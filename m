@@ -1,88 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbXLGA7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbXLGBJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbXLGA7s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 19:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbXLGA7l
+	id S1753981AbXLGBJf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 20:09:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbXLGBJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 19:59:41 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:3297 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbXLGA7j (ORCPT
+	Thu, 6 Dec 2007 20:09:25 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49048 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752217AbXLGBJX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 19:59:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=hyjW5EGYP9f9DGedna+RqOluwkBAMhBNE46pkxKaNgmzeUmrCxa6qJWVTJ5jiMRK8ss4r/KTlKxZakAch184/1Jk2qks8yWIbL4fo9vx/qGSvkemYtigBpS17/qEhS3ePelV+r91ccwe+LXd953jqh3on8DIamEaLZ8YP9MqDtQ=
-Message-ID: <47589AF4.6080708@gmail.com>
-Date: Fri, 07 Dec 2007 09:59:32 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, notting@redhat.com,
-       rusty@rustcorp.com.au, kay.sievers@vrfy.org, greg@kroah.com
-Subject: Re: [PATCH] depmod: sort output according to modules.order
-References: <47555AF1.8090304@gmail.com> <47555C64.8070607@gmail.com> <20071205072529.GA5681@uranus.ravnborg.org> <47565452.3010800@gmail.com> <47565486.8050701@gmail.com> <20071205190609.GA14997@uranus.ravnborg.org> <47573403.1060203@gmail.com> <20071206223754.GB25209@uranus.ravnborg.org>
-In-Reply-To: <20071206223754.GB25209@uranus.ravnborg.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=us-ascii
+	Thu, 6 Dec 2007 20:09:23 -0500
+Date: Thu, 6 Dec 2007 17:09:11 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bernd Schubert <bs@q-leap.de>
+Cc: linux-kernel@vger.kernel.org, bernd-schubert@gmx.de,
+       linux-scsi@vger.kernel.org
+Subject: Re: everything in wait_for_completion, what is my system doing?
+Message-Id: <20071206170911.4060cd1c.akpm@linux-foundation.org>
+In-Reply-To: <200712052144.54399.bs@q-leap.de>
+References: <200712052144.54399.bs@q-leap.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
->> As I said, I don't think leaving duplicate lines in a file which will be
->> installed, distributed and used widely is the RTTD.  There can be other
->> uses of the file.  For example, the file can be parsed and modified by
->> distro specific module selector.  Sure, all of them can be made to deal
->> with dup entries but that's just not the right place to solve the problem.
+On Wed, 5 Dec 2007 21:44:54 +0100
+Bernd Schubert <bs@q-leap.de> wrote:
+
+> after scsi-recovery a system here went into some kind lock-up, everything 
+> seems to be in wait_for_completion(). Please see the attached 
+> blocked_states.txt and all_states.txt files.
+> This is 2.6.22.12, I can easily find out the line numbers if required.
 > 
-> googled a bit.
-> It looks like:
-> awk '!x[$0]++'
-> does the trick.
-
-Great, that's much better.  I'll give it a try.
-
-> So we can skip the C file (good thing).
-
-Fully agreed.
-
->>> And this change in Makefile.lib seems bogus:
->>> +# make sure '/' follows subdirs
->>> +subdir-y       := $(patsubst %//,%/, $(addsuffix, /,$subdir-y))
->>> +subdir-m       := $(patsubst %//,%/, $(addsuffix, /,$subdir-m))
->> Some subdir-y|m entries have following / while others don't.  subdir-y|m
->> are lax about because either way it points to subdirectory.  The above
->> two lines are to normalize them so that there's no surprises when
->> concatenating file name to it.  I think it's a good idea to have the
->> above with or without other changes.
-> With this change building modpost no longer worked so kbuild
-> does not like the preceeding slashes. It could be fixed but thats
-> another patch.
-
-I don't really follow what you mean here.  Do you mean with the tailing
-slash normalized, modpost doesn't work anymore?  Or with the
-normalization removed?
-
->>> subdir-y and subdir-m does not point to directories that
->>> contains modules (built-in or not) so they can be ignored for modorder.
->> I didn't know that.  Is it forced that modules can't be put in
->> subdir-y|m directories?  What happens if I do that?
+> Any help is highly appreciated.
 > 
-> I guess modules can be built as modules - but they can never be built-in.
-> And if someone uses subdir-y to point to a dir with modules
-> I would anyway cosider that a bug.
+> 
 
-s/module/component which can be a dynamically loadable module or
-built-in to the kernel/ in my original sentence.  I just couldn't find a
-good word to use.  So, you're saying subdir-ym's can be dropped from
-modorder, right?  It would be great if we can implement a safeguard to
-check that subdif-ym's don't actually contain modules.
+Please cc linux-scsi on scsi-related reports.
 
-Thanks.
+> 
+> 
+> [blocked_states.txt  text/plain (20.5KB)]
+> [generate break]
+> [ 1818.566436] SysRq : Show Blocked State
+> [ 1818.570260]
+> [ 1818.570261]                                  free                        sibling
+> [ 1818.579253]   task                 PC        stack   pid father child younger older
+> [ 1818.586987] events/7      D 00000155dd642280     0    26      2 (L-TLB)
+> [ 1818.593747]  ffff81012b529ac0 0000000000000046 0000000000000000 ffff810128280d18
+> [ 1818.601321]  ffff8100ba2376f8 ffff81012b689630 ffff81012aff76b0 000000078023e215
+> [ 1818.608870]  000000010003ca14 0000000000000000 ffff810001065400 0000000780430c13
+> [ 1818.616222] Call Trace:
+> [ 1818.618925]  [<ffffffff804ececb>] io_schedule+0x28/0x36
+> [ 1818.624207]  [<ffffffff8036e517>] get_request_wait+0x104/0x158
+> [ 1818.630112]  [<ffffffff8036e5a1>] blk_get_request+0x36/0x6b
+> [ 1818.635755]  [<ffffffff8042f5cb>] scsi_execute+0x51/0x129
+> [ 1818.641240]  [<ffffffff880cc11b>] :scsi_transport_spi:spi_execute+0x87/0xf8
+> [ 1818.648271]  [<ffffffff880cd5ae>] :scsi_transport_spi:spi_dv_device_echo_buffer+0x181/0x27d
+> [ 1818.656739]  [<ffffffff880cd801>] :scsi_transport_spi:spi_dv_retrain+0x4e/0x240
+> [ 1818.664139]  [<ffffffff880ce008>] :scsi_transport_spi:spi_dv_device+0x615/0x69c
+> [ 1818.671542]  [<ffffffff880f16d1>] :mptspi:mptspi_dv_device+0xb3/0x14b
+> [ 1818.678042]  [<ffffffff880f27d3>] :mptspi:mptspi_dv_renegotiate_work+0xcb/0xef
+> [ 1818.685348]  [<ffffffff80245bb8>] run_workqueue+0x8e/0x120
+> [ 1818.690905]  [<ffffffff80245d50>] worker_thread+0x106/0x117
+> [ 1818.696540]  [<ffffffff80249672>] kthread+0x4b/0x82
+> [ 1818.701474]  [<ffffffff8020ab28>] child_rip+0xa/0x12
+> [ 1818.706495]
+> [ 1818.708022] unionfs-fuse- D 000001a76ef63463     0  1119      1 (NOTLB)
+> [ 1818.714764]  ffff810129765988 0000000000000082 0000000000000000 ffffffff80337e22
+> [ 1818.722329]  ffff8101297658c8 ffff81012b652f20 ffff810129eec810 0000000600000000
+> [ 1818.729895]  000000010005204e 0000000000000000 ffff81000105c400 0000000680337c3e
+> [ 1818.737249] Call Trace:
+> [ 1818.739953]  [<ffffffff804ecfba>] schedule_timeout+0x8a/0xb6
+> [ 1818.745673]  [<ffffffff804ecf01>] io_schedule_timeout+0x28/0x36
+> [ 1818.751664]  [<ffffffff8026fba7>] congestion_wait+0x9d/0xc2
+> [ 1818.757300]  [<ffffffff80269b24>] balance_dirty_pages_ratelimited_nr+0x196/0x22f
+> [ 1818.764781]  [<ffffffff80265a3f>] generic_file_buffered_write+0x52a/0x60d
+> [ 1818.771641]  [<ffffffff80266210>] __generic_file_aio_write_nolock+0x45a/0x491
+> [ 1818.778852]  [<ffffffff802662a8>] generic_file_aio_write+0x61/0xc1
+> [ 1818.785101]  [<ffffffff8032eb94>] nfs_file_write+0x138/0x1b7
+> [ 1818.790822]  [<ffffffff8028d222>] do_sync_write+0xcc/0x112
+> [ 1818.796372]  [<ffffffff8028d32b>] vfs_write+0xc3/0x165
+> [ 1818.801575]  [<ffffffff8028d5df>] sys_pwrite64+0x68/0x96
+> [ 1818.806959]  [<ffffffff80209d0e>] system_call+0x7e/0x83
+> [ 1818.812250]  [<00002b4eeec3ea73>]
+>
+> [snippage]
+>
 
--- 
-tejun
+Possibly your device driver had conniptions and stopped generating
+completion interrupts.
+
+Which driver is in use?
+
+I don't suppose it is repeatable.
