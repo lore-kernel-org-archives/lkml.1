@@ -1,32 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbXLGKY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbXLGK1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753919AbXLGKY2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 05:24:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbXLGKYT
+	id S1754672AbXLGK1k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 05:27:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbXLGK1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 05:24:19 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53132 "EHLO
+	Fri, 7 Dec 2007 05:27:31 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36135 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751659AbXLGKYS (ORCPT
+	by vger.kernel.org with ESMTP id S1752018AbXLGK1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 05:24:18 -0500
-Date: Fri, 7 Dec 2007 02:23:42 -0800
+	Fri, 7 Dec 2007 05:27:30 -0500
+Date: Fri, 7 Dec 2007 02:26:46 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
-       "Denis V. Lunev" <den@openvz.org>
-Subject: Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
-Message-Id: <20071207022342.806ee4ee.akpm@linux-foundation.org>
-In-Reply-To: <1197003097.13978.557.camel@pmac.infradead.org>
-References: <20071119191000.GA1560@elf.ucw.cz>
-	<200711192304.25087.rjw@sisk.pl>
-	<4743026B.2020907@openvz.org>
-	<m1hcj8mz1p.fsf_-_@ebiederm.dsl.xmission.com>
-	<1197003097.13978.557.camel@pmac.infradead.org>
+To: rct@frus.com (Bob Tracy)
+Cc: mingo@elte.hu, mcree@orcon.net.nz, linux-kernel@vger.kernel.org,
+       rjw@sisk.pl, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       linux-scsi@vger.kernel.org, kay.sievers@vrfy.org, greg@kroah.com
+Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
+Message-Id: <20071207022646.373c92f5.akpm@linux-foundation.org>
+In-Reply-To: <20071207050709.110D2DBA2@gherkin.frus.com>
+References: <20071206163305.c3587675.akpm@linux-foundation.org>
+	<20071207050709.110D2DBA2@gherkin.frus.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -35,40 +29,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 07 Dec 2007 04:51:37 +0000 David Woodhouse <dwmw2@infradead.org> wrote:
+On Thu, 6 Dec 2007 23:07:08 -0600 (CST) rct@frus.com (Bob Tracy) wrote:
 
-> On Mon, 2007-11-26 at 15:17 -0700, Eric W. Biederman wrote:
-> > Well I clearly goofed when I added the initial network namespace support
-> > for /proc/net.  Currently things work but there are odd details visible
-> > to user space, even when we have a single network namespace.
+> Andrew Morton wrote:
+> > commit 6f37ac793d6ba7b35d338f791974166f67fdd9ba
+> > Merge: 2f1f53b... d90bf5a...
+> > Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
+> > Date:   Wed Nov 14 18:51:48 2007 -0800
 > > 
-> > Since we do not cache proc_dir_entry dentries at the moment we can
-> > just modify ->lookup to return a different directory inode depending
-> > on the network namespace of the process looking at /proc/net, replacing
-> > the current technique of using a magic and fragile follow_link method.
+> >     Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/n
+> >     
+> >     * 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6:
+> >       [NET]: rt_check_expire() can take a long time, add a cond_resched()
+> >       [ISDN] sc: Really, really fix warning
+> >       [ISDN] sc: Fix sndpkt to have the correct number of arguments
+> >       [TCP] FRTO: Clear frto_highmark only after process_frto that uses it
+> >       [NET]: Remove notifier block from chain when register_netdevice_notifier f
+> >       [FS_ENET]: Fix module build.
+> >       [TCP]: Make sure write_queue_from does not begin with NULL ptr
+> >       [TCP]: Fix size calculation in sk_stream_alloc_pskb
+> >       [S2IO]: Fixed memory leak when MSI-X vector allocation fails
+> >       [BONDING]: Fix resource use after free
+> >       [SYSCTL]: Fix warning for token-ring from sysctl checker
+> >       [NET] random : secure_tcp_sequence_number should not assume CONFIG_KTIME_S
+> >       [IWLWIFI]: Not correctly dealing with hotunplug.
+> >       [TCP] FRTO: Plug potential LOST-bit leak
+> >       [TCP] FRTO: Limit snd_cwnd if TCP was application limited
+> >       [E1000]: Fix schedule while atomic when called from mii-tool.
+> >       [NETX]: Fix build failure added by 2.6.24 statistics cleanup.
+> >       [EP93xx_ETH]: Build fix after 2.6.24 NAPI changes.
+> >       [PKT_SCHED]: Check subqueue status before calling hard_start_xmit
 > > 
-> > To accomplish that this patch:
-> > - introduces a shadow_proc method to allow different dentries to
-> >   be returned from proc_lookup.
-> > - Removes the old /proc/net follow_link magic
-> > - Fixes a weakness in our not caching of proc generic dentries.
-> > 
-> > As shadow_proc uses a task struct to decided which dentry to return we
-> > can go back later and fix the proc generic caching without modifying any code that
-> > uses the shadow_proc method.
-> > 
-> > Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> > ---
-> >  fs/proc/generic.c       |   12 ++++++-
-> >  fs/proc/proc_net.c      |   86 +++--------------------------------------------
-> >  include/linux/proc_fs.h |    3 ++
-> >  3 files changed, 19 insertions(+), 82 deletions(-)
+> > I'm struggling to see how any of those could have broken block device
+> > mounting on alpha.  Are you sure you bisected right?
 > 
-> (commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416)
+> Based on what's in that commit, it *does* appear something went wrong
+> with bisection.  If the implicated commit is the next one in time
+> sequence relative to
 > 
-> This seems to have broken the use of /proc/bus/usb as a mountpoint. It
-> always appears empty now, whatever's supposed to be mounted there.
+> # good: [2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3] CRISv10 fasttimer: Scrap INLINE and name timeval_cmp better
 > 
+> then the test of whether I bisected correctly is as simple as applying
+> the commit and seeing if things break, because I'm running on the
+> kernel corresponding to 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3 right
+> now.  Let me give that a try and I'll report back.  Worst case, I'll
+> have to start over and write off the past four days...
 
-Yes.  Denis and Eric are tossing around competing patches but afaik nobody
-is happy with any of them.  Guys, could we get this sorted soonish please?
+Gad.  I trust the second time will be faster.
+
+git-bisect _is_ very error prone.  I find one of the problems is that each
+step is so far apart in time that you forget what you were doing.  Did I
+remember to test that iteration?  Did I install the right kernel?  etc.
+
+> Sorry about this...
+
+Not appropriate ;)   Thanks for helping out.
