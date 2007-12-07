@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbXLGKlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbXLGKpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753841AbXLGKlM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 05:41:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbXLGKk5
+	id S1754739AbXLGKpM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 05:45:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbXLGKo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 05:40:57 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55789 "EHLO mx2.mail.elte.hu"
+	Fri, 7 Dec 2007 05:44:59 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52417 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751051AbXLGKk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 05:40:57 -0500
-Date: Fri, 7 Dec 2007 11:40:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stefano Brivio <stefano.brivio@polimi.it>, Robert Love <rml@tech9.net>,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
-Message-ID: <20071207104013.GC27307@elte.hu>
-References: <20071207021952.6f0ac922@morte> <20071207084559.GA11162@elte.hu> <20071207023241.15274ef6.akpm@linux-foundation.org>
+	id S1751247AbXLGKo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 05:44:59 -0500
+To: "David P. Reed" <dpreed@reed.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64 with MCP51 laptops
+From: Andi Kleen <andi@firstfloor.org>
+References: <475879CD.9080006@reed.com>
+Date: Fri, 07 Dec 2007 11:44:57 +0100
+In-Reply-To: <475879CD.9080006@reed.com> (David P. Reed's message of "Thu\, 06 Dec 2007 17\:38\:05 -0500")
+Message-ID: <p733auekcly.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071207023241.15274ef6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"David P. Reed" <dpreed@reed.com> writes:
+>
+> ANy help/suggestions?
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Use a variable for the port and and do a early quirk to change 
+the port to something safe on your chipset? 
 
-> > -				t = printk_clock();
-> > +				t = cpu_clock(printk_cpu);
-> >  				nanosec_rem = do_div(t, 1000000000);
-> >  				tlen = sprintf(tbuf,
-> >  						"<%c>[%5lu.%06lu] ",
-> 
-> A bit risky - it's quite an expansion of code which no longer can call 
-> printk.
-> 
-> You might want to take that WARN_ON out of __update_rq_clock() ;)
+Ok there might be code using outb_p() before the early quirks,
+but should be possible to find using instrumentation.
 
-hm, dont we already detect printk recursions and turn them into a silent 
-return instead of a hang/crash?
+Also the port assignment might not be chipset specific, but BIOS
+specific, then you would need to match the DMI identifier. The 
+disadvantage of that is that there are usually other BIOS
+with other identifiers but the same problem around.
 
-	Ingo
+> Changing the delay instruction sequence from the outb to short jumps
+> might be the safe thing.  But Linus, et al. may have experience with
+> that on other architectures like older Pentiums etc.
+
+I don't think that makes sense to do on anything modern. The trouble
+is that the jumps will effectively execute near "infinitely fast" on any
+modern CPU compared to the bus. But the delay really needs to be something
+that is about IO port speed. Ok in theory you could try to measure
+a outb using RDTSC and then use udelay, but first you would need
+a safe port for that already and then RDTSC is not necessarily constant.
+
+-Andi
