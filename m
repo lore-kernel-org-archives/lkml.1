@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbXLGAkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbXLGAka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755577AbXLGAkH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 19:40:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbXLGAjz
+	id S1754067AbXLGAka (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 19:40:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbXLGAkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 19:39:55 -0500
-Received: from gherkin.frus.com ([192.158.254.49]:37233 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752639AbXLGAjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 19:39:54 -0500
-X-Greylist: delayed 1404 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Dec 2007 19:39:53 EST
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-In-Reply-To: <20071204121618.GA26132@elte.hu> "from Ingo Molnar at Dec 4, 2007
- 01:16:18 pm"
-To: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 6 Dec 2007 18:16:12 -0600 (CST)
-CC: Michael Cree <mcree@orcon.net.nz>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       linux-scsi@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg KH <greg@kroah.com>
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Dec 2007 19:40:10 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52215 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755597AbXLGAkH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Dec 2007 19:40:07 -0500
+Date: Thu, 6 Dec 2007 16:39:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Parag Warudkar <parag.warudkar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Failure with SATA DVD-RW
+Message-Id: <20071206163936.6b1fb00a.akpm@linux-foundation.org>
+In-Reply-To: <loom.20071206T012459-620@post.gmane.org>
+References: <cd32a0620712041608o7733db74xf4975dec44925730@mail.gmail.com>
+	<loom.20071206T012459-620@post.gmane.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20071207001612.39E36DBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK.  Finally have this thing painted into a corner: git has identified
-6f37ac793d6ba7b35d338f791974166f67fdd9ba as the first bad commit.
+On Thu, 6 Dec 2007 01:33:16 +0000 (UTC)
+Parag Warudkar <parag.warudkar@gmail.com> wrote:
 
->From "git bisect log", this corresponds to 
+> Tom Lanyon <tomlanyon <at> gmail.com> writes:
+> 
+> > scsi4: ahci
+> > ata5: SATA link up at 1.5 Gbps (SStatus 113 SControl 300)
+> > ata5.00: ATAPI, max UDMA/66
+> > ata5.00: qc timeout (cmd 0xef)
+> > ata5.00: failed to set xfermode (err_mask=0x104)
+> > ata5.00: limiting speed to UDMA/44
+> > ata5: failed to recover some devices, retrying in 5 secs
+> > ata5: port is slow to respond, please be patient (Status 0x80)
+> > ata5: port failed to respond (30 secs, status 0x80)
+> > ata5: COMRESET failed (device not ready)
+> > ata5: hardreset failed, retrying in 5 secs
+> > ata5: SATA link up at 1.5 Gbps (SStatus 113 SControl 300)
+> > ata5.00: ATAPI, max UDMA/66
+> > ata5.00: qc timeout (cmd 0xef)
+> > ata5.00: failed to set xfermode (err_mask=0x104)
+> > ata5.00: limiting speed to PIO0
+> > ata5: failed to recover some devices, retrying in 5 secs
+> > ata5: port is slow to respond, please be patient (Status 0x80)
+> > ata5: port failed to respond (30 secs, status 0x80)
+> > ata5: COMRESET failed (device not ready)
+> > ata5: hardreset failed, retrying in 5 secs
+> > ata5.00: ATAPI, max UDMA/66
+> > ata5.00: qc timeout (cmd 0xef)
+> > ata5.00: failed to set xfermode (err_mask=0x104)
+> > ata5.00: disabled
+> > 
+> Looks like it is trying to set transfer mode to UDMA/66 and failing. After 
+> that it tried UDMA/44 and failed again. Next UDMA/66 again with unsurprising 
+> result - failed. After that PIO0 which seems to cause some kind of trouble, 
+> then it tries UDMA/66 again, and I am not stating the result again :) ! 
+> 
+> > Any ideas what to try to get it working under AHCI?
+> > 
+> 
+> I recall reading somewhere - the Pioneer drive needs UDMA/33 which it did not 
+> try in your case - need to some how have it try UDMA/33 but I don't find a 
+> boot parameter which will do that. So may be adding a quirk for this device to 
+> limit the xfer mode to 33 may work. 
+> 
+> What does your dmesg output for the drives look like when you run in IDE 
+> compat mode? (Particularly the DMA for this drive?)
+> 
 
-# bad: [6f37ac793d6ba7b35d338f791974166f67fdd9ba] Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
+Please cc linux-ide on sata, pata and ide-related issues.
 
-Here's the full log:
+If nothing happens within a few days please raise a report at
+bugzilla.kernel.org so we can ignore this in an organised fashion, thanks.
 
-git-bisect start
-# good: [9aae299f7fd1888ea3a195cfe0edef17bb647415] Linux 2.6.24-rc2
-git-bisect good 9aae299f7fd1888ea3a195cfe0edef17bb647415
-# bad: [f05092637dc0d9a3f2249c9b283b973e6e96b7d2] Linux 2.6.24-rc3
-git-bisect bad f05092637dc0d9a3f2249c9b283b973e6e96b7d2
-# good: [e6a5c27f3b0fef72e528fc35e343af4b2db790ff] Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm
-git-bisect good e6a5c27f3b0fef72e528fc35e343af4b2db790ff
-# good: [42614fcde7bfdcbe43a7b17035c167dfebc354dd] vmstat: fix section mismatch warning
-git-bisect good 42614fcde7bfdcbe43a7b17035c167dfebc354dd
-# bad: [a052f4473603765eb6b4c19754689977601dc1d1] Merge git://git.kernel.org/pub/scm/linux/kernel/git/sam/x86
-git-bisect bad a052f4473603765eb6b4c19754689977601dc1d1
-# good: [d8e5219f9f5ca7518eb820db9f3d287a1d46fcf5] CRISv10 improve and bugfix fasttimer
-git-bisect good d8e5219f9f5ca7518eb820db9f3d287a1d46fcf5
-# good: [d90bf5a976793edfa88d3bb2393f0231eb8ce1e5] [NET]: rt_check_expire() can take a long time, add a cond_resched()
-git-bisect good d90bf5a976793edfa88d3bb2393f0231eb8ce1e5
-# good: [2a113281f5cd2febbab21a93c8943f8d3eece4d3] kconfig: use $K64BIT to set 64BIT with all*config targets
-git-bisect good 2a113281f5cd2febbab21a93c8943f8d3eece4d3
-# good: [2e2cd8bad6e03ceea73495ee6d557044213d95de] CRISv10 memset library add lineendings to asm
-git-bisect good 2e2cd8bad6e03ceea73495ee6d557044213d95de
-# bad: [6f37ac793d6ba7b35d338f791974166f67fdd9ba] Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-git-bisect bad 6f37ac793d6ba7b35d338f791974166f67fdd9ba
-# good: [2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3] CRISv10 fasttimer: Scrap INLINE and name timeval_cmp better
-git-bisect good 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3
-
--- 
-------------------------------------------------------------------------
-Bob Tracy          |  "They couldn't hit an elephant at this dist- "
-rct@frus.com       |   - Last words of Union General John Sedgwick,
-                   |  Battle of Spotsylvania Court House, U.S. Civil War
-------------------------------------------------------------------------
