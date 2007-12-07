@@ -1,68 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbXLGLl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbXLGLsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbXLGLl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 06:41:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbXLGLlS
+	id S1754586AbXLGLsK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 06:48:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXLGLry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 06:41:18 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34750 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752422AbXLGLlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 06:41:17 -0500
-Date: Fri, 7 Dec 2007 12:40:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Bob Tracy <rct@frus.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mcree@orcon.net.nz,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
-       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org,
-       kay.sievers@vrfy.org, greg@kroah.com
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-Message-ID: <20071207114048.GB14598@elte.hu>
-References: <20071206163305.c3587675.akpm@linux-foundation.org> <20071207050709.110D2DBA2@gherkin.frus.com>
+	Fri, 7 Dec 2007 06:47:54 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:34578 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbXLGLrw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 06:47:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=x-authentication-warning:to:cc:subject:references:in-reply-to:message-id:lines:user-agent:mime-version:content-type:from:date;
+        b=QYU1MpJZbPu6LMzCJQSqR9rhZ8RoSh9JQF9NT7MhVET2r7eBFcS8LVB/s0svyUboQsnGMWSdHJxgX3OhxyYnkXtC+LfRAM4PkyR+c17wMhFmIeh3Z6pX/Hik12tWlCEv4ldJOQ19KwyM/Na0tjI9kwMFoN92059OrhkbVHVQBl8=
+To: Al Boldi <a1426z@gawab.com>
+Cc: Andreas Ericsson <ae@op5.se>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+Subject: Re: git guidance
+References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com>
+	<200712070737.18519.a1426z@gawab.com> <475906F7.5010309@op5.se>
+	<200712071353.11654.a1426z@gawab.com>
+In-Reply-To: <200712071353.11654.a1426z@gawab.com>
+Message-ID: <m3prxiu3oo.fsf@roke.D-201>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071207050709.110D2DBA2@gherkin.frus.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=BAYES_00,SUBJECT_FUZZY_TION autolearn=no SpamAssassin version=3.2.3
-	0.2 SUBJECT_FUZZY_TION     Attempt to obfuscate words in Subject:
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+From: Jakub Narebski <jnareb@gmail.com>
+Date: Fri, 07 Dec 2007 03:47:49 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Al Boldi <a1426z@gawab.com> writes:
+> Andreas Ericsson wrote:
 
-* Bob Tracy <rct@frus.com> wrote:
-
-> > I'm struggling to see how any of those could have broken block 
-> > device mounting on alpha.  Are you sure you bisected right?
+>> So, to get to the bottom of this, which of the following workflows is it
+>> you want git to support?
+>>
+>> ### WORKFLOW A ###
+>> edit, edit, edit
+>> edit, edit, edit
+>> edit, edit, edit
+>> Oops I made a mistake and need to hop back to "current - 12".
+>> edit, edit, edit
+>> edit, edit, edit
+>> publish everything, similar to just tarring up your workdir and sending
+>> out ### END WORKFLOW A ###
+>>
+>> ### WORKFLOW B ###
+>> edit, edit, edit
+>> ok this looks good, I want to save a checkpoint here
+>> edit, edit, edit
+>> looks good again. next checkpoint
+>> edit, edit, edit
+>> oh crap, back to checkpoint 2
+>> edit, edit, edit
+>> ooh, that's better. save a checkpoint and publish those checkpoints
+>> ### END WORKFLOW B ###
 > 
-> Based on what's in that commit, it *does* appear something went wrong 
-> with bisection.  If the implicated commit is the next one in time 
-> sequence relative to
+> ### WORKFLOW C ###
+> for every save on a gitfs mounted dir, do an implied checkpoint, commit, or 
+> publish (should be adjustable), on its privately created on-the-fly 
+> repository.
+> ### END WORKFLOW C ###
+
+It looks like it is WORKFLOW A (with the fact that each ',' is file
+save stated explicitely rather than implicitely).
+ 
+> For example:
 > 
-> # good: [2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3] CRISv10 fasttimer: Scrap INLINE and name timeval_cmp better
+>   echo "// last comment on this file" >> /gitfs.mounted/file
 > 
-> then the test of whether I bisected correctly is as simple as applying 
-> the commit and seeing if things break, because I'm running on the 
-> kernel corresponding to 2f1f53bdc6531696934f6ee7bbdfa2ab4f4f62a3 right 
-> now.  Let me give that a try and I'll report back.  Worst case, I'll 
-> have to start over and write off the past four days...
+> should do an implied checkpoint, and make these checkpoints immediately 
+> visible under some checkpoint branch of the gitfs mounted dir.
+> 
+> Note, this way the developer gets version control without even noticing, and 
+> works completely transparent to any kind of application.
 
-generally it's easier to just go "back in time" and re-try the last 
-known "good" and last-known "bad" commit IDs to establish that they are 
-indeed correctly identified. if they are not then step back one more in 
-the bisection log. No need to spend another 4 days on this, if most of 
-the bisection is OK. You can replay a corrected git bisection log 
-quickly, by doing:
+Why not use versioning filesystem for that, for example ext3cow
+(which looks suprisingly git-like, when you take into account that
+for ext3cow history is linear and centralized, so one can use date
+or sequential number to name commits).
 
-  git-bisect reset
-  git-bisect < bisect.log
+See GitLinks page on Git Wiki, "Other links" section:
+  http://www.ext3cow.com/
 
-	Ingo
+Version control system is all about WORKFLOW B, where programmer
+controls when it is time to commit (and in private repository he/she
+can then rewrite history to arrive at "Perfect patch series"[*1*]);
+something that for example CVS failed at, requiring programmer to do
+a merge if upstream has any changes when trying to commit.
+
+[*1*] I have lost link to post at LKML about rewriting history to
+      arrive at perfect patch _series_. IIRC I have found it first
+      time on this mailing list. I would be grateful for sending this
+      link if you have it. TIA.
+
+-- 
+Jakub Narebski
+ShadeHawk on #git
