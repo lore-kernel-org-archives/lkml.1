@@ -1,191 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757757AbXLGWAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbXLGWBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757757AbXLGWAn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 17:00:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbXLGWAb
+	id S1755873AbXLGWBj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 17:01:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbXLGWBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 17:00:31 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40762 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755393AbXLGWAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 17:00:30 -0500
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX19bAroJ1vxbem0kwvT+ZwvmNL1Wj/tEOoJdJwpD6q
-	VZXVq09H+xjF56
-Date: Fri, 7 Dec 2007 23:00:25 +0100
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Al Boldi <a1426z@gawab.com>
-Cc: Andreas Ericsson <ae@op5.se>,
-       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
-       Phillip Susi <psusi@cfl.rr.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
-       git@vger.kernel.org
-Subject: Re: git guidance
-Message-ID: <20071207220025.GD2001@atjola.homenet>
-References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712070737.18519.a1426z@gawab.com> <475906F7.5010309@op5.se> <200712071353.11654.a1426z@gawab.com>
+	Fri, 7 Dec 2007 17:01:31 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:59777 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752457AbXLGWBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 17:01:30 -0500
+Message-ID: <4759C2B2.9020906@linux.vnet.ibm.com>
+Date: Sat, 08 Dec 2007 03:31:22 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="2oS5YaxWCcQjTEyO"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200712071353.11654.a1426z@gawab.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Y-GMX-Trusted: 0
+To: Greg KH <greg@kroah.com>
+CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, rsa@us.ibm.com, apw@shadowen.org,
+       balbir@in.ibm.com
+Subject: Re: 2.6.24-rc4-mm1 kobject changes broken with hvcs driver on powerpc
+References: <20071204211701.994dfce6.akpm@linux-foundation.org> <20071205141202.GB13189@linux.vnet.ibm.com> <47583D4F.2050707@linux.vnet.ibm.com> <20071206185006.GA21641@kroah.com> <47584672.8040201@linux.vnet.ibm.com> <20071206203118.GA28618@kroah.com> <1196985291.18388.19.camel@dyn9047017100.beaverton.ibm.com> <20071207003204.GA11947@kroah.com> <4758B7C2.8080806@linux.vnet.ibm.com> <20071207051459.GC496@kroah.com>
+In-Reply-To: <20071207051459.GC496@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---2oS5YaxWCcQjTEyO
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-
-On 2007.12.07 13:53:11 +0300, Al Boldi wrote:
-> Andreas Ericsson wrote:
-> > So, to get to the bottom of this, which of the following workflows is it
-> > you want git to support?
-> >
-> > ### WORKFLOW A ###
-> > edit, edit, edit
-> > edit, edit, edit
-> > edit, edit, edit
-> > Oops I made a mistake and need to hop back to "current - 12".
-> > edit, edit, edit
-> > edit, edit, edit
-> > publish everything, similar to just tarring up your workdir and sending
-> > out ### END WORKFLOW A ###
-> >
-> > ### WORKFLOW B ###
-> > edit, edit, edit
-> > ok this looks good, I want to save a checkpoint here
-> > edit, edit, edit
-> > looks good again. next checkpoint
-> > edit, edit, edit
-> > oh crap, back to checkpoint 2
-> > edit, edit, edit
-> > ooh, that's better. save a checkpoint and publish those checkpoints
-> > ### END WORKFLOW B ###
+> How about running 2.6.24-rc4 with _only_ the patch to this driver to
+> convert it to krefs?  Does that combination cause problems?
 > 
-> ### WORKFLOW C ###
-> for every save on a gitfs mounted dir, do an implied checkpoint, commit, or 
-> publish (should be adjustable), on its privately created on-the-fly 
-> repository.
-> ### END WORKFLOW C ###
-> 
-> For example:
-> 
->   echo "// last comment on this file" >> /gitfs.mounted/file
-> 
-> should do an implied checkpoint, and make these checkpoints immediately 
-> visible under some checkpoint branch of the gitfs mounted dir.
-> 
-> Note, this way the developer gets version control without even noticing, and 
-> works completely transparent to any kind of application.
+> The patch is at:
+> 	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver/kobject-convert-hvcs-to-use-kref-not-kobject.patch
 
-Ouch... That looks worse than "plain" per-file versioning. Not only do
-you per definition get "broken" commits if there's a change that affects
-two dependent files, you also get an insane amount of commits just for
-testing stuff, or fixing bugs.
+This patch works fine with _changes_ on 2.6.24-rc4. I can confirm that
+it's not a kref problem in that case. This patch still assumes that
+kref_get() returns a value. This is no longer true. The kref_get() call
+site needs to be changed.
 
-And unless you use some kind of union-fs on top (or keep ignored files
-in special unversioned area in your gitfs, which seems somewhat ugly),
-you'll probably also have to track lots of files in the working
-directory that are generated, unless you want to re-generate them after
-each reboot. And that leads to even more absolutely useless revisions.
-
-Just thinking of my vim .swp files (which I definitely don't want to
-loose on a crash/power outtage/pkill -9 .<ENTER> dammit) makes me scream
-because of the gazillion of commits they will produce (and no, I don't
-want them in some special out of tree directory).
-
-Plus, I have vim setup to _replace_ files on write, so that I can more
-easily use hard-linked copies with changing all copies at once _unless_
-I explicitly want to, meaning that I'd get full remove/add commits,
-which are absolutely useless. And trying to detect such patterns
-(rename, then write the changed file with the old name and then delete
-the renamed file) is probably not worth the trouble, because you
-coincidently might _want_ to have just these three steps recorded when
-you happen to perform them manually. And if you go for heuristics,
-you'll complain each time you get a false-positive/negative.
-
-
-That said, out of pure curiousness I came up with the attached script
-which just uses inotifywait to watch a directory and issue git commands
-on certain events. It is extremely stupid, but seems to work. And at
-least it hasn't got the drawbacks of a real gitfs regarding the need to
-have a "separate" non-versioned storage area for the working directory,
-because it simply uses the existing working directory wherever that
-might be stored. It doesn't use GIT_DIR/WORK_DIR yet, but hey, should be
-easy to add...
-
-Feel free to mess with that thing, hey, maybe you even like it and
-extend it to match your proposed workflow even more. I for sure won't
-use or even extend it, so you're likely on your own there.
-
-Side-note: Writing that script probably took less time than writing this
-email and probably less time than was wasted on this topic. Makes me
-want to use today's preferred "Code talks, b...s... walks" statement,
-but I'll refrain from that... Just because I lack the credibility to say
-that, and the script attached is quite crappy ;-)
-
-Björn
-
---2oS5YaxWCcQjTEyO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=git-watch
-
-#!/bin/bash
-inotifywait -m -r --exclude ^\./\.git/.* -e close_write -e move -e create -e delete . 2>/dev/null |
-while read FILE_PATH EVENT FILE_NAME
-do
-	FILE_NAME="$FILE_PATH$FILE_NAME"
-	FILE_NAME=${FILE_NAME#./}
-
-	# git doesn't care about directories
-	if [ -d "$FILE_NAME" ]
-	then
-		continue
-	fi
-
-	case "$EVENT" in
-		*CLOSE_WRITE*)
-		ACTION=change
-		;;
-		*MOVED_TO*)
-		ACTION=create
-		;;
-		*MODIFY*)
-		ACTION=change
-		;;
-		*DELETE*)
-		ACTION=delete
-		;;
-		*MOVED_FROM*)
-		ACTION=delete
-		;;
-		*CREATE*)
-		ACTION=create
-		;;
-		*)
-		continue
-		;;
-	esac
-
-	case $ACTION in
-		create)
-		git add "$FILE_NAME"
-		git commit -m "$FILE_NAME created"
-		;;
-		delete)
-		git rm --cached "$FILE_NAME"
-		git commit -m "$FILE_NAME removed"
-		;;
-		change)
-		git add "$FILE_NAME"
-		git commit -m "$FILE_NAME changed"
-		;;
-	esac
-done
-
---2oS5YaxWCcQjTEyO--
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
