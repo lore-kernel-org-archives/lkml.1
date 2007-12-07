@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbXLGR6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbXLGR73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756874AbXLGR6k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 12:58:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbXLGR6b
+	id S1757389AbXLGR73 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 12:59:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbXLGR7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 12:58:31 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32899 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753468AbXLGR6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 12:58:31 -0500
-Date: Fri, 7 Dec 2007 18:57:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: stefano.brivio@polimi.it, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Robert Love <rml@tech9.net>, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Michael Buesch <mb@bu3sch.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
-Message-ID: <20071207175754.GB19173@elte.hu>
-References: <20071207021952.6f0ac922@morte> <20071207084559.GA11162@elte.hu> <200712072213.06530.nickpiggin@yahoo.com.au> <20071207122310.maqkoxlb4gsg4ggc@webmail.polimi.it> <20071207122516.GA25115@elte.hu> <20071207123509.GA28676@elte.hu> <20071207124034.GA30052@elte.hu> <20071207145418.GA22277@elte.hu> <20071207174649.39c9198d@inria.fr>
+	Fri, 7 Dec 2007 12:59:19 -0500
+Received: from wr-out-0506.google.com ([64.233.184.231]:44355 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbXLGR7S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 12:59:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=veb3E7IYLvMr7HNKlpDTQDen75bXOWUmG9q+UD0yw3/V6HX22/RfId6k5DrK/8k3ZOaRj5KezR6BpkB8XvnrVrkYSOuJDi2VvRbO8FmI6Sv6PXTHbI6M0HdQj1FNrEfhqZW9R2chQPvRg0+DxAo+q01jPZe89UDLGiXLFA/NiQY=
+Message-ID: <2c0942db0712070959v400901ax59f7b445ec701c27@mail.gmail.com>
+Date: Fri, 7 Dec 2007 09:59:16 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: 2.6.24: false double-clicks from USB mouse
+Cc: "Mark Lord" <lkml@rtr.ca>, "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       rubini@vision.unipv.it, linux-input@vger.kernel.org,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>, linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <Pine.LNX.4.64.0712022300490.13260@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071207174649.39c9198d@inria.fr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <4752DB8C.50608@rtr.ca> <4752F6C7.4040904@rtr.ca>
+	 <Pine.LNX.4.64.0712021918500.13260@jikos.suse.cz>
+	 <4752FE11.2050200@rtr.ca> <4752FEFE.3000600@rtr.ca>
+	 <Pine.LNX.4.64.0712022007360.13260@jikos.suse.cz>
+	 <47530680.6020206@rtr.ca>
+	 <Pine.LNX.4.64.0712022025250.13260@jikos.suse.cz>
+	 <47530B32.7080502@rtr.ca>
+	 <Pine.LNX.4.64.0712022300490.13260@jikos.suse.cz>
+X-Google-Sender-Auth: cbce8fb5c53f4517
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Dec 2, 2007 2:07 PM, Jiri Kosina <jkosina@suse.cz> wrote:
+> Thanks. To sum up this longish thread:
+>
+> - Mark seems to be able to reproduce the problem quite easily; I was not
+>   successful reproducing this no matter how hard I tried, and I also
+>   didn't receive any similar bugreports from anyone else
+> - we are currently waiting for Mark to provide HID_DEBUG (and preferably
+>   also usbmon) output from the situation where multiple clicks are
+>   being generated incorrectly
 
-* Guillaume Chazarain <guichaz@yahoo.fr> wrote:
+Okay, I'm having a problem with 2.6.24-rc4 that I didn't with 2.6.23-rc6.
 
-> Le Fri, 7 Dec 2007 15:54:18 +0100,
-> Ingo Molnar <mingo@elte.hu> a écrit :
-> 
-> > This is a version that 
-> > is supposed fix all known aspects of TSC and frequency-change 
-> > weirdnesses.
-> 
-> Tested it with frequency changes, the clock is as smooth as I like it
-> :-)
+When the problem hits, my mouse (synaptics touchpad) is randomly
+moving about and clicking things whenever I have my finger on the
+trackpad. This behavior will persists for five to ten minutes (is
+happening now), and seems to be triggered by load (watching online
+videos in flash player, for example -- this matches Mark's experience
+with a make -j4).
 
-ok, great :-)
+I *think* the touchpad is connected via ps2, which looks like it'd
+clear usb of any blame. It's /dev/input/event6 at any rate.
 
-> The only remaining sched_clock user in need of conversion seems to be 
-> lockdep.
+This has been happening about once a day, and seems to start because
+of high CPU usage. ONce the CPU is idle, it still happens though, so
+I'm not sure why it clears up.
 
-yeah - for CONFIG_LOCKSTAT - but that needs to be done even more 
-carefully, due to rq->lock being lockdep-checked. We can perhaps try a 
-lock-less cpu_clock() version - other CPUs are not supposed to update 
-rq->clock.
-
-> Great work.
-
-thanks. I do get the impression that most of this can/should wait until 
-2.6.25. The patches look quite dangerous.
-
-	Ingo
+Any clues for where I should hunt from here?
