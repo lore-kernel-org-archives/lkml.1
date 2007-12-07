@@ -1,94 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbXLGKel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbXLGKhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbXLGKel (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 05:34:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbXLGKec
+	id S1754181AbXLGKhs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 05:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXLGKhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 05:34:32 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51668 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751385AbXLGKeb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 05:34:31 -0500
-Date: Fri, 7 Dec 2007 02:32:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stefano Brivio <stefano.brivio@polimi.it>, Robert Love <rml@tech9.net>,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
-Message-Id: <20071207023241.15274ef6.akpm@linux-foundation.org>
-In-Reply-To: <20071207084559.GA11162@elte.hu>
-References: <20071207021952.6f0ac922@morte>
-	<20071207084559.GA11162@elte.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Dec 2007 05:37:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38625 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751022AbXLGKhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 05:37:38 -0500
+Date: Fri, 7 Dec 2007 11:36:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Miles Lane <miles.lane@gmail.com>, laurent.riffard@free.fr,
+       linux-kernel@vger.kernel.org, roland@redhat.com, tglx@linutronix.de
+Subject: Re: 2.6.24-rc4-mm1: VDSOSYM build error
+Message-ID: <20071207103637.GB27307@elte.hu>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org> <47587796.8020705@free.fr> <20071206143754.07a67819.akpm@linux-foundation.org> <a44ae5cd0712061528j4c0ea529w71bd2b96e1e73043@mail.gmail.com> <20071206153415.353ddeea.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071206153415.353ddeea.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Dec 2007 09:45:59 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-> 
-> * Stefano Brivio <stefano.brivio@polimi.it> wrote:
-> 
-> > This patch fixes a regression introduced by:
-> > 
-> > commit bb29ab26863c022743143f27956cc0ca362f258c
-> > Author: Ingo Molnar <mingo@elte.hu>
-> > Date:   Mon Jul 9 18:51:59 2007 +0200
-> > 
-> > This caused the jiffies counter to leap back and forth on cpufreq 
-> > changes on my x86 box. I'd say that we can't always assume that TSC 
-> > does "small errors" only, when marked unstable. On cpufreq changes 
-> > these errors can be huge.
-> 
-> ah, printk_clock() still uses sched_clock(), not jiffies. So it's not 
-> the jiffies counter that goes back and forth, it's sched_clock() - so 
-> this is a printk timestamps anomaly, not related to jiffies. I thought 
-> we have fixed this bug in the printk code already: sched_clock() is a 
-> 'raw' interface that should not be used directly - the proper interface 
-> is cpu_clock(cpu). Does the patch below help?
-> 
-> 	Ingo
-> 
-> ----------------------->
-> Subject: sched: fix CONFIG_PRINT_TIME's reliance on sched_clock()
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> Stefano Brivio reported weird printk timestamp behavior during
-> CPU frequency changes:
-> 
->   http://bugzilla.kernel.org/show_bug.cgi?id=9475
-> 
-> fix CONFIG_PRINT_TIME's reliance on sched_clock() and use cpu_clock()
-> instead.
-> 
-> Reported-and-bisected-by: Stefano Brivio <stefano.brivio@polimi.it>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/printk.c |    2 +-
->  kernel/sched.c  |    7 ++++++-
->  2 files changed, 7 insertions(+), 2 deletions(-)
-> 
-> Index: linux/kernel/printk.c
-> ===================================================================
-> --- linux.orig/kernel/printk.c
-> +++ linux/kernel/printk.c
-> @@ -680,7 +680,7 @@ asmlinkage int vprintk(const char *fmt, 
->  					loglev_char = default_message_loglevel
->  						+ '0';
->  				}
-> -				t = printk_clock();
-> +				t = cpu_clock(printk_cpu);
->  				nanosec_rem = do_div(t, 1000000000);
->  				tlen = sprintf(tbuf,
->  						"<%c>[%5lu.%06lu] ",
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-A bit risky - it's quite an expansion of code which no longer can call printk.
+> On Thu, 6 Dec 2007 18:28:25 -0500
+> "Miles Lane" <miles.lane@gmail.com> wrote:
+> 
+> > How can I find Roland's patches, so I can try backing them out?
+> > I looked in the broken out patches and only saw one related
+> > to VDSO.  Backing it out did not help.  I tried searching for
+> > messages to LKML sent by "roland" but mostly got a bunch of
+> > folks sending spam.
+> 
+> They're all clumped into git-x86.patch.  Hard.
 
-You might want to take that WARN_ON out of __update_rq_clock() ;)
+in theory the git merges could be generated as a flat series of patch 
+files:
 
+ x86.git.foo-fixes.patch
+ x86.git.bar-updates.patch
+ x86.git.foo-fixes-feh.patch
+ ...
+
+which could also include the commit log. "git-log -p" might be a 
+suitable generator. For example, x86.git can be processed per commit, 
+via this script:
+
+  for N in `git-rev-list --reverse --no-merges --remove-empty master..mm`; do 
+    git-log -p $N
+  done
+
+the following git-export-quilt script (just wrote it, might be buggy, so 
+careful - and it blows away the patches/ directory wherever you run it) 
+will generate a series file into patches/series that can be applied via 
+quilt:
+
+  rm -rf patches
+  mkdir patches
+  for N in `git-rev-list --reverse --no-merges --remove-empty master..mm`; do
+   git-log -p -1 $N > .tmp
+   export SUBJECT=`head -5 .tmp | tail -1`
+
+   # generate filename out of subject line:
+   FILE=x86.git-"`echo $SUBJECT | cut -c10- |
+        tr '[:punct:] \t' '-' | tr -s - | tr '[:upper:]' '[:lower:]'`"
+
+   # generate unique name:
+   while [ -f patches/$FILE.patch ]; do FILE="$FILE"_; done
+
+   echo $FILE.patch
+   mv .tmp patches/$FILE.patch
+   echo $FILE.patch >> patches/series
+  done
+
+  ls -l patches/series
+
+i ran this script over x86.git and it produced a patch series with 247 
+patches that quilt was able to push correctly. (in theory this concept 
+should work for other git trees too - but i have not tried it)
+
+this would increase the series size quite substantially though - but it 
+would make cherry-picking and patch based bisection a lot easier.
+
+	Ingo
