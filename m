@@ -1,213 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbXLGSBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbXLGSEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757842AbXLGSBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 13:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbXLGSBB
+	id S1756663AbXLGSEf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 13:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbXLGSE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 13:01:01 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:62149 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754315AbXLGSBA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 13:01:00 -0500
-In-Reply-To: <21053.1196971251@redhat.com>
-References: <26C82FDD-C778-4034-A3CF-CB1C83A0C90C@oracle.com> <A0BB0F8C-9628-4B6C-A2F7-F3870B487D4E@oracle.com> <6306.1196874660@redhat.com> <25619.1196904168@redhat.com> <21053.1196971251@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DD7C0279-50CF-443B-B61B-D3DD78EE22C5@oracle.com>
-Cc: Peter Staubach <staubach@redhat.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Chuck Lever <chuck.lever@oracle.com>
-Subject: Re: How to manage shared persistent local caching (FS-Cache) with NFS?
-Date: Fri, 7 Dec 2007 12:59:48 -0500
-To: David Howells <dhowells@redhat.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 7 Dec 2007 13:04:27 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:2076 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753483AbXLGSE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 13:04:26 -0500
+Date: Fri, 7 Dec 2007 12:58:32 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Neil Horman <nhorman@redhat.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ben Woodard <woodard@redhat.com>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
+       Andi Kleen <andi@firstfloor.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@redhat.com>, nhorman@tuxdriver.com
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
+	boot cpu
+Message-ID: <20071207175832.GA18485@hmsreliant.think-freely.org>
+References: <20071128190525.GD3192@redhat.com> <474F7177.7050306@redhat.com> <20071130144250.GC23810@redhat.com> <20071130145131.GB5822@hmsendeavour.rdu.redhat.com> <20071206213951.GB28898@hmsreliant.think-freely.org> <20071206221143.GC2863@redhat.com> <m1bq93s5r8.fsf@ebiederm.dsl.xmission.com> <86802c440712070050s3c5017a4w8e747a7035d10d3a@mail.gmail.com> <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com> <20071207142144.GA10389@hmsendeavour.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071207142144.GA10389@hmsendeavour.rdu.redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David-
+On Fri, Dec 07, 2007 at 09:21:44AM -0500, Neil Horman wrote:
+> On Fri, Dec 07, 2007 at 01:22:04AM -0800, Yinghai Lu wrote:
+> > On Dec 7, 2007 12:50 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > >
+> > > On Dec 6, 2007 4:33 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> > ...
+> > > >
+> > > > My feel is that if it is for legacy interrupts only it should not be a problem.
+> > > > Let's investigate and see if we can unconditionally enable this quirk
+> > > > for all opteron systems.
+> > >
+> > > i checked that bit
+> > >
+> > > http://www.openbios.org/viewvc/trunk/LinuxBIOSv2/src/northbridge/amd/amdk8/coherent_ht.c?revision=2596&view=markup
+<snip>
+> > 
+> > it should be bit 18 (HTTC_APIC_EXT_ID)
+> > 
+> > 
+> > YH
+> 
+> this seems reasonable, I can reroll the patch for this.  As I think about it I'm
+> also going to update the patch to make this check occur for any pci class 0600
+> device from vendor AMD, since its possible that more than just nvidia chipsets
+> can be affected.
+> 
+> I'll repost as soon as I've tested, thanks!
+> Neil
 
-[ Some history snipped... ]
 
-On Dec 6, 2007, at 3:00 PM, David Howells wrote:
-> Chuck Lever <chuck.lever@oracle.com> wrote:
->> Is it a problem because, if there are multiple copies of the same  
->> remote file
->> in its cache, then FS-cache doesn't know, upon  reconnection,  
->> which item to
->> match against a particular remote file?
->
-> There are multiple copies of the same remote file that are  
-> described by the
-> same remote parameters.  Same IP address, same port, same NFS  
-> version, same
-> FSID, same FH.  The difference may be a local connection parameter.
+Ok, New patch attached.  It preforms the same function as previously described,
+but is more restricted in its application.  As Yinghai pointed out, the
+broadcast mask bit (bit 17 in the htcfg register) should only be enabled, if the
+extened apic id bit (bit 18 in the same register) is also set.  So this patch
+now check for that bit to be turned on first.  Also, this patch now adds an
+independent quirk check for all AMD hypertransport host controllers, since its
+possible for this misconfiguration to be present in systems other than nvidias.
+The net effect of these changes is, that its now applicable to all AMD systems
+containing hypertransport busses, and is only activated if extended apic ids are
+in use, meaning that this quirk guarantees that all processors in a system are
+elligible to receive interrupts from the ioapic, even if their apicid extends
+beyond the nominal 4 bit limitation.  Tested successfully by me.
 
-Why not encode the local mounted-on directory in the key?  A  
-cryptographic hash of the directory's absolute pathname would be  
-bounded in size.  And the mounted-on directory is usually persistent  
-across client reboots.
+Thanks & Regards
+Neil
 
-That way you can use the directory name hash to distinguish the  
-different views of the same remote object.
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
->> An adequate first pass at FS-cache can be done without guaranteeing
->> persistence.
->
-> True.  But it's not particularly interesting to me in such a case.
->
->> There are a host of other issues that need exposure -- steady-state
->> performance;
->
-> Meaning what?
 
-Meaning your cache is at quota all the time, and to continue  
-operation it must eject items constantly.
+ early-quirks.c |   83 ++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 76 insertions(+), 7 deletions(-)
 
-This is a scenario where it pays to cache the read-mostly items on  
-disk, and leave the frequently changing items in memory.
 
-The economics of disk caches is different than memory caches.  Disk  
-caches are much larger and cheaper, but their performance tanks when  
-they have to track frequently changing files.  Memory caches are  
-smaller, but tracking frequently changing data is only a little more  
-expensive than tracking data that doesn't change often.
 
-> I have been measuring the performance improvement and degradation  
-> numbers, and
-> I can say that if you've one client and one server, the server has  
-> all the
-> files in memory, and there's gigabit ethernet between them, an on- 
-> disk cache
-> really doesn't help.
->
-> Basically, the consideration of whether to use a cache is a  
-> compromise between
-> a host of factors.
->
->> cache garbage collection
->
-> Done.
->
->> and reclamation;
->
-> Done.
->
->> cache item aliasing;
->
-> Partly done.
->
->> whether all files on a mount point should be cached on disk, or  
->> some in
->> memory and some on disk;
->
-> I've thought about that, but no-one seems particularly interested in
-> discussing it.
-
-I think it's key to preventing FS-cache from making performance worse  
-in many common scenarios.
-
->> And what would it harm if FS-cache decides that certain items in  
->> its cache
->> have become ambiguous or otherwise unusable after a  reconnection  
->> event, thus
->> it reclaims them instead of re-using them?
->
-> It depends.
->
-> At some point I'd like to make disconnected operation possible, and  
-> that means
-> storing data to be written back in the cache.  You can't  
-> necessarily just
-> chuck that away.
-
-Disconnected operation for NFS is fraught with challenges.  Access to  
-data on servers is traditionally gated by the client's IP address,  
-for example.  The client may disconnect from the network, then  
-reconnect using a different address where suddenly all of its  
-accesses are rebuffed.
-
-NFS servers, not clients, traditionally determine the file's mtime  
-and ctime, and its file handle.  So file updates and file creation  
-become problematic.  The client has to reconcile the server's file  
-handle, for files created offline, with its own when reconnecting.
-
-And, for disconnected operation, the cache is required to contain  
-every item from the remote.  You can't just drop items from the cache  
-because they are inconvenient.
-
->>> I can't just say: "Well, it'll oops if you configure your NFS  
->>> shares like
->>> that,
->>> so don't.  It's not worth me implementing round it.".
->>
->> What causes that instability?  Why can't you insulate against the  
->> instability
->> but allow cache incoherence and aliased cache items?
->
-> Insulate how?  The only way to do that is to add something to the  
-> cache key
-> that says that these two otherwise identical items are actually  
-> diffent
-> things.
-
-That something might be the pathname of the mounted-on directory or  
-of the file itself.
-
->> I'm arguing that cache coherence isn't supported by the NFS  
->> protocol, so how
->> can FS-cache *require* a facility to support persistent local   
->> caching that
->> the protocol doesn't have in the first place?
->
-> NFS has just enough to just about support a persistent local cache for
-> unmodified files.  It has unique file keys per server, and it has a  
-> (limited)
-> amount of coherency data per file.  That's not really the problem.
->
-> The problem is that the client can create loads of different views  
-> of a remote
-> export and the kernel treats them as if they're views of different  
-> remote
-> exports.  These views do not necessarily have *anything* to  
-> distinguish them
-> at all (nosharecache option).
-
-Yes, they do.  The combination of mount options and mounted-on  
-directory (or local pathname to the file) gives you a unique identity  
-for that view.
-
-> Now, for the case of cached clients, we can enforce a reduction of  
-> incoherency
-> by requiring one remote inode maps to a single client inode if that  
-> inode is
-> going to be placed in the persistent cache.
-
-That seems reasonable.  Just don't cache the second and greater  
-instances of the same remote file if FS-cache can't handle local  
-aliases.
-
->> Invalidating is cheap for in-memory caches.  Frequent invalidation  
->> is going
->> to be expensive for FS-cache, since it requires some disk I/O (and  
->> perhaps
->> even file truncation).
->
-> So what?  That's one of the compromises you have to make if you  
-> want an
-> on-disk cache.  The invalidation is asynchronous anyway.
-
-So an item is cached in memory until space becomes available in the  
-disk cache?
->
-
---
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
+index 88bb83e..d5a7b30 100644
+--- a/arch/x86/kernel/early-quirks.c
++++ b/arch/x86/kernel/early-quirks.c
+@@ -44,6 +44,50 @@ static int __init nvidia_hpet_check(struct acpi_table_header *header)
+ #endif /* CONFIG_X86_IO_APIC */
+ #endif /* CONFIG_ACPI */
+ 
++static void __init fix_hypertransport_config(int num, int slot, int func)
++{
++	u32 htcfg;
++	/*
++	 *we found a hypertransport bus
++	 *make sure that are broadcasting
++	 *interrupts to all cpus on the ht bus
++	 *if we're using extended apic ids
++	 */
++	htcfg = read_pci_config(num, slot, func, 0x68);
++	if ((htcfg & (1 << 18)) == 1) {	
++		printk(KERN_INFO "Detected use of extended apic ids on hypertransport bus\n");
++		if ((htcfg & (1 << 17)) == 0) {
++			printk(KERN_INFO "Enabling hypertransport extended apic interrupt broadcast\n");
++			htcfg |= (1 << 17);
++			write_pci_config(num, slot, func, 0x68, htcfg);
++		}
++	}
++	
++}
++
++static void __init check_hypertransport_config()
++{
++	int num, slot, func;
++	u32 device, vendor;
++	func = 0;
++	for (num = 0; num < 32; num++) {
++		for (slot = 0; slot < 32; slot++) {
++			vendor = read_pci_config(num,slot,func,
++						PCI_VENDOR_ID); 
++			device = read_pci_config(num,slot,func,
++						PCI_DEVICE_ID);
++			vendor &= 0x0000ffff;
++			device >>= 16;
++			if ((vendor == PCI_VENDOR_ID_AMD) &&
++			    (device == PCI_DEVICE_ID_AMD_K8_NB))
++				fix_hypertransport_config(num,slot,func);
++		}
++	}
++
++	return;
++
++}
++
+ static void __init nvidia_bugs(void)
+ {
+ #ifdef CONFIG_ACPI
+@@ -83,6 +127,12 @@ static void __init ati_bugs(void)
+ #endif
+ }
+ 
++static void __init amd_host_bugs(void)
++{
++	printk(KERN_CRIT "IN AMD_HOST_BUGS\n");
++	check_hypertransport_config();
++}
++
+ struct chipset {
+ 	u16 vendor;
+ 	void (*f)(void);
+@@ -95,9 +145,16 @@ static struct chipset early_qrk[] __initdata = {
+ 	{}
+ };
+ 
++static struct chipset early_host_qrk[] __initdata = {
++	{ PCI_VENDOR_ID_AMD, amd_host_bugs},
++	{}
++};
++
+ void __init early_quirks(void)
+ {
+ 	int num, slot, func;
++	u8 found_bridge = 0;
++	u8 found_host = 0;
+ 
+ 	if (!early_pci_allowed())
+ 		return;
+@@ -115,18 +172,30 @@ void __init early_quirks(void)
+ 				if (class == 0xffffffff)
+ 					break;
+ 
+-				if ((class >> 16) != PCI_CLASS_BRIDGE_PCI)
++				class >>= 16;
++				if ((class != PCI_CLASS_BRIDGE_PCI) &&
++				    (class != PCI_CLASS_BRIDGE_HOST))
+ 					continue;
+ 
+ 				vendor = read_pci_config(num, slot, func,
+ 							 PCI_VENDOR_ID);
+ 				vendor &= 0xffff;
+-
+-				for (i = 0; early_qrk[i].f; i++)
+-					if (early_qrk[i].vendor == vendor) {
+-						early_qrk[i].f();
+-						return;
+-					}
++				if ((class == PCI_CLASS_BRIDGE_PCI) && (!found_bridge)) {
++					for (i = 0; early_qrk[i].f; i++)
++						if (early_qrk[i].vendor == vendor) {
++							early_qrk[i].f();
++							found_bridge = 1;;
++						}
++				} else if (!found_host) {
++					for (i = 0; early_host_qrk[i].f; i++)
++						if (early_host_qrk[i].vendor == vendor) {
++							early_host_qrk[i].f();
++							found_host = 1;
++						}
++				}
++
++				if (found_bridge && found_host)
++					return;
+ 
+ 				type = read_pci_config_byte(num, slot, func,
+ 							    PCI_HEADER_TYPE);
