@@ -1,202 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbXLGWh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbXLGWj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756845AbXLGWh3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 17:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbXLGWhV
+	id S1757600AbXLGWj0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 17:39:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbXLGWjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 17:37:21 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:41724 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbXLGWhS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 17:37:18 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Date: Sat, 08 Dec 2007 04:07:14 +0530
-Message-Id: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-Subject: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
+	Fri, 7 Dec 2007 17:39:15 -0500
+Received: from pat.uio.no ([129.240.10.15]:33036 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754243AbXLGWjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 17:39:14 -0500
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: gnome42@gmail.com, linux-kernel@vger.kernel.org, bfields@fieldses.org,
+       rjw@sisk.pl
+In-Reply-To: <20071207143319.ee048955.akpm@linux-foundation.org>
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
+	 <20071207040219.e231cbc7.akpm@linux-foundation.org>
+	 <fa4052ef0712071014l524951e2we4705d84c5005cf3@mail.gmail.com>
+	 <1197053179.7532.23.camel@heimdal.trondhjem.org>
+	 <20071207143319.ee048955.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 07 Dec 2007 17:39:06 -0500
+Message-Id: <1197067146.10831.5.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=5.0, autolearn=disabled, AWL=-0.242)
+X-UiO-Scanned: 5FAFC5208DB547E4FFD5057D87A4BE8FD8261E10
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 130 total 5636214 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Changelog
+On Fri, 2007-12-07 at 14:33 -0800, Andrew Morton wrote:
+> On Fri, 07 Dec 2007 13:46:19 -0500
+> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> 
+> > 
+> > On Fri, 2007-12-07 at 13:14 -0500, Shane wrote:
+> > > On Dec 7, 2007 7:02 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > ...
+> > > > > 2.6.24-rc3-git1 is last known good kernel. The problem also exists
+> > > > > with the latest snap 2.6.24-rc4-git4. NFS server is 2.6.23-rc9 and
+> > > > > is unchanged.
+> > > >
+> > > > hm, there have been no nfs changes since 2.6.24-rc4.
+> > > 
+> > > Ok, but the problem seems to have appeared before 2.6.24-rc4.
+> > > 
+> > > > > It is easily reproducible here, hopefully for the person who
+> > > > > knows how to debug it too :)
+> > > > >
+> > > >
+> > > > I guess a full set of the commands which you typed to reproduce this would
+> > > > help.
+> > > 
+> > > Server is 2.6.23-rc9 and is exporting:
+> > > 
+> > > /dirA/dirB
+> > > 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure,crossmnt)
+> > > /dirA/dirB/dirC
+> > > 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure)
+> > > /dirA/dirB/dirD
+> > > 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure)
+> > > 
+> > > The NFS client (Core2 SMP) 2.6.24-rc3-git4:
+> > > 
+> > > NFS-server:/dirA/dirB     /dirA/dirB    nfs
+> > > auto,rsize=16384,wsize=16384,hard,intr,users,exec,nfsvers=3,tcp,nolock,actimeo=0
+> > > 
+> > > Then on the client when the new kernel has booted:
+> > > 
+> > > ls /dirA/dirB      --> normal listing
+> > > ls /dirA/dirB/dirC   -->  Stale NFS file handle
+> > > ls /dirA/dirB/dirD   -->  Stale NFS file handle
+> > > 
+> > > I will do a few more builds/boots and check -rc3-git2 and -rc3-git3.
+> > 
+> > This problem has already been reported. The fix (which I'm planning on
+> > sending to Linus soon) is appended.
+> > 
+> 
+> That patch isn't in git://git.linux-nfs.org/pub/linux/nfs-2.6.git.  In fact
+> that tree is empty.
+> 
+> Has something gone wrong here?
 
-1. Get rid of the constant 5 (based on comments from
-                                Geert.Uytterhoeven@sonycom.com)
-2. Implement suggestions from Olof Johannson
-3. Check if cmdline is NULL in fake_numa_create_new_node()
+I'm expecting an updated fix for another bug. Once that is done, I'll
+merge those 2 to Linus, then start queueing up the 2.6.25 merge tree...
 
-Tested with additional parameters from Olof
+Trond
 
-numa=debug,fake=
-numa=foo,fake=bar
-
-
-Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
-NUMA nodes can be specified using the following command line option
-
-numa=fake=<node range>
-
-node range is of the format <range1>,<range2>,...<rangeN>
-
-Each of the rangeX parameters is passed using memparse(). I find the patch
-useful for fake NUMA emulation on my simple PowerPC machine. I've tested it
-on a non-numa box with the following arguments
-
-numa=fake=1G
-numa=fake=1G,2G
-name=fake=1G,512M,2G
-numa=fake=1500M,2800M mem=3500M
-numa=fake=1G mem=512M
-numa=fake=1G mem=1G
-
-This patch applies on top of 2.6.24-rc4.
-
-All though I've tried my best to handle some of the architecture specific
-details of PowerPC, I might have overlooked something obvious, like the usage
-of an API or some architecture tweaks. The patch depends on CONFIG_NUMA and
-I decided against creating a separate config option for fake NUMA to keep
-the code simple.
-
-Comments are as always welcome!
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- arch/powerpc/mm/numa.c |   59 ++++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 54 insertions(+), 5 deletions(-)
-
-diff -puN arch/powerpc/mm/numa.c~ppc-fake-numa-easy arch/powerpc/mm/numa.c
---- linux-2.6.24-rc4-mm1/arch/powerpc/mm/numa.c~ppc-fake-numa-easy	2007-12-07 21:25:55.000000000 +0530
-+++ linux-2.6.24-rc4-mm1-balbir/arch/powerpc/mm/numa.c	2007-12-08 03:19:46.000000000 +0530
-@@ -24,6 +24,8 @@
- 
- static int numa_enabled = 1;
- 
-+static char *cmdline __initdata;
-+
- static int numa_debug;
- #define dbg(args...) if (numa_debug) { printk(KERN_INFO args); }
- 
-@@ -39,6 +41,43 @@ static bootmem_data_t __initdata plat_no
- static int min_common_depth;
- static int n_mem_addr_cells, n_mem_size_cells;
- 
-+static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
-+						unsigned int *nid)
-+{
-+	unsigned long long mem;
-+	char *p = cmdline;
-+	static unsigned int fake_nid = 0;
-+	static unsigned long long curr_boundary = 0;
-+
-+	*nid = fake_nid;
-+	if (!p)
-+		return 0;
-+
-+	mem = memparse(p, &p);
-+	if (!mem)
-+		return 0;
-+
-+	if (mem < curr_boundary)
-+		return 0;
-+
-+	curr_boundary = mem;
-+
-+	if ((end_pfn << PAGE_SHIFT) > mem) {
-+		/*
-+		 * Skip commas and spaces
-+		 */
-+		while (*p == ',' || *p == ' ' || *p == '\t')
-+			p++;
-+
-+		cmdline = p;
-+		fake_nid++;
-+		*nid = fake_nid;
-+		dbg("created new fake_node with id %d\n", fake_nid);
-+		return 1;
-+	}
-+	return 0;
-+}
-+
- static void __cpuinit map_cpu_to_node(int cpu, int node)
- {
- 	numa_cpu_lookup_table[cpu] = node;
-@@ -344,12 +383,14 @@ static void __init parse_drconf_memory(s
- 			if (nid == 0xffff || nid >= MAX_NUMNODES)
- 				nid = default_nid;
- 		}
--		node_set_online(nid);
- 
- 		size = numa_enforce_memory_limit(start, lmb_size);
- 		if (!size)
- 			continue;
- 
-+		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
-+		node_set_online(nid);
-+
- 		add_active_range(nid, start >> PAGE_SHIFT,
- 				 (start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
- 	}
-@@ -429,7 +470,6 @@ new_range:
- 		nid = of_node_to_nid_single(memory);
- 		if (nid < 0)
- 			nid = default_nid;
--		node_set_online(nid);
- 
- 		if (!(size = numa_enforce_memory_limit(start, size))) {
- 			if (--ranges)
-@@ -438,6 +478,9 @@ new_range:
- 				continue;
- 		}
- 
-+		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
-+		node_set_online(nid);
-+
- 		add_active_range(nid, start >> PAGE_SHIFT,
- 				(start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
- 
-@@ -461,7 +504,7 @@ static void __init setup_nonnuma(void)
- 	unsigned long top_of_ram = lmb_end_of_DRAM();
- 	unsigned long total_ram = lmb_phys_mem_size();
- 	unsigned long start_pfn, end_pfn;
--	unsigned int i;
-+	unsigned int i, nid = 0;
- 
- 	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
- 	       top_of_ram, total_ram);
-@@ -471,9 +514,11 @@ static void __init setup_nonnuma(void)
- 	for (i = 0; i < lmb.memory.cnt; ++i) {
- 		start_pfn = lmb.memory.region[i].base >> PAGE_SHIFT;
- 		end_pfn = start_pfn + lmb_size_pages(&lmb.memory, i);
--		add_active_range(0, start_pfn, end_pfn);
-+
-+		fake_numa_create_new_node(end_pfn, &nid);
-+		add_active_range(nid, start_pfn, end_pfn);
-+		node_set_online(nid);
- 	}
--	node_set_online(0);
- }
- 
- void __init dump_numa_cpu_topology(void)
-@@ -702,6 +747,10 @@ static int __init early_numa(char *p)
- 	if (strstr(p, "debug"))
- 		numa_debug = 1;
- 
-+	p = strstr(p, "fake=");
-+	if (p)
-+		cmdline = p + strlen("fake=");
-+
- 	return 0;
- }
- early_param("numa", early_numa);
-_
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
