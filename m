@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbXLGEH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbXLGEM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbXLGEH2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Dec 2007 23:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbXLGEHU
+	id S1755296AbXLGEM4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Dec 2007 23:12:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbXLGEMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Dec 2007 23:07:20 -0500
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:38759 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752612AbXLGEHT (ORCPT
+	Thu, 6 Dec 2007 23:12:48 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:51704 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbXLGEMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Dec 2007 23:07:19 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=vHNPJ5t4sdcGRYRPs0NWjf5gp4bGc7Ia0fS4nAfFrA5QeeqOuShZLThAJHB2FWhfDp7GgieIMPH6OOtTef2HVmN49BeYx0geIcHDzjOIR/KFvskpPLbNtcInQzVgcUspTbgBJ9Ic2pURyIDbSN8q8rXhUM3MOeDiVaxLAfAm6hY=  ;
-X-YMail-OSG: .u1hW9cVM1lWPzomIPk9GA1Zz0XvxVXW_ZB2BUpLUfh8LIv64hpZGa2rJjMXAxDBUm.DdBhv6A--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 1/3] POWERPC: don't cast a pointer to pointer of list_head
-Date: Fri, 7 Dec 2007 15:07:09 +1100
-User-Agent: KMail/1.9.5
-Cc: paulus@samba.org, LKML <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
-References: <4757C1DA.6060603@cn.fujitsu.com>
-In-Reply-To: <4757C1DA.6060603@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712071507.10161.nickpiggin@yahoo.com.au>
+	Thu, 6 Dec 2007 23:12:47 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 06 Dec 2007 23:12:46 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mmc: remove unused 'mode' from the mmc_host structure
+Message-id: <alpine.LFD.0.99999.0712062257310.555@xanadu.home>
+User-Agent: Alpine 0.99999 (LFD 814 2007-11-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 December 2007 20:33, Li Zefan wrote:
-> The casting is safe only when the list_head member is the
-> first member of the structure.
+This field and corresponding defines are simply never used anywhere
+in the code.  But its mere presence is enough to confuse some host 
+driver authors who attempt to rely on it.  Let's eliminate the 
+possibility for confusion and remove it entirely.
 
-Even so, I don't think too safe :) It might technically work,
-but it could break more easily.
+Signed-off-by: Nicolas Pitre <nico@cam.org>
+---
 
-So even if you find places where list_head is the first member of
-a structure, it would be nice to explicitly use the list_head member
-and avoid casts IMO.
+yes, it's the second host driver I'm reviewing with this issue...
 
-Thanks,
-Nick
-
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->
-> ---
->  arch/ppc/syslib/ocp.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/ppc/syslib/ocp.c b/arch/ppc/syslib/ocp.c
-> index 3f5be2c..d42d408 100644
-> --- a/arch/ppc/syslib/ocp.c
-> +++ b/arch/ppc/syslib/ocp.c
-> @@ -376,7 +376,7 @@ ocp_remove_one_device(unsigned int vendor, unsigned int
-> function, int index)
->
->  	down_write(&ocp_devices_sem);
->  	dev = __ocp_find_device(vendor, function, index);
-> -	list_del((struct list_head *)dev);
-> +	list_del(&dev->link);
->  	up_write(&ocp_devices_sem);
->
->  	DBG(("ocp: ocp_remove_one_device(vendor: %x, function: %x, index: %d)...
-> done.\n", vendor, function, index));
+diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+index 125eee1..7ab962f 100644
+--- a/include/linux/mmc/host.h
++++ b/include/linux/mmc/host.h
+@@ -118,10 +118,6 @@ struct mmc_host {
+ 	unsigned int		removed:1;	/* host is being removed */
+ #endif
+ 
+-	unsigned int		mode;		/* current card mode of host */
+-#define MMC_MODE_MMC		0
+-#define MMC_MODE_SD		1
+-
+ 	struct mmc_card		*card;		/* device attached to this host */
+ 
+ 	wait_queue_head_t	wq;
