@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751846AbXLHTTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbXLHTZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751846AbXLHTTc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 14:19:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbXLHTTW
+	id S1753240AbXLHTZZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 14:25:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbXLHTZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 14:19:22 -0500
-Received: from simmts7.bellnexxia.net ([206.47.199.165]:44119 "EHLO
-	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751413AbXLHTTV (ORCPT
+	Sat, 8 Dec 2007 14:25:10 -0500
+Received: from mho-02-bos.mailhop.org ([63.208.196.179]:64682 "EHLO
+	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751225AbXLHTZI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 14:19:21 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAG99WkecIsMU/2dsb2JhbAAIkSs
-Message-ID: <475AEE30.4070806@gmail.com>
-Date: Sat, 08 Dec 2007 15:19:12 -0400
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Sat, 8 Dec 2007 14:25:08 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 216.15.117.105
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX19v0Ig1I6mywik+BQUhKIdu
+Message-ID: <475AEF8E.5040906@reed.com>
+Date: Sat, 08 Dec 2007 14:25:02 -0500
+From: "David P. Reed" <dpreed@reed.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Possible locking issue in viotape.c
-References: <20071206021857.826386004@mvista.com>	 <20071206021909.131993721@mvista.com>  <20071206102334.GE17299@elte.hu>	 <1196958847.1568.98.camel@jnielson-xp.ddns.mvista.com>	 <47588610.5010804@gmail.com>	 <1196989515.1568.131.camel@jnielson-xp.ddns.mvista.com>	 <4758A216.3030401@gmail.com>	 <1196991637.1568.140.camel@jnielson-xp.ddns.mvista.com>	 <475ADFC5.4030108@gmail.com> <1197138162.1568.172.camel@jnielson-xp.ddns.mvista.com>
-In-Reply-To: <1197138162.1568.172.camel@jnielson-xp.ddns.mvista.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+References: <475879CD.9080006@reed.com>	<p733auekcly.fsf@bingen.suse.de> <20071207160439.71b7f46a@the-village.bc.nu>
+In-Reply-To: <20071207160439.71b7f46a@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
->> Yes, you are right, I hadn't finished looking at all of the up() calls
->> when I came to my conclusion.  I will try to convert a few that are not
->> on your list, but I would like to know how you are generating your
->> patches into those files with the diffstat and recipient list.  Is that
->> a feature of some git command?
-> 
-> Git may have a similar feature, but I'm using a tool call Quilt. It's
-> used for managing a list of patches, and it can automatically add a
-> diffstat to the patch header (part of the quilt refresh command). I also
-> use it for emailing a list of patches.
-> 
 
-Yes, I've used quilt for working with mm patches in the past, but I'm
-not too familiar with the mail features.  For example, how do you get
-the recipient list and Signed-off-by in the patch file?  Do you just
-edit it by hand?  Or is there some guide to quilt I should be reading?
-I looked at the guide in /usr/share/doc/quilt/quilt.pdf, but it didn't
-have anything about email.  /usr/share/doc/quilt/README.MAIL has the
-details of all of the mail options, but doesn't give a nice example of
-what to do with the patch file and how to call 'quilt mail'.
 
--- 
-Kevin Winchester
+Alan Cox wrote:
+>
+> 0x80 should be fine for anything PC compatible anyway, its specifically
+> reserved as a debug port and supported for *exactly* that purpose by
+> many chipsets.
+>
+>   
+Disagree. The definitions of PC compatible are quite problematic.   I 
+have the advantage over some of you young guys, in that I actually wrote 
+code on one of the first 5 breadboard IBM PCs on the planet at Software 
+Arts, Inc. and I was directly involved in hardware spec projects with 
+the original IBM and Compaq engineers.  No one actually defined the port 
+numbered 80h as a "standard" for anything.  You won't find it documented 
+in any early manual for an IBM machine.
+
+The ISA bus supported unterminated transactions safely.   That allowed 
+some clever folks to design BIOS diagnostic tools that optionally 
+plugged into the bus.
+
+In any case, my machine does not have an ISA bus.  Why should it?  It's 
+a laptop!
+
+Now the interesting thing is that I have been scanning the source code 
+of Linux, and I find gazillions of inb_p outb_p and so forth 
+instructions where they have NO value.   It's as if some hacker who half 
+understood hardware threw in the _p "just to be safe".  Well, it's 
+neither safe, nor is it economical of code or data.  It hangs up the bus 
+on an MP machine, for example, even when it works, to do the delay by 
+"outb al,80h"
+
+Worse, the actual requirements of the gazillions of inb_p instructions 
+for delays are not documented in the code!  This is interesting, because 
+the number of devices likely to need a delay after providing data on an 
+"in" instruction is very likely to be near zero.  After all, the device 
+has already serviced the bus and delivered data!  Why put many 
+microseconds into the bus, locking out other ISA transactions (and PCI 
+maybe too) with an out to port 80?
+
+Some of the code in linux is really nice, really clean, really 
+well-thought out.  Some is ... well, I'm not trolling for a fight.
+
+
+
