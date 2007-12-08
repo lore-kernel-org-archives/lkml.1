@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbXLHPlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbXLHPma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbXLHPlq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 10:41:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbXLHPlf
+	id S1758183AbXLHPma (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 10:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbXLHPmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 10:41:35 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:6557 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752874AbXLHPld (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 10:41:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=lPcGaHejCYUfrpYa/LzIh1QlKvg09LP5tDjeCPfMTTb6FGVJmbfQdSmXV9F0/A0eidBjADvUlz9T5beIo2axhbqny4JHuDru1mZgxFrbus40Cdyr6du2xGC8kJaRGCHC4Az9LOGVFbgyWjqh26CPn1J9XAyDs6KRyFxcrR9CuDs=
-From: Denis Cheng <crquan@gmail.com>
-To: Adam Radford <linuxraid@amcc.com>
-Cc: linux-scsi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] 3W RAID drivers: memset not needed in probe
-Date: Sat,  8 Dec 2007 23:40:59 +0800
-Message-Id: <1197128459-14014-1-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.3.4
+	Sat, 8 Dec 2007 10:42:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54866 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752612AbXLHPmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 10:42:20 -0500
+Date: Sat, 8 Dec 2007 16:41:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Mark Lord <lkml@rtr.ca>, Guillaume Chazarain <guichaz@yahoo.fr>,
+       stefano.brivio@polimi.it, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Robert Love <rml@tech9.net>, linux-kernel@vger.kernel.org,
+       Dave Jones <davej@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
+Message-ID: <20071208154122.GE30270@elte.hu>
+References: <20071207084559.GA11162@elte.hu> <200712081627.45937.mb@bu3sch.de> <20071208153327.GC30270@elte.hu> <200712081636.45828.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712081636.45828.mb@bu3sch.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the memory return from scsi_host_alloc is alloced by kzalloc,
-which is already zero initilized, so memset not needed.
 
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
- drivers/scsi/3w-9xxx.c |    2 --
- drivers/scsi/3w-xxxx.c |    2 --
- 2 files changed, 0 insertions(+), 4 deletions(-)
+* Michael Buesch <mb@bu3sch.de> wrote:
 
-diff --git a/drivers/scsi/3w-9xxx.c b/drivers/scsi/3w-9xxx.c
-index afb262b..cb28511 100644
---- a/drivers/scsi/3w-9xxx.c
-+++ b/drivers/scsi/3w-9xxx.c
-@@ -2028,8 +2028,6 @@ static int __devinit twa_probe(struct pci_dev *pdev, const struct pci_device_id
- 	}
- 	tw_dev = (TW_Device_Extension *)host->hostdata;
- 
--	memset(tw_dev, 0, sizeof(TW_Device_Extension));
--
- 	/* Save values to device extension */
- 	tw_dev->host = host;
- 	tw_dev->tw_pci_dev = pdev;
-diff --git a/drivers/scsi/3w-xxxx.c b/drivers/scsi/3w-xxxx.c
-index 59716eb..a8c12d7 100644
---- a/drivers/scsi/3w-xxxx.c
-+++ b/drivers/scsi/3w-xxxx.c
-@@ -2295,8 +2295,6 @@ static int __devinit tw_probe(struct pci_dev *pdev, const struct pci_device_id *
- 	}
- 	tw_dev = (TW_Device_Extension *)host->hostdata;
- 
--	memset(tw_dev, 0, sizeof(TW_Device_Extension));
--
- 	/* Save values to device extension */
- 	tw_dev->host = host;
- 	tw_dev->tw_pci_dev = pdev;
--- 
-1.5.3.4
+> > i cannot see how. You can verify msleep by running something like this:
+> > 
+> >   while :; do time usleep 111000; done
+> > 
+> > you should see a steady stream of:
+> > 
+> >  real    0m0.113s
+> >  real    0m0.113s
+> >  real    0m0.113s
+> > 
+> > (on an idle system). If it fluctuates, with occasional longer delays, 
+> > there's some timer problem present.
+> 
+> Does the sleeping and timing use different time references?
 
+yes. But the real paranoid can do this from another box:
+
+  while :; do time ssh testbox usleep 111000; done
+
+	Ingo
