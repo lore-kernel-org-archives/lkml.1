@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbXLHABE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbXLHAIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755714AbXLHABE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 19:01:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXLHAAx
+	id S1756370AbXLHAIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 19:08:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbXLHAIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 19:00:53 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:15368 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbXLHAAx (ORCPT
+	Fri, 7 Dec 2007 19:08:10 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57993 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751723AbXLHAIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 19:00:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=lViKvyhEK/ybmb/g7CZ9nfkLXAAqDc3HhpT3EAQcel0iXcIO6OMrMJJCqVehuwVIJEXZxxC8166+7pQ+nKsNxYWCtt1s2/xegcEGiwHJRgLq8jMBbwPf0rkbqU90N13Ybd9oF/C+YOZjwu5wXok6Km9XuxtvqFvJ/xnIkVobTek=
-Date: Sat, 8 Dec 2007 03:00:43 +0300
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, gnome42@gmail.com,
-       linux-kernel@vger.kernel.org, bfields@fieldses.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Denis V. Lunev" <den@openvz.org>
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
-Message-ID: <20071208000043.GC1951@martell.zuzino.mipt.ru>
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com> <1197067918.10831.13.camel@heimdal.trondhjem.org> <20071207151444.af5d8e11.akpm@linux-foundation.org> <200712080043.29292.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712080043.29292.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+	Fri, 7 Dec 2007 19:08:06 -0500
+Date: Fri, 7 Dec 2007 16:08:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+Subject: Re: 2.6.24-rc4-mm1: undefined reference to `compat_sys_timerfd' on
+ sparc64
+Message-Id: <20071207160800.77e7e907.akpm@linux-foundation.org>
+In-Reply-To: <200712080104.55619.m.kozlowski@tuxland.pl>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	<200712080104.55619.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 12:43:28AM +0100, Rafael J. Wysocki wrote:
-> On Saturday, 8 of December 2007, Andrew Morton wrote:
-> > On Fri, 07 Dec 2007 17:51:58 -0500
-> > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > 
-> > > 
-> > > On Fri, 2007-12-07 at 14:39 -0500, Shane wrote:
-> > > > On Dec 7, 2007 2:16 PM, Shane <gnome42@gmail.com> wrote:
-> > > > ...
-> > > > > Confirmed working in rc4-git5.  I'll deploy this kernel in a few more
-> > > > > spots and check for other regressions.
-> > > > 
-> > > > Hmm, I installed a new kernel built from the same sources on the NFS
-> > > > server. And now I don't see anything at all in the crossmnt dirs.
-> > > > 
-> > > > ls /dirA/dirB/dirC  --> zero output (empty dir)
-> > > > 
-> > > > Are there any other pending fixes?
-> > > > 
-> > > > Shane
-> > > 
-> > > You've probably fallen afoul of 
-> > > 
-> > >    http://bugzilla.kernel.org/show_bug.cgi?id=9504
-> > > 
-> > 
-> > Yeah.
-> > 
-> > I have a tentative fix below but I can't seem to get Eric and Denis to get
-> > a suitable fix nailed down.  It's urgent!
-> 
-> Well, how about asking Linus to revert commit
-> 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416 altogether and starting over again?
-> 
-> It apparently causes more trouble than the issue it was supposed to fix.
+On Sat, 8 Dec 2007 01:04:55 +0100
+Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-I very much agree. ->shadow_proc is so ugly, so it's not funny anymore.
-Adding such hook for proc part of networking _and_ for modules is just asking
-for trouble as was demonstrated.
+> Hello,
+> 
+> 	I tried it on sun ultra 60 (dual sparc64) station. Unfortunately it failed
+> to compile.
+> 
+>   AS      arch/sparc64/lib/xor.o
+>   AR      arch/sparc64/lib/lib.a
+>   GEN     .version
+>   CHK     include/linux/compile.h
+> dnsdomainname: Unknown host
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> arch/sparc64/kernel/head.o: In function `sys_call_table32':
+> arch/sparc64/kernel/head.S:(.text+0x224e0): undefined reference to `compat_sys_timerfd'
+> make: *** [.tmp_vmlinux1] Error 1
+
+argh, sorry, I am soooooo fed up with fixing that patch.
+
+--- a/arch/sparc64/kernel/systbls.S~timerfd-v3-new-timerfd-api-sparc64-fix
++++ a/arch/sparc64/kernel/systbls.S
+@@ -80,7 +80,7 @@ sys_call_table32:
+ 	.word sys_fchmodat, sys_faccessat, compat_sys_pselect6, compat_sys_ppoll, sys_unshare
+ /*300*/	.word compat_sys_set_robust_list, compat_sys_get_robust_list, compat_sys_migrate_pages, compat_sys_mbind, compat_sys_get_mempolicy
+ 	.word compat_sys_set_mempolicy, compat_sys_kexec_load, compat_sys_move_pages, sys_getcpu, compat_sys_epoll_pwait
+-/*310*/	.word compat_sys_utimensat, compat_sys_signalfd, compat_sys_timerfd, sys_eventfd, compat_sys_fallocate
++/*310*/	.word compat_sys_utimensat, compat_sys_signalfd, sys_ni_syscall, sys_eventfd, compat_sys_fallocate
+ 
+ #endif /* CONFIG_COMPAT */
+ 
+_
+
+Or should this have been sys_nis_syscall()?
+
+
+I should have picked this up in cross-build testing but iirc
+sparc64 broke for other reasons.  Let me check on that.
