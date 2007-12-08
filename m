@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757032AbXLHPsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757752AbXLHPtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757032AbXLHPsa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 10:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXLHPsW
+	id S1757752AbXLHPtf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 10:49:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbXLHPt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 10:48:22 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49877 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750974AbXLHPsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 10:48:21 -0500
-Date: Sat, 8 Dec 2007 16:47:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Parag Warudkar <parag.warudkar@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: soft lockup - CPU#1 stuck for 15s! [swapper:0]
-Message-ID: <20071208154755.GA5255@elte.hu>
-References: <82e4877d0712071453h38795e36of26324a4b123fa6c@mail.gmail.com> <924EFEDD5F540B4284297C4DC59F3DEE38C3C2@orsmsx423.amr.corp.intel.com> <alpine.LFD.0.99999.0712080821220.3070@localhost.localdomain> <82e4877d0712080710g205ba93ag12ee204b15d70fdb@mail.gmail.com> <82e4877d0712080736v12c1e31at9149655ae000fe50@mail.gmail.com>
+	Sat, 8 Dec 2007 10:49:27 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:3589 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750991AbXLHPt1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 10:49:27 -0500
+Date: Sat, 8 Dec 2007 10:49:25 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
+In-Reply-To: <20071208014638.c4cddf12.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0712081043330.28689-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <82e4877d0712080736v12c1e31at9149655ae000fe50@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 8 Dec 2007, Andrew Morton wrote:
 
-* Parag Warudkar <parag.warudkar@gmail.com> wrote:
+> On Sat, 8 Dec 2007 03:40:49 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > This message contains a list of some regressions from 2.6.23 which have been
+> > reported since 2.6.24-rc1 was released and for which there are no fixes in the
+> > mainline that I know of.  If any of them have been fixed already, please let me
+> > know.
+> > 
+> > If you know of any other unresolved regressions from 2.6.23, please let me know
+> > either and I'll add them to the list.
+> > 
+> > 
+> > ..
+> >
+> > Subject		: system hangs after a few minutes
+> > Submitter	: Marcus Better <marcus@better.se>
+> > References	: http://bugzilla.kernel.org/show_bug.cgi?id=9335
+> > Handled-By	: Andrew Morton <akpm@linux-foundation.org>
+> > 		  Alan Stern <stern@rowland.harvard.edu>
+> > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=13871&action=view
+> > 
+> 
+> This one we have a confirmed fix from Alan but it doesn't appear to be in
+> anyone's tree.
 
->  [<c0438293>] tick_broadcast_oneshot_control+0x10/0xda
->  [<c0437ce2>] tick_notify+0x1d4/0x2eb
->  [<c04281bc>] get_next_timer_interrupt+0x143/0x1b4
->  [<c06058a1>] notifier_call_chain+0x2a/0x47
->  [<c04345c0>] raw_notifier_call_chain+0x17/0x1a
->  [<c043781e>] clockevents_notify+0x19/0x4f
->  [<c0533d23>] acpi_idle_enter_simple+0x183/0x1d0
->  [<c058cf03>] cpuidle_idle_call+0x53/0x78
->  [<c058ceb0>] cpuidle_idle_call+0x0/0x78
->  [<c0402575>] cpu_idle+0x97/0xb8
->  =======================
-> BUG: soft lockup - CPU#1 stuck for 11s! [vim:3736]
+An expanded version of that fix is in Greg's queue:
 
-does the patch below help? But the root cause is likely some timer 
-problems - do you get consistent results from:
+http://marc.info/?l=linux-usb-devel&m=119697043410947&w=2
 
-   while :; do time usleep 1111111; done
+Since he's away until Tuesday, nothing will happen for a few days.  
+However you might want to replace the old fix that got added to -mm.
 
-or do these sleeps fluctuate?
+> There is a second bug in here, applicable to core x86: Marcus's machine
+> won't boot with nmi_watchdog=1.
 
-	Ingo
+Alan Stern
 
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -774,6 +774,7 @@ void sched_clock_idle_wakeup_event(u64 d
- 	struct rq *rq = cpu_rq(smp_processor_id());
- 	u64 now = sched_clock();
- 
-+	touch_softlockup_watchdog();
- 	rq->idle_clock += delta_ns;
- 	/*
- 	 * Override the previous timestamp and ignore all
