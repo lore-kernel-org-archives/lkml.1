@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbXLHDJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbXLHD1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbXLHDJK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 22:09:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbXLHDIP
+	id S1756194AbXLHD1B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 22:27:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbXLHD0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 22:08:15 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:7817 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753362AbXLHDIM (ORCPT
+	Fri, 7 Dec 2007 22:26:53 -0500
+Received: from mail-dub.bigfish.com ([213.199.154.10]:51803 "EHLO
+	mail159-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751682AbXLHD0w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 22:08:12 -0500
-Message-Id: <20071208025623.144225546@mvista.com>
-References: <20071208025620.470633411@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 07 Dec 2007 00:00:03 -0800
-Subject: [PATCH 3/4] mcheck mce_64: mce_read_sem to mutex
-References: <20071208025608.631609481@mvista.com>
-User-Agent: quilt/0.46-1
-From: Daniel Walker <dwalker@mvista.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, linux@bohmer.net,
-       jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
-       kjwinchester@gmail.com
-Content-Disposition: inline; filename=mcheck_semaphore-to-mutex.patch
+	Fri, 7 Dec 2007 22:26:52 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <475A0EF4.1020502@am.sony.com>
+Date: Fri, 07 Dec 2007 19:26:44 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, miltonm@bga.com,
+       clameter@sgi.com, apw@shadowen.org, linux-kernel@vger.kernel.org
+Subject: Re: PS3: trouble with SPARSEMEM_VMEMMAP and kexec
+References: <20071205151147.9db4640b.akpm@linux-foundation.org> <47573806.8000808@am.sony.com> <20071206142552.694B.Y-GOTO@jp.fujitsu.com>
+In-Reply-To: <20071206142552.694B.Y-GOTO@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Dec 2007 03:26:46.0781 (UTC) FILETIME=[29914AD0:01C8394A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Converted to a mutex, and changed the name to mce_read_mutex.
+On 12/05/2007 10:09 PM, Yasunori Goto wrote:
+>> I'll try Milton's suggestion to pre-allocate the memory early.  It seems
+>> that should work as long as nothing else before the hot-plug mem is added
+>> needs a large chunk.
+> 
+> (However, I think Milton-san's suggestion is very desirable. 
+>  If preallocation of hotadd works on ia64 too, I'm very glad.)
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+As it turns out, preallocation is not a such a good solution I
+think because in the general case the system may need many
+allocations to support the added memory, so it would be difficult
+to know how much pre-allocated memory is needed.  I think a
+preferable solution is to use memory from the newly added
+region.
 
+I don't plan to work on a pre-allocation method.  I think I can
+free up sufficient memory in other ways.
 
----
- arch/x86/kernel/cpu/mcheck/mce_64.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+-Geoff
 
-Index: linux-2.6.23/arch/x86/kernel/cpu/mcheck/mce_64.c
-===================================================================
---- linux-2.6.23.orig/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ linux-2.6.23/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -564,7 +564,7 @@ static ssize_t mce_read(struct file *fil
- 			loff_t *off)
- {
- 	unsigned long *cpu_tsc;
--	static DECLARE_MUTEX(mce_read_sem);
-+	static DEFINE_MUTEX(mce_read_mutex);
- 	unsigned next;
- 	char __user *buf = ubuf;
- 	int i, err;
-@@ -573,12 +573,12 @@ static ssize_t mce_read(struct file *fil
- 	if (!cpu_tsc)
- 		return -ENOMEM;
- 
--	down(&mce_read_sem);
-+	mutex_lock(&mce_read_mutex);
- 	next = rcu_dereference(mcelog.next);
- 
- 	/* Only supports full reads right now */
- 	if (*off != 0 || usize < MCE_LOG_LEN*sizeof(struct mce)) {
--		up(&mce_read_sem);
-+		mutex_unlock(&mce_read_mutex);
- 		kfree(cpu_tsc);
- 		return -EINVAL;
- 	}
-@@ -621,7 +621,7 @@ static ssize_t mce_read(struct file *fil
- 			memset(&mcelog.entry[i], 0, sizeof(struct mce));
- 		}
- 	}
--	up(&mce_read_sem);
-+	mutex_unlock(&mce_read_mutex);
- 	kfree(cpu_tsc);
- 	return err ? -EFAULT : buf - ubuf;
- }
-
--- 
