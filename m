@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbXLHLnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbXLHMR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbXLHLnr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 06:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbXLHLnj
+	id S1756034AbXLHMR0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 07:17:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXLHMRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 06:43:39 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:62296 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbXLHLni (ORCPT
+	Sat, 8 Dec 2007 07:17:18 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53988 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319AbXLHMRR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 06:43:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=aJo3FD3jtsMBFRKLXClYalY7HqAsF+YIechTom7XCysR9Xsg1ZeJii8sENmxPCycTn4z5UnrW3wqfx9m/u5gauu0bW+7Gqu1V4T45qp5PR4C+44hJ3sZrW1AQvF7pw2vsUyAj2cKaQEWaTARomemjc+mlbWQ3N2717qhNbFqsw8=
-Message-ID: <817d11390712080343v54bff28j8a08299f445b6905@mail.gmail.com>
-Date: Sat, 8 Dec 2007 13:43:37 +0200
-From: "T T" <gentuu.call@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Quotaon livelock
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 8 Dec 2007 07:17:17 -0500
+Subject: Re: lockdep problem conversion semaphore->mutex (dev->sem)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Remy Bohmer <linux@bohmer.net>
+Cc: Daniel Walker <dwalker@mvista.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Dave Chinner <dgc@sgi.com>
+In-Reply-To: <3efb10970712071502p4db9c58ck623c377172ead4b2@mail.gmail.com>
+References: <3efb10970712071502p4db9c58ck623c377172ead4b2@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 08 Dec 2007 13:16:25 +0100
+Message-Id: <1197116185.31440.1.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi lkml,
 
-Enabling FS quotas can take up to several minutes to finish and
-depends on other users disk activity. This makes it a livelock (as it
-can be finished anyway).
+On Sat, 2007-12-08 at 00:02 +0100, Remy Bohmer wrote:
+> Hello Peter,
+> 
+> > > What specifically is wrong with dev->sem ?
+> >
+> > Nothing really, other than that they use semaphores to avoid lockdep :-/
+> >
+> > I think I know how to annotate this, after Alan Stern explained all the
+> > use cases, but I haven't come around to implementing it. Hope to do that
+> > soonish.
+> 
+> I was looking for an easy semaphore I could convert to a mutex, and I
+> ran into one that was widely spread and interesting, and which seemed
+> quite doable at first sight.
+> So, I started working on it, but was forgotten this discussion, (until
+> Daniel made me remember it this afternoon). So, I (stupid me ;-) )
+> tried to convert dev->sem...
+> 
+> After doing the monkey part of the conversion I can boot the kernel
+> completely on X86 and ARM, and everything works fine, except after
+> enabling lockdep, lockdep starts complaining...
+> 
+> Is this the problem you were pointing at?
 
-The problem described at:
-http://bugzilla.kernel.org/show_bug.cgi?id=9520
+Yeah, one of the interesting nestings :-)
 
-Yes, if we need to enable quotas once in the system start - no problem.
-But if we have to disable/enable it periodically - this become a nightmare.
+> I tried debugging it, and I have not found a recursive mutex locking
+> so far, only locking of 2 different mutexes in a row prior to this
+> warning, which IMO should be valid.
+> 
+> What is your opinion?
 
-Please don't advice to use edquota or so (quotactl(Q_SETQUOTA...) based things).
-What if it's really needed to use quotactl(Q_QUOTAOFF...)/quotactl(Q_QUOTAON...)
+Yeah, the locking is all valid afaics, its just that it needs some
+interesting annotations to make lockdep see it that way.
 
-The problem is at fs/dquot.c:add_dquot_ref()
-It's restarting to loop over the inodes list once it inits quota on an inode.
-And this happens over and over if something is modifying inodes list
-during quotas enabling.
+> BTW: I attached my patch for dev->sem as I have it now, that generates
+> this lockdep warning ( for if you want to look at it yourself also, so
+> you do not have to do the monkey part yourself anymore ;-)
 
-It looks like the action must take some time depending on FS size, but
-not on other users
-disk activity...
-Any advices how the algorithm at fs/dquot.c:add_dquot_ref() can be enhanced?
+I have a similar patch floating around, but thanks anyway :-)
 
-Thanks
-Nick
