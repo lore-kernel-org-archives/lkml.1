@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbXLHMR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbXLHM34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbXLHMR0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 07:17:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXLHMRS
+	id S1756329AbXLHM34 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 07:29:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXLHM3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 07:17:18 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53988 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751319AbXLHMRR (ORCPT
+	Sat, 8 Dec 2007 07:29:48 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:44953 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752436AbXLHM3s convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 07:17:17 -0500
-Subject: Re: lockdep problem conversion semaphore->mutex (dev->sem)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Remy Bohmer <linux@bohmer.net>
-Cc: Daniel Walker <dwalker@mvista.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Dave Chinner <dgc@sgi.com>
-In-Reply-To: <3efb10970712071502p4db9c58ck623c377172ead4b2@mail.gmail.com>
-References: <3efb10970712071502p4db9c58ck623c377172ead4b2@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 08 Dec 2007 13:16:25 +0100
-Message-Id: <1197116185.31440.1.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Sat, 8 Dec 2007 07:29:48 -0500
+From: Markus <M4rkusXXL@web.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: programs vanish with 2.6.22+
+Date: Sat, 8 Dec 2007 13:12:14 +0100
+User-Agent: KMail/1.9.7
+Cc: Simon Holm =?utf-8?q?Th=C3=B8gersen?= <odie@cs.aau.dk>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+References: <200712061906.42070.M4rkusXXL@web.de> <200712072352.04454.M4rkusXXL@web.de> <1197068970.6557.3.camel@odie.local>
+In-Reply-To: <1197068970.6557.3.camel@odie.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200712081312.14726.M4rkusXXL@web.de>
+X-Provags-ID: V01U2FsdGVkX19iY1N/tuJaxcaciDd6LUfUOwu3piAtXnrH9AgU
+	6AoJJM8YWy8yfV4d9QSe00fkVNL4l85KUaSl62OS6Jg8Va1+mO
+	wJ0YdOSdo=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I try that, but it will take a lot of time!
 
-On Sat, 2007-12-08 at 00:02 +0100, Remy Bohmer wrote:
-> Hello Peter,
+Markus
+
+
+> fre, 07 12 2007 kl. 23:52 +0100, skrev Markus:
+> > Well, now some windows vanished, but no additional messages were 
+> > produced by kernel. When somebody could tell what I exactly need to 
+> > do... would be nice.
+> > Or a hit, in what direction I should look. Because its really nasty 
+to 
+> > not being able to use a current kernel.
+> > 
+> > I already rebuild the whole system, as suggested by the gentoo-devs, 
+> > without success.
+> > 
+> > I could also try to debug/strace/whatever the apps and wait for it 
+to 
+> > disappear.
+> > 
+> > Just talk to me, I am not able to do this on my own...
+> > 
+> If you feel like you are able to tell whether a specific kernel 
+version
+> is buggy or not, you might want to try to bisect it. See
+> Documentation/BUG-HUNTING in the sources, and please ask.
 > 
-> > > What specifically is wrong with dev->sem ?
-> >
-> > Nothing really, other than that they use semaphores to avoid lockdep :-/
-> >
-> > I think I know how to annotate this, after Alan Stern explained all the
-> > use cases, but I haven't come around to implementing it. Hope to do that
-> > soonish.
 > 
-> I was looking for an easy semaphore I could convert to a mutex, and I
-> ran into one that was widely spread and interesting, and which seemed
-> quite doable at first sight.
-> So, I started working on it, but was forgotten this discussion, (until
-> Daniel made me remember it this afternoon). So, I (stupid me ;-) )
-> tried to convert dev->sem...
+> Simon Holm Thøgersen
 > 
-> After doing the monkey part of the conversion I can boot the kernel
-> completely on X86 and ARM, and everything works fine, except after
-> enabling lockdep, lockdep starts complaining...
 > 
-> Is this the problem you were pointing at?
 
-Yeah, one of the interesting nestings :-)
-
-> I tried debugging it, and I have not found a recursive mutex locking
-> so far, only locking of 2 different mutexes in a row prior to this
-> warning, which IMO should be valid.
-> 
-> What is your opinion?
-
-Yeah, the locking is all valid afaics, its just that it needs some
-interesting annotations to make lockdep see it that way.
-
-> BTW: I attached my patch for dev->sem as I have it now, that generates
-> this lockdep warning ( for if you want to look at it yourself also, so
-> you do not have to do the monkey part yourself anymore ;-)
-
-I have a similar patch floating around, but thanks anyway :-)
 
