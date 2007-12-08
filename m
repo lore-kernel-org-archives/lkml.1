@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbXLHKiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbXLHKpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754722AbXLHKiS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 05:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbXLHKiG
+	id S1755547AbXLHKpA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 05:45:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbXLHKou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 05:38:06 -0500
-Received: from cavan.codon.org.uk ([78.32.9.130]:34020 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbXLHKiE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 05:38:04 -0500
-Date: Sat, 8 Dec 2007 10:28:58 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andreas Mohr <andi@lisas.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
+	Sat, 8 Dec 2007 05:44:50 -0500
+Received: from [212.12.190.148] ([212.12.190.148]:37465 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750991AbXLHKot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 05:44:49 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: git guidance
+Date: Sat, 8 Dec 2007 13:41:54 +0300
+User-Agent: KMail/1.5
+Cc: Jakub Narebski <jnareb@gmail.com>, Andreas Ericsson <ae@op5.se>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
+       Phillip Susi <psusi@cfl.rr.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org
-Message-ID: <20071208102858.GA12080@srcf.ucam.org>
-References: <200712080340.49546.rjw@sisk.pl> <20071208013631.3147986a.akpm@linux-foundation.org> <20071208101256.GA25807@rhlx01.hs-esslingen.de> <20071208022001.155e0c52.akpm@linux-foundation.org>
+       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712080756.21980.a1426z@gawab.com> <7135.1197090987@turing-police.cc.vt.edu>
+In-Reply-To: <7135.1197090987@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071208022001.155e0c52.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200712081341.54589.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 02:20:01AM -0800, Andrew Morton wrote:
-> On Sat, 8 Dec 2007 11:12:57 +0100 Andreas Mohr <andi@lisas.de> wrote:
-> > ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT, Index (0FFFFFFFF) is beyond end of object [20070126]
-> > ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.GTF_] (Node c180b990), AE_AML_PACKAGE_LIMIT
-> > ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.CHN0.DRV1._GTF] (Node c180b888), AE_AML_PACKAGE_LIMIT
-> > ata1.01: _GTF evaluation failed (AE 0x300d)
+Valdis.Kletnieks@vt.edu wrote:
+> On Sat, 08 Dec 2007 07:56:21 +0300, Al Boldi said:
+> > It probably goes without saying, that gitfs should have some basic
+> > configuration file to setup its transparent behaviour
+>
+> But then it's not *truly* transparent, is it?
 
-037f6bb79f753c014bc84bca0de9bf98bb5ab169 ought to have fixed this?
+Don't mistake transparency with some form of auto-heuristic.  Transparency 
+only means that it inserts functionality without impeding your normal 
+workflow.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> And that leaves another question - if you make a config file that excludes
+> all the .o files - then what's backing the .o files?  Those data blocks
+> need to be *someplace*.  Maybe you can do something ugly like use unionfs
+> to combine your gitfs with something else to store the other files...
+
+Or any number of other possible implementation scenarios...
+
+> But at that point, you're probably better off just creating a properly
+> designed versioning filesystem.
+
+But gitfs is not about designing a versioning filesystem, it's about 
+designing a transparent interface into git to handle an SCM use-case.
+
+
+Thanks!
+
+--
+Al
+
