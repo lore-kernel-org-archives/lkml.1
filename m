@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbXLHVWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbXLHVir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbXLHVWx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 16:22:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXLHVWp
+	id S1753633AbXLHVir (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 16:38:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbXLHVij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 16:22:45 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:54686 "EHLO tetsuo.zabbo.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752099AbXLHVWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 16:22:44 -0500
-Message-ID: <475B0B11.1090008@oracle.com>
-Date: Sat, 08 Dec 2007 13:22:25 -0800
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Sat, 8 Dec 2007 16:38:39 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:34175 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899AbXLHVii (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 16:38:38 -0500
+From: Markus <M4rkusXXL@web.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: programs vanish with 2.6.22+
+Date: Sat, 8 Dec 2007 22:38:28 +0100
+User-Agent: KMail/1.9.7
+Cc: Paolo Ornati <ornati@fastwebnet.it>,
+       Simon Holm =?iso-8859-1?q?Th=F8gersen?= <odie@cs.aau.dk>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+References: <200712061906.42070.M4rkusXXL@web.de> <200712081312.14726.M4rkusXXL@web.de> <20071208150637.4eee3e3d@localhost>
+In-Reply-To: <20071208150637.4eee3e3d@localhost>
 MIME-Version: 1.0
-To: =?UTF-8?B?U2ltb24gSG9sbSBUaMO4Z2Vyc2Vu?= <odie@cs.aau.dk>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dan Williams <dan.j.williams@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
-       suresh.b.siddha@intel.com
-Subject: Re: [PATCH 1/6] indirect: use asmlinkage in i386 syscall table	prototype
-References: <1196983219534-git-send-email-zach.brown@oracle.com>	 <11969832193635-git-send-email-zach.brown@oracle.com> <1197117625.19335.3.camel@odie.local>
-In-Reply-To: <1197117625.19335.3.camel@odie.local>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712082238.29244.M4rkusXXL@web.de>
+X-Provags-ID: V01U2FsdGVkX19roxq0ZiV9gB+gA1R9FVZKX7uzKwjHzT4UCaVR
+	6+DqvkhTbKtjE/Aiw0LQyR0gF7PhGAAtp0PEnC0TVRi0OGWjLd
+	05pKno25M=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Well, after that I tried to verify that 22 is really fine. 
+Unfortunatelly under heavy load its the same... even with .19 (the 
+oldes kernel I have still installed)
+I just noticed it, because its harder to produce it on .22 and before. 
+You guys tuned the kernel so it was easier.
+So it must be something in userspace, please excuse me ;)
 
->> +	extern asmlinkage long (*sys_call_table[])(long, long, long,
-> This should be something like below instead, otherwise gcc wont parse
-> asmlinkage as being an attribute of the function signature.
-> 	extern long (asmlinkage *sys_call_table[])(long, long, long,
-
-Yeah, thanks for pointing these out.  As it happened, Jens beat you to
-it :).
-
-Both problems have been fixed in the git repositories for the guilt
-series and userspace tools, respectively.  You can always fetch the most
-recent versions from there.
-
-- z
+Markus
