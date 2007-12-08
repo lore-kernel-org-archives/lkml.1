@@ -1,135 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbXLHU6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbXLHVEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbXLHU6N (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 15:58:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbXLHU57
+	id S1754176AbXLHVEn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 16:04:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXLHVEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 15:57:59 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:55514 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbXLHU56 (ORCPT
+	Sat, 8 Dec 2007 16:04:35 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:35076 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbXLHVEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 15:57:58 -0500
+	Sat, 8 Dec 2007 16:04:35 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:content-transfer-encoding:user-agent;
-        b=yEbqFoMPHKls/cLS1aeWdx5GsO2X881hSny09vxErNRFeuv9bU+cAr+RXvJspARIlk9d0N2qHMagjyLvFxjWtcgMTgady27NrbJIB9L6mCmGBFkCsh6NZaprUwYvlC6wZVMNdLIDHV20Fc/hGcqDADRgAs1Y7SIj5yX57SI4Lhk=
-Date: Sat, 8 Dec 2007 21:59:00 +0100
-From: Marcin =?utf-8?Q?=C5=9Alusarz?= <marcin.slusarz@gmail.com>
-To: trivial@kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] asm-*/compat.h: fix typo in comment
-Message-ID: <20071208205855.GJ5087@joi>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wbNkSoPa69G9izJGxEhe9VYZmZdP1wRN3eaBtK3oLTGr5AzGbgRbImpHzsoZJQvDlvrw+HbzvJE096LEM1O6C/bq1zIJiS1La3cjLnJEUrfLNCk6idNBHMf9aM/fs25BG8JqqsICC8dtXwA2y/ebcQQqL09VWOfwDp05PXy2hbg=
+Message-ID: <82e4877d0712081304r19721b43w78b294ea8d470405@mail.gmail.com>
+Date: Sat, 8 Dec 2007 16:04:33 -0500
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: soft lockup - CPU#1 stuck for 15s! [swapper:0]
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <20071208125144.734e9f81@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <924EFEDD5F540B4284297C4DC59F3DEE38C3C2@orsmsx423.amr.corp.intel.com>
+	 <20071208154755.GA5255@elte.hu>
+	 <82e4877d0712080800j6572734ek78a76cf7bb17a7e0@mail.gmail.com>
+	 <20071208191330.GA21186@elte.hu>
+	 <82e4877d0712081133y49fec9bfyee30a3010b37c435@mail.gmail.com>
+	 <20071208194211.GA579@elte.hu>
+	 <82e4877d0712081208u335c968csd1d3e9259cdd2920@mail.gmail.com>
+	 <20071208201137.GA13451@elte.hu>
+	 <82e4877d0712081246x4d788c36i908916185611fa94@mail.gmail.com>
+	 <20071208125144.734e9f81@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-asm-*/compat.h: fix typo in comment
+On Dec 8, 2007 3:51 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> what chipset is this?
+> (I wonder if there's one where we shouldn't be force-enabling the hpet)
 
-Signed-off-by: Marcin Ślusarz <marcin.slusarz@gmail.com>
----
- include/asm-ia64/compat.h    |    2 +-
- include/asm-mips/compat.h    |    2 +-
- include/asm-parisc/compat.h  |    2 +-
- include/asm-powerpc/compat.h |    2 +-
- include/asm-s390/compat.h    |    2 +-
- include/asm-sparc64/compat.h |    2 +-
- include/asm-x86/compat.h     |    2 +-
- 7 files changed, 7 insertions(+), 7 deletions(-)
+It's an Intel Mac Mini - Intel 945GM chipset.
+I believe OSX requires HPET and so there shouldn't be a need to force
+enable it on this chipset?
 
-diff --git a/include/asm-ia64/compat.h b/include/asm-ia64/compat.h
-index 0f6e526..dfcf75b 100644
---- a/include/asm-ia64/compat.h
-+++ b/include/asm-ia64/compat.h
-@@ -181,7 +181,7 @@ struct compat_shmid64_ds {
- /*
-  * A pointer passed in from user mode. This should not be used for syscall parameters,
-  * just declare them as pointers because the syscall entry code will have appropriately
-- * comverted them already.
-+ * converted them already.
-  */
- typedef	u32		compat_uptr_t;
+Also I don't have problems under Centos 5.1 kernel (2.6.18-53.1.4.el5)
+and hpet is enabled there.
 
-diff --git a/include/asm-mips/compat.h b/include/asm-mips/compat.h
-index 568c76c..ac5d541 100644
---- a/include/asm-mips/compat.h
-+++ b/include/asm-mips/compat.h
-@@ -128,7 +128,7 @@ typedef u32		compat_sigset_word;
-  * A pointer passed in from user mode. This should not
-  * be used for syscall parameters, just declare them
-  * as pointers because the syscall entry code will have
-- * appropriately comverted them already.
-+ * appropriately converted them already.
-  */
- typedef u32		compat_uptr_t;
-
-diff --git a/include/asm-parisc/compat.h b/include/asm-parisc/compat.h
-index 5a85d1b..7f32611 100644
---- a/include/asm-parisc/compat.h
-+++ b/include/asm-parisc/compat.h
-@@ -132,7 +132,7 @@ typedef u32		compat_sigset_word;
-  * A pointer passed in from user mode. This should not
-  * be used for syscall parameters, just declare them
-  * as pointers because the syscall entry code will have
-- * appropriately comverted them already.
-+ * appropriately converted them already.
-  */
- typedef	u32		compat_uptr_t;
-
-diff --git a/include/asm-powerpc/compat.h b/include/asm-powerpc/compat.h
-index 64ab1dd..d811a8c 100644
---- a/include/asm-powerpc/compat.h
-+++ b/include/asm-powerpc/compat.h
-@@ -119,7 +119,7 @@ typedef u32		compat_sigset_word;
-  * A pointer passed in from user mode. This should not
-  * be used for syscall parameters, just declare them
-  * as pointers because the syscall entry code will have
-- * appropriately comverted them already.
-+ * appropriately converted them already.
-  */
- typedef	u32		compat_uptr_t;
-
-diff --git a/include/asm-s390/compat.h b/include/asm-s390/compat.h
-index 7f4ad62..de065b3 100644
---- a/include/asm-s390/compat.h
-+++ b/include/asm-s390/compat.h
-@@ -149,7 +149,7 @@ typedef u32		compat_sigset_word;
-  * A pointer passed in from user mode. This should not
-  * be used for syscall parameters, just declare them
-  * as pointers because the syscall entry code will have
-- * appropriately comverted them already.
-+ * appropriately converted them already.
-  */
- typedef	u32		compat_uptr_t;
-
-diff --git a/include/asm-sparc64/compat.h b/include/asm-sparc64/compat.h
-index 01fe668..f260b58 100644
---- a/include/asm-sparc64/compat.h
-+++ b/include/asm-sparc64/compat.h
-@@ -152,7 +152,7 @@ typedef u32		compat_sigset_word;
-  * A pointer passed in from user mode. This should not
-  * be used for syscall parameters, just declare them
-  * as pointers because the syscall entry code will have
-- * appropriately comverted them already.
-+ * appropriately converted them already.
-  */
- typedef	u32		compat_uptr_t;
-
-diff --git a/include/asm-x86/compat.h b/include/asm-x86/compat.h
-index 66ba798..0e18cb5 100644
---- a/include/asm-x86/compat.h
-+++ b/include/asm-x86/compat.h
-@@ -190,7 +190,7 @@ typedef struct user_regs_struct32 compat_elf_gregset_t;
-  * A pointer passed in from user mode. This should not
-  * be used for syscall parameters, just declare them
-  * as pointers because the syscall entry code will have
-- * appropriately comverted them already.
-+ * appropriately converted them already.
-  */
- typedef	u32		compat_uptr_t;
-
+Parag
