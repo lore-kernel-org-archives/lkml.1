@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbXLHUFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbXLHUGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbXLHUFp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 15:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbXLHUFd
+	id S1753980AbXLHUGq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 15:06:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbXLHUGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 15:05:33 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:42881 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753400AbXLHUFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 15:05:32 -0500
-Message-ID: <475AF8D0.1090407@garzik.org>
-Date: Sat, 08 Dec 2007 15:04:32 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sat, 8 Dec 2007 15:06:39 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:34824 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723AbXLHUGi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 15:06:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=ABg3ZNI8wDs7UqAn4w+why9uj+TuPnzCMYEUq4U5oRXpzewIyFFN5HuC/feVH6XF24+w2VABuyt4i7H1WVG0gO7WzG+1RwW9T8v2aK5fn1vChRqUfaWI+L4ebrMT+8pVxb1Q4yGvr3zJK7gu7rfxzDi3447x9vLxfRJHkZlZRV4=
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ps3: "mm/Kconfig" fix
+Date: Sat, 8 Dec 2007 21:06:46 +0100
+User-Agent: KMail/1.9.7
+Cc: Geoff Levand <geoffrey.levand@am.sony.com>
+References: <200712082030.11338.mboton@gmail.com>
+In-Reply-To: <200712082030.11338.mboton@gmail.com>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Theodore Tso <tytso@mit.edu>, Mike McGrath <mmcgrath@redhat.com>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org,
-       hmh@debian.org
-Subject: Re: entropy gathering (was Re: Why does reading from /dev/urandom
- deplete entropy so much?)
-References: <4755D350.1080801@redhat.com> <20071204223345.GJ19691@waste.org> <4756B50B.3060100@redhat.com> <20071205144934.GL7259@thunk.org> <1197099477.20786.149.camel@perihelion> <20071208173204.GI17037@thunk.org> <475AD585.7020908@redhat.com> <20071208174908.GJ17037@thunk.org> <20071208181525.GL19691@waste.org> <475AF241.5000809@garzik.org> <20071208195342.GO19691@waste.org>
-In-Reply-To: <20071208195342.GO19691@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200712082106.46372.mboton@gmail.com>
+From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Sat, Dec 08, 2007 at 02:36:33PM -0500, Jeff Garzik wrote:
->> As an aside...
->>
->> Speaking as the maintainer rng-tools, which is the home of the hardware 
->> RNG entropy gathering daemon...
->>
->> I wish somebody (not me) would take rngd and several other projects, and 
->> combine them into a single actively maintained "entropy gathering" package.
-> 
-> I think we should re-evaluate having an internal path from the hwrngs
-> to /dev/[u]random, which will reduce the need for userspace config
-> that can go wrong.
+Previous patch had another bug. This one works fine.
 
-That's a bit of a tangent on a tangent.  :)  Most people don't have a 
-hardware RNG.
+Signed-off-by: Miguel Botón <mboton@gmail.com>
 
-But as long as there are adequate safeguards against common hardware 
-failures (read: FIPS testing inside the kernel), go for it.
-
-	Jeff
+diff --git a/mm/Kconfig b/mm/Kconfig
+index 010a261..9ef9741 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -117,7 +117,7 @@ config SPARSEMEM_VMEMMAP_ENABLE
+ 
+ config SPARSEMEM_VMEMMAP
+ 	bool "Sparse Memory virtual memmap"
+-	depends on SPARSEMEM_VMEMMAP_ENABLE
++	depends on SPARSEMEM && SPARSEMEM_VMEMMAP_ENABLE
+ 	default y
+ 	help
+ 	 SPARSEMEM_VMEMMAP uses a virtually mapped memmap to optimise
 
 
-
+-- 
+	Miguel Botón
