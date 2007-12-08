@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbXLHXNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbXLHXhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbXLHXNL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 18:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbXLHXM5
+	id S1753383AbXLHXhd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 18:37:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbXLHXhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 18:12:57 -0500
-Received: from mu-out-0910.google.com ([209.85.134.189]:62246 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752399AbXLHXM4 (ORCPT
+	Sat, 8 Dec 2007 18:37:24 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:21971 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751846AbXLHXhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 18:12:56 -0500
+	Sat, 8 Dec 2007 18:37:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=w67eAtf+UQLtDguad2IAKErF2T/I6a7ClOicFGeIYYDkYeSTSOOVFdfM+r83FQsMYZymRBrDpuGpILoAEl/oRvaRy2lqHg8JBVBJKFlc1vahOSGQfq40MBKQZdSY9vu/uqBybWpzNMhMQ7iedvMy1gmUKnEkRcwuch5gqtPRUdE=
-Message-ID: <475B24F4.3090904@gmail.com>
-Date: Sun, 09 Dec 2007 00:12:52 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=tkmhsRMSSqNMKf8Jv9XjePz1oYfgibxbX2+SUGDOlfqKpY5lUkpkYM7SFX3m4ngCNwUmxtm/M2Z4JFHxSroN0AxFnNtYX2uEIMoT/bdhH5cq+QLnuN/UbIwFV+lLAMqxoOF0WWgyeC1RNoHR/RkNyWV9F8BJpLtAJYw1yCqcv5A=
+Message-ID: <3d8471ca0712081537r42535946n56d44f77b27f773@mail.gmail.com>
+Date: Sun, 9 Dec 2007 00:37:21 +0100
+From: "Guillaume Chazarain" <guichaz@yahoo.fr>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Stefano Brivio" <stefano.brivio@polimi.it>,
+       "Robert Love" <rml@tech9.net>, linux-kernel@vger.kernel.org,
+       "Dave Jones" <davej@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Michael Buesch" <mb@bu3sch.de>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Len Brown" <lenb@kernel.org>
+In-Reply-To: <20071208085207.GE30997@elte.hu>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
-References: <20071204211701.994dfce6.akpm@linux-foundation.org> <47595A0A.5000502@gmail.com> <20071207151150.GB24254@elte.hu> <20071207175134.GA18916@elte.hu> <475A5188.6070809@gmail.com> <20071208083939.GD30997@elte.hu> <475A629C.7010408@gmail.com> <20071208152447.GA30270@elte.hu>
-In-Reply-To: <20071208152447.GA30270@elte.hu>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071207021952.6f0ac922@morte>
+	 <200712080348.53117.nickpiggin@yahoo.com.au>
+	 <200712081150.50737.nickpiggin@yahoo.com.au>
+	 <200712081157.27840.nickpiggin@yahoo.com.au>
+	 <20071208085207.GE30997@elte.hu>
+X-Google-Sender-Auth: 26959e2b855f76a0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/08/2007 04:24 PM, Ingo Molnar wrote:
-> i'm wondering why it had no effect now
+On Dec 8, 2007 9:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
 
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index e0d3a4f..a46c252 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -47,15 +47,21 @@ void __init cpu_hotplug_init(void)
- }
+> the scariest bit isnt even the scaling i think - that is a fairly
+> straightforward and clean PER_CPU-ization of the global scaling factor,
+> and its hookup with cpufreq events. (and the credit for that goes to
+> Guillaume Chazarain)
 
- #ifdef CONFIG_HOTPLUG_CPU
--
-+#include <asm/io.h>
- void get_online_cpus(void)
- {
-+       outb(0x20, 0x80);
-        might_sleep();
-+       outb(0x21, 0x80);
-        if (cpu_hotplug.active_writer == current)
-                return;
-+       outb(0x22, 0x80);
-        mutex_lock(&cpu_hotplug.lock);
-+       outb(0x23, 0x80);
-        cpu_hotplug.refcount++;
-+       outb(0x24, 0x80);
-        mutex_unlock(&cpu_hotplug.lock);
-+       outb(0x25, 0x80);
+To be fair, the cpufreq hook were already there, I just did a buggy percpu
+conversion and added an offset that you removed ;-)
 
- }
- EXPORT_SYMBOL_GPL(get_online_cpus);
-
-produces 0x22 on the LCD (called from watchdog kthread).
-
-Going to catch some sleep,
---js
+-- 
+Guillaume
