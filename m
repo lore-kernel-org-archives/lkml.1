@@ -1,54 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbXLHBIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbXLHBMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719AbXLHBIc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 20:08:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXLHBIY
+	id S1756797AbXLHBMj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 20:12:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbXLHBMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 20:08:24 -0500
-Received: from smtp3.Stanford.EDU ([171.67.20.26]:50731 "EHLO
-	smtp3.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751415AbXLHBIX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 20:08:23 -0500
-Subject: Re: [git pull] x86/hrtimer/acpi fixes
-From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Len Brown <lenb@kernel.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <20071207195958.GA12529@elte.hu>
-References: <20071207183633.GC26778@elte.hu>
-	 <1197053386.32023.13.camel@cmn3.stanford.edu>
-	 <20071207185920.GA3006@elte.hu>
-	 <1197055769.32023.22.camel@cmn3.stanford.edu>
-	 <1197056910.32023.25.camel@cmn3.stanford.edu>
-	 <20071207195958.GA12529@elte.hu>
-Content-Type: text/plain
-Date: Fri, 07 Dec 2007 17:08:20 -0800
-Message-Id: <1197076100.32023.67.camel@cmn3.stanford.edu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Fri, 7 Dec 2007 20:12:31 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45593 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753464AbXLHBM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Dec 2007 20:12:29 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Petr Tesarik <ptesarik@suse.cz>, tony.luck@intel.com
+Subject: [PATCH] arch_ptrace_stop
+In-Reply-To: Petr Tesarik's message of  Thursday, 6 December 2007 17:49:53 +0100 <1196959793.6586.3.camel@elijah.suse.cz>
+References: <1196959793.6586.3.camel@elijah.suse.cz>
+X-Zippy-Says: I'm having a RELIGIOUS EXPERIENCE..  and I don't take any DRUGS
+Message-Id: <20071208011152.CDA8E26F8EA@magilla.localdomain>
+Date: Fri,  7 Dec 2007 17:11:52 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-12-07 at 20:59 +0100, Ingo Molnar wrote:
-> * Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU> wrote:
-> 
-> > > Nope, it doesn't still getting "delay" and "xrun" messages galore.
-> > 
-> > Attached: configuration and dmesg output booting with idle=poll, 
-> > reconfirmed that that makes the delay and xrun messages go away.
-> 
-> could you try the rolled up patch of various fixlets, ontop of current 
-> -git? (it might even apply to -rc4) It includes some more stuff beyond 
-> the ones in the pull request. (still being tested/reviewed)
 
-I'll try but it will take me a while to figure git and do a package
-build of it...
+This adds support to allow asm/ptrace.h to define two new macros,
+arch_ptrace_stop_needed and arch_ptrace_stop.  These control special
+machine-specific actions to be done before a ptrace stop.  The new
+code compiles away to nothing when the new macros are not defined.
+This is the case on all machines to begin with.
 
--- Fernando
+On ia64, these macros will be defined to solve the long-standing
+issue of ptrace vs register backing store.
 
+Signed-off-by: Roland McGrath <roland@redhat.com>
+CC: Petr Tesarik <ptesarik@suse.cz>
+CC: Tony Luck <tony.luck@intel.com>
+---
+ include/linux/ptrace.h |   35 +++++++++++++++++++++++++++++++++++
+ kernel/signal.c        |   33 ++++++++++++++++++++++++++++++++-
+ 2 files changed, 67 insertions(+), 1 deletions(-)
 
+diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
+index ae8146a..7168757 100644
+--- a/include/linux/ptrace.h
++++ b/include/linux/ptrace.h
+@@ -128,6 +128,41 @@ int generic_ptrace_pokedata(struct task_struct *tsk, long addr, long data);
+ #define force_successful_syscall_return() do { } while (0)
+ #endif
+ 
++#ifndef arch_ptrace_stop_needed
++/**
++ * arch_ptrace_stop_needed - Decide whether arch_ptrace_stop() should be called
++ * @code:	current->exit_code value ptrace will stop with
++ * @info:	siginfo_t pointer (or %NULL) for signal ptrace will stop with
++ *
++ * This is called with the siglock held, to decide whether or not it's
++ * necessary to release the siglock and call arch_ptrace_stop() with the
++ * same @code and @info arguments.  It can be defined to a constant if
++ * arch_ptrace_stop() is never required, or always is.  On machines where
++ * this makes sense, it should be defined to a quick test to optimize out
++ * calling arch_ptrace_stop() when it would be superfluous.  For example,
++ * if the thread has not been back to user mode since the last stop, the
++ * thread state might indicate that nothing needs to be done.
++ */
++#define arch_ptrace_stop_needed(code, info)	(0)
++#endif
++
++#ifndef arch_ptrace_stop
++/**
++ * arch_ptrace_stop - Do machine-specific work before stopping for ptrace
++ * @code:	current->exit_code value ptrace will stop with
++ * @info:	siginfo_t pointer (or %NULL) for signal ptrace will stop with
++ *
++ * This is called with no locks held when arch_ptrace_stop_needed() has
++ * just returned nonzero.  It is allowed to block, e.g. for user memory
++ * access.  The arch can have machine-specific work to be done before
++ * ptrace stops.  On ia64, register backing store gets written back to user
++ * memory here.  Since this can be costly (requires dropping the siglock),
++ * we only do it when the arch requires it for this particular stop, as
++ * indicated by arch_ptrace_stop_needed().
++ */
++#define arch_ptrace_stop(code, info)		do { } while (0)
++#endif
++
+ #endif
+ 
+ #endif
+diff --git a/kernel/signal.c b/kernel/signal.c
+index afa4f78..2e85fcb 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1594,6 +1594,17 @@ static inline int may_ptrace_stop(void)
+ }
+ 
+ /*
++ * Return nonzero if there is a SIGKILL that should be waking us up.
++ * Called with the siglock held.
++ */
++static int sigkill_pending(struct task_struct *tsk)
++{
++	return ((sigismember(&tsk->pending.signal, SIGKILL) ||
++		 sigismember(&tsk->signal->shared_pending.signal, SIGKILL)) &&
++		!unlikely(sigismember(&tsk->blocked, SIGKILL)));
++}
++
++/*
+  * This must be called with current->sighand->siglock held.
+  *
+  * This should be the path for all ptrace stops.
+@@ -1606,6 +1617,26 @@ static inline int may_ptrace_stop(void)
+  */
+ static void ptrace_stop(int exit_code, int nostop_code, siginfo_t *info)
+ {
++	int killed = 0;
++
++	if (arch_ptrace_stop_needed(exit_code, info)) {
++		/*
++		 * The arch code has something special to do before a
++		 * ptrace stop.  This is allowed to block, e.g. for faults
++		 * on user stack pages.  We can't keep the siglock while
++		 * calling arch_ptrace_stop, so we must release it now.
++		 * To preserve proper semantics, we must do this before
++		 * any signal bookkeeping like checking group_stop_count.
++		 * Meanwhile, a SIGKILL could come in before we retake the
++		 * siglock.  That must prevent us from sleeping in TASK_TRACED.
++		 * So after regaining the lock, we must check for SIGKILL.
++		 */
++		spin_unlock_irq(&current->sighand->siglock);
++		arch_ptrace_stop(exit_code, info);
++		spin_lock_irq(&current->sighand->siglock);
++		killed = sigkill_pending(current);
++	}
++
+ 	/*
+ 	 * If there is a group stop in progress,
+ 	 * we must participate in the bookkeeping.
+@@ -1621,7 +1652,7 @@ static void ptrace_stop(int exit_code, int nostop_code, siginfo_t *info)
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 	try_to_freeze();
+ 	read_lock(&tasklist_lock);
+-	if (may_ptrace_stop()) {
++	if (!unlikely(killed) && may_ptrace_stop()) {
+ 		do_notify_parent_cldstop(current, CLD_TRAPPED);
+ 		read_unlock(&tasklist_lock);
+ 		schedule();
