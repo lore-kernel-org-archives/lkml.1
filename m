@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751947AbXLHRoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752088AbXLHRqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751947AbXLHRoz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 12:44:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbXLHRos
+	id S1752088AbXLHRqI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 12:46:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbXLHRp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 12:44:48 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52024 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbXLHRos (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 12:44:48 -0500
-Subject: Re: lockdep problem conversion semaphore->mutex (dev->sem)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Remy Bohmer <linux@bohmer.net>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Dave Chinner <dgc@sgi.com>
-In-Reply-To: <1197132792.1568.162.camel@jnielson-xp.ddns.mvista.com>
-References: <3efb10970712071502p4db9c58ck623c377172ead4b2@mail.gmail.com>
-	 <1197116185.31440.1.camel@twins>
-	 <1197132792.1568.162.camel@jnielson-xp.ddns.mvista.com>
-Content-Type: text/plain
-Date: Sat, 08 Dec 2007 18:11:50 +0100
-Message-Id: <1197133910.6353.33.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Sat, 8 Dec 2007 12:45:56 -0500
+Received: from waste.org ([66.93.16.53]:42401 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750789AbXLHRpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 12:45:55 -0500
+Date: Sat, 8 Dec 2007 11:43:43 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Theodore Tso <tytso@mit.edu>, Jon Masters <jonathan@jonmasters.org>,
+       Mike McGrath <mmcgrath@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ray Lee <ray@madrabbit.org>, Adrian Bunk <bunk@kernel.org>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071208174343.GK19691@waste.org>
+References: <20071204204036.484f11ac@the-village.bc.nu> <20071204210827.GE19691@waste.org> <4755C423.60907@redhat.com> <20071204221525.GG19691@waste.org> <4755D350.1080801@redhat.com> <20071204223345.GJ19691@waste.org> <4756B50B.3060100@redhat.com> <20071205144934.GL7259@thunk.org> <1197099477.20786.149.camel@perihelion> <20071208173204.GI17037@thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071208173204.GI17037@thunk.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2007-12-08 at 08:53 -0800, Daniel Walker wrote:
-> On Sat, 2007-12-08 at 13:16 +0100, Peter Zijlstra wrote:
-> > On Sat, 2007-12-08 at 00:02 +0100, Remy Bohmer wrote:
-> > > Hello Peter,
-> > > 
-> > > > > What specifically is wrong with dev->sem ?
-> > > >
-> > > > Nothing really, other than that they use semaphores to avoid lockdep :-/
-> > > >
-> > > > I think I know how to annotate this, after Alan Stern explained all the
-> > > > use cases, but I haven't come around to implementing it. Hope to do that
-> > > > soonish.
-> > > 
-> > > I was looking for an easy semaphore I could convert to a mutex, and I
-> > > ran into one that was widely spread and interesting, and which seemed
-> > > quite doable at first sight.
-> > > So, I started working on it, but was forgotten this discussion, (until
-> > > Daniel made me remember it this afternoon). So, I (stupid me ;-) )
-> > > tried to convert dev->sem...
-> > > 
-> > > After doing the monkey part of the conversion I can boot the kernel
-> > > completely on X86 and ARM, and everything works fine, except after
-> > > enabling lockdep, lockdep starts complaining...
-> > > 
-> > > Is this the problem you were pointing at?
+On Sat, Dec 08, 2007 at 12:32:04PM -0500, Theodore Tso wrote:
+> On Sat, Dec 08, 2007 at 02:37:57AM -0500, Jon Masters wrote:
+> > > BTW, You may be better off using "uuidgen -t" to generate the UUID in
+> > > the smolt RPM, since that will use 12 bits of randomness from
+> > > /dev/random, plus the MAC, address and timestamp.  So even if there is
+> > > zero randomness in /dev/random, and the time is January 1, 1970, at
+> > > least the MAC will contribute some uniqueness to the UUID.
 > > 
-> > Yeah, one of the interesting nestings :-)
+> > I haven't checked how uuidgen uses the MAC, but I would suggest that
+> > that is not something Fedora should jump at doing - although it would
+> > help ensure unique UUIDs, it also contributes to the tinfoil hat
+> > responses that usually come up with things like smolt.
 > 
-> It must be the locking in __driver_attach(), taking dev->parent->sem
-> then taking dev->sem .. Assuming those are different structures, why
-> does lockdep trigger?
+> Huh?  What's the concern?  All you are submitting is a list of
+> hardware devices in your system.  That's hardly anything sensitive....
 
-They aren't different, parent is a struct device again.
+Using MAC addresses -does- de-anonymize things though and presumably
+anonymous collection is a stated goal.
 
+-- 
+Mathematics is the supreme nostalgia of our time.
