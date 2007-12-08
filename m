@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbXLHA5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbXLHBIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756615AbXLHA5o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 19:57:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbXLHA5h
+	id S1755719AbXLHBIc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 20:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXLHBIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 19:57:37 -0500
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:28705 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751949AbXLHA5g (ORCPT
+	Fri, 7 Dec 2007 20:08:24 -0500
+Received: from smtp3.Stanford.EDU ([171.67.20.26]:50731 "EHLO
+	smtp3.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751415AbXLHBIX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 19:57:36 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fvkLPH5O5YYwc1f3GSpWfpkL0qWUhUlC+w4IMJ6I6PrNNyCOu4iVPuEpkltGP3edho12HU3/S0hWyH37sVv6zwqJC2nPCUj6dMUpSP/1WAaDKUFUjO4LjmIKxam0rAQ6fEGLBBTneOINxThms7aUImudNLE6i6OPJXA4ZsTdz78=  ;
-X-YMail-OSG: GJR_LXsVM1m5TD0nNihO7SUz95YNt_vuKEIe9lz3_fzsWb1tLbMSGPz1uqaidycLMlRfgAYVRA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
+	Fri, 7 Dec 2007 20:08:23 -0500
+Subject: Re: [git pull] x86/hrtimer/acpi fixes
+From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
 To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
-Date: Sat, 8 Dec 2007 11:57:27 +1100
-User-Agent: KMail/1.9.5
-Cc: Stefano Brivio <stefano.brivio@polimi.it>, Robert Love <rml@tech9.net>,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
-References: <20071207021952.6f0ac922@morte> <200712080348.53117.nickpiggin@yahoo.com.au> <200712081150.50737.nickpiggin@yahoo.com.au>
-In-Reply-To: <200712081150.50737.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Len Brown <lenb@kernel.org>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>
+In-Reply-To: <20071207195958.GA12529@elte.hu>
+References: <20071207183633.GC26778@elte.hu>
+	 <1197053386.32023.13.camel@cmn3.stanford.edu>
+	 <20071207185920.GA3006@elte.hu>
+	 <1197055769.32023.22.camel@cmn3.stanford.edu>
+	 <1197056910.32023.25.camel@cmn3.stanford.edu>
+	 <20071207195958.GA12529@elte.hu>
+Content-Type: text/plain
+Date: Fri, 07 Dec 2007 17:08:20 -0800
+Message-Id: <1197076100.32023.67.camel@cmn3.stanford.edu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712081157.27840.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 08 December 2007 11:50, Nick Piggin wrote:
+On Fri, 2007-12-07 at 20:59 +0100, Ingo Molnar wrote:
+> * Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU> wrote:
+> 
+> > > Nope, it doesn't still getting "delay" and "xrun" messages galore.
+> > 
+> > Attached: configuration and dmesg output booting with idle=poll, 
+> > reconfirmed that that makes the delay and xrun messages go away.
+> 
+> could you try the rolled up patch of various fixlets, ontop of current 
+> -git? (it might even apply to -rc4) It includes some more stuff beyond 
+> the ones in the pull request. (still being tested/reviewed)
 
-> I guess your patch is fairly complex but it should work
+I'll try but it will take me a while to figure git and do a package
+build of it...
 
-I should also add that although complex, it should have a
-much smaller TSC delta window in which the wrong scaling
-factor can get applied to it (I guess it is about as good
-as you can possibly get). So I do like it :)
+-- Fernando
+
+
