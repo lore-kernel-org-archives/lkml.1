@@ -1,53 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbXLHJX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbXLHJY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757568AbXLHJX4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 04:23:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbXLHJXt
+	id S1757971AbXLHJY6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 04:24:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbXLHJYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 04:23:49 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:35564 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbXLHJXr (ORCPT
+	Sat, 8 Dec 2007 04:24:50 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37956 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755160AbXLHJYt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 04:23:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ctDyVf3Qips8nkn17Mg4BfjXpZk5pSpPDk/wCaJodF5hOHrud10zoBNQKjQcztWEWhqjyYt7dR8TzVzNzZ6C24TDHIXatFjdm7Uw4mm7NkC/q59WIXvPwDUvBokMy045mEsAgw0hsmzz8bEytAxa5OxW/LHUdL3lJwEm+QxbkN4=
-Message-ID: <475A629C.7010408@gmail.com>
-Date: Sat, 08 Dec 2007 10:23:40 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
+	Sat, 8 Dec 2007 04:24:49 -0500
+Date: Sat, 8 Dec 2007 01:23:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
-References: <20071204211701.994dfce6.akpm@linux-foundation.org> <47595A0A.5000502@gmail.com> <20071207151150.GB24254@elte.hu> <20071207175134.GA18916@elte.hu> <475A5188.6070809@gmail.com> <20071208083939.GD30997@elte.hu>
-In-Reply-To: <20071208083939.GD30997@elte.hu>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Fabio Comolli <fabio.comolli@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Len Brown <lenb@kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
+Message-Id: <20071208012354.c808f9d7.akpm@linux-foundation.org>
+In-Reply-To: <20071208082815.GB30997@elte.hu>
+References: <200712080340.49546.rjw@sisk.pl>
+	<b637ec0b0712072253k7f7410b6iaebf5b7b64ae4509@mail.gmail.com>
+	<20071208082815.GB30997@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/08/2007 09:39 AM, Ingo Molnar wrote:
-> * Jiri Slaby <jirislaby@gmail.com> wrote:
-> 
->> Unfortunately no change here.
-> 
-> could you try to revert this change:
-> 
-> -int softlockup_thresh = 10;
-> +int softlockup_thresh = 60;
-> 
-> i.e. change the value of softlockup_thresh back to 10. You should be 
-> able to tweak this runtime as well, without patching the kernel:
-> 
->   echo 10 > /proc/sys/kernel/softlockup_thresh
+On Sat, 8 Dec 2007 09:28:15 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-What should have this changed? I can't see any difference.
+> 
+> * Fabio Comolli <fabio.comolli@gmail.com> wrote:
+> 
+> > <snip>
+> > 
+> > > Subject         : Battery shows up twice in kpowersave
+> > > Submitter       : Rolf Eike Beer <eike-kernel@sf-tec.de>
+> > > References      : http://bugzilla.kernel.org/show_bug.cgi?id=9494
+> > > Handled-By      : Alexey Starikovskiy <astarikovskiy@suse.de>
+> > > Patch           :
+> > >
+> > 
+> > I don't think that this is a regression: I reported on RedHat bugzilla 
+> > when I switched from F7 to F8 and I was using 2.6.23.8 at that time. 
+> > It looks to me an HAL regression, but of course I may be wrong :-) as 
+> > the reported bisected to a bad commit.
+> > 
+> > https://bugzilla.redhat.com/show_bug.cgi?id=373041
+> > 
+> > By the way, I now switched to Fedrora Rawhide with a 2.6.24-rc4-git5 
+> > custom kernel and Gnome desktop and the problem is still present, even 
+> > with gnome-power-manager.
+> 
+> to me this looks like an ABI regression - utilities should work without 
+> change. Something changed in /sys output that caused HAL to think that 
+> there are two batteries:
+
+Yep.  Although HAL is of course a most special case of "userspace".
+
+> | The output of lshal shows that there are two UDI's with 
+> | info.capabilities = { 'battery' }:
+> |
+> | udi = '/org/freedesktop/Hal/devices/acpi_BAT0'
+> | udi = '/org/freedesktop/Hal/devices/computer_power_supply_0'
+> 
+> whether it's a HAL bug or a kernel bug, the original state should be 
+> restored and it should be worked out without breaking users of older HAL 
+> versions.
+
+"breaking users of older HAL versions" == "breaking machines".
+
+The patch should be reverted.  Do we know which one it was?
+
+> grumble: way too many times do various system utilities break when i 
+> upgrade the kernel on my laptop. Maybe a new debug mechanism: we should 
+> start fingerprinting the exact /sys and /proc output and enforce that 
+> it's immutable across kernel releases as long as the hardware is 
+> unmodified?
+
+That would be neat.  It would need to be executed on a lot of different
+machines.
+
+I wonder if there's something sneaky we can do here.  Install the script in
+/lib/modules/$(uname -r) and then run it from the kernel when the fork
+count reaches 1000 ;)
+
+(hey, I've seen worse: /proc files which start with #!/bin/sh)
