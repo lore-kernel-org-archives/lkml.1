@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbXLHUaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbXLHUce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753628AbXLHUaZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 15:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbXLHUaN
+	id S1754193AbXLHUce (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 15:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbXLHUc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 15:30:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43515 "EHLO mx2.mail.elte.hu"
+	Sat, 8 Dec 2007 15:32:27 -0500
+Received: from thunk.org ([69.25.196.29]:48469 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752085AbXLHUaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 15:30:11 -0500
-Date: Sat, 8 Dec 2007 21:29:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52,
-	[2.6.24-rc4-git5: Reported regressions from 2.6.23]
-Message-ID: <20071208202930.GA17934@elte.hu>
-References: <200712080340.49546.rjw@sisk.pl> <20071208093039.GA28054@elte.hu> <20071208163749.GI19691@waste.org> <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org> <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org> <20071208100950.a3547868.akpm@linux-foundation.org> <alpine.LFD.0.9999.0712081034470.12046@woody.linux-foundation.org> <20071208195211.GA3727@elte.hu>
+	id S1752142AbXLHUc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 15:32:26 -0500
+Date: Sat, 8 Dec 2007 15:31:21 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Matt Mackall <mpm@selenic.com>, Mike McGrath <mmcgrath@redhat.com>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org,
+       hmh@debian.org
+Subject: Re: entropy gathering (was Re: Why does reading from /dev/urandom
+	deplete entropy so much?)
+Message-ID: <20071208203121.GP17037@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jeff Garzik <jeff@garzik.org>, Matt Mackall <mpm@selenic.com>,
+	Mike McGrath <mmcgrath@redhat.com>,
+	Jon Masters <jonathan@jonmasters.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
+	Adrian Bunk <bunk@kernel.org>,
+	Marc Haber <mh+linux-kernel@zugschlus.de>,
+	linux-kernel@vger.kernel.org, hmh@debian.org
+References: <4756B50B.3060100@redhat.com> <20071205144934.GL7259@thunk.org> <1197099477.20786.149.camel@perihelion> <20071208173204.GI17037@thunk.org> <475AD585.7020908@redhat.com> <20071208174908.GJ17037@thunk.org> <20071208181525.GL19691@waste.org> <475AF241.5000809@garzik.org> <20071208195342.GO19691@waste.org> <475AF8D0.1090407@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071208195211.GA3727@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <475AF8D0.1090407@garzik.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Dec 08, 2007 at 03:04:32PM -0500, Jeff Garzik wrote:
+> That's a bit of a tangent on a tangent.  :)  Most people don't have a 
+> hardware RNG.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Actually, most Business class laptops from IBM/Lenovo, HP, Dell,
+Fujitsu, and Sony laptops *do* have TPM chips that among other things,
+contain a slow but (supposedly, if the TPM microprocessors are to be
+believed) secure hardware random number generator for use as a session
+key generator.  This is thanks to various US legal mandates, such as
+HIPPA for the medical industry, and not just the paranoid ravings of
+the MPAA and RIAA.  :-)
 
-> the SLUB concept is proudly outlined in init/Kconfig:
-> 
->   config SLUB
->         bool "SLUB (Unqueued Allocator)"
->         help
->            SLUB is a slab allocator that minimizes cache line usage
->            instead of managing queues of cached objects (SLAB approach).
->            Per cpu caching is realized using slabs of objects instead
->            of queues of objects. SLUB can use memory efficiently
->            and has enhanced diagnostics.
-> 
-> but that's not true anymore - the two concepts are pretty much 
-> equivalent, after all the "performance tuning" that went on in SLUB. 
-> (read: 'frantically try to catch up with SLAB in benchmarks')
+The problem is enabling the TPM isn't trivial, and life gets harder if
+you want the TPM chip to simultaneously work on dual-boot machines for
+both Windows and Linux, but it is certainly doable.
 
-just to hammer this point home - and while Christoph Lameter isnt online 
-currently to defend SLUB, this issue did come up and i guess there must 
-be other MM hackers that are advocates of SLUB. (otherwise this code 
-couldnt be upstream)
+>> I think we should re-evaluate having an internal path from the hwrngs
+>> to /dev/[u]random, which will reduce the need for userspace config
+>> that can go wrong.
 
-I find SLUB a fantastically confusing concept, and that starts at the 
-name. "Unqueued" it says. Lets take a look at the actual code:
+I think the userspace config problems were mainly due to the fact that
+there wasn't a single official userspace utility package for the
+random number package.  Comments in drivers/char/random.c for how to
+set up /etc/init.d/random is Just Not Enough.
 
-mm/slub.c:
+If we had a single, official random number generator package that
+contained the configuration, init.d script, as well as the daemon that
+can do all sorts of different things that you really, Really, REALLY
+want to do in userspace, including:
 
-  static void __always_inline *slab_alloc(struct kmem_cache *s,
-                  gfp_t gfpflags, int node, void *addr)
-  {
-  ...
-          local_irq_save(flags);
-          c = get_cpu_slab(s, smp_processor_id());
-  ...
-          else {
-                  object = c->freelist;
-                  c->freelist = object[c->offset];
-          }
-          local_irq_restore(flags);
+  * FIPS testing (as Jeff suggested --- making sure what you think is 
+    randomness isn't 60Hz hum is a Really Good Idea :-)
+  * access to TPM (if available --- I have a vague memory that you may
+    need access to the TPM key to access any of its functions, and the
+    the TPM key is stored in the filesystem)
 
-so it has a "free list", which is clearly per cpu. Hang on! Isnt that 
-actually a per CPU queue? Which SLUB has not, we are told? The "U" in 
-SLUB. How on earth can an allocator in 2007 claim to have no queuing
-(which is in essence caching)? Am i on crack with this? Did i miss
-something really obvious?
+So....  anyone interested in belling the metaphorical cat?   :-)
 
-	Ingo
+	       		     	     	 	      - Ted
