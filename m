@@ -1,79 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbXLHQA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbXLHQPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755111AbXLHQA5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 11:00:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbXLHQAt
+	id S1754015AbXLHQPd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 11:15:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbXLHQP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 11:00:49 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:41959 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752231AbXLHQAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 11:00:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JfyPlKSV69NsAd8lNqzIsqb4oJvWb6oyoxkw24hJvle023kcGhFDJAwufkb70ceE9LKqkmGWEaGN9xOxquObWlqTmi+zU7+N/+uRt1RnocgJNliKgcDpnWFMn1p+cjSF2Boj1ZPFlfqa9xdZ0o9pHnjTmbGjR1+xv2aTMAFrnM4=
-Message-ID: <82e4877d0712080800j6572734ek78a76cf7bb17a7e0@mail.gmail.com>
-Date: Sat, 8 Dec 2007 11:00:47 -0500
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: soft lockup - CPU#1 stuck for 15s! [swapper:0]
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <20071208154755.GA5255@elte.hu>
+	Sat, 8 Dec 2007 11:15:26 -0500
+Received: from mail.tmr.com ([64.65.253.246]:45028 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751543AbXLHQPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 11:15:25 -0500
+Message-ID: <475AC72B.1070508@tmr.com>
+Date: Sat, 08 Dec 2007 11:32:43 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: ICH9 & Core2 Duo - kernel crash
+References: <200712041331.24678.pavol.cvengros@primeinteractive.net> <47585879.7010305@tmr.com> <200712070701.55283.pavol.cvengros@primeinteractive.net> <47598E1B.7010907@tmr.com> <47599734.1030505@primeinteractive.net>
+In-Reply-To: <47599734.1030505@primeinteractive.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <82e4877d0712071453h38795e36of26324a4b123fa6c@mail.gmail.com>
-	 <924EFEDD5F540B4284297C4DC59F3DEE38C3C2@orsmsx423.amr.corp.intel.com>
-	 <alpine.LFD.0.99999.0712080821220.3070@localhost.localdomain>
-	 <82e4877d0712080710g205ba93ag12ee204b15d70fdb@mail.gmail.com>
-	 <82e4877d0712080736v12c1e31at9149655ae000fe50@mail.gmail.com>
-	 <20071208154755.GA5255@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 8, 2007 10:47 AM, Ingo Molnar <mingo@elte.hu> wrote:
+Pavol Cvengros wrote:
+> Bill Davidsen wrote:
+>> Pavol Cvengros wrote:
+>>> On Thursday 06 December 2007 21:15:53 Bill Davidsen wrote:
+>>>  
+>>>> Pavol Cvengros wrote:
+>>>>   
+>>>>> Hello,
+>>>>>
+>>>>> I am trying LKML to get some help on one linux kernel related 
+>>>>> problem.
+>>>>> Lately we got a machine with new HW from Intel. CPU is Intel Core2 
+>>>>> Duo
+>>>>> E6850 3GHz with 2GB of RAM. Motherboard is Intel DG33BU with G33 
+>>>>> chipset.
+>>>>>
+>>>>> After long fight with kernel crashes on different things, we 
+>>>>> figured out
+>>>>> that if the multicore is disabled in bios, everything is ok and 
+>>>>> machine
+>>>>> is running good. No kernel crashes no problems, but with one core 
+>>>>> only.
+>>>>>
+>>>>> This small table will maybe explain:
+>>>>>
+>>>>> Cores   -     kernel   -   state
+>>>>>    2  -   nonsmp or smp  - crash
+>>>>>    1  -  smp or nonsmp  - ok
+>>>>>
+>>>>> All crashes have been different (swaper, rcu, irq, init.....) or 
+>>>>> we just
+>>>>> got internal gcc compiler error while compiling kernel/glibc/.... 
+>>>>> and the
+>>>>> machine was frozen.
+>>>>>
+>>>>> Please can somebody advise what to do to identify that problem more
+>>>>> precisely. (debug kernel options?)
+>>>>>
+>>>>> Our immpresion - ICH9 & ICH9R support in kernel is bad... sorry to 
+>>>>> say..
+>>>>>       
+>>>> I have seen unusual memory behavior under heavy load, in the cases 
+>>>> I saw
+>>>> it was heavy DMA load from multiple SCSI controllers, and one case 
+>>>> with
+>>>> FFT on the CPU and heavy network load with gigE. Have you run 
+>>>> memtest on
+>>>> this hardware? Just a thought, but I see people running Linux on that
+>>>> chipset, if not that particular board.
+>>>>
+>>>> A cheap test even if it shows nothing. Of course it could be a CPU 
+>>>> cache
+>>>> issue in that one CPU, although that's unlikely.
+>>>>     
+>>>
+>>> yes, memtest was running all his tests without problems. The wierd 
+>>> thing is that all kernel crashes we have seen were different (as 
+>>> stated in original mail)....
+>>>
+>>>   
+>> The problem with memtest, unless I underestimate it, is that it 
+>> doesn't use all core and siblings, so it doesn't quite load the 
+>> memory system the way regular usage would. Needless to say, if this 
+>> does turn out to be a memory loading issue I don't know of any tools 
+>> to really test it. I fall back on part swapping, but that only helps 
+>> if it's the memory DIMM itself.
+>>
 >
-> does the patch below help? But the root cause is likely some timer
-> problems - do you get consistent results from:
+> right now that machine has 2 x 1GB DDR2 - 800MHz.... do you think I 
+> should test the machine with only one DDR? (I hope to put there 4GB 
+> all together)
 >
+Well, odd memory problems are rare, did you look for a BIOS update? It 
+could be that the chipset isn't being set properly, and would explain 
+why it might work differently with another BIOS. But if there's nothing 
+else to try, it won't hurt to see if it works differently with only one DDR.
 
-Haven't yet tried the patch - will try a little later.
-
->    while :; do time usleep 1111111; done
->
-> or do these sleeps fluctuate?
->
-
-They seem to fluctuate - not sure if that's supposed to be exact or if
-below variations are normal -
-This is when my compiles are running -
-
-[parag@mini ~]$ while :; do time usleep 1111111; done
-
-real    0m1.116s
-user    0m0.000s
-sys     0m0.000s
-
-real    0m1.112s
-user    0m0.000s
-sys     0m0.000s
-
-real    0m1.130s
-user    0m0.000s
-sys     0m0.004s
-
-real    0m1.144s
-user    0m0.000s
-sys     0m0.000s
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "Woe unto the statesman who makes war without a reason that will still
+  be valid when the war is over..." Otto von Bismark 
 
 
-Thanks
-Parag
