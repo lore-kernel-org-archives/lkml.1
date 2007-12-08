@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbXLHWNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbXLHWRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbXLHWNs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 17:13:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbXLHWNl
+	id S1755136AbXLHWRG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 17:17:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbXLHWQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 17:13:41 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41163 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752852AbXLHWNk convert rfc822-to-8bit (ORCPT
+	Sat, 8 Dec 2007 17:16:55 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:52817 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752884AbXLHWQy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 17:13:40 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
-Date: Sat, 8 Dec 2007 23:32:46 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200712080340.49546.rjw@sisk.pl> <1197110678.4665.2.camel@localhost.localdomain>
-In-Reply-To: <1197110678.4665.2.camel@localhost.localdomain>
+	Sat, 8 Dec 2007 17:16:54 -0500
+Date: Sat, 8 Dec 2007 15:16:52 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Nick Warne <nick@ukfsn.org>, Clemens Koller <clemens.koller@anagramm.de>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: scsi_wait_scan Kconfig option
+Message-ID: <20071208221652.GA1159@parisc-linux.org>
+References: <20071207191242.71a9cc3e@linuxamd.linicks.net> <475A9810.4070104@anagramm.de> <20071208162122.7e77601e@linuxamd.linicks.net> <475B0AC7.2030408@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712082332.47347.rjw@sisk.pl>
+In-Reply-To: <475B0AC7.2030408@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 8 of December 2007, Richard Purdie wrote:
-> On Sat, 2007-12-08 at 03:40 +0100, Rafael J. Wysocki wrote:
-> > Subject		: leds: ledtrig-timer calls sleeping function from invalid context
-> > Submitter	: Márton Németh <nm127@freemail.hu>
-> > References	: http://bugzilla.kernel.org/show_bug.cgi?id=9264
-> > Handled-By	: Richard Purdie <rpurdie@rpsys.net>
-> > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=13493&action=view
-> 
-> The fix is now in mainline:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=dc47206e552c0850ad11f7e9a1fca0a3c92f5d65
+On Sat, Dec 08, 2007 at 10:21:11PM +0100, Stefan Richter wrote:
+> Besides, in order for scsi_wait_scan to work, drivers need to support it
+> explicitly, don't they?  If so, simply kill the "default m" from config
+> SCSI_WAIT_SCAN and let any driver which is integrated with it select it.
 
-Yes, already dropped.
+No.  All drivers which call scsi_scan_host() support it.
 
-Thanks,
-Rafael
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
