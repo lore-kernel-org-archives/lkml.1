@@ -1,89 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbXLHXwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbXLHXxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbXLHXwY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 18:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXLHXwR
+	id S1753271AbXLHXxT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 18:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbXLHXxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 18:52:17 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50514 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752713AbXLHXwQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 18:52:16 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] will_become_orphaned_pgrp: we have threads
-References: <20071208183800.GA9940@tv-sign.ru>
-Date: Sat, 08 Dec 2007 16:50:04 -0700
-In-Reply-To: <20071208183800.GA9940@tv-sign.ru> (Oleg Nesterov's message of
-	"Sat, 8 Dec 2007 21:38:00 +0300")
-Message-ID: <m11w9wpx03.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 8 Dec 2007 18:53:12 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48340 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752875AbXLHXxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 18:53:11 -0500
+Date: Sun, 9 Dec 2007 00:53:44 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH 1/4 -mm] kexec based hibernation -v7 : kexec jump
+Message-ID: <20071208235344.GA17005@elf.ucw.cz>
+References: <1197042810.24045.61.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1197042810.24045.61.camel@caritas-dev.intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+Hi!
 
-> p->exit_state != 0 doesn't mean this process is dead, it may have sub-threads.
->
-> However, the new "p->exit_state && thread_group_empty(p)" check is not correct
-> either, this is just the temporary hack. Perhaps we can just remove this check,
-> but I don't understand orphaned process groups magic. At all. However, I think
-> exit_notify() is obviously and completely wrong wrt this helper.
+> This patch implements the functionality of jumping between the kexeced
+> kernel and the original kernel.
+> 
+> To support jumping between two kernels, before jumping to (executing)
+> the new kernel and jumping back to the original kernel, the devices
+> are put into quiescent state, and the state of devices and CPU is
+> saved. After jumping back from kexeced kernel and jumping to the new
+> kernel, the state of devices and CPU are restored accordingly. The
+> devices/CPU state save/restore code of software suspend is called to
+> implement corresponding function.
+> 
+> To support jumping without reserving memory. One shadow backup page
+> (source page) is allocated for each page used by new (kexeced) kernel
+> (destination page). When do kexec_load, the image of new kernel is
+> loaded into source pages, and before executing, the destination pages
+> and the source pages are swapped, so the contents of destination pages
+> are backupped. Before jumping to the new (kexeced) kernel and after
+> jumping back to the original kernel, the destination pages and the
+> source pages are swapped too.
+> 
+> A jump back protocol for kexec is defined and documented. It is an
+> extension to ordinary function calling protocol. So, the facility
+> provided by this patch can be used to call ordinary C function in real
+> mode.
+> 
+> A set of flags for sys_kexec_load are added to control which state are
+> saved/restored before/after real mode code executing. For example, you
+> can specify the device state and FPU state are saved/restored
+> before/after real mode code executing.
+> 
+> The states (exclude CPU state) save/restore code can be overridden
+> based on the "command" parameter of kexec jump. Because more states
+> need to be saved/restored by hibernating/resuming.
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-The problem that orphaned processes groups address is what happens if
-an entire process group is stopped, and there is not a process that
-can wake them up.
+I'm not kexec hacker... but maybe this is in good enough state to be
+merged? It is useful on its own: kexec jump and back means we can dump
+system then continue running, for example...
 
-The rule for an unprivileged process sending a signal to a process
-group is that it must be in the same session as the process group.
+								Pavel
 
-The rule for sending a signal to a process group is that the signal sender
-must be in the same session.
-
-So we are testing for a process group that does not have a living
-member with a parent outside of the process that can send the process
-group a signal.
-
-The test for init seems bogus.  /sbin/init rarely if ever starts
-processes in it's own session which is likely why this has not caused
-problems.  If we keep the test for init we need to make the test
-is_container_init rather the is global_init.
-
-As for exit_notify I agree.  We need a thread_group_exit_notify.
-That is responsible for performing work when we know the entire
-thread group has exited.  Sending the exit_signal and performing
-the through group orphaned check look like two of those tasks
-that need to be performed only at thread group exit.
-
-Oleg what do you see wrong with checking p->exit_state &&
-thread_group_empty(p)?   Since non-leader threads all self reap
-that seems to be a valid test for an dead thread group.
-
-Eric
-
-
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
->
-> --- PT/kernel/exit.c~4_orphaned_pgrp	2007-12-06 18:06:09.000000000 +0300
-> +++ PT/kernel/exit.c	2007-12-07 20:25:40.000000000 +0300
-> @@ -219,9 +219,9 @@ static int will_become_orphaned_pgrp(str
->  	int ret = 1;
->  
->  	do_each_pid_task(pgrp, PIDTYPE_PGID, p) {
-> -		if (p == ignored_task
-> -				|| p->exit_state
-> -				|| is_global_init(p->real_parent))
-> +		if ((p == ignored_task) ||
-> +		    (p->exit_state && thread_group_empty(p)) ||
-> +		    is_global_init(p->real_parent))
->  			continue;
->  		if (task_pgrp(p->real_parent) != pgrp &&
->  		    task_session(p->real_parent) == task_session(p)) {
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
