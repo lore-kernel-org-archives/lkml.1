@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbXLHS6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbXLHTBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752536AbXLHS6Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 13:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbXLHS6B
+	id S1752821AbXLHTBS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 14:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbXLHTBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 13:58:01 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:37229 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbXLHS6A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 13:58:00 -0500
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Roland Dreier <rolandd@cisco.com>,
-       Takashi Iwai <tiwai@suse.de>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
-X-Message-Flag: Warning: May contain useful information
-References: <200712080340.49546.rjw@sisk.pl>
-	<20071208014241.f4b138e0.akpm@linux-foundation.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Sat, 08 Dec 2007 10:57:57 -0800
-In-Reply-To: <20071208014241.f4b138e0.akpm@linux-foundation.org> (Andrew Morton's message of "Sat, 8 Dec 2007 01:42:41 -0800")
-Message-ID: <adawsrp9fpm.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Sat, 8 Dec 2007 14:01:09 -0500
+Received: from waste.org ([66.93.16.53]:58831 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750956AbXLHTBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 14:01:09 -0500
+Date: Sat, 8 Dec 2007 13:00:22 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52, [2.6.24-rc4-git5: Reported regressions from 2.6.23]
+Message-ID: <20071208190021.GN19691@waste.org>
+References: <200712080340.49546.rjw@sisk.pl> <20071208093039.GA28054@elte.hu> <20071208163749.GI19691@waste.org> <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org> <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 08 Dec 2007 18:57:58.0222 (UTC) FILETIME=[3F8A9EE0:01C839CC]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > Subject		: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
- > > Submitter	: Roland Dreier <rdreier@cisco.com>
- > > References	: http://lkml.org/lkml/2007/11/8/255
- > > 		  http://bugzilla.kernel.org/show_bug.cgi?id=9332
- > > Handled-By	: 
- > > Patch		: 
- > 
- > Takashi had a patch and that has been merged.  AFAIK this regression
- > has been fixed and we're left with a new but harmless warning.
- > 
- > However Roland reported other problems and it appears that the trail went
- > cold (http://lkml.org/lkml/2007/11/14/251)
+On Sat, Dec 08, 2007 at 09:54:06AM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Sat, 8 Dec 2007, Linus Torvalds wrote:
+> > 
+> > But I'll apply it anyway, because it looks "obviously correct" from the 
+> > standpoint that the _other_??slob user already clears the end result 
+> > explicitly later on, and we simply should never pass down __GFP_ZERO to 
+> > the actual page allocator.
+> 
+> Actually, I take that back. The other slob users are different. They share 
+> pages, this codepath does not.
+> 
+> So I think a more proper solution would be:
+>  (a) Something like this patch (which includes my previous mm/slub.c 
+>      change)
+>  (b) don't warn about atomic GFP_ZERO's - unless they have GFP_HIGHMEM set 
+>      *too*.
+> 
+> So which warning is it that triggers the bogus error?
 
-A fix for the most likely cause of this problem was merged (7eba5c9d
-"[ALSA] hda-codec - Check PINCAP only for PIN widgets") but it seems
-that setting CONFIG_SND_HDA_POWER_SAVE can cause the "azx_get_response
-timeout, switching to polling mode" message sometimes too.  However
-according to Takashi this is really just a cosmetic problem -- polling
-mode is not so bad.
+While I think the whole GFP_ZERO thing is a bit broken here, this is
+an improvement on my original patch, so:
 
- - R.
+Acked-by: Matt Mackall <mpm@selenic.com>
+> ---
+>  mm/slob.c |    2 +-
+>  mm/slub.c |    3 +++
+>  2 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/slob.c b/mm/slob.c
+> index ee2ef8a..773a7aa 100644
+> --- a/mm/slob.c
+> +++ b/mm/slob.c
+> @@ -330,7 +330,7 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
+>  
+>  	/* Not enough space: must allocate a new page */
+>  	if (!b) {
+> -		b = slob_new_page(gfp, 0, node);
+> +		b = slob_new_page(gfp & ~__GFP_ZERO, 0, node);
+>  		if (!b)
+>  			return 0;
+>  		sp = (struct slob_page *)virt_to_page(b);
+> diff --git a/mm/slub.c b/mm/slub.c
+> index b9f37cb..9c1d9f3 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -1468,6 +1468,9 @@ static void *__slab_alloc(struct kmem_cache *s,
+>  	void **object;
+>  	struct page *new;
+>  
+> +	/* We handle __GFP_ZERO in the caller */
+> +	gfpflags &= ~__GFP_ZERO;
+> +
+>  	if (!c->page)
+>  		goto new_slab;
+
+-- 
+Mathematics is the supreme nostalgia of our time.
