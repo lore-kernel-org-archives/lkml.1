@@ -1,100 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbXLHUz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbXLHU4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbXLHUz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 15:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXLHUzT
+	id S1754472AbXLHU4H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 15:56:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbXLHUz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 15:55:19 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:52224 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbXLHUzR (ORCPT
+	Sat, 8 Dec 2007 15:55:56 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:26121 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbXLHUzz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 15:55:17 -0500
+	Sat, 8 Dec 2007 15:55:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:content-transfer-encoding:user-agent;
-        b=ka7TnltePsH3CgzH8juIAdLofgjyfDSYqHYmpZiHi0er7oeQpg/Ui9v8L7MJR8b3MhLJOQY717iafVz5CVm9WWfJ9ipWfIsJxqcYdh86m5m2okflQqNGzTRBdgqT9AiHwD9pD5/9KN95ff6zM+uqAG+bKmQOV7DmWWBKSeJP+M4=
-Date: Sat, 8 Dec 2007 21:56:20 +0100
-From: Marcin =?utf-8?Q?=C5=9Alusarz?= <marcin.slusarz@gmail.com>
-To: perex@perex.cz
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] sound/core/seq: move declarations of globally visible
-	variables to proper headers
-Message-ID: <20071208205616.GI5087@joi>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=FatK5Rk0qlO7ym24FOpKzH3S4vVSjJ/EbzFBXyqqgkS4qj/W3SDhbPlm6L5tqjKSJbQrlra30VftqizXn+BQAjc0PqdgZMNRs4eDG3JUi64SsyoISVbEDTL1xNkzlaw2/AqRpBxKnp5t0yX9jIrNyzV66R6RT0IujPbRBY8agXQ=
+Message-ID: <3efb10970712081255k7ceec2bev4932512b2e1cda89@mail.gmail.com>
+Date: Sat, 8 Dec 2007 21:55:54 +0100
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: lockdep problem conversion semaphore->mutex (dev->sem)
+Cc: "Daniel Walker" <dwalker@mvista.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Dave Chinner" <dgc@sgi.com>
+In-Reply-To: <1197147016.6353.53.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <3efb10970712071502p4db9c58ck623c377172ead4b2@mail.gmail.com>
+	 <1197116185.31440.1.camel@twins>
+	 <1197132792.1568.162.camel@jnielson-xp.ddns.mvista.com>
+	 <1197133910.6353.33.camel@lappy>
+	 <1197133577.1568.166.camel@jnielson-xp.ddns.mvista.com>
+	 <1197135413.6353.36.camel@lappy>
+	 <3efb10970712081152o2d4abcfbo634a8d2445c09699@mail.gmail.com>
+	 <1197144276.6353.44.camel@lappy>
+	 <3efb10970712081233q10ac7f6bwb2c0ab8107714c1c@mail.gmail.com>
+	 <1197147016.6353.53.camel@lappy>
+X-Google-Sender-Auth: 1bed737610bb3dff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sound/core/seq: move declarations of globally visible variables to proper headers
+Peter,
 
-Signed-off-by: Marcin Ślusarz <marcin.slusarz@gmail.com>
----
- sound/core/seq/seq_clientmgr.c |    2 --
- sound/core/seq/seq_clientmgr.h |    2 ++
- sound/core/seq/seq_timer.c     |    7 -------
- sound/core/seq/seq_timer.h     |    7 +++++++
- 4 files changed, 9 insertions(+), 9 deletions(-)
+Thanks for this clear answer.
 
-diff --git a/sound/core/seq/seq_clientmgr.c b/sound/core/seq/seq_clientmgr.c
-index 2e3fa25..048ad5a 100644
---- a/sound/core/seq/seq_clientmgr.c
-+++ b/sound/core/seq/seq_clientmgr.c
-@@ -130,8 +130,6 @@ static struct snd_seq_client *clientptr(int clientid)
- 	return clienttab[clientid];
- }
+Remy
 
--extern int seq_client_load[];
--
- struct snd_seq_client *snd_seq_client_use_ptr(int clientid)
- {
- 	unsigned long flags;
-diff --git a/sound/core/seq/seq_clientmgr.h b/sound/core/seq/seq_clientmgr.h
-index 5e04e20..20f0a72 100644
---- a/sound/core/seq/seq_clientmgr.h
-+++ b/sound/core/seq/seq_clientmgr.h
-@@ -98,4 +98,6 @@ int snd_seq_kernel_client_write_poll(int clientid, struct file *file, poll_table
- int snd_seq_client_notify_subscription(int client, int port,
- 				       struct snd_seq_port_subscribe *info, int evtype);
-
-+extern int seq_client_load[15];
-+
- #endif
-diff --git a/sound/core/seq/seq_timer.c b/sound/core/seq/seq_timer.c
-index 8716352..82a5b33 100644
---- a/sound/core/seq/seq_timer.c
-+++ b/sound/core/seq/seq_timer.c
-@@ -27,13 +27,6 @@
- #include "seq_queue.h"
- #include "seq_info.h"
-
--extern int seq_default_timer_class;
--extern int seq_default_timer_sclass;
--extern int seq_default_timer_card;
--extern int seq_default_timer_device;
--extern int seq_default_timer_subdevice;
--extern int seq_default_timer_resolution;
--
- /* allowed sequencer timer frequencies, in Hz */
- #define MIN_FREQUENCY		10
- #define MAX_FREQUENCY		6250
-diff --git a/sound/core/seq/seq_timer.h b/sound/core/seq/seq_timer.h
-index e9ee154..88dfb71 100644
---- a/sound/core/seq/seq_timer.h
-+++ b/sound/core/seq/seq_timer.h
-@@ -138,4 +138,11 @@ int snd_seq_timer_set_skew(struct snd_seq_timer *tmr, unsigned int skew, unsigne
- snd_seq_real_time_t snd_seq_timer_get_cur_time(struct snd_seq_timer *tmr);
- snd_seq_tick_time_t snd_seq_timer_get_cur_tick(struct snd_seq_timer *tmr);
-
-+extern int seq_default_timer_class;
-+extern int seq_default_timer_sclass;
-+extern int seq_default_timer_card;
-+extern int seq_default_timer_device;
-+extern int seq_default_timer_subdevice;
-+extern int seq_default_timer_resolution;
-+
- #endif
+2007/12/8, Peter Zijlstra <peterz@infradead.org>:
+>
+> On Sat, 2007-12-08 at 21:33 +0100, Remy Bohmer wrote:
+>
+> > Which problems? I did not see any special things, it looked rather
+> > straight forward. What have I overlooked?
+>
+> On suspend it locks the whole device tree, this means it has 'unbounded'
+> nesting and holds an 'unbounded' number of locks. Neither things are
+> easy to annotate (remember that mutex_lock_nested can handle up to 8
+> nestings and current->held_locks has a max of 30).
+>
+> In fact, converting this will be the hardest part, it would require
+> reworking the locking and introduction of a hard limit on the device
+> tree depth - this might upset some people, but I suspect that 16 or 24
+> should be deep enough for pretty much anything. Of course, if people
+> prove me wrong, I'll have to reconsider. The up-side of the locking
+> scheme I'm thinking of will be that locking the whole tree will only
+> take 'depth' number of opterations vs the total number of tree elements.
+>
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
