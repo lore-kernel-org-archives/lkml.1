@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbXLHUsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbXLHUsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755548AbXLHUsZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 15:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbXLHUsJ
+	id S1755644AbXLHUsw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 15:48:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbXLHUsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 15:48:09 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:18745 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754991AbXLHUsG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 15:48:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=cqFjj9qMw0AYzyBfexjIStMfDNhxPDYDlkkD5YN62MDFA9YmlccASAdtQMv0g+4nsdazLJoCaAeM38m6sa4sAHArKY/jj2yF4I0UEXc2A95jY6KiiJBd7KNp1lV+PLwSYs12Ove+lgxpvljxrThQ5svJT3mHboTMb6V3Yx5GzK8=
-Message-ID: <3efb10970712081248o43c19976k3bba552d835c81e7@mail.gmail.com>
-Date: Sat, 8 Dec 2007 21:48:05 +0100
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: lockdep problem conversion semaphore->mutex (dev->sem)
-Cc: "Peter Zijlstra" <peterz@infradead.org>,
-       "Daniel Walker" <dwalker@mvista.com>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Dave Chinner" <dgc@sgi.com>
-In-Reply-To: <20071208200801.GC579@elte.hu>
+	Sat, 8 Dec 2007 15:48:43 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:43345 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753140AbXLHUsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 15:48:42 -0500
+Message-ID: <475B02EC.4080200@garzik.org>
+Date: Sat, 08 Dec 2007 15:47:40 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Theodore Tso <tytso@mit.edu>, Matt Mackall <mpm@selenic.com>,
+       Mike McGrath <mmcgrath@redhat.com>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org,
+       hmh@debian.org
+Subject: Re: entropy gathering (was Re: Why does reading from /dev/urandom
+ deplete entropy so much?)
+References: <4756B50B.3060100@redhat.com> <20071205144934.GL7259@thunk.org> <1197099477.20786.149.camel@perihelion> <20071208173204.GI17037@thunk.org> <475AD585.7020908@redhat.com> <20071208174908.GJ17037@thunk.org> <20071208181525.GL19691@waste.org> <475AF241.5000809@garzik.org> <20071208195342.GO19691@waste.org> <475AF8D0.1090407@garzik.org> <20071208203121.GP17037@thunk.org>
+In-Reply-To: <20071208203121.GP17037@thunk.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3efb10970712071502p4db9c58ck623c377172ead4b2@mail.gmail.com>
-	 <1197116185.31440.1.camel@twins>
-	 <1197132792.1568.162.camel@jnielson-xp.ddns.mvista.com>
-	 <1197133910.6353.33.camel@lappy>
-	 <1197133577.1568.166.camel@jnielson-xp.ddns.mvista.com>
-	 <1197135413.6353.36.camel@lappy>
-	 <3efb10970712081152o2d4abcfbo634a8d2445c09699@mail.gmail.com>
-	 <20071208200801.GC579@elte.hu>
-X-Google-Sender-Auth: 51f2b0d740a43ac3
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
+Theodore Tso wrote:
+> I think the userspace config problems were mainly due to the fact that
+> there wasn't a single official userspace utility package for the
+> random number package.  Comments in drivers/char/random.c for how to
+> set up /etc/init.d/random is Just Not Enough.
 
-> no, you are wrong. If you want to do complex locking, you can still do
-> it: take a look at the dev->sem conversion patches from Peter which
-> correctly do this. Lockdep has all the facilities for that.
-> (you just dont know about them)
-
-Ok.
-
-> the general policy message here is: do not implement complex locking. It
-> hurts. It's hard to maintain. It's easy to mess up and leads to bugs.
-
-Agree
-
-> Lockdep just makes that plain obvious.
-> Your mail and your frustration shows this general concept in happy
-
-Please, do not see it as frustration, because it isn't...
-I just want to understand it better.
-
-> action: judging from your comments you have little clue about dev->sem
-> locking and its implications and you'd happily go along and pollute the
-> kernel with complex and hard to maintain nested locking constructs.
-
-Now, you assume that i would _like_ complex locking. This is not true.
-
-I just want to understand what was so wrong with dev->sem, I even read
-in the discussions before about dev->sem, that it still was on the old
-semaphore interface to get around lockdep issues, and _that_ is wrong.
-That is bug-hiding from either the code or the tool. I just wanted to
-understand if this was a lockdep bug, or a real code bug.
-
-> Lockdep prevents you from doing it mindlessly, it _forces_ you to first
-> understand the data structures, their locking and their relationship
-> with each other. Then you can implement complexity, if you still want
-> it.
->
-> That, Sir, is a Good Thing (tm).
-
-Completely agree.
+Absolutely.
 
 
-Remy
+> If we had a single, official random number generator package that
+> contained the configuration, init.d script, as well as the daemon that
+> can do all sorts of different things that you really, Really, REALLY
+> want to do in userspace, including:
+> 
+>   * FIPS testing (as Jeff suggested --- making sure what you think is 
+>     randomness isn't 60Hz hum is a Really Good Idea :-)
+>   * access to TPM (if available --- I have a vague memory that you may
+>     need access to the TPM key to access any of its functions, and the
+>     the TPM key is stored in the filesystem)
+
++1 agreed
+
+(not volunteering, but I will cheer on the hearty soul who undertakes 
+this endeavor...)
+
