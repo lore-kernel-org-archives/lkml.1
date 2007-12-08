@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbXLHTRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751846AbXLHTTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753077AbXLHTRd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 14:17:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbXLHTR0
+	id S1751846AbXLHTTc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 14:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbXLHTTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 14:17:26 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34531 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751609AbXLHTRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 14:17:25 -0500
-Date: Sat, 8 Dec 2007 20:16:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Guillaume Chazarain <guichaz@yahoo.fr>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Stefano Brivio <stefano.brivio@polimi.it>, Robert Love <rml@tech9.net>,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] x86: scale cyc_2_nsec according to CPU frequency
-Message-ID: <20071208191629.GB21186@elte.hu>
-References: <20071207021952.6f0ac922@morte> <alpine.LFD.0.99999.0712070646210.3221@localhost.localdomain> <3d8471ca0712062318j483f8be6h256778752a13639a@mail.gmail.com> <20071207090252.1caf1509@inria.fr> <20071207135525.GA5588@elte.hu> <20071207152741.3408aeef@inria.fr> <20071207145206.GA21326@elte.hu> <20071208075735.4700bcac@laptopd505.fenrus.org>
+	Sat, 8 Dec 2007 14:19:22 -0500
+Received: from simmts7.bellnexxia.net ([206.47.199.165]:44119 "EHLO
+	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751413AbXLHTTV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 14:19:21 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAG99WkecIsMU/2dsb2JhbAAIkSs
+Message-ID: <475AEE30.4070806@gmail.com>
+Date: Sat, 08 Dec 2007 15:19:12 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071208075735.4700bcac@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Daniel Walker <dwalker@mvista.com>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Possible locking issue in viotape.c
+References: <20071206021857.826386004@mvista.com>	 <20071206021909.131993721@mvista.com>  <20071206102334.GE17299@elte.hu>	 <1196958847.1568.98.camel@jnielson-xp.ddns.mvista.com>	 <47588610.5010804@gmail.com>	 <1196989515.1568.131.camel@jnielson-xp.ddns.mvista.com>	 <4758A216.3030401@gmail.com>	 <1196991637.1568.140.camel@jnielson-xp.ddns.mvista.com>	 <475ADFC5.4030108@gmail.com> <1197138162.1568.172.camel@jnielson-xp.ddns.mvista.com>
+In-Reply-To: <1197138162.1568.172.camel@jnielson-xp.ddns.mvista.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Arjan van de Ven <arjan@infradead.org> wrote:
-
-> > > > Firstly, we dont need the 'offset' anymore because cpu_clock() 
-> > > > maintains offsets itself.
-> > > 
-> > > Yes, but a lower quality one. __update_rq_clock tries to 
-> > > compensate large jumping clocks with a jiffy resolution, while my 
-> > > offset arranges for a very smooth frequency transition.
-> > 
-> > yes, but that would be easy to fix up via calling 
-> > sched_clock_idle_wakeup_event(0) when doing a frequency transition, 
-> > without burdening the normal sched_clock() codepath with the offset. 
-> > See the attached latest version.
+Daniel Walker wrote:
+>> Yes, you are right, I hadn't finished looking at all of the up() calls
+>> when I came to my conclusion.  I will try to convert a few that are not
+>> on your list, but I would like to know how you are generating your
+>> patches into those files with the diffstat and recipient list.  Is that
+>> a feature of some git command?
 > 
-> can this deal with dual/quad core where the frequency of one core 
-> changes if the sofware changes the frequency of the other core?
+> Git may have a similar feature, but I'm using a tool call Quilt. It's
+> used for managing a list of patches, and it can automatically add a
+> diffstat to the patch header (part of the quilt refresh command). I also
+> use it for emailing a list of patches.
+> 
 
-doesnt the notifier still get run on the target CPU?
+Yes, I've used quilt for working with mm patches in the past, but I'm
+not too familiar with the mail features.  For example, how do you get
+the recipient list and Signed-off-by in the patch file?  Do you just
+edit it by hand?  Or is there some guide to quilt I should be reading?
+I looked at the guide in /usr/share/doc/quilt/quilt.pdf, but it didn't
+have anything about email.  /usr/share/doc/quilt/README.MAIL has the
+details of all of the mail options, but doesn't give a nice example of
+what to do with the patch file and how to call 'quilt mail'.
 
-	Ingo
+-- 
+Kevin Winchester
