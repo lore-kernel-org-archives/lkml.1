@@ -1,101 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbXLHPKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbXLHPLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbXLHPKM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 10:10:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXLHPJ7
+	id S1755609AbXLHPLK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 10:11:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbXLHPK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 10:09:59 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:45265 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751291AbXLHPJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 10:09:58 -0500
-Date: Sat, 8 Dec 2007 16:09:54 +0100
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: paulus@samba.org, linux-ppp@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] PPP synchronous tty: convert dead_sem to completion
-Message-ID: <20071208150954.GA8467@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	paulus@samba.org, linux-ppp@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
+	Sat, 8 Dec 2007 10:10:57 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:17656 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751291AbXLHPK4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 10:10:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hc8qjGmzO8HaiAMadaskmQsTDJg1j5yLUe+rry2XNMMsRbW/TgnH6c0oUpega9b2wkTqU9mDqKqT41z+idYUWHBbyxCromMGs+qD6UhAeHlkRzuFbtnHvyBIDsOcoaRg2pkNqSZJLWnoON4DAY2j+XYP6eDXzdydBOeGSJU8q60=
+Message-ID: <82e4877d0712080710g205ba93ag12ee204b15d70fdb@mail.gmail.com>
+Date: Sat, 8 Dec 2007 10:10:51 -0500
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: soft lockup - CPU#1 stuck for 15s! [swapper:0]
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.0.99999.0712080821220.3070@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <82e4877d0712071453h38795e36of26324a4b123fa6c@mail.gmail.com>
+	 <924EFEDD5F540B4284297C4DC59F3DEE38C3C2@orsmsx423.amr.corp.intel.com>
+	 <alpine.LFD.0.99999.0712080821220.3070@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PPP synchronous tty channel driver: convert the semaphore dead_sem to
-a completion
+On Dec 7, 2007 9:56 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> This looks pretty much like the problem I was solving yesterday.
+>
+> Parag, can you please try Linus latest and please check whether there
+> is a stack trace with clockevents_program_event on the top in your
+> dmesg.
+>
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Just booted with latest git and there is no  clockevents_program_event
+in dmesg anywhere.
 
---
+Any way I have enabled CPU_IDLE again and the machine's got to do lot
+of compiles today.
+I'll see if the problem reproduces.
 
-diff --git a/drivers/net/ppp_synctty.c b/drivers/net/ppp_synctty.c
-index f0c6a19..f7472c8 100644
---- a/drivers/net/ppp_synctty.c
-+++ b/drivers/net/ppp_synctty.c
-@@ -42,9 +42,9 @@
- #include <linux/if_ppp.h>
- #include <linux/ppp_channel.h>
- #include <linux/spinlock.h>
-+#include <linux/completion.h>
- #include <linux/init.h>
- #include <asm/uaccess.h>
--#include <asm/semaphore.h>
- 
- #define PPP_VERSION	"2.4.2"
- 
-@@ -70,7 +70,7 @@ struct syncppp {
- 	struct tasklet_struct tsk;
- 
- 	atomic_t	refcnt;
--	struct semaphore dead_sem;
-+	struct completion dead_cmp;
- 	struct ppp_channel chan;	/* interface to generic ppp layer */
- };
- 
-@@ -195,7 +195,7 @@ static struct syncppp *sp_get(struct tty_struct *tty)
- static void sp_put(struct syncppp *ap)
- {
- 	if (atomic_dec_and_test(&ap->refcnt))
--		up(&ap->dead_sem);
-+		complete(&ap->dead_cmp);
- }
- 
- /*
-@@ -225,7 +225,7 @@ ppp_sync_open(struct tty_struct *tty)
- 	tasklet_init(&ap->tsk, ppp_sync_process, (unsigned long) ap);
- 
- 	atomic_set(&ap->refcnt, 1);
--	init_MUTEX_LOCKED(&ap->dead_sem);
-+	init_completion(&ap->dead_cmp);
- 
- 	ap->chan.private = ap;
- 	ap->chan.ops = &sync_ops;
-@@ -273,7 +273,7 @@ ppp_sync_close(struct tty_struct *tty)
- 	 * by the time it returns.
- 	 */
- 	if (!atomic_dec_and_test(&ap->refcnt))
--		down(&ap->dead_sem);
-+		wait_for_completion(&ap->dead_cmp);
- 	tasklet_kill(&ap->tsk);
- 
- 	ppp_unregister_channel(&ap->chan);
+Thanks
 
--- 
-Matthias Kaehlcke
-Linux System Developer
-Barcelona
-
-      In itself, homosexuality is as limiting as heterosexuality: the
-     ideal should be to be capable of loving a woman or a man; either,
-      a human being, without  feeling fear, restraint, or obligation
-                          (Simone de Beauvoir)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Parag
