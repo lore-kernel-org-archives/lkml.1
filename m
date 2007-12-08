@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbXLHRlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751736AbXLHRn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752581AbXLHRlS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 12:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbXLHRlG
+	id S1751736AbXLHRn5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 12:43:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbXLHRnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 12:41:06 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38615 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750705AbXLHRlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 12:41:05 -0500
-Message-ID: <475AD585.7020908@redhat.com>
-Date: Sat, 08 Dec 2007 11:33:57 -0600
-From: Mike McGrath <mmcgrath@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Sat, 8 Dec 2007 12:43:50 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:20523 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750701AbXLHRnt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 12:43:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=tX/hilGECwiSSZZQHXQ+zWwJoI3x/UivnoIdD0rRnSztFiFOFMMioQnrlwwV/rOVgBbx2nQ6bBUWXdHkLKSrDzA6n+DpzBMcpki+54uSF0qHgRZ0pOLOvVKt2aLz9auu7CEAL2X9qYn95lQUGF8ds36S/+FSvcU9hPp+7sW/Bgo=
+Message-ID: <475AD7D0.8040905@gmail.com>
+Date: Sat, 08 Dec 2007 18:43:44 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Jon Masters <jonathan@jonmasters.org>,
-       Mike McGrath <mmcgrath@redhat.com>, Matt Mackall <mpm@selenic.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-References: <20071204195021.GB7259@thunk.org> <20071204204036.484f11ac@the-village.bc.nu> <20071204210827.GE19691@waste.org> <4755C423.60907@redhat.com> <20071204221525.GG19691@waste.org> <4755D350.1080801@redhat.com> <20071204223345.GJ19691@waste.org> <4756B50B.3060100@redhat.com> <20071205144934.GL7259@thunk.org> <1197099477.20786.149.camel@perihelion> <20071208173204.GI17037@thunk.org>
-In-Reply-To: <20071208173204.GI17037@thunk.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
+References: <20071204211701.994dfce6.akpm@linux-foundation.org> <47595A0A.5000502@gmail.com> <20071207151150.GB24254@elte.hu> <20071207175134.GA18916@elte.hu> <475A5188.6070809@gmail.com> <20071208083939.GD30997@elte.hu> <475A629C.7010408@gmail.com> <20071208152447.GA30270@elte.hu>
+In-Reply-To: <20071208152447.GA30270@elte.hu>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Sat, Dec 08, 2007 at 02:37:57AM -0500, Jon Masters wrote:
->   
->>> BTW, You may be better off using "uuidgen -t" to generate the UUID in
->>> the smolt RPM, since that will use 12 bits of randomness from
->>> /dev/random, plus the MAC, address and timestamp.  So even if there is
->>> zero randomness in /dev/random, and the time is January 1, 1970, at
->>> least the MAC will contribute some uniqueness to the UUID.
->>>       
->> I haven't checked how uuidgen uses the MAC, but I would suggest that
->> that is not something Fedora should jump at doing - although it would
->> help ensure unique UUIDs, it also contributes to the tinfoil hat
->> responses that usually come up with things like smolt.
->>     
->
-> Huh?  What's the concern?  All you are submitting is a list of
-> hardware devices in your system.  That's hardly anything sensitive....
->   
+On 12/08/2007 04:24 PM, Ingo Molnar wrote:
+> i'm wondering why it had no effect now - the new code is in essence a 
+> NOP over what we had.
 
-We actually had a very vocal minority about all of that which ended up 
-putting us in the unfortunate position of generating a random UUID 
-instead of using a hardware UUID from hal :-/
-
-    -Mike
+Maybe a dumb question. Why those changes in process_32.c in the patch and not in
+process_64.c?
