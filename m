@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbXLHEqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbXLHEsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbXLHEqF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Dec 2007 23:46:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXLHEpy
+	id S1756251AbXLHEsk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Dec 2007 23:48:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbXLHEsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Dec 2007 23:45:54 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:61843 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753345AbXLHEpx (ORCPT
+	Fri, 7 Dec 2007 23:48:31 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:19626 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752453AbXLHEsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Dec 2007 23:45:53 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=yq0/rS5016/gf05sUGQE2e2HJkv/dYIha69CILnS/yPg3azBssPIp3tvks8KBzldO
-	Jt3yB6DyDedURtWxvyVeQ==
-Date: Fri, 7 Dec 2007 20:45:21 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
-In-Reply-To: <475A1E6E.3010303@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.0.9999.0712072040300.26622@chino.kir.corp.google.com>
-References: <20071207211425.10223.91240.sendpatchset@balbir-laptop> <20071207221106.GH16824@localdomain> <4759C89B.9000709@linux.vnet.ibm.com> <alpine.DEB.0.9999.0712071510370.27689@chino.kir.corp.google.com> <475A1E6E.3010303@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 7 Dec 2007 23:48:30 -0500
+Date: Fri, 07 Dec 2007 22:47:57 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: 2.6.24-rc4-mm1 and Very Slow PCMCIA Compact Flash
+In-reply-to: <fa.5knWxRyOEvQSAwZoz5fEa2Krvko@ifi.uio.no>
+To: Zan Lynx <zlynx@acm.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org, linux-ide@vger.kernel.org
+Message-id: <475A21FD.6020009@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.9+cyQSoHqcg4p5BAdLi4beGvJ8E@ifi.uio.no>
+ <fa.es7DHARPOKbnzAqaEFBauYRpWjo@ifi.uio.no>
+ <fa.kwN53ZHLrpa2M5QIn+VR9hoaqjA@ifi.uio.no>
+ <fa.IgSJMFcov+qjLkhPpd1LhbCf93o@ifi.uio.no>
+ <fa.5knWxRyOEvQSAwZoz5fEa2Krvko@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Dec 2007, Balbir Singh wrote:
-
-> > You're going to want to distribute the cpu's based on how they match up 
-> > physically with the actual platform that you're running on.  x86_64 does 
+Zan Lynx wrote:
+> On Fri, 2007-12-07 at 15:22 -0800, Andrew Morton wrote:
+>> On Fri, 07 Dec 2007 23:09:43 +0000
+>> Zan Lynx <zlynx@acm.org> wrote:
+>>
+>>> On Fri, 2007-12-07 at 15:02 -0800, Andrew Morton wrote:
+>>>> On Fri, 07 Dec 2007 20:38:24 +0000
+>>>> Zan Lynx <zlynx@acm.org> wrote:
+>>>>
+>>>>> While I'm reporting problems I'll get this one out there.
+>>>>>
+>>>>> I normally use a USB-2 memory card reader but I also have a PCMCIA
+>>>>> CompactFlash adapter that I use occasionally.  During the MM series
+>>>>> kernels 2.6.22 and 23 (I am pretty sure) this didn't work at all.  I
+>>>>> don't know about vanilla since I don't run that.
+>>>>>
+>>>>> Now with MM kernels 2.6.24 rc1-4 the PCMCIA adapter works again, but I
+>>>>> only get read rates of 1.6 MB/s.  When it used to work in 2.6.20 I got
+>>>>> at least 16 MB/s.  The card itself is capable of 30+ in the USB-2
+>>>>> reader.
+>>>>>
+> [cut]
+>> Oh, OK.  Hopefully the ata guys can help out with this.
+>>
+>> I don't know if it actually strictly a regression?  Did libata ever support
+>> that device in any earlier kernels?
 > 
-> Could you explain this better, how does it match up CPU's with fake NUMA
-> memory? Is there some smartness there? I'll try and look at the code and
-> also see what I can do for PowerPC
+> That could be why it didn't work for a few kernel versions.  I
+> reconfigured for a libata-only system a while back.  And, since I
+> usually use the USB-2 flash reader I didn't care much about the PCMCIA.
 > 
+> I will try reverting that patch later tonight, in a few hours.
 
-numa_cpumask_lookup_table[] would return the correct cpumask for the fake 
-node index.  Then all the code that uses node_to_cpumask() in generic 
-kernel code like the scheduler and VM still preserve their true NUMA 
-affinity that matches the underlying hardware.  I tried to make x86_64 
-fake NUMA as close to the real thing as possible.
+It looks like pata_pcmcia is always PIO mode 0:
 
-You also probably want to make all you changes dependent on 
-CONFIG_NUMA_EMU like the x86_64 case.  That'll probably be helpful as you 
-extend this tool more and more.
+/**
+  *	pcmcia_init_one		-	attach a PCMCIA interface
+  *	@pdev: pcmcia device
+  *
+  *	Register a PCMCIA IDE interface. Such interfaces are PIO 0 and
+  *	shared IRQ.
+  */
 
-		David
+I assume that with old IDE this would use ide_cs.c, but I'm drawing a 
+blank on what modes that supports..
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
