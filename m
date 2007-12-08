@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbXLHRhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbXLHRlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbXLHRhr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 12:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbXLHRhj
+	id S1752581AbXLHRlS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 12:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbXLHRlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 12:37:39 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44885 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751335AbXLHRhj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 12:37:39 -0500
-X-Greylist: delayed 1502 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Dec 2007 12:37:38 EST
-Subject: Re: lockdep problem conversion semaphore->mutex (dev->sem)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Remy Bohmer <linux@bohmer.net>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Dave Chinner <dgc@sgi.com>
-In-Reply-To: <1197133577.1568.166.camel@jnielson-xp.ddns.mvista.com>
-References: <3efb10970712071502p4db9c58ck623c377172ead4b2@mail.gmail.com>
-	 <1197116185.31440.1.camel@twins>
-	 <1197132792.1568.162.camel@jnielson-xp.ddns.mvista.com>
-	 <1197133910.6353.33.camel@lappy>
-	 <1197133577.1568.166.camel@jnielson-xp.ddns.mvista.com>
-Content-Type: text/plain
-Date: Sat, 08 Dec 2007 18:36:53 +0100
-Message-Id: <1197135413.6353.36.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sat, 8 Dec 2007 12:41:06 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38615 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750705AbXLHRlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 12:41:05 -0500
+Message-ID: <475AD585.7020908@redhat.com>
+Date: Sat, 08 Dec 2007 11:33:57 -0600
+From: Mike McGrath <mmcgrath@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, Jon Masters <jonathan@jonmasters.org>,
+       Mike McGrath <mmcgrath@redhat.com>, Matt Mackall <mpm@selenic.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+References: <20071204195021.GB7259@thunk.org> <20071204204036.484f11ac@the-village.bc.nu> <20071204210827.GE19691@waste.org> <4755C423.60907@redhat.com> <20071204221525.GG19691@waste.org> <4755D350.1080801@redhat.com> <20071204223345.GJ19691@waste.org> <4756B50B.3060100@redhat.com> <20071205144934.GL7259@thunk.org> <1197099477.20786.149.camel@perihelion> <20071208173204.GI17037@thunk.org>
+In-Reply-To: <20071208173204.GI17037@thunk.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Theodore Tso wrote:
+> On Sat, Dec 08, 2007 at 02:37:57AM -0500, Jon Masters wrote:
+>   
+>>> BTW, You may be better off using "uuidgen -t" to generate the UUID in
+>>> the smolt RPM, since that will use 12 bits of randomness from
+>>> /dev/random, plus the MAC, address and timestamp.  So even if there is
+>>> zero randomness in /dev/random, and the time is January 1, 1970, at
+>>> least the MAC will contribute some uniqueness to the UUID.
+>>>       
+>> I haven't checked how uuidgen uses the MAC, but I would suggest that
+>> that is not something Fedora should jump at doing - although it would
+>> help ensure unique UUIDs, it also contributes to the tinfoil hat
+>> responses that usually come up with things like smolt.
+>>     
+>
+> Huh?  What's the concern?  All you are submitting is a list of
+> hardware devices in your system.  That's hardly anything sensitive....
+>   
 
-On Sat, 2007-12-08 at 09:06 -0800, Daniel Walker wrote:
-> On Sat, 2007-12-08 at 18:11 +0100, Peter Zijlstra wrote:
-> 
-> > > It must be the locking in __driver_attach(), taking dev->parent->sem
-> > > then taking dev->sem .. Assuming those are different structures, why
-> > > does lockdep trigger?
-> > 
-> > They aren't different, parent is a struct device again.
-> 
-> It's different memory tho .. I wasn't sure how to term that .. The locks
-> are in two different memory location so it couldn't be recursive .. I'm
-> only asking for my own understanding .. I don't mind inspecting
-> potentially bad locking ..
+We actually had a very vocal minority about all of that which ended up 
+putting us in the unfortunate position of generating a random UUID 
+instead of using a hardware UUID from hal :-/
 
-Yeah, it are different lock instances, however by virtue of sharing the
-same lock init site, they belong to the same lock class. Lockdep works
-by tracking class dependancies, not instance dependancies.
-
-By generalizing to classes it can detect locking errors before they
-actually occur.
-
-
+    -Mike
