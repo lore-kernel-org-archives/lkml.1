@@ -1,106 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbXLHMbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbXLHMii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756848AbXLHMbO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 07:31:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbXLHMa7
+	id S1756582AbXLHMii (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 07:38:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbXLHMia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 07:30:59 -0500
-Received: from fmmailgate01.web.de ([217.72.192.221]:38624 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753681AbXLHMa6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 07:30:58 -0500
-From: Markus <M4rkusXXL@web.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: programs vanish with 2.6.22+
-Date: Sat, 8 Dec 2007 13:25:21 +0100
-User-Agent: KMail/1.9.7
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-References: <200712061906.42070.M4rkusXXL@web.de> <200712072352.04454.M4rkusXXL@web.de> <Pine.LNX.4.64.0712080043360.847@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.0712080043360.847@axis700.grange>
+	Sat, 8 Dec 2007 07:38:30 -0500
+Received: from ozlabs.org ([203.10.76.45]:41297 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752103AbXLHMi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 07:38:29 -0500
+From: Sheela <sheela.sequeira@gmail.com>
+To: rusty@rustcorp.com.au
+Subject: [PATCH] Fix lguest documentation
+Date: Sat, 8 Dec 2007 23:19:58 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712081325.21790.M4rkusXXL@web.de>
-X-Provags-ID: V01U2FsdGVkX1+DZVsKDUVhqw3X2z28T39+IJp4TXIG7tVVDN1Q
-	yF/qv1Nw4QFXyQB5S6BjNKp+54Cau1z7M4HmgYH1Dp/yrIR/3K
-	An5q/RULM=
+Message-Id: <200712082319.58793.sheela.sequeira@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, just tried it. Started a dozen konquerors and attached strace to 
-everyone. When one disapeared, I only got a "Process 9246 detached", 
-nothing else is printed or written in the log.
+Share net is not supported , Rusty is an "idiot" . 
 
-Markus
+Signed-off-by: Sheela Sequeira <sheela.sequeira@gmail.com>
 
-
-> On Fri, 7 Dec 2007, Markus wrote:
-> 
-> > Well, now some windows vanished, but no additional messages were 
-> > produced by kernel. When somebody could tell what I exactly need to 
-> > do... would be nice.
-> > Or a hit, in what direction I should look. Because its really nasty 
-to 
-> > not being able to use a current kernel.
-> > 
-> > I already rebuild the whole system, as suggested by the gentoo-devs, 
-> > without success.
-> > 
-> > I could also try to debug/strace/whatever the apps and wait for it 
-to 
-> > disappear.
-> 
-> Well, you could attach strace to all likely crash candidates like
-> 
-> strace -etrace=none -o/tmp/<pid>.trace -p<pid>
-> 
-> which would at least tell you what signal it caught...
-> 
-> good luck
-> Guennadi
-> 
-> > 
-> > Just talk to me, I am not able to do this on my own...
-> > 
-> > 
-> > Markus
-> > 
-> > > On Fri, 7 Dec 2007, Markus wrote:
-> > > 
-> > > > Hi again!
-> > > > 
-> > > > The memtest ran 14 passes (~10h) without an error.
-> > > > 
-> > > > I now have a 2.6.24-rc4 with some debug-options turned on, 
-waiting 
-> > for 
-> > > > something to happen... can I just leave it untill a window 
-> > disappears 
-> > > > or do I need to manually enable something or run some user-space 
-> > app?!
-> > > 
-> > > It depends - different options have it differently. Most simple 
-ones 
-> > are 
-> > > just compile-time, so, you don't have to enable them. Look 
-in "help" 
-> > for 
-> > > respective debug-options.
-> > > 
-> > > Thanks
-> > > Guennadi
-> > > ---
-> > > Guennadi Liakhovetski
-> > > 
-> > 
-> > 
-> 
-> ---
-> Guennadi Liakhovetski
-> 
-
-
+diff --git a/Documentation/lguest/lguest.txt b/Documentation/lguest/lguest.txt
+index 7885ab2..722d4e7 100644
+--- a/Documentation/lguest/lguest.txt
++++ b/Documentation/lguest/lguest.txt
+@@ -109,10 +109,6 @@ Running Lguest:
+   See http://linux-net.osdl.org/index.php/Bridge for general information
+   on how to get bridging working.
+ 
+-- You can also create an inter-guest network using
+-  "--sharenet=<filename>": any two guests using the same file are on
+-  the same network.  This file is created if it does not exist.
+-
+ There is a helpful mailing list at http://ozlabs.org/mailman/listinfo/lguest
+ 
+ Good luck!
