@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbXLHJgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757962AbXLHJoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757870AbXLHJgy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 04:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756078AbXLHJgp
+	id S1757962AbXLHJoJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 04:44:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbXLHJn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 04:36:45 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44254 "EHLO
+	Sat, 8 Dec 2007 04:43:57 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53067 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756185AbXLHJgo convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1754864AbXLHJn4 convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 04:36:44 -0500
-Date: Sat, 8 Dec 2007 01:36:31 -0800
+	Sat, 8 Dec 2007 04:43:56 -0500
+Date: Sat, 8 Dec 2007 01:42:41 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>
+       Ingo Molnar <mingo@elte.hu>, Roland Dreier <rolandd@cisco.com>,
+       Takashi Iwai <tiwai@suse.de>, "Theodore Ts'o" <tytso@mit.edu>
 Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
-Message-Id: <20071208013631.3147986a.akpm@linux-foundation.org>
+Message-Id: <20071208014241.f4b138e0.akpm@linux-foundation.org>
 In-Reply-To: <200712080340.49546.rjw@sisk.pl>
 References: <200712080340.49546.rjw@sisk.pl>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
@@ -39,23 +39,22 @@ On Sat, 8 Dec 2007 03:40:49 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > If you know of any other unresolved regressions from 2.6.23, please let me know
 > either and I'll add them to the list.
 > 
+> ...
 > 
-> Subject		: PATA scan: ACPI Exception AE_AML_PACKAGE_LIMIT... is beyond end of object
-> Submitter	: Hans de Bruin <bruinjm@xs4all.nl>
-> References	: http://bugzilla.kernel.org/show_bug.cgi?id=9320
-> Handled-By	: Robert Moore <Robert.Moore@intel.com>
-> 		  Tejun Heo <htejun@gmail.com>
-> 		  Fu Michael <michael.fu@intel.com>
+> Subject		: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
+> Submitter	: Roland Dreier <rdreier@cisco.com>
+> References	: http://lkml.org/lkml/2007/11/8/255
+> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9332
+> Handled-By	: 
 > Patch		: 
-> 
 
-A number of other people are seeing the same thing and Tejun is putting in
-a blacklist of machines which cannot use libata+acpi.  That patch is not
-yet in any git tree which I pull.
+Takashi had a patch and that has been merged.  AFAIK this regression
+has been fixed and we're left with a new but harmless warning.
 
-AFACIT the machines kepe working OK - there's just some nasty dmesg spew.
+However Roland reported other problems and it appears that the trail went
+cold (http://lkml.org/lkml/2007/11/14/251)
 
-If any machines _are_ breaking then this could cause real problems and I'd
-prefer that we either go for a whitelist or arrange to detect the condition
-and fall back to non-acpi ata.
+Ted was hitting some of the same problems but that trail appears to also
+have gone cold (http://lkml.org/lkml/2007/11/23/17).
 
+Guys, can we have a status update on all of this please?
