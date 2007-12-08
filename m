@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbXLHTh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbXLHTlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753459AbXLHTh3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 14:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbXLHThW
+	id S1753470AbXLHTlF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 14:41:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXLHTkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 14:37:22 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:37754 "EHLO mail.dvmed.net"
+	Sat, 8 Dec 2007 14:40:55 -0500
+Received: from thunk.org ([69.25.196.29]:47051 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751502AbXLHThV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 14:37:21 -0500
-Message-ID: <475AF241.5000809@garzik.org>
-Date: Sat, 08 Dec 2007 14:36:33 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1750789AbXLHTky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 14:40:54 -0500
+Date: Sat, 8 Dec 2007 14:40:42 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Roland Dreier <rolandd@cisco.com>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
+Message-ID: <20071208194042.GO17037@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Roland Dreier <rolandd@cisco.com>,
+	Takashi Iwai <tiwai@suse.de>
+References: <200712080340.49546.rjw@sisk.pl> <20071208014241.f4b138e0.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>, Theodore Tso <tytso@mit.edu>
-CC: Mike McGrath <mmcgrath@redhat.com>, Jon Masters <jonathan@jonmasters.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org,
-       hmh@debian.org
-Subject: entropy gathering (was Re: Why does reading from /dev/urandom deplete
- entropy so much?)
-References: <4755C423.60907@redhat.com> <20071204221525.GG19691@waste.org> <4755D350.1080801@redhat.com> <20071204223345.GJ19691@waste.org> <4756B50B.3060100@redhat.com> <20071205144934.GL7259@thunk.org> <1197099477.20786.149.camel@perihelion> <20071208173204.GI17037@thunk.org> <475AD585.7020908@redhat.com> <20071208174908.GJ17037@thunk.org> <20071208181525.GL19691@waste.org>
-In-Reply-To: <20071208181525.GL19691@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071208014241.f4b138e0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Dec 08, 2007 at 01:42:41AM -0800, Andrew Morton wrote:
+> > Subject		: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
+> > Submitter	: Roland Dreier <rdreier@cisco.com>
+> > References	: http://lkml.org/lkml/2007/11/8/255
+> > 		  http://bugzilla.kernel.org/show_bug.cgi?id=9332
+> > Handled-By	: 
+> > Patch		: 
+> 
+> Takashi had a patch and that has been merged.  AFAIK this regression
+> has been fixed and we're left with a new but harmless warning.
+> 
+> However Roland reported other problems and it appears that the trail went
+> cold (http://lkml.org/lkml/2007/11/14/251)
+> 
+> Ted was hitting some of the same problems but that trail appears to also
+> have gone cold (http://lkml.org/lkml/2007/11/23/17).
 
-As an aside...
+Actually, not gone cold, but I stopped posting about it because it's
+been solved and I thought agreement had been reached that it should be
+pushed to mainline before 2.6.25.
 
-Speaking as the maintainer rng-tools, which is the home of the hardware 
-RNG entropy gathering daemon...
+I am very happily running with Ingo's "snd hda suspend latency:
+shorten codec read" patch, which was originally intended to speed up
+resuming from hibernation, but which as I discovered, also has the
+nice side effect of eliminating the reported error.  
 
-I wish somebody (not me) would take rngd and several other projects, and 
-combine them into a single actively maintained "entropy gathering" package.
+On 11/23, Takashi replied to my note (http://lkml.org/lkml/2007/11/23/17)
+and suggested that Jaroslav push this patch to Linus immediately
+instead of waiting for 2.6.25, since it appearly solves two problems
+with one stone.  However, I just checked, as of Linus's public, and
+Ingo's patch is *not* in mainline.
 
-IMO entropy gathering has been a long-standing need for headless network 
-servers (and now virtual machines).
+However, as far as I am concerned, Ingo's patch, first posted to LKML
+here: http://lkml.org/lkml/2007/11/16/66 should be listed as fixing
+the above regression.  Rafael, could you please make a note of this in
+your regression list, and could we please get this patch pushed into
+mainline?
 
-In addition to rngd for hardware RNGs, I've been daemons out there that 
-gather from audio and video sources (generally open wires/channels with 
-nothing plugged in), thermal sources, etc.  There is a lot of entropy 
-that could be gathered via userland, if you think creatively.
+Thanks!!
 
-	Jeff
-
-
-
+						- Ted
