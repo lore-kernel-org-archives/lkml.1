@@ -1,44 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbXLHKAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbXLHKIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756595AbXLHKAW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 05:00:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXLHKAJ
+	id S1756865AbXLHKIa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 05:08:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbXLHKIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 05:00:09 -0500
-Received: from an-out-0708.google.com ([209.85.132.240]:8867 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427AbXLHKAH (ORCPT
+	Sat, 8 Dec 2007 05:08:17 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53162 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753124AbXLHKIQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 05:00:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mf0Qe7JuWZnOw4OSKi9L15Kvz81Lo6zDMiUs2wjohylPzxZl9K/zA6THF5EQDqFN/gCXQVIUlJxaAs97AzffsRI/+/Y/9PSOfqdMUyFP6fbg4aH/odqDXnqq2EMvRO3n6mvQA2800sZ692zX2jUnyownzkODT7VX/48wlx1sqKY=
-Message-ID: <4af2d03a0712080200y579da2cdra63bfff568385b0a@mail.gmail.com>
-Date: Sat, 8 Dec 2007 11:00:05 +0100
-From: "Jiri Slaby" <jirislaby@gmail.com>
-To: "Nick Thompson" <Nick.Thompson@comtrol.com>
-Subject: Re: RocketPort Linux driver errors on module reload
-Cc: linux-kernel@vger.kernel.org, "Ferenc Wagner" <wferi@niif.hu>
-In-Reply-To: <B1F576FE19C55C43B8D2E31F061B50C062C3F9@exchange.comtrol.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sat, 8 Dec 2007 05:08:16 -0500
+Date: Sat, 8 Dec 2007 02:07:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zan Lynx <zlynx@acm.org>
+Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: 2.6.24-rc4-mm1 and Very Slow PCMCIA Compact Flash
+Message-Id: <20071208020722.9c7d91d0.akpm@linux-foundation.org>
+In-Reply-To: <1197090093.7157.2.camel@localhost>
+References: <1197059904.15428.15.camel@localhost>
+	<20071207150251.a0dbae23.akpm@linux-foundation.org>
+	<1197068983.15428.29.camel@localhost>
+	<20071207152249.360af326.akpm@linux-foundation.org>
+	<1197090093.7157.2.camel@localhost>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4717D95B.3080102@gmail.com>
-	 <B1F576FE19C55C43B8D2E31F061B50C062C3F9@exchange.comtrol.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 19, 2007 12:02 AM, Nick Thompson <Nick.Thompson@comtrol.com> wrote:
-> >From: Jiri Slaby [mailto:jirislaby@gmail.com]
-> >
-> >And the last question, when do you expect/estimate this would happen?
->
-> Jiri,
->  To be honest, it would be hard to estimate at this point. I've discussed it with one of our software engineers, but we do not know how long it will be at this point, as there is a lot of work to do to get it up to kernel coding standards. I will definitely keep the list up to date.
+On Fri, 07 Dec 2007 22:01:33 -0700 Zan Lynx <zlynx@acm.org> wrote:
 
-Hi Nick, any progress, any problems?
+> 
+> On Fri, 2007-12-07 at 15:22 -0800, Andrew Morton wrote:
+> > On Fri, 07 Dec 2007 23:09:43 +0000
+> > Zan Lynx <zlynx@acm.org> wrote:
+> [cut] 
+> > > > > Now with MM kernels 2.6.24 rc1-4 the PCMCIA adapter works again, but I
+> > > > > only get read rates of 1.6 MB/s.  When it used to work in 2.6.20 I got
+> > > > > at least 16 MB/s.  The card itself is capable of 30+ in the USB-2
+> > > > > reader.
+> [cut]
+> > Maybe pata_pcmcia-minor-cleanups-and-support-for-dual-channel-cards.patch?
+> > 
+> > Could you try a `patch -R' of the below?
+> > 
+> > 
+> > From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> > 
+> > Signed-off-by: Alan Cox <alan@redhat.com>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > ---
+> > 
+> >  drivers/ata/pata_pcmcia.c |   31 +++++++++++++++++--------------
+> >  1 file changed, 17 insertions(+), 14 deletions(-)
+> > 
+> > diff -puN drivers/ata/pata_pcmcia.c~pata_pcmcia-minor-cleanups-and-support-for-dual-channel-cards drivers/ata/pata_pcmcia.c
+> [cut]
+> 
+> Nope, that did not change anything.  It still detects as PIO0 and still
+> runs at 1.6 MB/s.
 
-thanks.
+argh.  OK.  And Linus's current tree is OK, yes?
+
+In which case we should be OK for 2.6.24 and I guess we can hope like heck
+that the dud patch doesn't leak into mainline.  Hopefully Alan will get
+some time to look into it before 2.6.25 opens.
+
+<looks>
+
+OK, there's a patch in Jeff's tree "pata_pcmcia: Add support for dumb 8bit
+IDE emulations" which could be our guy.
+
+I've uploaded two patches, against 2.6.24-rc4:
+
+http://userweb.kernel.org/~akpm/zl.with.gz
+	origin.patch + git-libata-all.patch
+
+http://userweb.kernel.org/~akpm/zl.without.gz
+	origin.patch + git-libata-all.patch - 5ddcddd4dfeb16a9509dad647f509828d6fee605
+
+It would be great if you could test both.  If zl.with is bad and zl.without
+is good then we know that 5ddcddd4dfeb16a9509dad647f509828d6fee605 caused
+this problem.
+
+Thanks.
+
