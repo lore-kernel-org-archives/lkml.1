@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbXLHUd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbXLHUga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbXLHUd1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 15:33:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXLHUdU
+	id S1754078AbXLHUga (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 15:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbXLHUgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 15:33:20 -0500
-Received: from py-out-1112.google.com ([64.233.166.183]:3945 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752044AbXLHUdS (ORCPT
+	Sat, 8 Dec 2007 15:36:23 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:29908 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbXLHUgX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 15:33:18 -0500
+	Sat, 8 Dec 2007 15:36:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=E5djRWZKbUK4sCGfQliMXY7L8TBI8+CNXBRzC/49WsDX1Kg0fHrrkkiuduEMflI2MmQXgZ6iSfA1G0EmoSVTIK2APdSvhquKy0xkRWFNScDYQIGqkemV043hUHEA90tqHfF/WN1F0QR1cq7FwQaN4aJ5IiHCgY1dWQzFkVThORI=
-Message-ID: <3efb10970712081233q10ac7f6bwb2c0ab8107714c1c@mail.gmail.com>
-Date: Sat, 8 Dec 2007 21:33:02 +0100
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: lockdep problem conversion semaphore->mutex (dev->sem)
-Cc: "Daniel Walker" <dwalker@mvista.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Dave Chinner" <dgc@sgi.com>
-In-Reply-To: <1197144276.6353.44.camel@lappy>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:content-transfer-encoding:user-agent;
+        b=ayvFlWB9ZWsw/s44ZO45O0XOZFCNkoXscAGKwdxGxrr3PFMXsNzoC/uBEDZkTwQx/kLM6Yna1bViXyfCGTg1F4cFiHQ7dFfm/52yDZ00vZZWtRPzQhnmxC2Cn64o3RRgPkOGf2IaRQb7MFmkY2kuKmGYif7T6duOYSVBSI2O988=
+Date: Sat, 8 Dec 2007 21:37:17 +0100
+From: Marcin =?utf-8?Q?=C5=9Alusarz?= <marcin.slusarz@gmail.com>
+To: perex@perex.cz
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] pcm_native: fix sparse warning about shadowing 'state'
+	symbol
+Message-ID: <20071208203712.GA5087@joi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <3efb10970712071502p4db9c58ck623c377172ead4b2@mail.gmail.com>
-	 <1197116185.31440.1.camel@twins>
-	 <1197132792.1568.162.camel@jnielson-xp.ddns.mvista.com>
-	 <1197133910.6353.33.camel@lappy>
-	 <1197133577.1568.166.camel@jnielson-xp.ddns.mvista.com>
-	 <1197135413.6353.36.camel@lappy>
-	 <3efb10970712081152o2d4abcfbo634a8d2445c09699@mail.gmail.com>
-	 <1197144276.6353.44.camel@lappy>
-X-Google-Sender-Auth: 33a9646dc7eb0219
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Peter,
+pcm_native: fix sparse warning about shadowing 'state' symbol
 
-> And while you might not see it in-tree anymore, lockdep does help out
-> tremendously while developing new code. I'm sure that without it the
-> locking would be in a much worse state than it is today.
+Signed-off-by: Marcin Ślusarz <marcin.slusarz@gmail.com>
+---
+ sound/core/pcm_native.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-I am not arguing that, I am also convinced it has done a good job.
-
-> I have a good idea on how to annotate this, but not yet the time to do
-> so.
-
-Sounds good...
-
-> Aside from the nesting problems, the dev->sem has other problems as
-> well. Converting this is rather non-trivial.
-
-Which problems? I did not see any special things, it looked rather
-straight forward. What have I overlooked?
-
-> I'd not put it as harshly as you put it though, lockdep makes some
-> assumptions which can lead to false positives -
-
-By putting it this black and white, it usually helps to get all the
-opinions clear ;-)
-(By staying in the middle, everybody usually tend to agree ;-)
-
-> otoh these assumptions
-> often end up pointing out 'curious' locking coupled to 'curious' data
-> structures. And fixing up these things often leads to better and simpler
-> code.
-> The emphasis is on often, this is one of the cases where this is not so.
-> So while it does restain the creativity of locking it often ends up
-> being for the better.
-
-Ack.
-
-Kind Regards,
-
-Remy
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index fb3dde4..925f0b6 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -1395,10 +1395,10 @@ static int snd_pcm_do_drain_init(struct snd_pcm_substream *substream, int state)
+ 	} else {
+ 		/* stop running stream */
+ 		if (runtime->status->state == SNDRV_PCM_STATE_RUNNING) {
+-			int state = snd_pcm_capture_avail(runtime) > 0 ?
++			int new_state = snd_pcm_capture_avail(runtime) > 0 ?
+ 				SNDRV_PCM_STATE_DRAINING : SNDRV_PCM_STATE_SETUP;
+-			snd_pcm_do_stop(substream, state);
+-			snd_pcm_post_stop(substream, state);
++			snd_pcm_do_stop(substream, new_state);
++			snd_pcm_post_stop(substream, new_state);
+ 		}
+ 	}
+ 	return 0;
