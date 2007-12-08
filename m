@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbXLHRz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbXLHRzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752460AbXLHRz0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 12:55:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbXLHRzP
+	id S1753050AbXLHRzj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 12:55:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbXLHRzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 12:55:15 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36123 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751026AbXLHRzO (ORCPT
+	Sat, 8 Dec 2007 12:55:23 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:53524 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751461AbXLHRzW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 12:55:14 -0500
-Date: Sat, 8 Dec 2007 09:54:06 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Matt Mackall <mpm@selenic.com>
-cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52,
- [2.6.24-rc4-git5: Reported regressions from 2.6.23]
-In-Reply-To: <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org>
-References: <200712080340.49546.rjw@sisk.pl> <20071208093039.GA28054@elte.hu> <20071208163749.GI19691@waste.org> <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Sat, 8 Dec 2007 12:55:22 -0500
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+From: Jon Masters <jonathan@jonmasters.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Mike McGrath <mmcgrath@redhat.com>, Matt Mackall <mpm@selenic.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20071208174908.GJ17037@thunk.org>
+References: <20071204210827.GE19691@waste.org> <4755C423.60907@redhat.com>
+	 <20071204221525.GG19691@waste.org> <4755D350.1080801@redhat.com>
+	 <20071204223345.GJ19691@waste.org> <4756B50B.3060100@redhat.com>
+	 <20071205144934.GL7259@thunk.org> <1197099477.20786.149.camel@perihelion>
+	 <20071208173204.GI17037@thunk.org> <475AD585.7020908@redhat.com>
+	 <20071208174908.GJ17037@thunk.org>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Sat, 08 Dec 2007 12:54:13 -0500
+Message-Id: <1197136453.12636.1.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Sat, 8 Dec 2007, Linus Torvalds wrote:
+On Sat, 2007-12-08 at 12:49 -0500, Theodore Tso wrote:
+> On Sat, Dec 08, 2007 at 11:33:57AM -0600, Mike McGrath wrote:
+> >> Huh?  What's the concern?  All you are submitting is a list of
+> >> hardware devices in your system.  That's hardly anything sensitive....
+> >
+> > We actually had a very vocal minority about all of that which ended up 
+> > putting us in the unfortunate position of generating a random UUID instead 
+> > of using a hardware UUID from hal :-/
 > 
-> But I'll apply it anyway, because it looks "obviously correct" from the 
-> standpoint that the _other_ slob user already clears the end result 
-> explicitly later on, and we simply should never pass down __GFP_ZERO to 
-> the actual page allocator.
+> Tinfoil hat responses indeed!  Ok, if those folks are really that
+> crazy, my suggestion then would be to do a "ifconfig -a > /dev/random"
+> before generating the UUID, and/or waiting until you just about to
+> send the first profile, and/or if you don't yet have a UUID,
+> generating it at that very moment.  The first will mix in the MAC
+> address into the random pool, which will help guarantee uniqueness,
+> and waiting until just before you send the result will mean it is much
+> more likely that the random pool will have collected some entropy from
+> user I/O, thus making the random UUID not only unique, but also
+> unpredictable.
 
-Actually, I take that back. The other slob users are different. They share 
-pages, this codepath does not.
+I do like that idea, and it could be combined with the DMI data for the
+system containing things like asset tracking numbers, etc. Could use HAL
+to generate a UUID based on hardware IDs and feed that in as entropy ;-)
 
-So I think a more proper solution would be:
- (a) Something like this patch (which includes my previous mm/slub.c 
-     change)
- (b) don't warn about atomic GFP_ZERO's - unless they have GFP_HIGHMEM set 
-     *too*.
+Jon.
 
-So which warning is it that triggers the bogus error?
 
-		Linus
----
- mm/slob.c |    2 +-
- mm/slub.c |    3 +++
- 2 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/mm/slob.c b/mm/slob.c
-index ee2ef8a..773a7aa 100644
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -330,7 +330,7 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
- 
- 	/* Not enough space: must allocate a new page */
- 	if (!b) {
--		b = slob_new_page(gfp, 0, node);
-+		b = slob_new_page(gfp & ~__GFP_ZERO, 0, node);
- 		if (!b)
- 			return 0;
- 		sp = (struct slob_page *)virt_to_page(b);
-diff --git a/mm/slub.c b/mm/slub.c
-index b9f37cb..9c1d9f3 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1468,6 +1468,9 @@ static void *__slab_alloc(struct kmem_cache *s,
- 	void **object;
- 	struct page *new;
- 
-+	/* We handle __GFP_ZERO in the caller */
-+	gfpflags &= ~__GFP_ZERO;
-+
- 	if (!c->page)
- 		goto new_slab;
- 
