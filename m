@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbXLHWJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbXLHWMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754339AbXLHWJT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 17:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXLHWJJ
+	id S1754829AbXLHWMQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 17:12:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbXLHWMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 17:09:09 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:47944 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752192AbXLHWJH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 17:09:07 -0500
-From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
-Organization: Pardus / KDE
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-Date: Sun, 9 Dec 2007 00:10:10 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: Bill Davidsen <davidsen@tmr.com>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
-References: <20071204114125.GA17310@torres.zugschlus.de> <47584E35.7030409@tmr.com> <20071208220345.GE20441@stusta.de>
-In-Reply-To: <20071208220345.GE20441@stusta.de>
+	Sat, 8 Dec 2007 17:12:00 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41154 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752558AbXLHWMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 17:12:00 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
+Date: Sat, 8 Dec 2007 23:30:53 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Roland Dreier <rolandd@cisco.com>,
+       Takashi Iwai <tiwai@suse.de>
+References: <200712080340.49546.rjw@sisk.pl> <20071208014241.f4b138e0.akpm@linux-foundation.org> <20071208194042.GO17037@thunk.org>
+In-Reply-To: <20071208194042.GO17037@thunk.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712090010.10362.ismail@pardus.org.tr>
+Message-Id: <200712082330.54259.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sunday 09 December 2007 00:03:45 tarihinde Adrian Bunk şunları yazmıştı:
-> On Thu, Dec 06, 2007 at 02:32:05PM -0500, Bill Davidsen wrote:
-> >...
-> > Sounds like a local DoS attack point to me...
->
-> As long as /dev/random is readable for all users there's no reason to
-> use /dev/urandom for a local DoS...
+On Saturday, 8 of December 2007, Theodore Tso wrote:
+> On Sat, Dec 08, 2007 at 01:42:41AM -0800, Andrew Morton wrote:
+> > > Subject		: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
+> > > Submitter	: Roland Dreier <rdreier@cisco.com>
+> > > References	: http://lkml.org/lkml/2007/11/8/255
+> > > 		  http://bugzilla.kernel.org/show_bug.cgi?id=9332
+> > > Handled-By	: 
+> > > Patch		: 
+> > 
+> > Takashi had a patch and that has been merged.  AFAIK this regression
+> > has been fixed and we're left with a new but harmless warning.
+> > 
+> > However Roland reported other problems and it appears that the trail went
+> > cold (http://lkml.org/lkml/2007/11/14/251)
+> > 
+> > Ted was hitting some of the same problems but that trail appears to also
+> > have gone cold (http://lkml.org/lkml/2007/11/23/17).
+> 
+> Actually, not gone cold, but I stopped posting about it because it's
+> been solved and I thought agreement had been reached that it should be
+> pushed to mainline before 2.6.25.
+> 
+> I am very happily running with Ingo's "snd hda suspend latency:
+> shorten codec read" patch, which was originally intended to speed up
+> resuming from hibernation, but which as I discovered, also has the
+> nice side effect of eliminating the reported error.  
+> 
+> On 11/23, Takashi replied to my note (http://lkml.org/lkml/2007/11/23/17)
+> and suggested that Jaroslav push this patch to Linus immediately
+> instead of waiting for 2.6.25, since it appearly solves two problems
+> with one stone.  However, I just checked, as of Linus's public, and
+> Ingo's patch is *not* in mainline.
+> 
+> However, as far as I am concerned, Ingo's patch, first posted to LKML
+> here: http://lkml.org/lkml/2007/11/16/66 should be listed as fixing
+> the above regression.  Rafael, could you please make a note of this in
+> your regression list,
 
-Draining entropy in /dev/urandom means that insecure and possibly not random 
-data will be used and well thats a security bug if not a DoS bug.
+Done, thanks.
 
-And yes this is by design, sigh.
-
--- 
-Never learn by your mistakes, if you do you may never dare to try again.
+> and could we please get this patch pushed into mainline?
