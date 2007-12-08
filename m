@@ -1,77 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbXLHUr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbXLHUsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755510AbXLHUr7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 15:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbXLHUrp
+	id S1755548AbXLHUsZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 15:48:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbXLHUsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 15:47:45 -0500
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:63253 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755357AbXLHUro (ORCPT
+	Sat, 8 Dec 2007 15:48:09 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:18745 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754991AbXLHUsG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 15:47:44 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 216.15.117.105
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/0xBI+raG4/B6ZZC1OGsjV
-Message-ID: <475B02E9.7000007@reed.com>
-Date: Sat, 08 Dec 2007 15:47:37 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
+	Sat, 8 Dec 2007 15:48:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=cqFjj9qMw0AYzyBfexjIStMfDNhxPDYDlkkD5YN62MDFA9YmlccASAdtQMv0g+4nsdazLJoCaAeM38m6sa4sAHArKY/jj2yF4I0UEXc2A95jY6KiiJBd7KNp1lV+PLwSYs12Ove+lgxpvljxrThQ5svJT3mHboTMb6V3Yx5GzK8=
+Message-ID: <3efb10970712081248o43c19976k3bba552d835c81e7@mail.gmail.com>
+Date: Sat, 8 Dec 2007 21:48:05 +0100
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: lockdep problem conversion semaphore->mutex (dev->sem)
+Cc: "Peter Zijlstra" <peterz@infradead.org>,
+       "Daniel Walker" <dwalker@mvista.com>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Dave Chinner" <dgc@sgi.com>
+In-Reply-To: <20071208200801.GC579@elte.hu>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-References: <475879CD.9080006@reed.com> <p733auekcly.fsf@bingen.suse.de> <20071207160439.71b7f46a@the-village.bc.nu> <475AEF8E.5040906@reed.com> <20071208195035.GA22497@one.firstfloor.org>
-In-Reply-To: <20071208195035.GA22497@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3efb10970712071502p4db9c58ck623c377172ead4b2@mail.gmail.com>
+	 <1197116185.31440.1.camel@twins>
+	 <1197132792.1568.162.camel@jnielson-xp.ddns.mvista.com>
+	 <1197133910.6353.33.camel@lappy>
+	 <1197133577.1568.166.camel@jnielson-xp.ddns.mvista.com>
+	 <1197135413.6353.36.camel@lappy>
+	 <3efb10970712081152o2d4abcfbo634a8d2445c09699@mail.gmail.com>
+	 <20071208200801.GC579@elte.hu>
+X-Google-Sender-Auth: 51f2b0d740a43ac3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am going to do a test on another "unused" port.
+Hello Ingo,
 
-However, I realized as I was thinking about this.  0x80 is the 
-"diagnostic device" port.  It is not an "unused" port.
+> no, you are wrong. If you want to do complex locking, you can still do
+> it: take a look at the dev->sem conversion patches from Peter which
+> correctly do this. Lockdep has all the facilities for that.
+> (you just dont know about them)
 
-Normally, Linux would support a device like the diagnostic device by 
-providing a character device, called /dev/post-diagnosis  (for the 
-power-on test diagnostic).  That device would reserve port 80 for its 
-use, and the driver could be loaded if there was such a device.
+Ok.
 
-Now one possibility is that my laptop contains a diagnostic code device 
-that stores all the out's to port 80 (documented only to the designers, 
-and kept "secret").   That device may need "clearing" periodically, 
-which is perhaps done by the SMM, which is turned off when I go into 
-ACPI-on state.  Or maybe it is designed to be cleared only when the 
-system boots at the beginning of the BIOS.  What happens when (as 
-happens in hwclock's polling of the RTC) thousands of in/out*_p calls 
-are made very fast?  Well, perhaps it is not cleared quickly enough, and 
-hangs the bus.
+> the general policy message here is: do not implement complex locking. It
+> hurts. It's hard to maintain. It's easy to mess up and leads to bugs.
 
-The point here is that Linux is NOT using a defined-to-be "unused" 
-port.  It IS using the "diagnostic" port, and talking to a diagnostic 
-device that *is* used, and may be present.
+Agree
 
-Just doesn't seem clean to me.
+> Lockdep just makes that plain obvious.
+> Your mail and your frustration shows this general concept in happy
 
-So I'd suggest 2 actions:
+Please, do not see it as frustration, because it isn't...
+I just want to understand it better.
 
-1) figure out a better implementation of _p that is "safe" and doesn't 
-use questionable heuristics.  udelay seems reasonable because it doesn't 
-drive contention on the busses on SMP machines, but perhaps someone has 
-a better idea.
+> action: judging from your comments you have little clue about dev->sem
+> locking and its implications and you'd happily go along and pollute the
+> kernel with complex and hard to maintain nested locking constructs.
 
-2) Start a background task with the maintainers of drivers to clean up 
-their code regarding these short delays for slow devices (note that it's 
-never because the *bus* is slow, but because the *device* is slow.)  
-Perhaps this could be helped by "deprecating" the _p calls and 
-suggesting an alternative that requires the coder to be precise about 
-what the delay is for, and how long it is supposed to be, perhaps on a 
-per-machine basis.
+Now, you assume that i would _like_ complex locking. This is not true.
+
+I just want to understand what was so wrong with dev->sem, I even read
+in the discussions before about dev->sem, that it still was on the old
+semaphore interface to get around lockdep issues, and _that_ is wrong.
+That is bug-hiding from either the code or the tool. I just wanted to
+understand if this was a lockdep bug, or a real code bug.
+
+> Lockdep prevents you from doing it mindlessly, it _forces_ you to first
+> understand the data structures, their locking and their relationship
+> with each other. Then you can implement complexity, if you still want
+> it.
+>
+> That, Sir, is a Good Thing (tm).
+
+Completely agree.
 
 
+Remy
