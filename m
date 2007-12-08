@@ -1,479 +1,299 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbXLHPkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbXLHPlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758118AbXLHPkw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 10:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756797AbXLHPjt
+	id S1758004AbXLHPlV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 10:41:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757049AbXLHPjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 10:39:49 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:34735 "EHLO smtp.polymtl.ca"
+	Sat, 8 Dec 2007 10:39:52 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:34743 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756425AbXLHPjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 10:39:47 -0500
-Message-Id: <20071208153935.058016100@polymtl.ca>
+	id S1756877AbXLHPju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 10:39:50 -0500
+Message-Id: <20071208153934.290075585@polymtl.ca>
 References: <20071208153255.078261362@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sat, 08 Dec 2007 10:32:59 -0500
+Date: Sat, 08 Dec 2007 10:32:57 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: [patch 4/4] Move Kconfig.instrumentation to arch/Kconfig and init/Kconfig
-Content-Disposition: inline; filename=move-kconfig-instrumentation-to-arch.patch
+       Sam Ravnborg <sam@ravnborg.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [patch 2/4] Add HAVE_OPROFILE
+Content-Disposition: inline; filename=add-have-oprofile.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Sat,  8 Dec 2007 15:39:37 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the instrumentation Kconfig to
+Linus:
+On the per-architecture side, I do think it would be better to *not* have
+internal architecture knowledge in a generic file, and as such a line like
 
-arch/Kconfig for architecture dependent options
-  - oprofile
-  - kprobes
+        depends on X86_32 || IA64 || PPC || S390 || SPARC64 || X86_64 || AVR32
 
-and
+really shouldn't exist in a file like kernel/Kconfig.instrumentation.
 
-init/Kconfig for architecture independent options
-  - profiling
-  - markers
+It would be much better to do
 
-Remove the "Instrumentation Support" menu. Everything moves to "General setup".
-Delete the kernel/Kconfig.instrumentation file.
+        depends on ARCH_SUPPORTS_KPROBES
+
+in that generic file, and then architectures that do support it would just
+have a
+
+        bool ARCH_SUPPORTS_KPROBES
+                default y
+
+in *their* architecture files. That would seem to be much more logical,
+and is readable both for arch maintainers *and* for people who have no
+clue - and don't care - about which architecture is supposed to support
+which interface...
+
+Changelog:
+
+Actually, I know I gave this as the magic incantation, but now that I see
+it, I realize that I should have told you to just use
+
+        config ARCH_SUPPORTS_KPROBES
+                def_bool y
+
+instead, which is a bit denser.
+
+We seem to use both kinds of syntax for these things, but this is really
+what "def_bool" is there for...
+
+Changelog :
+
+- Moving to HAVE_*.
+- Add AVR32 oprofile.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Sam Ravnborg <sam@ravnborg.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Haavard Skinnemoen <hskinnemoen@atmel.com>
 ---
- arch/Kconfig                   |   28 ++++++++++++++++++++
- arch/alpha/Kconfig             |    2 -
- arch/arm/Kconfig               |    2 -
- arch/blackfin/Kconfig          |    2 -
- arch/cris/Kconfig              |    2 -
- arch/frv/Kconfig               |    2 -
- arch/h8300/Kconfig             |    2 -
- arch/ia64/Kconfig              |    2 -
- arch/m32r/Kconfig              |    2 -
- arch/m68k/Kconfig              |    2 -
- arch/m68knommu/Kconfig         |    2 -
- arch/mips/Kconfig              |    2 -
- arch/parisc/Kconfig            |    2 -
- arch/powerpc/Kconfig           |    2 -
- arch/ppc/Kconfig               |    2 -
- arch/s390/Kconfig              |    2 -
- arch/sh/Kconfig                |    2 -
- arch/sparc/Kconfig             |    2 -
- arch/sparc64/Kconfig           |    2 -
- arch/um/Kconfig                |    2 -
- arch/v850/Kconfig              |    2 -
- arch/x86/Kconfig               |    2 -
- arch/xtensa/Kconfig            |    2 -
- init/Kconfig                   |   12 ++++++++
- kernel/Kconfig.instrumentation |   55 -----------------------------------------
- 25 files changed, 40 insertions(+), 99 deletions(-)
+ arch/alpha/Kconfig             |    1 +
+ arch/arm/Kconfig               |    1 +
+ arch/avr32/Kconfig             |    1 +
+ arch/blackfin/Kconfig          |    1 +
+ arch/ia64/Kconfig              |    1 +
+ arch/m32r/Kconfig              |    1 +
+ arch/mips/Kconfig              |    1 +
+ arch/parisc/Kconfig            |    1 +
+ arch/powerpc/Kconfig           |    1 +
+ arch/ppc/Kconfig               |    1 +
+ arch/s390/Kconfig              |    1 +
+ arch/sh/Kconfig                |    1 +
+ arch/sparc/Kconfig             |    1 +
+ arch/sparc64/Kconfig           |    1 +
+ arch/x86/Kconfig               |    1 +
+ kernel/Kconfig.instrumentation |    5 ++++-
+ 16 files changed, 19 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng.mm/arch/Kconfig
+Index: linux-2.6-lttng.mm/kernel/Kconfig.instrumentation
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/Kconfig	2007-12-08 09:57:15.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/Kconfig	2007-12-08 10:10:53.000000000 -0500
-@@ -1,3 +1,31 @@
- #
- # General architecture dependent options
- #
-+
-+config OPROFILE
-+	tristate "OProfile system profiling (EXPERIMENTAL)"
-+	depends on PROFILING && !UML
+--- linux-2.6-lttng.mm.orig/kernel/Kconfig.instrumentation	2007-12-08 09:53:22.000000000 -0500
++++ linux-2.6-lttng.mm/kernel/Kconfig.instrumentation	2007-12-08 09:59:35.000000000 -0500
+@@ -21,7 +21,7 @@ config PROFILING
+ config OPROFILE
+ 	tristate "OProfile system profiling (EXPERIMENTAL)"
+ 	depends on PROFILING && !UML
+-	depends on ALPHA || ARM || AVR32 || BLACKFIN || X86_32 || IA64 || M32R || MIPS || PARISC || PPC || S390 || SUPERH || SPARC || X86_64
 +	depends on HAVE_OPROFILE
-+	help
-+	  OProfile is a profiling system capable of profiling the
-+	  whole system, include the kernel, kernel modules, libraries,
-+	  and applications.
-+
-+	  If unsure, say N.
-+
+ 	help
+ 	  OProfile is a profiling system capable of profiling the
+ 	  whole system, include the kernel, kernel modules, libraries,
+@@ -29,6 +29,9 @@ config OPROFILE
+ 
+ 	  If unsure, say N.
+ 
 +config HAVE_OPROFILE
 +	def_bool n
 +
-+config KPROBES
-+	bool "Kprobes"
-+	depends on KALLSYMS && MODULES
-+	depends on HAVE_KPROBES
-+	help
-+	  Kprobes allows you to trap at almost any kernel address and
-+	  execute a callback function.  register_kprobe() establishes
-+	  a probepoint and specifies the callback.  Kprobes is useful
-+	  for kernel debugging, non-intrusive instrumentation and testing.
-+	  If in doubt, say "N".
-+
-+config HAVE_KPROBES
-+	def_bool n
-Index: linux-2.6-lttng.mm/init/Kconfig
-===================================================================
---- linux-2.6-lttng.mm.orig/init/Kconfig	2007-12-08 09:57:15.000000000 -0500
-+++ linux-2.6-lttng.mm/init/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -701,6 +701,18 @@ config PROC_PAGE_MONITOR
- 	  /proc/kpagecount, and /proc/kpageflags. Disabling these
-           interfaces will reduce the size of the kernel by approximately 4kb.
- 
-+config PROFILING
-+	bool "Profiling support (EXPERIMENTAL)"
-+	help
-+	  Say Y here to enable the extended profiling support mechanisms used
-+	  by profilers such as OProfile.
-+
-+config MARKERS
-+	bool "Activate markers"
-+	help
-+	  Place an empty function call at each marker site. Can be
-+	  dynamically changed for a probe function.
-+
- source "arch/Kconfig"
- 
- endmenu		# General setup
+ config KPROBES
+ 	bool "Kprobes"
+ 	depends on KALLSYMS && MODULES
 Index: linux-2.6-lttng.mm/arch/alpha/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/alpha/Kconfig	2007-12-08 09:57:56.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/alpha/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -658,8 +658,6 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/alpha/Kconfig.debug"
- 
- # DUMMY_CONSOLE may be defined in drivers/video/console/Kconfig
+--- linux-2.6-lttng.mm.orig/arch/alpha/Kconfig	2007-12-08 09:54:47.000000000 -0500
++++ linux-2.6-lttng.mm/arch/alpha/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -5,6 +5,7 @@
+ config ALPHA
+ 	bool
+ 	default y
++	select HAVE_OPROFILE
+ 	help
+ 	  The Alpha is a 64-bit general-purpose processor designed and
+ 	  marketed by the Digital Equipment Corporation of blessed memory,
 Index: linux-2.6-lttng.mm/arch/arm/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/arm/Kconfig	2007-12-08 09:57:56.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/arm/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -1077,8 +1077,6 @@ endmenu
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/arm/Kconfig.debug"
- 
- source "security/Kconfig"
+--- linux-2.6-lttng.mm.orig/arch/arm/Kconfig	2007-12-08 09:54:47.000000000 -0500
++++ linux-2.6-lttng.mm/arch/arm/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -10,6 +10,7 @@ config ARM
+ 	default y
+ 	select RTC_LIB
+ 	select SYS_SUPPORTS_APM_EMULATION
++	select HAVE_OPROFILE
+ 	help
+ 	  The ARM series is a line of low-power-consumption RISC chip designs
+ 	  licensed by ARM Ltd and targeted at embedded applications and
 Index: linux-2.6-lttng.mm/arch/blackfin/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/blackfin/Kconfig	2007-12-08 09:57:56.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/blackfin/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -995,8 +995,6 @@ source "drivers/Kconfig"
+--- linux-2.6-lttng.mm.orig/arch/blackfin/Kconfig	2007-12-08 09:22:46.000000000 -0500
++++ linux-2.6-lttng.mm/arch/blackfin/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -24,6 +24,7 @@ config RWSEM_XCHGADD_ALGORITHM
+ config BLACKFIN
+ 	bool
+ 	default y
++	select HAVE_OPROFILE
  
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/blackfin/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng.mm/arch/cris/Kconfig
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/cris/Kconfig	2007-12-08 09:54:05.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/cris/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -214,8 +214,6 @@ source "drivers/pci/Kconfig"
- 
- source "drivers/usb/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/cris/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng.mm/arch/frv/Kconfig
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/frv/Kconfig	2007-12-08 09:53:59.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/frv/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -384,8 +384,6 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/frv/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng.mm/arch/h8300/Kconfig
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/h8300/Kconfig	2007-12-08 09:54:47.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/h8300/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -226,8 +226,6 @@ endmenu
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/h8300/Kconfig.debug"
- 
- source "security/Kconfig"
+ config ZONE_DMA
+ 	bool
 Index: linux-2.6-lttng.mm/arch/ia64/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/ia64/Kconfig	2007-12-08 10:07:28.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/ia64/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -594,8 +594,6 @@ config IRQ_PER_CPU
- 
- source "arch/ia64/hp/sim/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/ia64/Kconfig.debug"
- 
- source "security/Kconfig"
+--- linux-2.6-lttng.mm.orig/arch/ia64/Kconfig	2007-12-08 09:22:46.000000000 -0500
++++ linux-2.6-lttng.mm/arch/ia64/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -15,6 +15,7 @@ config IA64
+ 	select ACPI if (!IA64_HP_SIM)
+ 	select PM if (!IA64_HP_SIM)
+ 	select ARCH_SUPPORTS_MSI
++	select HAVE_OPROFILE
+ 	default y
+ 	help
+ 	  The Itanium Processor Family is Intel's 64-bit successor to
 Index: linux-2.6-lttng.mm/arch/m32r/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/m32r/Kconfig	2007-12-08 09:57:56.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/m32r/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -430,8 +430,6 @@ source "drivers/Kconfig"
+--- linux-2.6-lttng.mm.orig/arch/m32r/Kconfig	2007-12-08 09:54:47.000000000 -0500
++++ linux-2.6-lttng.mm/arch/m32r/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -8,6 +8,7 @@ mainmenu "Linux/M32R Kernel Configuratio
+ config M32R
+ 	bool
+ 	default y
++	select HAVE_OPROFILE
  
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/m32r/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng.mm/arch/m68k/Kconfig
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/m68k/Kconfig	2007-12-08 09:54:47.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/m68k/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -672,8 +672,6 @@ endmenu
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/m68k/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng.mm/arch/m68knommu/Kconfig
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/m68knommu/Kconfig	2007-12-08 09:54:47.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/m68knommu/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -710,8 +710,6 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/m68knommu/Kconfig.debug"
- 
- source "security/Kconfig"
+ config SBUS
+ 	bool
 Index: linux-2.6-lttng.mm/arch/mips/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/mips/Kconfig	2007-12-08 10:07:16.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/mips/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -2072,8 +2072,6 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/mips/Kconfig.debug"
- 
- source "security/Kconfig"
+--- linux-2.6-lttng.mm.orig/arch/mips/Kconfig	2007-12-08 09:53:40.000000000 -0500
++++ linux-2.6-lttng.mm/arch/mips/Kconfig	2007-12-08 10:07:16.000000000 -0500
+@@ -1,6 +1,7 @@
+ config MIPS
+ 	bool
+ 	default y
++	select HAVE_OPROFILE if !MIPS_MT_SMTC
+ 	# Horrible source of confusion.  Die, die, die ...
+ 	select EMBEDDED
+ 	select RTC_LIB
 Index: linux-2.6-lttng.mm/arch/parisc/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/parisc/Kconfig	2007-12-08 09:57:56.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/parisc/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -271,8 +271,6 @@ source "drivers/Kconfig"
+--- linux-2.6-lttng.mm.orig/arch/parisc/Kconfig	2007-12-08 09:54:47.000000000 -0500
++++ linux-2.6-lttng.mm/arch/parisc/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -7,6 +7,7 @@ mainmenu "Linux/PA-RISC Kernel Configura
  
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/parisc/Kconfig.debug"
- 
- source "security/Kconfig"
+ config PARISC
+ 	def_bool y
++	select HAVE_OPROFILE
+ 	help
+ 	  The PA-RISC microprocessor is designed by Hewlett-Packard and used
+ 	  in many of their workstations & servers (HP9000 700 and 800 series,
 Index: linux-2.6-lttng.mm/arch/powerpc/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/powerpc/Kconfig	2007-12-08 10:07:28.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/powerpc/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -682,8 +682,6 @@ source "arch/powerpc/sysdev/qe_lib/Kconf
+--- linux-2.6-lttng.mm.orig/arch/powerpc/Kconfig	2007-12-08 09:53:56.000000000 -0500
++++ linux-2.6-lttng.mm/arch/powerpc/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -79,6 +79,7 @@ config ARCH_NO_VIRT_TO_BUS
+ config PPC
+ 	bool
+ 	default y
++	select HAVE_OPROFILE
  
- source "lib/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/powerpc/Kconfig.debug"
- 
- source "security/Kconfig"
+ config EARLY_PRINTK
+ 	bool
 Index: linux-2.6-lttng.mm/arch/ppc/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/ppc/Kconfig	2007-12-08 10:07:28.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/ppc/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -1319,8 +1319,6 @@ endmenu
+--- linux-2.6-lttng.mm.orig/arch/ppc/Kconfig	2007-12-08 09:22:46.000000000 -0500
++++ linux-2.6-lttng.mm/arch/ppc/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -42,6 +42,7 @@ config GENERIC_CALIBRATE_DELAY
+ config PPC
+ 	bool
+ 	default y
++	select HAVE_OPROFILE
  
- source "lib/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/ppc/Kconfig.debug"
- 
- source "security/Kconfig"
+ config PPC32
+ 	bool
 Index: linux-2.6-lttng.mm/arch/s390/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/s390/Kconfig	2007-12-08 10:07:28.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/s390/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -531,8 +531,6 @@ source "drivers/Kconfig"
+--- linux-2.6-lttng.mm.orig/arch/s390/Kconfig	2007-12-08 09:22:46.000000000 -0500
++++ linux-2.6-lttng.mm/arch/s390/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -51,6 +51,7 @@ mainmenu "Linux Kernel Configuration"
  
- source "fs/Kconfig"
+ config S390
+ 	def_bool y
++	select HAVE_OPROFILE
  
--source "kernel/Kconfig.instrumentation"
--
- source "arch/s390/Kconfig.debug"
+ source "init/Kconfig"
  
- source "security/Kconfig"
 Index: linux-2.6-lttng.mm/arch/sh/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/sh/Kconfig	2007-12-08 09:57:56.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/sh/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -892,8 +892,6 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/sh/Kconfig.debug"
- 
- source "security/Kconfig"
+--- linux-2.6-lttng.mm.orig/arch/sh/Kconfig	2007-12-08 09:54:47.000000000 -0500
++++ linux-2.6-lttng.mm/arch/sh/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -8,6 +8,7 @@ mainmenu "Linux/SuperH Kernel Configurat
+ config SUPERH
+ 	def_bool y
+ 	select EMBEDDED
++	select HAVE_OPROFILE
+ 	help
+ 	  The SuperH is a RISC processor targeted for use in embedded systems
+ 	  and consumer electronics; it was also used in the Sega Dreamcast
 Index: linux-2.6-lttng.mm/arch/sparc/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/sparc/Kconfig	2007-12-08 09:57:56.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/sparc/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -324,8 +324,6 @@ endmenu
+--- linux-2.6-lttng.mm.orig/arch/sparc/Kconfig	2007-12-08 09:54:47.000000000 -0500
++++ linux-2.6-lttng.mm/arch/sparc/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -66,6 +66,7 @@ config NR_CPUS
+ config SPARC
+ 	bool
+ 	default y
++	select HAVE_OPROFILE
  
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/sparc/Kconfig.debug"
- 
- source "security/Kconfig"
+ # Identify this as a Sparc32 build
+ config SPARC32
 Index: linux-2.6-lttng.mm/arch/sparc64/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/sparc64/Kconfig	2007-12-08 10:07:28.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/sparc64/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -467,8 +467,6 @@ source "drivers/sbus/char/Kconfig"
- 
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/sparc64/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng.mm/arch/um/Kconfig
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/um/Kconfig	2007-12-08 09:54:06.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/um/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -288,6 +288,4 @@ config INPUT
+--- linux-2.6-lttng.mm.orig/arch/sparc64/Kconfig	2007-12-08 09:54:47.000000000 -0500
++++ linux-2.6-lttng.mm/arch/sparc64/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -8,6 +8,7 @@ mainmenu "Linux/UltraSPARC Kernel Config
+ config SPARC
  	bool
- 	default n
+ 	default y
++	select HAVE_OPROFILE
  
--source "kernel/Kconfig.instrumentation"
--
- source "arch/um/Kconfig.debug"
-Index: linux-2.6-lttng.mm/arch/v850/Kconfig
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/v850/Kconfig	2007-12-08 09:54:47.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/v850/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -334,8 +334,6 @@ source "sound/Kconfig"
- 
- source "drivers/usb/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/v850/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng.mm/arch/xtensa/Kconfig
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/xtensa/Kconfig	2007-12-08 09:22:45.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/xtensa/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -251,8 +251,6 @@ config EMBEDDED_RAMDISK_IMAGE
- 	  provide one yourself.
- endmenu
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/xtensa/Kconfig.debug"
- 
- source "security/Kconfig"
+ config SPARC64
+ 	bool
 Index: linux-2.6-lttng.mm/arch/x86/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/x86/Kconfig	2007-12-08 10:07:28.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/x86/Kconfig	2007-12-08 10:08:17.000000000 -0500
-@@ -1582,8 +1582,6 @@ source "drivers/firmware/Kconfig"
+--- linux-2.6-lttng.mm.orig/arch/x86/Kconfig	2007-12-08 09:54:47.000000000 -0500
++++ linux-2.6-lttng.mm/arch/x86/Kconfig	2007-12-08 10:03:12.000000000 -0500
+@@ -18,6 +18,7 @@ config X86_64
+ ### Arch settings
+ config X86
+ 	def_bool y
++	select HAVE_OPROFILE
  
- source "fs/Kconfig"
- 
--source "kernel/Kconfig.instrumentation"
--
- source "arch/x86/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng.mm/kernel/Kconfig.instrumentation
+ config GENERIC_TIME
+ 	def_bool y
+Index: linux-2.6-lttng.mm/arch/avr32/Kconfig
 ===================================================================
---- linux-2.6-lttng.mm.orig/kernel/Kconfig.instrumentation	2007-12-08 10:07:28.000000000 -0500
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,55 +0,0 @@
--menuconfig INSTRUMENTATION
--	bool "Instrumentation Support"
--	default y
--	---help---
--	  Say Y here to get to see options related to performance measurement,
--	  system-wide debugging, and testing. This option alone does not add any
--	  kernel code.
--
--	  If you say N, all options in this submenu will be skipped and
--	  disabled. If you're trying to debug the kernel itself, go see the
--	  Kernel Hacking menu.
--
--if INSTRUMENTATION
--
--config PROFILING
--	bool "Profiling support (EXPERIMENTAL)"
--	help
--	  Say Y here to enable the extended profiling support mechanisms used
--	  by profilers such as OProfile.
--
--config OPROFILE
--	tristate "OProfile system profiling (EXPERIMENTAL)"
--	depends on PROFILING && !UML
--	depends on HAVE_OPROFILE
--	help
--	  OProfile is a profiling system capable of profiling the
--	  whole system, include the kernel, kernel modules, libraries,
--	  and applications.
--
--	  If unsure, say N.
--
--config HAVE_OPROFILE
--	def_bool n
--
--config KPROBES
--	bool "Kprobes"
--	depends on KALLSYMS && MODULES
--	depends on HAVE_KPROBES
--	help
--	  Kprobes allows you to trap at almost any kernel address and
--	  execute a callback function.  register_kprobe() establishes
--	  a probepoint and specifies the callback.  Kprobes is useful
--	  for kernel debugging, non-intrusive instrumentation and testing.
--	  If in doubt, say "N".
--
--config HAVE_KPROBES
--	def_bool n
--
--config MARKERS
--	bool "Activate markers"
--	help
--	  Place an empty function call at each marker site. Can be
--	  dynamically changed for a probe function.
--
--endif # INSTRUMENTATION
+--- linux-2.6-lttng.mm.orig/arch/avr32/Kconfig	2007-12-08 09:54:15.000000000 -0500
++++ linux-2.6-lttng.mm/arch/avr32/Kconfig	2007-12-08 09:57:56.000000000 -0500
+@@ -10,6 +10,7 @@ config AVR32
+ 	# With EMBEDDED=n, we get lots of stuff automatically selected
+ 	# that we usually don't need on AVR32.
+ 	select EMBEDDED
++	select HAVE_OPROFILE
+ 	help
+ 	  AVR32 is a high-performance 32-bit RISC microprocessor core,
+ 	  designed for cost-sensitive embedded applications, with particular
 
 -- 
 Mathieu Desnoyers
