@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbXLHKpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbXLHKpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbXLHKpA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 05:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbXLHKou
+	id S1756488AbXLHKpz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 05:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbXLHKps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 05:44:50 -0500
-Received: from [212.12.190.148] ([212.12.190.148]:37465 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750991AbXLHKot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 05:44:49 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: git guidance
-Date: Sat, 8 Dec 2007 13:41:54 +0300
-User-Agent: KMail/1.5
-Cc: Jakub Narebski <jnareb@gmail.com>, Andreas Ericsson <ae@op5.se>,
-       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
-       Phillip Susi <psusi@cfl.rr.com>,
+	Sat, 8 Dec 2007 05:45:48 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:58954 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751009AbXLHKpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 05:45:47 -0500
+Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
+From: Richard Purdie <rpurdie@rpsys.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Jing Xue <jingxue@digizenstudio.com>, linux-kernel@vger.kernel.org,
-       git@vger.kernel.org
-References: <20071129105220.v40i22q4gw4cgoso@intranet.digizenstudio.com> <200712080756.21980.a1426z@gawab.com> <7135.1197090987@turing-police.cc.vt.edu>
-In-Reply-To: <7135.1197090987@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200712081341.54589.a1426z@gawab.com>
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200712080340.49546.rjw@sisk.pl>
+References: <200712080340.49546.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Sat, 08 Dec 2007 10:44:38 +0000
+Message-Id: <1197110678.4665.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Sat, 08 Dec 2007 07:56:21 +0300, Al Boldi said:
-> > It probably goes without saying, that gitfs should have some basic
-> > configuration file to setup its transparent behaviour
->
-> But then it's not *truly* transparent, is it?
+On Sat, 2007-12-08 at 03:40 +0100, Rafael J. Wysocki wrote:
+> Subject		: leds: ledtrig-timer calls sleeping function from invalid context
+> Submitter	: Márton Németh <nm127@freemail.hu>
+> References	: http://bugzilla.kernel.org/show_bug.cgi?id=9264
+> Handled-By	: Richard Purdie <rpurdie@rpsys.net>
+> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=13493&action=view
 
-Don't mistake transparency with some form of auto-heuristic.  Transparency 
-only means that it inserts functionality without impeding your normal 
-workflow.
+The fix is now in mainline:
 
-> And that leaves another question - if you make a config file that excludes
-> all the .o files - then what's backing the .o files?  Those data blocks
-> need to be *someplace*.  Maybe you can do something ugly like use unionfs
-> to combine your gitfs with something else to store the other files...
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=dc47206e552c0850ad11f7e9a1fca0a3c92f5d65
 
-Or any number of other possible implementation scenarios...
+Cheers,
 
-> But at that point, you're probably better off just creating a properly
-> designed versioning filesystem.
-
-But gitfs is not about designing a versioning filesystem, it's about 
-designing a transparent interface into git to handle an SCM use-case.
+Richard
 
 
-Thanks!
-
---
-Al
 
