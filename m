@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbXLHTuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbXLHTwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753046AbXLHTuq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 14:50:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbXLHTui
+	id S1753636AbXLHTwS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 14:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbXLHTwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 14:50:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:54518 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750789AbXLHTuh (ORCPT
+	Sat, 8 Dec 2007 14:52:06 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:22275 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750789AbXLHTwD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 14:50:37 -0500
-Date: Sat, 8 Dec 2007 20:50:35 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "David P. Reed" <dpreed@reed.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64 with MCP51 laptops
-Message-ID: <20071208195035.GA22497@one.firstfloor.org>
-References: <475879CD.9080006@reed.com> <p733auekcly.fsf@bingen.suse.de> <20071207160439.71b7f46a@the-village.bc.nu> <475AEF8E.5040906@reed.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 8 Dec 2007 14:52:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=kwg79Z9R1CGpSwzHNWCQlq7lEUaVd0675JWkKDCL3frmoIPX0/vDqBxfBFsEKjX1grXNNwNdd5LPeAWkw05GPg1GhV6MoiB5RuxD9tpSPcdWiVPJ2GwflVGWQ4gv+FoRsuhchGMUA1/9qu+IVFc2g21+/wwHCxyZOKPxHpqyoLA=
+Message-ID: <3efb10970712081152o2d4abcfbo634a8d2445c09699@mail.gmail.com>
+Date: Sat, 8 Dec 2007 20:52:01 +0100
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Peter Zijlstra" <peterz@infradead.org>,
+       "Daniel Walker" <dwalker@mvista.com>
+Subject: Re: lockdep problem conversion semaphore->mutex (dev->sem)
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Dave Chinner" <dgc@sgi.com>
+In-Reply-To: <1197135413.6353.36.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <475AEF8E.5040906@reed.com>
-User-Agent: Mutt/1.4.2.1i
+References: <3efb10970712071502p4db9c58ck623c377172ead4b2@mail.gmail.com>
+	 <1197116185.31440.1.camel@twins>
+	 <1197132792.1568.162.camel@jnielson-xp.ddns.mvista.com>
+	 <1197133910.6353.33.camel@lappy>
+	 <1197133577.1568.166.camel@jnielson-xp.ddns.mvista.com>
+	 <1197135413.6353.36.camel@lappy>
+X-Google-Sender-Auth: 014cd7a8cdb64175
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 02:25:02PM -0500, David P. Reed wrote:
-> 
-> 
-> Alan Cox wrote:
-> >
-> >0x80 should be fine for anything PC compatible anyway, its specifically
-> >reserved as a debug port and supported for *exactly* that purpose by
-> >many chipsets.
-> >
-> >  
-> Disagree. The definitions of PC compatible are quite problematic.   I 
-> have the advantage over some of you young guys, in that I actually wrote 
-> code on one of the first 5 breadboard IBM PCs on the planet at Software 
-> Arts, Inc. and I was directly involved in hardware spec projects with 
-> the original IBM and Compaq engineers.  No one actually defined the port 
-> numbered 80h as a "standard" for anything.  You won't find it documented 
+Hello Peter and Daniel,
 
-It is a defacto standard for quite some time. Many motherboards
-even come with builtin port 80 displays and port 80 cards are a standard
-diagnostic tool. Pretty much all the of the standard BIOS
-write diagnostic messages to port 80. While in theory a vendor
-could change those BIOS they are pretty unlikely to do that.
+> Yeah, it are different lock instances, however by virtue of sharing the
+> same lock init site, they belong to the same lock class. Lockdep works
+> by tracking class dependancies, not instance dependancies.
 
-Have you tried yet as someone asked earlier if using another 
-free port that also leads to aborts causes the hang too?
-If yes you would know for sure it is nothing on port 80,
-but something not liking aborts (similar to the problem Eric B.
-found earlier) 
+The device and its parent both indeed have different
+pointers/instances. I saw that during debugging yesterday, so I
+already expected this was not really a bug, but a false positive of
+lockdep.
 
-Anyways using udelay is likely the way to go for modern
-systems.
+> By generalizing to classes it can detect locking errors before they
+> actually occur.
 
-> Now the interesting thing is that I have been scanning the source code 
-> of Linux, and I find gazillions of inb_p outb_p and so forth 
-> instructions where they have NO value.   It's as if some hacker who half 
+Basically that is a good thing...
+But... now we do not transfer the dev->sem to a mutex, because lockdep
+will start generating false positives, and thus we mask the lockdep
+error, by not converting the dev->sem to what it really is...
 
-It is hard to know afterwards. In the past we definitely had systems
-who needed such delays.  But some of it might be what you said.
+This does give me a bad feeling about this...  In short, we are
+implementing workarounds in good code code to hide bugs in
+debug-tooling... ?!
 
--Andi
+So, any suggestions on how to fix lockdep? Anyone some good hints
+where I can start?
+Is it that fundamental to lockdep that it cannot be fixed without
+breaking it, or do we have to instrument the code that tells lockdep
+to ignore this particular mutex?
+
+
+Kind Regards,
+
+Remy
