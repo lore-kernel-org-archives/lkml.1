@@ -1,74 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753799AbXLHO2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbXLHOoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753799AbXLHO2m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 09:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbXLHO2e
+	id S1753861AbXLHOoa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 09:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbXLHOoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 09:28:34 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60981 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751219AbXLHO2e (ORCPT
+	Sat, 8 Dec 2007 09:44:21 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57703 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751543AbXLHOoU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 09:28:34 -0500
-Date: Sat, 8 Dec 2007 15:28:31 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Tejun Heo <htejun@gmail.com>
-Cc: sam@ravnborg.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       notting@redhat.com, rusty@rustcorp.com.au, kay.sievers@vrfy.org,
-       greg@kroah.com
-Subject: Re: [PATCH] kbuild: implement modules.order
-Message-ID: <20071208142831.GB20441@stusta.de>
-References: <47555AF1.8090304@gmail.com> <20071207174843.GA20441@stusta.de> <4759DE63.7010206@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sat, 8 Dec 2007 09:44:20 -0500
+Date: Sat, 8 Dec 2007 14:43:24 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Jan Altenberg <jan.altenberg@linutronix.de>
+Cc: Andrew Victor <avictor.za@gmail.com>, David Brownell <david-b@pacbell.net>,
+       linux@maxim.org.za, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH][AT91] Fix compile error for at91rm9200 in latest git
+Message-ID: <20071208144324.GA12341@flint.arm.linux.org.uk>
+References: <1196675122.3832.18.camel@bender.lan> <200712031053.43316.david-b@pacbell.net> <cd73a99e0712031202u71efc0e1g8cf910760475bb5d@mail.gmail.com> <1196756069.3835.7.camel@bender.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4759DE63.7010206@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1196756069.3835.7.camel@bender.lan>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 08:59:31AM +0900, Tejun Heo wrote:
-> Adrian Bunk wrote:
-> > On Tue, Dec 04, 2007 at 10:49:37PM +0900, Tejun Heo wrote:
-> >> When multiple built-in modules (especially drivers) provide the same
-> >> capability, they're prioritized by link order specified by the order
-> >> listed in Makefile.  This implicit ordering is lost for loadable
-> >> modules.
-> >> ...
-> > 
-> > What exactly are the drivers you are thinking of?
-> > 
-> > I would rather see us getting away from any link order dependencies.
-> > 
-> > E.g. we might one day want to compile the whole kernel with one gcc call 
-> > (using "--combine -fwhole-program").
+On Tue, Dec 04, 2007 at 09:14:29AM +0100, Jan Altenberg wrote:
+> Hi all,
 > 
-> The following bugzilla triggered this change and I think contains enough
-> discussion on the subject.
+> > > Your patch looks correct, and seems to be the only obvious chunk
+> > > that's missing.  So, I'll ack it FWIW ... usual policy for these
+> > > patches is to go through Russell.
+> > 
+> > You can add my Ack for what it's worth.
 > 
->   http://bugzilla.kernel.org/show_bug.cgi?id=8933
+> OK, CC'ed Russell and added your Acked-by.
 > 
-> Thanks.
+> Signed-off-by: Jan Altenberg <jan.altenberg@linutronix.de>
+> Acked-by: Andrew Victor <avictor.za@gmail.com>
 
-Thanks, that explains much.
-
-And thinking about it, it doesn't seem to add any problems regarding 
-what I have in mind:
-
-If we would ever stop having any well-defined link-order for in-kernel 
-code and express everything through initcall levels, we simply must 
-additionally update the modules.order file.
-
-> tejun
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+-> patch system please.
