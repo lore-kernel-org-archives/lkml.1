@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbXLHUov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbXLHUpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754716AbXLHUov (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 15:44:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbXLHUoj
+	id S1753013AbXLHUpK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 15:45:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbXLHUoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 15:44:39 -0500
-Received: from 1wt.eu ([62.212.114.60]:2602 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753545AbXLHUoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 15:44:38 -0500
-Date: Sat, 8 Dec 2007 21:42:39 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Matt Mackall <mpm@selenic.com>, Theodore Tso <tytso@mit.edu>,
-       Mike McGrath <mmcgrath@redhat.com>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org,
-       hmh@debian.org
-Subject: Re: entropy gathering (was Re: Why does reading from /dev/urandom deplete entropy so much?)
-Message-ID: <20071208204239.GG15227@1wt.eu>
-References: <4755D350.1080801@redhat.com> <20071204223345.GJ19691@waste.org> <4756B50B.3060100@redhat.com> <20071205144934.GL7259@thunk.org> <1197099477.20786.149.camel@perihelion> <20071208173204.GI17037@thunk.org> <475AD585.7020908@redhat.com> <20071208174908.GJ17037@thunk.org> <20071208181525.GL19691@waste.org> <475AF241.5000809@garzik.org>
-Mime-Version: 1.0
+	Sat, 8 Dec 2007 15:44:46 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:41192 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754627AbXLHUoo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 15:44:44 -0500
+Date: Sat, 8 Dec 2007 20:44:26 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: davem@davemloft.net, wli@holomorphy.com, mingo@redhat.com,
+       linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: use of fixmap on non-x86/sh?
+Message-ID: <20071208204426.GC3361@linux-mips.org>
+References: <D16EA8BE-3C87-4345-8832-AB6112EE0FEA@kernel.crashing.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <475AF241.5000809@garzik.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <D16EA8BE-3C87-4345-8832-AB6112EE0FEA@kernel.crashing.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 02:36:33PM -0500, Jeff Garzik wrote:
-> 
-> As an aside...
-> 
-> Speaking as the maintainer rng-tools, which is the home of the hardware 
-> RNG entropy gathering daemon...
-> 
-> I wish somebody (not me) would take rngd and several other projects, and 
-> combine them into a single actively maintained "entropy gathering" package.
-> 
-> IMO entropy gathering has been a long-standing need for headless network 
-> servers (and now virtual machines).
-> 
-> In addition to rngd for hardware RNGs, I've been daemons out there that 
-> gather from audio and video sources (generally open wires/channels with 
-> nothing plugged in), thermal sources, etc.  There is a lot of entropy 
-> that could be gathered via userland, if you think creatively.
+On Fri, Nov 30, 2007 at 04:14:55PM -0600, Kumar Gala wrote:
 
-I remember having installed openssh on an AIX machines years ago, and
-being amazed by the number of sources it collected entropy from. Simple
-commands such as "ifconfig -a", "netstat -i" and "du -a", "ps -ef", "w"
-provided a lot of entropy.
+> Ben and I are talking about using fixmap on ppc for similar applications to 
+> it use on x86.  However in poking around other arch's (sparc, mips) they 
+> appear to have some support but not as complete as x86.
+>
+> For example both SPARC & MIPS reference __set_fixmap() in asm/fixmap.h but 
+> I can't find an implementation on either.
+>
+> So I was wondering if there was some reason fixmap isn't as well supported 
+> or if its just used for a specific function on those SPARC, MIPS, etc. and 
+> they dont need as much functionality out of it as x86 does.
 
-Regards,
-Willy
+MIPS uses fixmap for two purposes:
 
+ o In some cases it is possibly to avoid or optimize a cacheflush by creating
+   a temporary mapping.  The mechanism works very similar to what x86 and
+   MIPS use for atomic kmaps.
+ o Highmem.
+
+Both manipulate pagetables directly or even insert entries directly into
+the TLB without pagetables as intermediate stage so __set_fixmap is indeed
+unused.
+
+  Ralf
