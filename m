@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbXLION2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752567AbXLIOUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752536AbXLION2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 09:13:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbXLIONV
+	id S1752567AbXLIOUf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 09:20:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbXLIOU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 09:13:21 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42923 "EHLO ogre.sisk.pl"
+	Sun, 9 Dec 2007 09:20:27 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:42451 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750712AbXLIONU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 09:13:20 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: bbpetkov@yahoo.de
-Subject: Re: [RFC] swap image signature check upon resume
-Date: Sun, 9 Dec 2007 15:32:27 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-References: <20071206211335.GA4923@gollum.tnic> <20071209065559.GA4627@gollum.tnic> <200712091527.57523.rjw@sisk.pl>
-In-Reply-To: <200712091527.57523.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1750789AbXLIOU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 09:20:26 -0500
+Date: Sun, 9 Dec 2007 17:21:16 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] will_become_orphaned_pgrp: we have threads
+Message-ID: <20071209142116.GB131@tv-sign.ru>
+References: <20071208183800.GA9940@tv-sign.ru> <m11w9wpx03.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712091532.28417.rjw@sisk.pl>
+In-Reply-To: <m11w9wpx03.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 9 of December 2007, Rafael J. Wysocki wrote:
-> On Sunday, 9 of December 2007, Borislav Petkov wrote:
-> > On Sat, Dec 08, 2007 at 11:50:33PM +0100, Rafael J. Wysocki wrote:
-> > > On Saturday, 8 of December 2007, Borislav Petkov wrote:
-> > > > On Fri, Dec 07, 2007 at 09:19:09PM +0100, Rafael J. Wysocki wrote:
-> > > > 
-> > > > ...
-> > > > 
-> > > > > > > Well, there's a patchset in the current mainline that allows you to use
-> > > > > > > arbitrary (sufficiently new) kernel to load the image and then restore the
-> > > > > > > image kernel.  So, you can hibernate 2.6.24-rc3 and use 2.6.24-rc2 to restore
-> > > > > > > it, for example.
-> > > > > > > 
-> > > > > > > I'm going to do that for i386 too.
-> > > > > > right, this is d307c4a8e826c44f9633bd3f7e60d0491e7d885a (Hibernation: Arbitrary
-> > > > > > boot kernel support - generic code), i should've seen that. What's the status of
-> > > > > > those bits, from a quick scan it seems they need some rewiring (Kconfig, e.g.
-> > > > > > CONFIG_ARCH_HIBERNATION_HEADER etc..) and arch-specific save and restore
-> > > > > > functions?
-> > > > > 
-> > > > > No, this code is fully functional. :-)
-> > > > > 
-> > > > > The arch save and restore functions are in arch/x86/kernel/suspend_64.c .
-> > > > > 
-> > > > > As I said, i386 is not yet supported.
-> > > > 
-> > > > nice, holler if you need a tester when you have some prototypes ready. By the way,
-> > > > what do you do when the suspend image header mismatches and it is unsafe to continue booting?
-> > > 
-> > > If the image header doesn't match, we don't load it and return an error code,
-> > > which usually results in the boot kernel continuing to boot.
-> > 
-> > But if you continue to boot the filesystems were still mounted and fsck has to
-> > go over them and check for errors. In the case of ext2 this takes relatively
-> > long depending on the size of the partition. However, this is only the
-> > smaller problem, the problem of data loss is what worries me.
+On 12/08, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
 > 
-> The filesystems are synced before the hibernation, so there shouldn't be data
-> any loss.
+> > p->exit_state != 0 doesn't mean this process is dead, it may have sub-threads.
+> >
+> > However, the new "p->exit_state && thread_group_empty(p)" check is not correct
+> > either, this is just the temporary hack. Perhaps we can just remove this check,
+> > but I don't understand orphaned process groups magic. At all. However, I think
+> > exit_notify() is obviously and completely wrong wrt this helper.
+> 
+> The problem that orphaned processes groups address is what happens if
+> an entire process group is stopped, and there is not a process that
+> can wake them up.
+> 
+> The rule for an unprivileged process sending a signal to a process
+> group is that it must be in the same session as the process group.
+> 
+> The rule for sending a signal to a process group is that the signal sender
+> must be in the same session.
+> 
+> So we are testing for a process group that does not have a living
+> member with a parent outside of the process that can send the process
+> group a signal.
 
-s/data any loss/any data loss/ (sorry).
+Ah, thanks a lot Eric, I am _starting_ to understand this.
+
+> Oleg what do you see wrong with checking p->exit_state &&
+> thread_group_empty(p)?   Since non-leader threads all self reap
+> that seems to be a valid test for an dead thread group.
+
+There is a window when exit_notify() drops tasklist and before release_task().
+Suppose the last (non-leader) thread exits. This means that entire group exits,
+but thread_group_empty() is not true.
+
+Oleg.
+
