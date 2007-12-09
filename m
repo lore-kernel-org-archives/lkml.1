@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbXLIG5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbXLIHAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbXLIG5S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 01:57:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbXLIG5L
+	id S1753443AbXLIHAV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 02:00:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbXLIHAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 01:57:11 -0500
-Received: from smtp115.plus.mail.re1.yahoo.com ([69.147.102.78]:45011 "HELO
-	smtp115.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751057AbXLIG5K (ORCPT
+	Sun, 9 Dec 2007 02:00:09 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:30756 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732AbXLIHAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 01:57:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:Mail-Followup-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=Pk/g5PflT19uCWG3Fpb1qv0/aHa4b2nT3FFyT3rJ0sEMMVO7NiQz+JODPDaZslN/sW3JhPyyv6Wh8t016qxOBlZI0M8tUyR14q6AQwMYxGIj7k0ZldQqPAn2I46xNrrR5e66kEcWvlQRW/iPN99v1bocmkQa79lg9mbfoDg3+JA=  ;
-X-YMail-OSG: 8yYBmPQVM1kWZUyAWy8O3GTU4IBsN6wSryKURvvolClJZfaqE0gF7lbNfPi9tBc7krhYWnZxaw--
-Date: Sun, 9 Dec 2007 07:55:59 +0100
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] swap image signature check upon resume
-Message-ID: <20071209065559.GA4627@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-Mail-Followup-To: bbpetkov@yahoo.de, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-References: <20071206211335.GA4923@gollum.tnic> <200712072119.09836.rjw@sisk.pl> <20071208113306.GA7573@gollum.tnic> <200712082350.33626.rjw@sisk.pl>
+	Sun, 9 Dec 2007 02:00:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=CuJsTFSSr+3lDeNFFu/TW+if4l9SzgG1/v8CQMpYRjgPZjIu9t2va0jvcVspdRcp3FYdceZK+tsLaG40OkyDdK/kezPWhsojrMmmGwfCoqGvHjK6314+lMqNFRK+LxnsCVEO1Ci1U3hKYPvV2l7ZTUXTIjagIRa14qeekfZ5bhM=
+Message-ID: <475B9270.6070902@gmail.com>
+Date: Sun, 09 Dec 2007 16:00:00 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200712082350.33626.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
+References: <200712080340.49546.rjw@sisk.pl> <20071208015227.3a1c7fae.akpm@linux-foundation.org>
+In-Reply-To: <20071208015227.3a1c7fae.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 11:50:33PM +0100, Rafael J. Wysocki wrote:
-> On Saturday, 8 of December 2007, Borislav Petkov wrote:
-> > On Fri, Dec 07, 2007 at 09:19:09PM +0100, Rafael J. Wysocki wrote:
-> > 
-> > ...
-> > 
-> > > > > Well, there's a patchset in the current mainline that allows you to use
-> > > > > arbitrary (sufficiently new) kernel to load the image and then restore the
-> > > > > image kernel.  So, you can hibernate 2.6.24-rc3 and use 2.6.24-rc2 to restore
-> > > > > it, for example.
-> > > > > 
-> > > > > I'm going to do that for i386 too.
-> > > > right, this is d307c4a8e826c44f9633bd3f7e60d0491e7d885a (Hibernation: Arbitrary
-> > > > boot kernel support - generic code), i should've seen that. What's the status of
-> > > > those bits, from a quick scan it seems they need some rewiring (Kconfig, e.g.
-> > > > CONFIG_ARCH_HIBERNATION_HEADER etc..) and arch-specific save and restore
-> > > > functions?
-> > > 
-> > > No, this code is fully functional. :-)
-> > > 
-> > > The arch save and restore functions are in arch/x86/kernel/suspend_64.c .
-> > > 
-> > > As I said, i386 is not yet supported.
-> > 
-> > nice, holler if you need a tester when you have some prototypes ready. By the way,
-> > what do you do when the suspend image header mismatches and it is unsafe to continue booting?
+Hello, (cc'ing Alan)
+
+Andrew Morton wrote:
+>> Subject		: cd/dvd inaccessible in 2.6.24-rc2
+>> Submitter	: Will Trives <will@trivescon.com.au>
+>> References	: http://lkml.org/lkml/2007/11/9/290
+>> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9346
+>> Handled-By	: Len Brown <lenb@kernel.org>
+>> 		  Tejun Heo <htejun@gmail.com>
+>> Patch		: 
+>>
 > 
-> If the image header doesn't match, we don't load it and return an error code,
-> which usually results in the boot kernel continuing to boot.
+> Nasty one.  Tejun and several diligent reporters are doing sterling
+> work there and things have improved.  I don't know whether any of
+> Tejun's patches have been merged yet, but we'll probably be OK on
+> this one.
 
-But if you continue to boot the filesystems were still mounted and fsck has to
-go over them and check for errors. In the case of ext2 this takes relatively
-long depending on the size of the partition. However, this is only the
-smaller problem, the problem of data loss is what worries me.
+I'm still trying to find out what's really going on.  That drive is
+quite peculiar.
 
-Instead, I'd rather issue a warning that the swsusp header mismatches, say with
-which kernel the machine got suspended with and then start the countdown for reboot.
-Thoughts?
+> What is unclear (to me) is what actually caused those people's machines to
+> break?
+
+It's introduced by setting ATAPI transfer chunk size to actual
+transfer size which is the right thing to do generally.  However, with
+the change, the ATAPI HSM should be ready to drain full extra transfer
+chunks which libata HSM wasn't doing.  With that part changed, most
+regressions should go away.
+
+Unfortunately, simply adding that doesn't fix the case in bug 9346 and
+I'm still trying to find out why.  The good news is that the drive
+works fine with proposed more extensive improvements to libata ATAPI
+which will probably be included into 2.6.25, so we at least have long
+term solution.
+
+If we fail to find out the solution in time, we always have the
+alternative of backing out the ATAPI transfer chunk size update.  This
+will break some other cases which were fixed by the change but those
+won't be regressions at least and we can add transfer chunk size
+update with other changes to 2.6.25.
+
+Thanks.
 
 -- 
-Regards/Gruﬂ,
-    Boris.
+tejun
