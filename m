@@ -1,246 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbXLIVg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbXLIVh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbXLIVg4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 16:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbXLIVgq
+	id S1754575AbXLIVh1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 16:37:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbXLIVhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 16:36:46 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:48251 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752006AbXLIVgn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 16:36:43 -0500
-Date: Sun, 9 Dec 2007 22:36:42 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andreas Mohr <andi@lisas.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
-Message-ID: <20071209213642.GA27096@rhlx01.hs-esslingen.de>
-References: <fa.qQhD8aJpiTOFaZqjRYwoaG7YT1c@ifi.uio.no> <fa.yaP86AixGhz5Q7eXSu04pIQp6ho@ifi.uio.no> <fa.c3k8VKWAx4HIo9zXWbL5Ek0oSBw@ifi.uio.no> <fa.C8ACnOhs8bXB++vmugf5F34JcJg@ifi.uio.no> <fa.5o6E6S0UWnARbQPxLe30TvLQIiY@ifi.uio.no> <475AE150.9050306@shaw.ca>
+	Sun, 9 Dec 2007 16:37:11 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59143 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752522AbXLIVhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 16:37:09 -0500
+Date: Sun, 9 Dec 2007 22:37:40 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: hibernation issue with kernel 2.6.23-gentoo-r3 at T41
+Message-ID: <20071209213740.GD24284@elf.ucw.cz>
+References: <200712031419.41596.toralf.foerster@gmx.de> <200712092231.41064.rjw@sisk.pl> <20071209212132.GB24284@elf.ucw.cz> <200712092250.08496.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <475AE150.9050306@shaw.ca>
-X-Priority: none
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200712092250.08496.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun 2007-12-09 22:50:07, Rafael J. Wysocki wrote:
+> On Sunday, 9 of December 2007, Pavel Machek wrote:
+> > On Sun 2007-12-09 22:31:40, Rafael J. Wysocki wrote:
+> > > On Sunday, 9 of December 2007, Pavel Machek wrote:
+> > > > On Mon 2007-12-03 22:54:23, Rafael J. Wysocki wrote:
+> > > > > On Monday, 3 of December 2007, Toralf Förster wrote:
+> > > > > > Hhm,
+> > > > > > 
+> > > > > > in general it seems to be a regression of kernel 2.6.23 with suspend/hibernate
+> > > > > > if a user mode linux image is runnning.
+> > > > > > 
+> > > > > > With previous kernel versions (tested gentoo-sources-2.6.22-r9 and 
+> > > > > > gentoo-sources-2.6.21-r4) I've no problem to either suspend or to hibernate the
+> > > > > > ThinkPad T41.
+> > > > > > 
+> > > > > > However with gentoo-sources-2.6.23-r3 the system didn't neither
+> > > > > > suspend nor hibernate. The good news is that the system doesn't hang :-)
+> > > > >  
+> > > > > Please file a bug report at
+> > > > > http://bugzilla.kernel.org/enter_bug.cgi?product=Power%20Management
+> > > > > against Hibernation/Suspend and add my address to the report's CC list.
+> > > > 
+> > > > I smell refrigerator problem; can you suspend if you SIGSTOP your uml,
+> > > > first?
+> > > 
+> > > That might be, but the issue is apparently fixed in 2.6.24-rc and I'm
+> > > struggling to figure out how the !@#$%^ (please see
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=9501).
+> > 
+> > No idea... I'm glad its fixed :-). Maybe someone fixed uninterruptible
+> > sleep somewhere in ptrace...
+> 
+> Yeah, but we should find a -stable fix, if possible.
 
-[ACPI _GTM suspend issue sorta fixed, read below]
+I do not think this bug is severe enough to warrant stable fix. It
+does not eat data, and it should be easy to SIGSTOP and retry suspend.
 
-On Sat, Dec 08, 2007 at 12:24:16PM -0600, Robert Hancock wrote:
-> Matthew Garrett wrote:
->> On Sat, Dec 08, 2007 at 02:20:01AM -0800, Andrew Morton wrote:
->>> On Sat, 8 Dec 2007 11:12:57 +0100 Andreas Mohr <andi@lisas.de> wrote:
->>>> ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT, Index (0FFFFFFFF) is beyond end of object [20070126]
->>>> ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.GTF_] (Node c180b990), AE_AML_PACKAGE_LIMIT
->>>> ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.CHN0.DRV1._GTF] (Node c180b888), AE_AML_PACKAGE_LIMIT
->>>> ata1.01: _GTF evaluation failed (AE 0x300d)
->>
->> 037f6bb79f753c014bc84bca0de9bf98bb5ab169 ought to have fixed this?
->>
->
-> I should think it should have.
-
-Yup, the _GTF problem is certainly fixed, but this is a dead-end
-since I showed the -rc1 vs. -rc2 behaviour, whereas I still have
-failing suspend in -rc4 with this patch confirmed to be applied
-(source does contain the changes) and confirmed to apparently be working
-(no errors in dmesg any more).
-
-IOW, what I'm concerned about is not a _GTF error on boot any more,
-but a seemingly fatally handled _GTM error on suspend.
-
-
-...OK, dug some more into this, and now I managed to get it to work,
-and it was indeed _GTM which broke my whole suspend:
-
-Since _GTM is failing on me (and the point is, it's failing
-catastrophically, not "normally"!), ata_acpi_on_suspend()
-calling ata_acpi_gtm() fails with -EINVAL instead of -ENOENT,
-however ata_acpi_on_suspend() has the following correction only:
-
-        if (rc == -ENOENT)
-                rc = 0;
-
-to make sure a suspend doesn't get aborted (fatal error) when
-_GTM is simply empty.
-
-Changing this into
-
-        if ((rc == -ENOENT) || (rc == -EINVAL))
-                rc = 0;
-
-to additionally account for _invalid_ _GTM execution makes my suspend
-(and resume!) work again on -rc4.
-
-
-Now the question is whether this error code correction is ok, or whether a
-catastrophically failing _GTM should have been truly registered on boot
-already (where it does gtm to fetch cable timings) to subsequently avoid
-doing any ATA ACPI things on suspend at all.
-
-
-And the second, possibly much more lucrative, question would be
-whether we're actually doing something wrong with our ACPI _GTM execution
-which triggers the AE_AML_PACKAGE_LIMIT problem.
-
-This might help here, perhaps (relevant snippets of AML dump):
-
-                Device (CHN0)
-                {
-                    Name (_ADR, 0x00)
-                    Method (_GTM, 0, NotSerialized)
-                    {
-                        Return (GTM (PMPT, PMUE, PMUT, PSPT, PSUE, PSUT))
-                    }
-
-                    Method (_STM, 3, NotSerialized)
-                    {
-                        Store (Arg0, TMD0)
-                        Store (PMPT, GMPT)
-                        Store (PMUE, GMUE)
-                        Store (PMUT, GMUT)
-                        Store (PSPT, GSPT)
-                        Store (PSUE, GSUE)
-                        Store (PSUT, GSUT)
-                        STM ()
-                        Store (GMPT, PMPT)
-                        Store (GMUE, PMUE)
-                        Store (GMUT, PMUT)
-                        Store (GSPT, PSPT)
-                        Store (GSUE, PSUE)
-                        Store (GSUT, PSUT)
-                    }
-
-                Device (CHN1)
-                {
-                    Name (_ADR, 0x01)
-                    Method (_GTM, 0, NotSerialized)
-                    {
-                        Return (GTM (SMPT, SMUE, SMUT, SSPT, SSUE, SSUT))
-                    }
-
-                    Method (_STM, 3, NotSerialized)
-                    {
-                        Store (Arg0, TMD0)
-                        Store (SMPT, GMPT)
-                        Store (SMUE, GMUE)
-                        Store (SMUT, GMUT)
-                        Store (SSPT, GSPT)
-                        Store (SSUE, GSUE)
-                        Store (SSUT, GSUT)
-                        STM ()
-                        Store (GMPT, SMPT)
-                        Store (GMUE, SMUE)
-                        Store (GMUT, SMUT)
-                        Store (GSPT, SSPT)
-                        Store (GSUE, SSUE)
-                        Store (GSUT, SSUT)
-                    }
-
-
-                Method (GTM, 6, Serialized)
-                {
-                    Store (Ones, PIO0)
-                    Store (Ones, PIO1)
-                    Store (Ones, DMA0)
-                    Store (Ones, DMA1)
-                    Store (0x10, CHNF)
-                    If (REGF) {}
-                    Else
-                    {
-                        Return (TMD0)
-                    }
-
-                    Store (Match (DerefOf (Index (TIM0, 0x01)), MEQ, Arg0, MTR,
-                        0x00, 0x00), Local6)
-                    Store (DerefOf (Index (DerefOf (Index (TIM0, 0x00)), Local6)
-),
-                        Local7)
-                    Store (Local7, DMA0)
-                    Store (Local7, PIO0)
-                    Store (Match (DerefOf (Index (TIM0, 0x01)), MEQ, Arg3, MTR,
-                        0x00, 0x00), Local6)
-                    Store (DerefOf (Index (DerefOf (Index (TIM0, 0x00)), Local6)
-),
-                        Local7)
-                    Store (Local7, DMA1)
-                    Store (Local7, PIO1)
-                    If (Arg1)
-                    {
-                        If (A133 ())
-                        {
-                            Store (DerefOf (Index (DerefOf (Index (TIM0, 0x0D)),
- Arg2)),
-                                Local5)
-                        }
-                        Else
-                        {
-                            Store (DerefOf (Index (DerefOf (Index (TIM0, 0x0A)),
- Arg2)),
-                                Local5)
-                        }
-
-                        If (A133 ())
-                        {
-                            Store (DerefOf (Index (DerefOf (Index (TIM0, 0x0C)),
- Local5)),
-                                DMA0)
-                        }
-                        Else
-                        {
-                            Store (DerefOf (Index (DerefOf (Index (TIM0, 0x04)),
- Local5)),
-                                DMA0)
-                        }
-
-                        Or (CHNF, 0x01, CHNF)
-                    }
-
-                    If (Arg4)
-                    {
-                        If (A133 ())
-                        {
-                            Store (DerefOf (Index (DerefOf (Index (TIM0, 0x0D)), Arg5)),
-                                Local5)
-                        }
-                        Else
-                        {
-                            Store (DerefOf (Index (DerefOf (Index (TIM0, 0x0A)), Arg5)),
-                                Local5)
-                        }
-
-                        If (A133 ())
-                        {
-                            Store (DerefOf (Index (DerefOf (Index (TIM0, 0x0C)), Local5)),
-                                DMA1)
-                        }
-                        Else
-                        {
-                            Store (DerefOf (Index (DerefOf (Index (TIM0, 0x04)), Local5)),
-                                DMA1)
-                        }
-
-                        Or (CHNF, 0x04, CHNF)
-                    }
-
-                    Return (TMD0)
-                }
-
-
-Reminder: issue tracked at #9530.
-
-
-Thanks,
-
-Andreas Mohr
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
