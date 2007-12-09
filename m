@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbXLIHas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbXLIHr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbXLIHas (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 02:30:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbXLIHal
+	id S1752704AbXLIHr2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 02:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbXLIHrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 02:30:41 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:49512 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751433AbXLIHak (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 02:30:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=aNjXwLX15NQd0oIBnKc1SOogSsNISos9dKIuhvIkFu7UOtRZjM9k/zJ8ocHebaZQ2eRlvFSPup5Ylm3ov3BwldiTn9bNxj8lvCqrKI2FAgWqcXXFcZPgUzsEMettaFKoCk+rXbfAeL1xe4ksYwlCXJNIEs9bVOoXu+rRUrc+h+I=
-Message-ID: <475B9978.3080606@googlemail.com>
-Date: Sun, 09 Dec 2007 08:30:00 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071204)
+	Sun, 9 Dec 2007 02:47:20 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57374 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750702AbXLIHrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 02:47:19 -0500
+Date: Sun, 9 Dec 2007 08:46:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jiri Slaby <jirislaby@gmail.com>, Gautham R Shenoy <ego@in.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
+Message-ID: <20071209074647.GE22981@elte.hu>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org> <47595A0A.5000502@gmail.com> <20071207151150.GB24254@elte.hu> <20071207175134.GA18916@elte.hu> <475A5188.6070809@gmail.com> <20071208083939.GD30997@elte.hu> <475A629C.7010408@gmail.com> <20071208152447.GA30270@elte.hu> <475B24F4.3090904@gmail.com>
 MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: usb regression in 2.6.24-rc4
-References: <200712090113.57805.gene.heskett@gmail.cm>
-In-Reply-To: <200712090113.57805.gene.heskett@gmail.cm>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <475B24F4.3090904@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> Greetings guys & gals;
 
-Hi ,
+* Jiri Slaby <jirislaby@gmail.com> wrote:
 
+> On 12/08/2007 04:24 PM, Ingo Molnar wrote:
+> > i'm wondering why it had no effect now
 > 
-> This was sent about an hour ago to the usb-devel list also.
-> -------------
-> Just a few minutes ago I needed to make use of my scanner, an Epson 1250u.
+> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> index e0d3a4f..a46c252 100644
+> --- a/kernel/cpu.c
+> +++ b/kernel/cpu.c
+> @@ -47,15 +47,21 @@ void __init cpu_hotplug_init(void)
+>  }
 > 
-> Firing up xsane, the usual select the device menu window didn't show, and it 
-> went straight to my tv card as the only input device.
-> 
-> I couldn't recall the name of the tool that scans for scanners that's in the 
-> sane package, or should be, so I then did an lsusb, but got an empty result!
-> 
-> Unplugging the usb cable from the scanner, then reconnecting the usb cable got 
-> me the usual disconnect and connect messages in the log, but xsane still 
-> couldn't find it.
-> 
-> So I rebooted to 2.6.24-rc4 again, same result.  lsusb still gave an empty 
-> result.  The two kernels were generated from the same .config as far as I 
-> know.  The -rc3 .config was fed to a "make oldconfig" to make 
-> the -rc4 .config as is the usual practice.
-> 
-> So I then rebooted to 2.6.24-rc3, and it all works again.  I got the scanning 
-> done and the pix sent on their merry way.
-> 
-> Anybody have a suggestion of what to check, or maybe a patch to revert?  Or 
-> a .config option that needs to be enabled?
->
+>  #ifdef CONFIG_HOTPLUG_CPU
+> -
+> +#include <asm/io.h>
+>  void get_online_cpus(void)
+>  {
+> +       outb(0x20, 0x80);
+>         might_sleep();
+> +       outb(0x21, 0x80);
 
-Sounds for me like this one : 
+ah. If you comment out get_online_cpus()/put_online_cpus() from 
+kernel/softlockup.c, does it start working?
 
-http://lkml.org/lkml/2007/12/6/409
+Gautham, any ideas?
 
-Gabriel
+	Ingo
