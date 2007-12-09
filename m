@@ -1,122 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273AbXLIVqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbXLIV5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754273AbXLIVqa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 16:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbXLIVqW
+	id S1753368AbXLIV5t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 16:57:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbXLIV5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 16:46:22 -0500
-Received: from mail.prans.org ([64.79.206.200]:56044 "EHLO mail.prans.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751225AbXLIVqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 16:46:21 -0500
-X-Greylist: delayed 2017 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Dec 2007 16:46:21 EST
-From: Elvis Pranskevichus <el@prans.net>
-Subject: Re: [lm-sensors] 2.6.24-rc4 hwmon it87 probe fails
-To: Jean Delvare <khali@linux-fr.org>, Mike Houston <mikeserv@bmts.com>,
-       Adrian Bunk <bunk@stusta.de>, mhoffman@lightlink.com,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Adam Belay <ambx1@neo.rr.com>
-Date: Sun, 09 Dec 2007 16:12:25 -0500
-References: <20071204215154.7f26285e.mikeserv@bmts.com> <20071209000554.GF20441@stusta.de> <20071208212234.e00b74cd.mikeserv@bmts.com> <20071209105028.06ed52a6@hyperion.delvare>
-User-Agent: KNode/0.10.5
+	Sun, 9 Dec 2007 16:57:41 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:26700 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbXLIV5k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 16:57:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=f/aX7Qt4glmBRVhHQtfIOkJRwxiJ7sQ4AMjj9bynq4vzi+jvTwlZNL5FxfJV4ajJ6vywqRXQ87EM6Ji/z8VVydrVzQWrad2QaLiLMMtuw6mBdiqqRhTig2zHtTtvDQP0Mgo0drXf1P57sirMpZ6W3FZQPXnclQ4GYN4XZ1h8FbU=
+Message-ID: <82e4877d0712091357u41973a24v38c4ad18ad596de5@mail.gmail.com>
+Date: Sun, 9 Dec 2007 16:57:38 -0500
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: soft lockup - CPU#1 stuck for 15s! [swapper:0]
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <82e4877d0712081512s2b5a72aewbe396f28305ac963@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1J1TRp-0000ZF-6J@asgard.prans.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <924EFEDD5F540B4284297C4DC59F3DEE38C3C2@orsmsx423.amr.corp.intel.com>
+	 <20071208191330.GA21186@elte.hu>
+	 <82e4877d0712081133y49fec9bfyee30a3010b37c435@mail.gmail.com>
+	 <20071208194211.GA579@elte.hu>
+	 <82e4877d0712081208u335c968csd1d3e9259cdd2920@mail.gmail.com>
+	 <20071208201137.GA13451@elte.hu>
+	 <82e4877d0712081246x4d788c36i908916185611fa94@mail.gmail.com>
+	 <20071208125144.734e9f81@laptopd505.fenrus.org>
+	 <82e4877d0712081304r19721b43w78b294ea8d470405@mail.gmail.com>
+	 <82e4877d0712081512s2b5a72aewbe396f28305ac963@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
+On Dec 8, 2007 6:12 PM, Parag Warudkar <parag.warudkar@gmail.com> wrote:
+> No problems after disabling CONFIG_HIGHRES_TIMERS , CONFIG_CPU_IDLE
+> and CONFIG_NO_HZ.
+>
+> I will try enabling them one by one - HRT, NOHZ and CPU_IDLE last -
+> that way we can at least tell what is required to be hit with this
+> problem.
 
-> Hi Mike,
-> 
-> On Sat, 8 Dec 2007 21:22:34 -0500, Mike Houston wrote:
->> On Sun, 9 Dec 2007 01:05:54 +0100
->> Adrian Bunk <bunk@stusta.de> wrote:
->> 
->> > On Tue, Dec 04, 2007 at 09:51:54PM -0500, Mike Houston wrote:
->> > > I finally got around to testing Linux 2.6.24 (2.6.24-rc4) and
->> > > found that the it87 driver fails to probe and consequently, my
->> > > sensors no longer work. This was fine with Linux 2.6.23.8 (the
->> > > last kernel I was using)
->> > > 
->> > > The necessary modules load, but:
->> > > 
->> > > it87: Found IT8718F chip at 0x290, revision 2
->> > > it87: in3 is VCC (+5V)
->> > > it87 it87.656: Failed to request region 0x290-0x297
->> > > it87: probe of it87.656 failed with error -16
->> > > 
->> > > Coretemp still works.
->> > > 
->> > > It appears it has something to do with the ioport range being
->> > > reserved for some reason:
->> > > 
->> > > system 00:01: ioport range 0x290-0x29f has been reserved
->> 
->> > 
->> > Thanks for your report.
->> > 
->> > Please also provide:
->> > - dmesg from 2.6.23.8
->> > - The output of "cat /proc/ioports" for both kernels
->> 
->> Thanks Adrian, here is the information you have requested, for
->> both kernels (I have 2.6.23.9 now though where it87 still works)
->> 
->> Linux 2.6.23.9:
->> http://www.mikeserv.com/temp/proc_ioports-2.6.23.9.txt
->> http://www.mikeserv.com/temp/dmesg-2.6.23.9.txt
->> http://www.mikeserv.com/temp/config-2.6.23.9.txt
->> 
->> Linux 2.6.24-rc4:
->> http://www.mikeserv.com/temp/proc_ioports-2.6.24-rc4.txt
->> http://www.mikeserv.com/temp/dmesg-2.6.24-rc4.txt
-> 
-> This one shows:
-> 
-> system 00:01: ioport range 0x290-0x29f has been reserved
-> (...)
-> system 00:01: ioport range 0x290-0x294 has been reserved
-> 
-> This is clearly not correct as both areas overlap. The second
-> reservation is responsible for the it87 breakage, because it conflicts
-> with what the it87 driver later attempts to request (0x290-0x297). The
-> first is wrong as well (the IT87xxF environment controller I/O area is
-> 8 port wide, not 16) but shouldn't be a problem in practice.
-> 
-> These port reservations weren't happening in 2.6.23.9 according to your
-> dmesg output for that kernel. I don't know what changed in this area
-> since 2.6.23.9, maybe Bjorn or Adam (Cc'd) can tell.
-> 
+Looks like CPU_IDLE=y is necessary for the problem to show up.
+With CPU_IDLE=n HRT+NO_HZ+TICK_ONESHOT does not give soft lockup problems.
+(Actually with HIGH_RES_TIMERS=NO_HZ=TICK_ONESHOT=y  I do see short
+freezes on ssh - when I cannot type anything for may be a second even
+under 100% idle. But Soft Lock up doesnt show up in dmesg with this
+configuration.)
 
-Hi,
+No Soft Lockup - CPU_IDLE=n 5+ Hours uptime
+---------------------------------------------------------------------------
+HIGH_RES_TIMERS=NO_HZ=TICK_ONESHOT=n
+HIGH_RES_TIMERS=y NO_HZ=TICK_ONESHOT=n
+HIGH_RES_TIMERS=NO_HZ=y TICK_ONESHOT=n
+HIGH_RES_TIMERS=NO_HZ=TICK_ONESHOT=y - short freezes.
 
-I have exactly the same problem here on a Gigabyte GA-965G-DS3 motherboard
-based box:
 
-it87: Found IT8718F chip at 0x290, revision 1
-it87: in3 is VCC (+5V)
-it87 it87.656: Failed to request region 0x290-0x297
-it87: probe of it87.656 failed with error -16
+Soft Lockup - CPU_IDLE=y 2 hours uptime
+--------------------------------------------------------------------------
+HIGH_RES_TIMERS=NO_HZ=TICK_ONESHOT=y
 
-git bisecting revealed the offending commit:
+dmesg -
 
-a7839e960675b54: PNP: increase the maximum number of resources
+BUG: soft lockup - CPU#1 stuck for 11s! [swapper:0]
 
-Happened between rc3 and rc4.
+Pid: 0, comm: swapper Not tainted (2.6.24-rc4 #13)
+EIP: 0060:[<c0603eaa>] EFLAGS: 00000202 CPU: 1
+EIP is at _spin_lock_irqsave+0x16/0x27
+EAX: c06b4110 EBX: 00000001 ECX: f7873808 EDX: 00000293
+ESI: 00000005 EDI: f7873808 EBP: 00000000 ESP: f7829f10
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+CR0: 8005003b CR2: 800f5958 CR3: 37284000 CR4: 000006d0
+DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+DR6: ffff0ff0 DR7: 00000400
+ [<c0438293>] tick_broadcast_oneshot_control+0x10/0xda
+ [<c0437ce2>] tick_notify+0x1d4/0x2eb
+ [<c04281bc>] get_next_timer_interrupt+0x143/0x1b4
+ [<c06058a1>] notifier_call_chain+0x2a/0x47
+ [<c04345c0>] raw_notifier_call_chain+0x17/0x1a
+ [<c043781e>] clockevents_notify+0x19/0x4f
+ [<c0533d23>] acpi_idle_enter_simple+0x183/0x1d0
+ [<c058cf03>] cpuidle_idle_call+0x53/0x78
+ [<c058ceb0>] cpuidle_idle_call+0x0/0x78
+ [<c0402575>] cpu_idle+0x97/0xb8
+ =======================
 
-> Either way, the overlapping areas smell like a BIOS bug, meaning that
-> you should look for an updated BIOS for your system first.
-> 
->> http://www.mikeserv.com/temp/config-2.6.24-rc4.txt
-> 
-
-This indeed looks like a broken ACPI BIOS since the aforementioned commit
-touches only the PNP ACPI driver. I'm not sure how to work around this,
-though. Ideas?
-
---
-          Elvis
-
+Parag
