@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751817AbXLIQAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbXLIQLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751817AbXLIQAW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 11:00:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbXLIQAI
+	id S1752586AbXLIQLe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 11:11:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbXLIQLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 11:00:08 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:59637 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbXLIQAH (ORCPT
+	Sun, 9 Dec 2007 11:11:25 -0500
+Received: from smtp108.plus.mail.re1.yahoo.com ([69.147.102.71]:30168 "HELO
+	smtp108.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750998AbXLIQLY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 11:00:07 -0500
-Date: Sun, 9 Dec 2007 07:59:21 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Mackall" <mpm@selenic.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52,
- [2.6.24-rc4-git5: Reported regressions from 2.6.23]
-Message-ID: <20071209075921.4a0e1240@laptopd505.fenrus.org>
-In-Reply-To: <84144f020712090020o5bdeb54fqaa9e6578bd066f29@mail.gmail.com>
-References: <200712080340.49546.rjw@sisk.pl>
-	<20071208093039.GA28054@elte.hu>
-	<20071208163749.GI19691@waste.org>
-	<alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org>
-	<alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org>
-	<20071208100950.a3547868.akpm@linux-foundation.org>
-	<alpine.LFD.0.9999.0712081034470.12046@woody.linux-foundation.org>
-	<20071208195211.GA3727@elte.hu>
-	<20071208202930.GA17934@elte.hu>
-	<84144f020712090020o5bdeb54fqaa9e6578bd066f29@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 9 Dec 2007 11:11:24 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:Mail-Followup-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=2eL5FgMC49Rj3uDLDuWS9y4b/U0VozTxUcUrDyAtV8642t75JQQIOtY6y5oMghd5QAlfSqujzDJcMc35GvrdwFkKtmABc0YuvPj8QR0zH/9tALgdk0DExZbAPmsccHMn8aN3RkZr6O5b7JyJyyHI0mF1BU9VEl326LTrw9ARTbM=  ;
+X-YMail-OSG: JepKdHsVM1k7q_VHTRpUYBFhyIRguomo5CfXeJiu6LaTWNYpfmQfn8tRfC.m1Q.KPEidSv0GIA--
+Date: Sun, 9 Dec 2007 17:09:59 +0100
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] swap image signature check upon resume
+Message-ID: <20071209160959.GA4978@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+Mail-Followup-To: bbpetkov@yahoo.de, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+References: <20071206211335.GA4923@gollum.tnic> <200712082350.33626.rjw@sisk.pl> <20071209065559.GA4627@gollum.tnic> <200712091527.57523.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200712091527.57523.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Dec 2007 10:20:19 +0200
-"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
-\
-> Now, while SLAB code is "pleasant and straightforward code" (thanks,
-> btw) for UMA, it's really hairy for NUMA plus the "alien caches" eat
-> tons of memory 
+On Sun, Dec 09, 2007 at 03:27:57PM +0100, Rafael J. Wysocki wrote:
+...
 
-.. and they make slab slower on numa systems for database workloads
-(I'm sure they do fine for SGI's customers HPC load though))
+> > Instead, I'd rather issue a warning that the swsusp header mismatches, say with
+> > which kernel the machine got suspended with and then start the countdown for reboot.
+> 
+> What exactly would that change?  You need to reboot anyway and fsck will run on
+> the filesystems regardless of which kernel you boot with.
 
->(which is why Christoph wrote SLUB in the first place,
-> the current code in SLAB is mostly unfixable due to its *queuing*
-> nature).
-
-To be honest, a SLAB without the alien stuff might be one of the best
-performers today .... ;)
-(on database loads.. where slub is quite a disaster as everyone knows)
+well, you'll have the chance to reboot with the kernel the machine got suspended
+with and then the swsusp image header _will_ match so no fsck-ing. or am i
+missing something...
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Regards/Gruﬂ,
+    Boris.
