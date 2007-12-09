@@ -1,99 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXLIXfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbXLIXpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752812AbXLIXfB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 18:35:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbXLIXew
+	id S1753209AbXLIXpX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 18:45:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbXLIXpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 18:34:52 -0500
-Received: from mail.mikeserv.com ([64.15.129.103]:43924 "EHLO
-	hd-t3204cl.privatedns.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbXLIXev (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 18:34:51 -0500
-X-Greylist: delayed 1012 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Dec 2007 18:34:50 EST
-X-ClientAddr: 69.159.228.171
-Date: Sun, 9 Dec 2007 18:15:15 -0500
-From: Mike Houston <mike@mikeserv.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Elvis Pranskevichus <el@prans.net>, Mike Houston <mikeserv@bmts.com>,
-       Adrian Bunk <bunk@stusta.de>, mhoffman@lightlink.com,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Adam Belay <ambx1@neo.rr.com>
-Subject: Re: [lm-sensors] 2.6.24-rc4 hwmon it87 probe fails
-Message-Id: <20071209181515.a62878c0.mike@mikeserv.com>
-In-Reply-To: <20071209234215.748ed407@hyperion.delvare>
-References: <20071204215154.7f26285e.mikeserv@bmts.com>
-	<20071209000554.GF20441@stusta.de>
-	<20071208212234.e00b74cd.mikeserv@bmts.com>
-	<20071209105028.06ed52a6@hyperion.delvare>
-	<E1J1TRp-0000ZF-6J@asgard.prans.org>
-	<20071209234215.748ed407@hyperion.delvare>
-Organization: Mike's Computer Service
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.10.14; x86_64-unknown-linux-gnu)
+	Sun, 9 Dec 2007 18:45:10 -0500
+Received: from pat.uio.no ([129.240.10.15]:35832 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751322AbXLIXpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 18:45:08 -0500
+Subject: Re: BUG fs/dcache.c:595 in 2.4.24rc3-git3 during NFS umount
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, torvalds@osdl.org
+In-Reply-To: <200712081422.30815.ak@suse.de>
+References: <200712031623.58223.ak@suse.de>  <200712081422.30815.ak@suse.de>
+Content-Type: multipart/mixed; boundary="=-uvrAxHD9nvR+PYSn88t7"
+Date: Sun, 09 Dec 2007 18:45:01 -0500
+Message-Id: <1197243901.11792.1.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-mikeserv-MailScanner-Information: Please contact the ISP for more information
-X-mikeserv-MailScanner: Found to be clean
-X-MailScanner-From: mike@mikeserv.com
+X-Mailer: Evolution 2.12.1 
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.4, required=5.0, autolearn=disabled, AWL=-0.351)
+X-UiO-Scanned: 671EF6ABB855125E73EADD493F30708EEB57FAFF
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -3 maxlevel 200 minaction 2 bait 0 mail/h: 243 total 5650616 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Dec 2007 23:42:15 +0100
-Jean Delvare <khali@linux-fr.org> wrote:
-> In the meantime, I guess that booting with pnpacpi=off should fix
-> your problem. But it might break something else; I'm not sure what
-> the PNP ACPI driver is good for in the first place.
 
-Ahh, thanks guys. Yes, that did indeed work around the problem. My
-sensors work again, and I don't appear to have any ill effects. At
-least my devices are all working, and resource assignments (irq, io)
-look ok.
+--=-uvrAxHD9nvR+PYSn88t7
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-I'll put an append in my lilo.conf for pnpacpi=off for now.
 
-/proc/ioports with pnpacpi=off:
-0000-001f : dma1
-0020-0021 : pic1
-0040-0043 : timer0
-0050-0053 : timer1
-0060-006f : keyboard
-0070-0077 : rtc
-0080-008f : dma page reg
-00a0-00a1 : pic2
-00c0-00df : dma2
-00f0-00ff : fpu
-0290-0297 : it87
-  0290-0297 : it87
-03c0-03df : vga+
-0400-047f : 0000:00:1f.0
-  0400-0403 : ACPI PM1a_EVT_BLK
-  0404-0405 : ACPI PM1a_CNT_BLK
-  0408-040b : ACPI PM_TMR
-  0410-0415 : ACPI CPU throttle
-  0428-042f : ACPI GPE0_BLK
-0480-04bf : 0000:00:1f.0
-0500-051f : 0000:00:1f.3
-  0500-051f : i801_smbus
-0cf8-0cff : PCI conf1
-7000-7fff : PCI Bus #02
-8000-8fff : PCI Bus #04
-9000-9fff : PCI Bus #03
-a000-afff : PCI Bus #01
-  a000-a07f : 0000:01:00.0
-b000-bfff : PCI Bus #05
-  b000-b0ff : 0000:05:02.0
-    b000-b0ff : 8139too
-c000-c01f : 0000:00:1a.1
-c400-c41f : 0000:00:1d.0
-c800-c81f : 0000:00:1d.1
-cc00-cc1f : 0000:00:1d.2
-d000-d01f : 0000:00:1a.0
-d400-d407 : 0000:00:1f.2
-d800-d803 : 0000:00:1f.2
-dc00-dc07 : 0000:00:1f.2
-e000-e003 : 0000:00:1f.2
-e400-e41f : 0000:00:1f.2
+On Sat, 2007-12-08 at 14:22 +0100, Andi Kleen wrote:
+>  [39943.212533] ------------[ cut here ]------------
+> [39943.221973] kernel BUG at fs/dcache.c:595!
+> [39943.230369] invalid opcode: 0000 [1] SMP
+> [39943.238638] last sysfs file: /devices/system/cpu/cpu7/cache/index2/shared_cpu_map
+> [39943.253998] CPU 3
+> [39943.258283] Modules linked in: nfs lockd nfs_acl sunrpc autofs4 iptable_filter ip_tables ip6table_filter ip6_tables x_tables af_packet ipv6 cpufreq_conservative cpufreq_userspace cpufreq_powersave acpi_cpufreq dm_crypt ext2 ext3 jbd mbcache loop dm_mod e1000 i2c_i801 shpchp container pci_hotplug button iTCO_wdt rtc_cmos rtc_core i2c_core iTCO_vendor_support rtc_lib sr_mod cdrom floppy sg ehci_hcd uhci_hcd sd_mod usbcore edd reiserfs fan aic79xx scsi_transport_spi ata_piix ahci libata scsi_mod thermal processor
+> [39943.351718] Pid: 31869, comm: umount.nfs Tainted: G       N 2.6.24-rc4-git3-20071206230004-default #1
+> [39943.370555] RIP: 0010:[<ffffffff802a64ce>]  [<ffffffff802a64ce>] shrink_dcache_for_umount_subtree+0x16/0x241
+> [39943.390671] RSP: 0018:ffff8101dc88fe18  EFLAGS: 00010206
+> [39943.401552] RAX: 0000000000000000 RBX: ffff8100840893c0 RCX: 0000000000000000
+> [39943.416040] RDX: 00000000ffffffff RSI: 0000000000000296 RDI: ffff8100840893c0
+> [39943.430504] RBP: ffff8100084fff20 R08: ffff81004d0a6850 R09: 0000000000000296
+> [39943.444969] R10: ffff81004d0a6850 R11: ffffffff802f778c R12: ffff810222439400
+> [39943.459424] R13: 0000000000000000 R14: 00007fef065cdf00 R15: 0000000000000000
+> [39943.473887] FS:  00007fef052ad6f0(0000) GS:ffff810226419940(0000) knlGS:0000000000000000
+> [39943.490452] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [39943.502134] CR2: 00007f5793a36580 CR3: 000000021ee38000 CR4: 00000000000006e0
+> [39943.516599] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [39943.531049] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [39943.545507] Process umount.nfs (pid: 31869, threadinfo ffff8101dc88e000, task ffff81021ef3b080)
+> [39943.563289] Stack:  0000000000000296 ffff810222439400 ffffffff883e9be0 ffff810222439400
+> [39943.579846]  0000000000000000 ffffffff802a6728 ffff810222439400 ffffffff80297e34
+> [39943.595152]  ffff81004d0a67c0 0000000000000017 ffffffff88401a80 ffffffff80297f33
+> [39943.609871] Call Trace:
+> [39943.615566]  [<ffffffff802a6728>] shrink_dcache_for_umount+0x2f/0x3d
+> [39943.628463]  [<ffffffff80297e34>] generic_shutdown_super+0x19/0xf1
+> [39943.641011]  [<ffffffff80297f33>] kill_anon_super+0x9/0x35
+> [39943.652193]  [<ffffffff883cd1ba>] :nfs:nfs_kill_super+0xd/0x16
+> [39943.664037]  [<ffffffff80297fe4>] deactivate_super+0x6a/0x83
+> [39943.675537]  [<ffffffff802ab8ab>] sys_umount+0x23c/0x24d
+> [39943.686361]  [<ffffffff802a5c8a>] d_kill+0x40/0x55
+> [39943.696139]  [<ffffffff802a7217>] dput+0x26/0x115
+> [39943.705745]  [<ffffffff802970c0>] __fput+0x14a/0x179
+> [39943.715861]  [<ffffffff802aabd1>] mntput_no_expire+0x1f/0x86
+> [39943.727375]  [<ffffffff802946ea>] filp_close+0x5a/0x61
+> [39943.737853]  [<ffffffff8020bfde>] system_call+0x7e/0x83
+> [39943.748495]
+> [39943.751674]
+> [39943.751675] Code: 0f 0b eb fe 48 c7 c7 80 06 63 80 e8 67 75 17 00 48 8b 53 40
+> [39943.770405] RIP  [<ffffffff802a64ce>] shrink_dcache_for_umount_subtree+0x16/0x241
+> [39943.785790]  RSP <ffff8101dc88fe18>
+> [82148.423473] JBD: barrier-based sync failed on dm-1 - disabling barriers
 
-Mike Houston
+Hi Andi,
+
+Does the attached patch fix the Oops?
+
+Cheers
+  Trond
+
+--=-uvrAxHD9nvR+PYSn88t7
+Content-Description: 
+Content-Type: message/rfc822
+Content-Disposition: inline; filename=linux-2.6.24-002-fix_oops_in_nfs_unmount.dif
+
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: 
+Subject: NFS: Fix an Oops in NFS unmount
+Message-Id: <1197243901.11792.2.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+Ensure that the dummy 'root dentry' is invisible to d_find_alias(). If not,
+then it may be spliced into the tree if a parent directory from the same
+filesystem gets mounted at a later time.
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/nfs/getroot.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/fs/nfs/getroot.c b/fs/nfs/getroot.c
+index 0ee4384..076987e 100644
+--- a/fs/nfs/getroot.c
++++ b/fs/nfs/getroot.c
+@@ -57,6 +57,15 @@ static int nfs_superblock_set_dummy_root(struct super_block *sb, struct inode *i
+ 		}
+ 		/* Circumvent igrab(): we know the inode is not being freed */
+ 		atomic_inc(&inode->i_count);
++		/*
++		 * Ensure that this dentry is invisible to d_find_alias().
++		 * Otherwise, it may be spliced into the tree by
++		 * d_materialise_unique if a parent directory from the same
++		 * filesystem gets mounted at a later time.
++		 * This again causes shrink_dcache_for_umount_subtree() to
++		 * Oops, since the test for IS_ROOT() will fail.
++		 */
++		sb->s_root->d_flags |= DCACHE_DISCONNECTED;
+ 	}
+ 	return 0;
+ }
+
+--=-uvrAxHD9nvR+PYSn88t7--
+
