@@ -1,35 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbXLIWgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbXLIWm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbXLIWgI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 17:36:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbXLIWf4
+	id S1753653AbXLIWm2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 17:42:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbXLIWmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 17:35:56 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53510 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751225AbXLIWf4 (ORCPT
+	Sun, 9 Dec 2007 17:42:19 -0500
+Received: from smtp-100-sunday.nerim.net ([62.4.16.100]:54541 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750767AbXLIWmT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 17:35:56 -0500
-Date: Sun, 9 Dec 2007 22:29:28 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, "David P. Reed" <dpreed@reed.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-Message-ID: <20071209222928.3f7b63a4@the-village.bc.nu>
-In-Reply-To: <20071209212513.GC24284@elf.ucw.cz>
-References: <475879CD.9080006@reed.com>
-	<p733auekcly.fsf@bingen.suse.de>
-	<20071207160439.71b7f46a@the-village.bc.nu>
-	<20071209125458.GB4381@ucw.cz>
-	<20071209165908.GA15910@one.firstfloor.org>
-	<20071209212513.GC24284@elf.ucw.cz>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 9 Dec 2007 17:42:19 -0500
+Date: Sun, 9 Dec 2007 23:42:15 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Elvis Pranskevichus <el@prans.net>
+Cc: Mike Houston <mikeserv@bmts.com>, Adrian Bunk <bunk@stusta.de>,
+       mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Adam Belay <ambx1@neo.rr.com>
+Subject: Re: [lm-sensors] 2.6.24-rc4 hwmon it87 probe fails
+Message-ID: <20071209234215.748ed407@hyperion.delvare>
+In-Reply-To: <E1J1TRp-0000ZF-6J@asgard.prans.org>
+References: <20071204215154.7f26285e.mikeserv@bmts.com>
+	<20071209000554.GF20441@stusta.de>
+	<20071208212234.e00b74cd.mikeserv@bmts.com>
+	<20071209105028.06ed52a6@hyperion.delvare>
+	<E1J1TRp-0000ZF-6J@asgard.prans.org>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -37,19 +33,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Dec 2007 22:25:13 +0100
-Pavel Machek <pavel@ucw.cz> wrote:
+Hi Elvis,
 
-> On Sun 2007-12-09 17:59:08, Andi Kleen wrote:
-> > > I mean, we expect 8usec delay -- historical ISA timing -- but when
-> > > _PCI_ card with leds is inserted, it is likely to be faster than old
-> > > ISA, right?
-> > 
-> > Yes, i guess switching to udelay at least on newer systems would
-> > be a good idea.  I'm not quite sure about systems without TSC though.
+On Sun, 09 Dec 2007 16:12:25 -0500, Elvis Pranskevichus wrote:
+> I have exactly the same problem here on a Gigabyte GA-965G-DS3 motherboard
+> based box:
+
+Same motherboard as Mike has.
+
+> it87: Found IT8718F chip at 0x290, revision 1
+> it87: in3 is VCC (+5V)
+> it87 it87.656: Failed to request region 0x290-0x297
+> it87: probe of it87.656 failed with error -16
 > 
-> Something like this? (Warning, will not probably even compile on
-> x86-64, I do not have 64-bit compiler near me).
+> git bisecting revealed the offending commit:
+> 
+> a7839e960675b54: PNP: increase the maximum number of resources
+> 
+> Happened between rc3 and rc4.
+> 
+> > Either way, the overlapping areas smell like a BIOS bug, meaning that
+> > you should look for an updated BIOS for your system first.
+> > 
+> >> http://www.mikeserv.com/temp/config-2.6.24-rc4.txt
+> > 
+> 
+> This indeed looks like a broken ACPI BIOS since the aforementioned commit
+> touches only the PNP ACPI driver. I'm not sure how to work around this,
+> though. Ideas?
 
-You need to stick in a bug trap to verify that the udelay is not called
-before the cpu timer has been set up.
+Complaining to Gigabyte seems to be the best approach.
+
+In the meantime, I guess that booting with pnpacpi=off should fix your
+problem. But it might break something else; I'm not sure what the PNP
+ACPI driver is good for in the first place.
+
+-- 
+Jean Delvare
