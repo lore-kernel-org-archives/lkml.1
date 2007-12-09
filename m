@@ -1,103 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbXLIETz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbXLIEUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752776AbXLIETz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 23:19:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbXLIETp
+	id S1753623AbXLIEUU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 23:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbXLIEUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 23:19:45 -0500
-Received: from gherkin.frus.com ([192.158.254.49]:37990 "EHLO gherkin.frus.com"
+	Sat, 8 Dec 2007 23:20:04 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:44507 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751246AbXLIETo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 23:19:44 -0500
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-In-Reply-To: <475B3C23.6010304@orcon.net.nz> "from Michael Cree at Dec 9, 2007
- 01:51:47 pm"
-To: Michael Cree <mcree@orcon.net.nz>
-Date: Sat, 8 Dec 2007 22:19:39 -0600 (CST)
-CC: Kay Sievers <kay.sievers@vrfy.org>, Bob Tracy <rct@frus.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
-       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org, greg@kroah.com
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	id S1753085AbXLIEUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 23:20:01 -0500
+From: Neil Brown <neilb@suse.de>
+To: "Adrian McMenamin" <lkmladrian@gmail.com>
+Date: Sun, 9 Dec 2007 15:19:56 +1100
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20071209041939.7DE6FDBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+Message-ID: <18267.27884.259885.618469@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: rq_for_each_bio
+In-Reply-To: message from Adrian McMenamin on Sunday December 9
+References: <8b67d60712081737g2be31ad0j3006a89ef1db0c59@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Cree wrote:
-> Kay Sievers wrote:
-> > On Fri, 2007-12-07 at 23:05 -0600, Bob Tracy wrote:
-> >> Kay Sievers wrote:
-> >>> Is the udev daemon (still) running while it fails?
-> >> Yes, and there's something else I forgot to mention that may be
-> >> significant...  For the bad case, in addition to udevd, "ps -ef"
-> >> shows a "sh -e /lib/udev/net.agent" running with a PPID of 1.  This
-> >> process doesn't exit until I reboot.  If this is normal under the
-> >> circumstances, please disregard.
-> > 
-> > Does SysRq-T show where it hangs?
+On Sunday December 9, lkmladrian@gmail.com wrote:
+> I have tried to search through the mailing list and it is not entirely
+> clear, but it looks like this has gone from the kernel: not least
+> because my driver reports:
 > 
-> Ummm... No.  I didn't have the CONFIG_MAGIC_SYSRQ flag set, so I set it, 
-> and recompiled the kernel.  Guess what - now the system comes up 
-> normally without any problem.  The block devices appear in /dev.  To 
-> recap: without CONFIG_MAGIC_SYSRQ on the 2.6.24-rc3 kernel the missing 
-> block devices error in /dev occurs and the init scripts fall over on 
-> startup, and with CONFIG_MAGIC_SYSRQ the system comes up normally.
-
-I *do* have CONFIG_MAGIC_SYSRQ set.  Anyone care to bet whether my
-machine starts working again if I disable it?  Sheesh...  The "kernel
-alignment issue" theory is making sense...  We change the size of an
-initialized variable with the patch, and the problem shows up.  We
-shift starting addresses a different way by tweaking kernel options,
-and two wrongs make a right?  I've seen it happen, and tracking this
-down isn't going to be easy.  Anyone want to wade through the different
-System.map files and hazard a guess where we're leaving the rails?
-
-Here's a very brief diff excerpt between the System.map files corresponding
-to "sysctl_check patch reverted" (the -dirty version) and "with sysctl_check patch".
-At least they agree up to line 10870 :-) ...
-
---- /boot/System.map-2.6.24-rc2-g6f37ac79-dirty 2007-12-07 08:03:50.000000000 -0
-600
-+++ System.map  2007-12-07 13:43:37.000000000 -0600
-@@ -10868,9414 +10868,9414 @@
- fffffc0000684b00 R kallsyms_markers
- fffffc0000684d00 R kallsyms_token_table
- fffffc0000685100 R kallsyms_token_index
--fffffc00006f61e0 r __pci_fixup_PCI_VENDOR_ID_SERVERWORKSPCI_DEVICE_ID_SERVERWORKS_CSB5IDEquirk_svwks_csb5ide
--fffffc00006f61e0 R __start_pci_fixups_early
--fffffc00006f61f0 r __pci_fixup_PCI_VENDOR_ID_INTELPCI_DEVICE_ID_INTEL_82801CA_10quirk_ide_samemode
-(...)
--fffffc0000716120 r __param_bic_scale
--fffffc0000716148 r __param_tcp_friendliness
--fffffc0000716170 R __end_rodata
--fffffc0000716170 R __stop___param
-+fffffc00006f61f0 r __pci_fixup_PCI_VENDOR_ID_SERVERWORKSPCI_DEVICE_ID_SERVERWORKS_CSB5IDEquirk_svwks_csb5ide
-+fffffc00006f61f0 R __start_pci_fixups_early
-+fffffc00006f6200 r __pci_fixup_PCI_VENDOR_ID_INTELPCI_DEVICE_ID_INTEL_82801CA_10quirk_ide_samemode
-(...)
-+fffffc0000716130 r __param_bic_scale
-+fffffc0000716158 r __param_tcp_friendliness
-+fffffc0000716180 R __end_rodata
-+fffffc0000716180 R __stop___param
- fffffc0000718000 A __init_begin
- fffffc0000718000 T _sinittext
- fffffc0000718000 t set_reset_devices
-
-> When running the broken kernel udev is running (according to 'ps') and 
-> executing /sbin/udevtrigger manually generates a number of errors of the 
-> form:
+> drivers/sh/gdrom/gdrom.c:665: error: implicit declaration of function
+> 'rq_for_each_bio'
 > 
-> scsi_id[<pid>]: scsi_id: unable to access '/block'
+> I am not arguing for a stable ABI/API, I get that one - but is there a
+> canonical source of changes in the kernel (because unless you cross
+> reference lkml and git repos the mailing list isn't) and if there is -
+> how can we get it on the first page of google? :)
+
+The canonical source for changes in the kernel is the git history.  It
+stores all of them!
+
+The canonical source for changes in the kernel that are important to
+your driver is the output of the compiler.  If the compiler triggers
+and error where previously it didn't, then you depend on a part of the
+kernel that has changed --- if someone makes an API change that does
+not cause a compiler error for people who depend on the old
+behaviour, then they have done the wrong thing, but that happens
+rarely.
+
+If you get a compiler error, you then look in the git history to find
+out when the API changed, and read the comment.  in this case it is
+commit 5705f7021748a69d84d6567e68e8851dab551464
+
+If you look at this commit, you will see a brief explanation of the
+change, and examples of how new code replaced the old.
+
 > 
-> The missing /dev/* entries do not appear.
+> (Actually, forget the theologocal discussion, tell me about rq_for_each_bio)
 
-I don't get the errors that Michael is seeing, and udevtrigger seems to
-be exiting without errors (return code 0).  The last part is the same:
-the missing /dev/* entries do not appear.
+Every instance in the kernel of rq_for_each_bio used the bio simply to
+call bio_for_each_segment.  So we discarded rq_for_each_bio and
+introduced rq_for_each_segment.  It make code cleaner (less indent
+depth) and means that we can make changes to the rules for iterating
+through segments in a request in just one central place.  i.e. we have
+a higher level of abstraction.
 
---Bob T.
+If you have a usage of rq_for_each_bio where rq_for_each_segment
+cannot be used, please show us.
+
+NeilBrown
