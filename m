@@ -1,90 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbXLIEEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbXLIETz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752918AbXLIEEy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 23:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbXLIEEq
+	id S1752776AbXLIETz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 23:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbXLIETp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 23:04:46 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56553 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750940AbXLIEEp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 23:04:45 -0500
-Date: Sat, 8 Dec 2007 20:04:15 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Zan Lynx <zlynx@acm.org>
-Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: 2.6.24-rc4-mm1 and Very Slow PCMCIA Compact Flash
-Message-Id: <20071208200415.611afb57.akpm@linux-foundation.org>
-In-Reply-To: <1197169375.7352.4.camel@localhost>
-References: <1197059904.15428.15.camel@localhost>
-	<20071207150251.a0dbae23.akpm@linux-foundation.org>
-	<1197068983.15428.29.camel@localhost>
-	<20071207152249.360af326.akpm@linux-foundation.org>
-	<1197090093.7157.2.camel@localhost>
-	<20071208020722.9c7d91d0.akpm@linux-foundation.org>
-	<1197169375.7352.4.camel@localhost>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 8 Dec 2007 23:19:45 -0500
+Received: from gherkin.frus.com ([192.158.254.49]:37990 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751246AbXLIETo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 23:19:44 -0500
+Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
+In-Reply-To: <475B3C23.6010304@orcon.net.nz> "from Michael Cree at Dec 9, 2007
+ 01:51:47 pm"
+To: Michael Cree <mcree@orcon.net.nz>
+Date: Sat, 8 Dec 2007 22:19:39 -0600 (CST)
+CC: Kay Sievers <kay.sievers@vrfy.org>, Bob Tracy <rct@frus.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
+       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org, greg@kroah.com
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20071209041939.7DE6FDBA2@gherkin.frus.com>
+From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 08 Dec 2007 20:02:54 -0700 Zan Lynx <zlynx@acm.org> wrote:
-
-> 
-> On Sat, 2007-12-08 at 02:07 -0800, Andrew Morton wrote:
-> > On Fri, 07 Dec 2007 22:01:33 -0700 Zan Lynx <zlynx@acm.org> wrote:
+Michael Cree wrote:
+> Kay Sievers wrote:
+> > On Fri, 2007-12-07 at 23:05 -0600, Bob Tracy wrote:
+> >> Kay Sievers wrote:
+> >>> Is the udev daemon (still) running while it fails?
+> >> Yes, and there's something else I forgot to mention that may be
+> >> significant...  For the bad case, in addition to udevd, "ps -ef"
+> >> shows a "sh -e /lib/udev/net.agent" running with a PPID of 1.  This
+> >> process doesn't exit until I reboot.  If this is normal under the
+> >> circumstances, please disregard.
 > > 
-> > > 
-> > > On Fri, 2007-12-07 at 15:22 -0800, Andrew Morton wrote:
-> > > > On Fri, 07 Dec 2007 23:09:43 +0000
-> > > > Zan Lynx <zlynx@acm.org> wrote:
-> > > [cut] 
-> > > > > > > Now with MM kernels 2.6.24 rc1-4 the PCMCIA adapter works again, but I
-> > > > > > > only get read rates of 1.6 MB/s.  When it used to work in 2.6.20 I got
-> > > > > > > at least 16 MB/s.  The card itself is capable of 30+ in the USB-2
-> > > > > > > reader.
-> [cut]
-> > argh.  OK.  And Linus's current tree is OK, yes?
-> > 
-> > In which case we should be OK for 2.6.24 and I guess we can hope like heck
-> > that the dud patch doesn't leak into mainline.  Hopefully Alan will get
-> > some time to look into it before 2.6.25 opens.
+> > Does SysRq-T show where it hangs?
 > 
-> Linus' tree is also broken.
+> Ummm... No.  I didn't have the CONFIG_MAGIC_SYSRQ flag set, so I set it, 
+> and recompiled the kernel.  Guess what - now the system comes up 
+> normally without any problem.  The block devices appear in /dev.  To 
+> recap: without CONFIG_MAGIC_SYSRQ on the 2.6.24-rc3 kernel the missing 
+> block devices error in /dev occurs and the init scripts fall over on 
+> startup, and with CONFIG_MAGIC_SYSRQ the system comes up normally.
+
+I *do* have CONFIG_MAGIC_SYSRQ set.  Anyone care to bet whether my
+machine starts working again if I disable it?  Sheesh...  The "kernel
+alignment issue" theory is making sense...  We change the size of an
+initialized variable with the patch, and the problem shows up.  We
+shift starting addresses a different way by tweaking kernel options,
+and two wrongs make a right?  I've seen it happen, and tracking this
+down isn't going to be easy.  Anyone want to wade through the different
+System.map files and hazard a guess where we're leaving the rails?
+
+Here's a very brief diff excerpt between the System.map files corresponding
+to "sysctl_check patch reverted" (the -dirty version) and "with sysctl_check patch".
+At least they agree up to line 10870 :-) ...
+
+--- /boot/System.map-2.6.24-rc2-g6f37ac79-dirty 2007-12-07 08:03:50.000000000 -0
+600
++++ System.map  2007-12-07 13:43:37.000000000 -0600
+@@ -10868,9414 +10868,9414 @@
+ fffffc0000684b00 R kallsyms_markers
+ fffffc0000684d00 R kallsyms_token_table
+ fffffc0000685100 R kallsyms_token_index
+-fffffc00006f61e0 r __pci_fixup_PCI_VENDOR_ID_SERVERWORKSPCI_DEVICE_ID_SERVERWORKS_CSB5IDEquirk_svwks_csb5ide
+-fffffc00006f61e0 R __start_pci_fixups_early
+-fffffc00006f61f0 r __pci_fixup_PCI_VENDOR_ID_INTELPCI_DEVICE_ID_INTEL_82801CA_10quirk_ide_samemode
+(...)
+-fffffc0000716120 r __param_bic_scale
+-fffffc0000716148 r __param_tcp_friendliness
+-fffffc0000716170 R __end_rodata
+-fffffc0000716170 R __stop___param
++fffffc00006f61f0 r __pci_fixup_PCI_VENDOR_ID_SERVERWORKSPCI_DEVICE_ID_SERVERWORKS_CSB5IDEquirk_svwks_csb5ide
++fffffc00006f61f0 R __start_pci_fixups_early
++fffffc00006f6200 r __pci_fixup_PCI_VENDOR_ID_INTELPCI_DEVICE_ID_INTEL_82801CA_10quirk_ide_samemode
+(...)
++fffffc0000716130 r __param_bic_scale
++fffffc0000716158 r __param_tcp_friendliness
++fffffc0000716180 R __end_rodata
++fffffc0000716180 R __stop___param
+ fffffc0000718000 A __init_begin
+ fffffc0000718000 T _sinittext
+ fffffc0000718000 t set_reset_devices
+
+> When running the broken kernel udev is running (according to 'ps') and 
+> executing /sbin/udevtrigger manually generates a number of errors of the 
+> form:
 > 
-> I tried a Linus 2.6.24-rc4 and it acts the same way, with a very slow
-> transfer rate.  
+> scsi_id[<pid>]: scsi_id: unable to access '/block'
+> 
+> The missing /dev/* entries do not appear.
 
-shit
+I don't get the errors that Michael is seeing, and udevtrigger seems to
+be exiting without errors (return code 0).  The last part is the same:
+the missing /dev/* entries do not appear.
 
-> I also tried 2.6.24-rc4 with the older not-libata PATA drivers and it is
-> broken.
-
-squared.
-
->  dmesg had a line about the CF card detected as hda,
-> but /sys/block did not have hda and /dev/hda did not function.
-
-But these drivers did work in earlier kernels, yes? 2.6.20 worked, but
-we don't know about intervening kernels.
-
-Can you tell us which version(s)?
-
-> I will try the patches you mentioned
-
-Yes, that won't tell use anything.
-
-> but I think I may also have to
-> work backward through kernel versions until I find the last one where
-> the PCMCIA hd{a,b,c,d,e} drivers worked.
-
-That would be great - a git-bisect is often ideal. 
-http://www.kernel.org/doc/local/git-quick.html has details.
-
-
+--Bob T.
