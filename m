@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbXLIVbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbXLIVby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbXLIVbR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 16:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbXLIVbF
+	id S1754055AbXLIVby (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 16:31:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbXLIVbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 16:31:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44010 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbXLIVbE convert rfc822-to-8bit (ORCPT
+	Sun, 9 Dec 2007 16:31:47 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:49900 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751188AbXLIVbp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 16:31:04 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: hibernation issue with kernel 2.6.23-gentoo-r3 at T41
-Date: Sun, 9 Dec 2007 22:50:07 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>,
-       Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org
-References: <200712031419.41596.toralf.foerster@gmx.de> <200712092231.41064.rjw@sisk.pl> <20071209212132.GB24284@elf.ucw.cz>
-In-Reply-To: <20071209212132.GB24284@elf.ucw.cz>
+	Sun, 9 Dec 2007 16:31:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:content-transfer-encoding:user-agent;
+        b=sws6VyyxXvmWWqCCFhVTIxwVR9ULHkAc0R7iQqyb8J5WWpy271ln3a8e3q8cNJhz1xLOCW/b+wurKu5Usq22ynA/ZYLuhlh20/Tgh2J0CoBzrHSlWzJyG/xTVQSdGj1xVpn1u9Ge7C6t686/C3CZNwxTZSt39j36sJ7LOb6yCI0=
+Date: Sun, 9 Dec 2007 22:32:52 +0100
+From: Marcin =?utf-8?Q?=C5=9Alusarz?= <marcin.slusarz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Antonino Daplas <adaplas@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] vgacon: fix sparse warning about shadowing 'i' symbol
+Message-ID: <20071209213247.GD9440@joi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200712092250.08496.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 9 of December 2007, Pavel Machek wrote:
-> On Sun 2007-12-09 22:31:40, Rafael J. Wysocki wrote:
-> > On Sunday, 9 of December 2007, Pavel Machek wrote:
-> > > On Mon 2007-12-03 22:54:23, Rafael J. Wysocki wrote:
-> > > > On Monday, 3 of December 2007, Toralf Förster wrote:
-> > > > > Hhm,
-> > > > > 
-> > > > > in general it seems to be a regression of kernel 2.6.23 with suspend/hibernate
-> > > > > if a user mode linux image is runnning.
-> > > > > 
-> > > > > With previous kernel versions (tested gentoo-sources-2.6.22-r9 and 
-> > > > > gentoo-sources-2.6.21-r4) I've no problem to either suspend or to hibernate the
-> > > > > ThinkPad T41.
-> > > > > 
-> > > > > However with gentoo-sources-2.6.23-r3 the system didn't neither
-> > > > > suspend nor hibernate. The good news is that the system doesn't hang :-)
-> > > >  
-> > > > Please file a bug report at
-> > > > http://bugzilla.kernel.org/enter_bug.cgi?product=Power%20Management
-> > > > against Hibernation/Suspend and add my address to the report's CC list.
-> > > 
-> > > I smell refrigerator problem; can you suspend if you SIGSTOP your uml,
-> > > first?
-> > 
-> > That might be, but the issue is apparently fixed in 2.6.24-rc and I'm
-> > struggling to figure out how the !@#$%^ (please see
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9501).
-> 
-> No idea... I'm glad its fixed :-). Maybe someone fixed uninterruptible
-> sleep somewhere in ptrace...
+vgacon: fix sparse warning about shadowing 'i' symbol
 
-Yeah, but we should find a -stable fix, if possible.
+Signed-off-by: Marcin Åšlusarz <marcin.slusarz@gmail.com>
+---
+ drivers/video/console/vgacon.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-Greetings,
-Rafael
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index f65bcd3..6df29a6 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -1153,8 +1153,6 @@ static int vgacon_do_font_op(struct vgastate *state,char *arg,int set,int ch512)
+
+ 	/* if 512 char mode is already enabled don't re-enable it. */
+ 	if ((set) && (ch512 != vga_512_chars)) {
+-		int i;
+-
+ 		/* attribute controller */
+ 		for (i = 0; i < MAX_NR_CONSOLES; i++) {
+ 			struct vc_data *c = vc_cons[i].d;
