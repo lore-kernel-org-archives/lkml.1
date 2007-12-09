@@ -1,119 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752085AbXLIFn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865AbXLIFoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752085AbXLIFn5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 00:43:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750702AbXLIFnt
+	id S1752865AbXLIFoz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 00:44:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbXLIFos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 00:43:49 -0500
-Received: from waste.org ([66.93.16.53]:48482 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbXLIFns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 00:43:48 -0500
-Date: Sat, 8 Dec 2007 23:43:37 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/6] random: make backtracking attacks harder
-Message-ID: <20071209054337.GT19691@waste.org>
-References: <2.753618428@selenic.com> <5.753618428@selenic.com> <20071209014550.GU17037@thunk.org>
+	Sun, 9 Dec 2007 00:44:48 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:10044 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750894AbXLIFor (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 00:44:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=ttbIbbkFjTFp8/zsUI2g66OhRX0lqC46QpBJG8zDQdFSd3PsOsBJN8suKgdUBsmpL6DBbjxkuQFBJJErXL9vGw4rXjHi95FvzN7cp8k2LpsQmhOvIbrmtGGhLN+5nCA0sTJpxjnzMYdcILumavI8qUSDumnpJM6Xfm5WP2/D6OE=
+Message-ID: <475B80C8.2070102@gmail.com>
+Date: Sun, 09 Dec 2007 14:44:40 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071209014550.GU17037@thunk.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Adrian Bunk <bunk@kernel.org>
+CC: sam@ravnborg.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       notting@redhat.com, rusty@rustcorp.com.au, kay.sievers@vrfy.org,
+       greg@kroah.com
+Subject: Re: [PATCH] kbuild: implement modules.order
+References: <47555AF1.8090304@gmail.com> <20071207174843.GA20441@stusta.de> <4759DE63.7010206@gmail.com> <20071208142831.GB20441@stusta.de>
+In-Reply-To: <20071208142831.GB20441@stusta.de>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 08:45:50PM -0500, Theodore Tso wrote:
-> On Sat, Dec 08, 2007 at 05:20:38PM -0600, Matt Mackall wrote:
-> > random: make backtracking attacks harder
-> > 
-> > At each extraction, we change (poolbits / 16) + 32 bits in the pool,
-> > or 96 bits in the case of the secondary pools. Thus, a brute-force
-> > backtracking attack on the pool state is less difficult than breaking
-> > the hash. In certain cases, this difficulty may be is reduced to 2^64
-> > iterations.
+Adrian Bunk wrote:
+> And thinking about it, it doesn't seem to add any problems regarding 
+> what I have in mind:
 > 
-> OK, a backtracking attack assumes a fairly catastrophic case where the
-> attacker has managed to compromise the internal pool state.  In Linux,
-> if an attacker has this much access, in most scenarios the attacker
-> probably has the ability to gain write access to kernel memory as
-> well, at which point you have far worse problems.
-> 
-> The definition of a backtracking attack is when the attacker uses the
-> current pool state to try to recover the last entropy extraction.  As
-> you point out, at each extraction, 96 bits are changed in the pool.
-> But at each extraction, only 80 bits are extracted.
+> If we would ever stop having any well-defined link-order for in-kernel 
+> code and express everything through initcall levels, we simply must 
+> additionally update the modules.order file.
 
-Agreed.
- 
-> If you are trying to find the value of the 80 bits that were
-> extracted, and you know the current state of the pool, yes, you can
-> take the 96 bits that were changed after the last extraction, and try
-> all possible 2**96 combinations of the bits; but you probably won't
-> rule anything out, since after you iterate over all of the 2**96
-> combinations, you'll probably be able to generate all of the 2**80
-> possible output bits.  So you won't gain anything by trying to do a
-> backtracking attack.  So I don't think there's anything to worry about
-> here.
+Expressing order in Makefile is a convenient way to express simple
+ordering.  I think it's nice to keep it that way even if it doesn't
+necessarily mean link order.  So, maybe we can do the reverse and make
+built in modules follow module order regardless of actual link order
+(say sort init table according to module order before final link).
 
-Two observations:
-
-- 2**96 << 2**160 so our feedback is much weaker than our hash so we
-  should improve it on general principle
-- there's a way to improve this attack to 2**64 in some situations!
-
-I presume you've seen this paper:
-
- http://eprint.iacr.org/2006/086.pdf
-
-It was fairly obsolete at printing and makes a bunch of mistakes. But
-they do observe that at certain points in our feedback, the first
-512-bit block of the pool is not overwritten by the feedback and thus
-32 bits of feedback can be immediately discovered. Then an attacker
-can run 2**64 hashes to recover the remaining bits with excellent odds
-of having a unique preimage. It can't usually be extended multiple
-iterations because we move the add_ptr too much, so it's fairly weak
-as a backtracking attack.
-
-They precede this with a more general description of a 2**96 attack
-which doesn't work for precisely the reason you describe (2**16
-possible preimages for each output). But their 2**64 attack does seem
-like it works (in the world of cryptanalysis, and not real hardware of
-course!).
-
-Simply feeding back all five words of our hash rather than three in
-the secondary pools hardens this all right up. This patch also makes
-everything in here much easier to read and analyze.
-
-> What you describe in your comments:
-> 
-> > +	 * We mix the hash back into the pool to prevent backtracking
-> > +	 * attacks (where the attacker knows the state of the pool
-> > +	 * plus the current outputs, and attempts to find previous
-> > +	 * ouputs), unless the hash function can be inverted. 
-
-That part of the comment is not new, but I don't remember which of us
-wrote it.. 
-
-> > ...By
-> > +	 * mixing at least a SHA1 worth of hash data back, we make
-> > +	 * brute-forcing the feedback as hard as brute-forcing the
-> > +	 * hash.
-> >  	 */
-
-That part is new and I think is accurate.
-
-> Secondly, the fact that we use catastrophic reseeding means that even
-> if the state was compromised, at some point in time, every so often
-> when we do a "catastrophic reseed", this acts as a firewall to limit
-> the damage caused by a internal state exposure, both in the past and
-> the future.
-
-Absolutely. Having some depth in the design is quite valuable. But
-that doesn't mean we shouldn't shore up individual weaknesses when we
-find them.
+Thanks.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+tejun
