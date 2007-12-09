@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbXLINq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbXLINrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752532AbXLINq7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 08:46:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750790AbXLINqw
+	id S1753085AbXLINrU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 08:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbXLINrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 08:46:52 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45155 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750712AbXLINqv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 08:46:51 -0500
-Date: Sun, 9 Dec 2007 13:39:23 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: benh@kernel.crashing.org, Ralf Baechle <ralf@linux-mips.org>,
-       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Please revert: PCI: fix IDE legacy mode resources
-Message-ID: <20071209133923.4c35147b@the-village.bc.nu>
-In-Reply-To: <200712091346.25532.bzolnier@gmail.com>
-References: <200710122305.l9CN5tFI008240@hera.kernel.org>
-	<1197185091.6572.38.camel@pasglop>
-	<1197193794.6572.52.camel@pasglop>
-	<200712091346.25532.bzolnier@gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 9 Dec 2007 08:47:01 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42831 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752547AbXLINrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 08:47:00 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Gabriel C <nix.or.die@googlemail.com>,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: usb regression in 2.6.24-rc4
+Date: Sun, 9 Dec 2007 15:05:50 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <200712090113.57805.gene.heskett@gmail.cm> <475B9978.3080606@googlemail.com>
+In-Reply-To: <475B9978.3080606@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712091505.51233.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > In fact, I see a deeper problem with Bart's original patch that moved
-> > the "fixup" the PCI probe.
+On Sunday, 9 of December 2007, Gabriel C wrote:
+> Gene Heskett wrote:
+> > Greetings guys & gals;
 > 
-> I don't remember changing anything there, could you remind me what it was
-> exactly (commit number or patch name)?
+> Hi ,
+> 
+> > 
+> > This was sent about an hour ago to the usb-devel list also.
+> > -------------
+> > Just a few minutes ago I needed to make use of my scanner, an Epson 1250u.
+> > 
+> > Firing up xsane, the usual select the device menu window didn't show, and it 
+> > went straight to my tv card as the only input device.
+> > 
+> > I couldn't recall the name of the tool that scans for scanners that's in the 
+> > sane package, or should be, so I then did an lsusb, but got an empty result!
+> > 
+> > Unplugging the usb cable from the scanner, then reconnecting the usb cable got 
+> > me the usual disconnect and connect messages in the log, but xsane still 
+> > couldn't find it.
+> > 
+> > So I rebooted to 2.6.24-rc4 again, same result.  lsusb still gave an empty 
+> > result.  The two kernels were generated from the same .config as far as I 
+> > know.  The -rc3 .config was fed to a "make oldconfig" to make 
+> > the -rc4 .config as is the usual practice.
+> > 
+> > So I then rebooted to 2.6.24-rc3, and it all works again.  I got the scanning 
+> > done and the pix sent on their merry way.
+> > 
+> > Anybody have a suggestion of what to check, or maybe a patch to revert?  Or 
+> > a .config option that needs to be enabled?
+> >
+> 
+> Sounds for me like this one : 
+> 
+> http://lkml.org/lkml/2007/12/6/409
 
-I'm pretty sure he means the code I added a while ago to actually correct
-our IDE/ATA handling for legacy devices, fix the resource tree being
-wrong and remove tons of special cases from drivers.
+Yes, http://bugzilla.kernel.org/show_bug.cgi?id=9504 .
 
-Alan
+Gene, please try the patch at http://lkml.org/lkml/2007/12/7/364
+
+Thanks,
+Rafael
