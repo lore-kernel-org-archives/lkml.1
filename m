@@ -1,237 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbXLIJok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbXLIJug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753501AbXLIJok (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 04:44:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbXLIJo3
+	id S1753913AbXLIJug (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 04:50:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbXLIJu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 04:44:29 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:52657 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbXLIJo1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 04:44:27 -0500
-Message-ID: <475BB8C3.9040700@panasas.com>
-Date: Sun, 09 Dec 2007 11:43:31 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
-Subject: Re: [PATCH 27/28] blk_end_request: changing scsi mid-layer for bidi
- (take 3)
-References: <47555880.9070902@panasas.com>	<20071205.192611.08317167.k-ueda@ct.jp.nec.com>	<4757BFDC.6090502@panasas.com> <20071206.144417.41628995.k-ueda@ct.jp.nec.com>
-In-Reply-To: <20071206.144417.41628995.k-ueda@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 9 Dec 2007 04:50:27 -0500
+Received: from gate.crashing.org ([63.228.1.57]:36054 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750732AbXLIJu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 04:50:26 -0500
+Subject: Re: Please revert: PCI: fix IDE legacy mode resources
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <1197185091.6572.38.camel@pasglop>
+References: <200710122305.l9CN5tFI008240@hera.kernel.org>
+	 <1196899818.7033.11.camel@pasglop>
+	 <200712060434.lB64YUtc023934@po-mbox305.hop.2iij.net>
+	 <1196917447.7033.17.camel@pasglop>
+	 <200712060558.lB65wAFu016256@po-mbox304.hop.2iij.net>
+	 <1196922262.7033.33.camel@pasglop>  <20071209021231.GA13729@linux-mips.org>
+	 <1197185091.6572.38.camel@pasglop>
+Content-Type: text/plain
+Date: Sun, 09 Dec 2007 20:49:54 +1100
+Message-Id: <1197193794.6572.52.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 06 2007 at 21:44 +0200, Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote:
-> Hi Boaz, Jens,
-> 
-> On Thu, 06 Dec 2007 11:24:44 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
->>> Index: 2.6.24-rc3-mm2/drivers/scsi/scsi_lib.c
-<snip>
->> No I don't like it. The only client left for blk_end_request_callback()
->> is bidi,
-> 
-> ide-cd (cdrom_newpc_intr) is another client.
-> So I can't drop blk_end_request_callback() even if bidi doesn't use it.
-> 
-It looks like all is needed for the ide-cd case is a flag that says
-"don't complete the request". And the call-back is not actually used.
-(Inspecting the last: [PATCH 26/28] blk_end_request: changing ide-cd (take 3))
-The same exact flag could also help the bidi case. Perhaps have an API
-for that?
 
-<snip>
-> 
-> Index: 2.6.24-rc3-mm2/drivers/scsi/scsi_lib.c
-> ===================================================================
-> --- 2.6.24-rc3-mm2.orig/drivers/scsi/scsi_lib.c
-> +++ 2.6.24-rc3-mm2/drivers/scsi/scsi_lib.c
-> @@ -629,28 +629,6 @@ void scsi_run_host_queues(struct Scsi_Ho
->  		scsi_run_queue(sdev->request_queue);
->  }
->  
-> -static void scsi_finalize_request(struct scsi_cmnd *cmd, int uptodate)
-> -{
-> -	struct request_queue *q = cmd->device->request_queue;
-> -	struct request *req = cmd->request;
-> -	unsigned long flags;
-> -
-> -	add_disk_randomness(req->rq_disk);
-> -
-> -	spin_lock_irqsave(q->queue_lock, flags);
-> -	if (blk_rq_tagged(req))
-> -		blk_queue_end_tag(q, req);
-> -
-> -	end_that_request_last(req, uptodate);
-> -	spin_unlock_irqrestore(q->queue_lock, flags);
-> -
-> -	/*
-> -	 * This will goose the queue request function at the end, so we don't
-> -	 * need to worry about launching another command.
-> -	 */
-> -	scsi_next_command(cmd);
-> -}
-> -
->  /*
->   * Function:    scsi_end_request()
->   *
-> @@ -930,23 +908,25 @@ EXPORT_SYMBOL(scsi_release_buffers);
->  void scsi_end_bidi_request(struct scsi_cmnd *cmd)
->  {
->  	struct request *req = cmd->request;
-> +	unsigned int dlen = req->data_len;
-> +	unsigned int next_dlen = req->next_rq->data_len;
->  
-> -	end_that_request_chunk(req, 1, req->data_len);
->  	req->data_len = scsi_out(cmd)->resid;
-> -
-> -	end_that_request_chunk(req->next_rq, 1, req->next_rq->data_len);
->  	req->next_rq->data_len = scsi_in(cmd)->resid;
->  
-> -	scsi_release_buffers(cmd);
-> -
->  	/*
->  	 *FIXME: If ll_rw_blk.c is changed to also put_request(req->next_rq)
-> -	 *       in end_that_request_last() then this WARN_ON must be removed.
-> +	 *       in blk_end_bidi_request() then this WARN_ON must be removed.
->  	 *       for now, upper-driver must have registered an end_io.
->  	 */
->  	WARN_ON(!req->end_io);
->  
-> -	scsi_finalize_request(cmd, 1);
-> +	if (blk_end_bidi_request(req, 1, dlen, next_dlen))
-> +		/* req has not been completed */
-> +		BUG();
-> +
-> +	scsi_release_buffers(cmd);
-> +	scsi_next_command(cmd);
->  }
->  
->  /*
-> Index: 2.6.24-rc3-mm2/block/ll_rw_blk.c
-> ===================================================================
-> --- 2.6.24-rc3-mm2.orig/block/ll_rw_blk.c
-> +++ 2.6.24-rc3-mm2/block/ll_rw_blk.c
-> @@ -3792,24 +3792,17 @@ static void complete_request(struct requ
->  	if (!list_empty(&rq->queuelist))
->  		blkdev_dequeue_request(rq);
->  
-> +	if (blk_bidi_rq(rq) && !rq->end_io)
-> +		__blk_put_request(rq->next_rq->q, rq->next_rq);
-> +
->  	end_that_request_last(rq, uptodate);
->  }
->  
-> -/**
-> - * blk_end_request - Helper function for drivers to complete the request.
-> - * @rq:       the request being processed
-> - * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
-> - * @nr_bytes: number of bytes to complete
-> - *
-> - * Description:
-> - *     Ends I/O on a number of bytes attached to @rq.
-> - *     If @rq has leftover, sets it up for the next range of segments.
-> - *
-> - * Return:
-> - *     0 - we are done with this request
-> - *     1 - still buffers pending for this request
-> - **/
-> -int blk_end_request(struct request *rq, int uptodate, int nr_bytes)
-> +/*
-> + * Internal function
-> + */
-> +static int blk_end_io(struct request *rq, int uptodate, int nr_bytes,
-> +		      int bidi_bytes, int (drv_callback)(struct request *))
->  {
->  	struct request_queue *q = rq->q;
->  	unsigned long flags = 0UL;
-> @@ -3817,8 +3810,17 @@ int blk_end_request(struct request *rq, 
->  	if (blk_fs_request(rq) || blk_pc_request(rq)) {
->  		if (__end_that_request_first(rq, uptodate, nr_bytes))
->  			return 1;
-> +
-> +		/* Bidi request must be completed as a whole */
-> +		if (blk_bidi_rq(rq) &&
-> +		    __end_that_request_first(rq->next_rq, uptodate, bidi_bytes))
-> +			return 1;
->  	}
->  
-> +	/* Special feature for tricky drivers */
-> +	if (drv_callback && drv_callback(rq))
-> +		return 1;
-> +
->  	add_disk_randomness(rq->rq_disk);
->  
->  	spin_lock_irqsave(q->queue_lock, flags);
-> @@ -3827,6 +3829,32 @@ int blk_end_request(struct request *rq, 
->  
->  	return 0;
->  }
-> +
-> +int blk_end_bidi_request(struct request *rq, int uptodate, int nr_bytes,
-> +			 int bidi_bytes)
-> +{
-> +	return blk_end_io(rq, uptodate, nr_bytes, bidi_bytes, NULL);
-> +}
-> +EXPORT_SYMBOL_GPL(blk_end_bidi_request);
-> +
-> +/**
-> + * blk_end_request - Helper function for drivers to complete the request.
-> + * @rq:       the request being processed
-> + * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
-> + * @nr_bytes: number of bytes to complete
-> + *
-> + * Description:
-> + *     Ends I/O on a number of bytes attached to @rq.
-> + *     If @rq has leftover, sets it up for the next range of segments.
-> + *
-> + * Return:
-> + *     0 - we are done with this request
-> + *     1 - still buffers pending for this request
-> + **/
-> +int blk_end_request(struct request *rq, int uptodate, int nr_bytes)
-> +{
-> +	return blk_end_io(rq, uptodate, nr_bytes, 0, NULL);
-> +}
->  EXPORT_SYMBOL_GPL(blk_end_request);
->  
+> If that is the case though (that is it can't issue low ioport cycles),
+> how would have the fd6e7321...  worked in the first place ? Hrm...
+> strange. My understanding is that all that patch does is put junk in the
+> pci_dev resource structures :-) Maybe that's enough to cause the PCI
+> layer later on to be unhappy about them and reassign the BARs to some
+> place that works ? In which case, you are right, a better approach is a
+> quirk on this specific platform, or even better, mark 0...0x10000000
+> busy in ioport_resources and let the generic code clash & re-assign...
 
-All above looks fine, thanks.
+  .../...
 
->  /**
-> @@ -3878,25 +3906,7 @@ EXPORT_SYMBOL_GPL(__blk_end_request);
->  int blk_end_request_callback(struct request *rq, int uptodate, int nr_bytes,
->  			     int (drv_callback)(struct request *))
->  {
-> -	struct request_queue *q = rq->q;
-> -	unsigned long flags = 0UL;
-> -
-> -	if (blk_fs_request(rq) || blk_pc_request(rq)) {
-> -		if (__end_that_request_first(rq, uptodate, nr_bytes))
-> -			return 1;
-> -	}
-> -
-> -	/* Special feature for tricky drivers */
-> -	if (drv_callback && drv_callback(rq))
-> -		return 1;
-> -
-> -	add_disk_randomness(rq->rq_disk);
-> -
-> -	spin_lock_irqsave(q->queue_lock, flags);
-> -	complete_request(rq, uptodate);
-> -	spin_unlock_irqrestore(q->queue_lock, flags);
-> -
-> -	return 0;
-> +	return blk_end_io(rq, uptodate, nr_bytes, 0, drv_callback);
->  }
->  EXPORT_SYMBOL_GPL(blk_end_request_callback);
->  
+In fact, I see a deeper problem with Bart's original patch that moved
+the "fixup" the PCI probe.
 
-Boaz
+The code now replaces the content of the resource structures with the
+hard-decoded legacy addresses for any IDE controller in legacy mode,
+just losing whatever was there (the real BAR value).
+
+On some platforms, like PowerPC (and it might be the same problem MIPS
+has, I don't know for sure), we have a quirk that puts those controller
+back into native mode. But so far, those quirks didn't change the
+resources as they were supposed to contain the proper BAR values that
+would, from then, be used.
+
+Now that those values have been overriden in the resources, when the
+controller is switched to native mode, it will answer to the BAR values
+that no longer match the content of the resources and the driver will
+fail.
+
+So I think we have a deeper breakage here. I'll dig some machines for
+which we do that tomorrow and see what exactly is going on. It's mostly
+older machines so if there's a breakage, it has easily gone under the
+radar.
+
+I suspect any platform with such a quirk to turn IDE controllers into
+native mode will now -also- need to put back the BAR values in the
+struct resource, and do so -before- the platform fixup happens, that is
+from a header quirk.
+
+Cheers,
+Ben.
+
+
