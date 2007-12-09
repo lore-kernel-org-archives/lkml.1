@@ -1,99 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbXLIROs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbXLIRQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753091AbXLIROs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 12:14:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbXLIROl
+	id S1753526AbXLIRQZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 12:16:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbXLIRQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 12:14:41 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:46445 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751009AbXLIROk (ORCPT
+	Sun, 9 Dec 2007 12:16:18 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:12016 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751068AbXLIRQQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 12:14:40 -0500
-Date: Sun, 9 Dec 2007 09:10:58 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
+	Sun, 9 Dec 2007 12:16:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
+        b=d1sbVou2DW+VEOcIMI1T2agu+/HG4X34g+tVf+96fWT1gbapCa/too9Mhh+FKqm0lCVusRWxj4zK5xW1JIciUvbDQrs78eIUNdaY26G/TWOq63SnpEkFLJ+Ehy5etXRXqbMxFbB2N65Mov21EiuBjuch6IjRB0qBcgBcsFrJ+84=
+Message-Id: <20071209171601.368743645@gmail.com>
+References: <20071209171509.601451827@gmail.com>
+User-Agent: quilt/0.46-1
+Date: Sun, 09 Dec 2007 13:15:10 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: npiggin@suse.de, mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [patch 07/18] v4l: nopage
-Message-Id: <20071209091058.9dffa72f.randy.dunlap@oracle.com>
-In-Reply-To: <20071207163142.4e77f9c3.akpm@linux-foundation.org>
-References: <20071205071547.701344000@nick.local0.net>
-	<20071205071627.469118000@nick.local0.net>
-	<20071207163142.4e77f9c3.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Cc: Ingo Molnar <mingo@elte.hu>, Giuliano Pochini <pochini@shiny.it>,
+       Jaroslav Kysela <perex@perex.cz>, linux-kernel@vger.kernel.org,
+       Kevin Winchester <kjwinchester@gmail.com>
+Subject: [patch 1/2] echoaudio semaphore to mutex
+Content-Disposition: inline; filename=echoaudio-sem-to-mutex.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Dec 2007 16:31:42 -0800 Andrew Morton wrote:
+Convert the semaphore to a mutex in echoaudio.c
 
-> On Wed, 05 Dec 2007 18:15:54 +1100
-> npiggin@suse.de wrote:
-> 
-> > +static int
-> > +videobuf_vm_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-> >  {
-> >  	struct page *page;
-> >  
-> > -	dprintk(3,"nopage: fault @ %08lx [vma %08lx-%08lx]\n",
-> > -		vaddr,vma->vm_start,vma->vm_end);
-> > -	if (vaddr > vma->vm_end)
-> > -		return NOPAGE_SIGBUS;
-> > +	dprintk(3,"fault: fault @ %08lx [vma %08lx-%08lx]\n",
-> > +		(unsigned long)vmf->virtual_address,vma->vm_start,vma->vm_end);
-> >  	page = alloc_page(GFP_USER | __GFP_DMA32);
-> >  	if (!page)
-> > -		return NOPAGE_OOM;
-> > +		return VM_FAULT_OOM;
-> >  	clear_user_page(page_address(page), vaddr, page);
-> 
-> This didn't compile on sparc64 because `vaddr' is undefined.
-> 
-> 
-> Let us see why:
-> 
-> #define clear_user_page(page, vaddr, pg)	clear_page(page)
-> #define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
-> 
-> #define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
-> 	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
-> 
-> root cause: lack of argument checking on x86 due to stupid macros.
-
-Hm, I would have said that the root cause was that Nick removed the
-vaddr parameter from the function parameters:
-
--static struct page*
--videobuf_vm_nopage(struct vm_area_struct *vma, unsigned long vaddr,
--		   int *type)
-+static int
-+videobuf_vm_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
-
-Should the function now produce 'vaddr' internally?
-
-
-> Could someone *please* start a little project of extirpating this utter
-> brain damage?  Convert those macros to typechecked static inlines on x86
-> (at least) so this sort of thing (which happens again and again and again)
-> is lessened?
-
-Yep, unless someone else is already doing so...
-
-> macros are such miserable things.  I wonder if we could get checkpatch to
-> help out here?  
-
+Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
 
 ---
-~Randy
-Features and documentation: http://lwn.net/Articles/260136/
+ sound/pci/echoaudio/echoaudio.c |   18 +++++++++---------
+ sound/pci/echoaudio/echoaudio.h |    2 +-
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+
+Index: v2.6.24-rc4/sound/pci/echoaudio/echoaudio.c
+===================================================================
+--- v2.6.24-rc4.orig/sound/pci/echoaudio/echoaudio.c
++++ v2.6.24-rc4/sound/pci/echoaudio/echoaudio.c
+@@ -378,7 +378,7 @@ static int pcm_digital_in_open(struct sn
+ 
+ 	DE_ACT(("pcm_digital_in_open\n"));
+ 	max_channels = num_digital_busses_in(chip) - substream->number;
+-	down(&chip->mode_mutex);
++	mutex_lock(&chip->mode_mutex);
+ 	if (chip->digital_mode == DIGITAL_MODE_ADAT)
+ 		err = pcm_open(substream, max_channels);
+ 	else	/* If the card has ADAT, subtract the 6 channels
+@@ -405,7 +405,7 @@ static int pcm_digital_in_open(struct sn
+ 		chip->can_set_rate=0;
+ 
+ din_exit:
+-	up(&chip->mode_mutex);
++	mutex_unlock(&chip->mode_mutex);
+ 	return err;
+ }
+ 
+@@ -420,7 +420,7 @@ static int pcm_digital_out_open(struct s
+ 
+ 	DE_ACT(("pcm_digital_out_open\n"));
+ 	max_channels = num_digital_busses_out(chip) - substream->number;
+-	down(&chip->mode_mutex);
++	mutex_lock(&chip->mode_mutex);
+ 	if (chip->digital_mode == DIGITAL_MODE_ADAT)
+ 		err = pcm_open(substream, max_channels);
+ 	else	/* If the card has ADAT, subtract the 6 channels
+@@ -447,7 +447,7 @@ static int pcm_digital_out_open(struct s
+ 	if (atomic_read(&chip->opencount) > 1 && chip->rate_set)
+ 		chip->can_set_rate=0;
+ dout_exit:
+-	up(&chip->mode_mutex);
++	mutex_unlock(&chip->mode_mutex);
+ 	return err;
+ }
+ 
+@@ -1420,7 +1420,7 @@ static int snd_echo_digital_mode_put(str
+ 	if (dmode != chip->digital_mode) {
+ 		/* mode_mutex is required to make this operation atomic wrt
+ 		pcm_digital_*_open() and set_input_clock() functions. */
+-		down(&chip->mode_mutex);
++		mutex_lock(&chip->mode_mutex);
+ 
+ 		/* Do not allow the user to change the digital mode when a pcm
+ 		device is open because it also changes the number of channels
+@@ -1439,7 +1439,7 @@ static int snd_echo_digital_mode_put(str
+ 			if (changed >= 0)
+ 				changed = 1;	/* No errors */
+ 		}
+-		up(&chip->mode_mutex);
++		mutex_unlock(&chip->mode_mutex);
+ 	}
+ 	return changed;
+ }
+@@ -1566,12 +1566,12 @@ static int snd_echo_clock_source_put(str
+ 		return -EINVAL;
+ 	dclock = chip->clock_source_list[eclock];
+ 	if (chip->input_clock != dclock) {
+-		down(&chip->mode_mutex);
++		mutex_lock(&chip->mode_mutex);
+ 		spin_lock_irq(&chip->lock);
+ 		if ((changed = set_input_clock(chip, dclock)) == 0)
+ 			changed = 1;	/* no errors */
+ 		spin_unlock_irq(&chip->lock);
+-		up(&chip->mode_mutex);
++		mutex_unlock(&chip->mode_mutex);
+ 	}
+ 
+ 	if (changed < 0)
+@@ -1972,7 +1972,7 @@ static __devinit int snd_echo_create(str
+ 		return err;
+ 	}
+ 	atomic_set(&chip->opencount, 0);
+-	init_MUTEX(&chip->mode_mutex);
++	mutex_init(&chip->mode_mutex);
+ 	chip->can_set_rate = 1;
+ 	*rchip = chip;
+ 	/* Init done ! */
+Index: v2.6.24-rc4/sound/pci/echoaudio/echoaudio.h
+===================================================================
+--- v2.6.24-rc4.orig/sound/pci/echoaudio/echoaudio.h
++++ v2.6.24-rc4/sound/pci/echoaudio/echoaudio.h
+@@ -361,7 +361,7 @@ struct echoaudio {
+ 	spinlock_t lock;
+ 	struct snd_pcm_substream *substream[DSP_MAXPIPES];
+ 	int last_period[DSP_MAXPIPES];
+-	struct semaphore mode_mutex;
++	struct mutex mode_mutex;
+ 	u16 num_digital_modes, digital_mode_list[6];
+ 	u16 num_clock_sources, clock_source_list[10];
+ 	atomic_t opencount;
+
+-- 
