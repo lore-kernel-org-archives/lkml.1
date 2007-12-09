@@ -1,85 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbXLIMi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbXLIMme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751896AbXLIMi0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 07:38:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbXLIMiT
+	id S1751984AbXLIMme (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 07:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbXLIMm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 07:38:19 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:22558 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750949AbXLIMiS (ORCPT
+	Sun, 9 Dec 2007 07:42:27 -0500
+Received: from torres.zugschlus.de ([85.214.68.41]:56382 "EHLO
+	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021AbXLIMm0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 07:38:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=nZuOvp1Ih+XWfcvltnog348ANZk8/OPpwwtwqOzFIo9YkYiLOEHhuxrFkRcGdpR39A1lx+Y5O+k98P/kaeahLq+MqTTExVeYcyLzfRCn9ba3G/fVqq1AKPWUY0kTu9MBgiZ4z5WDFxy5gIl7t21Gojr+ZVrGy9a8qMDO9K2trE4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: Please revert: PCI: fix IDE legacy mode resources
-Date: Sun, 9 Dec 2007 13:46:25 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: Ralf Baechle <ralf@linux-mips.org>,
-       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <200710122305.l9CN5tFI008240@hera.kernel.org> <1197185091.6572.38.camel@pasglop> <1197193794.6572.52.camel@pasglop>
-In-Reply-To: <1197193794.6572.52.camel@pasglop>
+	Sun, 9 Dec 2007 07:42:26 -0500
+Date: Sun, 9 Dec 2007 13:42:00 +0100
+From: Marc Haber <mh+linux-kernel@zugschlus.de>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071209124200.GA31147@torres.zugschlus.de>
+References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <20071204164720.6e4dc2c4@the-village.bc.nu> <475599D6.4030008@cosmosbay.com> <20071205212646.GP17536@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712091346.25532.bzolnier@gmail.com>
+In-Reply-To: <20071205212646.GP17536@waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 09 December 2007, Benjamin Herrenschmidt wrote:
-> 
-> > If that is the case though (that is it can't issue low ioport cycles),
-> > how would have the fd6e7321...  worked in the first place ? Hrm...
-> > strange. My understanding is that all that patch does is put junk in the
-> > pci_dev resource structures :-) Maybe that's enough to cause the PCI
-> > layer later on to be unhappy about them and reassign the BARs to some
-> > place that works ? In which case, you are right, a better approach is a
-> > quirk on this specific platform, or even better, mark 0...0x10000000
-> > busy in ioport_resources and let the generic code clash & re-assign...
-> 
->   .../...
-> 
-> In fact, I see a deeper problem with Bart's original patch that moved
-> the "fixup" the PCI probe.
+On Wed, Dec 05, 2007 at 03:26:47PM -0600, Matt Mackall wrote:
+> The distinction between /dev/random and /dev/urandom boils down to one
+> word: paranoia. If you are not paranoid enough to mistrust your
+> network, then /dev/random IS NOT FOR YOU. Use /dev/urandom.
 
-I don't remember changing anything there, could you remind me what it was
-exactly (commit number or patch name)?
+But currently, people who use /dev/urandom to obtain low-quality
+entropy do a DoS for the paranoid people.
 
-> The code now replaces the content of the resource structures with the
-> hard-decoded legacy addresses for any IDE controller in legacy mode,
-> just losing whatever was there (the real BAR value).
-> 
-> On some platforms, like PowerPC (and it might be the same problem MIPS
-> has, I don't know for sure), we have a quirk that puts those controller
-> back into native mode. But so far, those quirks didn't change the
-> resources as they were supposed to contain the proper BAR values that
-> would, from then, be used.
-> 
-> Now that those values have been overriden in the resources, when the
-> controller is switched to native mode, it will answer to the BAR values
-> that no longer match the content of the resources and the driver will
-> fail.
-> 
-> So I think we have a deeper breakage here. I'll dig some machines for
-> which we do that tomorrow and see what exactly is going on. It's mostly
-> older machines so if there's a breakage, it has easily gone under the
-> radar.
-> 
-> I suspect any platform with such a quirk to turn IDE controllers into
-> native mode will now -also- need to put back the BAR values in the
-> struct resource, and do so -before- the platform fixup happens, that is
-> from a header quirk.
-> 
-> Cheers,
-> Ben.
+Greetings
+Marc
+
+-- 
+-----------------------------------------------------------------------------
+Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
+Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
+Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
