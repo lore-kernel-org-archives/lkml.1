@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751866AbXLIFGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbXLIFJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751866AbXLIFGA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 00:06:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750712AbXLIFFw
+	id S1752170AbXLIFJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 00:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbXLIFJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 00:05:52 -0500
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:60956 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750702AbXLIFFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 00:05:51 -0500
-Message-ID: <475B7763.5000008@keyaccess.nl>
-Date: Sun, 09 Dec 2007 06:04:35 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 9 Dec 2007 00:09:21 -0500
+Received: from waste.org ([66.93.16.53]:43061 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbXLIFJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 00:09:21 -0500
+Date: Sat, 8 Dec 2007 23:08:31 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: tytso@mit.edu, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] random: improve variable naming, clear extract buffer
+Message-ID: <20071209050831.GS19691@waste.org>
+References: <2.753618428@selenic.com> <7.753618428@selenic.com> <20071209015154.GW17037@thunk.org>
 MIME-Version: 1.0
-To: "David P. Reed" <dpreed@reed.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-References: <475879CD.9080006@reed.com>	<p733auekcly.fsf@bingen.suse.de> <20071207160439.71b7f46a@the-village.bc.nu> <475AEF8E.5040906@reed.com>
-In-Reply-To: <475AEF8E.5040906@reed.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071209015154.GW17037@thunk.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08-12-07 20:25, David P. Reed wrote:
+On Sat, Dec 08, 2007 at 08:51:54PM -0500, Theodore Tso wrote:
+> On Sat, Dec 08, 2007 at 05:21:00PM -0600, Matt Mackall wrote:
+> > random: improve variable naming, clear extract buffer
+> > 
+> > - split the SHA variables apart into hash and workspace
+> > - rename data to extract
+> > - wipe extract and workspace after hashing
+> > 
+> > diff -r 924f9a441236 drivers/char/random.c
+> > --- a/drivers/char/random.c	Sat Dec 08 16:22:29 2007 -0600
+> > +++ b/drivers/char/random.c	Sat Dec 08 16:32:31 2007 -0600
+> > @@ -461,7 +461,7 @@ static void __add_entropy_words(struct e
+> >  	unsigned long flags;
+> >  	/* rotate the add pointer more rapidly to span more of the
+> >  	 * pool on a given add */
+> > -	const int step = 5;
+> > +	const int step = 13;
+> >  
+> >  	/* Taps are constant, so we can load them without holding r->lock.  */
+> >  	tap1 = r->poolinfo->tap1;
+> 
+> This change has nothing to do with the patch comment.  If you want to
+> change the step size from 5 to 13, why not just change patch 5/6 to
+> just use a step size of 13 from the beginning?
 
-> In any case, my machine does not have an ISA bus.  Why should it?  It's 
-> a laptop!
+Patch refresh gone wrong.
+ 
+> Otherwise, yeah, this patch does make sense.
 
-A bus is not something with expansion slots. Your machine has an ISA bus, or 
-LPC rather, if only to hang its BIOS of. That earlier report about BIOS 
-chips shitting themselves due to aborts on LPC together with ACPI involving 
-the BIOS sounds a bit suspicious (and in that case using 0xed shouldn't help 
-any).
+Twice, in fact. This patch as sent won't compile due to an extra &.
 
-Rene.
+-- 
+Mathematics is the supreme nostalgia of our time.
