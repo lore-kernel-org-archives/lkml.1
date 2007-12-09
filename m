@@ -1,85 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbXLIWr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbXLIWut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbXLIWr7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 17:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbXLIWrw
+	id S1754029AbXLIWut (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 17:50:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXLIWum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 17:47:52 -0500
-Received: from gate.crashing.org ([63.228.1.57]:51082 "EHLO gate.crashing.org"
+	Sun, 9 Dec 2007 17:50:42 -0500
+Received: from smtp5-g19.free.fr ([212.27.42.35]:57894 "EHLO smtp5-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751138AbXLIWrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 17:47:51 -0500
-Subject: Re: Please revert: PCI: fix IDE legacy mode resources
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ralf Baechle <ralf@linux-mips.org>,
-       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-In-Reply-To: <20071209222335.70e52be3@the-village.bc.nu>
-References: <200710122305.l9CN5tFI008240@hera.kernel.org>
-	 <1196899818.7033.11.camel@pasglop>
-	 <200712060434.lB64YUtc023934@po-mbox305.hop.2iij.net>
-	 <1196917447.7033.17.camel@pasglop>
-	 <200712060558.lB65wAFu016256@po-mbox304.hop.2iij.net>
-	 <1196922262.7033.33.camel@pasglop> <20071209021231.GA13729@linux-mips.org>
-	 <1197185091.6572.38.camel@pasglop> <1197193794.6572.52.camel@pasglop>
-	 <20071209133812.2d305a02@the-village.bc.nu>
-	 <1197230609.6563.6.camel@pasglop>
-	 <20071209222335.70e52be3@the-village.bc.nu>
-Content-Type: text/plain
-Date: Mon, 10 Dec 2007 09:47:12 +1100
-Message-Id: <1197240432.6563.30.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1751012AbXLIWul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 17:50:41 -0500
+X-Greylist: delayed 410 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Dec 2007 17:50:41 EST
+Date: Sun, 9 Dec 2007 23:50:39 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: linux-kernel@vger.kernel.org, linuxconsole-dev@lists.sourceforge.net
+Subject: Re: vcsa and big endian
+Message-ID: <20071209225039.GB25047@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-kernel@vger.kernel.org,
+	linuxconsole-dev@lists.sourceforge.net
+References: <20071209224348.GA25292@implementation>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071209224348.GA25292@implementation>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Samuel Thibault, le Sun 09 Dec 2007 23:43:49 +0100, a écrit :
+> On big endian machines, /dev/vcsa stores text/attribute bytes in big
+> endian order, while it stores them in little endian order on little
+> endian machines.  Is that expected?
 
-On Sun, 2007-12-09 at 22:23 +0000, Alan Cox wrote:
-> 
-> I think the generic code is right, up to the MIPS stuff. What the MIPS
-> stuff is doing wants looking at further. If it simply can't address
-> legacy ports them it should set
+It looks like ggi considers this as normal.  In any case, the vcsa
+manual page should probably be made more clear ("but including
+attributes" -> "but using unsigned shorts that include attributes" for
+instance).
 
-Yes, well, we -do- need to remove the pcibios_resource_to_bus() things
-that were added to the generic code. That commit still needs to be
-reverted, it is bogus, as I explained in details. But I agree, the rest
-of the generic code is probably the best way to deal with those stupid
-fixed resources.
-
-> For switching quirks you should be fixing the class code in an early
-> fixup. The early fixups are run before we do the BAR processing. You
-> must however remember to update dev->class as well as the PCI register
-> if you do so.
-
-I would still need to clear out the BARs I suppose when switching from
-legacy to native mode, so they get re-assigned later.
-
-> See quirk_svwkrs_csb5ide() for a correct worked example going in the
-> other direction. If you follow that for the PPC quirks but going
-> native
-> then you will get desired results, although you want to check/know the
-> BAR
-> resources are sane, or clear them as part of the process.
-
-Ok.
-
-> So in summary:
->         - MIPS resource/bar bit may be wrong - if so lets revert that
->         - Rest of the logic is just fine, but you may need to move
-> your
-> quirks to be 'early' ones.
-
-I'm digging the HW that needs that stuff right now so I can experiment
-with various approaches and pick up the best one. Thanks.
-
-Cheers,
-Ben.
-
-
+Samuel
