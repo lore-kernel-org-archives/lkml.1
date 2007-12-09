@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752636AbXLIGOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbXLIGUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752636AbXLIGOS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 01:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbXLIGOF
+	id S1752882AbXLIGUZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 01:20:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbXLIGUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 01:14:05 -0500
-Received: from an-out-0708.google.com ([209.85.132.250]:17893 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbXLIGOD (ORCPT
+	Sun, 9 Dec 2007 01:20:13 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:41266 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750702AbXLIGUL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 01:14:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=organization:to:subject:user-agent:mime-version:content-disposition:date:message-id:content-type:content-transfer-encoding:from;
-        b=PQxXPVJ/0cvJvwsL9DcPTIuGKmAhoPOHJgr0NacMsCmmS8wiQPolbk5p7I2OOd4ApxqFEVHNvMNTamK+FNhOCbgHVbRfgB/AVv+WkA3zdib35n5oaEDqjY7RhJIhoJwdnOqvcr4uSz2SSxSX83fgs0AY2MXRdFtcrviA3i02JlY=
-Organization: Organization? Not detectable
-To: linux-kernel@vger.kernel.org
-Subject: usb regression in 2.6.24-rc4
-User-Agent: KMail/1.9.7
+	Sun, 9 Dec 2007 01:20:11 -0500
+From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
+Organization: Pardus / KDE
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Date: Sun, 9 Dec 2007 08:21:16 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
+Cc: Adrian Bunk <bunk@kernel.org>, Bill Davidsen <davidsen@tmr.com>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
+References: <20071204114125.GA17310@torres.zugschlus.de> <200712090010.10362.ismail@pardus.org.tr> <20071208234612.GQ17037@thunk.org>
+In-Reply-To: <20071208234612.GQ17037@thunk.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Date: Sun, 9 Dec 2007 01:13:57 -0500
-Message-Id: <200712090113.57805.gene.heskett@gmail.cm>
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-From: Gene Heskett <gene.heskett@gmail.com>
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200712090821.16483.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings guys & gals;
+Sunday 09 December 2007 01:46:12 tarihinde Theodore Tso şunları yazmıştı:
+> On Sun, Dec 09, 2007 at 12:10:10AM +0200, Ismail Dönmez wrote:
+> > > As long as /dev/random is readable for all users there's no reason to
+> > > use /dev/urandom for a local DoS...
+> >
+> > Draining entropy in /dev/urandom means that insecure and possibly not
+> > random data will be used and well thats a security bug if not a DoS bug.
+>
+> Actually in modern 2.6 kernels there are two separate output entropy
+> pools for /dev/random and /dev/urandom.  So assuming that the
+> adversary doesn't know the contents of the current state of the
+> entropy pool (i.e., the RNG is well seeded with entropy), you can read
+> all you want from /dev/urandom and that won't give an adversary
+> successful information to attack /dev/random.
 
-This was sent about an hour ago to the usb-devel list also.
--------------
-Just a few minutes ago I needed to make use of my scanner, an Epson 1250u.
+My understanding was if you can drain entropy from /dev/urandom any futher 
+reads from /dev/urandom will result in data which is not random at all. Is 
+that wrong?
 
-Firing up xsane, the usual select the device menu window didn't show, and it 
-went straight to my tv card as the only input device.
-
-I couldn't recall the name of the tool that scans for scanners that's in the 
-sane package, or should be, so I then did an lsusb, but got an empty result!
-
-Unplugging the usb cable from the scanner, then reconnecting the usb cable got 
-me the usual disconnect and connect messages in the log, but xsane still 
-couldn't find it.
-
-So I rebooted to 2.6.24-rc4 again, same result.  lsusb still gave an empty 
-result.  The two kernels were generated from the same .config as far as I 
-know.  The -rc3 .config was fed to a "make oldconfig" to make 
-the -rc4 .config as is the usual practice.
-
-So I then rebooted to 2.6.24-rc3, and it all works again.  I got the scanning 
-done and the pix sent on their merry way.
-
-Anybody have a suggestion of what to check, or maybe a patch to revert?  Or 
-a .config option that needs to be enabled?
+Regards,
+ismail
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Nothing is impossible for the man who doesn't have to do it himself.
-		-- A.H. Weiler
+Never learn by your mistakes, if you do you may never dare to try again.
