@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbXLIQLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752284AbXLIQR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752586AbXLIQLe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 11:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbXLIQLZ
+	id S1752284AbXLIQR4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 11:17:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbXLIQRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 11:11:25 -0500
-Received: from smtp108.plus.mail.re1.yahoo.com ([69.147.102.71]:30168 "HELO
-	smtp108.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750998AbXLIQLY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 11:11:24 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:Mail-Followup-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=2eL5FgMC49Rj3uDLDuWS9y4b/U0VozTxUcUrDyAtV8642t75JQQIOtY6y5oMghd5QAlfSqujzDJcMc35GvrdwFkKtmABc0YuvPj8QR0zH/9tALgdk0DExZbAPmsccHMn8aN3RkZr6O5b7JyJyyHI0mF1BU9VEl326LTrw9ARTbM=  ;
-X-YMail-OSG: JepKdHsVM1k7q_VHTRpUYBFhyIRguomo5CfXeJiu6LaTWNYpfmQfn8tRfC.m1Q.KPEidSv0GIA--
-Date: Sun, 9 Dec 2007 17:09:59 +0100
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] swap image signature check upon resume
-Message-ID: <20071209160959.GA4978@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-Mail-Followup-To: bbpetkov@yahoo.de, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-References: <20071206211335.GA4923@gollum.tnic> <200712082350.33626.rjw@sisk.pl> <20071209065559.GA4627@gollum.tnic> <200712091527.57523.rjw@sisk.pl>
+	Sun, 9 Dec 2007 11:17:48 -0500
+Received: from waste.org ([66.93.16.53]:51590 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750773AbXLIQRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 11:17:48 -0500
+Date: Sun, 9 Dec 2007 10:16:05 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Marc Haber <mh+linux-kernel@zugschlus.de>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071209161605.GX19691@waste.org>
+References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <20071204164720.6e4dc2c4@the-village.bc.nu> <475599D6.4030008@cosmosbay.com> <20071205212646.GP17536@waste.org> <20071209124200.GA31147@torres.zugschlus.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200712091527.57523.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20071209124200.GA31147@torres.zugschlus.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 09, 2007 at 03:27:57PM +0100, Rafael J. Wysocki wrote:
-...
-
-> > Instead, I'd rather issue a warning that the swsusp header mismatches, say with
-> > which kernel the machine got suspended with and then start the countdown for reboot.
+On Sun, Dec 09, 2007 at 01:42:00PM +0100, Marc Haber wrote:
+> On Wed, Dec 05, 2007 at 03:26:47PM -0600, Matt Mackall wrote:
+> > The distinction between /dev/random and /dev/urandom boils down to one
+> > word: paranoia. If you are not paranoid enough to mistrust your
+> > network, then /dev/random IS NOT FOR YOU. Use /dev/urandom.
 > 
-> What exactly would that change?  You need to reboot anyway and fsck will run on
-> the filesystems regardless of which kernel you boot with.
+> But currently, people who use /dev/urandom to obtain low-quality
+> entropy do a DoS for the paranoid people.
 
-well, you'll have the chance to reboot with the kernel the machine got suspended
-with and then the swsusp image header _will_ match so no fsck-ing. or am i
-missing something...
+Not true, as I've already pointed out in this thread.
 
 -- 
-Regards/Gruﬂ,
-    Boris.
+Mathematics is the supreme nostalgia of our time.
