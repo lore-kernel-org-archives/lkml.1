@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbXLIBIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbXLIBJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbXLIBIZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 20:08:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbXLIBIQ
+	id S1754716AbXLIBJU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 20:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbXLIBJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 20:08:16 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38149 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbXLIBIP (ORCPT
+	Sat, 8 Dec 2007 20:09:12 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:42411 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753074AbXLIBJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 20:08:15 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>,
-       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH 1/4 -mm] kexec based hibernation -v7 : kexec jump
-References: <1197042810.24045.61.camel@caritas-dev.intel.com>
-	<20071208235344.GA17005@elf.ucw.cz> <200712090119.57826.rjw@sisk.pl>
-Date: Sat, 08 Dec 2007 18:06:02 -0700
-In-Reply-To: <200712090119.57826.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sun, 9 Dec 2007 01:19:56 +0100")
-Message-ID: <m1prxgoex1.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 8 Dec 2007 20:09:10 -0500
+Subject: Re: entropy gathering (was Re: Why does reading from /dev/urandom
+	deplete entropy so much?)
+From: Jon Masters <jonathan@jonmasters.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Willy Tarreau <w@1wt.eu>, Jeff Garzik <jeff@garzik.org>,
+       Matt Mackall <mpm@selenic.com>, Mike McGrath <mmcgrath@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray@madrabbit.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org,
+       hmh@debian.org
+In-Reply-To: <20071208234721.GR17037@thunk.org>
+References: <20071204223345.GJ19691@waste.org> <4756B50B.3060100@redhat.com>
+	 <20071205144934.GL7259@thunk.org> <1197099477.20786.149.camel@perihelion>
+	 <20071208173204.GI17037@thunk.org> <475AD585.7020908@redhat.com>
+	 <20071208174908.GJ17037@thunk.org> <20071208181525.GL19691@waste.org>
+	 <475AF241.5000809@garzik.org> <20071208204239.GG15227@1wt.eu>
+	 <20071208234721.GR17037@thunk.org>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Sat, 08 Dec 2007 20:07:51 -0500
+Message-Id: <1197162471.12636.6.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
->> I'm not kexec hacker... but maybe this is in good enough state to be
->> merged? It is useful on its own: kexec jump and back means we can dump
->> system then continue running, for example...
->
-> As far as I'm concerned, patches [1/4] and [2/4] can go.
->
-> The other two are not in that shape yet (especially the [3/4] patch).
+On Sat, 2007-12-08 at 18:47 -0500, Theodore Tso wrote:
+> On Sat, Dec 08, 2007 at 09:42:39PM +0100, Willy Tarreau wrote:
+> > I remember having installed openssh on an AIX machines years ago, and
+> > being amazed by the number of sources it collected entropy from. Simple
+> > commands such as "ifconfig -a", "netstat -i" and "du -a", "ps -ef", "w"
+> > provided a lot of entropy.
+> 
+> Well.... not as many bits of entropy as you might think.  But every
+> little bit helps, especially if some of it is not available to
+> adversary.
 
-Ok.  Then I will see if I can review these in the next couple days
-and give some feedback.
+I was always especially fond of the "du" entropy source with Solaris
+installations of OpenSSH (the PRNG used commands like "du" too). It was
+always amusing that a single network outage at the University would
+prevent anyone from ssh'ing into the "UNIX" machines. So yeah, if we
+want to take a giant leap backwards, I suggest jumping at this.
 
-At a quick skim through the code it appears there is some more infrastructure
-then we need and things can still be simplified.
+Lots of these are not actually random - you can guess the free space on
+a network drive in some certain cases, you know what processes are
+likely to be created on a LiveCD, and many dmesg outputs are very
+similar, especially when there aren't precie timestamps included.
 
-Since this applies in particular to the user space interface I'm not comfortable
-with these patches going in just yet.
+But I do think it's time some of this got addressed :-)
 
-The unused KEXEC_PRESERVE_ flags especially give me pause.  Having something
-like that, that isn't currently wired up sounds like a bad place to start.
+Cheers,
 
-Eric
+Jon.
+
+
