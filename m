@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbXLIXAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXLIXVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672AbXLIXAT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 18:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXLIXAG
+	id S1752812AbXLIXVc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 18:21:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXLIXVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 18:00:06 -0500
-Received: from smtp5-g19.free.fr ([212.27.42.35]:43226 "EHLO smtp5-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751225AbXLIXAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 18:00:05 -0500
-Date: Mon, 10 Dec 2007 00:00:03 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: linux-kernel@vger.kernel.org, linuxconsole-dev@lists.sourceforge.net
-Subject: Re: vcsa and big endian
-Message-ID: <20071209230003.GC25047@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	linux-kernel@vger.kernel.org,
-	linuxconsole-dev@lists.sourceforge.net
-References: <20071209224348.GA25292@implementation> <20071209225039.GB25047@implementation>
+	Sun, 9 Dec 2007 18:21:23 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36660 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751075AbXLIXVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 18:21:23 -0500
+Date: Mon, 10 Dec 2007 00:22:08 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>, "David P. Reed" <dpreed@reed.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+	with MCP51 laptops
+Message-ID: <20071209232208.GA1726@elf.ucw.cz>
+References: <475879CD.9080006@reed.com> <p733auekcly.fsf@bingen.suse.de> <20071207160439.71b7f46a@the-village.bc.nu> <20071209125458.GB4381@ucw.cz> <20071209165908.GA15910@one.firstfloor.org> <20071209212513.GC24284@elf.ucw.cz> <20071209222928.3f7b63a4@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071209225039.GB25047@implementation>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20071209222928.3f7b63a4@the-village.bc.nu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel Thibault, le Sun 09 Dec 2007 23:50:39 +0100, a écrit :
-> Samuel Thibault, le Sun 09 Dec 2007 23:43:49 +0100, a écrit :
-> > On big endian machines, /dev/vcsa stores text/attribute bytes in big
-> > endian order, while it stores them in little endian order on little
-> > endian machines.  Is that expected?
+On Sun 2007-12-09 22:29:28, Alan Cox wrote:
+> On Sun, 9 Dec 2007 22:25:13 +0100
+> Pavel Machek <pavel@ucw.cz> wrote:
 > 
-> It looks like ggi considers this as normal.  In any case, the vcsa
-> manual page should probably be made more clear ("but including
-> attributes" -> "but using unsigned shorts that include attributes" for
-> instance).
+> > On Sun 2007-12-09 17:59:08, Andi Kleen wrote:
+> > > > I mean, we expect 8usec delay -- historical ISA timing -- but when
+> > > > _PCI_ card with leds is inserted, it is likely to be faster than old
+> > > > ISA, right?
+> > > 
+> > > Yes, i guess switching to udelay at least on newer systems would
+> > > be a good idea.  I'm not quite sure about systems without TSC though.
+> > 
+> > Something like this? (Warning, will not probably even compile on
+> > x86-64, I do not have 64-bit compiler near me).
+> 
+> You need to stick in a bug trap to verify that the udelay is not called
+> before the cpu timer has been set up.
 
-And the code example should be fixed too:
+Really? 
 
-	   char ch, attrib;
+udelay() seems to use
+... cpu_data(raw_smp_processor_id()).loops_per_jiffy .. 
 
-           (void) read(fd, &ch, 1);
-           (void) read(fd, &attrib, 1);
+..so it seems that bug trap is already there... because
+raw_smp_processor_id() will probably just oops...
 
-should rather be
-
-	   unsigned short s;
-	   unsigned char ch, attrib;
-
-	   ...
-
-           (void) read(fd, &s, 2);
-	   ch = s & 0xff;
-	   attrib = (s >> 8);
-
-
-The manual page should also mention that when a 512 chars font is
-loaded, the 9th bit is in the attrib value, and its position can be
-fetched through the VT_GETHIFONTMASK ioctl.
-
-Samuel
+We could solve this by pre-initializing loops_per_jiffy to some huge
+number, but I do not see convenient place where to do that.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
