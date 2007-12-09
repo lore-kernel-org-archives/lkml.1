@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbXLIVVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbXLIVWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbXLIVVZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 16:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbXLIVVF
+	id S1753246AbXLIVWe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 16:22:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbXLIVW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 16:21:05 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58892 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751454AbXLIVVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 16:21:01 -0500
-Date: Sun, 9 Dec 2007 22:21:32 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: Re: hibernation issue with kernel 2.6.23-gentoo-r3 at T41
-Message-ID: <20071209212132.GB24284@elf.ucw.cz>
-References: <200712031419.41596.toralf.foerster@gmx.de> <200712032254.23656.rjw@sisk.pl> <20071209174108.GH4381@ucw.cz> <200712092231.41064.rjw@sisk.pl>
+	Sun, 9 Dec 2007 16:22:26 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:39288 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751413AbXLIVWZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 16:22:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:content-transfer-encoding:user-agent;
+        b=YalgUceJdqxYytnNn4vjHOK1e5q38juS9bvBD1+LzJcBN8imlgCIAntGn1sWVVa65xcd2LkZNzw+092eUsjwDIj5R2GQFnkd7kokevu2A6HrtBkz8SJ7NyC0JFz2AW2NbYPexsk697SW/m0LWjNbV/0E0AjJZzCOx2LqTVe2Vh0=
+Date: Sun, 9 Dec 2007 22:23:42 +0100
+From: Marcin =?utf-8?Q?=C5=9Alusarz?= <marcin.slusarz@gmail.com>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] usb/storage/initializers.c: fix signedness difference
+Message-ID: <20071209212337.GA9440@joi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <200712092231.41064.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2007-12-09 22:31:40, Rafael J. Wysocki wrote:
-> On Sunday, 9 of December 2007, Pavel Machek wrote:
-> > On Mon 2007-12-03 22:54:23, Rafael J. Wysocki wrote:
-> > > On Monday, 3 of December 2007, Toralf Förster wrote:
-> > > > Hhm,
-> > > > 
-> > > > in general it seems to be a regression of kernel 2.6.23 with suspend/hibernate
-> > > > if a user mode linux image is runnning.
-> > > > 
-> > > > With previous kernel versions (tested gentoo-sources-2.6.22-r9 and 
-> > > > gentoo-sources-2.6.21-r4) I've no problem to either suspend or to hibernate the
-> > > > ThinkPad T41.
-> > > > 
-> > > > However with gentoo-sources-2.6.23-r3 the system didn't neither
-> > > > suspend nor hibernate. The good news is that the system doesn't hang :-)
-> > >  
-> > > Please file a bug report at
-> > > http://bugzilla.kernel.org/enter_bug.cgi?product=Power%20Management
-> > > against Hibernation/Suspend and add my address to the report's CC list.
-> > 
-> > I smell refrigerator problem; can you suspend if you SIGSTOP your uml,
-> > first?
-> 
-> That might be, but the issue is apparently fixed in 2.6.24-rc and I'm
-> struggling to figure out how the !@#$%^ (please see
-> http://bugzilla.kernel.org/show_bug.cgi?id=9501).
+usb/storage/initializers.c: fix signedness difference
 
-No idea... I'm glad its fixed :-). Maybe someone fixed uninterruptible
-sleep somewhere in ptrace...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Signed-off-by: Marcin Åšlusarz <marcin.slusarz@gmail.com>
+---
+ drivers/usb/storage/initializers.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/usb/storage/initializers.c b/drivers/usb/storage/initializers.c
+index ee5b42a..187dd1e 100644
+--- a/drivers/usb/storage/initializers.c
++++ b/drivers/usb/storage/initializers.c
+@@ -66,7 +66,8 @@ int usb_stor_ucr61s2b_init(struct us_data *us)
+ {
+ 	struct bulk_cb_wrap *bcb = (struct bulk_cb_wrap*) us->iobuf;
+ 	struct bulk_cs_wrap *bcs = (struct bulk_cs_wrap*) us->iobuf;
+-	int res, partial;
++	int res;
++	unsigned int partial;
+ 	static char init_string[] = "\xec\x0a\x06\x00$PCCHIPS";
+
+ 	US_DEBUGP("Sending UCR-61S2B initialization packet...\n");
