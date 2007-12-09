@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751860AbXLIMfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbXLIMi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751860AbXLIMfR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 07:35:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbXLIMfF
+	id S1751896AbXLIMi0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 07:38:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbXLIMiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 07:35:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56292 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750952AbXLIMfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 07:35:04 -0500
-Date: Sun, 9 Dec 2007 13:34:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52,
-	[2.6.24-rc4-git5: Reported regressions from 2.6.23]
-Message-ID: <20071209123441.GA21893@elte.hu>
-References: <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org> <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org> <20071208100950.a3547868.akpm@linux-foundation.org> <alpine.LFD.0.9999.0712081034470.12046@woody.linux-foundation.org> <20071208195211.GA3727@elte.hu> <20071208202930.GA17934@elte.hu> <84144f020712090020o5bdeb54fqaa9e6578bd066f29@mail.gmail.com> <20071209085030.GA14264@elte.hu> <84144f020712090118w27225592w8933ee2314db7556@mail.gmail.com> <20071209115139.GA29518@elte.hu>
+	Sun, 9 Dec 2007 07:38:19 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:22558 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750949AbXLIMiS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 07:38:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=nZuOvp1Ih+XWfcvltnog348ANZk8/OPpwwtwqOzFIo9YkYiLOEHhuxrFkRcGdpR39A1lx+Y5O+k98P/kaeahLq+MqTTExVeYcyLzfRCn9ba3G/fVqq1AKPWUY0kTu9MBgiZ4z5WDFxy5gIl7t21Gojr+ZVrGy9a8qMDO9K2trE4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: Please revert: PCI: fix IDE legacy mode resources
+Date: Sun, 9 Dec 2007 13:46:25 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: Ralf Baechle <ralf@linux-mips.org>,
+       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200710122305.l9CN5tFI008240@hera.kernel.org> <1197185091.6572.38.camel@pasglop> <1197193794.6572.52.camel@pasglop>
+In-Reply-To: <1197193794.6572.52.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071209115139.GA29518@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200712091346.25532.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > The problem is that for each cache, you have an "per-node alien 
-> > queues" for each node (see struct kmem_cache nodelists -> struct 
-> > kmem_list3 alien). Moving slab metadata to struct page solves this 
-> > but now you can only have one "queue" thats part of the same struct.
+On Sunday 09 December 2007, Benjamin Herrenschmidt wrote:
 > 
-> yes, it's what i referred to as "distributed, per node cache". It has 
-> no "quadratic overhead". It has SLAB memory spread out amongst nodes. 
-> I.e. 1 million pages are distributed amongst 1k nodes with 1000 pages 
-> per node with each node having 1 page.
+> > If that is the case though (that is it can't issue low ioport cycles),
+> > how would have the fd6e7321...  worked in the first place ? Hrm...
+> > strange. My understanding is that all that patch does is put junk in the
+> > pci_dev resource structures :-) Maybe that's enough to cause the PCI
+> > layer later on to be unhappy about them and reassign the BARs to some
+> > place that works ? In which case, you are right, a better approach is a
+> > quirk on this specific platform, or even better, mark 0...0x10000000
+> > busy in ioport_resources and let the generic code clash & re-assign...
 > 
-> But that memory is not lost and it's disingenous to call it 'overhead' 
-> and it very much comes handy for performance _IF_ there's global 
-> workload that involves cross-node allocations. It's simply a cache 
-> that is mis-sized and mis-constructed on large node count systems but 
-> i bet it makes quite a performance difference on low-node-count 
-> systems.
+>   .../...
 > 
-> On high node-count systems it might make sense to reduce the amount of 
-> cross-node caching and to _structure_ the distributed NUMA SLAB cache 
-> in an intelligent way (perhaps along cpuset boundaries) [...]
+> In fact, I see a deeper problem with Bart's original patch that moved
+> the "fixup" the PCI probe.
 
-i think much of this could be achieved by delaying the creation of alien 
-caches up until the point a { node X } -> { node Y } alloc/free 
-relationship gets established. So if a system is partitioned along 
-cpusets, vast areas of the NxN matrix never gets populated with alien 
-caches.
+I don't remember changing anything there, could you remind me what it was
+exactly (commit number or patch name)?
 
-	Ingo
+> The code now replaces the content of the resource structures with the
+> hard-decoded legacy addresses for any IDE controller in legacy mode,
+> just losing whatever was there (the real BAR value).
+> 
+> On some platforms, like PowerPC (and it might be the same problem MIPS
+> has, I don't know for sure), we have a quirk that puts those controller
+> back into native mode. But so far, those quirks didn't change the
+> resources as they were supposed to contain the proper BAR values that
+> would, from then, be used.
+> 
+> Now that those values have been overriden in the resources, when the
+> controller is switched to native mode, it will answer to the BAR values
+> that no longer match the content of the resources and the driver will
+> fail.
+> 
+> So I think we have a deeper breakage here. I'll dig some machines for
+> which we do that tomorrow and see what exactly is going on. It's mostly
+> older machines so if there's a breakage, it has easily gone under the
+> radar.
+> 
+> I suspect any platform with such a quirk to turn IDE controllers into
+> native mode will now -also- need to put back the BAR values in the
+> struct resource, and do so -before- the platform fixup happens, that is
+> from a header quirk.
+> 
+> Cheers,
+> Ben.
