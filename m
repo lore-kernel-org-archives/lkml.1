@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbXLICP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbXLICWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754374AbXLICP4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 21:15:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbXLICPt
+	id S1753995AbXLICWp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 21:22:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbXLICWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 21:15:49 -0500
-Received: from THUNK.ORG ([69.25.196.29]:34859 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751990AbXLICPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 21:15:49 -0500
-Date: Sat, 8 Dec 2007 21:15:44 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Roland Dreier <rolandd@cisco.com>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
-Message-ID: <20071209021544.GY17037@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Roland Dreier <rolandd@cisco.com>,
-	Takashi Iwai <tiwai@suse.de>
-References: <200712080340.49546.rjw@sisk.pl> <20071208014241.f4b138e0.akpm@linux-foundation.org> <20071208194042.GO17037@thunk.org> <200712082330.54259.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712082330.54259.rjw@sisk.pl>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sat, 8 Dec 2007 21:22:37 -0500
+Received: from tomts29.bellnexxia.net ([209.226.175.103]:40556 "EHLO
+	tomts29-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752144AbXLICWg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 21:22:36 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAFPgWkdFn+Sr/2dsb2JhbACmAA
+Date: Sat, 8 Dec 2007 21:22:34 -0500
+From: Mike Houston <mikeserv@bmts.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: linux-kernel@vger.kernel.org, mhoffman@lightlink.com,
+       lm-sensors@lm-sensors.org
+Subject: Re: 2.6.24-rc4 hwmon it87 probe fails
+Message-Id: <20071208212234.e00b74cd.mikeserv@bmts.com>
+In-Reply-To: <20071209000554.GF20441@stusta.de>
+References: <20071204215154.7f26285e.mikeserv@bmts.com>
+	<20071209000554.GF20441@stusta.de>
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.10.14; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 11:30:53PM +0100, Rafael J. Wysocki wrote:
-> On Saturday, 8 of December 2007, Theodore Tso wrote:
-> > However, as far as I am concerned, Ingo's patch, first posted to LKML
-> > here: http://lkml.org/lkml/2007/11/16/66 should be listed as fixing
-> > the above regression.  Rafael, could you please make a note of this in
-> > your regression list,
+On Sun, 9 Dec 2007 01:05:54 +0100
+Adrian Bunk <bunk@stusta.de> wrote:
+
+> On Tue, Dec 04, 2007 at 09:51:54PM -0500, Mike Houston wrote:
+> > I finally got around to testing Linux 2.6.24 (2.6.24-rc4) and
+> > found that the it87 driver fails to probe and consequently, my
+> > sensors no longer work. This was fine with Linux 2.6.23.8 (the
+> > last kernel I was using)
+> > 
+> > The necessary modules load, but:
+> > 
+> > it87: Found IT8718F chip at 0x290, revision 2
+> > it87: in3 is VCC (+5V)
+> > it87 it87.656: Failed to request region 0x290-0x297
+> > it87: probe of it87.656 failed with error -16
+> > 
+> > Coretemp still works.
+> > 
+> > It appears it has something to do with the ioport range being
+> > reserved for some reason:
+> > 
+> > system 00:01: ioport range 0x290-0x29f has been reserved
+
 > 
-> Done, thanks.
+> Thanks for your report.
+> 
+> Please also provide:
+> - dmesg from 2.6.23.8
+> - The output of "cat /proc/ioports" for both kernels
 
-Great, thanks.  I should add that technically this wasn't a regression
-since I had been seeing this since before 2.6.23.  Also, it isn't a
-big deal, since aside from noise in the syslog, falling back to
-polling more doesn't make any functional or user-visible difference
-(although I guess it's less efficient).  
+Thanks Adrian, here is the information you have requested, for
+both kernels (I have 2.6.23.9 now though where it87 still works)
 
-Regardless of whether it is a regression, it would be nice to get the
-patch applied and and this issue fixed for 2.6.25!
+Linux 2.6.23.9:
+http://www.mikeserv.com/temp/proc_ioports-2.6.23.9.txt
+http://www.mikeserv.com/temp/dmesg-2.6.23.9.txt
+http://www.mikeserv.com/temp/config-2.6.23.9.txt
 
-					- Ted
+Linux 2.6.24-rc4:
+http://www.mikeserv.com/temp/proc_ioports-2.6.24-rc4.txt
+http://www.mikeserv.com/temp/dmesg-2.6.24-rc4.txt
+http://www.mikeserv.com/temp/config-2.6.24-rc4.txt
+
+Mike Houston
