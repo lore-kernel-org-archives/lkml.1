@@ -1,99 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbXLITLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbXLITRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752650AbXLITLl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 14:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbXLITLd
+	id S1752502AbXLITRA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 14:17:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbXLITQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 14:11:33 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:45093 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750880AbXLITLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 14:11:32 -0500
-Date: Sun, 9 Dec 2007 20:13:17 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: Re: menuconfig: fail with clearer error if curses.h N/A
-Message-ID: <20071209191317.GA8496@uranus.ravnborg.org>
-References: <200710142323.21139.elendil@planet.nl>
+	Sun, 9 Dec 2007 14:16:53 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:27084 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750864AbXLITQw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 14:16:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=d6iir5F3GdoD9KFCJVlimc8tCG7SWj9AE3kB8auM5UsAXGW4BOobKppYCnfUEzVL085mn0xJIeCf1qP7UQc6VnIGJ4ld0hd75vJtEGqNyK/7OD1VgHgYSQL4msaBkI09T5KrIIpEv4dqNnfpAAhZbKDslAjaSPDMYV6mybXvH9I=
+Subject: [PATCH, cleaun-up git-sched 2/3] get rid of 'new_cpu' in
+	try_to_wake_up()
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <srostedt@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 09 Dec 2007 20:16:44 +0100
+Message-Id: <1197227804.6991.29.camel@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200710142323.21139.elendil@planet.nl>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 14, 2007 at 11:23:20PM +0200, Frans Pop wrote:
-> It would be nice if 'make menuconfig' could fail earlier or with a clearer
-> error if curses.h is not available. The actual error is currently rather
-> buried in a huge amount of indirect errors.
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
-It worked some time ago but I did not bother to check it out
-when it broke.
-With following patch it fails like this:
+Clean-up try_to_wake_up().
 
-$ make menuconfig
- *** Unable to find the ncurses libraries
- *** or the required header files.
- *** make menuconfig require the ncurses libraries
- ***
- *** Install ncurses (ncurses-devel) and try again
- ***
-make[1]: *** [scripts/kconfig/dochecklxdialog] Error 1
-make: *** [menuconfig] Error 2
+Get rid of the 'new_cpu' variable in try_to_wake_up() [ that's, one #ifdef section less ].
+Also remove a few redundant blank lines.
 
-This is much better.
+Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
-	Sam
-
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-index 1ad6f7f..8091435 100644
---- a/scripts/kconfig/Makefile
-+++ b/scripts/kconfig/Makefile
-@@ -93,12 +93,6 @@ HOST_LOADLIBES   = $(shell $(CONFIG_SHELL) $(check-lxdialog) -ldflags $(HOSTCC))
+---
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 91f4ea5..285003b 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1553,9 +1553,6 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
+ 	unsigned long flags;
+ 	long old_state;
+ 	struct rq *rq;
+-#ifdef CONFIG_SMP
+-	int new_cpu;
+-#endif
  
- HOST_EXTRACFLAGS += -DLOCALE
+ 	rq = task_rq_lock(p, &flags);
+ 	old_state = p->state;
+@@ -1573,9 +1570,9 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
+ 	if (unlikely(task_running(rq, p)))
+ 		goto out_activate;
  
--PHONY += $(obj)/dochecklxdialog
--$(obj)/dochecklxdialog:
--	$(Q)$(CONFIG_SHELL) $(check-lxdialog) -check $(HOSTCC) $(HOST_LOADLIBES)
+-	new_cpu = p->sched_class->select_task_rq(p, sync);
+-	if (new_cpu != cpu) {
+-		set_task_cpu(p, new_cpu);
++	cpu = p->sched_class->select_task_rq(p, sync);
++	if (cpu != orig_cpu) {
++		set_task_cpu(p, cpu);
+ 		task_rq_unlock(rq, &flags);
+ 		/* might preempt at this point */
+ 		rq = task_rq_lock(p, &flags);
+@@ -1602,10 +1599,8 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
+ 			}
+ 		}
+ 	}
 -
--always := dochecklxdialog
+ #endif
+ 
 -
- 
- # ===========================================================================
- # Shared Makefile for the various kconfig executables:
-@@ -145,6 +139,14 @@ clean-files	:= lkc_defs.h qconf.moc .tmp_qtcheck \
- 		   .tmp_gtkcheck zconf.tab.c lex.zconf.c zconf.hash.c
- clean-files     += mconf qconf gconf
- 
-+# Check that we have the required ncurses stuff installed for lxdialog (menuconfig)
-+PHONY += $(obj)/dochecklxdialog
-+$(addprefix $(obj)/,$(lxdialog)): $(obj)/dochecklxdialog
-+$(obj)/dochecklxdialog:
-+	$(Q)$(CONFIG_SHELL) $(check-lxdialog) -check $(HOSTCC) $(HOST_EXTRACFLAGS) $(HOST_LOADLIBES)
-+
-+always := dochecklxdialog
-+
- # Add environment specific flags
- HOST_EXTRACFLAGS += $(shell $(CONFIG_SHELL) $(srctree)/$(src)/check.sh $(HOSTCC) $(HOSTCFLAGS))
- 
-diff --git a/scripts/kconfig/lxdialog/check-lxdialog.sh b/scripts/kconfig/lxdialog/check-lxdialog.sh
-index 9681476..451297f 100644
---- a/scripts/kconfig/lxdialog/check-lxdialog.sh
-+++ b/scripts/kconfig/lxdialog/check-lxdialog.sh
-@@ -36,9 +36,10 @@ trap "rm -f $tmp" 0 1 2 3 15
- 
- # Check if we can link to ncurses
- check() {
--	echo "main() {}" | $cc -xc - -o $tmp 2> /dev/null
-+	echo " \#include CURSES_LOC main() {}" | $cc -xc - -o $tmp 2> /dev/null
- 	if [ $? != 0 ]; then
--		echo " *** Unable to find the ncurses libraries."          1>&2
-+		echo " *** Unable to find the ncurses libraries"           1>&2
-+		echo " *** or the required header files."                  1>&2
- 		echo " *** make menuconfig require the ncurses libraries"  1>&2
- 		echo " *** "                                               1>&2
- 		echo " *** Install ncurses (ncurses-devel) and try again"  1>&2
+ out_activate:
+ #endif /* CONFIG_SMP */
+ 	schedstat_inc(p, se.nr_wakeups);
+
+
