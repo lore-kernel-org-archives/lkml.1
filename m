@@ -1,76 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbXLITmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbXLITuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753227AbXLITmQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 14:42:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbXLITmA
+	id S1752835AbXLITuh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 14:50:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbXLITu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 14:42:00 -0500
-Received: from web52902.mail.re2.yahoo.com ([206.190.49.12]:27363 "HELO
-	web52902.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750864AbXLITl7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 14:41:59 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=V+wfeDzJeahlwZoR3rD/UMxNZ60h1hJ0pD5Z4jVr7xHbj1Ie3V0C5sxf88Nj13fLQF/0vY9V/cEuLZh/v0bk8eDhlDb8O7/Cn+/WITQt1Aw+amCGOzbOtgeeUpsxShpuaSHLLoF8LZtS30uowjb727bdkzlrBJTl53cIKtjxykA=;
-X-YMail-OSG: HSzqPswVM1l7ZSz1xKBB2tW.L2cnN9r7_DBCAhZnwPt.IBpTcInlWYivvd3GwGVXouOE.npfqM2DPQv9uSSWwkeoXos0BoWRZyhlht_keRzgouC2xziPY8zW0FuXKn5MoqU6fwmyWvGThDjESojPv9JKuA--
-Date: Sun, 9 Dec 2007 19:41:58 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: [2.6.23.9] hostap_plx locks up PC when reading PCI I/O memory
-To: Dan Williams <dcbw@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <1193657365.19938.17.camel@localhost.localdomain>
+	Sun, 9 Dec 2007 14:50:28 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:59586 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750998AbXLITu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 14:50:27 -0500
+Date: Sun, 9 Dec 2007 14:50:03 -0500
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>, gnome42@gmail.com,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Denis V. Lunev" <den@openvz.org>
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
+Message-ID: <20071209195003.GB2138@fieldses.org>
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com> <20071207151444.af5d8e11.akpm@linux-foundation.org> <200712080043.29292.rjw@sisk.pl> <200712090220.44543.maximlevitsky@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <587622.50680.qm@web52902.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712090220.44543.maximlevitsky@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Dec 09, 2007 at 02:20:44AM +0200, Maxim Levitsky wrote:
+> Due to the fact that I was bitten by this bug (I thought it is a feature), and a bit of lack
+> of understanding of NFS4 I want to ask few questions about NFS:
+> 
+> 1) I want to export whole file-system  with submounts to a range of clients.
+> As 'exports' manual says I can't do so, is that true?
 
-I've recently been having trouble loading the hostap_plx 802.11b wireless networking driver, and
-this evening I managed to narrow the problem down to these lines of code by copying code from
-hostap_plx into a "test driver" until the test driver also locked the PC up:
+Are you referring to the sentence in the description of "nohide" that
+say "The  nohide  option  is  currently only effective on single host
+exports.  It does not work reliably with  netgroup, subnet,  or wildcard
+exports."?  I believe that's out of date.  This should work.
 
-        /* read CIS; it is in even offsets in the beginning of attr_mem */
-        for (i = 0; i < CIS_MAX_LEN; i++)
-                cis[i] = readb(attr_mem + 2 * i);
+> Can you tell me how properly to use crossmnt and nohide?
+> Where should I put those options in root file-system export or in submount export?
 
-If I comment these lines out then my test driver just complains about the garbage CIS information
-and fails gracefully. Leave these lines in and my PC freezes instantly.
+The easiest option is to add "crossmnt" to the root export.
 
-These lines are part of the prism2_plx_check_cis() function, which is called when the module first
-loads. CIX_MAX_LEN is a #define for 256, and cis is a u8* pointer previously allocated as:
+> 2) NFS4 - I can't get it working:
+> 
+> *I have a LFS system, and this is what I did (NFS3 works fine, but crossmnt, and nohide seems not to work, probably due to above bug)
+> 	I also have seen errors about stale handles 
+> *Kernel - 2.6.24-rc3 with NFS3/4 client/server enabled on both host and guest. (both client and server running this kernel)
+> *rpc.idmapd running on both client and server + all standard NFS3 tools
+> *NFS tools 1.1.1 with nfs4 support compiled + without GSS (on server)
+> * /etc/exports with fsid=0: (on server)
+> 	/tmp *(fsid=0,insecure,rw,async,anonuid=100,anongid=1000)
+> * mounting with -tnfs4 server:/ /mnt/tmp
+> 
+> Still doesn't work, using wireshark shows that
+> 	NFSV4 COMPOUND call with
+> 		Opcode: PUTROOTFH (24)
+> 		Opcode: GETFH (10)
+> 		Opcode: GETATTR (9)
+> 
+> Fails with 
+> 	Reject State: AUTH_ERROR (1)
+> 	Auth State: bad credential (seal broken) (1)
+> 
+> 
+> Any ideas?
 
-cis = kmalloc(CIS_MAX_LEN, GFP_KERNEL);
+Your setup looks fine.  I assume this is the /proc/ bug again.
 
-attr_mem is one of the function's paramters, and is defined as void __iomem *attr_mem.
+--b.
 
-As far as I can tell, the PCI I/O memory information is correct, and matches what lspci tells me:
-
-00:0e.0 Network controller: Netgear MA301 802.11b Wireless PCI Adapter (rev 02)
-        Subsystem: Netgear MA301 802.11b Wireless PCI Adapter
-        Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+
-FastB2B-
-        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR-
-<PERR-
-        Interrupt: pin A routed to IRQ 5
-        Region 1: I/O ports at 1000 [size=128]
-        Region 2: Memory at e8002000 (32-bit, non-prefetchable) [size=4K]
-        Region 3: I/O ports at 1080 [size=64]
-
-so there is apparently 4K of I/O memory at 0xe8002000.
-
-Can anyone help me understand why my PC is locking up when it executes this code, please?
-
-Thanks,
-Chris
-
-
-
-      __________________________________________________________
-Sent from Yahoo! Mail - a smarter inbox http://uk.mail.yahoo.com
-
+> 
+> (I decided to switch to NFS4 only due to the lack of ability to see underlying mounts)
+> 
+> The system I am connecting to is a very old P1 system I use as a terminal
+> (X and ssh)
+> When I need to install something there I mount whole / of in on my main Core2 system
+> chroot there, and compile/install.
+> 
+> 
+> Best regrads,
+> 	Maxim Levitsky
