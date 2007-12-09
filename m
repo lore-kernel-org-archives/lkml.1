@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbXLIVZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbXLIV1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbXLIVZI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 16:25:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbXLIVYq
+	id S1753904AbXLIV1o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 16:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbXLIV1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 16:24:46 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:41846 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbXLIVYp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 16:24:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:content-transfer-encoding:user-agent;
-        b=gevXXiCdzzCCYBIuQSSoAXbirj1zyebiiytF93vWHf3zRnqAEHelFOJZ+YmtpD1O4xpy3kxOupJgEpSBTvY6sgJWTpNYA+/9cv8xiwD5tksCCph4y5KgTx01r6ThvtPaw4EWJySbCNx1uH8ghc1vB3wrSfa3MDN0/Nj0A1O8X58=
-Date: Sun, 9 Dec 2007 22:26:15 +0100
-From: Marcin =?utf-8?Q?=C5=9Alusarz?= <marcin.slusarz@gmail.com>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] ehci-hcd: fix sparse warning about shadowing 'status'
-	symbol
-Message-ID: <20071209212612.GC9440@joi>
+	Sun, 9 Dec 2007 16:27:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43997 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751459AbXLIV1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 16:27:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: bbpetkov@yahoo.de
+Subject: Re: [RFC] swap image signature check upon resume
+Date: Sun, 9 Dec 2007 22:46:35 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+References: <20071206211335.GA4923@gollum.tnic> <200712091527.57523.rjw@sisk.pl> <20071209160959.GA4978@gollum.tnic>
+In-Reply-To: <20071209160959.GA4978@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200712092246.36217.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ehci-hcd: fix sparse warning about shadowing 'status' symbol
+On Sunday, 9 of December 2007, Borislav Petkov wrote:
+> On Sun, Dec 09, 2007 at 03:27:57PM +0100, Rafael J. Wysocki wrote:
+> ...
+> 
+> > > Instead, I'd rather issue a warning that the swsusp header mismatches, say with
+> > > which kernel the machine got suspended with and then start the countdown for reboot.
+> > 
+> > What exactly would that change?  You need to reboot anyway and fsck will run on
+> > the filesystems regardless of which kernel you boot with.
+> 
+> well, you'll have the chance to reboot with the kernel the machine got suspended
+> with and then the swsusp image header _will_ match so no fsck-ing. or am i
+> missing something...
 
-Signed-off-by: Marcin Ślusarz <marcin.slusarz@gmail.com>
----
- drivers/usb/host/ehci-hcd.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+Yes, you are. :-)
 
-diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
-index 5f2d74e..e531f51 100644
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -829,16 +829,16 @@ static int ehci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
- 		/* reschedule QH iff another request is queued */
- 		if (!list_empty (&qh->qtd_list)
- 				&& HC_IS_RUNNING (hcd->state)) {
--			int status;
-+			int schedule_status;
+With the new code (which BTW I'm assuming we are talking about) the images are
+not matched against the kernel they were created by, but against a hard-coded
+magic number (defined in suspend_64.c) playing the role of the "header protocol
+version" and against some system parameters, like the amount of RAM etc.
+Since all kernels containing the new code use the same magic number, all of
+them will match or none of them will match.
 
--			status = qh_schedule (ehci, qh);
-+			schedule_status = qh_schedule (ehci, qh);
- 			spin_unlock_irqrestore (&ehci->lock, flags);
+Of course, we may want to change the magic at some point and in that case
+there you will have some non-matching kernels.  If you're worried about that,
+use the userland hibernation tools from suspend.sf.net (they handle such
+situations quite well).
 
--			if (status != 0) {
-+			if (schedule_status != 0) {
- 				// shouldn't happen often, but ...
- 				// FIXME kill those tds' urbs
- 				err ("can't reschedule qh %p, err %d",
--					qh, status);
-+					qh, schedule_status);
- 			}
- 			return status;
- 		}
+Greetings,
+Rafael
