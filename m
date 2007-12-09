@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751659AbXLIMcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751860AbXLIMfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751659AbXLIMcZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 07:32:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbXLIMcQ
+	id S1751860AbXLIMfR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 07:35:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbXLIMfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 07:32:16 -0500
-Received: from thunk.org ([69.25.196.29]:41471 "EHLO thunker.thunk.org"
+	Sun, 9 Dec 2007 07:35:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56292 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbXLIMcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 07:32:15 -0500
-Date: Sun, 9 Dec 2007 07:31:47 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Ismail =?iso-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>
-Cc: Adrian Bunk <bunk@kernel.org>, Bill Davidsen <davidsen@tmr.com>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-Message-ID: <20071209123147.GZ17037@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Ismail =?iso-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
-	Adrian Bunk <bunk@kernel.org>, Bill Davidsen <davidsen@tmr.com>,
-	Marc Haber <mh+linux-kernel@zugschlus.de>,
-	linux-kernel@vger.kernel.org
-References: <20071204114125.GA17310@torres.zugschlus.de> <200712090010.10362.ismail@pardus.org.tr> <20071208234612.GQ17037@thunk.org> <200712090821.16483.ismail@pardus.org.tr>
+	id S1750952AbXLIMfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 07:35:04 -0500
+Date: Sun, 9 Dec 2007 13:34:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52,
+	[2.6.24-rc4-git5: Reported regressions from 2.6.23]
+Message-ID: <20071209123441.GA21893@elte.hu>
+References: <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org> <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org> <20071208100950.a3547868.akpm@linux-foundation.org> <alpine.LFD.0.9999.0712081034470.12046@woody.linux-foundation.org> <20071208195211.GA3727@elte.hu> <20071208202930.GA17934@elte.hu> <84144f020712090020o5bdeb54fqaa9e6578bd066f29@mail.gmail.com> <20071209085030.GA14264@elte.hu> <84144f020712090118w27225592w8933ee2314db7556@mail.gmail.com> <20071209115139.GA29518@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200712090821.16483.ismail@pardus.org.tr>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20071209115139.GA29518@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 09, 2007 at 08:21:16AM +0200, Ismail Dönmez wrote:
-> My understanding was if you can drain entropy from /dev/urandom any futher 
-> reads from /dev/urandom will result in data which is not random at all. Is 
-> that wrong?
 
-Past a certain point /dev/urandom will stat returning results which
-are cryptographically random.  At that point, you are depending on the
-strength of the SHA hash algorithm, and actually being able to not
-just to find hash collisions, but being able to trivially find all or
-most possible pre-images for a particular SHA hash algorithm.  If that
-were to happen, it's highly likely that all digital signatures and
-openssh would be totally broken.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-						- Ted
+> > The problem is that for each cache, you have an "per-node alien 
+> > queues" for each node (see struct kmem_cache nodelists -> struct 
+> > kmem_list3 alien). Moving slab metadata to struct page solves this 
+> > but now you can only have one "queue" thats part of the same struct.
+> 
+> yes, it's what i referred to as "distributed, per node cache". It has 
+> no "quadratic overhead". It has SLAB memory spread out amongst nodes. 
+> I.e. 1 million pages are distributed amongst 1k nodes with 1000 pages 
+> per node with each node having 1 page.
+> 
+> But that memory is not lost and it's disingenous to call it 'overhead' 
+> and it very much comes handy for performance _IF_ there's global 
+> workload that involves cross-node allocations. It's simply a cache 
+> that is mis-sized and mis-constructed on large node count systems but 
+> i bet it makes quite a performance difference on low-node-count 
+> systems.
+> 
+> On high node-count systems it might make sense to reduce the amount of 
+> cross-node caching and to _structure_ the distributed NUMA SLAB cache 
+> in an intelligent way (perhaps along cpuset boundaries) [...]
+
+i think much of this could be achieved by delaying the creation of alien 
+caches up until the point a { node X } -> { node Y } alloc/free 
+relationship gets established. So if a system is partitioned along 
+cpusets, vast areas of the NxN matrix never gets populated with alien 
+caches.
+
+	Ingo
