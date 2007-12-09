@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbXLIW3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbXLIWcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753240AbXLIW3X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 17:29:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbXLIW3O
+	id S1753737AbXLIWcR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 17:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbXLIWcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 17:29:14 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52988 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751322AbXLIW3N (ORCPT
+	Sun, 9 Dec 2007 17:32:05 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51690 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbXLIWcC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 17:29:13 -0500
-Date: Sun, 9 Dec 2007 22:23:35 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: benh@kernel.crashing.org
-Cc: Ralf Baechle <ralf@linux-mips.org>,
-       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: Please revert: PCI: fix IDE legacy mode resources
-Message-ID: <20071209222335.70e52be3@the-village.bc.nu>
-In-Reply-To: <1197230609.6563.6.camel@pasglop>
-References: <200710122305.l9CN5tFI008240@hera.kernel.org>
-	<1196899818.7033.11.camel@pasglop>
-	<200712060434.lB64YUtc023934@po-mbox305.hop.2iij.net>
-	<1196917447.7033.17.camel@pasglop>
-	<200712060558.lB65wAFu016256@po-mbox304.hop.2iij.net>
-	<1196922262.7033.33.camel@pasglop>
-	<20071209021231.GA13729@linux-mips.org>
-	<1197185091.6572.38.camel@pasglop>
-	<1197193794.6572.52.camel@pasglop>
-	<20071209133812.2d305a02@the-village.bc.nu>
-	<1197230609.6563.6.camel@pasglop>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 9 Dec 2007 17:32:02 -0500
+Date: Sun, 9 Dec 2007 14:30:59 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Parag Warudkar" <parag.warudkar@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: soft lockup - CPU#1 stuck for 15s! [swapper:0]
+Message-ID: <20071209143059.7128abf5@laptopd505.fenrus.org>
+In-Reply-To: <82e4877d0712091357u41973a24v38c4ad18ad596de5@mail.gmail.com>
+References: <924EFEDD5F540B4284297C4DC59F3DEE38C3C2@orsmsx423.amr.corp.intel.com>
+	<20071208191330.GA21186@elte.hu>
+	<82e4877d0712081133y49fec9bfyee30a3010b37c435@mail.gmail.com>
+	<20071208194211.GA579@elte.hu>
+	<82e4877d0712081208u335c968csd1d3e9259cdd2920@mail.gmail.com>
+	<20071208201137.GA13451@elte.hu>
+	<82e4877d0712081246x4d788c36i908916185611fa94@mail.gmail.com>
+	<20071208125144.734e9f81@laptopd505.fenrus.org>
+	<82e4877d0712081304r19721b43w78b294ea8d470405@mail.gmail.com>
+	<82e4877d0712081512s2b5a72aewbe396f28305ac963@mail.gmail.com>
+	<82e4877d0712091357u41973a24v38c4ad18ad596de5@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quite possibly, though as I said in practice, what we did so far
-> happened to "just work" on pretty much everything we were faced with
-> (which iirc is basically winbond and VIA controllers, possibly a few
-> others).
+On Sun, 9 Dec 2007 16:57:38 -0500
+"Parag Warudkar" <parag.warudkar@gmail.com> wrote:
+
+> On Dec 8, 2007 6:12 PM, Parag Warudkar <parag.warudkar@gmail.com>
+> wrote:
+> > No problems after disabling CONFIG_HIGHRES_TIMERS , CONFIG_CPU_IDLE
+> > and CONFIG_NO_HZ.
+> >
+> > I will try enabling them one by one - HRT, NOHZ and CPU_IDLE last -
+> > that way we can at least tell what is required to be hit with this
+> > problem.
 > 
-> Anyway, I'll scrub around. Again, I'm not saying the approach is wrong
-> in the generic code.
+> Looks like CPU_IDLE=y is necessary for the problem to show up.
+> With CPU_IDLE=n HRT+NO_HZ+TICK_ONESHOT does not give soft lockup
+> problems. (Actually with HIGH_RES_TIMERS=NO_HZ=TICK_ONESHOT=y  I do
+> see short freezes on ssh - when I cannot type anything for may be a
+> second even under 100% idle. But Soft Lock up doesnt show up in dmesg
+> with this configuration.)
 
-I think the generic code is right, up to the MIPS stuff. What the MIPS
-stuff is doing wants looking at further. If it simply can't address
-legacy ports them it should set
 
-CONFIG_NO_ATA_LEGACY
-
-and be robust to such resource mappings. The CONFIG option tells libata
-to skip over controllers in legacy mode.
-
-For switching quirks you should be fixing the class code in an early
-fixup. The early fixups are run before we do the BAR processing. You must
-however remember to update dev->class as well as the PCI register if you
-do so.
-
-See quirk_svwkrs_csb5ide() for a correct worked example going in the
-other direction. If you follow that for the PPC quirks but going native
-then you will get desired results, although you want to check/know the BAR
-resources are sane, or clear them as part of the process.
-
-So in summary:
-	- MIPS resource/bar bit may be wrong - if so lets revert that
-	- Rest of the logic is just fine, but you may need to move your
-quirks to be 'early' ones.
-
-Alan
+starts to sound like something is turning off the clock during a somewhat deeper C-state...
