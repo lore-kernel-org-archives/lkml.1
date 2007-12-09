@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbXLISb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752959AbXLISgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbXLISb6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 13:31:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbXLISbt
+	id S1752959AbXLISgh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 13:36:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXLISga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 13:31:49 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:36717 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbXLISbr (ORCPT
+	Sun, 9 Dec 2007 13:36:30 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:39469 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751543AbXLISg3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 13:31:47 -0500
-X-Greylist: delayed 1462 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Dec 2007 13:31:47 EST
-Date: Sun, 9 Dec 2007 21:07:29 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Bob Tracy <rct@frus.com>
-Cc: Michael Cree <mcree@orcon.net.nz>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
-       linux-scsi@vger.kernel.org, greg@kroah.com
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-Message-ID: <20071209210729.A20635@jurassic.park.msu.ru>
-References: <475B3C23.6010304@orcon.net.nz> <20071209041939.7DE6FDBA2@gherkin.frus.com>
+	Sun, 9 Dec 2007 13:36:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=lZHCwkdVm+eC1Lujc8j1zF7o6lSIRz2XCHZM8hgoXwKDpiUcOKuUv4Eh2OMSsxcc0fBPkMT3hf3ikNPAPW51vTILnWbRMz+hcn46W2roqm5xcf4OQB4vSh9M9jFuoIRCakgcux2tzwXjU8Z7EFur3V+PmoxMg4rn/D2TlqNtKTk=
+Subject: [PATCH git-sched 1/3] no need for 'affine wakeup' balancing in
+	select_task_rq_fair() when task_cpu(p) == this_cpu
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <srostedt@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 09 Dec 2007 19:36:22 +0100
+Message-Id: <1197225382.6991.23.camel@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-In-Reply-To: <20071209041939.7DE6FDBA2@gherkin.frus.com>; from rct@frus.com on Sat, Dec 08, 2007 at 10:19:39PM -0600
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 10:19:39PM -0600, Bob Tracy wrote:
-> I *do* have CONFIG_MAGIC_SYSRQ set.  Anyone care to bet whether my
-> machine starts working again if I disable it?  Sheesh...
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
-Incredible...
+No need to do a check for 'affine wakeup and passive balancing possibilities' in
+select_task_rq_fair() when task_cpu(p) == this_cpu.
 
-Toggling CONFIG_MAGIC_SYSRQ works for me too, so I'm finally able
-to reproduce the problem (which is the main positive result so far ;-)
+I guess, this part got missed upon introduction of per-sched_class select_task_rq()
+in try_to_wake_up().
 
-There are lots of possible reasons why this happens, but at the
-moment I honestly have no idea.
-For now I have reassigned the bug #9457 to myself and will gradually hack
-into udev...
+Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
-Ivan.
+---
+
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index f881fc5..2208692 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -925,6 +925,9 @@ static int select_task_rq_fair(struct task_struct *p, int sync)
+ 	this_cpu = smp_processor_id();
+ 	new_cpu  = cpu;
+ 
++	if (cpu == this_cpu)
++		goto out_set_cpu;
++
+ 	for_each_domain(this_cpu, sd) {
+ 		if (cpu_isset(cpu, sd->span)) {
+ 			this_sd = sd;
+
+
