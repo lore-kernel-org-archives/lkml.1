@@ -1,42 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752284AbXLIQR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751759AbXLIQma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752284AbXLIQR4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 11:17:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbXLIQRs
+	id S1751759AbXLIQma (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 11:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbXLIQmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 11:17:48 -0500
-Received: from waste.org ([66.93.16.53]:51590 "EHLO waste.org"
+	Sun, 9 Dec 2007 11:42:22 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:58565 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750773AbXLIQRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 11:17:48 -0500
-Date: Sun, 9 Dec 2007 10:16:05 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Marc Haber <mh+linux-kernel@zugschlus.de>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-Message-ID: <20071209161605.GX19691@waste.org>
-References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <20071204164720.6e4dc2c4@the-village.bc.nu> <475599D6.4030008@cosmosbay.com> <20071205212646.GP17536@waste.org> <20071209124200.GA31147@torres.zugschlus.de>
-MIME-Version: 1.0
+	id S1750767AbXLIQmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 11:42:21 -0500
+Date: Sun, 9 Dec 2007 19:43:11 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] will_become_orphaned_pgrp: we have threads
+Message-ID: <20071209164311.GA416@tv-sign.ru>
+References: <20071208183800.GA9940@tv-sign.ru> <m11w9wpx03.fsf@ebiederm.dsl.xmission.com> <20071209142116.GB131@tv-sign.ru> <m14perooqx.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071209124200.GA31147@torres.zugschlus.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <m14perooqx.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 09, 2007 at 01:42:00PM +0100, Marc Haber wrote:
-> On Wed, Dec 05, 2007 at 03:26:47PM -0600, Matt Mackall wrote:
-> > The distinction between /dev/random and /dev/urandom boils down to one
-> > word: paranoia. If you are not paranoid enough to mistrust your
-> > network, then /dev/random IS NOT FOR YOU. Use /dev/urandom.
-> 
-> But currently, people who use /dev/urandom to obtain low-quality
-> entropy do a DoS for the paranoid people.
+On 12/09, Eric W. Biederman wrote:
+>
+> Equally messed up is a our status in /proc at that point.  Which
+> says our sleeping process is a zombie.
 
-Not true, as I've already pointed out in this thread.
+Yes, this is annoying.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+> I'm thinking we need to do at least some of the thread group leadership
+> transfer in do_exit, instead of de_thread.  Then p->group_leader->exit_state
+> would be sufficient to see if the entire thread group was alive,
+> as the group_leader would be whoever was left alive.  The original
+> group_leader might still need to be kept around for it's pid...
+>
+> I think that would solve most of the problems you have with a dead
+> thread group leader and sending SIG_STOP as well.
+
+Yes I was thinking about that too, but I am not brave enough to even
+try to to think to the end ;)
+
+As a minimal change, I tried to add "task_struct *leader_proxy" to
+signal_struct, which points to the next live thread, and changed by
+exit_notify(). eligible_child() checks it instead of ->exit_signal.
+But this is so messy...
+
+And in fact, if we are talking about group stop, it is a group operation,
+why do_wait() uses per-thread ->exit_code but not ->group_exit_code ?
+
+But yes, [PATCH 3/3] adds a visible difference, and I don't know if
+this difference is good or bad.
+
+	$ sleep 1000
+
+	[1]+  Stopped                 sleep 1000
+	$ strace -p `pidof sleep`
+	Process 432 attached - interrupt to quit
+
+Now strace "hangs" in do_wait() because ->exit_code was eaten by the
+shell. We need SIGCONT.
+
+With the "[PATCH 3/3]" strace proceeds happily.
+
+Oleg.
+
