@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbXLISmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbXLISrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753231AbXLISmA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 13:42:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbXLISlx
+	id S1752879AbXLISrv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 13:47:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbXLISrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 13:41:53 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45880 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750845AbXLISlw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 13:41:52 -0500
-Date: Sun, 9 Dec 2007 10:41:30 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
-In-Reply-To: <20071209134217.7ff02dd2@the-village.bc.nu>
-Message-ID: <alpine.LFD.0.9999.0712091036380.12046@woody.linux-foundation.org>
-References: <200712080340.49546.rjw@sisk.pl> <20071208015227.3a1c7fae.akpm@linux-foundation.org> <475B9270.6070902@gmail.com> <20071209134217.7ff02dd2@the-village.bc.nu>
+	Sun, 9 Dec 2007 13:47:43 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42616 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833AbXLISrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 13:47:43 -0500
+Date: Sun, 9 Dec 2007 19:47:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Len Brown <lenb@kernel.org>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [git pull] x86/hrtimer/acpi fixes
+Message-ID: <20071209184713.GA16628@elte.hu>
+References: <20071207183633.GC26778@elte.hu> <1197053386.32023.13.camel@cmn3.stanford.edu> <20071207185920.GA3006@elte.hu> <1197055769.32023.22.camel@cmn3.stanford.edu> <1197056910.32023.25.camel@cmn3.stanford.edu> <20071207195958.GA12529@elte.hu> <20071209180149.GJ4381@ucw.cz> <3d8471ca0712091010p1dd0de12h4f9dd1037d87223@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3d8471ca0712091010p1dd0de12h4f9dd1037d87223@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Guillaume Chazarain <guichaz@yahoo.fr> wrote:
 
-On Sun, 9 Dec 2007, Alan Cox wrote:
+> On Dec 9, 2007 7:01 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> > > + *  ns += offset to avoid sched_clock jumps with cpufreq
+> > > + *
+> > >   *                   -johnstul@us.ibm.com "math is hard, lets go shopping!"
+> > >   */
+> >
+> > Did john add the 'ns+=' or do comments need reorder?
 > 
-> Great, make everyone else wait another three months for a working CD
-> drive. The one off regression appears far less harmful than a revert.
+> I added it, but I think it needs to be removed as now the offset is 
+> maintained by the scheduler in __update_rq_clock().
 
-Btw, Alan, that "math" is total and utter BULLSH*T, and you should know 
-that.
+yeah, and it's already removed in latest x86.git.
 
-"The one off regression" is likely the tip of an iceberg. If something 
-regresses for one person, for that one person who tested and noticed and 
-made a bug-report, there's probably a thousand people who haven't even 
-tested the development kernel, or who had problems and just went back to 
-the previous version.
-
-In contrast, reverting something will be guaranteed to not have those 
-kinds of issues, since the only people who could notice are people for who 
-it never worked in the first place. There's no "silent mass of people" 
-that can be affected.
-
-This is why regressions are so important. They don't trump _everything_, 
-but basically ignoring and letting them slide is *much* more painful than 
-just reverting it.
-
-The biggest reason to ignore a regression is if nobody can even figure 
-out where it came from, or reverting simply isn't an option for some 
-really deep and fundamental issue. That doesn't seem to be the case here. 
-
-So we should revert unless there is some known acceptable real fix.
-
-		Linus
-
+	Ingo
