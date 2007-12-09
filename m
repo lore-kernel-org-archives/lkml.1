@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbXLIA3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbXLIAe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754544AbXLIA3q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 19:29:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXLIA3j
+	id S1753858AbXLIAe2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 19:34:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbXLIAeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 19:29:39 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:33385 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752028AbXLIA3i (ORCPT
+	Sat, 8 Dec 2007 19:34:20 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45641 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbXLIAeU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 19:29:38 -0500
-Date: Sat, 8 Dec 2007 19:28:36 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>,
+	Sat, 8 Dec 2007 19:34:20 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: Major regression on hackbench with SLUB
-In-Reply-To: <alpine.LFD.0.9999.0712071021510.12046@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.58.0712081924150.25994@gandalf.stny.rr.com>
-References: <1197049846.1645.68.camel@localhost.localdomain>
- <alpine.LFD.0.9999.0712070957070.7274@woody.linux-foundation.org>
- <alpine.LFD.0.9999.0712071021510.12046@woody.linux-foundation.org>
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] ptrace_stop: remove the wrong ->group_stop_count bookkeeping
+References: <20071208183801.GA9943@tv-sign.ru>
+Date: Sat, 08 Dec 2007 17:31:51 -0700
+In-Reply-To: <20071208183801.GA9943@tv-sign.ru> (Oleg Nesterov's message of
+	"Sat, 8 Dec 2007 21:38:01 +0300")
+Message-ID: <m1wsroogi0.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oleg Nesterov <oleg@tv-sign.ru> writes:
 
-Ingo,
+> ptrace_stop() decrements ->group_stop_count to "participate" in group stop.
+> This looks very wrong to me, the task can in fact decrement this counter twice.
+> If the tracee returns to the user-space before other threads complete the group
+> stop, it will notice TIF_SIGPENDING and do it again.
 
-Due to email problems, I never got your reply on this thread. But I saw
-your reply when reading this thread on lkml.org (nor did I receive Linus's
-first reply).
+This is one of those interesting weird cases.  The ptrace interface remains per
+task.
 
-Anyway, I booted 2.6.24-rc4-mm1 with the same config, and accepted the
-defaults to the new config options as the git version I checked. And it
-gave me an average of 12.5 second runs.
-
-Here's the oprofile for it:
-
-http://people.redhat.com/srostedt/slub/results/slub-mm.op
-
--- Steve
+So need to handle a simultaneous thread group stop and a per task stop.
 
 
+>
+> Another problem is that we don't set SIGNAL_STOP_STOPPED if the counter becomes
+> zero.
+>
+> I must admit, I don't undestand the reason why this code was added, it is very
+> old.
 
+I haven't dug in enough yet to understand better, but it is my hunch we
+need to do something when we have both kinds of stop happening simultaneously.
+
+Eric
