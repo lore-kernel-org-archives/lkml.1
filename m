@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbXLIPss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752534AbXLIPyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbXLIPss (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 10:48:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbXLIPsl
+	id S1752534AbXLIPyb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 10:54:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbXLIPyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 10:48:41 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59585 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbXLIPsk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 10:48:40 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] will_become_orphaned_pgrp: we have threads
-References: <20071208183800.GA9940@tv-sign.ru>
-	<m11w9wpx03.fsf@ebiederm.dsl.xmission.com>
-	<20071209142116.GB131@tv-sign.ru>
-Date: Sun, 09 Dec 2007 08:45:58 -0700
-In-Reply-To: <20071209142116.GB131@tv-sign.ru> (Oleg Nesterov's message of
-	"Sun, 9 Dec 2007 17:21:16 +0300")
-Message-ID: <m14perooqx.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 9 Dec 2007 10:54:23 -0500
+Received: from mail.atlantis.sk ([80.94.52.35]:51740 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750845AbXLIPyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 10:54:22 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64 with MCP51 laptops
+Date: Sun, 9 Dec 2007 16:54:11 +0100
+User-Agent: KMail/1.9.7
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       "David P. Reed" <dpreed@reed.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <475879CD.9080006@reed.com> <20071207160439.71b7f46a@the-village.bc.nu> <20071209125458.GB4381@ucw.cz>
+In-Reply-To: <20071209125458.GB4381@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712091654.15072.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
-
-> On 12/08, Eric W. Biederman wrote:
->>
->> Oleg Nesterov <oleg@tv-sign.ru> writes:
->> 
->> > p->exit_state != 0 doesn't mean this process is dead, it may have
-> sub-threads.
->> >
->> > However, the new "p->exit_state && thread_group_empty(p)" check is not
-> correct
->> > either, this is just the temporary hack. Perhaps we can just remove this
-> check,
->> > but I don't understand orphaned process groups magic. At all. However, I
-> think
->> > exit_notify() is obviously and completely wrong wrt this helper.
->> 
->> The problem that orphaned processes groups address is what happens if
->> an entire process group is stopped, and there is not a process that
->> can wake them up.
->> 
->> The rule for an unprivileged process sending a signal to a process
->> group is that it must be in the same session as the process group.
->> 
->> The rule for sending a signal to a process group is that the signal sender
->> must be in the same session.
->> 
->> So we are testing for a process group that does not have a living
->> member with a parent outside of the process that can send the process
->> group a signal.
+On Sunday 09 December 2007 13:54:58 you wrote:
+> Hi!
 >
-> Ah, thanks a lot Eric, I am _starting_ to understand this.
+> > > modern CPU compared to the bus. But the delay really needs to be
+> > > something that is about IO port speed. Ok in theory you could try to
+> > > measure a outb using RDTSC and then use udelay, but first you would
+> > > need
+> >
+> > You don't need to. Port 0x80 historically is about 8uS so just udelay(8)
+> > and make sure the initial default delay is conservative enough before the
+> > CPU speed is computed.
+> >
+> > 0x80 should be fine for anything PC compatible anyway, its specifically
+> > reserved as a debug port and supported for *exactly* that purpose by
+> > many chipsets.
 >
->> Oleg what do you see wrong with checking p->exit_state &&
->> thread_group_empty(p)?   Since non-leader threads all self reap
->> that seems to be a valid test for an dead thread group.
+> Actually, I've seen few pci cards with leds on port 0x80, and I
+> wonder: is our outb_p really correct?
 >
-> There is a window when exit_notify() drops tasklist and before release_task().
-> Suppose the last (non-leader) thread exits. This means that entire group exits,
-> but thread_group_empty() is not true.
+> I mean, we expect 8usec delay -- historical ISA timing -- but when
+> _PCI_ card with leds is inserted, it is likely to be faster than old
+> ISA, right?
+> 							Pavel
 
+Yes, there are PCI POST debug cards too. And also MiniPCI ones for notebooks. 
+Port 0x80 could be used for more useful things than delay with these cards 
+(and mainboards with integrated LED display) - like (kernel) debugging or as 
+a temperature display (when exported to userspace).
 
-And if you are an observer this is important.
-
-Equally messed up is a our status in /proc at that point.  Which
-says our sleeping process is a zombie.
-
-I'm thinking we need to do at least some of the thread group leadership
-transfer in do_exit, instead of de_thread.  Then p->group_leader->exit_state
-would be sufficient to see if the entire thread group was alive,
-as the group_leader would be whoever was left alive.  The original
-group_leader might still need to be kept around for it's pid...
-
-I think that would solve most of the problems you have with a dead
-thread group leader and sending SIG_STOP as well.
-
-Eric
+-- 
+Ondrej Zary
