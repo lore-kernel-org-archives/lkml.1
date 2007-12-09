@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbXLIFJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752085AbXLIFW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752170AbXLIFJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 00:09:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbXLIFJV
+	id S1752085AbXLIFW7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 00:22:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbXLIFWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 00:09:21 -0500
-Received: from waste.org ([66.93.16.53]:43061 "EHLO waste.org"
+	Sun, 9 Dec 2007 00:22:51 -0500
+Received: from 1wt.eu ([62.212.114.60]:2622 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750794AbXLIFJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 00:09:21 -0500
-Date: Sat, 8 Dec 2007 23:08:31 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: tytso@mit.edu, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] random: improve variable naming, clear extract buffer
-Message-ID: <20071209050831.GS19691@waste.org>
-References: <2.753618428@selenic.com> <7.753618428@selenic.com> <20071209015154.GW17037@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750701AbXLIFWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 00:22:50 -0500
+Date: Sun, 9 Dec 2007 06:21:50 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Theodore Tso <tytso@mit.edu>,
+       Ismail =?iso-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
+       Adrian Bunk <bunk@kernel.org>, Bill Davidsen <davidsen@tmr.com>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071209052149.GH15227@1wt.eu>
+References: <20071204114125.GA17310@torres.zugschlus.de> <47584E35.7030409@tmr.com> <20071208220345.GE20441@stusta.de> <200712090010.10362.ismail@pardus.org.tr> <20071208234612.GQ17037@thunk.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20071209015154.GW17037@thunk.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071208234612.GQ17037@thunk.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 08:51:54PM -0500, Theodore Tso wrote:
-> On Sat, Dec 08, 2007 at 05:21:00PM -0600, Matt Mackall wrote:
-> > random: improve variable naming, clear extract buffer
+On Sat, Dec 08, 2007 at 06:46:12PM -0500, Theodore Tso wrote:
+> On Sun, Dec 09, 2007 at 12:10:10AM +0200, Ismail Dönmez wrote:
+> > > As long as /dev/random is readable for all users there's no reason to
+> > > use /dev/urandom for a local DoS...
 > > 
-> > - split the SHA variables apart into hash and workspace
-> > - rename data to extract
-> > - wipe extract and workspace after hashing
-> > 
-> > diff -r 924f9a441236 drivers/char/random.c
-> > --- a/drivers/char/random.c	Sat Dec 08 16:22:29 2007 -0600
-> > +++ b/drivers/char/random.c	Sat Dec 08 16:32:31 2007 -0600
-> > @@ -461,7 +461,7 @@ static void __add_entropy_words(struct e
-> >  	unsigned long flags;
-> >  	/* rotate the add pointer more rapidly to span more of the
-> >  	 * pool on a given add */
-> > -	const int step = 5;
-> > +	const int step = 13;
-> >  
-> >  	/* Taps are constant, so we can load them without holding r->lock.  */
-> >  	tap1 = r->poolinfo->tap1;
+> > Draining entropy in /dev/urandom means that insecure and possibly not random 
+> > data will be used and well thats a security bug if not a DoS bug.
 > 
-> This change has nothing to do with the patch comment.  If you want to
-> change the step size from 5 to 13, why not just change patch 5/6 to
-> just use a step size of 13 from the beginning?
+> Actually in modern 2.6 kernels there are two separate output entropy
+> pools for /dev/random and /dev/urandom.  So assuming that the
+> adversary doesn't know the contents of the current state of the
+> entropy pool (i.e., the RNG is well seeded with entropy), you can read
+> all you want from /dev/urandom and that won't give an adversary
+> successful information to attack /dev/random.
 
-Patch refresh gone wrong.
- 
-> Otherwise, yeah, this patch does make sense.
+Wouldn't it be possible to mix the data with the pid+uid of the reading
+process so that even if another one tries to collect data from urandom,
+he cannot predict what another process will get ? BTW, I think that the
+tuple (pid,uid,timestamp of open) is unpredictable and uncontrollable
+enough to provide one or even a few bits of entropy by itself.
 
-Twice, in fact. This patch as sent won't compile due to an extra &.
+Regards,
+Willy
 
--- 
-Mathematics is the supreme nostalgia of our time.
