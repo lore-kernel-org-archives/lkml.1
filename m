@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbXLIAgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754295AbXLIAlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754652AbXLIAgR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Dec 2007 19:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXLIAgH
+	id S1754295AbXLIAlZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Dec 2007 19:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbXLIAlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Dec 2007 19:36:07 -0500
-Received: from THUNK.ORG ([69.25.196.29]:46150 "EHLO thunker.thunk.org"
+	Sat, 8 Dec 2007 19:41:18 -0500
+Received: from waste.org ([66.93.16.53]:50143 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752028AbXLIAgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Dec 2007 19:36:06 -0500
-Date: Sat, 8 Dec 2007 19:35:54 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/6] random: do extraction before mixing
-Message-ID: <20071209003554.GT17037@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Matt Mackall <mpm@selenic.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <2.753618428@selenic.com> <4.753618428@selenic.com>
+	id S1752381AbXLIAlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Dec 2007 19:41:17 -0500
+Date: Sat, 8 Dec 2007 18:40:17 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/6] random: use xor for mixing
+Message-ID: <20071209004017.GQ19691@waste.org>
+References: <2.753618428@selenic.com> <3.753618428@selenic.com> <20071209000103.GS17037@thunk.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4.753618428@selenic.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20071209000103.GS17037@thunk.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 05:20:17PM -0600, Matt Mackall wrote:
-> random: do extraction before mixing
+On Sat, Dec 08, 2007 at 07:01:04PM -0500, Theodore Tso wrote:
+> On Sat, Dec 08, 2007 at 05:20:16PM -0600, Matt Mackall wrote:
+> > random: use xor for mixing
+> > 
+> > With direct assignment, we can determine the twist table element used
+> > for mixing (the high 3 bits of the table are unique) and reverse a
+> > single step of mixing. Instead, use xor, which should also help
+> > preserve entropy in a given pool slot.
+> > 
+> > Signed-off-by: Matt Mackall <mpm@selenic.com>
+> > 
+> > diff -r bc336762cfdb drivers/char/random.c
+> > --- a/drivers/char/random.c	Wed Dec 05 17:20:02 2007 -0600
+> > +++ b/drivers/char/random.c	Sat Dec 08 13:27:34 2007 -0600
+> > @@ -496,7 +496,7 @@ static void __add_entropy_words(struct e
+> >  		w ^= r->pool[(i + tap4) & wordmask];
+> >  		w ^= r->pool[(i + tap5) & wordmask];
+> >  		w ^= r->pool[i];
+> > -		r->pool[i] = (w >> 3) ^ twist_table[w & 7];
+> > +		r->pool[i] ^= (w >> 3) ^ twist_table[w & 7];
+> >  	}
 > 
-> If an attacker manages to capture the current pool state, she can
-> determine the last 10 bytes extracted from the pool. 
+> In the original design of add_entropy_words(), in order to provably
+> not lose any entropy, you want add_entropy_words() to be reversible if
+> you mix in all zero's.
 
-That's not true; we aren't just extracting data in the
-__add_entropy_words() call.  In fact, above that, the bulk of the
-extraction comes form when we hash the entire pool, feeding back a
-portion of the hash into the pool here:
+Ahh, yes, that's true. I'd somehow missed that we effectively had a
+tap at 0, so I thought this was actually improving the situation. I'll
+replace this with a comment explaining the situation.
 
-	for (i = 0; i < r->poolinfo->poolwords; i += 16) {
-		/* hash blocks of 16 words = 512 bits */
-		sha_transform(buf, (__u8 *)(r->pool + i), buf + 5);
-		/* feed back portion of the resulting hash */
-		add_entropy_words(r, &buf[i % 5], 1);
-	}
+> The internals of the pool are never exposed, so an attacker should
+> never gain direct access to the entropy pool; hence worry about
+> whether someone can "reverse" the mixing isn't particuarly a worry;
+> indeed, in order to make sure we preserve entropy, the whole *point*
+> of the mixing algorithm is that it is reversible.
 
-So the buf[0..5] contains a hash of the entire pool, and every 16
-words, we're already mixing 32 bits into the pool.  So even if the
-attacker captures the current pool state, she's not going to be able
-to undo the intermediate SHA values that had been mixed into the pool.
+I'm working on strengthening forward security for cases where the
+internals are exposed to an attacker. There are any number of
+situations where this can and does happen, and ensuring we don't
+expose ourselves to backtracking is a worthwhile theoretical concern.
 
-> By mixing after
-> the extraction, this is made substantially harder.
+---
+random: document revisibility of mixing function.
 
-Not that much harder; as I mentioned as comments in my last patch, we
-are doing a linear polynomial mixing for speed purposes, so relying on
-the mixing to obscure the extraction isn't going to help much.
+Signed-off-by: Matt Mackall <mpm@selenic.com>
 
-But that's OK, we don't need to depend on that.  Note the amount of
-feedback that we do in the above loop.
+diff -r bc336762cfdb drivers/char/random.c
+--- a/drivers/char/random.c	Wed Dec 05 17:20:02 2007 -0600
++++ b/drivers/char/random.c	Sat Dec 08 18:38:15 2007 -0600
+@@ -447,6 +447,12 @@ static struct entropy_store nonblocking_
+  * degree, and then twisted.  We twist by three bits at a time because
+  * it's cheap to do so and helps slightly in the expected case where
+  * the entropy is concentrated in the low-order bits.
++ *
++ * This function is intentionally reversible, meaning that if we mix
++ * in known values, we can run the algorithm backwards and recover the
++ * earlier state. Because we can recover the original state, we are
++ * provably not destroying any existing entropy content in the pool
++ * when we mix.
+  */
+ static void __add_entropy_words(struct entropy_store *r, const __u32 *in,
+ 				int nwords, __u32 out[16])
 
-					- Ted
+-- 
+Mathematics is the supreme nostalgia of our time.
