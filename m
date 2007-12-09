@@ -1,157 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbXLIMFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751655AbXLIMOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752624AbXLIMFj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 07:05:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750790AbXLIMFa
+	id S1751655AbXLIMOY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 07:14:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbXLIMOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 07:05:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54202 "EHLO mx3.mail.elte.hu"
+	Sun, 9 Dec 2007 07:14:15 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:22884 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbXLIMF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 07:05:29 -0500
-Date: Sun, 9 Dec 2007 13:05:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
-Message-ID: <20071209120502.GA7012@elte.hu>
-References: <200712080340.49546.rjw@sisk.pl> <20071209035415.a3875df8.akpm@linux-foundation.org>
+	id S1750779AbXLIMOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 07:14:14 -0500
+Message-ID: <475BDC14.9040004@msgid.tls.msk.ru>
+Date: Sun, 09 Dec 2007 15:14:12 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.14pre (X11/20071018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071209035415.a3875df8.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: clock jumps on dualcore PentiumD with cpufreq
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This isn't a new issue, but so far no solution(s)
+has been found, it seems.  And with kernel development
+going on, the issue becomes worse.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Up to 2.6.20 or so (I don't remember exactly, but if
+I recall correctly the issue first appeared when new
+timer code has been merged), there was no issues at
+all.
 
-> Am trying to do a git-disect on it but it seems that someone has been 
-> screwing with ata Kconfig and I'm hitting a pile of 
-> cant-find-root-disk bisection points and I can't immediately work out 
-> why.  I'll try to find time to look at it again next week.
+Starting with 2.6.21 (at least), I see frequent messages
+from chronyd (http://chrony.sunsite.dk/), which was running
+on this machine since the day one, messages telling me
+that system clock has been reset - up to +/- several
+seconds.
 
-the way i solve such bisection problems is to have the patch like below 
-applied by a "git-bisect run" scriptlet (and popped off after the test). 
-This way all must-have drivers and kernel features are selected for that 
-particular testbox, no matter what Kconfig complication there are. 
-(except outright config option renaming but those are rare)
+On 2.6.22 there were only a few such messages per day,
+and the time delta was less than a second - in between
+0.2-0.8 second usually.  On 2.6.23, it become much,
+much worse.  Here's a typical log from today:
 
-	Ingo
+...
+Dec  9 08:10:50 paltus chronyd[1761]: System clock wrong by 0.664195 seconds, adjustment started
+Dec  9 08:31:06 paltus chronyd[1761]: System clock wrong by 0.666263 seconds, adjustment started
+Dec  9 09:10:35 paltus chronyd[1761]: System clock wrong by 0.830534 seconds, adjustment started
+Dec  9 09:47:56 paltus chronyd[1761]: System clock wrong by -0.632430 seconds, adjustment started
+Dec  9 10:11:24 paltus chronyd[1761]: System clock wrong by 0.557093 seconds, adjustment started
+Dec  9 10:30:36 paltus chronyd[1761]: System clock wrong by 0.931442 seconds, adjustment started
+Dec  9 10:31:40 paltus chronyd[1761]: System clock wrong by 0.918518 seconds, adjustment started
+Dec  9 10:32:44 paltus chronyd[1761]: System clock wrong by 0.919524 seconds, adjustment started
+Dec  9 10:33:48 paltus chronyd[1761]: System clock wrong by -1.783922 seconds, adjustment started
+Dec  9 10:50:53 paltus chronyd[1761]: System clock wrong by 0.815781 seconds, adjustment started
+Dec  9 11:18:37 paltus chronyd[1761]: System clock wrong by -1.120279 seconds, adjustment started
+Dec  9 11:48:30 paltus chronyd[1761]: System clock wrong by -0.576473 seconds, adjustment started
+Dec  9 11:50:38 paltus chronyd[1761]: System clock wrong by 0.728826 seconds, adjustment started
+Dec  9 11:52:46 paltus chronyd[1761]: System clock wrong by 0.561940 seconds, adjustment started
+Dec  9 11:57:02 paltus chronyd[1761]: System clock wrong by -0.786041 seconds, adjustment started
+Dec  9 12:18:22 paltus chronyd[1761]: System clock wrong by -0.559688 seconds, adjustment started
+Dec  9 12:20:30 paltus chronyd[1761]: System clock wrong by 0.712789 seconds, adjustment started
+Dec  9 12:26:55 paltus chronyd[1761]: System clock wrong by -0.511155 seconds, adjustment started
+Dec  9 12:40:47 paltus chronyd[1761]: System clock wrong by 0.721966 seconds, adjustment started
+Dec  9 12:47:11 paltus chronyd[1761]: System clock wrong by -1.053725 seconds, adjustment started
+Dec  9 13:01:03 paltus chronyd[1761]: System clock wrong by 0.921670 seconds, adjustment started
+Dec  9 13:21:20 paltus chronyd[1761]: System clock wrong by 0.948468 seconds, adjustment started
+...
 
-Index: linux/arch/x86/Kconfig.needed
-===================================================================
---- /dev/null
-+++ linux/arch/x86/Kconfig.needed
-@@ -0,0 +1,88 @@
-+config FORCE_MINIMAL_CONFIG
-+	bool
-+	default y
-+
-+select EXPERIMENTAL
-+
-+select EXT3_FS
-+select EXT3_FS_XATTR
-+select EXT3_FS_POSIX_ACL
-+select EXT3_FS_SECURITY
-+select BLOCK
-+select HOTPLUG
-+#select INOTIFY
-+#select INOTIFY_USER
-+
-+# so that capset() works (sudo, etc.):
-+select SECURITY
-+select SECURITY_CAPABILITIES
-+
-+select BINFMT_ELF
-+select MSDOS_PARTITION
-+select PARTITION_ADVANCED
-+select BSD_DISKLABEL
-+
-+select SYSFS
-+select SYSFS_DEPRECATED
-+select PROC_FS
-+select FUTEX
-+
-+select ATA
-+select SATA_AHCI
-+select ATA_PIIX
-+select PATA_AMD
-+select PATA_OLDPIIX
-+select BLK_DEV_SD
-+
-+select E100
-+select E1000
-+select NET_ETHERNET
-+select NET_PCI
-+select MII
-+select CRC32
-+
-+select 8139TOO
-+select FORCEDETH
-+
-+select PACKET
-+
-+select NETPOLL
-+select NETCONSOLE
-+select NET_POLL_CONTROLLER
-+select INET
-+select NET
-+select UNIX
-+select NETDEVICES
-+
-+select SERIAL_8250
-+select SERIAL_8250_CONSOLE
-+select MAGIC_SYSRQ
-+
-+select INPUT
-+select INPUT_MOUSEDEV
-+select INPUT_POLLDEV
-+select INPUT_KEYBOARD
-+select KEYBOARD_ATKBD
-+select SERIO
-+select SERIO_I8042
-+
-+select VT
-+select VT_CONSOLE
-+select HW_CONSOLE
-+select VGA_CONSOLE
-+select EARLY_PRINTK
-+select PRINTK
-+select UNIX98_PTYS
-+
-+select USB
-+select USB_MOUSE
-+select USB_EHCI_HCD
-+select USB_OHCI_HCD
-+select USB_UHCI_HCD
-+select USB_SUPPORT
-+
-+select PCI
-+
-+select STANDALONE
-+select PREVENT_FIRMWARE_BUILD
-+
-Index: linux/lib/Kconfig
-===================================================================
---- linux.orig/lib/Kconfig
-+++ linux/lib/Kconfig
-@@ -142,3 +142,6 @@ config CHECK_SIGNATURE
- 	bool
- 
- endmenu
-+
-+source "arch/x86/Kconfig.needed"
-+
-Index: linux/lib/Kconfig.debug
+As far as I can guess, the problem is that the clock is
+different on different CPUs (or, rather, cores), so when
+the process (chronyd) gets moved from one core to another,
+it loses its minds and behaves like the above, unable to
+"understand" what's going on, and the result is that it
+speeds up the clock on a core where it should slow the
+clock down and vise versa, resulting it a mess.
+
+The machine is an IBM xSeries 3200, single CPU dual-core
+PentiumD processor:
+
+vendor_id	: GenuineIntel
+cpu family	: 15
+model		: 6
+model name	: Intel(R) Pentium(R) D CPU 2.80GHz
+stepping	: 4
+cpu MHz		: 2800.000
+cache size	: 2048 KB
+
+The system says that TSC clocksource is unstable and switches
+to jiffies:
+
+Clocksource tsc unstable (delta = 70021228 ns)
+Time: jiffies clocksource has been installed.
+
+There are two things I noticed so far.
+
+First, this problem is quite strongly related to cpufreq.
+Namely, without cpufreq scaling (with the default "performance"
+governor), everything works correctly.  After switching to
+"ondemand" governor, chronyd goes mad as shown above.  And
+after switching back to "performance", after some time (needed
+for the madness to slowly stop), the problem vanishes again.
+By the way, I'm not exactly sure but it seems that the above
+message (about TSC being unstable) is triggered right when
+switching to "ondemand" governor.
+
+And second, I've only seen the whole problem with 32bits
+kernel.  x86-64 kernel (with the exact same config) does
+not expose it in any way, be it cpufreq or not.
+
+This last point is the very interesting one, because it
+suggests that the bug is in kernel somewhere, more, that
+it's in i386 part of it.
+
+Sadly I've only a limited testing abilities on this machine,
+as it's our main production (file) server (so I can only
+test something on it during weekends and late evenings).
+
+Similar (but at much smaller extent/scale) behavior has been
+observed on several machines with AMD X2-64 processors as well,
+also related to cpufreq, but this time both 64 and 32 bits
+kernels behaves the same, and it seems this is a different
+issue.
+
+Any recommendations for me to try to debug it further, please?..
+
+Thanks.
+
+/mjt
