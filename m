@@ -1,83 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbXLIJug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbXLIJuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753913AbXLIJug (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 04:50:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbXLIJu1
+	id S1754551AbXLIJuu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 04:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbXLIJud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 04:50:27 -0500
-Received: from gate.crashing.org ([63.228.1.57]:36054 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbXLIJu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 04:50:26 -0500
-Subject: Re: Please revert: PCI: fix IDE legacy mode resources
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <1197185091.6572.38.camel@pasglop>
-References: <200710122305.l9CN5tFI008240@hera.kernel.org>
-	 <1196899818.7033.11.camel@pasglop>
-	 <200712060434.lB64YUtc023934@po-mbox305.hop.2iij.net>
-	 <1196917447.7033.17.camel@pasglop>
-	 <200712060558.lB65wAFu016256@po-mbox304.hop.2iij.net>
-	 <1196922262.7033.33.camel@pasglop>  <20071209021231.GA13729@linux-mips.org>
-	 <1197185091.6572.38.camel@pasglop>
-Content-Type: text/plain
-Date: Sun, 09 Dec 2007 20:49:54 +1100
-Message-Id: <1197193794.6572.52.camel@pasglop>
+	Sun, 9 Dec 2007 04:50:33 -0500
+Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]:3452 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752418AbXLIJuc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 04:50:32 -0500
+Date: Sun, 9 Dec 2007 10:50:28 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Mike Houston <mikeserv@bmts.com>
+Cc: Adrian Bunk <bunk@stusta.de>, mhoffman@lightlink.com,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Adam Belay <ambx1@neo.rr.com>
+Subject: Re: [lm-sensors] 2.6.24-rc4 hwmon it87 probe fails
+Message-ID: <20071209105028.06ed52a6@hyperion.delvare>
+In-Reply-To: <20071208212234.e00b74cd.mikeserv@bmts.com>
+References: <20071204215154.7f26285e.mikeserv@bmts.com>
+	<20071209000554.GF20441@stusta.de>
+	<20071208212234.e00b74cd.mikeserv@bmts.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Mike,
 
-> If that is the case though (that is it can't issue low ioport cycles),
-> how would have the fd6e7321...  worked in the first place ? Hrm...
-> strange. My understanding is that all that patch does is put junk in the
-> pci_dev resource structures :-) Maybe that's enough to cause the PCI
-> layer later on to be unhappy about them and reassign the BARs to some
-> place that works ? In which case, you are right, a better approach is a
-> quirk on this specific platform, or even better, mark 0...0x10000000
-> busy in ioport_resources and let the generic code clash & re-assign...
+On Sat, 8 Dec 2007 21:22:34 -0500, Mike Houston wrote:
+> On Sun, 9 Dec 2007 01:05:54 +0100
+> Adrian Bunk <bunk@stusta.de> wrote:
+> 
+> > On Tue, Dec 04, 2007 at 09:51:54PM -0500, Mike Houston wrote:
+> > > I finally got around to testing Linux 2.6.24 (2.6.24-rc4) and
+> > > found that the it87 driver fails to probe and consequently, my
+> > > sensors no longer work. This was fine with Linux 2.6.23.8 (the
+> > > last kernel I was using)
+> > > 
+> > > The necessary modules load, but:
+> > > 
+> > > it87: Found IT8718F chip at 0x290, revision 2
+> > > it87: in3 is VCC (+5V)
+> > > it87 it87.656: Failed to request region 0x290-0x297
+> > > it87: probe of it87.656 failed with error -16
+> > > 
+> > > Coretemp still works.
+> > > 
+> > > It appears it has something to do with the ioport range being
+> > > reserved for some reason:
+> > > 
+> > > system 00:01: ioport range 0x290-0x29f has been reserved
+> 
+> > 
+> > Thanks for your report.
+> > 
+> > Please also provide:
+> > - dmesg from 2.6.23.8
+> > - The output of "cat /proc/ioports" for both kernels
+> 
+> Thanks Adrian, here is the information you have requested, for
+> both kernels (I have 2.6.23.9 now though where it87 still works)
+> 
+> Linux 2.6.23.9:
+> http://www.mikeserv.com/temp/proc_ioports-2.6.23.9.txt
+> http://www.mikeserv.com/temp/dmesg-2.6.23.9.txt
+> http://www.mikeserv.com/temp/config-2.6.23.9.txt
+> 
+> Linux 2.6.24-rc4:
+> http://www.mikeserv.com/temp/proc_ioports-2.6.24-rc4.txt
+> http://www.mikeserv.com/temp/dmesg-2.6.24-rc4.txt
 
-  .../...
+This one shows:
 
-In fact, I see a deeper problem with Bart's original patch that moved
-the "fixup" the PCI probe.
+system 00:01: ioport range 0x290-0x29f has been reserved
+(...)
+system 00:01: ioport range 0x290-0x294 has been reserved
 
-The code now replaces the content of the resource structures with the
-hard-decoded legacy addresses for any IDE controller in legacy mode,
-just losing whatever was there (the real BAR value).
+This is clearly not correct as both areas overlap. The second
+reservation is responsible for the it87 breakage, because it conflicts
+with what the it87 driver later attempts to request (0x290-0x297). The
+first is wrong as well (the IT87xxF environment controller I/O area is
+8 port wide, not 16) but shouldn't be a problem in practice.
 
-On some platforms, like PowerPC (and it might be the same problem MIPS
-has, I don't know for sure), we have a quirk that puts those controller
-back into native mode. But so far, those quirks didn't change the
-resources as they were supposed to contain the proper BAR values that
-would, from then, be used.
+These port reservations weren't happening in 2.6.23.9 according to your
+dmesg output for that kernel. I don't know what changed in this area
+since 2.6.23.9, maybe Bjorn or Adam (Cc'd) can tell.
 
-Now that those values have been overriden in the resources, when the
-controller is switched to native mode, it will answer to the BAR values
-that no longer match the content of the resources and the driver will
-fail.
+Either way, the overlapping areas smell like a BIOS bug, meaning that
+you should look for an updated BIOS for your system first.
 
-So I think we have a deeper breakage here. I'll dig some machines for
-which we do that tomorrow and see what exactly is going on. It's mostly
-older machines so if there's a breakage, it has easily gone under the
-radar.
+> http://www.mikeserv.com/temp/config-2.6.24-rc4.txt
 
-I suspect any platform with such a quirk to turn IDE controllers into
-native mode will now -also- need to put back the BAR values in the
-struct resource, and do so -before- the platform fixup happens, that is
-from a header quirk.
-
-Cheers,
-Ben.
-
-
+-- 
+Jean Delvare
