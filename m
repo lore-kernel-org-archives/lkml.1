@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbXLIOFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbXLIOJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbXLIOFw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 09:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbXLIOFo
+	id S1752784AbXLIOJU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 09:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbXLIOJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 09:05:44 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:46273 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751459AbXLIOFn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 09:05:43 -0500
-From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
-Organization: Pardus / KDE
-To: Theodore Tso <tytso@mit.edu>, Adrian Bunk <bunk@kernel.org>,
-       Bill Davidsen <davidsen@tmr.com>,
-       Marc Haber <mh+linux-kernel@zugschlus.de>, linux-kernel@vger.kernel.org
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-Date: Sun, 9 Dec 2007 16:06:49 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-References: <20071204114125.GA17310@torres.zugschlus.de> <200712090821.16483.ismail@pardus.org.tr> <20071209123147.GZ17037@thunk.org>
-In-Reply-To: <20071209123147.GZ17037@thunk.org>
+	Sun, 9 Dec 2007 09:09:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42910 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750797AbXLIOJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 09:09:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: bbpetkov@yahoo.de
+Subject: Re: [RFC] swap image signature check upon resume
+Date: Sun, 9 Dec 2007 15:27:57 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+References: <20071206211335.GA4923@gollum.tnic> <200712082350.33626.rjw@sisk.pl> <20071209065559.GA4627@gollum.tnic>
+In-Reply-To: <20071209065559.GA4627@gollum.tnic>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712091606.50089.ismail@pardus.org.tr>
+Message-Id: <200712091527.57523.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sunday 09 December 2007 14:31:47 tarihinde Theodore Tso şunları yazmıştı:
-> On Sun, Dec 09, 2007 at 08:21:16AM +0200, Ismail Dönmez wrote:
-> > My understanding was if you can drain entropy from /dev/urandom any
-> > futher reads from /dev/urandom will result in data which is not random at
-> > all. Is that wrong?
->
-> Past a certain point /dev/urandom will stat returning results which
-> are cryptographically random.  At that point, you are depending on the
-> strength of the SHA hash algorithm, and actually being able to not
-> just to find hash collisions, but being able to trivially find all or
-> most possible pre-images for a particular SHA hash algorithm.  If that
-> were to happen, it's highly likely that all digital signatures and
-> openssh would be totally broken.
+On Sunday, 9 of December 2007, Borislav Petkov wrote:
+> On Sat, Dec 08, 2007 at 11:50:33PM +0100, Rafael J. Wysocki wrote:
+> > On Saturday, 8 of December 2007, Borislav Petkov wrote:
+> > > On Fri, Dec 07, 2007 at 09:19:09PM +0100, Rafael J. Wysocki wrote:
+> > > 
+> > > ...
+> > > 
+> > > > > > Well, there's a patchset in the current mainline that allows you to use
+> > > > > > arbitrary (sufficiently new) kernel to load the image and then restore the
+> > > > > > image kernel.  So, you can hibernate 2.6.24-rc3 and use 2.6.24-rc2 to restore
+> > > > > > it, for example.
+> > > > > > 
+> > > > > > I'm going to do that for i386 too.
+> > > > > right, this is d307c4a8e826c44f9633bd3f7e60d0491e7d885a (Hibernation: Arbitrary
+> > > > > boot kernel support - generic code), i should've seen that. What's the status of
+> > > > > those bits, from a quick scan it seems they need some rewiring (Kconfig, e.g.
+> > > > > CONFIG_ARCH_HIBERNATION_HEADER etc..) and arch-specific save and restore
+> > > > > functions?
+> > > > 
+> > > > No, this code is fully functional. :-)
+> > > > 
+> > > > The arch save and restore functions are in arch/x86/kernel/suspend_64.c .
+> > > > 
+> > > > As I said, i386 is not yet supported.
+> > > 
+> > > nice, holler if you need a tester when you have some prototypes ready. By the way,
+> > > what do you do when the suspend image header mismatches and it is unsafe to continue booting?
+> > 
+> > If the image header doesn't match, we don't load it and return an error code,
+> > which usually results in the boot kernel continuing to boot.
+> 
+> But if you continue to boot the filesystems were still mounted and fsck has to
+> go over them and check for errors. In the case of ext2 this takes relatively
+> long depending on the size of the partition. However, this is only the
+> smaller problem, the problem of data loss is what worries me.
 
-Thats very good news, thanks for the detailed explanation. Time to update 
-common misconceptions.
+The filesystems are synced before the hibernation, so there shouldn't be data
+any loss.
 
-Regards,
-ismail
+> Instead, I'd rather issue a warning that the swsusp header mismatches, say with
+> which kernel the machine got suspended with and then start the countdown for reboot.
 
--- 
-Never learn by your mistakes, if you do you may never dare to try again.
+What exactly would that change?  You need to reboot anyway and fsck will run on
+the filesystems regardless of which kernel you boot with.
+
+Rafael
