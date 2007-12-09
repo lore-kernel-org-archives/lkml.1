@@ -1,61 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbXLIJaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbXLIJok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753603AbXLIJaj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 04:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbXLIJaa
+	id S1753501AbXLIJok (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 04:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbXLIJo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 04:30:30 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:56430 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751009AbXLIJa3 (ORCPT
+	Sun, 9 Dec 2007 04:44:29 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:52657 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbXLIJo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 04:30:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=u9vWXjMZXYQ/Di80MhCtk2fqhQ/MwmCTOODcRcUZqOieTCyw+IW+c75VBFMTc8+mb7X0eAiXAuNbgDIIfsN/D/O2oHRMoEbZVebZXTCQlP+psc3ZBFEwyMtSkfIv0w4nVEMVEVkJIK0P7/MmQkHSlXLcmOWjFCmx8J8FhUbBP4w=
-Message-ID: <475BB5AE.40503@gmail.com>
-Date: Sun, 09 Dec 2007 18:30:22 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sun, 9 Dec 2007 04:44:27 -0500
+Message-ID: <475BB8C3.9040700@panasas.com>
+Date: Sun, 09 Dec 2007 11:43:31 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, notting@redhat.com,
-       rusty@rustcorp.com.au, kay.sievers@vrfy.org, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] depmod: sort output according to modules.order, take
- #2
-References: <475936CE.70703@gmail.com> <4759379D.8090201@gmail.com>
-In-Reply-To: <4759379D.8090201@gmail.com>
-X-Enigmail-Version: 0.95.3
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
+Subject: Re: [PATCH 27/28] blk_end_request: changing scsi mid-layer for bidi
+ (take 3)
+References: <47555880.9070902@panasas.com>	<20071205.192611.08317167.k-ueda@ct.jp.nec.com>	<4757BFDC.6090502@panasas.com> <20071206.144417.41628995.k-ueda@ct.jp.nec.com>
+In-Reply-To: <20071206.144417.41628995.k-ueda@ct.jp.nec.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Kbuild now generates and installs modules.order along with modules.
-> This patch updates depmod such that it sorts module list according to
-> the file before generating output files.  Modules which aren't on
-> modules.order are put after modules which are ordered by
-> modules.order.
+On Thu, Dec 06 2007 at 21:44 +0200, Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote:
+> Hi Boaz, Jens,
 > 
-> This makes modprobe to prioritize modules according to kernel
-> Makefile's just as built-in modules are link-ordered by them.
+> On Thu, 06 Dec 2007 11:24:44 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
+>>> Index: 2.6.24-rc3-mm2/drivers/scsi/scsi_lib.c
+<snip>
+>> No I don't like it. The only client left for blk_end_request_callback()
+>> is bidi,
 > 
-> This patch is against module-init-tools 3.3-pre1.
+> ide-cd (cdrom_newpc_intr) is another client.
+> So I can't drop blk_end_request_callback() even if bidi doesn't use it.
 > 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Bill Nottingham <notting@redhat.com>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Cc: Kay Sievers <kay.sievers@vrfy.org>
+It looks like all is needed for the ide-cd case is a flag that says
+"don't complete the request". And the call-back is not actually used.
+(Inspecting the last: [PATCH 26/28] blk_end_request: changing ide-cd (take 3))
+The same exact flag could also help the bidi case. Perhaps have an API
+for that?
 
-The kernel part is in now.  Rusty Russell, what do you think about this
-depmod change?
+<snip>
+> 
+> Index: 2.6.24-rc3-mm2/drivers/scsi/scsi_lib.c
+> ===================================================================
+> --- 2.6.24-rc3-mm2.orig/drivers/scsi/scsi_lib.c
+> +++ 2.6.24-rc3-mm2/drivers/scsi/scsi_lib.c
+> @@ -629,28 +629,6 @@ void scsi_run_host_queues(struct Scsi_Ho
+>  		scsi_run_queue(sdev->request_queue);
+>  }
+>  
+> -static void scsi_finalize_request(struct scsi_cmnd *cmd, int uptodate)
+> -{
+> -	struct request_queue *q = cmd->device->request_queue;
+> -	struct request *req = cmd->request;
+> -	unsigned long flags;
+> -
+> -	add_disk_randomness(req->rq_disk);
+> -
+> -	spin_lock_irqsave(q->queue_lock, flags);
+> -	if (blk_rq_tagged(req))
+> -		blk_queue_end_tag(q, req);
+> -
+> -	end_that_request_last(req, uptodate);
+> -	spin_unlock_irqrestore(q->queue_lock, flags);
+> -
+> -	/*
+> -	 * This will goose the queue request function at the end, so we don't
+> -	 * need to worry about launching another command.
+> -	 */
+> -	scsi_next_command(cmd);
+> -}
+> -
+>  /*
+>   * Function:    scsi_end_request()
+>   *
+> @@ -930,23 +908,25 @@ EXPORT_SYMBOL(scsi_release_buffers);
+>  void scsi_end_bidi_request(struct scsi_cmnd *cmd)
+>  {
+>  	struct request *req = cmd->request;
+> +	unsigned int dlen = req->data_len;
+> +	unsigned int next_dlen = req->next_rq->data_len;
+>  
+> -	end_that_request_chunk(req, 1, req->data_len);
+>  	req->data_len = scsi_out(cmd)->resid;
+> -
+> -	end_that_request_chunk(req->next_rq, 1, req->next_rq->data_len);
+>  	req->next_rq->data_len = scsi_in(cmd)->resid;
+>  
+> -	scsi_release_buffers(cmd);
+> -
+>  	/*
+>  	 *FIXME: If ll_rw_blk.c is changed to also put_request(req->next_rq)
+> -	 *       in end_that_request_last() then this WARN_ON must be removed.
+> +	 *       in blk_end_bidi_request() then this WARN_ON must be removed.
+>  	 *       for now, upper-driver must have registered an end_io.
+>  	 */
+>  	WARN_ON(!req->end_io);
+>  
+> -	scsi_finalize_request(cmd, 1);
+> +	if (blk_end_bidi_request(req, 1, dlen, next_dlen))
+> +		/* req has not been completed */
+> +		BUG();
+> +
+> +	scsi_release_buffers(cmd);
+> +	scsi_next_command(cmd);
+>  }
+>  
+>  /*
+> Index: 2.6.24-rc3-mm2/block/ll_rw_blk.c
+> ===================================================================
+> --- 2.6.24-rc3-mm2.orig/block/ll_rw_blk.c
+> +++ 2.6.24-rc3-mm2/block/ll_rw_blk.c
+> @@ -3792,24 +3792,17 @@ static void complete_request(struct requ
+>  	if (!list_empty(&rq->queuelist))
+>  		blkdev_dequeue_request(rq);
+>  
+> +	if (blk_bidi_rq(rq) && !rq->end_io)
+> +		__blk_put_request(rq->next_rq->q, rq->next_rq);
+> +
+>  	end_that_request_last(rq, uptodate);
+>  }
+>  
+> -/**
+> - * blk_end_request - Helper function for drivers to complete the request.
+> - * @rq:       the request being processed
+> - * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
+> - * @nr_bytes: number of bytes to complete
+> - *
+> - * Description:
+> - *     Ends I/O on a number of bytes attached to @rq.
+> - *     If @rq has leftover, sets it up for the next range of segments.
+> - *
+> - * Return:
+> - *     0 - we are done with this request
+> - *     1 - still buffers pending for this request
+> - **/
+> -int blk_end_request(struct request *rq, int uptodate, int nr_bytes)
+> +/*
+> + * Internal function
+> + */
+> +static int blk_end_io(struct request *rq, int uptodate, int nr_bytes,
+> +		      int bidi_bytes, int (drv_callback)(struct request *))
+>  {
+>  	struct request_queue *q = rq->q;
+>  	unsigned long flags = 0UL;
+> @@ -3817,8 +3810,17 @@ int blk_end_request(struct request *rq, 
+>  	if (blk_fs_request(rq) || blk_pc_request(rq)) {
+>  		if (__end_that_request_first(rq, uptodate, nr_bytes))
+>  			return 1;
+> +
+> +		/* Bidi request must be completed as a whole */
+> +		if (blk_bidi_rq(rq) &&
+> +		    __end_that_request_first(rq->next_rq, uptodate, bidi_bytes))
+> +			return 1;
+>  	}
+>  
+> +	/* Special feature for tricky drivers */
+> +	if (drv_callback && drv_callback(rq))
+> +		return 1;
+> +
+>  	add_disk_randomness(rq->rq_disk);
+>  
+>  	spin_lock_irqsave(q->queue_lock, flags);
+> @@ -3827,6 +3829,32 @@ int blk_end_request(struct request *rq, 
+>  
+>  	return 0;
+>  }
+> +
+> +int blk_end_bidi_request(struct request *rq, int uptodate, int nr_bytes,
+> +			 int bidi_bytes)
+> +{
+> +	return blk_end_io(rq, uptodate, nr_bytes, bidi_bytes, NULL);
+> +}
+> +EXPORT_SYMBOL_GPL(blk_end_bidi_request);
+> +
+> +/**
+> + * blk_end_request - Helper function for drivers to complete the request.
+> + * @rq:       the request being processed
+> + * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
+> + * @nr_bytes: number of bytes to complete
+> + *
+> + * Description:
+> + *     Ends I/O on a number of bytes attached to @rq.
+> + *     If @rq has leftover, sets it up for the next range of segments.
+> + *
+> + * Return:
+> + *     0 - we are done with this request
+> + *     1 - still buffers pending for this request
+> + **/
+> +int blk_end_request(struct request *rq, int uptodate, int nr_bytes)
+> +{
+> +	return blk_end_io(rq, uptodate, nr_bytes, 0, NULL);
+> +}
+>  EXPORT_SYMBOL_GPL(blk_end_request);
+>  
 
-Thanks.
+All above looks fine, thanks.
 
--- 
-tejun
+>  /**
+> @@ -3878,25 +3906,7 @@ EXPORT_SYMBOL_GPL(__blk_end_request);
+>  int blk_end_request_callback(struct request *rq, int uptodate, int nr_bytes,
+>  			     int (drv_callback)(struct request *))
+>  {
+> -	struct request_queue *q = rq->q;
+> -	unsigned long flags = 0UL;
+> -
+> -	if (blk_fs_request(rq) || blk_pc_request(rq)) {
+> -		if (__end_that_request_first(rq, uptodate, nr_bytes))
+> -			return 1;
+> -	}
+> -
+> -	/* Special feature for tricky drivers */
+> -	if (drv_callback && drv_callback(rq))
+> -		return 1;
+> -
+> -	add_disk_randomness(rq->rq_disk);
+> -
+> -	spin_lock_irqsave(q->queue_lock, flags);
+> -	complete_request(rq, uptodate);
+> -	spin_unlock_irqrestore(q->queue_lock, flags);
+> -
+> -	return 0;
+> +	return blk_end_io(rq, uptodate, nr_bytes, 0, drv_callback);
+>  }
+>  EXPORT_SYMBOL_GPL(blk_end_request_callback);
+>  
+
+Boaz
