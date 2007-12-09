@@ -1,98 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbXLIRFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbXLIRIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752105AbXLIRFz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 12:05:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbXLIRFs
+	id S1753030AbXLIRIb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 12:08:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXLIRIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 12:05:48 -0500
-Received: from waste.org ([66.93.16.53]:46209 "EHLO waste.org"
+	Sun, 9 Dec 2007 12:08:24 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:46167 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750880AbXLIRFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 12:05:47 -0500
-Date: Sun, 9 Dec 2007 11:05:20 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/6] random: make backtracking attacks harder
-Message-ID: <20071209170520.GY19691@waste.org>
-References: <2.753618428@selenic.com> <5.753618428@selenic.com> <20071209014550.GU17037@thunk.org> <20071209054337.GT19691@waste.org> <20071209133300.GB17037@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071209133300.GB17037@thunk.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1750789AbXLIRIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 12:08:22 -0500
+Date: Sun, 9 Dec 2007 18:08:18 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Marcel Holtmann <marcel@holtmann.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-arch@vger.kernel.org
+Subject: Re: Correct types for mod_devicetable.h (was: Re: m68k build
+ failure)
+Message-ID: <20071209180818.55bf1443@poseidon.drzeus.cx>
+In-Reply-To: <Pine.LNX.4.64.0712021219430.29349@anakin>
+References: <20071127220723.e2e3d0b4.akpm@linux-foundation.org>
+	<20071128094856.056c0a3f@poseidon.drzeus.cx>
+	<20071128010056.85703a34.akpm@linux-foundation.org>
+	<20071128092856.GV8181@ftp.linux.org.uk>
+	<20071128132916.125e72ec@poseidon.drzeus.cx>
+	<Pine.LNX.4.64.0711281332350.29243@anakin>
+	<20071201215602.7a4710d9@poseidon.drzeus.cx>
+	<Pine.LNX.4.64.0712021219430.29349@anakin>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.2; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-21530-1197220101-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 09, 2007 at 08:33:00AM -0500, Theodore Tso wrote:
-> On Sat, Dec 08, 2007 at 11:43:37PM -0600, Matt Mackall wrote:
-> > > If you are trying to find the value of the 80 bits that were
-> > > extracted, and you know the current state of the pool, yes, you can
-> > > take the 96 bits that were changed after the last extraction, and try
-> > > all possible 2**96 combinations of the bits; but you probably won't
-> > > rule anything out, since after you iterate over all of the 2**96
-> > > combinations, you'll probably be able to generate all of the 2**80
-> > > possible output bits.  So you won't gain anything by trying to do a
-> > > backtracking attack.  So I don't think there's anything to worry about
-> > > here.
-> > 
-> > Two observations:
-> > 
-> > - 2**96 << 2**160 so our feedback is much weaker than our hash so we
-> >   should improve it on general principle
-> 
-> Well, no.  You're comparing apples and oranges here.  You can iterate
-> over 2**96 choices, but given that even if you are doing an iterative
-> guessing attack, you have 2**80 knowns, and 2**96 unknowns, it doesn't
-> buy you anything.  So saying that there is a successful attack with
-> O(2**96) simply isn't true!
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Again, I agree that there's not any sort of useful attack here.
+--=_hera.drzeus.cx-21530-1197220101-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> > - there's a way to improve this attack to 2**64 in some situations!
-> 
-> Yeah, but again, what does this "attack" buy you?  If you know the
-> output, and the current state of the pool, after doing 2**64
-> iterations you can get the state of the pool before the output.
-> Big-di-whoopdie-do.  You can't actually *do* anything with it.  
+On Sun, 2 Dec 2007 12:22:31 +0100 (CET)
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-Ahh, but this an attack on the output! You know only:
+>=20
+> I gave it a try:
+>   - Remove existing alignment attributes from some device_id types
+>   - Introduce kernel_* types with proper size and alignment for
+>     cross-compilation (sample <asm/kerneltypes.h> for m68k included)
+>   - Introduce BITS_PER_KERNEL_LONG, to make it clearer it applies to the =
+target
+>=20
+> Apart from a cross-compile session for m68k, it's untested.
+>=20
 
- pool' (including a fortuitously placed add_ptr)
+This still requires a bit of maintenance to set up a kerneltypes.h for ever=
+y arch. It also means we have to be very careful that gcc's internal alignm=
+ent settings matched the ones in our header.
 
-and from that, you can get all but 64 bits of pool. By 2**64 iterations of:
+Rgds
+Pierre
 
- pool = pool' + guess
- hash = SHA1(init, pool) # simplified
- pool^ = add(pool, hash)
- if pool^ = pool':
-  success!
+--=_hera.drzeus.cx-21530-1197220101-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-Now you've recovered pool. Then you can recover the *output* with:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
- hash = SHA1(init, pool)
- pool' = add(pool, hash)
- entropy = extract(pool)
- output = SHA1(hash, entropy)
+iD8DBQFHXCED7b8eESbyJLgRAgESAJ0R9nblCyDiATSLluhXtkQbaEDfpwCgxTwN
+mqkWi0Qs7h/8cg1As85dxFI=
+=TB+W
+-----END PGP SIGNATURE-----
 
-Depending on where the add_ptr lands, we might even be able to go back
-another iteration. 
-
-By the way, I think the paper missed out on some corner case attacks
-which extend the range to greater than half of the possible add_ptr
-positions. Whenever less than 96 bits are changed in the first block,
-we can discover the pool in O(2**64).
-
-> It's fixing a non-problem, but I don't think changing actually hurts
-> anything.  My preferred way of dealing with this problem is simply to
-> increase the output pool size, since that increases the number of bits
-> that change each time from 96 bits to 160 bits.
-
-Let's do that. But let's also do this because it makes the code more
-readable and somewhat stronger (for instance the first word fed back
-will be cascaded from the whole pool rather than the first 512 bits).
-We also only need to grab the lock once.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+--=_hera.drzeus.cx-21530-1197220101-0001-2--
