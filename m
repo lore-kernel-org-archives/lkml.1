@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752090AbXLIM4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbXLIM53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752090AbXLIM4M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 07:56:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbXLIMz5
+	id S1752473AbXLIM53 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 07:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbXLIM5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 07:55:57 -0500
-Received: from thunk.org ([69.25.196.29]:43777 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751038AbXLIMz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 07:55:56 -0500
-Date: Sun, 9 Dec 2007 07:55:41 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] random: step more rapidly through the pool when
-	adding and extracting
-Message-ID: <20071209125541.GA17037@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Matt Mackall <mpm@selenic.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <2.753618428@selenic.com> <6.753618428@selenic.com> <20071209014820.GV17037@thunk.org> <20071208200055.00762c19.akpm@linux-foundation.org> <20071209042204.GR19691@waste.org>
+	Sun, 9 Dec 2007 07:57:20 -0500
+Received: from asia.telenet-ops.be ([195.130.137.74]:56980 "EHLO
+	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbXLIM5T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 07:57:19 -0500
+Date: Sun, 9 Dec 2007 13:57:12 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: adam radford <aradford@gmail.com>
+Cc: Gabriele Gorla <gorlik@yahoo.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: Patch submission question [not in the FAQ]
+In-Reply-To: <b1bc6a000712061337o189b96bal45c0b7b5b7d47568@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0712091356530.31899@anakin>
+References: <602863.12913.qm@web53712.mail.re2.yahoo.com>
+ <b1bc6a000712061337o189b96bal45c0b7b5b7d47568@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071209042204.GR19691@waste.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 08, 2007 at 10:22:04PM -0600, Matt Mackall wrote:
+On Thu, 6 Dec 2007, adam radford wrote:
+> 2. I removed the bitfields from the 3w-xxxx driver but I have
+>    yet to add full big endian support due to lack of demand.  I have
+>    such a patch for this driver (which already includes the unpacking
+>    of the wait_queue_head_t variable) but I have not submitted it to
+>    the main-line kernel.  The in-kernel 3w-xxxx driver is still missing
+>    the byte-swaps.
 > 
-> It did. My laptop didn't relay them through my smarthost and my domain
-> has an SPF record.
+>    The 3w-9xxx (9000 series 3ware driver) has full big endian support.
+> 
+> Is this an official request for big endian support for the 3w-xxxx driver or
+> are you looking for anybody who has a packed 'wait_queue_head_t' and
+> submitting a patch to fix it?
 
-Ah, yes:
+Alpha is little endian.
 
-http://homepages.tesco.net/~J.deBoynePollard/FGA/smtp-spf-is-harmful.html
+Gr{oetje,eeting}s,
 
-							- Ted
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
