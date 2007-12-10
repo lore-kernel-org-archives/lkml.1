@@ -1,75 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbXLJWQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbXLJWVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbXLJWQT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 17:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbXLJWQK
+	id S1752749AbXLJWVA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 17:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXLJWUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 17:16:10 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:58925 "EHLO tetsuo.zabbo.net"
+	Mon, 10 Dec 2007 17:20:53 -0500
+Received: from imap.vc.cvut.cz ([147.32.240.222]:45939 "EHLO imap.vc.cvut.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751012AbXLJWQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 17:16:09 -0500
-Message-ID: <475DBA98.3000508@oracle.com>
-Date: Mon, 10 Dec 2007 14:15:52 -0800
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	id S1751212AbXLJWUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 17:20:52 -0500
+X-Greylist: delayed 1781 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Dec 2007 17:20:51 EST
+Message-ID: <1197322514.475db112ac621@imap.vc.cvut.cz>
+Date: Mon, 10 Dec 2007 22:35:14 +0100
+From: vandrove@vc.cvut.cz
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Denis V. Lunev" <den@sw.ru>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, rjw@sisk.pl,
+       trond.myklebust@fys.uio.no, gnome42@gmail.com,
+       linux-kernel@vger.kernel.org, bfields@fieldses.org, den@openvz.org,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com> <1197067918.10831.13.camel@heimdal.trondhjem.org> <20071207151444.af5d8e11.akpm@linux-foundation.org> <200712080043.29292.rjw@sisk.pl> <20071208000043.GC1951@martell.zuzino.mipt.ru> <20071207161508.afe8fdf1.akpm@linux-foundation.org> <m1lk85q0cw.fsf_-_@ebiederm.dsl.xmission.com> <475CA9EA.1090405@vc.cvut.cz> <475D3FE2.202@sw.ru> <20071210113519.00d4d361.akpm@linux-foundation.org>
+In-Reply-To: <20071210113519.00d4d361.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Phillip Susi <psusi@cfl.rr.com>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Evgeniy Polyakov"@agminet03.oracle.com
-Subject: Re: syslets v7: back to basics
-References: <1196983219534-git-send-email-zach.brown@oracle.com> <475DAFE9.7040700@cfl.rr.com>
-In-Reply-To: <475DAFE9.7040700@cfl.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.0
+X-Originating-IP: 65.113.40.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Andrew Morton <akpm@linux-foundation.org>:
 
-> I pulled from your tree to look over the patches, and noticed that it
-> looks like several commits were merged improperly.  It looks like they
-> were auto merged or something from an email, and the commit message
-> contains the email headers, rather than just the commit message in the
-> body.  This leads to the shortlog showing entries that start with
-> "Return-Path:".
+> On Mon, 10 Dec 2007 16:32:18 +0300 "Denis V. Lunev" <den@sw.ru> wrote:
+> >
+> 
+> Plese don't top-post.  It makes replying to you rather awkward.
+> 
+> > could you, plz, check patch sent by Eric above in this thread.
+> > 
+> > I have tried it on my test node and it works for module you have
+> > provided. The problem exists without it.
+> > 
+> 
+> When Peter says "with your patch in place" I assume that he's referring to
+> Eric's latest patch, namely.
 
-These are patches that guilt imported from email messages.  It didn't
-strip the headers and I didn't care to.  I'll try to in the future, it
-isn't a big deal.
+Sorry, I was not clear.  No, I meant Eric's original patch.  Without
+d_revalidate() problem does not occur.
+                                                   Petr
 
-> I was hoping to find at least some initial information on the overall
-> design in Documentation/ but don't see any.  Have you written any yet
-> that I could take a look at elsewhere maybe?
+> 
+> --- a/fs/proc/generic.c~proc-remove-fix-proc-generic-d_revalidate
+> +++ a/fs/proc/generic.c
+> @@ -374,16 +374,9 @@ static int proc_delete_dentry(struct den
+>  	return 1;
+>  }
+>  
+> -static int proc_revalidate_dentry(struct dentry *dentry, struct nameidata
+> *nd)
+> -{
+> -	d_drop(dentry);
+> -	return 0;
+> -}
+> -
+>  static struct dentry_operations proc_dentry_operations =
+>  {
+>  	.d_delete	= proc_delete_dentry,
+> -	.d_revalidate	= proc_revalidate_dentry,
+>  };
+>  
+>  /*
+> 
+> So we still have problems, it appears.
+> 
+> > 
+> > Petr Vandrovec wrote:
+> > > Eric W. Biederman wrote:
+> > >> Ultimately to implement /proc perfectly we need an implementation
+> > >> of d_revalidate because files and directories can be removed behind
+> > >> the back of the VFS, and d_revalidate is the only way we can let
+> > >> the VFS know that this has happened.
+> > >>
+> > >> So until we get a proper test for keeping dentries in the dcache
+> > >> fix the current d_revalidate method by completely removing it.  This
+> > >> returns us to the current status quo.
+> > > 
+> > > Hello,
+> > >    I know that I'm late to the party, but mount points is not only
+> > > problem with d_revalidate.  With your patch in place module below gets
+> > > refcount incremented by two every time I do 'ls -la /proc/fs/vmblock'.
+> > > 
+> > >
+> > > #include <linux/kernel.h>
+> > > #include <linux/module.h>
+> > > #include <linux/proc_fs.h>
+> > > 
+> > > static int vmblockinit(void) {
+> > >    struct proc_dir_entry *controlProcDirEntry;
+> > > 
+> > >    /* Create /proc/fs/vmblock */
+> > >    controlProcDirEntry = proc_mkdir("vmblock", proc_root_fs);
+> > >    if (!controlProcDirEntry) {
+> > >       printk(KERN_DEBUG "Bad...\n");
+> > >       return -EINVAL;
+> > >    }
+> > >    controlProcDirEntry->owner = THIS_MODULE;
+> > >    return 0;
+> > > }
+> > > 
+> > > static void vmblockexit(void) {
+> > >    remove_proc_entry("vmblock", proc_root_fs);
+> > > }
+> > > 
+> > > module_init(vmblockinit);
+> > > module_exit(vmblockexit);
+> > > 
+> > > 
+> > > (code comes from VMware's vmblock module,
+> > > http://sourceforge.net/project/showfiles.php?group_id=204462)
+> > >                         Thanks,
+> > >                             Petr
+> > > 
+> > > 
+> 
+> 
+> 
 
-No, but it's coming.  I'd like to have some robust documentation so that
-Ulrich can help me understand what more he'd need to support POSIX AIO
-with syslets from glibc.
 
-> Some of the things I was trying to figure out is does each syslet get
-> its own stack,
-
-Yes.  Each blocking operation has a thread that is performing the
-operation synchronously.  The benefit is that the thread is only created
-if the operation blocks.  If it doesn't block then it's a normal system
-call invocation.  You don't have to manage threads and communicate the
-arguments and results of system calls amongst threads for the case where
-it never blocks.
-
-> and schedule only at a few well defined points
-
-No, every blocking point is considered a scheduling point.
-
-> , and if
-> so, would it then be fair to characterize them as kernel mode fibers?
-
-I'm not sure what exactly you mean by kernel mode fibers (I can guess,
-but I'd rather not).  From the answer of to the last question, though,
-I'm going to guess that it might not be the most apt characterization.
-
-- z
 
