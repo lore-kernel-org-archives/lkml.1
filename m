@@ -1,62 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbXLJMTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbXLJMYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756727AbXLJMTl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 07:19:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXLJMTe
+	id S1756424AbXLJMYq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 07:24:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbXLJMYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 07:19:34 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:27478 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751577AbXLJMTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 07:19:33 -0500
-Date: Mon, 10 Dec 2007 13:16:27 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC] [PATCH] A clean aEvgeniy pproach to writeout throttling
-Message-ID: <20071210121627.GF5008@kernel.dk>
-References: <200712051603.02183.phillips@phunq.net> <200712100323.48535.phillips@phunq.net> <20071210114123.GE5008@kernel.dk> <200712100413.38077.phillips@phunq.net>
+	Mon, 10 Dec 2007 07:24:35 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50569 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752752AbXLJMYe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 07:24:34 -0500
+Date: Mon, 10 Dec 2007 14:24:31 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Reuben Farrelly <reuben-linuxkernel@reub.net>,
+       David Miller <davem@davemloft.net>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: 2.6.24-rc4-mm1
+In-Reply-To: <20071205233504.67366c5b.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0712101136190.18529@kivilampi-30.cs.helsinki.fi>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+ <47579DD9.9030909@reub.net> <20071205233504.67366c5b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712100413.38077.phillips@phunq.net>
+Content-Type: MULTIPART/MIXED; boundary="-696243703-1118666943-1197288931=:18529"
+Content-ID: <Pine.LNX.4.64.0712101424090.18529@kivilampi-30.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10 2007, Daniel Phillips wrote:
-> On Monday 10 December 2007 03:41, Jens Axboe wrote:
-> > On Mon, Dec 10 2007, Daniel Phillips wrote:
-> > > +       if (q && q->metric && !bio->bi_queue) {
-> > >
-> > > This prevents any reference to bi_bdev after the intial call to
-> > > generic_make_request.  Thanks to Evgeniy for pointing out the need
-> > > for this measure on the last go round.
-> >
-> > Which saves the initial target, for ease of accounting at end io time
-> > - that's not the point. What happens when ->make_request_fn() changes
-> > bio->bi_bdev and returns 1, causing another iteration of the
-> > __generic_make_request() loop? 'q' is no longer the valid target,
-> > bdev_get_queue(bio->bi_bdev) is.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696243703-1118666943-1197288931=:18529
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0712101424091.18529@kivilampi-30.cs.helsinki.fi>
+
+On Wed, 5 Dec 2007, Andrew Morton wrote:
+
+> On Thu, 06 Dec 2007 17:59:37 +1100 Reuben Farrelly <reuben-linuxkernel@reub.net> wrote:
 > 
-> What happens on the second iteration of a recursive submission loop is 
-> exactly nothing, as is right and proper.  The throttling has already 
-> been done, and all the state necessary to perform the unthrottle was 
-> recorded in the bio.  Everything seems to be in order there, and the 
-> algorithm does indeed perform its function as designed, though to be 
-> sure we have not tested it on -mm branch, only on mainline.
+> > This non fatal oops which I have just noticed may be related to this change then 
+> > - certainly looks networking related.
+> 
+> yep, but it isn't e1000.  It's core TCP.
+> 
+> > WARNING: at net/ipv4/tcp_input.c:2518 tcp_fastretrans_alert()
+> > Pid: 0, comm: swapper Not tainted 2.6.24-rc4-mm1 #1
+> 
+> Ilpo, Reuben's kernel is talking to you ;)
 
-OK, let me get the neon out then. This has nothing to do with
-throttling, I thought I made it clear that I get why you store the
-origin queue in ->bi_queue. I'm concerned with the workings of
-redirecting a bio. Previously we looked up the queue associated with
-bio->bi_bdev inside the loop in __generic_make_request(), as is REQUIRED
-to correctly locate a DIFFERENT queue if bio->bi_bdev has been changed
-to point somewhere else.
+...Please try the patch below. Andrew, this probably fixes your problem 
+(the packets <= tp->packets_out) as well.
 
-Clear?
+Dave, please include this one to net-2.6.25.
+
 
 -- 
-Jens Axboe
+ i.
 
+--
+[PATCH] [TCP]: Fix fack_count miscountings (multiple places)
+
+1) Fack_count is set incorrectly if the highest sent skb is
+already sacked (the skb->prev won't return it because it's on
+the other list already). These manifest as fackets_out counting
+error later on, the second-order effects are very hard to track,
+so it may fix all out-standing TCP bug reports.
+
+2) Prev == NULL check was wrong way around
+
+3) Last skb's fack count was incorrectly skipped while() {} loop
+
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ include/net/tcp.h |   22 ++++++++++++++++------
+ 1 files changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/include/net/tcp.h b/include/net/tcp.h
+index 9dbed0b..11a7e3e 100644
+--- a/include/net/tcp.h
++++ b/include/net/tcp.h
+@@ -1337,10 +1337,20 @@ static inline struct sk_buff *tcp_send_head(struct sock *sk)
+ static inline void tcp_advance_send_head(struct sock *sk, struct sk_buff *skb)
+ {
+ 	struct sk_buff *prev = tcp_write_queue_prev(sk, skb);
++	unsigned int fc = 0;
++
++	if (prev == (struct sk_buff *)&sk->sk_write_queue)
++		prev = NULL;
++	else if (!tcp_skb_adjacent(sk, prev, skb))
++		prev = NULL;
+ 
+-	if (prev != (struct sk_buff *)&sk->sk_write_queue)
+-		TCP_SKB_CB(skb)->fack_count = TCP_SKB_CB(prev)->fack_count +
+-					      tcp_skb_pcount(prev);
++	if ((prev == NULL) && !__tcp_write_queue_empty(sk, TCP_WQ_SACKED))
++		prev = __tcp_write_queue_tail(sk, TCP_WQ_SACKED);
++
++	if (prev != NULL)
++		fc = TCP_SKB_CB(prev)->fack_count + tcp_skb_pcount(prev);
++
++	TCP_SKB_CB(skb)->fack_count = fc;
+ 
+ 	sk->sk_send_head = tcp_write_queue_next(sk, skb);
+ 	if (sk->sk_send_head == (struct sk_buff *)&sk->sk_write_queue)
+@@ -1464,7 +1474,7 @@ static inline struct sk_buff *__tcp_reset_fack_counts(struct sock *sk,
+ {
+ 	unsigned int fc = 0;
+ 
+-	if (prev == NULL)
++	if (prev != NULL)
+ 		fc = TCP_SKB_CB(*prev)->fack_count + tcp_skb_pcount(*prev);
+ 
+ 	BUG_ON((*prev != NULL) && !tcp_skb_adjacent(sk, *prev, skb));
+@@ -1521,7 +1531,7 @@ static inline void tcp_reset_fack_counts(struct sock *sk, struct sk_buff *inskb)
+ 		skb[otherq] = prev->next;
+ 	}
+ 
+-	while (skb[queue] != __tcp_write_queue_tail(sk, queue)) {
++	do {
+ 		/* Lazy find for the other queue */
+ 		if (skb[queue] == NULL) {
+ 			skb[queue] = tcp_write_queue_find(sk, TCP_SKB_CB(prev)->seq,
+@@ -1535,7 +1545,7 @@ static inline void tcp_reset_fack_counts(struct sock *sk, struct sk_buff *inskb)
+ 			break;
+ 
+ 		queue ^= TCP_WQ_SACKED;
+-	}
++	} while (skb[queue] != __tcp_write_queue_tail(sk, queue));
+ }
+ 
+ static inline void __tcp_insert_write_queue_after(struct sk_buff *skb,
+-- 
+1.5.0.6
+---696243703-1118666943-1197288931=:18529--
