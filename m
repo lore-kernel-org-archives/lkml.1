@@ -1,85 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbXLJLxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757092AbXLJLzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757256AbXLJLxl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 06:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbXLJLx2
+	id S1757092AbXLJLzz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 06:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbXLJLzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 06:53:28 -0500
-Received: from de01egw02.freescale.net ([192.88.165.103]:55602 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755718AbXLJLx1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 06:53:27 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 10 Dec 2007 06:55:48 -0500
+Received: from pol.arx.gr ([193.239.214.237]:52847 "EHLO www4.arx.gr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753705AbXLJLzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 06:55:47 -0500
+X-Greylist: delayed 384 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Dec 2007 06:55:46 EST
+Message-ID: <475D27A6.1030304@arx.net>
+Date: Mon, 10 Dec 2007 13:48:54 +0200
+From: Thanos Chatziathanassiou <tchatzi@arx.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH 0/3] UCC TDM driver for MPC83xx platforms 
-Date: Mon, 10 Dec 2007 17:23:20 +0530
-Message-ID: <FBA61160C48B8D438F3323FEFB4EF2C259F2F6@zin33exm24.fsl.freescale.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 0/3] UCC TDM driver for MPC83xx platforms 
-Thread-Index: Acg7IWqJ0TJLhoi0SS+XneEcKAfWOQAACVnA
-From: "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>
-To: <rubini@vision.unipv.it>, <linux-ppcdev@ozlabs.kernel.org>,
-       <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       "Gala Kumar" <kumar.gala@freescale.com>
-Cc: "Barkowski Michael" <Michael.Barkowski@freescale.com>,
-       "Phillips Kim" <Kim.Phillips@freescale.com>,
-       "Kalra Ashish" <ashish.kalra@freescale.com>,
-       "Cutler Richard" <Rich.Cutler@freescale.com>
+To: linux-kernel@vger.kernel.org
+Subject: help
+Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg=sha1; boundary="------------ms000400080102090902000800"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are three patches
-[PATCH 1/3] drivers/misc : UCC TDM driver for mpc83xx platforms. This
-driver is usable in VoIP iind of applications to interface with SLIC
-kind of devices to exchange TDM voice samples.
+This is a cryptographically signed message in MIME format.
 
-[PATCH 2/3] arch/ : Platform changes
-- device tree entries for UCC TDM driver for MPC8323ERDB platform.
-- QE changes related to TDM , like,
-	 1) Modified ucc_fast_init so that it can be used by fast UCC
-based TDM driver. Mainly changes have been made to configure TDM clocks
-and Fsyncs.
+--------------ms000400080102090902000800
+Content-Type: text/plain; charset=ISO-8859-7; format=flowed
+Content-Transfer-Encoding: 7bit
 
-	2) Modified get_brg_clk so that it can return the input frequncy
-and input source of any BRG by reading the corresponding entries from
-device tree.
+help
 
-	3) Added new nodes brg and clocks in the device tree which
-represent input clocks for different BRGs.
+--------------ms000400080102090902000800
+Content-Type: application/x-pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
 
-	4) Modified qe_setbrg accordingly.
-- new device tree entries added for "clocks" and "brg"
-
-[PATCH 3/3] Documentation
-- Modified Documentation to explain the device tree entries related to
-UCC TDM driver and the new nodes added("clocks" and "brg")
-
-The patch applies over a merge of galak's for-2.6.25 plus for-2.6.24
-plus of_doc_update branches.
-In brief the steps were
-git clone
-git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-powerpc-galak git checkout -b for-2.6.25 origin/for-2.6.25 git checkout
--b for-2.6.24 origin/for-2.6.24 git checkout -b of_doc_update
-origin/of_doc_update
-git pull . for-2.6.24    # merge the other two
-git pull . for-2.6.25 
-git checkout -b tdm      # clean slate for tdm rebase work
-
-Also after applying the patches changes have to be made corresponding to
-Tabi's patch "qe: add function qe_clock_source".
-
-The driver has been tested with a VoIP stack and application on
-MPC8323ERDB.
-
-With Regards
-Poonam 
- 
- 
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIII+zCC
+AtgwggJBoAMCAQICEGl/+Sp8Ij9PO61AOtSD7lcwDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UE
+BhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMT
+I1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA3MDMwMTE4MTM0NVoX
+DTA4MDIyOTE4MTM0NVowQTEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEeMBwG
+CSqGSIb3DQEJARYPdGNoYXR6aUBhcngubmV0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+CgKCAQEAtqQ460HHxv/KAYuEJ5DlIKfYDlhZxTPyxEWSY7jY6HF/uJU1w9QMgYby5BpncGNu
+6wS3x6UUxysN8qGcWvGiN90jGf3QIOzA6rzGNzL2lQg2pxuLLm8E7LT9pXM28I3ClcOn7qQ/
+ydlJoaTmk8Zjbe5h0SoXNDDf1vk8hizHlZBFlpl7hsHZ9qLjOkTMGnVCstuog67BFUyQ/m3G
+h87y7mzboU63m1hjEewx5xJXRvlq/kZ/zxu4MBS/kWPsBkTCCi0QmeMMin0xI/TzTZ7CiC0c
+/dLMldv+Aq5tHkWtKH0qDZ+BkdSn0QXpZhNTjHwCQW7KYdnP++qj9TosmklbjQIDAQABoyww
+KjAaBgNVHREEEzARgQ90Y2hhdHppQGFyeC5uZXQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0B
+AQUFAAOBgQA5rpSXFBEM9BzS+Fv2p5Gy1ocxBkDj33x+JhIPlrEaMwlQ3HeG0xxNeCJnZ+OB
+JLtIMYf+OSG165+NU3vKpVGcpy4nZtTymb4oaBEhW3XpIPOnzkuxToFutIPZG7RUGfWGLmms
+oEPmZXcR2q8fvCRwHrZAfaGZgWQ52gbCwzafsTCCAtgwggJBoAMCAQICEGl/+Sp8Ij9PO61A
+OtSD7lcwDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBD
+b25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFp
+bCBJc3N1aW5nIENBMB4XDTA3MDMwMTE4MTM0NVoXDTA4MDIyOTE4MTM0NVowQTEfMB0GA1UE
+AxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEeMBwGCSqGSIb3DQEJARYPdGNoYXR6aUBhcngu
+bmV0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtqQ460HHxv/KAYuEJ5DlIKfY
+DlhZxTPyxEWSY7jY6HF/uJU1w9QMgYby5BpncGNu6wS3x6UUxysN8qGcWvGiN90jGf3QIOzA
+6rzGNzL2lQg2pxuLLm8E7LT9pXM28I3ClcOn7qQ/ydlJoaTmk8Zjbe5h0SoXNDDf1vk8hizH
+lZBFlpl7hsHZ9qLjOkTMGnVCstuog67BFUyQ/m3Gh87y7mzboU63m1hjEewx5xJXRvlq/kZ/
+zxu4MBS/kWPsBkTCCi0QmeMMin0xI/TzTZ7CiC0c/dLMldv+Aq5tHkWtKH0qDZ+BkdSn0QXp
+ZhNTjHwCQW7KYdnP++qj9TosmklbjQIDAQABoywwKjAaBgNVHREEEzARgQ90Y2hhdHppQGFy
+eC5uZXQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQUFAAOBgQA5rpSXFBEM9BzS+Fv2p5Gy
+1ocxBkDj33x+JhIPlrEaMwlQ3HeG0xxNeCJnZ+OBJLtIMYf+OSG165+NU3vKpVGcpy4nZtTy
+mb4oaBEhW3XpIPOnzkuxToFutIPZG7RUGfWGLmmsoEPmZXcR2q8fvCRwHrZAfaGZgWQ52gbC
+wzafsTCCAz8wggKooAMCAQICAQ0wDQYJKoZIhvcNAQEFBQAwgdExCzAJBgNVBAYTAlpBMRUw
+EwYDVQQIEwxXZXN0ZXJuIENhcGUxEjAQBgNVBAcTCUNhcGUgVG93bjEaMBgGA1UEChMRVGhh
+d3RlIENvbnN1bHRpbmcxKDAmBgNVBAsTH0NlcnRpZmljYXRpb24gU2VydmljZXMgRGl2aXNp
+b24xJDAiBgNVBAMTG1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBDQTErMCkGCSqGSIb3DQEJ
+ARYccGVyc29uYWwtZnJlZW1haWxAdGhhd3RlLmNvbTAeFw0wMzA3MTcwMDAwMDBaFw0xMzA3
+MTYyMzU5NTlaMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAo
+UHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBD
+QTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAxKY8VXNV+065yplaHmjAdQRwnd/p/6Me
+7L3N9VvyGna9fww6YfK/Uc4B1OVQCjDXAmNaLIkVcI7dyfArhVqqP3FWy688Cwfn8R+RNiQq
+E88r1fOCdz0Dviv+uxg+B79AgAJk16emu59l0cUqVIUPSAR/p7bRPGEEQB5kGXJgt/sCAwEA
+AaOBlDCBkTASBgNVHRMBAf8ECDAGAQH/AgEAMEMGA1UdHwQ8MDowOKA2oDSGMmh0dHA6Ly9j
+cmwudGhhd3RlLmNvbS9UaGF3dGVQZXJzb25hbEZyZWVtYWlsQ0EuY3JsMAsGA1UdDwQEAwIB
+BjApBgNVHREEIjAgpB4wHDEaMBgGA1UEAxMRUHJpdmF0ZUxhYmVsMi0xMzgwDQYJKoZIhvcN
+AQEFBQADgYEASIzRUIPqCy7MDaNmrGcPf6+svsIXoUOWlJ1/TCG4+DYfqi2fNi/A9BxQIJNw
+PP2t4WFiw9k6GX6EsZkbAMUaC4J0niVQlGLH2ydxVyWN3amcOY6MIE9lX5Xa9/eH1sYITq72
+6jTlEBpbNU1341YheILcIRk13iSx0x1G/11fZU8xggNkMIIDYAIBATB2MGIxCzAJBgNVBAYT
+AlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNU
+aGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIQaX/5KnwiP087rUA61IPuVzAJ
+BgUrDgMCGgUAoIIBwzAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEP
+Fw0wNzEyMTAxMTQ4NTRaMCMGCSqGSIb3DQEJBDEWBBQdrd6uLCmlD+EpS/0ZgQTB2YeGTjBS
+BgkqhkiG9w0BCQ8xRTBDMAoGCCqGSIb3DQMHMA4GCCqGSIb3DQMCAgIAgDANBggqhkiG9w0D
+AgIBQDAHBgUrDgMCBzANBggqhkiG9w0DAgIBKDCBhQYJKwYBBAGCNxAEMXgwdjBiMQswCQYD
+VQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UE
+AxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElzc3VpbmcgQ0ECEGl/+Sp8Ij9PO61AOtSD
+7lcwgYcGCyqGSIb3DQEJEAILMXigdjBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3Rl
+IENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVt
+YWlsIElzc3VpbmcgQ0ECEGl/+Sp8Ij9PO61AOtSD7lcwDQYJKoZIhvcNAQEBBQAEggEAtmQK
+PSqpQR4wxs9glNDMYcUYjKY4YH/crHAojsLA7Dt5ajZaqfkq7cROzTlqtW+ZqC21fYksbNIu
+DIdZtBsq6gkgvc5551oX0sgw8G90YAh8ICc1hVMRN5odIXA7oTzhvnXKVRnKLpkMC7+my7zd
+1WjUm6D3HQVPCafpmyFf1eV5r/9RcaVIm1yJBVP17/XlC6E51x6v8fLyKUJpCSL9gKyQqvXb
+hlr3xLVyjy3Lgnx2musvnoaXCbKbbVwcGv1bsQXK9u6tXugLwiJUSAQxXchlidRKgM+rg4RZ
+AEJiyeJ1C+7jHR0lTyuuNfp9DvrpZQTGPhvk5+ESt81Ez7z4IgAAAAAAAA==
+--------------ms000400080102090902000800--
