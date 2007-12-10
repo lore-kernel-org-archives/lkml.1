@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbXLJS6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbXLJS7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756953AbXLJS6U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 13:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbXLJS6J
+	id S1756774AbXLJS7c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 13:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbXLJS7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 13:58:09 -0500
-Received: from ns2.suse.de ([195.135.220.15]:36814 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753329AbXLJS6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 13:58:07 -0500
-Date: Mon, 10 Dec 2007 19:58:04 +0100
-From: Andi Kleen <ak@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <ak@suse.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
-Subject: Re: [PATCH RFC] [3/9] modpost: Declare the modpost error functions
-	as printf like
-Message-ID: <20071210185804.GB32466@bingen.suse.de>
-References: <20071122343.446909000@suse.de> <20071122024308.9B40114D68@wotan.suse.de> <20071210185008.GA17315@uranus.ravnborg.org>
+	Mon, 10 Dec 2007 13:59:25 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47615 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751304AbXLJS7Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 13:59:24 -0500
+Message-ID: <475D8C88.5080706@zytor.com>
+Date: Mon, 10 Dec 2007 10:59:20 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071210185008.GA17315@uranus.ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Avoid overflows in kernel/time.c
+References: <200711300019.lAU0Jpbr003807@tazenda.hos.anvin.org> <20071204032949.c677c021.akpm@linux-foundation.org>
+In-Reply-To: <20071204032949.c677c021.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2007 at 07:50:08PM +0100, Sam Ravnborg wrote:
-> On Thu, Nov 22, 2007 at 03:43:08AM +0100, Andi Kleen wrote:
-> > 
-> > This way gcc can warn for wrong format strings
+Andrew Morton wrote:
 > 
-> This loks good. Can I get i s-o-b then I will apply it.
+> My ia64 allmodconfig build has taken
+> 
+> akpm     15700 89.6  0.0   8256   700 pts/4    RN+  03:09  10:41 bc -q kernel/timeconst.bc
+> 
+> 11 minutes so far.  fc6/x86_64.
+> 
 
-Sorry must have been left out by mistake.
+I just tried this on my system, using your cross-compiler chain.  I got 
+a different error:
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+/opt/crosstool/gcc-3.4.5-glibc-2.3.6/ia64-unknown-linux-gnu/lib/gcc/ia64-unknown-linux-gnu/3.4.5/../../../../ia64-unknown-linux-gnu/bin/ld: 
+section .data.patch [a000000000000500 -> a000000000000507] overlaps 
+section .dynamic [a0000000000003c8 -> a000000000000507]
+collect2: ld returned 1 exit status
+make[2]: *** [arch/ia64/kernel/gate.so] Error 1
 
-for both patches.
+... but the timeconst stuff worked fine.  I tried it both from the 
+command line and using your xb script.
 
--Andi
+This is on a fc7/x86-64 box.  I also ran through all the values from 48 
+to 1024 on both an fc5 and an fc7 box (no fc6 box readily available, 
+although bc has been at 1.06 since 2000...)
 
+In short, this is highly weird.  Could you possibly do me a favour and 
+just run, at the command line:
+
+echo 250 | bc -q kernel/timeconst.bc
+
+... and see if it reproduces the lockup (I'm assuming HZ == 250 in your 
+config, since that's what I get when I do "make allmodconfig" on IA64.)
+
+(No need to wait 11 minutes.  It should run in a small fraction of a 
+second.)
+
+	-hpa
