@@ -1,141 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbXLJAeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbXLJAuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753593AbXLJAeL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 19:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbXLJAd5
+	id S1753436AbXLJAuR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 19:50:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbXLJAuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 19:33:57 -0500
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:47585 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751471AbXLJAd4 (ORCPT
+	Sun, 9 Dec 2007 19:50:03 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:47993 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751527AbXLJAuA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 19:33:56 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAAsYXEdMROHU/2dsb2JhbACBWg
-Date: Sun, 9 Dec 2007 19:28:51 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch-early-RFC 00/10] LTTng architecture dependent
-	instrumentation
-Message-ID: <20071210002851.GA21871@Krystal>
-References: <20071206025650.451824066@polymtl.ca> <20071206101112.GB17299@elte.hu> <20071208190504.GA30538@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 9 Dec 2007 19:50:00 -0500
+Date: Mon, 10 Dec 2007 01:49:59 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Robert Hancock <hancockr@shaw.ca>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-ide@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
+Message-ID: <20071210004959.GA23280@rhlx01.hs-esslingen.de>
+References: <fa.qQhD8aJpiTOFaZqjRYwoaG7YT1c@ifi.uio.no> <fa.yaP86AixGhz5Q7eXSu04pIQp6ho@ifi.uio.no> <fa.c3k8VKWAx4HIo9zXWbL5Ek0oSBw@ifi.uio.no> <fa.C8ACnOhs8bXB++vmugf5F34JcJg@ifi.uio.no> <fa.5o6E6S0UWnARbQPxLe30TvLQIiY@ifi.uio.no> <475AE150.9050306@shaw.ca> <20071209213642.GA27096@rhlx01.hs-esslingen.de> <20071210000429.GA3916@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20071208190504.GA30538@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:14:19 up 36 days,  5:19,  3 users,  load average: 0.54, 0.39,
-	0.31
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071210000429.GA3916@rhlx01.hs-esslingen.de>
+X-Priority: none
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Ingo Molnar (mingo@elte.hu) wrote:
-> > 
-> > hi Mathieu,
-> > 
-> > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > Here is the architecture dependent instrumentation for LTTng. [...]
-> > 
-> > A fundamental observation about markers, and i raised this point many 
-> > many months ago already, so it might sound repetitive, but i'm unsure 
-> > wether it's addressed. Documentation/markers.txt still says:
-> > 
-> > | * Purpose of markers
-> > |
-> > | A marker placed in code provides a hook to call a function (probe) 
-> > | that you can provide at runtime. A marker can be "on" (a probe is 
-> > | connected to it) or "off" (no probe is attached). When a marker is 
-> > | "off" it has no effect, except for adding a tiny time penalty 
-> > | (checking a condition for a branch) and space penalty (adding a few 
-> > | bytes for the function call at the end of the instrumented function 
-> > | and adds a data structure in a separate section).
-> > 
-> > could you please eliminate the checking of the flag, and insert a pure 
-> > NOP sequence by default (no extra branches), which is then patched in 
-> > with a function call instruction sequence, when the trace point is 
-> > turned on? (on architectures that have code patching infrastructure - 
-> > such as x86)
-> > 
+On Mon, Dec 10, 2007 at 01:04:31AM +0100, Andreas Mohr wrote:
+> IOW, it seems very likely that _GTM on these BIOSes (VIA chipsets) isn't
+> actually wrongly implemented but simply expects IDE controller values
+> to have been set up ""differently"".
 > 
-> Hi Ingo,
 > 
-[...] 
-> * No marker at all
-> 
-> 240300 cycles total
-> 12.02 cycles per loop
-> 
-[...]
-> * With my marker implementation (load immediate 0, branch predicted) :
-> 
-> between 200355 and 200580 cycles total (avg 200400 cycles)
-> 10.02 cycles per loop (yes, adding the marker increases performance)
-> 
-[...]
-> * With NOPs :
-> 
-> avg around 410000 cycles total
-> 20.5 cycles/loop (slowdown of 2)
-> 
->
-[...]
-> Therefore, because of the cost of stack setup, the load immediate and
-> conditionnal branch seems to be _much_ faster than the NOP alternative.
-> 
+> Or... one could possibly even infer from this that - maybe -
+> the _GTM invocation spot is wrong, it should be done somewhere
+> different during bootup. Or whatever.
 
-I wanted to know what clever things the dtrace guys have done, so I just
-dug into the dtrace code today, and it isn't pretty for x86.
+"Whatever" indeed:
 
-For the kernel sdt (static dtrace), the closest match to markers, they :
+There's an ASL Match() for a "PMPT" (Primary Master PorT) PCI register,
+and the possible register values are:
 
-1 - Use the linker to turn the calls to an undefined symbol into 
-"0x90 0x90 0x90 0x90 0x90" (5 nops)
-(note that they still suffer from the stack setup cost even when
-disabled. Therefore, performance-wise, I think the markers are already
-faster)
+                    Package (0x04)
+                    {
+                        0x20,
+                        0x31,
+                        0x65,
+                        0xA8
+                    },
 
-But let's dig deeper..
+and from
 
-2 - When what they call a "provider" is actvated, the first byte of the
-"instruction" (actually, it would be the second NOP) is changed for a f0
-lock prefix) :
+                OperationRegion (CFG2, PCI_Config, 0x40, 0x20)
+                Field (CFG2, DWordAcc, NoLock, Preserve)
+                {
+                            Offset (0x08),·
+                    SSPT,   8,·
+                    SMPT,   8,·
+                    PSPT,   8,·
+                    PMPT,   8,·
+                            Offset (0x10),·
+...
+we can infer that at PCI_Config offset 0x48 those values should be located.
+However after bootup or resume there are:
 
-"0x90 0xf0 0x90 0x90 0x90"
+# lspci -s 00:11.1 -xxx
+00:11.1 IDE interface: VIA Technologies, Inc. VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06)
+00: 06 11 71 05 07 00 90 02 06 8a 01 01 00 20 00 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 01 e4 00 00 00 00 00 00 00 00 00 00 06 11 71 05
+30: 00 00 00 00 c0 00 00 00 00 00 00 00 ff 01 00 00
+40: 0b 32 09 0a 18 1c c0 00 99 99 20 20 ff 00 a8 20
+50: 07 07 f6 f1 14 03 00 00 a8 a8 a8 a8 00 00 00 00
+60: 00 02 00 00 00 00 00 00 00 02 00 00 00 00 00 00
+70: 02 01 00 00 00 00 00 00 82 01 00 00 00 00 00 00
+80: 00 e0 a1 1f 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 01 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 06 00 71 05 06 11 71 05 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00
 
-3 - When this site is hit, the 0xf0 0x90 instruction will produce an
-illegal op fault. In the handler, they emulate a trap by incrementing
-EIP of the size of the illegal op. They lookup the faulty EIP in a hash
-table to know which site caused it and then they call the dtrace_probe
-function to call the consumers from there.
 
-So, if I have not missed anything, they will have the performance cost
-of a fault and a hash table lookup on the critical path, which is kind
-of dumb. Just the fault adds a few thousand cycles (assuming it will
-perform like an int3 breakpoint).
+As one can see, the relevant values for SSPT, SMPT, PSPT and PMPT are
+99 99 20 20, which are not quite entirely valid judging from the array above,
+and this is because the secondary port is unused, as can also be seen
+from my bootup log:
 
-Compared to this, my approach of load immediate + branch when disabled
-and the added function call when enabled are _much_ more lighweight.
+scsi0 : pata_via
+scsi1 : pata_via
+ata1: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xe400 irq 14
+ata2: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xe408 irq 15
+ata1.00: ATA-5: WDC WD1200JB-00CRA1, 17.07W17, max UDMA/100
+ata1.00: 234441648 sectors, multi 16: LBA
+ata1.01: ATAPI: TOSHIBA DVD-ROM SD-M1612, 1004, max UDMA/33
+Switched to high resolution mode on CPU 0
+ata1.00: configured for UDMA/100
+ata1.01: configured for UDMA/33
+ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT, Index (0FFFFFFFF) is beyond end of object [20070126]
+ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.GTM_] (Node df80b9a8), AE_AML_PACKAGE_LIM
+IT
+ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.CHN1._GTM] (Node df80b8d0), AE_AML_PACKAG
+E_LIMIT
+ata2: ACPI get timing mode failed (AE 0x300d)
 
-I guess the dtrace approach is good enough on sparc (except for stack
-setup cost when disabled), where they patch the 4 bytes nop into a 4
-byte function call and manage to get good performance, but the hack they
-are doing on x86 seems to be just too slow.
 
-Mathieu
+Manually tweaking the values to 20 20 20 20 truly does skip the _GTM failure message on suspend -
+only to reappear right on resume due to 99 99 20 20 combo happening again.
+If I don't tweak, I get _GTM failure at both suspend and resume.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+As such one can conclude that this BIOS is rather very confused when being called for _GTM on an entirely
+unused controller port. And this is either because the BIOS is dumb or because ACPI doesn't really
+expect anyone to call _GTM on an unused physical port. I'd bet on the latter...
+(however I haven't found ACPI 3.0b explicitly mentioning this somewhere yet)
+
+Andreas Mohr
