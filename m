@@ -1,103 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441AbXLJB6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbXLJCBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754441AbXLJB6o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 20:58:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbXLJB6h
+	id S1754615AbXLJCBI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 21:01:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXLJCA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 20:58:37 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35806 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750914AbXLJB6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 20:58:36 -0500
-Date: Sun, 9 Dec 2007 17:57:07 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
-In-Reply-To: <20071209220132.53268368@the-village.bc.nu>
-Message-ID: <alpine.LFD.0.9999.0712091736450.12046@woody.linux-foundation.org>
-References: <200712080340.49546.rjw@sisk.pl> <20071208015227.3a1c7fae.akpm@linux-foundation.org> <475B9270.6070902@gmail.com> <20071209134217.7ff02dd2@the-village.bc.nu> <alpine.LFD.0.9999.0712091036380.12046@woody.linux-foundation.org>
- <20071209220132.53268368@the-village.bc.nu>
+	Sun, 9 Dec 2007 21:00:56 -0500
+Received: from mx03.nsgroup.net ([195.84.17.43]:59641 "EHLO mx03.nsgroup.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751380AbXLJCA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 21:00:56 -0500
+X-Greylist: delayed 812 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Dec 2007 21:00:55 EST
+Message-ID: <475C9B06.9000901@nerdmail.nu>
+Date: Mon, 10 Dec 2007 02:48:54 +0100
+From: Alexander Rajula <chris@nerdmail.nu>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: PROBLEM: /proc/cpuinfo reports erroneous CPU frequency. (2.6.23 &
+ 2.6.22)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-velocity-MailScanner-Information: Please contact the ISP for more information
+X-velocity-MailScanner: Found to be clean
+X-velocity-MailScanner-From: chris@nerdmail.nu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+While using 2.6.23 and 2.6.22 (earlier kernels have not been tested) /proc/cpuinfo reports the wrong CPU frequency:
 
 
-On Sun, 9 Dec 2007, Alan Cox wrote:
-> 
-> The one off regression is probably not one off, but this is IDE so
-> actually its quite probable its a single broken firmware. 
->
-> The alternative is that you cripple just about every user of various
-> other standards compliant devices and controllers whose hardware we
-> finally fixed.
+While overclocking an AMD Athlon X2 (2GHz) CPU /proc/cpuinfo reports the wrong CPU frequency.
+I am quite puzzled by this.
+Is this an error in the kernel, or is there something strange going on?
 
-Alan, you're so full of shit that it's not even funny.
 
-Have you even *read* the thread?
+Output from /proc/cpuinfo (processor at 3.0GHz in BIOS):
 
-Tejun already reported that this apparently gets fixed _properly_ with the 
-more extensive cleanups and fixes that are pending for 2.6.25.
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 75
+model name      : AMD Athlon(tm) 64 X2 Dual Core Processor 3800+
+stepping        : 2
+cpu MHz         : 2300.043
+cache size      : 512 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 2
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp lm 3dnowext 3dnow rep_good pni cx16 lahf_lm cmp_legacy svm extapic cr8_legacy
+bogomips        : 4602.12
+TLB size        : 1024 4K pages
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp tm stc
 
-In other words, the stuff you call so critically important (yet we've been 
-able to live without it until now!) is apparently simply NOT YET READY. 
-It's breaking things.
+processor       : 1
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 75
+model name      : AMD Athlon(tm) 64 X2 Dual Core Processor 3800+
+stepping        : 2
+cpu MHz         : 2300.043
+cache size      : 512 KB
+physical id     : 0
+siblings        : 2
+core id         : 1
+cpu cores       : 2
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp lm 3dnowext 3dnow rep_good pni cx16 lahf_lm cmp_legacy svm extapic cr8_legacy
+bogomips        : 4599.31
+TLB size        : 1024 4K pages
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp tm st
 
-In this case, Tejun seems to be right on the money.  I also agree 100% 
-with him when he says
 
-   "Blacklist takes time to develop and temporary blacklist for just one
-    release doesn't sound like a good idea."
 
-because if we create some blacklist for that one reported device, not only 
-is it likely going to be wrong (it's almost never just one firmware or one 
-chip that has a particular issue), but we tend to create thee blacklists 
-and later realize that we shouldn't have blacklisted things at all, we 
-should just have done things differently.
+Output from scripts/ver_linux:
 
-For examples of that, see the NCQ blacklist that was just _us_ doing 
-things wrong (over-reacting to things we shouldn't care about), and 
-there's currently another totally unrelated discussion on a very similar 
-thing wrt libata and the ACPI startup commands for an unused controller 
-port.
+Linux dubbelmacka 2.6.23-gentoo-r3 #3 SMP PREEMPT Mon Dec 10 00:46:09 CET 2007 x
+86_64 AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ AuthenticAMD GNU/Linux
+ 
+Gnu C                  4.1.2
+Gnu make               3.81
+binutils               Binutils
+util-linux             2.12r
+mount                  2.12r
+module-init-tools      3.2.2
+e2fsprogs              1.39
+reiserfsprogs          3.6.19
+reiser4progs           1.0.5
+PPP                    2.4.4
+Linux C Library        2.5
+Dynamic linker (ldd)   2.5
+Procps                 3.2.7
+Net-tools              1.60
+Kbd                    1.13
+Sh-utils               6.9
+udev                   115
+Modules Loaded         nvidia
 
-> Finally you need to remember that the 'regression' is caused by the fact
-> we now do the _right_ thing both in terms of 'old IDE' and specs.
-
-.. and what the hell does that matter? If the code doesn't work, it 
-doesn't work, and you might as well point to some random scribblings done 
-by a three-year-old on toilet paper rather than any "specs".
-
-Real life matters more. Regressions matter more.
-
-We apparently do have a full fix, but it seems to be too invasive for 
-2.6.24, which means that the thing that currently DOES NOT WORK and 
-causes regressions should be reverted, so that 2.6.24 is at least no worse 
-than 2.6.23 (and all earlier kernels) in this respect.
-
-And then we should just hope that the more complete fix that Tejun has 
-doesn't cause any issues on its own. I would suggest that if you care so 
-deeply about this issue, you press Fedora into putting Tejun's tree into 
-Fedora testing, and get that thing tested out extensively.
-
-So the fact is, we have a way forward, but we should *not* take steps 
-backwards just because you want to push something out that isn't quite 
-ready. We should revert the change that causes the current trouble, safe 
-in the knowledge (or at least "strong hope") that we have a way forward 
-that makes *both* 2.6.24 and 2.6.25 be continual improvements.
-
-We used to allow regressions. It was really painful. It's hard to debug 
-things when things sometimes break. It's much better to have a nice 
-constant monotonic improvement.
-
-It's better for users, but it's much better also for developers, even if 
-you may be frustrated right now because some new code effectively gets 
-shut down until it works for everybody.
-
-		Linus
