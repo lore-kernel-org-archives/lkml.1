@@ -1,460 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353AbXLJSC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbXLJSDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757353AbXLJSC3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 13:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756249AbXLJSBN
+	id S1756720AbXLJSDT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 13:03:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbXLJSDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 13:01:13 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:55207 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756224AbXLJSBK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 13:01:10 -0500
-Date: Mon, 10 Dec 2007 13:00:07 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Karol Swietlicki <magotari@gmail.com>
-Subject: [PATCH 2/5] UML - Runtime detection of host VMSPLIT on i386
-Message-ID: <20071210180007.GA9328@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 10 Dec 2007 13:03:01 -0500
+Received: from mail.atlantis.sk ([80.94.52.35]:42156 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752815AbXLJSDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 13:03:00 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64 with MCP51 laptops
+Date: Mon, 10 Dec 2007 19:02:52 +0100
+User-Agent: KMail/1.9.7
+Cc: Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@ucw.cz>,
+       Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David P. Reed" <dpreed@reed.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <475879CD.9080006@reed.com> <475CBDD7.5050602@keyaccess.nl> <m3bq8y23de.fsf@maximus.localdomain>
+In-Reply-To: <m3bq8y23de.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+Message-Id: <200712101902.55933.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Calculate TASK_SIZE at run-time by figuring out the host's VMSPLIT -
-this is needed on i386 if UML is to run on hosts with varying VMSPLITs
-without recompilation.
+On Monday 10 December 2007 12:30:53 Krzysztof Halasa wrote:
+> Rene Herman <rene.herman@keyaccess.nl> writes:
+> > Alan, did you double-check that 8 us? I tried to but I seem to not
+> > have trustworthy documentation.
+>
+> I remember 16-bit CPU-driven ISA was able to do 2-3 MB/s transfers,
+> that means at least 1 Maccesses/second = up to 1 microsecond/access.
 
-TASK_SIZE is now defined in terms of a variable, task_size.  This gets
-rid of an include of pgtable.h from processor.h, which can cause
-include loops.
+Hard disk is limited to about 2 MB/s when connected through ISA controller, 
+IIRC. That's 16-bit PIO transfer.
 
-On i386, task_size is calculated early in boot by probing the address
-space in a binary search to figure out where the boundary between
-usable and non-usable memory is.  This tries to make sure that a page
-that is considered to be in userspace is, or can be made, read-write.
-I'm concerned about a system-global VDSO page in kernel memory being
-hit and considered to be a userspace page.
+> Perhaps IO ports accesses were slower than memory? But 8-12 times?
+> Perhaps port 0x80 was using (slower) 8-bit timings?
+>
+> Bus-mastering ISA cards were able to do ca. 5 MB/s with 8 MHz (10 MHz?)
+> clocking, some old machines didn't like it.
 
-On x86_64, task_size is just the old value of CONFIG_TOP_ADDR.
+Yes, ISA clock can be changed on many machines. Most cards run fine even at 11 
+(33/3) MHz with zero wait states. In fact, I haven't seen any card that did 
+not.
 
-A bunch of config variable are gone now.  CONFIG_TOP_ADDR is directly
-replaced by TASK_SIZE.  NEST_LEVEL is gone since the relocation of
-the stubs makes it irrelevant.  All the HOST_VMSPLIT stuff is gone.
-All references to these in arch/um/Makefile are also gone.
+> Googling suggests that a slave access on 8-bit ISA bus was taking
+> 6 cycles by default (including 4 wait states), 16-bit - 3 cycles
+> (with 1 WS). Respectively 0.75 us and 0.375 us, and 0.25 us for
+> 16-bit 0WS memory access (with standard 8 MHz clock).
+>
+> These values could be changed with BIOS setup, and devices could
+> use 0WS or I/O CHRDY signals if they didn't like the defaults
+> (dir 0WS mean 1 WS for 8-bit devices?).
 
-I noticed and fixed a missing extern in os.h when adding
-os_get_task_size.
-
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
----
- arch/um/Kconfig                         |   11 ---
- arch/um/Kconfig.i386                    |   37 ----------
- arch/um/Kconfig.x86_64                  |    4 -
- arch/um/Makefile                        |   11 ---
- arch/um/defconfig                       |    3 
- arch/um/include/os.h                    |    5 +
- arch/um/kernel/um_arch.c                |   13 +++
- arch/um/os-Linux/sys-i386/Makefile      |    2 
- arch/um/os-Linux/sys-i386/task_size.c   |  110 ++++++++++++++++++++++++++++++++
- arch/um/os-Linux/sys-x86_64/Makefile    |    2 
- arch/um/os-Linux/sys-x86_64/task_size.c |    5 +
- include/asm-um/fixmap.h                 |    3 
- include/asm-um/processor-generic.h      |    5 -
- 13 files changed, 137 insertions(+), 74 deletions(-)
-
-Index: linux-2.6-git/arch/um/kernel/um_arch.c
-===================================================================
---- linux-2.6-git.orig/arch/um/kernel/um_arch.c	2007-12-10 12:36:31.000000000 -0500
-+++ linux-2.6-git/arch/um/kernel/um_arch.c	2007-12-10 12:37:04.000000000 -0500
-@@ -224,6 +224,9 @@ static void __init uml_postsetup(void)
- }
- 
- /* Set during early boot */
-+unsigned long task_size;
-+EXPORT_SYMBOL(task_size);
-+
- unsigned long brk_start;
- unsigned long end_iomem;
- EXPORT_SYMBOL(end_iomem);
-@@ -250,6 +253,12 @@ int __init linux_main(int argc, char **a
- 	if (have_root == 0)
- 		add_arg(DEFAULT_COMMAND_LINE);
- 
-+	/*
-+	 * TASK_SIZE needs to be PGDIR_SIZE aligned or else exit_mmap craps
-+	 * out
-+	 */
-+	task_size = os_get_task_size(PGDIR_SHIFT);
-+
- 	/* OS sanity checks that need to happen before the kernel runs */
- 	os_early_checks();
- 
-@@ -286,7 +295,7 @@ int __init linux_main(int argc, char **a
- 
- 	highmem = 0;
- 	iomem_size = (iomem_size + PAGE_SIZE - 1) & PAGE_MASK;
--	max_physmem = CONFIG_TOP_ADDR - uml_physmem - iomem_size - MIN_VMALLOC;
-+	max_physmem = TASK_SIZE - uml_physmem - iomem_size - MIN_VMALLOC;
- 
- 	/*
- 	 * Zones have to begin on a 1 << MAX_ORDER page boundary,
-@@ -318,7 +327,7 @@ int __init linux_main(int argc, char **a
- 	}
- 
- 	virtmem_size = physmem_size;
--	avail = CONFIG_TOP_ADDR - start_vm;
-+	avail = TASK_SIZE - start_vm;
- 	if (physmem_size > avail)
- 		virtmem_size = avail;
- 	end_vm = start_vm + virtmem_size;
-Index: linux-2.6-git/include/asm-um/processor-generic.h
-===================================================================
---- linux-2.6-git.orig/include/asm-um/processor-generic.h	2007-12-10 12:36:31.000000000 -0500
-+++ linux-2.6-git/include/asm-um/processor-generic.h	2007-12-10 12:37:04.000000000 -0500
-@@ -11,7 +11,6 @@ struct pt_regs;
- struct task_struct;
- 
- #include "asm/ptrace.h"
--#include "asm/pgtable.h"
- #include "registers.h"
- #include "sysdep/archsetjmp.h"
- 
-@@ -94,7 +93,9 @@ static inline void mm_copy_segments(stru
- /*
-  * User space process size: 3GB (default).
-  */
--#define TASK_SIZE (CONFIG_TOP_ADDR & PGDIR_MASK)
-+extern unsigned long task_size;
-+
-+#define TASK_SIZE (task_size)
- 
- /* This decides where the kernel will search for a free chunk of vm
-  * space during mmap's.
-Index: linux-2.6-git/arch/um/include/os.h
-===================================================================
---- linux-2.6-git.orig/arch/um/include/os.h	2007-12-10 12:36:32.000000000 -0500
-+++ linux-2.6-git/arch/um/include/os.h	2007-12-10 12:37:04.000000000 -0500
-@@ -304,6 +304,9 @@ extern void sig_handler_common_skas(int 
- extern int os_arch_prctl(int pid, int code, unsigned long *addr);
- 
- /* tty.c */
--int get_pty(void);
-+extern int get_pty(void);
-+
-+/* sys-$ARCH/task_size.c */
-+extern unsigned long os_get_task_size(int shift);
- 
- #endif
-Index: linux-2.6-git/arch/um/os-Linux/sys-i386/Makefile
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/sys-i386/Makefile	2007-12-10 12:36:31.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/sys-i386/Makefile	2007-12-10 12:37:04.000000000 -0500
-@@ -3,7 +3,7 @@
- # Licensed under the GPL
- #
- 
--obj-y = registers.o signal.o tls.o
-+obj-y = registers.o signal.o task_size.o tls.o
- 
- USER_OBJS := $(obj-y)
- 
-Index: linux-2.6-git/arch/um/os-Linux/sys-i386/task_size.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-git/arch/um/os-Linux/sys-i386/task_size.c	2007-12-10 12:37:04.000000000 -0500
-@@ -0,0 +1,110 @@
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <signal.h>
-+#include <sys/mman.h>
-+#include "longjmp.h"
-+#include "kern_constants.h"
-+
-+static jmp_buf buf;
-+
-+static void segfault(int sig)
-+{
-+	longjmp(buf, 1);
-+}
-+
-+static int page_ok(unsigned long page)
-+{
-+	unsigned long *address = (unsigned long *) (page << UM_KERN_PAGE_SHIFT);
-+	unsigned long n = ~0UL;
-+	void *mapped = NULL;
-+	int ok = 0;
-+
-+	/*
-+	 * First see if the page is readable.  If it is, it may still
-+	 * be a VDSO, so we go on to see if it's writable.  If not
-+	 * then try mapping memory there.  If that fails, then we're
-+	 * still in the kernel area.  As a sanity check, we'll fail if
-+	 * the mmap succeeds, but gives us an address different from
-+	 * what we wanted.
-+	 */
-+	if (setjmp(buf) == 0)
-+		n = *address;
-+	else {
-+		mapped = mmap(address, UM_KERN_PAGE_SIZE,
-+			      PROT_READ | PROT_WRITE,
-+			      MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-+		if (mapped == MAP_FAILED)
-+			return 0;
-+		if (mapped != address)
-+			goto out;
-+	}
-+
-+	/*
-+	 * Now, is it writeable?  If so, then we're in user address
-+	 * space.  If not, then try mprotecting it and try the write
-+	 * again.
-+	 */
-+	if (setjmp(buf) == 0) {
-+		*address = n;
-+		ok = 1;
-+		goto out;
-+	} else if (mprotect(address, UM_KERN_PAGE_SIZE,
-+			  PROT_READ | PROT_WRITE) != 0)
-+		goto out;
-+
-+	if (setjmp(buf) == 0) {
-+		*address = n;
-+		ok = 1;
-+	}
-+
-+ out:
-+	if (mapped != NULL)
-+		munmap(mapped, UM_KERN_PAGE_SIZE);
-+	return ok;
-+}
-+
-+unsigned long os_get_task_size(int shift)
-+{
-+	struct sigaction sa, old;
-+	unsigned long bottom = 0 >> shift;
-+	unsigned long top = ~0UL >> shift;
-+	unsigned long test;
-+	int to_page = shift - UM_KERN_PAGE_SHIFT;
-+
-+	printf("Locating the top of the address space ... ");
-+	fflush(stdout);
-+
-+	/*
-+	 * We're going to be longjmping out of the signal handler, so
-+	 * SA_DEFER needs to be set.
-+	 */
-+	sa.sa_handler = segfault;
-+	sigemptyset(&sa.sa_mask);
-+	sa.sa_flags = SA_NODEFER;
-+	sigaction(SIGSEGV, &sa, &old);
-+
-+	if (!page_ok(bottom << to_page)) {
-+		fprintf(stderr, "Address 0x%x no good?\n", bottom << shift);
-+		exit(1);
-+	}
-+
-+	/* This could happen with a 4G/4G split */
-+	if (page_ok(top << to_page))
-+		goto out;
-+
-+	do {
-+		test = bottom + (top - bottom) / 2;
-+		if (page_ok(test << to_page))
-+			bottom = test;
-+		else
-+			top = test;
-+	} while (top - bottom > 1);
-+
-+out:
-+	/* Restore the old SIGSEGV handling */
-+	sigaction(SIGSEGV, &old, NULL);
-+
-+	printf("0x%x\n", top << shift);
-+	fflush(stdout);
-+	return top << shift;
-+}
-Index: linux-2.6-git/arch/um/os-Linux/sys-x86_64/Makefile
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/sys-x86_64/Makefile	2007-12-10 12:36:31.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/sys-x86_64/Makefile	2007-12-10 12:37:04.000000000 -0500
-@@ -3,7 +3,7 @@
- # Licensed under the GPL
- #
- 
--obj-y = registers.o prctl.o signal.o
-+obj-y = registers.o prctl.o signal.o task_size.o
- 
- USER_OBJS := $(obj-y)
- 
-Index: linux-2.6-git/arch/um/os-Linux/sys-x86_64/task_size.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-git/arch/um/os-Linux/sys-x86_64/task_size.c	2007-12-10 12:37:04.000000000 -0500
-@@ -0,0 +1,5 @@
-+unsigned long os_get_task_size(unsigned long shift)
-+{
-+	/* The old value of CONFIG_TOP_ADDR */
-+	return 0x7fc0000000;
-+}
-Index: linux-2.6-git/arch/um/Kconfig
-===================================================================
---- linux-2.6-git.orig/arch/um/Kconfig	2007-12-10 12:36:32.000000000 -0500
-+++ linux-2.6-git/arch/um/Kconfig	2007-12-10 12:37:04.000000000 -0500
-@@ -216,17 +216,6 @@ config NR_CPUS
- 	depends on SMP
- 	default "32"
- 
--config NEST_LEVEL
--	int "Nesting level"
--	default "0"
--	help
--          This is set to the number of layers of UMLs that this UML will be run
--          in.  Normally, this is zero, meaning that it will run directly on the
--          host.  Setting it to one will build a UML that can run inside a UML
--          that is running on the host.  Generally, if you intend this UML to run
--          inside another UML, set CONFIG_NEST_LEVEL to one more than the host
--          UML.
--
- config HIGHMEM
- 	bool "Highmem support (EXPERIMENTAL)"
- 	depends on !64BIT && EXPERIMENTAL
-Index: linux-2.6-git/arch/um/Kconfig.i386
-===================================================================
---- linux-2.6-git.orig/arch/um/Kconfig.i386	2007-12-10 12:36:31.000000000 -0500
-+++ linux-2.6-git/arch/um/Kconfig.i386	2007-12-10 12:37:04.000000000 -0500
-@@ -23,43 +23,6 @@ config SEMAPHORE_SLEEPERS
- 	bool
- 	default y
- 
--choice
--	prompt "Host memory split"
--	default HOST_VMSPLIT_3G
--	help
--        This is needed when the host kernel on which you run has a non-default
--	(like 2G/2G) memory split, instead of the customary 3G/1G. If you did
--	not recompile your own kernel but use the default distro's one, you can
--	safely accept the "Default split" option.
--
--	It can be enabled on recent (>=2.6.16-rc2) vanilla kernels via
--	CONFIG_VM_SPLIT_*, or on previous kernels with special patches (-ck
--	patchset by Con Kolivas, or other ones) - option names match closely the
--	host CONFIG_VM_SPLIT_* ones.
--
--	A lower setting (where 1G/3G is lowest and 3G/1G is higher) will
--	tolerate even more "normal" host kernels, but an higher setting will be
--	stricter.
--
--	So, if you do not know what to do here, say 'Default split'.
--
--config HOST_VMSPLIT_3G
--	bool "Default split (3G/1G user/kernel host split)"
--config HOST_VMSPLIT_3G_OPT
--	bool "3G/1G user/kernel host split (for full 1G low memory)"
--config HOST_VMSPLIT_2G
--	bool "2G/2G user/kernel host split"
--config HOST_VMSPLIT_1G
--	bool "1G/3G user/kernel host split"
--endchoice
--
--config TOP_ADDR
--	hex
--	default 0xB0000000 if HOST_VMSPLIT_3G_OPT
--	default 0x78000000 if HOST_VMSPLIT_2G
--	default 0x40000000 if HOST_VMSPLIT_1G
--	default 0xC0000000
--
- config 3_LEVEL_PGTABLES
- 	bool "Three-level pagetables (EXPERIMENTAL)"
- 	default n
-Index: linux-2.6-git/arch/um/Kconfig.x86_64
-===================================================================
---- linux-2.6-git.orig/arch/um/Kconfig.x86_64	2007-12-10 12:36:31.000000000 -0500
-+++ linux-2.6-git/arch/um/Kconfig.x86_64	2007-12-10 12:37:04.000000000 -0500
-@@ -15,10 +15,6 @@ config SEMAPHORE_SLEEPERS
- 	bool
- 	default y
- 
--config TOP_ADDR
-- 	hex
--	default 0x7fc0000000
--
- config 3_LEVEL_PGTABLES
-        bool
-        default y
-Index: linux-2.6-git/arch/um/Makefile
-===================================================================
---- linux-2.6-git.orig/arch/um/Makefile	2007-12-10 12:36:31.000000000 -0500
-+++ linux-2.6-git/arch/um/Makefile	2007-12-10 12:37:04.000000000 -0500
-@@ -79,13 +79,6 @@ KERNEL_DEFINES = $(strip -Derrno=kernel_
- KBUILD_CFLAGS += $(KERNEL_DEFINES)
- KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
- 
--# These are needed for clean and mrproper, since in that case .config is not
--# included; the values here are meaningless
--
--CONFIG_NEST_LEVEL ?= 0
--
--SIZE = ($(CONFIG_NEST_LEVEL) * 0x20000000)
--
- PHONY += linux
- 
- all: linux
-@@ -120,10 +113,6 @@ CFLAGS_NO_HARDENING := $(call cc-option,
- CONFIG_KERNEL_STACK_ORDER ?= 2
- STACK_SIZE := $(shell echo $$[ 4096 * (1 << $(CONFIG_KERNEL_STACK_ORDER)) ] )
- 
--ifndef START
--  START = $(shell echo $$[ $(TOP_ADDR) - $(SIZE) ] )
--endif
--
- CPPFLAGS_vmlinux.lds = -U$(SUBARCH) -DSTART=$(START) -DELF_ARCH=$(ELF_ARCH) \
- 	-DELF_FORMAT="$(ELF_FORMAT)" -DKERNEL_STACK_SIZE=$(STACK_SIZE)
- 
-Index: linux-2.6-git/arch/um/defconfig
-===================================================================
---- linux-2.6-git.orig/arch/um/defconfig	2007-12-10 12:36:31.000000000 -0500
-+++ linux-2.6-git/arch/um/defconfig	2007-12-10 12:37:04.000000000 -0500
-@@ -56,8 +56,6 @@ CONFIG_X86_TSC=y
- CONFIG_UML_X86=y
- # CONFIG_64BIT is not set
- CONFIG_SEMAPHORE_SLEEPERS=y
--# CONFIG_HOST_2G_2G is not set
--CONFIG_TOP_ADDR=0xc0000000
- # CONFIG_3_LEVEL_PGTABLES is not set
- CONFIG_ARCH_HAS_SC_SIGNALS=y
- CONFIG_ARCH_REUSE_HOST_VSYSCALL_AREA=y
-@@ -81,7 +79,6 @@ CONFIG_BINFMT_MISC=m
- # CONFIG_HPPFS is not set
- CONFIG_MCONSOLE=y
- CONFIG_MAGIC_SYSRQ=y
--CONFIG_NEST_LEVEL=0
- # CONFIG_HIGHMEM is not set
- CONFIG_KERNEL_STACK_ORDER=0
- 
-Index: linux-2.6-git/include/asm-um/fixmap.h
-===================================================================
---- linux-2.6-git.orig/include/asm-um/fixmap.h	2007-12-10 12:36:31.000000000 -0500
-+++ linux-2.6-git/include/asm-um/fixmap.h	2007-12-10 12:37:04.000000000 -0500
-@@ -1,6 +1,7 @@
- #ifndef __UM_FIXMAP_H
- #define __UM_FIXMAP_H
- 
-+#include <asm/processor.h>
- #include <asm/system.h>
- #include <asm/kmap_types.h>
- #include <asm/archparam.h>
-@@ -57,7 +58,7 @@ extern void __set_fixmap (enum fixed_add
-  * at the top of mem..
-  */
- 
--#define FIXADDR_TOP	(CONFIG_TOP_ADDR - 2 * PAGE_SIZE)
-+#define FIXADDR_TOP	(TASK_SIZE - 2 * PAGE_SIZE)
- #define FIXADDR_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
- #define FIXADDR_START	(FIXADDR_TOP - FIXADDR_SIZE)
- 
+-- 
+Ondrej Zary
