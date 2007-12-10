@@ -1,285 +1,754 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbXLJVEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbXLJVFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbXLJVEl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 16:04:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbXLJVEd
+	id S1757982AbXLJVFK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 16:05:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757504AbXLJVEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 16:04:33 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52836 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752688AbXLJVEc (ORCPT
+	Mon, 10 Dec 2007 16:04:54 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:14751 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753429AbXLJVEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 16:04:32 -0500
-Date: Mon, 10 Dec 2007 13:03:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: bfields@fieldses.org, neilb@suse.de, rjw@sisk.pl,
-       trond.myklebust@fys.uio.no, gnome42@gmail.com,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com, den@openvz.org,
-       linux-nfs@vger.kernel.org
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
-Message-Id: <20071210130305.d8983fdc.akpm@linux-foundation.org>
-In-Reply-To: <200712101705.30428.maximlevitsky@gmail.com>
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
-	<200712101619.12522.maximlevitsky@gmail.com>
-	<20071210143609.GF2138@fieldses.org>
-	<200712101705.30428.maximlevitsky@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 10 Dec 2007 16:04:52 -0500
+X-Greylist: delayed 464 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Dec 2007 16:04:52 EST
+X-SBRS: 5.6
+X-MesageID: 33292028
+X-Ironport-Server: ftlpip02.citrite.net
+X-Remote-IP: 216.142.71.134
+X-Policy: $Relay
+X-IronPort-AV: E=Sophos;i="4.24,148,1196658000"; 
+   d="scan'208";a="33292028"
+Message-ID: <475DA7CE.6020002@goop.org>
+Date: Mon, 10 Dec 2007 12:55:42 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: [PATCH 3/4] x86: unify asm-x86/page*.h
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Dec 2007 17:05:30 +0200
-Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+Unify common definitions in page*.h.  To simplify other code, I added
+typedefs for the value of pte/pmd/pud/pgd values, so they can be used
+symbolically elsewhere without needing to have lots of 32/64/PAE
+tests.
 
-> On Monday 10 December 2007 16:36:09 J. Bruce Fields wrote:
-> > On Mon, Dec 10, 2007 at 04:19:12PM +0200, Maxim Levitsky wrote:
-> > > ...
-> > > > It is best not to use nohide - we should probably mark it as
-> > > > 'legacy'.
-> > > > 
-> > > > Simply export the top level mountpoint as 'crossmnt'  and everything
-> > > > below there will be exported.
-> > > > 
-> > > > > Where should I put those options in root file-system export or in submount export?
-> > > > 
-> > > > crossmnt goes at the top.  nohide goes in the submount.  Both have
-> > > > the same general effect though with subtle differences.
-> > > > You don't need both (though that doesn't hurt).
-> > > > Just use crossmnt at the top,  Then you don't need to mention the
-> > > > lower level filesystems at all.
-> > > > 
-> > > > > 
-> > > ...
-> > > > > (I decided to switch to NFS4 only due to the lack of ability to see underlying mounts)
-> > > > > 
-> > > > 
-> > > > All of this should work fine with v3.  Once you have the right patch
-> > > > for the crossmnt bug applied, if you have further problems post them
-> > > > to linux-nfs@vger.kernel.org.
-> > > > 
-> > > > NeilBrown
-> > > > 
-> > > 
-> > > Big thanks,
-> > > 
-> > > Still NFS server just don't want to accept the connection
-> > > I noticed that if I first mount with
-> > > -tnfs, unmount,  and then mount with -tnfs4, it works
-> > 
-> > OK, in that case, that's definitely the bug Eric sent out the patch for;
-> > you may want to try applying his patch.
-> You mean
-> "[PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate" ?
-> 
-> I did apply it (on both kernel and server), and it doesn't help.
+Also, add PAGETABLE_LEVELS define so that other definitions can test
+for it directly rather than using indirect 32/64/PAE tests.
 
-argh, this is getting bad.
+Signed-off-by: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
 
-Can you please test the below patch asap? Against 2.6.24-rc4 or latest-linus.
-
-
-From: Andrew Morton <akpm@linux-foundation.org>
-
-Revert
-
-    commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416
-    Author: Eric W. Biederman <ebiederm@xmission.com>
-    Date:   Sun Dec 2 00:33:17 2007 +1100
-
-        [NETNS]: Fix /proc/net breakage
-
-It has caused all sorts of procfs mayhem.
-
-Reverting this will reintroduce
-
-    "Currently things work but there are odd details visible to user
-     space, even when we have a single network namespace."
-
-Where "details" was never elaborated upon.
-
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Pavel Emelyanov <xemul@openvz.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: "Denis V. Lunev" <den@openvz.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
+ include/asm-x86/page.h    |  333 +++++++++++++++++++++++++++++++++++++++++++--
+ include/asm-x86/page_32.h |  206 ---------------------------
+ include/asm-x86/page_64.h |  147 -------------------
+ 3 files changed, 323 insertions(+), 363 deletions(-)
 
- fs/proc/generic.c       |   12 -----
- fs/proc/proc_net.c      |   86 +++++++++++++++++++++++++++++++++++---
- include/linux/proc_fs.h |    3 -
- 3 files changed, 82 insertions(+), 19 deletions(-)
-
-diff -puN fs/proc/generic.c~revert-fix-proc-net-breakage fs/proc/generic.c
---- a/fs/proc/generic.c~revert-fix-proc-net-breakage
-+++ a/fs/proc/generic.c
-@@ -374,16 +374,9 @@ static int proc_delete_dentry(struct den
- 	return 1;
- }
- 
--static int proc_revalidate_dentry(struct dentry *dentry, struct nameidata *nd)
+===================================================================
+--- a/include/asm-x86/page.h
++++ b/include/asm-x86/page.h
+@@ -1,13 +1,326 @@
++#ifndef _ASM_X86_PAGE_H
++#define _ASM_X86_PAGE_H
++
++#include <linux/const.h>
++#include <linux/compiler.h>
++
++/* PAGE_SHIFT determines the page size */
++#define PAGE_SHIFT	12
++#define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
++#define PAGE_MASK	(~(PAGE_SIZE-1))
++#define PHYSICAL_PAGE_MASK	(~(PAGE_SIZE-1) & __PHYSICAL_MASK)
++
++#define LARGE_PAGE_MASK (~(LARGE_PAGE_SIZE-1))
++#define LARGE_PAGE_SIZE (_AC(1,UL) << PMD_SHIFT)
++
++#define HPAGE_SIZE	(_AC(1,UL) << HPAGE_SHIFT)
++#define HPAGE_MASK	(~(HPAGE_SIZE - 1))
++#define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
++
+ #ifdef __KERNEL__
+-# ifdef CONFIG_X86_32
+-#  include "page_32.h"
+-# else
+-#  include "page_64.h"
+-# endif
++
++#ifdef CONFIG_X86_32
++#ifdef CONFIG_X86_USE_3DNOW
++
++#include <asm/mmx.h>
++
++#define clear_page(page)	mmx_clear_page((void *)(page))
++#define copy_page(to,from)	mmx_copy_page(to,from)
++
++#else  /* !CONFIG_X86_USE_3DNOW */
++
++/*
++ *	On older X86 processors it's not a win to use MMX here it seems.
++ *	Maybe the K6-III ?
++ */
++
++#define clear_page(page)	memset((void *)(page), 0, PAGE_SIZE)
++#define copy_page(to,from)	memcpy((void *)(to), (void *)(from), PAGE_SIZE)
++
++#endif	/* CONFIG_X86_USE_3DNOW */
++
++#define __phys_addr(x)		((unsigned long)(x)-PAGE_OFFSET)
++
++#define __PAGE_OFFSET		_AC(CONFIG_PAGE_OFFSET,ull)
++
++#define VMALLOC_RESERVE		((unsigned long)__VMALLOC_RESERVE)
++#define MAXMEM			(-__PAGE_OFFSET-__VMALLOC_RESERVE)
++
++#ifndef __ASSEMBLY__
++extern unsigned int __VMALLOC_RESERVE;
++extern int nx_enabled;
++
++#include <linux/types.h>
++#endif
++
++#ifdef CONFIG_HUGETLB_PAGE
++#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
++#endif
++
++#ifndef CONFIG_X86_PAE
++/*
++ * 32 bit mode.  2 level pagetable, 32 bit physical, 32 bit virtual
++ */
++#define PAGETABLE_LEVELS	2
++#define __PHYSICAL_MASK_SHIFT	32
++#define __VIRTUAL_MASK_SHIFT	32
++#define HPAGE_SHIFT		PGDIR_SHIFT
++
++#ifndef __ASSEMBLY__
++typedef u32	pteval_t;
++typedef u32	pmdval_t;
++typedef u32	pudval_t;
++typedef u32	pgdval_t;
++typedef u32	pgprotval_t;
++
++typedef struct { unsigned long pte_low; } pte_t;
++
++static inline pteval_t native_pte_val(pte_t pte)
++{
++	return pte.pte_low;
++}
++
++static inline pte_t native_make_pte(pteval_t val)
++{
++	return (pte_t) { val };
++}
++#endif	/* __ASSEMBLY__ */
++
++#else	/* CONFIG_X86_PAE */
++/*
++ * 32 bit PAE mode.  3 level pagetable, 36 bit physical, 32 bit virtual
++ */
++#define PAGETABLE_LEVELS	3
++#define __PHYSICAL_MASK_SHIFT	36
++#define __VIRTUAL_MASK_SHIFT	32
++#define HPAGE_SHIFT		PMD_SHIFT
++
++#ifndef __ASSEMBLY__
++typedef u64	pteval_t;
++typedef u64	pmdval_t;
++typedef u64	pudval_t;
++typedef u64	pgdval_t;
++typedef u64	pgprotval_t;
++
++typedef struct { unsigned long pte_low, pte_high; } pte_t;
++
++static inline pteval_t native_pte_val(pte_t pte)
++{
++	return pte.pte_low | ((unsigned long long)pte.pte_high << 32);
++}
++
++static inline pte_t native_make_pte(pteval_t val)
++{
++	return (pte_t) { .pte_low = val, .pte_high = (val >> 32) } ;
++}
++#endif	/* __ASSEMBLY__ */
++
++#endif	 /* CONFIG_X86_PAE */
++
++#else  /* !CONFIG_X86_32 */
++/*
++ *  64 bit mode.  4 level pagetable, 46 bit physical, 48 bit virtual
++ */
++#define PAGETABLE_LEVELS	4
++#define __PHYSICAL_MASK_SHIFT	46
++#define __VIRTUAL_MASK_SHIFT	48
++#define HPAGE_SHIFT		PMD_SHIFT
++
++#ifndef __ASSEMBLY__
++typedef u64	pteval_t;
++typedef u64	pmdval_t;
++typedef u64	pudval_t;
++typedef u64	pgdval_t;
++typedef u64	pgprotval_t;
++
++typedef struct { pteval_t pte; } pte_t;
++
++static inline pteval_t native_pte_val(pte_t pte)
++{
++	return pte.pte;
++}
++
++static inline pte_t native_make_pte(pteval_t pte)
++{
++	return (pte_t){ pte };
++}
++
++extern unsigned long phys_base;
++extern unsigned long end_pfn;
++extern unsigned long end_pfn_map;
++
++void clear_page(void *);
++void copy_page(void *, void *);
++unsigned long __phys_addr(unsigned long);
++#endif	/* __ASSEMBLY__ */
++
++#define clear_user_page(page, vaddr, pg)	clear_page(page)
++#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
++
++#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
++	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
++#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
++
++#ifdef CONFIG_THREAD_ORDER
++# define THREAD_ORDER  CONFIG_THREAD_ORDER
+ #else
+-# ifdef __i386__
+-#  include "page_32.h"
+-# else
+-#  include "page_64.h"
+-# endif
++# define THREAD_ORDER  1
+ #endif
++#define THREAD_SIZE  (PAGE_SIZE << THREAD_ORDER)
++#define CURRENT_MASK (~(THREAD_SIZE-1))
++
++#define EXCEPTION_STACK_ORDER 0
++#define EXCEPTION_STKSZ (PAGE_SIZE << EXCEPTION_STACK_ORDER)
++
++#define DEBUG_STACK_ORDER (EXCEPTION_STACK_ORDER + 1)
++#define DEBUG_STKSZ (PAGE_SIZE << DEBUG_STACK_ORDER)
++
++#define IRQSTACK_ORDER 2
++#define IRQSTACKSIZE (PAGE_SIZE << IRQSTACK_ORDER)
++
++#define STACKFAULT_STACK 1
++#define DOUBLEFAULT_STACK 2
++#define NMI_STACK 3
++#define DEBUG_STACK 4
++#define MCE_STACK 5
++#define N_EXCEPTION_STACKS 5  /* hw limit: 7 */
++
++#define __PHYSICAL_START	CONFIG_PHYSICAL_START
++#define __KERNEL_ALIGN		0x200000
++
++#define KERNEL_TEXT_SIZE  (40*1024*1024)
++#define KERNEL_TEXT_START _AC(0xffffffff80000000, UL)
++
++/*
++ * Make sure kernel is aligned to 2MB address. Catching it at compile
++ * time is better. Change your config file and compile the kernel
++ * for a 2MB aligned address (CONFIG_PHYSICAL_START)
++ */
++#if (CONFIG_PHYSICAL_START % __KERNEL_ALIGN) != 0
++#error "CONFIG_PHYSICAL_START must be a multiple of 2MB"
++#endif
++
++#define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
++#define __START_KERNEL_map	_AC(0xffffffff80000000, UL)
++#define __PAGE_OFFSET           _AC(0xffff810000000000, UL)
++
++#define vmemmap ((struct page *)VMEMMAP_START)
++
++#endif	/* CONFIG_X86_32 */
++
++#ifndef __ASSEMBLY__
++typedef struct { pgprotval_t pgprot; } pgprot_t;
++typedef struct { pgdval_t pgd; } pgd_t;
++
++/* Macro so it can be used as lvalue */
++#define pgprot_val(prot)	((prot).pgprot)
++
++/* Must be macro so it can be used in initializers */
++#define __pgprot(x) ((pgprot_t) { (x) })
++
++static inline pgdval_t native_pgd_val(pgd_t pgd)
++{
++	return pgd.pgd;
++}
++
++static inline pgd_t native_make_pgd(pgdval_t val)
++{
++	return (pgd_t) { val };
++}
++
++#if PAGETABLE_LEVELS >= 3
++
++typedef struct { pmdval_t pmd; } pmd_t;
++
++static inline pmdval_t native_pmd_val(pmd_t pmd)
++{
++	return pmd.pmd;
++}
++
++static inline pmd_t native_make_pmd(unsigned long long pmd)
++{
++	return (pmd_t){ pmd };
++}
++
++#if PAGETABLE_LEVELS == 4
++
++typedef struct { pudval_t pud; } pud_t;
++
++static inline pud_t native_make_pud(unsigned long long pud)
++{
++	return (pud_t){ pud };
++}
++
++static inline pudval_t native_pud_val(pud_t pud)
++{
++	return pud.pud;
++}
++#else  /* PAGETABLE_LEVELS == 3 */
++#include <asm-generic/pgtable-nopud.h>
++#endif	/* PAGETABLE_LEVELS == 4 */
++#else  /* PAGETABLE_LEVELS == 2 */
++#include <asm-generic/pgtable-nopmd.h>
++#endif	/* PAGETABLE_LEVELS >= 3 */
++#endif	/* __ASSEMBLY__ */
++
++#ifndef CONFIG_PARAVIRT
++#define pgd_val(x)	native_pgd_val(x)
++#define __pgd(x)	native_make_pgd(x)
++
++#ifndef __PAGETABLE_PUD_FOLDED
++# define pud_val(x)	native_pud_val(x)
++# define __pud(x)	native_make_pud(x)
++#else
++# define pud_val(x)	native_pgd_val((x).pgd)
++#endif
++
++#ifndef __PAGETABLE_PMD_FOLDED
++# define pmd_val(x)	native_pmd_val(x)
++# define __pmd(x)	native_make_pmd(x)
++#else
++# define pmd_val(x)	native_pgd_val((x).pud.pgd)
++#endif
++
++#define pte_val(x)	native_pte_val(x)
++#define __pte(x)	native_make_pte(x)
++#endif	/* CONFIG_PARAVIRT */
++
++#define PTE_MASK	PHYSICAL_PAGE_MASK
++
++#define __PHYSICAL_MASK		((_AC(1,ULL) << __PHYSICAL_MASK_SHIFT) - 1)
++#define __VIRTUAL_MASK		((_AC(1,ULL) << __VIRTUAL_MASK_SHIFT) - 1)
++
++#define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
++
++/* to align the pointer to the (next) page boundary */
++#define PAGE_ALIGN(addr)	(((addr)+PAGE_SIZE-1)&PAGE_MASK)
++
++#define __pa(x)		__phys_addr((unsigned long)(x))
++#define __pa_symbol(x)	__phys_addr(RELOC_HIDE((unsigned long)(x), 0))
++#define __va(x)		((void *)((unsigned long)(x)+PAGE_OFFSET))
++
++#ifdef CONFIG_FLATMEM
++#define pfn_valid(pfn)		((pfn) < max_mapnr)
++#endif /* CONFIG_FLATMEM */
++#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
++#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
++#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
++
++#define VM_DATA_DEFAULT_FLAGS \
++	(((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
++	 VM_READ | VM_WRITE | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
++
++#define clear_user_page(page, vaddr, pg)	clear_page(page)
++#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
++
++#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
++	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
++#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
++
++#define __HAVE_ARCH_GATE_AREA 1
++
++#include <asm-generic/memory_model.h>
++#include <asm-generic/page.h>
++
++#endif	/* __KERNEL__ */
++#endif	/* _ASM_X86_PAGE_H */
+===================================================================
+--- a/include/asm-x86/page_32.h
++++ /dev/null
+@@ -1,206 +0,0 @@
+-#ifndef _I386_PAGE_H
+-#define _I386_PAGE_H
+-
+-/* PAGE_SHIFT determines the page size */
+-#define PAGE_SHIFT	12
+-#define PAGE_SIZE	(1UL << PAGE_SHIFT)
+-#define PAGE_MASK	(~(PAGE_SIZE-1))
+-
+-#define LARGE_PAGE_MASK (~(LARGE_PAGE_SIZE-1))
+-#define LARGE_PAGE_SIZE (1UL << PMD_SHIFT)
+-
+-#ifdef __KERNEL__
+-#ifndef __ASSEMBLY__
+-
+-#ifdef CONFIG_X86_USE_3DNOW
+-
+-#include <asm/mmx.h>
+-
+-#define clear_page(page)	mmx_clear_page((void *)(page))
+-#define copy_page(to,from)	mmx_copy_page(to,from)
+-
+-#else
+-
+-/*
+- *	On older X86 processors it's not a win to use MMX here it seems.
+- *	Maybe the K6-III ?
+- */
+- 
+-#define clear_page(page)	memset((void *)(page), 0, PAGE_SIZE)
+-#define copy_page(to,from)	memcpy((void *)(to), (void *)(from), PAGE_SIZE)
+-
+-#endif
+-
+-#define clear_user_page(page, vaddr, pg)	clear_page(page)
+-#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
+-
+-#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
+-	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
+-#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
+-
+-/*
+- * These are used to make use of C type-checking..
+- */
+-extern int nx_enabled;
+-
+-#ifdef CONFIG_X86_PAE
+-typedef struct { unsigned long pte_low, pte_high; } pte_t;
+-typedef struct { unsigned long long pmd; } pmd_t;
+-typedef struct { unsigned long long pgd; } pgd_t;
+-typedef struct { unsigned long long pgprot; } pgprot_t;
+-
+-static inline unsigned long long native_pgd_val(pgd_t pgd)
 -{
--	d_drop(dentry);
--	return 0;
+-	return pgd.pgd;
 -}
 -
- static struct dentry_operations proc_dentry_operations =
- {
- 	.d_delete	= proc_delete_dentry,
--	.d_revalidate	= proc_revalidate_dentry,
- };
- 
- /*
-@@ -404,11 +397,8 @@ struct dentry *proc_lookup(struct inode 
- 			if (de->namelen != dentry->d_name.len)
- 				continue;
- 			if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
--				unsigned int ino;
-+				unsigned int ino = de->low_ino;
- 
--				if (de->shadow_proc)
--					de = de->shadow_proc(current, de);
--				ino = de->low_ino;
- 				de_get(de);
- 				spin_unlock(&proc_subdir_lock);
- 				error = -EINVAL;
-diff -puN fs/proc/proc_net.c~revert-fix-proc-net-breakage fs/proc/proc_net.c
---- a/fs/proc/proc_net.c~revert-fix-proc-net-breakage
-+++ a/fs/proc/proc_net.c
-@@ -50,14 +50,89 @@ struct net *get_proc_net(const struct in
- }
- EXPORT_SYMBOL_GPL(get_proc_net);
- 
--static struct proc_dir_entry *shadow_pde;
-+static struct proc_dir_entry *proc_net_shadow;
- 
--static struct proc_dir_entry *proc_net_shadow(struct task_struct *task,
-+static struct dentry *proc_net_shadow_dentry(struct dentry *parent,
- 						struct proc_dir_entry *de)
- {
--	return task->nsproxy->net_ns->proc_net;
-+	struct dentry *shadow = NULL;
-+	struct inode *inode;
-+	if (!de)
-+		goto out;
-+	de_get(de);
-+	inode = proc_get_inode(parent->d_inode->i_sb, de->low_ino, de);
-+	if (!inode)
-+		goto out_de_put;
-+	shadow = d_alloc_name(parent, de->name);
-+	if (!shadow)
-+		goto out_iput;
-+	shadow->d_op = parent->d_op; /* proc_dentry_operations */
-+	d_instantiate(shadow, inode);
-+out:
-+	return shadow;
-+out_iput:
-+	iput(inode);
-+out_de_put:
-+	de_put(de);
-+	goto out;
-+}
-+
-+static void *proc_net_follow_link(struct dentry *parent, struct nameidata *nd)
-+{
-+	struct net *net = current->nsproxy->net_ns;
-+	struct dentry *shadow;
-+	shadow = proc_net_shadow_dentry(parent, net->proc_net);
-+	if (!shadow)
-+		return ERR_PTR(-ENOENT);
-+
-+	dput(nd->dentry);
-+	/* My dentry count is 1 and that should be enough as the
-+	 * shadow dentry is thrown away immediately.
-+	 */
-+	nd->dentry = shadow;
-+	return NULL;
- }
- 
-+static struct dentry *proc_net_lookup(struct inode *dir, struct dentry *dentry,
-+				      struct nameidata *nd)
-+{
-+	struct net *net = current->nsproxy->net_ns;
-+	struct dentry *shadow;
-+
-+	shadow = proc_net_shadow_dentry(nd->dentry, net->proc_net);
-+	if (!shadow)
-+		return ERR_PTR(-ENOENT);
-+
-+	dput(nd->dentry);
-+	nd->dentry = shadow;
-+
-+	return shadow->d_inode->i_op->lookup(shadow->d_inode, dentry, nd);
-+}
-+
-+static int proc_net_setattr(struct dentry *dentry, struct iattr *iattr)
-+{
-+	struct net *net = current->nsproxy->net_ns;
-+	struct dentry *shadow;
-+	int ret;
-+
-+	shadow = proc_net_shadow_dentry(dentry->d_parent, net->proc_net);
-+	if (!shadow)
-+		return -ENOENT;
-+	ret = shadow->d_inode->i_op->setattr(shadow, iattr);
-+	dput(shadow);
-+	return ret;
-+}
-+
-+static const struct file_operations proc_net_dir_operations = {
-+	.read			= generic_read_dir,
-+};
-+
-+static struct inode_operations proc_net_dir_inode_operations = {
-+	.follow_link	= proc_net_follow_link,
-+	.lookup		= proc_net_lookup,
-+	.setattr	= proc_net_setattr,
-+};
-+
- static __net_init int proc_net_ns_init(struct net *net)
- {
- 	struct proc_dir_entry *root, *netd, *net_statd;
-@@ -110,8 +185,9 @@ static struct pernet_operations __net_in
- 
- int __init proc_net_init(void)
- {
--	shadow_pde = proc_mkdir("net", NULL);
--	shadow_pde->shadow_proc = proc_net_shadow;
-+	proc_net_shadow = proc_mkdir("net", NULL);
-+	proc_net_shadow->proc_iops = &proc_net_dir_inode_operations;
-+	proc_net_shadow->proc_fops = &proc_net_dir_operations;
- 
- 	return register_pernet_subsys(&proc_net_ns_ops);
- }
-diff -puN include/linux/proc_fs.h~revert-fix-proc-net-breakage include/linux/proc_fs.h
---- a/include/linux/proc_fs.h~revert-fix-proc-net-breakage
-+++ a/include/linux/proc_fs.h
-@@ -48,8 +48,6 @@ typedef	int (read_proc_t)(char *page, ch
- typedef	int (write_proc_t)(struct file *file, const char __user *buffer,
- 			   unsigned long count, void *data);
- typedef int (get_info_t)(char *, char **, off_t, int);
--typedef struct proc_dir_entry *(shadow_proc_t)(struct task_struct *task,
--						struct proc_dir_entry *pde);
- 
- struct proc_dir_entry {
- 	unsigned int low_ino;
-@@ -80,7 +78,6 @@ struct proc_dir_entry {
- 	int pde_users;	/* number of callers into module in progress */
- 	spinlock_t pde_unload_lock; /* proc_fops checks and pde_users bumps */
- 	struct completion *pde_unload_completion;
--	shadow_proc_t *shadow_proc;
- };
- 
- struct kcore_list {
-_
+-static inline unsigned long long native_pmd_val(pmd_t pmd)
+-{
+-	return pmd.pmd;
+-}
+-
+-static inline unsigned long long native_pte_val(pte_t pte)
+-{
+-	return pte.pte_low | ((unsigned long long)pte.pte_high << 32);
+-}
+-
+-static inline pgd_t native_make_pgd(unsigned long long val)
+-{
+-	return (pgd_t) { val };
+-}
+-
+-static inline pmd_t native_make_pmd(unsigned long long val)
+-{
+-	return (pmd_t) { val };
+-}
+-
+-static inline pte_t native_make_pte(unsigned long long val)
+-{
+-	return (pte_t) { .pte_low = val, .pte_high = (val >> 32) } ;
+-}
+-
+-#ifndef CONFIG_PARAVIRT
+-#define pmd_val(x)	native_pmd_val(x)
+-#define __pmd(x)	native_make_pmd(x)
+-#endif
+-
+-#define HPAGE_SHIFT	21
+-#include <asm-generic/pgtable-nopud.h>
+-#else  /* !CONFIG_X86_PAE */
+-typedef struct { unsigned long pte_low; } pte_t;
+-typedef struct { unsigned long pgd; } pgd_t;
+-typedef struct { unsigned long pgprot; } pgprot_t;
+-#define boot_pte_t pte_t /* or would you rather have a typedef */
+-
+-static inline unsigned long native_pgd_val(pgd_t pgd)
+-{
+-	return pgd.pgd;
+-}
+-
+-static inline unsigned long native_pte_val(pte_t pte)
+-{
+-	return pte.pte_low;
+-}
+-
+-static inline pgd_t native_make_pgd(unsigned long val)
+-{
+-	return (pgd_t) { val };
+-}
+-
+-static inline pte_t native_make_pte(unsigned long val)
+-{
+-	return (pte_t) { .pte_low = val };
+-}
+-
+-#define HPAGE_SHIFT	22
+-#include <asm-generic/pgtable-nopmd.h>
+-#endif	/* CONFIG_X86_PAE */
+-
+-#define PTE_MASK	PAGE_MASK
+-
+-#ifdef CONFIG_HUGETLB_PAGE
+-#define HPAGE_SIZE	((1UL) << HPAGE_SHIFT)
+-#define HPAGE_MASK	(~(HPAGE_SIZE - 1))
+-#define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+-#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+-#endif
+-
+-#define pgprot_val(x)	((x).pgprot)
+-#define __pgprot(x)	((pgprot_t) { (x) } )
+-
+-#ifndef CONFIG_PARAVIRT
+-#define pgd_val(x)	native_pgd_val(x)
+-#define __pgd(x)	native_make_pgd(x)
+-#define pte_val(x)	native_pte_val(x)
+-#define __pte(x)	native_make_pte(x)
+-#endif
+-
+-#endif /* !__ASSEMBLY__ */
+-
+-/* to align the pointer to the (next) page boundary */
+-#define PAGE_ALIGN(addr)	(((addr)+PAGE_SIZE-1)&PAGE_MASK)
+-
+-/*
+- * This handles the memory map.. We could make this a config
+- * option, but too many people screw it up, and too few need
+- * it.
+- *
+- * A __PAGE_OFFSET of 0xC0000000 means that the kernel has
+- * a virtual address space of one gigabyte, which limits the
+- * amount of physical memory you can use to about 950MB. 
+- *
+- * If you want more physical memory than this then see the CONFIG_HIGHMEM4G
+- * and CONFIG_HIGHMEM64G options in the kernel configuration.
+- */
+-
+-#ifndef __ASSEMBLY__
+-
+-struct vm_area_struct;
+-
+-/*
+- * This much address space is reserved for vmalloc() and iomap()
+- * as well as fixmap mappings.
+- */
+-extern unsigned int __VMALLOC_RESERVE;
+-
+-extern int sysctl_legacy_va_layout;
+-
+-extern int page_is_ram(unsigned long pagenr);
+-
+-#endif /* __ASSEMBLY__ */
+-
+-#ifdef __ASSEMBLY__
+-#define __PAGE_OFFSET		CONFIG_PAGE_OFFSET
+-#else
+-#define __PAGE_OFFSET		((unsigned long)CONFIG_PAGE_OFFSET)
+-#endif
+-
+-
+-#define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
+-#define VMALLOC_RESERVE		((unsigned long)__VMALLOC_RESERVE)
+-#define MAXMEM			(-__PAGE_OFFSET-__VMALLOC_RESERVE)
+-#define __pa(x)			((unsigned long)(x)-PAGE_OFFSET)
+-/* __pa_symbol should be used for C visible symbols.
+-   This seems to be the official gcc blessed way to do such arithmetic. */
+-#define __pa_symbol(x)          __pa(RELOC_HIDE((unsigned long)(x),0))
+-#define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
+-#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
+-#ifdef CONFIG_FLATMEM
+-#define pfn_valid(pfn)		((pfn) < max_mapnr)
+-#endif /* CONFIG_FLATMEM */
+-#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+-
+-#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+-
+-#define VM_DATA_DEFAULT_FLAGS \
+-	(VM_READ | VM_WRITE | \
+-	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
+-		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+-
+-#include <asm-generic/memory_model.h>
+-#include <asm-generic/page.h>
+-
+-#define __HAVE_ARCH_GATE_AREA 1
+-#endif /* __KERNEL__ */
+-
+-#endif /* _I386_PAGE_H */
+===================================================================
+--- a/include/asm-x86/page_64.h
++++ /dev/null
+@@ -1,147 +0,0 @@
+-#ifndef _X86_64_PAGE_H
+-#define _X86_64_PAGE_H
+-
+-#include <linux/const.h>
+-
+-/* PAGE_SHIFT determines the page size */
+-#define PAGE_SHIFT	12
+-#define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
+-#define PAGE_MASK	(~(PAGE_SIZE-1))
+-#define PHYSICAL_PAGE_MASK	(~(PAGE_SIZE-1) & __PHYSICAL_MASK)
+-
+-#ifdef CONFIG_THREAD_ORDER
+-# define THREAD_ORDER	CONFIG_THREAD_ORDER
+-#else
+-# define THREAD_ORDER	1
+-#endif
+-
+-#define THREAD_SIZE  (PAGE_SIZE << THREAD_ORDER)
+-#define CURRENT_MASK (~(THREAD_SIZE-1))
+-
+-#define EXCEPTION_STACK_ORDER 0
+-#define EXCEPTION_STKSZ (PAGE_SIZE << EXCEPTION_STACK_ORDER)
+-
+-#define DEBUG_STACK_ORDER (EXCEPTION_STACK_ORDER + 1)
+-#define DEBUG_STKSZ (PAGE_SIZE << DEBUG_STACK_ORDER)
+-
+-#define IRQSTACK_ORDER 2
+-#define IRQSTACKSIZE (PAGE_SIZE << IRQSTACK_ORDER)
+-
+-#define STACKFAULT_STACK 1
+-#define DOUBLEFAULT_STACK 2
+-#define NMI_STACK 3
+-#define DEBUG_STACK 4
+-#define MCE_STACK 5
+-#define N_EXCEPTION_STACKS 5  /* hw limit: 7 */
+-
+-#define LARGE_PAGE_MASK (~(LARGE_PAGE_SIZE-1))
+-#define LARGE_PAGE_SIZE (_AC(1,UL) << PMD_SHIFT)
+-
+-#define HPAGE_SHIFT PMD_SHIFT
+-#define HPAGE_SIZE	(_AC(1,UL) << HPAGE_SHIFT)
+-#define HPAGE_MASK	(~(HPAGE_SIZE - 1))
+-#define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+-
+-#ifdef __KERNEL__
+-#ifndef __ASSEMBLY__
+-
+-extern unsigned long end_pfn;
+-extern unsigned long end_pfn_map;
+-
+-void clear_page(void *);
+-void copy_page(void *, void *);
+-
+-#define clear_user_page(page, vaddr, pg)	clear_page(page)
+-#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
+-
+-#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
+-	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
+-#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
+-/*
+- * These are used to make use of C type-checking..
+- */
+-typedef struct { unsigned long pte; } pte_t;
+-typedef struct { unsigned long pmd; } pmd_t;
+-typedef struct { unsigned long pud; } pud_t;
+-typedef struct { unsigned long pgd; } pgd_t;
+-#define PTE_MASK	PHYSICAL_PAGE_MASK
+-
+-typedef struct { unsigned long pgprot; } pgprot_t;
+-
+-extern unsigned long phys_base;
+-
+-#define pte_val(x)	((x).pte)
+-#define pmd_val(x)	((x).pmd)
+-#define pud_val(x)	((x).pud)
+-#define pgd_val(x)	((x).pgd)
+-#define pgprot_val(x)	((x).pgprot)
+-
+-#define __pte(x) ((pte_t) { (x) } )
+-#define __pmd(x) ((pmd_t) { (x) } )
+-#define __pud(x) ((pud_t) { (x) } )
+-#define __pgd(x) ((pgd_t) { (x) } )
+-#define __pgprot(x)	((pgprot_t) { (x) } )
+-
+-#endif /* !__ASSEMBLY__ */
+-
+-#define __PHYSICAL_START	CONFIG_PHYSICAL_START
+-#define __KERNEL_ALIGN		0x200000
+-
+-/*
+- * Make sure kernel is aligned to 2MB address. Catching it at compile
+- * time is better. Change your config file and compile the kernel
+- * for a 2MB aligned address (CONFIG_PHYSICAL_START)
+- */
+-#if (CONFIG_PHYSICAL_START % __KERNEL_ALIGN) != 0
+-#error "CONFIG_PHYSICAL_START must be a multiple of 2MB"
+-#endif
+-
+-#define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
+-#define __START_KERNEL_map	_AC(0xffffffff80000000, UL)
+-#define __PAGE_OFFSET           _AC(0xffff810000000000, UL)
+-
+-/* to align the pointer to the (next) page boundary */
+-#define PAGE_ALIGN(addr)	(((addr)+PAGE_SIZE-1)&PAGE_MASK)
+-
+-/* See Documentation/x86_64/mm.txt for a description of the memory map. */
+-#define __PHYSICAL_MASK_SHIFT	46
+-#define __PHYSICAL_MASK		((_AC(1,UL) << __PHYSICAL_MASK_SHIFT) - 1)
+-#define __VIRTUAL_MASK_SHIFT	48
+-#define __VIRTUAL_MASK		((_AC(1,UL) << __VIRTUAL_MASK_SHIFT) - 1)
+-
+-#define KERNEL_TEXT_SIZE  (40*1024*1024)
+-#define KERNEL_TEXT_START _AC(0xffffffff80000000, UL)
+-#define PAGE_OFFSET		__PAGE_OFFSET
+-
+-#ifndef __ASSEMBLY__
+-
+-#include <asm/bug.h>
+-
+-extern unsigned long __phys_addr(unsigned long);
+-
+-#endif /* __ASSEMBLY__ */
+-
+-#define __pa(x)		__phys_addr((unsigned long)(x))
+-#define __pa_symbol(x)	__phys_addr((unsigned long)(x))
+-
+-#define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
+-#define __boot_va(x)		__va(x)
+-#define __boot_pa(x)		__pa(x)
+-
+-#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+-#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+-#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
+-
+-#define VM_DATA_DEFAULT_FLAGS \
+-	(((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
+-	 VM_READ | VM_WRITE | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+-
+-#define __HAVE_ARCH_GATE_AREA 1	
+-#define vmemmap ((struct page *)VMEMMAP_START)
+-
+-#include <asm-generic/memory_model.h>
+-#include <asm-generic/page.h>
+-
+-#endif /* __KERNEL__ */
+-
+-#endif /* _X86_64_PAGE_H */
 
