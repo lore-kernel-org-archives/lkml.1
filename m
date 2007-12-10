@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbXLJC4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbXLJC4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757429AbXLJC4M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 21:56:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbXLJCoh
+	id S1756049AbXLJC4h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 21:56:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbXLJCok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 21:44:37 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49842 "EHLO
+	Sun, 9 Dec 2007 21:44:40 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49841 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755050AbXLJCns (ORCPT
+	with ESMTP id S1755023AbXLJCnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 21:43:48 -0500
+	Sun, 9 Dec 2007 21:43:47 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 13/42] Unionfs: basic file operations
-Date: Sun,  9 Dec 2007 21:41:46 -0500
-Message-Id: <119725454178-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 30/42] Unionfs: debugging infrastructure
+Date: Sun,  9 Dec 2007 21:42:03 -0500
+Message-Id: <11972545541475-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11972545353262-git-send-email-ezk@cs.sunysb.edu>
@@ -25,30 +25,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Includes read, write, mmap, fsync, and fasync.
-
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/file.c |  227 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 227 insertions(+), 0 deletions(-)
- create mode 100644 fs/unionfs/file.c
+ fs/unionfs/debug.c |  532 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 532 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/debug.c
 
-diff --git a/fs/unionfs/file.c b/fs/unionfs/file.c
+diff --git a/fs/unionfs/debug.c b/fs/unionfs/debug.c
 new file mode 100644
-index 0000000..c922173
+index 0000000..c2b8b58
 --- /dev/null
-+++ b/fs/unionfs/file.c
-@@ -0,0 +1,227 @@
++++ b/fs/unionfs/debug.c
+@@ -0,0 +1,532 @@
 +/*
 + * Copyright (c) 2003-2007 Erez Zadok
-+ * Copyright (c) 2003-2006 Charles P. Wright
 + * Copyright (c) 2005-2007 Josef 'Jeff' Sipek
-+ * Copyright (c) 2005-2006 Junjiro Okajima
-+ * Copyright (c) 2005      Arun M. Krishnakumar
-+ * Copyright (c) 2004-2006 David P. Quigley
-+ * Copyright (c) 2003-2004 Mohammad Nayyer Zubair
-+ * Copyright (c) 2003      Puja Gupta
-+ * Copyright (c) 2003      Harikesavan Krishnan
 + * Copyright (c) 2003-2007 Stony Brook University
 + * Copyright (c) 2003-2007 The Research Foundation of SUNY
 + *
@@ -59,213 +50,525 @@ index 0000000..c922173
 +
 +#include "union.h"
 +
-+static ssize_t unionfs_read(struct file *file, char __user *buf,
-+			    size_t count, loff_t *ppos)
++/*
++ * Helper debugging functions for maintainers (and for users to report back
++ * useful information back to maintainers)
++ */
++
++/* it's always useful to know what part of the code called us */
++#define PRINT_CALLER(fname, fxn, line)					\
++	do {								\
++		if (!printed_caller) {					\
++			pr_debug("PC:%s:%s:%d\n", (fname), (fxn), (line)); \
++			printed_caller = 1;				\
++		}							\
++	} while (0)
++
++/*
++ * __unionfs_check_{inode,dentry,file} perform exhaustive sanity checking on
++ * the fan-out of various Unionfs objects.  We check that no lower objects
++ * exist  outside the start/end branch range; that all objects within are
++ * non-NULL (with some allowed exceptions); that for every lower file
++ * there's a lower dentry+inode; that the start/end ranges match for all
++ * corresponding lower objects; that open files/symlinks have only one lower
++ * objects, but directories can have several; and more.
++ */
++void __unionfs_check_inode(const struct inode *inode,
++			   const char *fname, const char *fxn, int line)
 +{
-+	int err;
++	int bindex;
++	int istart, iend;
++	struct inode *lower_inode;
++	struct super_block *sb;
++	int printed_caller = 0;
++	void *poison_ptr;
 +
-+	unionfs_read_lock(file->f_path.dentry->d_sb);
-+	err = unionfs_file_revalidate(file, false);
-+	if (unlikely(err))
-+		goto out;
-+	unionfs_check_file(file);
-+
-+	err = do_sync_read(file, buf, count, ppos);
-+
-+out:
-+	unionfs_check_file(file);
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	return err;
-+}
-+
-+static ssize_t unionfs_write(struct file *file, const char __user *buf,
-+			     size_t count, loff_t *ppos)
-+{
-+	int err = 0;
-+
-+	unionfs_read_lock(file->f_path.dentry->d_sb);
-+	err = unionfs_file_revalidate(file, true);
-+	if (unlikely(err))
-+		goto out;
-+	unionfs_check_file(file);
-+
-+	err = do_sync_write(file, buf, count, ppos);
-+	/* update our inode times upon a successful lower write */
-+	if (err >= 0) {
-+		unionfs_copy_attr_times(file->f_path.dentry->d_inode);
-+		unionfs_check_file(file);
++	/* for inodes now */
++	BUG_ON(!inode);
++	sb = inode->i_sb;
++	istart = ibstart(inode);
++	iend = ibend(inode);
++	/* don't check inode if no lower branches */
++	if (istart < 0 && iend < 0)
++		return;
++	if (unlikely(istart > iend)) {
++		PRINT_CALLER(fname, fxn, line);
++		pr_debug(" Ci0: inode=%p istart/end=%d:%d\n",
++			 inode, istart, iend);
++	}
++	if (unlikely((istart == -1 && iend != -1) ||
++		     (istart != -1 && iend == -1))) {
++		PRINT_CALLER(fname, fxn, line);
++		pr_debug(" Ci1: inode=%p istart/end=%d:%d\n",
++			 inode, istart, iend);
++	}
++	if (!S_ISDIR(inode->i_mode)) {
++		if (unlikely(iend != istart)) {
++			PRINT_CALLER(fname, fxn, line);
++			pr_debug(" Ci2: inode=%p istart=%d iend=%d\n",
++				 inode, istart, iend);
++		}
 +	}
 +
-+out:
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	return err;
++	for (bindex = sbstart(sb); bindex < sbmax(sb); bindex++) {
++		if (unlikely(!UNIONFS_I(inode))) {
++			PRINT_CALLER(fname, fxn, line);
++			pr_debug(" Ci3: no inode_info %p\n", inode);
++			return;
++		}
++		if (unlikely(!UNIONFS_I(inode)->lower_inodes)) {
++			PRINT_CALLER(fname, fxn, line);
++			pr_debug(" Ci4: no lower_inodes %p\n", inode);
++			return;
++		}
++		lower_inode = unionfs_lower_inode_idx(inode, bindex);
++		if (lower_inode) {
++			memset(&poison_ptr, POISON_INUSE, sizeof(void *));
++			if (unlikely(bindex < istart || bindex > iend)) {
++				PRINT_CALLER(fname, fxn, line);
++				pr_debug(" Ci5: inode/linode=%p:%p bindex=%d "
++					 "istart/end=%d:%d\n", inode,
++					 lower_inode, bindex, istart, iend);
++			} else if (unlikely(lower_inode == poison_ptr)) {
++				/* freed inode! */
++				PRINT_CALLER(fname, fxn, line);
++				pr_debug(" Ci6: inode/linode=%p:%p bindex=%d "
++					 "istart/end=%d:%d\n", inode,
++					 lower_inode, bindex, istart, iend);
++			}
++			continue;
++		}
++		/* if we get here, then lower_inode == NULL */
++		if (bindex < istart || bindex > iend)
++			continue;
++		/*
++		 * directories can have NULL lower inodes in b/t start/end,
++		 * but NOT if at the start/end range.
++		 */
++		if (unlikely(S_ISDIR(inode->i_mode) &&
++			     bindex > istart && bindex < iend))
++			continue;
++		PRINT_CALLER(fname, fxn, line);
++		pr_debug(" Ci7: inode/linode=%p:%p "
++			 "bindex=%d istart/end=%d:%d\n",
++			 inode, lower_inode, bindex, istart, iend);
++	}
 +}
 +
-+static int unionfs_file_readdir(struct file *file, void *dirent,
-+				filldir_t filldir)
++void __unionfs_check_dentry(const struct dentry *dentry,
++			    const char *fname, const char *fxn, int line)
 +{
-+	return -ENOTDIR;
-+}
++	int bindex;
++	int dstart, dend, istart, iend;
++	struct dentry *lower_dentry;
++	struct inode *inode, *lower_inode;
++	struct super_block *sb;
++	struct vfsmount *lower_mnt;
++	int printed_caller = 0;
++	void *poison_ptr;
 +
-+static int unionfs_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	int err = 0;
-+	bool willwrite;
-+	struct file *lower_file;
++	BUG_ON(!dentry);
++	sb = dentry->d_sb;
++	inode = dentry->d_inode;
++	dstart = dbstart(dentry);
++	dend = dbend(dentry);
++	/* don't check dentry/mnt if no lower branches */
++	if (dstart < 0 && dend < 0)
++		goto check_inode;
++	BUG_ON(dstart > dend);
 +
-+	unionfs_read_lock(file->f_path.dentry->d_sb);
++	if (unlikely((dstart == -1 && dend != -1) ||
++		     (dstart != -1 && dend == -1))) {
++		PRINT_CALLER(fname, fxn, line);
++		pr_debug(" CD0: dentry=%p dstart/end=%d:%d\n",
++			 dentry, dstart, dend);
++	}
++	/*
++	 * check for NULL dentries inside the start/end range, or
++	 * non-NULL dentries outside the start/end range.
++	 */
++	for (bindex = sbstart(sb); bindex < sbmax(sb); bindex++) {
++		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++		if (lower_dentry) {
++			if (unlikely(bindex < dstart || bindex > dend)) {
++				PRINT_CALLER(fname, fxn, line);
++				pr_debug(" CD1: dentry/lower=%p:%p(%p) "
++					 "bindex=%d dstart/end=%d:%d\n",
++					 dentry, lower_dentry,
++					 (lower_dentry ? lower_dentry->d_inode :
++					  (void *) -1L),
++					 bindex, dstart, dend);
++			}
++		} else {	/* lower_dentry == NULL */
++			if (bindex < dstart || bindex > dend)
++				continue;
++			/*
++			 * Directories can have NULL lower inodes in b/t
++			 * start/end, but NOT if at the start/end range.
++			 * Ignore this rule, however, if this is a NULL
++			 * dentry or a deleted dentry.
++			 */
++			if (unlikely(!d_deleted((struct dentry *) dentry) &&
++				     inode &&
++				     !(inode && S_ISDIR(inode->i_mode) &&
++				       bindex > dstart && bindex < dend))) {
++				PRINT_CALLER(fname, fxn, line);
++				pr_debug(" CD2: dentry/lower=%p:%p(%p) "
++					 "bindex=%d dstart/end=%d:%d\n",
++					 dentry, lower_dentry,
++					 (lower_dentry ?
++					  lower_dentry->d_inode :
++					  (void *) -1L),
++					 bindex, dstart, dend);
++			}
++		}
++	}
 +
-+	/* This might be deferred to mmap's writepage */
-+	willwrite = ((vma->vm_flags | VM_SHARED | VM_WRITE) == vma->vm_flags);
-+	err = unionfs_file_revalidate(file, willwrite);
-+	if (unlikely(err))
-+		goto out;
-+	unionfs_check_file(file);
++	/* check for vfsmounts same as for dentries */
++	for (bindex = sbstart(sb); bindex < sbmax(sb); bindex++) {
++		lower_mnt = unionfs_lower_mnt_idx(dentry, bindex);
++		if (lower_mnt) {
++			if (unlikely(bindex < dstart || bindex > dend)) {
++				PRINT_CALLER(fname, fxn, line);
++				pr_debug(" CM0: dentry/lmnt=%p:%p bindex=%d "
++					 "dstart/end=%d:%d\n", dentry,
++					 lower_mnt, bindex, dstart, dend);
++			}
++		} else {	/* lower_mnt == NULL */
++			if (bindex < dstart || bindex > dend)
++				continue;
++			/*
++			 * Directories can have NULL lower inodes in b/t
++			 * start/end, but NOT if at the start/end range.
++			 * Ignore this rule, however, if this is a NULL
++			 * dentry.
++			 */
++			if (unlikely(inode &&
++				     !(inode && S_ISDIR(inode->i_mode) &&
++				       bindex > dstart && bindex < dend))) {
++				PRINT_CALLER(fname, fxn, line);
++				pr_debug(" CM1: dentry/lmnt=%p:%p "
++					 "bindex=%d dstart/end=%d:%d\n",
++					 dentry, lower_mnt, bindex,
++					 dstart, dend);
++			}
++		}
++	}
++
++check_inode:
++	/* for inodes now */
++	if (!inode)
++		return;
++	istart = ibstart(inode);
++	iend = ibend(inode);
++	/* don't check inode if no lower branches */
++	if (istart < 0 && iend < 0)
++		return;
++	BUG_ON(istart > iend);
++	if (unlikely((istart == -1 && iend != -1) ||
++		     (istart != -1 && iend == -1))) {
++		PRINT_CALLER(fname, fxn, line);
++		pr_debug(" CI0: dentry/inode=%p:%p istart/end=%d:%d\n",
++			 dentry, inode, istart, iend);
++	}
++	if (unlikely(istart != dstart)) {
++		PRINT_CALLER(fname, fxn, line);
++		pr_debug(" CI1: dentry/inode=%p:%p istart=%d dstart=%d\n",
++			 dentry, inode, istart, dstart);
++	}
++	if (unlikely(iend != dend)) {
++		PRINT_CALLER(fname, fxn, line);
++		pr_debug(" CI2: dentry/inode=%p:%p iend=%d dend=%d\n",
++			 dentry, inode, iend, dend);
++	}
++
++	if (!S_ISDIR(inode->i_mode)) {
++		if (unlikely(dend != dstart)) {
++			PRINT_CALLER(fname, fxn, line);
++			pr_debug(" CI3: dentry/inode=%p:%p dstart=%d dend=%d\n",
++				 dentry, inode, dstart, dend);
++		}
++		if (unlikely(iend != istart)) {
++			PRINT_CALLER(fname, fxn, line);
++			pr_debug(" CI4: dentry/inode=%p:%p istart=%d iend=%d\n",
++				 dentry, inode, istart, iend);
++		}
++	}
++
++	for (bindex = sbstart(sb); bindex < sbmax(sb); bindex++) {
++		lower_inode = unionfs_lower_inode_idx(inode, bindex);
++		if (lower_inode) {
++			memset(&poison_ptr, POISON_INUSE, sizeof(void *));
++			if (unlikely(bindex < istart || bindex > iend)) {
++				PRINT_CALLER(fname, fxn, line);
++				pr_debug(" CI5: dentry/linode=%p:%p bindex=%d "
++					 "istart/end=%d:%d\n", dentry,
++					 lower_inode, bindex, istart, iend);
++			} else if (unlikely(lower_inode == poison_ptr)) {
++				/* freed inode! */
++				PRINT_CALLER(fname, fxn, line);
++				pr_debug(" CI6: dentry/linode=%p:%p bindex=%d "
++					 "istart/end=%d:%d\n", dentry,
++					 lower_inode, bindex, istart, iend);
++			}
++			continue;
++		}
++		/* if we get here, then lower_inode == NULL */
++		if (bindex < istart || bindex > iend)
++			continue;
++		/*
++		 * directories can have NULL lower inodes in b/t start/end,
++		 * but NOT if at the start/end range.
++		 */
++		if (unlikely(S_ISDIR(inode->i_mode) &&
++			     bindex > istart && bindex < iend))
++			continue;
++		PRINT_CALLER(fname, fxn, line);
++		pr_debug(" CI7: dentry/linode=%p:%p "
++			 "bindex=%d istart/end=%d:%d\n",
++			 dentry, lower_inode, bindex, istart, iend);
++	}
 +
 +	/*
-+	 * File systems which do not implement ->writepage may use
-+	 * generic_file_readonly_mmap as their ->mmap op.  If you call
-+	 * generic_file_readonly_mmap with VM_WRITE, you'd get an -EINVAL.
-+	 * But we cannot call the lower ->mmap op, so we can't tell that
-+	 * writeable mappings won't work.  Therefore, our only choice is to
-+	 * check if the lower file system supports the ->writepage, and if
-+	 * not, return EINVAL (the same error that
-+	 * generic_file_readonly_mmap returns in that case).
++	 * If it's a directory, then intermediate objects b/t start/end can
++	 * be NULL.  But, check that all three are NULL: lower dentry, mnt,
++	 * and inode.
 +	 */
-+	lower_file = unionfs_lower_file(file);
-+	if (willwrite && !lower_file->f_mapping->a_ops->writepage) {
-+		err = -EINVAL;
-+		printk(KERN_ERR "unionfs: branch %d file system does not "
-+		       "support writeable mmap\n", fbstart(file));
-+	} else {
-+		err = generic_file_mmap(file, vma);
-+		if (err)
-+			printk(KERN_ERR
-+			       "unionfs: generic_file_mmap failed %d\n", err);
++	if (dstart >= 0 && dend >= 0 && S_ISDIR(inode->i_mode))
++		for (bindex = dstart+1; bindex < dend; bindex++) {
++			lower_inode = unionfs_lower_inode_idx(inode, bindex);
++			lower_dentry = unionfs_lower_dentry_idx(dentry,
++								bindex);
++			lower_mnt = unionfs_lower_mnt_idx(dentry, bindex);
++			if (unlikely(!((lower_inode && lower_dentry &&
++					lower_mnt) ||
++				       (!lower_inode &&
++					!lower_dentry && !lower_mnt)))) {
++				PRINT_CALLER(fname, fxn, line);
++				pr_debug(" Cx: lmnt/ldentry/linode=%p:%p:%p "
++					 "bindex=%d dstart/end=%d:%d\n",
++					 lower_mnt, lower_dentry, lower_inode,
++					 bindex, dstart, dend);
++			}
++		}
++	/* check if lower inode is newer than upper one (it shouldn't) */
++	if (unlikely(is_newer_lower(dentry))) {
++		PRINT_CALLER(fname, fxn, line);
++		for (bindex = ibstart(inode); bindex <= ibend(inode);
++		     bindex++) {
++			lower_inode = unionfs_lower_inode_idx(inode, bindex);
++			if (unlikely(!lower_inode))
++				continue;
++			pr_debug(" CI8: bindex=%d mtime/lmtime=%lu.%lu/%lu.%lu "
++				 "ctime/lctime=%lu.%lu/%lu.%lu\n",
++				 bindex,
++				 inode->i_mtime.tv_sec,
++				 inode->i_mtime.tv_nsec,
++				 lower_inode->i_mtime.tv_sec,
++				 lower_inode->i_mtime.tv_nsec,
++				 inode->i_ctime.tv_sec,
++				 inode->i_ctime.tv_nsec,
++				 lower_inode->i_ctime.tv_sec,
++				 lower_inode->i_ctime.tv_nsec);
++		}
 +	}
-+
-+out:
-+	if (!err) {
-+		/* copyup could cause parent dir times to change */
-+		unionfs_copy_attr_times(file->f_path.dentry->d_parent->d_inode);
-+		unionfs_check_file(file);
-+		unionfs_check_dentry(file->f_path.dentry->d_parent);
-+	}
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	return err;
 +}
 +
-+int unionfs_fsync(struct file *file, struct dentry *dentry, int datasync)
++void __unionfs_check_file(const struct file *file,
++			  const char *fname, const char *fxn, int line)
 +{
-+	int bindex, bstart, bend;
-+	struct file *lower_file;
-+	struct dentry *lower_dentry;
-+	struct inode *lower_inode, *inode;
-+	int err = -EINVAL;
-+
-+	unionfs_read_lock(file->f_path.dentry->d_sb);
-+	err = unionfs_file_revalidate(file, true);
-+	if (unlikely(err))
-+		goto out;
-+	unionfs_check_file(file);
-+
-+	bstart = fbstart(file);
-+	bend = fbend(file);
-+	if (bstart < 0 || bend < 0)
-+		goto out;
-+
-+	inode = dentry->d_inode;
-+	if (unlikely(!inode)) {
-+		printk(KERN_ERR
-+		       "unionfs: null lower inode in unionfs_fsync\n");
-+		goto out;
-+	}
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		lower_inode = unionfs_lower_inode_idx(inode, bindex);
-+		if (!lower_inode || !lower_inode->i_fop->fsync)
-+			continue;
-+		lower_file = unionfs_lower_file_idx(file, bindex);
-+		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
-+		mutex_lock(&lower_inode->i_mutex);
-+		err = lower_inode->i_fop->fsync(lower_file,
-+						lower_dentry,
-+						datasync);
-+		mutex_unlock(&lower_inode->i_mutex);
-+		if (err)
-+			goto out;
-+	}
-+
-+	unionfs_copy_attr_times(inode);
-+
-+out:
-+	unionfs_check_file(file);
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	return err;
-+}
-+
-+int unionfs_fasync(int fd, struct file *file, int flag)
-+{
-+	int bindex, bstart, bend;
-+	struct file *lower_file;
++	int bindex;
++	int dstart, dend, fstart, fend;
 +	struct dentry *dentry;
-+	struct inode *lower_inode, *inode;
-+	int err = 0;
++	struct file *lower_file;
++	struct inode *inode;
++	struct super_block *sb;
++	int printed_caller = 0;
 +
-+	unionfs_read_lock(file->f_path.dentry->d_sb);
-+	err = unionfs_file_revalidate(file, true);
-+	if (unlikely(err))
-+		goto out;
-+	unionfs_check_file(file);
-+
-+	bstart = fbstart(file);
-+	bend = fbend(file);
-+	if (bstart < 0 || bend < 0)
-+		goto out;
-+
++	BUG_ON(!file);
 +	dentry = file->f_path.dentry;
++	sb = dentry->d_sb;
++	dstart = dbstart(dentry);
++	dend = dbend(dentry);
++	BUG_ON(dstart > dend);
++	fstart = fbstart(file);
++	fend = fbend(file);
++	BUG_ON(fstart > fend);
++
++	if (unlikely((fstart == -1 && fend != -1) ||
++		     (fstart != -1 && fend == -1))) {
++		PRINT_CALLER(fname, fxn, line);
++		pr_debug(" CF0: file/dentry=%p:%p fstart/end=%d:%d\n",
++			 file, dentry, fstart, fend);
++	}
++	if (unlikely(fstart != dstart)) {
++		PRINT_CALLER(fname, fxn, line);
++		pr_debug(" CF1: file/dentry=%p:%p fstart=%d dstart=%d\n",
++			 file, dentry, fstart, dstart);
++	}
++	if (unlikely(fend != dend)) {
++		PRINT_CALLER(fname, fxn, line);
++		pr_debug(" CF2: file/dentry=%p:%p fend=%d dend=%d\n",
++			 file, dentry, fend, dend);
++	}
 +	inode = dentry->d_inode;
-+	if (unlikely(!inode)) {
-+		printk(KERN_ERR
-+		       "unionfs: null lower inode in unionfs_fasync\n");
-+		goto out;
++	if (!S_ISDIR(inode->i_mode)) {
++		if (unlikely(fend != fstart)) {
++			PRINT_CALLER(fname, fxn, line);
++			pr_debug(" CF3: file/inode=%p:%p fstart=%d fend=%d\n",
++				 file, inode, fstart, fend);
++		}
++		if (unlikely(dend != dstart)) {
++			PRINT_CALLER(fname, fxn, line);
++			pr_debug(" CF4: file/dentry=%p:%p dstart=%d dend=%d\n",
++				 file, dentry, dstart, dend);
++		}
 +	}
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		lower_inode = unionfs_lower_inode_idx(inode, bindex);
-+		if (!lower_inode || !lower_inode->i_fop->fasync)
-+			continue;
++
++	/*
++	 * check for NULL dentries inside the start/end range, or
++	 * non-NULL dentries outside the start/end range.
++	 */
++	for (bindex = sbstart(sb); bindex < sbmax(sb); bindex++) {
 +		lower_file = unionfs_lower_file_idx(file, bindex);
-+		mutex_lock(&lower_inode->i_mutex);
-+		err = lower_inode->i_fop->fasync(fd, lower_file, flag);
-+		mutex_unlock(&lower_inode->i_mutex);
-+		if (err)
-+			goto out;
++		if (lower_file) {
++			if (unlikely(bindex < fstart || bindex > fend)) {
++				PRINT_CALLER(fname, fxn, line);
++				pr_debug(" CF5: file/lower=%p:%p bindex=%d "
++					 "fstart/end=%d:%d\n", file,
++					 lower_file, bindex, fstart, fend);
++			}
++		} else {	/* lower_file == NULL */
++			if (bindex >= fstart && bindex <= fend) {
++				/*
++				 * directories can have NULL lower inodes in
++				 * b/t start/end, but NOT if at the
++				 * start/end range.
++				 */
++				if (unlikely(!(S_ISDIR(inode->i_mode) &&
++					       bindex > fstart &&
++					       bindex < fend))) {
++					PRINT_CALLER(fname, fxn, line);
++					pr_debug(" CF6: file/lower=%p:%p "
++						 "bindex=%d fstart/end=%d:%d\n",
++						 file, lower_file, bindex,
++						 fstart, fend);
++				}
++			}
++		}
 +	}
 +
-+	unionfs_copy_attr_times(inode);
-+
-+out:
-+	unionfs_check_file(file);
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	return err;
++	__unionfs_check_dentry(dentry, fname, fxn, line);
 +}
 +
-+struct file_operations unionfs_main_fops = {
-+	.llseek		= generic_file_llseek,
-+	.read		= unionfs_read,
-+	.aio_read	= generic_file_aio_read,
-+	.write		= unionfs_write,
-+	.aio_write	= generic_file_aio_write,
-+	.readdir	= unionfs_file_readdir,
-+	.unlocked_ioctl	= unionfs_ioctl,
-+	.mmap		= unionfs_mmap,
-+	.open		= unionfs_open,
-+	.flush		= unionfs_flush,
-+	.release	= unionfs_file_release,
-+	.fsync		= unionfs_fsync,
-+	.fasync		= unionfs_fasync,
-+	.splice_read	= generic_file_splice_read,
-+	.splice_write	= generic_file_splice_write,
-+};
++void __unionfs_check_nd(const struct nameidata *nd,
++			const char *fname, const char *fxn, int line)
++{
++	struct file *file;
++	int printed_caller = 0;
++
++	if (unlikely(!nd))
++		return;
++	if (nd->flags & LOOKUP_OPEN) {
++		file = nd->intent.open.file;
++		if (unlikely(file->f_path.dentry &&
++			     strcmp(file->f_path.dentry->d_sb->s_type->name,
++				    UNIONFS_NAME))) {
++			PRINT_CALLER(fname, fxn, line);
++			pr_debug(" CND1: lower_file of type %s\n",
++				 file->f_path.dentry->d_sb->s_type->name);
++			BUG();
++		}
++	}
++}
++
++/* useful to track vfsmount leaks that could cause EBUSY on unmount */
++void __show_branch_counts(const struct super_block *sb,
++			  const char *file, const char *fxn, int line)
++{
++	int i;
++	struct vfsmount *mnt;
++
++	pr_debug("BC:");
++	for (i = 0; i < sbmax(sb); i++) {
++		if (likely(sb->s_root))
++			mnt = UNIONFS_D(sb->s_root)->lower_paths[i].mnt;
++		else
++			mnt = NULL;
++		pr_debug("%d:", (mnt ? atomic_read(&mnt->mnt_count) : -99));
++	}
++	pr_debug("%s:%s:%d\n", file, fxn, line);
++}
++
++void __show_inode_times(const struct inode *inode,
++			const char *file, const char *fxn, int line)
++{
++	struct inode *lower_inode;
++	int bindex;
++
++	for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
++		lower_inode = unionfs_lower_inode_idx(inode, bindex);
++		if (unlikely(!lower_inode))
++			continue;
++		pr_debug("IT(%lu:%d): ", inode->i_ino, bindex);
++		pr_debug("%s:%s:%d ", file, fxn, line);
++		pr_debug("um=%lu/%lu lm=%lu/%lu ",
++			 inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
++			 lower_inode->i_mtime.tv_sec,
++			 lower_inode->i_mtime.tv_nsec);
++		pr_debug("uc=%lu/%lu lc=%lu/%lu\n",
++			 inode->i_ctime.tv_sec, inode->i_ctime.tv_nsec,
++			 lower_inode->i_ctime.tv_sec,
++			 lower_inode->i_ctime.tv_nsec);
++	}
++}
++
++void __show_dinode_times(const struct dentry *dentry,
++			const char *file, const char *fxn, int line)
++{
++	struct inode *inode = dentry->d_inode;
++	struct inode *lower_inode;
++	int bindex;
++
++	for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
++		lower_inode = unionfs_lower_inode_idx(inode, bindex);
++		if (!lower_inode)
++			continue;
++		pr_debug("DT(%s:%lu:%d): ", dentry->d_name.name, inode->i_ino,
++			 bindex);
++		pr_debug("%s:%s:%d ", file, fxn, line);
++		pr_debug("um=%lu/%lu lm=%lu/%lu ",
++			 inode->i_mtime.tv_sec, inode->i_mtime.tv_nsec,
++			 lower_inode->i_mtime.tv_sec,
++			 lower_inode->i_mtime.tv_nsec);
++		pr_debug("uc=%lu/%lu lc=%lu/%lu\n",
++			 inode->i_ctime.tv_sec, inode->i_ctime.tv_nsec,
++			 lower_inode->i_ctime.tv_sec,
++			 lower_inode->i_ctime.tv_nsec);
++	}
++}
++
++void __show_inode_counts(const struct inode *inode,
++			const char *file, const char *fxn, int line)
++{
++	struct inode *lower_inode;
++	int bindex;
++
++	if (unlikely(!inode)) {
++		pr_debug("SiC: Null inode\n");
++		return;
++	}
++	for (bindex = sbstart(inode->i_sb); bindex <= sbend(inode->i_sb);
++	     bindex++) {
++		lower_inode = unionfs_lower_inode_idx(inode, bindex);
++		if (unlikely(!lower_inode))
++			continue;
++		pr_debug("SIC(%lu:%d:%d): ", inode->i_ino, bindex,
++			 atomic_read(&(inode)->i_count));
++		pr_debug("lc=%d ", atomic_read(&(lower_inode)->i_count));
++		pr_debug("%s:%s:%d\n", file, fxn, line);
++	}
++}
 -- 
 1.5.2.2
 
