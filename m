@@ -1,75 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbXLJQ5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbXLJRJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127AbXLJQ5h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 11:57:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbXLJQ53
+	id S1754870AbXLJRJJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 12:09:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbXLJRIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 11:57:29 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:42730 "EHLO mx1.riseup.net"
+	Mon, 10 Dec 2007 12:08:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36638 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753565AbXLJQ53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 11:57:29 -0500
-Date: Mon, 10 Dec 2007 17:57:28 +0100
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] acpi_pci_irq_find_prt_entry(): use list_for_each_entry()
-	instead of list_for_each()
-Message-ID: <20071210165727.GA20186@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	id S1752361AbXLJRIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 12:08:54 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil>
+References: <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193859.24617.36392.stgit@warthog.procyon.org.uk>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
+       Trond.Myklebust@netapp.com, casey@schaufler-ca.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Mon, 10 Dec 2007 17:07:53 +0000
+Message-ID: <25037.1197306473@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-acpi_pci_irq_find_prt_entry(): use list_for_each_entry() instead of
-list_for_each()
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
---
+> > +	tsec->create_sid = SECINITSID_UNLABELED;
+> > +	tsec->keycreate_sid = SECINITSID_UNLABELED;
+> > +	tsec->sockcreate_sid = SECINITSID_UNLABELED;
 
-diff --git a/drivers/acpi/pci_irq.c b/drivers/acpi/pci_irq.c
-index dd3186a..e51dac7 100644
---- a/drivers/acpi/pci_irq.c
-+++ b/drivers/acpi/pci_irq.c
-@@ -51,10 +51,8 @@ static struct acpi_prt_entry *acpi_pci_irq_find_prt_entry(int segment,
- 							  int bus,
- 							  int device, int pin)
- {
--	struct list_head *node = NULL;
- 	struct acpi_prt_entry *entry = NULL;
- 
--
- 	if (!acpi_prt.count)
- 		return NULL;
- 
-@@ -64,8 +62,7 @@ static struct acpi_prt_entry *acpi_pci_irq_find_prt_entry(int segment,
- 	 *
- 	 */
- 	spin_lock(&acpi_prt_lock);
--	list_for_each(node, &acpi_prt.entries) {
--		entry = list_entry(node, struct acpi_prt_entry, node);
-+	list_for_each_entry(entry, &acpi_prt.entries, node) {
- 		if ((segment == entry->id.segment)
- 		    && (bus == entry->id.bus)
- 		    && (device == entry->id.device)
+Cleared means what?  Setting to 0?  Or is there some other constant I should
+use for that?
 
--- 
-Matthias Kaehlcke
-Linux System Developer
-Barcelona
-
-    Tant qu'il y aura sur terre des hommes pour qui existe un concept
-    d' 'honneur national', la menace d'une nouvelle guerre subsistera
-                              (B. Traven)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+David
