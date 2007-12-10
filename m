@@ -1,121 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbXLJTpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbXLJTqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405AbXLJTpp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 14:45:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbXLJTpf
+	id S1757609AbXLJTqg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 14:46:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbXLJTq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 14:45:35 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:64872 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754110AbXLJTpd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 14:45:33 -0500
-Subject: Re: [1/4] DST: Distributed storage documentation.
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Greg KH <greg@kroah.com>
-In-Reply-To: <20071210193304.GA24737@2ka.mipt.ru>
-References: <11972872493977@2ka.mipt.ru> <11972872501664@2ka.mipt.ru>
-	 <3ae72650712100451h6a84d6cfs9b3a2954c13c4612@mail.gmail.com>
-	 <20071210125839.GA16789@2ka.mipt.ru> <1197297108.6399.91.camel@lov.site>
-	 <20071210145055.GB7184@2ka.mipt.ru> <1197313348.6399.106.camel@lov.site>
-	 <20071210193304.GA24737@2ka.mipt.ru>
-Content-Type: text/plain
-Date: Mon, 10 Dec 2007 20:44:55 +0100
-Message-Id: <1197315895.6399.121.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18CMjQ75wGZq4e/oyI47Col311q7WOsYlwwKll
- T2wtSF7y2bn04BLvzmjLIvq7kBPA3XJQPD8glxNuRG0ZSWAc4Y
- DB3HhVIasSaSB9h9prmpdYAk8GBqYGe
+	Mon, 10 Dec 2007 14:46:29 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:19080 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754482AbXLJTq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 14:46:28 -0500
+Date: Mon, 10 Dec 2007 20:46:23 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Zach Brown <zach.brown@oracle.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dan Williams <dan.j.williams@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Simon Holm Thogersen <odie@cs.aau.dk>, suresh.b.siddha@intel.com
+Subject: Re: syslets v7: back to basics
+Message-ID: <20071210194623.GL22445@kernel.dk>
+References: <1196983219534-git-send-email-zach.brown@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1196983219534-git-send-email-zach.brown@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-12-10 at 22:33 +0300, Evgeniy Polyakov wrote:
-> On Mon, Dec 10, 2007 at 08:02:28PM +0100, Kay Sievers (kay.sievers@vrfy.org) wrote:
-> > > uganda:~/codes# ls -l /sys/devices/storage/n-0-ffff81003ebc220/
-> > > total 0
-> > > drwxr-xr-x 2 root root    0 2007-12-10 13:23 power
-> > > -r--r--r-- 1 root root 4096 2007-12-10 13:30 size
-> > > -r--r--r-- 1 root root 4096 2007-12-10 13:30 start
-> > > -r--r--r-- 1 root root 4096 2007-12-10 13:30 type
-> > > -rw-r--r-- 1 root root 4096 2007-12-10 13:30 uevent
-> > 
-> > This is a "struct device" instance without a subsystem (bus/class),
-> > right? It will not send an uevent to userspace. Is that intended? Why
-> > don't you add them all to the dst bus? 
+On Thu, Dec 06 2007, Zach Brown wrote:
 > 
-> I created dst bus for storage devices only, nodes are very different
-> objects, and actually they do not need any events from above, but I need
-> to put some attributes somewhere, so it is 'empty' device.
+> The following patches are a substantial refactoring of the syslet code.  I'm
+> branding them as the v7 release of the syslet infrastructure, though they
+> represent a signifiant change in focus.
 
-Ok.
+[snip]
 
-> > > Actually not - I have to set reference counter to something other than 1
-> > > or +/- 1, and thus will have to call kref_get() in a loop, which is a
-> > > very ugly step. Is there kref_set() or somethinglike that? At least not
-> > > in 2.6.22 what I'm using for now.
-> > 
-> > Yeah, a loop would look pretty ugly. How about just adding kref_set(),
-> > if you need it.
-> 
-> Well, then it distributed storage will not be able to build as
-> standalone module, and kref_set() itself will not be accepted as a single 
-> patch, since there are no in-kernel users :)
-> It is easily doable though.
+In case anyone is interested in playing with this, I updated the fio
+syslet engine to this interface. Not very well tested yet, but it seems
+to work.
 
-Most rules have exceptions. :) Send a patch, so we can see how it looks
-like.
+I have to say that I like the new interface a lot better, it's a lot
+simpler to work with. I was able to cut about 33% of the code that
+handles queueing IO and retrieving events (maybe even more, summed up
+losely). I'm still not a big fan of the indirect stuff, but that's
+minor.
 
-> > > > Why don't you use groups for the attributes?
-> > > 
-> > > For 3-4 attributes it is faster to register them in a loop than typing
-> > > another structure :)
-> > 
-> > Yeah, but if you would need to recover from an error when the creation
-> > of a file fails, a group would do the proper "rollback".
-> 
-> I do not care about such errors - if there is such an error for a file,
-> which exports information about type of the node (i.e. string "L" or "R")
-> or some other very meaningful info, then system has enough to care about
-> instead of this, so dst does not do anything special - it ignores such
-> errors :)
-> 
-> On exit path it will be checked and removed correctly.
-> If there will be additional sysfs files, I think group is a good way to
-> implement them.
-> 
-> > > > Why don't you use default attributes for the device, where you get all
-> > > > error handling done by the core.
-> > > 
-> > > What is 'default attributes' and for what devices?
-> > > All my sysfs files are so much trivial, so they do not need anything
-> > > special and I do not see what is error handling you mentioned.
-> > 
-> > If all devices of a subsystem (bus/class) are of the same type, you can
-> > set a default array of attributes in the "struct bus/class" to be
-> > created at every device. If you have multiple types of devices in the
-> > same subsytem (bus/class) you can to assign a the "device_type", which
-> > has the default attribute group.
-> > That way the core will create the files before the event is sent out to
-> > userspace, and the files can be access from the event itself. Not sure
-> > if that is needed for dst.
-> 
-> Ok, I see.
-> 
-> DST right now has 3 types of files - storage files, it is common for
-> every storage device; node files, which are the same for every node; and
-> per-algorithm private devices - they can be different (actually only
-> mirroring algorithm exports something to userspace).
-> 
-> I think it is possible to use default attributes for storage devices,
-> but node device does not have a bus/class, so they will be untouched.
+You can get fio by doing a
 
-Sounds fine.
+$ git clone git://git.kernel.dk/fio.git
 
-Thanks,
-Kay
+or just grabbing the latest snapshot from
+
+http://brick.kernel.dk/snaps/fio-git-latest.tar.gz
+
+-- 
+Jens Axboe
 
