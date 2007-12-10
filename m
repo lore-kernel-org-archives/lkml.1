@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbXLJX0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbXLJXhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753407AbXLJX0v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 18:26:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbXLJX0l
+	id S1753223AbXLJXhF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 18:37:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXLJXgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 18:26:41 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:16693 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbXLJX0k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 18:26:40 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: RFC: PNP: do not stop/start devices in suspend/resume path
-Date: Mon, 10 Dec 2007 16:26:34 -0700
-User-Agent: KMail/1.9.6
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, matthew@wil.cx,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, drzeus@drzeus.cx,
-       linux-acpi@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Matthieu Castet <castet.matthieu@free.fr>, Len Brown <lenb@kernel.org>
-References: <4745F77C.7040402@gmail.com> <200712051124.18852.bjorn.helgaas@hp.com> <1197011615.21100.1.camel@sli10-desk.sh.intel.com>
-In-Reply-To: <1197011615.21100.1.camel@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712101626.35491.bjorn.helgaas@hp.com>
+	Mon, 10 Dec 2007 18:36:54 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35022 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751342AbXLJXgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 18:36:53 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1197322068.18120.176.camel@moss-spartans.epoch.ncsc.mil>
+References: <1197322068.18120.176.camel@moss-spartans.epoch.ncsc.mil> <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil> <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193859.24617.36392.stgit@warthog.procyon.org.uk> <25037.1197306473@redhat.com> <25572.1197320887@redhat.com> 
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: dhowells@redhat.com, Karl MacMillan <kmacmill@redhat.com>,
+       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Mon, 10 Dec 2007 23:36:09 +0000
+Message-ID: <25965.1197329769@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 December 2007 12:13:35 am Shaohua Li wrote:
-> On Thu, 2007-12-06 at 02:24 +0800, Bjorn Helgaas wrote:
-> > Index: linux-mm/drivers/pnp/driver.c
-> > ===================================================================
-> > --- linux-mm.orig/drivers/pnp/driver.c  2007-11-30 13:58:25.000000000
-> > -0700
-> > +++ linux-mm/drivers/pnp/driver.c       2007-12-03 09:58:35.000000000
-> > -0700
-> > @@ -161,13 +161,6 @@
-> >                         return error;
-> >         }
-> > 
-> > -       if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE) &&
-> > -           pnp_can_disable(pnp_dev)) {
-> > -               error = pnp_stop_dev(pnp_dev);
-> > -               if (error)
-> > -                       return error;
-> > -       }
-> > -
-> >         if (pnp_dev->protocol && pnp_dev->protocol->suspend)
-> >                 pnp_dev->protocol->suspend(pnp_dev, state);
-> >         return 0;
-> > @@ -177,7 +170,6 @@
-> >  {
-> >         struct pnp_dev *pnp_dev = to_pnp_dev(dev);
-> >         struct pnp_driver *pnp_drv = pnp_dev->driver;
-> > -       int error;
-> > 
-> >         if (!pnp_drv)
-> >                 return 0;
-> > @@ -185,12 +177,6 @@
-> >         if (pnp_dev->protocol && pnp_dev->protocol->resume)
-> >                 pnp_dev->protocol->resume(pnp_dev);
-> > 
-> > -       if (!(pnp_drv->flags & PNP_DRIVER_RES_DO_NOT_CHANGE)) {
-> > -               error = pnp_start_dev(pnp_dev);
-> > -               if (error)
-> > -                       return error;
-> > -       }
-> > -
-> I'd suggest keep pnp_start_dev here to prevent BIOS not or assign
-> different resources after a resume.
+Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-The patch I currently have in -mm (http://lkml.org/lkml/2007/10/29/412)
-merely requests resources in pnp_start_dev() and releases them in
-pnp_stop_dev().  So if we remove pnp_stop_dev() but keep pnp_start_dev(),
-I have to fix that patch to deal with things that may already be
-reserved.
+> From a config file whose pathname would be provided by libselinux (ala
+> the way in which dbusd imports contexts), or directly as a context
+> returned by a libselinux function.
 
-But I don't see any mention in the spec of running _SRS in the
-sleep/wakup path, so I'm not convinced it's really necessary.
-Section 7.4 mentions _TTS, _PTS, _GTS, etc., but not _SRS.
+That sounds too SELinux specific.  How do I do it so that it works for any
+LSM?
 
-For devices, it looks like the intent is that BIOS should generate
-notifications that cause OSPM to re-enumerate devices that might
-have changed.  I'm pretty sure Linux is missing some of that code,
-though, so I could believe that _SRS might help paper over that
-deficiency.
+Is linking against libselinux is a viable option if it's not available under
+all LSM models?  Is it available under all LSM models?  Perhaps Casey can
+answer this one.
 
-What I'd really like to do is figure out how Windows uses _SRS and
-do the same thing.
+> > I use to do that, but someone objected...  Possibly Karl MacMillan.
+> 
+> Yes, but I think I disagreed then too.
 
-Bjorn
+So, who's right?
+
+> It doesn't fit with how other users of security_kernel_act_as() will
+> likely want to work (they will want to just set the context to a
+> specified value, whether one obtained from the client or from some local
+> source), nor with how type transitions normally work (exec, with the
+> program type as the second type field).  I think it will just cause
+> confusion and subtle breakage.
+
+It's causing me lots of confusion as it is.  I have been / am being told by
+different people to do different things just in dealing with SELinux, and
+various people are raising extra requirements or restrictions beyond that.
+There doesn't seem to be a consensus.
+
+It sounds like the best option is just to have the kernel nick the userspace
+daemon's security context and use that as is, and junk all the restrictions on
+what the daemon can do so that the kernel isn't too restricted.
+
+David
