@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbXLJCsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751941AbXLJCsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755499AbXLJCsH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 21:48:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbXLJCnW
+	id S1751941AbXLJCsg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 21:48:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbXLJCnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 21:43:22 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49786 "EHLO
+	Sun, 9 Dec 2007 21:43:24 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49794 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754718AbXLJCnO (ORCPT
+	with ESMTP id S1754750AbXLJCnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 21:43:14 -0500
+	Sun, 9 Dec 2007 21:43:16 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 28/42] Unionfs: async I/O queue operations
-Date: Sun,  9 Dec 2007 21:42:01 -0500
-Message-Id: <119725455240-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 26/42] Unionfs: extended attributes operations
+Date: Sun,  9 Dec 2007 21:41:59 -0500
+Message-Id: <11972545511474-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11972545353262-git-send-email-ezk@cs.sunysb.edu>
@@ -27,24 +27,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/sioq.c |  119 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 119 insertions(+), 0 deletions(-)
- create mode 100644 fs/unionfs/sioq.c
+ fs/unionfs/xattr.c |  153 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 153 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/xattr.c
 
-diff --git a/fs/unionfs/sioq.c b/fs/unionfs/sioq.c
+diff --git a/fs/unionfs/xattr.c b/fs/unionfs/xattr.c
 new file mode 100644
-index 0000000..2a8c88e
+index 0000000..00c6d0d
 --- /dev/null
-+++ b/fs/unionfs/sioq.c
-@@ -0,0 +1,119 @@
++++ b/fs/unionfs/xattr.c
+@@ -0,0 +1,153 @@
 +/*
-+ * Copyright (c) 2006-2007 Erez Zadok
-+ * Copyright (c) 2006      Charles P. Wright
-+ * Copyright (c) 2006-2007 Josef 'Jeff' Sipek
-+ * Copyright (c) 2006      Junjiro Okajima
-+ * Copyright (c) 2006      David P. Quigley
-+ * Copyright (c) 2006-2007 Stony Brook University
-+ * Copyright (c) 2006-2007 The Research Foundation of SUNY
++ * Copyright (c) 2003-2007 Erez Zadok
++ * Copyright (c) 2003-2006 Charles P. Wright
++ * Copyright (c) 2005-2007 Josef 'Jeff' Sipek
++ * Copyright (c) 2005-2006 Junjiro Okajima
++ * Copyright (c) 2005      Arun M. Krishnakumar
++ * Copyright (c) 2004-2006 David P. Quigley
++ * Copyright (c) 2003-2004 Mohammad Nayyer Zubair
++ * Copyright (c) 2003      Puja Gupta
++ * Copyright (c) 2003      Harikesavan Krishnan
++ * Copyright (c) 2003-2007 Stony Brook University
++ * Copyright (c) 2003-2007 The Research Foundation of SUNY
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
@@ -53,108 +57,138 @@ index 0000000..2a8c88e
 +
 +#include "union.h"
 +
-+/*
-+ * Super-user IO work Queue - sometimes we need to perform actions which
-+ * would fail due to the unix permissions on the parent directory (e.g.,
-+ * rmdir a directory which appears empty, but in reality contains
-+ * whiteouts).
-+ */
-+
-+static struct workqueue_struct *superio_workqueue;
-+
-+int __init init_sioq(void)
++/* This is lifted from fs/xattr.c */
++void *unionfs_xattr_alloc(size_t size, size_t limit)
 +{
-+	int err;
++	void *ptr;
 +
-+	superio_workqueue = create_workqueue("unionfs_siod");
-+	if (!IS_ERR(superio_workqueue))
-+		return 0;
++	if (size > limit)
++		return ERR_PTR(-E2BIG);
 +
-+	err = PTR_ERR(superio_workqueue);
-+	printk(KERN_ERR "unionfs: create_workqueue failed %d\n", err);
-+	superio_workqueue = NULL;
++	if (!size)		/* size request, no buffer is needed */
++		return NULL;
++
++	ptr = kmalloc(size, GFP_KERNEL);
++	if (unlikely(!ptr))
++		return ERR_PTR(-ENOMEM);
++	return ptr;
++}
++
++/*
++ * BKL held by caller.
++ * dentry->d_inode->i_mutex locked
++ */
++ssize_t unionfs_getxattr(struct dentry *dentry, const char *name, void *value,
++			 size_t size)
++{
++	struct dentry *lower_dentry = NULL;
++	int err = -EOPNOTSUPP;
++
++	unionfs_read_lock(dentry->d_sb);
++	unionfs_lock_dentry(dentry);
++
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
++	}
++
++	lower_dentry = unionfs_lower_dentry(dentry);
++
++	err = vfs_getxattr(lower_dentry, (char *) name, value, size);
++
++out:
++	unionfs_check_dentry(dentry);
++	unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(dentry->d_sb);
 +	return err;
 +}
 +
-+void stop_sioq(void)
++/*
++ * BKL held by caller.
++ * dentry->d_inode->i_mutex locked
++ */
++int unionfs_setxattr(struct dentry *dentry, const char *name,
++		     const void *value, size_t size, int flags)
 +{
-+	if (superio_workqueue)
-+		destroy_workqueue(superio_workqueue);
-+}
++	struct dentry *lower_dentry = NULL;
++	int err = -EOPNOTSUPP;
 +
-+void run_sioq(work_func_t func, struct sioq_args *args)
-+{
-+	INIT_WORK(&args->work, func);
++	unionfs_read_lock(dentry->d_sb);
++	unionfs_lock_dentry(dentry);
 +
-+	init_completion(&args->comp);
-+	while (!queue_work(superio_workqueue, &args->work)) {
-+		/* TODO: do accounting if needed */
-+		schedule();
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
 +	}
-+	wait_for_completion(&args->comp);
++
++	lower_dentry = unionfs_lower_dentry(dentry);
++
++	err = vfs_setxattr(lower_dentry, (char *) name, (void *) value,
++			   size, flags);
++
++out:
++	unionfs_check_dentry(dentry);
++	unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(dentry->d_sb);
++	return err;
 +}
 +
-+void __unionfs_create(struct work_struct *work)
++/*
++ * BKL held by caller.
++ * dentry->d_inode->i_mutex locked
++ */
++int unionfs_removexattr(struct dentry *dentry, const char *name)
 +{
-+	struct sioq_args *args = container_of(work, struct sioq_args, work);
-+	struct create_args *c = &args->create;
++	struct dentry *lower_dentry = NULL;
++	int err = -EOPNOTSUPP;
 +
-+	args->err = vfs_create(c->parent, c->dentry, c->mode, c->nd);
-+	complete(&args->comp);
++	unionfs_read_lock(dentry->d_sb);
++	unionfs_lock_dentry(dentry);
++
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
++	}
++
++	lower_dentry = unionfs_lower_dentry(dentry);
++
++	err = vfs_removexattr(lower_dentry, (char *) name);
++
++out:
++	unionfs_check_dentry(dentry);
++	unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(dentry->d_sb);
++	return err;
 +}
 +
-+void __unionfs_mkdir(struct work_struct *work)
++/*
++ * BKL held by caller.
++ * dentry->d_inode->i_mutex locked
++ */
++ssize_t unionfs_listxattr(struct dentry *dentry, char *list, size_t size)
 +{
-+	struct sioq_args *args = container_of(work, struct sioq_args, work);
-+	struct mkdir_args *m = &args->mkdir;
++	struct dentry *lower_dentry = NULL;
++	int err = -EOPNOTSUPP;
++	char *encoded_list = NULL;
 +
-+	args->err = vfs_mkdir(m->parent, m->dentry, m->mode);
-+	complete(&args->comp);
-+}
++	unionfs_read_lock(dentry->d_sb);
++	unionfs_lock_dentry(dentry);
 +
-+void __unionfs_mknod(struct work_struct *work)
-+{
-+	struct sioq_args *args = container_of(work, struct sioq_args, work);
-+	struct mknod_args *m = &args->mknod;
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
++	}
 +
-+	args->err = vfs_mknod(m->parent, m->dentry, m->mode, m->dev);
-+	complete(&args->comp);
-+}
++	lower_dentry = unionfs_lower_dentry(dentry);
 +
-+void __unionfs_symlink(struct work_struct *work)
-+{
-+	struct sioq_args *args = container_of(work, struct sioq_args, work);
-+	struct symlink_args *s = &args->symlink;
++	encoded_list = list;
++	err = vfs_listxattr(lower_dentry, encoded_list, size);
 +
-+	args->err = vfs_symlink(s->parent, s->dentry, s->symbuf, s->mode);
-+	complete(&args->comp);
-+}
-+
-+void __unionfs_unlink(struct work_struct *work)
-+{
-+	struct sioq_args *args = container_of(work, struct sioq_args, work);
-+	struct unlink_args *u = &args->unlink;
-+
-+	args->err = vfs_unlink(u->parent, u->dentry);
-+	complete(&args->comp);
-+}
-+
-+void __delete_whiteouts(struct work_struct *work)
-+{
-+	struct sioq_args *args = container_of(work, struct sioq_args, work);
-+	struct deletewh_args *d = &args->deletewh;
-+
-+	args->err = do_delete_whiteouts(d->dentry, d->bindex, d->namelist);
-+	complete(&args->comp);
-+}
-+
-+void __is_opaque_dir(struct work_struct *work)
-+{
-+	struct sioq_args *args = container_of(work, struct sioq_args, work);
-+
-+	args->ret = lookup_one_len(UNIONFS_DIR_OPAQUE, args->is_opaque.dentry,
-+				   sizeof(UNIONFS_DIR_OPAQUE) - 1);
-+	complete(&args->comp);
++out:
++	unionfs_check_dentry(dentry);
++	unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(dentry->d_sb);
++	return err;
 +}
 -- 
 1.5.2.2
