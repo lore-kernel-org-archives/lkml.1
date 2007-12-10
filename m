@@ -1,119 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbXLJFD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbXLJFKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752092AbXLJFD1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 00:03:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbXLJFDT
+	id S1752502AbXLJFKQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 00:10:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbXLJFKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 00:03:19 -0500
-Received: from ns1.suse.de ([195.135.220.2]:53790 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750840AbXLJFDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 00:03:17 -0500
-From: Neil Brown <neilb@suse.de>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Date: Mon, 10 Dec 2007 16:03:10 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 10 Dec 2007 00:10:04 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:37886 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbXLJFKB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 00:10:01 -0500
+Date: Sun, 9 Dec 2007 21:06:53 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: npiggin@suse.de, mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: [patch] x64/page.h: convert some macros to inlines
+Message-Id: <20071209210653.6d9f9cf9.randy.dunlap@oracle.com>
+In-Reply-To: <20071207163142.4e77f9c3.akpm@linux-foundation.org>
+References: <20071205071547.701344000@nick.local0.net>
+	<20071205071627.469118000@nick.local0.net>
+	<20071207163142.4e77f9c3.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18268.51342.353887.178014@notabene.brown>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, gnome42@gmail.com,
-       linux-kernel@vger.kernel.org, bfields@fieldses.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Denis V. Lunev" <den@openvz.org>
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
-In-Reply-To: message from Maxim Levitsky on Sunday December 9
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
-	<20071207151444.af5d8e11.akpm@linux-foundation.org>
-	<200712080043.29292.rjw@sisk.pl>
-	<200712090220.44543.maximlevitsky@gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday December 9, maximlevitsky@gmail.com wrote:
-> On Saturday 08 December 2007 01:43:28 Rafael J. Wysocki wrote:
-> > On Saturday, 8 of December 2007, Andrew Morton wrote:
-> > > On Fri, 07 Dec 2007 17:51:58 -0500
-> > > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > > 
-> > > > 
-> > > > On Fri, 2007-12-07 at 14:39 -0500, Shane wrote:
-> > > > > On Dec 7, 2007 2:16 PM, Shane <gnome42@gmail.com> wrote:
-> > > > > ...
-> > > > > > Confirmed working in rc4-git5.  I'll deploy this kernel in a few more
-> > > > > > spots and check for other regressions.
-> > > > > 
-> > > > > Hmm, I installed a new kernel built from the same sources on the NFS
-> > > > > server. And now I don't see anything at all in the crossmnt dirs.
-> > > > > 
-> > > > > ls /dirA/dirB/dirC  --> zero output (empty dir)
-> > > > > 
-> > > > > Are there any other pending fixes?
-> 
-> Hi,
-> Due to the fact that I was bitten by this bug (I thought it is a feature), and a bit of lack
-> of understanding of NFS4 I want to ask few questions about NFS:
-> 
-> 1) I want to export whole file-system  with submounts to a range of clients.
-> As 'exports' manual says I can't do so, is that true?
+On Fri, 7 Dec 2007 16:31:42 -0800 Andrew Morton wrote:
 
-You should be able to do this successfully with nfs-utils 1.1 or
-later.  Where does the manual say you cannot - we should fix that.
+> Could someone *please* start a little project of extirpating this utter
+> brain damage?  Convert those macros to typechecked static inlines on x86
+> (at least) so this sort of thing (which happens again and again and again)
+> is lessened?
 
+Here's a start on it.  x86 only and only 4 functions so far.
+Builds cleanly for i386 and x86_64.
 
-> 
-> Can you tell me how properly to use crossmnt and nohide?
+---
 
-It is best not to use nohide - we should probably mark it as
-'legacy'.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Simply export the top level mountpoint as 'crossmnt'  and everything
-below there will be exported.
+Convert clear_page/copy_page macros to inline functions for type-checking.
+Andrew wants to extirpate these ugly macros.
 
-> Where should I put those options in root file-system export or in submount export?
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ include/asm-x86/page_32.h |   39 +++++++++++++++++++++++++++++++++------
+ include/asm-x86/page_64.h |   19 +++++++++++++++----
+ 2 files changed, 48 insertions(+), 10 deletions(-)
 
-crossmnt goes at the top.  nohide goes in the submount.  Both have
-the same general effect though with subtle differences.
-You don't need both (though that doesn't hurt).
-Just use crossmnt at the top,  Then you don't need to mention the
-lower level filesystems at all.
-
-> 
-> 2) NFS4 - I can't get it working:
-> 
-> *I have a LFS system, and this is what I did (NFS3 works fine, but crossmnt, and nohide seems not to work, probably due to above bug)
-> 	I also have seen errors about stale handles 
-> *Kernel - 2.6.24-rc3 with NFS3/4 client/server enabled on both host and guest. (both client and server running this kernel)
-> *rpc.idmapd running on both client and server + all standard NFS3 tools
-> *NFS tools 1.1.1 with nfs4 support compiled + without GSS (on server)
-> * /etc/exports with fsid=0: (on server)
-> 	/tmp *(fsid=0,insecure,rw,async,anonuid=100,anongid=1000)
-> * mounting with -tnfs4 server:/ /mnt/tmp
-> 
-> Still doesn't work, using wireshark shows that
-> 	NFSV4 COMPOUND call with
-> 		Opcode: PUTROOTFH (24)
-> 		Opcode: GETFH (10)
-> 		Opcode: GETATTR (9)
-> 
-> Fails with 
-> 	Reject State: AUTH_ERROR (1)
-> 	Auth State: bad credential (seal broken) (1)
-> 
-> 
-> Any ideas?
-> 
-> (I decided to switch to NFS4 only due to the lack of ability to see underlying mounts)
-> 
-
-All of this should work fine with v3.  Once you have the right patch
-for the crossmnt bug applied, if you have further problems post them
-to linux-nfs@vger.kernel.org.
-
-NeilBrown
+--- linux-2.6.24-rc4-git6.orig/include/asm-x86/page_32.h
++++ linux-2.6.24-rc4-git6/include/asm-x86/page_32.h
+@@ -12,12 +12,21 @@
+ #ifdef __KERNEL__
+ #ifndef __ASSEMBLY__
+ 
++#include <linux/string.h>
++
+ #ifdef CONFIG_X86_USE_3DNOW
+ 
+ #include <asm/mmx.h>
+ 
+-#define clear_page(page)	mmx_clear_page((void *)(page))
+-#define copy_page(to,from)	mmx_copy_page(to,from)
++static inline void clear_page(void *page)
++{
++	mmx_clear_page(page);
++}
++
++static inline void copy_page(void *to, void *from)
++{
++	mmx_copy_page(to, from);
++}
+ 
+ #else
+ 
+@@ -26,13 +35,31 @@
+  *	Maybe the K6-III ?
+  */
+  
+-#define clear_page(page)	memset((void *)(page), 0, PAGE_SIZE)
+-#define copy_page(to,from)	memcpy((void *)(to), (void *)(from), PAGE_SIZE)
++static inline void clear_page(void *page)
++{
++	memset(page, 0, PAGE_SIZE);
++}
++
++static inline void copy_page(void *to, void *from)
++{
++	memcpy(to, from, PAGE_SIZE);
++}
+ 
+ #endif
+ 
+-#define clear_user_page(page, vaddr, pg)	clear_page(page)
+-#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
++struct page;
++
++static void inline clear_user_page(void *page, unsigned long vaddr,
++				struct page *pg)
++{
++	clear_page(page);
++}
++
++static void inline copy_user_page(void *to, void *from, unsigned long vaddr,
++				struct page *topage)
++{
++	copy_page(to, from);
++}
+ 
+ #define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
+ 	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
+--- linux-2.6.24-rc4-git6.orig/include/asm-x86/page_64.h
++++ linux-2.6.24-rc4-git6/include/asm-x86/page_64.h
+@@ -42,11 +42,22 @@
+ 
+ extern unsigned long end_pfn;
+ 
+-void clear_page(void *);
+-void copy_page(void *, void *);
++void clear_page(void *page);
++void copy_page(void *to, void *from);
+ 
+-#define clear_user_page(page, vaddr, pg)	clear_page(page)
+-#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
++struct page;
++
++static void inline clear_user_page(void *page, unsigned long vaddr,
++				struct page *pg)
++{
++	clear_page(page);
++}
++
++static void inline copy_user_page(void *to, void *from, unsigned long vaddr,
++				struct page *topage)
++{
++	copy_page(to, from);
++}
+ 
+ #define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
+ 	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
