@@ -1,99 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757092AbXLJLzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbXLJL6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757092AbXLJLzz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 06:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbXLJLzs
+	id S1757136AbXLJL6p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 06:58:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbXLJL6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 06:55:48 -0500
-Received: from pol.arx.gr ([193.239.214.237]:52847 "EHLO www4.arx.gr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753705AbXLJLzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 06:55:47 -0500
-X-Greylist: delayed 384 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Dec 2007 06:55:46 EST
-Message-ID: <475D27A6.1030304@arx.net>
-Date: Mon, 10 Dec 2007 13:48:54 +0200
-From: Thanos Chatziathanassiou <tchatzi@arx.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: help
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg=sha1; boundary="------------ms000400080102090902000800"
+	Mon, 10 Dec 2007 06:58:38 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:49426 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754315AbXLJL6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 06:58:37 -0500
+Date: Mon, 10 Dec 2007 13:00:26 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       davem@davemloft.net, mathieu.desnoyers@polymtl.ca,
+       hskinnemoen@atmel.com
+Subject: Re: [PATCH 2/2] Kprobes: Build kretprobe samples only if arch supports kretprobes
+Message-ID: <20071210120026.GA14992@uranus.ravnborg.org>
+References: <20071210095221.GA19425@in.ibm.com> <20071210095350.GB19425@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071210095350.GB19425@in.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a cryptographically signed message in MIME format.
+On Mon, Dec 10, 2007 at 03:23:50PM +0530, Ananth N Mavinakayanahalli wrote:
+> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> 
+> This patch builds samples/kprobes/kretprobe_example.c only on archs that
+> support kretprobes.
+> 
+> 
+> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> ---
+>  samples/kprobes/Makefile |    7 +++++--
+>  1 files changed, 5 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6.24-rc4/samples/kprobes/Makefile
+> ===================================================================
+> --- linux-2.6.24-rc4.orig/samples/kprobes/Makefile
+> +++ linux-2.6.24-rc4/samples/kprobes/Makefile
+> @@ -1,5 +1,8 @@
+>  # builds the kprobes example kernel modules;
+>  # then to use one (as root):  insmod <module_name.ko>
+>  
+> -obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o \
+> -		kretprobe_example.o
+> +obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o
+> +
+> +ifeq ($(CONFIG_HAVE_KRETPROBES),y)
+> +obj-$(CONFIG_SAMPLE_KPROBES) += kretprobe_example.o
+> +endif
 
---------------ms000400080102090902000800
-Content-Type: text/plain; charset=ISO-8859-7; format=flowed
-Content-Transfer-Encoding: 7bit
+It would be nice to push this configuration dependency to Kconfig.
+Something like:
 
-help
+config SAMPLE_KRETPROBES
+	default y
+	depends on SAMPLE_KPROBES
 
---------------ms000400080102090902000800
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
+And then in the Makefile have:
+obj-$(CONFIG_SAMPLE_KRETPROBES) += kretprobe_example.o
 
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIII+zCC
-AtgwggJBoAMCAQICEGl/+Sp8Ij9PO61AOtSD7lcwDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UE
-BhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMT
-I1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA3MDMwMTE4MTM0NVoX
-DTA4MDIyOTE4MTM0NVowQTEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEeMBwG
-CSqGSIb3DQEJARYPdGNoYXR6aUBhcngubmV0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
-CgKCAQEAtqQ460HHxv/KAYuEJ5DlIKfYDlhZxTPyxEWSY7jY6HF/uJU1w9QMgYby5BpncGNu
-6wS3x6UUxysN8qGcWvGiN90jGf3QIOzA6rzGNzL2lQg2pxuLLm8E7LT9pXM28I3ClcOn7qQ/
-ydlJoaTmk8Zjbe5h0SoXNDDf1vk8hizHlZBFlpl7hsHZ9qLjOkTMGnVCstuog67BFUyQ/m3G
-h87y7mzboU63m1hjEewx5xJXRvlq/kZ/zxu4MBS/kWPsBkTCCi0QmeMMin0xI/TzTZ7CiC0c
-/dLMldv+Aq5tHkWtKH0qDZ+BkdSn0QXpZhNTjHwCQW7KYdnP++qj9TosmklbjQIDAQABoyww
-KjAaBgNVHREEEzARgQ90Y2hhdHppQGFyeC5uZXQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0B
-AQUFAAOBgQA5rpSXFBEM9BzS+Fv2p5Gy1ocxBkDj33x+JhIPlrEaMwlQ3HeG0xxNeCJnZ+OB
-JLtIMYf+OSG165+NU3vKpVGcpy4nZtTymb4oaBEhW3XpIPOnzkuxToFutIPZG7RUGfWGLmms
-oEPmZXcR2q8fvCRwHrZAfaGZgWQ52gbCwzafsTCCAtgwggJBoAMCAQICEGl/+Sp8Ij9PO61A
-OtSD7lcwDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBD
-b25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFp
-bCBJc3N1aW5nIENBMB4XDTA3MDMwMTE4MTM0NVoXDTA4MDIyOTE4MTM0NVowQTEfMB0GA1UE
-AxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEeMBwGCSqGSIb3DQEJARYPdGNoYXR6aUBhcngu
-bmV0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtqQ460HHxv/KAYuEJ5DlIKfY
-DlhZxTPyxEWSY7jY6HF/uJU1w9QMgYby5BpncGNu6wS3x6UUxysN8qGcWvGiN90jGf3QIOzA
-6rzGNzL2lQg2pxuLLm8E7LT9pXM28I3ClcOn7qQ/ydlJoaTmk8Zjbe5h0SoXNDDf1vk8hizH
-lZBFlpl7hsHZ9qLjOkTMGnVCstuog67BFUyQ/m3Gh87y7mzboU63m1hjEewx5xJXRvlq/kZ/
-zxu4MBS/kWPsBkTCCi0QmeMMin0xI/TzTZ7CiC0c/dLMldv+Aq5tHkWtKH0qDZ+BkdSn0QXp
-ZhNTjHwCQW7KYdnP++qj9TosmklbjQIDAQABoywwKjAaBgNVHREEEzARgQ90Y2hhdHppQGFy
-eC5uZXQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQUFAAOBgQA5rpSXFBEM9BzS+Fv2p5Gy
-1ocxBkDj33x+JhIPlrEaMwlQ3HeG0xxNeCJnZ+OBJLtIMYf+OSG165+NU3vKpVGcpy4nZtTy
-mb4oaBEhW3XpIPOnzkuxToFutIPZG7RUGfWGLmmsoEPmZXcR2q8fvCRwHrZAfaGZgWQ52gbC
-wzafsTCCAz8wggKooAMCAQICAQ0wDQYJKoZIhvcNAQEFBQAwgdExCzAJBgNVBAYTAlpBMRUw
-EwYDVQQIEwxXZXN0ZXJuIENhcGUxEjAQBgNVBAcTCUNhcGUgVG93bjEaMBgGA1UEChMRVGhh
-d3RlIENvbnN1bHRpbmcxKDAmBgNVBAsTH0NlcnRpZmljYXRpb24gU2VydmljZXMgRGl2aXNp
-b24xJDAiBgNVBAMTG1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBDQTErMCkGCSqGSIb3DQEJ
-ARYccGVyc29uYWwtZnJlZW1haWxAdGhhd3RlLmNvbTAeFw0wMzA3MTcwMDAwMDBaFw0xMzA3
-MTYyMzU5NTlaMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAo
-UHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBD
-QTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAxKY8VXNV+065yplaHmjAdQRwnd/p/6Me
-7L3N9VvyGna9fww6YfK/Uc4B1OVQCjDXAmNaLIkVcI7dyfArhVqqP3FWy688Cwfn8R+RNiQq
-E88r1fOCdz0Dviv+uxg+B79AgAJk16emu59l0cUqVIUPSAR/p7bRPGEEQB5kGXJgt/sCAwEA
-AaOBlDCBkTASBgNVHRMBAf8ECDAGAQH/AgEAMEMGA1UdHwQ8MDowOKA2oDSGMmh0dHA6Ly9j
-cmwudGhhd3RlLmNvbS9UaGF3dGVQZXJzb25hbEZyZWVtYWlsQ0EuY3JsMAsGA1UdDwQEAwIB
-BjApBgNVHREEIjAgpB4wHDEaMBgGA1UEAxMRUHJpdmF0ZUxhYmVsMi0xMzgwDQYJKoZIhvcN
-AQEFBQADgYEASIzRUIPqCy7MDaNmrGcPf6+svsIXoUOWlJ1/TCG4+DYfqi2fNi/A9BxQIJNw
-PP2t4WFiw9k6GX6EsZkbAMUaC4J0niVQlGLH2ydxVyWN3amcOY6MIE9lX5Xa9/eH1sYITq72
-6jTlEBpbNU1341YheILcIRk13iSx0x1G/11fZU8xggNkMIIDYAIBATB2MGIxCzAJBgNVBAYT
-AlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNU
-aGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIQaX/5KnwiP087rUA61IPuVzAJ
-BgUrDgMCGgUAoIIBwzAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEP
-Fw0wNzEyMTAxMTQ4NTRaMCMGCSqGSIb3DQEJBDEWBBQdrd6uLCmlD+EpS/0ZgQTB2YeGTjBS
-BgkqhkiG9w0BCQ8xRTBDMAoGCCqGSIb3DQMHMA4GCCqGSIb3DQMCAgIAgDANBggqhkiG9w0D
-AgIBQDAHBgUrDgMCBzANBggqhkiG9w0DAgIBKDCBhQYJKwYBBAGCNxAEMXgwdjBiMQswCQYD
-VQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UE
-AxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElzc3VpbmcgQ0ECEGl/+Sp8Ij9PO61AOtSD
-7lcwgYcGCyqGSIb3DQEJEAILMXigdjBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3Rl
-IENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVt
-YWlsIElzc3VpbmcgQ0ECEGl/+Sp8Ij9PO61AOtSD7lcwDQYJKoZIhvcNAQEBBQAEggEAtmQK
-PSqpQR4wxs9glNDMYcUYjKY4YH/crHAojsLA7Dt5ajZaqfkq7cROzTlqtW+ZqC21fYksbNIu
-DIdZtBsq6gkgvc5551oX0sgw8G90YAh8ICc1hVMRN5odIXA7oTzhvnXKVRnKLpkMC7+my7zd
-1WjUm6D3HQVPCafpmyFf1eV5r/9RcaVIm1yJBVP17/XlC6E51x6v8fLyKUJpCSL9gKyQqvXb
-hlr3xLVyjy3Lgnx2musvnoaXCbKbbVwcGv1bsQXK9u6tXugLwiJUSAQxXchlidRKgM+rg4RZ
-AEJiyeJ1C+7jHR0lTyuuNfp9DvrpZQTGPhvk5+ESt81Ez7z4IgAAAAAAAA==
---------------ms000400080102090902000800--
+
+	Sam
