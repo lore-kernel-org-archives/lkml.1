@@ -1,140 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbXLJMYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbXLJM2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756424AbXLJMYq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 07:24:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbXLJMYf
+	id S1756566AbXLJM2R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 07:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbXLJM2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 07:24:35 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:50569 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752752AbXLJMYe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 07:24:34 -0500
-Date: Mon, 10 Dec 2007 14:24:31 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Reuben Farrelly <reuben-linuxkernel@reub.net>,
-       David Miller <davem@davemloft.net>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Auke Kok <auke-jan.h.kok@intel.com>
-Subject: Re: 2.6.24-rc4-mm1
-In-Reply-To: <20071205233504.67366c5b.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0712101136190.18529@kivilampi-30.cs.helsinki.fi>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
- <47579DD9.9030909@reub.net> <20071205233504.67366c5b.akpm@linux-foundation.org>
+	Mon, 10 Dec 2007 07:28:07 -0500
+Received: from phunq.net ([64.81.85.152]:53372 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751973AbXLJM2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 07:28:06 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC] [PATCH] A clean aEvgeniy pproach to writeout throttling
+Date: Mon, 10 Dec 2007 04:27:58 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+References: <200712051603.02183.phillips@phunq.net> <200712100413.38077.phillips@phunq.net> <20071210121627.GF5008@kernel.dk>
+In-Reply-To: <20071210121627.GF5008@kernel.dk>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696243703-1118666943-1197288931=:18529"
-Content-ID: <Pine.LNX.4.64.0712101424090.18529@kivilampi-30.cs.helsinki.fi>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712100427.58288.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Monday 10 December 2007 04:16, Jens Axboe wrote:
+> OK, let me get the neon out then. This has nothing to do with
+> throttling, I thought I made it clear that I get why you store the
+> origin queue in ->bi_queue. I'm concerned with the workings of
+> redirecting a bio. Previously we looked up the queue associated with
+> bio->bi_bdev inside the loop in __generic_make_request(), as is
+> REQUIRED to correctly locate a DIFFERENT queue if bio->bi_bdev has
+> been changed to point somewhere else.
 
----696243703-1118666943-1197288931=:18529
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0712101424091.18529@kivilampi-30.cs.helsinki.fi>
+Rhetoric aside, again.
 
-On Wed, 5 Dec 2007, Andrew Morton wrote:
+We are only interested in throttling against the bio->bi_bdev that was 
+stored in the bio at the time of the call to generic_make_request, why 
+should we care about the redirected value?
 
-> On Thu, 06 Dec 2007 17:59:37 +1100 Reuben Farrelly <reuben-linuxkernel@reub.net> wrote:
-> 
-> > This non fatal oops which I have just noticed may be related to this change then 
-> > - certainly looks networking related.
-> 
-> yep, but it isn't e1000.  It's core TCP.
-> 
-> > WARNING: at net/ipv4/tcp_input.c:2518 tcp_fastretrans_alert()
-> > Pid: 0, comm: swapper Not tainted 2.6.24-rc4-mm1 #1
-> 
-> Ilpo, Reuben's kernel is talking to you ;)
+Regards,
 
-...Please try the patch below. Andrew, this probably fixes your problem 
-(the packets <= tp->packets_out) as well.
-
-Dave, please include this one to net-2.6.25.
-
-
--- 
- i.
-
---
-[PATCH] [TCP]: Fix fack_count miscountings (multiple places)
-
-1) Fack_count is set incorrectly if the highest sent skb is
-already sacked (the skb->prev won't return it because it's on
-the other list already). These manifest as fackets_out counting
-error later on, the second-order effects are very hard to track,
-so it may fix all out-standing TCP bug reports.
-
-2) Prev == NULL check was wrong way around
-
-3) Last skb's fack count was incorrectly skipped while() {} loop
-
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
----
- include/net/tcp.h |   22 ++++++++++++++++------
- 1 files changed, 16 insertions(+), 6 deletions(-)
-
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 9dbed0b..11a7e3e 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -1337,10 +1337,20 @@ static inline struct sk_buff *tcp_send_head(struct sock *sk)
- static inline void tcp_advance_send_head(struct sock *sk, struct sk_buff *skb)
- {
- 	struct sk_buff *prev = tcp_write_queue_prev(sk, skb);
-+	unsigned int fc = 0;
-+
-+	if (prev == (struct sk_buff *)&sk->sk_write_queue)
-+		prev = NULL;
-+	else if (!tcp_skb_adjacent(sk, prev, skb))
-+		prev = NULL;
- 
--	if (prev != (struct sk_buff *)&sk->sk_write_queue)
--		TCP_SKB_CB(skb)->fack_count = TCP_SKB_CB(prev)->fack_count +
--					      tcp_skb_pcount(prev);
-+	if ((prev == NULL) && !__tcp_write_queue_empty(sk, TCP_WQ_SACKED))
-+		prev = __tcp_write_queue_tail(sk, TCP_WQ_SACKED);
-+
-+	if (prev != NULL)
-+		fc = TCP_SKB_CB(prev)->fack_count + tcp_skb_pcount(prev);
-+
-+	TCP_SKB_CB(skb)->fack_count = fc;
- 
- 	sk->sk_send_head = tcp_write_queue_next(sk, skb);
- 	if (sk->sk_send_head == (struct sk_buff *)&sk->sk_write_queue)
-@@ -1464,7 +1474,7 @@ static inline struct sk_buff *__tcp_reset_fack_counts(struct sock *sk,
- {
- 	unsigned int fc = 0;
- 
--	if (prev == NULL)
-+	if (prev != NULL)
- 		fc = TCP_SKB_CB(*prev)->fack_count + tcp_skb_pcount(*prev);
- 
- 	BUG_ON((*prev != NULL) && !tcp_skb_adjacent(sk, *prev, skb));
-@@ -1521,7 +1531,7 @@ static inline void tcp_reset_fack_counts(struct sock *sk, struct sk_buff *inskb)
- 		skb[otherq] = prev->next;
- 	}
- 
--	while (skb[queue] != __tcp_write_queue_tail(sk, queue)) {
-+	do {
- 		/* Lazy find for the other queue */
- 		if (skb[queue] == NULL) {
- 			skb[queue] = tcp_write_queue_find(sk, TCP_SKB_CB(prev)->seq,
-@@ -1535,7 +1545,7 @@ static inline void tcp_reset_fack_counts(struct sock *sk, struct sk_buff *inskb)
- 			break;
- 
- 		queue ^= TCP_WQ_SACKED;
--	}
-+	} while (skb[queue] != __tcp_write_queue_tail(sk, queue));
- }
- 
- static inline void __tcp_insert_write_queue_after(struct sk_buff *skb,
--- 
-1.5.0.6
----696243703-1118666943-1197288931=:18529--
+Daniel
