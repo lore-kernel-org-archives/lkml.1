@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbXLJHJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbXLJHST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbXLJHJu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 02:09:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbXLJHJm
+	id S1753203AbXLJHST (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 02:18:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbXLJHSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 02:09:42 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51450 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbXLJHJl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 02:09:41 -0500
-Subject: Re: [PATCH] vivi driver works only as first device
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Gregor Jasny <jasny@vidsoft.de>
-Cc: video4linux-list@redhat.com, Ted Walther <ted@enumera.com>,
-       John Sokol <sokol@videotechnology.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071206220634.GT17496@vidsoft.de>
-References: <20071203225610.GS17496@vidsoft.de>
-	 <20071206220634.GT17496@vidsoft.de>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 10 Dec 2007 05:08:51 -0200
-Message-Id: <1197270531.5168.5.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 10 Dec 2007 02:18:10 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:38527 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751011AbXLJHSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 02:18:08 -0500
+Date: Mon, 10 Dec 2007 08:18:04 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Wang Chen <wangchen@cn.fujitsu.com>
+Cc: fpavlic@de.ibm.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/3] Fix use of skb after netif_rx
+In-Reply-To: <475CA464.1060408@cn.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0712100813440.13319@ask.diku.dk>
+References: <Pine.LNX.4.64.0712092103560.11165@ask.diku.dk>
+ <475CA464.1060408@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gregor,
-Em Qui, 2007-12-06 às 23:06 +0100, Gregor Jasny escreveu:
-> From: Gregor Jasny <gjasny@web.de>
+> > // </smpl>
+> > 
+> > diff a/drivers/s390/net/ctcmain.c b/drivers/s390/net/ctcmain.c
+> > diff a/drivers/s390/net/netiucv.c b/drivers/s390/net/netiucv.c
 > 
-> When the vivi driver allocates a video device, video_register_device() stores the
-> allocated device minor inside the vivi structure. But when the device node is opened,
-> the file minor number is compared to the minor in the device list. So this patch
-> copies the allocated minor in the device list, too.
+> Julia, seems that your semantic patch misses following place.
+> 
+> drivers/s390/net/qeth_main.c:2733
+> ...
+> #endif
+> 			rxrc = netif_rx(skb);
+> 		card->dev->last_rx = jiffies;
+> 		card->stats.rx_packets++;
+> 		card->stats.rx_bytes += skb->len;
+> ...
 
-Thanks for the report. Instead of applying your patch, I decided to
-better analyze the issue, fixing it with the proper solution. The issue
-is that vivi_register changes iminor, but this change were not properly
-returned to the driver.
+Actually, I found this one as well, but I wasn't sure what to do with it.  
+This one is a bit more complicated because the line with the call to 
+netif_rx is in an else branch if the #ifdef above is taken.  So I wasn't 
+sure what would be the best way to solve the problem in this case.
 
--- 
-Cheers,
-Mauro
+Perhaps the solution would be just to save the value of the len field 
+in a local variable in this case, as you proposed in your original patch.
+
+julia
 
