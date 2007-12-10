@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbXLJPMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbXLJPZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753232AbXLJPMk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 10:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbXLJPM3
+	id S1752681AbXLJPZl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 10:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbXLJPZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 10:12:29 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:59600 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751601AbXLJPM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 10:12:28 -0500
-Date: Mon, 10 Dec 2007 18:12:25 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [1/4] DST: Distributed storage documentation.
-Message-ID: <20071210151225.GA17858@2ka.mipt.ru>
-References: <11972872493977@2ka.mipt.ru> <11972872501664@2ka.mipt.ru> <3ae72650712100451h6a84d6cfs9b3a2954c13c4612@mail.gmail.com> <20071210125839.GA16789@2ka.mipt.ru> <1197297108.6399.91.camel@lov.site> <20071210145055.GB7184@2ka.mipt.ru>
-Mime-Version: 1.0
+	Mon, 10 Dec 2007 10:25:33 -0500
+Received: from baron.borf.com ([65.14.39.133]:27553 "EHLO coraid.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751202AbXLJPZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 10:25:32 -0500
+Date: Mon, 10 Dec 2007 10:23:17 -0500
+From: "Ed L. Cashin" <ecashin@coraid.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jon Nelson <jnelson@jamponi.net>, jnelson-kernel-bugzilla@jamponi.net,
+       bugme-daemon@bugzilla.kernel.org, nickpiggin@yahoo.com.au,
+       clameter@sgi.com, linux-kernel@vger.kernel.org, rjw@sisk.pl,
+       a.p.zijlstra@chello.nl
+Subject: Re: [Bugme-new] [Bug 9482] New: kernel GPF in 2.6.24 (g09f345da)
+Message-ID: <20071210152317.GA943@coraid.com>
+References: <20071201122302.10dd9c44.akpm@linux-foundation.org> <20071203162137.GB25251@coraid.com> <20071203113459.d36c1a01.akpm@linux-foundation.org> <20071203210005.GB27094@coraid.com> <20071203213837.GE27094@coraid.com> <20071203144722.4188f476.akpm@linux-foundation.org> <20071203151349.0ebf497c.akpm@linux-foundation.org> <20071203234228.GG27094@coraid.com> <cccedfc60712081459u764de23ck953750fbdb391d16@mail.gmail.com> <20071208195015.b4b22e35.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071210145055.GB7184@2ka.mipt.ru>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20071208195015.b4b22e35.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2007 at 05:50:55PM +0300, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
-> > Further questions:
-> > Why do you do your own refcounting instead of using kref?
+On Sat, Dec 08, 2007 at 07:50:15PM -0800, Andrew Morton wrote:
+> On Sat, 8 Dec 2007 16:59:30 -0600 "Jon Nelson" <jnelson@jamponi.net> wrote:
 > 
-> That's because I always used atomic operations as a reference counters
-> and did not tried krefs :)
-> They are the same actually (module tricky arches where smp_mb_* are
-> required), so I can replace them in the next release.
+> > I can confirm that 2.6.24rc4 with the (second) patch works fine.
+> 
+> OK, thanks.
+> 
+> We haven't heard back from Ed yet.   I'll sit on this for a few more days.
 
-Actually not - I have to set reference counter to something other than 1
-or +/- 1, and thus will have to call kref_get() in a loop, which is a
-very ugly step. Is there kref_set() or somethinglike that? At least not
-in 2.6.22 what I'm using for now.
-
-Sigh, I've converted most of the DST already...
+Sorry, yes, the second patch works well for me in testing.  I had some
+initial concerns that were unfounded.
 
 -- 
-	Evgeniy Polyakov
+  Ed L Cashin <ecashin@coraid.com>
