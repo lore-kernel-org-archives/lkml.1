@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbXLJU5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbXLJVAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbXLJU5l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 15:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbXLJU5e
+	id S1757589AbXLJVAZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 16:00:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbXLJVAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 15:57:34 -0500
-Received: from nz-out-0506.google.com ([64.233.162.229]:3540 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754482AbXLJU5d (ORCPT
+	Mon, 10 Dec 2007 16:00:14 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50871 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751485AbXLJVAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 15:57:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=N01Mn4AqyTXJ4N0t/aSx3nEmkWIvbYxfCJKbQBZFut7M8GDPTGq0dDbTKNqyknNVnEFc0R3JAuiH4q0lStGa1bGe9t6JWxzS5Cu+2t23gUGjw/h9+N1lbMFOpXFzS/OvZmk15bEJJdiMJP807aUcQkTlGohoHb60YqsJqX7sVTw=
-Message-ID: <3d8471ca0712101257v792ffe37n49271f5a202b63e0@mail.gmail.com>
-Date: Mon, 10 Dec 2007 21:57:28 +0100
-From: "Guillaume Chazarain" <guichaz@yahoo.fr>
-To: "Ingo Molnar" <mingo@elte.hu>
+	Mon, 10 Dec 2007 16:00:13 -0500
+Date: Mon, 10 Dec 2007 12:59:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
 Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
+Message-Id: <20071210125923.37bd2f10.akpm@linux-foundation.org>
 In-Reply-To: <20071210204212.GA5502@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+References: <200712080340.49546.rjw@sisk.pl>
+	<20071210204212.GA5502@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200712080340.49546.rjw@sisk.pl> <20071210204212.GA5502@elte.hu>
-X-Google-Sender-Auth: 2e80a62db5a0e0f3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 10, 2007 9:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> although some claimed effect was on udelay()/mdelay() too.
+On Mon, 10 Dec 2007 21:42:12 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Any specific report?
-The jumping sched_clock on frequency change caused some
-scheduling oddities for me, but CFS attenuated the effect.
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > Subject		: jiffies counter leaps in 2.6.24-rc3
+> > Submitter	: Stefano Brivio <stefano.brivio@polimi.it>
+> > References	: http://lkml.org/lkml/2007/11/24/53
+> > 		  http://bugzilla.kernel.org/show_bug.cgi?id=9475
+> > Handled-By	: Ingo Molnar <mingo@elte.hu>
+> > Patch		: http://lkml.org/lkml/2007/12/7/132
+> 
+> Linus, Andrew, i need some help deciding what to do about this 
+> regression. The fixes for this have been tested and resolve the 
+> regression, but they change printk and other code that runs by default 
+> and is thus rather invasive so late in the v2.6.24 cycle. This bug 
+> should only affect CONFIG_PRINTK_TIME=y kernels (a non-default debug 
+> option) - although some claimed effect was on udelay()/mdelay() too.
+> 
+> i've attached below the queue of 5 patches that fix this problem. They 
+> have been build and boot tested with more than 1000 random kernels in 
+> the past few days, so i certainly trust the core and x86 bits of this.
+> 
+> what do you think? Right now i've got them queued up for 2.6.25 in both 
+> the scheduler-devel and the x86-devel git trees - but can submit them 
+> for 2.6.24 if it's better if we did them there. I've got no strong 
+> opinion either way.
 
-Thanks.
+printk_clock() doesn't seem terribly important but what's this stuff about
+effects on udelay/mdelay?  That can be serious if they're getting
+shortened.
 
--- 
-Guillaume
