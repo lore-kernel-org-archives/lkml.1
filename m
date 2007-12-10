@@ -1,44 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbXLJT6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbXLJUED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757895AbXLJT6D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 14:58:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbXLJT5v
+	id S1754751AbXLJUED (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 15:04:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbXLJUDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 14:57:51 -0500
-Received: from ns.suse.de ([195.135.220.2]:45743 "EHLO mx1.suse.de"
+	Mon, 10 Dec 2007 15:03:51 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:35088 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754703AbXLJT5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 14:57:50 -0500
-From: Andi Kleen <ak@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH RFC] [5/9] modpost: Fix a buffer overflow in modpost
-Date: Mon, 10 Dec 2007 20:57:28 +0100
-User-Agent: KMail/1.9.1
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au
-References: <20071122343.446909000@suse.de> <20071122024310.BB7E414D68@wotan.suse.de> <20071210193202.GC17315@uranus.ravnborg.org>
-In-Reply-To: <20071210193202.GC17315@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1752539AbXLJUDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 15:03:50 -0500
+Date: Mon, 10 Dec 2007 23:03:43 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: Re: [1/4] DST: Distributed storage documentation.
+Message-ID: <20071210200343.GA12635@2ka.mipt.ru>
+References: <11972872501664@2ka.mipt.ru> <3ae72650712100451h6a84d6cfs9b3a2954c13c4612@mail.gmail.com> <20071210125839.GA16789@2ka.mipt.ru> <1197297108.6399.91.camel@lov.site> <20071210145055.GB7184@2ka.mipt.ru> <1197313348.6399.106.camel@lov.site> <20071210193304.GA24737@2ka.mipt.ru> <1197315895.6399.121.camel@lov.site> <20071210195145.GA29132@2ka.mipt.ru> <1197316609.6399.124.camel@lov.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712102057.29016.ak@suse.de>
+In-Reply-To: <1197316609.6399.124.camel@lov.site>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 December 2007 20:32, Sam Ravnborg wrote:
-> On Thu, Nov 22, 2007 at 03:43:10AM +0100, Andi Kleen wrote:
-> > When passing an file name > 1k the stack could be overflowed.
-> > Not really a security issue, but still better plugged.
->
-> Looks good. A s-o-b line again please.
+On Mon, Dec 10, 2007 at 08:56:49PM +0100, Kay Sievers (kay.sievers@vrfy.org) wrote:
+> On Mon, 2007-12-10 at 22:51 +0300, Evgeniy Polyakov wrote:
+> > On Mon, Dec 10, 2007 at 08:44:55PM +0100, Kay Sievers (kay.sievers@vrfy.org) wrote:
+> > > > > > Actually not - I have to set reference counter to something other than 1
+> > > > > > or +/- 1, and thus will have to call kref_get() in a loop, which is a
+> > > > > > very ugly step. Is there kref_set() or somethinglike that? At least not
+> > > > > > in 2.6.22 what I'm using for now.
+> > > > > 
+> > > > > Yeah, a loop would look pretty ugly. How about just adding kref_set(),
+> > > > > if you need it.
+> > > > 
+> > > > Well, then it distributed storage will not be able to build as
+> > > > standalone module, and kref_set() itself will not be accepted as a single 
+> > > > patch, since there are no in-kernel users :)
+> > > > It is easily doable though.
+> > > 
+> > > Most rules have exceptions. :) Send a patch, so we can see how it looks
+> > > like.
+> > 
+> > It looks really non-trivial :)
+> 
+> Yeah, it does. :)
+> We miss an EXPORT_SYMBOL(), right?
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+Yep :)
 
-> Although I am not so happy with the ue of gcc extensions.
+diff --git a/include/linux/kref.h b/include/linux/kref.h
+index 6fee353..5d18563 100644
+--- a/include/linux/kref.h
++++ b/include/linux/kref.h
+@@ -24,6 +24,7 @@ struct kref {
+ 	atomic_t refcount;
+ };
+ 
++void kref_set(struct kref *kref, int num);
+ void kref_init(struct kref *kref);
+ void kref_get(struct kref *kref);
+ int kref_put(struct kref *kref, void (*release) (struct kref *kref));
+diff --git a/lib/kref.c b/lib/kref.c
+index a6dc3ec..9ecd6e8 100644
+--- a/lib/kref.c
++++ b/lib/kref.c
+@@ -15,13 +15,23 @@
+ #include <linux/module.h>
+ 
+ /**
++ * kref_set - initialize object and set refcount to requested number.
++ * @kref: object in question.
++ * @num: initial reference counter
++ */
++void kref_set(struct kref *kref, int num)
++{
++	atomic_set(&kref->refcount, num);
++	smp_mb();
++}
++
++/**
+  * kref_init - initialize object.
+  * @kref: object in question.
+  */
+ void kref_init(struct kref *kref)
+ {
+-	atomic_set(&kref->refcount,1);
+-	smp_mb();
++	kref_set(kref, 1);
+ }
+ 
+ /**
+@@ -61,6 +71,7 @@ int kref_put(struct kref *kref, void (*release)(struct kref *kref))
+ 	return 0;
+ }
+ 
++EXPORT_SYMBOL(kref_set);
+ EXPORT_SYMBOL(kref_init);
+ EXPORT_SYMBOL(kref_get);
+ EXPORT_SYMBOL(kref_put);
 
-That's not a gcc extension. It's C99.
-
--Andi
+-- 
+	Evgeniy Polyakov
