@@ -1,377 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbXLJV0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022AbXLJV3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbXLJV0B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 16:26:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXLJVZx
+	id S1757022AbXLJV3Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 16:29:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbXLJV27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 16:25:53 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60440 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbXLJVZv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 16:25:51 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 10 Dec 2007 22:25:33 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [GIT PULL] FireWire update
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.6f0ad7fef062de08@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Mon, 10 Dec 2007 16:28:59 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:45718 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752286AbXLJV25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 16:28:57 -0500
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
+	settings for task actions [try #2]
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: David Howells <dhowells@redhat.com>
+Cc: Karl MacMillan <kmacmill@redhat.com>, viro@ftp.linux.org.uk,
+       hch@infradead.org, Trond.Myklebust@netapp.com, casey@schaufler-ca.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <25572.1197320887@redhat.com>
+References: <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil>
+	 <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil>
+	 <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
+	 <20071205193859.24617.36392.stgit@warthog.procyon.org.uk>
+	 <25037.1197306473@redhat.com>  <25572.1197320887@redhat.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 10 Dec 2007 16:27:48 -0500
+Message-Id: <1197322068.18120.176.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+On Mon, 2007-12-10 at 21:08 +0000, David Howells wrote:
+> Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> 
+> > Otherwise, only other issue I have with this interface is it won't
+> > generalize to dealing with nfsd, where we want to set the acting context
+> > to a context we obtain from or determine based upon the client.
+> 
+> Are you speaking of security_kernel_act_as() and security_create_files_as()
+> specifically?  Or the task_struct::act_as override pointer in general?
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+security_kernel_act_as()
 
-to receive the following FireWire subsystem update.
+> I don't really know how nfsd wants to obtain and set its LSM context, so it's
+> a bit difficult for me to make something that works for nfsd as well as
+> cachefiles.
 
-This considerably enhances compatibility of the new firewire-ohci driver
-with a number of controllers.  It shrinks the list of chips with trouble
-with isochronous reception to VIA VT6306 and some variants of VT6307.
+It would get a context from the client or from a local configuration
+that would map security-unaware clients to a default context, and then
+want to assume that context for the particular operation.  No transition
+involved.
 
-The patch is somewhat big for this late -rc phase, and it has so far only
-surfaced in 2.6.24-rc4-mm1 and in recent Fedora test kernels.  But the
-author and I did a lot of tests with as much previously working chips as
-we could get our hands on (some more than listed below) to make sure that
-there is no regression.  
+> > Why can't cachefilesd just push a context into the kernel and pass that
+> > into the hook as the acting context,
+> 
+> How does cachefilesd come up with such a context?  Grab it from
+> /etc/cachefilesd.conf?
 
- drivers/firewire/fw-ohci.c |  175 +++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 155 insertions(+), 20 deletions(-)
+>From a config file whose pathname would be provided by libselinux (ala
+the way in which dbusd imports contexts), or directly as a context
+returned by a libselinux function.  Has to be done that way so that it
+can be set differently for different policy types (strict, targeted,
+mls).
 
-Jarod Wilson (1):
-      firewire: OHCI 1.0 Isochronous Receive support
+Naturally, cachefiles (the kernel module) would invoke a security hook
+to check whether the daemon is allowed to set the specified context.
 
+> I use to do that, but someone objected...  Possibly Karl MacMillan.
 
-Full log and diff:
+Yes, but I think I disagreed then too.
 
-commit a186b4a6b22fdc96a1ed63da483d267b5d00839e
-Author: Jarod Wilson <jwilson@redhat.com>
-Date:   Mon Dec 3 13:43:12 2007 -0500
+> > and then nfsd can do likewise using the context provided by the client or
+> > obtained locally from exports for ordinary clients?  Avoids the transition
+> > SID computation altogether within the kernel and makes this more generic.
+> 
+> I seem to remember that I was told that it should be done this way, possibly
+> by Karl MacMillan, but I don't remember exactly.
+> 
+> Now it's configured by cachefilesd.te:
+> 
+> 	type_transition cachefilesd_t kernel_t : process cachefiles_kernel_t;
 
-    firewire: OHCI 1.0 Isochronous Receive support
-    
-    Third rendition of FireWire OHCI 1.0 Isochronous Receive support, using a
-    zer-copy method similar to OHCI 1.1 which puts the IR data payload directly
-    into the userspace buffer. The zero-copy implementation eliminates the
-    video artifacts, audio popping, and buffer underrun problems seen with
-    version 1 of this patch, as well as fixing a regression in OHCI 1.1 support
-    introduced by version 2 of this patch.
-    
-    Successfully tested in OHCI 1.1 mode on the following chipsets:
-    
-    - NEC uPD72847 (rev 01), OHCI 1.1 (PCI)
-    - Ti XIO2200(A) (rev 01), OHCI 1.1 (PCIe)
-    - Ti TSB41AB2 (rev 01), OHCI 1.1 (PCI on SB Audigy)
-    - Apple UniNorth 2 (rev 81), OHCI 1.1 (PowerBook G4 onboard)
-    
-    Successfully tested in OHCI 1.0 mode on the following chipsets:
-    
-    - Agere FW323 (rev 06), OHCI 1.0 (Mac Mini onboard)
-    - Agere FW323 (rev 06), OHCI 1.0 (PCI)
-    - Via VT6306 (rev 46), OHCI 1.0 (PCI)
-    - NEC OrangeLink (rev 01), OHCI 1.0 (PCI)
-    - NEC uPD72847 (rev 01), OHCI 1.1 (PCI)
-    - Ti XIO2200(A) (rev 01), OHCI 1.1 (PCIe)
-    
-    The bulk of testing was done in an x86_64 system, but was also successfully
-    sanity-tested on other systems, including a PPC(32) PowerBook G4 and an i686
-    EPIA M10k. Crude benchmarking (watching top during capture) puts the cpu
-    utilization during capture on the EPIA's 1GHz Via C3 processor around 13%,
-    which is down from 30% with the v1 code.
-    
-    Some implementation details:
-    
-    To maintain the same userspace API as dual-buffer mode, we set up two
-    descriptors for every incoming packet. The first is an INPUT_MORE descriptor,
-    pointing to a buffer large enough to hold just the packet's iso headers,
-    immediately followed by an INPUT_LAST descriptor, pointing to a chunk of the
-    userspace buffer big enough for the packet's data payload. With this setup,
-    each incoming packet fills in these two descriptors in a manner that very
-    closely emulates dual-buffer receive, to the point where the bulk of the
-    handle_ir_* code is now identical between the two (and probably primed for
-    some restructuring to share code between them).
-    
-    The only caveat I have at the moment is that neither of my OHCI 1.0 Via
-    VT6307-based FireWire controllers work particularly well with this code
-    for reasons I have yet to figure out.
-    
-    Signed-off-by: Jarod Wilson <jwilson@redhat.com>
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-
-diff --git a/drivers/firewire/fw-ohci.c b/drivers/firewire/fw-ohci.c
-index c9b9081..436a855 100644
---- a/drivers/firewire/fw-ohci.c
-+++ b/drivers/firewire/fw-ohci.c
-@@ -437,6 +437,21 @@ static void ar_context_run(struct ar_context *ctx)
- 	flush_writes(ctx->ohci);
- }
- 
-+static struct descriptor *
-+find_branch_descriptor(struct descriptor *d, int z)
-+{
-+	int b, key;
-+
-+	b   = (le16_to_cpu(d->control) & DESCRIPTOR_BRANCH_ALWAYS) >> 2;
-+	key = (le16_to_cpu(d->control) & DESCRIPTOR_KEY_IMMEDIATE) >> 8;
-+
-+	/* figure out which descriptor the branch address goes in */
-+	if (z == 2 && (b == 3 || key == 2))
-+		return d;
-+	else
-+		return d + z - 1;
-+}
-+
- static void context_tasklet(unsigned long data)
- {
- 	struct context *ctx = (struct context *) data;
-@@ -455,7 +470,7 @@ static void context_tasklet(unsigned long data)
- 		address = le32_to_cpu(last->branch_address);
- 		z = address & 0xf;
- 		d = ctx->buffer + (address - ctx->buffer_bus) / sizeof(*d);
--		last = (z == 2) ? d : d + z - 1;
-+		last = find_branch_descriptor(d, z);
- 
- 		if (!ctx->callback(ctx, d, last))
- 			break;
-@@ -566,7 +581,7 @@ static void context_append(struct context *ctx,
- 
- 	ctx->head_descriptor = d + z + extra;
- 	ctx->prev_descriptor->branch_address = cpu_to_le32(d_bus | z);
--	ctx->prev_descriptor = z == 2 ? d : d + z - 1;
-+	ctx->prev_descriptor = find_branch_descriptor(d, z);
- 
- 	dma_sync_single_for_device(ctx->ohci->card.device, ctx->buffer_bus,
- 				   ctx->buffer_size, DMA_TO_DEVICE);
-@@ -655,7 +670,7 @@ at_context_queue_packet(struct context *ctx, struct fw_packet *packet)
- 	driver_data = (struct driver_data *) &d[3];
- 	driver_data->packet = packet;
- 	packet->driver_data = driver_data;
--	
-+
- 	if (packet->payload_length > 0) {
- 		payload_bus =
- 			dma_map_single(ohci->card.device, packet->payload,
-@@ -903,7 +918,7 @@ at_context_transmit(struct context *ctx, struct fw_packet *packet)
- 
- 	if (retval < 0)
- 		packet->callback(packet, &ctx->ohci->card, packet->ack);
--	
-+
- }
- 
- static void bus_reset_tasklet(unsigned long data)
-@@ -1431,6 +1446,57 @@ static int handle_ir_dualbuffer_packet(struct context *context,
- 	return 1;
- }
- 
-+static int handle_ir_packet_per_buffer(struct context *context,
-+				       struct descriptor *d,
-+				       struct descriptor *last)
-+{
-+	struct iso_context *ctx =
-+		container_of(context, struct iso_context, context);
-+	struct descriptor *pd = d + 1;
-+	__le32 *ir_header;
-+	size_t header_length;
-+	void *p, *end;
-+	int i, z;
-+
-+	if (pd->res_count == pd->req_count)
-+		/* Descriptor(s) not done yet, stop iteration */
-+		return 0;
-+
-+	header_length = le16_to_cpu(d->req_count);
-+
-+	i   = ctx->header_length;
-+	z   = le32_to_cpu(pd->branch_address) & 0xf;
-+	p   = d + z;
-+	end = p + header_length;
-+
-+	while (p < end && i + ctx->base.header_size <= PAGE_SIZE) {
-+		/*
-+		 * The iso header is byteswapped to little endian by
-+		 * the controller, but the remaining header quadlets
-+		 * are big endian.  We want to present all the headers
-+		 * as big endian, so we have to swap the first quadlet.
-+		 */
-+		*(u32 *) (ctx->header + i) = __swab32(*(u32 *) (p + 4));
-+		memcpy(ctx->header + i + 4, p + 8, ctx->base.header_size - 4);
-+		i += ctx->base.header_size;
-+		p += ctx->base.header_size + 4;
-+	}
-+
-+	ctx->header_length = i;
-+
-+	if (le16_to_cpu(pd->control) & DESCRIPTOR_IRQ_ALWAYS) {
-+		ir_header = (__le32 *) (d + z);
-+		ctx->base.callback(&ctx->base,
-+				   le32_to_cpu(ir_header[0]) & 0xffff,
-+				   ctx->header_length, ctx->header,
-+				   ctx->base.callback_data);
-+		ctx->header_length = 0;
-+	}
-+
-+
-+	return 1;
-+}
-+
- static int handle_it_packet(struct context *context,
- 			    struct descriptor *d,
- 			    struct descriptor *last)
-@@ -1466,14 +1532,12 @@ ohci_allocate_iso_context(struct fw_card *card, int type, size_t header_size)
- 	} else {
- 		mask = &ohci->ir_context_mask;
- 		list = ohci->ir_context_list;
--		callback = handle_ir_dualbuffer_packet;
-+		if (ohci->version >= OHCI_VERSION_1_1)
-+			callback = handle_ir_dualbuffer_packet;
-+		else
-+			callback = handle_ir_packet_per_buffer;
- 	}
- 
--	/* FIXME: We need a fallback for pre 1.1 OHCI. */
--	if (callback == handle_ir_dualbuffer_packet &&
--	    ohci->version < OHCI_VERSION_1_1)
--		return ERR_PTR(-ENOSYS);
--
- 	spin_lock_irqsave(&ohci->lock, flags);
- 	index = ffs(*mask) - 1;
- 	if (index >= 0)
-@@ -1532,7 +1596,9 @@ static int ohci_start_iso(struct fw_iso_context *base,
- 		context_run(&ctx->context, match);
- 	} else {
- 		index = ctx - ohci->ir_context_list;
--		control = IR_CONTEXT_DUAL_BUFFER_MODE | IR_CONTEXT_ISOCH_HEADER;
-+		control = IR_CONTEXT_ISOCH_HEADER;
-+		if (ohci->version >= OHCI_VERSION_1_1)
-+			control |= IR_CONTEXT_DUAL_BUFFER_MODE;
- 		match = (tags << 28) | (sync << 8) | ctx->base.channel;
- 		if (cycle >= 0) {
- 			match |= (cycle & 0x07fff) << 12;
-@@ -1738,7 +1804,6 @@ ohci_queue_iso_receive_dualbuffer(struct fw_iso_context *base,
- 	offset   = payload & ~PAGE_MASK;
- 	rest     = p->payload_length;
- 
--	/* FIXME: OHCI 1.0 doesn't support dual buffer receive */
- 	/* FIXME: make packet-per-buffer/dual-buffer a context option */
- 	while (rest > 0) {
- 		d = context_get_descriptors(&ctx->context,
-@@ -1777,6 +1842,81 @@ ohci_queue_iso_receive_dualbuffer(struct fw_iso_context *base,
- }
- 
- static int
-+ohci_queue_iso_receive_packet_per_buffer(struct fw_iso_context *base,
-+					 struct fw_iso_packet *packet,
-+					 struct fw_iso_buffer *buffer,
-+					 unsigned long payload)
-+{
-+	struct iso_context *ctx = container_of(base, struct iso_context, base);
-+	struct descriptor *d = NULL, *pd = NULL;
-+	struct fw_iso_packet *p;
-+	dma_addr_t d_bus, page_bus;
-+	u32 z, header_z, rest;
-+	int i, page, offset, packet_count, header_size;
-+
-+	if (packet->skip) {
-+		d = context_get_descriptors(&ctx->context, 1, &d_bus);
-+		if (d == NULL)
-+			return -ENOMEM;
-+
-+		d->control = cpu_to_le16(DESCRIPTOR_STATUS |
-+					 DESCRIPTOR_INPUT_LAST |
-+					 DESCRIPTOR_BRANCH_ALWAYS |
-+					 DESCRIPTOR_WAIT);
-+		context_append(&ctx->context, d, 1, 0);
-+	}
-+
-+	/* one descriptor for header, one for payload */
-+	/* FIXME: handle cases where we need multiple desc. for payload */
-+	z = 2;
-+	p = packet;
-+
-+	/*
-+	 * The OHCI controller puts the status word in the
-+	 * buffer too, so we need 4 extra bytes per packet.
-+	 */
-+	packet_count = p->header_length / ctx->base.header_size;
-+	header_size  = packet_count * (ctx->base.header_size + 4);
-+
-+	/* Get header size in number of descriptors. */
-+	header_z = DIV_ROUND_UP(header_size, sizeof(*d));
-+	page     = payload >> PAGE_SHIFT;
-+	offset   = payload & ~PAGE_MASK;
-+	rest     = p->payload_length;
-+
-+	for (i = 0; i < packet_count; i++) {
-+		/* d points to the header descriptor */
-+		d = context_get_descriptors(&ctx->context,
-+					    z + header_z, &d_bus);
-+		if (d == NULL)
-+			return -ENOMEM;
-+
-+		d->control      = cpu_to_le16(DESCRIPTOR_INPUT_MORE);
-+		d->req_count    = cpu_to_le16(header_size);
-+		d->res_count    = d->req_count;
-+		d->data_address = cpu_to_le32(d_bus + (z * sizeof(*d)));
-+
-+		/* pd points to the payload descriptor */
-+		pd = d + 1;
-+		pd->control = cpu_to_le16(DESCRIPTOR_STATUS |
-+					  DESCRIPTOR_INPUT_LAST |
-+					  DESCRIPTOR_BRANCH_ALWAYS);
-+		if (p->interrupt)
-+			pd->control |= cpu_to_le16(DESCRIPTOR_IRQ_ALWAYS);
-+
-+		pd->req_count = cpu_to_le16(rest);
-+		pd->res_count = pd->req_count;
-+
-+		page_bus = page_private(buffer->pages[page]);
-+		pd->data_address = cpu_to_le32(page_bus + offset);
-+
-+		context_append(&ctx->context, d, z, header_z);
-+	}
-+
-+	return 0;
-+}
-+
-+static int
- ohci_queue_iso(struct fw_iso_context *base,
- 	       struct fw_iso_packet *packet,
- 	       struct fw_iso_buffer *buffer,
-@@ -1790,8 +1930,9 @@ ohci_queue_iso(struct fw_iso_context *base,
- 		return ohci_queue_iso_receive_dualbuffer(base, packet,
- 							 buffer, payload);
- 	else
--		/* FIXME: Implement fallback for OHCI 1.0 controllers. */
--		return -ENOSYS;
-+		return ohci_queue_iso_receive_packet_per_buffer(base, packet,
-+								buffer,
-+								payload);
- }
- 
- static const struct fw_card_driver ohci_driver = {
-@@ -1911,12 +2052,6 @@ pci_probe(struct pci_dev *dev, const struct pci_device_id *ent)
- 	ohci->version = reg_read(ohci, OHCI1394_Version) & 0x00ff00ff;
- 	fw_notify("Added fw-ohci device %s, OHCI version %x.%x\n",
- 		  dev->dev.bus_id, ohci->version >> 16, ohci->version & 0xff);
--	if (ohci->version < OHCI_VERSION_1_1) {
--		fw_notify("    Isochronous I/O is not yet implemented for "
--			  "OHCI 1.0 chips.\n");
--		fw_notify("    Cameras, audio devices etc. won't work on "
--			  "this controller with this driver version.\n");
--	}
- 	return 0;
- 
-  fail_self_id:
+It doesn't fit with how other users of security_kernel_act_as() will
+likely want to work (they will want to just set the context to a
+specified value, whether one obtained from the client or from some local
+source), nor with how type transitions normally work (exec, with the
+program type as the second type field).  I think it will just cause
+confusion and subtle breakage.
 
 -- 
-Stefan Richter
--=====-=-=== ==-- -=-=-
-http://arcgraph.de/sr/
+Stephen Smalley
+National Security Agency
 
