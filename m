@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbXLJL6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbXLJMES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757136AbXLJL6p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 06:58:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbXLJL6i
+	id S1756232AbXLJMES (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 07:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbXLJMEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 06:58:38 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:49426 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754315AbXLJL6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 06:58:37 -0500
-Date: Mon, 10 Dec 2007 13:00:26 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       davem@davemloft.net, mathieu.desnoyers@polymtl.ca,
-       hskinnemoen@atmel.com
-Subject: Re: [PATCH 2/2] Kprobes: Build kretprobe samples only if arch supports kretprobes
-Message-ID: <20071210120026.GA14992@uranus.ravnborg.org>
-References: <20071210095221.GA19425@in.ibm.com> <20071210095350.GB19425@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071210095350.GB19425@in.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 10 Dec 2007 07:04:08 -0500
+Received: from mail.netone.net.tr ([193.192.98.182]:58233 "EHLO
+	mail.netone.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751054AbXLJMEH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 07:04:07 -0500
+X-Greylist: delayed 10090 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Dec 2007 07:04:06 EST
+Message-ID: <475D2AF1.5010807@netone.net.tr>
+Date: Mon, 10 Dec 2007 14:02:57 +0200
+From: Tarkan Erimer <tarkan@netone.net.tr>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Jerry Geis <geisj@pagestation.com>, linux-kernel@vger.kernel.org
+Subject: Re: Kernel BUG in 2.6.23.9
+References: <475C46BC.5020101@pagestation.com> <20071209134418.14c9f09d@laptopd505.fenrus.org> <475D0387.1070609@netone.net.tr>
+In-Reply-To: <475D0387.1070609@netone.net.tr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Dec 2007 12:02:32.0133 (UTC) FILETIME=[8B42C750:01C83B24]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2007 at 03:23:50PM +0530, Ananth N Mavinakayanahalli wrote:
-> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> 
-> This patch builds samples/kprobes/kretprobe_example.c only on archs that
-> support kretprobes.
-> 
-> 
-> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> ---
->  samples/kprobes/Makefile |    7 +++++--
->  1 files changed, 5 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.24-rc4/samples/kprobes/Makefile
-> ===================================================================
-> --- linux-2.6.24-rc4.orig/samples/kprobes/Makefile
-> +++ linux-2.6.24-rc4/samples/kprobes/Makefile
-> @@ -1,5 +1,8 @@
->  # builds the kprobes example kernel modules;
->  # then to use one (as root):  insmod <module_name.ko>
+Arjan van de Ven wrote:
+> On Sun, 09 Dec 2007 14:49:16 -0500
+> Jerry Geis <geisj@pagestation.com> wrote:
+>
 >  
-> -obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o \
-> -		kretprobe_example.o
-> +obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o
-> +
-> +ifeq ($(CONFIG_HAVE_KRETPROBES),y)
-> +obj-$(CONFIG_SAMPLE_KPROBES) += kretprobe_example.o
-> +endif
+>> I am using centos 5.1, 2.6.23.9 kernel. Machine works great all day.
+>> Then sometime through the night the kernel dies, the trace is below.
+>>     
+>
+> is this when a 3D screensaver is active?
+> Probably worth running without the proprietary nvidia driver.... it
+> also tends to get more people to pay attention :)
+>
+>
+> In addition to this suspicion; you're the first one to report this oops
+> since at least a year as shown in
+> http://www.kerneloops.org/guilty.php?guilty=journal_dirty_data&version=2.6.23-release&start=1540096&end=1572863 
+>
+>
+> so it might well be something weird on your side (like the binary
+> driver or some heat problem created by having a 3D screensaver)
+>
+>   
+Hi,
 
-It would be nice to push this configuration dependency to Kconfig.
-Something like:
+For a while, I have the same behavior. I tested under 2.6.23.9, 
+2.6.24-rc3 and rc4. So all of these kernels have the same issue. Also, I 
+don't use any proprietary driver. My video card is Intel-945 and I use 
+the "intel" driver. I use 3D screensavers as well. These kernels die 
+after some long idles like 1 or 2 days after. My distribution is Kubuntu 
+7.10 and with Kubuntu kernel this behavior did not happened. So, how to 
+track this interesting problem ? Any ideas welcomed :-)
 
-config SAMPLE_KRETPROBES
-	default y
-	depends on SAMPLE_KPROBES
+Cheers,
 
-And then in the Makefile have:
-obj-$(CONFIG_SAMPLE_KRETPROBES) += kretprobe_example.o
-
-
-	Sam
+Tarkan Erimer
