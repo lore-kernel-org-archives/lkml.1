@@ -1,55 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbXLJTmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbXLJTpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757112AbXLJTmy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 14:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbXLJTmr
+	id S1757405AbXLJTpp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 14:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbXLJTpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 14:42:47 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51539 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754335AbXLJTmr (ORCPT
+	Mon, 10 Dec 2007 14:45:35 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:64872 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754110AbXLJTpd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 14:42:47 -0500
-Date: Mon, 10 Dec 2007 19:37:17 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alexander Rajula <chris@nerdmail.nu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Compile error: patched 2.6.23-r3 with rr2310_00 drivers
-Message-ID: <20071210193717.4cc3bcf2@the-village.bc.nu>
-In-Reply-To: <475D95B5.9000905@nerdmail.nu>
-References: <475D95B5.9000905@nerdmail.nu>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 10 Dec 2007 14:45:33 -0500
+Subject: Re: [1/4] DST: Distributed storage documentation.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Greg KH <greg@kroah.com>
+In-Reply-To: <20071210193304.GA24737@2ka.mipt.ru>
+References: <11972872493977@2ka.mipt.ru> <11972872501664@2ka.mipt.ru>
+	 <3ae72650712100451h6a84d6cfs9b3a2954c13c4612@mail.gmail.com>
+	 <20071210125839.GA16789@2ka.mipt.ru> <1197297108.6399.91.camel@lov.site>
+	 <20071210145055.GB7184@2ka.mipt.ru> <1197313348.6399.106.camel@lov.site>
+	 <20071210193304.GA24737@2ka.mipt.ru>
+Content-Type: text/plain
+Date: Mon, 10 Dec 2007 20:44:55 +0100
+Message-Id: <1197315895.6399.121.camel@lov.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18CMjQ75wGZq4e/oyI47Col311q7WOsYlwwKll
+ T2wtSF7y2bn04BLvzmjLIvq7kBPA3XJQPD8glxNuRG0ZSWAc4Y
+ DB3HhVIasSaSB9h9prmpdYAk8GBqYGe
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->       CC      drivers/scsi/rr2310_00/os_linux.o
->     drivers/scsi/rr2310_00/os_linux.c: In function 'os_sd_changed':
->     drivers/scsi/rr2310_00/os_linux.c:315: error: implicit declaration
->     of function 'scsi_device_cancel'
->     make[3]: *** [drivers/scsi/rr2310_00/os_linux.o] Error 1
->     make[2]: *** [drivers/scsi/rr2310_00] Error 2
->     make[1]: *** [drivers/scsi] Error 2
->     make: *** [drivers] Error 2
+On Mon, 2007-12-10 at 22:33 +0300, Evgeniy Polyakov wrote:
+> On Mon, Dec 10, 2007 at 08:02:28PM +0100, Kay Sievers (kay.sievers@vrfy.org) wrote:
+> > > uganda:~/codes# ls -l /sys/devices/storage/n-0-ffff81003ebc220/
+> > > total 0
+> > > drwxr-xr-x 2 root root    0 2007-12-10 13:23 power
+> > > -r--r--r-- 1 root root 4096 2007-12-10 13:30 size
+> > > -r--r--r-- 1 root root 4096 2007-12-10 13:30 start
+> > > -r--r--r-- 1 root root 4096 2007-12-10 13:30 type
+> > > -rw-r--r-- 1 root root 4096 2007-12-10 13:30 uevent
+> > 
+> > This is a "struct device" instance without a subsystem (bus/class),
+> > right? It will not send an uevent to userspace. Is that intended? Why
+> > don't you add them all to the dst bus? 
 > 
-> 
-> 
-> The same driver patched onto the 2.6.22 kernel compiles.
-> 
-> Is this a linux specific bug, or are the drivers from Highpoint-tech 
-> simply outdated?
+> I created dst bus for storage devices only, nodes are very different
+> objects, and actually they do not need any events from above, but I need
+> to put some attributes somewhere, so it is 'empty' device.
 
-The report should go to highpoint tech.
+Ok.
 
-The Linux community is working on adding Highpoint 23xx support to the
-standard sata_mv drivers, but HPT don't appear to document a lot of the
-raid layout they use and hide it in a binary object module which makes it
-somewhat problematic.
+> > > Actually not - I have to set reference counter to something other than 1
+> > > or +/- 1, and thus will have to call kref_get() in a loop, which is a
+> > > very ugly step. Is there kref_set() or somethinglike that? At least not
+> > > in 2.6.22 what I'm using for now.
+> > 
+> > Yeah, a loop would look pretty ugly. How about just adding kref_set(),
+> > if you need it.
+> 
+> Well, then it distributed storage will not be able to build as
+> standalone module, and kref_set() itself will not be accepted as a single 
+> patch, since there are no in-kernel users :)
+> It is easily doable though.
 
-Alan
+Most rules have exceptions. :) Send a patch, so we can see how it looks
+like.
+
+> > > > Why don't you use groups for the attributes?
+> > > 
+> > > For 3-4 attributes it is faster to register them in a loop than typing
+> > > another structure :)
+> > 
+> > Yeah, but if you would need to recover from an error when the creation
+> > of a file fails, a group would do the proper "rollback".
+> 
+> I do not care about such errors - if there is such an error for a file,
+> which exports information about type of the node (i.e. string "L" or "R")
+> or some other very meaningful info, then system has enough to care about
+> instead of this, so dst does not do anything special - it ignores such
+> errors :)
+> 
+> On exit path it will be checked and removed correctly.
+> If there will be additional sysfs files, I think group is a good way to
+> implement them.
+> 
+> > > > Why don't you use default attributes for the device, where you get all
+> > > > error handling done by the core.
+> > > 
+> > > What is 'default attributes' and for what devices?
+> > > All my sysfs files are so much trivial, so they do not need anything
+> > > special and I do not see what is error handling you mentioned.
+> > 
+> > If all devices of a subsystem (bus/class) are of the same type, you can
+> > set a default array of attributes in the "struct bus/class" to be
+> > created at every device. If you have multiple types of devices in the
+> > same subsytem (bus/class) you can to assign a the "device_type", which
+> > has the default attribute group.
+> > That way the core will create the files before the event is sent out to
+> > userspace, and the files can be access from the event itself. Not sure
+> > if that is needed for dst.
+> 
+> Ok, I see.
+> 
+> DST right now has 3 types of files - storage files, it is common for
+> every storage device; node files, which are the same for every node; and
+> per-algorithm private devices - they can be different (actually only
+> mirroring algorithm exports something to userspace).
+> 
+> I think it is possible to use default attributes for storage devices,
+> but node device does not have a bus/class, so they will be untouched.
+
+Sounds fine.
+
+Thanks,
+Kay
+
