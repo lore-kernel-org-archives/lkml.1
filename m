@@ -1,65 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbXLJS7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbXLJTCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbXLJS7c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 13:59:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbXLJS7Z
+	id S1756427AbXLJTCi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 14:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbXLJTC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 13:59:25 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47615 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751304AbXLJS7Y (ORCPT
+	Mon, 10 Dec 2007 14:02:27 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:64740 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751699AbXLJTCZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 13:59:24 -0500
-Message-ID: <475D8C88.5080706@zytor.com>
-Date: Mon, 10 Dec 2007 10:59:20 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Avoid overflows in kernel/time.c
-References: <200711300019.lAU0Jpbr003807@tazenda.hos.anvin.org> <20071204032949.c677c021.akpm@linux-foundation.org>
-In-Reply-To: <20071204032949.c677c021.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 10 Dec 2007 14:02:25 -0500
+Subject: Re: [1/4] DST: Distributed storage documentation.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Greg KH <greg@kroah.com>
+In-Reply-To: <20071210145055.GB7184@2ka.mipt.ru>
+References: <11972872493977@2ka.mipt.ru> <11972872501664@2ka.mipt.ru>
+	 <3ae72650712100451h6a84d6cfs9b3a2954c13c4612@mail.gmail.com>
+	 <20071210125839.GA16789@2ka.mipt.ru> <1197297108.6399.91.camel@lov.site>
+	 <20071210145055.GB7184@2ka.mipt.ru>
+Content-Type: text/plain
+Date: Mon, 10 Dec 2007 20:02:28 +0100
+Message-Id: <1197313348.6399.106.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18UXopNwaxdM8Unl22Yp5CjXXu4iqdEBGjnFAf
+ N8eWQvsvTTC554giqWawHtWX6IMqeciQKfrT5PoW+aRwi8UpIr
+ PTK2YFfUSsUWTKL/ml2x6EHI70ZS6yN
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+On Mon, 2007-12-10 at 17:50 +0300, Evgeniy Polyakov wrote:
+> On Mon, Dec 10, 2007 at 03:31:48PM +0100, Kay Sievers (kay.sievers@vrfy.org) wrote:
+> > > I meant that for each new device, it will be placed into
+> > > /sys/devices/its_name, but it can also be accessed via
+> > > /sys/bus/dst/devices/
+> > 
+> > Still, it looks like a path. :)
+> > 
+> > Please don't reference any device directly with a /sys/devices/ path.
+> > You have to use the subsystem links to the devices
+> > in /sys/bus/dst/devices/. Devices are free to move around
+> > in /sys/devices, even during runtime. Yours don't do, but anyway, please
+> > remove all mentioning of direct access to /sys/devices/.
 > 
-> My ia64 allmodconfig build has taken
+> Ok, I will update documentation to reference /sys/bus/dst/devices
+> instead of /sys/devices
+
+Great, thanks!
+
+> > Btw, where is the top-level /sys/devices/storage/ coming from? I don't
+> > see that in the code. We don't accept any new "virtual parents" here.
+> >
+> > Your devices will automatically appear in /sys/devices/virtual/dst/, and
+> > not below your own parent. But that path does not matter anyway, because
+> > you should only access them from the /sys/bus/dst/devices/ directory.
+> > 
+> > And in general please don't claim generic names like "storage" in any
+> > namespace for a very specific subsystem like this.
 > 
-> akpm     15700 89.6  0.0   8256   700 pts/4    RN+  03:09  10:41 bc -q kernel/timeconst.bc
+> It is not a parent - it is an example for device called 'storage', if it
+> will be called 'testing', then path will be /sys/devices/testing or more
+> correct /sys/bus/dst/devices/testing :)
+
+Ah, I see.
+
+> > > It is 'dst' bus.
+> > > 
+> > > uganda:~/codes# ls -la /sys/devices/staorge/
+> > > total 0
+> > > drwxr-xr-x 4 root root    0 2007-12-10 11:46 .
+> > > drwxr-xr-x 9 root root    0 2007-12-10 11:46 ..
+> > > -r--r--r-- 1 root root 4096 2007-12-10 11:46 alg
+> > > lrwxrwxrwx 1 root root    0 2007-12-10 11:46 bus -> ../../bus/dst
+> > > drwxr-xr-x 3 root root    0 2007-12-10 11:46 n-0-ffff81003e24117
+> > > -r--r--r-- 1 root root 4096 2007-12-10 11:46 name
+> > > -r--r--r-- 1 root root 4096 2007-12-10 11:46 nodes
+> > > drwxr-xr-x 2 root root    0 2007-12-10 11:46 power
+> > > -rw-r--r-- 1 root root 4096 2007-12-10 11:46 remove_all_nodes
+> > > lrwxrwxrwx 1 root root    0 2007-12-10 11:46 subsystem -> ../../bus/dst
+> > > -rw-r--r-- 1 root root 4096 2007-12-10 11:46 uevent
+> > 
+> > Ok, how does:
+> >   ls -l /sys/devices/storage/n-0-ffff81003e24117
+> > look?
 > 
-> 11 minutes so far.  fc6/x86_64.
+> uganda:~/codes# ls -l /sys/devices/storage/n-0-ffff81003ebc220/
+> total 0
+> drwxr-xr-x 2 root root    0 2007-12-10 13:23 power
+> -r--r--r-- 1 root root 4096 2007-12-10 13:30 size
+> -r--r--r-- 1 root root 4096 2007-12-10 13:30 start
+> -r--r--r-- 1 root root 4096 2007-12-10 13:30 type
+> -rw-r--r-- 1 root root 4096 2007-12-10 13:30 uevent
+
+This is a "struct device" instance without a subsystem (bus/class),
+right? It will not send an uevent to userspace. Is that intended? Why
+don't you add them all to the dst bus? 
+
+> > > uganda:~/codes# ls -l /sys/bus/dst/
+> > > total 0
+> > > drwxr-xr-x 2 root root    0 2007-12-10 09:52 devices
+> > > drwxr-xr-x 2 root root    0 2007-12-10 09:52 drivers
+> > > -rw-r--r-- 1 root root 4096 2007-12-10 11:46 drivers_autoprobe
+> > > --w------- 1 root root 4096 2007-12-10 11:46 drivers_probe
+> > 
+> > How does:
+> >   ls -l /sys/bus/dst/devices
+> > look?
 > 
+> uganda:~/codes# ls -la /sys/bus/dst/devices/
+> total 0
+> drwxr-xr-x 2 root root 0 2007-12-10 13:30 .
+> drwxr-xr-x 4 root root 0 2007-12-10 13:22 ..
+> lrwxrwxrwx 1 root root 0 2007-12-10 13:30 storage -> ../../../devices/storage
+> 
+> Here 'storage' is just a name for device called 'storage', it can be
+> anything else.
 
-I just tried this on my system, using your cross-compiler chain.  I got 
-a different error:
+Fine.
 
-/opt/crosstool/gcc-3.4.5-glibc-2.3.6/ia64-unknown-linux-gnu/lib/gcc/ia64-unknown-linux-gnu/3.4.5/../../../../ia64-unknown-linux-gnu/bin/ld: 
-section .data.patch [a000000000000500 -> a000000000000507] overlaps 
-section .dynamic [a0000000000003c8 -> a000000000000507]
-collect2: ld returned 1 exit status
-make[2]: *** [arch/ia64/kernel/gate.so] Error 1
+> > Further questions:
+> > Why do you do your own refcounting instead of using kref?
+> 
+> That's because I always used atomic operations as a reference counters
+> and did not tried krefs :)
+> They are the same actually (module tricky arches where smp_mb_* are
+> required), so I can replace them in the next release.
 
-... but the timeconst stuff worked fine.  I tried it both from the 
-command line and using your xb script.
+On Mon, 2007-12-10 at 18:12 +0300, Evgeniy Polyakov wrote:
+> Actually not - I have to set reference counter to something other than 1
+> or +/- 1, and thus will have to call kref_get() in a loop, which is a
+> very ugly step. Is there kref_set() or somethinglike that? At least not
+> in 2.6.22 what I'm using for now.
 
-This is on a fc7/x86-64 box.  I also ran through all the values from 48 
-to 1024 on both an fc5 and an fc7 box (no fc6 box readily available, 
-although bc has been at 1.06 since 2000...)
+Yeah, a loop would look pretty ugly. How about just adding kref_set(),
+if you need it.
 
-In short, this is highly weird.  Could you possibly do me a favour and 
-just run, at the command line:
+> > Why don't you use groups for the attributes?
+> 
+> For 3-4 attributes it is faster to register them in a loop than typing
+> another structure :)
 
-echo 250 | bc -q kernel/timeconst.bc
+Yeah, but if you would need to recover from an error when the creation
+of a file fails, a group would do the proper "rollback".
 
-... and see if it reproduces the lockup (I'm assuming HZ == 250 in your 
-config, since that's what I get when I do "make allmodconfig" on IA64.)
+> > Why don't you use default attributes for the device, where you get all
+> > error handling done by the core.
+> 
+> What is 'default attributes' and for what devices?
+> All my sysfs files are so much trivial, so they do not need anything
+> special and I do not see what is error handling you mentioned.
 
-(No need to wait 11 minutes.  It should run in a small fraction of a 
-second.)
+If all devices of a subsystem (bus/class) are of the same type, you can
+set a default array of attributes in the "struct bus/class" to be
+created at every device. If you have multiple types of devices in the
+same subsytem (bus/class) you can to assign a the "device_type", which
+has the default attribute group.
+That way the core will create the files before the event is sent out to
+userspace, and the files can be access from the event itself. Not sure
+if that is needed for dst.
 
-	-hpa
+Thanks,
+Kay
+
