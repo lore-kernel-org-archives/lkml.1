@@ -1,86 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbXLJLka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbXLJLkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbXLJLka (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 06:40:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXLJLkS
+	id S1756551AbXLJLkr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 06:40:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbXLJLkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 06:40:18 -0500
-Received: from az33egw01.freescale.net ([192.88.158.102]:47856 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbXLJLkQ convert rfc822-to-8bit (ORCPT
+	Mon, 10 Dec 2007 06:40:33 -0500
+Received: from www.digitalsignage.messagenetsystems.com ([24.123.23.170]:33034
+	"EHLO unifiedpaging.messagenetsystems.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755846AbXLJLka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 06:40:16 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 10 Dec 2007 06:40:30 -0500
+Message-ID: <475D259D.3080909@pagestation.com>
+Date: Mon, 10 Dec 2007 06:40:13 -0500
+From: Jerry Geis <geisj@pagestation.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH 0/3] UCC TDM driver for MPC83xx platforms 
-Date: Mon, 10 Dec 2007 17:10:08 +0530
-Message-ID: <FBA61160C48B8D438F3323FEFB4EF2C259F2EE@zin33exm24.fsl.freescale.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 0/3] UCC TDM driver for MPC83xx platforms 
-Thread-Index: Acg7IWqJ0TJLhoi0SS+XneEcKAfWOQ==
-From: "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>
-To: <rubini@vision.unipv.it>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>, "Gala Kumar" <kumar.gala@freescale.com>
-Cc: "Barkowski Michael" <Michael.Barkowski@freescale.com>,
-       "Phillips Kim" <Kim.Phillips@freescale.com>,
-       "Kalra Ashish" <ashish.kalra@freescale.com>,
-       "Cutler Richard" <Rich.Cutler@freescale.com>
+To: Tarkan Erimer <tarkan@netone.net.tr>
+CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: Kernel BUG in 2.6.23.9
+References: <475C46BC.5020101@pagestation.com> <20071209134418.14c9f09d@laptopd505.fenrus.org> <475D0387.1070609@netone.net.tr>
+In-Reply-To: <475D0387.1070609@netone.net.tr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tarkan Erimer wrote:
+> Arjan van de Ven wrote:
+>> On Sun, 09 Dec 2007 14:49:16 -0500
+>> Jerry Geis <geisj@pagestation.com> wrote:
+>>
+>>  
+>>> I am using centos 5.1, 2.6.23.9 kernel. Machine works great all day.
+>>> Then sometime through the night the kernel dies, the trace is below.
+>>>     
+>>
+>> is this when a 3D screensaver is active?
+>> Probably worth running without the proprietary nvidia driver.... it
+>> also tends to get more people to pay attention :)
+>>
+>>
+>> In addition to this suspicion; you're the first one to report this oops
+>> since at least a year as shown in
+>> http://www.kerneloops.org/guilty.php?guilty=journal_dirty_data&version=2.6.23-release&start=1540096&end=1572863 
+>>
+>>
+>> so it might well be something weird on your side (like the binary
+>> driver or some heat problem created by having a 3D screensaver)
+>>
+>>   
+> Hi,
+>
+> For a while, I have the same behavior. I tested under 2.6.23.9, 
+> 2.6.24-rc3 and rc4. So all of these kernels have the same issue. Also, 
+> I don't use any proprietary driver. My video card is Intel-945 and I 
+> use the "intel" driver. I use 3D screensavers as well. These kernels 
+> die after some long idles like 1 or 2 days after. My distribution is 
+> Kubuntu 7.10 and with Kubuntu kernel this behavior did not happened. 
+> So, how to track this interesting problem ? Any ideas welcomed :-)
+>
+> Cheers,
+>
+> Tarkan Erimer
+>
+>
+>
+>
+>
+I am not running a 3D screen saver. I was just using blank screen.
+However, I did turn off the screen saver and last night my machine did 
+not crash.
 
-There are three patches
-[PATCH 1/3] drivers/misc : UCC TDM driver for mpc83xx platforms. This
-driver is usable in VoIP iind of applications to interface with SLIC
-kind of devices to exchange TDM voice samples.
+I am still using the NVIDIA driver.
+All I changed was the screen saver.
 
-[PATCH 2/3] arch/ : Platform changes
-- device tree entries for UCC TDM driver for MPC8323ERDB platform.
-- QE changes related to TDM , like,
-	 1) Modified ucc_fast_init so that it can be used by fast UCC
-based TDM driver. Mainly changes have been made to configure TDM clocks
-and Fsyncs.
+Any ideas on that?
 
-	2) Modified get_brg_clk so that it can return the input frequncy
-and input source of any BRG by reading the corresponding entries from
-device tree.
+Jerry
 
-	3) Added new nodes brg and clocks in the device tree which
-represent input clocks for different BRGs.
-
-	4) Modified qe_setbrg accordingly.
-- new device tree entries added for "clocks" and "brg"
-
-[PATCH 3/3] Documentation
-- Modified Documentation to explain the device tree entries related to
-UCC TDM driver and the new nodes added("clocks" and "brg")
-
-The patch applies over a merge of galak's for-2.6.25 plus for-2.6.24
-plus of_doc_update branches.
-In brief the steps were
-git clone
-git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-powerpc-galak
-git checkout -b for-2.6.25 origin/for-2.6.25
-git checkout -b for-2.6.24 origin/for-2.6.24
-git checkout -b of_doc_update origin/of_doc_update
-git pull . for-2.6.24    # merge the other two
-git pull . for-2.6.25 
-git checkout -b tdm      # clean slate for tdm rebase work
-
-Also after applying the patches changes have to be made corresponding to
-Tabi's patch "qe: add function qe_clock_source".
-
-The driver has been tested with a VoIP stack and application on
-MPC8323ERDB.
-
-With Regards
-Poonam 
- 
- 
