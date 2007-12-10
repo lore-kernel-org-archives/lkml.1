@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbXLJCrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbXLJCtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755657AbXLJCrK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 21:47:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbXLJCnP
+	id S1755241AbXLJCtU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 21:49:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXLJCnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 21:43:15 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49748 "EHLO
+	Sun, 9 Dec 2007 21:43:32 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49804 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653AbXLJCnG (ORCPT
+	with ESMTP id S1754818AbXLJCnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 21:43:06 -0500
+	Sun, 9 Dec 2007 21:43:21 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 22/42] Unionfs: unlink/rmdir operations
-Date: Sun,  9 Dec 2007 21:41:55 -0500
-Message-Id: <1197254548999-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 29/42] Unionfs: miscellaneous helper routines
+Date: Sun,  9 Dec 2007 21:42:02 -0500
+Message-Id: <11972545533887-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11972545353262-git-send-email-ezk@cs.sunysb.edu>
@@ -25,18 +25,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mostly related to whiteouts.
+
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/unlink.c |  236 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 236 insertions(+), 0 deletions(-)
- create mode 100644 fs/unionfs/unlink.c
+ fs/unionfs/subr.c |  242 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 242 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/subr.c
 
-diff --git a/fs/unionfs/unlink.c b/fs/unionfs/unlink.c
+diff --git a/fs/unionfs/subr.c b/fs/unionfs/subr.c
 new file mode 100644
-index 0000000..423ff36
+index 0000000..1a26c57
 --- /dev/null
-+++ b/fs/unionfs/unlink.c
-@@ -0,0 +1,236 @@
++++ b/fs/unionfs/subr.c
+@@ -0,0 +1,242 @@
 +/*
 + * Copyright (c) 2003-2007 Erez Zadok
 + * Copyright (c) 2003-2006 Charles P. Wright
@@ -57,221 +59,227 @@ index 0000000..423ff36
 +
 +#include "union.h"
 +
-+/* unlink a file by creating a whiteout */
-+static int unionfs_unlink_whiteout(struct inode *dir, struct dentry *dentry)
++/*
++ * Pass an unionfs dentry and an index.  It will try to create a whiteout
++ * for the filename in dentry, and will try in branch 'index'.  On error,
++ * it will proceed to a branch to the left.
++ */
++int create_whiteout(struct dentry *dentry, int start)
++{
++	int bstart, bend, bindex;
++	struct dentry *lower_dir_dentry;
++	struct dentry *lower_dentry;
++	struct dentry *lower_wh_dentry;
++	struct nameidata nd;
++	char *name = NULL;
++	int err = -EINVAL;
++
++	verify_locked(dentry);
++
++	bstart = dbstart(dentry);
++	bend = dbend(dentry);
++
++	/* create dentry's whiteout equivalent */
++	name = alloc_whname(dentry->d_name.name, dentry->d_name.len);
++	if (unlikely(IS_ERR(name))) {
++		err = PTR_ERR(name);
++		goto out;
++	}
++
++	for (bindex = start; bindex >= 0; bindex--) {
++		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++
++		if (!lower_dentry) {
++			/*
++			 * if lower dentry is not present, create the
++			 * entire lower dentry directory structure and go
++			 * ahead.  Since we want to just create whiteout, we
++			 * only want the parent dentry, and hence get rid of
++			 * this dentry.
++			 */
++			lower_dentry = create_parents(dentry->d_inode,
++						      dentry,
++						      dentry->d_name.name,
++						      bindex);
++			if (!lower_dentry || IS_ERR(lower_dentry)) {
++				int ret = PTR_ERR(lower_dentry);
++				if (!IS_COPYUP_ERR(ret))
++					printk(KERN_ERR
++					       "unionfs: create_parents for "
++					       "whiteout failed: bindex=%d "
++					       "err=%d\n", bindex, ret);
++				continue;
++			}
++		}
++
++		lower_wh_dentry =
++			lookup_one_len(name, lower_dentry->d_parent,
++				       dentry->d_name.len + UNIONFS_WHLEN);
++		if (IS_ERR(lower_wh_dentry))
++			continue;
++
++		/*
++		 * The whiteout already exists. This used to be impossible,
++		 * but now is possible because of opaqueness.
++		 */
++		if (lower_wh_dentry->d_inode) {
++			dput(lower_wh_dentry);
++			err = 0;
++			goto out;
++		}
++
++		err = init_lower_nd(&nd, LOOKUP_CREATE);
++		if (unlikely(err < 0))
++			goto out;
++		lower_dir_dentry = lock_parent(lower_wh_dentry);
++		err = is_robranch_super(dentry->d_sb, bindex);
++		if (!err)
++			err = vfs_create(lower_dir_dentry->d_inode,
++					 lower_wh_dentry,
++					 ~current->fs->umask & S_IRWXUGO,
++					 &nd);
++		unlock_dir(lower_dir_dentry);
++		dput(lower_wh_dentry);
++		release_lower_nd(&nd, err);
++
++		if (!err || !IS_COPYUP_ERR(err))
++			break;
++	}
++
++	/* set dbopaque so that lookup will not proceed after this branch */
++	if (!err)
++		set_dbopaque(dentry, bindex);
++
++out:
++	kfree(name);
++	return err;
++}
++
++/*
++ * This is a helper function for rename, which ends up with hosed over
++ * dentries when it needs to revert.
++ */
++int unionfs_refresh_lower_dentry(struct dentry *dentry, int bindex)
 +{
 +	struct dentry *lower_dentry;
-+	struct dentry *lower_dir_dentry;
-+	int bindex;
++	struct dentry *lower_parent;
 +	int err = 0;
 +
-+	err = unionfs_partial_lookup(dentry);
-+	if (err)
-+		goto out;
++	verify_locked(dentry);
 +
-+	bindex = dbstart(dentry);
++	unionfs_lock_dentry(dentry->d_parent);
++	lower_parent = unionfs_lower_dentry_idx(dentry->d_parent, bindex);
++	unionfs_unlock_dentry(dentry->d_parent);
++
++	BUG_ON(!S_ISDIR(lower_parent->d_inode->i_mode));
++
++	lower_dentry = lookup_one_len(dentry->d_name.name, lower_parent,
++				      dentry->d_name.len);
++	if (IS_ERR(lower_dentry)) {
++		err = PTR_ERR(lower_dentry);
++		goto out;
++	}
++
++	dput(unionfs_lower_dentry_idx(dentry, bindex));
++	iput(unionfs_lower_inode_idx(dentry->d_inode, bindex));
++	unionfs_set_lower_inode_idx(dentry->d_inode, bindex, NULL);
++
++	if (!lower_dentry->d_inode) {
++		dput(lower_dentry);
++		unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
++	} else {
++		unionfs_set_lower_dentry_idx(dentry, bindex, lower_dentry);
++		unionfs_set_lower_inode_idx(dentry->d_inode, bindex,
++					    igrab(lower_dentry->d_inode));
++	}
++
++out:
++	return err;
++}
++
++int make_dir_opaque(struct dentry *dentry, int bindex)
++{
++	int err = 0;
++	struct dentry *lower_dentry, *diropq;
++	struct inode *lower_dir;
++	struct nameidata nd;
++	kernel_cap_t orig_cap;
++
++	/*
++	 * Opaque directory whiteout markers are special files (like regular
++	 * whiteouts), and should appear to the users as if they don't
++	 * exist.  They should be created/deleted regardless of directory
++	 * search/create permissions, but only for the duration of this
++	 * creation of the .wh.__dir_opaque: file.  Note, this does not
++	 * circumvent normal ->permission).
++	 */
++	orig_cap = current->cap_effective;
++	cap_raise(current->cap_effective, CAP_DAC_READ_SEARCH);
++	cap_raise(current->cap_effective, CAP_DAC_OVERRIDE);
 +
 +	lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
-+	if (!lower_dentry)
++	lower_dir = lower_dentry->d_inode;
++	BUG_ON(!S_ISDIR(dentry->d_inode->i_mode) ||
++	       !S_ISDIR(lower_dir->i_mode));
++
++	mutex_lock(&lower_dir->i_mutex);
++	diropq = lookup_one_len(UNIONFS_DIR_OPAQUE, lower_dentry,
++				sizeof(UNIONFS_DIR_OPAQUE) - 1);
++	if (IS_ERR(diropq)) {
++		err = PTR_ERR(diropq);
 +		goto out;
-+
-+	lower_dir_dentry = lock_parent(lower_dentry);
-+
-+	/* avoid destroying the lower inode if the file is in use */
-+	dget(lower_dentry);
-+	err = is_robranch_super(dentry->d_sb, bindex);
-+	if (!err)
-+		err = vfs_unlink(lower_dir_dentry->d_inode, lower_dentry);
-+	/* if vfs_unlink succeeded, update our inode's times */
-+	if (!err)
-+		unionfs_copy_attr_times(dentry->d_inode);
-+	dput(lower_dentry);
-+	fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
-+	unlock_dir(lower_dir_dentry);
-+
-+	if (err && !IS_COPYUP_ERR(err))
-+		goto out;
-+
-+	/*
-+	 * We create whiteouts if (1) there was an error unlinking the main
-+	 * file; (2) there is a lower priority file with the same name
-+	 * (dbopaque); (3) the branch in which the file is not the last
-+	 * (rightmost0 branch.  The last rule is an optimization to avoid
-+	 * creating all those whiteouts if there's no chance they'd be
-+	 * masking any lower-priority branch, as well as unionfs is used
-+	 * with only one branch (using only one branch, while odd, is still
-+	 * possible).
-+	 */
-+	if (err) {
-+		if (dbstart(dentry) == 0)
-+			goto out;
-+		err = create_whiteout(dentry, dbstart(dentry) - 1);
-+	} else if (dbopaque(dentry) != -1) {
-+		err = create_whiteout(dentry, dbopaque(dentry));
-+	} else if (dbstart(dentry) < sbend(dentry->d_sb)) {
-+		err = create_whiteout(dentry, dbstart(dentry));
 +	}
 +
-+out:
++	err = init_lower_nd(&nd, LOOKUP_CREATE);
++	if (unlikely(err < 0))
++		goto out;
++	if (!diropq->d_inode)
++		err = vfs_create(lower_dir, diropq, S_IRUGO, &nd);
 +	if (!err)
-+		dentry->d_inode->i_nlink--;
++		set_dbopaque(dentry, bindex);
++	release_lower_nd(&nd, err);
 +
-+	/* We don't want to leave negative leftover dentries for revalidate. */
-+	if (!err && (dbopaque(dentry) != -1))
-+		update_bstart(dentry);
++	dput(diropq);
 +
++out:
++	mutex_unlock(&lower_dir->i_mutex);
++	current->cap_effective = orig_cap;
 +	return err;
 +}
 +
-+int unionfs_unlink(struct inode *dir, struct dentry *dentry)
++/*
++ * returns the right n_link value based on the inode type
++ */
++int unionfs_get_nlinks(const struct inode *inode)
 +{
-+	int err = 0;
++	/* don't bother to do all the work since we're unlinked */
++	if (inode->i_nlink == 0)
++		return 0;
 +
-+	unionfs_read_lock(dentry->d_sb);
-+	unionfs_lock_dentry(dentry);
++	if (!S_ISDIR(inode->i_mode))
++		return unionfs_lower_inode(inode)->i_nlink;
 +
-+	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
-+		err = -ESTALE;
-+		goto out;
-+	}
-+	unionfs_check_dentry(dentry);
-+
-+	err = unionfs_unlink_whiteout(dir, dentry);
-+	/* call d_drop so the system "forgets" about us */
-+	if (!err) {
-+		if (!S_ISDIR(dentry->d_inode->i_mode))
-+			unionfs_postcopyup_release(dentry);
-+		d_drop(dentry);
-+		/*
-+		 * if unlink/whiteout succeeded, parent dir mtime has
-+		 * changed
-+		 */
-+		unionfs_copy_attr_times(dir);
-+	}
-+
-+out:
-+	if (!err) {
-+		unionfs_check_dentry(dentry);
-+		unionfs_check_inode(dir);
-+	}
-+	unionfs_unlock_dentry(dentry);
-+	unionfs_read_unlock(dentry->d_sb);
-+	return err;
++	/*
++	 * For directories, we return 1. The only place that could cares
++	 * about links is readdir, and there's d_type there so even that
++	 * doesn't matter.
++	 */
++	return 1;
 +}
 +
-+static int unionfs_rmdir_first(struct inode *dir, struct dentry *dentry,
-+			       struct unionfs_dir_state *namelist)
++/* construct whiteout filename */
++char *alloc_whname(const char *name, int len)
 +{
-+	int err;
-+	struct dentry *lower_dentry;
-+	struct dentry *lower_dir_dentry = NULL;
++	char *buf;
 +
-+	/* Here we need to remove whiteout entries. */
-+	err = delete_whiteouts(dentry, dbstart(dentry), namelist);
-+	if (err)
-+		goto out;
++	buf = kmalloc(len + UNIONFS_WHLEN + 1, GFP_KERNEL);
++	if (unlikely(!buf))
++		return ERR_PTR(-ENOMEM);
 +
-+	lower_dentry = unionfs_lower_dentry(dentry);
++	strcpy(buf, UNIONFS_WHPFX);
++	strlcat(buf, name, len + UNIONFS_WHLEN + 1);
 +
-+	lower_dir_dentry = lock_parent(lower_dentry);
-+
-+	/* avoid destroying the lower inode if the file is in use */
-+	dget(lower_dentry);
-+	err = is_robranch(dentry);
-+	if (!err)
-+		err = vfs_rmdir(lower_dir_dentry->d_inode, lower_dentry);
-+	dput(lower_dentry);
-+
-+	fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
-+	/* propagate number of hard-links */
-+	dentry->d_inode->i_nlink = unionfs_get_nlinks(dentry->d_inode);
-+
-+out:
-+	if (lower_dir_dentry)
-+		unlock_dir(lower_dir_dentry);
-+	return err;
-+}
-+
-+int unionfs_rmdir(struct inode *dir, struct dentry *dentry)
-+{
-+	int err = 0;
-+	struct unionfs_dir_state *namelist = NULL;
-+	int dstart, dend;
-+
-+	unionfs_read_lock(dentry->d_sb);
-+	unionfs_lock_dentry(dentry);
-+
-+	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
-+		err = -ESTALE;
-+		goto out;
-+	}
-+	unionfs_check_dentry(dentry);
-+
-+	/* check if this unionfs directory is empty or not */
-+	err = check_empty(dentry, &namelist);
-+	if (err)
-+		goto out;
-+
-+	err = unionfs_rmdir_first(dir, dentry, namelist);
-+	dstart = dbstart(dentry);
-+	dend = dbend(dentry);
-+	/*
-+	 * We create a whiteout for the directory if there was an error to
-+	 * rmdir the first directory entry in the union.  Otherwise, we
-+	 * create a whiteout only if there is no chance that a lower
-+	 * priority branch might also have the same named directory.  IOW,
-+	 * if there is not another same-named directory at a lower priority
-+	 * branch, then we don't need to create a whiteout for it.
-+	 */
-+	if (!err) {
-+		if (dstart < dend)
-+			err = create_whiteout(dentry, dstart);
-+	} else {
-+		int new_err;
-+
-+		if (dstart == 0)
-+			goto out;
-+
-+		/* exit if the error returned was NOT -EROFS */
-+		if (!IS_COPYUP_ERR(err))
-+			goto out;
-+
-+		new_err = create_whiteout(dentry, dstart - 1);
-+		if (new_err != -EEXIST)
-+			err = new_err;
-+	}
-+
-+out:
-+	/*
-+	 * Drop references to lower dentry/inode so storage space for them
-+	 * can be reclaimed.  Then, call d_drop so the system "forgets"
-+	 * about us.
-+	 */
-+	if (!err) {
-+		struct inode *inode = dentry->d_inode;
-+		BUG_ON(!inode);
-+		iput(unionfs_lower_inode_idx(inode, dstart));
-+		unionfs_set_lower_inode_idx(inode, dstart, NULL);
-+		dput(unionfs_lower_dentry_idx(dentry, dstart));
-+		unionfs_set_lower_dentry_idx(dentry, dstart, NULL);
-+		/*
-+		 * If the last directory is unlinked, then mark istart/end
-+		 * as -1, (to maintain the invariant that if there are no
-+		 * lower objects, then branch index start and end are set to
-+		 * -1).
-+		 */
-+		if (!unionfs_lower_inode_idx(inode, dstart) &&
-+		    !unionfs_lower_inode_idx(inode, dend))
-+			ibstart(inode) = ibend(inode) = -1;
-+		d_drop(dentry);
-+	}
-+
-+	if (namelist)
-+		free_rdstate(namelist);
-+
-+	unionfs_unlock_dentry(dentry);
-+	unionfs_read_unlock(dentry->d_sb);
-+	return err;
++	return buf;
 +}
 -- 
 1.5.2.2
