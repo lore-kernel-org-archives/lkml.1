@@ -1,56 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbXLJNlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbXLJNme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbXLJNlX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 08:41:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbXLJNlQ
+	id S1757154AbXLJNme (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 08:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbXLJNm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 08:41:16 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:41971 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751737AbXLJNlP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 08:41:15 -0500
-Date: Mon, 10 Dec 2007 13:40:56 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: benh@kernel.crashing.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: Please revert: PCI: fix IDE legacy mode resources
-Message-ID: <20071210134056.GC12913@linux-mips.org>
-References: <200712060558.lB65wAFu016256@po-mbox304.hop.2iij.net> <1196922262.7033.33.camel@pasglop> <20071209021231.GA13729@linux-mips.org> <1197185091.6572.38.camel@pasglop> <1197193794.6572.52.camel@pasglop> <20071209133812.2d305a02@the-village.bc.nu> <1197230609.6563.6.camel@pasglop> <20071209222335.70e52be3@the-village.bc.nu> <1197260962.6563.46.camel@pasglop> <20071210112050.0bd6ac28@the-village.bc.nu>
-MIME-Version: 1.0
+	Mon, 10 Dec 2007 08:42:26 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:33378 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754593AbXLJNmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 08:42:25 -0500
+Date: Mon, 10 Dec 2007 19:12:14 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       davem@davemloft.net, mathieu.desnoyers@polymtl.ca,
+       hskinnemoen@atmel.com
+Subject: Re: [PATCH 2/2] Kprobes: Build kretprobe samples only if arch supports kretprobes - updated
+Message-ID: <20071210134214.GA30004@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20071210095221.GA19425@in.ibm.com> <20071210095350.GB19425@in.ibm.com> <20071210120026.GA14992@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071210112050.0bd6ac28@the-village.bc.nu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20071210120026.GA14992@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2007 at 11:20:50AM +0000, Alan Cox wrote:
-
-> > To be totally correct, we still need to also revert
-> > commit fd6e732186ab522c812ab19c2c5e5befb8ec8115 which
-> > is bogus.
+On Mon, Dec 10, 2007 at 01:00:26PM +0100, Sam Ravnborg wrote:
+> On Mon, Dec 10, 2007 at 03:23:50PM +0530, Ananth N Mavinakayanahalli wrote:
+> > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> > 
+> > This patch builds samples/kprobes/kretprobe_example.c only on archs that
+> > support kretprobes.
+> > 
+> > 
+> > Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> > ---
+> >  samples/kprobes/Makefile |    7 +++++--
+> >  1 files changed, 5 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux-2.6.24-rc4/samples/kprobes/Makefile
+> > ===================================================================
+> > --- linux-2.6.24-rc4.orig/samples/kprobes/Makefile
+> > +++ linux-2.6.24-rc4/samples/kprobes/Makefile
+> > @@ -1,5 +1,8 @@
+> >  # builds the kprobes example kernel modules;
+> >  # then to use one (as root):  insmod <module_name.ko>
+> >  
+> > -obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o \
+> > -		kretprobe_example.o
+> > +obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o
+> > +
+> > +ifeq ($(CONFIG_HAVE_KRETPROBES),y)
+> > +obj-$(CONFIG_SAMPLE_KPROBES) += kretprobe_example.o
+> > +endif
 > 
-> Agreed but that would cause an revert on an obscure MIPS platform which
-> is apparently now a thoughtcrime ;)
+> It would be nice to push this configuration dependency to Kconfig.
+> Something like:
 > 
-> > Linus, can you still apply this to 2.6.24 ? I would also like the
-> > above (fd6e...) reverted as so far, nobody have come up with a demonstration
-> > that it's not bogus.
+> config SAMPLE_KRETPROBES
+> 	default y
+> 	depends on SAMPLE_KPROBES
 > 
-> Ack the revert too.
-> 
-> The MIPS needs sorting out differently.
+> And then in the Makefile have:
+> obj-$(CONFIG_SAMPLE_KRETPROBES) += kretprobe_example.o
 
-Yep.
+Done. Updated patch below...
 
-It seems the whole MIPS resource managment is complicated enough (out of
-necessity) that only a few people actually grok it.  Ioports being
-actually memory mapped on MIPS only makes the confusion worse, sigh.
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-  Ralf
+This patch builds samples/kprobes/kretprobe_example.c only on archs that
+support kretprobes. Thanks to Sam Ravnborg for Kconfig suggestions.
+
+
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+---
+ samples/Kconfig          |    5 +++++
+ samples/kprobes/Makefile |    4 ++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.24-rc4/samples/kprobes/Makefile
+===================================================================
+--- linux-2.6.24-rc4.orig/samples/kprobes/Makefile
++++ linux-2.6.24-rc4/samples/kprobes/Makefile
+@@ -1,5 +1,5 @@
+ # builds the kprobes example kernel modules;
+ # then to use one (as root):  insmod <module_name.ko>
+ 
+-obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o \
+-		kretprobe_example.o
++obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o
++obj-$(CONFIG_SAMPLE_KRETPROBES) += kretprobe_example.o
+Index: linux-2.6.24-rc4/samples/Kconfig
+===================================================================
+--- linux-2.6.24-rc4.orig/samples/Kconfig
++++ linux-2.6.24-rc4/samples/Kconfig
+@@ -28,5 +28,10 @@ config SAMPLE_KPROBES
+ 	help
+ 	  This build several kprobes example modules.
+ 
++config SAMPLE_KRETPROBES
++	tristate "Build kretprobes example -- loadable modules only"
++	default m
++	depends on SAMPLE_KPROBES && HAVE_KRETPROBES
++
+ endif # SAMPLES
+ 
