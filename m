@@ -1,193 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbXLJPo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbXLJPqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbXLJPo0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 10:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbXLJPoS
+	id S1753861AbXLJPqO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 10:46:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbXLJPp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 10:44:18 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:2515 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbXLJPoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 10:44:17 -0500
-Date: Mon, 10 Dec 2007 10:39:59 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Neil Horman <nhorman@redhat.com>
-Cc: Ben Woodard <woodard@redhat.com>, kexec@lists.infradead.org,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
-       Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
-	boot cpu
-Message-ID: <20071210153959.GA23290@hmsreliant.think-freely.org>
-References: <474F7177.7050306@redhat.com> <20071130144250.GC23810@redhat.com> <20071130145131.GB5822@hmsendeavour.rdu.redhat.com> <20071206213951.GB28898@hmsreliant.think-freely.org> <20071206221143.GC2863@redhat.com> <m1bq93s5r8.fsf@ebiederm.dsl.xmission.com> <86802c440712070050s3c5017a4w8e747a7035d10d3a@mail.gmail.com> <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com> <20071207142144.GA10389@hmsendeavour.rdu.redhat.com> <20071207175832.GA18485@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 10 Dec 2007 10:45:57 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:24869
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752500AbXLJPpy convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 10:45:54 -0500
+Message-Id: <475D6D71.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Mon, 10 Dec 2007 15:46:41 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@redhat.com>
+Cc: <eranian@hpl.hp.com>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: resolve hidden patch conflict in
+	arch/x86/kernel/cpu/perfctr-watchdog.c
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20071207175832.GA18485@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 07, 2007 at 12:58:32PM -0500, Neil Horman wrote:
-> 
-> Ok, New patch attached.  It preforms the same function as previously described,
-> but is more restricted in its application.  As Yinghai pointed out, the
-> broadcast mask bit (bit 17 in the htcfg register) should only be enabled, if the
-> extened apic id bit (bit 18 in the same register) is also set.  So this patch
-> now check for that bit to be turned on first.  Also, this patch now adds an
-> independent quirk check for all AMD hypertransport host controllers, since its
-> possible for this misconfiguration to be present in systems other than nvidias.
-> The net effect of these changes is, that its now applicable to all AMD systems
-> containing hypertransport busses, and is only activated if extended apic ids are
-> in use, meaning that this quirk guarantees that all processors in a system are
-> elligible to receive interrupts from the ioapic, even if their apicid extends
-> beyond the nominal 4 bit limitation.  Tested successfully by me.
-> 
-> Thanks & Regards
-> Neil
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> 
-> 
->  early-quirks.c |   83 ++++++++++++++++++++++++++++++++++++++++++++++++++++-----
->  1 file changed, 76 insertions(+), 7 deletions(-)
-> 
-> 
-> 
-> diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
-> index 88bb83e..d5a7b30 100644
-> --- a/arch/x86/kernel/early-quirks.c
-> +++ b/arch/x86/kernel/early-quirks.c
-> @@ -44,6 +44,50 @@ static int __init nvidia_hpet_check(struct acpi_table_header *header)
->  #endif /* CONFIG_X86_IO_APIC */
->  #endif /* CONFIG_ACPI */
->  
-> +static void __init fix_hypertransport_config(int num, int slot, int func)
-> +{
-> +	u32 htcfg;
-> +	/*
-> +	 *we found a hypertransport bus
-> +	 *make sure that are broadcasting
-> +	 *interrupts to all cpus on the ht bus
-> +	 *if we're using extended apic ids
-> +	 */
-> +	htcfg = read_pci_config(num, slot, func, 0x68);
-> +	if ((htcfg & (1 << 18)) == 1) {	
-> +		printk(KERN_INFO "Detected use of extended apic ids on hypertransport bus\n");
-> +		if ((htcfg & (1 << 17)) == 0) {
-> +			printk(KERN_INFO "Enabling hypertransport extended apic interrupt broadcast\n");
-> +			htcfg |= (1 << 17);
-> +			write_pci_config(num, slot, func, 0x68, htcfg);
-> +		}
-> +	}
-> +	
-> +}
-> +
-> +static void __init check_hypertransport_config()
-> +{
-> +	int num, slot, func;
-> +	u32 device, vendor;
-> +	func = 0;
-> +	for (num = 0; num < 32; num++) {
-> +		for (slot = 0; slot < 32; slot++) {
-> +			vendor = read_pci_config(num,slot,func,
-> +						PCI_VENDOR_ID); 
-> +			device = read_pci_config(num,slot,func,
-> +						PCI_DEVICE_ID);
-> +			vendor &= 0x0000ffff;
-> +			device >>= 16;
-> +			if ((vendor == PCI_VENDOR_ID_AMD) &&
-> +			    (device == PCI_DEVICE_ID_AMD_K8_NB))
-> +				fix_hypertransport_config(num,slot,func);
-> +		}
-> +	}
-> +
-> +	return;
-> +
-> +}
-> +
->  static void __init nvidia_bugs(void)
->  {
->  #ifdef CONFIG_ACPI
-> @@ -83,6 +127,12 @@ static void __init ati_bugs(void)
->  #endif
->  }
->  
-> +static void __init amd_host_bugs(void)
-> +{
-> +	printk(KERN_CRIT "IN AMD_HOST_BUGS\n");
-> +	check_hypertransport_config();
-> +}
-> +
->  struct chipset {
->  	u16 vendor;
->  	void (*f)(void);
-> @@ -95,9 +145,16 @@ static struct chipset early_qrk[] __initdata = {
->  	{}
->  };
->  
-> +static struct chipset early_host_qrk[] __initdata = {
-> +	{ PCI_VENDOR_ID_AMD, amd_host_bugs},
-> +	{}
-> +};
-> +
->  void __init early_quirks(void)
->  {
->  	int num, slot, func;
-> +	u8 found_bridge = 0;
-> +	u8 found_host = 0;
->  
->  	if (!early_pci_allowed())
->  		return;
-> @@ -115,18 +172,30 @@ void __init early_quirks(void)
->  				if (class == 0xffffffff)
->  					break;
->  
-> -				if ((class >> 16) != PCI_CLASS_BRIDGE_PCI)
-> +				class >>= 16;
-> +				if ((class != PCI_CLASS_BRIDGE_PCI) &&
-> +				    (class != PCI_CLASS_BRIDGE_HOST))
->  					continue;
->  
->  				vendor = read_pci_config(num, slot, func,
->  							 PCI_VENDOR_ID);
->  				vendor &= 0xffff;
-> -
-> -				for (i = 0; early_qrk[i].f; i++)
-> -					if (early_qrk[i].vendor == vendor) {
-> -						early_qrk[i].f();
-> -						return;
-> -					}
-> +				if ((class == PCI_CLASS_BRIDGE_PCI) && (!found_bridge)) {
-> +					for (i = 0; early_qrk[i].f; i++)
-> +						if (early_qrk[i].vendor == vendor) {
-> +							early_qrk[i].f();
-> +							found_bridge = 1;;
-> +						}
-> +				} else if (!found_host) {
-> +					for (i = 0; early_host_qrk[i].f; i++)
-> +						if (early_host_qrk[i].vendor == vendor) {
-> +							early_host_qrk[i].f();
-> +							found_host = 1;
-> +						}
-> +				}
-> +
-> +				if (found_bridge && found_host)
-> +					return;
->  
->  				type = read_pci_config_byte(num, slot, func,
->  							    PCI_HEADER_TYPE);
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+There apparently was an unnoticed conflict between an earlier patch to
+this file and mine (d1e084746b0e5806e6345ab31c5b370f8dee2b23), which
+I noticed only now. I suppose a change like the one below (untested) is
+needed; I didn't get any response on a confirmation request for this from
+the submitter of the first patch.
 
-Sorry to reply to myself, but do we have consensus on this patch?  I'd like to
-figure out its disposition if possible.  
+The issue is the writing of the 'checkbit' member at the end of
+setup_intel_arch_watchdog(), which my patch made go to intel_arch_wd_ops
+rather than wd_ops.
 
-Thanks & Regards
-Neil
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: Stephane Eranian <eranian@hpl.hp.com>
+
+ arch/x86/kernel/cpu/perfctr-watchdog.c |   14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
+
+--- linux-2.6.24-rc4/arch/x86/kernel/cpu/perfctr-watchdog.c	2007-12-10 16:11:18.000000000 +0100
++++ 2.6.24-rc4-x86-coreduo-wd-ops/arch/x86/kernel/cpu/perfctr-watchdog.c	2007-12-06 08:51:03.000000000 +0100
+@@ -615,16 +615,6 @@ static struct wd_ops intel_arch_wd_ops _
+ 	.evntsel = MSR_ARCH_PERFMON_EVENTSEL1,
+ };
+ 
+-static struct wd_ops coreduo_wd_ops = {
+-	.reserve = single_msr_reserve,
+-	.unreserve = single_msr_unreserve,
+-	.setup = setup_intel_arch_watchdog,
+-	.rearm = p6_rearm,
+-	.stop = single_msr_stop_watchdog,
+-	.perfctr = MSR_ARCH_PERFMON_PERFCTR0,
+-	.evntsel = MSR_ARCH_PERFMON_EVENTSEL0,
+-};
+-
+ static void probe_nmi_watchdog(void)
+ {
+ 	switch (boot_cpu_data.x86_vendor) {
+@@ -638,8 +628,8 @@ static void probe_nmi_watchdog(void)
+ 		/* Work around Core Duo (Yonah) errata AE49 where perfctr1
+ 		   doesn't have a working enable bit. */
+ 		if (boot_cpu_data.x86 == 6 && boot_cpu_data.x86_model == 14) {
+-			wd_ops = &coreduo_wd_ops;
+-			break;
++			intel_arch_wd_ops.perfctr = MSR_ARCH_PERFMON_PERFCTR0;
++			intel_arch_wd_ops.evntsel = MSR_ARCH_PERFMON_EVENTSEL0;
+ 		}
+ 		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)) {
+ 			wd_ops = &intel_arch_wd_ops;
+
+
 
