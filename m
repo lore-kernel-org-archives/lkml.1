@@ -1,89 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbXLJVwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbXLJWFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589AbXLJVwS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 16:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbXLJVwL
+	id S1752751AbXLJWFg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 17:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXLJWF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 16:52:11 -0500
-Received: from hamlet.e18.physik.tu-muenchen.de ([129.187.154.223]:52775 "EHLO
-	hamlet.e18.physik.tu-muenchen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751214AbXLJVwK (ORCPT
+	Mon, 10 Dec 2007 17:05:29 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51980 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751496AbXLJWF2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 16:52:10 -0500
-X-Greylist: delayed 1575 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Dec 2007 16:52:09 EST
-Message-ID: <53905.88.217.68.129.1197321951.squirrel@www.e18.physik.tu-muenchen.de>
-Date: Mon, 10 Dec 2007 22:25:51 +0100 (CET)
-Subject: Re: Possibly SATA related freeze killed networking and RAID
-From: "Thiemo Nagel" <thiemo.nagel@ph.tum.de>
-To: linux-kernel@vger.kernel.org
-Cc: noah123@gmail.com
-User-Agent: SquirrelMail/1.4.4
-MIME-Version: 1.0
+	Mon, 10 Dec 2007 17:05:28 -0500
+Date: Mon, 10 Dec 2007 14:04:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, "Luck, Tony" <tony.luck@intel.com>
+Subject: Re: [PATCH] Avoid overflows in kernel/time.c
+Message-Id: <20071210140457.7a93de20.akpm@linux-foundation.org>
+In-Reply-To: <475D8C88.5080706@zytor.com>
+References: <200711300019.lAU0Jpbr003807@tazenda.hos.anvin.org>
+	<20071204032949.c677c021.akpm@linux-foundation.org>
+	<475D8C88.5080706@zytor.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, 10 Dec 2007 10:59:20 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-I think, I'm experiencing the same problem:
+> Andrew Morton wrote:
+> > 
+> > My ia64 allmodconfig build has taken
+> > 
+> > akpm     15700 89.6  0.0   8256   700 pts/4    RN+  03:09  10:41 bc -q kernel/timeconst.bc
+> > 
+> > 11 minutes so far.  fc6/x86_64.
+> > 
+> 
+> I just tried this on my system, using your cross-compiler chain.  I got 
+> a different error:
+> 
+> /opt/crosstool/gcc-3.4.5-glibc-2.3.6/ia64-unknown-linux-gnu/lib/gcc/ia64-unknown-linux-gnu/3.4.5/../../../../ia64-unknown-linux-gnu/bin/ld: 
+> section .data.patch [a000000000000500 -> a000000000000507] overlaps 
+> section .dynamic [a0000000000003c8 -> a000000000000507]
+> collect2: ld returned 1 exit status
+> make[2]: *** [arch/ia64/kernel/gate.so] Error 1
 
-09:16:34 : NETDEV WATCHDOG: eth0: transmit timed out
-09:16:34 : eth0: Got tx_timeout. irq: 00000000
-09:16:34 : eth0: Ring at 37e50000
-09:16:34 : eth0: Dumping tx registers
-09:16:34 :   0: 00000000 000000ff 00000003 025003ca 00000000 00000000
-00000000 00000000
-09:16:34 :  20: 00000000 00000000 00000000 00000000 00000000 00000000
-00000000 00000000
+You'll need rc4-mm1's ia64-increase-datapatch-offset.patch.  That's now in
+Tony's tree and should go into 2.6.24 IMO.
 
-[...]
+> ... but the timeconst stuff worked fine.  I tried it both from the 
+> command line and using your xb script.
+> 
+> This is on a fc7/x86-64 box.  I also ran through all the values from 48 
+> to 1024 on both an fc5 and an fc7 box (no fc6 box readily available, 
+> although bc has been at 1.06 since 2000...)
+> 
+> In short, this is highly weird.  Could you possibly do me a favour and 
+> just run, at the command line:
+> 
+> echo 250 | bc -q kernel/timeconst.bc
 
-09:16:54 : ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-09:16:54 : ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-09:16:54 : ata6.00: cmd 25/00:08:1e:97:48/00:00:19:00:00/e0 tag 0 cdb 0x0
-data 4096 in
-09:16:54 :          res 40/00:00:01:4f:c2/00:00:00:00:00/00 Emask 0x4
-(timeout)
-09:16:54 : ata5.00: cmd 25/00:70:1e:97:48/00:00:19:00:00/e0 tag 0 cdb 0x0
-data 57344 in
-09:16:54 :          res 40/00:00:01:4f:c2/00:00:00:00:00/00 Emask 0x4
-(timeout)
-09:16:54 : ata6: soft resetting port
-09:16:54 : ata5: soft resetting port
-09:16:54 : ata6: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-09:16:54 : ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-09:16:54 : NETDEV WATCHDOG: eth0: transmit timed out
-09:16:54 : eth0: Got tx_timeout. irq: 00000032
-09:16:54 : eth0: Ring at 37e50000
-09:16:54 : eth0: Dumping tx registers
+That works OK.
 
-A more complete log can be found at:
-http://www.e18.physik.tu-muenchen.de/~tnagel/misc/kernel-crash.log
+> ... and see if it reproduces the lockup (I'm assuming HZ == 250 in your 
+> config, since that's what I get when I do "make allmodconfig" on IA64.)
+> 
+> (No need to wait 11 minutes.  It should run in a small fraction of a 
+> second.)
 
-The setup is strikingly similar to that of noah (I'm quoting all of this
-by heart, if somebody is interested in more detail, just ask.):
+I retested 2.6.24-rc4-mm1 plus avoid-overflows-in-kernel-timec.patch and
+the failure has magically gone away.
 
-Kernel: 2.6.22 (amd64, Debian patches, tainted)
-Mainboard: Asus M2N-SLI Deluxe (nForce 570 SLI MCP --> MCP55, same as noah)
-CPU: Athlon64 Dual-Core (same as noah)
-RAM: 1GB
-HD: 22 x Samsung HD501LJ 500GB (same as noah), 1-6 connected to chipset,
-7-22 connected to RocketRaid 2340.
-
-I'm using software RAID like noah, (levels 1, 5 and 6), and like with noah
-the problem occurred during RAID check, in my case during heavy NFS load
-which had been ongoing for ~4 days.  This is the third time, it has
-happened, but only this time I could catch the logs via netconsole.  The
-two affected drives are connected to the chipset and show no SMART errors.
-
-Unfortunately, the kernel is tainted since I'm using HighPoint's drivers
-for the RR2340.  I don't know whether I can change this easily.
-
-Kind regards,
-
-Thiemo Nagel
-
+Ho hum.  I'll reconstitute the patch and will keep an eye on it.
+It'd be nice to avoid the introduction of the bc dependency though.
