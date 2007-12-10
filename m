@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbXLJXhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbXLJXhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753223AbXLJXhF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 18:37:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXLJXgy
+	id S1754184AbXLJXhc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 18:37:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbXLJXg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 18:36:54 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35022 "EHLO mx1.redhat.com"
+	Mon, 10 Dec 2007 18:36:58 -0500
+Received: from waste.org ([66.93.16.53]:55017 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751342AbXLJXgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 18:36:53 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1197322068.18120.176.camel@moss-spartans.epoch.ncsc.mil>
-References: <1197322068.18120.176.camel@moss-spartans.epoch.ncsc.mil> <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil> <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193859.24617.36392.stgit@warthog.procyon.org.uk> <25037.1197306473@redhat.com> <25572.1197320887@redhat.com> 
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: dhowells@redhat.com, Karl MacMillan <kmacmill@redhat.com>,
-       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
-       casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 10 Dec 2007 23:36:09 +0000
-Message-ID: <25965.1197329769@redhat.com>
+	id S1751864AbXLJXg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 18:36:57 -0500
+Date: Mon, 10 Dec 2007 17:35:25 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Marc Haber <mh+linux-kernel@zugschlus.de>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071210233525.GK19691@waste.org>
+References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <20071204164720.6e4dc2c4@the-village.bc.nu> <475599D6.4030008@cosmosbay.com> <20071205212646.GP17536@waste.org> <20071209124200.GA31147@torres.zugschlus.de> <20071209161605.GX19691@waste.org> <20071210230643.GC32133@torres.zugschlus.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071210230643.GC32133@torres.zugschlus.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Smalley <sds@tycho.nsa.gov> wrote:
-
-> From a config file whose pathname would be provided by libselinux (ala
-> the way in which dbusd imports contexts), or directly as a context
-> returned by a libselinux function.
-
-That sounds too SELinux specific.  How do I do it so that it works for any
-LSM?
-
-Is linking against libselinux is a viable option if it's not available under
-all LSM models?  Is it available under all LSM models?  Perhaps Casey can
-answer this one.
-
-> > I use to do that, but someone objected...  Possibly Karl MacMillan.
+On Tue, Dec 11, 2007 at 12:06:43AM +0100, Marc Haber wrote:
+> On Sun, Dec 09, 2007 at 10:16:05AM -0600, Matt Mackall wrote:
+> > On Sun, Dec 09, 2007 at 01:42:00PM +0100, Marc Haber wrote:
+> > > On Wed, Dec 05, 2007 at 03:26:47PM -0600, Matt Mackall wrote:
+> > > > The distinction between /dev/random and /dev/urandom boils down to one
+> > > > word: paranoia. If you are not paranoid enough to mistrust your
+> > > > network, then /dev/random IS NOT FOR YOU. Use /dev/urandom.
+> > > 
+> > > But currently, people who use /dev/urandom to obtain low-quality
+> > > entropy do a DoS for the paranoid people.
+> > 
+> > Not true, as I've already pointed out in this thread.
 > 
-> Yes, but I think I disagreed then too.
+> I must have missed this. Can you please explain again? For a layman it
+> looks like a paranoid application cannot read 500 Bytes from
+> /dev/random without blocking if some other application has previously
+> read 10 Kilobytes from /dev/urandom.
 
-So, who's right?
+/dev/urandom always leaves enough entropy in the input pool for
+/dev/random to reseed. Thus, as long as entropy is coming in, it is
+not possible for /dev/urandom readers to starve /dev/random readers.
+But /dev/random readers may still block temporarily and they should
+damn well expect to block if they read 500 bytes out of a 512 byte
+pool.
 
-> It doesn't fit with how other users of security_kernel_act_as() will
-> likely want to work (they will want to just set the context to a
-> specified value, whether one obtained from the client or from some local
-> source), nor with how type transitions normally work (exec, with the
-> program type as the second type field).  I think it will just cause
-> confusion and subtle breakage.
-
-It's causing me lots of confusion as it is.  I have been / am being told by
-different people to do different things just in dealing with SELinux, and
-various people are raising extra requirements or restrictions beyond that.
-There doesn't seem to be a consensus.
-
-It sounds like the best option is just to have the kernel nick the userspace
-daemon's security context and use that as is, and junk all the restrictions on
-what the daemon can do so that the kernel isn't too restricted.
-
-David
+-- 
+Mathematics is the supreme nostalgia of our time.
