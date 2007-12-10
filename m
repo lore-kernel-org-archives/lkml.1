@@ -1,127 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbXLJTg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbXLJTh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757328AbXLJTg4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 14:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756495AbXLJTgr
+	id S1757514AbXLJTh2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 14:37:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbXLJThN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 14:36:47 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57549 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751718AbXLJTgq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 14:36:46 -0500
-Date: Mon, 10 Dec 2007 11:35:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Denis V. Lunev" <den@sw.ru>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, rjw@sisk.pl,
-       trond.myklebust@fys.uio.no, gnome42@gmail.com,
-       linux-kernel@vger.kernel.org, bfields@fieldses.org, den@openvz.org,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate
-Message-Id: <20071210113519.00d4d361.akpm@linux-foundation.org>
-In-Reply-To: <475D3FE2.202@sw.ru>
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
-	<1197067918.10831.13.camel@heimdal.trondhjem.org>
-	<20071207151444.af5d8e11.akpm@linux-foundation.org>
-	<200712080043.29292.rjw@sisk.pl>
-	<20071208000043.GC1951@martell.zuzino.mipt.ru>
-	<20071207161508.afe8fdf1.akpm@linux-foundation.org>
-	<m1lk85q0cw.fsf_-_@ebiederm.dsl.xmission.com>
-	<475CA9EA.1090405@vc.cvut.cz>
-	<475D3FE2.202@sw.ru>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 10 Dec 2007 14:37:13 -0500
+Received: from mx03.nsgroup.net ([195.84.17.43]:39509 "EHLO mx03.nsgroup.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754781AbXLJThM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 14:37:12 -0500
+Message-ID: <475D95B5.9000905@nerdmail.nu>
+Date: Mon, 10 Dec 2007 20:38:29 +0100
+From: Alexander Rajula <chris@nerdmail.nu>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Compile error: patched 2.6.23-r3 with rr2310_00 drivers
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-velocity-MailScanner-Information: Please contact the ISP for more information
+X-velocity-MailScanner: Found to be clean
+X-velocity-MailScanner-From: chris@nerdmail.nu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Dec 2007 16:32:18 +0300 "Denis V. Lunev" <den@sw.ru> wrote:
->
+Compile error during "make" on patched 2.6.23-r3 with Highpoint-tech 
+RocketRaid 2300 drivers.
 
-Plese don't top-post.  It makes replying to you rather awkward.
+Today I tried to upgrade the kernel on my server, with no luck.
+The drivers for the Rocket Raid 2300 PCI express were patched onto the 
+2.6.23-r3-kernel, but it fails to compile while doing make with the 
+following error:
 
-> could you, plz, check patch sent by Eric above in this thread.
-> 
-> I have tried it on my test node and it works for module you have
-> provided. The problem exists without it.
-> 
+      CHK     include/linux/version.h
+      CHK     include/linux/utsrelease.h
+      CALL    scripts/checksyscalls.sh
+      CHK     include/linux/compile.h
+      CC      drivers/scsi/rr2310_00/os_linux.o
+    drivers/scsi/rr2310_00/os_linux.c: In function 'os_sd_changed':
+    drivers/scsi/rr2310_00/os_linux.c:315: error: implicit declaration
+    of function 'scsi_device_cancel'
+    make[3]: *** [drivers/scsi/rr2310_00/os_linux.o] Error 1
+    make[2]: *** [drivers/scsi/rr2310_00] Error 2
+    make[1]: *** [drivers/scsi] Error 2
+    make: *** [drivers] Error 2
 
-When Peter says "with your patch in place" I assume that he's referring to
-Eric's latest patch, namely.
 
---- a/fs/proc/generic.c~proc-remove-fix-proc-generic-d_revalidate
-+++ a/fs/proc/generic.c
-@@ -374,16 +374,9 @@ static int proc_delete_dentry(struct den
- 	return 1;
- }
- 
--static int proc_revalidate_dentry(struct dentry *dentry, struct nameidata *nd)
--{
--	d_drop(dentry);
--	return 0;
--}
--
- static struct dentry_operations proc_dentry_operations =
- {
- 	.d_delete	= proc_delete_dentry,
--	.d_revalidate	= proc_revalidate_dentry,
- };
- 
- /*
 
-So we still have problems, it appears.
+The same driver patched onto the 2.6.22 kernel compiles.
 
-> 
-> Petr Vandrovec wrote:
-> > Eric W. Biederman wrote:
-> >> Ultimately to implement /proc perfectly we need an implementation
-> >> of d_revalidate because files and directories can be removed behind
-> >> the back of the VFS, and d_revalidate is the only way we can let
-> >> the VFS know that this has happened.
-> >>
-> >> So until we get a proper test for keeping dentries in the dcache
-> >> fix the current d_revalidate method by completely removing it.  This
-> >> returns us to the current status quo.
-> > 
-> > Hello,
-> >    I know that I'm late to the party, but mount points is not only
-> > problem with d_revalidate.  With your patch in place module below gets
-> > refcount incremented by two every time I do 'ls -la /proc/fs/vmblock'.
-> > 
-> >
-> > #include <linux/kernel.h>
-> > #include <linux/module.h>
-> > #include <linux/proc_fs.h>
-> > 
-> > static int vmblockinit(void) {
-> >    struct proc_dir_entry *controlProcDirEntry;
-> > 
-> >    /* Create /proc/fs/vmblock */
-> >    controlProcDirEntry = proc_mkdir("vmblock", proc_root_fs);
-> >    if (!controlProcDirEntry) {
-> >       printk(KERN_DEBUG "Bad...\n");
-> >       return -EINVAL;
-> >    }
-> >    controlProcDirEntry->owner = THIS_MODULE;
-> >    return 0;
-> > }
-> > 
-> > static void vmblockexit(void) {
-> >    remove_proc_entry("vmblock", proc_root_fs);
-> > }
-> > 
-> > module_init(vmblockinit);
-> > module_exit(vmblockexit);
-> > 
-> > 
-> > (code comes from VMware's vmblock module,
-> > http://sourceforge.net/project/showfiles.php?group_id=204462)
-> >                         Thanks,
-> >                             Petr
-> > 
-> > 
+Is this a linux specific bug, or are the drivers from Highpoint-tech 
+simply outdated?
+
+I.e should this bug report be sent to Highpoint tech instead?
+
+The drivers may be downloaded at 
+http://www.highpoint-tech.com/BIOS_Driver/rr231x_00/Linux/rr231x_0x-linux-src-v2.1-081507-0256.tar.gz
+
+Output from scripts/ver_linux:
+
+    Linux caramel-apple 2.6.22-gentoo-r5 #6 SMP Mon Dec 10 19:36:34 CET
+    2007 x86_64
+    Intel(R) Core(TM)2 CPU          6320  @ 1.86GHz GenuineIntel GNU/Linux
+     
+
+    Gnu C                  4.1.1
+    Gnu make               3.81
+    binutils               2.16.1
+    util-linux             2.12r
+    mount                  2.12r
+    module-init-tools      3.2.2
+    e2fsprogs              1.39
+    reiserfsprogs          3.6.19
+    quota-tools            3.14.
+    Linux C Library        > libc.2.5
+    Dynamic linker (ldd)   2.5
+    Procps                 3.2.6
+    Net-tools              1.60
+    Kbd                    1.12
+    Sh-utils               6.4
+    udev                   104
+    Modules Loaded
 
