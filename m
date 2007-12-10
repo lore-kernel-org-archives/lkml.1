@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757525AbXLJMKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752AbXLJMNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757525AbXLJMKB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 07:10:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbXLJMJw
+	id S1756752AbXLJMNt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 07:13:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbXLJMNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 07:09:52 -0500
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:39778 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753763AbXLJMJw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 07:09:52 -0500
-Message-ID: <475D2C37.6010809@keyaccess.nl>
-Date: Mon, 10 Dec 2007 13:08:23 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 10 Dec 2007 07:13:41 -0500
+Received: from phunq.net ([64.81.85.152]:60560 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751764AbXLJMNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 07:13:40 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC] [PATCH] A clean aEvgeniy pproach to writeout throttling
+Date: Mon, 10 Dec 2007 04:13:37 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+References: <200712051603.02183.phillips@phunq.net> <200712100323.48535.phillips@phunq.net> <20071210114123.GE5008@kernel.dk>
+In-Reply-To: <20071210114123.GE5008@kernel.dk>
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-References: <475879CD.9080006@reed.com> <p733auekcly.fsf@bingen.suse.de>	<20071207160439.71b7f46a@the-village.bc.nu>	<20071209125458.GB4381@ucw.cz>	<20071209165908.GA15910@one.firstfloor.org>	<20071209212513.GC24284@elf.ucw.cz> <475CBDD7.5050602@keyaccess.nl> <m3bq8y23de.fsf@maximus.localdomain>
-In-Reply-To: <m3bq8y23de.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+Message-Id: <200712100413.38077.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10-12-07 12:30, Krzysztof Halasa wrote:
+On Monday 10 December 2007 03:41, Jens Axboe wrote:
+> On Mon, Dec 10 2007, Daniel Phillips wrote:
+> > +       if (q && q->metric && !bio->bi_queue) {
+> >
+> > This prevents any reference to bi_bdev after the intial call to
+> > generic_make_request.  Thanks to Evgeniy for pointing out the need
+> > for this measure on the last go round.
+>
+> Which saves the initial target, for ease of accounting at end io time
+> - that's not the point. What happens when ->make_request_fn() changes
+> bio->bi_bdev and returns 1, causing another iteration of the
+> __generic_make_request() loop? 'q' is no longer the valid target,
+> bdev_get_queue(bio->bi_bdev) is.
 
-> Rene Herman <rene.herman@keyaccess.nl> writes:
-> 
->> Alan, did you double-check that 8 us? I tried to but I seem to not
->> have trustworthy documentation.
-> 
-> I remember 16-bit CPU-driven ISA was able to do 2-3 MB/s transfers,
-> that means at least 1 Maccesses/second = up to 1 microsecond/access.
+What happens on the second iteration of a recursive submission loop is 
+exactly nothing, as is right and proper.  The throttling has already 
+been done, and all the state necessary to perform the unthrottle was 
+recorded in the bio.  Everything seems to be in order there, and the 
+algorithm does indeed perform its function as designed, though to be 
+sure we have not tested it on -mm branch, only on mainline.
 
-Yes, the thing is that I'm fairly convinced that an out to an unused port 
-takes sort of exactly 1 us (8 cycles at 8 MHz). That's what I've always 
-known it to be at least and have taken as the point. The same's also said 
-here for example:
+Regards,
 
-http://tldp.org/HOWTO/IO-Port-Programming-4.html
-
-as well as in the bit of MINIX source in an earlier version of this thread:
-
-http://lkml.org/lkml/2002/3/14/194
-
-Oh, in fact, a few older posts by Alan himself:
-
-http://lkml.org/lkml/2002/3/15/2
-http://lkml.org/lkml/2003/9/22/263
-
-I'm not a hardware person as the level of actual electrical signals but if 
-an earlier instance of Alan is disagreeing with the current one as well, I 
-guess it's halfway safe to join that one...
-
-Rene.
-
+Daniel
