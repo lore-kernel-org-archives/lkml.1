@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbXLJIfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbXLJIhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753825AbXLJIfO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 03:35:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbXLJIfA
+	id S1754543AbXLJIhj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 03:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXLJIhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 03:35:00 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46747 "EHLO mx3.mail.elte.hu"
+	Mon, 10 Dec 2007 03:37:32 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54024 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751036AbXLJIfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 03:35:00 -0500
-Date: Mon, 10 Dec 2007 09:34:18 +0100
+	id S1751337AbXLJIhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 03:37:31 -0500
+Date: Mon, 10 Dec 2007 09:37:17 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de,
-       mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [patch] x64/page.h: convert some macros to inlines
-Message-ID: <20071210083418.GB22699@elte.hu>
-References: <20071205071547.701344000@nick.local0.net> <20071205071627.469118000@nick.local0.net> <20071207163142.4e77f9c3.akpm@linux-foundation.org> <20071209210653.6d9f9cf9.randy.dunlap@oracle.com>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Steven Rostedt <srostedt@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH git-sched 1/3] no need for 'affine wakeup' balancing in
+	select_task_rq_fair() when task_cpu(p) == this_cpu
+Message-ID: <20071210083717.GC22699@elte.hu>
+References: <1197225382.6991.23.camel@earth>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071209210653.6d9f9cf9.randy.dunlap@oracle.com>
+In-Reply-To: <1197225382.6991.23.camel@earth>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,16 +37,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Randy Dunlap <randy.dunlap@oracle.com> wrote:
+* Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
 
-> > Could someone *please* start a little project of extirpating this 
-> > utter brain damage?  Convert those macros to typechecked static 
-> > inlines on x86 (at least) so this sort of thing (which happens again 
-> > and again and again) is lessened?
+> From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 > 
-> Here's a start on it.  x86 only and only 4 functions so far. Builds 
-> cleanly for i386 and x86_64.
+> No need to do a check for 'affine wakeup and passive balancing 
+> possibilities' in select_task_rq_fair() when task_cpu(p) == this_cpu.
+> 
+> I guess, this part got missed upon introduction of per-sched_class 
+> select_task_rq() in try_to_wake_up().
 
-great - applied.
+thanks, applied.
 
 	Ingo
