@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbXLJSCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353AbXLJSC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948AbXLJSCP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 13:02:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756229AbXLJSBK
+	id S1757353AbXLJSC3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 13:02:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756249AbXLJSBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 13:01:10 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:55206 "EHLO
+	Mon, 10 Dec 2007 13:01:13 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:55207 "EHLO
 	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756185AbXLJSBI (ORCPT
+	with ESMTP id S1756224AbXLJSBK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 13:01:08 -0500
+	Mon, 10 Dec 2007 13:01:10 -0500
 Date: Mon, 10 Dec 2007 13:00:07 -0500
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 1/5] UML - Customize tlb.h
-Message-ID: <20071210180007.GA9323@c2.user-mode-linux.org>
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Karol Swietlicki <magotari@gmail.com>
+Subject: [PATCH 2/5] UML - Runtime detection of host VMSPLIT on i386
+Message-ID: <20071210180007.GA9328@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,209 +26,435 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Removed the check of mm_users which can't succeed and gave tlb.h an
-include of percpu.h ]
+Calculate TASK_SIZE at run-time by figuring out the host's VMSPLIT -
+this is needed on i386 if UML is to run on hosts with varying VMSPLITs
+without recompilation.
 
-Customize the hooks in tlb.h to optimize TLB flushing some more.
+TASK_SIZE is now defined in terms of a variable, task_size.  This gets
+rid of an include of pgtable.h from processor.h, which can cause
+include loops.
 
-Add start and end fields to tlb_gather_mmu, which are used to limit
-the address space range scanned when a region is unmapped.
+On i386, task_size is calculated early in boot by probing the address
+space in a binary search to figure out where the boundary between
+usable and non-usable memory is.  This tries to make sure that a page
+that is considered to be in userspace is, or can be made, read-write.
+I'm concerned about a system-global VDSO page in kernel memory being
+hit and considered to be a userspace page.
 
-The interfaces which just free page tables, without actually changing
-mappings, don't need to cause a TLB flush.
+On x86_64, task_size is just the old value of CONFIG_TOP_ADDR.
+
+A bunch of config variable are gone now.  CONFIG_TOP_ADDR is directly
+replaced by TASK_SIZE.  NEST_LEVEL is gone since the relocation of
+the stubs makes it irrelevant.  All the HOST_VMSPLIT stuff is gone.
+All references to these in arch/um/Makefile are also gone.
+
+I noticed and fixed a missing extern in os.h when adding
+os_get_task_size.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/kernel/tlb.c |   25 +++++++---
- include/asm-um/tlb.h |  122 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 139 insertions(+), 8 deletions(-)
+ arch/um/Kconfig                         |   11 ---
+ arch/um/Kconfig.i386                    |   37 ----------
+ arch/um/Kconfig.x86_64                  |    4 -
+ arch/um/Makefile                        |   11 ---
+ arch/um/defconfig                       |    3 
+ arch/um/include/os.h                    |    5 +
+ arch/um/kernel/um_arch.c                |   13 +++
+ arch/um/os-Linux/sys-i386/Makefile      |    2 
+ arch/um/os-Linux/sys-i386/task_size.c   |  110 ++++++++++++++++++++++++++++++++
+ arch/um/os-Linux/sys-x86_64/Makefile    |    2 
+ arch/um/os-Linux/sys-x86_64/task_size.c |    5 +
+ include/asm-um/fixmap.h                 |    3 
+ include/asm-um/processor-generic.h      |    5 -
+ 13 files changed, 137 insertions(+), 74 deletions(-)
 
-Index: linux-2.6-git/arch/um/kernel/tlb.c
+Index: linux-2.6-git/arch/um/kernel/um_arch.c
 ===================================================================
---- linux-2.6-git.orig/arch/um/kernel/tlb.c	2007-12-07 14:35:55.000000000 -0500
-+++ linux-2.6-git/arch/um/kernel/tlb.c	2007-12-07 16:34:12.000000000 -0500
-@@ -193,18 +193,18 @@ static inline int update_pte_range(pmd_t
- 		if (!pte_young(*pte)) {
- 			r = 0;
- 			w = 0;
--		} else if (!pte_dirty(*pte)) {
-+		} else if (!pte_dirty(*pte))
- 			w = 0;
--		}
-+
- 		prot = ((r ? UM_PROT_READ : 0) | (w ? UM_PROT_WRITE : 0) |
- 			(x ? UM_PROT_EXEC : 0));
- 		if (hvc->force || pte_newpage(*pte)) {
- 			if (pte_present(*pte))
- 				ret = add_mmap(addr, pte_val(*pte) & PAGE_MASK,
- 					       PAGE_SIZE, prot, hvc);
--			else ret = add_munmap(addr, PAGE_SIZE, hvc);
--		}
--		else if (pte_newprot(*pte))
-+			else
-+				ret = add_munmap(addr, PAGE_SIZE, hvc);
-+		} else if (pte_newprot(*pte))
- 			ret = add_mprotect(addr, PAGE_SIZE, prot, hvc);
- 		*pte = pte_mkuptodate(*pte);
- 	} while (pte++, addr += PAGE_SIZE, ((addr != end) && !ret));
-@@ -500,7 +500,8 @@ void flush_tlb_range(struct vm_area_stru
- 	else fix_range(vma->vm_mm, start, end, 0);
+--- linux-2.6-git.orig/arch/um/kernel/um_arch.c	2007-12-10 12:36:31.000000000 -0500
++++ linux-2.6-git/arch/um/kernel/um_arch.c	2007-12-10 12:37:04.000000000 -0500
+@@ -224,6 +224,9 @@ static void __init uml_postsetup(void)
  }
  
--void flush_tlb_mm(struct mm_struct *mm)
-+void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
-+			unsigned long end)
- {
+ /* Set during early boot */
++unsigned long task_size;
++EXPORT_SYMBOL(task_size);
++
+ unsigned long brk_start;
+ unsigned long end_iomem;
+ EXPORT_SYMBOL(end_iomem);
+@@ -250,6 +253,12 @@ int __init linux_main(int argc, char **a
+ 	if (have_root == 0)
+ 		add_arg(DEFAULT_COMMAND_LINE);
+ 
++	/*
++	 * TASK_SIZE needs to be PGDIR_SIZE aligned or else exit_mmap craps
++	 * out
++	 */
++	task_size = os_get_task_size(PGDIR_SHIFT);
++
+ 	/* OS sanity checks that need to happen before the kernel runs */
+ 	os_early_checks();
+ 
+@@ -286,7 +295,7 @@ int __init linux_main(int argc, char **a
+ 
+ 	highmem = 0;
+ 	iomem_size = (iomem_size + PAGE_SIZE - 1) & PAGE_MASK;
+-	max_physmem = CONFIG_TOP_ADDR - uml_physmem - iomem_size - MIN_VMALLOC;
++	max_physmem = TASK_SIZE - uml_physmem - iomem_size - MIN_VMALLOC;
+ 
  	/*
- 	 * Don't bother flushing if this address space is about to be
-@@ -509,7 +510,17 @@ void flush_tlb_mm(struct mm_struct *mm)
- 	if (atomic_read(&mm->mm_users) == 0)
- 		return;
+ 	 * Zones have to begin on a 1 << MAX_ORDER page boundary,
+@@ -318,7 +327,7 @@ int __init linux_main(int argc, char **a
+ 	}
  
--	fix_range(mm, 0, TASK_SIZE, 0);
-+	fix_range(mm, start, end, 0);
-+}
-+
-+void flush_tlb_mm(struct mm_struct *mm)
-+{
-+	struct vm_area_struct *vma = mm->mmap;
-+
-+	while (vma != NULL) {
-+		fix_range(mm, vma->vm_start, vma->vm_end, 0);
-+		vma = vma->vm_next;
-+	}
- }
- 
- void force_flush_all(void)
-Index: linux-2.6-git/include/asm-um/tlb.h
+ 	virtmem_size = physmem_size;
+-	avail = CONFIG_TOP_ADDR - start_vm;
++	avail = TASK_SIZE - start_vm;
+ 	if (physmem_size > avail)
+ 		virtmem_size = avail;
+ 	end_vm = start_vm + virtmem_size;
+Index: linux-2.6-git/include/asm-um/processor-generic.h
 ===================================================================
---- linux-2.6-git.orig/include/asm-um/tlb.h	2007-12-07 00:09:56.000000000 -0500
-+++ linux-2.6-git/include/asm-um/tlb.h	2007-12-07 14:37:30.000000000 -0500
-@@ -1,6 +1,126 @@
- #ifndef __UM_TLB_H
- #define __UM_TLB_H
+--- linux-2.6-git.orig/include/asm-um/processor-generic.h	2007-12-10 12:36:31.000000000 -0500
++++ linux-2.6-git/include/asm-um/processor-generic.h	2007-12-10 12:37:04.000000000 -0500
+@@ -11,7 +11,6 @@ struct pt_regs;
+ struct task_struct;
  
--#include <asm/arch/tlb.h>
-+#include <linux/swap.h>
-+#include <asm/percpu.h>
-+#include <asm/pgalloc.h>
-+#include <asm/tlbflush.h>
+ #include "asm/ptrace.h"
+-#include "asm/pgtable.h"
+ #include "registers.h"
+ #include "sysdep/archsetjmp.h"
+ 
+@@ -94,7 +93,9 @@ static inline void mm_copy_segments(stru
+ /*
+  * User space process size: 3GB (default).
+  */
+-#define TASK_SIZE (CONFIG_TOP_ADDR & PGDIR_MASK)
++extern unsigned long task_size;
 +
-+#define tlb_start_vma(tlb, vma) do { } while (0)
-+#define tlb_end_vma(tlb, vma) do { } while (0)
-+#define tlb_flush(tlb) flush_tlb_mm((tlb)->mm)
++#define TASK_SIZE (task_size)
+ 
+ /* This decides where the kernel will search for a free chunk of vm
+  * space during mmap's.
+Index: linux-2.6-git/arch/um/include/os.h
+===================================================================
+--- linux-2.6-git.orig/arch/um/include/os.h	2007-12-10 12:36:32.000000000 -0500
++++ linux-2.6-git/arch/um/include/os.h	2007-12-10 12:37:04.000000000 -0500
+@@ -304,6 +304,9 @@ extern void sig_handler_common_skas(int 
+ extern int os_arch_prctl(int pid, int code, unsigned long *addr);
+ 
+ /* tty.c */
+-int get_pty(void);
++extern int get_pty(void);
 +
-+/* struct mmu_gather is an opaque type used by the mm code for passing around
-+ * any data needed by arch specific code for tlb_remove_page.
-+ */
-+struct mmu_gather {
-+	struct mm_struct	*mm;
-+	unsigned int		need_flush; /* Really unmapped some ptes? */
-+	unsigned long		start;
-+	unsigned long		end;
-+	unsigned int		fullmm; /* non-zero means full mm flush */
-+};
-+
-+/* Users of the generic TLB shootdown code must declare this storage space. */
-+DECLARE_PER_CPU(struct mmu_gather, mmu_gathers);
-+
-+static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
-+					  unsigned long address)
-+{
-+	if (tlb->start > address)
-+		tlb->start = address;
-+	if (tlb->end < address + PAGE_SIZE)
-+		tlb->end = address + PAGE_SIZE;
-+}
-+
-+static inline void init_tlb_gather(struct mmu_gather *tlb)
-+{
-+	tlb->need_flush = 0;
-+
-+	tlb->start = TASK_SIZE;
-+	tlb->end = 0;
-+
-+	if (tlb->fullmm) {
-+		tlb->start = 0;
-+		tlb->end = TASK_SIZE;
-+	}
-+}
-+
-+/* tlb_gather_mmu
-+ *	Return a pointer to an initialized struct mmu_gather.
-+ */
-+static inline struct mmu_gather *
-+tlb_gather_mmu(struct mm_struct *mm, unsigned int full_mm_flush)
-+{
-+	struct mmu_gather *tlb = &get_cpu_var(mmu_gathers);
-+
-+	tlb->mm = mm;
-+	tlb->fullmm = full_mm_flush;
-+
-+	init_tlb_gather(tlb);
-+
-+	return tlb;
-+}
-+
-+extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
-+			       unsigned long end);
-+
-+static inline void
-+tlb_flush_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
-+{
-+	if (!tlb->need_flush)
-+		return;
-+
-+	flush_tlb_mm_range(tlb->mm, tlb->start, tlb->end);
-+	init_tlb_gather(tlb);
-+}
-+
-+/* tlb_finish_mmu
-+ *	Called at the end of the shootdown operation to free up any resources
-+ *	that were required.
-+ */
-+static inline void
-+tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
-+{
-+	tlb_flush_mmu(tlb, start, end);
-+
-+	/* keep the page table cache within bounds */
-+	check_pgt_cache();
-+
-+	put_cpu_var(mmu_gathers);
-+}
-+
-+/* tlb_remove_page
-+ *	Must perform the equivalent to __free_pte(pte_get_and_clear(ptep)),
-+ *	while handling the additional races in SMP caused by other CPUs
-+ *	caching valid mappings in their TLBs.
-+ */
-+static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
-+{
-+	tlb->need_flush = 1;
-+	free_page_and_swap_cache(page);
-+	return;
-+}
-+
-+/**
-+ * tlb_remove_tlb_entry - remember a pte unmapping for later tlb invalidation.
-+ *
-+ * Record the fact that pte's were really umapped in ->need_flush, so we can
-+ * later optimise away the tlb invalidate.   This helps when userspace is
-+ * unmapping already-unmapped pages, which happens quite a lot.
-+ */
-+#define tlb_remove_tlb_entry(tlb, ptep, address)		\
-+	do {							\
-+		tlb->need_flush = 1;				\
-+		__tlb_remove_tlb_entry(tlb, ptep, address);	\
-+	} while (0)
-+
-+#define pte_free_tlb(tlb, ptep) __pte_free_tlb(tlb, ptep)
-+
-+#define pud_free_tlb(tlb, pudp) __pud_free_tlb(tlb, pudp)
-+
-+#define pmd_free_tlb(tlb, pmdp) __pmd_free_tlb(tlb, pmdp)
-+
-+#define tlb_migrate_finish(mm) do {} while (0)
++/* sys-$ARCH/task_size.c */
++extern unsigned long os_get_task_size(int shift);
  
  #endif
+Index: linux-2.6-git/arch/um/os-Linux/sys-i386/Makefile
+===================================================================
+--- linux-2.6-git.orig/arch/um/os-Linux/sys-i386/Makefile	2007-12-10 12:36:31.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/sys-i386/Makefile	2007-12-10 12:37:04.000000000 -0500
+@@ -3,7 +3,7 @@
+ # Licensed under the GPL
+ #
+ 
+-obj-y = registers.o signal.o tls.o
++obj-y = registers.o signal.o task_size.o tls.o
+ 
+ USER_OBJS := $(obj-y)
+ 
+Index: linux-2.6-git/arch/um/os-Linux/sys-i386/task_size.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-git/arch/um/os-Linux/sys-i386/task_size.c	2007-12-10 12:37:04.000000000 -0500
+@@ -0,0 +1,110 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <signal.h>
++#include <sys/mman.h>
++#include "longjmp.h"
++#include "kern_constants.h"
++
++static jmp_buf buf;
++
++static void segfault(int sig)
++{
++	longjmp(buf, 1);
++}
++
++static int page_ok(unsigned long page)
++{
++	unsigned long *address = (unsigned long *) (page << UM_KERN_PAGE_SHIFT);
++	unsigned long n = ~0UL;
++	void *mapped = NULL;
++	int ok = 0;
++
++	/*
++	 * First see if the page is readable.  If it is, it may still
++	 * be a VDSO, so we go on to see if it's writable.  If not
++	 * then try mapping memory there.  If that fails, then we're
++	 * still in the kernel area.  As a sanity check, we'll fail if
++	 * the mmap succeeds, but gives us an address different from
++	 * what we wanted.
++	 */
++	if (setjmp(buf) == 0)
++		n = *address;
++	else {
++		mapped = mmap(address, UM_KERN_PAGE_SIZE,
++			      PROT_READ | PROT_WRITE,
++			      MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++		if (mapped == MAP_FAILED)
++			return 0;
++		if (mapped != address)
++			goto out;
++	}
++
++	/*
++	 * Now, is it writeable?  If so, then we're in user address
++	 * space.  If not, then try mprotecting it and try the write
++	 * again.
++	 */
++	if (setjmp(buf) == 0) {
++		*address = n;
++		ok = 1;
++		goto out;
++	} else if (mprotect(address, UM_KERN_PAGE_SIZE,
++			  PROT_READ | PROT_WRITE) != 0)
++		goto out;
++
++	if (setjmp(buf) == 0) {
++		*address = n;
++		ok = 1;
++	}
++
++ out:
++	if (mapped != NULL)
++		munmap(mapped, UM_KERN_PAGE_SIZE);
++	return ok;
++}
++
++unsigned long os_get_task_size(int shift)
++{
++	struct sigaction sa, old;
++	unsigned long bottom = 0 >> shift;
++	unsigned long top = ~0UL >> shift;
++	unsigned long test;
++	int to_page = shift - UM_KERN_PAGE_SHIFT;
++
++	printf("Locating the top of the address space ... ");
++	fflush(stdout);
++
++	/*
++	 * We're going to be longjmping out of the signal handler, so
++	 * SA_DEFER needs to be set.
++	 */
++	sa.sa_handler = segfault;
++	sigemptyset(&sa.sa_mask);
++	sa.sa_flags = SA_NODEFER;
++	sigaction(SIGSEGV, &sa, &old);
++
++	if (!page_ok(bottom << to_page)) {
++		fprintf(stderr, "Address 0x%x no good?\n", bottom << shift);
++		exit(1);
++	}
++
++	/* This could happen with a 4G/4G split */
++	if (page_ok(top << to_page))
++		goto out;
++
++	do {
++		test = bottom + (top - bottom) / 2;
++		if (page_ok(test << to_page))
++			bottom = test;
++		else
++			top = test;
++	} while (top - bottom > 1);
++
++out:
++	/* Restore the old SIGSEGV handling */
++	sigaction(SIGSEGV, &old, NULL);
++
++	printf("0x%x\n", top << shift);
++	fflush(stdout);
++	return top << shift;
++}
+Index: linux-2.6-git/arch/um/os-Linux/sys-x86_64/Makefile
+===================================================================
+--- linux-2.6-git.orig/arch/um/os-Linux/sys-x86_64/Makefile	2007-12-10 12:36:31.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/sys-x86_64/Makefile	2007-12-10 12:37:04.000000000 -0500
+@@ -3,7 +3,7 @@
+ # Licensed under the GPL
+ #
+ 
+-obj-y = registers.o prctl.o signal.o
++obj-y = registers.o prctl.o signal.o task_size.o
+ 
+ USER_OBJS := $(obj-y)
+ 
+Index: linux-2.6-git/arch/um/os-Linux/sys-x86_64/task_size.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-git/arch/um/os-Linux/sys-x86_64/task_size.c	2007-12-10 12:37:04.000000000 -0500
+@@ -0,0 +1,5 @@
++unsigned long os_get_task_size(unsigned long shift)
++{
++	/* The old value of CONFIG_TOP_ADDR */
++	return 0x7fc0000000;
++}
+Index: linux-2.6-git/arch/um/Kconfig
+===================================================================
+--- linux-2.6-git.orig/arch/um/Kconfig	2007-12-10 12:36:32.000000000 -0500
++++ linux-2.6-git/arch/um/Kconfig	2007-12-10 12:37:04.000000000 -0500
+@@ -216,17 +216,6 @@ config NR_CPUS
+ 	depends on SMP
+ 	default "32"
+ 
+-config NEST_LEVEL
+-	int "Nesting level"
+-	default "0"
+-	help
+-          This is set to the number of layers of UMLs that this UML will be run
+-          in.  Normally, this is zero, meaning that it will run directly on the
+-          host.  Setting it to one will build a UML that can run inside a UML
+-          that is running on the host.  Generally, if you intend this UML to run
+-          inside another UML, set CONFIG_NEST_LEVEL to one more than the host
+-          UML.
+-
+ config HIGHMEM
+ 	bool "Highmem support (EXPERIMENTAL)"
+ 	depends on !64BIT && EXPERIMENTAL
+Index: linux-2.6-git/arch/um/Kconfig.i386
+===================================================================
+--- linux-2.6-git.orig/arch/um/Kconfig.i386	2007-12-10 12:36:31.000000000 -0500
++++ linux-2.6-git/arch/um/Kconfig.i386	2007-12-10 12:37:04.000000000 -0500
+@@ -23,43 +23,6 @@ config SEMAPHORE_SLEEPERS
+ 	bool
+ 	default y
+ 
+-choice
+-	prompt "Host memory split"
+-	default HOST_VMSPLIT_3G
+-	help
+-        This is needed when the host kernel on which you run has a non-default
+-	(like 2G/2G) memory split, instead of the customary 3G/1G. If you did
+-	not recompile your own kernel but use the default distro's one, you can
+-	safely accept the "Default split" option.
+-
+-	It can be enabled on recent (>=2.6.16-rc2) vanilla kernels via
+-	CONFIG_VM_SPLIT_*, or on previous kernels with special patches (-ck
+-	patchset by Con Kolivas, or other ones) - option names match closely the
+-	host CONFIG_VM_SPLIT_* ones.
+-
+-	A lower setting (where 1G/3G is lowest and 3G/1G is higher) will
+-	tolerate even more "normal" host kernels, but an higher setting will be
+-	stricter.
+-
+-	So, if you do not know what to do here, say 'Default split'.
+-
+-config HOST_VMSPLIT_3G
+-	bool "Default split (3G/1G user/kernel host split)"
+-config HOST_VMSPLIT_3G_OPT
+-	bool "3G/1G user/kernel host split (for full 1G low memory)"
+-config HOST_VMSPLIT_2G
+-	bool "2G/2G user/kernel host split"
+-config HOST_VMSPLIT_1G
+-	bool "1G/3G user/kernel host split"
+-endchoice
+-
+-config TOP_ADDR
+-	hex
+-	default 0xB0000000 if HOST_VMSPLIT_3G_OPT
+-	default 0x78000000 if HOST_VMSPLIT_2G
+-	default 0x40000000 if HOST_VMSPLIT_1G
+-	default 0xC0000000
+-
+ config 3_LEVEL_PGTABLES
+ 	bool "Three-level pagetables (EXPERIMENTAL)"
+ 	default n
+Index: linux-2.6-git/arch/um/Kconfig.x86_64
+===================================================================
+--- linux-2.6-git.orig/arch/um/Kconfig.x86_64	2007-12-10 12:36:31.000000000 -0500
++++ linux-2.6-git/arch/um/Kconfig.x86_64	2007-12-10 12:37:04.000000000 -0500
+@@ -15,10 +15,6 @@ config SEMAPHORE_SLEEPERS
+ 	bool
+ 	default y
+ 
+-config TOP_ADDR
+- 	hex
+-	default 0x7fc0000000
+-
+ config 3_LEVEL_PGTABLES
+        bool
+        default y
+Index: linux-2.6-git/arch/um/Makefile
+===================================================================
+--- linux-2.6-git.orig/arch/um/Makefile	2007-12-10 12:36:31.000000000 -0500
++++ linux-2.6-git/arch/um/Makefile	2007-12-10 12:37:04.000000000 -0500
+@@ -79,13 +79,6 @@ KERNEL_DEFINES = $(strip -Derrno=kernel_
+ KBUILD_CFLAGS += $(KERNEL_DEFINES)
+ KBUILD_CFLAGS += $(call cc-option,-fno-unit-at-a-time,)
+ 
+-# These are needed for clean and mrproper, since in that case .config is not
+-# included; the values here are meaningless
+-
+-CONFIG_NEST_LEVEL ?= 0
+-
+-SIZE = ($(CONFIG_NEST_LEVEL) * 0x20000000)
+-
+ PHONY += linux
+ 
+ all: linux
+@@ -120,10 +113,6 @@ CFLAGS_NO_HARDENING := $(call cc-option,
+ CONFIG_KERNEL_STACK_ORDER ?= 2
+ STACK_SIZE := $(shell echo $$[ 4096 * (1 << $(CONFIG_KERNEL_STACK_ORDER)) ] )
+ 
+-ifndef START
+-  START = $(shell echo $$[ $(TOP_ADDR) - $(SIZE) ] )
+-endif
+-
+ CPPFLAGS_vmlinux.lds = -U$(SUBARCH) -DSTART=$(START) -DELF_ARCH=$(ELF_ARCH) \
+ 	-DELF_FORMAT="$(ELF_FORMAT)" -DKERNEL_STACK_SIZE=$(STACK_SIZE)
+ 
+Index: linux-2.6-git/arch/um/defconfig
+===================================================================
+--- linux-2.6-git.orig/arch/um/defconfig	2007-12-10 12:36:31.000000000 -0500
++++ linux-2.6-git/arch/um/defconfig	2007-12-10 12:37:04.000000000 -0500
+@@ -56,8 +56,6 @@ CONFIG_X86_TSC=y
+ CONFIG_UML_X86=y
+ # CONFIG_64BIT is not set
+ CONFIG_SEMAPHORE_SLEEPERS=y
+-# CONFIG_HOST_2G_2G is not set
+-CONFIG_TOP_ADDR=0xc0000000
+ # CONFIG_3_LEVEL_PGTABLES is not set
+ CONFIG_ARCH_HAS_SC_SIGNALS=y
+ CONFIG_ARCH_REUSE_HOST_VSYSCALL_AREA=y
+@@ -81,7 +79,6 @@ CONFIG_BINFMT_MISC=m
+ # CONFIG_HPPFS is not set
+ CONFIG_MCONSOLE=y
+ CONFIG_MAGIC_SYSRQ=y
+-CONFIG_NEST_LEVEL=0
+ # CONFIG_HIGHMEM is not set
+ CONFIG_KERNEL_STACK_ORDER=0
+ 
+Index: linux-2.6-git/include/asm-um/fixmap.h
+===================================================================
+--- linux-2.6-git.orig/include/asm-um/fixmap.h	2007-12-10 12:36:31.000000000 -0500
++++ linux-2.6-git/include/asm-um/fixmap.h	2007-12-10 12:37:04.000000000 -0500
+@@ -1,6 +1,7 @@
+ #ifndef __UM_FIXMAP_H
+ #define __UM_FIXMAP_H
+ 
++#include <asm/processor.h>
+ #include <asm/system.h>
+ #include <asm/kmap_types.h>
+ #include <asm/archparam.h>
+@@ -57,7 +58,7 @@ extern void __set_fixmap (enum fixed_add
+  * at the top of mem..
+  */
+ 
+-#define FIXADDR_TOP	(CONFIG_TOP_ADDR - 2 * PAGE_SIZE)
++#define FIXADDR_TOP	(TASK_SIZE - 2 * PAGE_SIZE)
+ #define FIXADDR_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
+ #define FIXADDR_START	(FIXADDR_TOP - FIXADDR_SIZE)
+ 
