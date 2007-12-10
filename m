@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbXLJCtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbXLJCsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241AbXLJCtU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 21:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXLJCnc
+	id S1754958AbXLJCsx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 21:48:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbXLJCn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 21:43:32 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49804 "EHLO
+	Sun, 9 Dec 2007 21:43:28 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49798 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754818AbXLJCnV (ORCPT
+	with ESMTP id S1751864AbXLJCnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 21:43:21 -0500
+	Sun, 9 Dec 2007 21:43:20 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 29/42] Unionfs: miscellaneous helper routines
-Date: Sun,  9 Dec 2007 21:42:02 -0500
-Message-Id: <11972545533887-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 15/42] Unionfs: dentry revalidation
+Date: Sun,  9 Dec 2007 21:41:48 -0500
+Message-Id: <11972545431361-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11972545353262-git-send-email-ezk@cs.sunysb.edu>
@@ -25,20 +25,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mostly related to whiteouts.
+Includes d_release methods and cache-coherency support for dentries.
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/subr.c |  242 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 242 insertions(+), 0 deletions(-)
- create mode 100644 fs/unionfs/subr.c
+ fs/unionfs/dentry.c |  498 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 498 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/dentry.c
 
-diff --git a/fs/unionfs/subr.c b/fs/unionfs/subr.c
+diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
 new file mode 100644
-index 0000000..1a26c57
+index 0000000..7d27987
 --- /dev/null
-+++ b/fs/unionfs/subr.c
-@@ -0,0 +1,242 @@
++++ b/fs/unionfs/dentry.c
+@@ -0,0 +1,498 @@
 +/*
 + * Copyright (c) 2003-2007 Erez Zadok
 + * Copyright (c) 2003-2006 Charles P. Wright
@@ -60,227 +60,483 @@ index 0000000..1a26c57
 +#include "union.h"
 +
 +/*
-+ * Pass an unionfs dentry and an index.  It will try to create a whiteout
-+ * for the filename in dentry, and will try in branch 'index'.  On error,
-+ * it will proceed to a branch to the left.
++ * Revalidate a single dentry.
++ * Assume that dentry's info node is locked.
++ * Assume that parent(s) are all valid already, but
++ * the child may not yet be valid.
++ * Returns true if valid, false otherwise.
 + */
-+int create_whiteout(struct dentry *dentry, int start)
++static bool __unionfs_d_revalidate_one(struct dentry *dentry,
++				       struct nameidata *nd)
 +{
-+	int bstart, bend, bindex;
-+	struct dentry *lower_dir_dentry;
++	bool valid = true;	/* default is valid */
 +	struct dentry *lower_dentry;
-+	struct dentry *lower_wh_dentry;
-+	struct nameidata nd;
-+	char *name = NULL;
-+	int err = -EINVAL;
++	int bindex, bstart, bend;
++	int sbgen, dgen;
++	int positive = 0;
++	int locked = 0;
++	int interpose_flag;
++	struct nameidata lowernd; /* TODO: be gentler to the stack */
++
++	if (nd)
++		memcpy(&lowernd, nd, sizeof(struct nameidata));
++	else
++		memset(&lowernd, 0, sizeof(struct nameidata));
 +
 +	verify_locked(dentry);
 +
-+	bstart = dbstart(dentry);
-+	bend = dbend(dentry);
-+
-+	/* create dentry's whiteout equivalent */
-+	name = alloc_whname(dentry->d_name.name, dentry->d_name.len);
-+	if (unlikely(IS_ERR(name))) {
-+		err = PTR_ERR(name);
++	/* if the dentry is unhashed, do NOT revalidate */
++	if (d_deleted(dentry))
 +		goto out;
-+	}
 +
-+	for (bindex = start; bindex >= 0; bindex--) {
-+		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++	BUG_ON(dbstart(dentry) == -1);
++	if (dentry->d_inode)
++		positive = 1;
++	dgen = atomic_read(&UNIONFS_D(dentry)->generation);
++	sbgen = atomic_read(&UNIONFS_SB(dentry->d_sb)->generation);
++	/*
++	 * If we are working on an unconnected dentry, then there is no
++	 * revalidation to be done, because this file does not exist within
++	 * the namespace, and Unionfs operates on the namespace, not data.
++	 */
++	if (unlikely(sbgen != dgen)) {
++		struct dentry *result;
++		int pdgen;
 +
-+		if (!lower_dentry) {
-+			/*
-+			 * if lower dentry is not present, create the
-+			 * entire lower dentry directory structure and go
-+			 * ahead.  Since we want to just create whiteout, we
-+			 * only want the parent dentry, and hence get rid of
-+			 * this dentry.
-+			 */
-+			lower_dentry = create_parents(dentry->d_inode,
-+						      dentry,
-+						      dentry->d_name.name,
-+						      bindex);
-+			if (!lower_dentry || IS_ERR(lower_dentry)) {
-+				int ret = PTR_ERR(lower_dentry);
-+				if (!IS_COPYUP_ERR(ret))
-+					printk(KERN_ERR
-+					       "unionfs: create_parents for "
-+					       "whiteout failed: bindex=%d "
-+					       "err=%d\n", bindex, ret);
-+				continue;
++		/* The root entry should always be valid */
++		BUG_ON(IS_ROOT(dentry));
++
++		/* We can't work correctly if our parent isn't valid. */
++		pdgen = atomic_read(&UNIONFS_D(dentry->d_parent)->generation);
++		BUG_ON(pdgen != sbgen);	/* should never happen here */
++
++		/* Free the pointers for our inodes and this dentry. */
++		bstart = dbstart(dentry);
++		bend = dbend(dentry);
++		if (bstart >= 0) {
++			struct dentry *lower_dentry;
++			for (bindex = bstart; bindex <= bend; bindex++) {
++				lower_dentry =
++					unionfs_lower_dentry_idx(dentry,
++								 bindex);
++				dput(lower_dentry);
 +			}
 +		}
++		set_dbstart(dentry, -1);
++		set_dbend(dentry, -1);
 +
-+		lower_wh_dentry =
-+			lookup_one_len(name, lower_dentry->d_parent,
-+				       dentry->d_name.len + UNIONFS_WHLEN);
-+		if (IS_ERR(lower_wh_dentry))
-+			continue;
++		interpose_flag = INTERPOSE_REVAL_NEG;
++		if (positive) {
++			interpose_flag = INTERPOSE_REVAL;
++			/*
++			 * During BRM, the VFS could already hold a lock on
++			 * a file being read, so don't lock it again
++			 * (deadlock), but if you lock it in this function,
++			 * then release it here too.
++			 */
++			if (!mutex_is_locked(&dentry->d_inode->i_mutex)) {
++				mutex_lock(&dentry->d_inode->i_mutex);
++				locked = 1;
++			}
 +
-+		/*
-+		 * The whiteout already exists. This used to be impossible,
-+		 * but now is possible because of opaqueness.
-+		 */
-+		if (lower_wh_dentry->d_inode) {
-+			dput(lower_wh_dentry);
-+			err = 0;
-+			goto out;
++			bstart = ibstart(dentry->d_inode);
++			bend = ibend(dentry->d_inode);
++			if (bstart >= 0) {
++				struct inode *lower_inode;
++				for (bindex = bstart; bindex <= bend;
++				     bindex++) {
++					lower_inode =
++						unionfs_lower_inode_idx(
++							dentry->d_inode,
++							bindex);
++					iput(lower_inode);
++				}
++			}
++			kfree(UNIONFS_I(dentry->d_inode)->lower_inodes);
++			UNIONFS_I(dentry->d_inode)->lower_inodes = NULL;
++			ibstart(dentry->d_inode) = -1;
++			ibend(dentry->d_inode) = -1;
++			if (locked)
++				mutex_unlock(&dentry->d_inode->i_mutex);
 +		}
 +
-+		err = init_lower_nd(&nd, LOOKUP_CREATE);
-+		if (unlikely(err < 0))
++		result = unionfs_lookup_backend(dentry, &lowernd,
++						interpose_flag);
++		if (result) {
++			if (IS_ERR(result)) {
++				valid = false;
++				goto out;
++			}
++			/*
++			 * current unionfs_lookup_backend() doesn't return
++			 * a valid dentry
++			 */
++			dput(dentry);
++			dentry = result;
++		}
++
++		if (unlikely(positive && UNIONFS_I(dentry->d_inode)->stale)) {
++			make_bad_inode(dentry->d_inode);
++			d_drop(dentry);
++			valid = false;
 +			goto out;
-+		lower_dir_dentry = lock_parent(lower_wh_dentry);
-+		err = is_robranch_super(dentry->d_sb, bindex);
-+		if (!err)
-+			err = vfs_create(lower_dir_dentry->d_inode,
-+					 lower_wh_dentry,
-+					 ~current->fs->umask & S_IRWXUGO,
-+					 &nd);
-+		unlock_dir(lower_dir_dentry);
-+		dput(lower_wh_dentry);
-+		release_lower_nd(&nd, err);
-+
-+		if (!err || !IS_COPYUP_ERR(err))
-+			break;
++		}
++		goto out;
 +	}
 +
-+	/* set dbopaque so that lookup will not proceed after this branch */
-+	if (!err)
-+		set_dbopaque(dentry, bindex);
++	/* The revalidation must occur across all branches */
++	bstart = dbstart(dentry);
++	bend = dbend(dentry);
++	BUG_ON(bstart == -1);
++	for (bindex = bstart; bindex <= bend; bindex++) {
++		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++		if (!lower_dentry || !lower_dentry->d_op
++		    || !lower_dentry->d_op->d_revalidate)
++			continue;
++		/*
++		 * Don't pass nameidata to lower file system, because we
++		 * don't want an arbitrary lower file being opened or
++		 * returned to us: it may be useless to us because of the
++		 * fanout nature of unionfs (cf. file/directory open-file
++		 * invariants).  We will open lower files as and when needed
++		 * later on.
++		 */
++		if (!lower_dentry->d_op->d_revalidate(lower_dentry, NULL))
++			valid = false;
++	}
++
++	if (!dentry->d_inode)
++		valid = false;
++
++	if (valid) {
++		/*
++		 * If we get here, and we copy the meta-data from the lower
++		 * inode to our inode, then it is vital that we have already
++		 * purged all unionfs-level file data.  We do that in the
++		 * caller (__unionfs_d_revalidate_chain) by calling
++		 * purge_inode_data.
++		 */
++		unionfs_copy_attr_all(dentry->d_inode,
++				      unionfs_lower_inode(dentry->d_inode));
++		fsstack_copy_inode_size(dentry->d_inode,
++					unionfs_lower_inode(dentry->d_inode));
++	}
 +
 +out:
-+	kfree(name);
-+	return err;
++	return valid;
 +}
 +
 +/*
-+ * This is a helper function for rename, which ends up with hosed over
-+ * dentries when it needs to revert.
++ * Determine if the lower inode objects have changed from below the unionfs
++ * inode.  Return true if changed, false otherwise.
++ *
++ * We check if the mtime or ctime have changed.  However, the inode times
++ * can be changed by anyone without much protection, including
++ * asynchronously.  This can sometimes cause unionfs to find that the lower
++ * file system doesn't change its inode times quick enough, resulting in a
++ * false positive indication (which is harmless, it just makes unionfs do
++ * extra work in re-validating the objects).  To minimize the chances of
++ * these situations, we still consider such small time changes valid, but we
++ * don't print debugging messages unless the time changes are greater than
++ * UNIONFS_MIN_CC_TIME (which defaults to 3 seconds, as with NFS's acregmin)
++ * because significant changes are more likely due to users manually
++ * touching lower files.
 + */
-+int unionfs_refresh_lower_dentry(struct dentry *dentry, int bindex)
++bool is_newer_lower(const struct dentry *dentry)
 +{
-+	struct dentry *lower_dentry;
-+	struct dentry *lower_parent;
-+	int err = 0;
++	int bindex;
++	struct inode *inode;
++	struct inode *lower_inode;
 +
++	/* ignore if we're called on semi-initialized dentries/inodes */
++	if (!dentry || !UNIONFS_D(dentry))
++		return false;
++	inode = dentry->d_inode;
++	if (!inode || !UNIONFS_I(inode) ||
++	    ibstart(inode) < 0 || ibend(inode) < 0)
++		return false;
++
++	for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
++		lower_inode = unionfs_lower_inode_idx(inode, bindex);
++		if (!lower_inode)
++			continue;
++
++		/* check if mtime/ctime have changed */
++		if (unlikely(timespec_compare(&inode->i_mtime,
++					      &lower_inode->i_mtime) < 0)) {
++			if ((lower_inode->i_mtime.tv_sec -
++			     inode->i_mtime.tv_sec) > UNIONFS_MIN_CC_TIME) {
++				pr_info("unionfs: new lower inode mtime "
++					"(bindex=%d, name=%s)\n", bindex,
++					dentry->d_name.name);
++				show_dinode_times(dentry);
++			}
++			return true;
++		}
++		if (unlikely(timespec_compare(&inode->i_ctime,
++					      &lower_inode->i_ctime) < 0)) {
++			if ((lower_inode->i_ctime.tv_sec -
++			     inode->i_ctime.tv_sec) > UNIONFS_MIN_CC_TIME) {
++				pr_info("unionfs: new lower inode ctime "
++					"(bindex=%d, name=%s)\n", bindex,
++					dentry->d_name.name);
++				show_dinode_times(dentry);
++			}
++			return true;
++		}
++	}
++	return false;		/* default: lower is not newer */
++}
++
++/*
++ * Purge/remove/unmap all date pages of a unionfs inode.  This is called
++ * when the lower inode has changed, and we have to force processes to get
++ * the new data.
++ *
++ * XXX: Our implementation works in that as long as a user process will have
++ * caused Unionfs to be called, directly or indirectly, even to just do
++ * ->d_revalidate; then we will have purged the current Unionfs data and the
++ * process will see the new data.  For example, a process that continually
++ * re-reads the same file's data will see the NEW data as soon as the lower
++ * file had changed, upon the next read(2) syscall (even if the file is
++ * still open!)  However, this doesn't work when the process re-reads the
++ * open file's data via mmap(2) (unless the user unmaps/closes the file and
++ * remaps/reopens it).  Once we respond to ->readpage(s), then the kernel
++ * maps the page into the process's address space and there doesn't appear
++ * to be a way to force the kernel to invalidate those pages/mappings, and
++ * force the process to re-issue ->readpage.  If there's a way to invalidate
++ * active mappings and force a ->readpage, let us know please
++ * (invalidate_inode_pages2 doesn't do the trick).
++ */
++static inline void purge_inode_data(struct inode *inode)
++{
++	/* remove all non-private mappings */
++	unmap_mapping_range(inode->i_mapping, 0, 0, 0);
++
++	if (inode->i_data.nrpages)
++		truncate_inode_pages(&inode->i_data, 0);
++}
++
++/*
++ * Revalidate a parent chain of dentries, then the actual node.
++ * Assumes that dentry is locked, but will lock all parents if/when needed.
++ *
++ * If 'willwrite' is true, and the lower inode times are not in sync, then
++ * *don't* purge_inode_data, as it could deadlock if ->write calls us and we
++ * try to truncate a locked page.  Besides, if unionfs is about to write
++ * data to a file, then there's the data unionfs is about to write is more
++ * authoritative than what's below, therefore we can safely overwrite the
++ * lower inode times and data.
++ */
++bool __unionfs_d_revalidate_chain(struct dentry *dentry, struct nameidata *nd,
++				  bool willwrite)
++{
++	bool valid = false;	/* default is invalid */
++	struct dentry **chain = NULL; /* chain of dentries to reval */
++	int chain_len = 0;
++	struct dentry *dtmp;
++	int sbgen, dgen, i;
++	int saved_bstart, saved_bend, bindex;
++
++	/* find length of chain needed to revalidate */
++	/* XXX: should I grab some global (dcache?) lock? */
++	chain_len = 0;
++	sbgen = atomic_read(&UNIONFS_SB(dentry->d_sb)->generation);
++	dtmp = dentry->d_parent;
++	dgen = atomic_read(&UNIONFS_D(dtmp)->generation);
++	/* XXX: should we check if is_newer_lower all the way up? */
++	if (unlikely(is_newer_lower(dtmp))) {
++		/*
++		 * Special case: the root dentry's generation number must
++		 * always be valid, but its lower inode times don't have to
++		 * be, so sync up the times only.
++		 */
++		if (IS_ROOT(dtmp)) {
++			unionfs_copy_attr_times(dtmp->d_inode);
++		} else {
++			/*
++			 * reset generation number to zero, guaranteed to be
++			 * "old"
++			 */
++			dgen = 0;
++			atomic_set(&UNIONFS_D(dtmp)->generation, dgen);
++		}
++		purge_inode_data(dtmp->d_inode);
++	}
++	while (sbgen != dgen) {
++		/* The root entry should always be valid */
++		BUG_ON(IS_ROOT(dtmp));
++		chain_len++;
++		dtmp = dtmp->d_parent;
++		dgen = atomic_read(&UNIONFS_D(dtmp)->generation);
++	}
++	if (chain_len == 0)
++		goto out_this;	/* shortcut if parents are OK */
++
++	/*
++	 * Allocate array of dentries to reval.  We could use linked lists,
++	 * but the number of entries we need to alloc here is often small,
++	 * and short lived, so locality will be better.
++	 */
++	chain = kzalloc(chain_len * sizeof(struct dentry *), GFP_KERNEL);
++	if (unlikely(!chain)) {
++		printk(KERN_CRIT "unionfs: no more memory in %s\n",
++		       __FUNCTION__);
++		goto out;
++	}
++
++	/*
++	 * lock all dentries in chain, in child to parent order.
++	 * if failed, then sleep for a little, then retry.
++	 */
++	dtmp = dentry->d_parent;
++	for (i = chain_len-1; i >= 0; i--) {
++		chain[i] = dget(dtmp);
++		dtmp = dtmp->d_parent;
++	}
++
++	/*
++	 * call __unionfs_d_revalidate_one() on each dentry, but in parent
++	 * to child order.
++	 */
++	for (i = 0; i < chain_len; i++) {
++		unionfs_lock_dentry(chain[i]);
++		saved_bstart = dbstart(chain[i]);
++		saved_bend = dbend(chain[i]);
++		sbgen = atomic_read(&UNIONFS_SB(dentry->d_sb)->generation);
++		dgen = atomic_read(&UNIONFS_D(chain[i])->generation);
++
++		valid = __unionfs_d_revalidate_one(chain[i], nd);
++		/* XXX: is this the correct mntput condition?! */
++		if (valid && chain_len > 0 &&
++		    sbgen != dgen && chain[i]->d_inode &&
++		    S_ISDIR(chain[i]->d_inode->i_mode)) {
++			for (bindex = saved_bstart; bindex <= saved_bend;
++			     bindex++)
++				unionfs_mntput(chain[i], bindex);
++		}
++		unionfs_unlock_dentry(chain[i]);
++
++		if (unlikely(!valid))
++			goto out_free;
++	}
++
++
++out_this:
++	/* finally, lock this dentry and revalidate it */
 +	verify_locked(dentry);
++	dgen = atomic_read(&UNIONFS_D(dentry)->generation);
 +
-+	unionfs_lock_dentry(dentry->d_parent);
-+	lower_parent = unionfs_lower_dentry_idx(dentry->d_parent, bindex);
-+	unionfs_unlock_dentry(dentry->d_parent);
-+
-+	BUG_ON(!S_ISDIR(lower_parent->d_inode->i_mode));
-+
-+	lower_dentry = lookup_one_len(dentry->d_name.name, lower_parent,
-+				      dentry->d_name.len);
-+	if (IS_ERR(lower_dentry)) {
-+		err = PTR_ERR(lower_dentry);
-+		goto out;
++	if (unlikely(is_newer_lower(dentry))) {
++		/* root dentry special case as aforementioned */
++		if (IS_ROOT(dentry)) {
++			unionfs_copy_attr_times(dentry->d_inode);
++		} else {
++			/*
++			 * reset generation number to zero, guaranteed to be
++			 * "old"
++			 */
++			dgen = 0;
++			atomic_set(&UNIONFS_D(dentry)->generation, dgen);
++		}
++		if (!willwrite)
++			purge_inode_data(dentry->d_inode);
 +	}
-+
-+	dput(unionfs_lower_dentry_idx(dentry, bindex));
-+	iput(unionfs_lower_inode_idx(dentry->d_inode, bindex));
-+	unionfs_set_lower_inode_idx(dentry->d_inode, bindex, NULL);
-+
-+	if (!lower_dentry->d_inode) {
-+		dput(lower_dentry);
-+		unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
-+	} else {
-+		unionfs_set_lower_dentry_idx(dentry, bindex, lower_dentry);
-+		unionfs_set_lower_inode_idx(dentry->d_inode, bindex,
-+					    igrab(lower_dentry->d_inode));
-+	}
-+
-+out:
-+	return err;
-+}
-+
-+int make_dir_opaque(struct dentry *dentry, int bindex)
-+{
-+	int err = 0;
-+	struct dentry *lower_dentry, *diropq;
-+	struct inode *lower_dir;
-+	struct nameidata nd;
-+	kernel_cap_t orig_cap;
++	valid = __unionfs_d_revalidate_one(dentry, nd);
 +
 +	/*
-+	 * Opaque directory whiteout markers are special files (like regular
-+	 * whiteouts), and should appear to the users as if they don't
-+	 * exist.  They should be created/deleted regardless of directory
-+	 * search/create permissions, but only for the duration of this
-+	 * creation of the .wh.__dir_opaque: file.  Note, this does not
-+	 * circumvent normal ->permission).
++	 * If __unionfs_d_revalidate_one() succeeded above, then it will
++	 * have incremented the refcnt of the mnt's, but also the branch
++	 * indices of the dentry will have been updated (to take into
++	 * account any branch insertions/deletion.  So the current
++	 * dbstart/dbend match the current, and new, indices of the mnts
++	 * which __unionfs_d_revalidate_one has incremented.  Note: the "if"
++	 * test below does not depend on whether chain_len was 0 or greater.
 +	 */
-+	orig_cap = current->cap_effective;
-+	cap_raise(current->cap_effective, CAP_DAC_READ_SEARCH);
-+	cap_raise(current->cap_effective, CAP_DAC_OVERRIDE);
++	if (valid && sbgen != dgen)
++		for (bindex = dbstart(dentry);
++		     bindex <= dbend(dentry);
++		     bindex++)
++			unionfs_mntput(dentry, bindex);
 +
-+	lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
-+	lower_dir = lower_dentry->d_inode;
-+	BUG_ON(!S_ISDIR(dentry->d_inode->i_mode) ||
-+	       !S_ISDIR(lower_dir->i_mode));
-+
-+	mutex_lock(&lower_dir->i_mutex);
-+	diropq = lookup_one_len(UNIONFS_DIR_OPAQUE, lower_dentry,
-+				sizeof(UNIONFS_DIR_OPAQUE) - 1);
-+	if (IS_ERR(diropq)) {
-+		err = PTR_ERR(diropq);
-+		goto out;
++out_free:
++	/* unlock/dput all dentries in chain and return status */
++	if (chain_len > 0) {
++		for (i = 0; i < chain_len; i++)
++			dput(chain[i]);
++		kfree(chain);
 +	}
-+
-+	err = init_lower_nd(&nd, LOOKUP_CREATE);
-+	if (unlikely(err < 0))
-+		goto out;
-+	if (!diropq->d_inode)
-+		err = vfs_create(lower_dir, diropq, S_IRUGO, &nd);
-+	if (!err)
-+		set_dbopaque(dentry, bindex);
-+	release_lower_nd(&nd, err);
-+
-+	dput(diropq);
-+
 +out:
-+	mutex_unlock(&lower_dir->i_mutex);
-+	current->cap_effective = orig_cap;
++	return valid;
++}
++
++static int unionfs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
++{
++	int err;
++
++	unionfs_read_lock(dentry->d_sb);
++
++	unionfs_lock_dentry(dentry);
++	err = __unionfs_d_revalidate_chain(dentry, nd, false);
++	if (likely(err > 0)) { /* true==1: dentry is valid */
++		unionfs_check_dentry(dentry);
++		unionfs_check_nd(nd);
++	}
++	unionfs_unlock_dentry(dentry);
++
++	unionfs_read_unlock(dentry->d_sb);
++
 +	return err;
 +}
 +
 +/*
-+ * returns the right n_link value based on the inode type
++ * At this point no one can reference this dentry, so we don't have to be
++ * careful about concurrent access.
 + */
-+int unionfs_get_nlinks(const struct inode *inode)
++static void unionfs_d_release(struct dentry *dentry)
 +{
-+	/* don't bother to do all the work since we're unlinked */
-+	if (inode->i_nlink == 0)
-+		return 0;
++	int bindex, bstart, bend;
 +
-+	if (!S_ISDIR(inode->i_mode))
-+		return unionfs_lower_inode(inode)->i_nlink;
++	unionfs_read_lock(dentry->d_sb);
 +
-+	/*
-+	 * For directories, we return 1. The only place that could cares
-+	 * about links is readdir, and there's d_type there so even that
-+	 * doesn't matter.
-+	 */
-+	return 1;
++	unionfs_check_dentry(dentry);
++	/* this could be a negative dentry, so check first */
++	if (unlikely(!UNIONFS_D(dentry))) {
++		printk(KERN_ERR "unionfs: dentry without private data: %.*s\n",
++		       dentry->d_name.len, dentry->d_name.name);
++		goto out;
++	} else if (dbstart(dentry) < 0)
++		goto out_free;  /* due to a (normal) failed lookup */
++
++	/* Release all the lower dentries */
++	bstart = dbstart(dentry);
++	bend = dbend(dentry);
++	for (bindex = bstart; bindex <= bend; bindex++) {
++		dput(unionfs_lower_dentry_idx(dentry, bindex));
++		unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
++		/* NULL lower mnt is ok if this is a negative dentry */
++		if (!dentry->d_inode && !unionfs_lower_mnt_idx(dentry, bindex))
++			continue;
++		unionfs_mntput(dentry, bindex);
++		unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
++	}
++	/* free private data (unionfs_dentry_info) here */
++	kfree(UNIONFS_D(dentry)->lower_paths);
++	UNIONFS_D(dentry)->lower_paths = NULL;
++
++out_free:
++	/* No need to unlock it, because it is disappeared. */
++	free_dentry_private_data(dentry);
++
++out:
++	unionfs_read_unlock(dentry->d_sb);
++	return;
 +}
 +
-+/* construct whiteout filename */
-+char *alloc_whname(const char *name, int len)
-+{
-+	char *buf;
-+
-+	buf = kmalloc(len + UNIONFS_WHLEN + 1, GFP_KERNEL);
-+	if (unlikely(!buf))
-+		return ERR_PTR(-ENOMEM);
-+
-+	strcpy(buf, UNIONFS_WHPFX);
-+	strlcat(buf, name, len + UNIONFS_WHLEN + 1);
-+
-+	return buf;
-+}
++struct dentry_operations unionfs_dops = {
++	.d_revalidate	= unionfs_d_revalidate,
++	.d_release	= unionfs_d_release,
++};
 -- 
 1.5.2.2
 
