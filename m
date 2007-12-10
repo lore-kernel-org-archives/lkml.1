@@ -1,68 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbXLJEyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbXLJFD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756387AbXLJEyS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 23:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbXLJEwY
+	id S1752092AbXLJFD1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 00:03:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbXLJFDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 23:52:24 -0500
-Received: from smtp101.plus.mail.re1.yahoo.com ([69.147.102.64]:48564 "HELO
-	smtp101.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755039AbXLJEwX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 23:52:23 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:Mail-Followup-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=4pvdEgEksEuucJbXeZ6StoYROj00+dVA319f6qDYe/w5p3mtyKWimxUr/AEJbxlSDngRm+l308605KhEaDu082MElvz0Uo3ar86Ul7uFbvqvxobXU5iq6LFW/DS2mT+9Y4PTx5U+anjs2RaamoIdxzUqF0FPE+NfW2cWWGVy44k=  ;
-X-YMail-OSG: Etgx338VM1lQYk4n7h4Q32fKRZmaUkNQ3zhBbL0PT._oeGZ5aqe0ZJC7jmIpYQBHZdc4ADYQAA--
-Date: Mon, 10 Dec 2007 05:51:04 +0100
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] swap image signature check upon resume
-Message-ID: <20071210045104.GA7169@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-Mail-Followup-To: bbpetkov@yahoo.de, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-References: <20071206211335.GA4923@gollum.tnic> <200712091527.57523.rjw@sisk.pl> <20071209160959.GA4978@gollum.tnic> <200712092246.36217.rjw@sisk.pl>
+	Mon, 10 Dec 2007 00:03:19 -0500
+Received: from ns1.suse.de ([195.135.220.2]:53790 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750840AbXLJFDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 00:03:17 -0500
+From: Neil Brown <neilb@suse.de>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Date: Mon, 10 Dec 2007 16:03:10 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200712092246.36217.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18268.51342.353887.178014@notabene.brown>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>, gnome42@gmail.com,
+       linux-kernel@vger.kernel.org, bfields@fieldses.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Denis V. Lunev" <den@openvz.org>
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
+In-Reply-To: message from Maxim Levitsky on Sunday December 9
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
+	<20071207151444.af5d8e11.akpm@linux-foundation.org>
+	<200712080043.29292.rjw@sisk.pl>
+	<200712090220.44543.maximlevitsky@gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 09, 2007 at 10:46:35PM +0100, Rafael J. Wysocki wrote:
-> On Sunday, 9 of December 2007, Borislav Petkov wrote:
-> > On Sun, Dec 09, 2007 at 03:27:57PM +0100, Rafael J. Wysocki wrote:
-> > ...
-> > 
-> > > > Instead, I'd rather issue a warning that the swsusp header mismatches, say with
-> > > > which kernel the machine got suspended with and then start the countdown for reboot.
+On Sunday December 9, maximlevitsky@gmail.com wrote:
+> On Saturday 08 December 2007 01:43:28 Rafael J. Wysocki wrote:
+> > On Saturday, 8 of December 2007, Andrew Morton wrote:
+> > > On Fri, 07 Dec 2007 17:51:58 -0500
+> > > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 > > > 
-> > > What exactly would that change?  You need to reboot anyway and fsck will run on
-> > > the filesystems regardless of which kernel you boot with.
-> > 
-> > well, you'll have the chance to reboot with the kernel the machine got suspended
-> > with and then the swsusp image header _will_ match so no fsck-ing. or am i
-> > missing something...
+> > > > 
+> > > > On Fri, 2007-12-07 at 14:39 -0500, Shane wrote:
+> > > > > On Dec 7, 2007 2:16 PM, Shane <gnome42@gmail.com> wrote:
+> > > > > ...
+> > > > > > Confirmed working in rc4-git5.  I'll deploy this kernel in a few more
+> > > > > > spots and check for other regressions.
+> > > > > 
+> > > > > Hmm, I installed a new kernel built from the same sources on the NFS
+> > > > > server. And now I don't see anything at all in the crossmnt dirs.
+> > > > > 
+> > > > > ls /dirA/dirB/dirC  --> zero output (empty dir)
+> > > > > 
+> > > > > Are there any other pending fixes?
 > 
-> Yes, you are. :-)
+> Hi,
+> Due to the fact that I was bitten by this bug (I thought it is a feature), and a bit of lack
+> of understanding of NFS4 I want to ask few questions about NFS:
 > 
-> With the new code (which BTW I'm assuming we are talking about) the images are
-> not matched against the kernel they were created by, but against a hard-coded
-> magic number (defined in suspend_64.c) playing the role of the "header protocol
-> version" and against some system parameters, like the amount of RAM etc.
-> Since all kernels containing the new code use the same magic number, all of
-> them will match or none of them will match.
+> 1) I want to export whole file-system  with submounts to a range of clients.
+> As 'exports' manual says I can't do so, is that true?
 
-right, i was kinda wondering when actually a swsusp image won't match after looking
-at check_image_kernel() but missed that arch-specific RESTORE_MAGIC bit.
-Thanks for clearing that up.
+You should be able to do this successfully with nfs-utils 1.1 or
+later.  Where does the manual say you cannot - we should fix that.
 
--- 
-Regards/Gruß,
-    Boris.
+
+> 
+> Can you tell me how properly to use crossmnt and nohide?
+
+It is best not to use nohide - we should probably mark it as
+'legacy'.
+
+Simply export the top level mountpoint as 'crossmnt'  and everything
+below there will be exported.
+
+> Where should I put those options in root file-system export or in submount export?
+
+crossmnt goes at the top.  nohide goes in the submount.  Both have
+the same general effect though with subtle differences.
+You don't need both (though that doesn't hurt).
+Just use crossmnt at the top,  Then you don't need to mention the
+lower level filesystems at all.
+
+> 
+> 2) NFS4 - I can't get it working:
+> 
+> *I have a LFS system, and this is what I did (NFS3 works fine, but crossmnt, and nohide seems not to work, probably due to above bug)
+> 	I also have seen errors about stale handles 
+> *Kernel - 2.6.24-rc3 with NFS3/4 client/server enabled on both host and guest. (both client and server running this kernel)
+> *rpc.idmapd running on both client and server + all standard NFS3 tools
+> *NFS tools 1.1.1 with nfs4 support compiled + without GSS (on server)
+> * /etc/exports with fsid=0: (on server)
+> 	/tmp *(fsid=0,insecure,rw,async,anonuid=100,anongid=1000)
+> * mounting with -tnfs4 server:/ /mnt/tmp
+> 
+> Still doesn't work, using wireshark shows that
+> 	NFSV4 COMPOUND call with
+> 		Opcode: PUTROOTFH (24)
+> 		Opcode: GETFH (10)
+> 		Opcode: GETATTR (9)
+> 
+> Fails with 
+> 	Reject State: AUTH_ERROR (1)
+> 	Auth State: bad credential (seal broken) (1)
+> 
+> 
+> Any ideas?
+> 
+> (I decided to switch to NFS4 only due to the lack of ability to see underlying mounts)
+> 
+
+All of this should work fine with v3.  Once you have the right patch
+for the crossmnt bug applied, if you have further problems post them
+to linux-nfs@vger.kernel.org.
+
+NeilBrown
