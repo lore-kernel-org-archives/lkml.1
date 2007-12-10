@@ -1,59 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbXLJQQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbXLJQWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753487AbXLJQQU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 11:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXLJQQM
+	id S1754148AbXLJQWs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 11:22:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbXLJQWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 11:16:12 -0500
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:52001 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752020AbXLJQQL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 11:16:11 -0500
-Date: Mon, 10 Dec 2007 17:16:09 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       eric miao <eric.y.miao@marvell.com>
-Subject: Re: [patch 2.6.24-rc4-mm 4/6] gpiolib:  create empty drivers/gpio
-Message-ID: <20071210171609.0d4738b8@hyperion.delvare>
-In-Reply-To: <200712092039.57722.david-b@pacbell.net>
-References: <200712092022.14062.david-b@pacbell.net>
-	<200712092039.57722.david-b@pacbell.net>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Dec 2007 11:22:40 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42429 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752231AbXLJQWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 11:22:39 -0500
+Date: Mon, 10 Dec 2007 11:20:12 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Neil Horman <nhorman@redhat.com>, Ben Woodard <woodard@redhat.com>,
+       kexec@lists.infradead.org, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
+       Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
+	boot cpu
+Message-ID: <20071210162009.GA27124@redhat.com>
+References: <20071130144250.GC23810@redhat.com> <20071130145131.GB5822@hmsendeavour.rdu.redhat.com> <20071206213951.GB28898@hmsreliant.think-freely.org> <20071206221143.GC2863@redhat.com> <m1bq93s5r8.fsf@ebiederm.dsl.xmission.com> <86802c440712070050s3c5017a4w8e747a7035d10d3a@mail.gmail.com> <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com> <20071207142144.GA10389@hmsendeavour.rdu.redhat.com> <20071207175832.GA18485@hmsreliant.think-freely.org> <20071210153959.GA23290@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071210153959.GA23290@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
-
-On Sun, 9 Dec 2007 20:39:57 -0800, David Brownell wrote:
-> From: David Brownell <dbrownell@users.sourceforge.net>
+On Mon, Dec 10, 2007 at 10:39:59AM -0500, Neil Horman wrote:
+> On Fri, Dec 07, 2007 at 12:58:32PM -0500, Neil Horman wrote:
+> > 
+> > Ok, New patch attached.  It preforms the same function as previously described,
+> > but is more restricted in its application.  As Yinghai pointed out, the
+> > broadcast mask bit (bit 17 in the htcfg register) should only be enabled, if the
+> > extened apic id bit (bit 18 in the same register) is also set.  So this patch
+> > now check for that bit to be turned on first.  Also, this patch now adds an
+> > independent quirk check for all AMD hypertransport host controllers, since its
+> > possible for this misconfiguration to be present in systems other than nvidias.
+> > The net effect of these changes is, that its now applicable to all AMD systems
+> > containing hypertransport busses, and is only activated if extended apic ids are
+> > in use, meaning that this quirk guarantees that all processors in a system are
+> > elligible to receive interrupts from the ioapic, even if their apicid extends
+> > beyond the nominal 4 bit limitation.  Tested successfully by me.
+> > 
+> > Thanks & Regards
+> > Neil
+> > 
+> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> > 
+> > 
+> >  early-quirks.c |   83 ++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+> >  1 file changed, 76 insertions(+), 7 deletions(-)
+> > 
+> > 
+> > 
+> > diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
+> > index 88bb83e..d5a7b30 100644
+> > --- a/arch/x86/kernel/early-quirks.c
+> > +++ b/arch/x86/kernel/early-quirks.c
+> > @@ -44,6 +44,50 @@ static int __init nvidia_hpet_check(struct acpi_table_header *header)
+> >  #endif /* CONFIG_X86_IO_APIC */
+> >  #endif /* CONFIG_ACPI */
+> >  
+> > +static void __init fix_hypertransport_config(int num, int slot, int func)
+> > +{
+> > +	u32 htcfg;
+> > +	/*
+> > +	 *we found a hypertransport bus
+> > +	 *make sure that are broadcasting
+> > +	 *interrupts to all cpus on the ht bus
+> > +	 *if we're using extended apic ids
+> > +	 */
+> > +	htcfg = read_pci_config(num, slot, func, 0x68);
+> > +	if ((htcfg & (1 << 18)) == 1) {	
+> > +		printk(KERN_INFO "Detected use of extended apic ids on hypertransport bus\n");
+> > +		if ((htcfg & (1 << 17)) == 0) {
+> > +			printk(KERN_INFO "Enabling hypertransport extended apic interrupt broadcast\n");
+> > +			htcfg |= (1 << 17);
+> > +			write_pci_config(num, slot, func, 0x68, htcfg);
+> > +		}
+> > +	}
+> > +	
+> > +}
+> > +
+> > +static void __init check_hypertransport_config()
+> > +{
+> > +	int num, slot, func;
+> > +	u32 device, vendor;
+> > +	func = 0;
+> > +	for (num = 0; num < 32; num++) {
+> > +		for (slot = 0; slot < 32; slot++) {
+> > +			vendor = read_pci_config(num,slot,func,
+> > +						PCI_VENDOR_ID); 
+> > +			device = read_pci_config(num,slot,func,
+> > +						PCI_DEVICE_ID);
+> > +			vendor &= 0x0000ffff;
+> > +			device >>= 16;
+> > +			if ((vendor == PCI_VENDOR_ID_AMD) &&
+> > +			    (device == PCI_DEVICE_ID_AMD_K8_NB))
+> > +				fix_hypertransport_config(num,slot,func);
+> > +		}
+> > +	}
+> > +
+> > +	return;
+> > +
+> > +}
+> > +
+> >  static void __init nvidia_bugs(void)
+> >  {
+> >  #ifdef CONFIG_ACPI
+> > @@ -83,6 +127,12 @@ static void __init ati_bugs(void)
+> >  #endif
+> >  }
+> >  
+> > +static void __init amd_host_bugs(void)
+> > +{
+> > +	printk(KERN_CRIT "IN AMD_HOST_BUGS\n");
+> > +	check_hypertransport_config();
+> > +}
+> > +
+> >  struct chipset {
+> >  	u16 vendor;
+> >  	void (*f)(void);
+> > @@ -95,9 +145,16 @@ static struct chipset early_qrk[] __initdata = {
+> >  	{}
+> >  };
+> >  
+> > +static struct chipset early_host_qrk[] __initdata = {
+> > +	{ PCI_VENDOR_ID_AMD, amd_host_bugs},
+> > +	{}
+> > +};
+> > +
+> >  void __init early_quirks(void)
+> >  {
+> >  	int num, slot, func;
+> > +	u8 found_bridge = 0;
+> > +	u8 found_host = 0;
+> >  
+> >  	if (!early_pci_allowed())
+> >  		return;
+> > @@ -115,18 +172,30 @@ void __init early_quirks(void)
+> >  				if (class == 0xffffffff)
+> >  					break;
+> >  
+> > -				if ((class >> 16) != PCI_CLASS_BRIDGE_PCI)
+> > +				class >>= 16;
+> > +				if ((class != PCI_CLASS_BRIDGE_PCI) &&
+> > +				    (class != PCI_CLASS_BRIDGE_HOST))
+> >  					continue;
+> >  
+> >  				vendor = read_pci_config(num, slot, func,
+> >  							 PCI_VENDOR_ID);
+> >  				vendor &= 0xffff;
+> > -
+> > -				for (i = 0; early_qrk[i].f; i++)
+> > -					if (early_qrk[i].vendor == vendor) {
+> > -						early_qrk[i].f();
+> > -						return;
+> > -					}
+> > +				if ((class == PCI_CLASS_BRIDGE_PCI) && (!found_bridge)) {
+> > +					for (i = 0; early_qrk[i].f; i++)
+> > +						if (early_qrk[i].vendor == vendor) {
+> > +							early_qrk[i].f();
+> > +							found_bridge = 1;;
+> > +						}
+> > +				} else if (!found_host) {
+> > +					for (i = 0; early_host_qrk[i].f; i++)
+> > +						if (early_host_qrk[i].vendor == vendor) {
+> > +							early_host_qrk[i].f();
+> > +							found_host = 1;
+> > +						}
+> > +				}
+> > +
+> > +				if (found_bridge && found_host)
+> > +					return;
+> >  
+> >  				type = read_pci_config_byte(num, slot, func,
+> >  							    PCI_HEADER_TYPE);
+> > 
+> > _______________________________________________
+> > kexec mailing list
+> > kexec@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/kexec
 > 
-> Add an empty drivers/gpio directory for gpiolib based GPIO expanders.
-> We already have three of them (two I2C, one SPI), and there are dozens
-> of similar chips that only exist for GPIO expansion.
+> Sorry to reply to myself, but do we have consensus on this patch?  I'd like to
+> figure out its disposition if possible.  
 > 
-> This won't be the only place to hold such gpio_chip code.  Many external
-> chips add a few GPIOs as secondary functionality, and platform code
-> frequently needs to closely integrate GPIO and IRQ support.
-> 
-> This is placed *early* in the build/link sequence since it's common for
-> other drivers to depend on GPIOs to do their work, so they need to be
-> initialized early in the device_initcall() sequence.
 
-Note that I foresee potential problems with this. These GPIO drivers
-need I2C or SPI to be initialized before they can load. However on some
-systems, I2C or SPI buses are hanging off GPIOs, meaning that these
-GPIOS need to be initialized before I2C or SPI, respectively. I can
-imagine weird setups where for example an SPI bus would be driven by an
-I2C-based GPIO chip, or vice-versa. I sure hope that nobody does this,
-but you never know... And I'm not sure how we would possibly support
-this.
+I agree with the approach taken. Somebody needs to review the changes done
+for applying early_quirks. I am not well versed with it.
 
--- 
-Jean Delvare
+Thanks
+Vivek
