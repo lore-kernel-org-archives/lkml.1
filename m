@@ -1,420 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbXLJL0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbXLJL2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbXLJL0a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 06:26:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbXLJL0W
+	id S1755883AbXLJL2v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 06:28:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbXLJL2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 06:26:22 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34300 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbXLJL0V (ORCPT
+	Mon, 10 Dec 2007 06:28:45 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38616 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751337AbXLJL2o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 06:26:21 -0500
-Subject: Re: kernel BUG: Eeek! page_mapcount(page) went negative!
-From: Peter Zijlstra <peterz@infradead.org>
-To: Norbert Preining <preining@logic.at>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       hugh <hugh@veritas.com>, Avi Kivity <avi@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20071210104859.GI7003@gamma.logic.tuwien.ac.at>
-References: <20071210104859.GI7003@gamma.logic.tuwien.ac.at>
-Content-Type: text/plain
-Date: Mon, 10 Dec 2007 12:26:07 +0100
-Message-Id: <1197285967.31440.22.camel@twins>
+	Mon, 10 Dec 2007 06:28:44 -0500
+Date: Mon, 10 Dec 2007 11:20:50 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: benh@kernel.crashing.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: Please revert: PCI: fix IDE legacy mode resources
+Message-ID: <20071210112050.0bd6ac28@the-village.bc.nu>
+In-Reply-To: <1197260962.6563.46.camel@pasglop>
+References: <200710122305.l9CN5tFI008240@hera.kernel.org>
+	<1196899818.7033.11.camel@pasglop>
+	<200712060434.lB64YUtc023934@po-mbox305.hop.2iij.net>
+	<1196917447.7033.17.camel@pasglop>
+	<200712060558.lB65wAFu016256@po-mbox304.hop.2iij.net>
+	<1196922262.7033.33.camel@pasglop>
+	<20071209021231.GA13729@linux-mips.org>
+	<1197185091.6572.38.camel@pasglop>
+	<1197193794.6572.52.camel@pasglop>
+	<20071209133812.2d305a02@the-village.bc.nu>
+	<1197230609.6563.6.camel@pasglop>
+	<20071209222335.70e52be3@the-village.bc.nu>
+	<1197260962.6563.46.camel@pasglop>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 10 Dec 2007 15:29:22 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Mon, 2007-12-10 at 11:48 +0100, Norbert Preining wrote:
-> Hi all!
+> powerpc: Fix IDE legacy vs. native fixups
 > 
-> (Please Cc)
+> PowerMac and CHRP/BriQ platforms have quirks to switch some IDE
+> controllers from legacy mode to fully native mode. Those quirks
+> however will not work properly anymore due to a change to the
+> generic code to better handle legacy IDE resources.
 > 
-> I was running a kvm installing windows, and eek it crashed happily my
-> computer, probably because I forgot to give kvm -no-acpi option.
+> This fixes it by moving those quirk to "early" quirks (so they
+> run before resources are probed for the devices) and clearing
+> all BARs after the conversion to force a reallocation of sane
+> values.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-How reproducable is this? You make it sound like its easy to reproduce,
-which would make me think kvm does something iffy.
+Acked-by: Alan Cox <alan@redhat.com>
 
-Please, share a bit more information with us, start by telling us the
-reproducability, your machine info, your kernel config (userspace
-version number of kvm?)
+> To be totally correct, we still need to also revert
+> commit fd6e732186ab522c812ab19c2c5e5befb8ec8115 which
+> is bogus.
 
-> Anyway, it shouldn't (should it?) Eeeek out?
+Agreed but that would cause an revert on an obscure MIPS platform which
+is apparently now a thoughtcrime ;)
 
-Indeed, it should not. In this case it looks like corrupt page tables
-that are responsible, you have a lot of badness preceding the Eeek.
+> Linus, can you still apply this to 2.6.24 ? I would also like the
+> above (fd6e...) reverted as so far, nobody have come up with a demonstration
+> that it's not bogus.
 
-> kvm: guest NX capability removed
-> apic write: bad size=1 fee00030
-> Ignoring de-assert INIT to vcpu 0
-> Ignoring de-assert INIT to vcpu 0
-> kvm: emulating exchange as write
-> swap_dup: Bad swap file entry 185e8957
-> VM: killing process cpufreq-applet
-> Bad pte = 8b2cec83, process = ???, vm_flags = 8000075, vaddr = b7800000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> swap_free: Bad swap offset entry 00416856
-> swap_free: Bad swap file entry 40ff006a
-> Bad pte = 85f08b80, process = ???, vm_flags = 8000075, vaddr = b7806000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> Bad pte = b80a75f6, process = ???, vm_flags = 8000075, vaddr = b7807000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> Bad pte = c000009a, process = ???, vm_flags = 8000075, vaddr = b7808000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> swap_free: Bad swap offset entry 0014458b
-> Bad pte = 458b0689, process = ???, vm_flags = 8000075, vaddr = b780b000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> swap_free: Bad swap file entry 60044689
-> Bad pte = 530c458b, process = ???, vm_flags = 8000075, vaddr = b780d000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> Bad pte = 89105d8b, process = ???, vm_flags = 8000075, vaddr = b780e000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> swap_free: Bad swap file entry 185e8957
-> swap_free: Bad swap file entry 30481574
-> swap_free: Bad swap offset entry 00ebc000
-> Bad pte = 9868562b, process = ???, vm_flags = 8000075, vaddr = b7814000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> Bad pte = 53801981, process = ???, vm_flags = 8000075, vaddr = b7815000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> Bad pte = 6a538019, process = ???, vm_flags = 8000075, vaddr = b7818000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> swap_free: Bad swap file entry 18c7ace8
-> Bad pte = f88bfffe, process = ???, vm_flags = 8000075, vaddr = b781a000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> Bad pte = 8510c483, process = ???, vm_flags = 8000075, vaddr = b781b000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> Bad pte = bf1674ff, process = ???, vm_flags = 8000075, vaddr = b781c000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> Bad pte = c0000001, process = ???, vm_flags = 8000075, vaddr = b781d000
-> Pid: 5170, comm: cpufreq-applet Not tainted 2.6.24-rc4 #1
->  [<c01556db>] vm_normal_page+0x3e/0x53
->  [<c0155d58>] unmap_vmas+0x184/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> Eeek! page_mapcount(page) went negative! (-1)
->   page pfn = 199a8
->   page->flags = 40000000
->   page->count = 1
->   page->mapping = 00000000
->   vma->vm_ops = 0xc0412a48
->   vma->vm_ops->nopage = _stext+0x3feff000/0x14
->   vma->vm_ops->fault = filemap_fault+0x0/0x39d
->   vma->vm_file->f_op->mmap = generic_file_mmap+0x0/0x3e
-> ------------[ cut here ]------------
-> kernel BUG at mm/rmap.c:631!
-> invalid opcode: 0000 [#1] PREEMPT SMP 
-> Modules linked in: usb_storage kvm_intel kvm binfmt_misc fuse dm_crypt dm_snapshot dm_mod coretemp hwmon nsc_ircc tifm_7xx1 iwl3945 tifm_core joydev 8250_pnp 8250 serial_core irda mac80211 crc_ccitt firewire_ohci firewire_core crc_itu_t
-> 
-> Pid: 5170, comm: cpufreq-applet Not tainted (2.6.24-rc4 #1)
-> EIP: 0060:[<c015b0db>] EFLAGS: 00210292 CPU: 0
-> EIP is at page_remove_rmap+0xe5/0x104
-> EAX: 0000003b EBX: c1333500 ECX: c04a5893 EDX: 00200002
-> ESI: e6f8280c EDI: b7820000 EBP: e6fef080 ESP: e6dd3e8c
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> Process cpufreq-applet (pid: 5170, ti=e6dd2000 task=e6c24000 task.ti=e6dd2000)
-> Stack: c03bf622 00000000 c1333500 00000000 c0155e35 c04940e0 c17f80f0 b788afff 
->        00000000 e6f8280c e6dd3f0c 00000001 00000000 b788b000 f77a2b78 f77a2b78 
->        f7492040 c17f80e0 00000000 fffffffe 00004000 b788b000 00000000 e6dd3f0c 
-> Call Trace:
->  [<c0155e35>] unmap_vmas+0x261/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> Code: 8b 46 40 8b 50 08 b8 71 f6 3b c0 e8 a2 76 fe ff 8b 46 48 85 c0 74 14 8b 40 10 85 c0 74 0d 8b 50 2c b8 8f f6 3b c0 e8 87 76 fe ff <0f> 0b eb fe 8b 53 10 89 d8 59 5b 5b 83 e2 01 5e f7 da 83 c2 04 
-> EIP: [<c015b0db>] page_remove_rmap+0xe5/0x104 SS:ESP 0068:e6dd3e8c
-> Fixing recursive fault but reboot is needed!
-> BUG: scheduling while atomic: cpufreq-applet/5170/0x00000003
-> Pid: 5170, comm: cpufreq-applet Tainted: G      D 2.6.24-rc4 #1
->  [<c035336d>] schedule+0x93/0x5a8
->  [<c01cf25d>] free_as_io_context+0x7/0x79
->  [<c0126009>] do_exit+0xc3/0x642
->  [<c021adfc>] do_unblank_screen+0xd/0x103
->  [<c0105328>] die+0x1d6/0x1de
->  [<c010560c>] do_invalid_op+0x0/0x8a
->  [<c010568d>] do_invalid_op+0x81/0x8a
->  [<c015b0db>] page_remove_rmap+0xe5/0x104
->  [<c0123519>] __call_console_drivers+0x4f/0x5b
->  [<c01238d0>] release_console_sem+0x17f/0x198
->  [<c0123d15>] printk+0x1b/0x1f
->  [<c0354daa>] error_code+0x72/0x78
->  [<c015b0db>] page_remove_rmap+0xe5/0x104
->  [<c0155e35>] unmap_vmas+0x261/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c011b5ff>] do_page_fault+0x49b/0x51c
->  [<c01701e9>] sys_poll+0x3a/0x6b
->  [<c011b164>] do_page_fault+0x0/0x51c
->  [<c0354daa>] error_code+0x72/0x78
->  =======================
-> apic write: bad size=1 fee00030
-> Ignoring de-assert INIT to vcpu 0
-> Ignoring de-assert INIT to vcpu 0
-> Eeek! page_mapcount(page) went negative! (-2)
->   page pfn = 199a8
->   page->flags = 40000004
->   page->count = 1
->   page->mapping = 00000000
->   vma->vm_ops = kvm_vm_vm_ops+0x0/0xffffae2f [kvm]
->   vma->vm_ops->nopage = kvm_vm_nopage+0x0/0x42 [kvm]
->   vma->vm_ops->fault = _stext+0x3feff000/0x14
->   vma->vm_file->f_op->mmap = kvm_vm_mmap+0x0/0xa [kvm]
-> ------------[ cut here ]------------
-> kernel BUG at mm/rmap.c:631!
-> invalid opcode: 0000 [#2] PREEMPT SMP 
-> Modules linked in: usb_storage kvm_intel kvm binfmt_misc fuse dm_crypt dm_snapshot dm_mod coretemp hwmon nsc_ircc tifm_7xx1 iwl3945 tifm_core joydev 8250_pnp 8250 serial_core irda mac80211 crc_ccitt firewire_ohci firewire_core crc_itu_t
-> 
-> Pid: 20473, comm: kvm Tainted: G      D (2.6.24-rc4 #1)
-> EIP: 0060:[<c015b0db>] EFLAGS: 00010286 CPU: 0
-> EIP is at page_remove_rmap+0xe5/0x104
-> EAX: 0000003a EBX: c1333500 ECX: c04a5892 EDX: 00000002
-> ESI: e6e8eba8 EDI: a74b9000 EBP: d82c52e4 ESP: df4cfdd8
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> Process kvm (pid: 20473, ti=df4ce000 task=df61c550 task.ti=df4ce000)
-> Stack: c03bf622 00000000 c1333500 00000020 c0155e35 c04940e0 c17f80f0 b7a25fff 
->        00000000 e6e8eba8 df4cfe58 00000001 00000000 a7800000 e9c4ea74 e9c4ea74 
->        e6e8a040 c17f80e0 00000000 fffffffd 00005000 b7a26000 00000000 df4cfe58 
-> Call Trace:
->  [<c0155e35>] unmap_vmas+0x261/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c012bb68>] __dequeue_signal+0x10/0x14c
->  [<c012be35>] recalc_sigpending+0xb/0x30
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c012d7af>] get_signal_to_deliver+0x3f8/0x41d
->  [<c0103609>] do_notify_resume+0x84/0x612
->  [<c012d078>] dequeue_signal+0x95/0x111
->  [<c013b2a6>] tick_program_event+0x33/0x52
->  [<c01384bd>] getnstimeofday+0x2b/0xac
->  [<c013654a>] hrtimer_start+0xf1/0xfd
->  [<f8a6b006>] kvm_vcpu_ioctl+0x0/0xc60 [kvm]
->  [<c016ee67>] do_ioctl+0x1f/0x62
->  [<c016f0ca>] vfs_ioctl+0x220/0x232
->  [<c016f11f>] sys_ioctl+0x43/0x4c
->  [<c010404a>] work_notifysig+0x13/0x19
->  =======================
-> Code: 8b 46 40 8b 50 08 b8 71 f6 3b c0 e8 a2 76 fe ff 8b 46 48 85 c0 74 14 8b 40 10 85 c0 74 0d 8b 50 2c b8 8f f6 3b c0 e8 87 76 fe ff <0f> 0b eb fe 8b 53 10 89 d8 59 5b 5b 83 e2 01 5e f7 da 83 c2 04 
-> EIP: [<c015b0db>] page_remove_rmap+0xe5/0x104 SS:ESP 0068:df4cfdd8
-> Fixing recursive fault but reboot is needed!
-> BUG: scheduling while atomic: kvm/20473/0x00000003
-> Pid: 20473, comm: kvm Tainted: G      D 2.6.24-rc4 #1
->  [<c035336d>] schedule+0x93/0x5a8
->  [<c01cf25d>] free_as_io_context+0x7/0x79
->  [<c0126009>] do_exit+0xc3/0x642
->  [<c021adfc>] do_unblank_screen+0xd/0x103
->  [<c0105328>] die+0x1d6/0x1de
->  [<c010560c>] do_invalid_op+0x0/0x8a
->  [<c010568d>] do_invalid_op+0x81/0x8a
->  [<c015b0db>] page_remove_rmap+0xe5/0x104
->  [<c0123519>] __call_console_drivers+0x4f/0x5b
->  [<c01238d0>] release_console_sem+0x17f/0x198
->  [<c0147b6e>] handle_IRQ_event+0x1a/0x3f
->  [<c010678c>] do_IRQ+0x5c/0x70
->  [<c0127b26>] irq_exit+0x53/0x75
->  [<c010678c>] do_IRQ+0x5c/0x70
->  [<c0354daa>] error_code+0x72/0x78
->  [<c015b0db>] page_remove_rmap+0xe5/0x104
->  [<c0155e35>] unmap_vmas+0x261/0x4ed
->  [<c01587d7>] exit_mmap+0x7c/0x106
->  [<c0121730>] mmput+0x1c/0x75
->  [<c0126115>] do_exit+0x1cf/0x642
->  [<c012bb68>] __dequeue_signal+0x10/0x14c
->  [<c012be35>] recalc_sigpending+0xb/0x30
->  [<c01265f5>] sys_exit_group+0x0/0xd
->  [<c012d7af>] get_signal_to_deliver+0x3f8/0x41d
->  [<c0103609>] do_notify_resume+0x84/0x612
->  [<c012d078>] dequeue_signal+0x95/0x111
->  [<c013b2a6>] tick_program_event+0x33/0x52
->  [<c01384bd>] getnstimeofday+0x2b/0xac
->  [<c013654a>] hrtimer_start+0xf1/0xfd
->  [<f8a6b006>] kvm_vcpu_ioctl+0x0/0xc60 [kvm]
->  [<c016ee67>] do_ioctl+0x1f/0x62
->  [<c016f0ca>] vfs_ioctl+0x220/0x232
->  [<c016f11f>] sys_ioctl+0x43/0x4c
->  [<c010404a>] work_notifysig+0x13/0x19
->  =======================
-> 
-> Best wishes
-> 
-> Norbert
-> 
-> -------------------------------------------------------------------------------
-> Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-> Debian Developer <preining@debian.org>                         Debian TeX Group
-> gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
-> -------------------------------------------------------------------------------
-> PEN-TRE-TAFARN-Y-FEDW (n.)
-> Welsh word which literally translates as
-> 'leaking-biro-by-the-glass-hole-of-the-clerk-of-the-bank-has-been-
-> -taken-to-another-place-leaving-only-the-special-inkwell-and-three-
-> -inches-of-tin-chain'.
-> 			--- Douglas Adams, The Meaning of Liff
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Ack the revert too.
 
+The MIPS needs sorting out differently.
