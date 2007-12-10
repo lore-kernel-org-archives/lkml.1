@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbXLJJj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbXLJJne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbXLJJj0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 04:39:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXLJJjS
+	id S1755366AbXLJJne (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 04:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbXLJJnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 04:39:18 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:40017 "EHLO
+	Mon, 10 Dec 2007 04:43:25 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:46473 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751773AbXLJJjR (ORCPT
+	with ESMTP id S1751485AbXLJJnY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 04:39:17 -0500
+	Mon, 10 Dec 2007 04:43:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=I9TC9xEHrwm/paYy4MbBM/LUZGgMuBQjtiK9eQqP6AQ/EhR6TcRD/uIb4n5JHhkfLvaIEO7Mji3CXnL1AZw9ErJAeglvSbkhNH8FyJibQinqkGvlaWnbj0wriY23FYKvo+G6RGTaepUt8iHCqyaMldQ738amU4bswMLes+6Z/F8=
-Message-ID: <f17812d70712100139q31c95d6er12105ebbe94b3909@mail.gmail.com>
-Date: Mon, 10 Dec 2007 17:39:09 +0800
+        b=eB3WTylSAJ5qTyyLp6n+EUaR7v8IwRhapFipMzjyiivHagbSpsYy40tGVvNiaNS0HygGEoihe4t5GwoLCpYcIDLKn7W+NQ2j4QQ+GZmTInzn33MSWQCOow2f9rbdznup5WgcxRjNTu8dkcZYe8RoYbsz4kSHBIuj2nOxYe4t0sk=
+Message-ID: <f17812d70712100143w65898405rd96f460aef621a25@mail.gmail.com>
+Date: Mon, 10 Dec 2007 17:43:21 +0800
 From: "eric miao" <eric.y.miao@gmail.com>
 To: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
        linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
        i2c@lm-sensors.org
-Subject: [PATCH 2.6.24-rc4-mm 1/2] gpiolib: basic support for 16-bit PCA9539 GPIO expander
+Subject: [PATCH 2.6.24-rc4-mm 2/2] gpiolib: add Generic IRQ support for 16-bit PCA9539 GPIO expander
 Cc: "David Brownell" <david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -30,331 +30,284 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1. use 16-bit register access to simplify the logic, cache OUTPUT
-   and DIRECTION registers for fast access
+This patch adds the generic IRQ support for the PCA9539 on-chip GPIOs,
+platform specific code is required to keep a correct gpio_to_irq() and
+irq_to_gpio() mapping.
 
-2. platform code is required to setup
-   a) the numbering of GPIO for PCA9539 (base and number)
-   c) pass "pca9539_platform_data" within "i2c_board_info"
+Note: due to the inaccessibility of the generic IRQ code within modules,
+this support is only available if the driver is built-in.
 
 Signed-off-by: eric miao <eric.miao@marvell.com>
 Acked-by: Ben Gardner <bgardner@wabtec.com>
 ---
- drivers/gpio/Kconfig        |   10 ++
- drivers/gpio/Makefile       |    1 +
- drivers/gpio/pca9539.c      |  248 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/i2c/pca9539.h |   18 +++
- 4 files changed, 277 insertions(+), 0 deletions(-)
- create mode 100644 drivers/gpio/pca9539.c
- create mode 100644 include/linux/i2c/pca9539.h
+ drivers/gpio/Kconfig   |   10 +++-
+ drivers/gpio/pca9539.c |  184 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 193 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index dd9e697..6528fce 100644
+index 6528fce..ee5b684 100644
 --- a/drivers/gpio/Kconfig
 +++ b/drivers/gpio/Kconfig
-@@ -32,6 +32,16 @@ config GPIO_PCF857X
- 	  This driver provides an in-kernel interface to those GPIOs using
- 	  platform-neutral GPIO calls.
+@@ -40,7 +40,15 @@ config GPIO_PCA9539
+ 	  16-bit I/O port.
 
-+config GPIO_PCA9539
-+	tristate "Philips PCA9539 16-bit I/O port"
-+	depends on I2C
+ 	  This driver can also be built as a module.  If so, the module
+-	  will be called pca9539.
++	  will be called pca9539.  Note: the Generic IRQ support for the
++	  chip will only be available if the driver is built-in
++
++config GPIO_PCA9539_GENERIC_IRQ
++	bool "    Generic IRQ support for PCA9539"
++	depends on GPIO_PCA9539=y
 +	help
-+	  If you say yes here you get support for the Philips PCA9539
-+	  16-bit I/O port.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called pca9539.
-+
++	  Say yes here to support the Generic IRQ for the PCA9539 on-chip
++	  GPIO lines.
+
  comment "SPI GPIO expanders:"
 
- config GPIO_MCP23S08
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 575bb57..5f32943 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -2,3 +2,4 @@
-
- obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
- obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
-+obj-$(CONFIG_GPIO_PCA9539)	+= pca9539.o
 diff --git a/drivers/gpio/pca9539.c b/drivers/gpio/pca9539.c
-new file mode 100644
-index 0000000..0a3ae6a
---- /dev/null
+index 0a3ae6a..e736dd9 100644
+--- a/drivers/gpio/pca9539.c
 +++ b/drivers/gpio/pca9539.c
-@@ -0,0 +1,248 @@
-+/*
-+    pca9539.c - 16-bit I/O port with interrupt and reset
+@@ -11,6 +11,9 @@
+
+ #include <linux/module.h>
+ #include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/interrupt.h>
++#include <linux/workqueue.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c/pca9539.h>
+
+@@ -27,9 +30,25 @@ struct pca9539_chip {
+ 	unsigned gpio_start;
+ 	uint16_t reg_output;
+ 	uint16_t reg_direction;
++	uint16_t last_input;
+
+ 	struct i2c_client *client;
+ 	struct gpio_chip gpio_chip;
++#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
++	/*
++	 * Note: Generic IRQ is not accessible within module code, the IRQ
++	 * support will thus _only_ be available if the driver is built-in
++	 */
++	int irq;	/* IRQ for the chip itself */
++	int irq_start;	/* starting IRQ for the on-chip GPIO lines */
 +
-+    Copyright (C) 2005 Ben Gardner <bgardner@wabtec.com>
-+    Copyright (C) 2007 Marvell Internation Ltd.
++	uint16_t irq_mask;
++	uint16_t irq_falling_edge;
++	uint16_t irq_rising_edge;
 +
-+    This program is free software; you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation; version 2 of the License.
-+*/
++	struct irq_chip irq_chip;
++	struct work_struct irq_work;
++#endif
+ };
+
+ static int pca9539_write_reg(struct pca9539_chip *chip, int reg, uint16_t val)
+@@ -152,6 +171,150 @@ static int pca9539_init_gpio(struct pca9539_chip *chip)
+ 	return gpiochip_add(gc);
+ }
+
++#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
++/* FIXME: change to schedule_delayed_work() here if reading out of
++ * registers does not reflect the actual pin levels
++ */
 +
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/i2c.h>
-+#include <linux/i2c/pca9539.h>
-+
-+#include <asm/gpio.h>
-+
-+#define NR_PCA9539_GPIOS	16
-+
-+#define PCA9539_INPUT		0
-+#define PCA9539_OUTPUT		2
-+#define PCA9539_INVERT		4
-+#define PCA9539_DIRECTION	6
-+
-+struct pca9539_chip {
-+	unsigned gpio_start;
-+	uint16_t reg_output;
-+	uint16_t reg_direction;
-+
-+	struct i2c_client *client;
-+	struct gpio_chip gpio_chip;
-+};
-+
-+static int pca9539_write_reg(struct pca9539_chip *chip, int reg, uint16_t val)
-+{
-+	return i2c_smbus_write_word_data(chip->client, reg, val);
-+}
-+
-+static int pca9539_read_reg(struct pca9539_chip *chip, int reg, uint16_t *val)
-+{
-+	int ret;
-+
-+	ret = i2c_smbus_read_word_data(chip->client, reg);
-+	if (ret < 0) {
-+		printk(KERN_ERR "%s: failed to read\n", __FUNCTION__);
-+		return ret;
-+	}
-+
-+	*val = (uint16_t)ret;
-+	return 0;
-+}
-+
-+static int pca9539_gpio_direction_input(struct gpio_chip *gc, unsigned off)
++static void pca9539_irq_work(struct work_struct *work)
 +{
 +	struct pca9539_chip *chip;
-+	uint16_t reg_val;
-+	int ret;
++	uint16_t input, mask, rising, falling;
++	int ret, i;
 +
-+	chip = container_of(gc, struct pca9539_chip, gpio_chip);
++	chip = container_of(work, struct pca9539_chip, irq_work);
 +
-+	reg_val = chip->reg_direction | (1u << off);
-+	ret = pca9539_write_reg(chip, PCA9539_DIRECTION, reg_val);
-+	if (ret)
-+		return ret;
-+
-+	chip->reg_direction = reg_val;
-+	return 0;
-+}
-+
-+static int pca9539_gpio_direction_output(struct gpio_chip *gc,
-+		unsigned off, int val)
-+{
-+	struct pca9539_chip *chip;
-+	uint16_t reg_val;
-+	int ret;
-+
-+	chip = container_of(gc, struct pca9539_chip, gpio_chip);
-+
-+	/* set output level */
-+	if (val)
-+		reg_val = chip->reg_output | (1u << off);
-+	else
-+		reg_val = chip->reg_output & ~(1u << off);
-+
-+	ret = pca9539_write_reg(chip, PCA9539_OUTPUT, reg_val);
-+	if (ret)
-+		return ret;
-+
-+	chip->reg_output = reg_val;
-+
-+	/* then direction */
-+	reg_val = chip->reg_direction & ~(1u << off);
-+	ret = pca9539_write_reg(chip, PCA9539_DIRECTION, reg_val);
-+	if (ret)
-+		return ret;
-+
-+	chip->reg_direction = reg_val;
-+	return 0;
-+}
-+
-+static int pca9539_gpio_get_value(struct gpio_chip *gc, unsigned off)
-+{
-+	struct pca9539_chip *chip;
-+	uint16_t reg_val;
-+	int ret;
-+
-+	chip = container_of(gc, struct pca9539_chip, gpio_chip);
-+
-+	ret = pca9539_read_reg(chip, PCA9539_INPUT, &reg_val);
++	ret = pca9539_read_reg(chip, PCA9539_INPUT, &input);
 +	if (ret < 0)
-+		return ret;
-+
-+	return (reg_val & (1u << off)) ? 1 : 0;
-+}
-+
-+static void pca9539_gpio_set_value(struct gpio_chip *gc, unsigned off, int val)
-+{
-+	struct pca9539_chip *chip;
-+	uint16_t reg_val;
-+	int ret;
-+
-+	chip = container_of(gc, struct pca9539_chip, gpio_chip);
-+
-+	if (val)
-+		reg_val = chip->reg_output | (1u << off);
-+	else
-+		reg_val = chip->reg_output & ~(1u << off);
-+
-+	ret = pca9539_write_reg(chip, PCA9539_OUTPUT, reg_val);
-+	if (ret)
 +		return;
 +
-+	chip->reg_output = reg_val;
++	mask = (input ^ chip->last_input) & chip->irq_mask;
++	rising = (input & mask) & chip->irq_rising_edge;
++	falling = (~input & mask) & chip->irq_falling_edge;
++
++	irq_enter();
++
++	for (i = 0; i < NR_PCA9539_GPIOS; i++) {
++		if ((rising | falling) & (1u << i)) {
++			int irq = chip->irq_start + i;
++			struct irq_desc *desc;
++
++			desc = irq_desc + irq;
++			desc_handle_irq(irq, desc);
++		}
++	}
++
++	irq_exit();
++
++	chip->last_input = input;
 +}
 +
-+static int pca9539_init_gpio(struct pca9539_chip *chip)
++static void fastcall
++pca9539_irq_demux(unsigned int irq, struct irq_desc *desc)
 +{
-+	struct gpio_chip *gc;
++	struct pca9539_chip *chip = desc->handler_data;
 +
-+	gc = &chip->gpio_chip;
-+
-+	gc->direction_input  = pca9539_gpio_direction_input;
-+	gc->direction_output = pca9539_gpio_direction_output;
-+	gc->get = pca9539_gpio_get_value;
-+	gc->set = pca9539_gpio_set_value;
-+
-+	gc->base = chip->gpio_start;
-+	gc->ngpio = NR_PCA9539_GPIOS;
-+	gc->label = "pca9539";
-+
-+	return gpiochip_add(gc);
++	desc->chip->mask(chip->irq);
++	desc->chip->ack(chip->irq);
++	schedule_work(&chip->irq_work);
++	desc->chip->unmask(chip->irq);
 +}
 +
-+static int __devinit pca9539_probe(struct i2c_client *client)
++static void pca9539_irq_mask(unsigned int irq)
 +{
-+	struct pca9539_platform_data *pdata;
-+	struct pca9539_chip *chip;
-+	int ret;
++	struct irq_desc *desc = irq_desc + irq;
++	struct pca9539_chip *chip = desc->chip_data;
 +
-+	pdata = client->dev.platform_data;
-+	if (pdata == NULL)
-+		return -ENODEV;
++	chip->irq_mask &= ~(1u << (irq - chip->irq_start));
++}
 +
-+	chip = kzalloc(sizeof(struct pca9539_chip), GFP_KERNEL);
-+	if (chip == NULL)
-+		return -ENOMEM;
++static void pca9539_irq_unmask(unsigned int irq)
++{
++	struct irq_desc *desc = irq_desc + irq;
++	struct pca9539_chip *chip = desc->chip_data;
 +
-+	chip->client = client;
++	chip->irq_mask |= 1u << (irq - chip->irq_start);
++}
 +
-+	chip->gpio_start = pdata->gpio_base;
++static void pca9539_irq_ack(unsigned int irq)
++{
++	/* unfortunately, we have to provide an empty irq_chip.ack even
++	 * if we do nothing here, Generic IRQ will complain otherwise
++	 */
++}
 +
-+	/* initialize registers */
-+	chip->reg_output = 0xffff;
-+	chip->reg_direction = 0xffff;
++static int pca9539_irq_set_type(unsigned int irq, unsigned int type)
++{
++	struct irq_desc *desc = irq_desc + irq;
++	struct pca9539_chip *chip = desc->chip_data;
++	uint16_t mask = 1u << (irq - chip->irq_start);
 +
-+	pca9539_write_reg(chip, PCA9539_OUTPUT, chip->reg_output);
-+	pca9539_write_reg(chip, PCA9539_DIRECTION, chip->reg_direction);
++	if (type == IRQT_PROBE) {
++		if ((mask & chip->irq_rising_edge) ||
++		    (mask & chip->irq_falling_edge) ||
++		    (mask & ~chip->reg_direction))
++			return 0;
 +
-+	/* set platform specific polarity inversion */
-+	pca9539_write_reg(chip, PCA9539_INVERT, pdata->invert);
++		type = __IRQT_RISEDGE | __IRQT_FALEDGE;
++	}
 +
-+	ret = pca9539_init_gpio(chip);
++	gpio_direction_input(irq_to_gpio(irq));
++
++	if (type & __IRQT_RISEDGE)
++		chip->irq_rising_edge |= mask;
++	else
++		chip->irq_rising_edge &= ~mask;
++
++	if (type & __IRQT_FALEDGE)
++		chip->irq_falling_edge |= mask;
++	else
++		chip->irq_falling_edge &= ~mask;
++
++	return 0;
++}
++
++static int pca9539_init_irq(struct pca9539_chip *chip)
++{
++	struct irq_chip *ic = &chip->irq_chip;
++	int irq, irq_start = chip->irq_start;
++
++	/* do not install GPIO interrupts for the chip if
++	 * 1. the PCA9539 interrupt line is not used
++	 * 2. or the GPIO interrupt number exceeds NR_IRQS
++	 */
++	if (chip->irq <= 0 || irq_start + NR_PCA9539_GPIOS >= NR_IRQS)
++		return -EINVAL;
++
++	chip->irq_mask	= 0;
++	chip->irq_rising_edge  = 0;
++	chip->irq_falling_edge = 0;
++
++	ic->ack = pca9539_irq_ack;
++	ic->mask = pca9539_irq_mask;
++	ic->unmask = pca9539_irq_unmask;
++	ic->set_type = pca9539_irq_set_type;
++
++	for (irq = irq_start; irq < irq_start + NR_PCA9539_GPIOS; irq++) {
++		set_irq_chip(irq, ic);
++		set_irq_chip_data(irq, chip);
++		set_irq_handler(irq, handle_edge_irq);
++		set_irq_flags(irq, IRQF_VALID | IRQF_PROBE);
++	}
++
++	set_irq_type(chip->irq, IRQT_FALLING);
++	set_irq_data(chip->irq, chip);
++	set_irq_chained_handler(chip->irq, pca9539_irq_demux);
++
++	INIT_WORK(&chip->irq_work, pca9539_irq_work);
++	return 0;
++}
++#else
++static inline int pca9539_init_irq(struct pca9539_chip *chip)
++{
++	return 0;
++}
++#endif /* CONFIG_GPIO_PCA9539_GENERIC_IRQ */
++
+ static int __devinit pca9539_probe(struct i2c_client *client)
+ {
+ 	struct pca9539_platform_data *pdata;
+@@ -167,8 +330,15 @@ static int __devinit pca9539_probe(struct
+i2c_client *client)
+ 		return -ENOMEM;
+
+ 	chip->client = client;
++	chip->irq = client->irq;
+
+ 	chip->gpio_start = pdata->gpio_base;
++	chip->irq_start  = gpio_to_irq(chip->gpio_start);
++
++	/* read init register values */
++	ret = pca9539_read_reg(chip, PCA9539_INPUT, &chip->last_input);
 +	if (ret)
 +		goto out_failed;
-+
-+	if (pdata->setup) {
-+		ret = pdata->setup(client, chip->gpio_chip.base,
-+				chip->gpio_chip.ngpio, pdata->context);
-+		if (ret < 0)
-+			dev_dbg(&client->dev, "setup failed, %d\n", ret);
+
+ 	/* initialize registers */
+ 	chip->reg_output = 0xffff;
+@@ -191,6 +361,12 @@ static int __devinit pca9539_probe(struct
+i2c_client *client)
+ 			dev_dbg(&client->dev, "setup failed, %d\n", ret);
+ 	}
+
++	ret = pca9539_init_irq(chip);
++	if (ret) {
++		ret = gpiochip_remove(&chip->gpio_chip);
++		goto out_failed;
 +	}
 +
-+	i2c_set_clientdata(client, chip);
-+	return 0;
-+
-+out_failed:
-+	kfree(chip);
-+	return ret;
-+}
-+
+ 	i2c_set_clientdata(client, chip);
+ 	return 0;
+
+@@ -199,6 +375,13 @@ out_failed:
+ 	return ret;
+ }
+
++#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
 +static int pca9539_remove(struct i2c_client *client)
 +{
-+	struct pca9539_platform_data *pdata = client->dev.platform_data;
-+	struct pca9539_chip *chip = i2c_get_clientdata(client);
-+	int ret = 0;
-+
-+	if (pdata->teardown) {
-+		ret = pdata->teardown(client, chip->gpio_chip.base,
-+				chip->gpio_chip.ngpio, pdata->context);
-+		if (ret < 0)
-+			dev_dbg(&client->dev, "teardown failed, %d\n", ret);
-+	}
-+
-+	ret = gpiochip_remove(&chip->gpio_chip);
-+	if (ret) {
-+		dev_err(&client->dev, "failed remove gpio_chip\n");
-+		return ret;
-+	}
-+
-+	kfree(chip);
-+	return 0;
++	printk(KERN_ERR "failed to unload the driver with IRQ support\n");
++	return -EINVAL;
 +}
-+
-+static struct i2c_driver pca9539_driver = {
-+	.driver = {
-+		.name	= "pca9539",
-+	},
-+	.probe		= pca9539_probe,
-+	.remove		= pca9539_remove,
-+};
-+
-+static int __init pca9539_init(void)
-+{
-+	return i2c_add_driver(&pca9539_driver);
-+}
-+
-+static void __exit pca9539_exit(void)
-+{
-+	i2c_del_driver(&pca9539_driver);
-+}
-+
-+MODULE_AUTHOR("Ben Gardner <bgardner@wabtec.com>");
-+MODULE_DESCRIPTION("PCA9539 driver");
-+MODULE_LICENSE("GPL");
-+
-+module_init(pca9539_init);
-+module_exit(pca9539_exit);
-diff --git a/include/linux/i2c/pca9539.h b/include/linux/i2c/pca9539.h
-new file mode 100644
-index 0000000..611d84a
---- /dev/null
-+++ b/include/linux/i2c/pca9539.h
-@@ -0,0 +1,18 @@
-+/* platform data for the PCA9539 16-bit I/O expander driver */
-+
-+struct pca9539_platform_data {
-+	/* number of the first GPIO */
-+	unsigned	gpio_base;
-+
-+	/* initial polarity inversion setting */
-+	uint16_t	invert;
-+
-+	void		*context;	/* param to setup/teardown */
-+
-+	int		(*setup)(struct i2c_client *client,
-+				unsigned gpio, unsigned ngpio,
-+				void *context);
-+	int		(*teardown)(struct i2c_client *client,
-+				unsigned gpio, unsigned ngpio,
-+				void *context);
-+};
++#else
+ static int pca9539_remove(struct i2c_client *client)
+ {
+ 	struct pca9539_platform_data *pdata = client->dev.platform_data;
+@@ -221,6 +404,7 @@ static int pca9539_remove(struct i2c_client *client)
+ 	kfree(chip);
+ 	return 0;
+ }
++#endif /* CONFIG_GPIO_PCA9539_GENERIC_IRQ */
+
+ static struct i2c_driver pca9539_driver = {
+ 	.driver = {
 -- 
 1.5.2.5.GIT
