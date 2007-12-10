@@ -1,97 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbXLJFvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbXLJFyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131AbXLJFvU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 00:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbXLJFvM
+	id S1753486AbXLJFyb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 00:54:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbXLJFyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 00:51:12 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50799 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbXLJFvL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 00:51:11 -0500
-Date: Mon, 10 Dec 2007 14:50:02 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: sparsemem: Make SPARSEMEM_VMEMMAP selectable
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <475B6D77.6070906@am.sony.com>
-References: <47537F2E.2070204@am.sony.com> <475B6D77.6070906@am.sony.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20071210144624.B6EA.Y-GOTO@jp.fujitsu.com>
+	Mon, 10 Dec 2007 00:54:23 -0500
+Received: from www.tglx.de ([62.245.132.106]:56739 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750841AbXLJFyX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 00:54:23 -0500
+Date: Mon, 10 Dec 2007 11:23:35 +0530 (IST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ITIMER_REAL: convert to use struct pid
+In-Reply-To: <20071207170336.GA13835@tv-sign.ru>
+Message-ID: <alpine.LFD.0.99999.0712101122580.11977@localhost.localdomain>
+References: <20071207170336.GA13835@tv-sign.ru>
+User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks good to me.
-
-Thanks.
-
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 
 
+On Fri, 7 Dec 2007, Oleg Nesterov wrote:
+
+> signal_struct->tsk points to the ->group_leader and thus we have the nasty code
+> in de_thread() which has to change it and restart ->real_timer if the leader is
+> changed.
 > 
-> From: Geoff Levand <geoffrey.levand@am.sony.com>
+> Use "struct pid *leader_pid" instead. This also allows us to kill now unneeded
+> send_group_sig_info().
 > 
-> SPARSEMEM_VMEMMAP needs to be a selectable config option to
-> support building the kernel both with and without sparsemem
-> vmemmap support.  This selection is desirable for platforms
-> which could be configured one way for platform specific
-> builds and the other for multi-platform builds.
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+Nice cleanup.
+
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+
+ 
+>  include/linux/sched.h |    3 +--
+>  kernel/fork.c         |    2 +-
+>  kernel/itimer.c       |    2 +-
+>  fs/exec.c             |   22 ++--------------------
+>  kernel/signal.c       |   14 --------------
+>  5 files changed, 5 insertions(+), 38 deletions(-)
 > 
-> Signed-off-by: Miguel Boton <mboton@gmail.com>
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> ---
-> 
-> Andrew, 
-> 
-> Please consider for 2.6.24.
-> 
-> -Geoff
-> 
-> 
->  mm/Kconfig |   15 +++++++--------
->  1 file changed, 7 insertions(+), 8 deletions(-)
-> 
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -112,18 +112,17 @@ config SPARSEMEM_EXTREME
->  	def_bool y
->  	depends on SPARSEMEM && !SPARSEMEM_STATIC
+> --- PT/include/linux/sched.h~3_itimer_tsk_pid	2007-12-02 14:53:29.000000000 +0300
+> +++ PT/include/linux/sched.h	2007-12-07 19:24:44.000000000 +0300
+> @@ -444,7 +444,7 @@ struct signal_struct {
 >  
-> -#
-> -# SPARSEMEM_VMEMMAP uses a virtually mapped mem_map to optimise pfn_to_page
-> -# and page_to_pfn.  The most efficient option where kernel virtual space is
-> -# not under pressure.
-> -#
->  config SPARSEMEM_VMEMMAP_ENABLE
->  	def_bool n
+>  	/* ITIMER_REAL timer for the process */
+>  	struct hrtimer real_timer;
+> -	struct task_struct *tsk;
+> +	struct pid *leader_pid;
+>  	ktime_t it_real_incr;
 >  
->  config SPARSEMEM_VMEMMAP
-> -	bool
-> -	depends on SPARSEMEM
-> -	default y if (SPARSEMEM_VMEMMAP_ENABLE)
-> +	bool "Sparse Memory virtual memmap"
-> +	depends on SPARSEMEM && SPARSEMEM_VMEMMAP_ENABLE
-> +	default y
-> +	help
-> +	 SPARSEMEM_VMEMMAP uses a virtually mapped memmap to optimise
-> +	 pfn_to_page and page_to_pfn operations.  This is the most
-> +	 efficient option when sufficient kernel resources are available.
+>  	/* ITIMER_PROF and ITIMER_VIRTUAL timers for the process */
+> @@ -1630,7 +1630,6 @@ extern void block_all_signals(int (*noti
+>  extern void unblock_all_signals(void);
+>  extern void release_task(struct task_struct * p);
+>  extern int send_sig_info(int, struct siginfo *, struct task_struct *);
+> -extern int send_group_sig_info(int, struct siginfo *, struct task_struct *);
+>  extern int force_sigsegv(int, struct task_struct *);
+>  extern int force_sig_info(int, struct siginfo *, struct task_struct *);
+>  extern int __kill_pgrp_info(int sig, struct siginfo *info, struct pid *pgrp);
+> --- PT/kernel/fork.c~3_itimer_tsk_pid	2007-12-07 19:03:34.000000000 +0300
+> +++ PT/kernel/fork.c	2007-12-07 19:08:57.000000000 +0300
+> @@ -882,7 +882,6 @@ static int copy_signal(unsigned long clo
+>  	hrtimer_init(&sig->real_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+>  	sig->it_real_incr.tv64 = 0;
+>  	sig->real_timer.function = it_real_fn;
+> -	sig->tsk = tsk;
 >  
->  # eventually, we can have this option just 'select SPARSEMEM'
->  config MEMORY_HOTPLUG
+>  	sig->it_virt_expires = cputime_zero;
+>  	sig->it_virt_incr = cputime_zero;
+> @@ -1300,6 +1299,7 @@ static struct task_struct *copy_process(
+>  			if (clone_flags & CLONE_NEWPID)
+>  				p->nsproxy->pid_ns->child_reaper = p;
+>  
+> +			p->signal->leader_pid = pid;
+>  			p->signal->tty = current->signal->tty;
+>  			set_task_pgrp(p, task_pgrp_nr(current));
+>  			set_task_session(p, task_session_nr(current));
+> --- PT/kernel/itimer.c~3_itimer_tsk_pid	2007-10-25 16:22:12.000000000 +0400
+> +++ PT/kernel/itimer.c	2007-12-07 19:15:27.000000000 +0300
+> @@ -132,7 +132,7 @@ enum hrtimer_restart it_real_fn(struct h
+>  	struct signal_struct *sig =
+>  		container_of(timer, struct signal_struct, real_timer);
+>  
+> -	send_group_sig_info(SIGALRM, SEND_SIG_PRIV, sig->tsk);
+> +	kill_pid_info(SIGALRM, SEND_SIG_PRIV, sig->leader_pid);
+>  
+>  	return HRTIMER_NORESTART;
+>  }
+> --- PT/fs/exec.c~3_itimer_tsk_pid	2007-12-02 16:07:22.000000000 +0300
+> +++ PT/fs/exec.c	2007-12-07 19:18:48.000000000 +0300
+> @@ -781,26 +781,8 @@ static int de_thread(struct task_struct 
+>  	zap_other_threads(tsk);
+>  	read_unlock(&tasklist_lock);
+>  
+> -	/*
+> -	 * Account for the thread group leader hanging around:
+> -	 */
+> -	count = 1;
+> -	if (!thread_group_leader(tsk)) {
+> -		count = 2;
+> -		/*
+> -		 * The SIGALRM timer survives the exec, but needs to point
+> -		 * at us as the new group leader now.  We have a race with
+> -		 * a timer firing now getting the old leader, so we need to
+> -		 * synchronize with any firing (by calling del_timer_sync)
+> -		 * before we can safely let the old group leader die.
+> -		 */
+> -		sig->tsk = tsk;
+> -		spin_unlock_irq(lock);
+> -		if (hrtimer_cancel(&sig->real_timer))
+> -			hrtimer_restart(&sig->real_timer);
+> -		spin_lock_irq(lock);
+> -	}
+> -
+> +	/* Account for the thread group leader hanging around: */
+> +	count = thread_group_leader(tsk) ? 1 : 2;
+>  	sig->notify_count = count;
+>  	while (atomic_read(&sig->count) > count) {
+>  		__set_current_state(TASK_UNINTERRUPTIBLE);
+> --- PT/kernel/signal.c~3_itimer_tsk_pid	2007-12-07 17:20:27.000000000 +0300
+> +++ PT/kernel/signal.c	2007-12-07 19:23:40.000000000 +0300
+> @@ -1204,20 +1204,6 @@ send_sig(int sig, struct task_struct *p,
+>  	return send_sig_info(sig, __si_special(priv), p);
+>  }
+>  
+> -/*
+> - * This is the entry point for "process-wide" signals.
+> - * They will go to an appropriate thread in the thread group.
+> - */
+> -int
+> -send_group_sig_info(int sig, struct siginfo *info, struct task_struct *p)
+> -{
+> -	int ret;
+> -	read_lock(&tasklist_lock);
+> -	ret = group_send_sig_info(sig, info, p);
+> -	read_unlock(&tasklist_lock);
+> -	return ret;
+> -}
+> -
+>  void
+>  force_sig(int sig, struct task_struct *p)
+>  {
 > 
-> 
-
--- 
-Yasunori Goto 
-
-
