@@ -1,217 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbXLJGQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbXLJGUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753448AbXLJGQQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 01:16:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXLJGQB
+	id S1754575AbXLJGUI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 01:20:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbXLJGT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 01:16:01 -0500
-Received: from ozlabs.org ([203.10.76.45]:42592 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751244AbXLJGQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 01:16:00 -0500
-To: Greg Kroah-Hartman <greg@kroah.com>
-CC: linux-pci@atrey.karlin.mff.cuni.cz, <linuxppc-dev@ozlabs.org>,
-       <linux-kernel@vger.kernel.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 10 Dec 2007 17:15:57 +1100
-Subject: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b resources
-Message-Id: <20071210061559.2E3DDDDE02@ozlabs.org>
+	Mon, 10 Dec 2007 01:19:57 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60145 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751350AbXLJGT4 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 01:19:56 -0500
+Date: Mon, 10 Dec 2007 17:19:46 +1100
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.24-rc5
+User-Agent: nail 11.25 7/29/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071210061946.C08AD58C4C34@chook.melbourne.sgi.com>
+From: lachlan@sgi.com (Lachlan McIlroy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current pci_assign_unassigned_resources() code doesn't work properly
-on 32 bits platforms with 64 bits resources. The main reason is the use
-of unsigned long in various places instead of resource_size_t.
+Please pull from the for-linus branch:
+    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 
-This fixes it, along with some tricks to avoid casting to 64 bits on
-platforms that don't need it in every printk around.
+This will update the following files:
 
-This is a pre-requisite for making powerpc use the generic code instead of
-its own half-useful implementation.
+ fs/xfs/linux-2.6/xfs_buf.c     |   37 +++++-------
+ fs/xfs/linux-2.6/xfs_file.c    |  124 ++++++++++++++++++++++++++++++++++++++++
+ fs/xfs/linux-2.6/xfs_ioctl.c   |   20 +++----
+ fs/xfs/linux-2.6/xfs_ioctl32.c |    3 +
+ fs/xfs/linux-2.6/xfs_iops.c    |    4 +-
+ fs/xfs/quota/xfs_qm.c          |    3 +
+ fs/xfs/xfs_iget.c              |    2 +-
+ fs/xfs/xfs_itable.c            |   43 +++++++++-----
+ 8 files changed, 186 insertions(+), 50 deletions(-)
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+through these commits:
 
-This version now uses casts as Greg asked for and adds proper setup
-of the prefetchable base & limit "upper" registers when using 64 bits
-resources.
+commit cf10e82bdc0d38d09dfaf46d0daf56136138ef3f
+Author: David Chinner <dgc@sgi.com>
+Date:   Fri Dec 7 14:09:11 2007 +1100
 
- drivers/pci/setup-bus.c |   59 +++++++++++++++++++++++++++++-------------------
- include/linux/pci.h     |    4 +--
- 2 files changed, 38 insertions(+), 25 deletions(-)
+    [XFS] Fix xfs_ichgtime()s broken usage of I_SYNC
+    
+    The recent I_LOCK->I_SYNC changes mistakenly changed xfs_ichgtime to look
+    at I_SYNC instead of I_LOCK. This was incorrect and prevents newly created
+    inodes from moving to the dirty list. Change this to the correct check
+    which is for I_NEW, not I_LOCK or I_SYNC so that behaviour is correct.
+    
+    SGI-PV: 974225
+    SGI-Modid: xfs-linux-melb:xfs-kern:30204a
+    
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
 
-Index: linux-work/drivers/pci/setup-bus.c
-===================================================================
---- linux-work.orig/drivers/pci/setup-bus.c	2007-12-10 16:56:51.000000000 +1100
-+++ linux-work/drivers/pci/setup-bus.c	2007-12-10 17:12:27.000000000 +1100
-@@ -89,8 +89,9 @@ void pci_setup_cardbus(struct pci_bus *b
- 		 * The IO resource is allocated a range twice as large as it
- 		 * would normally need.  This allows us to set both IO regs.
- 		 */
--		printk("  IO window: %08lx-%08lx\n",
--			region.start, region.end);
-+		printk(KERN_INFO "  IO window: 0x%08lx-0x%08lx\n",
-+		       (unsigned long)region.start,
-+		       (unsigned long)region.end);
- 		pci_write_config_dword(bridge, PCI_CB_IO_BASE_0,
- 					region.start);
- 		pci_write_config_dword(bridge, PCI_CB_IO_LIMIT_0,
-@@ -99,8 +100,9 @@ void pci_setup_cardbus(struct pci_bus *b
- 
- 	pcibios_resource_to_bus(bridge, &region, bus->resource[1]);
- 	if (bus->resource[1]->flags & IORESOURCE_IO) {
--		printk("  IO window: %08lx-%08lx\n",
--			region.start, region.end);
-+		printk(KERN_INFO "  IO window: 0x%08lx-0x%08lx\n",
-+		       (unsigned long)region.start,
-+		       (unsigned long)region.end);
- 		pci_write_config_dword(bridge, PCI_CB_IO_BASE_1,
- 					region.start);
- 		pci_write_config_dword(bridge, PCI_CB_IO_LIMIT_1,
-@@ -109,8 +111,9 @@ void pci_setup_cardbus(struct pci_bus *b
- 
- 	pcibios_resource_to_bus(bridge, &region, bus->resource[2]);
- 	if (bus->resource[2]->flags & IORESOURCE_MEM) {
--		printk("  PREFETCH window: %08lx-%08lx\n",
--			region.start, region.end);
-+		printk(KERN_INFO "  PREFETCH window: 0x%08lx-0x%08lx\n",
-+		       (unsigned long)region.start,
-+		       (unsigned long)region.end);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_0,
- 					region.start);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_LIMIT_0,
-@@ -119,8 +122,9 @@ void pci_setup_cardbus(struct pci_bus *b
- 
- 	pcibios_resource_to_bus(bridge, &region, bus->resource[3]);
- 	if (bus->resource[3]->flags & IORESOURCE_MEM) {
--		printk("  MEM window: %08lx-%08lx\n",
--			region.start, region.end);
-+		printk(KERN_INFO "  MEM window: 0x%08lx-0x%08lx\n",
-+		       (unsigned long)region.start,
-+		       (unsigned long)region.end);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_1,
- 					region.start);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_LIMIT_1,
-@@ -145,7 +149,7 @@ pci_setup_bridge(struct pci_bus *bus)
- {
- 	struct pci_dev *bridge = bus->self;
- 	struct pci_bus_region region;
--	u32 l, io_upper16;
-+	u32 l, bu, lu, io_upper16;
- 
- 	DBG(KERN_INFO "PCI: Bridge: %s\n", pci_name(bridge));
- 
-@@ -159,7 +163,8 @@ pci_setup_bridge(struct pci_bus *bus)
- 		/* Set up upper 16 bits of I/O base/limit. */
- 		io_upper16 = (region.end & 0xffff0000) | (region.start >> 16);
- 		DBG(KERN_INFO "  IO window: %04lx-%04lx\n",
--				region.start, region.end);
-+		    (unsigned long)region.start,
-+		    (unsigned long)region.end);
- 	}
- 	else {
- 		/* Clear upper 16 bits of I/O base/limit. */
-@@ -180,8 +185,9 @@ pci_setup_bridge(struct pci_bus *bus)
- 	if (bus->resource[1]->flags & IORESOURCE_MEM) {
- 		l = (region.start >> 16) & 0xfff0;
- 		l |= region.end & 0xfff00000;
--		DBG(KERN_INFO "  MEM window: %08lx-%08lx\n",
--				region.start, region.end);
-+		DBG(KERN_INFO "  MEM window: 0x%08lx-0x%08lx\n",
-+		    (unsigned long)region.start,
-+		    (unsigned long)region.end);
- 	}
- 	else {
- 		l = 0x0000fff0;
-@@ -195,12 +201,18 @@ pci_setup_bridge(struct pci_bus *bus)
- 	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, 0);
- 
- 	/* Set up PREF base/limit. */
-+	bu = lu = 0;
- 	pcibios_resource_to_bus(bridge, &region, bus->resource[2]);
- 	if (bus->resource[2]->flags & IORESOURCE_PREFETCH) {
- 		l = (region.start >> 16) & 0xfff0;
- 		l |= region.end & 0xfff00000;
--		DBG(KERN_INFO "  PREFETCH window: %08lx-%08lx\n",
--				region.start, region.end);
-+#ifdef CONFIG_RESOURCES_64BIT
-+		bu = region.start >> 32;
-+		lu = region.end >> 32;
-+#endif
-+		DBG(KERN_INFO "  PREFETCH window: 0x%016llx-0x%016llx\n",
-+		    (unsigned long long)region.start,
-+		    (unsigned long long)region.end);
- 	}
- 	else {
- 		l = 0x0000fff0;
-@@ -208,8 +220,9 @@ pci_setup_bridge(struct pci_bus *bus)
- 	}
- 	pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE, l);
- 
--	/* Clear out the upper 32 bits of PREF base. */
--	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, 0);
-+	/* Set the upper 32 bits of PREF base & limit. */
-+	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
-+	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
- 
- 	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
- }
-@@ -323,8 +336,8 @@ static void pbus_size_io(struct pci_bus 
- static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long type)
- {
- 	struct pci_dev *dev;
--	unsigned long min_align, align, size;
--	unsigned long aligns[12];	/* Alignments from 1Mb to 2Gb */
-+	resource_size_t min_align, align, size;
-+	resource_size_t aligns[12];	/* Alignments from 1Mb to 2Gb */
- 	int order, max_order;
- 	struct resource *b_res = find_free_bus_resource(bus, type);
- 
-@@ -340,7 +353,7 @@ static int pbus_size_mem(struct pci_bus 
- 		
- 		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
- 			struct resource *r = &dev->resource[i];
--			unsigned long r_size;
-+			resource_size_t r_size;
- 
- 			if (r->parent || (r->flags & mask) != type)
- 				continue;
-@@ -350,10 +363,10 @@ static int pbus_size_mem(struct pci_bus 
- 			order = __ffs(align) - 20;
- 			if (order > 11) {
- 				printk(KERN_WARNING "PCI: region %s/%d "
--				       "too large: %llx-%llx\n",
-+				       "too large: 0x%016llx-0x%016llx\n",
- 					pci_name(dev), i,
--					(unsigned long long)r->start,
--					(unsigned long long)r->end);
-+				       (unsigned long long)r->start,
-+				       (unsigned long long)r->end);
- 				r->flags = 0;
- 				continue;
- 			}
-@@ -372,7 +385,7 @@ static int pbus_size_mem(struct pci_bus 
- 	align = 0;
- 	min_align = 0;
- 	for (order = 0; order <= max_order; order++) {
--		unsigned long align1 = 1UL << (order + 20);
-+		resource_size_t align1 = RESOURCE_ORDER(order + 20);
- 
- 		if (!align)
- 			min_align = align1;
-Index: linux-work/include/linux/pci.h
-===================================================================
---- linux-work.orig/include/linux/pci.h	2007-12-10 16:56:51.000000000 +1100
-+++ linux-work/include/linux/pci.h	2007-12-10 16:57:20.000000000 +1100
-@@ -314,8 +314,8 @@ struct pci_raw_ops {
- extern struct pci_raw_ops *raw_pci_ops;
- 
- struct pci_bus_region {
--	unsigned long start;
--	unsigned long end;
-+	resource_size_t start;
-+	resource_size_t end;
- };
- 
- struct pci_dynids {
+commit 978c7b2ff49597ab76ff7529a933bd366941ac25
+Author: Rafael J. Wysocki <rjw@sisk.pl>
+Date:   Fri Dec 7 14:09:02 2007 +1100
+
+    [XFS] Make xfsbufd threads freezable
+    
+    Fix breakage caused by commit 831441862956fffa17b9801db37e6ea1650b0f69
+    that did not introduce the necessary call to set_freezable() in
+    xfs/linux-2.6/xfs_buf.c .
+    
+    SGI-PV: 974224
+    SGI-Modid: xfs-linux-melb:xfs-kern:30203a
+    
+    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+
+commit e89bc612d61edbcefaeb6f2244f86c0f3ec89d23
+Author: Christoph Hellwig <hch@infradead.org>
+Date:   Fri Dec 7 14:07:53 2007 +1100
+
+    [XFS] revert to double-buffering readdir
+    
+    The current readdir implementation deadlocks on a btree buffers locks
+    because nfsd calls back into ->lookup from the filldir callback. The only
+    short-term fix for this is to revert to the old inefficient
+    double-buffering scheme.
+    
+    SGI-PV: 973377
+    SGI-Modid: xfs-linux-melb:xfs-kern:30201a
+    
+    Signed-off-by: Christoph Hellwig <hch@infradead.org>
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+
+commit a7430847fcb19297d6db833f35b9c9645c4a6395
+Author: David Chinner <dgc@sgi.com>
+Date:   Fri Nov 23 16:30:23 2007 +1100
+
+    [XFS] Fix broken inode cluster setup.
+    
+    The radix tree based inode caches did away with the inode cluster hashes,
+    replacing them with a bunch of masking and gang lookups on the radix tree.
+    
+    This masking got broken when moving the code to per-ag radix trees and
+    indexing by agino # rather than straight inode number. The result is
+    clustered inode writeback does not cluster and things can go extremely
+    slowly when there are lots of inodes to write.
+    
+    Fix it up by comparing the agino # of the inode we just looked up to the
+    index of the cluster we are looking for.
+    
+    Tested-by: Torsten Kaiser <just.for.lkml@googlemail.com>
+    
+    SGI-PV: 972915
+    SGI-Modid: xfs-linux-melb:xfs-kern:30033a
+    
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+
+commit 77be55a5a13d9c7ddf780a93861f2fba33f8be1a
+Author: Lachlan McIlroy <lachlan@sgi.com>
+Date:   Fri Nov 23 16:31:00 2007 +1100
+
+    [XFS] Clear XBF_READ_AHEAD flag on I/O completion.
+    
+    SGI-PV: 972554
+    SGI-Modid: xfs-linux-melb:xfs-kern:30128a
+    
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+    Signed-off-by: Christoph Hellwig <hch@infradead.org>
+
+commit d1afb678ce77b930334a8a640a05b8e68178a377
+Author: Lachlan McIlroy <lachlan@sgi.com>
+Date:   Tue Nov 27 17:01:24 2007 +1100
+
+    [XFS] Fixed a few bugs in xfs_buf_associate_memory()
+    
+    - calculation of 'page_count' was incorrect as it did not
+      consider the offset of 'mem' into the first page. The
+      logic to bump 'page_count' didn't work if 'len' was <=
+      PAGE_CACHE_SIZE (ie offset = 3k, len = 2k).
+    - setting b_buffer_length to 'len' is incorrect if 'offset'
+      is > 0. Set it to the total length of the buffer.
+    - I suspect that passing a non-aligned address into
+      mem_to_page() for the first page may have been causing
+      issues - don't know but just tidy up that code anyway.
+    
+    SGI-PV: 971596
+    SGI-Modid: xfs-linux-melb:xfs-kern:30143a
+    
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+    Signed-off-by: Christoph Hellwig <hch@infradead.org>
+
+commit cd57e594adc624dd9ee4c0ded3949da21ec24b2f
+Author: Lachlan McIlroy <lachlan@sgi.com>
+Date:   Fri Nov 23 16:30:32 2007 +1100
+
+    [XFS] 971064 Various fixups for xfs_bulkstat().
+    
+    - sanity check for NULL user buffer in xfs_ioc_bulkstat[_compat]()
+    - remove the special case for XFS_IOC_FSBULKSTAT with count == 1. This
+      special case causes bulkstat to fail because the special case uses
+      xfs_bulkstat_single() instead of xfs_bulkstat() and the two functions
+      have different semantics.  xfs_bulkstat() will return the next inode
+      after the one supplied while skipping internal inodes (ie quota inodes).
+      xfs_bulkstate_single() will only lookup the inode supplied and return
+      an error if it is an internal inode.
+    - in xfs_bulkstat(), need to initialise 'lastino' to the inode supplied
+      so in cases were we return without examining any inodes the scan wont
+      restart back at zero.
+    - sanity check for valid *ubcountp values. Cannot sanity check for valid
+      ubuffer here because some users of xfs_bulkstat() don't supply a buffer.
+    - checks against 'ubleft' (the space left in the user's buffer) should be
+      against 'statstruct_size' which is the supplied minimum object size.
+      The mixture of checks against statstruct_size and 0 was one of the
+      reasons we were skipping inodes.
+    - if the formatter function returns BULKSTAT_RV_NOTHING and an error and
+      the error is not ENOENT or EINVAL then we need to abort the scan. ENOENT
+      is for inodes that are no longer valid and we just skip them. EINVAL is
+      returned if we try to lookup an internal inode so we skip them too. For
+      a DMF scan if the inode and DMF attribute cannot fit into the space left
+      in the user's buffer it would return ERANGE. We didn't handle this error
+      and skipped the inode. We would continue to skip inodes until one fitted
+      into the user's buffer or we completed the scan.
+    - put back the recalculation of agino (that got removed with the last fix)
+      at the end of the while loop. This is because the code at the start of
+      the loop expects agino to be the last inode examined if it is non-zero.
+    - if we found some inodes but then encountered an error, return success
+      this time and the error next time. If the formatter aborted with ENOMEM
+      we will now return this error but only if we couldn't read any inodes.
+      Previously if we encountered ENOMEM without reading any inodes we
+      returned a zero count and no error which falsely indicated the scan was
+      complete.
+    
+    SGI-PV: 973431
+    SGI-Modid: xfs-linux-melb:xfs-kern:30089a
+    
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+    Signed-off-by: David Chinner <dgc@sgi.com>
+
+commit d757762bf2f6aea954745c76b4d767067b85be9d
+Author: Donald Douwsma <donaldd@sgi.com>
+Date:   Fri Nov 23 16:27:42 2007 +1100
+
+    [XFS] Fix dbflush panic in xfs_qm_sync.
+    
+    The recent behaviour layer removal dropped the check for quotas that have
+    been requested at mount time but have subsequently been turned off. This
+    results in a panic when accessing m_quotainfo which has been freed.
+    
+    This patch adds the check originally made by xfs_qm_syncall() to
+    xfs_qm_sync().
+    
+    SGI-PV: 969769
+    SGI-Modid: xfs-linux-melb:xfs-kern:29908a
+    
+    Signed-off-by: Donald Douwsma <donaldd@sgi.com>
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
