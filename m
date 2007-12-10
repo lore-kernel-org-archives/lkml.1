@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbXLJC5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbXLJC57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758216AbXLJC5k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 21:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755252AbXLJCou
+	id S1758299AbXLJC57 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 21:57:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXLJCo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 21:44:50 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49774 "EHLO
+	Sun, 9 Dec 2007 21:44:57 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49764 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754690AbXLJCnN (ORCPT
+	with ESMTP id S1751850AbXLJCnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 21:43:13 -0500
+	Sun, 9 Dec 2007 21:43:12 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 12/42] Unionfs: common file copyup/revalidation operations
-Date: Sun,  9 Dec 2007 21:41:45 -0500
-Message-Id: <11972545411405-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 21/42] Unionfs: inode operations
+Date: Sun,  9 Dec 2007 21:41:54 -0500
+Message-Id: <11972545483378-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11972545353262-git-send-email-ezk@cs.sunysb.edu>
@@ -25,20 +25,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Includes open, ioctl, and flush operations.
+Includes create, lookup, link, symlink, mkdir, mknod, readlink, follow_link,
+put_link, permission, and setattr.
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/commonfops.c |  827 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 827 insertions(+), 0 deletions(-)
- create mode 100644 fs/unionfs/commonfops.c
+ fs/unionfs/inode.c | 1154 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 1154 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/inode.c
 
-diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
 new file mode 100644
-index 0000000..f714e2f
+index 0000000..63ff3d3
 --- /dev/null
-+++ b/fs/unionfs/commonfops.c
-@@ -0,0 +1,827 @@
++++ b/fs/unionfs/inode.c
+@@ -0,0 +1,1154 @@
 +/*
 + * Copyright (c) 2003-2007 Erez Zadok
 + * Copyright (c) 2003-2006 Charles P. Wright
@@ -59,813 +60,1140 @@ index 0000000..f714e2f
 +
 +#include "union.h"
 +
-+/*
-+ * 1) Copyup the file
-+ * 2) Rename the file to '.unionfs<original inode#><counter>' - obviously
-+ * stolen from NFS's silly rename
-+ */
-+static int copyup_deleted_file(struct file *file, struct dentry *dentry,
-+			       int bstart, int bindex)
-+{
-+	static unsigned int counter;
-+	const int i_inosize = sizeof(dentry->d_inode->i_ino) * 2;
-+	const int countersize = sizeof(counter) * 2;
-+	const int nlen = sizeof(".unionfs") + i_inosize + countersize - 1;
-+	char name[nlen + 1];
-+	int err;
-+	struct dentry *tmp_dentry = NULL;
-+	struct dentry *lower_dentry;
-+	struct dentry *lower_dir_dentry = NULL;
-+
-+	lower_dentry = unionfs_lower_dentry_idx(dentry, bstart);
-+
-+	sprintf(name, ".unionfs%*.*lx",
-+		i_inosize, i_inosize, lower_dentry->d_inode->i_ino);
-+
-+	/*
-+	 * Loop, looking for an unused temp name to copyup to.
-+	 *
-+	 * It's somewhat silly that we look for a free temp tmp name in the
-+	 * source branch (bstart) instead of the dest branch (bindex), where
-+	 * the final name will be created.  We _will_ catch it if somehow
-+	 * the name exists in the dest branch, but it'd be nice to catch it
-+	 * sooner than later.
-+	 */
-+retry:
-+	tmp_dentry = NULL;
-+	do {
-+		char *suffix = name + nlen - countersize;
-+
-+		dput(tmp_dentry);
-+		counter++;
-+		sprintf(suffix, "%*.*x", countersize, countersize, counter);
-+
-+		pr_debug("unionfs: trying to rename %s to %s\n",
-+			 dentry->d_name.name, name);
-+
-+		tmp_dentry = lookup_one_len(name, lower_dentry->d_parent,
-+					    nlen);
-+		if (IS_ERR(tmp_dentry)) {
-+			err = PTR_ERR(tmp_dentry);
-+			goto out;
-+		}
-+	} while (tmp_dentry->d_inode != NULL);	/* need negative dentry */
-+	dput(tmp_dentry);
-+
-+	err = copyup_named_file(dentry->d_parent->d_inode, file, name, bstart,
-+				bindex,
-+				i_size_read(file->f_path.dentry->d_inode));
-+	if (err) {
-+		if (unlikely(err == -EEXIST))
-+			goto retry;
-+		goto out;
-+	}
-+
-+	/* bring it to the same state as an unlinked file */
-+	lower_dentry = unionfs_lower_dentry_idx(dentry, dbstart(dentry));
-+	if (!unionfs_lower_inode_idx(dentry->d_inode, bindex)) {
-+		atomic_inc(&lower_dentry->d_inode->i_count);
-+		unionfs_set_lower_inode_idx(dentry->d_inode, bindex,
-+					    lower_dentry->d_inode);
-+	}
-+	lower_dir_dentry = lock_parent(lower_dentry);
-+	err = vfs_unlink(lower_dir_dentry->d_inode, lower_dentry);
-+	unlock_dir(lower_dir_dentry);
-+
-+out:
-+	if (!err)
-+		unionfs_check_dentry(dentry);
-+	return err;
-+}
-+
-+/*
-+ * put all references held by upper struct file and free lower file pointer
-+ * array
-+ */
-+static void cleanup_file(struct file *file)
-+{
-+	int bindex, bstart, bend;
-+	struct file **lower_files;
-+	struct file *lower_file;
-+	struct super_block *sb = file->f_path.dentry->d_sb;
-+
-+	lower_files = UNIONFS_F(file)->lower_files;
-+	bstart = fbstart(file);
-+	bend = fbend(file);
-+
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		int i;	/* holds (possibly) updated branch index */
-+		int old_bid;
-+
-+		lower_file = unionfs_lower_file_idx(file, bindex);
-+		if (!lower_file)
-+			continue;
-+
-+		/*
-+		 * Find new index of matching branch with an open
-+		 * file, since branches could have been added or
-+		 * deleted causing the one with open files to shift.
-+		 */
-+		old_bid = UNIONFS_F(file)->saved_branch_ids[bindex];
-+		i = branch_id_to_idx(sb, old_bid);
-+		if (unlikely(i < 0)) {
-+			printk(KERN_ERR "unionfs: no superblock for "
-+			       "file %p\n", file);
-+			continue;
-+		}
-+
-+		/* decrement count of open files */
-+		branchput(sb, i);
-+		/*
-+		 * fput will perform an mntput for us on the correct branch.
-+		 * Although we're using the file's old branch configuration,
-+		 * bindex, which is the old index, correctly points to the
-+		 * right branch in the file's branch list.  In other words,
-+		 * we're going to mntput the correct branch even if branches
-+		 * have been added/removed.
-+		 */
-+		fput(lower_file);
-+		UNIONFS_F(file)->lower_files[bindex] = NULL;
-+		UNIONFS_F(file)->saved_branch_ids[bindex] = -1;
-+	}
-+
-+	UNIONFS_F(file)->lower_files = NULL;
-+	kfree(lower_files);
-+	kfree(UNIONFS_F(file)->saved_branch_ids);
-+	/* set to NULL because caller needs to know if to kfree on error */
-+	UNIONFS_F(file)->saved_branch_ids = NULL;
-+}
-+
-+/* open all lower files for a given file */
-+static int open_all_files(struct file *file)
-+{
-+	int bindex, bstart, bend, err = 0;
-+	struct file *lower_file;
-+	struct dentry *lower_dentry;
-+	struct dentry *dentry = file->f_path.dentry;
-+	struct super_block *sb = dentry->d_sb;
-+
-+	bstart = dbstart(dentry);
-+	bend = dbend(dentry);
-+
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
-+		if (!lower_dentry)
-+			continue;
-+
-+		dget(lower_dentry);
-+		unionfs_mntget(dentry, bindex);
-+		branchget(sb, bindex);
-+
-+		lower_file =
-+			dentry_open(lower_dentry,
-+				    unionfs_lower_mnt_idx(dentry, bindex),
-+				    file->f_flags);
-+		if (IS_ERR(lower_file)) {
-+			err = PTR_ERR(lower_file);
-+			goto out;
-+		} else {
-+			unionfs_set_lower_file_idx(file, bindex, lower_file);
-+		}
-+	}
-+out:
-+	return err;
-+}
-+
-+/* open the highest priority file for a given upper file */
-+static int open_highest_file(struct file *file, bool willwrite)
-+{
-+	int bindex, bstart, bend, err = 0;
-+	struct file *lower_file;
-+	struct dentry *lower_dentry;
-+	struct dentry *dentry = file->f_path.dentry;
-+	struct inode *parent_inode = dentry->d_parent->d_inode;
-+	struct super_block *sb = dentry->d_sb;
-+
-+	bstart = dbstart(dentry);
-+	bend = dbend(dentry);
-+
-+	lower_dentry = unionfs_lower_dentry(dentry);
-+	if (willwrite && IS_WRITE_FLAG(file->f_flags) && is_robranch(dentry)) {
-+		for (bindex = bstart - 1; bindex >= 0; bindex--) {
-+			err = copyup_file(parent_inode, file, bstart, bindex,
-+					  i_size_read(dentry->d_inode));
-+			if (!err)
-+				break;
-+		}
-+		atomic_set(&UNIONFS_F(file)->generation,
-+			   atomic_read(&UNIONFS_I(dentry->d_inode)->
-+				       generation));
-+		goto out;
-+	}
-+
-+	dget(lower_dentry);
-+	unionfs_mntget(dentry, bstart);
-+	lower_file = dentry_open(lower_dentry,
-+				 unionfs_lower_mnt_idx(dentry, bstart),
-+				 file->f_flags);
-+	if (IS_ERR(lower_file)) {
-+		err = PTR_ERR(lower_file);
-+		goto out;
-+	}
-+	branchget(sb, bstart);
-+	unionfs_set_lower_file(file, lower_file);
-+	/* Fix up the position. */
-+	lower_file->f_pos = file->f_pos;
-+
-+	memcpy(&lower_file->f_ra, &file->f_ra, sizeof(struct file_ra_state));
-+out:
-+	return err;
-+}
-+
-+/* perform a delayed copyup of a read-write file on a read-only branch */
-+static int do_delayed_copyup(struct file *file)
-+{
-+	int bindex, bstart, bend, err = 0;
-+	struct dentry *dentry = file->f_path.dentry;
-+	struct inode *parent_inode = dentry->d_parent->d_inode;
-+
-+	bstart = fbstart(file);
-+	bend = fbend(file);
-+
-+	BUG_ON(!S_ISREG(dentry->d_inode->i_mode));
-+
-+	unionfs_check_file(file);
-+	unionfs_check_dentry(dentry);
-+	for (bindex = bstart - 1; bindex >= 0; bindex--) {
-+		if (!d_deleted(dentry))
-+			err = copyup_file(parent_inode, file, bstart,
-+					  bindex,
-+					  i_size_read(dentry->d_inode));
-+		else
-+			err = copyup_deleted_file(file, dentry, bstart,
-+						  bindex);
-+
-+		if (!err)
-+			break;
-+	}
-+	if (err || (bstart <= fbstart(file)))
-+		goto out;
-+	bend = fbend(file);
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		if (unionfs_lower_file_idx(file, bindex)) {
-+			branchput(dentry->d_sb, bindex);
-+			fput(unionfs_lower_file_idx(file, bindex));
-+			unionfs_set_lower_file_idx(file, bindex, NULL);
-+		}
-+		if (unionfs_lower_mnt_idx(dentry, bindex)) {
-+			unionfs_mntput(dentry, bindex);
-+			unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
-+		}
-+		if (unionfs_lower_dentry_idx(dentry, bindex)) {
-+			BUG_ON(!dentry->d_inode);
-+			iput(unionfs_lower_inode_idx(dentry->d_inode, bindex));
-+			unionfs_set_lower_inode_idx(dentry->d_inode, bindex,
-+						    NULL);
-+			dput(unionfs_lower_dentry_idx(dentry, bindex));
-+			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
-+		}
-+	}
-+	/* for reg file, we only open it "once" */
-+	fbend(file) = fbstart(file);
-+	set_dbend(dentry, dbstart(dentry));
-+	ibend(dentry->d_inode) = ibstart(dentry->d_inode);
-+
-+out:
-+	unionfs_check_file(file);
-+	unionfs_check_dentry(dentry);
-+	return err;
-+}
-+
-+/*
-+ * Revalidate the struct file
-+ * @file: file to revalidate
-+ * @willwrite: true if caller may cause changes to the file; false otherwise.
-+ */
-+int unionfs_file_revalidate(struct file *file, bool willwrite)
-+{
-+	struct super_block *sb;
-+	struct dentry *dentry;
-+	int sbgen, fgen, dgen;
-+	int bstart, bend;
-+	int size;
-+	int err = 0;
-+
-+	dentry = file->f_path.dentry;
-+	unionfs_lock_dentry(dentry);
-+	sb = dentry->d_sb;
-+
-+	/*
-+	 * First revalidate the dentry inside struct file,
-+	 * but not unhashed dentries.
-+	 */
-+	if (unlikely(!d_deleted(dentry) &&
-+		     !__unionfs_d_revalidate_chain(dentry, NULL, willwrite))) {
-+		err = -ESTALE;
-+		goto out_nofree;
-+	}
-+
-+	sbgen = atomic_read(&UNIONFS_SB(sb)->generation);
-+	dgen = atomic_read(&UNIONFS_D(dentry)->generation);
-+	fgen = atomic_read(&UNIONFS_F(file)->generation);
-+
-+	BUG_ON(sbgen > dgen);
-+
-+	/*
-+	 * There are two cases we are interested in.  The first is if the
-+	 * generation is lower than the super-block.  The second is if
-+	 * someone has copied up this file from underneath us, we also need
-+	 * to refresh things.
-+	 */
-+	if (unlikely(!d_deleted(dentry) &&
-+		     (sbgen > fgen || dbstart(dentry) != fbstart(file)))) {
-+		/* save orig branch ID */
-+		int orig_brid =
-+			UNIONFS_F(file)->saved_branch_ids[fbstart(file)];
-+
-+		/* First we throw out the existing files. */
-+		cleanup_file(file);
-+
-+		/* Now we reopen the file(s) as in unionfs_open. */
-+		bstart = fbstart(file) = dbstart(dentry);
-+		bend = fbend(file) = dbend(dentry);
-+
-+		size = sizeof(struct file *) * sbmax(sb);
-+		UNIONFS_F(file)->lower_files = kzalloc(size, GFP_KERNEL);
-+		if (unlikely(!UNIONFS_F(file)->lower_files)) {
-+			err = -ENOMEM;
-+			goto out;
-+		}
-+		size = sizeof(int) * sbmax(sb);
-+		UNIONFS_F(file)->saved_branch_ids = kzalloc(size, GFP_KERNEL);
-+		if (unlikely(!UNIONFS_F(file)->saved_branch_ids)) {
-+			err = -ENOMEM;
-+			goto out;
-+		}
-+
-+		if (S_ISDIR(dentry->d_inode->i_mode)) {
-+			/* We need to open all the files. */
-+			err = open_all_files(file);
-+			if (err)
-+				goto out;
-+		} else {
-+			int new_brid;
-+			/* We only open the highest priority branch. */
-+			err = open_highest_file(file, willwrite);
-+			if (err)
-+				goto out;
-+			new_brid = UNIONFS_F(file)->
-+			  saved_branch_ids[fbstart(file)];
-+			if (unlikely(new_brid != orig_brid && sbgen > fgen)) {
-+				/*
-+				 * If we re-opened the file on a different
-+				 * branch than the original one, and this
-+				 * was due to a new branch inserted, then
-+				 * update the mnt counts of the old and new
-+				 * branches accordingly.
-+				 */
-+				unionfs_mntget(dentry, bstart);
-+				unionfs_mntput(sb->s_root,
-+					       branch_id_to_idx(sb, orig_brid));
-+			}
-+		}
-+		atomic_set(&UNIONFS_F(file)->generation,
-+			   atomic_read(
-+				   &UNIONFS_I(dentry->d_inode)->generation));
-+	}
-+
-+	/* Copyup on the first write to a file on a readonly branch. */
-+	if (willwrite && IS_WRITE_FLAG(file->f_flags) &&
-+	    !IS_WRITE_FLAG(unionfs_lower_file(file)->f_flags) &&
-+	    is_robranch(dentry)) {
-+		pr_debug("unionfs: do delay copyup of \"%s\"\n",
-+			 dentry->d_name.name);
-+		err = do_delayed_copyup(file);
-+	}
-+
-+out:
-+	if (err) {
-+		kfree(UNIONFS_F(file)->lower_files);
-+		kfree(UNIONFS_F(file)->saved_branch_ids);
-+	}
-+out_nofree:
-+	if (!err)
-+		unionfs_check_file(file);
-+	unionfs_unlock_dentry(dentry);
-+	return err;
-+}
-+
-+/* unionfs_open helper function: open a directory */
-+static int __open_dir(struct inode *inode, struct file *file)
-+{
-+	struct dentry *lower_dentry;
-+	struct file *lower_file;
-+	int bindex, bstart, bend;
-+	struct vfsmount *mnt;
-+
-+	bstart = fbstart(file) = dbstart(file->f_path.dentry);
-+	bend = fbend(file) = dbend(file->f_path.dentry);
-+
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		lower_dentry =
-+			unionfs_lower_dentry_idx(file->f_path.dentry, bindex);
-+		if (!lower_dentry)
-+			continue;
-+
-+		dget(lower_dentry);
-+		unionfs_mntget(file->f_path.dentry, bindex);
-+		mnt = unionfs_lower_mnt_idx(file->f_path.dentry, bindex);
-+		lower_file = dentry_open(lower_dentry, mnt, file->f_flags);
-+		if (IS_ERR(lower_file))
-+			return PTR_ERR(lower_file);
-+
-+		unionfs_set_lower_file_idx(file, bindex, lower_file);
-+
-+		/*
-+		 * The branchget goes after the open, because otherwise
-+		 * we would miss the reference on release.
-+		 */
-+		branchget(inode->i_sb, bindex);
-+	}
-+
-+	return 0;
-+}
-+
-+/* unionfs_open helper function: open a file */
-+static int __open_file(struct inode *inode, struct file *file)
-+{
-+	struct dentry *lower_dentry;
-+	struct file *lower_file;
-+	int lower_flags;
-+	int bindex, bstart, bend;
-+
-+	lower_dentry = unionfs_lower_dentry(file->f_path.dentry);
-+	lower_flags = file->f_flags;
-+
-+	bstart = fbstart(file) = dbstart(file->f_path.dentry);
-+	bend = fbend(file) = dbend(file->f_path.dentry);
-+
-+	/*
-+	 * check for the permission for lower file.  If the error is
-+	 * COPYUP_ERR, copyup the file.
-+	 */
-+	if (lower_dentry->d_inode && is_robranch(file->f_path.dentry)) {
-+		/*
-+		 * if the open will change the file, copy it up otherwise
-+		 * defer it.
-+		 */
-+		if (lower_flags & O_TRUNC) {
-+			int size = 0;
-+			int err = -EROFS;
-+
-+			/* copyup the file */
-+			for (bindex = bstart - 1; bindex >= 0; bindex--) {
-+				err = copyup_file(
-+					file->f_path.dentry->d_parent->d_inode,
-+					file, bstart, bindex, size);
-+				if (!err)
-+					break;
-+			}
-+			return err;
-+		} else {
-+			lower_flags &= ~(OPEN_WRITE_FLAGS);
-+		}
-+	}
-+
-+	dget(lower_dentry);
-+
-+	/*
-+	 * dentry_open will decrement mnt refcnt if err.
-+	 * otherwise fput() will do an mntput() for us upon file close.
-+	 */
-+	unionfs_mntget(file->f_path.dentry, bstart);
-+	lower_file =
-+		dentry_open(lower_dentry,
-+			    unionfs_lower_mnt_idx(file->f_path.dentry, bstart),
-+			    lower_flags);
-+	if (IS_ERR(lower_file))
-+		return PTR_ERR(lower_file);
-+
-+	unionfs_set_lower_file(file, lower_file);
-+	branchget(inode->i_sb, bstart);
-+
-+	return 0;
-+}
-+
-+int unionfs_open(struct inode *inode, struct file *file)
++static int unionfs_create(struct inode *parent, struct dentry *dentry,
++			  int mode, struct nameidata *nd)
 +{
 +	int err = 0;
-+	struct file *lower_file = NULL;
-+	struct dentry *dentry = NULL;
-+	int bindex = 0, bstart = 0, bend = 0;
-+	int size;
-+
-+	unionfs_read_lock(inode->i_sb);
-+
-+	file->private_data =
-+		kzalloc(sizeof(struct unionfs_file_info), GFP_KERNEL);
-+	if (unlikely(!UNIONFS_F(file))) {
-+		err = -ENOMEM;
-+		goto out_nofree;
-+	}
-+	fbstart(file) = -1;
-+	fbend(file) = -1;
-+	atomic_set(&UNIONFS_F(file)->generation,
-+		   atomic_read(&UNIONFS_I(inode)->generation));
-+
-+	size = sizeof(struct file *) * sbmax(inode->i_sb);
-+	UNIONFS_F(file)->lower_files = kzalloc(size, GFP_KERNEL);
-+	if (unlikely(!UNIONFS_F(file)->lower_files)) {
-+		err = -ENOMEM;
-+		goto out;
-+	}
-+	size = sizeof(int) * sbmax(inode->i_sb);
-+	UNIONFS_F(file)->saved_branch_ids = kzalloc(size, GFP_KERNEL);
-+	if (unlikely(!UNIONFS_F(file)->saved_branch_ids)) {
-+		err = -ENOMEM;
-+		goto out;
-+	}
-+
-+	dentry = file->f_path.dentry;
-+	unionfs_lock_dentry(dentry);
-+
-+	bstart = fbstart(file) = dbstart(dentry);
-+	bend = fbend(file) = dbend(dentry);
-+
-+	/*
-+	 * open all directories and make the unionfs file struct point to
-+	 * these lower file structs
-+	 */
-+	if (S_ISDIR(inode->i_mode))
-+		err = __open_dir(inode, file);	/* open a dir */
-+	else
-+		err = __open_file(inode, file);	/* open a file */
-+
-+	/* freeing the allocated resources, and fput the opened files */
-+	if (err) {
-+		for (bindex = bstart; bindex <= bend; bindex++) {
-+			lower_file = unionfs_lower_file_idx(file, bindex);
-+			if (!lower_file)
-+				continue;
-+
-+			branchput(file->f_path.dentry->d_sb, bindex);
-+			/* fput calls dput for lower_dentry */
-+			fput(lower_file);
-+		}
-+	}
-+
-+	/* XXX: should this unlock be moved to the function bottom? */
-+	unionfs_unlock_dentry(dentry);
-+
-+out:
-+	if (err) {
-+		kfree(UNIONFS_F(file)->lower_files);
-+		kfree(UNIONFS_F(file)->saved_branch_ids);
-+		kfree(UNIONFS_F(file));
-+	}
-+out_nofree:
-+	unionfs_check_inode(inode);
-+	if (!err) {
-+		unionfs_check_file(file);
-+		unionfs_check_dentry(file->f_path.dentry->d_parent);
-+	}
-+	unionfs_read_unlock(inode->i_sb);
-+	return err;
-+}
-+
-+/*
-+ * release all lower object references & free the file info structure
-+ *
-+ * No need to grab sb info's rwsem.
-+ */
-+int unionfs_file_release(struct inode *inode, struct file *file)
-+{
-+	struct file *lower_file = NULL;
-+	struct unionfs_file_info *fileinfo;
-+	struct unionfs_inode_info *inodeinfo;
-+	struct super_block *sb = inode->i_sb;
-+	struct dentry *dentry = file->f_path.dentry;
-+	int bindex, bstart, bend;
-+	int fgen, err = 0;
-+
-+	unionfs_read_lock(sb);
-+	/*
-+	 * Yes, we have to revalidate this file even if it's being released.
-+	 * This is important for open-but-unlinked files, as well as mmap
-+	 * support.
-+	 */
-+	err = unionfs_file_revalidate(file, true);
-+	if (unlikely(err))
-+		goto out;
-+	unionfs_check_file(file);
-+	fileinfo = UNIONFS_F(file);
-+	BUG_ON(file->f_path.dentry->d_inode != inode);
-+	inodeinfo = UNIONFS_I(inode);
-+
-+	/* fput all the lower files */
-+	fgen = atomic_read(&fileinfo->generation);
-+	bstart = fbstart(file);
-+	bend = fbend(file);
-+
-+	unionfs_lock_dentry(dentry);
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		lower_file = unionfs_lower_file_idx(file, bindex);
-+
-+		if (lower_file) {
-+			fput(lower_file);
-+			branchput(sb, bindex);
-+		}
-+
-+		/* if there are no more refs to the dentry, dput it */
-+		if (d_deleted(dentry)) {
-+			dput(unionfs_lower_dentry_idx(dentry, bindex));
-+			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
-+		}
-+	}
-+	unionfs_unlock_dentry(dentry);
-+
-+	kfree(fileinfo->lower_files);
-+	kfree(fileinfo->saved_branch_ids);
-+
-+	if (fileinfo->rdstate) {
-+		fileinfo->rdstate->access = jiffies;
-+		spin_lock(&inodeinfo->rdlock);
-+		inodeinfo->rdcount++;
-+		list_add_tail(&fileinfo->rdstate->cache,
-+			      &inodeinfo->readdircache);
-+		mark_inode_dirty(inode);
-+		spin_unlock(&inodeinfo->rdlock);
-+		fileinfo->rdstate = NULL;
-+	}
-+	kfree(fileinfo);
-+
-+out:
-+	unionfs_read_unlock(sb);
-+	return err;
-+}
-+
-+/* pass the ioctl to the lower fs */
-+static long do_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-+{
-+	struct file *lower_file;
-+	int err;
-+
-+	lower_file = unionfs_lower_file(file);
-+
-+	err = -ENOTTY;
-+	if (!lower_file || !lower_file->f_op)
-+		goto out;
-+	if (lower_file->f_op->unlocked_ioctl) {
-+		err = lower_file->f_op->unlocked_ioctl(lower_file, cmd, arg);
-+	} else if (lower_file->f_op->ioctl) {
-+		lock_kernel();
-+		err = lower_file->f_op->ioctl(
-+			lower_file->f_path.dentry->d_inode,
-+			lower_file, cmd, arg);
-+		unlock_kernel();
-+	}
-+
-+out:
-+	return err;
-+}
-+
-+/*
-+ * return to user-space the branch indices containing the file in question
-+ *
-+ * We use fd_set and therefore we are limited to the number of the branches
-+ * to FD_SETSIZE, which is currently 1024 - plenty for most people
-+ */
-+static int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
-+				   unsigned long arg)
-+{
-+	int err = 0;
-+	fd_set branchlist;
-+	int bstart = 0, bend = 0, bindex = 0;
-+	int orig_bstart, orig_bend;
-+	struct dentry *dentry, *lower_dentry;
-+	struct vfsmount *mnt;
-+
-+	dentry = file->f_path.dentry;
-+	unionfs_lock_dentry(dentry);
-+	orig_bstart = dbstart(dentry);
-+	orig_bend = dbend(dentry);
-+	err = unionfs_partial_lookup(dentry);
-+	if (err)
-+		goto out;
-+	bstart = dbstart(dentry);
-+	bend = dbend(dentry);
-+
-+	FD_ZERO(&branchlist);
-+
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
-+		if (!lower_dentry)
-+			continue;
-+		if (likely(lower_dentry->d_inode))
-+			FD_SET(bindex, &branchlist);
-+		/* purge any lower objects after partial_lookup */
-+		if (bindex < orig_bstart || bindex > orig_bend) {
-+			dput(lower_dentry);
-+			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
-+			iput(unionfs_lower_inode_idx(dentry->d_inode, bindex));
-+			unionfs_set_lower_inode_idx(dentry->d_inode, bindex,
-+						    NULL);
-+			mnt = unionfs_lower_mnt_idx(dentry, bindex);
-+			if (!mnt)
-+				continue;
-+			unionfs_mntput(dentry, bindex);
-+			unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
-+		}
-+	}
-+	/* restore original dentry's offsets */
-+	set_dbstart(dentry, orig_bstart);
-+	set_dbend(dentry, orig_bend);
-+	ibstart(dentry->d_inode) = orig_bstart;
-+	ibend(dentry->d_inode) = orig_bend;
-+
-+	err = copy_to_user((void __user *)arg, &branchlist, sizeof(fd_set));
-+	if (unlikely(err))
-+		err = -EFAULT;
-+
-+out:
-+	unionfs_unlock_dentry(dentry);
-+	return err < 0 ? err : bend;
-+}
-+
-+long unionfs_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-+{
-+	long err;
-+
-+	unionfs_read_lock(file->f_path.dentry->d_sb);
-+
-+	err = unionfs_file_revalidate(file, true);
-+	if (unlikely(err))
-+		goto out;
-+
-+	/* check if asked for local commands */
-+	switch (cmd) {
-+	case UNIONFS_IOCTL_INCGEN:
-+		/* Increment the superblock generation count */
-+		pr_info("unionfs: incgen ioctl deprecated; "
-+			"use \"-o remount,incgen\"\n");
-+		err = -ENOSYS;
-+		break;
-+
-+	case UNIONFS_IOCTL_QUERYFILE:
-+		/* Return list of branches containing the given file */
-+		err = unionfs_ioctl_queryfile(file, cmd, arg);
-+		break;
-+
-+	default:
-+		/* pass the ioctl down */
-+		err = do_ioctl(file, cmd, arg);
-+		break;
-+	}
-+
-+out:
-+	unionfs_check_file(file);
-+	unionfs_read_unlock(file->f_path.dentry->d_sb);
-+	return err;
-+}
-+
-+int unionfs_flush(struct file *file, fl_owner_t id)
-+{
-+	int err = 0;
-+	struct file *lower_file = NULL;
-+	struct dentry *dentry = file->f_path.dentry;
-+	int bindex, bstart, bend;
++	struct dentry *lower_dentry = NULL;
++	struct dentry *wh_dentry = NULL;
++	struct dentry *lower_parent_dentry = NULL;
++	char *name = NULL;
++	int valid = 0;
++	struct nameidata lower_nd;
 +
 +	unionfs_read_lock(dentry->d_sb);
++	unionfs_lock_dentry(dentry);
 +
-+	err = unionfs_file_revalidate(file, true);
-+	if (unlikely(err))
++	unionfs_lock_dentry(dentry->d_parent);
++	valid = __unionfs_d_revalidate_chain(dentry->d_parent, nd, false);
++	unionfs_unlock_dentry(dentry->d_parent);
++	if (unlikely(!valid)) {
++		err = -ESTALE;	/* same as what real_lookup does */
 +		goto out;
-+	unionfs_check_file(file);
++	}
++	valid = __unionfs_d_revalidate_chain(dentry, nd, false);
++	/*
++	 * It's only a bug if this dentry was not negative and couldn't be
++	 * revalidated (shouldn't happen).
++	 */
++	BUG_ON(!valid && dentry->d_inode);
 +
-+	bstart = fbstart(file);
-+	bend = fbend(file);
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		lower_file = unionfs_lower_file_idx(file, bindex);
-+
-+		if (lower_file && lower_file->f_op &&
-+		    lower_file->f_op->flush) {
-+			err = lower_file->f_op->flush(lower_file, id);
-+			if (err)
-+				goto out;
-+		}
-+
++	/*
++	 * We shouldn't create things in a read-only branch; this check is a
++	 * bit redundant as we don't allow branch 0 to be read-only at the
++	 * moment
++	 */
++	err = is_robranch_super(dentry->d_sb, 0);
++	if (err) {
++		err = -EROFS;
++		goto out;
 +	}
 +
-+	/* on success, update our times */
-+	unionfs_copy_attr_times(dentry->d_inode);
-+	/* parent time could have changed too (async) */
-+	unionfs_copy_attr_times(dentry->d_parent->d_inode);
++	/*
++	 * We _always_ create on branch 0
++	 */
++	lower_dentry = unionfs_lower_dentry_idx(dentry, 0);
++	if (lower_dentry) {
++		/*
++		 * check if whiteout exists in this branch, i.e. lookup .wh.foo
++		 * first.
++		 */
++		name = alloc_whname(dentry->d_name.name, dentry->d_name.len);
++		if (unlikely(IS_ERR(name))) {
++			err = PTR_ERR(name);
++			goto out;
++		}
++
++		wh_dentry = lookup_one_len(name, lower_dentry->d_parent,
++					   dentry->d_name.len + UNIONFS_WHLEN);
++		if (IS_ERR(wh_dentry)) {
++			err = PTR_ERR(wh_dentry);
++			wh_dentry = NULL;
++			goto out;
++		}
++
++		if (wh_dentry->d_inode) {
++			/*
++			 * .wh.foo has been found, so let's unlink it
++			 */
++			struct dentry *lower_dir_dentry;
++
++			lower_dir_dentry = lock_parent(wh_dentry);
++			err = vfs_unlink(lower_dir_dentry->d_inode, wh_dentry);
++			unlock_dir(lower_dir_dentry);
++
++			/*
++			 * Whiteouts are special files and should be deleted
++			 * no matter what (as if they never existed), in
++			 * order to allow this create operation to succeed.
++			 * This is especially important in sticky
++			 * directories: a whiteout may have been created by
++			 * one user, but the newly created file may be
++			 * created by another user.  Therefore, in order to
++			 * maintain Unix semantics, if the vfs_unlink above
++			 * ailed, then we have to try to directly unlink the
++			 * whiteout.  Note: in the ODF version of unionfs,
++			 * whiteout are handled much more cleanly.
++			 */
++			if (err == -EPERM) {
++				struct inode *inode = lower_dir_dentry->d_inode;
++				err = inode->i_op->unlink(inode, wh_dentry);
++			}
++			if (err) {
++				printk(KERN_ERR "unionfs: create: could not "
++				       "unlink whiteout, err = %d\n", err);
++				goto out;
++			}
++		}
++	} else {
++		/*
++		 * if lower_dentry is NULL, create the entire
++		 * dentry directory structure in branch 0.
++		 */
++		lower_dentry = create_parents(parent, dentry,
++					      dentry->d_name.name, 0);
++		if (IS_ERR(lower_dentry)) {
++			err = PTR_ERR(lower_dentry);
++			goto out;
++		}
++	}
++
++	lower_parent_dentry = lock_parent(lower_dentry);
++	if (IS_ERR(lower_parent_dentry)) {
++		err = PTR_ERR(lower_parent_dentry);
++		goto out;
++	}
++
++	err = init_lower_nd(&lower_nd, LOOKUP_CREATE);
++	if (unlikely(err < 0))
++		goto out;
++	err = vfs_create(lower_parent_dentry->d_inode, lower_dentry, mode,
++			 &lower_nd);
++	release_lower_nd(&lower_nd, err);
++
++	if (!err) {
++		err = PTR_ERR(unionfs_interpose(dentry, parent->i_sb, 0));
++		if (!err) {
++			unionfs_copy_attr_times(parent);
++			fsstack_copy_inode_size(parent,
++						lower_parent_dentry->d_inode);
++			/* update no. of links on parent directory */
++			parent->i_nlink = unionfs_get_nlinks(parent);
++		}
++	}
++
++	unlock_dir(lower_parent_dentry);
 +
 +out:
-+	unionfs_check_file(file);
++	dput(wh_dentry);
++	kfree(name);
++
++	if (!err)
++		unionfs_postcopyup_setmnt(dentry);
++
++	unionfs_check_inode(parent);
++	if (!err) {
++		unionfs_check_dentry(dentry->d_parent);
++		unionfs_check_nd(nd);
++	}
++	unionfs_check_dentry(dentry);
++	unionfs_unlock_dentry(dentry);
 +	unionfs_read_unlock(dentry->d_sb);
 +	return err;
 +}
++
++/*
++ * unionfs_lookup is the only special function which takes a dentry, yet we
++ * do NOT want to call __unionfs_d_revalidate_chain because by definition,
++ * we don't have a valid dentry here yet.
++ */
++static struct dentry *unionfs_lookup(struct inode *parent,
++				     struct dentry *dentry,
++				     struct nameidata *nd)
++{
++	struct path path_save;
++	struct dentry *ret;
++
++	unionfs_read_lock(dentry->d_sb);
++
++	/* save the dentry & vfsmnt from namei */
++	if (nd) {
++		path_save.dentry = nd->dentry;
++		path_save.mnt = nd->mnt;
++	}
++
++	/*
++	 * unionfs_lookup_backend returns a locked dentry upon success,
++	 * so we'll have to unlock it below.
++	 */
++	ret = unionfs_lookup_backend(dentry, nd, INTERPOSE_LOOKUP);
++
++	/* restore the dentry & vfsmnt in namei */
++	if (nd) {
++		nd->dentry = path_save.dentry;
++		nd->mnt = path_save.mnt;
++	}
++	if (!IS_ERR(ret)) {
++		if (ret)
++			dentry = ret;
++		/* parent times may have changed */
++		unionfs_copy_attr_times(dentry->d_parent->d_inode);
++	}
++
++	unionfs_check_inode(parent);
++	unionfs_check_dentry(dentry);
++	unionfs_check_dentry(dentry->d_parent);
++	unionfs_check_nd(nd);
++	if (!IS_ERR(ret))
++		unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(dentry->d_sb);
++
++	return ret;
++}
++
++static int unionfs_link(struct dentry *old_dentry, struct inode *dir,
++			struct dentry *new_dentry)
++{
++	int err = 0;
++	struct dentry *lower_old_dentry = NULL;
++	struct dentry *lower_new_dentry = NULL;
++	struct dentry *lower_dir_dentry = NULL;
++	struct dentry *whiteout_dentry;
++	char *name = NULL;
++
++	unionfs_read_lock(old_dentry->d_sb);
++	unionfs_double_lock_dentry(new_dentry, old_dentry);
++
++	if (unlikely(!__unionfs_d_revalidate_chain(old_dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
++	}
++	if (unlikely(new_dentry->d_inode &&
++		     !__unionfs_d_revalidate_chain(new_dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
++	}
++
++	lower_new_dentry = unionfs_lower_dentry(new_dentry);
++
++	/*
++	 * check if whiteout exists in the branch of new dentry, i.e. lookup
++	 * .wh.foo first. If present, delete it
++	 */
++	name = alloc_whname(new_dentry->d_name.name, new_dentry->d_name.len);
++	if (unlikely(IS_ERR(name))) {
++		err = PTR_ERR(name);
++		goto out;
++	}
++
++	whiteout_dentry = lookup_one_len(name, lower_new_dentry->d_parent,
++					 new_dentry->d_name.len +
++					 UNIONFS_WHLEN);
++	if (IS_ERR(whiteout_dentry)) {
++		err = PTR_ERR(whiteout_dentry);
++		goto out;
++	}
++
++	if (!whiteout_dentry->d_inode) {
++		dput(whiteout_dentry);
++		whiteout_dentry = NULL;
++	} else {
++		/* found a .wh.foo entry, unlink it and then call vfs_link() */
++		lower_dir_dentry = lock_parent(whiteout_dentry);
++		err = is_robranch_super(new_dentry->d_sb, dbstart(new_dentry));
++		if (!err)
++			err = vfs_unlink(lower_dir_dentry->d_inode,
++					 whiteout_dentry);
++
++		fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
++		dir->i_nlink = unionfs_get_nlinks(dir);
++		unlock_dir(lower_dir_dentry);
++		lower_dir_dentry = NULL;
++		dput(whiteout_dentry);
++		if (err)
++			goto out;
++	}
++
++	if (dbstart(old_dentry) != dbstart(new_dentry)) {
++		lower_new_dentry = create_parents(dir, new_dentry,
++						  new_dentry->d_name.name,
++						  dbstart(old_dentry));
++		err = PTR_ERR(lower_new_dentry);
++		if (IS_COPYUP_ERR(err))
++			goto docopyup;
++		if (!lower_new_dentry || IS_ERR(lower_new_dentry))
++			goto out;
++	}
++	lower_new_dentry = unionfs_lower_dentry(new_dentry);
++	lower_old_dentry = unionfs_lower_dentry(old_dentry);
++
++	BUG_ON(dbstart(old_dentry) != dbstart(new_dentry));
++	lower_dir_dentry = lock_parent(lower_new_dentry);
++	err = is_robranch(old_dentry);
++	if (!err)
++		err = vfs_link(lower_old_dentry, lower_dir_dentry->d_inode,
++			       lower_new_dentry);
++	unlock_dir(lower_dir_dentry);
++
++docopyup:
++	if (IS_COPYUP_ERR(err)) {
++		int old_bstart = dbstart(old_dentry);
++		int bindex;
++
++		for (bindex = old_bstart - 1; bindex >= 0; bindex--) {
++			err = copyup_dentry(old_dentry->d_parent->d_inode,
++					    old_dentry, old_bstart,
++					    bindex, old_dentry->d_name.name,
++					    old_dentry->d_name.len, NULL,
++					    i_size_read(old_dentry->d_inode));
++			if (!err) {
++				lower_new_dentry =
++					create_parents(dir, new_dentry,
++						       new_dentry->d_name.name,
++						       bindex);
++				lower_old_dentry =
++					unionfs_lower_dentry(old_dentry);
++				lower_dir_dentry =
++					lock_parent(lower_new_dentry);
++				/* do vfs_link */
++				err = vfs_link(lower_old_dentry,
++					       lower_dir_dentry->d_inode,
++					       lower_new_dentry);
++				unlock_dir(lower_dir_dentry);
++				goto check_link;
++			}
++		}
++		goto out;
++	}
++
++check_link:
++	if (err || !lower_new_dentry->d_inode)
++		goto out;
++
++	/* Its a hard link, so use the same inode */
++	new_dentry->d_inode = igrab(old_dentry->d_inode);
++	d_instantiate(new_dentry, new_dentry->d_inode);
++	unionfs_copy_attr_all(dir, lower_new_dentry->d_parent->d_inode);
++	fsstack_copy_inode_size(dir, lower_new_dentry->d_parent->d_inode);
++
++	/* propagate number of hard-links */
++	old_dentry->d_inode->i_nlink = unionfs_get_nlinks(old_dentry->d_inode);
++	/* new dentry's ctime may have changed due to hard-link counts */
++	unionfs_copy_attr_times(new_dentry->d_inode);
++
++out:
++	if (!new_dentry->d_inode)
++		d_drop(new_dentry);
++
++	kfree(name);
++	if (!err)
++		unionfs_postcopyup_setmnt(new_dentry);
++
++	unionfs_check_inode(dir);
++	unionfs_check_dentry(new_dentry);
++	unionfs_check_dentry(old_dentry);
++
++	unionfs_unlock_dentry(new_dentry);
++	unionfs_unlock_dentry(old_dentry);
++	unionfs_read_unlock(old_dentry->d_sb);
++
++	return err;
++}
++
++static int unionfs_symlink(struct inode *dir, struct dentry *dentry,
++			   const char *symname)
++{
++	int err = 0;
++	struct dentry *lower_dentry = NULL;
++	struct dentry *whiteout_dentry = NULL;
++	struct dentry *lower_dir_dentry = NULL;
++	umode_t mode;
++	int bindex = 0, bstart;
++	char *name = NULL;
++
++	unionfs_read_lock(dentry->d_sb);
++	unionfs_lock_dentry(dentry);
++
++	if (unlikely(dentry->d_inode &&
++		     !__unionfs_d_revalidate_chain(dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
++	}
++
++	/* We start out in the leftmost branch. */
++	bstart = dbstart(dentry);
++
++	lower_dentry = unionfs_lower_dentry(dentry);
++
++	/*
++	 * check if whiteout exists in this branch, i.e. lookup .wh.foo
++	 * first. If present, delete it
++	 */
++	name = alloc_whname(dentry->d_name.name, dentry->d_name.len);
++	if (unlikely(IS_ERR(name))) {
++		err = PTR_ERR(name);
++		goto out;
++	}
++
++	whiteout_dentry =
++		lookup_one_len(name, lower_dentry->d_parent,
++			       dentry->d_name.len + UNIONFS_WHLEN);
++	if (IS_ERR(whiteout_dentry)) {
++		err = PTR_ERR(whiteout_dentry);
++		goto out;
++	}
++
++	if (!whiteout_dentry->d_inode) {
++		dput(whiteout_dentry);
++		whiteout_dentry = NULL;
++	} else {
++		/*
++		 * found a .wh.foo entry, unlink it and then call
++		 * vfs_symlink().
++		 */
++		lower_dir_dentry = lock_parent(whiteout_dentry);
++
++		err = is_robranch_super(dentry->d_sb, bstart);
++		if (!err)
++			err = vfs_unlink(lower_dir_dentry->d_inode,
++					 whiteout_dentry);
++		dput(whiteout_dentry);
++
++		fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
++		/* propagate number of hard-links */
++		dir->i_nlink = unionfs_get_nlinks(dir);
++
++		unlock_dir(lower_dir_dentry);
++
++		if (err) {
++			/* exit if the error returned was NOT -EROFS */
++			if (!IS_COPYUP_ERR(err))
++				goto out;
++			/*
++			 * should now try to create symlink in the another
++			 * branch.
++			 */
++			bstart--;
++		}
++	}
++
++	/*
++	 * deleted whiteout if it was present, now do a normal vfs_symlink()
++	 * with possible recursive directory creation
++	 */
++	for (bindex = bstart; bindex >= 0; bindex--) {
++		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++		if (!lower_dentry) {
++			/*
++			 * if lower_dentry is NULL, create the entire
++			 * dentry directory structure in branch 'bindex'.
++			 * lower_dentry will NOT be null when bindex ==
++			 * bstart because lookup passed as a negative
++			 * unionfs dentry pointing to a lone negative
++			 * underlying dentry
++			 */
++			lower_dentry = create_parents(dir, dentry,
++						      dentry->d_name.name,
++						      bindex);
++			if (!lower_dentry || IS_ERR(lower_dentry)) {
++				if (IS_ERR(lower_dentry))
++					err = PTR_ERR(lower_dentry);
++				if (!IS_COPYUP_ERR(err))
++					printk(KERN_ERR
++					       "unionfs: create_parents for "
++					       "symlink failed: bindex=%d "
++					       "err=%d\n", bindex, err);
++				continue;
++			}
++		}
++
++		lower_dir_dentry = lock_parent(lower_dentry);
++
++		err = is_robranch_super(dentry->d_sb, bindex);
++		if (!err) {
++			mode = S_IALLUGO;
++			err = vfs_symlink(lower_dir_dentry->d_inode,
++					  lower_dentry, symname, mode);
++		}
++		unlock_dir(lower_dir_dentry);
++
++		if (err || !lower_dentry->d_inode) {
++			/*
++			 * break out of for loop if error returned was NOT
++			 * -EROFS.
++			 */
++			if (!IS_COPYUP_ERR(err))
++				break;
++		} else {
++			/*
++			 * Only INTERPOSE_LOOKUP can return a value other
++			 * than 0 on err.
++			 */
++			err = PTR_ERR(unionfs_interpose(dentry,
++							dir->i_sb, 0));
++			if (!err) {
++				fsstack_copy_attr_times(dir,
++							lower_dir_dentry->
++							d_inode);
++				fsstack_copy_inode_size(dir,
++							lower_dir_dentry->
++							d_inode);
++				/*
++				 * update number of links on parent
++				 * directory.
++				 */
++				dir->i_nlink = unionfs_get_nlinks(dir);
++			}
++			break;
++		}
++	}
++
++out:
++	if (!dentry->d_inode)
++		d_drop(dentry);
++
++	kfree(name);
++	if (!err)
++		unionfs_postcopyup_setmnt(dentry);
++
++	unionfs_check_inode(dir);
++	unionfs_check_dentry(dentry);
++	unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(dentry->d_sb);
++
++	return err;
++}
++
++static int unionfs_mkdir(struct inode *parent, struct dentry *dentry, int mode)
++{
++	int err = 0;
++	struct dentry *lower_dentry = NULL, *whiteout_dentry = NULL;
++	struct dentry *lower_parent_dentry = NULL;
++	int bindex = 0, bstart;
++	char *name = NULL;
++	int whiteout_unlinked = 0;
++	struct sioq_args args;
++
++	unionfs_read_lock(dentry->d_sb);
++	unionfs_lock_dentry(dentry);
++
++	if (unlikely(dentry->d_inode &&
++		     !__unionfs_d_revalidate_chain(dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
++	}
++
++	bstart = dbstart(dentry);
++
++	lower_dentry = unionfs_lower_dentry(dentry);
++
++	/*
++	 * check if whiteout exists in this branch, i.e. lookup .wh.foo
++	 * first.
++	 */
++	name = alloc_whname(dentry->d_name.name, dentry->d_name.len);
++	if (unlikely(IS_ERR(name))) {
++		err = PTR_ERR(name);
++		goto out;
++	}
++
++	whiteout_dentry = lookup_one_len(name, lower_dentry->d_parent,
++					 dentry->d_name.len + UNIONFS_WHLEN);
++	if (IS_ERR(whiteout_dentry)) {
++		err = PTR_ERR(whiteout_dentry);
++		goto out;
++	}
++
++	if (!whiteout_dentry->d_inode) {
++		dput(whiteout_dentry);
++		whiteout_dentry = NULL;
++	} else {
++		lower_parent_dentry = lock_parent(whiteout_dentry);
++
++		/* found a.wh.foo entry, remove it then do vfs_mkdir */
++		err = is_robranch_super(dentry->d_sb, bstart);
++		if (!err) {
++			args.unlink.parent = lower_parent_dentry->d_inode;
++			args.unlink.dentry = whiteout_dentry;
++			run_sioq(__unionfs_unlink, &args);
++			err = args.err;
++		}
++		dput(whiteout_dentry);
++
++		unlock_dir(lower_parent_dentry);
++
++		if (err) {
++			/* exit if the error returned was NOT -EROFS */
++			if (!IS_COPYUP_ERR(err))
++				goto out;
++			bstart--;
++		} else {
++			whiteout_unlinked = 1;
++		}
++	}
++
++	for (bindex = bstart; bindex >= 0; bindex--) {
++		int i;
++		int bend = dbend(dentry);
++
++		if (is_robranch_super(dentry->d_sb, bindex))
++			continue;
++
++		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++		if (!lower_dentry) {
++			lower_dentry = create_parents(parent, dentry,
++						      dentry->d_name.name,
++						      bindex);
++			if (!lower_dentry || IS_ERR(lower_dentry)) {
++				printk(KERN_ERR "unionfs: lower dentry "
++				       " NULL for bindex = %d\n", bindex);
++				continue;
++			}
++		}
++
++		lower_parent_dentry = lock_parent(lower_dentry);
++
++		if (IS_ERR(lower_parent_dentry)) {
++			err = PTR_ERR(lower_parent_dentry);
++			goto out;
++		}
++
++		err = vfs_mkdir(lower_parent_dentry->d_inode, lower_dentry,
++				mode);
++
++		unlock_dir(lower_parent_dentry);
++
++		/* did the mkdir succeed? */
++		if (err)
++			break;
++
++		for (i = bindex + 1; i < bend; i++) {
++			if (unionfs_lower_dentry_idx(dentry, i)) {
++				dput(unionfs_lower_dentry_idx(dentry, i));
++				unionfs_set_lower_dentry_idx(dentry, i, NULL);
++			}
++		}
++		set_dbend(dentry, bindex);
++
++		/*
++		 * Only INTERPOSE_LOOKUP can return a value other than 0 on
++		 * err.
++		 */
++		err = PTR_ERR(unionfs_interpose(dentry, parent->i_sb, 0));
++		if (!err) {
++			unionfs_copy_attr_times(parent);
++			fsstack_copy_inode_size(parent,
++						lower_parent_dentry->d_inode);
++
++			/* update number of links on parent directory */
++			parent->i_nlink = unionfs_get_nlinks(parent);
++		}
++
++		err = make_dir_opaque(dentry, dbstart(dentry));
++		if (err) {
++			printk(KERN_ERR "unionfs: mkdir: error creating "
++			       ".wh.__dir_opaque: %d\n", err);
++			goto out;
++		}
++
++		/* we are done! */
++		break;
++	}
++
++out:
++	if (!dentry->d_inode)
++		d_drop(dentry);
++
++	kfree(name);
++
++	if (!err) {
++		unionfs_copy_attr_times(dentry->d_inode);
++		unionfs_postcopyup_setmnt(dentry);
++	}
++	unionfs_check_inode(parent);
++	unionfs_check_dentry(dentry);
++	unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(dentry->d_sb);
++
++	return err;
++}
++
++static int unionfs_mknod(struct inode *dir, struct dentry *dentry, int mode,
++			 dev_t dev)
++{
++	int err = 0;
++	struct dentry *lower_dentry = NULL, *whiteout_dentry = NULL;
++	struct dentry *lower_parent_dentry = NULL;
++	int bindex = 0, bstart;
++	char *name = NULL;
++	int whiteout_unlinked = 0;
++
++	unionfs_read_lock(dentry->d_sb);
++	unionfs_lock_dentry(dentry);
++
++	if (unlikely(dentry->d_inode &&
++		     !__unionfs_d_revalidate_chain(dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
++	}
++
++	bstart = dbstart(dentry);
++
++	lower_dentry = unionfs_lower_dentry(dentry);
++
++	/*
++	 * check if whiteout exists in this branch, i.e. lookup .wh.foo
++	 * first.
++	 */
++	name = alloc_whname(dentry->d_name.name, dentry->d_name.len);
++	if (unlikely(IS_ERR(name))) {
++		err = PTR_ERR(name);
++		goto out;
++	}
++
++	whiteout_dentry = lookup_one_len(name, lower_dentry->d_parent,
++					 dentry->d_name.len + UNIONFS_WHLEN);
++	if (IS_ERR(whiteout_dentry)) {
++		err = PTR_ERR(whiteout_dentry);
++		goto out;
++	}
++
++	if (!whiteout_dentry->d_inode) {
++		dput(whiteout_dentry);
++		whiteout_dentry = NULL;
++	} else {
++		/* found .wh.foo, unlink it */
++		lower_parent_dentry = lock_parent(whiteout_dentry);
++
++		/* found a.wh.foo entry, remove it then do vfs_mkdir */
++		err = is_robranch_super(dentry->d_sb, bstart);
++		if (!err)
++			err = vfs_unlink(lower_parent_dentry->d_inode,
++					 whiteout_dentry);
++		dput(whiteout_dentry);
++
++		unlock_dir(lower_parent_dentry);
++
++		if (err) {
++			if (!IS_COPYUP_ERR(err))
++				goto out;
++			bstart--;
++		} else {
++			whiteout_unlinked = 1;
++		}
++	}
++
++	for (bindex = bstart; bindex >= 0; bindex--) {
++		if (is_robranch_super(dentry->d_sb, bindex))
++			continue;
++
++		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++		if (!lower_dentry) {
++			lower_dentry = create_parents(dir, dentry,
++						      dentry->d_name.name,
++						      bindex);
++			if (IS_ERR(lower_dentry)) {
++				printk(KERN_ERR "unionfs: failed to create "
++				       "parents on %d, err = %ld\n",
++				       bindex, PTR_ERR(lower_dentry));
++				continue;
++			}
++		}
++
++		lower_parent_dentry = lock_parent(lower_dentry);
++		if (IS_ERR(lower_parent_dentry)) {
++			err = PTR_ERR(lower_parent_dentry);
++			goto out;
++		}
++
++		err = vfs_mknod(lower_parent_dentry->d_inode,
++				lower_dentry, mode, dev);
++
++		if (err) {
++			unlock_dir(lower_parent_dentry);
++			break;
++		}
++
++		/*
++		 * Only INTERPOSE_LOOKUP can return a value other than 0 on
++		 * err.
++		 */
++		err = PTR_ERR(unionfs_interpose(dentry, dir->i_sb, 0));
++		if (!err) {
++			fsstack_copy_attr_times(dir,
++						lower_parent_dentry->d_inode);
++			fsstack_copy_inode_size(dir,
++						lower_parent_dentry->d_inode);
++			/* update number of links on parent directory */
++			dir->i_nlink = unionfs_get_nlinks(dir);
++		}
++		unlock_dir(lower_parent_dentry);
++
++		break;
++	}
++
++out:
++	if (!dentry->d_inode)
++		d_drop(dentry);
++
++	kfree(name);
++
++	if (!err)
++		unionfs_postcopyup_setmnt(dentry);
++
++	unionfs_check_inode(dir);
++	unionfs_check_dentry(dentry);
++	unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(dentry->d_sb);
++
++	return err;
++}
++
++static int unionfs_readlink(struct dentry *dentry, char __user *buf,
++			    int bufsiz)
++{
++	int err;
++	struct dentry *lower_dentry;
++
++	unionfs_read_lock(dentry->d_sb);
++	unionfs_lock_dentry(dentry);
++
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
++	}
++
++	lower_dentry = unionfs_lower_dentry(dentry);
++
++	if (!lower_dentry->d_inode->i_op ||
++	    !lower_dentry->d_inode->i_op->readlink) {
++		err = -EINVAL;
++		goto out;
++	}
++
++	err = lower_dentry->d_inode->i_op->readlink(lower_dentry,
++						    buf, bufsiz);
++	if (err > 0)
++		fsstack_copy_attr_atime(dentry->d_inode,
++					lower_dentry->d_inode);
++
++out:
++	unionfs_check_dentry(dentry);
++	unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(dentry->d_sb);
++
++	return err;
++}
++
++/*
++ * unionfs_follow_link takes a dentry, but it is simple.  It only needs to
++ * allocate some memory and then call our ->readlink method.  Our
++ * unionfs_readlink *does* lock our dentry and revalidate the dentry.
++ * Therefore, we do not have to lock our dentry here, to prevent a deadlock;
++ * nor do we need to revalidate it either.  It is safe to not lock our
++ * dentry here, nor revalidate it, because unionfs_follow_link does not do
++ * anything (prior to calling ->readlink) which could become inconsistent
++ * due to branch management.
++ */
++static void *unionfs_follow_link(struct dentry *dentry, struct nameidata *nd)
++{
++	char *buf;
++	int len = PAGE_SIZE, err;
++	mm_segment_t old_fs;
++
++	unionfs_read_lock(dentry->d_sb);
++
++	/* This is freed by the put_link method assuming a successful call. */
++	buf = kmalloc(len, GFP_KERNEL);
++	if (unlikely(!buf)) {
++		err = -ENOMEM;
++		goto out;
++	}
++
++	/* read the symlink, and then we will follow it */
++	old_fs = get_fs();
++	set_fs(KERNEL_DS);
++	err = dentry->d_inode->i_op->readlink(dentry, (char __user *)buf, len);
++	set_fs(old_fs);
++	if (err < 0) {
++		kfree(buf);
++		buf = NULL;
++		goto out;
++	}
++	buf[err] = 0;
++	nd_set_link(nd, buf);
++	err = 0;
++
++out:
++	unionfs_check_dentry(dentry);
++	unionfs_check_nd(nd);
++	unionfs_read_unlock(dentry->d_sb);
++	return ERR_PTR(err);
++}
++
++/* FIXME: We may not have to lock here */
++static void unionfs_put_link(struct dentry *dentry, struct nameidata *nd,
++			     void *cookie)
++{
++	unionfs_read_lock(dentry->d_sb);
++
++	unionfs_lock_dentry(dentry);
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, nd, false)))
++		printk(KERN_ERR
++		       "unionfs: put_link failed to revalidate dentry\n");
++
++	unionfs_check_dentry(dentry);
++	unionfs_check_nd(nd);
++	kfree(nd_get_link(nd));
++	unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(dentry->d_sb);
++}
++
++/*
++ * Don't grab the superblock read-lock in unionfs_permission, which prevents
++ * a deadlock with the branch-management "add branch" code (which grabbed
++ * the write lock).  It is safe to not grab the read lock here, because even
++ * with branch management taking place, there is no chance that
++ * unionfs_permission, or anything it calls, will use stale branch
++ * information.
++ */
++static int unionfs_permission(struct inode *inode, int mask,
++			      struct nameidata *nd)
++{
++	struct inode *lower_inode = NULL;
++	int err = 0;
++	int bindex, bstart, bend;
++	const int is_file = !S_ISDIR(inode->i_mode);
++	const int write_mask = (mask & MAY_WRITE) && !(mask & MAY_READ);
++
++	bstart = ibstart(inode);
++	bend = ibend(inode);
++	if (unlikely(bstart < 0 || bend < 0)) {
++		/*
++		 * With branch-management, we can get a stale inode here.
++		 * If so, we return ESTALE back to link_path_walk, which
++		 * would discard the dcache entry and re-lookup the
++		 * dentry+inode.  This should be equivalent to issuing
++		 * __unionfs_d_revalidate_chain on nd.dentry here.
++		 */
++		if (is_file)	/* dirs can be unlinked but chdir'ed to */
++			err = -ESTALE;	/* force revalidate */
++		goto out;
++	}
++
++	for (bindex = bstart; bindex <= bend; bindex++) {
++		lower_inode = unionfs_lower_inode_idx(inode, bindex);
++		if (!lower_inode)
++			continue;
++
++		/*
++		 * check the condition for D-F-D underlying files/directories,
++		 * we don't have to check for files, if we are checking for
++		 * directories.
++		 */
++		if (!is_file && !S_ISDIR(lower_inode->i_mode))
++			continue;
++
++		/*
++		 * We check basic permissions, but we ignore any conditions
++		 * such as readonly file systems or branches marked as
++		 * readonly, because those conditions should lead to a
++		 * copyup taking place later on.
++		 */
++		err = permission(lower_inode, mask, nd);
++		if (err && bindex > 0) {
++			umode_t mode = lower_inode->i_mode;
++			if (is_robranch_super(inode->i_sb, bindex) &&
++			    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
++				err = 0;
++			if (IS_COPYUP_ERR(err))
++				err = 0;
++		}
++
++		/*
++		 * The permissions are an intersection of the overall directory
++		 * permissions, so we fail if one fails.
++		 */
++		if (err)
++			goto out;
++
++		/* only the leftmost file matters. */
++		if (is_file || write_mask) {
++			if (is_file && write_mask) {
++				err = get_write_access(lower_inode);
++				if (!err)
++					put_write_access(lower_inode);
++			}
++			break;
++		}
++	}
++	/* sync times which may have changed (asynchronously) below */
++	unionfs_copy_attr_times(inode);
++
++out:
++	unionfs_check_inode(inode);
++	unionfs_check_nd(nd);
++	return err;
++}
++
++static int unionfs_setattr(struct dentry *dentry, struct iattr *ia)
++{
++	int err = 0;
++	struct dentry *lower_dentry;
++	struct inode *inode = NULL;
++	struct inode *lower_inode = NULL;
++	int bstart, bend, bindex;
++	int i;
++	int copyup = 0;
++
++	unionfs_read_lock(dentry->d_sb);
++	unionfs_lock_dentry(dentry);
++
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
++		err = -ESTALE;
++		goto out;
++	}
++
++	bstart = dbstart(dentry);
++	bend = dbend(dentry);
++	inode = dentry->d_inode;
++
++	/*
++	 * mode change is for clearing setuid/setgid. Allow lower filesystem
++	 * to reinterpret it in its own way.
++	 */
++	if (ia->ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID))
++		ia->ia_valid &= ~ATTR_MODE;
++
++	for (bindex = bstart; (bindex <= bend) || (bindex == bstart);
++	     bindex++) {
++		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++		if (!lower_dentry)
++			continue;
++		BUG_ON(lower_dentry->d_inode == NULL);
++
++		/* If the file is on a read only branch */
++		if (is_robranch_super(dentry->d_sb, bindex)
++		    || IS_RDONLY(lower_dentry->d_inode)) {
++			if (copyup || (bindex != bstart))
++				continue;
++			/* Only if its the leftmost file, copyup the file */
++			for (i = bstart - 1; i >= 0; i--) {
++				loff_t size = i_size_read(dentry->d_inode);
++				if (ia->ia_valid & ATTR_SIZE)
++					size = ia->ia_size;
++				err = copyup_dentry(dentry->d_parent->d_inode,
++						    dentry, bstart, i,
++						    dentry->d_name.name,
++						    dentry->d_name.len,
++						    NULL, size);
++
++				if (!err) {
++					copyup = 1;
++					lower_dentry =
++						unionfs_lower_dentry(dentry);
++					break;
++				}
++				/*
++				 * if error is in the leftmost branch, pass
++				 * it up.
++				 */
++				if (i == 0)
++					goto out;
++			}
++
++		}
++		err = notify_change(lower_dentry, ia);
++		if (err)
++			goto out;
++		break;
++	}
++
++	/* for mmap */
++	if (ia->ia_valid & ATTR_SIZE) {
++		if (ia->ia_size != i_size_read(inode)) {
++			err = vmtruncate(inode, ia->ia_size);
++			if (err)
++				printk(KERN_ERR
++				       "unionfs: setattr: vmtruncate failed\n");
++		}
++	}
++
++	/* get the size from the first lower inode */
++	lower_inode = unionfs_lower_inode(inode);
++	unionfs_copy_attr_all(inode, lower_inode);
++	/*
++	 * unionfs_copy_attr_all will copy the lower times to our inode if
++	 * the lower ones are newer (useful for cache coherency).  However,
++	 * ->setattr is the only place in which we may have to copy the
++	 * lower inode times absolutely, to support utimes(2).
++	 */
++	if (ia->ia_valid & ATTR_MTIME_SET)
++		inode->i_mtime = lower_inode->i_mtime;
++	if (ia->ia_valid & ATTR_CTIME)
++		inode->i_ctime = lower_inode->i_ctime;
++	if (ia->ia_valid & ATTR_ATIME_SET)
++		inode->i_atime = lower_inode->i_atime;
++	fsstack_copy_inode_size(inode, lower_inode);
++	/* if setattr succeeded, then parent dir may have changed */
++	unionfs_copy_attr_times(dentry->d_parent->d_inode);
++out:
++	unionfs_check_dentry(dentry);
++	unionfs_check_dentry(dentry->d_parent);
++	unionfs_unlock_dentry(dentry);
++	unionfs_read_unlock(dentry->d_sb);
++
++	return err;
++}
++
++struct inode_operations unionfs_symlink_iops = {
++	.readlink	= unionfs_readlink,
++	.permission	= unionfs_permission,
++	.follow_link	= unionfs_follow_link,
++	.setattr	= unionfs_setattr,
++	.put_link	= unionfs_put_link,
++};
++
++struct inode_operations unionfs_dir_iops = {
++	.create		= unionfs_create,
++	.lookup		= unionfs_lookup,
++	.link		= unionfs_link,
++	.unlink		= unionfs_unlink,
++	.symlink	= unionfs_symlink,
++	.mkdir		= unionfs_mkdir,
++	.rmdir		= unionfs_rmdir,
++	.mknod		= unionfs_mknod,
++	.rename		= unionfs_rename,
++	.permission	= unionfs_permission,
++	.setattr	= unionfs_setattr,
++#ifdef CONFIG_UNION_FS_XATTR
++	.setxattr	= unionfs_setxattr,
++	.getxattr	= unionfs_getxattr,
++	.removexattr	= unionfs_removexattr,
++	.listxattr	= unionfs_listxattr,
++#endif /* CONFIG_UNION_FS_XATTR */
++};
++
++struct inode_operations unionfs_main_iops = {
++	.permission	= unionfs_permission,
++	.setattr	= unionfs_setattr,
++#ifdef CONFIG_UNION_FS_XATTR
++	.setxattr	= unionfs_setxattr,
++	.getxattr	= unionfs_getxattr,
++	.removexattr	= unionfs_removexattr,
++	.listxattr	= unionfs_listxattr,
++#endif /* CONFIG_UNION_FS_XATTR */
++};
 -- 
 1.5.2.2
 
