@@ -1,107 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbXLJTdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756979AbXLJTgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755022AbXLJTdW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 14:33:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXLJTdL
+	id S1756979AbXLJTgk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 14:36:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbXLJTgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 14:33:11 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:52206 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbXLJTdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 14:33:09 -0500
-Date: Mon, 10 Dec 2007 22:33:05 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [1/4] DST: Distributed storage documentation.
-Message-ID: <20071210193304.GA24737@2ka.mipt.ru>
-References: <11972872493977@2ka.mipt.ru> <11972872501664@2ka.mipt.ru> <3ae72650712100451h6a84d6cfs9b3a2954c13c4612@mail.gmail.com> <20071210125839.GA16789@2ka.mipt.ru> <1197297108.6399.91.camel@lov.site> <20071210145055.GB7184@2ka.mipt.ru> <1197313348.6399.106.camel@lov.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1197313348.6399.106.camel@lov.site>
-User-Agent: Mutt/1.5.9i
+	Mon, 10 Dec 2007 14:36:32 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:37285 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751718AbXLJTgb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 14:36:31 -0500
+Message-ID: <475D952D.9070207@linux.vnet.ibm.com>
+Date: Tue, 11 Dec 2007 01:06:13 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
+References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
+In-Reply-To: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2007 at 08:02:28PM +0100, Kay Sievers (kay.sievers@vrfy.org) wrote:
-> > uganda:~/codes# ls -l /sys/devices/storage/n-0-ffff81003ebc220/
-> > total 0
-> > drwxr-xr-x 2 root root    0 2007-12-10 13:23 power
-> > -r--r--r-- 1 root root 4096 2007-12-10 13:30 size
-> > -r--r--r-- 1 root root 4096 2007-12-10 13:30 start
-> > -r--r--r-- 1 root root 4096 2007-12-10 13:30 type
-> > -rw-r--r-- 1 root root 4096 2007-12-10 13:30 uevent
+Balbir Singh wrote:
+> Changelog
 > 
-> This is a "struct device" instance without a subsystem (bus/class),
-> right? It will not send an uevent to userspace. Is that intended? Why
-> don't you add them all to the dst bus? 
-
-I created dst bus for storage devices only, nodes are very different
-objects, and actually they do not need any events from above, but I need
-to put some attributes somewhere, so it is 'empty' device.
-
-> > Actually not - I have to set reference counter to something other than 1
-> > or +/- 1, and thus will have to call kref_get() in a loop, which is a
-> > very ugly step. Is there kref_set() or somethinglike that? At least not
-> > in 2.6.22 what I'm using for now.
+> 1. Get rid of the constant 5 (based on comments from
+>                                 Geert.Uytterhoeven@sonycom.com)
+> 2. Implement suggestions from Olof Johannson
+> 3. Check if cmdline is NULL in fake_numa_create_new_node()
 > 
-> Yeah, a loop would look pretty ugly. How about just adding kref_set(),
-> if you need it.
-
-Well, then it distributed storage will not be able to build as
-standalone module, and kref_set() itself will not be accepted as a single 
-patch, since there are no in-kernel users :)
-It is easily doable though.
-
-> > > Why don't you use groups for the attributes?
-> > 
-> > For 3-4 attributes it is faster to register them in a loop than typing
-> > another structure :)
+> Tested with additional parameters from Olof
 > 
-> Yeah, but if you would need to recover from an error when the creation
-> of a file fails, a group would do the proper "rollback".
-
-I do not care about such errors - if there is such an error for a file,
-which exports information about type of the node (i.e. string "L" or "R")
-or some other very meaningful info, then system has enough to care about
-instead of this, so dst does not do anything special - it ignores such
-errors :)
-
-On exit path it will be checked and removed correctly.
-If there will be additional sysfs files, I think group is a good way to
-implement them.
-
-> > > Why don't you use default attributes for the device, where you get all
-> > > error handling done by the core.
-> > 
-> > What is 'default attributes' and for what devices?
-> > All my sysfs files are so much trivial, so they do not need anything
-> > special and I do not see what is error handling you mentioned.
+> numa=debug,fake=
+> numa=foo,fake=bar
 > 
-> If all devices of a subsystem (bus/class) are of the same type, you can
-> set a default array of attributes in the "struct bus/class" to be
-> created at every device. If you have multiple types of devices in the
-> same subsytem (bus/class) you can to assign a the "device_type", which
-> has the default attribute group.
-> That way the core will create the files before the event is sent out to
-> userspace, and the files can be access from the event itself. Not sure
-> if that is needed for dst.
+> 
+> Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
+> NUMA nodes can be specified using the following command line option
+> 
+> numa=fake=<node range>
+> 
+> node range is of the format <range1>,<range2>,...<rangeN>
+> 
+> Each of the rangeX parameters is passed using memparse(). I find the patch
+> useful for fake NUMA emulation on my simple PowerPC machine. I've tested it
+> on a non-numa box with the following arguments
+> 
+> numa=fake=1G
+> numa=fake=1G,2G
+> name=fake=1G,512M,2G
+> numa=fake=1500M,2800M mem=3500M
+> numa=fake=1G mem=512M
+> numa=fake=1G mem=1G
+> 
+> This patch applies on top of 2.6.24-rc4.
+> 
+> All though I've tried my best to handle some of the architecture specific
+> details of PowerPC, I might have overlooked something obvious, like the usage
+> of an API or some architecture tweaks. The patch depends on CONFIG_NUMA and
+> I decided against creating a separate config option for fake NUMA to keep
+> the code simple.
+> 
+> Comments are as always welcome!
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+>  arch/powerpc/mm/numa.c |   59 ++++++++++++++++++++++++++++++++++++++++++++-----
+>  1 file changed, 54 insertions(+), 5 deletions(-)
+> 
+> diff -puN arch/powerpc/mm/numa.c~ppc-fake-numa-easy arch/powerpc/mm/numa.c
+> --- linux-2.6.24-rc4-mm1/arch/powerpc/mm/numa.c~ppc-fake-numa-easy	2007-12-07 21:25:55.000000000 +0530
+> +++ linux-2.6.24-rc4-mm1-balbir/arch/powerpc/mm/numa.c	2007-12-08 03:19:46.000000000 +0530
+> @@ -24,6 +24,8 @@
+> 
+>  static int numa_enabled = 1;
+> 
+> +static char *cmdline __initdata;
+> +
+>  static int numa_debug;
+>  #define dbg(args...) if (numa_debug) { printk(KERN_INFO args); }
+> 
+> @@ -39,6 +41,43 @@ static bootmem_data_t __initdata plat_no
+>  static int min_common_depth;
+>  static int n_mem_addr_cells, n_mem_size_cells;
+> 
+> +static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
+> +						unsigned int *nid)
+> +{
+> +	unsigned long long mem;
+> +	char *p = cmdline;
+> +	static unsigned int fake_nid = 0;
+> +	static unsigned long long curr_boundary = 0;
+> +
+> +	*nid = fake_nid;
+> +	if (!p)
+> +		return 0;
+> +
+> +	mem = memparse(p, &p);
+> +	if (!mem)
+> +		return 0;
+> +
+> +	if (mem < curr_boundary)
+> +		return 0;
+> +
+> +	curr_boundary = mem;
+> +
+> +	if ((end_pfn << PAGE_SHIFT) > mem) {
+> +		/*
+> +		 * Skip commas and spaces
+> +		 */
+> +		while (*p == ',' || *p == ' ' || *p == '\t')
+> +			p++;
+> +
+> +		cmdline = p;
+> +		fake_nid++;
+> +		*nid = fake_nid;
+> +		dbg("created new fake_node with id %d\n", fake_nid);
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+>  static void __cpuinit map_cpu_to_node(int cpu, int node)
+>  {
+>  	numa_cpu_lookup_table[cpu] = node;
+> @@ -344,12 +383,14 @@ static void __init parse_drconf_memory(s
+>  			if (nid == 0xffff || nid >= MAX_NUMNODES)
+>  				nid = default_nid;
+>  		}
+> -		node_set_online(nid);
+> 
+>  		size = numa_enforce_memory_limit(start, lmb_size);
+>  		if (!size)
+>  			continue;
+> 
+> +		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
+> +		node_set_online(nid);
+> +
+>  		add_active_range(nid, start >> PAGE_SHIFT,
+>  				 (start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
+>  	}
+> @@ -429,7 +470,6 @@ new_range:
+>  		nid = of_node_to_nid_single(memory);
+>  		if (nid < 0)
+>  			nid = default_nid;
+> -		node_set_online(nid);
+> 
+>  		if (!(size = numa_enforce_memory_limit(start, size))) {
+>  			if (--ranges)
+> @@ -438,6 +478,9 @@ new_range:
+>  				continue;
+>  		}
+> 
+> +		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
+> +		node_set_online(nid);
+> +
+>  		add_active_range(nid, start >> PAGE_SHIFT,
+>  				(start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
+> 
+> @@ -461,7 +504,7 @@ static void __init setup_nonnuma(void)
+>  	unsigned long top_of_ram = lmb_end_of_DRAM();
+>  	unsigned long total_ram = lmb_phys_mem_size();
+>  	unsigned long start_pfn, end_pfn;
+> -	unsigned int i;
+> +	unsigned int i, nid = 0;
+> 
+>  	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
+>  	       top_of_ram, total_ram);
+> @@ -471,9 +514,11 @@ static void __init setup_nonnuma(void)
+>  	for (i = 0; i < lmb.memory.cnt; ++i) {
+>  		start_pfn = lmb.memory.region[i].base >> PAGE_SHIFT;
+>  		end_pfn = start_pfn + lmb_size_pages(&lmb.memory, i);
+> -		add_active_range(0, start_pfn, end_pfn);
+> +
+> +		fake_numa_create_new_node(end_pfn, &nid);
+> +		add_active_range(nid, start_pfn, end_pfn);
+> +		node_set_online(nid);
+>  	}
+> -	node_set_online(0);
+>  }
+> 
+>  void __init dump_numa_cpu_topology(void)
+> @@ -702,6 +747,10 @@ static int __init early_numa(char *p)
+>  	if (strstr(p, "debug"))
+>  		numa_debug = 1;
+> 
+> +	p = strstr(p, "fake=");
+> +	if (p)
+> +		cmdline = p + strlen("fake=");
+> +
+>  	return 0;
+>  }
+>  early_param("numa", early_numa);
+> _
+> 
 
-Ok, I see.
 
-DST right now has 3 types of files - storage files, it is common for
-every storage device; node files, which are the same for every node; and
-per-algorithm private devices - they can be different (actually only
-mirroring algorithm exports something to userspace).
+If there are no other major objections, could we get this infrastructure
+into -mm?
 
-I think it is possible to use default attributes for storage devices,
-but node device does not have a bus/class, so they will be untouched.
-
-> Thanks,
-> Kay
 
 -- 
-	Evgeniy Polyakov
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
