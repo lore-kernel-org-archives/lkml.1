@@ -1,91 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757779AbXLJLuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757588AbXLJLtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757779AbXLJLuT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 06:50:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbXLJLtq
+	id S1757588AbXLJLtz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 06:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbXLJLt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 06:49:46 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:7893 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757464AbXLJLto (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 06:49:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iIsPeIk19FXTR3eyYsJBBghqeKxkRfdPtyYzpWbojnRe/FX4DaLiVmpsB6ufjsO7cw8Zr2y+8pdNz3LP4mulSWxTjPChbhktoI7uDNYQVaWPh5qPs8WGmAfyt71D7BvQjYcnysp1L+dtYKXI15TV3Jg926J5n/0W1KC2GPB+tC4=
-Message-ID: <c03d1bd00712100349i2c878d94g3085ed78f23c247e@mail.gmail.com>
-Date: Mon, 10 Dec 2007 17:19:43 +0530
-From: "Gautham R Shenoy" <ego.lkml@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: broken suspend (sched related) [Was: 2.6.24-rc4-mm1]
-Cc: "Gautham R Shenoy" <ego@in.ibm.com>, "Jiri Slaby" <jirislaby@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Arjan van de Ven" <arjan@linux.intel.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       "Dipankar Sarma" <dipankar@in.ibm.com>
-In-Reply-To: <20071210112832.GA20189@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Dec 2007 06:49:29 -0500
+Received: from mga11.intel.com ([192.55.52.93]:1512 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757327AbXLJLt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 06:49:26 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.23,276,1194249600"; 
+   d="scan'208";a="231767772"
+Date: Mon, 10 Dec 2007 12:49:09 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com,
+       suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com
+Subject: [patch 3/4] x86, ptrace: change interface to newest-to-oldest array
+Message-ID: <20071210124909.A14988@sedona.ch.intel.com>
+Mime-Version: 1.0
 Content-Disposition: inline
-References: <475A629C.7010408@gmail.com> <475B24F4.3090904@gmail.com>
-	 <20071209074647.GE22981@elte.hu> <20071210081952.GA7215@in.ibm.com>
-	 <475CFF01.2090502@gmail.com> <20071210091052.GA14487@elte.hu>
-	 <20071210101500.GB12880@in.ibm.com> <20071210102157.GB31103@elte.hu>
-	 <20071210110818.GC12880@in.ibm.com> <20071210112832.GA20189@elte.hu>
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 10, 2007 4:58 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Gautham R Shenoy <ego@in.ibm.com> wrote:
->
-> > > say we've got 100 CPUs, so we've got 100 watchdog tasks running -
-> > > one for each CPU. Checking for hung tasks is a global operation not
-> > > a per-CPU operation (we iterate over the global tasklist), hence
-> > > only one CPU should really be calling this function. That
-> > > online-cpus logic achieves this by picking a single CPU. Perhaps it
-> > > would be better to keep a hung_task_checker_cpu variable that is
-> > > driven from a CPU-hotplug-down notifier? That way if a CPU is
-> > > brought down we can update hung_task_checker_cpu to another,
-> > > still-online CPU. (this would also be faster, because event-driven)
-> >
-> > Do you mean something like this?
->
-> yeah, thanks - queued it up.
+Change the ptrace user interface to use an array from newest to oldest BTS entry.
+This eliminates the need for the GET_INDEX command.
 
-Stupid me! I forgot to remove the local variable check_cpu in static
-int watchdog(void * __bind_cpu). Could you please correct it before
-applying?
+I could further imagine combining ALLOCATE_BUFFER with CONFIG and GET_BUFFER_SIZE with STATUS. This would bring the interface down to 3 commands (config, status, read), but it would require struct to be passed for config and status.
 
->
-> one question:
->
-> > +static int check_cpu = -1;
->
-> >       case CPU_ONLINE:
-> >       case CPU_ONLINE_FROZEN:
-> > +             check_cpu = any_online_cpu(cpu_online_map);
-> >               wake_up_process(per_cpu(watchdog_task, hotcpu));
-> >               break;
->
-> do we bring the boot CPU online too - i.e. will check_cpu be properly
-> initialized on UP too?
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
 
-Yes, it does.
->
->         Ingo
->
+Index: linux-2.6-x86/arch/x86/kernel/ptrace.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/ptrace.c	2007-12-10 11:14:26.%N +0100
++++ linux-2.6-x86/arch/x86/kernel/ptrace.c	2007-12-10 11:34:20.%N +0100
+@@ -479,26 +479,33 @@
+ 	return ds_get_bts_size((void *)child->thread.ds_area_msr);
+ }
+ 
+-static int ptrace_bts_get_index(struct task_struct *child)
+-{
+-	if (!child->thread.ds_area_msr)
+-		return -ENXIO;
+-
+-	return ds_get_bts_index((void *)child->thread.ds_area_msr);
+-}
+-
+ static int ptrace_bts_read_record(struct task_struct *child,
+ 				  long index,
+ 				  struct bts_struct __user *out)
+ {
+ 	struct bts_struct ret;
+ 	int retval;
++	int bts_size;
++	int bts_index;
+ 
+ 	if (!child->thread.ds_area_msr)
+ 		return -ENXIO;
+ 
++	if (index < 0)
++		return -EINVAL;
++
++	bts_size = ds_get_bts_size((void *)child->thread.ds_area_msr);
++	if (bts_size <= index)
++		return -EINVAL;
++
++	/* translate the ptrace bts index into the ds bts index */
++	bts_index = ds_get_bts_index((void *)child->thread.ds_area_msr);
++	bts_index -= (index + 1);
++	if (bts_index < 0)
++		bts_index += bts_size;
++
+ 	retval = ds_read_bts((void *)child->thread.ds_area_msr,
+-			     index, &ret);
++			     bts_index, &ret);
+ 	if (retval)
+ 		return retval;
+ 
+@@ -813,10 +820,6 @@
+ 		ret = ptrace_bts_get_buffer_size(child);
+ 		break;
+ 
+-	case PTRACE_BTS_GET_INDEX:
+-		ret = ptrace_bts_get_index(child);
+-		break;
+-
+ 	case PTRACE_BTS_READ_RECORD:
+ 		ret = ptrace_bts_read_record
+ 			(child, data,
+@@ -1017,7 +1020,6 @@
+ 	case PTRACE_BTS_MAX_BUFFER_SIZE:
+ 	case PTRACE_BTS_ALLOCATE_BUFFER:
+ 	case PTRACE_BTS_GET_BUFFER_SIZE:
+-	case PTRACE_BTS_GET_INDEX:
+ 	case PTRACE_BTS_READ_RECORD:
+ 	case PTRACE_BTS_CONFIG:
+ 	case PTRACE_BTS_STATUS:
+Index: linux-2.6-x86/include/asm-x86/ptrace-abi.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/ptrace-abi.h	2007-12-10 11:14:26.%N +0100
++++ linux-2.6-x86/include/asm-x86/ptrace-abi.h	2007-12-10 11:16:27.%N +0100
+@@ -99,32 +99,27 @@
+    ENXIO........no buffer allocated */
+ #define PTRACE_BTS_GET_BUFFER_SIZE 42
+ 
+-/* Return the index of the next bts record to be written,
+-   if successful; -1, otherwise.
+-   EOPNOTSUPP...processor does not support bts tracing
+-   ENXIO........no buffer allocated
+-   After the first warp-around, this is the start of the circular bts buffer. */
+-#define PTRACE_BTS_GET_INDEX 43
+-
+-/* Read the DATA'th bts record into a ptrace_bts_record buffer provided in ADDR.
++/* Read the DATA'th bts record into a ptrace_bts_record buffer
++   provided in ADDR.
++   Records are ordered from newest to oldest.
+    Return 0, if successful; -1, otherwise
+    EOPNOTSUPP...processor does not support bts tracing
+    ENXIO........no buffer allocated
+    EINVAL.......invalid index */
+-#define PTRACE_BTS_READ_RECORD 44
++#define PTRACE_BTS_READ_RECORD 43
+ 
+ /* Configure last branch trace; the configuration is given as a bit-mask of
+    PTRACE_BTS_O_* options in DATA; parameter ADDR is ignored.
+    Return 0, if successful; -1, otherwise
+    EOPNOTSUPP...processor does not support bts tracing
+    ENXIO........no buffer allocated */
+-#define PTRACE_BTS_CONFIG 45
++#define PTRACE_BTS_CONFIG 44
+ 
+ /* Return the configuration as bit-mask of PTRACE_BTS_O_* options
+    if successful; -1, otherwise.
+    EOPNOTSUPP...processor does not support bts tracing
+    ENXIO........no buffer allocated */
+-#define PTRACE_BTS_STATUS 46
++#define PTRACE_BTS_STATUS 45
+ 
+ /* Trace configuration options */
+ /* Collect last branch trace */
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-Thanks and Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
