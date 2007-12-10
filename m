@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbXLJLly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbXLJLm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756865AbXLJLly (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 06:41:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756639AbXLJLk7
+	id S1756709AbXLJLm6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 06:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXLJLmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 06:40:59 -0500
-Received: from mga02.intel.com ([134.134.136.20]:58478 "EHLO mga02.intel.com"
+	Mon, 10 Dec 2007 06:42:49 -0500
+Received: from mga03.intel.com ([143.182.124.21]:59025 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756631AbXLJLk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 06:40:56 -0500
+	id S1752944AbXLJLms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 06:42:48 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.23,276,1194249600"; 
-   d="scan'208";a="292366142"
-Date: Mon, 10 Dec 2007 12:38:09 +0100
+   d="scan'208";a="337220491"
+Date: Mon, 10 Dec 2007 12:42:40 +0100
 From: Markus Metzger <markus.t.metzger@intel.com>
 To: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
        tglx@linutronix.de
-Cc: markut.t.metzger@intel.com, markus.t.metzger@gmail.com,
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com,
        suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
        mtk.manpages@gmail.com
-Subject: [patch 1/4] x86: remove bad comment
-Message-ID: <20071210123809.A14251@sedona.ch.intel.com>
+Subject: [patch 2/4] x86, ptrace: use jiffies for bts timestamps
+Message-ID: <20071210124240.A14941@sedona.ch.intel.com>
 Mime-Version: 1.0
 Content-Disposition: inline
 User-Agent: Mutt/1.2.5i
@@ -30,25 +30,119 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove a comment that is no longer correct. The reconfiguration is done directly in __switch_to_xtra.
+Use jiffies for timestamps in last branch recording.
+
 
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
 
-Index: linux-2.6-x86/arch/x86/kernel/process_64.c
+Index: linux-2.6-x86/arch/x86/kernel/ptrace.c
 ===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/process_64.c	2007-12-10 09:35:26.%N +0100
-+++ linux-2.6-x86/arch/x86/kernel/process_64.c	2007-12-10 09:36:38.%N +0100
-@@ -598,10 +598,6 @@
- 		memset(tss->io_bitmap, 0xff, prev->io_bitmap_max);
- 	}
+--- linux-2.6-x86.orig/arch/x86/kernel/ptrace.c	2007-12-10 09:47:57.%N +0100
++++ linux-2.6-x86/arch/x86/kernel/ptrace.c	2007-12-10 10:11:37.%N +0100
+@@ -616,7 +616,7 @@
+ {
+ 	struct bts_struct rec = {
+ 		.qualifier = qualifier,
+-		.variant.timestamp = sched_clock()
++		.variant.jiffies = jiffies
+ 	};
  
--	/*
--	 * Last branch recording recofiguration of trace hardware and
--	 * disentangling of trace data per task.
--	 */
- 	if (test_tsk_thread_flag(prev_p, TIF_BTS_TRACE_TS))
- 		ptrace_bts_take_timestamp(prev_p, BTS_TASK_DEPARTS);
+ 	if (ptrace_bts_get_buffer_size(tsk) <= 0)
+Index: linux-2.6-x86/include/asm-x86/ds.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/ds.h	2007-12-10 09:47:57.%N +0100
++++ linux-2.6-x86/include/asm-x86/ds.h	2007-12-10 10:11:37.%N +0100
+@@ -48,7 +48,7 @@
+ 		} lbr;
+ 		/* BTS_TASK_ARRIVES or
+ 		   BTS_TASK_DEPARTS */
+-		unsigned long long timestamp;
++		unsigned long jiffies;
+ 	} variant;
+ };
+ 
+Index: linux-2.6-x86/arch/x86/kernel/ds.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/ds.c	2007-12-10 09:13:55.%N +0100
++++ linux-2.6-x86/arch/x86/kernel/ds.c	2007-12-10 10:22:43.%N +0100
+@@ -167,23 +167,13 @@
+ {
+ 	(*(unsigned char *)(base + ds_cfg.info_type.offset)) = value;
+ }
+-/*
+- * The info data might overlap with the info type on some architectures.
+- * We therefore read and write the exact number of bytes.
+- */
+-static inline unsigned long long get_info_data(char *base)
+-{
+-	unsigned long long value = 0;
+-	memcpy(&value,
+-	       base + ds_cfg.info_data.offset,
+-	       ds_cfg.info_data.size);
+-	return value;
+-}
+-static inline void set_info_data(char *base, unsigned long long value)
+-{
+-	memcpy(base + ds_cfg.info_data.offset,
+-	       &value,
+-	       ds_cfg.info_data.size);
++static inline unsigned long get_info_data(char *base)
++{
++	return *(unsigned long *)(base + ds_cfg.info_data.offset);
++}
++static inline void set_info_data(char *base, unsigned long value)
++{
++	(*(unsigned long *)(base + ds_cfg.info_data.offset)) = value;
+ }
+ 
+ 
+@@ -282,8 +272,8 @@
+ 
+ 	memset(out, 0, sizeof(*out));
+ 	if (get_from_ip(bts) == BTS_ESCAPE_ADDRESS) {
+-		out->qualifier         = get_info_type(bts);
+-		out->variant.timestamp = get_info_data(bts);
++		out->qualifier       = get_info_type(bts);
++		out->variant.jiffies = get_info_data(bts);
+ 	} else {
+ 		out->qualifier = BTS_BRANCH;
+ 		out->variant.lbr.from_ip = get_from_ip(bts);
+@@ -319,7 +309,7 @@
+ 	case BTS_TASK_DEPARTS:
+ 		set_from_ip(bts, BTS_ESCAPE_ADDRESS);
+ 		set_info_type(bts, in->qualifier);
+-		set_info_data(bts, in->variant.timestamp);
++		set_info_data(bts, in->variant.jiffies);
+ 		break;
+ 
+ 	default:
+@@ -350,7 +340,7 @@
+ 	.from_ip = { 0, 4 },
+ 	.to_ip = { 4, 4 },
+ 	.info_type = { 4, 1 },
+-	.info_data = { 5, 7 },
++	.info_data = { 8, 4 },
+ 	.debugctl_mask = (1<<2)|(1<<3)
+ };
+ 
+@@ -364,7 +354,7 @@
+ 	.from_ip = { 0, 4 },
+ 	.to_ip = { 4, 4 },
+ 	.info_type = { 4, 1 },
+-	.info_data = { 5, 7 },
++	.info_data = { 8, 4 },
+ 	.debugctl_mask = (1<<6)|(1<<7)
+ };
+ #endif /* _i386_ */
+@@ -379,7 +369,7 @@
+ 	.from_ip = { 0, 8 },
+ 	.to_ip = { 8, 8 },
+ 	.info_type = { 8, 1 },
+-	.info_data = { 9, 7 },
++	.info_data = { 16, 8 },
+ 	.debugctl_mask = (1<<6)|(1<<7)|(1<<9)
+ };
  
 ---------------------------------------------------------------------
 Intel GmbH
