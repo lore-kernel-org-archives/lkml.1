@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbXLJXEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbXLJXHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753875AbXLJXEu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 18:04:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbXLJXEm
+	id S1754077AbXLJXHZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 18:07:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbXLJXHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 18:04:42 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41425 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751861AbXLJXEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 18:04:42 -0500
-Date: Tue, 11 Dec 2007 00:04:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       Stefano Brivio <stefano.brivio@polimi.it>,
-       Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
-Message-ID: <20071210230425.GA641@elte.hu>
-References: <200712080340.49546.rjw@sisk.pl> <20071210204212.GA5502@elte.hu> <20071210125923.37bd2f10.akpm@linux-foundation.org> <20071210224508.GB27178@elte.hu>
+	Mon, 10 Dec 2007 18:07:14 -0500
+Received: from torres.zugschlus.de ([85.214.68.41]:53531 "EHLO
+	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212AbXLJXHN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 18:07:13 -0500
+Date: Tue, 11 Dec 2007 00:06:43 +0100
+From: Marc Haber <mh+linux-kernel@zugschlus.de>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
+Message-ID: <20071210230643.GC32133@torres.zugschlus.de>
+References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <20071204164720.6e4dc2c4@the-village.bc.nu> <475599D6.4030008@cosmosbay.com> <20071205212646.GP17536@waste.org> <20071209124200.GA31147@torres.zugschlus.de> <20071209161605.GX19691@waste.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071210224508.GB27178@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071209161605.GX19691@waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > what do you think? Right now i've got them queued up for 2.6.25 in 
-> > > both the scheduler-devel and the x86-devel git trees - but can 
-> > > submit them for 2.6.24 if it's better if we did them there. I've got 
-> > > no strong opinion either way.
+On Sun, Dec 09, 2007 at 10:16:05AM -0600, Matt Mackall wrote:
+> On Sun, Dec 09, 2007 at 01:42:00PM +0100, Marc Haber wrote:
+> > On Wed, Dec 05, 2007 at 03:26:47PM -0600, Matt Mackall wrote:
+> > > The distinction between /dev/random and /dev/urandom boils down to one
+> > > word: paranoia. If you are not paranoid enough to mistrust your
+> > > network, then /dev/random IS NOT FOR YOU. Use /dev/urandom.
 > > 
-> > printk_clock() doesn't seem terribly important but what's this stuff 
-> > about effects on udelay/mdelay?  That can be serious if they're 
-> > getting shortened.
+> > But currently, people who use /dev/urandom to obtain low-quality
+> > entropy do a DoS for the paranoid people.
 > 
-> since udelay depends on loops_per_jiffy, which is fixed up 
-> time_cpufreq_notifier(), i dont see how it could be affected by 
-> frequency changes. (but that's the theory - practice might be 
-> different)
+> Not true, as I've already pointed out in this thread.
 
-Stefano Brivio reported udelay()/mdelay() effects in the b43 driver. 
-(and it caused driver failures for him.)
+I must have missed this. Can you please explain again? For a layman it
+looks like a paranoid application cannot read 500 Bytes from
+/dev/random without blocking if some other application has previously
+read 10 Kilobytes from /dev/urandom.
 
-Stefano, could you please try to sum up your experiences with that 
-issue? Is it reproducable, and the 5 patches i did fix it? (if yes, 
-could you try to re-do the mdelay verifications perhaps, to make sure 
-it's not some other effect interacting here. In theory sched-clock 
-scaling has no effect on udelay behavior.)
+Greetings
+Marc
 
-	Ingo
+-- 
+-----------------------------------------------------------------------------
+Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
+Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
+Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
