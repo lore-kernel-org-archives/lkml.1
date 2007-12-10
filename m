@@ -1,313 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbXLJJne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbXLJJoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbXLJJne (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 04:43:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbXLJJnZ
+	id S1755549AbXLJJoK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 04:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbXLJJn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 04:43:25 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:46473 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbXLJJnY (ORCPT
+	Mon, 10 Dec 2007 04:43:57 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:33258 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751939AbXLJJn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 04:43:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=eB3WTylSAJ5qTyyLp6n+EUaR7v8IwRhapFipMzjyiivHagbSpsYy40tGVvNiaNS0HygGEoihe4t5GwoLCpYcIDLKn7W+NQ2j4QQ+GZmTInzn33MSWQCOow2f9rbdznup5WgcxRjNTu8dkcZYe8RoYbsz4kSHBIuj2nOxYe4t0sk=
-Message-ID: <f17812d70712100143w65898405rd96f460aef621a25@mail.gmail.com>
-Date: Mon, 10 Dec 2007 17:43:21 +0800
-From: "eric miao" <eric.y.miao@gmail.com>
-To: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       i2c@lm-sensors.org
-Subject: [PATCH 2.6.24-rc4-mm 2/2] gpiolib: add Generic IRQ support for 16-bit PCA9539 GPIO expander
-Cc: "David Brownell" <david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Dec 2007 04:43:56 -0500
+Date: Mon, 10 Dec 2007 15:13:36 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/4] Instrumentation menu removal, against 2.6.24-rc4-mm1 (mmotm)
+Message-ID: <20071210094336.GB8437@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20071208153255.078261362@polymtl.ca> <20071210085741.GA8437@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071210085741.GA8437@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the generic IRQ support for the PCA9539 on-chip GPIOs,
-platform specific code is required to keep a correct gpio_to_irq() and
-irq_to_gpio() mapping.
+On Mon, Dec 10, 2007 at 02:27:41PM +0530, Ananth N Mavinakayanahalli wrote:
+> On Sat, Dec 08, 2007 at 10:32:55AM -0500, Mathieu Desnoyers wrote:
+> > Hi Andrew,
+> > 
+> > This time I am taking no chance :
+> > 
+> > The instrumentation menu removal patchset here applies against 2.6.24-rc4-mm1
+> > _and_ against mmotm (dated : stamp-2007-12-05-15-24) without problem.
+> > 
+> > We should hopefully be able to stop racing against other architecture specific
+> > fixes done underneath. Please be aware that the following fix :
+> > 
+> > - fix-oprofile-configuration-breakage.patch
+> > 
+> > from MIPS did not show up in your mmotm tree. I guess you just sent it upstream
+> > without keeping it in your own tree. I have applied the content of this fix in
+> > my patchset (meaning : select HAVE_OPROFILE if !MIPS_MT_SMTC in
+> > add-have-oprofile.patch), but I think you might have a reject if you still have
+> > this fix-oprofile-configuration-breakage.patch in your local tree but not in
+> > mmotm.
+> 
+> Mathieu,
+> 
+> With this patchset, a `make defconfig' results in:
+> 
+> CONFIG_OPROFILE=y
+> CONFIG_HAVE_OPROFILE=y
+> CONFIG_KPROBES=y
+> CONFIG_HAVE_KPROBES=y
+> 
+> You probably also need to change the defconfigs...
 
-Note: due to the inaccessibility of the generic IRQ code within modules,
-this support is only available if the driver is built-in.
+Nevermind. If the intention is to key off the build based on CONFIG_<FOO>
+and have the CONFIG_HAVE_<FOO> settings just to make the config simpler,
+this change is fine. The side effect is just that the CONFIG_HAVE_<FOO>
+will still have default settings even when CONFIG_<FOO> is not set.
 
-Signed-off-by: eric miao <eric.miao@marvell.com>
-Acked-by: Ben Gardner <bgardner@wabtec.com>
----
- drivers/gpio/Kconfig   |   10 +++-
- drivers/gpio/pca9539.c |  184 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 193 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 6528fce..ee5b684 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -40,7 +40,15 @@ config GPIO_PCA9539
- 	  16-bit I/O port.
-
- 	  This driver can also be built as a module.  If so, the module
--	  will be called pca9539.
-+	  will be called pca9539.  Note: the Generic IRQ support for the
-+	  chip will only be available if the driver is built-in
-+
-+config GPIO_PCA9539_GENERIC_IRQ
-+	bool "    Generic IRQ support for PCA9539"
-+	depends on GPIO_PCA9539=y
-+	help
-+	  Say yes here to support the Generic IRQ for the PCA9539 on-chip
-+	  GPIO lines.
-
- comment "SPI GPIO expanders:"
-
-diff --git a/drivers/gpio/pca9539.c b/drivers/gpio/pca9539.c
-index 0a3ae6a..e736dd9 100644
---- a/drivers/gpio/pca9539.c
-+++ b/drivers/gpio/pca9539.c
-@@ -11,6 +11,9 @@
-
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/irq.h>
-+#include <linux/interrupt.h>
-+#include <linux/workqueue.h>
- #include <linux/i2c.h>
- #include <linux/i2c/pca9539.h>
-
-@@ -27,9 +30,25 @@ struct pca9539_chip {
- 	unsigned gpio_start;
- 	uint16_t reg_output;
- 	uint16_t reg_direction;
-+	uint16_t last_input;
-
- 	struct i2c_client *client;
- 	struct gpio_chip gpio_chip;
-+#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
-+	/*
-+	 * Note: Generic IRQ is not accessible within module code, the IRQ
-+	 * support will thus _only_ be available if the driver is built-in
-+	 */
-+	int irq;	/* IRQ for the chip itself */
-+	int irq_start;	/* starting IRQ for the on-chip GPIO lines */
-+
-+	uint16_t irq_mask;
-+	uint16_t irq_falling_edge;
-+	uint16_t irq_rising_edge;
-+
-+	struct irq_chip irq_chip;
-+	struct work_struct irq_work;
-+#endif
- };
-
- static int pca9539_write_reg(struct pca9539_chip *chip, int reg, uint16_t val)
-@@ -152,6 +171,150 @@ static int pca9539_init_gpio(struct pca9539_chip *chip)
- 	return gpiochip_add(gc);
- }
-
-+#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
-+/* FIXME: change to schedule_delayed_work() here if reading out of
-+ * registers does not reflect the actual pin levels
-+ */
-+
-+static void pca9539_irq_work(struct work_struct *work)
-+{
-+	struct pca9539_chip *chip;
-+	uint16_t input, mask, rising, falling;
-+	int ret, i;
-+
-+	chip = container_of(work, struct pca9539_chip, irq_work);
-+
-+	ret = pca9539_read_reg(chip, PCA9539_INPUT, &input);
-+	if (ret < 0)
-+		return;
-+
-+	mask = (input ^ chip->last_input) & chip->irq_mask;
-+	rising = (input & mask) & chip->irq_rising_edge;
-+	falling = (~input & mask) & chip->irq_falling_edge;
-+
-+	irq_enter();
-+
-+	for (i = 0; i < NR_PCA9539_GPIOS; i++) {
-+		if ((rising | falling) & (1u << i)) {
-+			int irq = chip->irq_start + i;
-+			struct irq_desc *desc;
-+
-+			desc = irq_desc + irq;
-+			desc_handle_irq(irq, desc);
-+		}
-+	}
-+
-+	irq_exit();
-+
-+	chip->last_input = input;
-+}
-+
-+static void fastcall
-+pca9539_irq_demux(unsigned int irq, struct irq_desc *desc)
-+{
-+	struct pca9539_chip *chip = desc->handler_data;
-+
-+	desc->chip->mask(chip->irq);
-+	desc->chip->ack(chip->irq);
-+	schedule_work(&chip->irq_work);
-+	desc->chip->unmask(chip->irq);
-+}
-+
-+static void pca9539_irq_mask(unsigned int irq)
-+{
-+	struct irq_desc *desc = irq_desc + irq;
-+	struct pca9539_chip *chip = desc->chip_data;
-+
-+	chip->irq_mask &= ~(1u << (irq - chip->irq_start));
-+}
-+
-+static void pca9539_irq_unmask(unsigned int irq)
-+{
-+	struct irq_desc *desc = irq_desc + irq;
-+	struct pca9539_chip *chip = desc->chip_data;
-+
-+	chip->irq_mask |= 1u << (irq - chip->irq_start);
-+}
-+
-+static void pca9539_irq_ack(unsigned int irq)
-+{
-+	/* unfortunately, we have to provide an empty irq_chip.ack even
-+	 * if we do nothing here, Generic IRQ will complain otherwise
-+	 */
-+}
-+
-+static int pca9539_irq_set_type(unsigned int irq, unsigned int type)
-+{
-+	struct irq_desc *desc = irq_desc + irq;
-+	struct pca9539_chip *chip = desc->chip_data;
-+	uint16_t mask = 1u << (irq - chip->irq_start);
-+
-+	if (type == IRQT_PROBE) {
-+		if ((mask & chip->irq_rising_edge) ||
-+		    (mask & chip->irq_falling_edge) ||
-+		    (mask & ~chip->reg_direction))
-+			return 0;
-+
-+		type = __IRQT_RISEDGE | __IRQT_FALEDGE;
-+	}
-+
-+	gpio_direction_input(irq_to_gpio(irq));
-+
-+	if (type & __IRQT_RISEDGE)
-+		chip->irq_rising_edge |= mask;
-+	else
-+		chip->irq_rising_edge &= ~mask;
-+
-+	if (type & __IRQT_FALEDGE)
-+		chip->irq_falling_edge |= mask;
-+	else
-+		chip->irq_falling_edge &= ~mask;
-+
-+	return 0;
-+}
-+
-+static int pca9539_init_irq(struct pca9539_chip *chip)
-+{
-+	struct irq_chip *ic = &chip->irq_chip;
-+	int irq, irq_start = chip->irq_start;
-+
-+	/* do not install GPIO interrupts for the chip if
-+	 * 1. the PCA9539 interrupt line is not used
-+	 * 2. or the GPIO interrupt number exceeds NR_IRQS
-+	 */
-+	if (chip->irq <= 0 || irq_start + NR_PCA9539_GPIOS >= NR_IRQS)
-+		return -EINVAL;
-+
-+	chip->irq_mask	= 0;
-+	chip->irq_rising_edge  = 0;
-+	chip->irq_falling_edge = 0;
-+
-+	ic->ack = pca9539_irq_ack;
-+	ic->mask = pca9539_irq_mask;
-+	ic->unmask = pca9539_irq_unmask;
-+	ic->set_type = pca9539_irq_set_type;
-+
-+	for (irq = irq_start; irq < irq_start + NR_PCA9539_GPIOS; irq++) {
-+		set_irq_chip(irq, ic);
-+		set_irq_chip_data(irq, chip);
-+		set_irq_handler(irq, handle_edge_irq);
-+		set_irq_flags(irq, IRQF_VALID | IRQF_PROBE);
-+	}
-+
-+	set_irq_type(chip->irq, IRQT_FALLING);
-+	set_irq_data(chip->irq, chip);
-+	set_irq_chained_handler(chip->irq, pca9539_irq_demux);
-+
-+	INIT_WORK(&chip->irq_work, pca9539_irq_work);
-+	return 0;
-+}
-+#else
-+static inline int pca9539_init_irq(struct pca9539_chip *chip)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_GPIO_PCA9539_GENERIC_IRQ */
-+
- static int __devinit pca9539_probe(struct i2c_client *client)
- {
- 	struct pca9539_platform_data *pdata;
-@@ -167,8 +330,15 @@ static int __devinit pca9539_probe(struct
-i2c_client *client)
- 		return -ENOMEM;
-
- 	chip->client = client;
-+	chip->irq = client->irq;
-
- 	chip->gpio_start = pdata->gpio_base;
-+	chip->irq_start  = gpio_to_irq(chip->gpio_start);
-+
-+	/* read init register values */
-+	ret = pca9539_read_reg(chip, PCA9539_INPUT, &chip->last_input);
-+	if (ret)
-+		goto out_failed;
-
- 	/* initialize registers */
- 	chip->reg_output = 0xffff;
-@@ -191,6 +361,12 @@ static int __devinit pca9539_probe(struct
-i2c_client *client)
- 			dev_dbg(&client->dev, "setup failed, %d\n", ret);
- 	}
-
-+	ret = pca9539_init_irq(chip);
-+	if (ret) {
-+		ret = gpiochip_remove(&chip->gpio_chip);
-+		goto out_failed;
-+	}
-+
- 	i2c_set_clientdata(client, chip);
- 	return 0;
-
-@@ -199,6 +375,13 @@ out_failed:
- 	return ret;
- }
-
-+#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
-+static int pca9539_remove(struct i2c_client *client)
-+{
-+	printk(KERN_ERR "failed to unload the driver with IRQ support\n");
-+	return -EINVAL;
-+}
-+#else
- static int pca9539_remove(struct i2c_client *client)
- {
- 	struct pca9539_platform_data *pdata = client->dev.platform_data;
-@@ -221,6 +404,7 @@ static int pca9539_remove(struct i2c_client *client)
- 	kfree(chip);
- 	return 0;
- }
-+#endif /* CONFIG_GPIO_PCA9539_GENERIC_IRQ */
-
- static struct i2c_driver pca9539_driver = {
- 	.driver = {
--- 
-1.5.2.5.GIT
+Ananth
