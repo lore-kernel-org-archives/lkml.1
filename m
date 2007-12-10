@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbXLJCpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbXLJCpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbXLJCpZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 21:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbXLJCm4
+	id S1755579AbXLJCpp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 21:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbXLJCnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 21:42:56 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49687 "EHLO
+	Sun, 9 Dec 2007 21:43:01 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49693 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752083AbXLJCms (ORCPT
+	with ESMTP id S1752331AbXLJCmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 21:42:48 -0500
+	Sun, 9 Dec 2007 21:42:50 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 05/42] Unionfs: documentation for any known issues
-Date: Sun,  9 Dec 2007 21:41:38 -0500
-Message-Id: <11972545383139-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 03/42] Unionfs: documentation for general concepts
+Date: Sun,  9 Dec 2007 21:41:36 -0500
+Message-Id: <11972545371967-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11972545353262-git-send-email-ezk@cs.sunysb.edu>
@@ -27,38 +27,213 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- Documentation/filesystems/unionfs/issues.txt |   24 ++++++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/filesystems/unionfs/issues.txt
+ Documentation/filesystems/unionfs/concepts.txt |  199 ++++++++++++++++++++++++
+ 1 files changed, 199 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/filesystems/unionfs/concepts.txt
 
-diff --git a/Documentation/filesystems/unionfs/issues.txt b/Documentation/filesystems/unionfs/issues.txt
+diff --git a/Documentation/filesystems/unionfs/concepts.txt b/Documentation/filesystems/unionfs/concepts.txt
 new file mode 100644
-index 0000000..9db1d70
+index 0000000..7654ccc
 --- /dev/null
-+++ b/Documentation/filesystems/unionfs/issues.txt
-@@ -0,0 +1,24 @@
-+KNOWN Unionfs 2.1 ISSUES:
-+=========================
++++ b/Documentation/filesystems/unionfs/concepts.txt
+@@ -0,0 +1,199 @@
++Unionfs 2.1 CONCEPTS:
++=====================
 +
-+1. Unionfs should not use lookup_one_len() on the underlying f/s as it
-+   confuses NFSv4.  Currently, unionfs_lookup() passes lookup intents to the
-+   lower file-system, this eliminates part of the problem.  The remaining
-+   calls to lookup_one_len may need to be changed to pass an intent.  We are
-+   currently introducing VFS changes to fs/namei.c's do_path_lookup() to
-+   allow proper file lookup and opening in stackable file systems.
++This file describes the concepts needed by a namespace unification file
++system.
 +
-+2. Lockdep (a debugging feature) isn't aware of stacking, and so it
-+   incorrectly complains about locking problems.  The problem boils down to
-+   this: Lockdep considers all objects of a certain type to be in the same
-+   class, for example, all inodes.  Lockdep doesn't like to see a lock held
-+   on two inodes within the same task, and warns that it could lead to a
-+   deadlock.  However, stackable file systems do precisely that: they lock
-+   an upper object, and then a lower object, in a strict order to avoid
-+   locking problems; in addition, Unionfs, as a fan-out file system, may
-+   have to lock several lower inodes.  We are currently looking into Lockdep
-+   to see how to make it aware of stackable file systems.  In the meantime,
-+   if you get any warnings from Lockdep, you can safely ignore them (or feel
-+   free to report them to the Unionfs maintainers, just to be sure).
++
++Branch Priority:
++================
++
++Each branch is assigned a unique priority - starting from 0 (highest
++priority).  No two branches can have the same priority.
++
++
++Branch Mode:
++============
++
++Each branch is assigned a mode - read-write or read-only. This allows
++directories on media mounted read-write to be used in a read-only manner.
++
++
++Whiteouts:
++==========
++
++A whiteout removes a file name from the namespace. Whiteouts are needed when
++one attempts to remove a file on a read-only branch.
++
++Suppose we have a two-branch union, where branch 0 is read-write and branch
++1 is read-only. And a file 'foo' on branch 1:
++
++./b0/
++./b1/
++./b1/foo
++
++The unified view would simply be:
++
++./union/
++./union/foo
++
++Since 'foo' is stored on a read-only branch, it cannot be removed. A
++whiteout is used to remove the name 'foo' from the unified namespace. Again,
++since branch 1 is read-only, the whiteout cannot be created there. So, we
++try on a higher priority (lower numerically) branch and create the whiteout
++there.
++
++./b0/
++./b0/.wh.foo
++./b1/
++./b1/foo
++
++Later, when Unionfs traverses branches (due to lookup or readdir), it
++eliminate 'foo' from the namespace (as well as the whiteout itself.)
++
++
++Duplicate Elimination:
++======================
++
++It is possible for files on different branches to have the same name.
++Unionfs then has to select which instance of the file to show to the user.
++Given the fact that each branch has a priority associated with it, the
++simplest solution is to take the instance from the highest priority
++(numerically lowest value) and "hide" the others.
++
++
++Copyup:
++=======
++
++When a change is made to the contents of a file's data or meta-data, they
++have to be stored somewhere. The best way is to create a copy of the
++original file on a branch that is writable, and then redirect the write
++though to this copy. The copy must be made on a higher priority branch so
++that lookup and readdir return this newer "version" of the file rather than
++the original (see duplicate elimination).
++
++
++Cache Coherency:
++================
++
++Unionfs users often want to be able to modify files and directories directly
++on the lower branches, and have those changes be visible at the Unionfs
++level.  This means that data (e.g., pages) and meta-data (dentries, inodes,
++open files, etc.) have to be synchronized between the upper and lower
++layers.  In other words, the newest changes from a layer below have to be
++propagated to the Unionfs layer above.  If the two layers are not in sync, a
++cache incoherency ensues, which could lead to application failures and even
++oopses.  The Linux kernel, however, has a rather limited set of mechanisms
++to ensure this inter-layer cache coherency---so Unionfs has to do most of
++the hard work on its own.
++
++Maintaining Invariants:
++
++The way Unionfs ensures cache coherency is as follows.  At each entry point
++to a Unionfs file system method, we call a utility function to validate the
++primary objects of this method.  Generally, we call unionfs_file_revalidate
++on open files, and __unionfs_d_revalidate_chain on dentries (which also
++validates inodes).  These utility functions check to see whether the upper
++Unionfs object is in sync with any of the lower objects that it represents.
++The checks we perform include whether the Unionfs superblock has a newer
++generation number, or if any of the lower objects mtime's or ctime's are
++newer.  (Note: generation numbers change when branch-management commands are
++issued, so in a way, maintaining cache coherency is also very important for
++branch-management.)  If indeed we determine that any Unionfs object is no
++longer in sync with its lower counterparts, then we rebuild that object
++similarly to how we do so for branch-management.
++
++While rebuilding Unionfs's objects, we also purge any page mappings and
++truncate inode pages (see fs/unionfs/dentry.c:purge_inode_data).  This is to
++ensure that Unionfs will re-get the newer data from the lower branches.  We
++perform this purging only if the Unionfs operation in question is a reading
++operation; if Unionfs is performing a data writing operation (e.g., ->write,
++->commit_write, etc.) then we do NOT flush the lower mappings/pages: this is
++because (1) a self-deadlock could occur and (2) the upper Unionfs pages are
++considered more authoritative anyway, as they are newer and will overwrite
++any lower pages.
++
++Unionfs maintains the following important invariant regarding mtime's,
++ctime's, and atime's: the upper inode object's times are the max() of all of
++the lower ones.  For non-directory objects, there's only one object below,
++so the mapping is simple; for directory objects, there could me multiple
++lower objects and we have to sync up with the newest one of all the lower
++ones.  This invariant is important to maintain, especially for directories
++(besides, we need this to be POSIX compliant).  A union could comprise
++multiple writable branches, each of which could change.  If we don't reflect
++the newest possible mtime/ctime, some applications could fail.  For example,
++NFSv2/v3 exports check for newer directory mtimes on the server to determine
++if the client-side attribute cache should be purged.
++
++To maintain these important invariants, of course, Unionfs carefully
++synchronizes upper and lower times in various places.  For example, if we
++copy-up a file to a top-level branch, the parent directory where the file
++was copied up to will now have a new mtime: so after a successful copy-up,
++we sync up with the new top-level branch's parent directory mtime.
++
++Implementation:
++
++This cache-coherency implementation is efficient because it defers any
++synchronizing between the upper and lower layers until absolutely needed.
++Consider the example a common situation where users perform a lot of lower
++changes, such as untarring a whole package.  While these take place,
++typically the user doesn't access the files via Unionfs; only after the
++lower changes are done, does the user try to access the lower files.  With
++our cache-coherency implementation, the entirety of the changes to the lower
++branches will not result in a single CPU cycle spent at the Unionfs level
++until the user invokes a system call that goes through Unionfs.
++
++We have considered two alternate cache-coherency designs.  (1) Using the
++dentry/inode notify functionality to register interest in finding out about
++any lower changes.  This is a somewhat limited and also a heavy-handed
++approach which could result in many notifications to the Unionfs layer upon
++each small change at the lower layer (imagine a file being modified multiple
++times in rapid succession).  (2) Rewriting the VFS to support explicit
++callbacks from lower objects to upper objects.  We began exploring such an
++implementation, but found it to be very complicated--it would have resulted
++in massive VFS/MM changes which are unlikely to be accepted by the LKML
++community.  We therefore believe that our current cache-coherency design and
++implementation represent the best approach at this time.
++
++Limitations:
++
++Our implementation works in that as long as a user process will have caused
++Unionfs to be called, directly or indirectly, even to just do
++->d_revalidate; then we will have purged the current Unionfs data and the
++process will see the new data.  For example, a process that continually
++re-reads the same file's data will see the NEW data as soon as the lower
++file had changed, upon the next read(2) syscall (even if the file is still
++open!)  However, this doesn't work when the process re-reads the open file's
++data via mmap(2) (unless the user unmaps/closes the file and remaps/reopens
++it).  Once we respond to ->readpage(s), then the kernel maps the page into
++the process's address space and there doesn't appear to be a way to force
++the kernel to invalidate those pages/mappings, and force the process to
++re-issue ->readpage.  If there's a way to invalidate active mappings and
++force a ->readpage, let us know please (invalidate_inode_pages2 doesn't do
++the trick).
++
++Our current Unionfs code has to perform many file-revalidation calls.  It
++would be really nice if the VFS would export an optional file system hook
++->file_revalidate (similarly to dentry->d_revalidate) that will be called
++before each VFS op that has a "struct file" in it.
++
++Certain file systems have micro-second granularity (or better) for inode
++times, and asynchronous actions could cause those times to change with some
++small delay.  In such cases, Unionfs may see a changed inode time that only
++differs by a tiny fraction of a second: such a change may be a false
++positive indication that the lower object has changed, whereas if unionfs
++waits a little longer, that false indication will not be seen.  (These false
++positives are harmless, because they would at most cause unionfs to
++re-validate an object that may need no revalidation, and print a debugging
++message that clutters the console/logs.)  Therefore, to minimize the chances
++of these situations, we delay the detection of changed times by a small
++factor of a few seconds, called UNIONFS_MIN_CC_TIME (which defaults to 3
++seconds, as does NFS).  This means that we will detect the change, only a
++couple of seconds later, if indeed the time change persists in the lower
++file object.  This delayed detection has an added performance benefit: we
++reduce the number of times that unionfs has to revalidate objects, in case
++there's a lot of concurrent activity on both the upper and lower objects,
++for the same file(s).  Lastly, this delayed time attribute detection is
++similar to how NFS clients operate (e.g., acregmin).
 +
 +For more information, see <http://unionfs.filesystems.org/>.
 -- 
