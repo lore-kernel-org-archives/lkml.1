@@ -1,75 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbXLJPFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbXLJPGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753841AbXLJPFh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 10:05:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbXLJPF0
+	id S1754740AbXLJPGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 10:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbXLJPGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 10:05:26 -0500
-Received: from gherkin.frus.com ([192.158.254.49]:51046 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbXLJPFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 10:05:25 -0500
-Subject: Re: [BUG] 2.6.23-rc3 can't see sd partitions on Alpha
-In-Reply-To: <1197128912.5483.51.camel@lov.site> "from Kay Sievers at Dec 8,
- 2007 04:48:32 pm"
-To: Kay Sievers <kay.sievers@vrfy.org>
-Date: Mon, 10 Dec 2007 09:05:13 -0600 (CST)
-CC: Bob Tracy <rct@frus.com>, Michael Cree <mcree@orcon.net.nz>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, rth@twiddle.net,
-       ink@jurassic.park.msu.ru, linux-scsi@vger.kernel.org, greg@kroah.com
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	Mon, 10 Dec 2007 10:06:01 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:11326 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751153AbXLJPGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 10:06:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=hnnnlRU3Kbi3y7nYGGZqJ3O+V7dYZJD0r1NjPInKcuMPCbOb6hq84PbP3FJlYmvoBXvtcUp2BFQ0W2OnpMnhNvWp56JgkD5G45maiqE4w36+cK/qDWpn2vRX5ZC38mNM6bFRQWTwrI8wjemhpuFm/C4o23KyO1qDSihc7Mx1ZWc=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
+Date: Mon, 10 Dec 2007 17:05:30 +0200
+User-Agent: KMail/1.9.6
+Cc: Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>, gnome42@gmail.com,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Denis V. Lunev" <den@openvz.org>, linux-nfs@vger.kernel.org
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com> <200712101619.12522.maximlevitsky@gmail.com> <20071210143609.GF2138@fieldses.org>
+In-Reply-To: <20071210143609.GF2138@fieldses.org>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20071210150513.0C04BDBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+Content-Disposition: inline
+Message-Id: <200712101705.30428.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On Fri, 2007-12-07 at 23:05 -0600, Bob Tracy wrote:
-> > Kay Sievers wrote:
-> > > Is the udev daemon (still) running while it fails?
+On Monday 10 December 2007 16:36:09 J. Bruce Fields wrote:
+> On Mon, Dec 10, 2007 at 04:19:12PM +0200, Maxim Levitsky wrote:
+> > ...
+> > > It is best not to use nohide - we should probably mark it as
+> > > 'legacy'.
+> > > 
+> > > Simply export the top level mountpoint as 'crossmnt'  and everything
+> > > below there will be exported.
+> > > 
+> > > > Where should I put those options in root file-system export or in submount export?
+> > > 
+> > > crossmnt goes at the top.  nohide goes in the submount.  Both have
+> > > the same general effect though with subtle differences.
+> > > You don't need both (though that doesn't hurt).
+> > > Just use crossmnt at the top,  Then you don't need to mention the
+> > > lower level filesystems at all.
+> > > 
+> > > > 
+> > ...
+> > > > (I decided to switch to NFS4 only due to the lack of ability to see underlying mounts)
+> > > > 
+> > > 
+> > > All of this should work fine with v3.  Once you have the right patch
+> > > for the crossmnt bug applied, if you have further problems post them
+> > > to linux-nfs@vger.kernel.org.
+> > > 
+> > > NeilBrown
+> > > 
 > > 
-> > Yes, and there's something else I forgot to mention that may be
-> > significant...  For the bad case, in addition to udevd, "ps -ef"
-> > shows a "sh -e /lib/udev/net.agent" running with a PPID of 1.  This
-> > process doesn't exit until I reboot.  If this is normal under the
-> > circumstances, please disregard.
+> > Big thanks,
+> > 
+> > Still NFS server just don't want to accept the connection
+> > I noticed that if I first mount with
+> > -tnfs, unmount,  and then mount with -tnfs4, it works
 > 
-> Does SysRq-T show where it hangs?
+> OK, in that case, that's definitely the bug Eric sent out the patch for;
+> you may want to try applying his patch.
+You mean
+"[PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate" ?
 
-A quick comparison of the trace sections for udevd and net.agent indicates
-those traces are identical: none of the function names in the traces appear
-to be what you might be looking for, i.e., the processes appear to have been
-waiting for an event of some kind, and woke up long enough to process the
-SysRq-T keyboard interrupt and the corresponding action.
+I did apply it (on both kernel and server), and it doesn't help.
+Best regards,
+	Maxim Levitsky
 
-Hmm...  Ok...  The state information itself is probably more useful in
-this context.  Here's the info for net.agent:
+PS: I am unfamiliar with nfs/nfs4, so this could be just a 
+configuration/compilation issue.
+> 
+> --b.
+> 
 
-net.agent      S      fffffc000032c37c   0    895    1
-  fffffc0000743b10  0000000000000010  fffffc00004f3b5c  fffffc00007601a8
-    0000000000000001  0000000000000074  fffffc0000747758  fffffc00230f0000
-    0000000000000007  0000000000000007  fffffc00004f390c  0000000000000010
-    fffffc00004e9eb8  fffffc00230f0000  0000000000000014  fffffc0023085140
-    0000000000000001  0000000000000014  fffffc00001de000  0000000000000001
-    fffffc000055dcfc  fffffc0023085140  fffffc00232788c0  0000000000000001
 
-Addresses of presumed interest from System.map:
-
-fffffc000032c000 t do_wait
-fffffc0000740000 D init_thread_union
-fffffc00004f3b40 t sysrq_handle_showstate
-fffffc00007601a8 d sysrq_showstate_op
-fffffc0000747758 D console_printk
-fffffc002...  not in System.map (module?) -- I'll track this down later
-   if needed.
-fffffc00004f3850 T __handle_sysrq
-fffffc00004e9850 t kbd_event
-fffffc00001...  not in System.map (?? begins with fffffc0000300000 A swapper_pg_dir)
-fffffc000055dc30 t input_pass_event
-
---Bob T.
