@@ -1,216 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756979AbXLJTgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbXLJTg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756979AbXLJTgk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 14:36:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbXLJTgc
+	id S1757328AbXLJTg4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 14:36:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756495AbXLJTgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 14:36:32 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:37285 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751718AbXLJTgb (ORCPT
+	Mon, 10 Dec 2007 14:36:47 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57549 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751718AbXLJTgq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 14:36:31 -0500
-Message-ID: <475D952D.9070207@linux.vnet.ibm.com>
-Date: Tue, 11 Dec 2007 01:06:13 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
-References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-In-Reply-To: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 10 Dec 2007 14:36:46 -0500
+Date: Mon, 10 Dec 2007 11:35:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Denis V. Lunev" <den@sw.ru>
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, rjw@sisk.pl,
+       trond.myklebust@fys.uio.no, gnome42@gmail.com,
+       linux-kernel@vger.kernel.org, bfields@fieldses.org, den@openvz.org,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate
+Message-Id: <20071210113519.00d4d361.akpm@linux-foundation.org>
+In-Reply-To: <475D3FE2.202@sw.ru>
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
+	<1197067918.10831.13.camel@heimdal.trondhjem.org>
+	<20071207151444.af5d8e11.akpm@linux-foundation.org>
+	<200712080043.29292.rjw@sisk.pl>
+	<20071208000043.GC1951@martell.zuzino.mipt.ru>
+	<20071207161508.afe8fdf1.akpm@linux-foundation.org>
+	<m1lk85q0cw.fsf_-_@ebiederm.dsl.xmission.com>
+	<475CA9EA.1090405@vc.cvut.cz>
+	<475D3FE2.202@sw.ru>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Changelog
+On Mon, 10 Dec 2007 16:32:18 +0300 "Denis V. Lunev" <den@sw.ru> wrote:
+>
+
+Plese don't top-post.  It makes replying to you rather awkward.
+
+> could you, plz, check patch sent by Eric above in this thread.
 > 
-> 1. Get rid of the constant 5 (based on comments from
->                                 Geert.Uytterhoeven@sonycom.com)
-> 2. Implement suggestions from Olof Johannson
-> 3. Check if cmdline is NULL in fake_numa_create_new_node()
-> 
-> Tested with additional parameters from Olof
-> 
-> numa=debug,fake=
-> numa=foo,fake=bar
-> 
-> 
-> Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
-> NUMA nodes can be specified using the following command line option
-> 
-> numa=fake=<node range>
-> 
-> node range is of the format <range1>,<range2>,...<rangeN>
-> 
-> Each of the rangeX parameters is passed using memparse(). I find the patch
-> useful for fake NUMA emulation on my simple PowerPC machine. I've tested it
-> on a non-numa box with the following arguments
-> 
-> numa=fake=1G
-> numa=fake=1G,2G
-> name=fake=1G,512M,2G
-> numa=fake=1500M,2800M mem=3500M
-> numa=fake=1G mem=512M
-> numa=fake=1G mem=1G
-> 
-> This patch applies on top of 2.6.24-rc4.
-> 
-> All though I've tried my best to handle some of the architecture specific
-> details of PowerPC, I might have overlooked something obvious, like the usage
-> of an API or some architecture tweaks. The patch depends on CONFIG_NUMA and
-> I decided against creating a separate config option for fake NUMA to keep
-> the code simple.
-> 
-> Comments are as always welcome!
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  arch/powerpc/mm/numa.c |   59 ++++++++++++++++++++++++++++++++++++++++++++-----
->  1 file changed, 54 insertions(+), 5 deletions(-)
-> 
-> diff -puN arch/powerpc/mm/numa.c~ppc-fake-numa-easy arch/powerpc/mm/numa.c
-> --- linux-2.6.24-rc4-mm1/arch/powerpc/mm/numa.c~ppc-fake-numa-easy	2007-12-07 21:25:55.000000000 +0530
-> +++ linux-2.6.24-rc4-mm1-balbir/arch/powerpc/mm/numa.c	2007-12-08 03:19:46.000000000 +0530
-> @@ -24,6 +24,8 @@
-> 
->  static int numa_enabled = 1;
-> 
-> +static char *cmdline __initdata;
-> +
->  static int numa_debug;
->  #define dbg(args...) if (numa_debug) { printk(KERN_INFO args); }
-> 
-> @@ -39,6 +41,43 @@ static bootmem_data_t __initdata plat_no
->  static int min_common_depth;
->  static int n_mem_addr_cells, n_mem_size_cells;
-> 
-> +static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
-> +						unsigned int *nid)
-> +{
-> +	unsigned long long mem;
-> +	char *p = cmdline;
-> +	static unsigned int fake_nid = 0;
-> +	static unsigned long long curr_boundary = 0;
-> +
-> +	*nid = fake_nid;
-> +	if (!p)
-> +		return 0;
-> +
-> +	mem = memparse(p, &p);
-> +	if (!mem)
-> +		return 0;
-> +
-> +	if (mem < curr_boundary)
-> +		return 0;
-> +
-> +	curr_boundary = mem;
-> +
-> +	if ((end_pfn << PAGE_SHIFT) > mem) {
-> +		/*
-> +		 * Skip commas and spaces
-> +		 */
-> +		while (*p == ',' || *p == ' ' || *p == '\t')
-> +			p++;
-> +
-> +		cmdline = p;
-> +		fake_nid++;
-> +		*nid = fake_nid;
-> +		dbg("created new fake_node with id %d\n", fake_nid);
-> +		return 1;
-> +	}
-> +	return 0;
-> +}
-> +
->  static void __cpuinit map_cpu_to_node(int cpu, int node)
->  {
->  	numa_cpu_lookup_table[cpu] = node;
-> @@ -344,12 +383,14 @@ static void __init parse_drconf_memory(s
->  			if (nid == 0xffff || nid >= MAX_NUMNODES)
->  				nid = default_nid;
->  		}
-> -		node_set_online(nid);
-> 
->  		size = numa_enforce_memory_limit(start, lmb_size);
->  		if (!size)
->  			continue;
-> 
-> +		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
-> +		node_set_online(nid);
-> +
->  		add_active_range(nid, start >> PAGE_SHIFT,
->  				 (start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
->  	}
-> @@ -429,7 +470,6 @@ new_range:
->  		nid = of_node_to_nid_single(memory);
->  		if (nid < 0)
->  			nid = default_nid;
-> -		node_set_online(nid);
-> 
->  		if (!(size = numa_enforce_memory_limit(start, size))) {
->  			if (--ranges)
-> @@ -438,6 +478,9 @@ new_range:
->  				continue;
->  		}
-> 
-> +		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
-> +		node_set_online(nid);
-> +
->  		add_active_range(nid, start >> PAGE_SHIFT,
->  				(start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
-> 
-> @@ -461,7 +504,7 @@ static void __init setup_nonnuma(void)
->  	unsigned long top_of_ram = lmb_end_of_DRAM();
->  	unsigned long total_ram = lmb_phys_mem_size();
->  	unsigned long start_pfn, end_pfn;
-> -	unsigned int i;
-> +	unsigned int i, nid = 0;
-> 
->  	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
->  	       top_of_ram, total_ram);
-> @@ -471,9 +514,11 @@ static void __init setup_nonnuma(void)
->  	for (i = 0; i < lmb.memory.cnt; ++i) {
->  		start_pfn = lmb.memory.region[i].base >> PAGE_SHIFT;
->  		end_pfn = start_pfn + lmb_size_pages(&lmb.memory, i);
-> -		add_active_range(0, start_pfn, end_pfn);
-> +
-> +		fake_numa_create_new_node(end_pfn, &nid);
-> +		add_active_range(nid, start_pfn, end_pfn);
-> +		node_set_online(nid);
->  	}
-> -	node_set_online(0);
->  }
-> 
->  void __init dump_numa_cpu_topology(void)
-> @@ -702,6 +747,10 @@ static int __init early_numa(char *p)
->  	if (strstr(p, "debug"))
->  		numa_debug = 1;
-> 
-> +	p = strstr(p, "fake=");
-> +	if (p)
-> +		cmdline = p + strlen("fake=");
-> +
->  	return 0;
->  }
->  early_param("numa", early_numa);
-> _
+> I have tried it on my test node and it works for module you have
+> provided. The problem exists without it.
 > 
 
+When Peter says "with your patch in place" I assume that he's referring to
+Eric's latest patch, namely.
 
-If there are no other major objections, could we get this infrastructure
-into -mm?
+--- a/fs/proc/generic.c~proc-remove-fix-proc-generic-d_revalidate
++++ a/fs/proc/generic.c
+@@ -374,16 +374,9 @@ static int proc_delete_dentry(struct den
+ 	return 1;
+ }
+ 
+-static int proc_revalidate_dentry(struct dentry *dentry, struct nameidata *nd)
+-{
+-	d_drop(dentry);
+-	return 0;
+-}
+-
+ static struct dentry_operations proc_dentry_operations =
+ {
+ 	.d_delete	= proc_delete_dentry,
+-	.d_revalidate	= proc_revalidate_dentry,
+ };
+ 
+ /*
 
+So we still have problems, it appears.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> 
+> Petr Vandrovec wrote:
+> > Eric W. Biederman wrote:
+> >> Ultimately to implement /proc perfectly we need an implementation
+> >> of d_revalidate because files and directories can be removed behind
+> >> the back of the VFS, and d_revalidate is the only way we can let
+> >> the VFS know that this has happened.
+> >>
+> >> So until we get a proper test for keeping dentries in the dcache
+> >> fix the current d_revalidate method by completely removing it.  This
+> >> returns us to the current status quo.
+> > 
+> > Hello,
+> >    I know that I'm late to the party, but mount points is not only
+> > problem with d_revalidate.  With your patch in place module below gets
+> > refcount incremented by two every time I do 'ls -la /proc/fs/vmblock'.
+> > 
+> >
+> > #include <linux/kernel.h>
+> > #include <linux/module.h>
+> > #include <linux/proc_fs.h>
+> > 
+> > static int vmblockinit(void) {
+> >    struct proc_dir_entry *controlProcDirEntry;
+> > 
+> >    /* Create /proc/fs/vmblock */
+> >    controlProcDirEntry = proc_mkdir("vmblock", proc_root_fs);
+> >    if (!controlProcDirEntry) {
+> >       printk(KERN_DEBUG "Bad...\n");
+> >       return -EINVAL;
+> >    }
+> >    controlProcDirEntry->owner = THIS_MODULE;
+> >    return 0;
+> > }
+> > 
+> > static void vmblockexit(void) {
+> >    remove_proc_entry("vmblock", proc_root_fs);
+> > }
+> > 
+> > module_init(vmblockinit);
+> > module_exit(vmblockexit);
+> > 
+> > 
+> > (code comes from VMware's vmblock module,
+> > http://sourceforge.net/project/showfiles.php?group_id=204462)
+> >                         Thanks,
+> >                             Petr
+> > 
+> > 
+
