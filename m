@@ -1,90 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbXLJNbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbXLJNeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbXLJNbz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 08:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbXLJNbs
+	id S1756173AbXLJNeK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 08:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbXLJNd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 08:31:48 -0500
-Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:63878 "EHLO iris"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751003AbXLJNbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 08:31:47 -0500
-Message-ID: <475D3FE2.202@sw.ru>
-Date: Mon, 10 Dec 2007 16:32:18 +0300
-From: "Denis V. Lunev" <den@sw.ru>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
+	Mon, 10 Dec 2007 08:33:57 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:11838 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751003AbXLJNd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 08:33:57 -0500
+Date: Mon, 10 Dec 2007 14:30:50 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC] [PATCH] A clean aEvgeniy pproach to writeout throttling
+Message-ID: <20071210133050.GJ5008@kernel.dk>
+References: <200712051603.02183.phillips@phunq.net> <200712100504.15865.phillips@phunq.net> <20071210131901.GI5008@kernel.dk> <200712100526.49319.phillips@phunq.net>
 MIME-Version: 1.0
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, rjw@sisk.pl,
-       trond.myklebust@fys.uio.no, gnome42@gmail.com,
-       linux-kernel@vger.kernel.org, bfields@fieldses.org, den@openvz.org,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>	<1197067918.10831.13.camel@heimdal.trondhjem.org>	<20071207151444.af5d8e11.akpm@linux-foundation.org>	<200712080043.29292.rjw@sisk.pl>	<20071208000043.GC1951@martell.zuzino.mipt.ru>	<20071207161508.afe8fdf1.akpm@linux-foundation.org> <m1lk85q0cw.fsf_-_@ebiederm.dsl.xmission.com> <475CA9EA.1090405@vc.cvut.cz>
-In-Reply-To: <475CA9EA.1090405@vc.cvut.cz>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712100526.49319.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-could you, plz, check patch sent by Eric above in this thread.
+On Mon, Dec 10 2007, Daniel Phillips wrote:
+> On Monday 10 December 2007 05:19, Jens Axboe wrote:
+> > Precisely. So forgive me for thinking this patch hasn't seen very
+> > varied testing, that's 2 errors (one simple, one bad - broken was NOT
+> > a gross exageration, thanks) in very few lines.
+> 
+> See the [RFC]?  If I had meant Request For Flaming, I would have written 
+> that.  Thankyou for the catch.
 
-I have tried it on my test node and it works for module you have
-provided. The problem exists without it.
+The same mail that contained this part, copied verbatim:
 
-Regards,
-	Den
+"Let me close with perhaps the most relevant remarks: the attached code
+ has been in heavy testing and in production for months now.  Thus there
+ is nothing theoretical when I say it works, and the patch speaks for
+ itself in terms of obvious correctness."
 
-Petr Vandrovec wrote:
-> Eric W. Biederman wrote:
->> Ultimately to implement /proc perfectly we need an implementation
->> of d_revalidate because files and directories can be removed behind
->> the back of the VFS, and d_revalidate is the only way we can let
->> the VFS know that this has happened.
->>
->> So until we get a proper test for keeping dentries in the dcache
->> fix the current d_revalidate method by completely removing it.  This
->> returns us to the current status quo.
-> 
-> Hello,
->    I know that I'm late to the party, but mount points is not only
-> problem with d_revalidate.  With your patch in place module below gets
-> refcount incremented by two every time I do 'ls -la /proc/fs/vmblock'.
-> 
-> 
-> #include <linux/kernel.h>
-> #include <linux/module.h>
-> #include <linux/proc_fs.h>
-> 
-> static int vmblockinit(void) {
->    struct proc_dir_entry *controlProcDirEntry;
-> 
->    /* Create /proc/fs/vmblock */
->    controlProcDirEntry = proc_mkdir("vmblock", proc_root_fs);
->    if (!controlProcDirEntry) {
->       printk(KERN_DEBUG "Bad...\n");
->       return -EINVAL;
->    }
->    controlProcDirEntry->owner = THIS_MODULE;
->    return 0;
-> }
-> 
-> static void vmblockexit(void) {
->    remove_proc_entry("vmblock", proc_root_fs);
-> }
-> 
-> module_init(vmblockinit);
-> module_exit(vmblockexit);
-> 
-> 
-> (code comes from VMware's vmblock module,
-> http://sourceforge.net/project/showfiles.php?group_id=204462)
->                         Thanks,
->                             Petr
-> 
-> 
+We must have differing opinions on what obvious correctness is.
+
+Future replies to /dev/null, please.
+
+-- 
+Jens Axboe
 
