@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbXLJA6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbXLJBD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671AbXLJA6g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 19:58:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbXLJA6P
+	id S1754294AbXLJBD5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 20:03:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbXLJBDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 19:58:15 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49200 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752079AbXLJA6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 19:58:14 -0500
-Message-ID: <475C8EE9.2040608@redhat.com>
-Date: Sun, 09 Dec 2007 19:57:13 -0500
-From: Steven Rostedt <srostedt@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Sun, 9 Dec 2007 20:03:49 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:41655 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751527AbXLJBDs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 20:03:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=T6phgpt7MGKqd47HH8KJHNY1mR02/WhOFSxM2Lan07M8A/6EDukN8cqO2zr6uEfBNoCe7LzBU+Fsf1BZSppVXhNp8n/lGniULT2RH6vUkoln+78VxtFJ+EJ8RnZeVCQ9jzbTZbWybVmQj/KhbMFtlPPHUHGZnIfewGed0mzelec=
+Message-ID: <475C906A.50503@gmail.com>
+Date: Mon, 10 Dec 2007 10:03:38 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Balbir Singh <balbir@in.ibm.com>, vatsa@linux.vnet.ibm.com,
-       LKML Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: RT Load balance changes in sched-devel
-References: <20071130145939.GN5681@linux.vnet.ibm.com> <b647ffbd0712011156p252ae29dnfa75494e4d2c845c@mail.gmail.com> <20071203182223.GA4133@linux.vnet.ibm.com> <47556B23.2060909@redhat.com> <20071204153542.GC3388@linux.vnet.ibm.com> <b647ffbd0712040828l51a26a82jc0f38d3f4aa2291e@mail.gmail.com> <20071205134036.GA21933@linux.vnet.ibm.com> <4756B8E9.3080709@redhat.com> <20071205164800.GA24767@linux.vnet.ibm.com> <4756D709.1020901@redhat.com> <b647ffbd0712090916l4eb9a944r4726680a5fdcae46@mail.gmail.com> <475BEE6B.BA47.005A.0@novell.com>
-In-Reply-To: <475BEE6B.BA47.005A.0@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Kjartan Maraas <kmaraas@broadpark.no>
+CC: Tomas Carnecky <tom@dbservice.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-ide@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: laptop reboots right after hibernation
+References: <473730F6.2010900@dbservice.com> <20071118105214.GB7299@ucw.cz> <4740692E.7010801@dbservice.com> <47409DA3.7070909@dbservice.com> <1195551141.2792.3.camel@localhost.localdomain> <474CBFB6.4020105@gmail.com> <1196253340.2884.1.camel@localhost.localdomain> <474FE862.4040700@gmail.com> <1196458627.4106.1.camel@localhost.localdomain> <47565738.1050003@gmail.com> <1196874547.3700.0.camel@localhost.localdomain> <4757608D.8020005@gmail.com> <1196959657.2661.0.camel@localhost.localdomain> <475B8F51.8030605@gmail.com> <1197236609.4022.0.camel@localhost.localdomain>
+In-Reply-To: <1197236609.4022.0.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
->> btw., both cases would be addressed by placing load-balance points
->> into sched_class_rt->{enqueue,dequeue}_task_rt()... push_rt_tasks()
->> and pull_rt_tasks() respectively. As a side effect (I think,
->> technically, it would be possible), 3 out of 4 *_balance_rt() calls
->> (the exception: schedule_tail_balance_rt()) in schedule() would become
->> unnecessary.
+Kjartan Maraas wrote:
+>> Hmmm... Ah.. okay.  Wrongly splitted patch.  Can you please do it one
+>> more time?
 >>
->> _BUT_
->>
->> the enqueue/dequeue() interface would become less straightforward,
->> logically-wise.
->> Something like:
+> Attached.
 
-Also push and pull_rt use activate,deactivate as well. So this would 
-make that code a bit more complex.
+Alright, it works now but it seems both dmesgs are from no-filter patch.
+ I'm pretty sure it works too because one of your previous dmesgs showed
+it worked.  Please double check.
 
->>
->> rq = activate_task(rq, ...) ; /* may unlock rq and lock/return another one 
->> */
->>
->> would complicate the existing use cases.
->>
-> 
-> I think I would prefer to just fix the setscheduler/setprio cases for the class transition than change the behavior of these enqueue/dequeue calls.  But I will keep an open mind as I look into this issue.
+Thanks.
 
-I agree with Gregory on this. I prefer to fix the two you found. I 
-thought about them before, but somehow they were missed :-/
-
-Anyway, I'll be working on adding some more patches on Monday. There may 
-be other ways to clean this up.
-
-> 
-> Thanks for the review!
-
-Yeah, thanks from me too!
-
--- Steve
-
+-- 
+tejun
