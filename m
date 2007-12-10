@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbXLJLoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbXLJLsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756591AbXLJLoh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 06:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbXLJLoa
+	id S1756574AbXLJLsI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 06:48:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbXLJLrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 06:44:30 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:21197 "EHLO kernel.dk"
+	Mon, 10 Dec 2007 06:47:42 -0500
+Received: from tservice.ru ([195.178.208.66]:55434 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753057AbXLJLo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 06:44:29 -0500
-Date: Mon, 10 Dec 2007 12:41:23 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC] [PATCH] A clean aEvgeniy pproach to writeout throttling
-Message-ID: <20071210114123.GE5008@kernel.dk>
-References: <200712051603.02183.phillips@phunq.net> <20071210104749.GC5008@kernel.dk> <200712100323.48535.phillips@phunq.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712100323.48535.phillips@phunq.net>
+	id S1751518AbXLJLrl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 06:47:41 -0500
+Cc: netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [0/4] DST: Distributed storage.
+In-Reply-To: <11qqqasdzxczc036@2ka.mipt.ru>
+X-Mailer: Patch sending script by Greg Kroah-Hartman
+Date: Mon, 10 Dec 2007 14:47:29 +0300
+Message-Id: <11972872493977@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: lkml <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7BIT
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10 2007, Daniel Phillips wrote:
-> On Monday 10 December 2007 02:47, Jens Axboe wrote:
-> > Ehm, this patch is so broken it's not even funny - did you even
-> > compile? You would have noticed the warning on request_queue_t,
-> > surely. The big problem is the last hunk here though, how would that
-> > work on stacked devices? Clue: ->bi_bdev is not const, it can change
-> > after a call to ->make_request_fn().
-> 
-> Such paranoia.  Yes, the patch was compiled.   Yes, the warning was 
-> slipped through.  No, it is not substantive, and in fact was removed 
-> from another branch of our tree already.
-> 
-> Ignoring the rhetoric, apparently you missed the line:
-> 
-> +       if (q && q->metric && !bio->bi_queue) {
-> 
-> The prevents any reference ti bi_bdev after the intial call to 
-> generic_make_request.  Thanks to Evgeniy for pointing out the need for 
-> this measure on the last go round.
 
-Which saves the initial target, for ease of accounting at end io time -
-that's not the point. What happens when ->make_request_fn() changes
-bio->bi_bdev and returns 1, causing another iteration of the
-__generic_make_request() loop? 'q' is no longer the valid target,
-bdev_get_queue(bio->bi_bdev) is.
+Distributed storage.
 
-> "So broken" is a gross exaggeration.  Substantive comments welcome.
+I'm pleased to announce the 11'th release of the distributed
+storage subsystem (DST). This is a maintenance release and includes
+bug fixes and simple feature extensions only.
 
-Or you could try and make an effort to understand the comment instead of
-just glancing over it.
+DST allows to form a storage on top of local and remote nodes
+and combine them into linear or mirroring setup, which in
+turn can be exported to remote nodes.
 
--- 
-Jens Axboe
+Short changelog:
+ * wakeup state when mirror detected error to seedup reconnect
+ * if connecting in csum mode to no-csum server, do not enable csums
+ * do not clean queue until all users are removed
+ * allow to increase size of the storage in linear add callback 
+	(with this change it is possible to add nodes into linear array
+	in real time without stopping storage. Filesystem has to be prepared
+	for the case when underlying device has changed its size.
+	Real-time addon of mirror nodes is also supported)
+ * allow to delete gendisk only after device was started
+ * dst debug config option
+ * Name: Gamardjoba, genacvale! ('Hi friend' in georgian)
+
+Great thanks to Matthew Hodgson <matthew@mxtelecom.com> for debugging!
+
+Overall list of features of the DST can be found on project's homepage:
+
+http://tservice.net.ru/~s0mbre/old/?section=projects&item=dst
+
+Thank you.
+
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+
 
