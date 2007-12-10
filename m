@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbXLJJoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbXLJJpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755549AbXLJJoK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 04:44:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbXLJJn5
+	id S1755565AbXLJJpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 04:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXLJJpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 04:43:57 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:33258 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751939AbXLJJn4 (ORCPT
+	Mon, 10 Dec 2007 04:45:35 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:57844 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbXLJJpd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 04:43:56 -0500
-Date: Mon, 10 Dec 2007 15:13:36 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/4] Instrumentation menu removal, against 2.6.24-rc4-mm1 (mmotm)
-Message-ID: <20071210094336.GB8437@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20071208153255.078261362@polymtl.ca> <20071210085741.GA8437@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071210085741.GA8437@in.ibm.com>
-User-Agent: Mutt/1.5.11
+	Mon, 10 Dec 2007 04:45:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Vr/7DX3i5knAvevfTWVhKRl7l+5B/Gm32wtOLArpcyWzZ14CXcWy8ywXDnznY5mvhzCkSTAjNBmTMAnZLhWa9Pln+Y/bHumeb/9idXvBZINfEwOqbzK+5xo7xVcKV7Bo6FNt/av2CFa39+wiQDuB/wBNu6iqY66hcPb0dHZG8xU=
+Message-ID: <475D0AAC.3030408@gmail.com>
+Date: Mon, 10 Dec 2007 18:45:16 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Parag Warudkar <parag.warudkar@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Tom Lanyon <tomlanyon@gmail.com>
+Subject: Re: Failure with SATA DVD-RW
+References: <cd32a0620712041608o7733db74xf4975dec44925730@mail.gmail.com>	<loom.20071206T012459-620@post.gmane.org> <20071206164043.589290f4.akpm@linux-foundation.org>
+In-Reply-To: <20071206164043.589290f4.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2007 at 02:27:41PM +0530, Ananth N Mavinakayanahalli wrote:
-> On Sat, Dec 08, 2007 at 10:32:55AM -0500, Mathieu Desnoyers wrote:
-> > Hi Andrew,
-> > 
-> > This time I am taking no chance :
-> > 
-> > The instrumentation menu removal patchset here applies against 2.6.24-rc4-mm1
-> > _and_ against mmotm (dated : stamp-2007-12-05-15-24) without problem.
-> > 
-> > We should hopefully be able to stop racing against other architecture specific
-> > fixes done underneath. Please be aware that the following fix :
-> > 
-> > - fix-oprofile-configuration-breakage.patch
-> > 
-> > from MIPS did not show up in your mmotm tree. I guess you just sent it upstream
-> > without keeping it in your own tree. I have applied the content of this fix in
-> > my patchset (meaning : select HAVE_OPROFILE if !MIPS_MT_SMTC in
-> > add-have-oprofile.patch), but I think you might have a reject if you still have
-> > this fix-oprofile-configuration-breakage.patch in your local tree but not in
-> > mmotm.
+Andrew Morton wrote:
+> (argh, shit, resent.  Please don't massage the cc list.  Do reply-to-all)
 > 
-> Mathieu,
+> On Thu, 6 Dec 2007 01:33:16 +0000 (UTC)
+> Parag Warudkar <parag.warudkar@gmail.com> wrote:
 > 
-> With this patchset, a `make defconfig' results in:
-> 
-> CONFIG_OPROFILE=y
-> CONFIG_HAVE_OPROFILE=y
-> CONFIG_KPROBES=y
-> CONFIG_HAVE_KPROBES=y
-> 
-> You probably also need to change the defconfigs...
+>> Tom Lanyon <tomlanyon <at> gmail.com> writes:
+>>
+>>> scsi4: ahci
+>>> ata5: SATA link up at 1.5 Gbps (SStatus 113 SControl 300)
+>>> ata5.00: ATAPI, max UDMA/66
+>>> ata5.00: qc timeout (cmd 0xef)
+>>> ata5.00: failed to set xfermode (err_mask=0x104)
+>>> ata5.00: limiting speed to UDMA/44
+>>> ata5: failed to recover some devices, retrying in 5 secs
+>>> ata5: port is slow to respond, please be patient (Status 0x80)
+>>> ata5: port failed to respond (30 secs, status 0x80)
+>>> ata5: COMRESET failed (device not ready)
+>>> ata5: hardreset failed, retrying in 5 secs
+>>> ata5: SATA link up at 1.5 Gbps (SStatus 113 SControl 300)
+>>> ata5.00: ATAPI, max UDMA/66
+>>> ata5.00: qc timeout (cmd 0xef)
+>>> ata5.00: failed to set xfermode (err_mask=0x104)
+>>> ata5.00: limiting speed to PIO0
+>>> ata5: failed to recover some devices, retrying in 5 secs
+>>> ata5: port is slow to respond, please be patient (Status 0x80)
+>>> ata5: port failed to respond (30 secs, status 0x80)
+>>> ata5: COMRESET failed (device not ready)
+>>> ata5: hardreset failed, retrying in 5 secs
+>>> ata5.00: ATAPI, max UDMA/66
+>>> ata5.00: qc timeout (cmd 0xef)
+>>> ata5.00: failed to set xfermode (err_mask=0x104)
+>>> ata5.00: disabled
+>>>
+>> Looks like it is trying to set transfer mode to UDMA/66 and failing. After 
+>> that it tried UDMA/44 and failed again. Next UDMA/66 again with unsurprising 
+>> result - failed. After that PIO0 which seems to cause some kind of trouble, 
+>> then it tries UDMA/66 again, and I am not stating the result again :) ! 
+>>
+>>> Any ideas what to try to get it working under AHCI?
+>>>
+>> I recall reading somewhere - the Pioneer drive needs UDMA/33 which it did not 
+>> try in your case - need to some how have it try UDMA/33 but I don't find a 
+>> boot parameter which will do that. So may be adding a quirk for this device to 
+>> limit the xfer mode to 33 may work. 
+>>
+>> What does your dmesg output for the drives look like when you run in IDE 
+>> compat mode? (Particularly the DMA for this drive?)
+>>
 
-Nevermind. If the intention is to key off the build based on CONFIG_<FOO>
-and have the CONFIG_HAVE_<FOO> settings just to make the config simpler,
-this change is fine. The side effect is just that the CONFIG_HAVE_<FOO>
-will still have default settings even when CONFIG_<FOO> is not set.
+Also, does irqpoll help?
 
-Ananth
+-- 
+tejun
