@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbXLJLAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbXLJLVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbXLJLAK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 06:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXLJK76
+	id S1754717AbXLJLVl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 06:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXLJLVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 05:59:58 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47402 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751764AbXLJK75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 05:59:57 -0500
-Date: Mon, 10 Dec 2007 11:59:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jie Chen <chen@jlab.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
-Message-ID: <20071210105943.GA5370@elte.hu>
-References: <20071205164723.GA25641@elte.hu> <4756E44E.8080607@jlab.org> <20071205200343.GA14570@elte.hu> <475708A7.4030708@jlab.org> <20071205204645.GC25694@elte.hu> <47570F83.6040601@jlab.org> <20071205210222.GA30089@elte.hu> <47572353.4040606@jlab.org> <20071206104318.GB30838@elte.hu> <47582367.6060602@jlab.org>
+	Mon, 10 Dec 2007 06:21:33 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:30316 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbXLJLVd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 06:21:33 -0500
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH] IB/ehca: Return correct #SGEs for SRQ
+User-Agent: KMail/1.8.2
+Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Marcus Eder <meder@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47582367.6060602@jlab.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Length: 2328
+Date: Mon, 10 Dec 2007 12:20:57 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200712101220.57876.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Firmware would round up the number of SGEs to four, because the WQE
+structure holds four SGEs. For SRQ, only three are supported, so return a
+fixed value instead.
 
-* Jie Chen <chen@jlab.org> wrote:
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
 
-> I did patch the header file and recompiled the kernel. I observed no 
-> difference (two threads overhead stays too high). Thank you.
+The patch will apply cleanly on top of Roland's git. Please review and apply
+for 2.6.24 -- Thanks!
 
-ok, i think i found it. You do this in your qmt/pthread_sync.c 
-test-code:
+ drivers/infiniband/hw/ehca/ehca_qp.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- double get_time_of_day_()
- {
- ...
-   err = gettimeofday(&ts, NULL);
- ...
- }
+diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
+index dd12668..eff5fb5 100644
+--- a/drivers/infiniband/hw/ehca/ehca_qp.c
++++ b/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -838,7 +838,7 @@ struct ib_srq *ehca_create_srq(struct ib_pd *pd,
+ 
+ 	/* copy back return values */
+ 	srq_init_attr->attr.max_wr = qp_init_attr.cap.max_recv_wr;
+-	srq_init_attr->attr.max_sge = qp_init_attr.cap.max_recv_sge;
++	srq_init_attr->attr.max_sge = 3;
+ 
+ 	/* drive SRQ into RTR state */
+ 	mqpcb = ehca_alloc_fw_ctrlblock(GFP_KERNEL);
+@@ -1750,7 +1750,7 @@ int ehca_query_srq(struct ib_srq *srq, struct ib_srq_attr *srq_attr)
+ 	}
+ 
+ 	srq_attr->max_wr = qpcb->max_nr_outst_recv_wr - 1;
+-	srq_attr->max_sge = qpcb->actual_nr_sges_in_rq_wqe;
++	srq_attr->max_sge = 3;
+ 	srq_attr->srq_limit = EHCA_BMASK_GET(
+ 		MQPCB_CURR_SRQ_LIMIT, qpcb->curr_srq_limit);
+ 
+-- 
+1.5.2
 
-and then you use this in the measurement loop:
 
-   for (k=0; k<=OUTERREPS; k++){
-     start  = getclock();
-     for (j=0; j<innerreps; j++){
- #ifdef _QMT_PUBLIC
-       delay((void *)0, 0);
- #else
-       delay(0, 0, 0, (void *)0);
- #endif
-     }
-     times[k] = (getclock() - start) * 1.0e6 / (double) innerreps;
-   }
-
-the problem is, this does not take the overhead of gettimeofday into 
-account - which overhead can easily reach 10 usecs (the observed 
-regression). Could you try to eliminate the gettimeofday overhead from 
-your measurement?
-
-gettimeofday overhead is something that might have changed from .21 to 
-.22 on your box.
-
-	Ingo
