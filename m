@@ -1,283 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbXLJLdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbXLJLdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756249AbXLJLdL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 06:33:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbXLJLc6
+	id S1756511AbXLJLdd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 06:33:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbXLJLdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 06:32:58 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:34359 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbXLJLc5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 06:32:57 -0500
-Date: Mon, 10 Dec 2007 17:02:49 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       davem@davemloft.net, mathieu.desnoyers@polymtl.ca,
-       hskinnemoen@atmel.com
-Subject: Re: [PATCH 1/2] Kprobes: Indicate kretprobe support in arch/<arch>/Kconfig - updated
-Message-ID: <20071210113249.GC8437@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20071210095221.GA19425@in.ibm.com> <20071210101307.GA14359@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071210101307.GA14359@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.11
+	Mon, 10 Dec 2007 06:33:24 -0500
+Received: from phunq.net ([64.81.85.152]:44680 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752282AbXLJLdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 06:33:23 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC] [PATCH] A clean approach to writeout throttling
+Date: Mon, 10 Dec 2007 03:33:20 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+References: <200712051603.02183.phillips@phunq.net> <20071210104749.GC5008@kernel.dk>
+In-Reply-To: <20071210104749.GC5008@kernel.dk>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_AQSXH2LfSlrBjym"
+Message-Id: <200712100333.20934.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2007 at 11:13:07AM +0100, Sam Ravnborg wrote:
-> On Mon, Dec 10, 2007 at 03:22:22PM +0530, Ananth N Mavinakayanahalli wrote:
-> > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> > 
-> > This patch adds CONFIG_HAVE_KRETPROBES to the arch/<arch>/Kconfig file
-> > for relevant architectures with kprobes support. This facilitates easy
-> > handling of in-kernel modules (like samples/kprobes/kretprobe_example.c)
-> > that depend on kretprobes being present in the kernel.
-> > 
-> > This patch depends on Mathieu Desnoyers' "Instrumentation menu removal"
-> > patchset (http://marc.info/?l=linux-kernel&m=119496432229633&w=2)
-> > 
-> > Updated to apply on 2.6.24-rc4-mm1.
-> > 
-> > Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> > ---
-> >  arch/avr32/Kconfig            |    5 +++++
-> >  arch/ia64/Kconfig             |    5 +++++
-> >  arch/powerpc/Kconfig          |    5 +++++
-> >  arch/s390/Kconfig             |    5 +++++
-> >  arch/sparc64/Kconfig          |    5 +++++
-> >  arch/x86/Kconfig              |    5 +++++
-> >  include/asm-ia64/kprobes.h    |    1 -
-> >  include/asm-powerpc/kprobes.h |    1 -
-> >  include/asm-s390/kprobes.h    |    1 -
-> >  include/asm-x86/kprobes_32.h  |    1 -
-> >  include/asm-x86/kprobes_64.h  |    1 -
-> >  include/linux/kprobes.h       |    6 +++---
-> >  kernel/kprobes.c              |    8 +++-----
-> >  13 files changed, 36 insertions(+), 13 deletions(-)
-> > 
-> > Index: linux-2.6.24-rc4/arch/avr32/Kconfig
-> > ===================================================================
-> > --- linux-2.6.24-rc4.orig/arch/avr32/Kconfig
-> > +++ linux-2.6.24-rc4/arch/avr32/Kconfig
-> > @@ -66,6 +66,11 @@ config GENERIC_BUG
-> >  	def_bool y
-> >  	depends on BUG
-> >  
-> > +config HAVE_KRETPROBES
-> > +	bool
-> > +	depends on HAVE_KPROBES
-> > +	default n
-> > +
-> 
-> The symbol HAVE_KRETPROBES should be defined in the common file - so
-> the only thing you have to do is a single line:
->  config AVR32
-> +	select HAVE_KRETPROBES
-> 
-> 
-> Much more dense than defining the symbols once for each arch.
+--Boundary-00=_AQSXH2LfSlrBjym
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Agreed. Updated patch below.
+On Monday 10 December 2007 02:47, Jens Axboe wrote:
+> ...the warning on request_queue_t...
 
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+There you go, Jens, service with a smile.
 
-This patch adds CONFIG_HAVE_KRETPROBES to the arch/<arch>/Kconfig file
-for relevant architectures with kprobes support. This facilitates easy
-handling of in-kernel modules (like samples/kprobes/kretprobe_example.c)
-that depend on kretprobes being present in the kernel.
+Regards,
 
-This patch depends on Mathieu Desnoyers' "Instrumentation menu removal"
-patchset (http://marc.info/?l=linux-kernel&m=119496432229633&w=2)
+Daniel
 
-Updated to apply on 2.6.24-rc4-mm1. Thanks to Sam Ravnborg for helping
-make the patch more lean.
+--Boundary-00=_AQSXH2LfSlrBjym
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="bio.throttle-2.6.24-rc3-mm"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="bio.throttle-2.6.24-rc3-mm"
 
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
----
- arch/Kconfig                  |    4 ++++
- arch/ia64/Kconfig             |    1 +
- arch/powerpc/Kconfig          |    1 +
- arch/s390/Kconfig             |    1 +
- arch/x86/Kconfig              |    1 +
- include/asm-ia64/kprobes.h    |    1 -
- include/asm-powerpc/kprobes.h |    1 -
- include/asm-x86/kprobes_32.h  |    1 -
- include/asm-x86/kprobes_64.h  |    1 -
- include/linux/kprobes.h       |    6 +++---
- kernel/kprobes.c              |    8 +++-----
- 11 files changed, 14 insertions(+), 12 deletions(-)
-
-Index: linux-2.6.24-rc4/arch/Kconfig
-===================================================================
---- linux-2.6.24-rc4.orig/arch/Kconfig
-+++ linux-2.6.24-rc4/arch/Kconfig
-@@ -29,3 +29,7 @@ config KPROBES
+--- 2.6.24-rc3-mm.clean/block/ll_rw_blk.c	2007-12-04 14:45:25.000000000 -0800
++++ 2.6.24-rc3-mm/block/ll_rw_blk.c	2007-12-10 03:27:42.000000000 -0800
+@@ -3210,7 +3210,7 @@ static inline int bio_check_eod(struct b
+  */
+ static inline void __generic_make_request(struct bio *bio)
+ {
+-	struct request_queue *q;
++	struct request_queue *q = bdev_get_queue(bio->bi_bdev);
+ 	sector_t old_sector;
+ 	int ret, nr_sectors = bio_sectors(bio);
+ 	dev_t old_dev;
+@@ -3221,6 +3221,13 @@ static inline void __generic_make_reques
+ 	if (bio_check_eod(bio, nr_sectors))
+ 		goto end_io;
  
- config HAVE_KPROBES
- 	def_bool n
++	if (q && q->metric && !bio->bi_queue) {
++		int need = bio->bi_throttle = q->metric(bio);
++		bio->bi_queue = q;
++		/* FIXME: potential race if atomic_sub is called in the middle of condition check */
++		wait_event_interruptible(q->throttle_wait, atomic_read(&q->available) >= need);
++		atomic_sub(need, &q->available);
++	}
+ 	/*
+ 	 * Resolve the mapping until finished. (drivers are
+ 	 * still free to implement/resolve their own stacking
+@@ -3234,7 +3241,6 @@ static inline void __generic_make_reques
+ 	do {
+ 		char b[BDEVNAME_SIZE];
+ 
+-		q = bdev_get_queue(bio->bi_bdev);
+ 		if (!q) {
+ 			printk(KERN_ERR
+ 			       "generic_make_request: Trying to access "
+--- 2.6.24-rc3-mm.clean/drivers/md/dm.c	2007-12-04 14:46:04.000000000 -0800
++++ 2.6.24-rc3-mm/drivers/md/dm.c	2007-12-04 23:31:41.000000000 -0800
+@@ -889,6 +889,11 @@ static int dm_any_congested(void *conges
+ 	return r;
+ }
+ 
++static unsigned dm_metric(struct bio *bio)
++{
++	return bio->bi_vcnt;
++}
 +
-+config HAVE_KRETPROBES
-+	def_bool n
-+	depends on HAVE_KPROBES
-Index: linux-2.6.24-rc4/arch/ia64/Kconfig
-===================================================================
---- linux-2.6.24-rc4.orig/arch/ia64/Kconfig
-+++ linux-2.6.24-rc4/arch/ia64/Kconfig
-@@ -17,6 +17,7 @@ config IA64
- 	select ARCH_SUPPORTS_MSI
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
-+	select HAVE_KRETPROBES
- 	default y
- 	help
- 	  The Itanium Processor Family is Intel's 64-bit successor to
-Index: linux-2.6.24-rc4/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6.24-rc4.orig/arch/powerpc/Kconfig
-+++ linux-2.6.24-rc4/arch/powerpc/Kconfig
-@@ -81,6 +81,7 @@ config PPC
- 	default y
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
-+	select HAVE_KRETPROBES
+ /*-----------------------------------------------------------------
+  * An IDR is used to keep track of allocated minor numbers.
+  *---------------------------------------------------------------*/
+@@ -967,6 +972,7 @@ out:
  
- config EARLY_PRINTK
- 	bool
-Index: linux-2.6.24-rc4/arch/s390/Kconfig
-===================================================================
---- linux-2.6.24-rc4.orig/arch/s390/Kconfig
-+++ linux-2.6.24-rc4/arch/s390/Kconfig
-@@ -53,6 +53,7 @@ config S390
- 	def_bool y
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
-+	select HAVE_KRETPROBES
+ static struct block_device_operations dm_blk_dops;
  
- source "init/Kconfig"
- 
-Index: linux-2.6.24-rc4/arch/x86/Kconfig
-===================================================================
---- linux-2.6.24-rc4.orig/arch/x86/Kconfig
-+++ linux-2.6.24-rc4/arch/x86/Kconfig
-@@ -20,6 +20,7 @@ config X86
- 	def_bool y
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
-+	select HAVE_KRETPROBES
- 
- config GENERIC_TIME
- 	def_bool y
-Index: linux-2.6.24-rc4/include/asm-ia64/kprobes.h
-===================================================================
---- linux-2.6.24-rc4.orig/include/asm-ia64/kprobes.h
-+++ linux-2.6.24-rc4/include/asm-ia64/kprobes.h
-@@ -82,7 +82,6 @@ struct kprobe_ctlblk {
- 	struct prev_kprobe prev_kprobe[ARCH_PREV_KPROBE_SZ];
- };
- 
--#define ARCH_SUPPORTS_KRETPROBES
- #define kretprobe_blacklist_size 0
- 
- #define SLOT0_OPCODE_SHIFT	(37)
-Index: linux-2.6.24-rc4/include/asm-powerpc/kprobes.h
-===================================================================
---- linux-2.6.24-rc4.orig/include/asm-powerpc/kprobes.h
-+++ linux-2.6.24-rc4/include/asm-powerpc/kprobes.h
-@@ -80,7 +80,6 @@ typedef unsigned int kprobe_opcode_t;
- #define is_trap(instr)	(IS_TW(instr) || IS_TWI(instr))
- #endif
- 
--#define ARCH_SUPPORTS_KRETPROBES
- #define flush_insn_slot(p)	do { } while (0)
- #define kretprobe_blacklist_size 0
- 
-Index: linux-2.6.24-rc4/include/asm-x86/kprobes_32.h
-===================================================================
---- linux-2.6.24-rc4.orig/include/asm-x86/kprobes_32.h
-+++ linux-2.6.24-rc4/include/asm-x86/kprobes_32.h
-@@ -42,7 +42,6 @@ typedef u8 kprobe_opcode_t;
- 	? (MAX_STACK_SIZE) \
- 	: (((unsigned long)current_thread_info()) + THREAD_SIZE - (ADDR)))
- 
--#define ARCH_SUPPORTS_KRETPROBES
- #define flush_insn_slot(p)	do { } while (0)
- 
- extern const int kretprobe_blacklist_size;
-Index: linux-2.6.24-rc4/include/asm-x86/kprobes_64.h
-===================================================================
---- linux-2.6.24-rc4.orig/include/asm-x86/kprobes_64.h
-+++ linux-2.6.24-rc4/include/asm-x86/kprobes_64.h
-@@ -41,7 +41,6 @@ typedef u8 kprobe_opcode_t;
- 	? (MAX_STACK_SIZE) \
- 	: (((unsigned long)current_thread_info()) + THREAD_SIZE - (ADDR)))
- 
--#define ARCH_SUPPORTS_KRETPROBES
- extern const int kretprobe_blacklist_size;
- 
- void kretprobe_trampoline(void);
-Index: linux-2.6.24-rc4/include/linux/kprobes.h
-===================================================================
---- linux-2.6.24-rc4.orig/include/linux/kprobes.h
-+++ linux-2.6.24-rc4/include/linux/kprobes.h
-@@ -125,11 +125,11 @@ struct jprobe {
- DECLARE_PER_CPU(struct kprobe *, current_kprobe);
- DECLARE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
- 
--#ifdef ARCH_SUPPORTS_KRETPROBES
-+#ifdef CONFIG_HAVE_KRETPROBES
- extern void arch_prepare_kretprobe(struct kretprobe_instance *ri,
- 				   struct pt_regs *regs);
- extern int arch_trampoline_kprobe(struct kprobe *p);
--#else /* ARCH_SUPPORTS_KRETPROBES */
-+#else /* CONFIG_HAVE_KRETPROBES */
- static inline void arch_prepare_kretprobe(struct kretprobe *rp,
- 					struct pt_regs *regs)
- {
-@@ -138,7 +138,7 @@ static inline int arch_trampoline_kprobe
- {
- 	return 0;
- }
--#endif /* ARCH_SUPPORTS_KRETPROBES */
-+#endif /* CONFIG_HAVE_KRETPROBES */
++#define DEFAULT_THROTTLE_CAPACITY 1000
  /*
-  * Function-return probe -
-  * Note:
-Index: linux-2.6.24-rc4/kernel/kprobes.c
-===================================================================
---- linux-2.6.24-rc4.orig/kernel/kprobes.c
-+++ linux-2.6.24-rc4/kernel/kprobes.c
-@@ -678,8 +678,7 @@ void __kprobes unregister_jprobe(struct 
- 	unregister_kprobe(&jp->kp);
+  * Allocate and initialise a blank device with a given minor.
+  */
+@@ -1009,6 +1015,11 @@ static struct mapped_device *alloc_dev(i
+ 		goto bad1_free_minor;
+ 
+ 	md->queue->queuedata = md;
++	md->queue->metric = dm_metric;
++	/* A dm device constructor may change the throttle capacity */
++	atomic_set(&md->queue->available, md->queue->capacity = DEFAULT_THROTTLE_CAPACITY);
++	init_waitqueue_head(&md->queue->throttle_wait);
++
+ 	md->queue->backing_dev_info.congested_fn = dm_any_congested;
+ 	md->queue->backing_dev_info.congested_data = md;
+ 	blk_queue_make_request(md->queue, dm_request);
+--- 2.6.24-rc3-mm.clean/fs/bio.c	2007-12-04 14:38:47.000000000 -0800
++++ 2.6.24-rc3-mm/fs/bio.c	2007-12-04 23:31:41.000000000 -0800
+@@ -1007,6 +1007,13 @@ void bio_endio(struct bio *bio, int erro
+ 	else if (!test_bit(BIO_UPTODATE, &bio->bi_flags))
+ 		error = -EIO;
+ 
++	if (bio->bi_throttle) {
++		struct request_queue *q = bio->bi_queue;
++		bio->bi_throttle = 0; /* or detect multiple endio and err? */
++		atomic_add(bio->bi_throttle, &q->available);
++		wake_up(&q->throttle_wait);
++	}
++
+ 	if (bio->bi_end_io)
+ 		bio->bi_end_io(bio, error);
  }
+--- 2.6.24-rc3-mm.clean/include/linux/bio.h	2007-12-04 14:39:31.000000000 -0800
++++ 2.6.24-rc3-mm/include/linux/bio.h	2007-12-04 23:31:41.000000000 -0800
+@@ -111,6 +111,9 @@ struct bio {
+ 	bio_end_io_t		*bi_end_io;
+ 	atomic_t		bi_cnt;		/* pin count */
  
--#ifdef ARCH_SUPPORTS_KRETPROBES
--
-+#ifdef CONFIG_HAVE_KRETPROBES
- /*
-  * This kprobe pre_handler is registered with every kretprobe. When probe
-  * hits it will set up the return probe.
-@@ -762,7 +761,7 @@ int __kprobes register_kretprobe(struct 
- 	return ret;
- }
++	struct request_queue	*bi_queue;	/* for throttling */
++	unsigned		bi_throttle;	/* throttle metric */
++
+ 	void			*bi_private;
  
--#else /* ARCH_SUPPORTS_KRETPROBES */
-+#else /* CONFIG_HAVE_KRETPROBES */
+ 	bio_destructor_t	*bi_destructor;	/* destructor */
+--- 2.6.24-rc3-mm.clean/include/linux/blkdev.h	2007-12-04 14:47:18.000000000 -0800
++++ 2.6.24-rc3-mm/include/linux/blkdev.h	2007-12-04 23:31:41.000000000 -0800
+@@ -383,6 +383,10 @@ struct request_queue
+ 	struct work_struct	unplug_work;
  
- int __kprobes register_kretprobe(struct kretprobe *rp)
- {
-@@ -774,8 +773,7 @@ static int __kprobes pre_handler_kretpro
- {
- 	return 0;
- }
--
--#endif /* ARCH_SUPPORTS_KRETPROBES */
-+#endif /* CONFIG_HAVE_KRETPROBES */
+ 	struct backing_dev_info	backing_dev_info;
++	unsigned (*metric)(struct bio *bio);	/* bio throttle metric */
++	wait_queue_head_t	throttle_wait;
++	atomic_t		available;
++	unsigned		capacity;
  
- void __kprobes unregister_kretprobe(struct kretprobe *rp)
- {
+ 	/*
+ 	 * The queue owner gets to use this for whatever they like.
+
+--Boundary-00=_AQSXH2LfSlrBjym--
