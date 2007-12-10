@@ -1,40 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbXLJKEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbXLJKLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbXLJKEZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 05:04:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbXLJKEA
+	id S1755541AbXLJKLb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 05:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbXLJKLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 05:04:00 -0500
-Received: from styx.suse.cz ([82.119.242.94]:35048 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754857AbXLJKD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 05:03:58 -0500
-Date: Mon, 10 Dec 2007 11:03:56 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH BUGFIX] hid: the `bit' in hidinput_mapping_quirks() is
- an	out parameter
-In-Reply-To: <397037229.08913@ustc.edu.cn>
-Message-ID: <Pine.LNX.4.64.0712101103350.4570@jikos.suse.cz>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
- <397037229.08913@ustc.edu.cn>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 10 Dec 2007 05:11:23 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46089 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750941AbXLJKLW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 05:11:22 -0500
+Date: Mon, 10 Dec 2007 11:13:07 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
+       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+       davem@davemloft.net, mathieu.desnoyers@polymtl.ca,
+       hskinnemoen@atmel.com
+Subject: Re: [PATCH 1/2] Kprobes: Indicate kretprobe support in arch/<arch>/Kconfig
+Message-ID: <20071210101307.GA14359@uranus.ravnborg.org>
+References: <20071210095221.GA19425@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071210095221.GA19425@in.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Dec 2007, Fengguang Wu wrote:
+On Mon, Dec 10, 2007 at 03:22:22PM +0530, Ananth N Mavinakayanahalli wrote:
+> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> 
+> This patch adds CONFIG_HAVE_KRETPROBES to the arch/<arch>/Kconfig file
+> for relevant architectures with kprobes support. This facilitates easy
+> handling of in-kernel modules (like samples/kprobes/kretprobe_example.c)
+> that depend on kretprobes being present in the kernel.
+> 
+> This patch depends on Mathieu Desnoyers' "Instrumentation menu removal"
+> patchset (http://marc.info/?l=linux-kernel&m=119496432229633&w=2)
+> 
+> Updated to apply on 2.6.24-rc4-mm1.
+> 
+> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> ---
+>  arch/avr32/Kconfig            |    5 +++++
+>  arch/ia64/Kconfig             |    5 +++++
+>  arch/powerpc/Kconfig          |    5 +++++
+>  arch/s390/Kconfig             |    5 +++++
+>  arch/sparc64/Kconfig          |    5 +++++
+>  arch/x86/Kconfig              |    5 +++++
+>  include/asm-ia64/kprobes.h    |    1 -
+>  include/asm-powerpc/kprobes.h |    1 -
+>  include/asm-s390/kprobes.h    |    1 -
+>  include/asm-x86/kprobes_32.h  |    1 -
+>  include/asm-x86/kprobes_64.h  |    1 -
+>  include/linux/kprobes.h       |    6 +++---
+>  kernel/kprobes.c              |    8 +++-----
+>  13 files changed, 36 insertions(+), 13 deletions(-)
+> 
+> Index: linux-2.6.24-rc4/arch/avr32/Kconfig
+> ===================================================================
+> --- linux-2.6.24-rc4.orig/arch/avr32/Kconfig
+> +++ linux-2.6.24-rc4/arch/avr32/Kconfig
+> @@ -66,6 +66,11 @@ config GENERIC_BUG
+>  	def_bool y
+>  	depends on BUG
+>  
+> +config HAVE_KRETPROBES
+> +	bool
+> +	depends on HAVE_KPROBES
+> +	default n
+> +
 
-> Fix a panic, by changing 
-> 	hidinput_mapping_quirks(,, unsigned long *bit,)
-> to 
-> 	hidinput_mapping_quirks(,, unsigned long **bit,)
-> The `bit' in this function is an out parameter.
+The symbol HAVE_KRETPROBES should be defined in the common file - so
+the only thing you have to do is a single line:
+ config AVR32
++	select HAVE_KRETPROBES
 
-Thanks for catching this, I will apply it to my tree.
 
--- 
-Jiri Kosina
-SUSE Labs
+Much more dense than defining the symbols once for each arch.
+
+	Sam
