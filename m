@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbXLJUEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbXLJUFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757977AbXLJUEk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 15:04:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbXLJUES
+	id S1754636AbXLJUFi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 15:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbXLJUF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 15:04:18 -0500
-Received: from nz-out-0506.google.com ([64.233.162.230]:21763 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757461AbXLJUEQ (ORCPT
+	Mon, 10 Dec 2007 15:05:27 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:60656 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754382AbXLJUF0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 15:04:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=LLSOvnOCVSJN9jdjyN5gpeBTNLT3ZG2QGtlX+OkYUrwIKU9nFKrj6bmQ811uY0iqQ4CSkNg3wE1sMw1YFgfOzmg3E8ybupWVzS8gwOpbhGOQ8b7g4VZ1aHGMEQ+HgNv2/3/+Ze0KLN+szJMtEjWdUO6boRwp+bSj4yseW1Y5dno=
-Message-ID: <170fa0d20712101204u7add338ah5d05d4d2501432d6@mail.gmail.com>
-Date: Mon, 10 Dec 2007 15:04:14 -0500
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: NeilBrown <neilb@suse.de>
-Subject: Re: [PATCH 003 of 3] md: Update md bitmap during resync.
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1071207054200.7907@suse.de>
+	Mon, 10 Dec 2007 15:05:26 -0500
+Date: Mon, 10 Dec 2007 22:05:24 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: David Miller <davem@davemloft.net>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Reuben Farrelly <reuben-linuxkernel@reub.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: 2.6.24-rc4-mm1
+In-Reply-To: <Pine.LNX.4.64.0712101136190.18529@kivilampi-30.cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0712102203010.11235@kivilampi-30.cs.helsinki.fi>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+ <47579DD9.9030909@reub.net> <20071205233504.67366c5b.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0712101136190.18529@kivilampi-30.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_18091_21201694.1197317054351"
-References: <20071207163806.7539.patches@notabene> <1071207054200.7907@suse.de>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-910908797-1197317124=:11235"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_18091_21201694.1197317054351
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Dec 7, 2007 12:42 AM, NeilBrown <neilb@suse.de> wrote:
->
-> Currently and md array with a write-intent bitmap does not updated
-> that bitmap to reflect successful partial resync.  Rather the entire
-> bitmap is updated when the resync completes.
->
-> This is because there is no guarentee that resync requests will
-> complete in order, and tracking each request individually is
-> unnecessarily burdensome.
->
-> However there is value in regularly updating the bitmap, so add code
-> to periodically pause while all pending sync requests complete, then
-> update the bitmap.  Doing this only every few seconds (the same as the
-> bitmap update time) does not notciably affect resync performance.
->
-> Signed-off-by: Neil Brown <neilb@suse.de>
+---696243703-910908797-1197317124=:11235
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-Hi Neil,
+On Mon, 10 Dec 2007, Ilpo Järvinen wrote:
 
-You forgot to export bitmap_cond_end_sync.  Please see the attached patch.
+> Dave, please include this one to net-2.6.25.
 
-regards,
-Mike
+...
 
-------=_Part_18091_21201694.1197317054351
-Content-Type: text/x-patch; name=export_bitmap_cond_end_sync.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fa1fkr4p0
-Content-Disposition: attachment; filename=export_bitmap_cond_end_sync.patch
+> --
+> [PATCH] [TCP]: Fix fack_count miscountings (multiple places)
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWQvYml0bWFwLmMgYi9kcml2ZXJzL21kL2JpdG1hcC5jCmlu
-ZGV4IGYzMWVhNGYuLmI1OTY1MzggMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbWQvYml0bWFwLmMKKysr
-IGIvZHJpdmVycy9tZC9iaXRtYXAuYwpAQCAtMTU2NiwzICsxNTY2LDQgQEAgRVhQT1JUX1NZTUJP
-TChiaXRtYXBfc3RhcnRfc3luYyk7CiBFWFBPUlRfU1lNQk9MKGJpdG1hcF9lbmRfc3luYyk7CiBF
-WFBPUlRfU1lNQk9MKGJpdG1hcF91bnBsdWcpOwogRVhQT1JUX1NZTUJPTChiaXRtYXBfY2xvc2Vf
-c3luYyk7CitFWFBPUlRfU1lNQk9MKGJpdG1hcF9jb25kX2VuZF9zeW5jKTsK
-------=_Part_18091_21201694.1197317054351--
+I've better version of this coming up, so Dave please don't put this one 
+into net-2.6.25 (noticed that both the original and the after patch code 
+can get to an infinite loop and the new code is flawed in some rare cases 
+still as well). I'll submit a better version soon.
+
+-- 
+ i.
+---696243703-910908797-1197317124=:11235--
