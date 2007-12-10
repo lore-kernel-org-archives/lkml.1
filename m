@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbXLJRzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbXLJRz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824AbXLJRzW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 12:55:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbXLJRzI
+	id S1755969AbXLJRz6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 12:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXLJRzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 12:55:08 -0500
-Received: from zcars04f.nortel.com ([47.129.242.57]:64211 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751692AbXLJRzG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 12:55:06 -0500
-Message-ID: <475D7D70.5030502@nortel.com>
-Date: Mon, 10 Dec 2007 11:54:56 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 10 Dec 2007 12:55:49 -0500
+Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:23066 "EHLO
+	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751705AbXLJRzr convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 12:55:47 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: "Chris Friesen" <cfriesen@nortel.com>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: "ip neigh show" not showing arp cache entries?
-References: <475D7901.1040900@nortel.com>
-In-Reply-To: <475D7901.1040900@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Dec 2007 17:55:00.0005 (UTC) FILETIME=[C85FF550:01C83B55]
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.22.14 oops msg with commvault galaxy ?
+Date: Mon, 10 Dec 2007 12:55:24 -0500
+Message-ID: <F1D642E5A91BC94D9504EC83AE19E6B0015201C3@ecqcmtlmail3.quebec.int.ec.gc.ca>
+In-Reply-To: <20071210091501.deed38fa.randy.dunlap@oracle.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.22.14 oops msg with commvault galaxy ?
+Thread-Index: Acg7UFGxPEE2ecSwTbKBC6hIInUm6gAAbYfA
+References: <20071207151113.e9841341.akpm@linux-foundation.org><20071207171455.b2eecb60.randy.dunlap@oracle.com><F1D642E5A91BC94D9504EC83AE19E6B0015201AF@ecqcmtlmail3.quebec.int.ec.gc.ca><F1D642E5A91BC94D9504EC83AE19E6B0015201B1@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071210091501.deed38fa.randy.dunlap@oracle.com>
+From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <mingo@elte.hu>
+X-OriginalArrivalTime: 10 Dec 2007 17:55:24.0599 (UTC) FILETIME=[D708B470:01C83B55]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
+> -----Message d'origine-----
+> De : Randy Dunlap [mailto:randy.dunlap@oracle.com] 
+> Envoyé : 10 décembre 2007 12:15
 > 
-> I'm seeing some strange behaviour on a 2.6.14 ppc64 system.  If I run 
-> "ip neigh show" it prints out nothing, but if I run "arp" then I see the 
-> other nodes on the local network.
+> On Mon, 10 Dec 2007 09:03:17 -0500 Fortier,Vincent [Montreal] wrote:
 > 
+> Ingo, can you look at this, please?
+> Vincent is getting oopses on 2.6.22.14-cfs-etch.
 > 
-> root@base0-0-0-5-0-11-1:/root> ip neigh show
-> root@base0-0-0-5-0-11-1:/root> arp -n
-> Address                  HWtype  HWaddress           Flags Mask    Iface
-> 172.24.132.0             ether   00:01:AF:14:E8:DA   C    bond0
-> 172.24.132.1                     (incomplete)    bond0
-> 172.24.136.0             ether   00:C0:8B:07:B3:7E   C    bond0
-> 172.24.132.4             ether   00:01:AF:14:E8:DA   C    bond0
-> 172.24.132.2             ether   00:01:AF:14:E8:DA   C    bond0
+> Vincent, did you apply the cfs patch or did Debian etch provide that?
+
+I did. http://linux-dev.qc.ec.gc.ca/
+
+> If you applied it, did you use
+> http://people.redhat.com/mingo/cfs-scheduler/sched-cfs-v2.6.22.13-v24.patch
+> or a different patch?
 > 
-> 
-> Any ideas what's going on here?
 
-I've got some further information.  If I look for a specific address, it 
-seems to work:
+I applied exactly that one.. and had already sent that info to ingo this morning since I presumed the CFS patchset could be involved in this by reagarding the more detailed output.
 
-root@base0-0-0-5-0-11-1:/root> ip neigh show 172.24.136.0
-172.24.136.0 dev bond0 lladdr 00:c0:8b:07:b3:7e REACHABLE
+Also note that CFS v24 on 2.6.21 does not produce the oops and I can run galaxy backups on the system without any problems.
 
-
-In the above scenario, the arp cache lists the device as reachable via 
-bond0.  If I search the arp cache to see whether the address is 
-reachable from one of bond0's slave devices, should it come back 
-positive or negative?
-
-Chris
+- vin
