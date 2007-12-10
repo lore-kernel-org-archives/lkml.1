@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbXLJCre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbXLJCrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbXLJCre (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 21:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbXLJCnS
+	id S1756304AbXLJCrt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 21:47:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814AbXLJCnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 21:43:18 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49738 "EHLO
+	Sun, 9 Dec 2007 21:43:20 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49753 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754175AbXLJCnE (ORCPT
+	with ESMTP id S1754484AbXLJCnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 21:43:04 -0500
+	Sun, 9 Dec 2007 21:43:07 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 27/42] Unionfs: async I/O queue headers
-Date: Sun,  9 Dec 2007 21:42:00 -0500
-Message-Id: <11972545523728-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 09/42] Unionfs: main Makefile
+Date: Sun,  9 Dec 2007 21:41:42 -0500
+Message-Id: <11972545392605-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11972545353262-git-send-email-ezk@cs.sunysb.edu>
@@ -27,108 +27,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/sioq.h |   92 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 92 insertions(+), 0 deletions(-)
- create mode 100644 fs/unionfs/sioq.h
+ fs/unionfs/Makefile |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/Makefile
 
-diff --git a/fs/unionfs/sioq.h b/fs/unionfs/sioq.h
+diff --git a/fs/unionfs/Makefile b/fs/unionfs/Makefile
 new file mode 100644
-index 0000000..afb71ee
+index 0000000..17ca4a7
 --- /dev/null
-+++ b/fs/unionfs/sioq.h
-@@ -0,0 +1,92 @@
-+/*
-+ * Copyright (c) 2006-2007 Erez Zadok
-+ * Copyright (c) 2006      Charles P. Wright
-+ * Copyright (c) 2006-2007 Josef 'Jeff' Sipek
-+ * Copyright (c) 2006      Junjiro Okajima
-+ * Copyright (c) 2006      David P. Quigley
-+ * Copyright (c) 2006-2007 Stony Brook University
-+ * Copyright (c) 2006-2007 The Research Foundation of SUNY
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
++++ b/fs/unionfs/Makefile
+@@ -0,0 +1,13 @@
++obj-$(CONFIG_UNION_FS) += unionfs.o
 +
-+#ifndef _SIOQ_H
-+#define _SIOQ_H
++unionfs-y := subr.o dentry.o file.o inode.o main.o super.o \
++	rdstate.o copyup.o dirhelper.o rename.o unlink.o \
++	lookup.o commonfops.o dirfops.o sioq.o mmap.o
 +
-+struct deletewh_args {
-+	struct unionfs_dir_state *namelist;
-+	struct dentry *dentry;
-+	int bindex;
-+};
++unionfs-$(CONFIG_UNION_FS_XATTR) += xattr.o
 +
-+struct is_opaque_args {
-+	struct dentry *dentry;
-+};
++unionfs-$(CONFIG_UNION_FS_DEBUG) += debug.o
 +
-+struct create_args {
-+	struct inode *parent;
-+	struct dentry *dentry;
-+	umode_t mode;
-+	struct nameidata *nd;
-+};
-+
-+struct mkdir_args {
-+	struct inode *parent;
-+	struct dentry *dentry;
-+	umode_t mode;
-+};
-+
-+struct mknod_args {
-+	struct inode *parent;
-+	struct dentry *dentry;
-+	umode_t mode;
-+	dev_t dev;
-+};
-+
-+struct symlink_args {
-+	struct inode *parent;
-+	struct dentry *dentry;
-+	char *symbuf;
-+	umode_t mode;
-+};
-+
-+struct unlink_args {
-+	struct inode *parent;
-+	struct dentry *dentry;
-+};
-+
-+
-+struct sioq_args {
-+	struct completion comp;
-+	struct work_struct work;
-+	int err;
-+	void *ret;
-+
-+	union {
-+		struct deletewh_args deletewh;
-+		struct is_opaque_args is_opaque;
-+		struct create_args create;
-+		struct mkdir_args mkdir;
-+		struct mknod_args mknod;
-+		struct symlink_args symlink;
-+		struct unlink_args unlink;
-+	};
-+};
-+
-+/* Extern definitions for SIOQ functions */
-+extern int __init init_sioq(void);
-+extern void stop_sioq(void);
-+extern void run_sioq(work_func_t func, struct sioq_args *args);
-+
-+/* Extern definitions for our privilege escalation helpers */
-+extern void __unionfs_create(struct work_struct *work);
-+extern void __unionfs_mkdir(struct work_struct *work);
-+extern void __unionfs_mknod(struct work_struct *work);
-+extern void __unionfs_symlink(struct work_struct *work);
-+extern void __unionfs_unlink(struct work_struct *work);
-+extern void __delete_whiteouts(struct work_struct *work);
-+extern void __is_opaque_dir(struct work_struct *work);
-+
-+#endif /* not _SIOQ_H */
++ifeq ($(CONFIG_UNION_FS_DEBUG),y)
++EXTRA_CFLAGS += -DDEBUG
++endif
 -- 
 1.5.2.2
 
