@@ -1,160 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbXLJLm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbXLJLoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756709AbXLJLm6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 06:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXLJLmt
+	id S1756591AbXLJLoh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 06:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbXLJLoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 06:42:49 -0500
-Received: from mga03.intel.com ([143.182.124.21]:59025 "EHLO mga03.intel.com"
+	Mon, 10 Dec 2007 06:44:30 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:21197 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752944AbXLJLms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 06:42:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,276,1194249600"; 
-   d="scan'208";a="337220491"
-Date: Mon, 10 Dec 2007 12:42:40 +0100
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com,
-       suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Subject: [patch 2/4] x86, ptrace: use jiffies for bts timestamps
-Message-ID: <20071210124240.A14941@sedona.ch.intel.com>
-Mime-Version: 1.0
+	id S1753057AbXLJLo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 06:44:29 -0500
+Date: Mon, 10 Dec 2007 12:41:23 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC] [PATCH] A clean aEvgeniy pproach to writeout throttling
+Message-ID: <20071210114123.GE5008@kernel.dk>
+References: <200712051603.02183.phillips@phunq.net> <20071210104749.GC5008@kernel.dk> <200712100323.48535.phillips@phunq.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200712100323.48535.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use jiffies for timestamps in last branch recording.
+On Mon, Dec 10 2007, Daniel Phillips wrote:
+> On Monday 10 December 2007 02:47, Jens Axboe wrote:
+> > Ehm, this patch is so broken it's not even funny - did you even
+> > compile? You would have noticed the warning on request_queue_t,
+> > surely. The big problem is the last hunk here though, how would that
+> > work on stacked devices? Clue: ->bi_bdev is not const, it can change
+> > after a call to ->make_request_fn().
+> 
+> Such paranoia.  Yes, the patch was compiled.   Yes, the warning was 
+> slipped through.  No, it is not substantive, and in fact was removed 
+> from another branch of our tree already.
+> 
+> Ignoring the rhetoric, apparently you missed the line:
+> 
+> +       if (q && q->metric && !bio->bi_queue) {
+> 
+> The prevents any reference ti bi_bdev after the intial call to 
+> generic_make_request.  Thanks to Evgeniy for pointing out the need for 
+> this measure on the last go round.
 
+Which saves the initial target, for ease of accounting at end io time -
+that's not the point. What happens when ->make_request_fn() changes
+bio->bi_bdev and returns 1, causing another iteration of the
+__generic_make_request() loop? 'q' is no longer the valid target,
+bdev_get_queue(bio->bi_bdev) is.
 
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
+> "So broken" is a gross exaggeration.  Substantive comments welcome.
 
-Index: linux-2.6-x86/arch/x86/kernel/ptrace.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/ptrace.c	2007-12-10 09:47:57.%N +0100
-+++ linux-2.6-x86/arch/x86/kernel/ptrace.c	2007-12-10 10:11:37.%N +0100
-@@ -616,7 +616,7 @@
- {
- 	struct bts_struct rec = {
- 		.qualifier = qualifier,
--		.variant.timestamp = sched_clock()
-+		.variant.jiffies = jiffies
- 	};
- 
- 	if (ptrace_bts_get_buffer_size(tsk) <= 0)
-Index: linux-2.6-x86/include/asm-x86/ds.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/ds.h	2007-12-10 09:47:57.%N +0100
-+++ linux-2.6-x86/include/asm-x86/ds.h	2007-12-10 10:11:37.%N +0100
-@@ -48,7 +48,7 @@
- 		} lbr;
- 		/* BTS_TASK_ARRIVES or
- 		   BTS_TASK_DEPARTS */
--		unsigned long long timestamp;
-+		unsigned long jiffies;
- 	} variant;
- };
- 
-Index: linux-2.6-x86/arch/x86/kernel/ds.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/ds.c	2007-12-10 09:13:55.%N +0100
-+++ linux-2.6-x86/arch/x86/kernel/ds.c	2007-12-10 10:22:43.%N +0100
-@@ -167,23 +167,13 @@
- {
- 	(*(unsigned char *)(base + ds_cfg.info_type.offset)) = value;
- }
--/*
-- * The info data might overlap with the info type on some architectures.
-- * We therefore read and write the exact number of bytes.
-- */
--static inline unsigned long long get_info_data(char *base)
--{
--	unsigned long long value = 0;
--	memcpy(&value,
--	       base + ds_cfg.info_data.offset,
--	       ds_cfg.info_data.size);
--	return value;
--}
--static inline void set_info_data(char *base, unsigned long long value)
--{
--	memcpy(base + ds_cfg.info_data.offset,
--	       &value,
--	       ds_cfg.info_data.size);
-+static inline unsigned long get_info_data(char *base)
-+{
-+	return *(unsigned long *)(base + ds_cfg.info_data.offset);
-+}
-+static inline void set_info_data(char *base, unsigned long value)
-+{
-+	(*(unsigned long *)(base + ds_cfg.info_data.offset)) = value;
- }
- 
- 
-@@ -282,8 +272,8 @@
- 
- 	memset(out, 0, sizeof(*out));
- 	if (get_from_ip(bts) == BTS_ESCAPE_ADDRESS) {
--		out->qualifier         = get_info_type(bts);
--		out->variant.timestamp = get_info_data(bts);
-+		out->qualifier       = get_info_type(bts);
-+		out->variant.jiffies = get_info_data(bts);
- 	} else {
- 		out->qualifier = BTS_BRANCH;
- 		out->variant.lbr.from_ip = get_from_ip(bts);
-@@ -319,7 +309,7 @@
- 	case BTS_TASK_DEPARTS:
- 		set_from_ip(bts, BTS_ESCAPE_ADDRESS);
- 		set_info_type(bts, in->qualifier);
--		set_info_data(bts, in->variant.timestamp);
-+		set_info_data(bts, in->variant.jiffies);
- 		break;
- 
- 	default:
-@@ -350,7 +340,7 @@
- 	.from_ip = { 0, 4 },
- 	.to_ip = { 4, 4 },
- 	.info_type = { 4, 1 },
--	.info_data = { 5, 7 },
-+	.info_data = { 8, 4 },
- 	.debugctl_mask = (1<<2)|(1<<3)
- };
- 
-@@ -364,7 +354,7 @@
- 	.from_ip = { 0, 4 },
- 	.to_ip = { 4, 4 },
- 	.info_type = { 4, 1 },
--	.info_data = { 5, 7 },
-+	.info_data = { 8, 4 },
- 	.debugctl_mask = (1<<6)|(1<<7)
- };
- #endif /* _i386_ */
-@@ -379,7 +369,7 @@
- 	.from_ip = { 0, 8 },
- 	.to_ip = { 8, 8 },
- 	.info_type = { 8, 1 },
--	.info_data = { 9, 7 },
-+	.info_data = { 16, 8 },
- 	.debugctl_mask = (1<<6)|(1<<7)|(1<<9)
- };
- 
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+Or you could try and make an effort to understand the comment instead of
+just glancing over it.
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+-- 
+Jens Axboe
+
