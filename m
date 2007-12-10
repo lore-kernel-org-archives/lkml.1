@@ -1,151 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbXLJFKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbXLJFOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752502AbXLJFKQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 00:10:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbXLJFKE
+	id S1753181AbXLJFOx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 00:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbXLJFOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 00:10:04 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:37886 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750834AbXLJFKB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 00:10:01 -0500
-Date: Sun, 9 Dec 2007 21:06:53 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
+	Mon, 10 Dec 2007 00:14:46 -0500
+Received: from mx2.suse.de ([195.135.220.15]:43685 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751126AbXLJFOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 00:14:45 -0500
+From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: npiggin@suse.de, mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [patch] x64/page.h: convert some macros to inlines
-Message-Id: <20071209210653.6d9f9cf9.randy.dunlap@oracle.com>
-In-Reply-To: <20071207163142.4e77f9c3.akpm@linux-foundation.org>
-References: <20071205071547.701344000@nick.local0.net>
-	<20071205071627.469118000@nick.local0.net>
-	<20071207163142.4e77f9c3.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Date: Mon, 10 Dec 2007 16:14:40 +1100
+Message-Id: <1071210051440.12083@suse.de>
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: [PATCH] knfsd: Change mailing list for nfsd in MAINTAINERS
+References: <20071210161353.11987.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Dec 2007 16:31:42 -0800 Andrew Morton wrote:
 
-> Could someone *please* start a little project of extirpating this utter
-> brain damage?  Convert those macros to typechecked static inlines on x86
-> (at least) so this sort of thing (which happens again and again and again)
-> is lessened?
+nfs@lists.sourceforge.net is being decommissioned.
 
-Here's a start on it.  x86 only and only 4 functions so far.
-Builds cleanly for i386 and x86_64.
+I wonder if the website should be changed to linux-nfs.org ...
 
----
+Cc: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+Signed-off-by: Neil Brown <neilb@suse.de>
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+### Diffstat output
+ ./MAINTAINERS |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Convert clear_page/copy_page macros to inline functions for type-checking.
-Andrew wants to extirpate these ugly macros.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/asm-x86/page_32.h |   39 +++++++++++++++++++++++++++++++++------
- include/asm-x86/page_64.h |   19 +++++++++++++++----
- 2 files changed, 48 insertions(+), 10 deletions(-)
-
---- linux-2.6.24-rc4-git6.orig/include/asm-x86/page_32.h
-+++ linux-2.6.24-rc4-git6/include/asm-x86/page_32.h
-@@ -12,12 +12,21 @@
- #ifdef __KERNEL__
- #ifndef __ASSEMBLY__
+diff .prev/MAINTAINERS ./MAINTAINERS
+--- .prev/MAINTAINERS	2007-12-10 16:03:52.000000000 +1100
++++ ./MAINTAINERS	2007-12-10 16:04:07.000000000 +1100
+@@ -2259,7 +2259,7 @@ P:	J. Bruce Fields
+ M:	bfields@fieldses.org
+ P:	Neil Brown
+ M:	neilb@suse.de
+-L:	nfs@lists.sourceforge.net
++L:	linux-nfs@vger.kernel.org
+ W:	http://nfs.sourceforge.net/
+ S:	Supported
  
-+#include <linux/string.h>
-+
- #ifdef CONFIG_X86_USE_3DNOW
- 
- #include <asm/mmx.h>
- 
--#define clear_page(page)	mmx_clear_page((void *)(page))
--#define copy_page(to,from)	mmx_copy_page(to,from)
-+static inline void clear_page(void *page)
-+{
-+	mmx_clear_page(page);
-+}
-+
-+static inline void copy_page(void *to, void *from)
-+{
-+	mmx_copy_page(to, from);
-+}
- 
- #else
- 
-@@ -26,13 +35,31 @@
-  *	Maybe the K6-III ?
-  */
-  
--#define clear_page(page)	memset((void *)(page), 0, PAGE_SIZE)
--#define copy_page(to,from)	memcpy((void *)(to), (void *)(from), PAGE_SIZE)
-+static inline void clear_page(void *page)
-+{
-+	memset(page, 0, PAGE_SIZE);
-+}
-+
-+static inline void copy_page(void *to, void *from)
-+{
-+	memcpy(to, from, PAGE_SIZE);
-+}
- 
- #endif
- 
--#define clear_user_page(page, vaddr, pg)	clear_page(page)
--#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
-+struct page;
-+
-+static void inline clear_user_page(void *page, unsigned long vaddr,
-+				struct page *pg)
-+{
-+	clear_page(page);
-+}
-+
-+static void inline copy_user_page(void *to, void *from, unsigned long vaddr,
-+				struct page *topage)
-+{
-+	copy_page(to, from);
-+}
- 
- #define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
- 	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
---- linux-2.6.24-rc4-git6.orig/include/asm-x86/page_64.h
-+++ linux-2.6.24-rc4-git6/include/asm-x86/page_64.h
-@@ -42,11 +42,22 @@
- 
- extern unsigned long end_pfn;
- 
--void clear_page(void *);
--void copy_page(void *, void *);
-+void clear_page(void *page);
-+void copy_page(void *to, void *from);
- 
--#define clear_user_page(page, vaddr, pg)	clear_page(page)
--#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
-+struct page;
-+
-+static void inline clear_user_page(void *page, unsigned long vaddr,
-+				struct page *pg)
-+{
-+	clear_page(page);
-+}
-+
-+static void inline copy_user_page(void *to, void *from, unsigned long vaddr,
-+				struct page *topage)
-+{
-+	copy_page(to, from);
-+}
- 
- #define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
- 	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
