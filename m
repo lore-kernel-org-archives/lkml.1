@@ -1,129 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbXLJOcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbXLJOgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756250AbXLJOcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 09:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbXLJOcA
+	id S1755983AbXLJOgt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 09:36:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXLJOgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 09:32:00 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:51237 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751054AbXLJOb7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 09:31:59 -0500
-Subject: Re: [1/4] DST: Distributed storage documentation.
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Greg KH <greg@kroah.com>
-In-Reply-To: <20071210125839.GA16789@2ka.mipt.ru>
-References: <11972872493977@2ka.mipt.ru> <11972872501664@2ka.mipt.ru>
-	 <3ae72650712100451h6a84d6cfs9b3a2954c13c4612@mail.gmail.com>
-	 <20071210125839.GA16789@2ka.mipt.ru>
-Content-Type: text/plain
-Date: Mon, 10 Dec 2007 15:31:48 +0100
-Message-Id: <1197297108.6399.91.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+m2zr/vXfLp7zZx6x7vFOY6zBpHpcrmT/WUE1
- xDM8UH82pZfGQbp5ThJRRk9GaIvrYak197lMwDaIqqKACpAXGv
- UfvnDHaZjpqJ/pHvbgYLgQwnVQaLc5f
+	Mon, 10 Dec 2007 09:36:41 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:53511 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751036AbXLJOgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 09:36:40 -0500
+Date: Mon, 10 Dec 2007 09:36:09 -0500
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>, gnome42@gmail.com,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Denis V. Lunev" <den@openvz.org>, linux-nfs@vger.kernel.org
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
+Message-ID: <20071210143609.GF2138@fieldses.org>
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com> <200712090220.44543.maximlevitsky@gmail.com> <18268.51342.353887.178014@notabene.brown> <200712101619.12522.maximlevitsky@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712101619.12522.maximlevitsky@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-12-10 at 15:58 +0300, Evgeniy Polyakov wrote:
-> On Mon, Dec 10, 2007 at 01:51:43PM +0100, Kay Sievers (kay.sievers@vrfy.org) wrote:
-> > On Dec 10, 2007 12:47 PM, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> > > diff --git a/Documentation/dst/sysfs.txt b/Documentation/dst/sysfs.txt
-> > > new file mode 100644
-> > > index 0000000..79d79dc
-> > > --- /dev/null
-> > > +++ b/Documentation/dst/sysfs.txt
-> > > @@ -0,0 +1,30 @@
-> > > +This file describes sysfs files created for each storage.
-> > > +
-> > > +1. Per-storage files.
-> > > +Each storage has its own dir /sysfs/devices/$storage_name,
+On Mon, Dec 10, 2007 at 04:19:12PM +0200, Maxim Levitsky wrote:
+> ...
+> > It is best not to use nohide - we should probably mark it as
+> > 'legacy'.
 > > 
-> > It's always /sys/devices/.
-> 
-> I meant that for each new device, it will be placed into
-> /sys/devices/its_name, but it can also be accessed via
-> /sys/bus/dst/devices/
-
-Still, it looks like a path. :)
-
-Please don't reference any device directly with a /sys/devices/ path.
-You have to use the subsystem links to the devices
-in /sys/bus/dst/devices/. Devices are free to move around
-in /sys/devices, even during runtime. Yours don't do, but anyway, please
-remove all mentioning of direct access to /sys/devices/.
-
-Btw, where is the top-level /sys/devices/storage/ coming from? I don't
-see that in the code. We don't accept any new "virtual parents" here.
-Your devices will automatically appear in /sys/devices/virtual/dst/, and
-not below your own parent. But that path does not matter anyway, because
-you should only access them from the /sys/bus/dst/devices/ directory.
-
-And in general please don't claim generic names like "storage" in any
-namespace for a very specific subsystem like this.
-
-> > > +which contains following files:
-> > > +
-> > > +alg - contains name of the algorithm used to created given storage
-> > > +name - name of the storage
-> > > +nodes - map of the storage (list of nodes and their sizes and starts)
-> > > +remove_all_nodes - writable file which allows to remove all nodes from given
-> > > +       storage
-> > > +n-$start-$cookie - per node directory, where
-> > > +       $start - start of the given node in sectors,
-> > > +       $cookie - unique node's id used by DST
-> > > +
-> > > +2. Per-node files.
-> > > +Node's files are located in /sysfs/devices/$storage_name/n-$start-$cookie
-> > > +directory, described above.
+> > Simply export the top level mountpoint as 'crossmnt'  and everything
+> > below there will be exported.
 > > 
-> > To which class or bus do the devices you create belong? Care to show a
-> > "tree" or "ls -la" of the device?
+> > > Where should I put those options in root file-system export or in submount export?
+> > 
+> > crossmnt goes at the top.  nohide goes in the submount.  Both have
+> > the same general effect though with subtle differences.
+> > You don't need both (though that doesn't hurt).
+> > Just use crossmnt at the top,  Then you don't need to mention the
+> > lower level filesystems at all.
+> > 
+> > > 
+> ...
+> > > (I decided to switch to NFS4 only due to the lack of ability to see underlying mounts)
+> > > 
+> > 
+> > All of this should work fine with v3.  Once you have the right patch
+> > for the crossmnt bug applied, if you have further problems post them
+> > to linux-nfs@vger.kernel.org.
+> > 
+> > NeilBrown
+> > 
 > 
-> It is 'dst' bus.
+> Big thanks,
 > 
-> uganda:~/codes# ls -la /sys/devices/staorge/
-> total 0
-> drwxr-xr-x 4 root root    0 2007-12-10 11:46 .
-> drwxr-xr-x 9 root root    0 2007-12-10 11:46 ..
-> -r--r--r-- 1 root root 4096 2007-12-10 11:46 alg
-> lrwxrwxrwx 1 root root    0 2007-12-10 11:46 bus -> ../../bus/dst
-> drwxr-xr-x 3 root root    0 2007-12-10 11:46 n-0-ffff81003e24117
-> -r--r--r-- 1 root root 4096 2007-12-10 11:46 name
-> -r--r--r-- 1 root root 4096 2007-12-10 11:46 nodes
-> drwxr-xr-x 2 root root    0 2007-12-10 11:46 power
-> -rw-r--r-- 1 root root 4096 2007-12-10 11:46 remove_all_nodes
-> lrwxrwxrwx 1 root root    0 2007-12-10 11:46 subsystem -> ../../bus/dst
-> -rw-r--r-- 1 root root 4096 2007-12-10 11:46 uevent
+> Still NFS server just don't want to accept the connection
+> I noticed that if I first mount with
+> -tnfs, unmount,  and then mount with -tnfs4, it works
 
-Ok, how does:
-  ls -l /sys/devices/storage/n-0-ffff81003e24117
-look?
+OK, in that case, that's definitely the bug Eric sent out the patch for;
+you may want to try applying his patch.
 
-> uganda:~/codes# ls -l /sys/bus/dst/
-> total 0
-> drwxr-xr-x 2 root root    0 2007-12-10 09:52 devices
-> drwxr-xr-x 2 root root    0 2007-12-10 09:52 drivers
-> -rw-r--r-- 1 root root 4096 2007-12-10 11:46 drivers_autoprobe
-> --w------- 1 root root 4096 2007-12-10 11:46 drivers_probe
-
-How does:
-  ls -l /sys/bus/dst/devices
-look?
-
-
-Further questions:
-Why do you do your own refcounting instead of using kref?
-Why don't you use groups for the attributes?
-Why don't you use default attributes for the device, where you get all
-error handling done by the core.
-
-Kay
-
+--b.
