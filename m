@@ -1,111 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbXLJNme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbXLJNoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757154AbXLJNme (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 08:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbXLJNm0
+	id S1757255AbXLJNoB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 08:44:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbXLJNny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 08:42:26 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:33378 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754593AbXLJNmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 08:42:25 -0500
-Date: Mon, 10 Dec 2007 19:12:14 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       davem@davemloft.net, mathieu.desnoyers@polymtl.ca,
-       hskinnemoen@atmel.com
-Subject: Re: [PATCH 2/2] Kprobes: Build kretprobe samples only if arch supports kretprobes - updated
-Message-ID: <20071210134214.GA30004@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20071210095221.GA19425@in.ibm.com> <20071210095350.GB19425@in.ibm.com> <20071210120026.GA14992@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 10 Dec 2007 08:43:54 -0500
+Received: from phunq.net ([64.81.85.152]:53039 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751705AbXLJNnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 08:43:53 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC] [PATCH] A clean aEvgeniy pproach to writeout throttling
+Date: Mon, 10 Dec 2007 05:43:45 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+References: <200712051603.02183.phillips@phunq.net> <200712100526.49319.phillips@phunq.net> <20071210133050.GJ5008@kernel.dk>
+In-Reply-To: <20071210133050.GJ5008@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071210120026.GA14992@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.11
+Message-Id: <200712100543.45204.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2007 at 01:00:26PM +0100, Sam Ravnborg wrote:
-> On Mon, Dec 10, 2007 at 03:23:50PM +0530, Ananth N Mavinakayanahalli wrote:
-> > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> > 
-> > This patch builds samples/kprobes/kretprobe_example.c only on archs that
-> > support kretprobes.
-> > 
-> > 
-> > Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> > ---
-> >  samples/kprobes/Makefile |    7 +++++--
-> >  1 files changed, 5 insertions(+), 2 deletions(-)
-> > 
-> > Index: linux-2.6.24-rc4/samples/kprobes/Makefile
-> > ===================================================================
-> > --- linux-2.6.24-rc4.orig/samples/kprobes/Makefile
-> > +++ linux-2.6.24-rc4/samples/kprobes/Makefile
-> > @@ -1,5 +1,8 @@
-> >  # builds the kprobes example kernel modules;
-> >  # then to use one (as root):  insmod <module_name.ko>
-> >  
-> > -obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o \
-> > -		kretprobe_example.o
-> > +obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o
-> > +
-> > +ifeq ($(CONFIG_HAVE_KRETPROBES),y)
-> > +obj-$(CONFIG_SAMPLE_KPROBES) += kretprobe_example.o
-> > +endif
-> 
-> It would be nice to push this configuration dependency to Kconfig.
-> Something like:
-> 
-> config SAMPLE_KRETPROBES
-> 	default y
-> 	depends on SAMPLE_KPROBES
-> 
-> And then in the Makefile have:
-> obj-$(CONFIG_SAMPLE_KRETPROBES) += kretprobe_example.o
+On Monday 10 December 2007 05:30, Jens Axboe wrote:
+> On Mon, Dec 10 2007, Daniel Phillips wrote:
+> "Let me close with perhaps the most relevant remarks: the attached
+> code has been in heavy testing and in production for months now. 
+> Thus there is nothing theoretical when I say it works, and the patch
+> speaks for itself in terms of obvious correctness."
 
-Done. Updated patch below...
+That is quite correct, even without the redirect the code passed all our 
+tests.  Remember, we were testing for deadlock, not every possible 
+block IO configuration.
 
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> We must have differing opinions on what obvious correctness is.
 
-This patch builds samples/kprobes/kretprobe_example.c only on archs that
-support kretprobes. Thanks to Sam Ravnborg for Kconfig suggestions.
+Yes we do.  You appear to have missed the plot entirely.  I suppose I 
+should remind you: this is about deadlock in _your_ subsystem that has 
+been creating bug reports for years.  Block writeout deadlock.  Caused 
+by a deficiency in _your_ subsystem.
 
-
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
----
- samples/Kconfig          |    5 +++++
- samples/kprobes/Makefile |    4 ++--
- 2 files changed, 7 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.24-rc4/samples/kprobes/Makefile
-===================================================================
---- linux-2.6.24-rc4.orig/samples/kprobes/Makefile
-+++ linux-2.6.24-rc4/samples/kprobes/Makefile
-@@ -1,5 +1,5 @@
- # builds the kprobes example kernel modules;
- # then to use one (as root):  insmod <module_name.ko>
- 
--obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o \
--		kretprobe_example.o
-+obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o
-+obj-$(CONFIG_SAMPLE_KRETPROBES) += kretprobe_example.o
-Index: linux-2.6.24-rc4/samples/Kconfig
-===================================================================
---- linux-2.6.24-rc4.orig/samples/Kconfig
-+++ linux-2.6.24-rc4/samples/Kconfig
-@@ -28,5 +28,10 @@ config SAMPLE_KPROBES
- 	help
- 	  This build several kprobes example modules.
- 
-+config SAMPLE_KRETPROBES
-+	tristate "Build kretprobes example -- loadable modules only"
-+	default m
-+	depends on SAMPLE_KPROBES && HAVE_KRETPROBES
-+
- endif # SAMPLES
- 
+Got a plan?  Or does endless, pointless flaming feel more like progress 
+to you?
