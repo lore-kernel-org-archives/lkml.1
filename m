@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbXLJDND@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbXLJDN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbXLJDND (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 22:13:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbXLJDMw
+	id S1755551AbXLJDN3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 22:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXLJDNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 22:12:52 -0500
-Received: from mga01.intel.com ([192.55.52.88]:58124 "EHLO mga01.intel.com"
+	Sun, 9 Dec 2007 22:13:18 -0500
+Received: from mailgw.cvut.cz ([147.32.3.235]:59840 "EHLO mailgw.cvut.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751126AbXLJDMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 22:12:51 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.23,274,1194249600"; 
-   d="scan'208";a="428795434"
-Subject: Re: [PATCH] iwlwifi3945/4965 - fix rate control algo reference leak
-From: Zhu Yi <yi.zhu@intel.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       "John W.Linville" <linville@tuxdriver.com>,
-       Thomas Tuttle <linux-kernel@ttuttle.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Wu <flamingice@sourmilk.net>,
-       LWML <linux-wireless@vger.kernel.org>
-In-Reply-To: <475AB087.5050209@rtr.ca>
-References: <20071206093922.GA7356@cvg>
-	 <1196991573.3170.43.camel@debian.sh.intel.com>  <475AB087.5050209@rtr.ca>
-Content-Type: text/plain
-Organization: Intel Corp.
-Date: Mon, 10 Dec 2007 11:04:56 +0800
-Message-Id: <1197255896.3170.232.camel@debian.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	id S1755237AbXLJDNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 22:13:17 -0500
+X-Greylist: delayed 1249 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Dec 2007 22:13:16 EST
+Message-ID: <475CA9EA.1090405@vc.cvut.cz>
+Date: Sun, 09 Dec 2007 18:52:26 -0800
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.11) Gecko/20071119 Iceape/1.1.7 (Debian-1.1.7-1)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, rjw@sisk.pl,
+       trond.myklebust@fys.uio.no, gnome42@gmail.com,
+       linux-kernel@vger.kernel.org, bfields@fieldses.org, den@openvz.org,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>	<1197067918.10831.13.camel@heimdal.trondhjem.org>	<20071207151444.af5d8e11.akpm@linux-foundation.org>	<200712080043.29292.rjw@sisk.pl>	<20071208000043.GC1951@martell.zuzino.mipt.ru>	<20071207161508.afe8fdf1.akpm@linux-foundation.org> <m1lk85q0cw.fsf_-_@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1lk85q0cw.fsf_-_@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2007-12-08 at 09:56 -0500, Mark Lord wrote:
+Eric W. Biederman wrote:
+> Ultimately to implement /proc perfectly we need an implementation
+> of d_revalidate because files and directories can be removed behind
+> the back of the VFS, and d_revalidate is the only way we can let
+> the VFS know that this has happened.
 > 
-> Any chance of getting LEDs support re-added to this driver,
-> perhaps in the 2.6.25 timeframe?
+> So until we get a proper test for keeping dentries in the dcache
+> fix the current d_revalidate method by completely removing it.  This
+> returns us to the current status quo.
 
-I'd also like to see it happen. Stay tuned.
+Hello,
+    I know that I'm late to the party, but mount points is not only 
+problem with d_revalidate.  With your patch in place module below gets 
+refcount incremented by two every time I do 'ls -la /proc/fs/vmblock'.
 
-Thanks,
--yi
+
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/proc_fs.h>
+
+static int vmblockinit(void) {
+    struct proc_dir_entry *controlProcDirEntry;
+
+    /* Create /proc/fs/vmblock */
+    controlProcDirEntry = proc_mkdir("vmblock", proc_root_fs);
+    if (!controlProcDirEntry) {
+       printk(KERN_DEBUG "Bad...\n");
+       return -EINVAL;
+    }
+    controlProcDirEntry->owner = THIS_MODULE;
+    return 0;
+}
+
+static void vmblockexit(void) {
+    remove_proc_entry("vmblock", proc_root_fs);
+}
+
+module_init(vmblockinit);
+module_exit(vmblockexit);
+
+
+(code comes from VMware's vmblock module, 
+http://sourceforge.net/project/showfiles.php?group_id=204462)
+						Thanks,
+							Petr
+
