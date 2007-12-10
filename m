@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbXLJCqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbXLJCre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbXLJCqs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 21:46:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbXLJCnM
+	id S1756171AbXLJCre (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 21:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbXLJCnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 21:43:12 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49719 "EHLO
+	Sun, 9 Dec 2007 21:43:18 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49738 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbXLJCm6 (ORCPT
+	with ESMTP id S1754175AbXLJCnE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 21:42:58 -0500
+	Sun, 9 Dec 2007 21:43:04 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 04/42] Unionfs: usage documentation for users
-Date: Sun,  9 Dec 2007 21:41:37 -0500
-Message-Id: <11972545371315-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 27/42] Unionfs: async I/O queue headers
+Date: Sun,  9 Dec 2007 21:42:00 -0500
+Message-Id: <11972545523728-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11972545353262-git-send-email-ezk@cs.sunysb.edu>
@@ -27,131 +27,108 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- Documentation/filesystems/unionfs/usage.txt |  115 +++++++++++++++++++++++++++
- 1 files changed, 115 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/filesystems/unionfs/usage.txt
+ fs/unionfs/sioq.h |   92 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 92 insertions(+), 0 deletions(-)
+ create mode 100644 fs/unionfs/sioq.h
 
-diff --git a/Documentation/filesystems/unionfs/usage.txt b/Documentation/filesystems/unionfs/usage.txt
+diff --git a/fs/unionfs/sioq.h b/fs/unionfs/sioq.h
 new file mode 100644
-index 0000000..a6b1aca
+index 0000000..afb71ee
 --- /dev/null
-+++ b/Documentation/filesystems/unionfs/usage.txt
-@@ -0,0 +1,115 @@
-+Unionfs is a stackable unification file system, which can appear to merge
-+the contents of several directories (branches), while keeping their physical
-+content separate.  Unionfs is useful for unified source tree management,
-+merged contents of split CD-ROM, merged separate software package
-+directories, data grids, and more.  Unionfs allows any mix of read-only and
-+read-write branches, as well as insertion and deletion of branches anywhere
-+in the fan-out.  To maintain Unix semantics, Unionfs handles elimination of
-+duplicates, partial-error conditions, and more.
++++ b/fs/unionfs/sioq.h
+@@ -0,0 +1,92 @@
++/*
++ * Copyright (c) 2006-2007 Erez Zadok
++ * Copyright (c) 2006      Charles P. Wright
++ * Copyright (c) 2006-2007 Josef 'Jeff' Sipek
++ * Copyright (c) 2006      Junjiro Okajima
++ * Copyright (c) 2006      David P. Quigley
++ * Copyright (c) 2006-2007 Stony Brook University
++ * Copyright (c) 2006-2007 The Research Foundation of SUNY
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
 +
-+# mount -t unionfs -o branch-option[,union-options[,...]] none MOUNTPOINT
++#ifndef _SIOQ_H
++#define _SIOQ_H
 +
-+The available branch-option for the mount command is:
++struct deletewh_args {
++	struct unionfs_dir_state *namelist;
++	struct dentry *dentry;
++	int bindex;
++};
 +
-+	dirs=branch[=ro|=rw][:...]
++struct is_opaque_args {
++	struct dentry *dentry;
++};
 +
-+specifies a separated list of which directories compose the union.
-+Directories that come earlier in the list have a higher precedence than
-+those which come later. Additionally, read-only or read-write permissions of
-+the branch can be specified by appending =ro or =rw (default) to each
-+directory.
++struct create_args {
++	struct inode *parent;
++	struct dentry *dentry;
++	umode_t mode;
++	struct nameidata *nd;
++};
 +
-+Syntax:
++struct mkdir_args {
++	struct inode *parent;
++	struct dentry *dentry;
++	umode_t mode;
++};
 +
-+	dirs=/branch1[=ro|=rw]:/branch2[=ro|=rw]:...:/branchN[=ro|=rw]
++struct mknod_args {
++	struct inode *parent;
++	struct dentry *dentry;
++	umode_t mode;
++	dev_t dev;
++};
 +
-+Example:
++struct symlink_args {
++	struct inode *parent;
++	struct dentry *dentry;
++	char *symbuf;
++	umode_t mode;
++};
 +
-+	dirs=/writable_branch=rw:/read-only_branch=ro
-+
-+
-+DYNAMIC BRANCH MANAGEMENT AND REMOUNTS
-+======================================
-+
-+You can remount a union and change its overall mode, or reconfigure the
-+branches, as follows.
-+
-+To downgrade a union from read-write to read-only:
-+
-+# mount -t unionfs -o remount,ro none MOUNTPOINT
-+
-+To upgrade a union from read-only to read-write:
-+
-+# mount -t unionfs -o remount,rw none MOUNTPOINT
-+
-+To delete a branch /foo, regardless where it is in the current union:
-+
-+# mount -t unionfs -o remount,del=/foo none MOUNTPOINT
-+
-+To insert (add) a branch /foo before /bar:
-+
-+# mount -t unionfs -o remount,add=/bar:/foo none MOUNTPOINT
-+
-+To insert (add) a branch /foo (with the "rw" mode flag) before /bar:
-+
-+# mount -t unionfs -o remount,add=/bar:/foo=rw none MOUNTPOINT
-+
-+To insert (add) a branch /foo (in "rw" mode) at the very beginning (i.e., a
-+new highest-priority branch), you can use the above syntax, or use a short
-+hand version as follows:
-+
-+# mount -t unionfs -o remount,add=/foo none MOUNTPOINT
-+
-+To append a branch to the very end (new lowest-priority branch):
-+
-+# mount -t unionfs -o remount,add=:/foo none MOUNTPOINT
-+
-+To append a branch to the very end (new lowest-priority branch), in
-+read-only mode:
-+
-+# mount -t unionfs -o remount,add=:/foo=ro none MOUNTPOINT
-+
-+Finally, to change the mode of one existing branch, say /foo, from read-only
-+to read-write, and change /bar from read-write to read-only:
-+
-+# mount -t unionfs -o remount,mode=/foo=rw,mode=/bar=ro none MOUNTPOINT
-+
-+Note: in Unionfs 2.x, you cannot set the leftmost branch to readonly because
-+then Unionfs won't have any writable place for copyups to take place.
-+Moreover, the VFS can get confused when it tries to modify something in a
-+file system mounted read-write, but isn't permitted to write to it.
-+Instead, you should set the whole union as readonly, as described above.
-+If, however, you must set the leftmost branch as readonly, perhaps so you
-+can get a snapshot of it at a point in time, then you should insert a new
-+writable top-level branch, and mark the one you want as readonly.  This can
-+be accomplished as follows, assuming that /foo is your current leftmost
-+branch:
-+
-+# mount -t tmpfs -o size=NNN /new
-+# mount -t unionfs -o remount,add=/new,mode=/foo=ro none MOUNTPOINT
-+<do what you want safely in /foo>
-+# mount -t unionfs -o remount,del=/new,mode=/foo=rw none MOUNTPOINT
-+<check if there's anything in /new you want to preserve>
-+# umount /new
-+
-+CACHE CONSISTENCY
-+=================
-+
-+If you modify any file on any of the lower branches directly, while there is
-+a Unionfs 2.1 mounted above any of those branches, you should tell Unionfs
-+to purge its caches and re-get the objects.  To do that, you have to
-+increment the generation number of the superblock using the following
-+command:
-+
-+# mount -t unionfs -o remount,incgen none MOUNTPOINT
-+
-+Note that the older way of incrementing the generation number using an
-+ioctl, is no longer supported in Unionfs 2.0 and newer.  Ioctls in general
-+are not encouraged.  Plus, an ioctl is per-file concept, whereas the
-+generation number is a per-file-system concept.  Worse, such an ioctl
-+requires an open file, which then has to be invalidated by the very nature
-+of the generation number increase (read: the old generation increase ioctl
-+was pretty racy).
++struct unlink_args {
++	struct inode *parent;
++	struct dentry *dentry;
++};
 +
 +
-+For more information, see <http://unionfs.filesystems.org/>.
++struct sioq_args {
++	struct completion comp;
++	struct work_struct work;
++	int err;
++	void *ret;
++
++	union {
++		struct deletewh_args deletewh;
++		struct is_opaque_args is_opaque;
++		struct create_args create;
++		struct mkdir_args mkdir;
++		struct mknod_args mknod;
++		struct symlink_args symlink;
++		struct unlink_args unlink;
++	};
++};
++
++/* Extern definitions for SIOQ functions */
++extern int __init init_sioq(void);
++extern void stop_sioq(void);
++extern void run_sioq(work_func_t func, struct sioq_args *args);
++
++/* Extern definitions for our privilege escalation helpers */
++extern void __unionfs_create(struct work_struct *work);
++extern void __unionfs_mkdir(struct work_struct *work);
++extern void __unionfs_mknod(struct work_struct *work);
++extern void __unionfs_symlink(struct work_struct *work);
++extern void __unionfs_unlink(struct work_struct *work);
++extern void __delete_whiteouts(struct work_struct *work);
++extern void __is_opaque_dir(struct work_struct *work);
++
++#endif /* not _SIOQ_H */
 -- 
 1.5.2.2
 
