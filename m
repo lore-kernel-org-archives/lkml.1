@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbXLJXhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbXLJXis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbXLJXhc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 18:37:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbXLJXg6
+	id S1754014AbXLJXis (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 18:38:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbXLJXik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 18:36:58 -0500
-Received: from waste.org ([66.93.16.53]:55017 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751864AbXLJXg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 18:36:57 -0500
-Date: Mon, 10 Dec 2007 17:35:25 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Marc Haber <mh+linux-kernel@zugschlus.de>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-Message-ID: <20071210233525.GK19691@waste.org>
-References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <20071204164720.6e4dc2c4@the-village.bc.nu> <475599D6.4030008@cosmosbay.com> <20071205212646.GP17536@waste.org> <20071209124200.GA31147@torres.zugschlus.de> <20071209161605.GX19691@waste.org> <20071210230643.GC32133@torres.zugschlus.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071210230643.GC32133@torres.zugschlus.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 10 Dec 2007 18:38:40 -0500
+Received: from mfe1.polimi.it ([131.175.12.23]:58521 "EHLO polimi.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752010AbXLJXij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 18:38:39 -0500
+Date: Tue, 11 Dec 2007 00:34:33 +0100
+From: Stefano Brivio <stefano.brivio@polimi.it>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       Guillaume Chazarain <guichaz@yahoo.fr>
+Subject: Re: 2.6.24-rc4-git5: Reported regressions from 2.6.23
+Message-ID: <20071211003433.5cf0230d@morte>
+In-Reply-To: <20071210230425.GA641@elte.hu>
+References: <200712080340.49546.rjw@sisk.pl>
+	<20071210204212.GA5502@elte.hu>
+	<20071210125923.37bd2f10.akpm@linux-foundation.org>
+	<20071210224508.GB27178@elte.hu>
+	<20071210230425.GA641@elte.hu>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.3.3.310218, Antispam-Engine: 2.5.2.311128, Antispam-Data: 2007.11.6.30824
+X-PerlMx-Spam: Gauge=II, Probability=22%, Report='RELAY_IN_PBL_11 2.5, RDNS_GENERIC_POOLED 0, RDNS_SUSP 0, RDNS_SUSP_GENERIC 0, RELAY_IN_PBL 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 11, 2007 at 12:06:43AM +0100, Marc Haber wrote:
-> On Sun, Dec 09, 2007 at 10:16:05AM -0600, Matt Mackall wrote:
-> > On Sun, Dec 09, 2007 at 01:42:00PM +0100, Marc Haber wrote:
-> > > On Wed, Dec 05, 2007 at 03:26:47PM -0600, Matt Mackall wrote:
-> > > > The distinction between /dev/random and /dev/urandom boils down to one
-> > > > word: paranoia. If you are not paranoid enough to mistrust your
-> > > > network, then /dev/random IS NOT FOR YOU. Use /dev/urandom.
-> > > 
-> > > But currently, people who use /dev/urandom to obtain low-quality
-> > > entropy do a DoS for the paranoid people.
-> > 
-> > Not true, as I've already pointed out in this thread.
+On Tue, 11 Dec 2007 00:04:25 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> I must have missed this. Can you please explain again? For a layman it
-> looks like a paranoid application cannot read 500 Bytes from
-> /dev/random without blocking if some other application has previously
-> read 10 Kilobytes from /dev/urandom.
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > > what do you think? Right now i've got them queued up for 2.6.25 in 
+> > > > both the scheduler-devel and the x86-devel git trees - but can 
+> > > > submit them for 2.6.24 if it's better if we did them there. I've got 
+> > > > no strong opinion either way.
+> > > 
+> > > printk_clock() doesn't seem terribly important but what's this stuff 
+> > > about effects on udelay/mdelay?  That can be serious if they're 
+> > > getting shortened.
+> > 
+> > since udelay depends on loops_per_jiffy, which is fixed up 
+> > time_cpufreq_notifier(), i dont see how it could be affected by 
+> > frequency changes. (but that's the theory - practice might be 
+> > different)
+> 
+> Stefano Brivio reported udelay()/mdelay() effects in the b43 driver. 
+> (and it caused driver failures for him.)
+> 
+> Stefano, could you please try to sum up your experiences with that 
+> issue? Is it reproducable, and the 5 patches i did fix it? (if yes, 
+> could you try to re-do the mdelay verifications perhaps, to make sure 
+> it's not some other effect interacting here. In theory sched-clock 
+> scaling has no effect on udelay behavior.)
 
-/dev/urandom always leaves enough entropy in the input pool for
-/dev/random to reseed. Thus, as long as entropy is coming in, it is
-not possible for /dev/urandom readers to starve /dev/random readers.
-But /dev/random readers may still block temporarily and they should
-damn well expect to block if they read 500 bytes out of a 512 byte
-pool.
+Sorry for disappearing. Anyway, yes, those patches fixed it. Precision in
+delays isn't that good when using my crappy unstable TSC (mdelay(2000)
+causes delays between 2 and 2.9 seconds) but it's not depending on frequency
+changes anymore. So I'd say it's fixed, but please tell me if you want me
+to do any other test so as to be sure it is.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+
+--
+Ciao
+Stefano
