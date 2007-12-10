@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbXLJOgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbXLJOjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755983AbXLJOgt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 09:36:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXLJOgl
+	id S1756292AbXLJOjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 09:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbXLJOjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 09:36:41 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:53511 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751036AbXLJOgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 09:36:40 -0500
-Date: Mon, 10 Dec 2007 09:36:09 -0500
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, gnome42@gmail.com,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Denis V. Lunev" <den@openvz.org>, linux-nfs@vger.kernel.org
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
-Message-ID: <20071210143609.GF2138@fieldses.org>
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com> <200712090220.44543.maximlevitsky@gmail.com> <18268.51342.353887.178014@notabene.brown> <200712101619.12522.maximlevitsky@gmail.com>
+	Mon, 10 Dec 2007 09:39:03 -0500
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:64502 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751407AbXLJOjA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 09:39:00 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch] mm: fix XIP file writes
+Date: Mon, 10 Dec 2007 15:38:20 +0100
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, rob@landley.net,
+       Jens Axboe <axboe@kernel.dk>, cotte@de.ibm.com
+References: <20071204042628.GA26636@wotan.suse.de> <20071204113549.GA6751@wotan.suse.de> <20071204130050.GB6751@wotan.suse.de>
+In-Reply-To: <20071204130050.GB6751@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200712101619.12522.maximlevitsky@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Message-Id: <200712101538.20619.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2007 at 04:19:12PM +0200, Maxim Levitsky wrote:
-> ...
-> > It is best not to use nohide - we should probably mark it as
-> > 'legacy'.
-> > 
-> > Simply export the top level mountpoint as 'crossmnt'  and everything
-> > below there will be exported.
-> > 
-> > > Where should I put those options in root file-system export or in submount export?
-> > 
-> > crossmnt goes at the top.  nohide goes in the submount.  Both have
-> > the same general effect though with subtle differences.
-> > You don't need both (though that doesn't hurt).
-> > Just use crossmnt at the top,  Then you don't need to mention the
-> > lower level filesystems at all.
-> > 
-> > > 
-> ...
-> > > (I decided to switch to NFS4 only due to the lack of ability to see underlying mounts)
-> > > 
-> > 
-> > All of this should work fine with v3.  Once you have the right patch
-> > for the crossmnt bug applied, if you have further problems post them
-> > to linux-nfs@vger.kernel.org.
-> > 
-> > NeilBrown
-> > 
-> 
-> Big thanks,
-> 
-> Still NFS server just don't want to accept the connection
-> I noticed that if I first mount with
-> -tnfs, unmount,  and then mount with -tnfs4, it works
+Hi Nick,
 
-OK, in that case, that's definitely the bug Eric sent out the patch for;
-you may want to try applying his patch.
+> Here we go. See, brd already found a bug ;)
+> Can you apply the ext2 XIP patch too? And I'll resend the brd XIP patch.
+[...]
+> Writing to XIP files at a non-page-aligned offset results in data corruption
+> because the writes were always sent to the start of the page.
+[...]
+> @@ -314,7 +314,7 @@ __xip_file_write(struct file *filp, cons
+>  		fault_in_pages_readable(buf, bytes);
+>  		kaddr = kmap_atomic(page, KM_USER0);
+>  		copied = bytes -
+> -			__copy_from_user_inatomic_nocache(kaddr, buf, bytes);
+> +			__copy_from_user_inatomic_nocache(kaddr + offset, buf, bytes);
+>  		kunmap_atomic(kaddr, KM_USER0);
+>  		flush_dcache_page(page);
 
---b.
+I asked myself why this problem never happened before. So I asked our testers
+to reproduce this problem on 2.6.23 and service levels. As the testcase did
+not trigger, I looked into the 2.6.23 code. This problem was introduced by
+commit 4a9e5ef1f4f15205e477817a5cefc34bd3f65f55 (mm: write iovec cleanup from
+Nick Piggin) during 2.6.24-rc:
+--------snip-------
+-		copied = filemap_copy_from_user(page, offset, buf, bytes);
+[...]
++		copied = bytes -
++			__copy_from_user_inatomic_nocache(kaddr, buf, bytes);
+-------------------
+
+So yes, its good to have xip on brd. It even tests your changes ;-)
+Good news is, that we dont need anything for stable.
+
+Christian
