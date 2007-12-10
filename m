@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbXLJSi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbXLJSsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756400AbXLJSi0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 13:38:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbXLJSiT
+	id S1755994AbXLJSsf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 13:48:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbXLJSsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 13:38:19 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:34079 "EHLO fieldses.org"
+	Mon, 10 Dec 2007 13:48:25 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49433 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753653AbXLJSiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 13:38:19 -0500
-Date: Mon, 10 Dec 2007 13:38:13 -0500
-To: NeilBrown <neilb@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: [PATCH] knfsd: Change mailing list for nfsd in MAINTAINERS
-Message-ID: <20071210183813.GC28557@fieldses.org>
-References: <20071210161353.11987.patches@notabene> <1071210051440.12083@suse.de>
-MIME-Version: 1.0
+	id S1751613AbXLJSsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 13:48:24 -0500
+Date: Mon, 10 Dec 2007 19:50:08 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <ak@suse.de>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH RFC] [3/9] modpost: Declare the modpost error functions as printf like
+Message-ID: <20071210185008.GA17315@uranus.ravnborg.org>
+References: <20071122343.446909000@suse.de> <20071122024308.9B40114D68@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1071210051440.12083@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <20071122024308.9B40114D68@wotan.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2007 at 04:14:40PM +1100, NeilBrown wrote:
+On Thu, Nov 22, 2007 at 03:43:08AM +0100, Andi Kleen wrote:
 > 
-> nfs@lists.sourceforge.net is being decommissioned.
+> This way gcc can warn for wrong format strings
 
-OK by me, thanks.
+This loks good. Can I get i s-o-b then I will apply it.
 
-> 
-> I wonder if the website should be changed to linux-nfs.org ...
+	Sam
 
-Probably.
-
---b.
 
 > 
-> Cc: "J. Bruce Fields" <bfields@fieldses.org>
-> Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
-> Signed-off-by: Neil Brown <neilb@suse.de>
+> ---
+>  scripts/mod/modpost.c |    8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
 > 
-> ### Diffstat output
->  ./MAINTAINERS |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff .prev/MAINTAINERS ./MAINTAINERS
-> --- .prev/MAINTAINERS	2007-12-10 16:03:52.000000000 +1100
-> +++ ./MAINTAINERS	2007-12-10 16:04:07.000000000 +1100
-> @@ -2259,7 +2259,7 @@ P:	J. Bruce Fields
->  M:	bfields@fieldses.org
->  P:	Neil Brown
->  M:	neilb@suse.de
-> -L:	nfs@lists.sourceforge.net
-> +L:	linux-nfs@vger.kernel.org
->  W:	http://nfs.sourceforge.net/
->  S:	Supported
+> Index: linux/scripts/mod/modpost.c
+> ===================================================================
+> --- linux.orig/scripts/mod/modpost.c
+> +++ linux/scripts/mod/modpost.c
+> @@ -33,7 +33,9 @@ enum export {
+>  	export_unused_gpl, export_gpl_future, export_unknown
+>  };
+>  
+> -void fatal(const char *fmt, ...)
+> +#define PRINTF __attribute__ ((format (printf, 1, 2)))
+> +
+> +PRINTF void fatal(const char *fmt, ...)
+>  {
+>  	va_list arglist;
+>  
+> @@ -46,7 +48,7 @@ void fatal(const char *fmt, ...)
+>  	exit(1);
+>  }
+>  
+> -void warn(const char *fmt, ...)
+> +PRINTF void warn(const char *fmt, ...)
+>  {
+>  	va_list arglist;
+>  
+> @@ -57,7 +59,7 @@ void warn(const char *fmt, ...)
+>  	va_end(arglist);
+>  }
+>  
+> -void merror(const char *fmt, ...)
+> +PRINTF void merror(const char *fmt, ...)
+>  {
+>  	va_list arglist;
 >  
