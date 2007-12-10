@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbXLJCyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbXLJCz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757395AbXLJCyz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 21:54:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbXLJCo0
+	id S1756642AbXLJCz2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 21:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbXLJCo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 21:44:26 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49843 "EHLO
+	Sun, 9 Dec 2007 21:44:29 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49846 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755051AbXLJCnu (ORCPT
+	with ESMTP id S1755083AbXLJCnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 21:43:50 -0500
+	Sun, 9 Dec 2007 21:43:52 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 35/42] Unionfs: common header file for user-land utilities and kernel
-Date: Sun,  9 Dec 2007 21:42:08 -0500
-Message-Id: <1197254558675-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 34/42] VFS path get/put ops used by Unionfs
+Date: Sun,  9 Dec 2007 21:42:07 -0500
+Message-Id: <11972545582872-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11972545353262-git-send-email-ezk@cs.sunysb.edu>
@@ -25,42 +25,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Note: this will become obsolete once similar patches, now in -mm, make it to
+mainline.
+
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- include/linux/union_fs.h |   24 ++++++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/union_fs.h
+ include/linux/namei.h |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/union_fs.h b/include/linux/union_fs.h
-new file mode 100644
-index 0000000..d29318f
---- /dev/null
-+++ b/include/linux/union_fs.h
-@@ -0,0 +1,24 @@
-+/*
-+ * Copyright (c) 2003-2007 Erez Zadok
-+ * Copyright (c) 2005-2007 Josef 'Jeff' Sipek
-+ * Copyright (c) 2003-2007 Stony Brook University
-+ * Copyright (c) 2003-2007 The Research Foundation of SUNY
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
+diff --git a/include/linux/namei.h b/include/linux/namei.h
+index 4cb4f8d..63f16d9 100644
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/dcache.h>
+ #include <linux/linkage.h>
++#include <linux/mount.h>
+ 
+ struct vfsmount;
+ 
+@@ -100,4 +101,16 @@ static inline char *nd_get_link(struct nameidata *nd)
+ 	return nd->saved_names[nd->depth];
+ }
+ 
++static inline void pathget(struct path *path)
++{
++	mntget(path->mnt);
++	dget(path->dentry);
++}
 +
-+#ifndef _LINUX_UNION_FS_H
-+#define _LINUX_UNION_FS_H
++static inline void pathput(struct path *path)
++{
++	dput(path->dentry);
++	mntput(path->mnt);
++}
 +
-+#define UNIONFS_VERSION  "2.1-mm"
-+
-+/*
-+ * DEFINITIONS FOR USER AND KERNEL CODE:
-+ */
-+# define UNIONFS_IOCTL_INCGEN		_IOR(0x15, 11, int)
-+# define UNIONFS_IOCTL_QUERYFILE	_IOR(0x15, 15, int)
-+
-+#endif /* _LINUX_UNIONFS_H */
-+
+ #endif /* _LINUX_NAMEI_H */
 -- 
 1.5.2.2
 
