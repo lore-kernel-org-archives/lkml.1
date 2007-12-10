@@ -1,78 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbXLJDN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbXLJDPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755551AbXLJDN3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Dec 2007 22:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXLJDNS
+	id S1755375AbXLJDPq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Dec 2007 22:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbXLJDPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Dec 2007 22:13:18 -0500
-Received: from mailgw.cvut.cz ([147.32.3.235]:59840 "EHLO mailgw.cvut.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755237AbXLJDNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Dec 2007 22:13:17 -0500
-X-Greylist: delayed 1249 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Dec 2007 22:13:16 EST
-Message-ID: <475CA9EA.1090405@vc.cvut.cz>
-Date: Sun, 09 Dec 2007 18:52:26 -0800
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.11) Gecko/20071119 Iceape/1.1.7 (Debian-1.1.7-1)
+	Sun, 9 Dec 2007 22:15:38 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:44481
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751572AbXLJDPh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Dec 2007 22:15:37 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH RFC] sched: Fixed missed rt-balance points on priority shifts
+To: dmitry.adamushko@gmail.com, mingo@elte.hu, rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org, ghaskins@novell.com
+Date: Sun, 09 Dec 2007 21:53:23 -0500
+Message-ID: <20071210024709.4760.68134.stgit@novell1.haskins.net>
+In-Reply-To: <475BEE6B.BA47.005A.0@novell.com>
+References: <475BEE6B.BA47.005A.0@novell.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, rjw@sisk.pl,
-       trond.myklebust@fys.uio.no, gnome42@gmail.com,
-       linux-kernel@vger.kernel.org, bfields@fieldses.org, den@openvz.org,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>	<1197067918.10831.13.camel@heimdal.trondhjem.org>	<20071207151444.af5d8e11.akpm@linux-foundation.org>	<200712080043.29292.rjw@sisk.pl>	<20071208000043.GC1951@martell.zuzino.mipt.ru>	<20071207161508.afe8fdf1.akpm@linux-foundation.org> <m1lk85q0cw.fsf_-_@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1lk85q0cw.fsf_-_@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Ultimately to implement /proc perfectly we need an implementation
-> of d_revalidate because files and directories can be removed behind
-> the back of the VFS, and d_revalidate is the only way we can let
-> the VFS know that this has happened.
-> 
-> So until we get a proper test for keeping dentries in the dcache
-> fix the current d_revalidate method by completely removing it.  This
-> returns us to the current status quo.
+Hi Ingo, Steven, Dmitry,
+   Here is a proposed fix for the issue that Dmitry brought up today.  It
+   should apply cleanly to sched-devel (though I have a few of my other
+   submitted fixes queued ahead of this that are not yet in sched-devel...so if
+   you have a problem let me know and I will rebase/resubmit)
 
-Hello,
-    I know that I'm late to the party, but mount points is not only 
-problem with d_revalidate.  With your patch in place module below gets 
-refcount incremented by two every time I do 'ls -la /proc/fs/vmblock'.
+Regards,
+-Greg
 
+--------------------------
+sched: Fixed missed rt-balance points on priority shifts
 
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/proc_fs.h>
+Dmitry Adamushko identified several holes in the rt-migration stategy relating
+to changing priority via sched_setscheduler or rt_mutex_setprio:
 
-static int vmblockinit(void) {
-    struct proc_dir_entry *controlProcDirEntry;
+http://lkml.org/lkml/2007/12/9/94
 
-    /* Create /proc/fs/vmblock */
-    controlProcDirEntry = proc_mkdir("vmblock", proc_root_fs);
-    if (!controlProcDirEntry) {
-       printk(KERN_DEBUG "Bad...\n");
-       return -EINVAL;
-    }
-    controlProcDirEntry->owner = THIS_MODULE;
-    return 0;
-}
+This patch should button up those conditions.
 
-static void vmblockexit(void) {
-    remove_proc_entry("vmblock", proc_root_fs);
-}
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+---
 
-module_init(vmblockinit);
-module_exit(vmblockexit);
+ kernel/sched.c    |    8 ++++++++
+ kernel/sched_rt.c |   46 +++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 53 insertions(+), 1 deletions(-)
 
-
-(code comes from VMware's vmblock module, 
-http://sourceforge.net/project/showfiles.php?group_id=204462)
-						Thanks,
-							Petr
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 02f04bc..fd08ac2 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -348,6 +348,7 @@ struct rt_rq {
+ 	/* highest queued rt task prio */
+ 	int highest_prio;
+ 	int overloaded;
++	int needs_pull;
+ };
+ 
+ #ifdef CONFIG_SMP
+@@ -4037,6 +4038,9 @@ void rt_mutex_setprio(struct task_struct *p, int prio)
+ 			check_preempt_curr(rq, p);
+ 		}
+ 	}
++
++	wakeup_balance_rt(rq, p);
++
+ 	task_rq_unlock(rq, &flags);
+ }
+ 
+@@ -4341,6 +4345,9 @@ recheck:
+ 			check_preempt_curr(rq, p);
+ 		}
+ 	}
++
++	wakeup_balance_rt(rq, p);
++
+ 	__task_rq_unlock(rq);
+ 	spin_unlock_irqrestore(&p->pi_lock, flags);
+ 
+@@ -6887,6 +6894,7 @@ void __init sched_init(void)
+ 		INIT_LIST_HEAD(&rq->migration_queue);
+ 		rq->rt.highest_prio = MAX_RT_PRIO;
+ 		rq->rt.overloaded = 0;
++		rq->rt.needs_pull = 0;
+ #endif
+ 		atomic_set(&rq->nr_iowait, 0);
+ 
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 65cbb78..1257575 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -84,6 +84,8 @@ static inline void inc_rt_tasks(struct task_struct *p, struct rq *rq)
+ 
+ static inline void dec_rt_tasks(struct task_struct *p, struct rq *rq)
+ {
++	int highest_prio = rq->rt.highest_prio;
++
+ 	WARN_ON(!rt_task(p));
+ 	WARN_ON(!rq->rt.rt_nr_running);
+ 	rq->rt.rt_nr_running--;
+@@ -103,6 +105,42 @@ static inline void dec_rt_tasks(struct task_struct *p, struct rq *rq)
+ 	if (p->nr_cpus_allowed > 1)
+ 		rq->rt.rt_nr_migratory--;
+ 
++	if (rq->rt.highest_prio > highest_prio) {
++		/*
++		 * If the departing task is reducing our priority, we need to
++		 * check if we should pull tasks because its always possible
++		 * that another RQ tried to push tasks away but skipped us due
++		 * to elevated priority.  That elevated priority is now
++		 * subsiding so there may be tasks that are newly eligible for
++		 * migration.  This pull operation is currently facilitated
++		 * via schedule().
++		 */
++		rq->rt.needs_pull = 1;
++
++		/*
++		 * FIXME: I am not sure about this next part:
++		 *
++		 * If the departing task is already running, we dont need to be
++		 * specific about rescheduling because presumably it will
++		 * happen momentarily anyway.  However, if the departing task
++		 * was *not* the current task (#), we should invoke a
++		 * reschedule to make sure we have the optimal task running.
++		 *
++		 * (#) It may seem like a pathological condition to have the
++		 * highest priority task not also be the current task.  However
++		 * consider the condition where this highest task was enqueued
++		 * and subsequently dequeued before the RQ ever had a chance to
++		 * reschedule.
++		 *
++		 * I have no doubt that this is the proper thing to do to make
++		 * sure RT tasks are properly balanced.  What I cannot wrap my
++		 * head around at this late hour is if issuing a reschedule()
++		 * here may cause issues in other circumstances.  TBD
++		 */
++		if (!task_running(rq, p))
++			resched_task(rq->curr);
++	}
++
+ 	update_rt_migration(rq);
+ #endif /* CONFIG_SMP */
+ }
+@@ -662,8 +700,14 @@ static int pull_rt_task(struct rq *this_rq)
+ static void schedule_balance_rt(struct rq *rq, struct task_struct *prev)
+ {
+ 	/* Try to pull RT tasks here if we lower this rq's prio */
+-	if (unlikely(rt_task(prev)) && rq->rt.highest_prio > prev->prio)
++	if (unlikely(rq->rt.needs_pull)) {
++		/*
++		 * Clear the flag first, since pulling may release the lock
++		 * and someone else may re-set the needs_pull
++		 */
++		rq->rt.needs_pull = 0;
+ 		pull_rt_task(rq);
++	}
+ }
+ 
+ static void schedule_tail_balance_rt(struct rq *rq)
 
