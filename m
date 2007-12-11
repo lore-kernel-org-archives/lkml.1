@@ -1,240 +1,353 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbXLKC2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbXLKC2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753054AbXLKC2W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 21:28:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbXLKC2P
+	id S1754116AbXLKC2x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 21:28:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbXLKC2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 21:28:15 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56371 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751570AbXLKC2O (ORCPT
+	Mon, 10 Dec 2007 21:28:45 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:29743 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751570AbXLKC2o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 21:28:14 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH 1/4 -mm] kexec based hibernation -v7 : kexec jump
-References: <1197042810.24045.61.camel@caritas-dev.intel.com>
-Date: Mon, 10 Dec 2007 19:25:43 -0700
-In-Reply-To: <1197042810.24045.61.camel@caritas-dev.intel.com> (Ying Huang's
-	message of "Fri, 07 Dec 2007 15:53:30 +0000")
-Message-ID: <m1tzmq0xy0.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 10 Dec 2007 21:28:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=N8MOI/h1Ezg4Cp9puW5s5xnihWDoEYn0qz8ovuntPuhJJrtXcGm1whg/pfGnQaUnPM0pBu84aCLb5p7y3/14yGqkAdReNMlsRzBlVaJYxV/pvdbdtrxcHdGF4gsCOKQJe1wt6rYd5GEWKcvp0bGX7YSTEwwGBdVYWtEtMh5DTjc=
+Message-ID: <f17812d70712101828r8f9d8c3kda51a853f4c806e4@mail.gmail.com>
+Date: Tue, 11 Dec 2007 10:28:43 +0800
+From: "eric miao" <eric.y.miao@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH 2.6.24-rc4-mm 2/2] gpiolib: add Generic IRQ support for 16-bit PCA9539 GPIO expander
+Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       i2c@lm-sensors.org
+In-Reply-To: <200712100214.52478.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f17812d70712100143w65898405rd96f460aef621a25@mail.gmail.com>
+	 <200712100214.52478.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Huang, Ying" <ying.huang@intel.com> writes:
-
-> This patch implements the functionality of jumping between the kexeced
-> kernel and the original kernel.
+On Dec 10, 2007 6:14 PM, David Brownell <david-b@pacbell.net> wrote:
+> On Monday 10 December 2007, eric miao wrote:
+> > +config GPIO_PCA9539_GENERIC_IRQ
+> > +bool " Generic IRQ support for PCA9539"
+> > +depends on GPIO_PCA9539=y
 >
-> To support jumping between two kernels, before jumping to (executing)
-> the new kernel and jumping back to the original kernel, the devices
-> are put into quiescent state, and the state of devices and CPU is
-> saved. After jumping back from kexeced kernel and jumping to the new
-> kernel, the state of devices and CPU are restored accordingly. The
-> devices/CPU state save/restore code of software suspend is called to
-> implement corresponding function.
+> Also depends on GENERIC_HARDIRQS, right?  (You should let
+> the Kconfig UI handle indentation, too...)
 >
-> To support jumping without reserving memory. One shadow backup page
-> (source page) is allocated for each page used by new (kexeced) kernel
-> (destination page). When do kexec_load, the image of new kernel is
-> loaded into source pages, and before executing, the destination pages
-> and the source pages are swapped, so the contents of destination pages
-> are backupped. Before jumping to the new (kexeced) kernel and after
-> jumping back to the original kernel, the destination pages and the
-> source pages are swapped too.
+> Seems like doing this for an I2C chip ought to shake loose
+> some interesting review comments.  :)
 >
-> A jump back protocol for kexec is defined and documented. It is an
-> extension to ordinary function calling protocol. So, the facility
-> provided by this patch can be used to call ordinary C function in real
-> mode.
 >
-> A set of flags for sys_kexec_load are added to control which state are
-> saved/restored before/after real mode code executing. For example, you
-> can specify the device state and FPU state are saved/restored
-> before/after real mode code executing.
+> > +help
+> > + Say yes here to support the Generic IRQ for the PCA9539 on-chip
+> > + GPIO lines.
 >
-> The states (exclude CPU state) save/restore code can be overridden
-> based on the "command" parameter of kexec jump. Because more states
-> need to be saved/restored by hibernating/resuming.
+> This somewhat resembles the pcf857x chips in that it only support
+> pin-changed IRQs (IRQ_TYPE_EDGE_BOTH) in hardware.  Some other I/O
+> expanders are a bit more flexible.
+>
+> - Dave
 >
 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
->
-> ---
->  Documentation/i386/jump_back_protocol.txt |  103 ++++++++++++++
->  arch/powerpc/kernel/machine_kexec.c       |    2 
->  arch/ppc/kernel/machine_kexec.c           |    2 
->  arch/sh/kernel/machine_kexec.c            |    2 
->  arch/x86/kernel/machine_kexec_32.c        |   88 +++++++++---
->  arch/x86/kernel/machine_kexec_64.c        |    2 
->  arch/x86/kernel/relocate_kernel_32.S | 214 +++++++++++++++++++++++++++---
->  include/asm-x86/kexec_32.h                |   39 ++++-
->  include/linux/kexec.h                     |   40 +++++
->  kernel/kexec.c                            |  188 ++++++++++++++++++++++++++
->  kernel/power/Kconfig                      |    2 
->  kernel/sys.c                              |   35 +++-
->  12 files changed, 648 insertions(+), 69 deletions(-)
->
-> --- a/arch/x86/kernel/machine_kexec_32.c
-> +++ b/arch/x86/kernel/machine_kexec_32.c
-> @@ -20,6 +20,7 @@
->  #include <asm/cpufeature.h>
->  #include <asm/desc.h>
->  #include <asm/system.h>
-> +#include <asm/cacheflush.h>
->  
->  #define PAGE_ALIGNED __attribute__ ((__aligned__(PAGE_SIZE)))
->  static u32 kexec_pgd[1024] PAGE_ALIGNED;
-> @@ -83,10 +84,14 @@ static void load_segments(void)
->   * reboot code buffer to allow us to avoid allocations
->   * later.
->   *
-> - * Currently nothing.
-> + * Turn off NX bit for control page.
->   */
->  int machine_kexec_prepare(struct kimage *image)
->  {
-> +	if (nx_enabled) {
-> + change_page_attr(image->control_code_page, 1, PAGE_KERNEL_EXEC);
-> +		global_flush_tlb();
-> +	}
->  	return 0;
->  }
->  
-> @@ -96,25 +101,59 @@ int machine_kexec_prepare(struct kimage 
->   */
->  void machine_kexec_cleanup(struct kimage *image)
->  {
-> +	if (nx_enabled) {
-> +		change_page_attr(image->control_code_page, 1, PAGE_KERNEL);
-> +		global_flush_tlb();
-> +	}
-> +}
-> +
-> +void machine_kexec(struct kimage *image)
-> +{
-> +	machine_kexec_call(image, NULL, 0);
->  }
->  
->  /*
->   * Do not allocate memory (or fail in any way) in machine_kexec().
->   * We are past the point of no return, committed to rebooting now.
->   */
-> -NORET_TYPE void machine_kexec(struct kimage *image)
-> +int machine_kexec_vcall(struct kimage *image, unsigned long *ret,
-> +			 unsigned int argc, va_list args)
->  {
+Updated as follows:
 
-Why do we need var arg support?
-Can't we do that with a shim we load from user space?
+>From 486724d8b2b7a668600e38807680cc3a089ad533 Mon Sep 17 00:00:00 2001
+From: eric miao <eric.miao@marvell.com>
+Date: Mon, 10 Dec 2007 17:24:36 +0800
+Subject: [PATCH] gpiolib: add Generic IRQ support for 16-bit PCA9539
+GPIO expander
 
->  	unsigned long page_list[PAGES_NR];
->  	void *control_page;
-> +	asmlinkage NORET_TYPE void
-> +		(*relocate_kernel_ptr)(unsigned long indirection_page,
-> +				       unsigned long control_page,
-> +				       unsigned long start_address,
-> +				       unsigned int has_pae) ATTRIB_NORET;
->  
->  	/* Interrupts aren't acceptable while we reboot */
->  	local_irq_disable();
->  
->  	control_page = page_address(image->control_code_page);
-> -	memcpy(control_page, relocate_kernel, PAGE_SIZE);
-> +	memcpy(control_page, relocate_page, PAGE_SIZE/2);
-> +	KCALL_MAGIC(control_page) = 0;
->  
-> +	if (image->preserve_cpu) {
-> +		unsigned int i;
-> +		KCALL_MAGIC(control_page) = KCALL_MAGIC_NUMBER;
-> +		KCALL_ARGC(control_page) = argc;
-> +		for (i = 0; i < argc; i++)
-> +			KCALL_ARGS(control_page)[i] = \
-> +				va_arg(args, unsigned long);
-> +
-> +		if (kexec_call_save_cpu(control_page)) {
-> +			image->start = KCALL_ENTRY(control_page);
-> +			if (ret)
-> +				*ret = KCALL_ARGS(control_page)[0];
-> +			return 0;
-> +		}
-> +	}
-> +
-> +	relocate_kernel_ptr = control_page +
-> +		((void *)relocate_kernel - (void *)relocate_page);
->  	page_list[PA_CONTROL_PAGE] = __pa(control_page);
-> -	page_list[VA_CONTROL_PAGE] = (unsigned long)relocate_kernel;
-> +	page_list[VA_CONTROL_PAGE] = (unsigned long)control_page;
->  	page_list[PA_PGD] = __pa(kexec_pgd);
->  	page_list[VA_PGD] = (unsigned long)kexec_pgd;
->  #ifdef CONFIG_X86_PAE
-> @@ -127,26 +166,33 @@ NORET_TYPE void machine_kexec(struct kim
->  	page_list[VA_PTE_0] = (unsigned long)kexec_pte0;
->  	page_list[PA_PTE_1] = __pa(kexec_pte1);
->  	page_list[VA_PTE_1] = (unsigned long)kexec_pte1;
-> + page_list[PA_SWAP_PAGE] = (page_to_pfn(image->swap_page) << PAGE_SHIFT);
->  
-> -	/* The segment registers are funny things, they have both a
-> -	 * visible and an invisible part.  Whenever the visible part is
-> -	 * set to a specific selector, the invisible part is loaded
-> -	 * with from a table in memory.  At no other time is the
-> -	 * descriptor table in memory accessed.
-> -	 *
-> -	 * I take advantage of this here by force loading the
-> -	 * segments, before I zap the gdt with an invalid value.
-> -	 */
-> -	load_segments();
-> -	/* The gdt & idt are now invalid.
-> -	 * If you want to load them you must set up your own idt & gdt.
-> -	 */
-> -	set_gdt(phys_to_virt(0),0);
-> -	set_idt(phys_to_virt(0),0);
-> +	if (image->preserve_cpu_ext) {
-> +		/* The segment registers are funny things, they have
-> +		 * both a visible and an invisible part.  Whenever the
-> +		 * visible part is set to a specific selector, the
-> +		 * invisible part is loaded with from a table in
-> +		 * memory.  At no other time is the descriptor table
-> +		 * in memory accessed.
-> +		 *
-> +		 * I take advantage of this here by force loading the
-> +		 * segments, before I zap the gdt with an invalid
-> +		 * value.
-> +		 */
-> +		load_segments();
-> +		/* The gdt & idt are now invalid.  If you want to load
-> +		 * them you must set up your own idt & gdt.
-> +		 */
-> +		set_gdt(phys_to_virt(0), 0);
-> +		set_idt(phys_to_virt(0), 0);
-> +	}
+This patch adds the generic IRQ support for the PCA9539 on-chip GPIOs.
 
-We can't keep the same idt and gdt as the pages they are on will be
-overwritten/reused.  So explictily stomping on them sounds better
-so they never work.  We can restore them on kernel reentry.
+Note: due to the inaccessibility of the generic IRQ code within modules,
+this support is only available if the driver is built-in.
 
->  	/* now call it */
-> -	relocate_kernel((unsigned long)image->head, (unsigned long)page_list,
-> -			image->start, cpu_has_pae);
-> +	relocate_kernel_ptr((unsigned long)image->head,
-> +			    (unsigned long)page_list,
-> +			    image->start, cpu_has_pae);
+Signed-off-by: eric miao <eric.miao@marvell.com>
+Acked-by: Ben Gardner <bgardner@wabtec.com>
+---
+ drivers/gpio/Kconfig   |   11 +++-
+ drivers/gpio/pca9539.c |  184 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 194 insertions(+), 1 deletions(-)
 
-Why rename relocate_kernel?
-Ah.  I see.  You need to make it into a pointer again.  The crazy don't
-stop the pgd support strikes again.  It used to be named rnk.
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 6528fce..f897df8 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -40,7 +40,16 @@ config GPIO_PCA9539
+ 	  16-bit I/O port.
 
-More later.
+ 	  This driver can also be built as a module.  If so, the module
+-	  will be called pca9539.
++	  will be called pca9539.  Note: the Generic IRQ support for the
++	  chip will only be available if the driver is built-in
++
++config GPIO_PCA9539_GENERIC_IRQ
++	bool "Generic IRQ support for PCA9539"
++	depends on GPIO_PCA9539=y && GENERIC_HARDIRQS
++	help
++	  Say yes here to support the Generic IRQ for the PCA9539 on-chip
++	  GPIO lines. Only pin-changed IRQs (IRQ_TYPE_EDGE_BOTH) are
++	  supported in hardware.
 
-Eric
+ comment "SPI GPIO expanders:"
 
+diff --git a/drivers/gpio/pca9539.c b/drivers/gpio/pca9539.c
+index 0a3ae6a..e736dd9 100644
+--- a/drivers/gpio/pca9539.c
++++ b/drivers/gpio/pca9539.c
+@@ -11,6 +11,9 @@
+
+ #include <linux/module.h>
+ #include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/interrupt.h>
++#include <linux/workqueue.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c/pca9539.h>
+
+@@ -27,9 +30,25 @@ struct pca9539_chip {
+ 	unsigned gpio_start;
+ 	uint16_t reg_output;
+ 	uint16_t reg_direction;
++	uint16_t last_input;
+
+ 	struct i2c_client *client;
+ 	struct gpio_chip gpio_chip;
++#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
++	/*
++	 * Note: Generic IRQ is not accessible within module code, the IRQ
++	 * support will thus _only_ be available if the driver is built-in
++	 */
++	int irq;	/* IRQ for the chip itself */
++	int irq_start;	/* starting IRQ for the on-chip GPIO lines */
++
++	uint16_t irq_mask;
++	uint16_t irq_falling_edge;
++	uint16_t irq_rising_edge;
++
++	struct irq_chip irq_chip;
++	struct work_struct irq_work;
++#endif
+ };
+
+ static int pca9539_write_reg(struct pca9539_chip *chip, int reg, uint16_t val)
+@@ -152,6 +171,150 @@ static int pca9539_init_gpio(struct pca9539_chip *chip)
+ 	return gpiochip_add(gc);
+ }
+
++#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
++/* FIXME: change to schedule_delayed_work() here if reading out of
++ * registers does not reflect the actual pin levels
++ */
++
++static void pca9539_irq_work(struct work_struct *work)
++{
++	struct pca9539_chip *chip;
++	uint16_t input, mask, rising, falling;
++	int ret, i;
++
++	chip = container_of(work, struct pca9539_chip, irq_work);
++
++	ret = pca9539_read_reg(chip, PCA9539_INPUT, &input);
++	if (ret < 0)
++		return;
++
++	mask = (input ^ chip->last_input) & chip->irq_mask;
++	rising = (input & mask) & chip->irq_rising_edge;
++	falling = (~input & mask) & chip->irq_falling_edge;
++
++	irq_enter();
++
++	for (i = 0; i < NR_PCA9539_GPIOS; i++) {
++		if ((rising | falling) & (1u << i)) {
++			int irq = chip->irq_start + i;
++			struct irq_desc *desc;
++
++			desc = irq_desc + irq;
++			desc_handle_irq(irq, desc);
++		}
++	}
++
++	irq_exit();
++
++	chip->last_input = input;
++}
++
++static void fastcall
++pca9539_irq_demux(unsigned int irq, struct irq_desc *desc)
++{
++	struct pca9539_chip *chip = desc->handler_data;
++
++	desc->chip->mask(chip->irq);
++	desc->chip->ack(chip->irq);
++	schedule_work(&chip->irq_work);
++	desc->chip->unmask(chip->irq);
++}
++
++static void pca9539_irq_mask(unsigned int irq)
++{
++	struct irq_desc *desc = irq_desc + irq;
++	struct pca9539_chip *chip = desc->chip_data;
++
++	chip->irq_mask &= ~(1u << (irq - chip->irq_start));
++}
++
++static void pca9539_irq_unmask(unsigned int irq)
++{
++	struct irq_desc *desc = irq_desc + irq;
++	struct pca9539_chip *chip = desc->chip_data;
++
++	chip->irq_mask |= 1u << (irq - chip->irq_start);
++}
++
++static void pca9539_irq_ack(unsigned int irq)
++{
++	/* unfortunately, we have to provide an empty irq_chip.ack even
++	 * if we do nothing here, Generic IRQ will complain otherwise
++	 */
++}
++
++static int pca9539_irq_set_type(unsigned int irq, unsigned int type)
++{
++	struct irq_desc *desc = irq_desc + irq;
++	struct pca9539_chip *chip = desc->chip_data;
++	uint16_t mask = 1u << (irq - chip->irq_start);
++
++	if (type == IRQT_PROBE) {
++		if ((mask & chip->irq_rising_edge) ||
++		    (mask & chip->irq_falling_edge) ||
++		    (mask & ~chip->reg_direction))
++			return 0;
++
++		type = __IRQT_RISEDGE | __IRQT_FALEDGE;
++	}
++
++	gpio_direction_input(irq_to_gpio(irq));
++
++	if (type & __IRQT_RISEDGE)
++		chip->irq_rising_edge |= mask;
++	else
++		chip->irq_rising_edge &= ~mask;
++
++	if (type & __IRQT_FALEDGE)
++		chip->irq_falling_edge |= mask;
++	else
++		chip->irq_falling_edge &= ~mask;
++
++	return 0;
++}
++
++static int pca9539_init_irq(struct pca9539_chip *chip)
++{
++	struct irq_chip *ic = &chip->irq_chip;
++	int irq, irq_start = chip->irq_start;
++
++	/* do not install GPIO interrupts for the chip if
++	 * 1. the PCA9539 interrupt line is not used
++	 * 2. or the GPIO interrupt number exceeds NR_IRQS
++	 */
++	if (chip->irq <= 0 || irq_start + NR_PCA9539_GPIOS >= NR_IRQS)
++		return -EINVAL;
++
++	chip->irq_mask	= 0;
++	chip->irq_rising_edge  = 0;
++	chip->irq_falling_edge = 0;
++
++	ic->ack = pca9539_irq_ack;
++	ic->mask = pca9539_irq_mask;
++	ic->unmask = pca9539_irq_unmask;
++	ic->set_type = pca9539_irq_set_type;
++
++	for (irq = irq_start; irq < irq_start + NR_PCA9539_GPIOS; irq++) {
++		set_irq_chip(irq, ic);
++		set_irq_chip_data(irq, chip);
++		set_irq_handler(irq, handle_edge_irq);
++		set_irq_flags(irq, IRQF_VALID | IRQF_PROBE);
++	}
++
++	set_irq_type(chip->irq, IRQT_FALLING);
++	set_irq_data(chip->irq, chip);
++	set_irq_chained_handler(chip->irq, pca9539_irq_demux);
++
++	INIT_WORK(&chip->irq_work, pca9539_irq_work);
++	return 0;
++}
++#else
++static inline int pca9539_init_irq(struct pca9539_chip *chip)
++{
++	return 0;
++}
++#endif /* CONFIG_GPIO_PCA9539_GENERIC_IRQ */
++
+ static int __devinit pca9539_probe(struct i2c_client *client)
+ {
+ 	struct pca9539_platform_data *pdata;
+@@ -167,8 +330,15 @@ static int __devinit pca9539_probe(struct
+i2c_client *client)
+ 		return -ENOMEM;
+
+ 	chip->client = client;
++	chip->irq = client->irq;
+
+ 	chip->gpio_start = pdata->gpio_base;
++	chip->irq_start  = gpio_to_irq(chip->gpio_start);
++
++	/* read init register values */
++	ret = pca9539_read_reg(chip, PCA9539_INPUT, &chip->last_input);
++	if (ret)
++		goto out_failed;
+
+ 	/* initialize registers */
+ 	chip->reg_output = 0xffff;
+@@ -191,6 +361,12 @@ static int __devinit pca9539_probe(struct
+i2c_client *client)
+ 			dev_dbg(&client->dev, "setup failed, %d\n", ret);
+ 	}
+
++	ret = pca9539_init_irq(chip);
++	if (ret) {
++		ret = gpiochip_remove(&chip->gpio_chip);
++		goto out_failed;
++	}
++
+ 	i2c_set_clientdata(client, chip);
+ 	return 0;
+
+@@ -199,6 +375,13 @@ out_failed:
+ 	return ret;
+ }
+
++#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
++static int pca9539_remove(struct i2c_client *client)
++{
++	printk(KERN_ERR "failed to unload the driver with IRQ support\n");
++	return -EINVAL;
++}
++#else
+ static int pca9539_remove(struct i2c_client *client)
+ {
+ 	struct pca9539_platform_data *pdata = client->dev.platform_data;
+@@ -221,6 +404,7 @@ static int pca9539_remove(struct i2c_client *client)
+ 	kfree(chip);
+ 	return 0;
+ }
++#endif /* CONFIG_GPIO_PCA9539_GENERIC_IRQ */
+
+ static struct i2c_driver pca9539_driver = {
+ 	.driver = {
+-- 
+1.5.2.5.GIT
+
+
+
+-- 
+Cheers
+- eric
