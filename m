@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbXLKRuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbXLKR6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbXLKRuz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 12:50:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXLKRus
+	id S1754754AbXLKR6X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 12:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbXLKR6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 12:50:48 -0500
-Received: from dvhart.com ([64.146.134.43]:48709 "EHLO dvhart.com"
+	Tue, 11 Dec 2007 12:58:10 -0500
+Received: from rtr.ca ([76.10.145.34]:3601 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753338AbXLKRus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 12:50:48 -0500
-Message-ID: <475ECDF6.1070404@mbligh.org>
-Date: Tue, 11 Dec 2007 09:50:46 -0800
-From: Martin Bligh <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	id S1753394AbXLKR6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 12:58:08 -0500
+Message-ID: <475ECFAD.2030901@rtr.ca>
+Date: Tue, 11 Dec 2007 12:58:05 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.24-rc4-mm1
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>	<475EB8B5.2090104@mbligh.org> <20071211085943.4e7c77aa.randy.dunlap@oracle.com>
-In-Reply-To: <20071211085943.4e7c77aa.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
+       hp@syntomax.com, Alan Cox <alan@redhat.com>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sata_mv: improve warnings about Highpoint RocketRAID 23xx
+ cards
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> I can't see this compile failure posted anywhere:
->> http://test.kernel.org/results/IBM/126049/build/debug/stderr
->>
->> arch/x86/vdso/vdso32/sigreturn.S: Assembler messages:
->> arch/x86/vdso/vdso32/sigreturn.S:23: Error: suffix or operands invalid 
->> for `pop'
->>
->> arch/x86/vdso/vdso32/syscall.S:25: Error: suffix or operands invalid for 
->> `pop'
->> make[1]: *** [arch/x86/vdso/vdso32/syscall.o] Error 1
->> make: *** [arch/x86/vdso] Error 2
-> 
-> I see those on one build machine but not on another, so I thought
-> that it was a tools issue...
+Improve the existing boot/load time warnings from sata_mv
+for Highpoint RocketRAID 23xx cards, based on new knowledge
+about where the BIOS likes to overwrite sectors with metadata.
 
-If so, it's a tools issue that worked fine until -mm1, which makes
-it a kernel problem in my mind ;-)
+Harmless to us, but very useful for end users.
 
->> Nor this one:
->> http://test.kernel.org/results/IBM/126096/build/debug/stderr
->>
->> drivers/char/hvcs.c: In function â€˜hvcs_openâ€™:
->> drivers/char/hvcs.c:1180: error: wrong type argument to unary 
->> exclamation mark
-> 
-> See http://marc.info/?l=linux-kernel&m=119700448119646
-> for patches.
+Signed-off-by: Mark Lord <mlord@pobox.com>
+---
+This should ideally go upstream for 2.6.24.
 
-
-Thanks,
-
-M.
+--- old/drivers/ata/sata_mv.c	2007-12-10 18:14:09.000000000 -0500
++++ linux/drivers/ata/sata_mv.c	2007-12-11 12:51:51.000000000 -0500
+@@ -2506,11 +2506,31 @@
+ 		if (pdev->vendor == PCI_VENDOR_ID_TTI &&
+ 		    (pdev->device == 0x2300 || pdev->device == 0x2310))
+ 		{
+-			printk(KERN_WARNING "sata_mv: Highpoint RocketRAID BIOS"
+-				" will CORRUPT DATA on attached drives when"
+-				" configured as \"Legacy\".  BEWARE!\n");
+-			printk(KERN_WARNING "sata_mv: Use BIOS \"JBOD\" volumes"
+-				" instead for safety.\n");
++			/*
++			 * Highpoint RocketRAID PCIe 23xx series cards:
++			 *
++			 * Unconfigured drives are treated as "Legacy"
++			 * by the BIOS, and it overwrites sector 8 with
++			 * a "Lgcy" metadata block prior to Linux boot.
++			 *
++			 * Configured drives (RAID or JBOD) leave sector 8
++			 * alone, but instead overwrite a high numbered
++			 * sector for the RAID metadata.  This sector can
++			 * be determined exactly, by truncating the physical
++			 * drive capacity to a nice even GB value.
++			 *
++			 * RAID metadata is at: (dev->n_sectors & ~0xfffff)
++			 *
++			 * Warn the user, lest they think we're just buggy.
++			 */
++			printk(KERN_WARNING DRV_NAME ": Highpoint RocketRAID"
++				" BIOS CORRUPTS DATA on all attached drives,"
++				" regardless of if/how they are configured."
++				" BEWARE!\n");
++			printk(KERN_WARNING DRV_NAME ": For data safety, do not"
++				" use sectors 8-9 on \"Legacy\" drives,"
++				" and avoid the final two gigabytes on"
++				" all RocketRAID BIOS initialized drives.\n");
+ 		}
+ 	case chip_6042:
+ 		hpriv->ops = &mv6xxx_ops;
