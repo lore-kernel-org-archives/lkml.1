@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbXLKS12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbXLKSeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbXLKS12 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 13:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbXLKS1T
+	id S1754001AbXLKSeT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 13:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbXLKSeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 13:27:19 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:38012 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257AbXLKS1S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 13:27:18 -0500
-Subject: Re: [kvm-devel] [RFC] Proposed new directory layout for kvm and
-	virtualization
-From: Hollis Blanchard <hollisb@us.ibm.com>
-Reply-To: Hollis Blanchard <hollisb@us.ibm.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <475ECC04.8000609@qumranet.com>
-References: <475E5CBB.9080608@qumranet.com>
-	 <20071211161032.GA25769@uranus.ravnborg.org>
-	 <475EB7AC.9040903@qumranet.com>
-	 <20071211173717.GA26368@uranus.ravnborg.org>
-	 <475ECC04.8000609@qumranet.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Tue, 11 Dec 2007 12:26:32 -0600
-Message-Id: <1197397592.9632.26.camel@basalt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Tue, 11 Dec 2007 13:34:10 -0500
+Received: from gherkin.frus.com ([192.158.254.49]:52404 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751099AbXLKSeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 13:34:09 -0500
+Subject: Re: [patch] alpha: strncpy/strncat fixes
+In-Reply-To: <20071211200720.A23822@jurassic.park.msu.ru> "from Ivan Kokshaysky
+ at Dec 11, 2007 08:07:20 pm"
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Date: Tue, 11 Dec 2007 12:34:02 -0600 (CST)
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Richard Henderson <rth@twiddle.net>, Bob Tracy <rct@frus.com>,
+       Michael Cree <mcree@orcon.net.nz>, Kay Sievers <kay.sievers@vrfy.org>,
+       mingo@elte.hu, rjw@sisk.pl, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20071211183403.2DC67DBA2@gherkin.frus.com>
+From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-12-11 at 19:42 +0200, Avi Kivity wrote:
+Ivan Kokshaysky wrote:
+> (...)
+> (http://bugzilla.kernel.org/show_bug.cgi?id=9457).
 > 
-> > Are there any dependencies between the arch and non-arch files
-> > such as they are combined in a single module?  
+> [ev6-]stxncpy.S: (...)
+> strncpy.S: (...)
 > 
-> Yes, they are combined into a single module.
-> 
-> In the case of x86, some of arch/x86/... will be combined with
-> virt/kvm/ to form kvm.ko, while others will generate kvm-intel.ko and
-> kvm-amd.ko.
+> Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 
-Also, asm-offsets is a major sticking point. Either we create a
-dependency on arch/*/kernel/asm-offsets.c, or we find a way to create a
-new arch/*/virt/asm-offsets.c file.
+ACK.  2.6.24-rc3 working fine for me with this patch applied.
+Nice work!
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
-
+--Bob Tracy
+rct@frus.com
