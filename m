@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbXLKW0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbXLKW1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758145AbXLKW0w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:26:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757240AbXLKWXn
+	id S1757545AbXLKW1P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:27:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757302AbXLKWXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:23:43 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38542 "EHLO
+	Tue, 11 Dec 2007 17:23:52 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38548 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757248AbXLKWXm (ORCPT
+	with ESMTP id S1757299AbXLKWXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:23:42 -0500
-Date: Tue, 11 Dec 2007 23:23:43 +0100
+	Tue, 11 Dec 2007 17:23:51 -0500
+Date: Tue, 11 Dec 2007 23:23:49 +0100
 From: Adrian Bunk <bunk@kernel.org>
 To: mchehab@infradead.org
 Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/media/video/bt8xx/ section fixes
-Message-ID: <20071211222343.GX14204@stusta.de>
+Subject: [2.6 patch] drivers/media/video/ivtv/ section fix
+Message-ID: <20071211222349.GY14204@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -29,7 +29,7 @@ This patch fixes the following section mismatch with CONFIG_HOTPLUG=n:
 <--  snip  -->
 
 ...
-WARNING: vmlinux.o(.text+0x881632): Section mismatch: reference to .init.text.20:bttv_check_chipset (between 'bttv_init_module' and 'bttv_cleanup_module')
+WARNING: vmlinux.o(.text+0x94f07b): Section mismatch: reference to .init.text.20:init_ivtv_i2c (between 'ivtv_process_eeprom' and 'ivtv_init_on_first_open')
 ...
 
 <--  snip  -->
@@ -38,44 +38,35 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/media/video/bt8xx/bttv-cards.c  |    2 +-
- drivers/media/video/bt8xx/bttv-driver.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/media/video/ivtv/ivtv-i2c.c |    2 +-
+ drivers/media/video/ivtv/ivtv-i2c.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-ff5427b559f57118a845cafc987690a55f5d0df5 
-diff --git a/drivers/media/video/bt8xx/bttv-cards.c b/drivers/media/video/bt8xx/bttv-cards.c
-index 3abd9fa..585d1ef 100644
---- a/drivers/media/video/bt8xx/bttv-cards.c
-+++ b/drivers/media/video/bt8xx/bttv-cards.c
-@@ -5080,7 +5080,7 @@ static void PXC200_muxsel(struct bttv *btv, unsigned int input)
- /* ----------------------------------------------------------------------- */
- /* motherboard chipset specific stuff                                      */
- 
--void __devinit bttv_check_chipset(void)
-+void __init bttv_check_chipset(void)
- {
- 	int pcipci_fail = 0;
- 	struct pci_dev *dev = NULL;
-diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
-index a88b56e..cff9d22 100644
---- a/drivers/media/video/bt8xx/bttv-driver.c
-+++ b/drivers/media/video/bt8xx/bttv-driver.c
-@@ -4988,7 +4988,7 @@ static struct pci_driver bttv_pci_driver = {
- #endif
- };
- 
--static int bttv_init_module(void)
-+static int __init bttv_init_module(void)
- {
- 	int ret;
- 
-@@ -5021,7 +5021,7 @@ static int bttv_init_module(void)
- 	return pci_register_driver(&bttv_pci_driver);
+e09578fa0df356f5e60b668014a517bab37791c6 
+diff --git a/drivers/media/video/ivtv/ivtv-i2c.c b/drivers/media/video/ivtv/ivtv-i2c.c
+index 623eea2..77b27dc 100644
+--- a/drivers/media/video/ivtv/ivtv-i2c.c
++++ b/drivers/media/video/ivtv/ivtv-i2c.c
+@@ -706,7 +706,7 @@ void ivtv_call_i2c_clients(struct ivtv *itv, unsigned int cmd, void *arg)
  }
  
--static void bttv_cleanup_module(void)
-+static void __exit bttv_cleanup_module(void)
+ /* init + register i2c algo-bit adapter */
+-int __devinit init_ivtv_i2c(struct ivtv *itv)
++int init_ivtv_i2c(struct ivtv *itv)
  {
- 	pci_unregister_driver(&bttv_pci_driver);
- 	bus_unregister(&bttv_sub_bus_type);
+ 	IVTV_DEBUG_I2C("i2c init\n");
+ 
+diff --git a/drivers/media/video/ivtv/ivtv-i2c.h b/drivers/media/video/ivtv/ivtv-i2c.h
+index de6a074..987042c 100644
+--- a/drivers/media/video/ivtv/ivtv-i2c.h
++++ b/drivers/media/video/ivtv/ivtv-i2c.h
+@@ -35,7 +35,7 @@ int ivtv_call_i2c_client(struct ivtv *itv, int addr, unsigned int cmd, void *arg
+ void ivtv_call_i2c_clients(struct ivtv *itv, unsigned int cmd, void *arg);
+ 
+ /* init + register i2c algo-bit adapter */
+-int __devinit init_ivtv_i2c(struct ivtv *itv);
++int init_ivtv_i2c(struct ivtv *itv);
+ void exit_ivtv_i2c(struct ivtv *itv);
+ 
+ #endif
 
