@@ -1,144 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbXLKAUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbXLKAV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753926AbXLKAUK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 19:20:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXLKATy
+	id S1754824AbXLKAV5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 19:21:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXLKAVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 19:19:54 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38169 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751806AbXLKATx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 19:19:53 -0500
-Date: Tue, 11 Dec 2007 11:18:55 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Poonam_Aggrwal-b10812 <b10812@freescale.com>
-Cc: rubini@vision.unipv.it, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, kumar.gala@freescale.com,
-       linuxppc-dev@ozlabs.org, michael.barkowski@freescale.com,
-       rich.cutler@freescale.com, ashish.kalra@freescale.com
-Subject: Re: [PATCH 2/3] arch/ : Platform changes for UCC TDM driver for
- MPC8323ERDB.Also includes related QE changes.
-Message-Id: <20071211111855.dc5276a2.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0712101734490.29623@linux121>
-References: <Pine.LNX.4.64.0712101734490.29623@linux121>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__11_Dec_2007_11_18_55_+1100_aYXMMFeJtgjYB5/J"
+	Mon, 10 Dec 2007 19:21:48 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:25343 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752505AbXLKAVr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 19:21:47 -0500
+Date: Mon, 10 Dec 2007 18:21:19 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Iomega ZIP-100 drive unsupported with jmicron JMB361 chip?
+In-reply-to: <fa.yONLBG7CMuz80f4dUP5r/5k7emw@ifi.uio.no>
+To: trash can <thetrashcan@earthlink.net>
+Cc: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
+Message-id: <475DD7FF.4030906@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.yONLBG7CMuz80f4dUP5r/5k7emw@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__11_Dec_2007_11_18_55_+1100_aYXMMFeJtgjYB5/J
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+(linux-ide cc'ed)
 
-On Mon, 10 Dec 2007 17:39:22 +0530 (IST) Poonam_Aggrwal-b10812 <b10812@free=
-scale.com> wrote:
->
-> +++ b/arch/powerpc/sysdev/qe_lib/qe.c
-> @@ -149,22 +149,116 @@ EXPORT_SYMBOL(qe_issue_cmd);
->   */
->  static unsigned int brg_clk =3D 0;
-> =20
-> -unsigned int get_brg_clk(void)
-> +u32 get_brg_clk(enum qe_clock brgclk, enum qe_clock *brg_source)
->  {
-> -	struct device_node *qe;
-> -	if (brg_clk)
-> -		return brg_clk;
-> +	struct device_node *qe, *brg, *clocks;
-> +	enum qe_clock brg_src;
-> +	u32 brg_input_freq =3D 0;
-> +	u32 brg_num;
-> +	const unsigned int *prop;
-> =20
-> -	qe =3D of_find_node_by_type(NULL, "qe");
-> -	if (qe) {
-> +	*brg_source =3D 0;
-> +
-> +	brg_num =3D brgclk - QE_BRG1;
-> +	brg =3D of_find_compatible_node(NULL, NULL, "fsl,cpm-brg");
-> +	if (brg) {
->  		unsigned int size;
-> -		const u32 *prop =3D of_get_property(qe, "brg-frequency", &size);
-> -		brg_clk =3D *prop;
-> -		of_node_put(qe);
-> -	};
-> +		prop =3D of_get_property(brg,
-> +					"fsl,brg-sources", &size);
-> +
-> +		brg_src =3D *(prop + brg_num);
+trash can wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> I have tolerated this problem for a year and do not post to this list in
+> haste. I have posted on forums and searched the community over the past
+> year. I have looked at the list archive on gossamer-threads.com for
+> solutions. With Fedora Core 6 unsupported (the last kernel for which my
+> zip drive worked), it is time for my last attempt at a solution. Please
+> CC: any response as I have not joined the list. I have compiled a
+> kernel-debug RPM and can run this if its output would help. Thank you
+> for any time you might devote to this problem.
+> 
+> motherboard: MSI P965 Platinum/Intel P965 Express Chipset Based (MS-7238
+> series)
+> Fedora 8 : kernel 2.6.23.1-42.fc8
+> Iomega Zip drive internal Model Z100ATAPI
+> 
+> lspci
+> 03:00.0 SATA controller: JMicron Technologies, Inc. JMB361 AHCI/IDE (rev 02)
+> 03:00.1 IDE interface: JMicron Technologies, Inc. JMB361 AHCI/IDE (rev 02)
+> 
+> # lsmod | grep ata
+> pata_jmicron            8257  0
+> ata_generic             8901  0
+> ata_piix               16709  0
+> libata                 99633  4 ahci,pata_jmicron,ata_generic,ata_piix
+> scsi_mod              119757  4 sr_mod,sg,libata,sd_mod
+> 
+> I have recently changed the BIOS setting for the SATA#1 Controller from
+> [IDE] to [AHCI] with no effect. I assume AHCI is correct?
 
-You should probably sanity check that prop is not NULL and points to
-something large enough.
+AHCI is better, yes. It shouldn't be relevant this this problem though.
 
-You don't use brg after here, so the "of_node_put(brg)" could go here to
-save putting it in multiple places later.  Also, currently there are
-paths through the following code that do not do the of_node_put(brg).
+> 
+> Text below attached as text.txt for readability.
+> from dmesg:
+> libata version 2.21 loaded.
+> device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised: dm-devel@redhat.com
+> PCI: Enabling device 0000:03:00.1 (0000 -> 0001)
+> ACPI: PCI Interrupt 0000:03:00.1[B] -> GSI 17 (level, low) -> IRQ 17
+> PCI: Setting latency timer of device 0000:03:00.1 to 64
+> scsi0 : pata_jmicron
+> scsi1 : pata_jmicron
+> ata1: PATA max UDMA/100 cmd 0x0001cc00 ctl 0x0001c882 bmdma 0x0001c400 irq 17
+> ata2: PATA max UDMA/100 cmd 0x0001c800 ctl 0x0001c482 bmdma 0x0001c408 irq 17
+> ata1.00: ATAPI: LITE-ON DVDRW SOHW-1693S, KS0B, max UDMA/66
+> ata1.01: ATAPI: IOMEGA  ZIP 100       ATAPI, 05.H, max MWDMA1, CDB intr
+> ata1.00: configured for UDMA/66
+> ata1.01: configured for MWDMA1
+> scsi 0:0:0:0: CD-ROM            LITE-ON  DVDRW SOHW-1693S KS0B PQ: 0 ANSI: 5
+> scsi 0:0:1:0: Direct-Access     IOMEGA   ZIP 100          05.H PQ: 0 ANSI: 5
+> sd 0:0:1:0: [sda] 196608 512-byte hardware sectors (101 MB)
+> sd 0:0:1:0: [sda] Write Protect is off
+> sd 0:0:1:0: [sda] Mode Sense: 00 40 00 00
+> sd 0:0:1:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> sd 0:0:1:0: [sda] 196608 512-byte hardware sectors (101 MB)
+> sd 0:0:1:0: [sda] Write Protect is off
+> sd 0:0:1:0: [sda] Mode Sense: 00 40 00 00
+> sd 0:0:1:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+>  sda:<6>sd 0:0:1:0: [sda] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE,SUGGEST_OK
+> sd 0:0:1:0: [sda] Sense Key : Hardware Error [current]
+> sd 0:0:1:0: [sda] Add. Sense: Scsi parity error
+> end_request: I/O error, dev sda, sector 0
+> Buffer I/O error on device sda, logical block 0
+> 
+> If a disk is inserted into the drive (/var/log/messages)
+> Dec 10 14:22:53 localhost kernel: sd 0:0:1:0: [sda] Spinning up disk.....<5>sd 0:0:1:0: [sda] Spinning up disk....ready
+> Dec 10 14:22:53 localhost kernel: sd 0:0:1:0: [sda] 196608 512-byte hardware sectors (101 MB)
+> Dec 10 14:22:53 localhost kernel: sd 0:0:1:0: [sda] Write Protect is off
+> Dec 10 14:22:53 localhost kernel: sd 0:0:1:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> Dec 10 14:22:53 localhost kernel: sd 0:0:1:0: [sda] 196608 512-byte hardware sectors (101 MB)
+> Dec 10 14:22:53 localhost kernel: sd 0:0:1:0: [sda] Write Protect is off
+> Dec 10 14:22:53 localhost kernel: sd 0:0:1:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> Dec 10 14:22:53 localhost kernel:  sda:<6>sd 0:0:1:0: [sda] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE,SUGGEST_OK
+> Dec 10 14:22:53 localhost kernel: sd 0:0:1:0: [sda] Sense Key : Hardware Error [current]
+> Dec 10 14:22:53 localhost kernel: sd 0:0:1:0: [sda] Add. Sense: Scsi parity error
+> Dec 10 14:22:53 localhost kernel: end_request: I/O error, dev sda, sector 0
+> Dec 10 14:22:53 localhost kernel: printk: 42 messages suppressed.
+> Dec 10 14:22:53 localhost kernel: Buffer I/O error on device sda, logical block 0
 
-> +		if (brg_src =3D=3D 0) {
-> +			*brg_source =3D 0;
-> +			if (brg_clk > 0) {
-> +				of_node_put(brg);
-> +				return brg_clk;
-> +			}
-> +			qe =3D of_find_node_by_type(NULL, "qe");
-> +			if (qe) {
-> +				unsigned int size;
-> +				prop =3D of_get_property
-> +						(qe, "brg-frequency", &size);
-> +				of_node_put(qe);
-> +				of_node_put(brg);
-> +				return *prop;
+That is rather curious. There's no sign of any libata error handling 
+going on.. Maybe the drive is actually returning that error code in the 
+ATAPI CDB, or at least we think it is?
 
-NULL check here (yes, I know that the old code didn't check).
+You are sure that this drive still works with older kernels using 
+drivers/ide, and that the hardware didn't break at some point, I assume?
 
-> +			}
-> +		} else {
-> +			*brg_source =3D brg_src + QE_CLK1 - 1;
-> +			clocks =3D of_find_compatible_node(NULL, NULL,
-> +							"fsl,cpm-clocks");
-> +			prop =3D of_get_property(clocks,
-> +						"#clock-cells", &size);
-> +			/*
-> +			 * clock-cells =3D 1 only supported right now.
-> +			 */
-> +			if (*prop !=3D 1)
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-Again check for NULL (and possibly size).
-
-> +				return 0;
-> +			prop =3D of_get_property(clocks,
-> +						"clock-frequency", &size);
-> +
-> +			brg_input_freq =3D *(prop+(brg_src - 1));
-
-And again.
-
-> +			of_node_put(clocks);
-> +			of_node_put(brg);
-> +			return brg_input_freq;
-> +		}
-> +	}
->  	return brg_clk;
->  }
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__11_Dec_2007_11_18_55_+1100_aYXMMFeJtgjYB5/J
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHXdd1TgG2atn1QN8RArh5AJ4z8kANPQGUw2pYDIfRI2CdvnttngCfT+pA
-BH33qJqo4Ko6RxABhcfvFlo=
-=PF5i
------END PGP SIGNATURE-----
-
---Signature=_Tue__11_Dec_2007_11_18_55_+1100_aYXMMFeJtgjYB5/J--
