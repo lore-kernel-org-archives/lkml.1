@@ -1,67 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbXLKBfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbXLKBgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbXLKBfZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 20:35:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbXLKBfP
+	id S1755241AbXLKBgw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 20:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbXLKBgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 20:35:15 -0500
-Received: from thunk.org ([69.25.196.29]:55131 "EHLO thunker.thunk.org"
+	Mon, 10 Dec 2007 20:36:45 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58317 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751817AbXLKBfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 20:35:13 -0500
-Date: Mon, 10 Dec 2007 20:34:14 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Marc Haber <mh+linux-kernel@zugschlus.de>,
-       Eric Dumazet <dada1@cosmosbay.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: Why does reading from /dev/urandom deplete entropy so much?
-Message-ID: <20071211013414.GS17037@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Matt Mackall <mpm@selenic.com>,
-	Marc Haber <mh+linux-kernel@zugschlus.de>,
-	Eric Dumazet <dada1@cosmosbay.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	"David S. Miller" <davem@davemloft.net>
-References: <20071204114125.GA17310@torres.zugschlus.de> <20071204161811.GB15974@stusta.de> <20071204164720.6e4dc2c4@the-village.bc.nu> <475599D6.4030008@cosmosbay.com> <20071205212646.GP17536@waste.org> <20071209124200.GA31147@torres.zugschlus.de> <20071209161605.GX19691@waste.org> <20071210230643.GC32133@torres.zugschlus.de> <20071210233525.GK19691@waste.org>
+	id S1751176AbXLKBgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 20:36:45 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071210233525.GK19691@waste.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Scott James Remnant <scott@ubuntu.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 1/2] ptrace_stop: fix the race with ptrace detach+attach
+In-Reply-To: Oleg Nesterov's message of  Thursday, 22 November 2007 19:14:59 +0300 <20071122161459.GA5973@tv-sign.ru>
+References: <20071122161459.GA5973@tv-sign.ru>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20071211013639.D540F26F997@magilla.localdomain>
+Date: Mon, 10 Dec 2007 17:36:39 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2007 at 05:35:25PM -0600, Matt Mackall wrote:
-> > I must have missed this. Can you please explain again? For a layman it
-> > looks like a paranoid application cannot read 500 Bytes from
-> > /dev/random without blocking if some other application has previously
-> > read 10 Kilobytes from /dev/urandom.
-> 
-> /dev/urandom always leaves enough entropy in the input pool for
-> /dev/random to reseed. Thus, as long as entropy is coming in, it is
-> not possible for /dev/urandom readers to starve /dev/random readers.
-> But /dev/random readers may still block temporarily and they should
-> damn well expect to block if they read 500 bytes out of a 512 byte
-> pool.
+Your change looks correct to me.
 
-A paranoid application should only need to read ~500 bytes if it is
-generating a long-term RSA private key, and in that case, it would do
-well to use a non-blocking read, and if it can't get enough bytes, it
-should prompt the user to move the mouse around or bang on the
-keyboard.  /dev/random is *not* magic where you can assume that you
-will always get an unlimited amount of good randomness.  Applications
-who assume this are broken, and it has nothing to do with DOS attacks.
 
-Note that even paranoid applicatons should not be using /dev/random
-for session keys; again, /dev/random isn't magic, and entropy isn't
-unlimited. Instead, such an application should pull 16 bytes or so,
-and then use it to seed a cryptographic random number generator.
-
-    	     	   	  		- Ted
+Thanks,
+Roland
