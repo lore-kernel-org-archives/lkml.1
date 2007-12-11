@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbXLKWni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbXLKWoL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757283AbXLKWni (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:43:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbXLKWmv
+	id S1754504AbXLKWoL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:44:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbXLKWnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:42:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34122 "EHLO mx1.redhat.com"
+	Tue, 11 Dec 2007 17:43:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34162 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756532AbXLKWms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:42:48 -0500
-Date: Tue, 11 Dec 2007 17:41:54 -0500 (EST)
-Message-Id: <20071211.174154.64804815.k-ueda@ct.jp.nec.com>
+	id S1754230AbXLKWnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 17:43:47 -0500
+Date: Tue, 11 Dec 2007 17:43:40 -0500 (EST)
+Message-Id: <20071211.174340.107680113.k-ueda@ct.jp.nec.com>
 To: jens.axboe@oracle.com
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
        k-ueda@ct.jp.nec.com
-Subject: [PATCH 03/30] blk_end_request: changing block layer core (take 4)
+Subject: [PATCH 07/30] blk_end_request: changing floppy (take 4)
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
  =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
@@ -26,116 +26,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts core parts of block layer to use blk_end_request
-interfaces.  Related 'uptodate' arguments are converted to 'error'.
+This patch converts floppy to use blk_end_request interfaces.
+Related 'uptodate' arguments are converted to 'error'.
 
-'dequeue' argument was originally introduced for end_dequeued_request(),
-where no attempt should be made to dequeue the request as it's already
-dequeued.
-However, it's not necessary as it can be checked with
-list_empty(&rq->queuelist).
-(Dequeued request has empty list and queued request doesn't.)
-And it has been done in blk_end_request interfaces.
-
-As a result of this patch, end_queued_request() and
-end_dequeued_request() become identical.  A future patch will merge
-and rename them and change users of those functions.
+As a result, the interface of internal function, floppy_end_request(),
+is changed.
 
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 ---
- block/ll_rw_blk.c |   35 +++++++++++++++--------------------
- 1 files changed, 15 insertions(+), 20 deletions(-)
+ drivers/block/floppy.c |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
 
-Index: 2.6.24-rc4/block/ll_rw_blk.c
+Index: 2.6.24-rc4/drivers/block/floppy.c
 ===================================================================
---- 2.6.24-rc4.orig/block/ll_rw_blk.c
-+++ 2.6.24-rc4/block/ll_rw_blk.c
-@@ -347,7 +347,6 @@ unsigned blk_ordered_req_seq(struct requ
- void blk_ordered_complete_seq(struct request_queue *q, unsigned seq, int error)
+--- 2.6.24-rc4.orig/drivers/block/floppy.c
++++ 2.6.24-rc4/drivers/block/floppy.c
+@@ -2287,21 +2287,19 @@ static int do_format(int drive, struct f
+  * =============================
+  */
+ 
+-static void floppy_end_request(struct request *req, int uptodate)
++static void floppy_end_request(struct request *req, int error)
  {
- 	struct request *rq;
--	int uptodate;
+ 	unsigned int nr_sectors = current_count_sectors;
++	unsigned int drive = (unsigned int)req->rq_disk->private_data;
  
- 	if (error && !q->orderr)
- 		q->orderr = error;
-@@ -361,15 +360,11 @@ void blk_ordered_complete_seq(struct req
- 	/*
- 	 * Okay, sequence complete.
- 	 */
--	uptodate = 1;
--	if (q->orderr)
--		uptodate = q->orderr;
--
- 	q->ordseq = 0;
- 	rq = q->orig_bar_rq;
+ 	/* current_count_sectors can be zero if transfer failed */
+-	if (!uptodate)
++	if (error)
+ 		nr_sectors = req->current_nr_sectors;
+-	if (end_that_request_first(req, uptodate, nr_sectors))
++	if (__blk_end_request(req, error, nr_sectors << 9))
+ 		return;
+-	add_disk_randomness(req->rq_disk);
+-	floppy_off((long)req->rq_disk->private_data);
+-	blkdev_dequeue_request(req);
+-	end_that_request_last(req, uptodate);
  
--	end_that_request_first(rq, uptodate, rq->hard_nr_sectors);
--	end_that_request_last(rq, uptodate);
-+	if (__blk_end_request(rq, q->orderr, blk_rq_bytes(rq)))
-+		BUG();
+ 	/* We're done with the request */
++	floppy_off(drive);
+ 	current_req = NULL;
  }
  
- static void pre_flush_end_io(struct request *rq, int error)
-@@ -486,9 +481,9 @@ int blk_do_ordered(struct request_queue 
- 			 * ORDERED_NONE while this request is on it.
- 			 */
- 			blkdev_dequeue_request(rq);
--			end_that_request_first(rq, -EOPNOTSUPP,
--					       rq->hard_nr_sectors);
--			end_that_request_last(rq, -EOPNOTSUPP);
-+			if (__blk_end_request(rq, -EOPNOTSUPP,
-+					      blk_rq_bytes(rq)))
-+				BUG();
- 			*rqp = NULL;
- 			return 0;
+@@ -2332,7 +2330,7 @@ static void request_done(int uptodate)
+ 
+ 		/* unlock chained buffers */
+ 		spin_lock_irqsave(q->queue_lock, flags);
+-		floppy_end_request(req, 1);
++		floppy_end_request(req, 0);
+ 		spin_unlock_irqrestore(q->queue_lock, flags);
+ 	} else {
+ 		if (rq_data_dir(req) == WRITE) {
+@@ -2346,7 +2344,7 @@ static void request_done(int uptodate)
+ 			DRWE->last_error_generation = DRS->generation;
  		}
-@@ -3691,14 +3686,14 @@ void end_that_request_last(struct reques
- EXPORT_SYMBOL(end_that_request_last);
- 
- static inline void __end_request(struct request *rq, int uptodate,
--				 unsigned int nr_bytes, int dequeue)
-+				 unsigned int nr_bytes)
- {
--	if (!end_that_request_chunk(rq, uptodate, nr_bytes)) {
--		if (dequeue)
--			blkdev_dequeue_request(rq);
--		add_disk_randomness(rq->rq_disk);
--		end_that_request_last(rq, uptodate);
--	}
-+	int error = 0;
-+
-+	if (uptodate <= 0)
-+		error = uptodate ? uptodate : -EIO;
-+
-+	__blk_end_request(rq, error, nr_bytes);
+ 		spin_lock_irqsave(q->queue_lock, flags);
+-		floppy_end_request(req, 0);
++		floppy_end_request(req, -EIO);
+ 		spin_unlock_irqrestore(q->queue_lock, flags);
+ 	}
  }
- 
- /**
-@@ -3741,7 +3736,7 @@ EXPORT_SYMBOL_GPL(blk_rq_cur_bytes);
-  **/
- void end_queued_request(struct request *rq, int uptodate)
- {
--	__end_request(rq, uptodate, blk_rq_bytes(rq), 1);
-+	__end_request(rq, uptodate, blk_rq_bytes(rq));
- }
- EXPORT_SYMBOL(end_queued_request);
- 
-@@ -3758,7 +3753,7 @@ EXPORT_SYMBOL(end_queued_request);
-  **/
- void end_dequeued_request(struct request *rq, int uptodate)
- {
--	__end_request(rq, uptodate, blk_rq_bytes(rq), 0);
-+	__end_request(rq, uptodate, blk_rq_bytes(rq));
- }
- EXPORT_SYMBOL(end_dequeued_request);
- 
-@@ -3784,7 +3779,7 @@ EXPORT_SYMBOL(end_dequeued_request);
-  **/
- void end_request(struct request *req, int uptodate)
- {
--	__end_request(req, uptodate, req->hard_cur_sectors << 9, 1);
-+	__end_request(req, uptodate, req->hard_cur_sectors << 9);
- }
- EXPORT_SYMBOL(end_request);
- 
