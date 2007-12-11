@@ -1,31 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbXLKIxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbXLKIy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbXLKIxY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 03:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbXLKIxO
+	id S1753171AbXLKIy5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 03:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbXLKIyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 03:53:14 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34117 "EHLO mx3.mail.elte.hu"
+	Tue, 11 Dec 2007 03:54:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34372 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751088AbXLKIxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 03:53:13 -0500
-Date: Tue, 11 Dec 2007 09:52:32 +0100
+	id S1750722AbXLKIyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 03:54:46 -0500
+Date: Tue, 11 Dec 2007 09:54:23 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Dave Jones <davej@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52,
-	[2.6.24-rc4-git5: Reported regressions from 2.6.23]
-Message-ID: <20071211085232.GE20172@elte.hu>
-References: <200712080340.49546.rjw@sisk.pl> <20071208093039.GA28054@elte.hu> <20071208163749.GI19691@waste.org> <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org> <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org> <20071208100950.a3547868.akpm@linux-foundation.org> <alpine.LFD.0.9999.0712081034470.12046@woody.linux-foundation.org> <20071208195211.GA3727@elte.hu> <20071211062720.GA29764@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: Re: [PATCH 5/4] x86: fix up asm-x86/pgtable*.h formatting
+Message-ID: <20071211085423.GF20172@elte.hu>
+References: <475DA7C5.70900@goop.org> <20071211083413.GA19953@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071211062720.GA29764@redhat.com>
+In-Reply-To: <20071211083413.GA19953@infradead.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,43 +37,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dave Jones <davej@redhat.com> wrote:
+* Christoph Hellwig <hch@infradead.org> wrote:
 
-> On Sat, Dec 08, 2007 at 08:52:11PM +0100, Ingo Molnar wrote:
+> On Mon, Dec 10, 2007 at 12:55:33PM -0800, Jeremy Fitzhardinge wrote:
+> > +#define set_pte_atomic(pteptr, pteval)		set_pte(pteptr,pteval)
+> > +#define set_pte_present(mm,addr,ptep,pteval)	set_pte_at(mm,addr,ptep,pteval)
+> >  
+> > +#define pte_clear(mm,addr,xp)				\
+> > +	do {						\
+> > +		set_pte_at(mm, addr, xp, __pte(0));	\
+> > +	} while (0)
+> > +
+> >  #undef pmd_clear
+> > +#define pmd_clear(xp)				\
+> > +	do {					\
+> > +		set_pmd(xp, __pmd(0));		\
+> > +	} while (0)
 > 
->  > so even today's upstream kernel, which has 'ancient' SLUB code, SLAB and 
->  > SLUB have essentially the same linecount:
->  > 
->  >   $ wc -l mm/slab.c mm/slub.c
->  >   4478 mm/slab.c
->  >   4125 mm/slub.c
->  > 
->  > (and while linecount != complexity, there is a strong relationship.)
->  > 
->  > With SLAB having 10 years more test coverage and tuning.
-> 
-> FWIW, the one thing slub does that slab doesn't that I find really 
-> nice is being enable to enable debugging at boot time rather than 
-> compile time.
+> What about turning these into inline functions to get better type 
+> checking?
 
-yes, but that's largely due to "dont change SLAB because we've got SLUB" 
-resistence to SLAB patches. It's a 2 minute hack to implement this for 
-SLAB.
-
-> We don't get many people running benchmarks against the Fedora kernel, 
-> so any scalability differences between slub/slab probably won't reach 
-> us until we start shipping betas of the next RHEL based on the same 
-> kernel.
-> 
-> Which leaves my only other gripe.  It broke slabtop.
-
-that's actually a _bad_ ABI regression. Rafael, could you please add 
-this to the regressions list?
-
-> There's an alternative implementation in Documentation/vm/slabinfo.c 
-> (why there not say, util-linux, home of current slabtop?)
-
-the kernel should output /proc/slabinfo data with the same formatting, 
-period.
+yes, please. That will also trigger and resolve any still present 
+include file dependency mess. Macros are often used to hack around 
+unclean include file layouts.
 
 	Ingo
