@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbXLKVwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbXLKVxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422AbXLKVwg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 16:52:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbXLKVw2
+	id S1755167AbXLKVxK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 16:53:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbXLKVwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 16:52:28 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45057 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750834AbXLKVw1 (ORCPT
+	Tue, 11 Dec 2007 16:52:54 -0500
+Received: from smtp-vbr1.xs4all.nl ([194.109.24.21]:2069 "EHLO
+	smtp-vbr1.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbXLKVwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 16:52:27 -0500
-Date: Tue, 11 Dec 2007 13:51:22 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Lee.Schermerhorn@hp.com, mel@csn.ul.ie, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rientjes@google.com, kamezawa.hiroyu@jp.fujitsu.com,
-       clameter@sgi.com
-Subject: Re: [PATCH 0/6] Use two zonelists per node instead of multiple
- zonelists v11r2
-Message-Id: <20071211135122.7a4a8dec.akpm@linux-foundation.org>
-In-Reply-To: <20071211202157.1961.27940.sendpatchset@skynet.skynet.ie>
-References: <20071211202157.1961.27940.sendpatchset@skynet.skynet.ie>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 11 Dec 2007 16:52:53 -0500
+Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in
+	directory) (fwd)
+From: Miquel van Smoorenburg <miquels@cistron.nl>
+To: Anders Henke <anders.henke@1und1.de>
+Cc: FUJITA Tomonori <tomof@acm.org>, matthew@wil.cx, jack@ucw.cz,
+       fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, miquels@cistron.nl
+In-Reply-To: <1197384034.19679.13.camel@n2o.xs4all.nl>
+References: <20071129130319.GA2642@atrey.karlin.mff.cuni.cz>
+	 <20071129235813Y.tomof@acm.org> <20071129164557.GD30957@1und1.de>
+	 <20071130021226T.tomof@acm.org>  <20071130103450.GC7697@1und1.de>
+	 <1197384034.19679.13.camel@n2o.xs4all.nl>
+Content-Type: text/plain
+Date: Tue, 11 Dec 2007 22:53:03 +0100
+Message-Id: <1197409983.6288.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Dec 2007 20:21:57 +0000 (GMT)
-Mel Gorman <mel@csn.ul.ie> wrote:
+On Tue, 2007-12-11 at 15:40 +0100, Miquel van Smoorenburg wrote:
+> I just noticed the same bug when I tried to update a 2.6.18 server to
+> 2.6.23.9 .. also tried 2.6.24-rc4. The symptom I'm seeing is that init
+> segfaults, or can't be found .. anyway, driver/fs errors.
+> 
+> In the kernel config, under "processor type and features", I disabled
+> "64GB memory" support (changed to 4GB) and I also disabled "64 bit
+> Memory and IO resources" and the problem went away. Do you by any chance
+> happen to have those features enabled ?
+> 
+> The dpt_i2o driver is not 64-bit clean, it happens to work with
+> PAE/64-bit dma in earlier kernels but that might be by chance. Perhaps
+> the different initialization ordering exposes the problem.
+> 
+> I got the 64-bit dpt_i2o driver from Adaptec some time ago, and I have
+> added 64-bit support to the 2.6.23.1 dpt_i2o driver based on that
+> driver. I intended to submit it for 2.6.25 or so ... if I have some time
+> later today or tomorrow I'll try that next to see if that makes a
+> difference.
 
-> This is a rebase of the two-zonelist patchset to 2.6.24-rc4-mm1 and some
-> warnings cleared up.
+I just recompiled 2.6.23.9 with the 64 bit patch for dpt_i2o and now it
+boots just fine.
 
-Sorry, but I don't think I'll be looking at anything which looks like it
-isn't a bugfix for a while.
+The patch is here:
+http://www.miquels.cistron.nl/linux/dpt_i2o-64bit-2.6.23.patch
 
-I'm swamped in regressions (and everyone else should be too) but also we
-need to look at why there were so many regressions - people jamming way too
-much inadequately tested stuff into the 2.6.24 merge window.  The only way
-we can fix that is to merge less stuff and to more carefully review and
-test the things which we _do_ plan on merging.
+It's not the final version - it needs a few cleanups before it can be
+submitted, but perhaps you can test if it also works for you.
 
-Part of that process is for me to get more -mm kernels out and to test them
-more and to encourage more people to test them and to report and fix
-problems.  But I've hardly looked at the -mm queue in a week because of
-2.6.24 regressions.
+Mike.
 
-argh.
