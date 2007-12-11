@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbXLKQyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbXLKQyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754714AbXLKQyB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 11:54:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbXLKQxw
+	id S1755207AbXLKQyw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 11:54:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbXLKQyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 11:53:52 -0500
-Received: from gw.goop.org ([64.81.55.164]:45007 "EHLO mail.goop.org"
+	Tue, 11 Dec 2007 11:54:44 -0500
+Received: from rtr.ca ([76.10.145.34]:3792 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751347AbXLKQxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 11:53:52 -0500
-Message-ID: <475EC0A0.1000206@goop.org>
-Date: Tue, 11 Dec 2007 08:53:52 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1752106AbXLKQyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 11:54:43 -0500
+Message-ID: <475EC0D1.8010200@rtr.ca>
+Date: Tue, 11 Dec 2007 11:54:41 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 4/4] x86: unify asm-x86/pgtable*.h
-References: <475DA7BF.8090606@goop.org> <20071211082910.GB15183@elte.hu>
-In-Reply-To: <20071211082910.GB15183@elte.hu>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-15
+To: trash can <thetrashcan@earthlink.net>
+Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       ide <linux-ide@vger.kernel.org>
+Subject: Re: Iomega ZIP-100 drive unsupported with jmicron JMB361 chip?
+References: <fa.yONLBG7CMuz80f4dUP5r/5k7emw@ifi.uio.no> <475DD7FF.4030906@shaw.ca> <475EAEDD.9090905@earthlink.net>
+In-Reply-To: <475EAEDD.9090905@earthlink.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> when applied to x86.git#mm this patch has build problems:
->
-> include/asm/pgtable.h: In function 'pte_modify':
-> include/asm/pgtable.h:246: error: 'pteval_t' undeclared (first use in this function)
-> include/asm/pgtable.h:246: error: (Each undeclared identifier is reported only once
-> include/asm/pgtable.h:246: error: for each function it appears in.)
-> include/asm/pgtable.h:246: error: expected ';' before 'pte'
-> include/asm/pgtable.h:247: error: 'pte' undeclared (first use in this function)
->
-> config attached.
->   
+trash can wrote:
+..
+> Robert Hancock wrote:
+>> That is rather curious. There's no sign of any libata error handling
+>> going on.. Maybe the drive is actually returning that error code in the
+>> ATAPI CDB, or at least we think it is?
+>>
+>> You are sure that this drive still works with older kernels using
+>> drivers/ide, and that the hardware didn't break at some point, I assume?
+>>
+> Thanks for your time. I get a kernel panic with the controller mode in BIOS
+> set to AHCI with Fedora Core 6. Once returned to IDE (setting used since
+> computer was built) I booted up. Added information: In Fedora 7 I can not
+> burn DVDs or CDROM using K3b with the Zip drive connected. Some
+> preformatting (I assume) is done rendering the CD/DVD useless then got an
+> I/O error. In Fedora 8 I am able to burn a CDROM using K3b but DVDs behave
+> as with Fedora 7. All is well when the Zip is totaly removed. This Zip
+> drive also worked under Microsoft 2000 { which was removed over a year
+> ago ;-) }. Fedora Core 6, Fedora 7, and Fedora 8 are all installed on
+> this machine. This drive did not work with a Ubuntu 7.10 Live CD on this
+> machine. I intend to try this Zip drive on another motherboard with the
+> above live CD.
+...
 
-Hm, odd.  I compiled and booted 32-bit and 64-bit.  Ah, though I may
-have missed 32-bit non-PAE,  which is your config.
+I missed the early part of this thread,
+but here is a data point that may or may not be useful.
 
-    J
+I have an ASUS mobo here with an onboard JM363 SATA/PATA controller
+(verified by looking at the actual chip).
+
+It works fine when in AHCI mode with a PATA ATAPI ZIP100 drive
+all by itself.  No other configurations tested.
+This is with kernel 2.6.24-rc4-git?.
+
+Cheers
