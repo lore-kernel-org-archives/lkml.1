@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbXLKRFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbXLKRGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756566AbXLKRFZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 12:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbXLKRFL
+	id S1756638AbXLKRGY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 12:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbXLKRGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 12:05:11 -0500
-Received: from mail.suse.de ([195.135.220.2]:33016 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751229AbXLKRFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 12:05:09 -0500
-Date: Tue, 11 Dec 2007 09:04:00 -0800
-From: Greg KH <gregkh@suse.de>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       kay.sievers@vrfy.org
-Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
-Message-ID: <20071211170400.GA4861@suse.de>
-References: <20071207151113.e9841341.akpm@linux-foundation.org> <20071207171455.b2eecb60.randy.dunlap@oracle.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201AF@ecqcmtlmail3.quebec.int.ec.gc.ca> <F1D642E5A91BC94D9504EC83AE19E6B0015201B1@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071210091501.deed38fa.randy.dunlap@oracle.com> <20071211145437.GA15617@linux.vnet.ibm.com> <20071211164319.GA14783@linux.vnet.ibm.com>
+	Tue, 11 Dec 2007 12:06:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:49226 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753127AbXLKRGN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 12:06:13 -0500
+Message-ID: <475EC342.8080901@zytor.com>
+Date: Tue, 11 Dec 2007 09:05:06 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071211164319.GA14783@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "David P. Reed" <dpreed@reed.com>
+CC: Rene Herman <rene.herman@keyaccess.nl>, Paul Rolland <rol@as2917.net>,
+       David Newall <david@davidnewall.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+References: <475879CD.9080006@reed.com>	<p733auekcly.fsf@bingen.suse.de>	<20071207160439.71b7f46a@the-village.bc.nu>	<20071209125458.GB4381@ucw.cz>	<20071209165908.GA15910@one.firstfloor.org>	<20071209212513.GC24284@elf.ucw.cz>	<475CBDD7.5050602@keyaccess.nl>	<m3bq8y23de.fsf@maximus.localdomain>	<475DE37F.20706@davidnewall.com>	<475DE6F4.80702@zytor.com>	<475DEB23.1000304@davidnewall.com>	<20071211084059.3d03e11d@tux.DEF.witbe.net>	<475E5D4B.8020101@keyaccess.nl>	<475E7DC2.4060509@davidnewall.com>	<475E8D91.20201@keyaccess.nl>	<20071211143224.15900995@tux.DEF.witbe.net>	<475E9B9B.2050709@keyaccess.nl>	<475EACB8.7080608@keyaccess.nl> <20071211163706.2dc82275@tux.DEF.witbe.net> <475EB263.2050405@keyaccess.nl> <475EC1C0.2040000@reed.com>
+In-Reply-To: <475EC1C0.2040000@reed.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 11, 2007 at 10:13:19PM +0530, Dhaval Giani wrote:
-> On Tue, Dec 11, 2007 at 08:24:37PM +0530, Dhaval Giani wrote:
-> > On Mon, Dec 10, 2007 at 09:15:01AM -0800, Randy Dunlap wrote:
-> > > On Mon, 10 Dec 2007 09:03:17 -0500 Fortier,Vincent [Montreal] wrote:
-> > > 
-> > > Ingo, can you look at this, please?
-> > > Vincent is getting oopses on 2.6.22.14-cfs-etch.
-> > > 
-> > 
-> > Hi,
-> > 
-> > We are looking into this bug now. I believe that the patch at
-> > http://marc.info/?l=linux-kernel&m=119404922603293 should help.
-> > 
-> > I am working with Kay to get this ported.
-> > 
-> 
-> Hi Vincent,
-> 
-> Does the following patch help?
-> 
-> Kay/Greg, could you please review and add your Signed-off-by(s) as
-> required?
+David P. Reed wrote:
+> I do remind all that 0x80 is a BIOS-specific standard, and is per BIOS - 
+> other ports have been used in the history of the IBM PC family by some 
+> vendors, and some machines have used it for DMA port mapping!!
 
-Um, why?  What is this patch for?  Where is it to be sent, to Linus for
-2.6.24-final?  Or to the -stable tree?
+Correction: ALL machines use it for DMA port mapping.  The port is 
+assigned to the legacy DMA controller, but performs no operation. 
+That's what makes it safe to write (NOT read!)
 
-> This is basically a port of the patch at
-> http://marc.info/?l=linux-kernel&m=119404922603293
-
-Yeah, but that patch needs some other core kobject changes, right?
-
-What exactly are you trying to fix here, the fact that this code never
-even worked?
-
-And, please, we need some documentation for Documenatation/ABI/ on
-exactly what these sysfs files and tree is for.  Please add that now for
-Linus's tree.
-
-confused,
-
-greg k-h
+	-hpa
