@@ -1,145 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756381AbXLKWwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbXLKWwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756381AbXLKWwL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:52:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758715AbXLKWuv
+	id S1758545AbXLKWwb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:52:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758381AbXLKWvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:50:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39326 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758687AbXLKWut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:50:49 -0500
-Date: Tue, 11 Dec 2007 17:50:41 -0500 (EST)
-Message-Id: <20071211.175041.15586071.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com, bzolnier@gmail.com
-Subject: [PATCH 23/30] blk_end_request: changing ide normal caller (take 4)
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Dec 2007 17:51:06 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:34050 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758937AbXLKWvE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 17:51:04 -0500
+Date: Tue, 11 Dec 2007 14:47:16 -0800
+From: Greg KH <greg@kroah.com>
+To: Divy Le Ray <divy@chelsio.com>
+Cc: Ben Greear <greearb@candelatech.com>, Jeff Garzik <jeff@garzik.org>,
+       NetDev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] cxgb - driver fixes.
+Message-ID: <20071211224716.GA17643@kroah.com>
+References: <474C8BF8.9080609@chelsio.com> <474F0422.6090309@candelatech.com> <4751ED97.5090804@chelsio.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4751ED97.5090804@chelsio.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts "normal" parts of ide to use blk_end_request
-interfaces.  Related 'uptodate' arguments are converted to 'error'.
+On Sat, Dec 01, 2007 at 03:26:15PM -0800, Divy Le Ray wrote:
+> Ben Greear wrote:
+>> Divy Le Ray wrote:
+>>> Jeff,
+>>>
+>>> I'm submitting a patch series for inclusion in 2.6.24 for the cxgb 
+>>> driver.
+>>> The patches are built against Linus'git tree.
+>>>
+>>> Here is a brief description:
+>>> - Ensure that GSO skbs have enough headroom before encapsulating them,
+>>> - Fix a crash in NAPI mode,
+>>> - Fix statistics accounting and report.
+>>
+>> We ran pktgen overnight on 2.6.23 with patch 1 and 3 applied (patch 2
+>> not needed on .23 it seems) and it was stable at about 1.5Gbps 
+>> bi-directional
+>> using 1500 MTU sized frames.
+>>
+>> We'll run some more tests with user-space TCP & UDP today, but it looks 
+>> good
+>> so far.
+>>
+>> Perhaps these patches should be considered for .23 stable as well?
+>>
+>> Thanks,
+>> Ben
+>>
+>
+> Yes, patches 1 and 3 could be considered for .22 and .23-stable, along with 
+> the previous fix:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7de6af0f23b25df8da9719ecae1916b669d0b03d
 
-The conversion of 'uptodate' to 'error' is done only for the internal
-function, __ide_end_request().
-ide_end_request() was not changed since it's exported and used
-by many ide drivers.
+Can you send all of the individual patches you wish to have applied to
+the -stable tree to stable@kernel.org so that we can properly determine
+exactly which patches you are referring to?
 
+Also, make sure they are already in Linus's tree before telling us about
+them.
 
-With this patch, blkdev_dequeue_request() in __ide_end_request() is
-moved to blk_end_request, since blk_end_request takes care of
-dequeueing request like below:
+thanks,
 
-	if (!list_empty(&rq->queuelist))
-		blkdev_dequeue_request(rq);
-
-In the case of ide,
-  o 'dequeue' variable of __ide_end_request() is 1 only when the request
-    is still linked to the queue (i.e. rq->queuelist is not empty)
-  o 'dequeue' variable of __ide_end_request() is 0 only when the request
-    has already been removed from the queue (i.e. rq->queuelist is empty)
-So blk_end_request can handle it correctly although ide always run
-thought the code above.
-
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
----
- drivers/ide/ide-cd.c |    6 +++---
- drivers/ide/ide-io.c |   25 ++++++++++++-------------
- 2 files changed, 15 insertions(+), 16 deletions(-)
-
-Index: 2.6.24-rc4/drivers/ide/ide-cd.c
-===================================================================
---- 2.6.24-rc4.orig/drivers/ide/ide-cd.c
-+++ 2.6.24-rc4/drivers/ide/ide-cd.c
-@@ -655,9 +655,9 @@ static void cdrom_end_request (ide_drive
- 					BUG();
- 			} else {
- 				spin_lock_irqsave(&ide_lock, flags);
--				end_that_request_chunk(failed, 0,
--							failed->data_len);
--				end_that_request_last(failed, 0);
-+				if (__blk_end_request(failed, -EIO,
-+						      failed->data_len))
-+					BUG();
- 				spin_unlock_irqrestore(&ide_lock, flags);
- 			}
- 		} else
-Index: 2.6.24-rc4/drivers/ide/ide-io.c
-===================================================================
---- 2.6.24-rc4.orig/drivers/ide/ide-io.c
-+++ 2.6.24-rc4/drivers/ide/ide-io.c
-@@ -58,15 +58,19 @@ static int __ide_end_request(ide_drive_t
- 			     int uptodate, unsigned int nr_bytes, int dequeue)
- {
- 	int ret = 1;
-+	int error = 0;
-+
-+	if (uptodate <= 0)
-+		error = uptodate ? uptodate : -EIO;
- 
- 	/*
- 	 * if failfast is set on a request, override number of sectors and
- 	 * complete the whole request right now
- 	 */
--	if (blk_noretry_request(rq) && end_io_error(uptodate))
-+	if (blk_noretry_request(rq) && error)
- 		nr_bytes = rq->hard_nr_sectors << 9;
- 
--	if (!blk_fs_request(rq) && end_io_error(uptodate) && !rq->errors)
-+	if (!blk_fs_request(rq) && error && !rq->errors)
- 		rq->errors = -EIO;
- 
- 	/*
-@@ -78,14 +82,9 @@ static int __ide_end_request(ide_drive_t
- 		HWGROUP(drive)->hwif->ide_dma_on(drive);
- 	}
- 
--	if (!end_that_request_chunk(rq, uptodate, nr_bytes)) {
--		add_disk_randomness(rq->rq_disk);
--		if (dequeue) {
--			if (!list_empty(&rq->queuelist))
--				blkdev_dequeue_request(rq);
-+	if (!__blk_end_request(rq, error, nr_bytes)) {
-+		if (dequeue)
- 			HWGROUP(drive)->rq = NULL;
--		}
--		end_that_request_last(rq, uptodate);
- 		ret = 0;
- 	}
- 
-@@ -292,9 +291,9 @@ static void ide_complete_pm_request (ide
- 		drive->blocked = 0;
- 		blk_start_queue(drive->queue);
- 	}
--	blkdev_dequeue_request(rq);
- 	HWGROUP(drive)->rq = NULL;
--	end_that_request_last(rq, 1);
-+	if (__blk_end_request(rq, 0, 0))
-+		BUG();
- 	spin_unlock_irqrestore(&ide_lock, flags);
- }
- 
-@@ -391,10 +390,10 @@ void ide_end_drive_cmd (ide_drive_t *dri
- 	}
- 
- 	spin_lock_irqsave(&ide_lock, flags);
--	blkdev_dequeue_request(rq);
- 	HWGROUP(drive)->rq = NULL;
- 	rq->errors = err;
--	end_that_request_last(rq, !rq->errors);
-+	if (__blk_end_request(rq, (rq->errors ? -EIO : 0), 0))
-+		BUG();
- 	spin_unlock_irqrestore(&ide_lock, flags);
- }
- 
+greg k-h
