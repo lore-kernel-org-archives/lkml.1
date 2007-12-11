@@ -1,110 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbXLKT0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbXLKT11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754727AbXLKT0k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 14:26:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbXLKT0c
+	id S1755838AbXLKT11 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 14:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXLKT1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 14:26:32 -0500
-Received: from web36607.mail.mud.yahoo.com ([209.191.85.24]:45764 "HELO
-	web36607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753187AbXLKT0b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 14:26:31 -0500
-X-YMail-OSG: rMNt6z8VM1nNuiQQ.3bW3PWKxOC1ws9lpsS0V0OZEI_Ma0rwlwNip2BNv3Zzixf1rJMbfjsz0Q--
-X-RocketYMMF: rancidfat
-Date: Tue, 11 Dec 2007 11:26:29 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
-To: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com
-Cc: David Howells <dhowells@redhat.com>, Karl MacMillan <kmacmill@redhat.com>,
-       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <1197398079.28006.13.camel@moss-spartans.epoch.ncsc.mil>
+	Tue, 11 Dec 2007 14:27:18 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:2225 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752115AbXLKT1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 14:27:17 -0500
+Date: Tue, 11 Dec 2007 14:24:34 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Ben Woodard <woodard@redhat.com>, Neil Horman <nhorman@redhat.com>,
+       kexec@lists.infradead.org, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
+       Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
+	boot cpu
+Message-ID: <20071211192434.GD10999@hmsreliant.think-freely.org>
+References: <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com> <20071207142144.GA10389@hmsendeavour.rdu.redhat.com> <20071207175832.GA18485@hmsreliant.think-freely.org> <m1k5nm2g3w.fsf@ebiederm.dsl.xmission.com> <20071211034349.GA3635@localhost.localdomain> <m1ejdt25x0.fsf@ebiederm.dsl.xmission.com> <20071211143910.GA10999@hmsreliant.think-freely.org> <m1ve75z1v3.fsf@ebiederm.dsl.xmission.com> <20071211182254.GB10999@hmsreliant.think-freely.org> <m1ejdtysqd.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <266601.55481.qm@web36607.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1ejdtysqd.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Stephen Smalley <sds@tycho.nsa.gov> wrote:
-
-> On Mon, 2007-12-10 at 14:26 -0800, Casey Schaufler wrote:
-> > --- Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> > 
-> > > On Mon, 2007-12-10 at 21:08 +0000, David Howells wrote:
-> > > > Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> > > > 
-> > > > > Otherwise, only other issue I have with this interface is it won't
-> > > > > generalize to dealing with nfsd, where we want to set the acting
-> context
-> > > > > to a context we obtain from or determine based upon the client.
-> > > > 
-> > > > Are you speaking of security_kernel_act_as() and
-> security_create_files_as()
-> > > > specifically?  Or the task_struct::act_as override pointer in general?
-> > > 
-> > > security_kernel_act_as()
-> > > 
-> > > > I don't really know how nfsd wants to obtain and set its LSM context,
-> so
-> > > it's
-> > > > a bit difficult for me to make something that works for nfsd as well as
-> > > > cachefiles.
-> > > 
-> > > It would get a context from the client or from a local configuration
-> > > that would map security-unaware clients to a default context, and then
-> > > want to assume that context for the particular operation.  No transition
-> > > involved.
-> > 
-> > I would expect that the operation would be more sophisticated
-> > than that. You certainly aren't going to use what comes from
-> > the other side without any processing, and I expect you'll have
-> > some sort of operation on anything you pull from a config file
-> > before you actually apply it.
+On Tue, Dec 11, 2007 at 11:46:34AM -0700, Eric W. Biederman wrote:
+> Neil Horman <nhorman@tuxdriver.com> writes:
 > 
-> Yes, that's true - the contexts would be subjected to a permission
-> check.  But that's separable from the act of setting it as the task's
-> acting security state (and needs to be separated, as the precise check
-> will vary depending on the situation - cachefiles is going to apply a
-> different sort of check than nfsd).
+> Ok. My only remaining nit to pick is that fix_hypertransport_config
+> is right in the middle of the nvidia quirks, which can be a bit
+> confusing when reading through the code.  Otherwise I think this
+> is a version that we can merge.
 > 
-> > > > > Why can't cachefilesd just push a context into the kernel and pass
-> that
-> > > > > into the hook as the acting context,
-> > > > 
-> > > > How does cachefilesd come up with such a context?  Grab it from
-> > > > /etc/cachefilesd.conf?
-> > > 
-> > > >From a config file whose pathname would be provided by libselinux (ala
-> > > the way in which dbusd imports contexts), or directly as a context
-> > > returned by a libselinux function.  Has to be done that way so that it
-> > > can be set differently for different policy types (strict, targeted,
-> > > mls).
-> > 
-> > Unless you've got an LSM other than SELinux, of course. If
-> > cachefilesd is going to be responsible for maintaining this
-> > magic context there needs to be an LSM interface for it, not
-> > just an SELinux interface.
+Sure, I'll move it to the top of the file
+
+> Let's get a clean description on this thing and send it to the
+> current x86 maintainers. Thomas, Ingo, and HPA
 > 
-> LSM is an in-kernel interface.  Here we are talking about a userspace
-> interface for obtaining the right security label to use.  There is no
-> equivalent to LSM in userspace as of yet.  Feel free to invent one, but
-> don't ask the rest of us to do it or wait for it to materialize.
 
-I am much more concerned with the interfaces used to pass the
-information into the kernel. I would expect that to be LSM
-independent, not a call into libselinux that resolves into a
-selinuxfs operation, or it's netlink equivilant. It would be
-unfortunate if the userland/kernel interface became an obstacle
-to cachefiles being adopted.
+Clean Summary:
 
-> ...
+Recently a kdump bug was discovered in which a system would hang inside 
+calibrate_delay during the booting of the kdump kernel.  This was caused by the 
+fact that the jiffies counter was not being incremented during timer 
+calibration.  The root cause of this problem was found to be a bios 
+misconfiguration of the hypertransport bus.  On system affected by this hang, 
+the bios had assigned APIC ids which used extended apic bits (more than the 
+nominal 4 bit ids's), but failed to configure bit 18 of the hypertransport 
+transaction config register, which indicated that the mask for the destination 
+field of interrupt packets accross the ht bus (see section 3.3.9 of 
+http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/26094.PDF).  
+If a crash occurs on a cpu with an APIC id that extends beyond 4 bits, it will 
+not recieve interrupts during the kdump kernel boot, and this hang will be the 
+result.  The fix is to add this patch, whcih add an early pci quirk check, to 
+forcibly enable this bit in the httcfg register.  This enables all cpus on a 
+system to receive interrupts, and allows kdump kernel bootup to procede 
+normally.  
+
+> 
+> > Thanks & Regards
+> > Neil
+> >
+> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+> 
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+ early-quirks.c |   90 +++++++++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 69 insertions(+), 21 deletions(-)
+
+
+
+diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
+index 88bb83e..c0d0c69 100644
+--- a/arch/x86/kernel/early-quirks.c
++++ b/arch/x86/kernel/early-quirks.c
+@@ -21,8 +21,36 @@
+ #include <asm/gart.h>
+ #endif
+ 
+-static void __init via_bugs(void)
++static void __init fix_hypertransport_config(int num, int slot, int func)
+ {
++	u32 htcfg;
++	/*
++	 *we found a hypertransport bus
++	 *make sure that are broadcasting
++	 *interrupts to all cpus on the ht bus
++	 *if we're using extended apic ids
++	 */
++	htcfg = read_pci_config(num, slot, func, 0x68);
++	if (htcfg & (1 << 18)) {	
++		printk(KERN_INFO "Detected use of extended apic ids on hypertransport bus\n");
++		if ((htcfg & (1 << 17)) == 0) {
++			printk(KERN_INFO "Enabling hypertransport extended apic interrupt broadcast\n");
++			printk(KERN_INFO "Note this is a bios bug, please contact your hw vendor\n");
++			htcfg |= (1 << 17);
++			write_pci_config(num, slot, func, 0x68, htcfg);
++		}
++	}
++
++	
++}
++
++static void __init via_bugs(int  num, int slot, int func)
++{
++	static int fix_applied = 0;
++
++	if (fix_applied++)
++		return;
++
+ #ifdef CONFIG_GART_IOMMU
+ 	if ((end_pfn > MAX_DMA32_PFN ||  force_iommu) &&
+ 	    !gart_iommu_aperture_allowed) {
+@@ -44,8 +72,13 @@ static int __init nvidia_hpet_check(struct acpi_table_header *header)
+ #endif /* CONFIG_X86_IO_APIC */
+ #endif /* CONFIG_ACPI */
+ 
+-static void __init nvidia_bugs(void)
++static void __init nvidia_bugs(int num, int slot, int func)
+ {
++	static int fix_applied = 0;
++
++	if (fix_applied++)
++		return;
++
+ #ifdef CONFIG_ACPI
+ #ifdef CONFIG_X86_IO_APIC
+ 	/*
+@@ -72,8 +105,13 @@ static void __init nvidia_bugs(void)
+ 
+ }
+ 
+-static void __init ati_bugs(void)
++static void __init ati_bugs(int num, int slot, int func)
+ {
++	static int fix_applied = 0;
++
++	if (fix_applied++)
++		return;
++
+ #ifdef CONFIG_X86_IO_APIC
+ 	if (timer_over_8254 == 1) {
+ 		timer_over_8254 = 0;
+@@ -84,14 +122,18 @@ static void __init ati_bugs(void)
+ }
+ 
+ struct chipset {
+-	u16 vendor;
+-	void (*f)(void);
++	u32 vendor;
++	u32 device;
++	u32 class;
++	u32 class_mask;
++	void (*f)(int num, int slot, int func);
+ };
+ 
+ static struct chipset early_qrk[] __initdata = {
+-	{ PCI_VENDOR_ID_NVIDIA, nvidia_bugs },
+-	{ PCI_VENDOR_ID_VIA, via_bugs },
+-	{ PCI_VENDOR_ID_ATI, ati_bugs },
++	{ PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, nvidia_bugs },
++	{ PCI_VENDOR_ID_VIA, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, via_bugs },
++	{ PCI_VENDOR_ID_ATI, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, ati_bugs },
++	{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB, PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, fix_hypertransport_config },
+ 	{}
+ };
+ 
+@@ -106,27 +148,33 @@ void __init early_quirks(void)
+ 	for (num = 0; num < 32; num++) {
+ 		for (slot = 0; slot < 32; slot++) {
+ 			for (func = 0; func < 8; func++) {
+-				u32 class;
+-				u32 vendor;
++				u16 class;
++				u16 vendor;
++				u16 device;
+ 				u8 type;
+ 				int i;
+-				class = read_pci_config(num,slot,func,
++
++				class = read_pci_config_16(num,slot,func,
+ 							PCI_CLASS_REVISION);
+-				if (class == 0xffffffff)
++				if (class == 0xffff)
+ 					break;
+ 
+-				if ((class >> 16) != PCI_CLASS_BRIDGE_PCI)
+-					continue;
+-
+-				vendor = read_pci_config(num, slot, func,
++				vendor = read_pci_config_16(num, slot, func,
+ 							 PCI_VENDOR_ID);
+-				vendor &= 0xffff;
+ 
+-				for (i = 0; early_qrk[i].f; i++)
+-					if (early_qrk[i].vendor == vendor) {
+-						early_qrk[i].f();
+-						return;
++				device = read_pci_config_16(num, slot, func,
++							PCI_DEVICE_ID);
++
++				for(i=0;early_qrk[i].f != NULL;i++) {
++					if (((early_qrk[i].vendor == PCI_ANY_ID) ||
++					    (early_qrk[i].vendor == vendor)) &&
++					   ((early_qrk[i].device == PCI_ANY_ID) ||
++					    (early_qrk[i].device == device)) &&
++					   (!((early_qrk[i].class ^ class) & 
++					     early_qrk[i].class_mask))) {
++						early_qrk[i].f(num, slot, func);
+ 					}
++				}
+ 
+ 				type = read_pci_config_byte(num, slot, func,
+ 							    PCI_HEADER_TYPE);
