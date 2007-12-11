@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759588AbXLKWyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759635AbXLKWzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759588AbXLKWyu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:54:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759383AbXLKWx3
+	id S1759635AbXLKWzN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:55:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759090AbXLKWx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:53:29 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51200 "EHLO mx1.redhat.com"
+	Tue, 11 Dec 2007 17:53:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51238 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758644AbXLKWxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:53:23 -0500
-Date: Tue, 11 Dec 2007 17:52:28 -0500 (EST)
-Message-Id: <20071211.175228.52120550.k-ueda@ct.jp.nec.com>
+	id S1758502AbXLKWx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 17:53:56 -0500
+Date: Tue, 11 Dec 2007 17:53:24 -0500 (EST)
+Message-Id: <20071211.175324.11049746.k-ueda@ct.jp.nec.com>
 To: jens.axboe@oracle.com
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
        k-ueda@ct.jp.nec.com, bharrosh@panasas.com
-Subject: [PATCH 28/30] blk_end_request: remove/unexport end_that_request_*
- (take 4)
+Subject: [PATCH 30/30] blk_end_request: cleanup of request completion (take
+ 4)
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
  =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
@@ -27,141 +27,93 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the following functions:
-  o end_that_request_first()
-  o end_that_request_chunk()
-and stops exporting the functions below:
-  o end_that_request_last()
+This patch merges complete_request() into end_that_request_last()
+for cleanup.
+
+complete_request() was introduced by earlier part of this patch-set,
+not to break the existing users of end_that_request_last().
+
+Since all users are converted to blk_end_request interfaces and
+end_that_request_last() is no longer exported, the code can be
+merged to end_that_request_last().
 
 Cc: Boaz Harrosh <bharrosh@panasas.com>
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 ---
- block/ll_rw_blk.c      |   61 ++++++++++++-------------------------------------
- include/linux/blkdev.h |   13 ++++------
- 2 files changed, 20 insertions(+), 54 deletions(-)
+ block/ll_rw_blk.c |   31 ++++++++++++++-----------------
+ 1 files changed, 14 insertions(+), 17 deletions(-)
 
 Index: 2.6.24-rc4/block/ll_rw_blk.c
 ===================================================================
 --- 2.6.24-rc4.orig/block/ll_rw_blk.c
 +++ 2.6.24-rc4/block/ll_rw_blk.c
-@@ -3410,6 +3410,20 @@ static void blk_recalc_rq_sectors(struct
- 	}
- }
- 
-+/**
-+ * __end_that_request_first - end I/O on a request
-+ * @req:      the request being processed
-+ * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
-+ * @nr_bytes: number of bytes to complete
-+ *
-+ * Description:
-+ *     Ends I/O on a number of bytes attached to @req, and sets it up
-+ *     for the next range of segments (if any) in the cluster.
-+ *
-+ * Return:
-+ *     0 - we are done with this request, call end_that_request_last()
-+ *     1 - still buffers pending for this request
-+ **/
- static int __end_that_request_first(struct request *req, int uptodate,
- 				    int nr_bytes)
- {
-@@ -3526,49 +3540,6 @@ static int __end_that_request_first(stru
- 	return 1;
- }
- 
--/**
-- * end_that_request_first - end I/O on a request
-- * @req:      the request being processed
-- * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
-- * @nr_sectors: number of sectors to end I/O on
-- *
-- * Description:
-- *     Ends I/O on a number of sectors attached to @req, and sets it up
-- *     for the next range of segments (if any) in the cluster.
-- *
-- * Return:
-- *     0 - we are done with this request, call end_that_request_last()
-- *     1 - still buffers pending for this request
-- **/
--int end_that_request_first(struct request *req, int uptodate, int nr_sectors)
--{
--	return __end_that_request_first(req, uptodate, nr_sectors << 9);
--}
--
--EXPORT_SYMBOL(end_that_request_first);
--
--/**
-- * end_that_request_chunk - end I/O on a request
-- * @req:      the request being processed
-- * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
-- * @nr_bytes: number of bytes to complete
-- *
-- * Description:
-- *     Ends I/O on a number of bytes attached to @req, and sets it up
-- *     for the next range of segments (if any). Like end_that_request_first(),
-- *     but deals with bytes instead of sectors.
-- *
-- * Return:
-- *     0 - we are done with this request, call end_that_request_last()
-- *     1 - still buffers pending for this request
-- **/
--int end_that_request_chunk(struct request *req, int uptodate, int nr_bytes)
--{
--	return __end_that_request_first(req, uptodate, nr_bytes);
--}
--
--EXPORT_SYMBOL(end_that_request_chunk);
--
- /*
-  * splice the completion data to a local structure and hand off to
-  * process_completion_queue() to complete the requests
-@@ -3648,7 +3619,7 @@ EXPORT_SYMBOL(blk_complete_request);
- /*
-  * queue lock must be held
-  */
--void end_that_request_last(struct request *req, int uptodate)
-+static void end_that_request_last(struct request *req, int uptodate)
+@@ -3616,6 +3616,12 @@ static void end_that_request_last(struct
  {
  	struct gendisk *disk = req->rq_disk;
- 	int error;
-@@ -3683,8 +3654,6 @@ void end_that_request_last(struct reques
+ 
++	if (blk_rq_tagged(req))
++		blk_queue_end_tag(req->q, req);
++
++	if (blk_queued_rq(req))
++		blkdev_dequeue_request(req);
++
+ 	if (unlikely(laptop_mode) && blk_fs_request(req))
+ 		laptop_io_completion();
+ 
+@@ -3633,10 +3639,15 @@ static void end_that_request_last(struct
+ 		disk_round_stats(disk);
+ 		disk->in_flight--;
+ 	}
++
+ 	if (req->end_io)
+ 		req->end_io(req, error);
+-	else
++	else {
++		if (blk_bidi_rq(req))
++			__blk_put_request(req->next_rq->q, req->next_rq);
++
  		__blk_put_request(req->q, req);
++	}
  }
  
--EXPORT_SYMBOL(end_that_request_last);
--
  static inline void __end_request(struct request *rq, int uptodate,
- 				 unsigned int nr_bytes)
- {
-Index: 2.6.24-rc4/include/linux/blkdev.h
-===================================================================
---- 2.6.24-rc4.orig/include/linux/blkdev.h
-+++ 2.6.24-rc4/include/linux/blkdev.h
-@@ -720,21 +720,18 @@ static inline void blk_run_address_space
+@@ -3737,20 +3748,6 @@ void end_request(struct request *req, in
  }
+ EXPORT_SYMBOL(end_request);
  
- /*
-- * end_request() and friends. Must be called with the request queue spinlock
-- * acquired. All functions called within end_request() _must_be_ atomic.
-+ * blk_end_request() and friends.
-+ * __blk_end_request() and end_request() must be called with
-+ * the request queue spinlock acquired.
-  *
-  * Several drivers define their own end_request and call
-- * end_that_request_first() and end_that_request_last()
-- * for parts of the original function. This prevents
-- * code duplication in drivers.
-+ * blk_end_request() for parts of the original function.
-+ * This prevents code duplication in drivers.
-  */
- extern int blk_end_request(struct request *rq, int error, int nr_bytes);
- extern int __blk_end_request(struct request *rq, int error, int nr_bytes);
- extern int blk_end_bidi_request(struct request *rq, int error, int nr_bytes,
- 				int bidi_bytes);
--extern int end_that_request_first(struct request *, int, int);
--extern int end_that_request_chunk(struct request *, int, int);
--extern void end_that_request_last(struct request *, int);
- extern void end_request(struct request *, int);
- extern void end_queued_request(struct request *, int);
- extern void end_dequeued_request(struct request *, int);
+-static void complete_request(struct request *rq, int error)
+-{
+-	if (blk_rq_tagged(rq))
+-		blk_queue_end_tag(rq->q, rq);
+-
+-	if (blk_queued_rq(rq))
+-		blkdev_dequeue_request(rq);
+-
+-	if (blk_bidi_rq(rq) && !rq->end_io)
+-		__blk_put_request(rq->next_rq->q, rq->next_rq);
+-
+-	end_that_request_last(rq, error);
+-}
+-
+ /**
+  * blk_end_io - Generic end_io function to complete a request.
+  * @rq:           the request being processed
+@@ -3793,7 +3790,7 @@ static int blk_end_io(struct request *rq
+ 	add_disk_randomness(rq->rq_disk);
+ 
+ 	spin_lock_irqsave(q->queue_lock, flags);
+-	complete_request(rq, error);
++	end_that_request_last(rq, error);
+ 	spin_unlock_irqrestore(q->queue_lock, flags);
+ 
+ 	return 0;
+@@ -3841,7 +3838,7 @@ int __blk_end_request(struct request *rq
+ 
+ 	add_disk_randomness(rq->rq_disk);
+ 
+-	complete_request(rq, error);
++	end_that_request_last(rq, error);
+ 
+ 	return 0;
+ }
