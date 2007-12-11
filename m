@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbXLKWUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbXLKWU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbXLKWUn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:20:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXLKWUY
+	id S1755810AbXLKWU4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbXLKWUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:20:24 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:54605 "EHLO
+	Tue, 11 Dec 2007 17:20:32 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:54609 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751917AbXLKWUV (ORCPT
+	with ESMTP id S1755303AbXLKWUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:20:21 -0500
-Date: Tue, 11 Dec 2007 23:20:22 +0100
+	Tue, 11 Dec 2007 17:20:30 -0500
+Date: Tue, 11 Dec 2007 23:20:30 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: yi.zhu@intel.com, jketreno@linux.intel.com
-Cc: linux-wireless@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: [2.6 patch] wireless/ipw2200.c: add __dev{init,exit} annotations
-Message-ID: <20071211222022.GC14204@stusta.de>
+To: romieu@fr.zoreil.com, sorbica@icplus.com.tw, jesse@icplus.com.tw
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] drivers/net/ipg.c: add __devexit annotation
+Message-ID: <20071211222030.GD14204@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,46 +24,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds __dev{init,exit} annotations.
+ipg_remove() can become __devexit.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- drivers/net/wireless/ipw2200.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-dc37213e10799b6613c322c775923f070c8d5d9b 
-diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
-index 54f44e5..da51f47 100644
---- a/drivers/net/wireless/ipw2200.c
-+++ b/drivers/net/wireless/ipw2200.c
-@@ -10751,7 +10751,7 @@ static void ipw_bg_link_down(struct work_struct *work)
- 	mutex_unlock(&priv->mutex);
- }
+97ace7a0e52ceac30caae20e1a3fe72c4644bce7 
+diff --git a/drivers/net/ipg.c b/drivers/net/ipg.c
+index dbd23bb..285ebbc 100644
+--- a/drivers/net/ipg.c
++++ b/drivers/net/ipg.c
+@@ -2214,7 +2214,7 @@ static struct ethtool_ops ipg_ethtool_ops = {
+ 	.nway_reset   = ipg_nway_reset,
+ };
  
--static int ipw_setup_deferred_work(struct ipw_priv *priv)
-+static int __devinit ipw_setup_deferred_work(struct ipw_priv *priv)
+-static void ipg_remove(struct pci_dev *pdev)
++static void __devexit ipg_remove(struct pci_dev *pdev)
  {
- 	int ret = 0;
- 
-@@ -11600,7 +11600,8 @@ static void ipw_prom_free(struct ipw_priv *priv)
- #endif
- 
- 
--static int ipw_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
-+static int __devinit ipw_pci_probe(struct pci_dev *pdev,
-+				   const struct pci_device_id *ent)
- {
- 	int err = 0;
- 	struct net_device *net_dev;
-@@ -11767,7 +11768,7 @@ static int ipw_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	return err;
- }
- 
--static void ipw_pci_remove(struct pci_dev *pdev)
-+static void __devexit ipw_pci_remove(struct pci_dev *pdev)
- {
- 	struct ipw_priv *priv = pci_get_drvdata(pdev);
- 	struct list_head *p, *q;
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+ 	struct ipg_nic_private *sp = netdev_priv(dev);
 
