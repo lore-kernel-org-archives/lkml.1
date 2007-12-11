@@ -1,166 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbXLKSVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbXLKSZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbXLKSVj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 13:21:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbXLKSVb
+	id S1755097AbXLKSZu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 13:25:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbXLKSZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 13:21:31 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:43273 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752517AbXLKSV3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 13:21:29 -0500
-Date: Tue, 11 Dec 2007 23:50:15 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-Cc: Greg KH <gregkh@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       kay.sievers@vrfy.org
-Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
-Message-ID: <20071211182015.GA22339@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20071207151113.e9841341.akpm@linux-foundation.org> <20071207171455.b2eecb60.randy.dunlap@oracle.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201AF@ecqcmtlmail3.quebec.int.ec.gc.ca> <F1D642E5A91BC94D9504EC83AE19E6B0015201B1@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071210091501.deed38fa.randy.dunlap@oracle.com> <20071211145437.GA15617@linux.vnet.ibm.com> <20071211164319.GA14783@linux.vnet.ibm.com> <20071211170400.GA4861@suse.de> <20071211172338.GA17896@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201EF@ecqcmtlmail3.quebec.int.ec.gc.ca>
+	Tue, 11 Dec 2007 13:25:41 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:3951 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753350AbXLKSZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 13:25:40 -0500
+Date: Tue, 11 Dec 2007 13:22:54 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Ben Woodard <woodard@redhat.com>, Neil Horman <nhorman@redhat.com>,
+       kexec@lists.infradead.org, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
+       Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
+	boot cpu
+Message-ID: <20071211182254.GB10999@hmsreliant.think-freely.org>
+References: <m1bq93s5r8.fsf@ebiederm.dsl.xmission.com> <86802c440712070050s3c5017a4w8e747a7035d10d3a@mail.gmail.com> <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com> <20071207142144.GA10389@hmsendeavour.rdu.redhat.com> <20071207175832.GA18485@hmsreliant.think-freely.org> <m1k5nm2g3w.fsf@ebiederm.dsl.xmission.com> <20071211034349.GA3635@localhost.localdomain> <m1ejdt25x0.fsf@ebiederm.dsl.xmission.com> <20071211143910.GA10999@hmsreliant.think-freely.org> <m1ve75z1v3.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0015201EF@ecqcmtlmail3.quebec.int.ec.gc.ca>
+In-Reply-To: <m1ve75z1v3.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 11, 2007 at 12:47:29PM -0500, Fortier,Vincent [Montreal] wrote:
-> > -----Message d'origine-----
-> > De : linux-kernel-owner@vger.kernel.org 
-> > [mailto:linux-kernel-owner@vger.kernel.org] De la part de Dhaval Giani
-> > 
-> > On Tue, Dec 11, 2007 at 09:04:00AM -0800, Greg KH wrote:
-> > > On Tue, Dec 11, 2007 at 10:13:19PM +0530, Dhaval Giani wrote:
-> > > > On Tue, Dec 11, 2007 at 08:24:37PM +0530, Dhaval Giani wrote:
-> > > > > On Mon, Dec 10, 2007 at 09:15:01AM -0800, Randy Dunlap wrote:
-> > > > > > On Mon, 10 Dec 2007 09:03:17 -0500 Fortier,Vincent wrote:
-> > > > > > 
-> > > > > > Ingo, can you look at this, please?
-> > > > > > Vincent is getting oopses on 2.6.22.14-cfs-etch.
-> > > > > > 
-> > > > > 
-> > > > > Hi,
-> > > > > 
-> > > > > We are looking into this bug now. I believe that the patch at
-> > > > > http://marc.info/?l=linux-kernel&m=119404922603293 should help.
-> > > > > 
-> > > > > I am working with Kay to get this ported.
-> > > > > 
-> > > > 
-> > > > Hi Vincent,
-> > > > 
-> > > > Does the following patch help?
-> > > > 
-> > > > Kay/Greg, could you please review and add your Signed-off-by(s) as
+On Tue, Dec 11, 2007 at 08:29:20AM -0700, Eric W. Biederman wrote:
+> Neil Horman <nhorman@tuxdriver.com> writes:
 > 
-> > > > required?
-> > > 
-> > > Um, why?  What is this patch for?  Where is it to be sent, to Linus 
-> > > for 2.6.24-final?  Or to the -stable tree?
-> > > 
-> > 
-> > Hi Greg,
-> > 
-> > This is for 2.26.24-final, since Fair User scheduling is not 
-> > yet there in stable.
-> > 
-> > > > This is basically a port of the patch at
-> > > > http://marc.info/?l=linux-kernel&m=119404922603293
-> > > 
-> > > Yeah, but that patch needs some other core kobject changes, right?
-> > > 
-> > 
-> > Yep, there are some other changes that patch needed. We have 
-> > worked around them by using the existing functions in the 
-> > current Linus tree.
-> > 
-> > > What exactly are you trying to fix here, the fact that this code
-> never 
-> > > even worked?
-> > > 
-> > 
-> > The code was not using the kobject API. Its been cleaned up now (I
-> > hope!)
+> > On Mon, Dec 10, 2007 at 09:48:11PM -0700, Eric W. Biederman wrote:
+> >> Neil Horman <nhorman@tuxdriver.com> writes:
 > 
-> It refused to apply cleanly on a 2.6.22.14 + CFS v24, only one failure
-> occured.  So I resolved it manually and attached the resulting diff.
+> Ok.  I just looked at read_pci_config.  It doesn't do the right thing for
+> a non-aligned 32bit access.  (Not that I am convinced there is a right
+> thing we can do).  Please make this read_pci_config_16 instead
+> and you won't need the shift.
 > 
-> My tests with Galaxy 5.9 shows that it still does not work.  Although,
-> the error seems to have changed a bit (see attached dmesg)
+> Either that or as I earlier suggested just do a 32bit read from offset 0
+> and use shifts and masks to get vendor and device fields.
 > 
 
-Hmmm, makes me suspect the bug is somewhere else. What I am not able to
-figure out is that I was able to recreate the trace you had on my
-systems. So there is a bug somewhere there.
 
-Could you send your config please?
+The former seems like a reasonable solution to me.  Corrected in this updated
+patch.
 
-> > > And, please, we need some documentation for Documenatation/ABI/ on 
-> > > exactly what these sysfs files and tree is for.  Please add that now
+> You almost got YH's comment.  You need return 2 for the old functions
+> so we don't try and apply a per chipset fixup for every device in
+> the system.
 > 
-> > > for Linus's tree.
-> > 
-> > On to it, will send the patch asap.
-> > 
-> > > confused,
-> > 
-> > hope i helped (in clearing it :) )
-> 
-> Should this patch eventually be included in?
-> 2.6.25                                                      ?
-> 2.6.24                                                      ?
-> (-stable 2.6.23 & 2.6.22) || backport CFS v24 -> v25        ?
+> I'm actually inclined to remove the return magic and just do something
+> like:
+> 	static fix_applied;
+> 	if (fix_applied++)
+>         	return;
+> In those functions that should be called only once.
 > 
 
-2.6.24 is what I believe, unless of course the bug lies elsewhere.
+I like the latter approach better.  It seems less convoluted to me.
 
--- 
-regards,
-Dhaval
+New patch attached.
 
-[  638.466375] BUG: unable to handle kernel paging request at virtual address 80000000
-[  638.466479]  printing eip:
-[  638.466527] c01d9182
-[  638.466574] *pdpt = 000000002d022001
-[  638.466622] *pde = 0000000000000000
-[  638.466672] Oops: 0000 [#1]
-[  638.466719] SMP 
-[  638.466838] last sysfs file: /devices/platform/floppy.0/uevent
-[  638.466890] Modules linked in: xfs drbd cn nfs nfsd exportfs lockd nfs_acl sunrpc ppdev parport_pc lp parport button ac battery ipv6 fuse ide_cd ide_generic usbkbd usbmouse tsdev iTCO_wdt iTCO_vendor_support sg psmouse e752x_edac shpchp sr_mod pci_hotplug serio_raw edac_mc evdev pcspkr cdrom floppy ext3 jbd mbcache dm_mirror dm_snapshot dm_mod generic piix ide_core ata_piix ehci_hcd uhci_hcd tg3 usbcore thermal processor fan mptscsih mptbase megaraid_sas megaraid_mbox megaraid_mm cciss aacraid
-[  638.469273] CPU:    3
-[  638.469274] EIP:    0060:[<c01d9182>]    Not tainted VLI
-[  638.469275] EFLAGS: 00010297   (2.6.22.14-cfs-etch-686-envcan #1)
-[  638.469444] EIP is at vsnprintf+0x2af/0x48c
-[  638.469504] eax: 80000000   ebx: ffffffff   ecx: 80000000   edx: fffffffe
-[  638.469567] esi: ebc29017   edi: ed019eac   ebp: ffffffff   esp: ed019e4c
-[  638.469631] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-[  638.469693] Process clBackup (pid: 4849, ti=ed018000 task=f6674c60 task.ti=ed018000)
-[  638.469757] Stack: ec2a9000 00001000 c033b658 f899b56c c0236131 ec2a9000 143d6fe8 ebc29017 
-[  638.470212]        00f9b608 00000000 ffffffff ffffffff 00000000 c0337ecb 00000003 00000017 
-[  638.470665]        c037a3a0 ec2a9000 c01d93e0 ed019eac ed019eac c02356ac ebc29017 c0337eca 
-[  638.471129] Call Trace:
-[  638.471258]  [<c0236131>] dev_uevent+0x189/0x1e0
-[  638.471377]  [<c01d93e0>] sprintf+0x20/0x23
-[  638.471486]  [<c02356ac>] show_uevent+0xad/0xd5
-[  638.471594]  [<c0157189>] get_page_from_freelist+0x273/0x30a
-[  638.471713]  [<c01323b4>] group_send_sig_info+0x12/0x56
-[  638.471822]  [<c0157272>] __alloc_pages+0x52/0x286
-[  638.471930]  [<c02355ff>] show_uevent+0x0/0xd5
-[  638.472034]  [<c02351be>] dev_attr_show+0x15/0x18
-[  638.472138]  [<c01a8e91>] sysfs_read_file+0x87/0xd8
-[  638.472240]  [<c018807c>] sys_getxattr+0x46/0x4e
-[  638.472341]  [<c01a8e0a>] sysfs_read_file+0x0/0xd8
-[  638.472445]  [<c0171f77>] vfs_read+0xa6/0x128
-[  638.472551]  [<c0172373>] sys_read+0x41/0x67
-[  638.472656]  [<c0103d8a>] syscall_call+0x7/0xb
-[  638.472765]  =======================
-[  638.472822] Code: 74 24 28 73 03 c6 06 20 4d 46 85 ed 7f f1 e9 b9 00 00 00 8b 0f b8 59 0a 33 c0 8b 54 24 2c 81 f9 ff 0f 00 00 0f 46 c8 89 c8 eb 06 <80> 38 00 74 07 40 4a 83 fa ff 75 f4 29 c8 f6 44 24 30 10 89 c3 
-[  638.475660] EIP: [<c01d9182>] vsnprintf+0x2af/0x48c SS:ESP 0068:ed019e4c
+Thanks & Regards
+Neil
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
 
+ early-quirks.c |   90 +++++++++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 69 insertions(+), 21 deletions(-)
+
+
+diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
+index 88bb83e..f307285 100644
+--- a/arch/x86/kernel/early-quirks.c
++++ b/arch/x86/kernel/early-quirks.c
+@@ -21,8 +21,13 @@
+ #include <asm/gart.h>
+ #endif
+ 
+-static void __init via_bugs(void)
++static void __init via_bugs(int  num, int slot, int func)
+ {
++	static int fix_applied = 0;
++
++	if (fix_applied++)
++		return;
++
+ #ifdef CONFIG_GART_IOMMU
+ 	if ((end_pfn > MAX_DMA32_PFN ||  force_iommu) &&
+ 	    !gart_iommu_aperture_allowed) {
+@@ -44,8 +49,36 @@ static int __init nvidia_hpet_check(struct acpi_table_header *header)
+ #endif /* CONFIG_X86_IO_APIC */
+ #endif /* CONFIG_ACPI */
+ 
+-static void __init nvidia_bugs(void)
++static void __init fix_hypertransport_config(int num, int slot, int func)
+ {
++	u32 htcfg;
++	/*
++	 *we found a hypertransport bus
++	 *make sure that are broadcasting
++	 *interrupts to all cpus on the ht bus
++	 *if we're using extended apic ids
++	 */
++	htcfg = read_pci_config(num, slot, func, 0x68);
++	if (htcfg & (1 << 18)) {	
++		printk(KERN_INFO "Detected use of extended apic ids on hypertransport bus\n");
++		if ((htcfg & (1 << 17)) == 0) {
++			printk(KERN_INFO "Enabling hypertransport extended apic interrupt broadcast\n");
++			printk(KERN_INFO "Note this is a bios bug, please contact your hw vendor\n");
++			htcfg |= (1 << 17);
++			write_pci_config(num, slot, func, 0x68, htcfg);
++		}
++	}
++
++	
++}
++
++static void __init nvidia_bugs(int num, int slot, int func)
++{
++	static int fix_applied = 0;
++
++	if (fix_applied++)
++		return;
++
+ #ifdef CONFIG_ACPI
+ #ifdef CONFIG_X86_IO_APIC
+ 	/*
+@@ -72,8 +105,13 @@ static void __init nvidia_bugs(void)
+ 
+ }
+ 
+-static void __init ati_bugs(void)
++static void __init ati_bugs(int num, int slot, int func)
+ {
++	static int fix_applied = 0;
++
++	if (fix_applied++)
++		return;
++
+ #ifdef CONFIG_X86_IO_APIC
+ 	if (timer_over_8254 == 1) {
+ 		timer_over_8254 = 0;
+@@ -84,14 +122,18 @@ static void __init ati_bugs(void)
+ }
+ 
+ struct chipset {
+-	u16 vendor;
+-	void (*f)(void);
++	u32 vendor;
++	u32 device;
++	u32 class;
++	u32 class_mask;
++	void (*f)(int num, int slot, int func);
+ };
+ 
+ static struct chipset early_qrk[] __initdata = {
+-	{ PCI_VENDOR_ID_NVIDIA, nvidia_bugs },
+-	{ PCI_VENDOR_ID_VIA, via_bugs },
+-	{ PCI_VENDOR_ID_ATI, ati_bugs },
++	{ PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, nvidia_bugs },
++	{ PCI_VENDOR_ID_VIA, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, via_bugs },
++	{ PCI_VENDOR_ID_ATI, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, ati_bugs },
++	{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB, PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, fix_hypertransport_config },
+ 	{}
+ };
+ 
+@@ -106,27 +148,33 @@ void __init early_quirks(void)
+ 	for (num = 0; num < 32; num++) {
+ 		for (slot = 0; slot < 32; slot++) {
+ 			for (func = 0; func < 8; func++) {
+-				u32 class;
+-				u32 vendor;
++				u16 class;
++				u16 vendor;
++				u16 device;
+ 				u8 type;
+ 				int i;
+-				class = read_pci_config(num,slot,func,
++
++				class = read_pci_config_16(num,slot,func,
+ 							PCI_CLASS_REVISION);
+-				if (class == 0xffffffff)
++				if (class == 0xffff)
+ 					break;
+ 
+-				if ((class >> 16) != PCI_CLASS_BRIDGE_PCI)
+-					continue;
+-
+-				vendor = read_pci_config(num, slot, func,
++				vendor = read_pci_config_16(num, slot, func,
+ 							 PCI_VENDOR_ID);
+-				vendor &= 0xffff;
+ 
+-				for (i = 0; early_qrk[i].f; i++)
+-					if (early_qrk[i].vendor == vendor) {
+-						early_qrk[i].f();
+-						return;
++				device = read_pci_config_16(num, slot, func,
++							PCI_DEVICE_ID);
++
++				for(i=0;early_qrk[i].f != NULL;i++) {
++					if (((early_qrk[i].vendor == PCI_ANY_ID) ||
++					    (early_qrk[i].vendor == vendor)) &&
++					   ((early_qrk[i].device == PCI_ANY_ID) ||
++					    (early_qrk[i].device == device)) &&
++					   (!((early_qrk[i].class ^ class) & 
++					     early_qrk[i].class_mask))) {
++						early_qrk[i].f(num, slot, func);
+ 					}
++				}
+ 
+ 				type = read_pci_config_byte(num, slot, func,
+ 							    PCI_HEADER_TYPE);
