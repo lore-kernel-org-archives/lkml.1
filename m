@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbXLKN2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbXLKNdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753589AbXLKN2S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 08:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbXLKN2I
+	id S1753767AbXLKNdA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 08:33:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbXLKNcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 08:28:08 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59807 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752124AbXLKN2G (ORCPT
+	Tue, 11 Dec 2007 08:32:52 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37629 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbXLKNcw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 08:28:06 -0500
-Date: Tue, 11 Dec 2007 13:22:22 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: linux-pcmcia@lists.infradead.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Richard Knutsson <ricknu-0@student.ltu.se>
-Subject: Re: [PATCH 2/6] pcmcia/3c574_cs: Fix 'shadow variable' warning
-Message-ID: <20071211132222.598d69ec@the-village.bc.nu>
-In-Reply-To: <20071211043417.28518.39249.sendpatchset@thinktank.campus.ltu.se>
-References: <20071211043412.28518.40867.sendpatchset@thinktank.campus.ltu.se>
-	<20071211043417.28518.39249.sendpatchset@thinktank.campus.ltu.se>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 11 Dec 2007 08:32:52 -0500
+Date: Tue, 11 Dec 2007 14:32:49 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Newall <david@davidnewall.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@ucw.cz>,
+       Andi Kleen <andi@firstfloor.org>, "David P. Reed" <dpreed@reed.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64 with MCP51 laptops
+Message-ID: <20071211133249.GA16750@one.firstfloor.org>
+References: <20071207160439.71b7f46a@the-village.bc.nu> <20071209125458.GB4381@ucw.cz> <20071209165908.GA15910@one.firstfloor.org> <20071209212513.GC24284@elf.ucw.cz> <475CBDD7.5050602@keyaccess.nl> <m3bq8y23de.fsf@maximus.localdomain> <475DE37F.20706@davidnewall.com> <475DE6F4.80702@zytor.com> <475DEB23.1000304@davidnewall.com> <20071211131413.1079be59@the-village.bc.nu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071211131413.1079be59@the-village.bc.nu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Dec 2007 05:32:43 +0100 (MET)
-Richard Knutsson <ricknu-0@student.ltu.se> wrote:
-
-> Fixing:
->   CHECK   drivers/net/pcmcia/3c574_cs.c
-> drivers/net/pcmcia/3c574_cs.c:695:7: warning: symbol 'i' shadows an earlier one
-> drivers/net/pcmcia/3c574_cs.c:636:6: originally declared here
+> The LPC bus behaviour is absolutely and precisely defined. The timing of
+> the inb is defined in bus clocks which is perfect as the devices needing
+> delay are running at a fraction of busclock usually busclock/2.
 > 
-> Signed-off-by: Richard Knutson <ricknu-0@student.ltu.se>
+> Older processors did not have a high precision timer so you couldn't
+> calibrate loop based delays for 1uS.
 
-For 2/3/4/5/6:
+For newer CPUs udelay() would be probably fine though. We seem
+to have several documented examples now where the bus aborts
+trigger hardware bugs, and it is always better to avoid such situations.
 
-Acked-by: Alan Cox <alan@redhat.com>
+I still think the best strategy would be to switch based on TSC
+availability. Perhaps move out*_p out of line to avoid code bloat.
 
-Not sure I agree with the first patch though.
+-Andi
+
