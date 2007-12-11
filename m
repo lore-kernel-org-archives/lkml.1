@@ -1,156 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbXLKRGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbXLKRHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbXLKRGh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 12:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbXLKRGQ
+	id S1756856AbXLKRHb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 12:07:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbXLKRHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 12:06:16 -0500
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:51658 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752658AbXLKRGN (ORCPT
+	Tue, 11 Dec 2007 12:07:20 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:46524 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753438AbXLKRHS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 12:06:13 -0500
-Message-ID: <475EC320.5080008@keyaccess.nl>
-Date: Tue, 11 Dec 2007 18:04:32 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: "David P. Reed" <dpreed@reed.com>
-CC: Andi Kleen <andi@firstfloor.org>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       David Newall <david@davidnewall.com>, Paul Rolland <rol@as2917.net>,
-       "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-References: <m3bq8y23de.fsf@maximus.localdomain> <475DE37F.20706@davidnewall.com> <475DE6F4.80702@zytor.com> <475DEB23.1000304@davidnewall.com> <20071211084059.3d03e11d@tux.DEF.witbe.net> <475E5D4B.8020101@keyaccess.nl> <475E7DC2.4060509@davidnewall.com> <475E8D91.20201@keyaccess.nl> <475E95A3.3070801@davidnewall.com> <Pine.LNX.4.61.0712111024060.22976@chaos.analogic.com> <20071211163017.GD16750@one.firstfloor.org> <475EBFBA.6090301@keyaccess.nl> <475EC246.10205@reed.com>
-In-Reply-To: <475EC246.10205@reed.com>
-Content-Type: multipart/mixed;
- boundary="------------070402090502090105000307"
-X-Spam-Score: -1.0 (-)
+	Tue, 11 Dec 2007 12:07:18 -0500
+Date: Tue, 11 Dec 2007 20:07:20 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Richard Henderson <rth@twiddle.net>, Bob Tracy <rct@frus.com>,
+       Michael Cree <mcree@orcon.net.nz>, Kay Sievers <kay.sievers@vrfy.org>,
+       mingo@elte.hu, rjw@sisk.pl, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: [patch] alpha: strncpy/strncat fixes
+Message-ID: <20071211200720.A23822@jurassic.park.msu.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070402090502090105000307
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+First of all, thanks to Bob Tracy <rct@frus.com> and 
+Michael Cree <mcree@orcon.net.nz> for testing.
+Especially to Bob, as he has done titanic multi-day git-bisect
+work that finally helped to reproduce and nail down the bug
+(http://bugzilla.kernel.org/show_bug.cgi?id=9457).
 
-On 11-12-07 18:00, David P. Reed wrote:
+[ev6-]stxncpy.S: it's t12, not t2 register that is supposed to contain
+the last byte offset upon return. As a result of wrong register use
+(which was my fault back in 2003, IIRC), under some circumstances extra
+terminating zero bytes were added to destination string. This particularly
+led to incorrect DEVPATH strings generated in uevent and therefore to udev
+problems.
 
-> Which port do you want me to test?
+strncpy.S: unrelated bug I found while testing the above fix - destination
+is not properly zero-padded then a byte count exceeds source length. 
+Actually this is addition to strncpy fix from last year.
 
-Oh, thought your previous reply was already responding to this. The "other 
-diagnostic port", 0xed. The point is not so much that it's going to be a 
-good alternate solution but to exclude it being a possible solution.
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 
-> Also, I can run the timing test on my machine if you share the source
-> code so I can build it.
+Ivan.
 
-Thanks, would be interesting. This one:
-
-Rene.
-
---------------070402090502090105000307
-Content-Type: text/plain;
- name="port80.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="port80.c"
-
-#include <stdlib.h>
-#include <stdio.h>
-
-#include <sys/io.h>
-
-#define LOOPS 1000
-
-unsigned long cycles[LOOPS];
-
-int main(void)
-{
-	unsigned long overhead;
-	unsigned long total;
-	int i;
-
-	if (iopl(3) < 0) {
-		perror("iopl");
-		return EXIT_FAILURE;
-	}
-
-	/* pull it in */
-	for (i = 0; i < LOOPS; i++)
-		cycles[i] = 0;
-
-	asm volatile ("cli");
-	for (i = 0; i < LOOPS; i++)
-		asm (
-			"xor	%%eax, %%eax	\n\t"
-			"cpuid			\n\t"	
-			"rdtsc			\n\t"
-			"movl	%%eax, %%esi	\n\t"	
-			"xor	%%eax, %%eax	\n\t"
-			"cpuid			\n\t"
-			"rdtsc			\n\t"
-			"subl	%%esi, %%eax	\n\t"
-
-			: "=a" (cycles[i]) : : "ecx", "edx", "ebx", "esi");
-	asm volatile ("sti");
-
-	overhead = 0;
-	for (i = 0; i < LOOPS; i++)
-		overhead += cycles[i];
-
-	asm volatile ("cli");
-	for (i = 0; i < LOOPS; i++)
-		asm (
-			"xor	%%eax, %%eax	\n\t"
-			"cpuid			\n\t"	
-			"rdtsc			\n\t"
-			"movl	%%eax, %%esi	\n\t"	
-			"outb	%%al, $0x80	\n\t"
-			"xor	%%eax, %%eax	\n\t"
-			"cpuid			\n\t"
-			"rdtsc			\n\t"
-			"subl	%%esi, %%eax	\n\t"
-
-			: "=a" (cycles[i]) : : "ecx", "edx", "ebx", "esi");
-	asm volatile ("sti");
-
-	total = 0;
-	for (i = 0; i < LOOPS; i++)
-		total += cycles[i];
-	total -= overhead;
-
-	printf("out: %lu\n", total / LOOPS);
-
-	asm volatile ("cli");
-	for (i = 0; i < LOOPS; i++)
-		asm (
-			"xor	%%eax, %%eax	\n\t"
-			"cpuid			\n\t"	
-			"rdtsc			\n\t"
-			"movl	%%eax, %%esi	\n\t"	
-			"inb	$0x80, %%al	\n\t"
-			"xor	%%eax, %%eax	\n\t"
-			"cpuid			\n\t"
-			"rdtsc			\n\t"
-			"subl	%%esi, %%eax	\n\t"
-
-			: "=a" (cycles[i]) : : "ecx", "edx", "ebx", "esi");
-	asm volatile ("sti");
-
-	total = 0;
-	for (i = 0; i < LOOPS; i++)
-		total += cycles[i];
-	total -= overhead;
-
-	printf("in : %lu\n", total / LOOPS);
-
-	return EXIT_SUCCESS;
-}
-
---------------070402090502090105000307--
+--- 2.6.24-rc3/arch/alpha/lib/ev6-stxncpy.S	Wed Oct 10 00:31:38 2007
++++ linux/arch/alpha/lib/ev6-stxncpy.S	Tue Dec 11 02:28:57 2007
+@@ -362,10 +362,10 @@ $unaligned:
+ 
+ 	extql	t2, a1, t2	# U :
+ 	cmpbge	zero, t1, t8	# E : is there a zero?
+-	andnot	t2, t6, t12	# E : dest mask for a single word copy
++	andnot	t2, t6, t2	# E : dest mask for a single word copy
+ 	or	t8, t10, t5	# E : test for end-of-count too
+ 
+-	cmpbge	zero, t12, t3	# E :
++	cmpbge	zero, t2, t3	# E :
+ 	cmoveq	a2, t5, t8	# E : Latency=2, extra map slot
+ 	nop			# E : keep with cmoveq
+ 	andnot	t8, t3, t8	# E : (stall)
+@@ -379,13 +379,13 @@ $unaligned:
+ 	negq	t8, t6		# E : build bitmask of bytes <= zero
+ 	mskqh	t1, t4, t1	# U :
+ 
+-	and	t6, t8, t2	# E :
+-	subq	t2, 1, t6	# E : (stall)
+-	or	t6, t2, t8	# E : (stall)
+-	zapnot	t12, t8, t12	# U : prepare source word; mirror changes (stall)
++	and	t6, t8, t12	# E :
++	subq	t12, 1, t6	# E : (stall)
++	or	t6, t12, t8	# E : (stall)
++	zapnot	t2, t8, t2	# U : prepare source word; mirror changes (stall)
+ 
+ 	zapnot	t1, t8, t1	# U : to source validity mask
+-	andnot	t0, t12, t0	# E : zero place for source to reside
++	andnot	t0, t2, t0	# E : zero place for source to reside
+ 	or	t0, t1, t0	# E : and put it there (stall both t0, t1)
+ 	stq_u	t0, 0(a0)	# L : (stall)
+ 
+--- 2.6.24-rc3/arch/alpha/lib/stxncpy.S	Wed Oct 10 00:31:38 2007
++++ linux/arch/alpha/lib/stxncpy.S	Tue Dec 11 02:28:57 2007
+@@ -315,9 +315,9 @@ $unaligned:
+ 
+ 	extql	t2, a1, t2	# e0    :
+ 	cmpbge	zero, t1, t8	# .. e1 : is there a zero?
+-	andnot	t2, t6, t12	# e0    : dest mask for a single word copy
++	andnot	t2, t6, t2	# e0    : dest mask for a single word copy
+ 	or	t8, t10, t5	# .. e1 : test for end-of-count too
+-	cmpbge	zero, t12, t3	# e0    :
++	cmpbge	zero, t2, t3	# e0    :
+ 	cmoveq	a2, t5, t8	# .. e1 :
+ 	andnot	t8, t3, t8	# e0    :
+ 	beq	t8, $u_head	# .. e1 (zdb)
+@@ -330,14 +330,14 @@ $unaligned:
+ 	ldq_u	t0, 0(a0)	# e0    :
+ 	negq	t8, t6		# .. e1 : build bitmask of bytes <= zero
+ 	mskqh	t1, t4, t1	# e0    :
+-	and	t6, t8, t2	# .. e1 :
+-	subq	t2, 1, t6	# e0    :
+-	or	t6, t2, t8	# e1    :
++	and	t6, t8, t12	# .. e1 :
++	subq	t12, 1, t6	# e0    :
++	or	t6, t12, t8	# e1    :
+ 
+-	zapnot	t12, t8, t12	# e0    : prepare source word; mirror changes
++	zapnot	t2, t8, t2	# e0    : prepare source word; mirror changes
+ 	zapnot	t1, t8, t1	# .. e1 : to source validity mask
+ 
+-	andnot	t0, t12, t0	# e0    : zero place for source to reside
++	andnot	t0, t2, t0	# e0    : zero place for source to reside
+ 	or	t0, t1, t0	# e1    : and put it there
+ 	stq_u	t0, 0(a0)	# e0    :
+ 	ret	(t9)		# .. e1 :
+--- 2.6.24-rc3/arch/alpha/lib/strncpy.S	Wed Oct 10 00:31:38 2007
++++ linux/arch/alpha/lib/strncpy.S	Tue Dec 11 02:28:57 2007
+@@ -35,7 +35,7 @@ strncpy:
+ 
+ 	or	$3, $24, $3	# clear the bits between the last
+ 	or	$4, $27, $4	# written byte and the last byte in COUNT
+-	andnot	$4, $3, $4
++	andnot	$3, $4, $4
+ 	zap	$1, $4, $1
+ 
+ 	stq_u	$1, 0($16)
