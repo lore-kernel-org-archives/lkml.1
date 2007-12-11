@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbXLKWgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbXLKWhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755831AbXLKWgu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:36:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbXLKWgj
+	id S1756622AbXLKWhz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbXLKWhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:36:39 -0500
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:63547 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbXLKWgi (ORCPT
+	Tue, 11 Dec 2007 17:37:43 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:61522 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbXLKWhm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:36:38 -0500
-X-Greylist: delayed 495 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Dec 2007 17:36:37 EST
-From: Junio C Hamano <junio@pobox.com>
-To: Divy Le Ray <divy@chelsio.com>
-Subject: Re: [PATCH 2/2] cxgb3 - Parity initialization for T3C adapters
-References: <20071205181527.22106.73134.stgit@speedy5>
-	<4759A6EA.1050106@garzik.org> <4759CD92.2070604@chelsio.com>
-cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, swise@opengridcomputing.com,
-       wenxiong@us.ibm.com
-Date: Tue, 11 Dec 2007 14:27:55 -0800
-In-Reply-To: <4759CD92.2070604@chelsio.com> (Divy Le Ray's message of "Fri, 07
-	Dec 2007 14:47:46 -0800")
-Message-ID: <7vbq8wdfys.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 11 Dec 2007 17:37:42 -0500
+Date: Tue, 11 Dec 2007 14:35:27 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: matthew@wil.cx, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/scsi/advansys.c section fix
+Message-Id: <20071211143527.a259a0ad.randy.dunlap@oracle.com>
+In-Reply-To: <20071211222353.GZ14204@stusta.de>
+References: <20071211222353.GZ14204@stusta.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Divy Le Ray <divy@chelsio.com> writes:
+On Tue, 11 Dec 2007 23:23:53 +0100 Adrian Bunk wrote:
 
-> On this topic, I have a question: how do I get to see all the
-> netdev-2.6 branches ?
-> After cloning a free  netdev-2.6 tree, 'git branch' shows only the
-> master branch:
+> This patch fixes the following section mismatch with CONFIG_HOTPLUG=n:
+> 
+> <--  snip  -->
+> 
 > ...
-> Cloning
-> "git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git"
-> into "netdev-2.6-fresh"...
-> Initialized empty Git repository in /opt/sources/netdev-2.6-fresh/.git/
+> WARNING: vmlinux.o(.exit.text+0xcf8a): Section mismatch: reference to .init.data:_asc_def_iop_base (between 'advansys_isa_remove' and 'exit_this_scsi_driver')
 > ...
-> 100% (23058/23058) done
-> done
-> -bash-3.1$ cd netdev-2.6-fresh/
-> -bash-3.1$ git branch
-> * master
+> 
+> <--  snip  -->
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> e81cac11f9efe882a89708c298fa6268375b0221 
+> diff --git a/drivers/scsi/advansys.c b/drivers/scsi/advansys.c
+> index 9dd3952..38a1ee2 100644
+> --- a/drivers/scsi/advansys.c
+> +++ b/drivers/scsi/advansys.c
+> @@ -13906,7 +13906,7 @@ static int advansys_release(struct Scsi_Host *shost)
+>  
+>  #define ASC_IOADR_TABLE_MAX_IX  11
+>  
+> -static PortAddr _asc_def_iop_base[ASC_IOADR_TABLE_MAX_IX] __devinitdata = {
+> +static PortAddr _asc_def_iop_base[ASC_IOADR_TABLE_MAX_IX] = {
+>  	0x100, 0x0110, 0x120, 0x0130, 0x140, 0x0150, 0x0190,
+>  	0x0210, 0x0230, 0x0250, 0x0330
+>  };
+> 
+> -
 
-At this point,
+http://marc.info/?l=linux-scsi&m=119368247502255
 
-$ git branch -r
+Acked-by me.
 
-will show you have copies of Jeff's branches in remotes/origin/.
 
-$ git checkout -b upstream origin/upstream
-
-would make your local upstream branch that forks from Jeff's upstream
-branch.
+---
+~Randy
+Features and documentation: http://lwn.net/Articles/260136/
