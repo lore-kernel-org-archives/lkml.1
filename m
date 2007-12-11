@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbXLKMF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbXLKMIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752708AbXLKMF4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 07:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbXLKMFr
+	id S1753279AbXLKMIv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 07:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbXLKMIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 07:05:47 -0500
-Received: from styx.suse.cz ([82.119.242.94]:48642 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750848AbXLKMFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 07:05:47 -0500
-Date: Tue, 11 Dec 2007 13:05:45 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Unify mmap_{32|64}.c
-In-Reply-To: <20071211104321.GA21513@elte.hu>
-Message-ID: <Pine.LNX.4.64.0712111305000.12449@jikos.suse.cz>
-References: <1196889830.10408.50.camel@brick> <20071209081324.GB4509@elte.hu>
- <1197301855.1799.1.camel@brick> <20071211083917.GB20172@elte.hu>
- <20071211104321.GA21513@elte.hu>
+	Tue, 11 Dec 2007 07:08:43 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:37148 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751638AbXLKMIm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 07:08:42 -0500
+Message-ID: <475E7DC2.4060509@davidnewall.com>
+Date: Tue, 11 Dec 2007 22:38:34 +1030
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: Paul Rolland <rol@as2917.net>, "H. Peter Anvin" <hpa@zytor.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Pavel Machek <pavel@ucw.cz>,
+       Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David P. Reed" <dpreed@reed.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+References: <475879CD.9080006@reed.com>	<p733auekcly.fsf@bingen.suse.de>	<20071207160439.71b7f46a@the-village.bc.nu>	<20071209125458.GB4381@ucw.cz>	<20071209165908.GA15910@one.firstfloor.org>	<20071209212513.GC24284@elf.ucw.cz>	<475CBDD7.5050602@keyaccess.nl>	<m3bq8y23de.fsf@maximus.localdomain>	<475DE37F.20706@davidnewall.com>	<475DE6F4.80702@zytor.com>	<475DEB23.1000304@davidnewall.com> <20071211084059.3d03e11d@tux.DEF.witbe.net> <475E5D4B.8020101@keyaccess.nl>
+In-Reply-To: <475E5D4B.8020101@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Dec 2007, Ingo Molnar wrote:
+Rene Herman wrote:
+> On 11-12-07 08:40, Paul Rolland wrote:
+>
+>> Well, if the delay is so much unspecified, what about _reading_ port 
+>> 0x80 ?
+>> Will the delay be shorter ?
+>
+> The delay is completely and fully specified in terms of the ISA/LPC clock
 
-> > > mmap_is_ia32 always true for X86_32, or while emulating IA32 on X86_64
-> > > Randomization not supported on X86_32 in legacy layout.  Both layouts 
-> > > allow randomization on X86_64.
-> > thanks for sorting this out - this looks really clean now. I've added 
-> > your patch to x86.git.
-> hm, it fails to boot on Fedora 8:
->  Freeing unused kernel memory: 296k freed
->  Write protecting the kernel read-only data: 1500k
->  mount[623]: segfault at 0000000b ip 4d681ab6 sp bf9a1b94 error 6
->  modprobe[625]: segfault at 0000000b ip 4d681ab6 sp bffd9994 error 6
->  consoletype[629]: segfault at 0000000b ip 4d681ab6 sp bfb6ad14 error 6
->  awk[632]: segfault at 0000000b ip 4d681ab6 sp bffe68c4 error 6
->  fstab-decode[633]: segfault at 0000000b ip 4d681ab6 sp bff1c8c4 error 6
->  setsysfont[634]: segfault at 0000000b ip 4d681ab6 sp bfdd0f74 error 6
->  hwclock[637]: segfault at 0000000b ip 4d681ab6 sp bf963304 error 6
->  touch[642]: segfault at 0000000b ip 4d681ab6 sp bf98cb34 error 6
->  modprobe[651]: segfault at 0000000b ip 4d681ab6 sp bfbc0564 error 6
->  rhgb-client[654]: segfault at 0000000b ip 4d681ab6 sp bfe9c024 error 6
+That would be the delay on the i386 (sic) architecture.  In general, 
+though, the delay is:
 
-Ingo,
+    "Some devices require that accesses to their ports are slowed down. 
+    This functionality is provided by appending a _p to the end of the
+    function."
+    -- Documentation/DocBook/deviceiobook.tmpl
 
-just for clarification -- this happens with Harvery's merged code (haven't 
-looked at it yet), but not with the original code, do I understand it 
-correctly?
 
-Thanks,
+(I've not seen any other formal definition.)
 
--- 
-Jiri Kosina
-SUSE Labs
+Most architectures (Alpha, Arm, Arm2, Blackfin, FRV, h8300, IA64, 
+PA-RISC, PowerPC, Sparc, Sparc64, V850 and Xtensa) do no pause.  M68k 
+does no pause except in one configuration, when it's the same as i386.  
+On m32r it's a push and a pop.  On SuperH it's similar to i386, only 
+using 16-bit input.  X86-64 is the same as i386!
+
+Thinking that _p gives a pause is perhaps too PC-centric.  Why, if a 
+delay is needed, wouldn't you use a real delay; one that says how long 
+it should be?
