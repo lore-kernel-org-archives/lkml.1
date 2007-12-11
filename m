@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbXLKMcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbXLKMgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752962AbXLKMcS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 07:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbXLKMcI
+	id S1753180AbXLKMgi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 07:36:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbXLKMg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 07:32:08 -0500
-Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:39574
-	"EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751503AbXLKMcH (ORCPT
+	Tue, 11 Dec 2007 07:36:29 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:3073 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751387AbXLKMg2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 07:32:07 -0500
-X-Greylist: delayed 596 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Dec 2007 07:32:06 EST
-X-IronPort-AV: E=Sophos;i="4.24,152,1196636400"; 
-   d="scan'208";a="6697281"
-From: Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: [PATCH] kbuild: Re-enable Makefile generation in a new O=... directory
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jay Cliburn <jacliburn@bellsouth.net>, linux-kernel@vger.kernel.org
-Date: Tue, 11 Dec 2007 13:22:08 +0100
-Message-ID: <20071211122208.4050.34387.stgit@cheypa.inria.fr>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Dec 2007 07:36:28 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: davem@davemloft.net (David Miller)
+Subject: Re: [PATCH] [NET]: Fix Ooops of napi net_rx_action.
+Cc: joonwpark81@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Organization: Core
+In-Reply-To: <20071211.023218.31965443.davem@davemloft.net>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1J24LV-0003ig-00@gondolin.me.apana.org.au>
+Date: Tue, 11 Dec 2007 20:36:21 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch kbuild: fix building with O=.. options
-http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=18c32dac75b187d1a4e858f3cfdf03e844129f5e
-disabled the creation of a Makefile in a new O=... directory. Restore it.
+David Miller <davem@davemloft.net> wrote:
+>
+> How can the NAPI_STATE_SCHED bit be cleared externally yet we take
+> this list_move_tail() code path?
 
-Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
----
+His driver is probably buggy.  When we had two drivers beginning
+with e100 we often forgot to apply fixes to the both of them.  Now
+that we have three it's even more confusing.
 
- scripts/mkmakefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I just checked and indeed e1000e seems to be missing the NAPI fix
+that was applied to e1000.  Of course it doesn't rule out the
+possibility of another NAPI bug in e1000.
 
-diff --git a/scripts/mkmakefile b/scripts/mkmakefile
-index 9ad1bd7..e0f54b9 100644
---- a/scripts/mkmakefile
-+++ b/scripts/mkmakefile
-@@ -13,7 +13,7 @@
- test ! -r $2/Makefile -o -O $2/Makefile || exit 0
- # Only overwrite automatically generated Makefiles
- # (so we do not overwrite kernel Makefile)
--if ! grep -q Automatically $2/Makefile
-+if test -e $2/Makefile && ! grep -q Automatically $2/Makefile
- then
- 	exit 0
- fi
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
