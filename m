@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbXLKOOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbXLKOQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbXLKOOv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 09:14:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbXLKOOo
+	id S1754490AbXLKOQQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 09:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbXLKOQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 09:14:44 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:34237 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186AbXLKOOn (ORCPT
+	Tue, 11 Dec 2007 09:16:04 -0500
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:48622 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbXLKOQD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 09:14:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:reply-to:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=mQs1F79RQM6P2iPEJ+oAljPPvmCU5GYMHYeI/D/pyUMF0jYHRQ77p7i6jr8XQrr5kig0qzsqe2QKe3+MFH/iRV8OzFsRGrspmUW7tc8hbh7rFO5+2wxN40U3ciMAdDZT8UMsFzI4urTBoedSkcemhyaPANA+QCsYJm9YSxHtiXw=
-Message-ID: <475E9B4F.2090008@qumranet.com>
-Date: Tue, 11 Dec 2007 16:14:39 +0200
-Reply-To: dor.laor@qumranet.com
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 11 Dec 2007 09:16:03 -0500
+Message-ID: <475E9B3A.7050403@keyaccess.nl>
+Date: Tue, 11 Dec 2007 15:14:18 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: tglx@linutronix.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: Performance overhead of get_cycles_sync
-References: <475E8C8B.7070308@qumranet.com> <20071211133738.GA8150@elte.hu>
-In-Reply-To: <20071211133738.GA8150@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Newall <david@davidnewall.com>
+CC: Paul Rolland <rol@as2917.net>, "H. Peter Anvin" <hpa@zytor.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Pavel Machek <pavel@ucw.cz>,
+       Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David P. Reed" <dpreed@reed.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+References: <475879CD.9080006@reed.com>	<p733auekcly.fsf@bingen.suse.de>	<20071207160439.71b7f46a@the-village.bc.nu>	<20071209125458.GB4381@ucw.cz>	<20071209165908.GA15910@one.firstfloor.org>	<20071209212513.GC24284@elf.ucw.cz>	<475CBDD7.5050602@keyaccess.nl>	<m3bq8y23de.fsf@maximus.localdomain>	<475DE37F.20706@davidnewall.com>	<475DE6F4.80702@zytor.com>	<475DEB23.1000304@davidnewall.com> <20071211084059.3d03e11d@tux.DEF.witbe.net> <475E5D4B.8020101@keyaccess.nl> <475E7DC2.4060509@davidnewall.com> <475E8D91.20201@keyaccess.nl> <475E95A3.3070801@davidnewall.com>
+In-Reply-To: <475E95A3.3070801@davidnewall.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Dor Laor <dor.laor@gmail.com>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->
-> * Dor Laor <dor.laor@gmail.com> wrote:
->
-> > Hi Ingo, Thomas,
-> >
-> > In the latest kernel (2.6.24-rc3) I noticed a drastic performance
-> > decrease for KVM networking. The reason is many vmexit (exit reason is
-> > cpuid instruction) caused by calls to gettimeofday that uses tsc
-> > sourceclock. read_tsc calls get_cycles_sync which might call cpuid in
-> > order to serialize the cpu.
-> >
-> > Can you explain why the cpu needs to be serialized for every gettime
-> > call? Do we need to be that accurate? (It will also slightly improve
-> > physical hosts). I believe you have a reason and the answer is yes. In
-> > that case can you replace the serializing instruction with an
-> > instruction that does not trigger vmexit? Maybe use 'ltr' for example?
->
-> hm, where exactly does it call CPUID?
->
->         Ingo
->
-Here, commented out [include/asm-x86/tsc.h]:
-/* Like get_cycles, but make sure the CPU is synchronized. */
-static __always_inline cycles_t get_cycles_sync(void)
-{
-    unsigned long long ret;
-    unsigned eax, edx;
+On 11-12-07 14:50, David Newall wrote:
 
-    /*
-       * Use RDTSCP if possible; it is guaranteed to be synchronous
-      * and doesn't cause a VMEXIT on Hypervisors
-     */
-    alternative_io(ASM_NOP3, ".byte 0x0f,0x01,0xf9", X86_FEATURE_RDTSCP,
-               ASM_OUTPUT2("=a" (eax), "=d" (edx)),
-               "a" (0U), "d" (0U) : "ecx", "memory");
-    ret = (((unsigned long long)edx) << 32) | ((unsigned long long)eax);
-    if (ret)
-        return ret;
+> Rene Herman wrote:
 
-    /*
-     * Don't do an additional sync on CPUs where we know
-     * RDTSC is already synchronous:
-     */
-//    alternative_io("cpuid", ASM_NOP2, X86_FEATURE_SYNC_RDTSC,
-//              "=a" (eax), "0" (1) : "ebx","ecx","edx","memory");
-    rdtscll(ret);
+>> This particular discussion isn't about anything in general but solely 
+>> about the delay an outb_p gives you on x86 since what is under 
+>> discussion is not using an output to port 0x80 on that platform to 
+>> generate it.
+> 
+> That could be true if outb_p were used only in architecture dependent
 
-    return ret;
-}
+It not only could be, it _is_ true. Not using an output to port 0x80 is what 
+this discussion is about.
 
+> code, but it's not.  It's used in drivers that are supposed to run on 
+> all sorts of platforms.  Why does a megaraid controller need delays on 
+> i386 but not on Sparc, PowerPC, Alpha and others?  Is it buggy on most 
+> platforms, or just unnecessarily slow on Intel?
+
+The latter probably and I don't bleedin' well care. In a discussion about 
+removing the out to 0x80 the only thing that is relevant is what it should 
+be replaced with. Usually, "nothing" will do but generally, udelay(1) will.
+
+>>> is needed, wouldn't you use a real delay; one that says how long it
+>>> should be?
+>> Thinking that _p gives a pause is perhaps too PC-centric. Why, if a delay
+>>
+>> Because any possible outb_p delay should be synced to the bus-clock, 
+>> not to any wall-clock.
+> 
+> You misunderstand.  A delay can be counted in bus cycles.
+
+No damnit, you misunderstand. I'm saying that an outb_p _should_ be defined 
+in terms of the bus clock since if you want a wall-clock delay you should be 
+using just that.
+
+The _hardware_ is synced to the bus clock and therefore, having a delay 
+available that is synced to the bus clock as well makes some sense. And 
+again again again again not withstanding that, a udelay will still be an 
+okay replacement in practice.
+
+Rene.
