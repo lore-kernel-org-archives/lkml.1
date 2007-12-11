@@ -1,89 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbXLKHrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbXLKHuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752722AbXLKHrl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 02:47:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbXLKHrc
+	id S1753314AbXLKHuu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 02:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbXLKHun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 02:47:32 -0500
-Received: from smtp.witbe.net ([81.88.96.48]:59795 "EHLO smtp.witbe.net"
+	Tue, 11 Dec 2007 02:50:43 -0500
+Received: from mga01.intel.com ([192.55.52.88]:29428 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751735AbXLKHrb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 02:47:31 -0500
-X-Greylist: delayed 317 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Dec 2007 02:47:31 EST
-Date: Tue, 11 Dec 2007 08:40:59 +0100
-From: Paul Rolland <rol@as2917.net>
-To: David Newall <david@davidnewall.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@ucw.cz>,
-       Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "David P. Reed" <dpreed@reed.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-Message-ID: <20071211084059.3d03e11d@tux.DEF.witbe.net>
-In-Reply-To: <475DEB23.1000304@davidnewall.com>
-References: <475879CD.9080006@reed.com>
-	<p733auekcly.fsf@bingen.suse.de>
-	<20071207160439.71b7f46a@the-village.bc.nu>
-	<20071209125458.GB4381@ucw.cz>
-	<20071209165908.GA15910@one.firstfloor.org>
-	<20071209212513.GC24284@elf.ucw.cz>
-	<475CBDD7.5050602@keyaccess.nl>
-	<m3bq8y23de.fsf@maximus.localdomain>
-	<475DE37F.20706@davidnewall.com>
-	<475DE6F4.80702@zytor.com>
-	<475DEB23.1000304@davidnewall.com>
-Organization: AS2917.net
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+	id S1751915AbXLKHum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 02:50:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,150,1196668800"; 
+   d="scan'208";a="431695429"
+Subject: Re: [PATCH 1/4 -mm] kexec based hibernation -v7 : kexec jump
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <m1tzmq0xy0.fsf@ebiederm.dsl.xmission.com>
+References: <1197042810.24045.61.camel@caritas-dev.intel.com>
+	 <m1tzmq0xy0.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 11 Dec 2007 15:50:19 +0000
+Message-Id: <1197388219.11506.32.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 11 Dec 2007 07:50:38.0163 (UTC) FILETIME=[850BBA30:01C83BCA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, 11 Dec 2007 12:12:59 +1030
-David Newall <david@davidnewall.com> wrote:
-
-> H. Peter Anvin wrote:
-> > David Newall wrote:
-> >
-> > I think a single ISA bus transaction is 1 µs, so two of them back to 
-> > back should be 2 µs, not 8 µs...
+On Mon, 2007-12-10 at 19:25 -0700, Eric W. Biederman wrote:
+> "Huang, Ying" <ying.huang@intel.com> writes:
+[...]
+> >  /*
+> >   * Do not allocate memory (or fail in any way) in machine_kexec().
+> >   * We are past the point of no return, committed to rebooting now.
+> >   */
+> > -NORET_TYPE void machine_kexec(struct kimage *image)
+> > +int machine_kexec_vcall(struct kimage *image, unsigned long *ret,
+> > +			 unsigned int argc, va_list args)
+> >  {
 > 
-> Exactly.  You think it's 2us, but the documentation doesn't say.  The _p 
-> functions are generic inasmuch as they provide an unspecified delay.  
+> Why do we need var arg support?
+> Can't we do that with a shim we load from user space?
 
-Well, if the delay is so much unspecified, what about _reading_ port 0x80 ?
-Will the delay be shorter ? And if so, what about reading port 0x80 and
-writing the value back ?
-inb  al,0x80
-outb 0x80,al
+If all parameters are provided in user space, the usage model may be as
+follow:
 
-I've been wondering since the beginning of this thread if the problem is not
-just the value we put to port 0x80, not writing to the port...
+- sys_kexec_load() /* with executable/data/parameters(A) loaded */
+- sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with parameters(A)*/
+- /* jump back */
+- sys_kexec_load() /* with executable/data/parameters(B) loaded */
+- sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with parameters(B)*/
+- /* jump back */
 
-Just my 0.02 Eur...
+That is, the kexec image should be re-loaded if the parameters are
+different, and there can be no state reserved in kexec image. This is OK
+for original kexec implementation, because there is no jumping back.
+But, for kexec with jumping back, another usage model may be useful too.
 
-Paul
+- sys_kexec_load() /* with executable/data loaded */
+- sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,parameters(A)) /* execute physical mode code with parameters(A)*/
+- sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,parameters(B)) /* execute physical mode code with parameters(B)*/
+
+This way the kexec image need not to be re-loaded, and the state of
+kexec image can be reserved across several invoking.
 
 
--- 
-Paul Rolland                                E-Mail : rol(at)witbe.net
-Witbe.net SA                                Tel. +33 (0)1 47 67 77 77
-Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
-F-92057 Paris La Defense                    RIPE : PR12-RIPE
+Another usage model may be useful is invoking the kexec image (such as
+firmware) from kernel space.
 
-Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un navigateur 
-"Some people dream of success... while others wake up and work hard at it" 
+- kmalloc the needed memory and loaded the firmware image (if needed)
+- sys_kexec_load() with a fake image (one segment with size 0), the
+entry point of the fake image is the entry point of the firmware image.
+- kexec_call(fake_image, ...) /* maybe change entry point if needed */
 
-"I worry about my child and the Internet all the time, even though she's too 
-young to have logged on yet. Here's what I worry about. I worry that 10 or 15 
-years from now, she will come to me and say 'Daddy, where were you when they 
-took freedom of the press away from the Internet?'"
---Mike Godwin, Electronic Frontier Foundation 
+This way, some kernel code can invoke the firmware in physical mode just
+like invoking an ordinary function.
+
+[...]
+> > -	/* The segment registers are funny things, they have both a
+> > -	 * visible and an invisible part.  Whenever the visible part is
+> > -	 * set to a specific selector, the invisible part is loaded
+> > -	 * with from a table in memory.  At no other time is the
+> > -	 * descriptor table in memory accessed.
+> > -	 *
+> > -	 * I take advantage of this here by force loading the
+> > -	 * segments, before I zap the gdt with an invalid value.
+> > -	 */
+> > -	load_segments();
+> > -	/* The gdt & idt are now invalid.
+> > -	 * If you want to load them you must set up your own idt & gdt.
+> > -	 */
+> > -	set_gdt(phys_to_virt(0),0);
+> > -	set_idt(phys_to_virt(0),0);
+> > +	if (image->preserve_cpu_ext) {
+> > +		/* The segment registers are funny things, they have
+> > +		 * both a visible and an invisible part.  Whenever the
+> > +		 * visible part is set to a specific selector, the
+> > +		 * invisible part is loaded with from a table in
+> > +		 * memory.  At no other time is the descriptor table
+> > +		 * in memory accessed.
+> > +		 *
+> > +		 * I take advantage of this here by force loading the
+> > +		 * segments, before I zap the gdt with an invalid
+> > +		 * value.
+> > +		 */
+> > +		load_segments();
+> > +		/* The gdt & idt are now invalid.  If you want to load
+> > +		 * them you must set up your own idt & gdt.
+> > +		 */
+> > +		set_gdt(phys_to_virt(0), 0);
+> > +		set_idt(phys_to_virt(0), 0);
+> > +	}
+> 
+> We can't keep the same idt and gdt as the pages they are on will be
+> overwritten/reused.  So explictily stomping on them sounds better
+> so they never work.  We can restore them on kernel reentry.
+
+The original idea about this code is:
+
+If the kexec image is claimed that it need not to "perserving extensive
+CPU state" (such as FPU/MMX/GDT/LDT/IDT/CS/DS/ES/FS/GS/SS etc), the
+IDT/GDT/CS/DS/ES/FS/GS/SS are not touched in kexec image code. So the
+segment registers need not to be set.
+
+But this is not clear. At least more description should be provided for
+each preserve flag.
+
+> >  	/* now call it */
+> > -	relocate_kernel((unsigned long)image->head, (unsigned long)page_list,
+> > -			image->start, cpu_has_pae);
+> > +	relocate_kernel_ptr((unsigned long)image->head,
+> > +			    (unsigned long)page_list,
+> > +			    image->start, cpu_has_pae);
+> 
+> Why rename relocate_kernel?
+> Ah.  I see.  You need to make it into a pointer again.  The crazy don't
+> stop the pgd support strikes again.  It used to be named rnk.
+
+You mean I should change the function pointer name to rnk to keep
+consistency? I find rnk in IA64 implementation.
+
+Best Regards,
+Huang Ying
