@@ -1,72 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbXLKWwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759324AbXLKWwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758545AbXLKWwb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:52:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758381AbXLKWvG
+	id S1759324AbXLKWwr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758951AbXLKWvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:51:06 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34050 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758937AbXLKWvE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:51:04 -0500
-Date: Tue, 11 Dec 2007 14:47:16 -0800
-From: Greg KH <greg@kroah.com>
-To: Divy Le Ray <divy@chelsio.com>
-Cc: Ben Greear <greearb@candelatech.com>, Jeff Garzik <jeff@garzik.org>,
-       NetDev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] cxgb - driver fixes.
-Message-ID: <20071211224716.GA17643@kroah.com>
-References: <474C8BF8.9080609@chelsio.com> <474F0422.6090309@candelatech.com> <4751ED97.5090804@chelsio.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4751ED97.5090804@chelsio.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 11 Dec 2007 17:51:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39351 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757770AbXLKWvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 17:51:14 -0500
+Date: Tue, 11 Dec 2007 17:51:02 -0500 (EST)
+Message-Id: <20071211.175102.25403920.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
+       k-ueda@ct.jp.nec.com
+Subject: [PATCH 24/30] blk_end_request: add callback feature (take 4)
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 01, 2007 at 03:26:15PM -0800, Divy Le Ray wrote:
-> Ben Greear wrote:
->> Divy Le Ray wrote:
->>> Jeff,
->>>
->>> I'm submitting a patch series for inclusion in 2.6.24 for the cxgb 
->>> driver.
->>> The patches are built against Linus'git tree.
->>>
->>> Here is a brief description:
->>> - Ensure that GSO skbs have enough headroom before encapsulating them,
->>> - Fix a crash in NAPI mode,
->>> - Fix statistics accounting and report.
->>
->> We ran pktgen overnight on 2.6.23 with patch 1 and 3 applied (patch 2
->> not needed on .23 it seems) and it was stable at about 1.5Gbps 
->> bi-directional
->> using 1500 MTU sized frames.
->>
->> We'll run some more tests with user-space TCP & UDP today, but it looks 
->> good
->> so far.
->>
->> Perhaps these patches should be considered for .23 stable as well?
->>
->> Thanks,
->> Ben
->>
->
-> Yes, patches 1 and 3 could be considered for .22 and .23-stable, along with 
-> the previous fix:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7de6af0f23b25df8da9719ecae1916b669d0b03d
+This patch adds a variant of the interface, blk_end_request_callback(),
+which has driver callback feature.
 
-Can you send all of the individual patches you wish to have applied to
-the -stable tree to stable@kernel.org so that we can properly determine
-exactly which patches you are referring to?
+Drivers may need to do special works between end_that_request_first()
+and end_that_request_last().
+For such drivers, blk_end_request_callback() allows it to pass
+a callback function which is called between end_that_request_first()
+and end_that_request_last().
 
-Also, make sure they are already in Linus's tree before telling us about
-them.
+This interface is only for fallback of other blk_end_request interfaces.
+Drivers should avoid their tricky behaviors and use other interfaces
+as much as possible.
 
-thanks,
+Currently, only one driver, ide-cd, needs this interface.
+So this interface should/will be removed, after the driver removes
+such tricky behaviors.
 
-greg k-h
+o ide-cd (cdrom_newpc_intr())
+  In PIO mode, cdrom_newpc_intr() needs to defer end_that_request_last()
+  until the device clears DRQ_STAT and raises an interrupt after
+  end_that_request_first().
+  So end_that_request_first() and end_that_request_last() are called
+  separately in cdrom_newpc_intr().
+
+  This means blk_end_request_callback() has to return without
+  completing request even if no leftover in the request.
+  To satisfy the requirement, callback function has return value
+  so that drivers can tell blk_end_request_callback() to return
+  without completing request.
+
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+---
+ block/ll_rw_blk.c      |   72 ++++++++++++++++++++++++++++++++++++++++++++-----
+ include/linux/blkdev.h |    2 +
+ 2 files changed, 68 insertions(+), 6 deletions(-)
+
+Index: 2.6.24-rc4/block/ll_rw_blk.c
+===================================================================
+--- 2.6.24-rc4.orig/block/ll_rw_blk.c
++++ 2.6.24-rc4/block/ll_rw_blk.c
+@@ -3803,10 +3803,14 @@ static void complete_request(struct requ
+ }
+ 
+ /**
+- * blk_end_request - Helper function for drivers to complete the request.
+- * @rq:       the request being processed
+- * @error:    0 for success, < 0 for error
+- * @nr_bytes: number of bytes to complete
++ * blk_end_io - Generic end_io function to complete a request.
++ * @rq:           the request being processed
++ * @error:        0 for success, < 0 for error
++ * @nr_bytes:     number of bytes to complete
++ * @drv_callback: function called between completion of bios in the request
++ *                and completion of the request.
++ *                If the callback returns non 0, this helper returns without
++ *                completion of the request.
+  *
+  * Description:
+  *     Ends I/O on a number of bytes attached to @rq.
+@@ -3814,9 +3818,10 @@ static void complete_request(struct requ
+  *
+  * Return:
+  *     0 - we are done with this request
+- *     1 - still buffers pending for this request
++ *     1 - this request is not freed yet, it still has pending buffers.
+  **/
+-int blk_end_request(struct request *rq, int error, int nr_bytes)
++static int blk_end_io(struct request *rq, int error, int nr_bytes,
++		      int (drv_callback)(struct request *))
+ {
+ 	struct request_queue *q = rq->q;
+ 	unsigned long flags = 0UL;
+@@ -3833,6 +3838,10 @@ int blk_end_request(struct request *rq, 
+ 			return 1;
+ 	}
+ 
++	/* Special feature for tricky drivers */
++	if (drv_callback && drv_callback(rq))
++		return 1;
++
+ 	add_disk_randomness(rq->rq_disk);
+ 
+ 	spin_lock_irqsave(q->queue_lock, flags);
+@@ -3841,6 +3850,25 @@ int blk_end_request(struct request *rq, 
+ 
+ 	return 0;
+ }
++
++/**
++ * blk_end_request - Helper function for drivers to complete the request.
++ * @rq:       the request being processed
++ * @error:    0 for success, < 0 for error
++ * @nr_bytes: number of bytes to complete
++ *
++ * Description:
++ *     Ends I/O on a number of bytes attached to @rq.
++ *     If @rq has leftover, sets it up for the next range of segments.
++ *
++ * Return:
++ *     0 - we are done with this request
++ *     1 - still buffers pending for this request
++ **/
++int blk_end_request(struct request *rq, int error, int nr_bytes)
++{
++	return blk_end_io(rq, error, nr_bytes, NULL);
++}
+ EXPORT_SYMBOL_GPL(blk_end_request);
+ 
+ /**
+@@ -3879,6 +3907,38 @@ int __blk_end_request(struct request *rq
+ }
+ EXPORT_SYMBOL_GPL(__blk_end_request);
+ 
++/**
++ * blk_end_request_callback - Special helper function for tricky drivers
++ * @rq:           the request being processed
++ * @error:        0 for success, < 0 for error
++ * @nr_bytes:     number of bytes to complete
++ * @drv_callback: function called between completion of bios in the request
++ *                and completion of the request.
++ *                If the callback returns non 0, this helper returns without
++ *                completion of the request.
++ *
++ * Description:
++ *     Ends I/O on a number of bytes attached to @rq.
++ *     If @rq has leftover, sets it up for the next range of segments.
++ *
++ *     This special helper function is used only for existing tricky drivers.
++ *     (e.g. cdrom_newpc_intr() of ide-cd)
++ *     This interface will be removed when such drivers are rewritten.
++ *     Don't use this interface in other places anymore.
++ *
++ * Return:
++ *     0 - we are done with this request
++ *     1 - this request is not freed yet.
++ *         this request still has pending buffers or
++ *         the driver doesn't want to finish this request yet.
++ **/
++int blk_end_request_callback(struct request *rq, int error, int nr_bytes,
++			     int (drv_callback)(struct request *))
++{
++	return blk_end_io(rq, error, nr_bytes, drv_callback);
++}
++EXPORT_SYMBOL_GPL(blk_end_request_callback);
++
+ static void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
+ 			    struct bio *bio)
+ {
+Index: 2.6.24-rc4/include/linux/blkdev.h
+===================================================================
+--- 2.6.24-rc4.orig/include/linux/blkdev.h
++++ 2.6.24-rc4/include/linux/blkdev.h
+@@ -736,6 +736,8 @@ extern void end_that_request_last(struct
+ extern void end_request(struct request *, int);
+ extern void end_queued_request(struct request *, int);
+ extern void end_dequeued_request(struct request *, int);
++extern int blk_end_request_callback(struct request *rq, int error, int nr_bytes,
++				    int (drv_callback)(struct request *));
+ extern void blk_complete_request(struct request *);
+ 
+ /*
