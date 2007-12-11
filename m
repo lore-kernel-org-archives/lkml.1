@@ -1,172 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbXLKVg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbXLKVh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754303AbXLKVg0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 16:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXLKVgR
+	id S1754803AbXLKVh4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 16:37:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbXLKVht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 16:36:17 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:44455 "EHLO zombie.ncsc.mil"
+	Tue, 11 Dec 2007 16:37:49 -0500
+Received: from ozlabs.org ([203.10.76.45]:45818 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751838AbXLKVgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 16:36:16 -0500
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
-	settings for task actions [try #2]
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: David Howells <dhowells@redhat.com>
-Cc: Karl MacMillan <kmacmill@redhat.com>, viro@ftp.linux.org.uk,
-       hch@infradead.org, Trond.Myklebust@netapp.com, casey@schaufler-ca.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <9789.1197405725@redhat.com>
-References: <1197401823.28006.74.camel@moss-spartans.epoch.ncsc.mil>
-	 <1197322068.18120.176.camel@moss-spartans.epoch.ncsc.mil>
-	 <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil>
-	 <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil>
-	 <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
-	 <20071205193859.24617.36392.stgit@warthog.procyon.org.uk>
-	 <25037.1197306473@redhat.com> <25572.1197320887@redhat.com>
-	 <25965.1197329769@redhat.com>   <9789.1197405725@redhat.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 11 Dec 2007 16:34:07 -0500
-Message-Id: <1197408847.28006.184.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	id S1751892AbXLKVhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 16:37:48 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18271.804.101490.729913@cargo.ozlabs.ibm.com>
+Date: Wed, 12 Dec 2007 08:37:40 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][POWERPC] Provide a way to protect 4k subpages when using 64k pages
+In-Reply-To: <20071211155305.GA28055@lst.de>
+References: <18264.58263.818005.757831@cargo.ozlabs.ibm.com>
+	<20071211155305.GA28055@lst.de>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-12-11 at 20:42 +0000, David Howells wrote:
-> Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> 
-> > > That sounds too SELinux specific.  How do I do it so that it works for any
-> > > LSM?
-> > 
-> > You can't.  There is no LSM for userspace; LSM specifically disavowed
-> > any common userspace API, and that was one of our original
-> > objections/concerns about it.
-> 
-> So, basically, userspace programs (outside of security tools) aren't supposed
-> to need access to the security infrastructure?
+Christoph Hellwig writes:
 
-I didn't say that.  I said that LSM provides no standard way for
-userspace to access the security infrastructure, at least beyond the
-raw /proc/self/attr and xattr APIs, and I view that as a defect in LSM.
-SELinux does have a userspace API, because we think there should be a
-way for userspace to do that, and it is being used by userspace programs
-outside of security tools.
+> As Arnd said reusing an old system call slot seems rather dangerous,
+> I'd rather avoid it.
 
-> > > Is linking against libselinux is a viable option if it's not available under
-> > > all LSM models?  Is it available under all LSM models?  Perhaps Casey can
-> > > answer this one.
-> > 
-> > Nope, they would all have their own libraries, if they have a library at
-> > all.  But that isn't your problem
-> 
-> It is if I have to maintain a special pieces of code for each possible LSM.
-> One piece for SELinux, one piece for AppArmour, one piece for Smack, one piece
-> for Casey's security system.  That sounds like a pain.
+Sure.  I don't mind allocating a new syscall for this.
 
-All your code has to do is invoke a function provided by libselinux.  If
-at some later time a liblsm is introduced that provides a common
-front-end to a libselinux, libsmack, ..., then you can use that.  But it
-doesn't exist today.   But it all just becomes a simple function call
-regardless.
+> But I wonder whether we really need a new
+> syscall.  Using 4k pages should basically be a pre-process flag
+> (which it already is as an implementation detail in your patch), and
 
-> > - your kernel interface should be generic, and your LSM hooks should be
-> > generic, but your userspace isn't required to be.  Have a look at how many
-> > programs in the distribution currently link against libselinux, whether
-> > directly or by dlopen'ing it.
-> 
-> In /usr/bin ldd reports approximately 297 binaries link to libselinux, though
-> I can't say how many of those linked against it directly rather than picking
-> it up by contamination through a shared library.  Furthermore, I've no idea
-> how many more find it by dlopen.
+Hmmm.  Ultimately I want to make it (the page size) be per-slice,
+which shouldn't actually be particularly difficult.
 
-The point being that userspace is already using the SELinux API directly
-- cachefilesd certainly won't be the first or most crucial application
-to do so.
+> thus the proper way to mark it should be a personality flag.  This
+> also means it could be implied by certain personalities, e.g. powerpc
+> 32bit for full compatiblity.  
 
-> > > > > I use to do that, but someone objected...  Possibly Karl MacMillan.
-> > > > 
-> > > > Yes, but I think I disagreed then too.
-> > > 
-> > > So, who's right?
-> > 
-> > Karl isn't a maintainer of the SELinux kernel code.  And I had thought
-> > that even he had reconsidered this idea after further discussion.
-> 
-> Not that I know of.
+The 32-bit PowerPC ABI explicitly says that the kernel can use any
+power-of-2 page size between 4kB and 64kB, so I don't see any need to
+do 4k emulation for 32-bit processes.
 
-Well, he can speak to that.  But regardless, he isn't the maintainer.
+> All these process would use plain mmap/
+> mprotect to deal with the subpage protections.
 
-> > > > It doesn't fit with how other users of security_kernel_act_as() will
-> > > > likely want to work (they will want to just set the context to a
-> > > > specified value, whether one obtained from the client or from some local
-> > > > source), nor with how type transitions normally work (exec, with the
-> > > > program type as the second type field).  I think it will just cause
-> > > > confusion and subtle breakage.
-> > > 
-> > > It's causing me lots of confusion as it is.  I have been / am being told by
-> > > different people to do different things just in dealing with SELinux, and
-> > > various people are raising extra requirements or restrictions beyond that.
-> > > There doesn't seem to be a consensus.
-> > > 
-> > > It sounds like the best option is just to have the kernel nick the userspace
-> > > daemon's security context and use that as is, and junk all the restrictions on
-> > > what the daemon can do so that the kernel isn't too restricted.
-> > 
-> > Well, you could do that, if that meets your needs, but it doesn't sound
-> > very optimal either.
-> 
-> True.  I'd rather have separate security for each.
-> 
-> > Why are you opposed to having userspace determine the context and write it
-> > to a cachefiles interface,
-> 
-> Because, from what I gather, that means my userspace program needs to do
-> something different, depending on the security model that's currently in force
-> on a system.  Furthermore, I would have to have separate code, as far as I
-> know, for each security model as there's no commonality in userspace.
->
-> I can't just link against libselinux.  It might not be there.  I'm not going
-> to tie my program to SELinux either.
+It would be lovely if the generic VM code could handle multiple page
+sizes, but it can't at the moment.  So I assume that you are talking
+about intercepting mmap, mprotect, etc. in the powerpc arch code and
+emulating 4k-granularity mmap/mprotect/mremap/munmap etc. using 64k
+anonymous pages plus some sort of internal subpage protection map.
 
-You can certainly make the linking conditional at compile time based on
-a build flag, and/or you can dlopen it at runtime and fall back
-gracefully if not present.  It isn't tying your program to libselinux,
-just using it if present, in this case to obtain an input to supply to
-your kernel module so that the "policy" of deciding what context to use
-is completely determined in userspace and not hardcoded at all into the
-kernel.  If init and ls and ps can do it, cachefilesd can too.
+The difference between that and my scheme is that that puts more of
+the logic into the kernel rather than the emulator.  Since it is only
+specialized programs (such as x86 emulators) that need to emulate
+4k-granularity mappings, I'd rather put most of that logic in
+userspace rather than the kernel, and just have the part that only the
+kernel can do (the subpage protections) implemented in the kernel.
+If there was a more general need for 4k-granularity mappings then I
+would agree with you, but I don't see that need at present.
 
-> Furthermore, I worked out "the right way to do this" with some apparent
-> SELinux person, and you seemed reasonably accepting of it.  Now I have to go
-> and redo all the work, having had to redo the security stuff a couple of times
-> already because someone objected.  *That* is the main obstacle to getting my
-> code accepted at the moment, I think.
+> In fact the x86 emulation on ia64 already has some hacks for that in
+> arch/ia64/ia32/sys_ia32.c, and it would be really useful if we could
+> make both the interface and eventually the code implementing it generic.
+> At least ia64 and mips have multiple pages sizes already and I suspect
+> more architectures will grow support for it.
 
-I did express reservations about it, and I really don't think that this
-is the main obstacle - the determination of the acting task security
-label and how to set it is really only a small part of your patch set,
-and considerably less disruptive than the rest of it.
+I don't see anything in arch/ia64/ia32/sys_ia32.c that can't be done
+in userspace by an emulator.  As far as I can see, with that code, you
+end up with the permissions on each ia64 page being the union of the
+permissions on the 4k subpages, meaning that the program can access
+subpages that it shouldn't really be able to access.  So I don't see
+that sys_ia32.c addresses the problem that my patch is designed to
+solve, namely, ensuring that an emulated program gets a SIGSEGV if it
+tries to access subpages that it shouldn't be able to access.
 
-> How about I just stick the context in /etc/cachefilesd.conf as a textual
-> configuration item and have the daemon pass that as a string to the cachefiles
-> kernel module, which can then ask LSM if it's valid to set this context as an
-> override, given the daemon's own security context?  That seems entirely
-> reasonable to me.
-
-That mostly works, but it means that an update to policy may require an
-update to /etc/cachefilesd.conf, or that switching from one policy to
-another might likewise require changing that file.  Versus using a
-separate policy-provided config file for the label.
-
-BTW, as should be obvious, some LSMs aren't label-based at all, so it
-would need to be optional.
-
--- 
-Stephen Smalley
-National Security Agency
-
+Paul.
