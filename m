@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbXLKW7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbXLKXAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbXLKW7i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:59:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXLKW71
+	id S1757639AbXLKXAa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 18:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbXLKXAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:59:27 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:57416 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752018AbXLKW70 (ORCPT
+	Tue, 11 Dec 2007 18:00:19 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57112 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752103AbXLKXAS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:59:26 -0500
-Message-ID: <fa686aa40712111459k28a9bd96r484d8d9317c11671@mail.gmail.com>
-Date: Tue, 11 Dec 2007 15:59:25 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>
-Subject: Re: [PATCH 20/30] blk_end_request: changing xsysace (take 4)
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
-In-Reply-To: <20071211.174946.85815368.k-ueda@ct.jp.nec.com>
+	Tue, 11 Dec 2007 18:00:18 -0500
+Date: Wed, 12 Dec 2007 00:00:15 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [2.6 patch] drivers/pci/msi.c: move arch hooks to the top
+Message-ID: <20071211230015.GD14204@stusta.de>
+References: <20071211221940.GA14204@stusta.de> <1197413050.7276.1.camel@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20071211.174946.85815368.k-ueda@ct.jp.nec.com>
-X-Google-Sender-Auth: 4dc8d2aadc495bcf
+In-Reply-To: <1197413050.7276.1.camel@concordia>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/11/07, Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote:
-> This patch converts xsysace to use blk_end_request interfaces.
-> Related 'uptodate' arguments are converted to 'error'.
->
-> xsysace is a little bit different from "normal" drivers.
-> xsysace driver has a state machine in it.
-> It calls end_that_request_first() and end_that_request_last()
-> from different states. (ACE_FSM_STATE_REQ_TRANSFER and
-> ACE_FSM_STATE_REQ_COMPLETE, respectively.)
->
-> However, those states are consecutive and without any interruption
-> inbetween.
-> So we can just follow the standard conversion rule (b) mentioned in
-> the patch subject "[PATCH 01/30] blk_end_request: add new request
-> completion interface".
->
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+On Wed, Dec 12, 2007 at 09:44:10AM +1100, Michael Ellerman wrote:
+> On Tue, 2007-12-11 at 23:19 +0100, Adrian Bunk wrote:
+> > This patch fixes the following problem present with older gcc versions:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> >   CC      drivers/pci/msi.o
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pci/msi.c:692: warning: weak declaration of `arch_msi_check_device' after first use results in unspecified behavior
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pci/msi.c:704: warning: weak declaration of `arch_setup_msi_irqs' after first use results in unspecified behavior
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pci/msi.c:724: warning: weak declaration of `arch_teardown_msi_irqs' after first use results in unspecified behavior
+> > ...
+> > 
+> > <--  snip  -->
+> 
+> They're declared in <linux/msi.h>, I don't see what it's problem is.
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Older gcc versions don't like that they cannot see that they are weak 
+functions at the time when they are used.
+
+I'm not sure whether the generated code does the right thing, but even 
+if it does rearranging the code doesn't do any harm here.
+
+> cheers
+
+cu
+Adrian
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
