@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbXLKQa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454AbXLKQd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875AbXLKQa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 11:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbXLKQaV
+	id S1753454AbXLKQd4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 11:33:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbXLKQdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 11:30:21 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:34197 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750865AbXLKQaU (ORCPT
+	Tue, 11 Dec 2007 11:33:49 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:62725 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbXLKQds (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 11:30:20 -0500
-Date: Tue, 11 Dec 2007 17:30:17 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-Cc: David Newall <david@davidnewall.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, Paul Rolland <rol@as2917.net>,
+	Tue, 11 Dec 2007 11:33:48 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18270.48009.256443.854729@stoffel.org>
+Date: Tue, 11 Dec 2007 11:32:09 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Paul Rolland <rol@as2917.net>, David Newall <david@davidnewall.com>,
        "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
        Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
        linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@redhat.com>, rol@witbe.net
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64 with MCP51 laptops
-Message-ID: <20071211163017.GD16750@one.firstfloor.org>
-References: <m3bq8y23de.fsf@maximus.localdomain> <475DE37F.20706@davidnewall.com> <475DE6F4.80702@zytor.com> <475DEB23.1000304@davidnewall.com> <20071211084059.3d03e11d@tux.DEF.witbe.net> <475E5D4B.8020101@keyaccess.nl> <475E7DC2.4060509@davidnewall.com> <475E8D91.20201@keyaccess.nl> <475E95A3.3070801@davidnewall.com> <Pine.LNX.4.61.0712111024060.22976@chaos.analogic.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0712111024060.22976@chaos.analogic.com>
-User-Agent: Mutt/1.4.2.1i
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+In-Reply-To: <475EACB8.7080608@keyaccess.nl>
+References: <475879CD.9080006@reed.com>
+	<p733auekcly.fsf@bingen.suse.de>
+	<20071207160439.71b7f46a@the-village.bc.nu>
+	<20071209125458.GB4381@ucw.cz>
+	<20071209165908.GA15910@one.firstfloor.org>
+	<20071209212513.GC24284@elf.ucw.cz>
+	<475CBDD7.5050602@keyaccess.nl>
+	<m3bq8y23de.fsf@maximus.localdomain>
+	<475DE37F.20706@davidnewall.com>
+	<475DE6F4.80702@zytor.com>
+	<475DEB23.1000304@davidnewall.com>
+	<20071211084059.3d03e11d@tux.DEF.witbe.net>
+	<475E5D4B.8020101@keyaccess.nl>
+	<475E7DC2.4060509@davidnewall.com>
+	<475E8D91.20201@keyaccess.nl>
+	<20071211143224.15900995@tux.DEF.witbe.net>
+	<475E9B9B.2050709@keyaccess.nl>
+	<475EACB8.7080608@keyaccess.nl>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Most, probably most-all, of the delays to port operations
-> on modern ix86 machines are not needed at all. Certainly
 
-We know this. The problem is that there is no good known way to 
-figure out which machines need it. Also it is typically 
-slow hardware anyways -- the most time critical is probably
-the 8259, but nobody who cares about performance still uses 
-it except as a fail safe fallback and for those it is better
-to be conservative.
+Here's my results on a PIII Xeon, 550mhz, 440GX chipset, and an ISA
+slot, which until recently was actually used with an 8 port serial
+card:
 
-> machines that use bridges to expand port I/O to the ISA
-> bus do need any such delays. There are exactly two (and
-
-It has been observed to be required talking to some older 
-PCI based northbridges too. 
-
-> (2) I/O operations that have two ports, one an index
-> port and the other a data port, like the CMOS RTC. Once
-
-and PIT etc.
-
-Anyways it looks like the discussion here is going in a
-a loop. I had hoped David would post his test results with
-another port so that we know for sure that the bus aborts 
-(and not port 80) is the problem on his box. But it looks like
-he doesn't want to do this. Still removing the bus aborts
-is probably the correct way to go forward.
-
-Only needs a patch now. If nobody beats me to it i'll
-add one later to my tree.
-
--Andi
-
+jfsnew:~/src> sudo ./port80
+out: 729
+in : 348
+jfsnew:~/src> sudo ./port80
+out: 729
+in : 354
+jfsnew:~/src> sudo ./port80
+out: 729
+in : 350
+jfsnew:~/src> sudo ./port80
+out: 728
+in : 346
+jfsnew:~/src> sudo ./port80
+out: 730
+in : 340
