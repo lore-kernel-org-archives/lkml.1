@@ -1,139 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbXLKXdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbXLKXeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557AbXLKXdA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 18:33:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbXLKXcr
+	id S1757348AbXLKXeh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 18:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbXLKXe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 18:32:47 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:58544 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754889AbXLKXcp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 18:32:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type:from;
-        b=rE/cyRGgPox0Hq/hACXBbWg/caz2UdJahN3CtuRKZadxv0ROrNVpHaW5MM+iZnTmdmHHbEL/iJ4LzYk0kjZksWkW0ccb6xRBhGzwBNlB+zJn15wjZ3oFIMurmhBY6dszkvNJF2J8DOb6LLQ4k0aMC/ew+MK4c3MG+G1PSb+puzo=
-Message-ID: <475F1DC6.5090403@keyaccess.nl>
-Date: Wed, 12 Dec 2007 00:31:18 +0100
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 11 Dec 2007 18:34:28 -0500
+Received: from mga11.intel.com ([192.55.52.93]:28700 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753678AbXLKXeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 18:34:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,154,1196668800"; 
+   d="scan'208";a="234889000"
+Message-ID: <475F1DEE.4080909@intel.com>
+Date: Tue, 11 Dec 2007 15:31:58 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-CC: dpreed@reed.com, Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz,
-       andi@firstfloor.org, rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>,
-       david@davidnewall.com, hpa@zytor.com, john@stoffel.org,
-       linux-os@analogic.com
-Subject: [RFT] Port 0x80 I/O speed
-Content-Type: multipart/mixed;
- boundary="------------070402050109070509090404"
-From: Rene Herman <rene.herman@gmail.com>
+To: linux-kernel@vger.kernel.org, jeff@garzik.org
+CC: mm-commits@vger.kernel.org, randy.dunlap@oracle.com,
+       auke-jan.h.kok@intel.com
+Subject: Re: + e1000e-make-e1000e-default-to-the-same-kconfig-setting-as-e1000.patch
+ added to -mm tree
+References: <200712112328.lBBNSUN6014553@imap1.linux-foundation.org>
+In-Reply-To: <200712112328.lBBNSUN6014553@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Dec 2007 23:32:29.0520 (UTC) FILETIME=[18707D00:01C83C4E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070402050109070509090404
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+akpm@linux-foundation.org wrote:
+> The patch titled
+>      e1000e: make E1000E default to the same kconfig setting as E1000
+> has been added to the -mm tree.  Its filename is
+>      e1000e-make-e1000e-default-to-the-same-kconfig-setting-as-e1000.patch
+> 
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> 
+> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+> out what to do about this
+> 
+> ------------------------------------------------------
+> Subject: e1000e: make E1000E default to the same kconfig setting as E1000
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Make E1000E default to the same kconfig setting as E1000.  So people's
+> machiens don't stop working when they use oldconfig.
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Jeff Garzik <jeff@garzik.org>
+> Cc: Auke Kok <auke-jan.h.kok@intel.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  drivers/net/Kconfig |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff -puN drivers/net/Kconfig~e1000e-make-e1000e-default-to-the-same-kconfig-setting-as-e1000 drivers/net/Kconfig
+> --- a/drivers/net/Kconfig~e1000e-make-e1000e-default-to-the-same-kconfig-setting-as-e1000
+> +++ a/drivers/net/Kconfig
+> @@ -1986,6 +1986,7 @@ config E1000_DISABLE_PACKET_SPLIT
+>  config E1000E
+>  	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
+>  	depends on PCI
+> +	default E1000
+>  	---help---
+>  	  This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
+>  	  ethernet family of adapters. For PCI or PCI-X e1000 adapters,
 
-Good day.
+Acked-by: Auke Kok <auke-jan.h.kok@intel.com>
 
-Would some people on x86 (both 32 and 64) be kind enough to compile and run 
-the attached program? This is about testing how long I/O port access to port 
-0x80 takes. It measures in CPU cycles so CPU speed is crucial in reporting.
+Jeff, can you apply to #upstream?
 
-Posted a previous incarnation of this before, buried in the outb 0x80 thread 
-which had a serialising problem. This one should as far as I can see measure 
-the right thing though. Please yell if you disagree...
-
-For me, on a Duron 1300 (AMD756 chipset) I have a constant:
-
-rene@7ixe4:~/src/port80$ su -c ./port80
-cycles: out 2400, in 2400
-
-and on a PII 400 (Intel 440BX chipset) a constant:
-
-rene@6bap:~/src/port80$ su -c ./port80
-cycles: out 553, in 251
-
-Results are (mostly) independent of compiler optimisation, but testing with 
-an -O2 compile should be most useful. Thanks!
-
-Rene.
-
---------------070402050109070509090404
-Content-Type: text/plain;
- name="port80.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="port80.c"
-
-/* gcc -W -Wall -O2 -o port80 port80.c */
-
-#include <stdlib.h>
-#include <stdio.h>
-
-#include <sys/io.h>
-
-#define LOOPS 10000
-
-inline unsigned long long rdtsc(void)
-{
-	unsigned long long tsc;
-
-	asm volatile ("rdtsc": "=A" (tsc));
-
-	return tsc;
-}
-
-inline void serialize(void)
-{
-	asm volatile ("cpuid": : : "eax", "ebx", "ecx", "edx");
-}
-
-int main(void)
-{
-	unsigned long long start;
-	unsigned long long overhead; 
-	unsigned long long output;
-	unsigned long long input;
-	int i;
-
-	if (iopl(3) < 0) {
-		perror("iopl");
-		return EXIT_FAILURE;
-	}
-
-	asm volatile ("cli");
-	start = rdtsc();
-	for (i = 0; i < LOOPS; i++) {
-	 	serialize();	
-		serialize();
-	}
-	overhead = rdtsc() - start;
-
-	start = rdtsc() + overhead;
-	for (i = 0; i < LOOPS; i++) {
-		serialize();
-		asm volatile ("outb %al, $0x80");
-		serialize();
-	}
-	output = rdtsc() - start;
-
-	start = rdtsc() + overhead;
-	for (i = 0; i < LOOPS; i++) {
-		serialize();
-		asm volatile ("inb $0x80, %%al": : : "al");
-		serialize();
-	}
-	input = rdtsc() - start;
-	asm volatile ("sti");
-
-	output /= LOOPS;
-	input  /= LOOPS;
-	printf("cycles: out %llu, in %llu\n", output, input);
-
-	return EXIT_SUCCESS;
-}
-
---------------070402050109070509090404--
+Auke
