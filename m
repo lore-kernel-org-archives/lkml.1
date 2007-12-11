@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbXLKTcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbXLKTgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755590AbXLKTcj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 14:32:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbXLKTcc
+	id S1755264AbXLKTgc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 14:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbXLKTgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 14:32:32 -0500
-Received: from mx1.suse.de ([195.135.220.2]:59230 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752831AbXLKTcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 14:32:31 -0500
-Date: Tue, 11 Dec 2007 11:31:25 -0800
-From: Greg KH <gregkh@suse.de>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       kay.sievers@vrfy.org
-Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
-Message-ID: <20071211193125.GA30194@suse.de>
-References: <20071207151113.e9841341.akpm@linux-foundation.org> <20071207171455.b2eecb60.randy.dunlap@oracle.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201AF@ecqcmtlmail3.quebec.int.ec.gc.ca> <F1D642E5A91BC94D9504EC83AE19E6B0015201B1@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071210091501.deed38fa.randy.dunlap@oracle.com> <20071211145437.GA15617@linux.vnet.ibm.com> <20071211164319.GA14783@linux.vnet.ibm.com> <20071211170400.GA4861@suse.de> <20071211172338.GA17896@linux.vnet.ibm.com>
+	Tue, 11 Dec 2007 14:36:25 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34681 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751332AbXLKTgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 14:36:24 -0500
+Date: Tue, 11 Dec 2007 20:36:54 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rene Herman <rene.herman@keyaccess.nl>, Paul Rolland <rol@as2917.net>,
+       David Newall <david@davidnewall.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+	with MCP51 laptops
+Message-ID: <20071211193654.GE3437@elf.ucw.cz>
+References: <475E7DC2.4060509@davidnewall.com> <475E8D91.20201@keyaccess.nl> <20071211143224.15900995@tux.DEF.witbe.net> <475E9B9B.2050709@keyaccess.nl> <475EACB8.7080608@keyaccess.nl> <20071211163706.2dc82275@tux.DEF.witbe.net> <475EB263.2050405@keyaccess.nl> <475EC1C0.2040000@reed.com> <20071211173231.2b87a81f@the-village.bc.nu> <475EE2CA.6020601@reed.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071211172338.GA17896@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <475EE2CA.6020601@reed.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 11, 2007 at 10:53:38PM +0530, Dhaval Giani wrote:
-> On Tue, Dec 11, 2007 at 09:04:00AM -0800, Greg KH wrote:
-> > On Tue, Dec 11, 2007 at 10:13:19PM +0530, Dhaval Giani wrote:
-> > > On Tue, Dec 11, 2007 at 08:24:37PM +0530, Dhaval Giani wrote:
-> > > > On Mon, Dec 10, 2007 at 09:15:01AM -0800, Randy Dunlap wrote:
-> > > > > On Mon, 10 Dec 2007 09:03:17 -0500 Fortier,Vincent [Montreal] wrote:
-> > > > > 
-> > > > > Ingo, can you look at this, please?
-> > > > > Vincent is getting oopses on 2.6.22.14-cfs-etch.
-> > > > > 
-> > > > 
-> > > > Hi,
-> > > > 
-> > > > We are looking into this bug now. I believe that the patch at
-> > > > http://marc.info/?l=linux-kernel&m=119404922603293 should help.
-> > > > 
-> > > > I am working with Kay to get this ported.
-> > > > 
-> > > 
-> > > Hi Vincent,
-> > > 
-> > > Does the following patch help?
-> > > 
-> > > Kay/Greg, could you please review and add your Signed-off-by(s) as
-> > > required?
-> > 
-> > Um, why?  What is this patch for?  Where is it to be sent, to Linus for
-> > 2.6.24-final?  Or to the -stable tree?
-> > 
-> 
-> Hi Greg,
-> 
-> This is for 2.26.24-final, since Fair User scheduling is not yet there
-> in stable.
+Hi!
 
-Again, I think this patch is too big for that release, unless it really
-is determined that this fix is needed.  As this thread shows, I do not
-think it is true...
+> a spec sheet, or even better a machine.   I may have an original PC-XT 
+> still lying around in the attic, don't know if I can fire it up, but it had 
+> such graphics cards.  I also have several early high-speed clones that were 
+> "overclocked".
 
-thanks,
+PC-XT does not count ... it needs to be 386 capable to
+count... Hmm.. but we have ucLinux now, so maybe PC-XT does count.
 
-greg k-h
+>> Which requires care. Have you verified all the main chipset vendors ?
+>>
+>>   
+> I obviously have not.   Clearly the guys who want this port 80 hack so 
+> desperately have not either.  That's why we are in this pickle.
+
+Noone _wants_ this port 0x80 hack. We already have it, had it for 10+
+years, and now we are trying to get rid of it -- _safely_.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
