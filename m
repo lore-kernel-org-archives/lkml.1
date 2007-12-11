@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbXLKWWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbXLKWW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755060AbXLKWWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:22:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbXLKWV2
+	id S1756114AbXLKWW6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:22:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756309AbXLKWVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:21:28 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:38489 "EHLO
+	Tue, 11 Dec 2007 17:21:54 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:38495 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756026AbXLKWVZ (ORCPT
+	with ESMTP id S1756137AbXLKWVg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:21:25 -0500
-Date: Tue, 11 Dec 2007 23:21:26 +0100
+	Tue, 11 Dec 2007 17:21:36 -0500
+Date: Tue, 11 Dec 2007 23:21:37 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>, adaplas@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/video/pm3fb.c section fix
-Message-ID: <20071211222126.GH14204@stusta.de>
+To: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Zhang Yanmin <yanmin.zhang@intel.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [2.6 patch] #if 0 pci_cleanup_aer_correct_error_status()
+Message-ID: <20071211222137.GJ14204@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,38 +26,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following section mismatches:
-
-<--  snip  -->
-
-...
-WARNING: vmlinux.o(.text+0x46e456): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x46e45c): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x46e49b): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x46e4a0): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x46e4bc): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x46e4c2): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x46e5c1): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x46e5c7): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-...
-
-<--  snip  -->
+This patch #if 0's the no longer used 
+pci_cleanup_aer_correct_error_status().
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-2d78ede5eebe2900519b7fc43e688b411e4fdedf 
-diff --git a/drivers/video/pm3fb.c b/drivers/video/pm3fb.c
-index 0706599..5dba8cd 100644
---- a/drivers/video/pm3fb.c
-+++ b/drivers/video/pm3fb.c
-@@ -1227,7 +1227,7 @@ static struct fb_ops pm3fb_ops = {
+
+ drivers/pci/pcie/aer/aerdrv_core.c |    3 ++-
+ include/linux/aer.h                |    5 -----
+ 2 files changed, 2 insertions(+), 6 deletions(-)
+
+5e074e99ac5290c61ed022c6084ddc0ac7d5b71a 
+diff --git a/drivers/pci/pcie/aer/aerdrv_core.c b/drivers/pci/pcie/aer/aerdrv_core.c
+index 3c0d8d1..e84dfc8 100644
+--- a/drivers/pci/pcie/aer/aerdrv_core.c
++++ b/drivers/pci/pcie/aer/aerdrv_core.c
+@@ -117,6 +117,7 @@ int pci_cleanup_aer_uncorrect_error_status(struct pci_dev *dev)
+ 	return 0;
+ }
  
- /* mmio register are already mapped when this function is called */
- /* the pm3fb_fix.smem_start is also set */
--static unsigned long pm3fb_size_memory(struct pm3_par *par)
-+static unsigned long __devinit pm3fb_size_memory(struct pm3_par *par)
++#if 0
+ int pci_cleanup_aer_correct_error_status(struct pci_dev *dev)
  {
- 	unsigned long	memsize = 0;
- 	unsigned long	tempBypass, i, temp1, temp2;
+ 	int pos;
+@@ -131,6 +132,7 @@ int pci_cleanup_aer_correct_error_status(struct pci_dev *dev)
+ 
+ 	return 0;
+ }
++#endif  /*  0  */
+ 
+ static int find_device_iter(struct device *device, void *data)
+ {
+@@ -757,5 +759,4 @@ EXPORT_SYMBOL_GPL(pci_find_aer_capability);
+ EXPORT_SYMBOL_GPL(pci_enable_pcie_error_reporting);
+ EXPORT_SYMBOL_GPL(pci_disable_pcie_error_reporting);
+ EXPORT_SYMBOL_GPL(pci_cleanup_aer_uncorrect_error_status);
+-EXPORT_SYMBOL_GPL(pci_cleanup_aer_correct_error_status);
+ 
+diff --git a/include/linux/aer.h b/include/linux/aer.h
+index bcf236d..f251814 100644
+--- a/include/linux/aer.h
++++ b/include/linux/aer.h
+@@ -13,7 +13,6 @@ extern int pci_enable_pcie_error_reporting(struct pci_dev *dev);
+ extern int pci_find_aer_capability(struct pci_dev *dev);
+ extern int pci_disable_pcie_error_reporting(struct pci_dev *dev);
+ extern int pci_cleanup_aer_uncorrect_error_status(struct pci_dev *dev);
+-extern int pci_cleanup_aer_correct_error_status(struct pci_dev *dev);
+ #else
+ static inline int pci_enable_pcie_error_reporting(struct pci_dev *dev)
+ {
+@@ -31,10 +30,6 @@ static inline int pci_cleanup_aer_uncorrect_error_status(struct pci_dev *dev)
+ {
+ 	return -EINVAL;
+ }
+-static inline int pci_cleanup_aer_correct_error_status(struct pci_dev *dev)
+-{
+-	return -EINVAL;
+-}
+ #endif
+ 
+ #endif //_AER_H_
 
