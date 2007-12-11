@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbXLKKsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbXLKKwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752763AbXLKKsS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 05:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbXLKKsJ
+	id S1752763AbXLKKwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 05:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbXLKKwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 05:48:09 -0500
-Received: from mailout06.sul.t-online.de ([194.25.134.19]:55259 "EHLO
-	mailout06.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751186AbXLKKsH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 05:48:07 -0500
-Message-ID: <475E6A99.1050800@t-online.de>
-Date: Tue, 11 Dec 2007 11:46:49 +0100
-From: Bernd Schmidt <bernds_cb1@t-online.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
+	Tue, 11 Dec 2007 05:52:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55503 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbXLKKwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 05:52:03 -0500
+Date: Tue, 11 Dec 2007 11:51:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jie Chen <chen@jlab.org>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
+Message-ID: <20071211105149.GA24250@elte.hu>
+References: <20071205200343.GA14570@elte.hu> <475708A7.4030708@jlab.org> <20071205204645.GC25694@elte.hu> <47570F83.6040601@jlab.org> <20071205210222.GA30089@elte.hu> <47572353.4040606@jlab.org> <20071206104318.GB30838@elte.hu> <47582367.6060602@jlab.org> <20071210105943.GA5370@elte.hu> <475D9BB5.20808@jlab.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       penguin-kernel@I-love.SAKURA.ne.jp, linux-kernel@vger.kernel.org,
-       Greg Ungerer <gerg@snapgear.com>, Paul Mundt <lethal@linux-sh.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] Add EXPORT_SYMBOL(ksize);
-References: <200712021743.GBH12983.FHOFVJOMFLOStQ@I-love.SAKURA.ne.jp> <20071202134841.GI15974@stusta.de> <20071203153459.ac19dae3.akpm@linux-foundation.org> <20071206210248.GN15974@stusta.de>
-In-Reply-To: <20071206210248.GN15974@stusta.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ID: ZwwTWGZGgh2YoB6WnjfW9epu44DYLKSXTTBLs8uYgarSVoNlWFyarNjps+2EcQvQfM
-X-TOI-MSGID: ba593c06-2ad3-4316-8169-e80c5634a42e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <475D9BB5.20808@jlab.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A couple of Cc:s added.
 
-Adrian Bunk wrote:
-> On Mon, Dec 03, 2007 at 03:34:59PM -0800, Andrew Morton wrote:
->> On Sun, 2 Dec 2007 14:48:42 +0100
->> Adrian Bunk <bunk@kernel.org> wrote:
+* Jie Chen <chen@jlab.org> wrote:
+
+>> and then you use this in the measurement loop:
 >>
->>> On Sun, Dec 02, 2007 at 05:43:39PM +0900, Tetsuo Handa wrote:
->>>> mm/slub.c exports ksize(), but mm/slob.c and mm/slab.c don't. I don't know why.
->>>> ...
->>> That's due to the fact that my patch to remove this unused export from 
->>> slub was not yet applied...
->>>
->>> Where is the modular in-kernel user?
->>>
->> binfmt_flat.c, binfmt_elf_fdpic.c.
-> 
-> I could have sworn I had checked that both are bools, but BINFMT_FLAT is 
-> actually a tristate.
-> 
-> Is anyone actually using binfmt_flat modular (considering it's only 
-> available for !MMU embedded systems)? If yes, then only exporting 
-> ksize() will not be enough for getting it working modular...
+>>    for (k=0; k<=OUTERREPS; k++){
+>>      start  = getclock();
+>>      for (j=0; j<innerreps; j++){
+>>  #ifdef _QMT_PUBLIC
+>>        delay((void *)0, 0);
+>>  #else
+>>        delay(0, 0, 0, (void *)0);
+>>  #endif
+>>      }
+>>      times[k] = (getclock() - start) * 1.0e6 / (double) innerreps;
+>>    }
+>>
+>> the problem is, this does not take the overhead of gettimeofday into 
+>> account - which overhead can easily reach 10 usecs (the observed 
+>> regression). Could you try to eliminate the gettimeofday overhead from 
+>> your measurement?
+>>
+>> gettimeofday overhead is something that might have changed from .21 to .22 
+>> on your box.
+>>
+>> 	Ingo
+>
+> Hi, Ingo:
+>
+> In my pthread_sync code, I first call refer () subroutine which 
+> actually establishes the elapsed time (reference time) for 
+> non-synchronized delay() using the gettimeofday. Then each 
+> synchronization overhead value is obtained by subtracting the 
+> reference time from the elapsed time with introduced synchronization. 
+> The effect of gettimeofday() should be minimal if the time difference 
+> (overhead value) is the interest here. Unless the gettimeofday behaves 
+> differently in the case of running 8 threads .vs. running 2 threads.
+>
+> I will try to replace gettimeofday with a lightweight timer call in my 
+> test code. Thank you very much.
 
-We're not using modular binfmt_flat on the Blackfin, but I can't speak
-for other architectures.
+gettimeofday overhead is around 10 usecs here:
 
+ 2740  1197359374.873214 gettimeofday({1197359374, 873225}, NULL) = 0 <0.000010>
+ 2740  1197359374.970592 gettimeofday({1197359374, 970608}, NULL) = 0 <0.000010>
 
-Bernd
--- 
-This footer brought to you by insane German lawmakers.
-Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
-Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
-Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
+and that's the only thing that is going on when computing the reference 
+time - and i see a similar syscall pattern in the PARALLEL and BARRIER 
+calculations as well (with no real scheduling going on).
+
+	Ingo
