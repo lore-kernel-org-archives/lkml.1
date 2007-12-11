@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbXLKNqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754322AbXLKNrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbXLKNqp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 08:46:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXLKNqi
+	id S1754322AbXLKNrI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 08:47:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXLKNqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 08:46:38 -0500
-Received: from il.qumranet.com ([82.166.9.18]:38364 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751940AbXLKNqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 08:46:37 -0500
-Message-ID: <475E94BA.8060402@qumranet.com>
-Date: Tue, 11 Dec 2007 15:46:34 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 11 Dec 2007 08:46:54 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46980 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752430AbXLKNqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 08:46:54 -0500
+Date: Tue, 11 Dec 2007 14:47:25 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Newall <david@davidnewall.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       "David P. Reed" <dpreed@reed.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+	with MCP51 laptops
+Message-ID: <20071211134725.GB17992@elf.ucw.cz>
+References: <20071209125458.GB4381@ucw.cz> <20071209165908.GA15910@one.firstfloor.org> <20071209212513.GC24284@elf.ucw.cz> <475CBDD7.5050602@keyaccess.nl> <m3bq8y23de.fsf@maximus.localdomain> <475DE37F.20706@davidnewall.com> <475DE6F4.80702@zytor.com> <475DEB23.1000304@davidnewall.com> <20071211131413.1079be59@the-village.bc.nu> <20071211133249.GA16750@one.firstfloor.org>
 MIME-Version: 1.0
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: [RFC] Proposed new directory layout for kvm and virtualization
-References: <475E5CBB.9080608@qumranet.com> <200712111438.51142.borntraeger@de.ibm.com>
-In-Reply-To: <200712111438.51142.borntraeger@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071211133249.GA16750@one.firstfloor.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Borntraeger wrote:
-> Am Dienstag, 11. Dezember 2007 schrieb Avi Kivity:
->   
->> KVM is due to receive support for multiple architectures (ppc, ia64, and 
->> s390, in addition to the existing x86), hopefully in time for the 2.6.25 
->> merge window.  It is awkward to place the new arch support in 
->> drivers/kvm/, so I'd like to propose the following new layout:
->>
->>   virt/         top-level directory for hypervisors
->>   virt/kvm/     kvm common code
->>   virt/lguest/  the other hypervisor
->>   arch/*/kvm/   arch dependent kvm code
->>   include/linux/kvm.h       arch independent interface
->>   include/asm/kvm.h         arch dependent interface
->>   include/linux/kvm_para.h  arch independent guest interface
->>   include/asm/kvm_para.h    arch dependent guest interface
->>
->> The include/ hierarchy is already in place; I'm including it for 
->> completeness.
->>     
->
-> For completeness, where do we want to put the drivers?
-> drivers/*, drivers/net/* etc. 
-> or
-> drivers/kvm/* drivers/xen/* etc.
->   
+On Tue 2007-12-11 14:32:49, Andi Kleen wrote:
+> > The LPC bus behaviour is absolutely and precisely defined. The timing of
+> > the inb is defined in bus clocks which is perfect as the devices needing
+> > delay are running at a fraction of busclock usually busclock/2.
+> > 
+> > Older processors did not have a high precision timer so you couldn't
+> > calibrate loop based delays for 1uS.
+> 
+> For newer CPUs udelay() would be probably fine though. We seem
+> to have several documented examples now where the bus aborts
+> trigger hardware bugs, and it is always better to avoid such situations.
+> 
+> I still think the best strategy would be to switch based on TSC
+> availability. Perhaps move out*_p out of line to avoid code bloat.
 
-There's already drivers/virtio/ for kvm.  If kvm-specific drivers come 
-up, we can place them in drivers/kvm/.
-
+Why is TSC significant? udelay() based on bogomips seems to be good
+enough...?
+									Pavel
 -- 
-error compiling committee.c: too many arguments to function
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
