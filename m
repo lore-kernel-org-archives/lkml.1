@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbXLKWpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbXLKWpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755264AbXLKWpQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:45:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757178AbXLKWoN
+	id S1757667AbXLKWpo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:45:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757394AbXLKWoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:44:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34190 "EHLO mx1.redhat.com"
+	Tue, 11 Dec 2007 17:44:15 -0500
+Received: from ozlabs.org ([203.10.76.45]:53162 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756314AbXLKWoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:44:10 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1197408847.28006.184.camel@moss-spartans.epoch.ncsc.mil>
-References: <1197408847.28006.184.camel@moss-spartans.epoch.ncsc.mil> <1197401823.28006.74.camel@moss-spartans.epoch.ncsc.mil> <1197322068.18120.176.camel@moss-spartans.epoch.ncsc.mil> <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil> <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193859.24617.36392.stgit@warthog.procyon.org.uk> <25037.1197306473@redhat.com> <25572.1197320887@redhat.com> <25965.1197329769@redhat.com> <9789.1197405725@redhat.com> 
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: dhowells@redhat.com, Karl MacMillan <kmacmill@redhat.com>,
-       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
-       casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Tue, 11 Dec 2007 22:43:00 +0000
-Message-ID: <12117.1197412980@redhat.com>
+	id S1757376AbXLKWoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 17:44:12 -0500
+Subject: Re: [2.6 patch] drivers/pci/msi.c: move arch hooks to the top
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Adrian Bunk <bunk@kernel.org>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+In-Reply-To: <20071211221940.GA14204@stusta.de>
+References: <20071211221940.GA14204@stusta.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-knK7gUhlbuB6J6YC4Qr/"
+Date: Wed, 12 Dec 2007 09:44:10 +1100
+Message-Id: <1197413050.7276.1.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-> All your code has to do is invoke a function provided by libselinux.
+--=-knK7gUhlbuB6J6YC4Qr/
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Calling libselinux means it's a special case for a specific LSM.
+On Tue, 2007-12-11 at 23:19 +0100, Adrian Bunk wrote:
+> This patch fixes the following problem present with older gcc versions:
+>=20
+> <--  snip  -->
+>=20
+> ...
+>   CC      drivers/pci/msi.o
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pci/msi.c:692: warning:=
+ weak declaration of `arch_msi_check_device' after first use results in uns=
+pecified behavior
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pci/msi.c:704: warning:=
+ weak declaration of `arch_setup_msi_irqs' after first use results in unspe=
+cified behavior
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pci/msi.c:724: warning:=
+ weak declaration of `arch_teardown_msi_irqs' after first use results in un=
+specified behavior
+> ...
+>=20
+> <--  snip  -->
 
-I think the best way to do this, then, has to be to dlopen the appropriate LSM
-library.  That way I don't need to do any conditional compilation or linking,
-but can build all the bits in to cachefilesd and have the appropriate one
-selected by the /etc/cachefilesd.conf.
+They're declared in <linux/msi.h>, I don't see what it's problem is.
 
-So, what do I invoke in libselinux, how do I configure it, and how do I
-integrate the config into my RPM and install it?
+cheers
 
-And then what does it give me that I can hand to the kernel (a context string
-for SELinux, I presume), how do I get the kernel to make a check on it, how do
-I configure the check and how do I install that config from my RPM (I presume
-I just need to modify the .fc, .if and .te files that I have already)?
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-> That mostly works, but it means that an update to policy may require an
-> update to /etc/cachefilesd.conf, or that switching from one policy to
-> another might likewise require changing that file.  Versus using a
-> separate policy-provided config file for the label.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Whilst that's a fair point, if it's in a config file somewhere, then someone
-may want to change it or someone may want to provide a second file for a
-second cache with a different security label.
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-> BTW, as should be obvious, some LSMs aren't label-based at all, so it
-> would need to be optional.
+--=-knK7gUhlbuB6J6YC4Qr/
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Aargh.  In which case it might not be possible to make the SELinux context
-passing from userspace -> kernel generic for all LSMs:-(
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-David
+iD8DBQBHXxK6dSjSd0sB4dIRAvyHAJwMaWWtLgge9iKn/J7YEOKUGjUsBgCeJwPB
+YwdtsRtf+bczA5L6MYWLHlY=
+=CwJh
+-----END PGP SIGNATURE-----
+
+--=-knK7gUhlbuB6J6YC4Qr/--
+
