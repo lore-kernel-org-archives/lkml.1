@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbXLKRES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbXLKRFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756532AbXLKRES (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 12:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbXLKRD7
+	id S1756566AbXLKRFZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 12:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbXLKRFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 12:03:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58335 "EHLO mx3.mail.elte.hu"
+	Tue, 11 Dec 2007 12:05:11 -0500
+Received: from mail.suse.de ([195.135.220.2]:33016 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751229AbXLKRD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 12:03:58 -0500
-Date: Tue, 11 Dec 2007 18:03:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: dor.laor@qumranet.com, tglx@linutronix.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: Performance overhead of get_cycles_sync
-Message-ID: <20071211170334.GA30144@elte.hu>
-References: <475E8C8B.7070308@qumranet.com> <20071211133738.GA8150@elte.hu> <475E9A92.4030001@qumranet.com> <20071211142717.GA15903@elte.hu> <20071211083513.56c2a385@laptopd505.fenrus.org>
+	id S1751229AbXLKRFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 12:05:09 -0500
+Date: Tue, 11 Dec 2007 09:04:00 -0800
+From: Greg KH <gregkh@suse.de>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       kay.sievers@vrfy.org
+Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
+Message-ID: <20071211170400.GA4861@suse.de>
+References: <20071207151113.e9841341.akpm@linux-foundation.org> <20071207171455.b2eecb60.randy.dunlap@oracle.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201AF@ecqcmtlmail3.quebec.int.ec.gc.ca> <F1D642E5A91BC94D9504EC83AE19E6B0015201B1@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071210091501.deed38fa.randy.dunlap@oracle.com> <20071211145437.GA15617@linux.vnet.ibm.com> <20071211164319.GA14783@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071211083513.56c2a385@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071211164319.GA14783@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Arjan van de Ven <arjan@infradead.org> wrote:
-
-> > * Dor Laor <dor.laor@gmail.com> wrote:
+On Tue, Dec 11, 2007 at 10:13:19PM +0530, Dhaval Giani wrote:
+> On Tue, Dec 11, 2007 at 08:24:37PM +0530, Dhaval Giani wrote:
+> > On Mon, Dec 10, 2007 at 09:15:01AM -0800, Randy Dunlap wrote:
+> > > On Mon, 10 Dec 2007 09:03:17 -0500 Fortier,Vincent [Montreal] wrote:
+> > > 
+> > > Ingo, can you look at this, please?
+> > > Vincent is getting oopses on 2.6.22.14-cfs-etch.
+> > > 
 > > 
-> > The patch below should resolve this - could you please test and Ack 
-> > it? But this CPUID was present in v2.6.23 too, so why did it only 
-> > show up in 2.6.24-rc for you?
+> > Hi,
+> > 
+> > We are looking into this bug now. I believe that the patch at
+> > http://marc.info/?l=linux-kernel&m=119404922603293 should help.
+> > 
+> > I am working with Kay to get this ported.
+> > 
 > 
-> isn't this probably wrong since this code is also used in the vsyscall 
-> code..
+> Hi Vincent,
+> 
+> Does the following patch help?
+> 
+> Kay/Greg, could you please review and add your Signed-off-by(s) as
+> required?
 
-the TSC clocksource (and hence the vsyscall code) is turned off on 
-systems that fail the TOD/CLOCK portion of this test:
+Um, why?  What is this patch for?  Where is it to be sent, to Linus for
+2.6.24-final?  Or to the -stable tree?
 
-  http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
+> This is basically a port of the patch at
+> http://marc.info/?l=linux-kernel&m=119404922603293
 
-i.e. on the majority of systems in place.
+Yeah, but that patch needs some other core kobject changes, right?
 
-	Ingo
+What exactly are you trying to fix here, the fact that this code never
+even worked?
+
+And, please, we need some documentation for Documenatation/ABI/ on
+exactly what these sysfs files and tree is for.  Please add that now for
+Linus's tree.
+
+confused,
+
+greg k-h
