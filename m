@@ -1,59 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756410AbXLKWs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbXLKWsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756410AbXLKWs2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:48:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757458AbXLKWsH
+	id S1758703AbXLKWsq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:48:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757147AbXLKWsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:48:07 -0500
-Received: from smtp-dmz-232-tuesday.dmz.nerim.net ([195.5.254.232]:51967 "EHLO
-	kellthuzad.dmz.nerim.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757174AbXLKWsF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:48:05 -0500
-X-Greylist: delayed 1808 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Dec 2007 17:48:05 EST
-Date: Tue, 11 Dec 2007 23:16:08 +0100
-From: Andre Majorel <aym-xunil@teaser.fr>
-To: linux-kernel@vger.kernel.org
-Subject: readlink(), the pause that refreshes
-Message-ID: <20071211221608.GA21366@aym.net2.nerim.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 11 Dec 2007 17:48:24 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39181 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758596AbXLKWsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 17:48:22 -0500
+Date: Tue, 11 Dec 2007 17:48:09 -0500 (EST)
+Message-Id: <20071211.174809.91447619.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
+       k-ueda@ct.jp.nec.com, Markus.Lidel@shadowconnect.com
+Subject: [PATCH 16/30] blk_end_request: changing i2o_block (take 4)
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kernel 2.6.22.14. Create a tree of directories containing tens or
-hundreds of thousands of symlinks and run
+This patch converts i2o_block to use blk_end_request interfaces.
+Related 'uptodate' arguments are converted to 'error'.
 
-  find linkfarm | program-that-readlinks-the-file-names-in-its-stdin
+As a result, the interface of internal function, i2o_block_end_request(),
+is changed.
 
-Memory usage will grow and grow until the system starts to swap,
-after which you are SOL. The combined effects of thrashing and the
-OOM killer will render your system catatonic for a long time and
-if it finally recovers, you probably won't be able to log in. With
-1 GB of RAM, the tipping point is somewhere above 700,000
-symlinks.
+Cc: Markus Lidel <Markus.Lidel@shadowconnect.com>
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+---
+ drivers/message/i2o/i2o_block.c |   20 ++++++++------------
+ 1 files changed, 8 insertions(+), 12 deletions(-)
 
-So you kill the pipe before it starts to swap. Memory usage does
-not go down. Try "sync" or "umount /linkfarm". They will block for
-minutes, during which memory usage goes down slowly, on the order
-of 1 MB per second. All the while, iostat indicates several
-hundred transactions per second on the disk where the link farm
-resides.
-
-All this crap appears to be related to the updating of the atimes
-after a readlink. I understand that the problem could be
-alleviated by mounting the file system noatime or relatime, but
-this not just a performance problem. You should not be able to
-make your system unusable with just one process making readlink()
-calls.
-
-As a stop gap, is there an equivalent of O_NOATIME for readlink() ?
-
--- 
-André Majorel <URL:http://www.teaser.fr/~amajorel/>
-Do not use this account for regular correspondence.
-See the URL above for contact information.
+Index: 2.6.24-rc4/drivers/message/i2o/i2o_block.c
+===================================================================
+--- 2.6.24-rc4.orig/drivers/message/i2o/i2o_block.c
++++ 2.6.24-rc4/drivers/message/i2o/i2o_block.c
+@@ -412,13 +412,13 @@ static void i2o_block_delayed_request_fn
+ /**
+  *	i2o_block_end_request - Post-processing of completed commands
+  *	@req: request which should be completed
+- *	@uptodate: 1 for success, 0 for I/O error, < 0 for specific error
++ *	@error: 0 for success, < 0 for error
+  *	@nr_bytes: number of bytes to complete
+  *
+  *	Mark the request as complete. The lock must not be held when entering.
+  *
+  */
+-static void i2o_block_end_request(struct request *req, int uptodate,
++static void i2o_block_end_request(struct request *req, int error,
+ 				  int nr_bytes)
+ {
+ 	struct i2o_block_request *ireq = req->special;
+@@ -426,22 +426,18 @@ static void i2o_block_end_request(struct
+ 	struct request_queue *q = req->q;
+ 	unsigned long flags;
+ 
+-	if (end_that_request_chunk(req, uptodate, nr_bytes)) {
++	if (blk_end_request(req, error, nr_bytes)) {
+ 		int leftover = (req->hard_nr_sectors << KERNEL_SECTOR_SHIFT);
+ 
+ 		if (blk_pc_request(req))
+ 			leftover = req->data_len;
+ 
+-		if (end_io_error(uptodate))
+-			end_that_request_chunk(req, 0, leftover);
++		if (error)
++			blk_end_request(req, -EIO, leftover);
+ 	}
+ 
+-	add_disk_randomness(req->rq_disk);
+-
+ 	spin_lock_irqsave(q->queue_lock, flags);
+ 
+-	end_that_request_last(req, uptodate);
+-
+ 	if (likely(dev)) {
+ 		dev->open_queue_depth--;
+ 		list_del(&ireq->queue);
+@@ -468,7 +464,7 @@ static int i2o_block_reply(struct i2o_co
+ 			   struct i2o_message *msg)
+ {
+ 	struct request *req;
+-	int uptodate = 1;
++	int error = 0;
+ 
+ 	req = i2o_cntxt_list_get(c, le32_to_cpu(msg->u.s.tcntxt));
+ 	if (unlikely(!req)) {
+@@ -501,10 +497,10 @@ static int i2o_block_reply(struct i2o_co
+ 
+ 		req->errors++;
+ 
+-		uptodate = 0;
++		error = -EIO;
+ 	}
+ 
+-	i2o_block_end_request(req, uptodate, le32_to_cpu(msg->body[1]));
++	i2o_block_end_request(req, error, le32_to_cpu(msg->body[1]));
+ 
+ 	return 1;
+ };
