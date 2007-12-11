@@ -1,63 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753688AbXLKOIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbXLKONP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753688AbXLKOIz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 09:08:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbXLKOIq
+	id S1754074AbXLKONP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 09:13:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXLKOM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 09:08:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46064 "EHLO mx3.mail.elte.hu"
+	Tue, 11 Dec 2007 09:12:58 -0500
+Received: from tornado.reub.net ([59.167.253.246]:57955 "EHLO tornado.reub.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752328AbXLKOIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 09:08:45 -0500
-Date: Tue, 11 Dec 2007 15:08:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Unify mmap_{32|64}.c
-Message-ID: <20071211140830.GC12204@elte.hu>
-References: <1196889830.10408.50.camel@brick> <20071209081324.GB4509@elte.hu> <1197301855.1799.1.camel@brick> <20071211083917.GB20172@elte.hu> <20071211104321.GA21513@elte.hu> <Pine.LNX.4.64.0712111305000.12449@jikos.suse.cz>
+	id S1752124AbXLKOM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 09:12:57 -0500
+X-DKIM: Sendmail DKIM Filter v2.3.2 tornado.reub.net EB6C3129ACB
+Message-ID: <475E9AE1.1010005@reub.net>
+Date: Wed, 12 Dec 2007 01:12:49 +1100
+From: Reuben Farrelly <reuben-linuxkernel@reub.net>
+User-Agent: Thunderbird 2.0.0.12pre (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712111305000.12449@jikos.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.24-rc4-mm1
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>	<475D51C7.6010809@reub.net> <20071210131135.855118f5.akpm@linux-foundation.org>
+In-Reply-To: <20071210131135.855118f5.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jiri Kosina <jkosina@suse.cz> wrote:
 
-> > hm, it fails to boot on Fedora 8:
-> >  Freeing unused kernel memory: 296k freed
-> >  Write protecting the kernel read-only data: 1500k
-> >  mount[623]: segfault at 0000000b ip 4d681ab6 sp bf9a1b94 error 6
-> >  modprobe[625]: segfault at 0000000b ip 4d681ab6 sp bffd9994 error 6
-> >  consoletype[629]: segfault at 0000000b ip 4d681ab6 sp bfb6ad14 error 6
-> >  awk[632]: segfault at 0000000b ip 4d681ab6 sp bffe68c4 error 6
-> >  fstab-decode[633]: segfault at 0000000b ip 4d681ab6 sp bff1c8c4 error 6
-> >  setsysfont[634]: segfault at 0000000b ip 4d681ab6 sp bfdd0f74 error 6
-> >  hwclock[637]: segfault at 0000000b ip 4d681ab6 sp bf963304 error 6
-> >  touch[642]: segfault at 0000000b ip 4d681ab6 sp bf98cb34 error 6
-> >  modprobe[651]: segfault at 0000000b ip 4d681ab6 sp bfbc0564 error 6
-> >  rhgb-client[654]: segfault at 0000000b ip 4d681ab6 sp bfe9c024 error 6
+On 11/12/2007 8:11 AM, Andrew Morton wrote:
+> On Tue, 11 Dec 2007 01:48:39 +1100
+> Reuben Farrelly <reuben-linuxkernel@reub.net> wrote:
 > 
-> Ingo,
+>>
+>> On 5/12/2007 4:17 PM, Andrew Morton wrote:
+>>> Temporarily at
+>>>
+>>>   http://userweb.kernel.org/~akpm/2.6.24-rc4-mm1/
+>>>
+>>> Will appear later at
+>>>
+>>>   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/
+>>>
+>>>
+>>> - Lots of device IDs have been removed from the e1000 driver and moved over
+>>>   to e1000e.  So if your e1000 stops working, you forgot to set CONFIG_E1000E.
+>>>
+>>> - The s390 build is still broken.
+>> I'm seeing this most incredibly unhelpful (to debug) but fortunately
+>> reproduceable problem (so far 4/4 times) on this -mm kernel.  I thought this 
+>> problem may have been related to another bug which I have reported (A TCP oops) 
+>> but even after applying a likely fix for that I am still seeing this problem.
+>>
+>> The machine boots up perfectly fine and runs good until I load it up.
+>> In this case I can reliably cause this to occur by pulling a 3G ISO across the
+>> GigE network from my Linux box to my PC.  After maybe 50M or so, the console 
+>> just displays this (ignore initial boot banner):
+>>
+>> ----------
+>>
+>>   * Starting local ...                                                     [ ok ]
+>>
+>>
+>> This is tornado.reub.net (Linux x86_64 2.6.24-rc4-mm1) 00:24:01
+>>
+>> tornado login: *** buffer overf
+>>
+>> -------
+>>
+>> Yes - after displaying the 'f' in what I can only guess is the word 'overflow',
+>> the box spontaneously reboots.  There is no further console output until it 
+>> starts to come back up again.
+>>
+>> The problem does not exist in 2.6.23-gentoo kernels nor in a vanilla 
+>> 2.6.24-rc4-git6 (phew!), so this looks to be an -mm only problem at this stage.
+>>
+>> I enabled a number of kernel debugging options but then I got no output at all 
+>> when the machine crashed.
+>>
+>> I'm at a bit of a loss as to which subsystem this might be coming from, so I'm 
+>> not sure who to CC.
+>>
+>> Box information is (still) up at http://www.reub.net/files/kernel/2.6.24-rc4-mm1/
+>>
 > 
-> just for clarification -- this happens with Harvery's merged code 
-> (haven't looked at it yet), but not with the original code, do I 
-> understand it correctly?
+> hm.  grepping around for "buffer overflow" doesn't turn up anything except in
+> drivers which you won't be using on that machine.
+> 
+> I'd be suspecting networking, obviously.  If you're feeling keen could you please
+> grep a 2.6.24-rc4 tree and apply 2.6.24-rc4-mm1's origin.patch and git-net.patch
+> and see if the bug is still present?
 
-yeah, correct - your original randomization code is fine.
+No - seems to be fine with just origin.patch and git-net.patch.
 
-	Ingo
+Just for good measure I then reverted git-net.patch and applied 
+git-netdev-all.patch instead, and still wasn't able to trigger the reboot or 
+console message, no matter how hard I tried.
+
+I guess for now I'll sit on it, and if it appears in the next -mm it'll probably 
+annoy me enough and inspire me to dig deeper (or, "guess" deeper, given the lack 
+of direction as to where to even begin).
+
+Reuben
