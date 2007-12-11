@@ -1,122 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbXLKO1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbXLKOdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607AbXLKO1z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 09:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXLKO1r
+	id S1754079AbXLKOdr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 09:33:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbXLKOdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 09:27:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51044 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752563AbXLKO1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 09:27:46 -0500
-Date: Tue, 11 Dec 2007 15:27:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: dor.laor@qumranet.com
-Cc: tglx@linutronix.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: Performance overhead of get_cycles_sync
-Message-ID: <20071211142717.GA15903@elte.hu>
-References: <475E8C8B.7070308@qumranet.com> <20071211133738.GA8150@elte.hu> <475E9A92.4030001@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <475E9A92.4030001@qumranet.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 11 Dec 2007 09:33:39 -0500
+Received: from [81.2.110.250] ([81.2.110.250]:36124 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751615AbXLKOdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 09:33:38 -0500
+Date: Tue, 11 Dec 2007 14:25:52 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Newall <david@davidnewall.com>
+Cc: Rene Herman <rene.herman@keyaccess.nl>, Paul Rolland <rol@as2917.net>,
+       "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
+       "David P. Reed" <dpreed@reed.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+Message-ID: <20071211142552.2ae6ea9a@the-village.bc.nu>
+In-Reply-To: <475E95A3.3070801@davidnewall.com>
+References: <475879CD.9080006@reed.com>
+	<p733auekcly.fsf@bingen.suse.de>
+	<20071207160439.71b7f46a@the-village.bc.nu>
+	<20071209125458.GB4381@ucw.cz>
+	<20071209165908.GA15910@one.firstfloor.org>
+	<20071209212513.GC24284@elf.ucw.cz>
+	<475CBDD7.5050602@keyaccess.nl>
+	<m3bq8y23de.fsf@maximus.localdomain>
+	<475DE37F.20706@davidnewall.com>
+	<475DE6F4.80702@zytor.com>
+	<475DEB23.1000304@davidnewall.com>
+	<20071211084059.3d03e11d@tux.DEF.witbe.net>
+	<475E5D4B.8020101@keyaccess.nl>
+	<475E7DC2.4060509@davidnewall.com>
+	<475E8D91.20201@keyaccess.nl>
+	<475E95A3.3070801@davidnewall.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> That could be true if outb_p were used only in architecture dependent 
+> code, but it's not.  It's used in drivers that are supposed to run on 
+> all sorts of platforms.  Why does a megaraid controller need delays on 
+> i386 but not on Sparc, PowerPC, Alpha and others?  Is it buggy on most 
+> platforms, or just unnecessarily slow on Intel?
 
-* Dor Laor <dor.laor@gmail.com> wrote:
+Each platform provides its own versions of the various _p functions which
+work as required for that platform.
 
-> Here [include/asm-x86/tsc.h]:
->
-> /* Like get_cycles, but make sure the CPU is synchronized. */
-> static __always_inline cycles_t get_cycles_sync(void)
-> {
->    unsigned long long ret;
->    unsigned eax, edx;
->
->    /*
->       * Use RDTSCP if possible; it is guaranteed to be synchronous
->      * and doesn't cause a VMEXIT on Hypervisors
->     */
->    alternative_io(ASM_NOP3, ".byte 0x0f,0x01,0xf9", X86_FEATURE_RDTSCP,
->               ASM_OUTPUT2("=a" (eax), "=d" (edx)),
->               "a" (0U), "d" (0U) : "ecx", "memory");
->    ret = (((unsigned long long)edx) << 32) | ((unsigned long long)eax);
->    if (ret)
->        return ret;
->
->    /*
->     * Don't do an additional sync on CPUs where we know
->     * RDTSC is already synchronous:
->     */
-> //    alternative_io("cpuid", ASM_NOP2, X86_FEATURE_SYNC_RDTSC,
-> //              "=a" (eax), "0" (1) : "ebx","ecx","edx","memory");
->    rdtscll(ret);
+As to megaraid, I don't have the docs so I couldn't specifically tell you
+but the use in that driver looks dubious as its not an ISA/LPC device.
 
-The patch below should resolve this - could you please test and Ack it? 
-But this CPUID was present in v2.6.23 too, so why did it only show up in 
-2.6.24-rc for you?
+> It's most commonly a zero delay.  Only in the minority of architectures 
+> is it otherwise.  If a delay is needed, then put one in, but don't put 
+> in a paper promise that's more likely to be ignored than observed.
 
-	Ingo
+Most of those platforms have hardware that was designed not to need those
+delays and they know that their CMOS clock etc are not clocked at half
+the LPC bus clock. Thus they don't need _p.
 
--------------->
-Subject: x86: fix get_cycles_sync() overhead
-From: Ingo Molnar <mingo@elte.hu>
+> without need.  Not surprising since it has such a vague specific 
+> meaning.  One could say, Linux on i386 is liberally sprinkled with 
 
-get_cycles_sync() is causing massive overhead in KVM networking:
+"vague specific" ? sorry don't follow you.
 
-   http://lkml.org/lkml/2007/12/11/54
+Its an ISA bus delay on systems that need it (or an LPC bus delay on
+newer ones).
 
-remove the explicit CPUID serialization - it causes VM exits and is
-pointless: we care about GTOD coherency but that goes to user-space
-via a syscall, and syscalls are serialization points anyway.
+> I really prefer accurate code, but I'm also pragmatic and realise that 
+> it's far too much work to fix this any time soon.  But if it were to be 
+> fixed, then perhaps _p would take an additional parameter, measured in 
+> cycles of delay.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- include/asm-x86/tsc.h |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+measured in what, against what, for which bus.
 
-Index: linux-x86.q/include/asm-x86/tsc.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/tsc.h
-+++ linux-x86.q/include/asm-x86/tsc.h
-@@ -39,8 +39,8 @@ static __always_inline cycles_t get_cycl
- 	unsigned eax, edx;
- 
- 	/*
--  	 * Use RDTSCP if possible; it is guaranteed to be synchronous
-- 	 * and doesn't cause a VMEXIT on Hypervisors
-+	 * Use RDTSCP if possible; it is guaranteed to be synchronous
-+	 * and doesn't cause a VMEXIT on Hypervisors
- 	 */
- 	alternative_io(ASM_NOP3, ".byte 0x0f,0x01,0xf9", X86_FEATURE_RDTSCP,
- 		       ASM_OUTPUT2("=a" (eax), "=d" (edx)),
-@@ -50,11 +50,11 @@ static __always_inline cycles_t get_cycl
- 		return ret;
- 
- 	/*
--	 * Don't do an additional sync on CPUs where we know
--	 * RDTSC is already synchronous:
-+	 * Use RDTSC on other CPUs. This might not be fully synchronous,
-+	 * but it's not a problem: the only coherency we care about is
-+	 * the GTOD output to user-space, and syscalls are synchronization
-+	 * points anyway:
- 	 */
--	alternative_io("cpuid", ASM_NOP2, X86_FEATURE_SYNC_RDTSC,
--			  "=a" (eax), "0" (1) : "ebx","ecx","edx","memory");
- 	rdtscll(ret);
- 
- 	return ret;
+inb_p/outb_p are really only meaningful for ISA/LPC bus devices. In those
+cases it is precisely defined. Its use for PCI devices is a bit suspect
+and as a general rule probably wrong.
+
+Alan
