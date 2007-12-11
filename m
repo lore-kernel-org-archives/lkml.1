@@ -1,122 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbXLKUXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbXLKUXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756829AbXLKUXU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 15:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbXLKUXA
+	id S1756986AbXLKUXi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 15:23:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755887AbXLKUXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 15:23:00 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:53813 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756111AbXLKUW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 15:22:59 -0500
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@linux-foundation.org
-Cc: Lee.Schermerhorn@hp.com, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Message-Id: <20071211202257.1961.66587.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20071211202157.1961.27940.sendpatchset@skynet.skynet.ie>
-References: <20071211202157.1961.27940.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 3/6] Remember what the preferred zone is for zone_statistics
-Date: Tue, 11 Dec 2007 20:22:57 +0000 (GMT)
+	Tue, 11 Dec 2007 15:23:12 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57689 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754360AbXLKUXK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 15:23:10 -0500
+Date: Tue, 11 Dec 2007 20:16:19 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: Rene Herman <rene.herman@keyaccess.nl>, Paul Rolland <rol@as2917.net>,
+       David Newall <david@davidnewall.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Pavel Machek <pavel@ucw.cz>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+Message-ID: <20071211201619.2ba97298@the-village.bc.nu>
+In-Reply-To: <475EE2CA.6020601@reed.com>
+References: <475879CD.9080006@reed.com>
+	<p733auekcly.fsf@bingen.suse.de>
+	<20071207160439.71b7f46a@the-village.bc.nu>
+	<20071209125458.GB4381@ucw.cz>
+	<20071209165908.GA15910@one.firstfloor.org>
+	<20071209212513.GC24284@elf.ucw.cz>
+	<475CBDD7.5050602@keyaccess.nl>
+	<m3bq8y23de.fsf@maximus.localdomain>
+	<475DE37F.20706@davidnewall.com>
+	<475DE6F4.80702@zytor.com>
+	<475DEB23.1000304@davidnewall.com>
+	<20071211084059.3d03e11d@tux.DEF.witbe.net>
+	<475E5D4B.8020101@keyaccess.nl>
+	<475E7DC2.4060509@davidnewall.com>
+	<475E8D91.20201@keyaccess.nl>
+	<20071211143224.15900995@tux.DEF.witbe.net>
+	<475E9B9B.2050709@keyaccess.nl>
+	<475EACB8.7080608@keyaccess.nl>
+	<20071211163706.2dc82275@tux.DEF.witbe.net>
+	<475EB263.2050405@keyaccess.nl>
+	<475EC1C0.2040000@reed.com>
+	<20071211173231.2b87a81f@the-village.bc.nu>
+	<475EE2CA.6020601@reed.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> And if you choose to be such an insulting ****
 
-On NUMA, zone_statistics() is used to record events like numa hit, miss
-and foreign. It assumes that the first zone in a zonelist is the preferred
-zone. When multiple zonelists are replaced by one that is filtered, this
-is no longer the case.
+Fine. I won't bother submitting patches to fix this because I don't seem
+to care any more. The only person who is suffering seems to have an
+attitude problem and the only people I work for with attitude problems
+are customers of my employer.
 
-This patch records what the preferred zone is rather than assuming the
-first zone in the zonelist is it. This simplifies the reading of later
-patches in this set.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
-
- include/linux/vmstat.h |    2 +-
- mm/page_alloc.c        |    9 +++++----
- mm/vmstat.c            |    6 +++---
- 3 files changed, 9 insertions(+), 8 deletions(-)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc4-mm1-007_node_zonelist/include/linux/vmstat.h linux-2.6.24-rc4-mm1-008_preferred/include/linux/vmstat.h
---- linux-2.6.24-rc4-mm1-007_node_zonelist/include/linux/vmstat.h	2007-12-04 04:26:10.000000000 +0000
-+++ linux-2.6.24-rc4-mm1-008_preferred/include/linux/vmstat.h	2007-12-07 13:51:10.000000000 +0000
-@@ -174,7 +174,7 @@ static inline unsigned long node_page_st
- 		zone_page_state(&zones[ZONE_MOVABLE], item);
- }
- 
--extern void zone_statistics(struct zonelist *, struct zone *);
-+extern void zone_statistics(struct zone *, struct zone *);
- 
- #else
- 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc4-mm1-007_node_zonelist/mm/page_alloc.c linux-2.6.24-rc4-mm1-008_preferred/mm/page_alloc.c
---- linux-2.6.24-rc4-mm1-007_node_zonelist/mm/page_alloc.c	2007-12-07 13:51:01.000000000 +0000
-+++ linux-2.6.24-rc4-mm1-008_preferred/mm/page_alloc.c	2007-12-07 13:51:10.000000000 +0000
-@@ -1049,7 +1049,7 @@ void split_page(struct page *page, unsig
-  * we cheat by calling it from here, in the order > 0 path.  Saves a branch
-  * or two.
-  */
--static struct page *buffered_rmqueue(struct zonelist *zonelist,
-+static struct page *buffered_rmqueue(struct zone *preferred_zone,
- 			struct zone *zone, int order, gfp_t gfp_flags)
- {
- 	unsigned long flags;
-@@ -1101,7 +1101,7 @@ again:
- 	}
- 
- 	__count_zone_vm_events(PGALLOC, zone, 1 << order);
--	zone_statistics(zonelist, zone);
-+	zone_statistics(preferred_zone, zone);
- 	local_irq_restore(flags);
- 	put_cpu();
- 
-@@ -1382,7 +1382,7 @@ get_page_from_freelist(gfp_t gfp_mask, u
- 	struct zone **z;
- 	struct page *page = NULL;
- 	int classzone_idx = zone_idx(zonelist->zones[0]);
--	struct zone *zone;
-+	struct zone *zone, *preferred_zone;
- 	nodemask_t *allowednodes = NULL;/* zonelist_cache approximation */
- 	int zlc_active = 0;		/* set if using zonelist_cache */
- 	int did_zlc_setup = 0;		/* just call zlc_setup() one time */
-@@ -1394,6 +1394,7 @@ zonelist_scan:
- 	 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
- 	 */
- 	z = zonelist->zones;
-+	preferred_zone = *z;
- 
- 	do {
- 		/*
-@@ -1432,7 +1433,7 @@ zonelist_scan:
- 			}
- 		}
- 
--		page = buffered_rmqueue(zonelist, zone, order, gfp_mask);
-+		page = buffered_rmqueue(preferred_zone, zone, order, gfp_mask);
- 		if (page)
- 			break;
- this_zone_full:
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc4-mm1-007_node_zonelist/mm/vmstat.c linux-2.6.24-rc4-mm1-008_preferred/mm/vmstat.c
---- linux-2.6.24-rc4-mm1-007_node_zonelist/mm/vmstat.c	2007-12-07 12:14:07.000000000 +0000
-+++ linux-2.6.24-rc4-mm1-008_preferred/mm/vmstat.c	2007-12-07 13:51:10.000000000 +0000
-@@ -365,13 +365,13 @@ void refresh_cpu_vm_stats(int cpu)
-  *
-  * Must be called with interrupts disabled.
-  */
--void zone_statistics(struct zonelist *zonelist, struct zone *z)
-+void zone_statistics(struct zone *preferred_zone, struct zone *z)
- {
--	if (z->zone_pgdat == zonelist->zones[0]->zone_pgdat) {
-+	if (z->zone_pgdat == preferred_zone->zone_pgdat) {
- 		__inc_zone_state(z, NUMA_HIT);
- 	} else {
- 		__inc_zone_state(z, NUMA_MISS);
--		__inc_zone_state(zonelist->zones[0], NUMA_FOREIGN);
-+		__inc_zone_state(preferred_zone, NUMA_FOREIGN);
- 	}
- 	if (z->node == numa_node_id())
- 		__inc_zone_state(z, NUMA_LOCAL);
+Alan
