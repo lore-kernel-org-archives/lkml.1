@@ -1,140 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbXLKTUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbXLKT0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbXLKTUP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 14:20:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbXLKTT5
+	id S1754727AbXLKT0k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 14:26:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbXLKT0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 14:19:57 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:59997 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755919AbXLKTTz (ORCPT
+	Tue, 11 Dec 2007 14:26:32 -0500
+Received: from web36607.mail.mud.yahoo.com ([209.191.85.24]:45764 "HELO
+	web36607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753187AbXLKT0b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 14:19:55 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 18.85.9.165
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+UAR4AHtdZIWergcJhUAmY
-Message-ID: <475EE2CA.6020601@reed.com>
-Date: Tue, 11 Dec 2007 14:19:38 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
+	Tue, 11 Dec 2007 14:26:31 -0500
+X-YMail-OSG: rMNt6z8VM1nNuiQQ.3bW3PWKxOC1ws9lpsS0V0OZEI_Ma0rwlwNip2BNv3Zzixf1rJMbfjsz0Q--
+X-RocketYMMF: rancidfat
+Date: Tue, 11 Dec 2007 11:26:29 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
+To: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com
+Cc: David Howells <dhowells@redhat.com>, Karl MacMillan <kmacmill@redhat.com>,
+       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <1197398079.28006.13.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Rene Herman <rene.herman@keyaccess.nl>, Paul Rolland <rol@as2917.net>,
-       David Newall <david@davidnewall.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>, Pavel Machek <pavel@ucw.cz>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-References: <475879CD.9080006@reed.com>	<p733auekcly.fsf@bingen.suse.de>	<20071207160439.71b7f46a@the-village.bc.nu>	<20071209125458.GB4381@ucw.cz>	<20071209165908.GA15910@one.firstfloor.org>	<20071209212513.GC24284@elf.ucw.cz>	<475CBDD7.5050602@keyaccess.nl>	<m3bq8y23de.fsf@maximus.localdomain>	<475DE37F.20706@davidnewall.com>	<475DE6F4.80702@zytor.com>	<475DEB23.1000304@davidnewall.com>	<20071211084059.3d03e11d@tux.DEF.witbe.net>	<475E5D4B.8020101@keyaccess.nl>	<475E7DC2.4060509@davidnewall.com>	<475E8D91.20201@keyaccess.nl>	<20071211143224.15900995@tux.DEF.witbe.net>	<475E9B9B.2050709@keyaccess.nl>	<475EACB8.7080608@keyaccess.nl>	<20071211163706.2dc82275@tux.DEF.witbe.net>	<475EB263.2050405@keyaccess.nl>	<475EC1C0.2040000@reed.com> <20071211173231.2b87a81f@the-village.bc.nu>
-In-Reply-To: <20071211173231.2b87a81f@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <266601.55481.qm@web36607.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--- Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-Alan Cox wrote:
->
-> The vga driver is somewhat misnamed. In console mode we handle everything
-> back to MDA/HGA and some HGA adapters do need delays.
->
->   
-No they don't.   I really, really, really know this for a fact.  I wrote 
-ASM drivers for every early video adapter and ran them all through Lotus 
-QA and Software Arts QA.   Personally.  The only delay needed is caused 
-by not having dual-ported video frame buffers on the original CGA in 
-high res character mode. This caused "snow" when a memory write was done 
-concurrently with the read being done by the scanline character 
-generator. And that delay was done by waiting for a bit in the I/O port 
-space to change.  There was NO reason to do waits between I/O 
-instructions.  Produce a spec sheet, or even better a machine.   I may 
-have an original PC-XT still lying around in the attic, don't know if I 
-can fire it up, but it had such graphics cards.  I also have several 
-early high-speed clones that were "overclocked".
+> On Mon, 2007-12-10 at 14:26 -0800, Casey Schaufler wrote:
+> > --- Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> > 
+> > > On Mon, 2007-12-10 at 21:08 +0000, David Howells wrote:
+> > > > Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> > > > 
+> > > > > Otherwise, only other issue I have with this interface is it won't
+> > > > > generalize to dealing with nfsd, where we want to set the acting
+> context
+> > > > > to a context we obtain from or determine based upon the client.
+> > > > 
+> > > > Are you speaking of security_kernel_act_as() and
+> security_create_files_as()
+> > > > specifically?  Or the task_struct::act_as override pointer in general?
+> > > 
+> > > security_kernel_act_as()
+> > > 
+> > > > I don't really know how nfsd wants to obtain and set its LSM context,
+> so
+> > > it's
+> > > > a bit difficult for me to make something that works for nfsd as well as
+> > > > cachefiles.
+> > > 
+> > > It would get a context from the client or from a local configuration
+> > > that would map security-unaware clients to a default context, and then
+> > > want to assume that context for the particular operation.  No transition
+> > > involved.
+> > 
+> > I would expect that the operation would be more sophisticated
+> > than that. You certainly aren't going to use what comes from
+> > the other side without any processing, and I expect you'll have
+> > some sort of operation on anything you pull from a config file
+> > before you actually apply it.
+> 
+> Yes, that's true - the contexts would be subjected to a permission
+> check.  But that's separable from the act of setting it as the task's
+> acting security state (and needs to be separated, as the precise check
+> will vary depending on the situation - cachefiles is going to apply a
+> different sort of check than nfsd).
+> 
+> > > > > Why can't cachefilesd just push a context into the kernel and pass
+> that
+> > > > > into the hook as the acting context,
+> > > > 
+> > > > How does cachefilesd come up with such a context?  Grab it from
+> > > > /etc/cachefilesd.conf?
+> > > 
+> > > >From a config file whose pathname would be provided by libselinux (ala
+> > > the way in which dbusd imports contexts), or directly as a context
+> > > returned by a libselinux function.  Has to be done that way so that it
+> > > can be set differently for different policy types (strict, targeted,
+> > > mls).
+> > 
+> > Unless you've got an LSM other than SELinux, of course. If
+> > cachefilesd is going to be responsible for maintaining this
+> > magic context there needs to be an LSM interface for it, not
+> > just an SELinux interface.
+> 
+> LSM is an in-kernel interface.  Here we are talking about a userspace
+> interface for obtaining the right security label to use.  There is no
+> equivalent to LSM in userspace as of yet.  Feel free to invent one, but
+> don't ask the rest of us to do it or wait for it to materialize.
 
->> I do remind all that 0x80 is a BIOS-specific standard, and is per BIOS - 
->> other ports have been used in the history of the IBM PC family by some 
->> vendors, and some machines have used it for DMA port mapping!!  And 
->>     
->
-> All do -thats why it is suitable.
->   
-Not true.  Again, I can produce machines that don't use 0x80.  Perhaps 
-that is because I am many years older than you are, and have been 
-writing code for PC compatibles since 1981.  (not a typo - this was 
-before the first IBM PC was released to the public).
->   
->> Windows XP does NOT use it at all.  Therefore it may not be supported by 
->>     
->
-> Older Windows does. Don't know about XP although DOS apps in XP will but
-> they may virtualise the port.
->
->   
-Show me one line of Windows code written by Microsoft that uses port 
-80.  I don't know what app hackers might have done - there was no 
-protection, and someone might have copied the BIOS for some reason.
->> I have a simple patch that fixes my primary concern - just change the 
->> CMOS_READ and CMOS_WRITE, 64-bit versions of I/O and bootcode vga 
->> accesses (first group below) to use the straight inb and outb code.
->>     
->
-> Which requires care. Have you verified all the main chipset vendors ?
->
->   
-I obviously have not.   Clearly the guys who want this port 80 hack so 
-desperately have not either.  That's why we are in this pickle.  (well, 
-we only to the extent that I am accepted as having useful input.  I'm 
-happy to go if I'm not perceived as being helpful).
->> I may submit it so that the many others who share my pain will be made 
->>     
->
-> All .. none of them ?
->   
-There is a long standing set of reports of "hwclock" not working on HP 
-dv.000v laptops, where the . stands for 2, 4, 6, and 9.   These are all 
-nvidia MCP51 chipset AMD64's.
+I am much more concerned with the interfaces used to pass the
+information into the kernel. I would expect that to be LSM
+independent, not a call into libselinux that resolves into a
+selinuxfs operation, or it's netlink equivilant. It would be
+unfortunate if the userland/kernel interface became an obstacle
+to cachefiles being adopted.
 
-And if you choose to be such an insulting ****, I may just stop trying 
-to be helpful.  I presume that others in the community find my comments 
-helpful.
-> I can do some of these off the top of my head
->
->   
->> drivers/net/8390.h
->>     
->
-> Needed for some 8390 devices on ISA bus
->
->   
->> drivers/net/de600.c
->> drivers/net/de600.h
->>     
->
-> Uses the parallel port which isnt guaranteed to be full ISA speed.
->
->   
->> drivers/scsi/ppa.h
->>     
->
-> Parallel port
->
->   
->> drivers/serial/8250.c
->>     
->
-> Some PC's need delays for certain ops.
->
->   
->> drivers/watchdog/wdt_pci.c
->>     
->
-> That one is a mistake I believe, I'll dig out the docs.
->
->
->   
+> ...
+
+
+Casey Schaufler
+casey@schaufler-ca.com
