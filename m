@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbXLKPCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbXLKPCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbXLKPCh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 10:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbXLKPC3
+	id S1754360AbXLKPCz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 10:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbXLKPCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 10:02:29 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45622 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752261AbXLKPC1 (ORCPT
+	Tue, 11 Dec 2007 10:02:44 -0500
+Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:3808 "EHLO
+	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbXLKPCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 10:02:27 -0500
-Date: Tue, 11 Dec 2007 16:02:25 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: dor.laor@qumranet.com
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-Subject: Re: Performance overhead of get_cycles_sync
-Message-ID: <20071211150225.GC16750@one.firstfloor.org>
-References: <475E8C8B.7070308@qumranet.com> <p73lk81nw71.fsf@bingen.suse.de> <475EA54C.4090306@qumranet.com>
+	Tue, 11 Dec 2007 10:02:43 -0500
+X-Greylist: delayed 1270 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Dec 2007 10:02:42 EST
+Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry in
+	directory) (fwd)
+From: Miquel van Smoorenburg <miquels@cistron.nl>
+To: Anders Henke <anders.henke@1und1.de>
+Cc: FUJITA Tomonori <tomof@acm.org>, matthew@wil.cx, jack@ucw.cz,
+       fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, miquels@cistron.nl
+In-Reply-To: <20071130103450.GC7697@1und1.de>
+References: <20071129130319.GA2642@atrey.karlin.mff.cuni.cz>
+	 <20071129235813Y.tomof@acm.org> <20071129164557.GD30957@1und1.de>
+	 <20071130021226T.tomof@acm.org>  <20071130103450.GC7697@1und1.de>
+Content-Type: text/plain
+Date: Tue, 11 Dec 2007 15:40:34 +0100
+Message-Id: <1197384034.19679.13.camel@n2o.xs4all.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <475EA54C.4090306@qumranet.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 11, 2007 at 04:57:16PM +0200, Dor Laor wrote:
-> Andi Kleen wrote:
-> >[headers rewritten because of gmane crosspost breakage]
-> >
-> >  
-> >>In the latest kernel (2.6.24-rc3) I noticed a drastic performance 
-> >>decrease for KVM networking.
-> >>    
-> >
-> >That should not have changed for quite some time.
-> >
-> >Also it depends on the CPU of course.
-> >  
-> I didn't find the exact place of the change but using fedora 2.6.23-8 
-> there is no problem.
-> 3aefbe0746580a710d4392a884ac1e4aac7c728f turn X86_FEATURE_SYNC_RDTSC  
-> off for most
-> intel cpus, but it was committed in May.
+On Fri, 2007-11-30 at 11:34 +0100, Anders Henke wrote:
+> Am 30.11.2007 schrieb FUJITA Tomonori:
+> > > > > According to the 2.6.23-rc1 short-form changelog, there is
+> > > > > one major edit on the dpt_i2o driver:
+> > > > > 
+> > > > > FUJITA Tomonori 
+> > > > > 
+> > > > >       [SCSI] dpt_i2o: convert to use the data buffer accessors
+> > > > > 
+> > > > > Stephen Rothwell 
+> > > > >       dpt_i2o depends on virt_to_bus
+> > > > > 
+> > > > > Fujita, would you please take a look at this?
+> > > > 
+>
+> In between, I've ruled out that the static assignment isn't
+> source of the problem.  And due to some manually made "make clean" which 
+> didn't clean enough, I've also pointed out the wrong patch - sorry,
+> Fujita, definitely the right one which breaks my boxes is the dpt_i2o patch 
+> from 2.6.23-rc2 to 2.6.23-rc3 (7 kb in Size) from Matthew Wilcox.
+> 
+> commit 55d9fcf57ba5ec427544fca7abc335cf3da78160
+> Author: Matthew Wilcox <matthew@wil.cx>
+> Date:   Mon Jul 30 15:19:18 2007 -0600
+> 
+>     [SCSI] dpt_i2o: convert to SCSI hotplug model
 
-Ah there was a change to enable it on Core2. On AMD it was 
-always there except on CPUs with RDTSCP
+I just noticed the same bug when I tried to update a 2.6.18 server to
+2.6.23.9 .. also tried 2.6.24-rc4. The symptom I'm seeing is that init
+segfaults, or can't be found .. anyway, driver/fs errors.
 
-Anyways the very likely right way (I'm still waiting for final
-confirmation from Intel) to solve this is to use LFENCE which
-happens to stop RDTSC and is relatively light weight and won't
-cause vmexits. Unfortunately that doesn't work on AMD, but 
-there MFENCE happens to work. But there are more problems
-in this code which I have a (.24) patchkit to fix.
+In the kernel config, under "processor type and features", I disabled
+"64GB memory" support (changed to 4GB) and I also disabled "64 bit
+Memory and IO resources" and the problem went away. Do you by any chance
+happen to have those features enabled ?
 
-> According to Intel spec it is a serializing instruction along with cpuid 
-> and others.
+The dpt_i2o driver is not 64-bit clean, it happens to work with
+PAE/64-bit dma in earlier kernels but that might be by chance. Perhaps
+the different initialization ordering exposes the problem.
 
-You're right. The real roblem is that it is ring 0 only and that can
-be executed in ring 3. That is why Ingo's patch was wrong too.
+I got the 64-bit dpt_i2o driver from Adaptec some time ago, and I have
+added 64-bit support to the 2.6.23.1 dpt_i2o driver based on that
+driver. I intended to submit it for 2.6.25 or so ... if I have some time
+later today or tomorrow I'll try that next to see if that makes a
+difference.
 
--Andi
+Mike.
+
