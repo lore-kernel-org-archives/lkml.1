@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbXLKUDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbXLKUH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757214AbXLKUDj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 15:03:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757105AbXLKUDM
+	id S1756298AbXLKUH7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 15:07:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbXLKUHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 15:03:12 -0500
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:46849 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756324AbXLKUDL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 15:03:11 -0500
-Message-ID: <475EEC75.80609@keyaccess.nl>
-Date: Tue, 11 Dec 2007 21:00:53 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 11 Dec 2007 15:07:52 -0500
+Received: from phunq.net ([64.81.85.152]:56232 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751511AbXLKUHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 15:07:51 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC] [PATCH] A clean aEvgeniy pproach to writeout throttling
+Date: Tue, 11 Dec 2007 12:07:43 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+References: <200712051603.02183.phillips@phunq.net> <200712100617.24157.phillips@phunq.net> <20071211131514.GB25437@kernel.dk>
+In-Reply-To: <20071211131514.GB25437@kernel.dk>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Andi Kleen <andi@firstfloor.org>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       David Newall <david@davidnewall.com>, Paul Rolland <rol@as2917.net>,
-       "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-References: <475DE6F4.80702@zytor.com> <475DEB23.1000304@davidnewall.com> <20071211084059.3d03e11d@tux.DEF.witbe.net> <475E5D4B.8020101@keyaccess.nl> <475E7DC2.4060509@davidnewall.com> <475E8D91.20201@keyaccess.nl> <475E95A3.3070801@davidnewall.com> <Pine.LNX.4.61.0712111024060.22976@chaos.analogic.com> <20071211163017.GD16750@one.firstfloor.org> <475EBFBA.6090301@keyaccess.nl> <20071211191649.GB3437@elf.ucw.cz>
-In-Reply-To: <20071211191649.GB3437@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+Message-Id: <200712111207.43156.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11-12-07 20:16, Pavel Machek wrote:
+On Tuesday 11 December 2007 05:15, Jens Axboe wrote:
+> As to the patch in question "fixing" it in the block layer, it's a
+> fairly simple work around and I'm not totally against it. If you get
+> rid of the ->bi_throttle stuff and just do sanity checks on the
+> count, then we could look at getting some testing done.
 
->> Pavel Machek already posted one. His udelay(8) wants to be less -- 1 or "to 
->> be safe" perhaps 2.
->>
->> http://lkml.org/lkml/2007/12/9/131
-> 
-> 2 at least; that's how long outb(0x80) takes on one of my
-> machines. Actually, ISA can go down to 4MHz, so maybe we should be
-> using 4 usec.... but I guess I'm paranoid here.
+Oh, sorry I missed that olive branch on first read.  Getting rid of 
+those 8 bytes that bother you requires an extensive rethink of bio  
+handling in order to make some fields that are not now constant, 
+constant or at least restored on change.  Which would be a good thing 
+in itself.  There are lots of good improvements that can be made to 
+this subsystem along those lines.
 
-4 isn't sensible. There have been machines capable both of running Linux and 
-their ISA bus at less than 8 MHz (if only for example by picking a 5 divisor 
-on a system that was capable of hosting a 40 Mhz 386/486 but using a slower 
-CPU) but not by much. And machines doing that and running Linux, even more 
-so "today": 0.
+But that is properly a separate project.  Quite some time will be needed 
+to get it right, and should I mention it, everybody needs to be on the 
+same page or the work will never start.  It is therefore a theoretical 
+solution.  We have a practical, tested solution, here and now, and it 
+is short enough to be understood, unlike any of the previous attempts.
 
-My posted test program (although there seems to be something wrong with it 
-since it's influenced by compiler optimisation) is showing more than 1 but 
-note that on the vast majority of machines, 0 would in fact do. 1 will on 
-all, 2 will as well.
+Your argument seems to be that adding 8 bytes to struct bio turns this 
+beautiful swan into an ugly duck.  Actually, because the throttling 
+reduces the number of bios in flight in a busy system, total memory use 
+is reduced.  When the system is not busy, there are few bios hanging 
+around so that is not a problem either.  Nice, hmm?
 
-Rene.
-
+Daniel
