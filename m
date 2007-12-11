@@ -1,63 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbXLKX1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbXLKXdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbXLKX1w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 18:27:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbXLKX1l
+	id S1756557AbXLKXdA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 18:33:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbXLKXcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 18:27:41 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:37627 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750865AbXLKX1k (ORCPT
+	Tue, 11 Dec 2007 18:32:47 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:58544 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754889AbXLKXcp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 18:27:40 -0500
+	Tue, 11 Dec 2007 18:32:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=O+BvKY2bYAfl32FHpzMv5u3C+2jQevBPBRgqPHgHBFoBDr2jSAdQ3ZhnOEv5e1UAT/IBuBjKKbPqI0sHhA98iFFbihkvxhD23BdPaibujvlxD3ejkSKW7ws1TQEkXoc9KtziqqlLkK25R3xzHTa/9VHRewcpTwjXLObyY/I1Eis=
-Message-ID: <b25c3fa70712111527p561b3e2i24ee0fdf3d61a98c@mail.gmail.com>
-Date: Wed, 12 Dec 2007 08:27:39 +0900
-From: "Joonwoo Park" <joonwpark81@gmail.com>
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-Subject: Re: [PATCH] [NET]: Fix Ooops of napi net_rx_action.
-Cc: "David Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
-In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F5203F82FC3@orsmsx418.amr.corp.intel.com>
+        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type:from;
+        b=rE/cyRGgPox0Hq/hACXBbWg/caz2UdJahN3CtuRKZadxv0ROrNVpHaW5MM+iZnTmdmHHbEL/iJ4LzYk0kjZksWkW0ccb6xRBhGzwBNlB+zJn15wjZ3oFIMurmhBY6dszkvNJF2J8DOb6LLQ4k0aMC/ew+MK4c3MG+G1PSb+puzo=
+Message-ID: <475F1DC6.5090403@keyaccess.nl>
+Date: Wed, 12 Dec 2007 00:31:18 +0100
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <001801c83bd6$2001d410$9c94fea9@jason>
-	 <20071211.023218.31965443.davem@davemloft.net>
-	 <b25c3fa70712110457g2bf04c6flc387f2b9cb51cf3b@mail.gmail.com>
-	 <36D9DB17C6DE9E40B059440DB8D95F5203F82FC3@orsmsx418.amr.corp.intel.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+CC: dpreed@reed.com, Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz,
+       andi@firstfloor.org, rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>,
+       david@davidnewall.com, hpa@zytor.com, john@stoffel.org,
+       linux-os@analogic.com
+Subject: [RFT] Port 0x80 I/O speed
+Content-Type: multipart/mixed;
+ boundary="------------070402050109070509090404"
+From: Rene Herman <rene.herman@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/12/12, Brandeburg, Jesse <jesse.brandeburg@intel.com>:
-> Joonwoo Park wrote:
-> >     /* If no Tx and not enough Rx work done, exit the polling mode */
-> >     if ((!tx_cleaned && (work_done == 0)) ||
-> >        !netif_running(poll_dev)) {
-> > quit_polling:
-> >         if (likely(adapter->itr_setting & 3))
-> >             e1000_set_itr(adapter);
-> >         netif_rx_complete(poll_dev, napi);
-> >         e1000_irq_enable(adapter);
->
-> all drivers using NAPI in 2.6.24+ (NNAPI??) must return zero here, after
-> calling netif_rx_complete.  netif_rx_complete plus work_done != 0 causes
-> a bug.
->
-> >     }
-> >
-> >     return work_done;
-> > }
-> >
->
+This is a multi-part message in MIME format.
+--------------070402050109070509090404
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I'm working another patch for drivers (maybe patches)
+Good day.
 
-Thanks.
-Joonwoo
+Would some people on x86 (both 32 and 64) be kind enough to compile and run 
+the attached program? This is about testing how long I/O port access to port 
+0x80 takes. It measures in CPU cycles so CPU speed is crucial in reporting.
+
+Posted a previous incarnation of this before, buried in the outb 0x80 thread 
+which had a serialising problem. This one should as far as I can see measure 
+the right thing though. Please yell if you disagree...
+
+For me, on a Duron 1300 (AMD756 chipset) I have a constant:
+
+rene@7ixe4:~/src/port80$ su -c ./port80
+cycles: out 2400, in 2400
+
+and on a PII 400 (Intel 440BX chipset) a constant:
+
+rene@6bap:~/src/port80$ su -c ./port80
+cycles: out 553, in 251
+
+Results are (mostly) independent of compiler optimisation, but testing with 
+an -O2 compile should be most useful. Thanks!
+
+Rene.
+
+--------------070402050109070509090404
+Content-Type: text/plain;
+ name="port80.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="port80.c"
+
+/* gcc -W -Wall -O2 -o port80 port80.c */
+
+#include <stdlib.h>
+#include <stdio.h>
+
+#include <sys/io.h>
+
+#define LOOPS 10000
+
+inline unsigned long long rdtsc(void)
+{
+	unsigned long long tsc;
+
+	asm volatile ("rdtsc": "=A" (tsc));
+
+	return tsc;
+}
+
+inline void serialize(void)
+{
+	asm volatile ("cpuid": : : "eax", "ebx", "ecx", "edx");
+}
+
+int main(void)
+{
+	unsigned long long start;
+	unsigned long long overhead; 
+	unsigned long long output;
+	unsigned long long input;
+	int i;
+
+	if (iopl(3) < 0) {
+		perror("iopl");
+		return EXIT_FAILURE;
+	}
+
+	asm volatile ("cli");
+	start = rdtsc();
+	for (i = 0; i < LOOPS; i++) {
+	 	serialize();	
+		serialize();
+	}
+	overhead = rdtsc() - start;
+
+	start = rdtsc() + overhead;
+	for (i = 0; i < LOOPS; i++) {
+		serialize();
+		asm volatile ("outb %al, $0x80");
+		serialize();
+	}
+	output = rdtsc() - start;
+
+	start = rdtsc() + overhead;
+	for (i = 0; i < LOOPS; i++) {
+		serialize();
+		asm volatile ("inb $0x80, %%al": : : "al");
+		serialize();
+	}
+	input = rdtsc() - start;
+	asm volatile ("sti");
+
+	output /= LOOPS;
+	input  /= LOOPS;
+	printf("cycles: out %llu, in %llu\n", output, input);
+
+	return EXIT_SUCCESS;
+}
+
+--------------070402050109070509090404--
