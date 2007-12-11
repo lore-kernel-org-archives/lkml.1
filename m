@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbXLKRCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbXLKRC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755757AbXLKRCE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 12:02:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXLKRBw
+	id S1755914AbXLKRC0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 12:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755681AbXLKRB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 12:01:52 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:32956 "EHLO
+	Tue, 11 Dec 2007 12:01:59 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:32958 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752713AbXLKRBu (ORCPT
+	with ESMTP id S1755623AbXLKRB4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 12:01:50 -0500
-Date: Tue, 11 Dec 2007 12:01:24 -0500
+	Tue, 11 Dec 2007 12:01:56 -0500
+Date: Tue, 11 Dec 2007 12:01:25 -0500
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Stanislaw Gruszka <stf_xl@wp.pl>
-Subject: [PATCH 1/2] UML - Stop gdb from deleting breakpoints when running UML
-Message-ID: <20071211170124.GA6584@c2.user-mode-linux.org>
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 2/2] UML - update uml-kill-processes-instead-of-panicing-kernel.patch
+Message-ID: <20071211170125.GA6589@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,380 +25,757 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ This should go into 2.6.24.  It applies ahead of my other -mm
-patches and it conflicts with
-uml-kill-processes-instead-of-panicing-kernel.patch.  So, I'm also
-sending an updated version of that patch which merges cleanly with
-this one already applied. ]
+[ This is an updated version of
+uml-kill-processes-instead-of-panicing-kernel.patch which applies
+cleanly with my previous breakpoint-fixing patch already applied ]
 
-From: Stanislaw Gruszka <stf_xl@wp.pl>
+UML was panicing in the case of failures of libc calls which shouldn't happen.
+ This is an overreaction since a failure from libc doesn't normally mean that
+kernel data structures are in an unknown state.  Instead, the current process
+should just be killed if there is no way to recover.
 
-Sometimes when UML is debugged gdb miss breakpoints.
+The case that prompted this was a failure of PTRACE_SETREGS restoring the same
+state that was read by PTRACE_GETREGS.  It appears that when a process tries
+to load a bogus value into a segment register, it segfaults (as expected) and
+the value is actually loaded and is seen by PTRACE_GETREGS (not expected).
 
-When process traced by gdb do fork, debugger remove breakpoints from
-child address space. There is possibility to trace more than one fork,
-but this not work with UML, I guess (only guess) there is a deadlock -
-gdb waits for UML and UML waits for gdb.
+This case is fixed by forcing a fatal SIGSEGV on the process so that it
+immediately dies.  fatal_sigsegv was added for this purpose.  It was declared
+as noreturn, so in order to pursuade gcc that it actually does not return, I
+added a call to os_dump_core (and declared it noreturn) so that I get a core
+file if somehow the process survives.
 
-When clone() is called with SIGCHLD and CLONE_VM flags, gdb see this
-as PTRACE_EVENT_FORK not as PTRACE_EVENT_CLONE and remove breakpoints
-from child and at the same time from traced process, because either
-have the same address space.
+All other calls in arch/um/os-Linux/skas/process.c got the same treatment,
+with failures causing the process to die instead of a kernel panic, with some
+exceptions.
 
-Maybe it is possible to do fix in gdb, but I'm not sure if there is
-easy way to find out if traced and child processes share memory. So I
-do fix for UML, it simply do not call clone() with both SIGCHLD and
-CLONE_VM flags together.  Additionally __WALL flag is used for
-waitpid() to assure not miss clone and normal process events.
+userspace_tramp exits with status 1 if anything goes wrong there.  That will
+cause start_userspace to return an error.  copy_context_skas0 and
+map_stub_pages also now return errors instead of panicing.  Callers of thes
+functions were changed to check for errors and do something appropriate. 
+Usually that's to return an error to their callers. 
+check_skas3_ptrace_faultinfo just exits since that's too early to do anything
+else.
 
-[ jdike - checkpatch fixes ]
+save_registers, restore_registers, and init_registers now return status
+instead of panicing on failure, with their callers doing something
+appropriate.
 
-Signed-off-by: Stanislaw Gruszka <stf_xl@wp.pl>
+There were also duplicate declarations of save_registers and restore_registers
+in os.h - these are gone.
+
+I noticed and fixed up some whitespace damage.
+
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/drivers/net_user.c               |    2 -
- arch/um/drivers/slip_user.c              |   12 +--------
- arch/um/drivers/slirp_user.c             |   15 ++----------
- arch/um/drivers/ubd_user.c               |    3 --
- arch/um/include/os.h                     |    2 -
- arch/um/os-Linux/aio.c                   |    4 +--
- arch/um/os-Linux/drivers/ethertap_user.c |   10 +-------
- arch/um/os-Linux/drivers/tuntap_user.c   |    2 -
- arch/um/os-Linux/helper.c                |   38 ++++++++++++++++++++++---------
- arch/um/os-Linux/process.c               |    4 +--
- arch/um/os-Linux/skas/process.c          |   12 +++++----
- arch/um/os-Linux/util.c                  |    2 -
- 12 files changed, 50 insertions(+), 56 deletions(-)
 
-Index: linux-2.6-git/arch/um/drivers/net_user.c
+ arch/um/include/kern_util.h     |    1 
+ arch/um/include/os.h            |    8 
+ arch/um/include/registers.h     |    6 
+ arch/um/kernel/skas/mmu.c       |    5 
+ arch/um/kernel/skas/process.c   |   20 +-
+ arch/um/kernel/trap.c           |   12 +
+ arch/um/os-Linux/registers.c    |   21 +-
+ arch/um/os-Linux/skas/process.c |  265 +++++++++++++++++++-----------
+ arch/um/os-Linux/start_up.c     |    4 
+ arch/um/sys-x86_64/syscalls.c   |    8 
+ 10 files changed, 233 insertions(+), 117 deletions(-)
+
+Index: linux-2.6-git/arch/um/include/kern_util.h
 ===================================================================
---- linux-2.6-git.orig/arch/um/drivers/net_user.c	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/drivers/net_user.c	2007-12-11 11:49:03.000000000 -0500
-@@ -201,7 +201,7 @@ static int change_tramp(char **argv, cha
- 	close(fds[1]);
+--- linux-2.6-git.orig/arch/um/include/kern_util.h	2007-12-11 11:11:12.000000000 -0500
++++ linux-2.6-git/arch/um/include/kern_util.h	2007-12-11 11:11:33.000000000 -0500
+@@ -62,6 +62,7 @@ extern int singlestepping(void *t);
+ extern void segv_handler(int sig, struct uml_pt_regs *regs);
+ extern void bus_handler(int sig, struct uml_pt_regs *regs);
+ extern void winch(int sig, struct uml_pt_regs *regs);
++extern void fatal_sigsegv(void) __attribute__ ((noreturn));
  
- 	if (pid > 0)
--		CATCH_EINTR(err = waitpid(pid, NULL, 0));
-+		helper_wait(pid, 0, "change_tramp");
- 	return pid;
- }
  
-Index: linux-2.6-git/arch/um/drivers/slip_user.c
-===================================================================
---- linux-2.6-git.orig/arch/um/drivers/slip_user.c	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/drivers/slip_user.c	2007-12-11 11:49:03.000000000 -0500
-@@ -77,7 +77,7 @@ static int slip_tramp(char **argv, int f
- {
- 	struct slip_pre_exec_data pe_data;
- 	char *output;
--	int status, pid, fds[2], err, output_len;
-+	int pid, fds[2], err, output_len;
- 
- 	err = os_pipe(fds, 1, 0);
- 	if (err < 0) {
-@@ -109,15 +109,7 @@ static int slip_tramp(char **argv, int f
- 	read_output(fds[0], output, output_len);
- 	printk("%s", output);
- 
--	CATCH_EINTR(err = waitpid(pid, &status, 0));
--	if (err < 0)
--		err = errno;
--	else if (!WIFEXITED(status) || (WEXITSTATUS(status) != 0)) {
--		printk(UM_KERN_ERR "'%s' didn't exit with status 0\n", argv[0]);
--		err = -EINVAL;
--	}
--	else err = 0;
--
-+	err = helper_wait(pid, 0, argv[0]);
- 	close(fds[0]);
- 
- out_free:
-Index: linux-2.6-git/arch/um/drivers/slirp_user.c
-===================================================================
---- linux-2.6-git.orig/arch/um/drivers/slirp_user.c	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/drivers/slirp_user.c	2007-12-11 11:49:03.000000000 -0500
-@@ -79,7 +79,7 @@ out:
- static void slirp_close(int fd, void *data)
- {
- 	struct slirp_data *pri = data;
--	int status,err;
-+	int err;
- 
- 	close(fd);
- 	close(pri->slave);
-@@ -98,18 +98,9 @@ static void slirp_close(int fd, void *da
- 		       "(%d)\n", pri->pid, errno);
- 	}
  #endif
--
--	CATCH_EINTR(err = waitpid(pri->pid, &status, WNOHANG));
--	if (err < 0) {
--		printk(UM_KERN_ERR "slirp_close: waitpid returned %d\n", errno);
-+	err = helper_wait(pri->pid, 1, "slirp_close");
-+	if (err < 0)
- 		return;
--	}
--
--	if (err == 0) {
--		printk(UM_KERN_ERR "slirp_close: process %d has not exited\n",
--		       pri->pid);
--		return;
--	}
- 
- 	pri->pid = -1;
- }
-Index: linux-2.6-git/arch/um/drivers/ubd_user.c
-===================================================================
---- linux-2.6-git.orig/arch/um/drivers/ubd_user.c	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/drivers/ubd_user.c	2007-12-11 11:49:03.000000000 -0500
-@@ -49,8 +49,7 @@ int start_io_thread(unsigned long sp, in
- 		goto out_close;
- 	}
- 
--	pid = clone(io_thread, (void *) sp, CLONE_FILES | CLONE_VM | SIGCHLD,
--		    NULL);
-+	pid = clone(io_thread, (void *) sp, CLONE_FILES | CLONE_VM, NULL);
- 	if(pid < 0){
- 		err = -errno;
- 		printk("start_io_thread - clone failed : errno = %d\n", errno);
-Index: linux-2.6-git/arch/um/os-Linux/aio.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/aio.c	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/aio.c	2007-12-11 11:49:03.000000000 -0500
-@@ -218,7 +218,7 @@ static int init_aio_24(void)
- 		goto out_close_pipe;
- 
- 	err = run_helper_thread(not_aio_thread, NULL,
--				CLONE_FILES | CLONE_VM | SIGCHLD, &aio_stack);
-+				CLONE_FILES | CLONE_VM, &aio_stack);
- 	if (err < 0)
- 		goto out_close_pipe;
- 
-@@ -254,7 +254,7 @@ static int init_aio_26(void)
- 	}
- 
- 	err = run_helper_thread(aio_thread, NULL,
--				CLONE_FILES | CLONE_VM | SIGCHLD, &aio_stack);
-+				CLONE_FILES | CLONE_VM, &aio_stack);
- 	if (err < 0)
- 		return err;
- 
-Index: linux-2.6-git/arch/um/os-Linux/drivers/ethertap_user.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/drivers/ethertap_user.c	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/drivers/ethertap_user.c	2007-12-11 11:49:03.000000000 -0500
-@@ -94,7 +94,7 @@ static int etap_tramp(char *dev, char *g
- 		      int control_remote, int data_me, int data_remote)
- {
- 	struct etap_pre_exec_data pe_data;
--	int pid, status, err, n;
-+	int pid, err, n;
- 	char version_buf[sizeof("nnnnn\0")];
- 	char data_fd_buf[sizeof("nnnnnn\0")];
- 	char gate_buf[sizeof("nnn.nnn.nnn.nnn\0")];
-@@ -131,13 +131,7 @@ static int etap_tramp(char *dev, char *g
- 	}
- 	if (c != 1) {
- 		printk(UM_KERN_ERR "etap_tramp : uml_net failed\n");
--		err = -EINVAL;
--		CATCH_EINTR(n = waitpid(pid, &status, 0));
--		if (n < 0)
--			err = -errno;
--		else if (!WIFEXITED(status) || (WEXITSTATUS(status) != 1))
--			printk(UM_KERN_ERR "uml_net didn't exit with "
--			       "status 1\n");
-+		err = helper_wait(pid, 0, "uml_net");
- 	}
- 	return err;
- }
-Index: linux-2.6-git/arch/um/os-Linux/drivers/tuntap_user.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/drivers/tuntap_user.c	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/drivers/tuntap_user.c	2007-12-11 11:49:03.000000000 -0500
-@@ -107,7 +107,7 @@ static int tuntap_open_tramp(char *gate,
- 		       "errno = %d\n", errno);
- 		return err;
- 	}
--	CATCH_EINTR(waitpid(pid, NULL, 0));
-+	helper_wait(pid, 0, "tuntap_open_tramp");
- 
- 	cmsg = CMSG_FIRSTHDR(&msg);
- 	if (cmsg == NULL) {
-Index: linux-2.6-git/arch/um/os-Linux/helper.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/helper.c	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/helper.c	2007-12-11 11:50:31.000000000 -0500
-@@ -76,7 +76,7 @@ int run_helper(void (*pre_exec)(void *),
- 	data.fd = fds[1];
- 	data.buf = __cant_sleep() ? kmalloc(PATH_MAX, UM_GFP_ATOMIC) :
- 					kmalloc(PATH_MAX, UM_GFP_KERNEL);
--	pid = clone(helper_child, (void *) sp, CLONE_VM | SIGCHLD, &data);
-+	pid = clone(helper_child, (void *) sp, CLONE_VM, &data);
- 	if (pid < 0) {
- 		ret = -errno;
- 		printk("run_helper : clone failed, errno = %d\n", errno);
-@@ -101,7 +101,7 @@ int run_helper(void (*pre_exec)(void *),
- 			ret = n;
- 			kill(pid, SIGKILL);
- 		}
--		CATCH_EINTR(waitpid(pid, NULL, 0));
-+		CATCH_EINTR(waitpid(pid, NULL, __WCLONE));
- 	}
- 
- out_free2:
-@@ -126,7 +126,7 @@ int run_helper_thread(int (*proc)(void *
- 		return -ENOMEM;
- 
- 	sp = stack + UM_KERN_PAGE_SIZE - sizeof(void *);
--	pid = clone(proc, (void *) sp, flags | SIGCHLD, arg);
-+	pid = clone(proc, (void *) sp, flags, arg);
- 	if (pid < 0) {
- 		err = -errno;
- 		printk("run_helper_thread : clone failed, errno = %d\n",
-@@ -134,7 +134,7 @@ int run_helper_thread(int (*proc)(void *
- 		return err;
- 	}
- 	if (stack_out == NULL) {
--		CATCH_EINTR(pid = waitpid(pid, &status, 0));
-+		CATCH_EINTR(pid = waitpid(pid, &status, __WCLONE));
- 		if (pid < 0) {
- 			err = -errno;
- 			printk("run_helper_thread - wait failed, errno = %d\n",
-@@ -150,14 +150,30 @@ int run_helper_thread(int (*proc)(void *
- 	return pid;
- }
- 
--int helper_wait(int pid)
-+int helper_wait(int pid, int nohang, char *pname)
- {
--	int ret;
-+	int ret, status;
-+	int wflags = __WCLONE;
- 
--	CATCH_EINTR(ret = waitpid(pid, NULL, WNOHANG));
-+	if (nohang)
-+		wflags |= WNOHANG;
-+
-+	if (!pname)
-+		pname = "helper_wait";
-+
-+	CATCH_EINTR(ret = waitpid(pid, &status, wflags));
- 	if (ret < 0) {
--		ret = -errno;
--		printk("helper_wait : waitpid failed, errno = %d\n", errno);
--	}
--	return ret;
-+		printk(UM_KERN_ERR "%s : waitpid process %d failed, "
-+		       "errno = %d\n", pname, pid, errno);
-+		return -errno;
-+	} else if (nohang && ret == 0) {
-+		printk(UM_KERN_ERR "%s : process %d has not exited\n",
-+		       pname, pid);
-+		return -ECHILD;
-+	} else if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-+		printk(UM_KERN_ERR "%s : process %d didn't exit with "
-+		       "status 0\n", pname, pid);
-+		return -ECHILD;
-+	} else
-+		return 0;
- }
-Index: linux-2.6-git/arch/um/os-Linux/process.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/process.c	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/process.c	2007-12-11 11:49:03.000000000 -0500
-@@ -101,7 +101,7 @@ void os_kill_process(int pid, int reap_c
- {
- 	kill(pid, SIGKILL);
- 	if (reap_child)
--		CATCH_EINTR(waitpid(pid, NULL, 0));
-+		CATCH_EINTR(waitpid(pid, NULL, __WALL));
- }
- 
- /* This is here uniquely to have access to the userspace errno, i.e. the one
-@@ -130,7 +130,7 @@ void os_kill_ptraced_process(int pid, in
- 	ptrace(PTRACE_KILL, pid);
- 	ptrace(PTRACE_CONT, pid);
- 	if (reap_child)
--		CATCH_EINTR(waitpid(pid, NULL, 0));
-+		CATCH_EINTR(waitpid(pid, NULL, __WALL));
- }
- 
- /* Don't use the glibc version, which caches the result in TLS. It misses some
-Index: linux-2.6-git/arch/um/os-Linux/util.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/util.c	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/util.c	2007-12-11 11:49:03.000000000 -0500
-@@ -141,7 +141,7 @@ void os_dump_core(void)
- 	 * nothing reasonable to do if that fails.
- 	 */
- 
--	while ((pid = waitpid(-1, NULL, WNOHANG)) > 0)
-+	while ((pid = waitpid(-1, NULL, WNOHANG | __WALL)) > 0)
- 		os_kill_ptraced_process(pid, 0);
- 
- 	abort();
 Index: linux-2.6-git/arch/um/include/os.h
 ===================================================================
---- linux-2.6-git.orig/arch/um/include/os.h	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/include/os.h	2007-12-11 11:49:03.000000000 -0500
-@@ -214,7 +214,7 @@ extern int execvp_noalloc(char *buf, con
- extern int run_helper(void (*pre_exec)(void *), void *pre_data, char **argv);
- extern int run_helper_thread(int (*proc)(void *), void *arg,
- 			     unsigned int flags, unsigned long *stack_out);
--extern int helper_wait(int pid);
-+extern int helper_wait(int pid, int nohang, char *pname);
+--- linux-2.6-git.orig/arch/um/include/os.h	2007-12-11 11:11:14.000000000 -0500
++++ linux-2.6-git/arch/um/include/os.h	2007-12-11 11:11:33.000000000 -0500
+@@ -238,7 +238,7 @@ extern int raw(int fd);
+ extern void setup_machinename(char *machine_out);
+ extern void setup_hostinfo(char *buf, int len);
+ extern int setjmp_wrapper(void (*proc)(void *, void *), ...);
+-extern void os_dump_core(void);
++extern void os_dump_core(void) __attribute__ ((noreturn));
  
+ /* time.c */
+ extern void idle_sleep(unsigned long long nsecs);
+@@ -267,11 +267,9 @@ extern int protect(struct mm_id * mm_idp
+ extern int is_skas_winch(int pid, int fd, void *data);
+ extern int start_userspace(unsigned long stub_stack);
+ extern int copy_context_skas0(unsigned long stack, int pid);
+-extern void save_registers(int pid, struct uml_pt_regs *regs);
+-extern void restore_registers(int pid, struct uml_pt_regs *regs);
+ extern void userspace(struct uml_pt_regs *regs);
+-extern void map_stub_pages(int fd, unsigned long code,
+-			   unsigned long data, unsigned long stack);
++extern int map_stub_pages(int fd, unsigned long code, unsigned long data,
++			  unsigned long stack);
+ extern void new_thread(void *stack, jmp_buf *buf, void (*handler)(void));
+ extern void switch_threads(jmp_buf *me, jmp_buf *you);
+ extern int start_idle_thread(void *stack, jmp_buf *switch_buf);
+Index: linux-2.6-git/arch/um/include/registers.h
+===================================================================
+--- linux-2.6-git.orig/arch/um/include/registers.h	2007-12-11 11:11:24.000000000 -0500
++++ linux-2.6-git/arch/um/include/registers.h	2007-12-11 11:11:33.000000000 -0500
+@@ -13,9 +13,9 @@ extern int save_fp_registers(int pid, un
+ extern int restore_fp_registers(int pid, unsigned long *fp_regs);
+ extern int save_fpx_registers(int pid, unsigned long *fp_regs);
+ extern int restore_fpx_registers(int pid, unsigned long *fp_regs);
+-extern void save_registers(int pid, struct uml_pt_regs *regs);
+-extern void restore_registers(int pid, struct uml_pt_regs *regs);
+-extern void init_registers(int pid);
++extern int save_registers(int pid, struct uml_pt_regs *regs);
++extern int restore_registers(int pid, struct uml_pt_regs *regs);
++extern int init_registers(int pid);
+ extern void get_safe_registers(unsigned long *regs);
+ extern unsigned long get_thread_reg(int reg, jmp_buf *buf);
  
- /* tls.c */
+Index: linux-2.6-git/arch/um/kernel/skas/mmu.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/kernel/skas/mmu.c	2007-12-11 11:11:23.000000000 -0500
++++ linux-2.6-git/arch/um/kernel/skas/mmu.c	2007-12-11 11:11:33.000000000 -0500
+@@ -77,6 +77,11 @@ int init_new_context(struct task_struct 
+ 			to_mm->id.u.pid = copy_context_skas0(stack,
+ 							     from_mm->id.u.pid);
+ 		else to_mm->id.u.pid = start_userspace(stack);
++
++		if (to_mm->id.u.pid < 0) {
++			ret = to_mm->id.u.pid;
++			goto out_free;
++		}
+ 	}
+ 
+ 	ret = init_new_ldt(to_mm, from_mm);
+Index: linux-2.6-git/arch/um/kernel/skas/process.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/kernel/skas/process.c	2007-12-11 11:02:52.000000000 -0500
++++ linux-2.6-git/arch/um/kernel/skas/process.c	2007-12-11 11:11:33.000000000 -0500
+@@ -6,19 +6,25 @@
+ #include "linux/init.h"
+ #include "linux/sched.h"
+ #include "as-layout.h"
++#include "kern.h"
+ #include "os.h"
+ #include "skas.h"
+ 
+ int new_mm(unsigned long stack)
+ {
+-	int fd;
++	int fd, err;
+ 
+ 	fd = os_open_file("/proc/mm", of_cloexec(of_write(OPENFLAGS())), 0);
+ 	if (fd < 0)
+ 		return fd;
+ 
+-	if (skas_needs_stub)
+-		map_stub_pages(fd, STUB_CODE, STUB_DATA, stack);
++	if (skas_needs_stub) {
++		err = map_stub_pages(fd, STUB_CODE, STUB_DATA, stack);
++		if (err) {
++			os_close_file(fd);
++			return err;
++		}
++	}
+ 
+ 	return fd;
+ }
+@@ -49,8 +55,14 @@ int __init start_uml(void)
+ {
+ 	stack_protections((unsigned long) &cpu0_irqstack);
+ 	set_sigstack(cpu0_irqstack, THREAD_SIZE);
+-	if (proc_mm)
++	if (proc_mm) {
+ 		userspace_pid[0] = start_userspace(0);
++		if (userspace_pid[0] < 0) {
++			printf("start_uml - start_userspace returned %d\n",
++			       userspace_pid[0]);
++			exit(1);
++		}
++	}
+ 
+ 	init_new_thread_signals();
+ 
+Index: linux-2.6-git/arch/um/kernel/trap.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/kernel/trap.c	2007-12-11 11:11:13.000000000 -0500
++++ linux-2.6-git/arch/um/kernel/trap.c	2007-12-11 11:11:33.000000000 -0500
+@@ -129,6 +129,18 @@ static void bad_segv(struct faultinfo fi
+ 	force_sig_info(SIGSEGV, &si, current);
+ }
+ 
++void fatal_sigsegv(void)
++{
++	force_sigsegv(SIGSEGV, current);
++	do_signal();
++	/*
++	 * This is to tell gcc that we're not returning - do_signal
++	 * can, in general, return, but in this case, it's not, since
++	 * we just got a fatal SIGSEGV queued.
++	 */
++	os_dump_core();
++}
++
+ void segv_handler(int sig, struct uml_pt_regs *regs)
+ {
+ 	struct faultinfo * fi = UPT_FAULTINFO(regs);
+Index: linux-2.6-git/arch/um/os-Linux/registers.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/os-Linux/registers.c	2007-12-11 11:11:24.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/registers.c	2007-12-11 11:11:33.000000000 -0500
+@@ -8,42 +8,41 @@
+ #include <string.h>
+ #include <sys/ptrace.h>
+ #include "sysdep/ptrace.h"
+-#include "user.h"
+ 
+-void save_registers(int pid, struct uml_pt_regs *regs)
++int save_registers(int pid, struct uml_pt_regs *regs)
+ {
+ 	int err;
+ 
+ 	err = ptrace(PTRACE_GETREGS, pid, 0, regs->gp);
+ 	if (err < 0)
+-		panic("save_registers - saving registers failed, errno = %d\n",
+-		      errno);
++		return -errno;
++	return 0;
+ }
+ 
+-void restore_registers(int pid, struct uml_pt_regs *regs)
++int restore_registers(int pid, struct uml_pt_regs *regs)
+ {
+ 	int err;
+ 
+ 	err = ptrace(PTRACE_SETREGS, pid, 0, regs->gp);
+ 	if (err < 0)
+-		panic("restore_registers - saving registers failed, "
+-		      "errno = %d\n", errno);
++		return -errno;
++	return 0;
+ }
+ 
+ /* This is set once at boot time and not changed thereafter */
+ 
+ static unsigned long exec_regs[MAX_REG_NR];
+ 
+-void init_registers(int pid)
++int init_registers(int pid)
+ {
+ 	int err;
+ 
+ 	err = ptrace(PTRACE_GETREGS, pid, 0, exec_regs);
+-	if (err)
+-		panic("check_ptrace : PTRACE_GETREGS failed, errno = %d",
+-		      errno);
++	if (err < 0)
++		return -errno;
+ 
+ 	arch_init_registers(pid);
++	return 0;
+ }
+ 
+ void get_safe_registers(unsigned long *regs)
 Index: linux-2.6-git/arch/um/os-Linux/skas/process.c
 ===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/skas/process.c	2007-12-11 11:48:08.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/skas/process.c	2007-12-11 11:49:03.000000000 -0500
-@@ -64,7 +64,7 @@ void wait_stub_done(int pid)
- 	int n, status, err;
+--- linux-2.6-git.orig/arch/um/os-Linux/skas/process.c	2007-12-11 11:11:24.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/skas/process.c	2007-12-11 11:17:00.000000000 -0500
+@@ -38,17 +38,17 @@ int is_skas_winch(int pid, int fd, void 
  
- 	while (1) {
--		CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED));
-+		CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED | __WALL));
- 		if ((n < 0) || !WIFSTOPPED(status))
- 			goto bad_wait;
+ static int ptrace_dump_regs(int pid)
+ {
+-        unsigned long regs[MAX_REG_NR];
+-        int i;
++	unsigned long regs[MAX_REG_NR];
++	int i;
  
-@@ -153,7 +153,7 @@ static void handle_trap(int pid, struct 
- 			panic("handle_trap - continuing to end of syscall "
- 			      "failed, errno = %d\n", errno);
+-        if (ptrace(PTRACE_GETREGS, pid, 0, regs) < 0)
+-                return -errno;
++	if (ptrace(PTRACE_GETREGS, pid, 0, regs) < 0)
++		return -errno;
  
--		CATCH_EINTR(err = waitpid(pid, &status, WUNTRACED));
-+		CATCH_EINTR(err = waitpid(pid, &status, WUNTRACED | __WALL));
+ 	printk(UM_KERN_ERR "Stub registers -\n");
+ 	for (i = 0; i < ARRAY_SIZE(regs); i++)
+ 		printk(UM_KERN_ERR "\t%d - %lx\n", i, regs[i]);
+ 
+-        return 0;
++	return 0;
+ }
+ 
+ /*
+@@ -73,9 +73,11 @@ void wait_stub_done(int pid)
+ 			break;
+ 
+ 		err = ptrace(PTRACE_CONT, pid, 0, 0);
+-		if (err)
+-			panic("wait_stub_done : continue failed, errno = %d\n",
+-			      errno);
++		if (err) {
++			printk(UM_KERN_ERR "wait_stub_done : continue failed, "
++			       "errno = %d\n", errno);
++			fatal_sigsegv();
++		}
+ 	}
+ 
+ 	if (((1 << WSTOPSIG(status)) & STUB_DONE_MASK) != 0)
+@@ -86,8 +88,10 @@ bad_wait:
+ 	if (err)
+ 		printk(UM_KERN_ERR "Failed to get registers from stub, "
+ 		       "errno = %d\n", -err);
+-	panic("wait_stub_done : failed to wait for SIGUSR1/SIGTRAP, pid = %d, "
+-	      "n = %d, errno = %d, status = 0x%x\n", pid, n, errno, status);
++	printk(UM_KERN_ERR "wait_stub_done : failed to wait for SIGTRAP, "
++	       "pid = %d, n = %d, errno = %d, status = 0x%x\n", pid, n, errno,
++	       status);
++	fatal_sigsegv();
+ }
+ 
+ extern unsigned long current_stub_stack(void);
+@@ -98,9 +102,11 @@ void get_skas_faultinfo(int pid, struct 
+ 
+ 	if (ptrace_faultinfo) {
+ 		err = ptrace(PTRACE_FAULTINFO, pid, 0, fi);
+-		if (err)
+-			panic("get_skas_faultinfo - PTRACE_FAULTINFO failed, "
+-			      "errno = %d\n", errno);
++		if (err) {
++			printk(UM_KERN_ERR "get_skas_faultinfo - "
++			       "PTRACE_FAULTINFO failed, errno = %d\n", errno);
++			fatal_sigsegv();
++		}
+ 
+ 		/* Special handling for i386, which has different structs */
+ 		if (sizeof(struct ptrace_faultinfo) < sizeof(struct faultinfo))
+@@ -110,9 +116,11 @@ void get_skas_faultinfo(int pid, struct 
+ 	}
+ 	else {
+ 		err = ptrace(PTRACE_CONT, pid, 0, SIGSEGV);
+-		if (err)
+-			panic("Failed to continue stub, pid = %d, errno = %d\n",
+-			      pid, errno);
++		if (err) {
++			printk(UM_KERN_ERR "Failed to continue stub, pid = %d, "
++			       "errno = %d\n", pid, errno);
++			fatal_sigsegv();
++		}
+ 		wait_stub_done(pid);
+ 
+ 		/*
+@@ -145,25 +153,31 @@ static void handle_trap(int pid, struct 
+ 	{
+ 		err = ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_NR_OFFSET,
+ 			     __NR_getpid);
+-		if (err < 0)
+-			panic("handle_trap - nullifying syscall failed, "
+-			      "errno = %d\n", errno);
++		if (err < 0) {
++			printk(UM_KERN_ERR "handle_trap - nullifying syscall "
++			       "failed, errno = %d\n", errno);
++			fatal_sigsegv();
++		}
+ 
+ 		err = ptrace(PTRACE_SYSCALL, pid, 0, 0);
+-		if (err < 0)
+-			panic("handle_trap - continuing to end of syscall "
+-			      "failed, errno = %d\n", errno);
++		if (err < 0) {
++			printk(UM_KERN_ERR "handle_trap - continuing to end of "
++			       "syscall failed, errno = %d\n", errno);
++			fatal_sigsegv();
++		}
+ 
+ 		CATCH_EINTR(err = waitpid(pid, &status, WUNTRACED | __WALL));
  		if ((err < 0) || !WIFSTOPPED(status) ||
- 		   (WSTOPSIG(status) != SIGTRAP + 0x80)) {
-                         err = ptrace_dump_regs(pid);
-@@ -255,16 +255,18 @@ int start_userspace(unsigned long stub_s
- 		panic("start_userspace : mmap failed, errno = %d", errno);
+-		   (WSTOPSIG(status) != SIGTRAP + 0x80)) {
+-                        err = ptrace_dump_regs(pid);
+-                        if (err)
+-                                printk(UM_KERN_ERR "Failed to get registers "
++		    (WSTOPSIG(status) != SIGTRAP + 0x80)) {
++			err = ptrace_dump_regs(pid);
++			if (err)
++				printk(UM_KERN_ERR "Failed to get registers "
+ 				       "from process, errno = %d\n", -err);
+-			panic("handle_trap - failed to wait at end of syscall, "
+-			      "errno = %d, status = %d\n", errno, status);
+-                }
++			printk(UM_KERN_ERR "handle_trap - failed to wait at "
++			       "end of syscall, errno = %d, status = %d\n",
++			       errno, status);
++			fatal_sigsegv();
++		}
+ 	}
+ 
+ 	handle_syscall(regs);
+@@ -181,9 +195,11 @@ static int userspace_tramp(void *stack)
+ 	signal(SIGTERM, SIG_DFL);
+ 	signal(SIGWINCH, SIG_IGN);
+ 	err = set_interval();
+-	if (err)
+-		panic("userspace_tramp - setting timer failed, errno = %d\n",
+-		      err);
++	if (err) {
++		printk(UM_KERN_ERR "userspace_tramp - setting timer failed, "
++		       "errno = %d\n", err);
++		exit(1);
++	}
+ 
+ 	if (!proc_mm) {
+ 		/*
+@@ -226,9 +242,11 @@ static int userspace_tramp(void *stack)
+ 		sa.sa_flags = SA_ONSTACK | SA_NODEFER;
+ 		sa.sa_handler = (void *) v;
+ 		sa.sa_restorer = NULL;
+-		if (sigaction(SIGSEGV, &sa, NULL) < 0)
+-			panic("userspace_tramp - setting SIGSEGV handler "
+-			      "failed - errno = %d\n", errno);
++		if (sigaction(SIGSEGV, &sa, NULL) < 0) {
++			printk(UM_KERN_ERR "userspace_tramp - setting SIGSEGV "
++			       "handler failed - errno = %d\n", errno);
++			exit(1);
++		}
+ 	}
+ 
+ 	kill(os_getpid(), SIGSTOP);
+@@ -244,13 +262,18 @@ int start_userspace(unsigned long stub_s
+ {
+ 	void *stack;
+ 	unsigned long sp;
+-	int pid, status, n, flags;
++	int pid, status, n, flags, err;
+ 
+ 	stack = mmap(NULL, UM_KERN_PAGE_SIZE,
+ 		     PROT_READ | PROT_WRITE | PROT_EXEC,
+ 		     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+-	if (stack == MAP_FAILED)
+-		panic("start_userspace : mmap failed, errno = %d", errno);
++	if (stack == MAP_FAILED) {
++		err = -errno;
++		printk(UM_KERN_ERR "start_userspace : mmap failed, "
++		       "errno = %d", errno);
++		return err;
++	}
++
  	sp = (unsigned long) stack + UM_KERN_PAGE_SIZE - sizeof(void *);
  
--	flags = CLONE_FILES | SIGCHLD;
-+	flags = CLONE_FILES;
- 	if (proc_mm)
- 		flags |= CLONE_VM;
-+	else
-+		flags |= SIGCHLD;
+ 	flags = CLONE_FILES;
+@@ -260,29 +283,50 @@ int start_userspace(unsigned long stub_s
+ 		flags |= SIGCHLD;
  
  	pid = clone(userspace_tramp, (void *) sp, flags, (void *) stub_stack);
- 	if (pid < 0)
- 		panic("start_userspace : clone failed, errno = %d", errno);
+-	if (pid < 0)
+-		panic("start_userspace : clone failed, errno = %d", errno);
++	if (pid < 0) {
++		err = -errno;
++		printk(UM_KERN_ERR "start_userspace : clone failed, "
++		       "errno = %d", errno);
++		return err;
++	}
  
  	do {
--		CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED));
-+		CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED | __WALL));
- 		if (n < 0)
- 			panic("start_userspace : wait failed, errno = %d",
- 			      errno);
-@@ -314,7 +316,7 @@ void userspace(struct uml_pt_regs *regs)
- 			      "pid=%d, ptrace operation = %d, errno = %d\n",
- 			      pid, op, errno);
+ 		CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED | __WALL));
+-		if (n < 0)
+-			panic("start_userspace : wait failed, errno = %d",
+-			      errno);
++		if (n < 0) {
++			err = -errno;
++			printk(UM_KERN_ERR "start_userspace : wait failed, "
++			       "errno = %d", errno);
++			goto out_kill;
++		}
+ 	} while (WIFSTOPPED(status) && (WSTOPSIG(status) == SIGVTALRM));
  
--		CATCH_EINTR(err = waitpid(pid, &status, WUNTRACED));
-+		CATCH_EINTR(err = waitpid(pid, &status, WUNTRACED | __WALL));
- 		if (err < 0)
- 			panic("userspace - waitpid failed, errno = %d\n",
- 			      errno);
+-	if (!WIFSTOPPED(status) || (WSTOPSIG(status) != SIGSTOP))
+-		panic("start_userspace : expected SIGSTOP, got status = %d",
+-		      status);
++	if (!WIFSTOPPED(status) || (WSTOPSIG(status) != SIGSTOP)) {
++		err = -EINVAL;
++		printk(UM_KERN_ERR "start_userspace : expected SIGSTOP, got "
++		       "status = %d", status);
++		goto out_kill;
++	}
+ 
+ 	if (ptrace(PTRACE_OLDSETOPTIONS, pid, NULL,
+-		   (void *) PTRACE_O_TRACESYSGOOD) < 0)
+-		panic("start_userspace : PTRACE_OLDSETOPTIONS failed, "
+-		      "errno = %d\n", errno);
++		   (void *) PTRACE_O_TRACESYSGOOD) < 0) {
++		err = -errno;
++		printk(UM_KERN_ERR "start_userspace : PTRACE_OLDSETOPTIONS "
++		       "failed, errno = %d\n", errno);
++		goto out_kill;
++	}
+ 
+-	if (munmap(stack, UM_KERN_PAGE_SIZE) < 0)
+-		panic("start_userspace : munmap failed, errno = %d\n", errno);
++	if (munmap(stack, UM_KERN_PAGE_SIZE) < 0) {
++		err = -errno;
++		printk(UM_KERN_ERR "start_userspace : munmap failed, "
++		       "errno = %d\n", errno);
++		goto out_kill;
++	}
+ 
+ 	return pid;
++
++ out_kill:
++	os_kill_ptraced_process(pid, 1);
++	return err;
+ }
+ 
+ void userspace(struct uml_pt_regs *regs)
+@@ -300,9 +344,16 @@ void userspace(struct uml_pt_regs *regs)
+ 	nsecs += os_nsecs();
+ 
+ 	while (1) {
++		/*
++		 * This can legitimately fail if the process loads a
++		 * bogus value into a segment register.  It will
++		 * segfault and PTRACE_GETREGS will read that value
++		 * out of the process.  However, PTRACE_SETREGS will
++		 * fail.  In this case, there is nothing to do but
++		 * just kill the process.
++		 */
+ 		if (ptrace(PTRACE_SETREGS, pid, 0, regs->gp))
+-			panic("userspace - PTRACE_SETREGS failed, "
+-			      "errno = %d\n", errno);
++			fatal_sigsegv();
+ 
+ 		/* Now we set local_using_sysemu to be used for one loop */
+ 		local_using_sysemu = get_using_sysemu();
+@@ -310,21 +361,25 @@ void userspace(struct uml_pt_regs *regs)
+ 		op = SELECT_PTRACE_OPERATION(local_using_sysemu,
+ 					     singlestepping(NULL));
+ 
+-		err = ptrace(op, pid, 0, 0);
+-		if (err)
+-			panic("userspace - could not resume userspace process, "
+-			      "pid=%d, ptrace operation = %d, errno = %d\n",
+-			      pid, op, errno);
++		if (ptrace(op, pid, 0, 0)) {
++			printk(UM_KERN_ERR "userspace - ptrace continue "
++			       "failed, op = %d, errno = %d\n", op, errno);
++			fatal_sigsegv();
++		}
+ 
+ 		CATCH_EINTR(err = waitpid(pid, &status, WUNTRACED | __WALL));
+-		if (err < 0)
+-			panic("userspace - waitpid failed, errno = %d\n",
+-			      errno);
++		if (err < 0) {
++			printk(UM_KERN_ERR "userspace - wait failed, "
++			       "errno = %d\n", errno);
++			fatal_sigsegv();
++		}
+ 
+ 		regs->is_user = 1;
+-		if (ptrace(PTRACE_GETREGS, pid, 0, regs->gp))
+-			panic("userspace - saving registers failed, "
+-			      "errno = %d\n", errno);
++		if (ptrace(PTRACE_GETREGS, pid, 0, regs->gp)) {
++			printk(UM_KERN_ERR "userspace - PTRACE_GETREGS failed, "
++			       "errno = %d\n", errno);
++			fatal_sigsegv();
++		}
+ 
+ 		UPT_SYSCALL_NR(regs) = -1; /* Assume: It's not a syscall */
+ 
+@@ -371,6 +426,7 @@ void userspace(struct uml_pt_regs *regs)
+ 			default:
+ 			        printk(UM_KERN_ERR "userspace - child stopped "
+ 				       "with signal %d\n", sig);
++				fatal_sigsegv();
+ 			}
+ 			pid = userspace_pid[0];
+ 			interrupt_end();
+@@ -422,9 +478,12 @@ int copy_context_skas0(unsigned long new
+ 						     .it_interval = tv }) });
+ 
+ 	err = ptrace_setregs(pid, thread_regs);
+-	if (err < 0)
+-		panic("copy_context_skas0 : PTRACE_SETREGS failed, "
+-		      "pid = %d, errno = %d\n", pid, -err);
++	if (err < 0) {
++		err = -errno;
++		printk(UM_KERN_ERR "copy_context_skas0 : PTRACE_SETREGS "
++		       "failed, pid = %d, errno = %d\n", pid, -err);
++		return err;
++	}
+ 
+ 	/* set a well known return code for detection of child write failure */
+ 	child_data->err = 12345678;
+@@ -434,31 +493,47 @@ int copy_context_skas0(unsigned long new
+ 	 * parent's stack, and check, if bad result.
+ 	 */
+ 	err = ptrace(PTRACE_CONT, pid, 0, 0);
+-	if (err)
+-		panic("Failed to continue new process, pid = %d, "
+-		      "errno = %d\n", pid, errno);
++	if (err) {
++		err = -errno;
++		printk(UM_KERN_ERR "Failed to continue new process, pid = %d, "
++		       "errno = %d\n", pid, errno);
++		return err;
++	}
++
+ 	wait_stub_done(pid);
+ 
+ 	pid = data->err;
+-	if (pid < 0)
+-		panic("copy_context_skas0 - stub-parent reports error %d\n",
+-		      -pid);
++	if (pid < 0) {
++		printk(UM_KERN_ERR "copy_context_skas0 - stub-parent reports "
++		       "error %d\n", -pid);
++		return pid;
++	}
+ 
+ 	/*
+ 	 * Wait, until child has finished too: read child's result from
+ 	 * child's stack and check it.
+ 	 */
+ 	wait_stub_done(pid);
+-	if (child_data->err != STUB_DATA)
+-		panic("copy_context_skas0 - stub-child reports error %ld\n",
+-		      child_data->err);
++	if (child_data->err != STUB_DATA) {
++		printk(UM_KERN_ERR "copy_context_skas0 - stub-child reports "
++		       "error %ld\n", child_data->err);
++		err = child_data->err;
++		goto out_kill;
++	}
+ 
+ 	if (ptrace(PTRACE_OLDSETOPTIONS, pid, NULL,
+-		   (void *)PTRACE_O_TRACESYSGOOD) < 0)
+-		panic("copy_context_skas0 : PTRACE_OLDSETOPTIONS failed, "
+-		      "errno = %d\n", errno);
++		   (void *)PTRACE_O_TRACESYSGOOD) < 0) {
++		err = -errno;
++		printk(UM_KERN_ERR "copy_context_skas0 : PTRACE_OLDSETOPTIONS "
++		       "failed, errno = %d\n", errno);
++		goto out_kill;
++	}
+ 
+ 	return pid;
++
++ out_kill:
++	os_kill_ptraced_process(pid, 1);
++	return err;
+ }
+ 
+ /*
+@@ -466,8 +541,8 @@ int copy_context_skas0(unsigned long new
+  * available. Opening /proc/mm creates a new mm_context, which lacks
+  * the stub-pages. Thus, we map them using /proc/mm-fd
+  */
+-void map_stub_pages(int fd, unsigned long code,
+-		    unsigned long data, unsigned long stack)
++int map_stub_pages(int fd, unsigned long code, unsigned long data,
++		   unsigned long stack)
+ {
+ 	struct proc_mm_op mmop;
+ 	int n;
+@@ -491,8 +566,9 @@ void map_stub_pages(int fd, unsigned lon
+ 		printk(UM_KERN_ERR "mmap args - addr = 0x%lx, fd = %d, "
+ 		       "offset = %llx\n", code, code_fd,
+ 		       (unsigned long long) code_offset);
+-		panic("map_stub_pages : /proc/mm map for code failed, "
+-		      "err = %d\n", n);
++		printk(UM_KERN_ERR "map_stub_pages : /proc/mm map for code "
++		       "failed, err = %d\n", n);
++		return -n;
+ 	}
+ 
+ 	if (stack) {
+@@ -510,10 +586,15 @@ void map_stub_pages(int fd, unsigned lon
+ 				      .offset  = map_offset
+ 		} } });
+ 		CATCH_EINTR(n = write(fd, &mmop, sizeof(mmop)));
+-		if (n != sizeof(mmop))
+-			panic("map_stub_pages : /proc/mm map for data failed, "
+-			      "err = %d\n", errno);
++		if (n != sizeof(mmop)) {
++			n = errno;
++			printk(UM_KERN_ERR "map_stub_pages : /proc/mm map for "
++			       "data failed, err = %d\n", n);
++			return -n;
++		}
+ 	}
++
++	return 0;
+ }
+ 
+ void new_thread(void *stack, jmp_buf *buf, void (*handler)(void))
+@@ -574,7 +655,9 @@ int start_idle_thread(void *stack, jmp_b
+ 		kmalloc_ok = 0;
+ 		return 1;
+ 	default:
+-		panic("Bad sigsetjmp return in start_idle_thread - %d\n", n);
++		printk(UM_KERN_ERR "Bad sigsetjmp return in "
++		       "start_idle_thread - %d\n", n);
++		fatal_sigsegv();
+ 	}
+ 	longjmp(*switch_buf, 1);
+ }
+@@ -617,9 +700,11 @@ void __switch_mm(struct mm_id *mm_idp)
+ 	if (proc_mm) {
+ 		err = ptrace(PTRACE_SWITCH_MM, userspace_pid[0], 0,
+ 			     mm_idp->u.mm_fd);
+-		if (err)
+-			panic("__switch_mm - PTRACE_SWITCH_MM failed, "
+-			      "errno = %d\n", errno);
++		if (err) {
++			printk(UM_KERN_ERR "__switch_mm - PTRACE_SWITCH_MM "
++			       "failed, errno = %d\n", errno);
++			fatal_sigsegv();
++		}
+ 	}
+ 	else userspace_pid[0] = mm_idp->u.pid;
+ }
+Index: linux-2.6-git/arch/um/os-Linux/start_up.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/os-Linux/start_up.c	2007-12-11 11:11:14.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/start_up.c	2007-12-11 11:11:33.000000000 -0500
+@@ -411,7 +411,9 @@ static inline void check_skas3_ptrace_fa
+ 			non_fatal("found\n");
+ 	}
+ 
+-	init_registers(pid);
++	if (init_registers(pid))
++		fatal("Failed to initialize default registers");
++
+ 	stop_ptraced_child(pid, 1, 1);
+ }
+ 
+Index: linux-2.6-git/arch/um/sys-x86_64/syscalls.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/sys-x86_64/syscalls.c	2007-12-11 11:11:14.000000000 -0500
++++ linux-2.6-git/arch/um/sys-x86_64/syscalls.c	2007-12-11 11:11:33.000000000 -0500
+@@ -48,7 +48,9 @@ long arch_prctl(struct task_struct *task
+ 	switch (code) {
+ 	case ARCH_SET_FS:
+ 	case ARCH_SET_GS:
+-		restore_registers(pid, &current->thread.regs.regs);
++		ret = restore_registers(pid, &current->thread.regs.regs);
++		if (ret)
++			return ret;
+ 		break;
+ 	case ARCH_GET_FS:
+ 	case ARCH_GET_GS:
+@@ -70,10 +72,10 @@ long arch_prctl(struct task_struct *task
+ 	switch (code) {
+ 	case ARCH_SET_FS:
+ 		current->thread.arch.fs = (unsigned long) ptr;
+-		save_registers(pid, &current->thread.regs.regs);
++		ret = save_registers(pid, &current->thread.regs.regs);
+ 		break;
+ 	case ARCH_SET_GS:
+-		save_registers(pid, &current->thread.regs.regs);
++		ret = save_registers(pid, &current->thread.regs.regs);
+ 		break;
+ 	case ARCH_GET_FS:
+ 		ret = put_user(tmp, addr);
