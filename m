@@ -1,73 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXLKTv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbXLKTyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756181AbXLKTv6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 14:51:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbXLKTvt
+	id S1756072AbXLKTyN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 14:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbXLKTx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 14:51:49 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:50312 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751347AbXLKTvs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 14:51:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xzKwl+9Wm5L/J2zxrCf1Al8C20H20htA5hrHtc5Z0C86x90InnvlNamqsLiO8OmCbAut4Bc0Sxlt7hiPGgimykeCgMV+1CyAjkJ5rEnPHSRexex53kcb+KSIEqmjnay5FNQQcrt845dAsQ0m3tjsMGQyPPAvSvSr1d31hdE2EW0=
-Message-ID: <86802c440712111151t29acd38kf9fac8e41743f3e4@mail.gmail.com>
-Date: Tue, 11 Dec 2007 11:51:39 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Neil Horman" <nhorman@tuxdriver.com>
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Ben Woodard" <woodard@redhat.com>, "Neil Horman" <nhorman@redhat.com>,
-       kexec@lists.infradead.org, "Andi Kleen" <ak@suse.de>,
-       linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
-       "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <20071211192434.GD10999@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 11 Dec 2007 14:53:57 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:50749 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751500AbXLKTx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 14:53:56 -0500
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
+	settings for task actions [try #2]
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: casey@schaufler-ca.com
+Cc: David Howells <dhowells@redhat.com>, Karl MacMillan <kmacmill@redhat.com>,
+       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <899818.54251.qm@web36606.mail.mud.yahoo.com>
+References: <899818.54251.qm@web36606.mail.mud.yahoo.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 11 Dec 2007 14:52:16 -0500
+Message-Id: <1197402736.28006.90.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com>
-	 <20071207175832.GA18485@hmsreliant.think-freely.org>
-	 <m1k5nm2g3w.fsf@ebiederm.dsl.xmission.com>
-	 <20071211034349.GA3635@localhost.localdomain>
-	 <m1ejdt25x0.fsf@ebiederm.dsl.xmission.com>
-	 <20071211143910.GA10999@hmsreliant.think-freely.org>
-	 <m1ve75z1v3.fsf@ebiederm.dsl.xmission.com>
-	 <20071211182254.GB10999@hmsreliant.think-freely.org>
-	 <m1ejdtysqd.fsf@ebiederm.dsl.xmission.com>
-	 <20071211192434.GD10999@hmsreliant.think-freely.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 11, 2007 11:24 AM, Neil Horman <nhorman@tuxdriver.com> wrote:
-> On Tue, Dec 11, 2007 at 11:46:34AM -0700, Eric W. Biederman wrote:
-> > Neil Horman <nhorman@tuxdriver.com> writes:
-> >
-> > Ok. My only remaining nit to pick is that fix_hypertransport_config
-> > is right in the middle of the nvidia quirks, which can be a bit
-> > confusing when reading through the code.  Otherwise I think this
-> > is a version that we can merge.
-> >
-> Sure, I'll move it to the top of the file
->
-> > Let's get a clean description on this thing and send it to the
-> > current x86 maintainers. Thomas, Ingo, and HPA
-> >
->
-> Clean Summary:
->
-> Recently a kdump bug was discovered in which a system would hang inside
-> calibrate_delay during the booting of the kdump kernel.  This was caused by the
-> fact that the jiffies counter was not being incremented during timer
-> calibration.  The root cause of this problem was found to be a bios
-> misconfiguration of the hypertransport bus.  On system affected by this hang,
-> the bios had assigned APIC ids which used extended apic bits (more than the
-> nominal 4 bit ids's), but failed to configure bit 18 of the hypertransport
+On Mon, 2007-12-10 at 15:46 -0800, Casey Schaufler wrote:
+> --- David Howells <dhowells@redhat.com> wrote:
+> 
+> > Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> > 
+> > > From a config file whose pathname would be provided by libselinux (ala
+> > > the way in which dbusd imports contexts), or directly as a context
+> > > returned by a libselinux function.
+> > 
+> > That sounds too SELinux specific.  How do I do it so that it works for any
+> > LSM?
+> > 
+> > Is linking against libselinux is a viable option if it's not available under
+> > all LSM models?  Is it available under all LSM models?  Perhaps Casey can
+> > answer this one.
+> 
+> Linking against libselinux is not now, nor will it ever be, a viable
+> option. There's just too much sophistication contained in libselinux
+> for us simple folk to deal with.
+> 
+> > > > I use to do that, but someone objected...  Possibly Karl MacMillan.
+> > > 
+> > > Yes, but I think I disagreed then too.
+> > 
+> > So, who's right?
+> 
+> Me! (smiley inserted here, for those in need)
+> 
+> > > It doesn't fit with how other users of security_kernel_act_as() will
+> > > likely want to work (they will want to just set the context to a
+> > > specified value, whether one obtained from the client or from some local
+> > > source), nor with how type transitions normally work (exec, with the
+> > > program type as the second type field).  I think it will just cause
+> > > confusion and subtle breakage.
+> > 
+> > It's causing me lots of confusion as it is.  I have been / am being told by
+> > different people to do different things just in dealing with SELinux, and
+> > various people are raising extra requirements or restrictions beyond that.
+> > There doesn't seem to be a consensus.
+> > 
+> > It sounds like the best option is just to have the kernel nick the userspace
+> > daemon's security context and use that as is, and junk all the restrictions
+> > on
+> > what the daemon can do so that the kernel isn't too restricted.
+> 
+> That would be consistant with the (perhaps archaic now) behavior
+> of nfsd on Unix, which did nothing but "lend it's credential" to the
+> underlying kernel code. I think it's a rational approach, although I
+> expect that in may have troubles under SELinux.
 
-should be bit 17.
+nfsd needs to able to set the acting label to a value determined based
+on the client so that file operations performed on behalf of the client
+are subjected to the right set of permission checks and new files are
+labeled properly, just as it already does for uid and gid (via fsuid and
+fsgid).  So merely inheriting the label from the nfsd daemon doesn't
+help with that purpose.
 
-YH
+Both nfsd and cachefiles need a way to set the acting label, so having a
+common hook for both to do that makes sense.  The authorization of that
+label will differ, so splitting the authorization into a separate hook
+also makes sense.
+ 
+-- 
+Stephen Smalley
+National Security Agency
+
