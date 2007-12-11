@@ -1,60 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755750AbXLKXPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbXLKXRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755750AbXLKXPU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 18:15:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbXLKXPH
+	id S1756597AbXLKXRb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 18:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXLKXRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 18:15:07 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:50269 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328AbXLKXPF convert rfc822-to-8bit (ORCPT
+	Tue, 11 Dec 2007 18:17:18 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:20002 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752473AbXLKXRQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 18:15:05 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: kvm-devel@lists.sourceforge.net
-Subject: Re: [kvm-devel] [RFC] Proposed new directory layout for kvm =?iso-8859-1?q?and=09virtualization?=
-Date: Wed, 12 Dec 2007 00:14:42 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Avi Kivity <avi@qumranet.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <475E5CBB.9080608@qumranet.com> <20071211151143.GA7751@osiris.boeblingen.de.ibm.com> <475EB23E.1060002@qumranet.com>
-In-Reply-To: <475EB23E.1060002@qumranet.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200712120014.43314.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/Qs2VL2LSxfWwZzbJ+miTeunZmXtWtb2H/VrP
- BS2zO6DQupinKxiE74h/viU8/Zk8tV5Q6C1fIRmBkzUY9t+SuL
- 766B+7eOYeKzx7Xga3TQg==
+	Tue, 11 Dec 2007 18:17:16 -0500
+Date: Tue, 11 Dec 2007 15:15:43 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mbligh@google.com,
+       linux-kernel@vger.kernel.org, apw@shadowen.org, netdev@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu
+Subject: Re: 2.6.24-rc4-mm1
+Message-Id: <20071211151543.f3b73c62.randy.dunlap@oracle.com>
+In-Reply-To: <475F0C6C.20900@intel.com>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+	<33307c790712110813h23def95dvd068b7226e9fcd36@mail.gmail.com>
+	<20071211123705.844aac24.akpm@linux-foundation.org>
+	<475F00A2.6020406@intel.com>
+	<20071211141040.a1c6f316.akpm@linux-foundation.org>
+	<475F0C6C.20900@intel.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 11 December 2007, Avi Kivity wrote:
-> Heiko Carstens wrote:
-> > On Tue, Dec 11, 2007 at 11:47:39AM +0200, Avi Kivity wrote:
-> >
-> >>  arch/*/kvm/   arch dependent kvm code
-> >>     
-> >
-> > Maybe arch/*/virt/ ? No need to add an own directory for each hypervisor.
-> >
-> There will be several kvm files in that directory for x86. If you have 
-> just one file, I guess arch/*/virt/kvm.c is okay.
+On Tue, 11 Dec 2007 14:17:16 -0800 Kok, Auke wrote:
 
-In that case, even arch/*/{mm,kernel}/kvm.c would work fine, as long as you
-only want to support one hypervisor, or a small set of small files, there
-is no need to have even have a virt directory.
+> Andrew Morton wrote:
+> > On Tue, 11 Dec 2007 13:26:58 -0800
+> > "Kok, Auke" <auke-jan.h.kok@intel.com> wrote:
+> > 
+> >> Andrew Morton wrote:
+> >>> On Tue, 11 Dec 2007 08:13:52 -0800 "Martin Bligh" <mbligh@google.com> wrote:
+> >>>
+> >>>>> - Lots of device IDs have been removed from the e1000 driver and moved
+> >>>>> over
+> >>>>>  to e1000e.  So if your e1000 stops working, you forgot to set
+> >>>>> CONFIG_E1000E.
+> >>>>>
+> >>>>>
+> >>>> Wouldn't it make sense to just default this to on if E1000 was on, rather
+> >>>> than screwing
+> >>>> everybody for no good reason (plus breaking all the automated testing, etc
+> >>>> etc)?
+> >>>> Much though I love random refactoring, it is fairly painful to just keep
+> >>>> changing the
+> >>>> names of things.
+> >>> (cc netdev and Auke)
+> >>>
+> >>> Yes, that would be very sensible.  CONFIG_E1000E should default to whatever
+> >>> CONFIG_E1000 was set to.
+> >> which is "y" for x86 and friends, ppc, arm and ia64 through 'defconfig'. the
+> >> Kconfig files do not have defaults in them.
+> > 
+> > I wouldn't be looking at defconfig files - I don't think many people use
+> > them.  Most people use their previous config, via oldconfig.
+> > 
+> > So what we want here is to give them E1000E if they had previously been
+> > using E1000.  I don't know how one would do this in Kconfig.
+> 
+> ditto. I doubt that "SELECT E1000E" would be a good idea here (maybe not even
+> work), and I can't think of anything else.
 
-However, if you want to have symmetry across the architectures, I think
-arch/*/kvm/ works out best, along the lines of 
-arch/*/{perfmon,crypto,xen,power}. Neither of these is particularly large,
-but arch/* is typically not that crowded either.
+"default E1000" in E1000E seems to work for me.
 
-	Arnd <><
+---
+
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Make E1000E default to the same kconfig setting as E1000,
+at least for -mm testing.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/net/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-2.6.24-rc4-mm1.orig/drivers/net/Kconfig
++++ linux-2.6.24-rc4-mm1/drivers/net/Kconfig
+@@ -1986,6 +1986,7 @@ config E1000_DISABLE_PACKET_SPLIT
+ config E1000E
+ 	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
+ 	depends on PCI
++	default E1000
+ 	---help---
+ 	  This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
+ 	  ethernet family of adapters. For PCI or PCI-X e1000 adapters,
