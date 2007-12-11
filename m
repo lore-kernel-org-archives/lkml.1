@@ -1,27 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbXLKKP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbXLKKc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752651AbXLKKP6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 05:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXLKKPv
+	id S1752657AbXLKKc3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 05:32:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXLKKcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 05:15:51 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33131
+	Tue, 11 Dec 2007 05:32:20 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36585
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751388AbXLKKPu (ORCPT
+	by vger.kernel.org with ESMTP id S1751925AbXLKKcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 05:15:50 -0500
-Date: Tue, 11 Dec 2007 02:15:49 -0800 (PST)
-Message-Id: <20071211.021549.126640032.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: m.kozlowski@tuxland.pl, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: Re: 2.6.24-rc4-mm1: undefined reference to `compat_sys_timerfd' on
- sparc64
+	Tue, 11 Dec 2007 05:32:19 -0500
+Date: Tue, 11 Dec 2007 02:32:18 -0800 (PST)
+Message-Id: <20071211.023218.31965443.davem@davemloft.net>
+To: joonwpark81@gmail.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [NET]: Fix Ooops of napi net_rx_action.
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071207160800.77e7e907.akpm@linux-foundation.org>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	<200712080104.55619.m.kozlowski@tuxland.pl>
-	<20071207160800.77e7e907.akpm@linux-foundation.org>
+In-Reply-To: <001801c83bd6$2001d410$9c94fea9@jason>
+References: <001801c83bd6$2001d410$9c94fea9@jason>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,15 +26,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 7 Dec 2007 16:08:00 -0800
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+Date: Tue, 11 Dec 2007 18:13:34 +0900
 
-> Or should this have been sys_nis_syscall()?
+Joonwoo-ssi annyoung haseyo,
 
-sys_nis_syscall() was used in cases on sparc where we wanted
-to get a log of invocations of unimplemented syscalls, as it
-aided debugging and anaylsis.
+> [NET]: Fix Ooops of napi net_rx_action.
+> Before doing list_move_tail napi poll_list, it should be ensured
+> 
+> Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
+> ---
+> diff --git a/net/core/dev.c b/net/core/dev.c
+> index 86d6261..74bd5ab 100644
+> --- a/net/core/dev.c
+> +++ b/net/core/dev.c
+> @@ -2207,7 +2207,8 @@ static void net_rx_action(struct softirq_action *h)
+>  		 * still "owns" the NAPI instance and therefore can
+>  		 * move the instance around on the list at-will.
+>  		 */
+> -		if (unlikely(work == weight))
+> +		if (unlikely((test_bit(NAPI_STATE_SCHED, &n->state))
+> +				&& (work == weight)))
+>  			list_move_tail(&n->poll_list, list);
+>  
+>  		netpoll_poll_unlock(have);
 
-But the usefulness of such things I think is long gone, so
-what I'll likely do is kill the sys_nis_syscall stuff from the
-sparc ports.
+How can the NAPI_STATE_SCHED bit be cleared externally yet we take
+this list_move_tail() code path?
+
+If NAPI_STATE_SCHED is cleared, work will be zero which will never be
+equal to 'weight', and this we'll never attempt the list_move_tail().
+
+If something clears NAPI_STATE_SCHED meanwhile, we have a serious race
+and your patch is an incomplete bandaid.  For example, if it can
+happen, then a case like:
+
+		if (test_bit(NAPI_STATE_SCHED, &n->state))
+	... something clears NAPI_STATE_SCHED right now ...
+			work = n->poll(n, weight);
+
+can crash too.
