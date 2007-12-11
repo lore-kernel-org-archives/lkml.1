@@ -1,191 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbXLKIuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbXLKIxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753108AbXLKIuT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 03:50:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbXLKIuF
+	id S1752756AbXLKIxY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 03:53:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbXLKIxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 03:50:05 -0500
-Received: from mga02.intel.com ([134.134.136.20]:18965 "EHLO mga02.intel.com"
+	Tue, 11 Dec 2007 03:53:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34117 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751014AbXLKIuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 03:50:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,150,1196668800"; 
-   d="scan'208";a="240380112"
-Subject: [PATCH -mm] x86 boot : export boot_params via sysfs
-From: "Huang, Ying" <ying.huang@intel.com>
-To: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 11 Dec 2007 16:49:09 +0000
-Message-Id: <1197391749.17188.8.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 11 Dec 2007 08:49:26.0973 (UTC) FILETIME=[BC6166D0:01C83BD2]
+	id S1751088AbXLKIxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 03:53:13 -0500
+Date: Tue, 11 Dec 2007 09:52:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Jones <davej@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52,
+	[2.6.24-rc4-git5: Reported regressions from 2.6.23]
+Message-ID: <20071211085232.GE20172@elte.hu>
+References: <200712080340.49546.rjw@sisk.pl> <20071208093039.GA28054@elte.hu> <20071208163749.GI19691@waste.org> <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org> <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org> <20071208100950.a3547868.akpm@linux-foundation.org> <alpine.LFD.0.9999.0712081034470.12046@woody.linux-foundation.org> <20071208195211.GA3727@elte.hu> <20071211062720.GA29764@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071211062720.GA29764@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch export the boot parameters via sysfs. This can be used for
-debugging and kexec.
 
-The files added are as follow:
+* Dave Jones <davej@redhat.com> wrote:
 
-/sys/kernel/boot_params/data	: binary file for struct boot_params
-/sys/kernel/boot_params/version	: boot protocol version
+> On Sat, Dec 08, 2007 at 08:52:11PM +0100, Ingo Molnar wrote:
+> 
+>  > so even today's upstream kernel, which has 'ancient' SLUB code, SLAB and 
+>  > SLUB have essentially the same linecount:
+>  > 
+>  >   $ wc -l mm/slab.c mm/slub.c
+>  >   4478 mm/slab.c
+>  >   4125 mm/slub.c
+>  > 
+>  > (and while linecount != complexity, there is a strong relationship.)
+>  > 
+>  > With SLAB having 10 years more test coverage and tuning.
+> 
+> FWIW, the one thing slub does that slab doesn't that I find really 
+> nice is being enable to enable debugging at boot time rather than 
+> compile time.
 
-This patch is based on 2.6.24-rc4-mm1 and has been tested on i386 and
-x86_64 platoform.
+yes, but that's largely due to "dont change SLAB because we've got SLUB" 
+resistence to SLAB patches. It's a 2 minute hack to implement this for 
+SLAB.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+> We don't get many people running benchmarks against the Fedora kernel, 
+> so any scalability differences between slub/slab probably won't reach 
+> us until we start shipping betas of the next RHEL based on the same 
+> kernel.
+> 
+> Which leaves my only other gripe.  It broke slabtop.
 
----
- arch/x86/kernel/Makefile_32 |    1 
- arch/x86/kernel/Makefile_64 |    1 
- arch/x86/kernel/ksysfs.c    |   94 ++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/setup64.c   |    2 
- arch/x86/kernel/setup_32.c  |    2 
- 5 files changed, 98 insertions(+), 2 deletions(-)
+that's actually a _bad_ ABI regression. Rafael, could you please add 
+this to the regressions list?
 
---- a/arch/x86/kernel/Makefile_64
-+++ b/arch/x86/kernel/Makefile_64
-@@ -39,6 +39,7 @@ obj-$(CONFIG_X86_VSMP)		+= vsmp_64.o
- obj-$(CONFIG_K8_NB)		+= k8.o
- obj-$(CONFIG_AUDIT)		+= audit_64.o
- obj-$(CONFIG_EFI)		+= efi.o efi_64.o efi_stub_64.o
-+obj-$(CONFIG_SYSFS)		+= ksysfs.o
- 
- obj-$(CONFIG_MODULES)		+= module_64.o
- obj-$(CONFIG_PCI)		+= early-quirks.o
---- a/arch/x86/kernel/setup64.c
-+++ b/arch/x86/kernel/setup64.c
-@@ -24,7 +24,7 @@
- #include <asm/sections.h>
- #include <asm/setup.h>
- 
--struct boot_params __initdata boot_params;
-+struct boot_params boot_params;
- 
- cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
- 
---- /dev/null
-+++ b/arch/x86/kernel/ksysfs.c
-@@ -0,0 +1,94 @@
-+/*
-+ * arch/i386/ksysfs.c - architecture specific sysfs attributes in /sys/kernel
-+ *
-+ * Copyright (C) 2007, Intel Corp.
-+ *      Huang Ying <ying.huang@intel.com>
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#include <linux/kobject.h>
-+#include <linux/string.h>
-+#include <linux/sysfs.h>
-+#include <linux/init.h>
-+#include <linux/stat.h>
-+#include <linux/mm.h>
-+
-+#include <asm/setup.h>
-+
-+static ssize_t boot_params_version_show(struct kobject *kobj,
-+					struct kobj_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "0x%04x\n", boot_params.hdr.version);
-+}
-+
-+static struct kobj_attribute boot_params_version_attr = {
-+	.attr = {
-+		.name = "version",
-+		.mode = S_IRUGO,
-+	},
-+	.show = boot_params_version_show,
-+};
-+
-+static struct attribute *boot_params_attrs[] = {
-+	&boot_params_version_attr.attr,
-+	NULL
-+};
-+
-+static struct attribute_group boot_params_attr_group = {
-+	.attrs = boot_params_attrs,
-+};
-+
-+static ssize_t boot_params_data_read(struct kobject *kobj,
-+				     struct bin_attribute *bin_attr,
-+				     char *buf, loff_t off, size_t count)
-+{
-+	memcpy(buf, (void *)&boot_params + off, count);
-+	return count;
-+}
-+
-+static struct bin_attribute boot_params_data_attr = {
-+	.attr = {
-+		.name = "data",
-+		.mode = S_IRUGO,
-+	},
-+	.read = boot_params_data_read,
-+	.size = sizeof(boot_params),
-+};
-+
-+static int __init boot_params_ksysfs_init(void)
-+{
-+	int error;
-+	struct kobject *boot_params_kobj;
-+
-+	boot_params_kobj = kobject_create_and_register("boot_params",
-+						       kernel_kobj);
-+	if (!boot_params_kobj) {
-+		error = -ENOMEM;
-+		goto err_return;
-+	}
-+	error = sysfs_create_group(boot_params_kobj,
-+				   &boot_params_attr_group);
-+	if (error)
-+		goto err_boot_params_subsys_unregister;
-+	error = sysfs_create_bin_file(boot_params_kobj,
-+				      &boot_params_data_attr);
-+	if (error)
-+		goto err_boot_params_subsys_unregister;
-+	return 0;
-+err_boot_params_subsys_unregister:
-+	kobject_unregister(boot_params_kobj);
-+err_return:
-+	return error;
-+}
-+
-+static int __init arch_ksysfs_init(void)
-+{
-+	int error;
-+
-+	error = boot_params_ksysfs_init();
-+
-+	return error;
-+}
-+
-+arch_initcall(arch_ksysfs_init);
---- a/arch/x86/kernel/Makefile_32
-+++ b/arch/x86/kernel/Makefile_32
-@@ -44,6 +44,7 @@ obj-$(CONFIG_EARLY_PRINTK)	+= early_prin
- obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
- obj-$(CONFIG_K8_NB)		+= k8.o
- obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
-+obj-$(CONFIG_SYSFS)		+= ksysfs.o
- 
- obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt_32.o
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -194,7 +194,7 @@ unsigned long saved_videomode;
- 
- static char __initdata command_line[COMMAND_LINE_SIZE];
- 
--struct boot_params __initdata boot_params;
-+struct boot_params boot_params;
- 
- #if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
- struct edd edd;
+> There's an alternative implementation in Documentation/vm/slabinfo.c 
+> (why there not say, util-linux, home of current slabtop?)
+
+the kernel should output /proc/slabinfo data with the same formatting, 
+period.
+
+	Ingo
