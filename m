@@ -1,93 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbXLKUBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbXLKUBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbXLKUBP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 15:01:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXLKUBA
+	id S1756482AbXLKUBz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 15:01:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbXLKUBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 15:01:00 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:11077 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbXLKUA7 (ORCPT
+	Tue, 11 Dec 2007 15:01:47 -0500
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:46301 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360AbXLKUBr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 15:00:59 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: bbpetkov@yahoo.de
-Subject: Re: 2.6.24-rc4-mm1: acpi reboots machine... solved
-Date: Tue, 11 Dec 2007 13:00:24 -0700
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, len.brown@intel.com,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20071209075001.GA4686@gollum.tnic> <20071209091946.GA4501@gollum.tnic> <20071211174443.GA5013@gollum.tnic>
-In-Reply-To: <20071211174443.GA5013@gollum.tnic>
+	Tue, 11 Dec 2007 15:01:47 -0500
+Message-ID: <475EEC10.8020300@keyaccess.nl>
+Date: Tue, 11 Dec 2007 20:59:12 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Pavel Machek <pavel@ucw.cz>
+CC: Andi Kleen <andi@firstfloor.org>,
+       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       David Newall <david@davidnewall.com>, Paul Rolland <rol@as2917.net>,
+       "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+References: <475DE6F4.80702@zytor.com> <475DEB23.1000304@davidnewall.com> <20071211084059.3d03e11d@tux.DEF.witbe.net> <475E5D4B.8020101@keyaccess.nl> <475E7DC2.4060509@davidnewall.com> <475E8D91.20201@keyaccess.nl> <475E95A3.3070801@davidnewall.com> <Pine.LNX.4.61.0712111024060.22976@chaos.analogic.com> <20071211163017.GD16750@one.firstfloor.org> <475EBFBA.6090301@keyaccess.nl> <20071211191649.GB3437@elf.ucw.cz>
+In-Reply-To: <20071211191649.GB3437@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712111300.24841.bjorn.helgaas@hp.com>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 11 December 2007 10:44:43 am Borislav Petkov wrote:
-> On Sun, Dec 09, 2007 at 10:19:47AM +0100, Borislav Petkov wrote:
-> > On Sun, Dec 09, 2007 at 08:50:02AM +0100, Borislav Petkov wrote:
-> > > Hi Andrew,
-> > > Hi Len,
-> > > 
-> > > after booting 2.6.24-rc4-mm1 (2.6.24-rc4-190-g94545ba, otoh, boots just
-> > > fine) on my asus laptop, the machine reboots after claiming that
-> > > "Critical temperature reached (255 C)." However, the degrees number
-> > > is kinda hinting at 0xff all-ones field. Will try dump_stack in
-> > > acpi_thermal_critical() to checkout the call path. For now here's the netconsole bootlog:
-> > 
-> > Here's what i got so far:
-> > 
-> > [   50.287939] Pid: 1, comm: swapper Not tainted 2.6.24-rc4-mm1 #14
-> > [   50.287999]  [<c0104b65>] show_trace_log_lvl+0x12/0x25
-> > [   50.288103]  [<c01053e7>] show_trace+0xd/0x10
-> > [   50.288202]  [<c0105a6c>] dump_stack+0x57/0x5f
-> > [   50.288303]  [<c021c991>] acpi_thermal_check+0x150/0x3bb
-> > [   50.288415]  [<c021d4b3>] acpi_thermal_add+0x261/0x2cf
-> > [   50.288515]  [<c0213549>] acpi_device_probe+0x3e/0xdb
-> > [   50.288615]  [<c023f8f5>] driver_probe_device+0xaf/0x12a
-> > [   50.288717]  [<c023fa88>] __driver_attach+0x6c/0xa5
-> > [   50.288817]  [<c023ee5a>] bus_for_each_dev+0x3e/0x60
-> > [   50.288916]  [<c023f77d>] driver_attach+0x14/0x16
-> > [   50.289015]  [<c023f5a6>] bus_add_driver+0xa6/0x1a8
-> > [   50.289114]  [<c023fc53>] driver_register+0x42/0x47
-> > [   50.289214]  [<c02138c2>] acpi_bus_register_driver+0x3a/0x3c
-> > [   50.289316]  [<c044306b>] acpi_thermal_init+0x57/0x76
-> > [   50.289424]  [<c04344a7>] kernel_init+0x138/0x280
-> > [   50.289525]  [<c01047df>] kernel_thread_helper+0x7/0x10
-> > [   50.289625]  =======================
-> > [   50.289680] ACPI: Critical trip point
-> > [   50.289736] Critical temperature reached (255 C), shutting down.
-> > 
-> > so in acpi_thermal_get_temperature() called in acpi_thermal_add() the
-> > tz->temperature thingy is not set properly (printk's added):
-> > 
-> > [   50.276607] Old temp: 4294967023
-> > [   50.281890] Got temp: 255
-> > [   50.282567] Old temp: 255
-> > [   50.287882] Got temp: 255
-> > 
-> > What's also strange is that the tz acpi_thermal is alloc'd with kzalloc and
-> > there's still garbage in it after reading it in acpi_thermal_get_temperature()
-> > for the first time. Debugging continues...
-> 
-> (i almost suspected that the problem might be something completely different.)
-> well, after bisecting the rc4-mm1 tree for a whole day today, the evildoer
-> turned out to be
-> 
-> broken-out/pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch.
-> 
-> After backing this one out, mm1 boots just fine here.
+On 11-12-07 20:16, Pavel Machek wrote:
 
-Thanks for tracking this down.  I'll look into your logs and see if I
-can figure out what's going on.  There's another report related to that
-patch here: http://lkml.org/lkml/2007/11/22/110 .  Looks like a different
-symptom though, so probably a different fix.
+>> Pavel Machek already posted one. His udelay(8) wants to be less -- 1 or "to 
+>> be safe" perhaps 2.
+>>
+>> http://lkml.org/lkml/2007/12/9/131
+> 
+> 2 at least; that's how long outb(0x80) takes on one of my
+> machines. Actually, ISA can go down to 4MHz, so maybe we should be
+> using 4 usec.... but I guess I'm paranoid here.
 
-Bjorn
+4 isn't sensible. There have been machines capable both of running Linux and 
+their ISA bus at less than 8 MHz (if only for example by picking a 5 divisor 
+on a system that was capable of hosting a 40 Mhz 386/486 but using a slower 
+CPU) but not by much. And machines doing that and running Linux, even more 
+so "today": 0.
+
+My posted test program (although there seems to be something wrong with it 
+since it's influenced by compiler optimisation) is showing more than 1 but 
+note that on the vast majority of machines, 0 would in fact do. 1 will on 
+all, 2 will as well.
+
+Rene.
 
