@@ -1,353 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbXLKC2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbXLKDBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbXLKC2x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 21:28:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbXLKC2p
+	id S1752453AbXLKDBN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 22:01:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbXLKDA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 21:28:45 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:29743 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751570AbXLKC2o (ORCPT
+	Mon, 10 Dec 2007 22:00:59 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35254 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbXLKDA6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 21:28:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=N8MOI/h1Ezg4Cp9puW5s5xnihWDoEYn0qz8ovuntPuhJJrtXcGm1whg/pfGnQaUnPM0pBu84aCLb5p7y3/14yGqkAdReNMlsRzBlVaJYxV/pvdbdtrxcHdGF4gsCOKQJe1wt6rYd5GEWKcvp0bGX7YSTEwwGBdVYWtEtMh5DTjc=
-Message-ID: <f17812d70712101828r8f9d8c3kda51a853f4c806e4@mail.gmail.com>
-Date: Tue, 11 Dec 2007 10:28:43 +0800
-From: "eric miao" <eric.y.miao@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH 2.6.24-rc4-mm 2/2] gpiolib: add Generic IRQ support for 16-bit PCA9539 GPIO expander
-Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       i2c@lm-sensors.org
-In-Reply-To: <200712100214.52478.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 10 Dec 2007 22:00:58 -0500
+Date: Tue, 11 Dec 2007 12:03:49 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: [DOC][for -mm] update Documentation/controller/memory.txt
+Message-Id: <20071211120349.3ae9c55c.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f17812d70712100143w65898405rd96f460aef621a25@mail.gmail.com>
-	 <200712100214.52478.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 10, 2007 6:14 PM, David Brownell <david-b@pacbell.net> wrote:
-> On Monday 10 December 2007, eric miao wrote:
-> > +config GPIO_PCA9539_GENERIC_IRQ
-> > +bool " Generic IRQ support for PCA9539"
-> > +depends on GPIO_PCA9539=y
->
-> Also depends on GENERIC_HARDIRQS, right?  (You should let
-> the Kconfig UI handle indentation, too...)
->
-> Seems like doing this for an I2C chip ought to shake loose
-> some interesting review comments.  :)
->
->
-> > +help
-> > + Say yes here to support the Generic IRQ for the PCA9539 on-chip
-> > + GPIO lines.
->
-> This somewhat resembles the pcf857x chips in that it only support
-> pin-changed IRQs (IRQ_TYPE_EDGE_BOTH) in hardware.  Some other I/O
-> expanders are a bit more flexible.
->
-> - Dave
->
+Balbir-san, could you review this update ?
 
-Updated as follows:
+--
+Documentation updates for memory controller.
 
->From 486724d8b2b7a668600e38807680cc3a089ad533 Mon Sep 17 00:00:00 2001
-From: eric miao <eric.miao@marvell.com>
-Date: Mon, 10 Dec 2007 17:24:36 +0800
-Subject: [PATCH] gpiolib: add Generic IRQ support for 16-bit PCA9539
-GPIO expander
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-This patch adds the generic IRQ support for the PCA9539 on-chip GPIOs.
+Index: linux-2.6.24-rc4-mm1/Documentation/controllers/memory.txt
+===================================================================
+--- linux-2.6.24-rc4-mm1.orig/Documentation/controllers/memory.txt
++++ linux-2.6.24-rc4-mm1/Documentation/controllers/memory.txt
+@@ -9,8 +9,7 @@ d. Provides a double LRU: global memory 
+    global LRU; a cgroup on hitting a limit, reclaims from the per
+    cgroup LRU
+ 
+-NOTE: Page Cache (unmapped) also includes Swap Cache pages as a subset
+-and will not be referred to explicitly in the rest of the documentation.
++NOTE: Swap Cache (unmapped) is not accounted now.
+ 
+ Benefits and Purpose of the memory controller
+ 
+@@ -144,7 +143,7 @@ list.
+ The memory controller uses the following hierarchy
+ 
+ 1. zone->lru_lock is used for selecting pages to be isolated
+-2. mem->lru_lock protects the per cgroup LRU
++2. mem->per_zone->lru_lock protects the per cgroup LRU (per zone)
+ 3. lock_page_cgroup() is used to protect page->page_cgroup
+ 
+ 3. User Interface
+@@ -193,6 +192,15 @@ this file after a write to guarantee the
+ The memory.failcnt field gives the number of times that the cgroup limit was
+ exceeded.
+ 
++The memory.stat file gives accounting information. Now, the number of
++caches, RSS and Active pages/Inactive pages are shown.
++
++The memory.force_empty gives an interface to drop *all* charges by force.
++
++# echo -n 1 > memory.force_empty
++
++will drop all charges in cgroup. Currently, this is maintained for test.
++
+ 4. Testing
+ 
+ Balbir posted lmbench, AIM9, LTP and vmmstress results [10] and [11].
+@@ -222,11 +230,8 @@ reclaimed.
+ 
+ A cgroup can be removed by rmdir, but as discussed in sections 4.1 and 4.2, a
+ cgroup might have some charge associated with it, even though all
+-tasks have migrated away from it. If some pages are still left, after following
+-the steps listed in sections 4.1 and 4.2, check the Swap Cache usage in
+-/proc/meminfo to see if the Swap Cache usage is showing up in the
+-cgroups memory.usage_in_bytes counter. A simple test of swapoff -a and
+-swapon -a should free any pending Swap Cache usage.
++tasks have migrated away from it. Such charges are automatically dropped at
++rmdir() if there are no tasks.
+ 
+ 4.4 Choosing what to account  -- Page Cache (unmapped) vs RSS (mapped)?
+ 
+@@ -238,15 +243,11 @@ echo -n 1 > memory.control_type
+ 5. TODO
+ 
+ 1. Add support for accounting huge pages (as a separate controller)
+-2. Improve the user interface to accept/display memory limits in KB or MB
+-   rather than pages (since page sizes can differ across platforms/machines).
+-3. Make cgroup lists per-zone
+-4. Make per-cgroup scanner reclaim not-shared pages first
+-5. Teach controller to account for shared-pages
+-6. Start reclamation when the limit is lowered
+-7. Start reclamation in the background when the limit is
++2. Make per-cgroup scanner reclaim not-shared pages first
++3. Teach controller to account for shared-pages
++4. Start reclamation when the limit is lowered
++5. Start reclamation in the background when the limit is
+    not yet hit but the usage is getting closer
+-8. Create per zone LRU lists per cgroup
+ 
+ Summary
+ 
 
-Note: due to the inaccessibility of the generic IRQ code within modules,
-this support is only available if the driver is built-in.
-
-Signed-off-by: eric miao <eric.miao@marvell.com>
-Acked-by: Ben Gardner <bgardner@wabtec.com>
----
- drivers/gpio/Kconfig   |   11 +++-
- drivers/gpio/pca9539.c |  184 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 194 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 6528fce..f897df8 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -40,7 +40,16 @@ config GPIO_PCA9539
- 	  16-bit I/O port.
-
- 	  This driver can also be built as a module.  If so, the module
--	  will be called pca9539.
-+	  will be called pca9539.  Note: the Generic IRQ support for the
-+	  chip will only be available if the driver is built-in
-+
-+config GPIO_PCA9539_GENERIC_IRQ
-+	bool "Generic IRQ support for PCA9539"
-+	depends on GPIO_PCA9539=y && GENERIC_HARDIRQS
-+	help
-+	  Say yes here to support the Generic IRQ for the PCA9539 on-chip
-+	  GPIO lines. Only pin-changed IRQs (IRQ_TYPE_EDGE_BOTH) are
-+	  supported in hardware.
-
- comment "SPI GPIO expanders:"
-
-diff --git a/drivers/gpio/pca9539.c b/drivers/gpio/pca9539.c
-index 0a3ae6a..e736dd9 100644
---- a/drivers/gpio/pca9539.c
-+++ b/drivers/gpio/pca9539.c
-@@ -11,6 +11,9 @@
-
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/irq.h>
-+#include <linux/interrupt.h>
-+#include <linux/workqueue.h>
- #include <linux/i2c.h>
- #include <linux/i2c/pca9539.h>
-
-@@ -27,9 +30,25 @@ struct pca9539_chip {
- 	unsigned gpio_start;
- 	uint16_t reg_output;
- 	uint16_t reg_direction;
-+	uint16_t last_input;
-
- 	struct i2c_client *client;
- 	struct gpio_chip gpio_chip;
-+#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
-+	/*
-+	 * Note: Generic IRQ is not accessible within module code, the IRQ
-+	 * support will thus _only_ be available if the driver is built-in
-+	 */
-+	int irq;	/* IRQ for the chip itself */
-+	int irq_start;	/* starting IRQ for the on-chip GPIO lines */
-+
-+	uint16_t irq_mask;
-+	uint16_t irq_falling_edge;
-+	uint16_t irq_rising_edge;
-+
-+	struct irq_chip irq_chip;
-+	struct work_struct irq_work;
-+#endif
- };
-
- static int pca9539_write_reg(struct pca9539_chip *chip, int reg, uint16_t val)
-@@ -152,6 +171,150 @@ static int pca9539_init_gpio(struct pca9539_chip *chip)
- 	return gpiochip_add(gc);
- }
-
-+#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
-+/* FIXME: change to schedule_delayed_work() here if reading out of
-+ * registers does not reflect the actual pin levels
-+ */
-+
-+static void pca9539_irq_work(struct work_struct *work)
-+{
-+	struct pca9539_chip *chip;
-+	uint16_t input, mask, rising, falling;
-+	int ret, i;
-+
-+	chip = container_of(work, struct pca9539_chip, irq_work);
-+
-+	ret = pca9539_read_reg(chip, PCA9539_INPUT, &input);
-+	if (ret < 0)
-+		return;
-+
-+	mask = (input ^ chip->last_input) & chip->irq_mask;
-+	rising = (input & mask) & chip->irq_rising_edge;
-+	falling = (~input & mask) & chip->irq_falling_edge;
-+
-+	irq_enter();
-+
-+	for (i = 0; i < NR_PCA9539_GPIOS; i++) {
-+		if ((rising | falling) & (1u << i)) {
-+			int irq = chip->irq_start + i;
-+			struct irq_desc *desc;
-+
-+			desc = irq_desc + irq;
-+			desc_handle_irq(irq, desc);
-+		}
-+	}
-+
-+	irq_exit();
-+
-+	chip->last_input = input;
-+}
-+
-+static void fastcall
-+pca9539_irq_demux(unsigned int irq, struct irq_desc *desc)
-+{
-+	struct pca9539_chip *chip = desc->handler_data;
-+
-+	desc->chip->mask(chip->irq);
-+	desc->chip->ack(chip->irq);
-+	schedule_work(&chip->irq_work);
-+	desc->chip->unmask(chip->irq);
-+}
-+
-+static void pca9539_irq_mask(unsigned int irq)
-+{
-+	struct irq_desc *desc = irq_desc + irq;
-+	struct pca9539_chip *chip = desc->chip_data;
-+
-+	chip->irq_mask &= ~(1u << (irq - chip->irq_start));
-+}
-+
-+static void pca9539_irq_unmask(unsigned int irq)
-+{
-+	struct irq_desc *desc = irq_desc + irq;
-+	struct pca9539_chip *chip = desc->chip_data;
-+
-+	chip->irq_mask |= 1u << (irq - chip->irq_start);
-+}
-+
-+static void pca9539_irq_ack(unsigned int irq)
-+{
-+	/* unfortunately, we have to provide an empty irq_chip.ack even
-+	 * if we do nothing here, Generic IRQ will complain otherwise
-+	 */
-+}
-+
-+static int pca9539_irq_set_type(unsigned int irq, unsigned int type)
-+{
-+	struct irq_desc *desc = irq_desc + irq;
-+	struct pca9539_chip *chip = desc->chip_data;
-+	uint16_t mask = 1u << (irq - chip->irq_start);
-+
-+	if (type == IRQT_PROBE) {
-+		if ((mask & chip->irq_rising_edge) ||
-+		    (mask & chip->irq_falling_edge) ||
-+		    (mask & ~chip->reg_direction))
-+			return 0;
-+
-+		type = __IRQT_RISEDGE | __IRQT_FALEDGE;
-+	}
-+
-+	gpio_direction_input(irq_to_gpio(irq));
-+
-+	if (type & __IRQT_RISEDGE)
-+		chip->irq_rising_edge |= mask;
-+	else
-+		chip->irq_rising_edge &= ~mask;
-+
-+	if (type & __IRQT_FALEDGE)
-+		chip->irq_falling_edge |= mask;
-+	else
-+		chip->irq_falling_edge &= ~mask;
-+
-+	return 0;
-+}
-+
-+static int pca9539_init_irq(struct pca9539_chip *chip)
-+{
-+	struct irq_chip *ic = &chip->irq_chip;
-+	int irq, irq_start = chip->irq_start;
-+
-+	/* do not install GPIO interrupts for the chip if
-+	 * 1. the PCA9539 interrupt line is not used
-+	 * 2. or the GPIO interrupt number exceeds NR_IRQS
-+	 */
-+	if (chip->irq <= 0 || irq_start + NR_PCA9539_GPIOS >= NR_IRQS)
-+		return -EINVAL;
-+
-+	chip->irq_mask	= 0;
-+	chip->irq_rising_edge  = 0;
-+	chip->irq_falling_edge = 0;
-+
-+	ic->ack = pca9539_irq_ack;
-+	ic->mask = pca9539_irq_mask;
-+	ic->unmask = pca9539_irq_unmask;
-+	ic->set_type = pca9539_irq_set_type;
-+
-+	for (irq = irq_start; irq < irq_start + NR_PCA9539_GPIOS; irq++) {
-+		set_irq_chip(irq, ic);
-+		set_irq_chip_data(irq, chip);
-+		set_irq_handler(irq, handle_edge_irq);
-+		set_irq_flags(irq, IRQF_VALID | IRQF_PROBE);
-+	}
-+
-+	set_irq_type(chip->irq, IRQT_FALLING);
-+	set_irq_data(chip->irq, chip);
-+	set_irq_chained_handler(chip->irq, pca9539_irq_demux);
-+
-+	INIT_WORK(&chip->irq_work, pca9539_irq_work);
-+	return 0;
-+}
-+#else
-+static inline int pca9539_init_irq(struct pca9539_chip *chip)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_GPIO_PCA9539_GENERIC_IRQ */
-+
- static int __devinit pca9539_probe(struct i2c_client *client)
- {
- 	struct pca9539_platform_data *pdata;
-@@ -167,8 +330,15 @@ static int __devinit pca9539_probe(struct
-i2c_client *client)
- 		return -ENOMEM;
-
- 	chip->client = client;
-+	chip->irq = client->irq;
-
- 	chip->gpio_start = pdata->gpio_base;
-+	chip->irq_start  = gpio_to_irq(chip->gpio_start);
-+
-+	/* read init register values */
-+	ret = pca9539_read_reg(chip, PCA9539_INPUT, &chip->last_input);
-+	if (ret)
-+		goto out_failed;
-
- 	/* initialize registers */
- 	chip->reg_output = 0xffff;
-@@ -191,6 +361,12 @@ static int __devinit pca9539_probe(struct
-i2c_client *client)
- 			dev_dbg(&client->dev, "setup failed, %d\n", ret);
- 	}
-
-+	ret = pca9539_init_irq(chip);
-+	if (ret) {
-+		ret = gpiochip_remove(&chip->gpio_chip);
-+		goto out_failed;
-+	}
-+
- 	i2c_set_clientdata(client, chip);
- 	return 0;
-
-@@ -199,6 +375,13 @@ out_failed:
- 	return ret;
- }
-
-+#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
-+static int pca9539_remove(struct i2c_client *client)
-+{
-+	printk(KERN_ERR "failed to unload the driver with IRQ support\n");
-+	return -EINVAL;
-+}
-+#else
- static int pca9539_remove(struct i2c_client *client)
- {
- 	struct pca9539_platform_data *pdata = client->dev.platform_data;
-@@ -221,6 +404,7 @@ static int pca9539_remove(struct i2c_client *client)
- 	kfree(chip);
- 	return 0;
- }
-+#endif /* CONFIG_GPIO_PCA9539_GENERIC_IRQ */
-
- static struct i2c_driver pca9539_driver = {
- 	.driver = {
--- 
-1.5.2.5.GIT
-
-
-
--- 
-Cheers
-- eric
