@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbXLKWm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbXLKWnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756667AbXLKWm5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:42:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbXLKWmb
+	id S1756928AbXLKWnW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756298AbXLKWmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:42:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34096 "EHLO mx1.redhat.com"
+	Tue, 11 Dec 2007 17:42:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34116 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755546AbXLKWm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:42:28 -0500
-Date: Tue, 11 Dec 2007 17:39:36 -0500 (EST)
-Message-Id: <20071211.173936.122828268.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com, bharrosh@panasas.com
+	id S1756164AbXLKWmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 17:42:38 -0500
+Date: Tue, 11 Dec 2007 17:42:27 -0500 (EST)
+Message-Id: <20071211.174227.66055336.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com
-Subject: [PATCH 00/30] blk_end_request: full I/O completion handler (take 4)
+       k-ueda@ct.jp.nec.com, toshihiro.kobayashi@nokia.com,
+       Hiroshi.DOYU@nokia.com
+Subject: [PATCH 04/30] blk_end_request: changing arm (take 4)
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
  =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
@@ -26,200 +27,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens, Boaz,
+This patch converts arm's OMAP mailbox driver to use
+blk_end_request interfaces.
 
-The following is the updated patch-set for blk_end_request().
-I have done some interface/implementation changes based on
-feedbacks/discussions since the previous version.
-(Although this patch-set was made on top of 2.6.24-rc4, I confirmed
- it can be applied to 2.6.24-rc5, too.  Also, I confirmed it has
- no build error on my IA64 box.)
+If the original code was converted literally, blk_end_request would
+be called with '-EIO' because end_that_request_last() were called
+with '0' (i.e. failure).
+But I think these '0's are bugs in the original code because it's
+unlikely that all requests are treated as failure.
+(The bugs should have no effect unless these requests have an end_io
+ callback.)
 
-As for patches without Cc tag, I couldn't find the maintainer
-related to the patch.
+So I changed them to pass '0' (i.e. success) to blk_end_request.
 
-Patch 27 through patch 30 conflict with Boaz's scsi bidi patch.
-If Boaz's patch goes first, I will rebase these 4 patches on top of
-Boaz's patch and post them again.
+Cc: Toshihiro Kobayashi <toshihiro.kobayashi@nokia.com>
+Cc: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+---
 
+ arch/arm/plat-omap/mailbox.c |   16 ++++++----------
+ 1 files changed, 6 insertions(+), 10 deletions(-)
 
------------------- Changes from the previous post ---------------------
-Changes between take3 and take4:
-  o Rebased on top of 2.6.24-rc4 + an IDE's patch to remove dead
-    post_transform_command()
-    (http://marc.info/?l=linux-kernel&m=119654922030880&w=2)
-  o Changed the 'uptodate' argument of blk_end_request interfaces
-    to 'error'.  Changed all related drivers, too.  (PATCH 01-29)
-  o Added blk_queued_rq() macro, which indicates whether the request
-    is in the block-layer's queue or not  (PATCH 01)
-  o Added blk_end_bidi_request() interface for bidi request (PATCH 26)
-  o Removed some code duplications of blk_end_request interfaces
-    using an internal function (blk_end_io())  (PATCH 24 and PATCH 26)
-  o Added cleanup of request completion introduced by this
-    patch-set  (PATCH 30)
-
-Changes between take2 and take3:
-  o Rebased on top of 2.6.24-rc3-mm2
-  o Added a bidi patch, which changes bidi to use blk_end_request()
-    (PATCH 27)
-  o Dropped blk_rq_size() which was to get size of entire request
-    because rq_byte_size() has been added to ll_rw_blk.c (PATCH 02)
-  o Removed 'dequeue' argument, which was added in 2.6.23-rc7-mm1,
-    from __end_request() (PATCH 03)
-  o Removed lguest patch because lguest has been changed not to use
-    end_that_request_{chunk/last} directly.
-
-Changes between take1 and take2:
-  o Rebased on top of 2.6.23-rc4-mm1
-  o Don't pass the lock held information (PATCH 01)
-  o Removed sect2byte() macro (PATCH 02)
-  o fixed blk_rq_size() and blk_rq_cur_size() for blk_pc_requests (PATCH 02)
-  o Separated the patch for changes of end_that_request_* user (PATCH 03-26)
-  o Removed the patch which changes the role of rq->end_io()
-    from this patch-set because some more discussions are needed
-    about it.
------------------------------------------------------------------------
-
-
-Summary of each patch are below:
-  01/30: add new request completion interface, blk_end_request (block)
-  02/30: add some functions to get the size of request in bytes (block)
-  03/30: convert to use blk_end_request (block)
-  04/30: convert to use blk_end_request (arm)
-  05/30: convert to use blk_end_request (um)
-  06/30: convert to use blk_end_request (DAC960)
-  07/30: convert to use blk_end_request (floppy)
-  08/30: convert to use blk_end_request (nbd)
-  09/30: convert to use blk_end_request (ps3disk)
-  10/30: convert to use blk_end_request (sunvdc)
-  11/30: convert to use blk_end_request (sx8)
-  12/30: convert to use blk_end_request (ub)
-  13/30: convert to use blk_end_request (viodasd)
-  14/30: convert to use blk_end_request (xen-blkfront)
-  15/30: convert to use blk_end_request (viocd)
-  16/30: convert to use blk_end_request (i2o_block)
-  17/30: convert to use blk_end_request (mmc)
-  18/30: convert to use blk_end_request (s390)
-  19/30: convert to use blk_end_request (ide-scsi)
-  20/30: convert to use blk_end_request (xsysace)
-  21/30: convert to use blk_end_request (cciss)
-  22/30: convert to use blk_end_request (cpqarray)
-  23/30: convert to use blk_end_request (normal parts of ide)
-  24/30: add a valiant of blk_end_request having callback feature (block)
-  25/30: convert to use blk_end_request (ide-cd, cdrom_newpc_intr())
-  26/30: add a valiant of blk_end_request for bidi request (block)
-  27/30: convert to use blk_end_request (scsi mid-layer)
-  28/30: remove/unexport no longer needed end_that_request_* (block)
-  29/30: remove no longer needed 'uptodate' related codes (block)
-  30/30: cleanup of request completion introduced by this patch-set (block)
-
-I have tested this patch-set on two machines,
-IA64+QLA1280+QLA2200 box and x86_64+SATA+IDE-CDROM box.
-
-
-Below is the explanation about needs and details of this patch-set.
-
-SUMMARY
-=======
-This set of patches changes request completion interface
-between device drivers and block layer to 1-step procedure
-from current 2-step procedures (i.e. end_that_request_{first/chunk}
-and end_that_request_last) so that the block layer can take over
-the ownership of the request from device drivers before starting to
-complete each chunk of the request.
-
-This patch-set prepares for realizing another patch-set which changes
-the role of rq->end_io().  It allows request-based multipath to hook
-in before completing each chunk of request, check errors for it and
-retry it using another path if error is detected.
-
-
-BACKGROUND
-==========
-The patch-set which changes the role of rq->end_io() is necessary
-to allow device stacking at request level, that is request-based
-device-mapper multipath.
-Currently, device-mapper is implemented as a stacking block device
-at BIO level.  OTOH, request-based dm will stack at request level
-to allow better multipathing decision.
-To allow device stacking at request level, the completion procedure
-need to provide a hook for it.
-For example, dm-multipath has to check errors and retry with other
-paths if necessary before returning the I/O result to upper layer.
-struct request has 'end_io' hook currently.  But it's called at
-the very late stage of completion handling where the I/O result
-is already returned to the upper layer.
-So we need something here.
-
-The first approach to hook in completion of each chunk of request
-was adding a new rq->end_io_first() hook and calling it on the top
-of __end_that_request_first().
-  - http://marc.theaimsgroup.com/?l=linux-scsi&m=115520444515914&w=2
-  - http://marc.theaimsgroup.com/?l=linux-kernel&m=116656637425880&w=2
-However, Jens pointed out that redesigning rq->end_io() as a full
-completion handler would be better:
-
-On Thu, 21 Dec 2006 08:49:47 +0100, Jens Axboe <jens.axboe@oracle.com> wrote:
-> Ok, I see what you are getting at. The current ->end_io() is called when
-> the request has fully completed, you want notification for each chunk
-> potentially completed.
-> 
-> I think a better design here would be to use ->end_io() as the full
-> completion handler, similar to how bio->bi_end_io() works. A request
-> originating from __make_request() would set something ala:
-.....
-> instead of calling the functions manually. That would allow you to get
-> notification right at the beginning and do what you need, without adding
-> a special hook for this.
-
-I thought his comment was reasonable.
-So I modified the patches based on his suggestion.
-
-
-WHAT IS CHANGED
-===============
-The change is basically illustlated by the following pseudo code:
-
-[Before]
-  if (end_that_request_{first/chunk} succeeds) { <-- completes bios
-     <do something driver specific>
-     end_that_request_last() <-- calls end_io()
-     <the request is free from the driver>
-  } else {
-     <the request was incomplete, retry for leftover or ignoring>
-  }
-
-[After]
-  if (blk_end_request() succeeds) { <-- calls end_io(), completes bios
-     <the request is free from the driver>
-  } else {
-     <the request was incomplete, retry for leftover or ignoring>
-  }
-
-
-In detail, request completion procedures are changed like below.
-
-[Before]
-  o 2 steps completion using end_that_request_{first/chunk}
-    and end_that_request_last().
-  o Device drivers have ownership of a request until they
-    call end_that_request_last().
-  o rq->end_io() is called at the last stage of
-    end_that_request_last() for some block layer codes need
-    specific request handling when completing it.
-
-[After]
-  o 1 step completion using blk_end_request().
-    (end_that_request_* are no longer used from device drivers.)
-  o Device drivers give over ownership of a request
-    when calling blk_end_request().
-    If it returns 0, the request is completed.
-    If it returns 1, the request isn't completed and
-    the ownership is returned to the device driver again.
-  o rq->end_io() is called at the top of blk_end_request() to
-    allow to hook all parts of request completion.
-    Existing users of rq->end_io() must be changed to do
-    all parts of request completion.
-
-Thanks,
-Kiyoshi Ueda
+Index: 2.6.24-rc4/arch/arm/plat-omap/mailbox.c
+===================================================================
+--- 2.6.24-rc4.orig/arch/arm/plat-omap/mailbox.c
++++ 2.6.24-rc4/arch/arm/plat-omap/mailbox.c
+@@ -116,8 +116,8 @@ static void mbox_tx_work(struct work_str
+ 		}
+ 
+ 		spin_lock(q->queue_lock);
+-		blkdev_dequeue_request(rq);
+-		end_that_request_last(rq, 0);
++		if (__blk_end_request(rq, 0, 0))
++			BUG();
+ 		spin_unlock(q->queue_lock);
+ 	}
+ }
+@@ -149,10 +149,8 @@ static void mbox_rx_work(struct work_str
+ 
+ 		msg = (mbox_msg_t) rq->data;
+ 
+-		spin_lock_irqsave(q->queue_lock, flags);
+-		blkdev_dequeue_request(rq);
+-		end_that_request_last(rq, 0);
+-		spin_unlock_irqrestore(q->queue_lock, flags);
++		if (blk_end_request(rq, 0, 0))
++			BUG();
+ 
+ 		mbox->rxq->callback((void *)msg);
+ 	}
+@@ -263,10 +261,8 @@ omap_mbox_read(struct device *dev, struc
+ 
+ 		*p = (mbox_msg_t) rq->data;
+ 
+-		spin_lock_irqsave(q->queue_lock, flags);
+-		blkdev_dequeue_request(rq);
+-		end_that_request_last(rq, 0);
+-		spin_unlock_irqrestore(q->queue_lock, flags);
++		if (blk_end_request(rq, 0, 0))
++			BUG();
+ 
+ 		if (unlikely(mbox_seq_test(mbox, *p))) {
+ 			pr_info("mbox: Illegal seq bit!(%08x) ignored\n", *p);
