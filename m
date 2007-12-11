@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbXLKWCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbXLKWLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbXLKWCR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbXLKWB7
+	id S1753893AbXLKWLc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbXLKWLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:01:59 -0500
-Received: from mga03.intel.com ([143.182.124.21]:5141 "EHLO mga03.intel.com"
+	Tue, 11 Dec 2007 17:11:23 -0500
+Received: from ccs17.jlab.org ([129.57.35.82]:46039 "EHLO ccs17.jlab.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751273AbXLKWB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:01:58 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,154,1196668800"; 
-   d="scan'208";a="338796125"
-Message-ID: <475F084E.3090309@intel.com>
-Date: Tue, 11 Dec 2007 13:59:42 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+	id S1751036AbXLKWLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 17:11:23 -0500
+Message-ID: <475F0B07.2060303@jlab.org>
+Date: Tue, 11 Dec 2007 17:11:19 -0500
+From: Jie Chen <chen@jlab.org>
+Organization: Jefferson Lab
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Martin Bligh <mbligh@google.com>, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>, netdev@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.24-rc4-mm1
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>	<33307c790712110813h23def95dvd068b7226e9fcd36@mail.gmail.com> <20071211123705.844aac24.akpm@linux-foundation.org> <475F00A2.6020406@intel.com>
-In-Reply-To: <475F00A2.6020406@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Possible bug from kernel 2.6.22 and above, 2.6.24-rc4
+References: <20071205210222.GA30089@elte.hu> <47572353.4040606@jlab.org> <20071206104318.GB30838@elte.hu> <47582367.6060602@jlab.org> <20071210105943.GA5370@elte.hu> <475D9BB5.20808@jlab.org> <20071211105149.GA24250@elte.hu> <475EAC81.1020408@jlab.org> <20071211155226.GA1056@elte.hu> <475EBD30.1010506@jlab.org> <20071211212352.GF6902@elte.hu>
+In-Reply-To: <20071211212352.GF6902@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Dec 2007 22:00:16.0530 (UTC) FILETIME=[36853720:01C83C41]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> Andrew Morton wrote:
->> On Tue, 11 Dec 2007 08:13:52 -0800 "Martin Bligh" <mbligh@google.com> wrote:
->>
->>>> - Lots of device IDs have been removed from the e1000 driver and moved
->>>> over
->>>>  to e1000e.  So if your e1000 stops working, you forgot to set
->>>> CONFIG_E1000E.
->>>>
->>>>
->>> Wouldn't it make sense to just default this to on if E1000 was on, rather
->>> than screwing
->>> everybody for no good reason (plus breaking all the automated testing, etc
->>> etc)?
->>> Much though I love random refactoring, it is fairly painful to just keep
->>> changing the
->>> names of things.
->> (cc netdev and Auke)
->>
->> Yes, that would be very sensible.  CONFIG_E1000E should default to whatever
->> CONFIG_E1000 was set to.
+Ingo Molnar wrote:
+> * Jie Chen <chen@jlab.org> wrote:
 > 
-> which is "y" for x86 and friends, ppc, arm and ia64 through 'defconfig'. the
-> Kconfig files do not have defaults in them.
+>> The following is pthread_sync output for 2.6.21.7-cfs-v24 #1 SMP 
+>> kernel.
 > 
-> I can send a patch to adjust the defconfig files, would that be OK? I certainly
-> think that would be reasonable, I dislike setting defaults through defconfig for
-> network drivers myself and rather would not do that.
+>> 2 threads:
+> 
+>> PARALLEL time =       11.106580 microseconds +/- 0.002460
+>> PARALLEL overhead =    0.617590 microseconds +/- 0.003409
+> 
+>> Output for Kernel 2.6.24-rc4 #1 SMP
+> 
+>> PARALLEL time =              19.668450 microseconds +/- 0.015782
+>> PARALLEL overhead =           9.157945 microseconds +/- 0.018217
+> 
+> ok, so the problem is that this PARALLEL time has an additional +9 usecs 
+> overhead, right? I dont see this myself on a Core2 CPU:
+> 
+> PARALLEL time =                           10.446933 microseconds +/- 0.078849
+> PARALLEL overhead =                       0.751732 microseconds +/- 0.177446
+> 
+> 	Ingo
+Hi, Ingo:
 
-that should read "dislike setting defaults through Kconfig ..."
+Yes, the extra 9 usecs overhead for running two threads in the 2.6.24 
+kernel when there are total of 8 cores (2 quad opterons). What is the 
+total number of cores do you have? I do not have machines that have dual 
+quad Xeons here for direct comparisons. Thank you.
 
-Auke
+-- 
+#############################################################################
+# Jie Chen
+# Scientific Computing Group
+# Thomas Jefferson National Accelerator Facility
+# Newport News, VA 23606
+#
+# chen@jlab.org
+# (757)269-5046 (office)
+# (757)269-6248 (fax)
+#############################################################################
