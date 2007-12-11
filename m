@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXLKW1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758407AbXLKW1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758266AbXLKW1f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:27:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbXLKWXy
+	id S1758407AbXLKW1v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:27:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbXLKWX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:23:54 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:38550 "EHLO
+	Tue, 11 Dec 2007 17:23:57 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38553 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757306AbXLKWXx (ORCPT
+	with ESMTP id S1754869AbXLKWX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:23:53 -0500
-Date: Tue, 11 Dec 2007 23:23:53 +0100
+	Tue, 11 Dec 2007 17:23:56 -0500
+Date: Tue, 11 Dec 2007 23:23:56 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: matthew@wil.cx, James.Bottomley@HansenPartnership.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/scsi/advansys.c section fix
-Message-ID: <20071211222353.GZ14204@stusta.de>
+To: romieu@fr.zoreil.com, jgarzik@pobox.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] drivers/net/sis190.c section fix
+Message-ID: <20071211222356.GA14204@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -29,7 +29,7 @@ This patch fixes the following section mismatch with CONFIG_HOTPLUG=n:
 <--  snip  -->
 
 ...
-WARNING: vmlinux.o(.exit.text+0xcf8a): Section mismatch: reference to .init.data:_asc_def_iop_base (between 'advansys_isa_remove' and 'exit_this_scsi_driver')
+WARNING: vmlinux.o(.init.text.20+0x4cb25): Section mismatch: reference to .exit.text:sis190_mii_remove (between 'sis190_init_one' and 'read_eeprom')
 ...
 
 <--  snip  -->
@@ -37,18 +37,18 @@ WARNING: vmlinux.o(.exit.text+0xcf8a): Section mismatch: reference to .init.data
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-e81cac11f9efe882a89708c298fa6268375b0221 
-diff --git a/drivers/scsi/advansys.c b/drivers/scsi/advansys.c
-index 9dd3952..38a1ee2 100644
---- a/drivers/scsi/advansys.c
-+++ b/drivers/scsi/advansys.c
-@@ -13906,7 +13906,7 @@ static int advansys_release(struct Scsi_Host *shost)
+29fae057ba15a552a7cad1e731d3238d567032ba 
+diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
+index 7200883..49f767b 100644
+--- a/drivers/net/sis190.c
++++ b/drivers/net/sis190.c
+@@ -1381,7 +1381,7 @@ out:
+ 	return rc;
+ }
  
- #define ASC_IOADR_TABLE_MAX_IX  11
+-static void __devexit sis190_mii_remove(struct net_device *dev)
++static void sis190_mii_remove(struct net_device *dev)
+ {
+ 	struct sis190_private *tp = netdev_priv(dev);
  
--static PortAddr _asc_def_iop_base[ASC_IOADR_TABLE_MAX_IX] __devinitdata = {
-+static PortAddr _asc_def_iop_base[ASC_IOADR_TABLE_MAX_IX] = {
- 	0x100, 0x0110, 0x120, 0x0130, 0x140, 0x0150, 0x0190,
- 	0x0210, 0x0230, 0x0250, 0x0330
- };
 
