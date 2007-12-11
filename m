@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbXLKRlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbXLKRmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755516AbXLKRlR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 12:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbXLKRlH
+	id S1755855AbXLKRmi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 12:42:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXLKRmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 12:41:07 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:53373 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751735AbXLKRlG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 12:41:06 -0500
-Message-ID: <475ECB94.3040007@s5r6.in-berlin.de>
-Date: Tue, 11 Dec 2007 18:40:36 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+	Tue, 11 Dec 2007 12:42:31 -0500
+Received: from il.qumranet.com ([82.166.9.18]:35180 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753262AbXLKRma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 12:42:30 -0500
+Message-ID: <475ECC04.8000609@qumranet.com>
+Date: Tue, 11 Dec 2007 19:42:28 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@bitplanet.net>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] FireWire update
-References: <tkrat.6f0ad7fef062de08@s5r6.in-berlin.de> <59ad55d30712110818u2717b329j80778ec7cc290988@mail.gmail.com>
-In-Reply-To: <59ad55d30712110818u2717b329j80778ec7cc290988@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: [RFC] Proposed new directory layout for kvm and virtualization
+References: <475E5CBB.9080608@qumranet.com> <20071211161032.GA25769@uranus.ravnborg.org> <475EB7AC.9040903@qumranet.com> <20071211173717.GA26368@uranus.ravnborg.org>
+In-Reply-To: <20071211173717.GA26368@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristian Høgsberg wrote:
-> On Dec 10, 2007 4:25 PM, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> This considerably enhances compatibility of the new firewire-ohci driver
-...
-> And I worked with Jarod on this so I'll add a
-> 
-> Signed-off-by: Kristian Høgsberg <krh@redhat.com>
+Sam Ravnborg wrote:
+>
+>>> So use arch/*/virt/kvm/ if kvm really requires
+>>> a subdirectory of it own. Preferably not.
+>>> A handful of files named kvm* does not warrant their own
+>>> subdirectory IMO.
+>>>
+>>>  
+>>>       
+>> We'll have 5-6 x86 specific files.
+>>
+>> Where do you suggest we place them?
+>>     
+> /arch/x86/virt/
+>
+>   
 
-The commit already went public; nevertheless I much appreciate the
-sign-off and your work on the OHCI 1.0 issue.  Thanks.
+But, I want to place the arch independent files in virt/kvm/, so as to 
+leave room for virt/lguest/.
+
+> Seems logical and fit the way we handle mm/ versus arch/*/mm,
+> kernel/ arch/*/kernel etc.
+>   
+
+Exactly, so virt/kvm/ -> arch/x86/virt/kvm/.
+
+> Are there any dependencies between the arch and non-arch files
+> such as they are combined in a single module?
+>
+>   
+
+Yes, they are combined into a single module.
+
+In the case of x86, some of arch/x86/... will be combined with virt/kvm/ 
+to form kvm.ko, while others will generate kvm-intel.ko and kvm-amd.ko.
+
 -- 
-Stefan Richter
--=====-=-=== ==-- -=-==
-http://arcgraph.de/sr/
+error compiling committee.c: too many arguments to function
+
