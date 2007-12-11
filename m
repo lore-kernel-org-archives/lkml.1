@@ -1,102 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbXLKXRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757792AbXLKXRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756597AbXLKXRb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 18:17:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXLKXRS
+	id S1757792AbXLKXRs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 18:17:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbXLKXR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 18:17:18 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:20002 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbXLKXRQ (ORCPT
+	Tue, 11 Dec 2007 18:17:29 -0500
+Received: from mx.neterion.com ([72.1.205.142]:59528 "EHLO owa.neterion.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755827AbXLKXR1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 18:17:16 -0500
-Date: Tue, 11 Dec 2007 15:15:43 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mbligh@google.com,
-       linux-kernel@vger.kernel.org, apw@shadowen.org, netdev@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-Subject: Re: 2.6.24-rc4-mm1
-Message-Id: <20071211151543.f3b73c62.randy.dunlap@oracle.com>
-In-Reply-To: <475F0C6C.20900@intel.com>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
-	<33307c790712110813h23def95dvd068b7226e9fcd36@mail.gmail.com>
-	<20071211123705.844aac24.akpm@linux-foundation.org>
-	<475F00A2.6020406@intel.com>
-	<20071211141040.a1c6f316.akpm@linux-foundation.org>
-	<475F0C6C.20900@intel.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 11 Dec 2007 18:17:27 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [2.6 patch] drivers/net/s2io.c section fixes
+Date: Tue, 11 Dec 2007 18:16:51 -0500
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD7702B13B2D@nekter>
+In-Reply-To: <20071211222306.GV14204@stusta.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [2.6 patch] drivers/net/s2io.c section fixes
+Thread-Index: Acg8RIvMet7eU0jmQuywV7RKQGtahQABy+Cw
+From: "Ramkrishna Vepa" <Ramkrishna.Vepa@neterion.com>
+To: "Adrian Bunk" <bunk@kernel.org>, <jgarzik@pobox.com>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "Rastapur Santosh" <santosh.rastapur@neterion.com>,
+       "Sivakumar Subramani" <Sivakumar.Subramani@neterion.com>,
+       "Sreenivasa Honnur" <Sreenivasa.Honnur@neterion.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Dec 2007 14:17:16 -0800 Kok, Auke wrote:
+Thanks. Patch looks good. Please accept.
 
-> Andrew Morton wrote:
-> > On Tue, 11 Dec 2007 13:26:58 -0800
-> > "Kok, Auke" <auke-jan.h.kok@intel.com> wrote:
-> > 
-> >> Andrew Morton wrote:
-> >>> On Tue, 11 Dec 2007 08:13:52 -0800 "Martin Bligh" <mbligh@google.com> wrote:
-> >>>
-> >>>>> - Lots of device IDs have been removed from the e1000 driver and moved
-> >>>>> over
-> >>>>>  to e1000e.  So if your e1000 stops working, you forgot to set
-> >>>>> CONFIG_E1000E.
-> >>>>>
-> >>>>>
-> >>>> Wouldn't it make sense to just default this to on if E1000 was on, rather
-> >>>> than screwing
-> >>>> everybody for no good reason (plus breaking all the automated testing, etc
-> >>>> etc)?
-> >>>> Much though I love random refactoring, it is fairly painful to just keep
-> >>>> changing the
-> >>>> names of things.
-> >>> (cc netdev and Auke)
-> >>>
-> >>> Yes, that would be very sensible.  CONFIG_E1000E should default to whatever
-> >>> CONFIG_E1000 was set to.
-> >> which is "y" for x86 and friends, ppc, arm and ia64 through 'defconfig'. the
-> >> Kconfig files do not have defaults in them.
-> > 
-> > I wouldn't be looking at defconfig files - I don't think many people use
-> > them.  Most people use their previous config, via oldconfig.
-> > 
-> > So what we want here is to give them E1000E if they had previously been
-> > using E1000.  I don't know how one would do this in Kconfig.
+Ram
+
+> -----Original Message-----
+> From: Adrian Bunk [mailto:bunk@kernel.org]
+> Sent: Tuesday, December 11, 2007 2:23 PM
+> To: ram.vepa@neterion.com; Rastapur Santosh; Sivakumar Subramani;
+> Sreenivasa Honnur; jgarzik@pobox.com
+> Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: [2.6 patch] drivers/net/s2io.c section fixes
 > 
-> ditto. I doubt that "SELECT E1000E" would be a good idea here (maybe not even
-> work), and I can't think of anything else.
-
-"default E1000" in E1000E seems to work for me.
-
----
-
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-Make E1000E default to the same kconfig setting as E1000,
-at least for -mm testing.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/net/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-2.6.24-rc4-mm1.orig/drivers/net/Kconfig
-+++ linux-2.6.24-rc4-mm1/drivers/net/Kconfig
-@@ -1986,6 +1986,7 @@ config E1000_DISABLE_PACKET_SPLIT
- config E1000E
- 	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
- 	depends on PCI
-+	default E1000
- 	---help---
- 	  This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
- 	  ethernet family of adapters. For PCI or PCI-X e1000 adapters,
+> Code used by the non-__devinit s2io_open() mustn't be __devinit.
+> 
+> This patch fixes the following section mismatch with CONFIG_HOTPLUG=n:
+> 
+> <--  snip  -->
+> 
+> ...
+> WARNING: vmlinux.o(.text+0x6f6e3e): Section mismatch: reference to
+> .init.text.20:s2io_test_intr (between 's2io_open' and
+'s2io_ethtool_sset')
+> ...
+> 
+> <--  snip  -->
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+>  drivers/net/s2io.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> 50fb761b99d7ee0b234359d02144f84a87e2faff
+> diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
+> index 121cb10..9d80f1c 100644
+> --- a/drivers/net/s2io.c
+> +++ b/drivers/net/s2io.c
+> @@ -3737,7 +3737,7 @@ static int s2io_enable_msi_x(struct s2io_nic
+*nic)
+>  }
+> 
+>  /* Handle software interrupt used during MSI(X) test */
+> -static irqreturn_t __devinit s2io_test_intr(int irq, void *dev_id)
+> +static irqreturn_t s2io_test_intr(int irq, void *dev_id)
+>  {
+>  	struct s2io_nic *sp = dev_id;
+> 
+> @@ -3748,7 +3748,7 @@ static irqreturn_t __devinit s2io_test_intr(int
+irq,
+> void *dev_id)
+>  }
+> 
+>  /* Test interrupt path by forcing a a software IRQ */
+> -static int __devinit s2io_test_msi(struct s2io_nic *sp)
+> +static int s2io_test_msi(struct s2io_nic *sp)
+>  {
+>  	struct pci_dev *pdev = sp->pdev;
+>  	struct XENA_dev_config __iomem *bar0 = sp->bar0;
