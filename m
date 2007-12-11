@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbXLKRCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbXLKRDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbXLKRCp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 12:02:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbXLKRCR
+	id S1753805AbXLKRDD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 12:03:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbXLKRCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 12:02:17 -0500
-Received: from wr-out-0506.google.com ([64.233.184.224]:60173 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753131AbXLKRCP (ORCPT
+	Tue, 11 Dec 2007 12:02:24 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:58449 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755901AbXLKRCW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 12:02:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aODLpj+13rg+6RjjD6AYtLBKthdzn8LC9F6baxVQGBmyTVp1iC9PmM4BGgiPMIifeehh+E1YMwuq3eWoHPBREGK0T1frlXvG/1DBvljZu29TgfGB7bM+jnS0+Qj/o+GpGUGhtvfqP4ch71XFNjHxTUaV6IIQk4UT3XELyhDGnkk=
-Message-ID: <b14f3e280712110902m7e937c78jf972f50c2c20f3f4@mail.gmail.com>
-Date: Tue, 11 Dec 2007 15:02:13 -0200
-From: "Mauricio Mauad Menegaz Filho" <mmauad@gmail.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: HTC TyTN || (P4550) violates GPL?? Or maybe Qualcomm itself with MSM7200???
-Cc: CIJOML <cijoml@volny.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <20071209130813.GE4381@ucw.cz>
+	Tue, 11 Dec 2007 12:02:22 -0500
+Message-ID: <475EC24E.4070900@zytor.com>
+Date: Tue, 11 Dec 2007 09:01:02 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200712080115.05608.cijoml@volny.cz>
-	 <b14f3e280712071640o76895d73jfd6745ddb3de23dd@mail.gmail.com>
-	 <20071209130813.GE4381@ucw.cz>
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: David Newall <david@davidnewall.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+References: <475879CD.9080006@reed.com> <p733auekcly.fsf@bingen.suse.de>	<20071207160439.71b7f46a@the-village.bc.nu>	<20071209125458.GB4381@ucw.cz>	<20071209165908.GA15910@one.firstfloor.org>	<20071209212513.GC24284@elf.ucw.cz> <475CBDD7.5050602@keyaccess.nl> <m3bq8y23de.fsf@maximus.localdomain> <475DE37F.20706@davidnewall.com> <475DE6F4.80702@zytor.com> <475E341F.9000107@keyaccess.nl>
+In-Reply-To: <475E341F.9000107@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Did phone packaging contain sources or written offer for them? If not,
-> they are probably still violating GPL. gpl-violations.org, I'd say.
+Rene Herman wrote:
+> On 11-12-07 02:25, H. Peter Anvin wrote:
+> 
+>> David Newall wrote:
+>>> Where did the 8us delay come from?  The documentation and source is 
+>>> careful not to say how long the delay is.  Would changing it to, say 
+>>> 1us, be technically wrong?  Is code that requires 8us correct?
+>>
+>> I think a single ISA bus transaction is 1 µs, so two of them back to 
+>> back should be 2 µs, not 8 µs...
+> 
+> Sigh. And now where do these _two_ transactions come from? (and yes, see 
+> Alan's folowups, a transaction on a spec bus is 1 us).
+> 
 
-Hi Michal/Pavel
+Stale memory, sorry.
 
-Both of you are right. Qualcomm is not offering source codes for the drivers (at
- least, there is no way to find the drivers on their site, and they
-are probably not
-asking for MSM based devices to advertise *drivers available* or such), nor the
-iguana source code contains the drivers. Licenses are needless until violated.
-
-Mauad
+	-hpa
