@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbXLKXqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbXLKXsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757978AbXLKXqU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 18:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbXLKXqM
+	id S1757507AbXLKXsr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 18:48:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbXLKXsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 18:46:12 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:26033 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874AbXLKXqK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 18:46:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=VrVyCKzqH0UYcAUPlN4yqxZUKEh29tY9P/sGIbEz7MJx24UzOb/9vkemkfgpwQLCEw7OKaJM1+etSj6DOmRcSC/+EuYqGm4LoL3y87Q1DQkN8u9wWlJFc3pQI9DHqAOIXckIQgImiFgSpaD0QbHbvIWldnQFl9+azg+/uABaSso=
-Message-ID: <475F20EA.5050803@keyaccess.nl>
-Date: Wed, 12 Dec 2007 00:44:42 +0100
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
-       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
-       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
-Subject: Re: [RFT] Port 0x80 I/O speed
-References: <475F1DC6.5090403@keyaccess.nl> <200712120140.34697.maximlevitsky@gmail.com>
-In-Reply-To: <200712120140.34697.maximlevitsky@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Tue, 11 Dec 2007 18:48:37 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59384 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752671AbXLKXsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 18:48:36 -0500
+Date: Tue, 11 Dec 2007 15:48:03 -0800
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, zaitcev@redhat.com
+Subject: Re: [PATCH 12/30] blk_end_request: changing ub (take 4)
+Message-Id: <20071211154803.58beb681.zaitcev@redhat.com>
+In-Reply-To: <20071211.174647.75757994.k-ueda@ct.jp.nec.com>
+References: <20071211.174647.75757994.k-ueda@ct.jp.nec.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Rene Herman <rene.herman@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12-12-07 00:40, Maxim Levitsky wrote:
+On Tue, 11 Dec 2007 17:46:47 -0500 (EST), Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote:
 
-> maxim@MAIN:~/tmp$ sudo ./port800
-> cycles: out 1767, in 1147
-> maxim@MAIN:~/tmp$ sudo ./port800
-> cycles: out 1774, in 1148
-> maxim@MAIN:~/tmp$ sudo ./port800
-> cycles: out 1769, in 1150
-> maxim@MAIN:~/tmp$ sudo ./port800
-> cycles: out 1769, in 1150
-> maxim@MAIN:~/tmp$ sudo ./port800
-> cycles: out 1777, in 1150
-> maxim@MAIN:~/tmp$ sudo ./port800
-> cycles: out 1766, in 1149
-> maxim@MAIN:~/tmp$ sudo ./port800
-> cycles: out 1768, in 1148
-> maxim@MAIN:~/tmp$ sudo ./port800
-> cycles: out 1765, in 1147
-> 
-> 
-> Core 2 Duo system (ICH8/Intel DG965RY motherboard)
+>  	if (scsi_status == 0) {
+> -		uptodate = 1;
+> +		error = 0;
+>  	} else {
+> -		uptodate = 0;
+> +		error = -EIO;
+>  		rq->errors = scsi_status;
+>  	}
+> -	end_that_request_first(rq, uptodate, rq->hard_nr_sectors);
+> -	end_that_request_last(rq, uptodate);
+> +	if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
+> +		BUG();
 
-1.8 Ghz?
+Acked-by: Pete Zaitcev <zaitcev@redhat.com>
 
-Rene.
+I follow the discussion, actually, and wanted to ask someone to look
+closer if it's appropriate to use __blk_end_request() here.
+My understanding was, blk_end_request() is the same thing, only
+takes the queue lock. But then, should I refactor ub so that it
+calls __blk_end_request if request function ends with an error
+and blk_end_request if the end-of-IO even is processed? If not,
+and the above is sufficient, why have blk_end_request at all?
 
+-- Pete
