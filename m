@@ -1,45 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbXLKAcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbXLKAfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754903AbXLKAcP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 19:32:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbXLKAcA
+	id S1755156AbXLKAfI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 19:35:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbXLKAe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 19:32:00 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:56840 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbXLKAb7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 19:31:59 -0500
-Message-ID: <475DDA4C.9020002@zytor.com>
-Date: Mon, 10 Dec 2007 16:31:08 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Mon, 10 Dec 2007 19:34:58 -0500
+Received: from gw.goop.org ([64.81.55.164]:55666 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751948AbXLKAe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 19:34:57 -0500
+Message-ID: <475DDB2F.9060405@goop.org>
+Date: Mon, 10 Dec 2007 16:34:55 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Rene Herman <rene.herman@keyaccess.nl>
-CC: "David P. Reed" <dpreed@reed.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-References: <475879CD.9080006@reed.com> <p733auekcly.fsf@bingen.suse.de> <47595DB2.5080302@reed.com> <20071207145430.GA5992@one.firstfloor.org> <47596A2E.4060602@keyaccess.nl> <4759749E.5070401@keyaccess.nl>
-In-Reply-To: <4759749E.5070401@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Jan Beulich <jbeulich@novell.com>
+CC: mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386: fix a few paravirt-related modpost warnings
+References: <475D79A4.76E4.0078.0@novell.com>
+In-Reply-To: <475D79A4.76E4.0078.0@novell.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> 
-> By the way, David, it would be interesting if you could test 0xed. If 
-> your problem is some piece of hardware getting upset at LPC bus aborts 
-> it's not going to matter and we'd know an outb delay is just not an 
-> option on your system at least. You said you could quickly reproduce the 
-> problem with port 0x80?
-> 
+Jan Beulich wrote:
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>   
+Acked-by: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
 
-I tried 0xED for a few versions (1.31-1.37) of SYSLINUX.  It broke on a 
-lot of hardware (Phoenix BIOS uses 0xED by default, but BIOSes don't 
-have to work on arbitrary hardware.)
+>  arch/x86/kernel/head_32.S |    2 +-
+>  arch/x86/xen/setup.c      |    2 +-
+>  arch/x86/xen/xen-head.S   |    2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
+>
+> --- linux-2.6.24-rc4/arch/x86/kernel/head_32.S	2007-12-07 09:00:59.000000000 +0100
+> +++ 2.6.24-rc4-i386-lguest-warning/arch/x86/kernel/head_32.S	2007-12-05 18:30:33.000000000 +0100
+> @@ -151,7 +151,7 @@ WEAK(xen_entry)
+>  	/* Unknown implementation; there's really
+>  	   nothing we can do at this point. */
+>  	ud2a
+> -.data
+> +.section .init.data, "aw"
+>  subarch_entries:
+>  	.long default_entry		/* normal x86/PC */
+>  	.long lguest_entry		/* lguest hypervisor */
+> --- linux-2.6.24-rc4/arch/x86/xen/setup.c	2007-12-07 09:01:00.000000000 +0100
+> +++ 2.6.24-rc4-i386-lguest-warning/arch/x86/xen/setup.c	2007-12-10 17:31:06.000000000 +0100
+> @@ -59,7 +59,7 @@ static void xen_idle(void)
+>  /*
+>   * Set the bit indicating "nosegneg" library variants should be used.
+>   */
+> -static void fiddle_vdso(void)
+> +static __init void fiddle_vdso(void)
+>  {
+>  	extern u32 VDSO_NOTE_MASK; /* See ../kernel/vsyscall-note.S.  */
+>  	extern char vsyscall_int80_start;
+> --- linux-2.6.24-rc4/arch/x86/xen/xen-head.S	2007-12-07 09:01:00.000000000 +0100
+> +++ 2.6.24-rc4-i386-lguest-warning/arch/x86/xen/xen-head.S	2007-12-10 17:25:46.000000000 +0100
+> @@ -7,7 +7,7 @@
+>  #include <asm/boot.h>
+>  #include <xen/interface/elfnote.h>
+>  
+> -.pushsection .init.text
+> +.pushsection .init.text, "ax"
+>  ENTRY(startup_xen)
+>  	movl %esi,xen_start_info
+>  	cld
+>
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
 
-	-hpa
