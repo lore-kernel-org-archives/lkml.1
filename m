@@ -1,44 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbXLKRQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbXLKRXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754168AbXLKRQb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 12:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbXLKRQW
+	id S1753906AbXLKRXz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 12:23:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbXLKRXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 12:16:22 -0500
-Received: from gw.goop.org ([64.81.55.164]:32887 "EHLO mail.goop.org"
+	Tue, 11 Dec 2007 12:23:47 -0500
+Received: from ns.suse.de ([195.135.220.2]:36496 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751560AbXLKRQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 12:16:21 -0500
-Message-ID: <475EC5E5.80104@goop.org>
-Date: Tue, 11 Dec 2007 09:16:21 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1752402AbXLKRXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 12:23:46 -0500
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Performance overhead of get_cycles_sync
+References: <475E8C8B.7070308@qumranet.com> <20071211133738.GA8150@elte.hu>
+	<475E9A92.4030001@qumranet.com> <20071211142717.GA15903@elte.hu>
+	<20071211083513.56c2a385@laptopd505.fenrus.org>
+	<20071211170334.GA30144@elte.hu>
+From: Andi Kleen <ak@suse.de>
+Date: Tue, 11 Dec 2007 18:23:45 +0100
+In-Reply-To: <20071211170334.GA30144@elte.hu> (Ingo Molnar's message of "Tue\, 11 Dec 2007 18\:03\:34 +0100")
+Message-ID: <p73abohno0u.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: 7eggert@gmx.de
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH] xen: relax signature check
-References: <9yY38-5oa-11@gated-at.bofh.it> <E1J27Or-00012X-DF@be1.7eggert.dyndns.org>
-In-Reply-To: <E1J27Or-00012X-DF@be1.7eggert.dyndns.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bodo Eggert wrote:
-> Not BUG_ON(memcmp(xen_start_info->magic, "xen-3.", 6) != 0); ?
-> I don't thin Xen version 32 will be compatible ...
->   
+Ingo Molnar <mingo-X9Un+BFzKDI@public.gmane.org> writes:
 
-It had better be; if it loads the kernel, it should present a xen-3
-compatible ABI.
+> the TSC clocksource (and hence the vsyscall code) is turned off on 
+> systems that fail the TOD/CLOCK portion of this test:
 
-But this is just a sanity check to make sure things are basically OK;
-BUG_ON is hardly nice error reporting (not that there's much else we can
-do at that point).
+Which is not on core2 which was the question about. And if it was
+turned off it wouldn't use get_cycles_sync() at all.
 
-    J
+-Andi
