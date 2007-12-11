@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbXLKPw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbXLKPwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753407AbXLKPw1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 10:52:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbXLKPwU
+	id S1753440AbXLKPwo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 10:52:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXLKPwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 10:52:20 -0500
-Received: from moutng.kundenserver.de ([212.227.126.183]:57538 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbXLKPwT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 10:52:19 -0500
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH] xen: relax signature check
-To: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Reply-To: 7eggert@gmx.de
-Date: Tue, 11 Dec 2007 16:52:01 +0100
-References: <9yY38-5oa-11@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Tue, 11 Dec 2007 10:52:35 -0500
+Received: from il.qumranet.com ([82.166.9.18]:57870 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751229AbXLKPwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 10:52:34 -0500
+Message-ID: <475EB23E.1060002@qumranet.com>
+Date: Tue, 11 Dec 2007 17:52:30 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1J27Or-00012X-DF@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/q6RTTM8pxJ0ota5kFVPQDVkOj8OcCmr0SI6j
- duE4Wflrnw0OfL4Wls0FLCAh9Az6EpAJAKhYJStm34QTYPpRwK
- +8eXUDnkME54sQWKfdkZw==
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [kvm-devel] [RFC] Proposed new directory layout for kvm and	virtualization
+References: <475E5CBB.9080608@qumranet.com> <20071211151143.GA7751@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20071211151143.GA7751@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Heiko Carstens wrote:
+> On Tue, Dec 11, 2007 at 11:47:39AM +0200, Avi Kivity wrote:
+>   
+>> KVM is due to receive support for multiple architectures (ppc, ia64, and 
+>> s390, in addition to the existing x86), hopefully in time for the 2.6.25 
+>> merge window.  It is awkward to place the new arch support in drivers/kvm/, 
+>> so I'd like to propose the following new layout:
+>> ...
+>>  arch/*/kvm/   arch dependent kvm code
+>>     
+>
+> Maybe arch/*/virt/ ? No need to add an own directory for each hypervisor.
+>
+>   
 
-> Some versions of Xen 3.x set their magic number to "xen-3.[12]", so
-> relax the test to match them.
+There will be several kvm files in that directory for x86. If you have 
+just one file, I guess arch/*/virt/kvm.c is okay.
 
-
-> -     BUG_ON(memcmp(xen_start_info->magic, "xen-3.0", 7) != 0);
-> +     BUG_ON(memcmp(xen_start_info->magic, "xen-3", 5) != 0);
-
-Not BUG_ON(memcmp(xen_start_info->magic, "xen-3.", 6) != 0); ?
-I don't thin Xen version 32 will be compatible ...
+-- 
+error compiling committee.c: too many arguments to function
 
