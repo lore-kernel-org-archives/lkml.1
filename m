@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbXLKTCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbXLKTDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbXLKTCR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 14:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXLKTCF
+	id S1755294AbXLKTDp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 14:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbXLKTDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 14:02:05 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56237
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751784AbXLKTCE (ORCPT
+	Tue, 11 Dec 2007 14:03:38 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43278 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbXLKTDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 14:02:04 -0500
-Date: Tue, 11 Dec 2007 11:02:02 -0800 (PST)
-Message-Id: <20071211.110202.186865875.davem@davemloft.net>
-To: andi@firstfloor.org
-Cc: nashif@linux.intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Intel Management Engine Interface
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071211185317.GA21864@one.firstfloor.org>
-References: <p7363z5nlo8.fsf@bingen.suse.de>
-	<475ED912.609@linux.intel.com>
-	<20071211185317.GA21864@one.firstfloor.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 11 Dec 2007 14:03:37 -0500
+Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52,
+	[2.6.24-rc4-git5: Reported regressions from 2.6.23]
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dave Jones <davej@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+In-Reply-To: <20071211085232.GE20172@elte.hu>
+References: <200712080340.49546.rjw@sisk.pl>
+	 <20071208093039.GA28054@elte.hu> <20071208163749.GI19691@waste.org>
+	 <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org>
+	 <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org>
+	 <20071208100950.a3547868.akpm@linux-foundation.org>
+	 <alpine.LFD.0.9999.0712081034470.12046@woody.linux-foundation.org>
+	 <20071208195211.GA3727@elte.hu> <20071211062720.GA29764@redhat.com>
+	 <20071211085232.GE20172@elte.hu>
+Content-Type: text/plain
+Date: Tue, 11 Dec 2007 20:03:01 +0100
+Message-Id: <1197399781.6353.60.camel@lappy>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
-Date: Tue, 11 Dec 2007 19:53:17 +0100
 
-> Ok but saving oops is such a useful facility that we'll probably
-> need to think about implementing SOAP in the kernel.
+On Tue, 2007-12-11 at 09:52 +0100, Ingo Molnar wrote:
+> * Dave Jones <davej@redhat.com> wrote:
 
-Ummm, no.
+> > Which leaves my only other gripe.  It broke slabtop.
+> 
+> that's actually a _bad_ ABI regression. Rafael, could you please add 
+> this to the regressions list?
+> 
+> > There's an alternative implementation in Documentation/vm/slabinfo.c 
+> > (why there not say, util-linux, home of current slabtop?)
+> 
+> the kernel should output /proc/slabinfo data with the same formatting, 
+> period.
 
-UDP is stateless, a stripped down copy of TCP we simply
-do not need.  We also do not need XML in the kernel either.
+I can remember it being said that would be one of the things to-do
+before SLUB could become default.
 
-If they want to support things like this they should do it in the
-firmware of the management entity like every other sane server
-platform does these days.
-
-The console and OOPS messages should go over an extremely resilient
-transport which is as simple as possible which usually means shared
-memory or I/O memory with some simple handshake or doorbell.  This
-gets it to the management entity board or whatever, and how it gets
-from there to the remote system is it's business not that of the
-kernel.
-
-Not TCP, and definitely not this XML SOAP crap.
