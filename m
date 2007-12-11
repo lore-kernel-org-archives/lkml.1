@@ -1,166 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755784AbXLKDQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbXLKDpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755784AbXLKDQs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Dec 2007 22:16:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbXLKDQf
+	id S1752545AbXLKDpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Dec 2007 22:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXLKDpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Dec 2007 22:16:35 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:39719 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753681AbXLKDQe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Dec 2007 22:16:34 -0500
-Message-Id: <20071211031458.413167005@goodmis.org>
-References: <20071211030033.632581735@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 10 Dec 2007 22:00:34 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, vatsa@linux.vnet.ibm.com,
-       Balbir Singh <balbir@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/4 v2] Replace hooks with pre/post schedule and wakeup methods
-Content-Disposition: inline; filename=sched-pre-post-schedule-methods.patch
+	Mon, 10 Dec 2007 22:45:31 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:4061 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751304AbXLKDpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Dec 2007 22:45:31 -0500
+Date: Mon, 10 Dec 2007 22:43:49 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Neil Horman <nhorman@redhat.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ben Woodard <woodard@redhat.com>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+Message-ID: <20071211034349.GA3635@localhost.localdomain>
+References: <20071130144250.GC23810@redhat.com> <20071130145131.GB5822@hmsendeavour.rdu.redhat.com> <20071206213951.GB28898@hmsreliant.think-freely.org> <20071206221143.GC2863@redhat.com> <m1bq93s5r8.fsf@ebiederm.dsl.xmission.com> <86802c440712070050s3c5017a4w8e747a7035d10d3a@mail.gmail.com> <86802c440712070122q6e5824bcp12e1c3f560e2ab53@mail.gmail.com> <20071207142144.GA10389@hmsendeavour.rdu.redhat.com> <20071207175832.GA18485@hmsreliant.think-freely.org> <m1k5nm2g3w.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1k5nm2g3w.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To make the main sched.c code more agnostic to the schedule classes.
-Instead of having specific hooks in the schedule code for the RT class
-balancing. They are replaced with a pre_schedule, post_schedule
-and task_wake_up methods. These methods may be used by any of the classes
-but currently, only the sched_rt class implements them.
+On Mon, Dec 10, 2007 at 06:08:03PM -0700, Eric W. Biederman wrote:
+> Neil Horman <nhorman@tuxdriver.com> writes:
+> 
+<snip>
+> 
+> Ok.  This test is broken.  Please remove the == 1.  You are looking
+> for == (1 << 18).  So just saying: "if (htcfg & (1 << 18))" should be clearer.
+> 
+Fixed.  Thanks!
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- include/linux/sched.h |    3 +++
- kernel/sched.c        |   20 ++++++++++++++++----
- kernel/sched_rt.c     |   17 +++++++----------
- 3 files changed, 26 insertions(+), 14 deletions(-)
+> > + printk(KERN_INFO "Detected use of extended apic ids on hypertransport bus\n");
+> > +		if ((htcfg & (1 << 17)) == 0) {
+> > + printk(KERN_INFO "Enabling hypertransport extended apic interrupt
+> > broadcast\n");
+> > +			htcfg |= (1 << 17);
+> > +			write_pci_config(num, slot, func, 0x68, htcfg);
+> > +		}
+> > +	}
+> > +	
+> > +}
+> 
+> The rest of this quirk looks fine, include the fact it is only intended
+> to be applied to PCI_VENDOR_ID_AMD PCI_DEVICE_ID_AMD_K8_NB.
+> 
+Copy that.
 
-Index: linux-sched/include/linux/sched.h
-===================================================================
---- linux-sched.orig/include/linux/sched.h	2007-12-10 20:39:11.000000000 -0500
-+++ linux-sched/include/linux/sched.h	2007-12-10 20:39:14.000000000 -0500
-@@ -848,6 +848,9 @@ struct sched_class {
- 	int (*move_one_task) (struct rq *this_rq, int this_cpu,
- 			      struct rq *busiest, struct sched_domain *sd,
- 			      enum cpu_idle_type idle);
-+	void (*pre_schedule) (struct rq *this_rq, struct task_struct *task);
-+	void (*post_schedule) (struct rq *this_rq);
-+	void (*task_wake_up) (struct rq *this_rq, struct task_struct *task);
+> 
+> For what is below I don't like the way the infrastructure has been
+> extended as what you are doing quickly devolves into a big mess.
+> 
+> Please extend struct chipset to be something like:
+> struct chipset {
+> 	u16 vendor;
+> 	u16 device;
+>         u32 class, class_mask;
+> 	void (*f)(void);
+> };
+> 
+> And then the test for matching the chipset can be something like:
+> 	if ((id->vendor == PCI_ANY_ID || id->vendor == dev->vendor) &&
+> 	    (id->device == PCI_ANY_ID || id->device == dev->device) &&
+> 	    !((id->class ^ dev->class) & id->class_mask))
+> 
+> Essentially a subset of pci_match_one_device from drivers/pci/pci.h
+> 
+> That way you don't need to increase the number of tables or the
+> number of passes through the pci busses, just update the early_qrk
+> table with a few more bits of information.
+> 
+copy that.  Fixed.  Thanks!
+
+> The extended form should be much more maintainable in the long
+> run.  Given that we may want this before we enable the timer
+> which is very early doing this in the pci early quirks seems
+> to make sense.
+> 
+> Eric
+
+
+New patch attached, with suggestions incorporated.
+
+Thanks & regards
+Neil
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+
+
+ early-quirks.c |   82 ++++++++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 73 insertions(+), 9 deletions(-)
+
+
+
+diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
+index 88bb83e..4b0cee1 100644
+--- a/arch/x86/kernel/early-quirks.c
++++ b/arch/x86/kernel/early-quirks.c
+@@ -44,6 +44,50 @@ static int __init nvidia_hpet_check(struct acpi_table_header *header)
+ #endif /* CONFIG_X86_IO_APIC */
+ #endif /* CONFIG_ACPI */
+ 
++static void __init fix_hypertransport_config(int num, int slot, int func)
++{
++	u32 htcfg;
++	/*
++	 *we found a hypertransport bus
++	 *make sure that are broadcasting
++	 *interrupts to all cpus on the ht bus
++	 *if we're using extended apic ids
++	 */
++	htcfg = read_pci_config(num, slot, func, 0x68);
++	if (htcfg & (1 << 18)) {	
++		printk(KERN_INFO "Detected use of extended apic ids on hypertransport bus\n");
++		if ((htcfg & (1 << 17)) == 0) {
++			printk(KERN_INFO "Enabling hypertransport extended apic interrupt broadcast\n");
++			htcfg |= (1 << 17);
++			write_pci_config(num, slot, func, 0x68, htcfg);
++		}
++	}
++	
++}
++
++static void __init check_hypertransport_config()
++{
++	int num, slot, func;
++	u32 device, vendor;
++	func = 0;
++	for (num = 0; num < 32; num++) {
++		for (slot = 0; slot < 32; slot++) {
++			vendor = read_pci_config(num,slot,func,
++						PCI_VENDOR_ID); 
++			device = read_pci_config(num,slot,func,
++						PCI_DEVICE_ID);
++			vendor &= 0x0000ffff;
++			device >>= 16;
++			if ((vendor == PCI_VENDOR_ID_AMD) &&
++			    (device == PCI_DEVICE_ID_AMD_K8_NB))
++				fix_hypertransport_config(num,slot,func);
++		}
++	}
++
++	return;
++
++}
++
+ static void __init nvidia_bugs(void)
+ {
+ #ifdef CONFIG_ACPI
+@@ -83,15 +127,25 @@ static void __init ati_bugs(void)
  #endif
- 
- 	void (*set_curr_task) (struct rq *rq);
-Index: linux-sched/kernel/sched.c
-===================================================================
---- linux-sched.orig/kernel/sched.c	2007-12-10 20:39:11.000000000 -0500
-+++ linux-sched/kernel/sched.c	2007-12-10 20:39:14.000000000 -0500
-@@ -1620,7 +1620,10 @@ out_activate:
- 
- out_running:
- 	p->state = TASK_RUNNING;
--	wakeup_balance_rt(rq, p);
-+#ifdef CONFIG_SMP
-+	if (p->sched_class->task_wake_up)
-+		p->sched_class->task_wake_up(rq, p);
-+#endif
- out:
- 	task_rq_unlock(rq, &flags);
- 
-@@ -1743,7 +1746,10 @@ void fastcall wake_up_new_task(struct ta
- 		inc_nr_running(p, rq);
- 	}
- 	check_preempt_curr(rq, p);
--	wakeup_balance_rt(rq, p);
-+#ifdef CONFIG_SMP
-+	if (p->sched_class->task_wake_up)
-+		p->sched_class->task_wake_up(rq, p);
-+#endif
- 	task_rq_unlock(rq, &flags);
  }
  
-@@ -1864,7 +1870,10 @@ static void finish_task_switch(struct rq
- 	prev_state = prev->state;
- 	finish_arch_switch(prev);
- 	finish_lock_switch(rq, prev);
--	schedule_tail_balance_rt(rq);
-+#ifdef CONFIG_SMP
-+	if (current->sched_class->post_schedule)
-+		current->sched_class->post_schedule(rq);
-+#endif
++static void __init amd_host_bugs(void)
++{
++	printk(KERN_CRIT "IN AMD_HOST_BUGS\n");
++	check_hypertransport_config();
++}
++
+ struct chipset {
+ 	u16 vendor;
++	u16 device;
++	u32 class;
++	u32 class_mask;
+ 	void (*f)(void);
+ };
  
- 	fire_sched_in_preempt_notifiers(current);
- 	if (mm)
-@@ -3633,7 +3642,10 @@ need_resched_nonpreemptible:
- 		switch_count = &prev->nvcsw;
- 	}
+ static struct chipset early_qrk[] __initdata = {
+-	{ PCI_VENDOR_ID_NVIDIA, nvidia_bugs },
+-	{ PCI_VENDOR_ID_VIA, via_bugs },
+-	{ PCI_VENDOR_ID_ATI, ati_bugs },
++	{ PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, nvidia_bugs },
++	{ PCI_VENDOR_ID_VIA, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, via_bugs },
++	{ PCI_VENDOR_ID_ATI, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, ati_bugs },
++	{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB, PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, amd_host_bugs },
+ 	{}
+ };
  
--	schedule_balance_rt(rq, prev);
-+#ifdef CONFIG_SMP
-+	if (prev->sched_class->pre_schedule)
-+		prev->sched_class->pre_schedule(rq, prev);
-+#endif
+@@ -108,25 +162,35 @@ void __init early_quirks(void)
+ 			for (func = 0; func < 8; func++) {
+ 				u32 class;
+ 				u32 vendor;
++				u32 device;
+ 				u8 type;
+ 				int i;
++
+ 				class = read_pci_config(num,slot,func,
+ 							PCI_CLASS_REVISION);
+ 				if (class == 0xffffffff)
+ 					break;
  
- 	if (unlikely(!rq->nr_running))
- 		idle_balance(cpu, rq);
-Index: linux-sched/kernel/sched_rt.c
-===================================================================
---- linux-sched.orig/kernel/sched_rt.c	2007-12-10 20:39:11.000000000 -0500
-+++ linux-sched/kernel/sched_rt.c	2007-12-10 20:39:14.000000000 -0500
-@@ -689,14 +689,14 @@ static int pull_rt_task(struct rq *this_
- 	return ret;
- }
+-				if ((class >> 16) != PCI_CLASS_BRIDGE_PCI)
+-					continue;
++				class >>= 16;
  
--static void schedule_balance_rt(struct rq *rq, struct task_struct *prev)
-+static void pre_schedule_rt(struct rq *rq, struct task_struct *prev)
- {
- 	/* Try to pull RT tasks here if we lower this rq's prio */
- 	if (unlikely(rt_task(prev)) && rq->rt.highest_prio > prev->prio)
- 		pull_rt_task(rq);
- }
+ 				vendor = read_pci_config(num, slot, func,
+ 							 PCI_VENDOR_ID);
+ 				vendor &= 0xffff;
  
--static void schedule_tail_balance_rt(struct rq *rq)
-+static void post_schedule_rt(struct rq *rq)
- {
- 	/*
- 	 * If we have more than one rt_task queued, then
-@@ -713,10 +713,9 @@ static void schedule_tail_balance_rt(str
- }
+-				for (i = 0; early_qrk[i].f; i++)
+-					if (early_qrk[i].vendor == vendor) {
+-						early_qrk[i].f();
+-						return;
++				device = read_pci_config(num, slot, func,
++							PCI_DEVICE_ID);
++				device >>= 16;
++
++				for(i=0;early_qrk[i].f != NULL;i++) {
++					if (((early_qrk[i].vendor == PCI_ANY_ID) ||
++					    (early_qrk[i].vendor == vendor)) &&
++					   ((early_qrk[i].device == PCI_ANY_ID) ||
++					    (early_qrk[i].device == device)) &&
++					   ((early_qrk[i].class ^ class) & 
++					     early_qrk[i].class_mask)) {
++						early_qrk[i].f();
+ 					}
++				}
  
- 
--static void wakeup_balance_rt(struct rq *rq, struct task_struct *p)
-+static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
- {
--	if (unlikely(rt_task(p)) &&
--	    !task_running(rq, p) &&
-+	if (!task_running(rq, p) &&
- 	    (p->prio >= rq->rt.highest_prio) &&
- 	    rq->rt.overloaded)
- 		push_rt_tasks(rq);
-@@ -780,11 +779,6 @@ static void leave_domain_rt(struct rq *r
- 	if (rq->rt.overloaded)
- 		rt_clear_overload(rq);
- }
--
--#else /* CONFIG_SMP */
--# define schedule_tail_balance_rt(rq)	do { } while (0)
--# define schedule_balance_rt(rq, prev)	do { } while (0)
--# define wakeup_balance_rt(rq, p)	do { } while (0)
- #endif /* CONFIG_SMP */
- 
- static void task_tick_rt(struct rq *rq, struct task_struct *p)
-@@ -838,6 +832,9 @@ const struct sched_class rt_sched_class 
- 	.set_cpus_allowed       = set_cpus_allowed_rt,
- 	.join_domain            = join_domain_rt,
- 	.leave_domain           = leave_domain_rt,
-+	.pre_schedule		= pre_schedule_rt,
-+	.post_schedule		= post_schedule_rt,
-+	.task_wake_up		= task_wake_up_rt,
- #endif
- 
- 	.set_curr_task          = set_curr_task_rt,
-
--- 
+ 				type = read_pci_config_byte(num, slot, func,
+ 							    PCI_HEADER_TYPE);
