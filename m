@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbXLKLlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbXLKMF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752411AbXLKLlB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 06:41:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbXLKLkx
+	id S1752708AbXLKMF4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 07:05:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbXLKMFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 06:40:53 -0500
-Received: from hosted01.westnet.com.au ([203.10.1.211]:37832 "EHLO
-	hosted01.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186AbXLKLkw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 06:40:52 -0500
-X-Greylist: delayed 1457 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Dec 2007 06:40:52 EST
-Message-ID: <475E718A.5080001@snapgear.com>
-Date: Tue, 11 Dec 2007 21:16:26 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 11 Dec 2007 07:05:47 -0500
+Received: from styx.suse.cz ([82.119.242.94]:48642 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750848AbXLKMFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 07:05:47 -0500
+Date: Tue, 11 Dec 2007 13:05:45 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Unify mmap_{32|64}.c
+In-Reply-To: <20071211104321.GA21513@elte.hu>
+Message-ID: <Pine.LNX.4.64.0712111305000.12449@jikos.suse.cz>
+References: <1196889830.10408.50.camel@brick> <20071209081324.GB4509@elte.hu>
+ <1197301855.1799.1.camel@brick> <20071211083917.GB20172@elte.hu>
+ <20071211104321.GA21513@elte.hu>
 MIME-Version: 1.0
-To: Bernd Schmidt <bernds_cb1@t-online.de>
-CC: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       penguin-kernel@I-love.SAKURA.ne.jp, linux-kernel@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>, David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] Add EXPORT_SYMBOL(ksize);
-References: <200712021743.GBH12983.FHOFVJOMFLOStQ@I-love.SAKURA.ne.jp> <20071202134841.GI15974@stusta.de> <20071203153459.ac19dae3.akpm@linux-foundation.org> <20071206210248.GN15974@stusta.de> <475E6A99.1050800@t-online.de>
-In-Reply-To: <475E6A99.1050800@t-online.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-PMX-Branch: TNG-Outgoing
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernd Schmidt wrote:
-> A couple of Cc:s added.
-> 
-> Adrian Bunk wrote:
->> On Mon, Dec 03, 2007 at 03:34:59PM -0800, Andrew Morton wrote:
->>> On Sun, 2 Dec 2007 14:48:42 +0100
->>> Adrian Bunk <bunk@kernel.org> wrote:
->>>
->>>> On Sun, Dec 02, 2007 at 05:43:39PM +0900, Tetsuo Handa wrote:
->>>>> mm/slub.c exports ksize(), but mm/slob.c and mm/slab.c don't. I don't know why.
->>>>> ...
->>>> That's due to the fact that my patch to remove this unused export from 
->>>> slub was not yet applied...
->>>>
->>>> Where is the modular in-kernel user?
->>>>
->>> binfmt_flat.c, binfmt_elf_fdpic.c.
->> I could have sworn I had checked that both are bools, but BINFMT_FLAT is 
->> actually a tristate.
->>
->> Is anyone actually using binfmt_flat modular (considering it's only 
->> available for !MMU embedded systems)? If yes, then only exporting 
->> ksize() will not be enough for getting it working modular...
-> 
-> We're not using modular binfmt_flat on the Blackfin, but I can't speak
-> for other architectures.
+On Tue, 11 Dec 2007, Ingo Molnar wrote:
 
-I don't know of any architectures that do (or have ever) used
-these as modules.
+> > > mmap_is_ia32 always true for X86_32, or while emulating IA32 on X86_64
+> > > Randomization not supported on X86_32 in legacy layout.  Both layouts 
+> > > allow randomization on X86_64.
+> > thanks for sorting this out - this looks really clean now. I've added 
+> > your patch to x86.git.
+> hm, it fails to boot on Fedora 8:
+>  Freeing unused kernel memory: 296k freed
+>  Write protecting the kernel read-only data: 1500k
+>  mount[623]: segfault at 0000000b ip 4d681ab6 sp bf9a1b94 error 6
+>  modprobe[625]: segfault at 0000000b ip 4d681ab6 sp bffd9994 error 6
+>  consoletype[629]: segfault at 0000000b ip 4d681ab6 sp bfb6ad14 error 6
+>  awk[632]: segfault at 0000000b ip 4d681ab6 sp bffe68c4 error 6
+>  fstab-decode[633]: segfault at 0000000b ip 4d681ab6 sp bff1c8c4 error 6
+>  setsysfont[634]: segfault at 0000000b ip 4d681ab6 sp bfdd0f74 error 6
+>  hwclock[637]: segfault at 0000000b ip 4d681ab6 sp bf963304 error 6
+>  touch[642]: segfault at 0000000b ip 4d681ab6 sp bf98cb34 error 6
+>  modprobe[651]: segfault at 0000000b ip 4d681ab6 sp bfbc0564 error 6
+>  rhgb-client[654]: segfault at 0000000b ip 4d681ab6 sp bfe9c024 error 6
 
-Regards
-Greg
+Ingo,
 
+just for clarification -- this happens with Harvery's merged code (haven't 
+looked at it yet), but not with the original code, do I understand it 
+correctly?
 
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
