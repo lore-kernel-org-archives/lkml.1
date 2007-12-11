@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758002AbXLKW0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbXLKW0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758002AbXLKW0L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbXLKWXK
+	id S1758063AbXLKW0h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:26:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbXLKWXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:23:10 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38532 "EHLO
+	Tue, 11 Dec 2007 17:23:31 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38538 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755928AbXLKWXF (ORCPT
+	with ESMTP id S1756033AbXLKWXa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:23:05 -0500
-Date: Tue, 11 Dec 2007 23:23:06 +0100
+	Tue, 11 Dec 2007 17:23:30 -0500
+Date: Tue, 11 Dec 2007 23:23:31 +0100
 From: Adrian Bunk <bunk@kernel.org>
-To: ram.vepa@neterion.com, santosh.rastapur@neterion.com,
-       sivakumar.subramani@neterion.com, sreenivasa.honnur@neterion.com,
-       jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/net/s2io.c section fixes
-Message-ID: <20071211222306.GV14204@stusta.de>
+To: megaraidlinux@lsi.com, James.Bottomley@HansenPartnership.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] scsi/megaraid.c: __devexit annotation
+Message-ID: <20071211222331.GW14204@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -26,45 +24,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Code used by the non-__devinit s2io_open() mustn't be __devinit.
-
-This patch fixes the following section mismatch with CONFIG_HOTPLUG=n:
-
-<--  snip  -->
-
-...
-WARNING: vmlinux.o(.text+0x6f6e3e): Section mismatch: reference to .init.text.20:s2io_test_intr (between 's2io_open' and 's2io_ethtool_sset')
-...
-
-<--  snip  -->
+megaraid_remove_one() can become __devexit.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- drivers/net/s2io.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-50fb761b99d7ee0b234359d02144f84a87e2faff 
-diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
-index 121cb10..9d80f1c 100644
---- a/drivers/net/s2io.c
-+++ b/drivers/net/s2io.c
-@@ -3737,7 +3737,7 @@ static int s2io_enable_msi_x(struct s2io_nic *nic)
+b7d71f38d1c1aa66311e862b58f36aa34c888f98 
+diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
+index 66c6520..765c24d 100644
+--- a/drivers/scsi/megaraid.c
++++ b/drivers/scsi/megaraid.c
+@@ -4889,7 +4889,7 @@ __megaraid_shutdown(adapter_t *adapter)
+ 		mdelay(1000);
  }
  
- /* Handle software interrupt used during MSI(X) test */
--static irqreturn_t __devinit s2io_test_intr(int irq, void *dev_id)
-+static irqreturn_t s2io_test_intr(int irq, void *dev_id)
+-static void
++static void __devexit
+ megaraid_remove_one(struct pci_dev *pdev)
  {
- 	struct s2io_nic *sp = dev_id;
- 
-@@ -3748,7 +3748,7 @@ static irqreturn_t __devinit s2io_test_intr(int irq, void *dev_id)
- }
- 
- /* Test interrupt path by forcing a a software IRQ */
--static int __devinit s2io_test_msi(struct s2io_nic *sp)
-+static int s2io_test_msi(struct s2io_nic *sp)
- {
- 	struct pci_dev *pdev = sp->pdev;
- 	struct XENA_dev_config __iomem *bar0 = sp->bar0;
+ 	struct Scsi_Host *host = pci_get_drvdata(pdev);
+
