@@ -1,86 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbXLKXlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbXLKXoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757415AbXLKXlT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 18:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbXLKXlJ
+	id S1756914AbXLKXoP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 18:44:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbXLKXn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 18:41:09 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:6707 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753350AbXLKXlH (ORCPT
+	Tue, 11 Dec 2007 18:43:59 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47966 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750992AbXLKXn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 18:41:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=T2VT/WmlR+41rZwerc5hjjG8PkwT034HaY6K0r2Co2L4pDLG3WvQv+/UJ14IUGuxRZ1dWlaeHAe8m9XZNlp1UnxzrdRjPWZdZeQHFbq9xuk+s0DF4b1UEkrdHSsHHiBmN2dri1GZYe3LQWIrl9NhvwYB/EFq3TBX8xH1WpAuVcg=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Rene Herman <rene.herman@gmail.com>
-Subject: Re: [RFT] Port 0x80 I/O speed
-Date: Wed, 12 Dec 2007 01:40:34 +0200
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
-       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
-       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
-References: <475F1DC6.5090403@keyaccess.nl>
-In-Reply-To: <475F1DC6.5090403@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 11 Dec 2007 18:43:58 -0500
+Date: Tue, 11 Dec 2007 15:43:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, gentuu@gmail.com
+Subject: Re: [PATCH] Improve inode list scanning in add_dquot_ref()
+Message-Id: <20071211154310.dd2a3065.akpm@linux-foundation.org>
+In-Reply-To: <20071211134319.GB8153@duck.suse.cz>
+References: <20071211134319.GB8153@duck.suse.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712120140.34697.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 December 2007 01:31:18 Rene Herman wrote:
-> Good day.
+On Tue, 11 Dec 2007 14:43:19 +0100
+Jan Kara <jack@suse.cz> wrote:
+
+>   Hi,
 > 
-> Would some people on x86 (both 32 and 64) be kind enough to compile and run 
-> the attached program? This is about testing how long I/O port access to port 
-> 0x80 takes. It measures in CPU cycles so CPU speed is crucial in reporting.
+>   attached patch makes add_dquot_ref() quite faster if used on a life
+> filesystem. It has survived some testing on my machine but there could be
+> some subtle races I've missed so please leave it in -mm for a while (not
+> that I'd think that people use quotas with -mm kernels but at least it
+> should go into vanilla in -rc1...). Thanks.
 > 
-> Posted a previous incarnation of this before, buried in the outb 0x80 thread 
-> which had a serialising problem. This one should as far as I can see measure 
-> the right thing though. Please yell if you disagree...
+> 								Honza
 > 
-> For me, on a Duron 1300 (AMD756 chipset) I have a constant:
+> ---
+> We restarted scan of sb->s_inodes list whenever we had to drop inode_lock in
+> add_dquot_ref(). This leads to overall quadratic running time and thus
+> add_dquot_ref() can take several minutes when called on a life filesystem.  We
+> fix the problem by using the fact that inode cannot be removed from s_inodes
+> list while we hold a reference to it and thus we can safely restart the scan if
+> we don't drop the reference. Here we use the fact that inodes freshly added to
+> s_inodes list are already guaranteed to have quotas properly initialized and
+> the ordering of inodes on s_inodes list does not change so we cannot skip any
+> inode.  Thanks goes to Nick <gentuu@gmail.com> for analyzing the problem and
+> testing the fix.
 > 
-> rene@7ixe4:~/src/port80$ su -c ./port80
-> cycles: out 2400, in 2400
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> CC: Nick <gentuu@gmail.com>
 > 
-> and on a PII 400 (Intel 440BX chipset) a constant:
-> 
-> rene@6bap:~/src/port80$ su -c ./port80
-> cycles: out 553, in 251
-> 
-> Results are (mostly) independent of compiler optimisation, but testing with 
-> an -O2 compile should be most useful. Thanks!
-> 
-> Rene.
-> 
+> diff --git a/fs/dquot.c b/fs/dquot.c
+> index 2809768..ecea4be 100644
+> --- a/fs/dquot.c
+> +++ b/fs/dquot.c
+> @@ -696,9 +696,8 @@ static int dqinit_needed(struct inode *inode, int type)
+>  /* This routine is guarded by dqonoff_mutex mutex */
+>  static void add_dquot_ref(struct super_block *sb, int type)
+>  {
+> -	struct inode *inode;
+> +	struct inode *inode, *old_inode = NULL;
+>  
+> -restart:
+>  	spin_lock(&inode_lock);
+>  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+>  		if (!atomic_read(&inode->i_writecount))
+> @@ -711,12 +710,20 @@ restart:
+>  		__iget(inode);
+>  		spin_unlock(&inode_lock);
+>  
+> +		if (old_inode)
+> +			iput(old_inode);
+>  		sb->dq_op->initialize(inode, type);
+> -		iput(inode);
+> -		/* As we may have blocked we had better restart... */
+> -		goto restart;
+> +		/* We hold a reference to 'inode' so it couldn't have been
+> +		 * removed from s_inodes list while we dropped the inode_lock.
+> +		 * We cannot iput the inode now as we can be holding the last
+> +		 * reference and we cannot iput it under inode_lock. So we
+> +		 * keep the reference and iput it later. */
+> +		old_inode = inode;
+> +		spin_lock(&inode_lock);
+>  	}
+>  	spin_unlock(&inode_lock);
+> +	if (old_inode)
+> +		iput(old_inode);
+>  }
+>  
+
+iput(NULL) is legal.  In the great majority of cases old_inode!=NULL so I
+think we should use that feature here?
 
 
-Sure,
+--- a/fs/dquot.c~quota-improve-inode-list-scanning-in-add_dquot_ref-fix
++++ a/fs/dquot.c
+@@ -710,8 +710,7 @@ static void add_dquot_ref(struct super_b
+ 		__iget(inode);
+ 		spin_unlock(&inode_lock);
+ 
+-		if (old_inode)
+-			iput(old_inode);
++		iput(old_inode);
+ 		sb->dq_op->initialize(inode, type);
+ 		/* We hold a reference to 'inode' so it couldn't have been
+ 		 * removed from s_inodes list while we dropped the inode_lock.
+@@ -722,8 +721,7 @@ static void add_dquot_ref(struct super_b
+ 		spin_lock(&inode_lock);
+ 	}
+ 	spin_unlock(&inode_lock);
+-	if (old_inode)
+-		iput(old_inode);
++	iput(old_inode);
+ }
+ 
+ /* Return 0 if dqput() won't block (note that 1 doesn't necessarily mean blocking) */
+_
 
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1767, in 1147
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1774, in 1148
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1769, in 1150
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1769, in 1150
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1777, in 1150
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1766, in 1149
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1768, in 1148
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1765, in 1147
-
-
-Core 2 Duo system (ICH8/Intel DG965RY motherboard)
