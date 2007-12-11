@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784AbXLKWov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbXLKWpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757784AbXLKWov (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 17:44:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbXLKWoK
+	id S1755264AbXLKWpQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 17:45:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757178AbXLKWoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 17:44:10 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34175 "EHLO mx1.redhat.com"
+	Tue, 11 Dec 2007 17:44:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34190 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754504AbXLKWoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 17:44:07 -0500
-Date: Tue, 11 Dec 2007 17:43:15 -0500 (EST)
-Message-Id: <20071211.174315.57154895.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com
-Subject: [PATCH 06/30] blk_end_request: changing DAC960 (take 4)
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1756314AbXLKWoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 17:44:10 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1197408847.28006.184.camel@moss-spartans.epoch.ncsc.mil>
+References: <1197408847.28006.184.camel@moss-spartans.epoch.ncsc.mil> <1197401823.28006.74.camel@moss-spartans.epoch.ncsc.mil> <1197322068.18120.176.camel@moss-spartans.epoch.ncsc.mil> <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil> <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193859.24617.36392.stgit@warthog.procyon.org.uk> <25037.1197306473@redhat.com> <25572.1197320887@redhat.com> <25965.1197329769@redhat.com> <9789.1197405725@redhat.com> 
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: dhowells@redhat.com, Karl MacMillan <kmacmill@redhat.com>,
+       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Tue, 11 Dec 2007 22:43:00 +0000
+Message-ID: <12117.1197412980@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts DAC960 to use blk_end_request interfaces.
-Related 'UpToDate' arguments are converted to 'Error'.
+Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
----
- drivers/block/DAC960.c |   11 ++---------
- 1 files changed, 2 insertions(+), 9 deletions(-)
+> All your code has to do is invoke a function provided by libselinux.
 
-Index: 2.6.24-rc4/drivers/block/DAC960.c
-===================================================================
---- 2.6.24-rc4.orig/drivers/block/DAC960.c
-+++ 2.6.24-rc4/drivers/block/DAC960.c
-@@ -3455,19 +3455,12 @@ static inline bool DAC960_ProcessComplet
- 						 bool SuccessfulIO)
- {
- 	struct request *Request = Command->Request;
--	int UpToDate;
--
--	UpToDate = 0;
--	if (SuccessfulIO)
--		UpToDate = 1;
-+	int Error = SuccessfulIO ? 0 : -EIO;
- 
- 	pci_unmap_sg(Command->Controller->PCIDevice, Command->cmd_sglist,
- 		Command->SegmentCount, Command->DmaDirection);
- 
--	 if (!end_that_request_first(Request, UpToDate, Command->BlockCount)) {
--		add_disk_randomness(Request->rq_disk);
-- 	 	end_that_request_last(Request, UpToDate);
--
-+	 if (!__blk_end_request(Request, Error, Command->BlockCount << 9)) {
- 		if (Command->Completion) {
- 			complete(Command->Completion);
- 			Command->Completion = NULL;
+Calling libselinux means it's a special case for a specific LSM.
+
+I think the best way to do this, then, has to be to dlopen the appropriate LSM
+library.  That way I don't need to do any conditional compilation or linking,
+but can build all the bits in to cachefilesd and have the appropriate one
+selected by the /etc/cachefilesd.conf.
+
+So, what do I invoke in libselinux, how do I configure it, and how do I
+integrate the config into my RPM and install it?
+
+And then what does it give me that I can hand to the kernel (a context string
+for SELinux, I presume), how do I get the kernel to make a check on it, how do
+I configure the check and how do I install that config from my RPM (I presume
+I just need to modify the .fc, .if and .te files that I have already)?
+
+> That mostly works, but it means that an update to policy may require an
+> update to /etc/cachefilesd.conf, or that switching from one policy to
+> another might likewise require changing that file.  Versus using a
+> separate policy-provided config file for the label.
+
+Whilst that's a fair point, if it's in a config file somewhere, then someone
+may want to change it or someone may want to provide a second file for a
+second cache with a different security label.
+
+> BTW, as should be obvious, some LSMs aren't label-based at all, so it
+> would need to be optional.
+
+Aargh.  In which case it might not be possible to make the SELinux context
+passing from userspace -> kernel generic for all LSMs:-(
+
+David
