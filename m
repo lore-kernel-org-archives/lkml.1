@@ -1,71 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760590AbXLLUgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbXLLUhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760590AbXLLUgX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 15:36:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXLLUgL
+	id S1760217AbXLLUhl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 15:37:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXLLUhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 15:36:11 -0500
-Received: from spirit.analogic.com ([204.178.40.4]:4579 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757492AbXLLUgJ convert rfc822-to-8bit (ORCPT
+	Wed, 12 Dec 2007 15:37:33 -0500
+Received: from mho-02-bos.mailhop.org ([63.208.196.179]:54957 "EHLO
+	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751752AbXLLUhc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 15:36:09 -0500
+	Wed, 12 Dec 2007 15:37:32 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 18.85.9.165
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX195xun5SKuTrWFzaYXK5b89
+Message-ID: <47604673.8000509@reed.com>
+Date: Wed, 12 Dec 2007 15:37:07 -0500
+From: "David P. Reed" <dpreed@reed.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 12 Dec 2007 20:31:34.0058 (UTC) FILETIME=[FC7E30A0:01C83CFD]
-Content-class: urn:content-classes:message
-Subject: Re: Attitude problems.
-Date: Wed, 12 Dec 2007 15:31:33 -0500
-Message-ID: <Pine.LNX.4.61.0712121520540.6100@chaos.analogic.com>
-in-reply-to: <476039AA.7010008@reed.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Attitude problems.
-thread-index: Acg8/fyMuvhX63CqSP2dvnApCY/Xxw==
-References: <475879CD.9080006@reed.com> <20071207160439.71b7f46a@the-village.bc.nu> <20071209125458.GB4381@ucw.cz> <20071209165908.GA15910@one.firstfloor.org> <20071209212513.GC24284@elf.ucw.cz> <475CBDD7.5050602@keyaccess.nl> <m3bq8y23de.fsf@maximus.localdomain> <475DE37F.20706@davidnewall.com> <475DE6F4.80702@zytor.com> <475DEB23.1000304@davidnewall.com> <20071211084059.3d03e11d@tux.DEF.witbe.net> <475E5D4B.8020101@keyaccess.nl> <475E7DC2.4060509@davidnewall.com> <475E8D91.20201@keyaccess.nl> <20071211143224.15900995@tux.DEF.witbe.net> <475E9B9B.2050709@keyaccess.nl> <475EACB8.7080608@keyaccess.nl> <20071211163706.2dc82275@tux.DEF.witbe.net> <475EB263.2050405@keyaccess.nl> <475EC1C0.2040000@reed.com> <20071211173231.2b87a81f@the-village.bc.nu> <475EE2CA.6020601@reed.com> <Pine.LNX.4.61.0712111513490.23653@chaos.analogic.com> <475F23BD.3040903@reed.com> <Pine.LNX.4.61.0712120802300.4443@chaos.analogic.com> <476039AA.7010008@reed.com>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "David P. Reed" <dpreed@reed.com>
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Rene Herman" <rene.herman@keyaccess.nl>,
-       "Paul Rolland" <rol@as2917.net>, "David Newall" <david@davidnewall.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Krzysztof Halasa" <khc@pm.waw.pl>,
-       "Pavel Machek" <pavel@ucw.cz>, "Andi Kleen" <andi@firstfloor.org>,
-       <linux-kernel@vger.kernel.org>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@redhat.com>, <rol@witbe.net>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: Rene Herman <rene.herman@gmail.com>
+CC: Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
+       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       David Newall <david@davidnewall.com>, Paul Rolland <rol@as2917.net>,
+       "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: More info on port 80 symptoms on MCP51 machine.
+References: <475DE6F4.80702@zytor.com> <475DEB23.1000304@davidnewall.com> <20071211084059.3d03e11d@tux.DEF.witbe.net> <475E5D4B.8020101@keyaccess.nl> <475E7DC2.4060509@davidnewall.com> <475E8D91.20201@keyaccess.nl> <475E95A3.3070801@davidnewall.com> <Pine.LNX.4.61.0712111024060.22976@chaos.analogic.com> <20071211163017.GD16750@one.firstfloor.org> <475EBFBA.6090301@keyaccess.nl> <20071211191649.GB3437@elf.ucw.cz> <475EEC75.80609@keyaccess.nl> <47603F66.3070108@reed.com> <476043DA.5000602@keyaccess.nl>
+In-Reply-To: <476043DA.5000602@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Port 0xED, just FYI:
 
-On Wed, 12 Dec 2007, David P. Reed wrote:
+cycles: out 1430, in 1370
+cycles: out 1429, in 1370
 
-> Who has attitude problems here?  I have indeed learned a lot about assholes.
+(800 Mhz)
+
+
+Rene Herman wrote:
+> On 12-12-07 21:07, David P. Reed wrote:
 >
-> linux-os (Dick Johnson) wrote:
->> Yep. We are all wrong. You come out of nowhere and claim to
->> be right. Goodbye.
+>> Sadly, I've been busy with other crises in my day job for the last 
+>> few days.   I did modify Rene's test program and ran it on my 
+>> "problem" machine, with the results below.
 >>
-
-Hmmm, I gave you every opportunity to back off your pretense
-of writing code for the IBM/PC before it existed. You insisted
-upon continuing your diatribe. You are the one with the attitude
-problem. FYI, the last COMPLETE BIOS I wrote is on-line at:
-http://www.AbominableFirebug.com/Sources/pbios.zip
-It was written seven years ago. The first one I helped write
-was written 36 years ago. I do know something about this stuff.
-
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+>> The interesting part of this is that port 80 seems to respond to "in" 
+>> instructions faster than the presumably "unused" ports 0xEC  and 
+>> 0XEF  (those were mentioned by someone as alternatives to port 80).
+>
+> Don't know if someone else mentioned those but I only said 0xed. 
+> That's the value Phoenix BIOSes use (yes, and which H. Peter Anvin) 
+> reported as being generally problematic as well).
+>
+> It's in fact not all that unexpected it seems that port 0x80 responds 
+> to in given that it's used by the DMA controller. It's a write that 
+> falls on deaf ears. The read is going to be faster if it doesn't 
+> timeout on an unused port.
+>
+> Although it's not faster for everyone, such as for me indicating that 
+> for us port 0x80 is really-really unused, it is for many. See results 
+> here:
+>
+> http://lkml.org/lkml/2007/12/12/309
+>
+>> That, and the fact that the port 80 test reliably freezes the machine 
+>> solid the second time it is run, and the "hwclock" utility reliably 
+>> hangs the machine if the port 80's are used in the 
+>> CMOS_READ/CMOS_WRITE loop, seems to strongly indicate that this 
+>> chipset or motherboard actually uses port 80, rather than there being 
+>> a bus problem.
+>
+> Yes, so it seems. In this case we could in fact also "fix" your 
+> situation by just going to 0xed depending on for example DMI. Alan Cox 
+> just posted a few further problems with a simple udelay() replacement...
+>
+>> Someone might have an in to nVidia to clarify this, since I don't.  
+>> In any case, the udelay(2) approach seems to be a safe fix for this 
+>> machine.
+>>
+>> Hope input from an "outsider" is helpful in going forward.   I put a 
+>> lot of time and effort into tracking down this problem on this 
+>> particular machine model, largely because I like the machine.
+>>
+>> Running the (slightly modified to test ports 80, ec, ef instead of 
+>> just port 80) test when the 2 GHz max speed CPU is running at 800 
+>> MHz, here's what I get for port 80 and port ec and port ef.
+>>
+>> port 80:   cycles: out 1430, in 792
+>
+> At 800 MHz, that's 1.79 / 0.99 microseconds. The precision of the "in" 
+> is somewhat interesting. Did someone at nVidia think it's an "in" from 
+> 0x80 which should get the 1 microsec delay?
+>
+>> port ef:    cycles: out 1431, in 1378
+>> port ec:   cycles: out 1432, in 1372
+>
+> Unused ports, bus timeouts.
+>
+>> ----------------------------
+>>
+>> System info:  HP Pavilion dv9000z laptop (AMD64x2)
+>>
+>> PCI bus controller is nVidia MCP51.
+>> processor       : 0
+>> vendor_id       : AuthenticAMD
+>> cpu family      : 15
+>> model           : 72
+>> model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-60
+>> stepping        : 2
+>> cpu MHz         : 800.000
+>> cache size      : 512 KB
+>
+> Rene.
+>
