@@ -1,251 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbXLLVkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758297AbXLLVnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754126AbXLLVkM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 16:40:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757193AbXLLVjt
+	id S1758297AbXLLVnu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 16:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbXLLVnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 16:39:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51932 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760118AbXLLVjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 16:39:47 -0500
-Date: Wed, 12 Dec 2007 22:39:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull] x86, timer, genirq updates
-Message-ID: <20071212213927.GA27762@elte.hu>
+	Wed, 12 Dec 2007 16:43:42 -0500
+Received: from [87.201.200.205] ([87.201.200.205]:37287 "EHLO HasBox.COM"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751229AbXLLVnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 16:43:41 -0500
+Message-ID: <4760560A.4030202@0Bits.COM>
+Date: Thu, 13 Dec 2007 01:43:38 +0400
+From: Mitch <Mitch@0Bits.COM>
+User-Agent: Thunderbird 3.0a1pre (X11/2007112417)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: ext3 SMP bug  ?  PANIC in __d_find_alias 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It is on:
 
-Linus, please pull the latest x86 git tree from:
+$ uname -a
+Linux home 2.6.23 #5 SMP PREEMPT Sun Oct 21 23:08:50 GST 2007 i686 
+unknown unknown GNU/Linux
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+And yes it happened on previous kernels also at least since .21
+I've had 6 panics so far randomly, but generally when doing a "updatedb" 
+(from find(1)) which seems to trigger it ever so often if there is other 
+activity also going on.
 
-x86: an AMD/Barcelona bugfix, timers: two bugfixes, genirq: 
-missing inline function added. Tested on 32-bit and 64-bit x86.
+M
 
-	Ingo
+-------- Original Message --------
+Subject: Re: ext3 SMP bug  ?  PANIC in __d_find_alias
+Date: Wed, 12 Dec 2007 20:36:40 +0100
+From: Rafael J. Wysocki <rjw@sisk.pl>
+To: Mitch <Mitch@0bits.com>
+CC: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <475FD03A.7080401@0Bits.COM>
 
------------------->
-Adrian Bunk (1):
-      timer: kernel/timer.c section fixes
+[Added CC to linux-ext4@vger.kernel.org]
 
-Barry Kasindorf (1):
-      oprofile: op_model_athlon.c support for AMD family 10h barcelona performance counters
+On Wednesday, 12 of December 2007, Mitch wrote:
+> Can anyone help with this ? This seems to be a true SMP bug - the same 
+> kernel on another UP machine is working fine (although different h/w). 
+> Seems like stress (find for example) can easily trigger this. Does it 
+> look like i have a bad filesystem ? Can anyone help me figure out which 
+> one ? The fact that this is tainted (due to nvidia) is a red herring i 
+> think because both my machines (the SMP and UP one) are using the same 
+> nvidia module and the panic is in ext3 code.
 
-Kevin Hilman (1):
-      genirq: add unlocked version of set_irq_handler()
+Which kernel is this?
 
-Thomas Gleixner (1):
-      clockevents: fix reprogramming decision in oneshot broadcast
+Did it happen with any previous kernel?
 
- arch/x86/oprofile/op_model_athlon.c |   22 ++++++++++----
- include/linux/irq.h                 |    7 ++++
- kernel/time/tick-broadcast.c        |   56 +++++++++++++-----------------------
- kernel/timer.c                      |    4 +-
- 4 files changed, 46 insertions(+), 43 deletions(-)
 
-diff --git a/arch/x86/oprofile/op_model_athlon.c b/arch/x86/oprofile/op_model_athlon.c
-index 3057a19..c3ee433 100644
---- a/arch/x86/oprofile/op_model_athlon.c
-+++ b/arch/x86/oprofile/op_model_athlon.c
-@@ -1,6 +1,6 @@
- /**
-  * @file op_model_athlon.h
-- * athlon / K7 model-specific MSR operations
-+ * athlon / K7 / K8 / Family 10h model-specific MSR operations
-  *
-  * @remark Copyright 2002 OProfile authors
-  * @remark Read the file COPYING
-@@ -31,12 +31,16 @@
- #define CTRL_WRITE(l,h,msrs,c) do {wrmsr(msrs->controls[(c)].addr, (l), (h));} while (0)
- #define CTRL_SET_ACTIVE(n) (n |= (1<<22))
- #define CTRL_SET_INACTIVE(n) (n &= ~(1<<22))
--#define CTRL_CLEAR(x) (x &= (1<<21))
-+#define CTRL_CLEAR_LO(x) (x &= (1<<21))
-+#define CTRL_CLEAR_HI(x) (x &= 0xfffffcf0)
- #define CTRL_SET_ENABLE(val) (val |= 1<<20)
- #define CTRL_SET_USR(val,u) (val |= ((u & 1) << 16))
- #define CTRL_SET_KERN(val,k) (val |= ((k & 1) << 17))
- #define CTRL_SET_UM(val, m) (val |= (m << 8))
--#define CTRL_SET_EVENT(val, e) (val |= e)
-+#define CTRL_SET_EVENT_LOW(val, e) (val |= (e & 0xff))
-+#define CTRL_SET_EVENT_HIGH(val, e) (val |= ((e >> 8) & 0xf))
-+#define CTRL_SET_HOST_ONLY(val, h) (val |= ((h & 1) << 9))
-+#define CTRL_SET_GUEST_ONLY(val, h) (val |= ((h & 1) << 8))
- 
- static unsigned long reset_value[NUM_COUNTERS];
-  
-@@ -70,7 +74,8 @@ static void athlon_setup_ctrs(struct op_msrs const * const msrs)
- 		if (unlikely(!CTRL_IS_RESERVED(msrs,i)))
- 			continue;
- 		CTRL_READ(low, high, msrs, i);
--		CTRL_CLEAR(low);
-+		CTRL_CLEAR_LO(low);
-+		CTRL_CLEAR_HI(high);
- 		CTRL_WRITE(low, high, msrs, i);
- 	}
- 
-@@ -89,12 +94,17 @@ static void athlon_setup_ctrs(struct op_msrs const * const msrs)
- 			CTR_WRITE(counter_config[i].count, msrs, i);
- 
- 			CTRL_READ(low, high, msrs, i);
--			CTRL_CLEAR(low);
-+			CTRL_CLEAR_LO(low);
-+			CTRL_CLEAR_HI(high);
- 			CTRL_SET_ENABLE(low);
- 			CTRL_SET_USR(low, counter_config[i].user);
- 			CTRL_SET_KERN(low, counter_config[i].kernel);
- 			CTRL_SET_UM(low, counter_config[i].unit_mask);
--			CTRL_SET_EVENT(low, counter_config[i].event);
-+			CTRL_SET_EVENT_LOW(low, counter_config[i].event);
-+			CTRL_SET_EVENT_HIGH(high, counter_config[i].event);
-+			CTRL_SET_HOST_ONLY(high, 0);
-+			CTRL_SET_GUEST_ONLY(high, 0);
-+
- 			CTRL_WRITE(low, high, msrs, i);
- 		} else {
- 			reset_value[i] = 0;
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index efc8853..4669be0 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -339,6 +339,13 @@ extern void
- __set_irq_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
- 		  const char *name);
- 
-+/* caller has locked the irq_desc and both params are valid */
-+static inline void __set_irq_handler_unlocked(int irq,
-+					      irq_flow_handler_t handler)
-+{
-+	irq_desc[irq].handle_irq = handler;
-+}
-+
- /*
-  * Set a highlevel flow handler for a given IRQ:
-  */
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index aa82d7b..5b86698 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -384,45 +384,19 @@ int tick_resume_broadcast_oneshot(struct clock_event_device *bc)
- }
- 
- /*
-- * Reprogram the broadcast device:
-- *
-- * Called with tick_broadcast_lock held and interrupts disabled.
-- */
--static int tick_broadcast_reprogram(void)
--{
--	ktime_t expires = { .tv64 = KTIME_MAX };
--	struct tick_device *td;
--	int cpu;
--
--	/*
--	 * Find the event which expires next:
--	 */
--	for (cpu = first_cpu(tick_broadcast_oneshot_mask); cpu != NR_CPUS;
--	     cpu = next_cpu(cpu, tick_broadcast_oneshot_mask)) {
--		td = &per_cpu(tick_cpu_device, cpu);
--		if (td->evtdev->next_event.tv64 < expires.tv64)
--			expires = td->evtdev->next_event;
--	}
--
--	if (expires.tv64 == KTIME_MAX)
--		return 0;
--
--	return tick_broadcast_set_event(expires, 0);
--}
--
--/*
-  * Handle oneshot mode broadcasting
-  */
- static void tick_handle_oneshot_broadcast(struct clock_event_device *dev)
- {
- 	struct tick_device *td;
- 	cpumask_t mask;
--	ktime_t now;
-+	ktime_t now, next_event;
- 	int cpu;
- 
- 	spin_lock(&tick_broadcast_lock);
- again:
- 	dev->next_event.tv64 = KTIME_MAX;
-+	next_event.tv64 = KTIME_MAX;
- 	mask = CPU_MASK_NONE;
- 	now = ktime_get();
- 	/* Find all expired events */
-@@ -431,19 +405,31 @@ again:
- 		td = &per_cpu(tick_cpu_device, cpu);
- 		if (td->evtdev->next_event.tv64 <= now.tv64)
- 			cpu_set(cpu, mask);
-+		else if (td->evtdev->next_event.tv64 < next_event.tv64)
-+			next_event.tv64 = td->evtdev->next_event.tv64;
- 	}
- 
- 	/*
--	 * Wakeup the cpus which have an expired event. The broadcast
--	 * device is reprogrammed in the return from idle code.
-+	 * Wakeup the cpus which have an expired event.
-+	 */
-+	tick_do_broadcast(mask);
-+
-+	/*
-+	 * Two reasons for reprogram:
-+	 *
-+	 * - The global event did not expire any CPU local
-+	 * events. This happens in dyntick mode, as the maximum PIT
-+	 * delta is quite small.
-+	 *
-+	 * - There are pending events on sleeping CPUs which were not
-+	 * in the event mask
- 	 */
--	if (!tick_do_broadcast(mask)) {
-+	if (next_event.tv64 != KTIME_MAX) {
- 		/*
--		 * The global event did not expire any CPU local
--		 * events. This happens in dyntick mode, as the
--		 * maximum PIT delta is quite small.
-+		 * Rearm the broadcast device. If event expired,
-+		 * repeat the above
- 		 */
--		if (tick_broadcast_reprogram())
-+		if (tick_broadcast_set_event(next_event, 0))
- 			goto again;
- 	}
- 	spin_unlock(&tick_broadcast_lock);
-diff --git a/kernel/timer.c b/kernel/timer.c
-index a05817c..d4527dc 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -1219,11 +1219,11 @@ asmlinkage long sys_sysinfo(struct sysinfo __user *info)
-  */
- static struct lock_class_key base_lock_keys[NR_CPUS];
- 
--static int __devinit init_timers_cpu(int cpu)
-+static int __cpuinit init_timers_cpu(int cpu)
- {
- 	int j;
- 	tvec_base_t *base;
--	static char __devinitdata tvec_base_done[NR_CPUS];
-+	static char __cpuinitdata tvec_base_done[NR_CPUS];
- 
- 	if (!tvec_base_done[cpu]) {
- 		static char boot_done;
+> Dec 10 03:02:43 home kernel: BUG: unable to handle kernel NULL pointer 
+> dereference at virtual address 00000000
+> Dec 10 03:02:43 home kernel:  printing eip:
+> Dec 10 03:02:43 home kernel: c01761fc
+> Dec 10 03:02:43 home kernel: *pdpt = 00000000198a6001
+> Dec 10 03:02:43 home kernel: *pde = 0000000000000000
+> Dec 10 03:02:43 home kernel: Oops: 0000 [#1]
+> Dec 10 03:02:43 home kernel: PREEMPT SMP
+> Dec 10 03:02:43 home kernel: Modules linked in: loop nls_iso8859_1 
+> nls_cp437 vfat fat tun iptable_nat nvidia(P) appletalk psnap llc nfsd expo
+> rtfs lockd sunrpc xt_limit xt_tcpudp iptable_mangle ipt_LOG 
+> ipt_MASQUERADE nf_nat ipt_TOS ipt_REJECT nf_conntrack_irc 
+> nf_conntrack_ftp nf_con
+> ntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables 
+> ftdi_sio usbserial forcedeth snd_hda_intel snd_seq_oss snd_seq_midi_event
+>   snd_seq snd_seq_device snd_pcm_oss snd_pcm snd_timer snd_page_alloc 
+> snd_mixer_oss snd usb_storage ehci_hcd ohci_hcd it87 hwmon_vid i2c_dev i
+> 2c_core
+> Dec 10 03:02:43 home kernel: CPU:    1
+> Dec 10 03:02:43 home kernel: EIP:    0060:[__d_find_alias+44/192] 
+> Tainted: P        VLI
+> Dec 10 03:02:43 home kernel: EFLAGS: 00010282   (2.6.23 #5)
+> Dec 10 03:02:43 home kernel: EIP is at __d_find_alias+0x2c/0xc0
+> Dec 10 03:02:43 home kernel: eax: 00000000   ebx: c03579bc   ecx: 
+> 00000000   edx: 00004000
+> Dec 10 03:02:44 home kernel: esi: f55d58bc   edi: 00000000   ebp: 
+> 00000001   esp: d479dda4
+> Dec 10 03:02:44 home kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033 
+> ss: 0068
+> Dec 10 03:02:44 home kernel: Process find (pid: 8233, ti=d479c000 
+> task=f6d35ab0 task.ti=d479c000)
+> Dec 10 03:02:44 home kernel: Stack: f55d58a4 ebf42f00 f6735800 ebf42f00 
+> c017832f f55d58a4 ebf42f00 f6735800
+> Dec 10 03:02:44 home kernel:        c01ad386 c0177755 ebf42f60 d479de38 
+> ebf42f00 e85bf2fc c0357e80 ebf42f00
+> Dec 10 03:02:44 home kernel:        d479df04 c016d242 d479de44 f7c04740 
+> f1352a98 f1352b0c d479de38 00034c98
+> Dec 10 03:02:44 home kernel: Call Trace:
+> Dec 10 03:02:44 home kernel:  [d_splice_alias+95/208] 
+> d_splice_alias+0x5f/0xd0
+> Dec 10 03:02:44 home kernel:  [ext3_lookup+230/288] ext3_lookup+0xe6/0x120
+> Dec 10 03:02:44 home kernel:  [d_alloc+309/416] d_alloc+0x135/0x1a0
+> Dec 10 03:02:44 home kernel:  [do_lookup+290/416] do_lookup+0x122/0x1a0
+> Dec 10 03:02:44 home kernel:  [__link_path_walk+1873/3408] 
+> __link_path_walk+0x751/0xd50
+> Dec 10 03:02:44 home kernel:  [link_path_walk+101/192] 
+> link_path_walk+0x65/0xc0
+> Dec 10 03:02:44 home kernel:  [link_path_walk+69/192] 
+> link_path_walk+0x45/0xc0
+> Dec 10 03:02:44 home kernel:  [nameidata_to_filp+53/64] 
+> nameidata_to_filp+0x35/0x40
+> Dec 10 03:02:44 home kernel:  [do_filp_open+75/96] do_filp_open+0x4b/0x60
+> Dec 10 03:02:44 home kernel:  [do_path_lookup+120/448] 
+> do_path_lookup+0x78/0x1c0
+> Dec 10 03:02:44 home kernel:  [getname+160/192] getname+0xa0/0xc0
+> Dec 10 03:02:44 home kernel:  [__user_walk_fd+59/96] 
+> __user_walk_fd+0x3b/0x60
+> Dec 10 03:02:44 home kernel:  [vfs_lstat_fd+31/80] vfs_lstat_fd+0x1f/0x50
+> Dec 10 03:02:44 home kernel:  [nameidata_to_filp+53/64] 
+> nameidata_to_filp+0x35/0x40
+> Dec 10 03:02:44 home kernel:  [do_filp_open+75/96] do_filp_open+0x4b/0x60
+> Dec 10 03:02:44 home kernel:  [sys_lstat64+15/48] sys_lstat64+0xf/0x30
+> Dec 10 03:02:44 home kernel:  [__fput+257/352] __fput+0x101/0x160
+> Dec 10 03:02:44 home kernel:  [mntput_no_expire+19/96] 
+> mntput_no_expire+0x13/0x60
+> Dec 10 03:02:44 home kernel:  [filp_close+71/128] filp_close+0x47/0x80
+> Dec 10 03:02:44 home kernel:  [sys_close+102/208] sys_close+0x66/0xd0
+> Dec 10 03:02:44 home kernel:  [sysenter_past_esp+95/133] 
+> sysenter_past_esp+0x5f/0x85
+> Dec 10 03:02:44 home kernel:  =======================
+> Dec 10 03:02:44 home kernel: Code: 89 c1 89 d5 57 56 8d 70 18 53 8b 40 
+> 18 31 db 39 c6 74 6c 0f b7 51 6a 31 ff 81 e2 00 f0 00 00 eb 0a 85 ed 7
+> 4 6a 39 ce 74 2e 89 c8 <8b> 08 0f 18 01 90 81 fa 00 40 00 00 8d 58 bc 74 
+> 06 f6 43 04 10
+> Dec 10 03:02:44 home kernel: EIP: [__d_find_alias+44/192] 
+> __d_find_alias+0x2c/0xc0 SS:ESP 0068:d479dda4
+> Dec 10 03:02:44 home kernel: note: find[8233] exited with preempt_count 1
+> Dec 10 03:02:44 home kernel: BUG: scheduling while atomic: 
+> find/0x10000002/8233
+> Dec 10 03:02:44 home kernel:  [schedule+1474/1728] 
+> __sched_text_start+0x5c2/0x6c0
+> Dec 10 03:02:44 home kernel:  [__cond_resched+24/48] 
+> __cond_resched+0x18/0x30
+> Dec 10 03:02:44 home kernel:  [cond_resched+42/64] cond_resched+0x2a/0x40
+> Dec 10 03:02:44 home kernel:  [unmap_vmas+1502/1536] unmap_vmas+0x5de/0x600
+> Dec 10 03:02:44 home kernel:  [exit_mmap+123/288] exit_mmap+0x7b/0x120
+> Dec 10 03:02:44 home kernel:  [mmput+30/128] mmput+0x1e/0x80
+> Dec 10 03:02:44 home kernel:  [do_exit+272/2048] do_exit+0x110/0x800
+> Dec 10 03:02:44 home kernel:  [die+588/592] die+0x24c/0x250
+> Dec 10 03:02:44 home kernel:  [do_page_fault+722/2016] 
+> do_page_fault+0x2d2/0x7e0
+> Dec 10 03:02:44 home kernel:  [do_page_fault+0/2016] do_page_fault+0x0/0x7e0
+> Dec 10 03:02:44 home kernel:  [error_code+114/120] error_code+0x72/0x78
+> Dec 10 03:02:44 home kernel:  [__d_find_alias+44/192] 
+> __d_find_alias+0x2c/0xc0
+> Dec 10 03:02:44 home kernel:  [d_splice_alias+95/208] 
+> d_splice_alias+0x5f/0xd0
+> Dec 10 03:02:44 home kernel:  [ext3_lookup+230/288] ext3_lookup+0xe6/0x120
+> Dec 10 03:02:44 home kernel:  [d_alloc+309/416] d_alloc+0x135/0x1a0
+> Dec 10 03:02:44 home kernel:  [do_lookup+290/416] do_lookup+0x122/0x1a0
+> Dec 10 03:02:44 home kernel:  [__link_path_walk+1873/3408] 
+> __link_path_walk+0x751/0xd50
+> Dec 10 03:02:44 home kernel:  [link_path_walk+101/192] 
+> link_path_walk+0x65/0xc0
+> Dec 10 03:02:44 home kernel:  [link_path_walk+69/192] 
+> link_path_walk+0x45/0xc0
+> Dec 10 03:02:44 home kernel:  [nameidata_to_filp+53/64] 
+> nameidata_to_filp+0x35/0x40
+> Dec 10 03:02:44 home kernel:  [do_filp_open+75/96] do_filp_open+0x4b/0x60
+> Dec 10 03:02:44 home kernel:  [do_path_lookup+120/448] 
+> do_path_lookup+0x78/0x1c0
+> Dec 10 03:02:44 home kernel:  [getname+160/192] getname+0xa0/0xc0
+> Dec 10 03:02:44 home kernel:  [__user_walk_fd+59/96] 
+> __user_walk_fd+0x3b/0x60
+> Dec 10 03:02:44 home kernel:  [vfs_lstat_fd+31/80] vfs_lstat_fd+0x1f/0x50
+> Dec 10 03:02:44 home kernel:  [nameidata_to_filp+53/64] 
+> nameidata_to_filp+0x35/0x40
+> Dec 10 03:02:44 home kernel:  [do_filp_open+75/96] do_filp_open+0x4b/0x60
+> Dec 10 03:02:44 home kernel:  [sys_lstat64+15/48] sys_lstat64+0xf/0x30
+> Dec 10 03:02:44 home kernel:  [__fput+257/352] __fput+0x101/0x160
+> Dec 10 03:02:44 home kernel:  [mntput_no_expire+19/96] 
+> mntput_no_expire+0x13/0x60
+> Dec 10 03:02:44 home kernel:  [filp_close+71/128] filp_close+0x47/0x80
+> Dec 10 03:02:44 home kernel:  [sys_close+102/208] sys_close+0x66/0xd0
+> Dec 10 03:02:44 home kernel:  [sysenter_past_esp+95/133] 
+> sysenter_past_esp+0x5f/0x85
+> Dec 10 03:02:44 home kernel:  =======================
+> Dec 10 03:02:44 home kernel: BUG: scheduling while atomic: 
+> find/0x10000002/8233
+> Dec 10 03:02:44 home kernel:  [schedule+1474/1728] 
+> __sched_text_start+0x5c2/0x6c0
+> Dec 10 03:02:44 home kernel:  [release_pages+295/336] 
+> release_pages+0x127/0x150
+> Dec 10 03:02:44 home kernel:  [reschedule_interrupt+40/48] 
+> reschedule_interrupt+0x28/0x30
+> Dec 10 03:02:44 home kernel:  [__cond_resched+24/48] 
+> __cond_resched+0x18/0x30
+> Dec 10 03:02:44 home kernel:  [cond_resched+42/64] cond_resched+0x2a/0x40
+> Dec 10 03:02:44 home kernel:  [unmap_vmas+1502/1536] unmap_vmas+0x5de/0x600
+> Dec 10 03:02:44 home kernel:  [exit_mmap+123/288] exit_mmap+0x7b/0x120
+> Dec 10 03:02:44 home kernel:  [mmput+30/128] mmput+0x1e/0x80
+> Dec 10 03:02:44 home kernel:  [do_exit+272/2048] do_exit+0x110/0x800
+> Dec 10 03:02:44 home kernel:  [die+588/592] die+0x24c/0x250
+> Dec 10 03:02:44 home kernel:  [do_page_fault+722/2016] 
+> do_page_fault+0x2d2/0x7e0
+> Dec 10 03:02:44 home kernel:  [do_page_fault+0/2016] do_page_fault+0x0/0x7e0
+> Dec 10 03:02:44 home kernel:  [error_code+114/120] error_code+0x72/0x78
+> Dec 10 03:02:44 home kernel:  [__d_find_alias+44/192] 
+> __d_find_alias+0x2c/0xc0
+> Dec 10 03:02:44 home kernel:  [d_splice_alias+95/208] 
+> d_splice_alias+0x5f/0xd0
+> Dec 10 03:02:44 home kernel:  [ext3_lookup+230/288] ext3_lookup+0xe6/0x120
+> Dec 10 03:02:44 home kernel:  [d_alloc+309/416] d_alloc+0x135/0x1a0
+> Dec 10 03:02:44 home kernel:  [do_lookup+290/416] do_lookup+0x122/0x1a0
+> Dec 10 03:02:44 home kernel:  [__link_path_walk+1873/3408] 
+> __link_path_walk+0x751/0xd50
+> Dec 10 03:02:44 home kernel:  [link_path_walk+101/192] 
+> link_path_walk+0x65/0xc0
+> Dec 10 03:02:44 home kernel:  [link_path_walk+69/192] 
+> link_path_walk+0x45/0xc0
+> Dec 10 03:02:44 home kernel:  [nameidata_to_filp+53/64] 
+> nameidata_to_filp+0x35/0x40
+> Dec 10 03:02:44 home kernel:  [do_filp_open+75/96] do_filp_open+0x4b/0x60
+> Dec 10 03:02:44 home kernel:  [do_path_lookup+120/448] 
+> do_path_lookup+0x78/0x1c0
+> Dec 10 03:02:44 home kernel:  [getname+160/192] getname+0xa0/0xc0
+> Dec 10 03:02:44 home kernel:  [__user_walk_fd+59/96] 
+> __user_walk_fd+0x3b/0x60
+> Dec 10 03:02:44 home kernel:  [vfs_lstat_fd+31/80] vfs_lstat_fd+0x1f/0x50
+> Dec 10 03:02:44 home kernel:  [nameidata_to_filp+53/64] 
+> nameidata_to_filp+0x35/0x40
+> Dec 10 03:02:44 home kernel:  [do_filp_open+75/96] do_filp_open+0x4b/0x60
+> Dec 10 03:02:44 home kernel:  [sys_lstat64+15/48] sys_lstat64+0xf/0x30
+> Dec 10 03:02:44 home kernel:  [__fput+257/352] __fput+0x101/0x160
+> Dec 10 03:02:44 home kernel:  [mntput_no_expire+19/96] 
+> mntput_no_expire+0x13/0x60
+> Dec 10 03:02:44 home kernel:  [filp_close+71/128] filp_close+0x47/0x80
+> Dec 10 03:02:44 home kernel:  [sys_close+102/208] sys_close+0x66/0xd0
+> Dec 10 03:02:44 home kernel:  [sysenter_past_esp+95/133] 
+> sysenter_past_esp+0x5f/0x85
+> Dec 10 03:02:44 home kernel:  =======================
