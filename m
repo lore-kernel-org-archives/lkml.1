@@ -1,78 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbXLLU0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbXLLU0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557AbXLLU0d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 15:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXLLU0Z
+	id S1758743AbXLLU0y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 15:26:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbXLLU0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 15:26:25 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:3561 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751863AbXLLU0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 15:26:24 -0500
-Date: Wed, 12 Dec 2007 15:22:15 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andi Kleen <ak@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Ben Woodard <woodard@redhat.com>, Neil Horman <nhorman@redhat.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       hbabu@us.ibm.com, Andi Kleen <andi@firstfloor.org>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Message-ID: <20071212202215.GB29735@hmsendeavour.rdu.redhat.com>
-References: <m1ve75z1v3.fsf@ebiederm.dsl.xmission.com> <20071211182254.GB10999@hmsreliant.think-freely.org> <m1ejdtysqd.fsf@ebiederm.dsl.xmission.com> <20071211192434.GD10999@hmsreliant.think-freely.org> <86802c440712111151t29acd38kf9fac8e41743f3e4@mail.gmail.com> <20071211205955.GF10999@hmsreliant.think-freely.org> <20071212142132.GC4889@bingen.suse.de> <20071212155515.GA29735@hmsendeavour.rdu.redhat.com> <20071212160722.GD4889@bingen.suse.de> <m1prxbu2ah.fsf@ebiederm.dsl.xmission.com>
+	Wed, 12 Dec 2007 15:26:44 -0500
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:6450 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753440AbXLLU0n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 15:26:43 -0500
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Marcus Eder <meder@de.ibm.com>
+Subject: Re: [PATCH] IB/ehca: Return correct #SGEs for SRQ
+X-Message-Flag: Warning: May contain useful information
+References: <200712101220.57876.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 12 Dec 2007 12:26:41 -0800
+In-Reply-To: <200712101220.57876.fenkes@de.ibm.com> (Joachim Fenkes's message of "Mon, 10 Dec 2007 12:20:57 +0100")
+Message-ID: <ada7ijj8xry.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1prxbu2ah.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+X-OriginalArrivalTime: 12 Dec 2007 20:26:41.0407 (UTC) FILETIME=[4E0F30F0:01C83CFD]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 12:43:34PM -0700, Eric W. Biederman wrote:
-> Andi Kleen <ak@suse.de> writes:
-> >
-> > It could enable the extended APIC IDs but not use them? 
-> 
-> In which case complaining is still correct (the BIOS was out of sync),
-> enabling bit 17 is still correct and we are just in overkill mode.
-> 
-> > Anyways I haven't got docs on that NV bridge so I might be wrong.
-> 
-> This has everything to do with how AMD coherent hypertransport works and
-> little if anything to do with how the NV bridge operated.
-> 
-> Basically the NV bridge seems to be sending a standard hypertransport
-> x86 legacy interrupt packet (that doesn't have any target information)
-> and when that packet  hits the coherent hypertransport domain it isn't
-> being converted into whatever would send it to all cpus. 
-> 
-> .....
-> 
-> The real practical problem is if somehow the BIOS goofs up this way
-> and it then decides to ask us to boot on one of these cpus with
-> an extended apic id.  We will hang in calibrate_delay.  So far
-> this only seems to happen in the kdump case but in theory the BIOS
-> could be completely crazy.
-> 
-
-
-I think this just leaves us with deciding on a mechanism for how to do
-single-application quirks.  I take Andi's point that adding a flag set to the
-quirk data structure is a fine solution, but I'm really ok with static integers
-in individual functions.  Do we have consensus on how to handle that?  I'm happy
-either way, but I'd rather have agreement on how to handle it before I post
-another iteration of this patch.  
-
-Thanks & Regards
-Neil
-
-> Eric
-
--- 
-/***************************************************
- *Neil Horman
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+thanks, applied.
