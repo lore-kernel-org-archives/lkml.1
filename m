@@ -1,128 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbXLLB4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbXLLCCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754914AbXLLB4r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 20:56:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXLLB4k
+	id S1755864AbXLLCCn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 21:02:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbXLLCCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 20:56:40 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37486 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751695AbXLLB4j (ORCPT
+	Tue, 11 Dec 2007 21:02:34 -0500
+Received: from mu-out-0910.google.com ([209.85.134.188]:60983 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752361AbXLLCCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 20:56:39 -0500
-Date: Tue, 11 Dec 2007 23:05:06 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PATCHES] V4L/DVB fixes
-Message-Id: <1197424531.9563.6.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+	Tue, 11 Dec 2007 21:02:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=CUdwcB2XsotjpnME9x57Bv+318+lfQg44hruWOlAsyw4qjUG7C+ON/HrvJrf3FokSc90swyu9B8cHEAMWaVKRXzBD3HwTnFQo1WHumjUVDdD0fewiF+1RBacI45e+saTCT45V+JGO6i1q4VwTHEYLWBZY4QJM+p2Ow9Gh4yOB/c=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression [SOLVED]
+Date: Wed, 12 Dec 2007 04:01:56 +0200
+User-Agent: KMail/1.9.6
+Cc: bfields@fieldses.org, neilb@suse.de, rjw@sisk.pl,
+       trond.myklebust@fys.uio.no, gnome42@gmail.com,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com, den@openvz.org,
+       linux-nfs@vger.kernel.org
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com> <200712101705.30428.maximlevitsky@gmail.com> <20071210130305.d8983fdc.akpm@linux-foundation.org>
+In-Reply-To: <20071210130305.d8983fdc.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200712120401.57128.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Monday 10 December 2007 23:03:05 Andrew Morton wrote:
+> On Mon, 10 Dec 2007 17:05:30 +0200
+> Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> 
+> > On Monday 10 December 2007 16:36:09 J. Bruce Fields wrote:
+> > > On Mon, Dec 10, 2007 at 04:19:12PM +0200, Maxim Levitsky wrote:
+> > > > ...
+> > > > > It is best not to use nohide - we should probably mark it as
+> > > > > 'legacy'.
+> > > > > 
+> > > > > Simply export the top level mountpoint as 'crossmnt'  and everything
+> > > > > below there will be exported.
+> > > > > 
+> > > > > > Where should I put those options in root file-system export or in submount export?
+> > > > > 
+> > > > > crossmnt goes at the top.  nohide goes in the submount.  Both have
+> > > > > the same general effect though with subtle differences.
+> > > > > You don't need both (though that doesn't hurt).
+> > > > > Just use crossmnt at the top,  Then you don't need to mention the
+> > > > > lower level filesystems at all.
+> > > > > 
+> > > > > > 
+> > > > ...
+> > > > > > (I decided to switch to NFS4 only due to the lack of ability to see underlying mounts)
+> > > > > > 
+> > > > > 
+> > > > > All of this should work fine with v3.  Once you have the right patch
+> > > > > for the crossmnt bug applied, if you have further problems post them
+> > > > > to linux-nfs@vger.kernel.org.
+> > > > > 
+> > > > > NeilBrown
+> > > > > 
+> > > > 
+> > > > Big thanks,
+> > > > 
+> > > > Still NFS server just don't want to accept the connection
+> > > > I noticed that if I first mount with
+> > > > -tnfs, unmount,  and then mount with -tnfs4, it works
+> > > 
+> > > OK, in that case, that's definitely the bug Eric sent out the patch for;
+> > > you may want to try applying his patch.
+> > You mean
+> > "[PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate" ?
+> > 
+> > I did apply it (on both kernel and server), and it doesn't help.
+> 
+> argh, this is getting bad.
+> 
+> Can you please test the below patch asap? Against 2.6.24-rc4 or latest-linus.
+> 
+> 
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> Revert
+> 
+>     commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416
+>     Author: Eric W. Biederman <ebiederm@xmission.com>
+>     Date:   Sun Dec 2 00:33:17 2007 +1100
+> 
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+Hi,
 
-For the following:
+I finally solved this.
+There is no need to revert 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416.
 
-   - several driver fixes at ivtv, em28xx, tvp5150, tda10086, saa7146, zl10353, 
-     saa7134, saa7134-alsa, saa7134-dvb, cxusb, saa5246a and saa5249;
+It was actually a deadly mixture of 3 bugs:
 
-   - section fixes for bttv and ivtv;
+1) Stale handles - Trond's patch fixes it, but I somehow missed it.
+2) Empty /proc/fs/nfsd (which causes nfs4 failures, and masks the bug #1, since with it the subfolders are just empty)
+	[PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate fixes it
 
-   - Kconfig fixes for dib3000mc;
+3) And as I expected, a userspace bug, which believe me or not has exactly the same symptoms
+like #2 (and doesn't depend on others)
 
-   - videobuf-core bad lock fixes;
+It is a wrong boot script in BLFS that starts nfs daemons in wrong order.
+So there are 3 bugs and each masks the former one :-) .
 
-   - memory leak fix at videobuf-vmalloc.
+I revised boot script to use recommended order like in nfs-utils.
+And finally everything works....
 
-Cheers,
-Mauro.
-
----
-
- drivers/media/common/saa7146_video.c          |   11 +-
- drivers/media/dvb/dvb-usb/Makefile            |    3 +
- drivers/media/dvb/dvb-usb/dibusb-common.c     |    4 +
- drivers/media/dvb/frontends/tda10086.c        |   14 +-
- drivers/media/dvb/frontends/zl10353.c         |    4 +-
- drivers/media/dvb/frontends/zl10353.h         |    2 +-
- drivers/media/video/bt8xx/bttv-cards.c        |    2 +-
- drivers/media/video/bt8xx/bttv-driver.c       |    9 +-
- drivers/media/video/cx88/cx88-blackbird.c     |    5 +-
- drivers/media/video/cx88/cx88-video.c         |    5 +-
- drivers/media/video/em28xx/em28xx-video.c     |    7 +-
- drivers/media/video/ivtv/ivtv-i2c.c           |    2 +-
- drivers/media/video/ivtv/ivtv-i2c.h           |    2 +-
- drivers/media/video/ivtv/ivtv-streams.c       |    2 +-
- drivers/media/video/saa5246a.c                |   10 +-
- drivers/media/video/saa5249.c                 |    8 +-
- drivers/media/video/saa7134/saa7134-alsa.c    |   16 ++-
- drivers/media/video/saa7134/saa7134-cards.c   |    2 +-
- drivers/media/video/saa7134/saa7134-core.c    |   21 +-
- drivers/media/video/saa7134/saa7134-dvb.c     |    1 +
- drivers/media/video/saa7134/saa7134-empress.c |    5 +-
- drivers/media/video/saa7134/saa7134-video.c   |    5 +-
- drivers/media/video/tvp5150.c                 |   11 +
- drivers/media/video/videobuf-core.c           |  247 ++++++++++++++++---------
- drivers/media/video/videobuf-vmalloc.c        |    6 +-
- drivers/media/video/vivi.c                    |    1 +
- include/media/videobuf-core.h                 |    2 +
- 27 files changed, 246 insertions(+), 161 deletions(-)
-
-Adrian Bunk (2):
-      V4L/DVB (6796): ivtv/ section fix
-      V4L/DVB (6797): bt8xx/ section fixes
-
-Benoit Istin (1):
-      V4L/DVB (6746): saa7134-dvb: fix tuning for WinTV HVR-1110
-
-Brandon Philips (4):
-      V4L/DVB (6601): V4L: videobuf-core locking fixes and comments
-      V4L/DVB (6602): V4L: Convert videobuf drivers to videobuf_stop
-      V4L/DVB (6615): V4L: Fix VIDIOCGMBUF  locking in saa7146
-      V4L/DVB (6751): V4L: Memory leak!  Fix count in videobuf-vmalloc mmap
-
-Chris Pascoe (1):
-      V4L/DVB (6629): zl10353: fix default adc_clock and TRL nominal rate calculation
-
-Hans Verkuil (1):
-      V4L/DVB (6485): ivtv: fix compile warning
-
-Hartmut Hackmann (1):
-      V4L/DVB (6579): Fix bug #8824: Correct support for Diseqc on tda10086
-
-Heikki Lindholm (2):
-      V4L/DVB (6666): saa7134-alsa: fix period handling
-      V4L/DVB (6690): saa7134: fix ignored interrupts
-
-Hermann Pitton (1):
-      V4L/DVB (6686): saa7134: fix composite over s-video input on the Tevion MD 9717
-
-Jiri Kosina (1):
-      V4L/DVB (6733): DVB: Compile 3000MC-specific DIB code only for CONFIG_DVB_DIB3000MC
-
-Mauro Carvalho Chehab (4):
-      V4L/DVB (6542): Fix S-video mode on tvp5150
-      V4L/DVB (6581): Fix: avoids negative vma usage count
-      V4L/DVB (6750): Fix in-kernel compilation for cxusb
-      V4L/DVB (6794): Fix compilation when dib3000mc is compiled as a module
-
-Richard Knutsson (1):
-      V4L/DVB (6684): Complement va_start() with va_end() + style fixes
-
-Sascha Sommer (1):
-      V4L/DVB (6540): em28xx: fix failing autodetection after the reboot
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
-
+Best regards,
+	Maxim Levitsky
