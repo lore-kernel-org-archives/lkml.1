@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbXLLOKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751939AbXLLOSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753573AbXLLOKp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 09:10:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbXLLOKg
+	id S1751939AbXLLOSE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 09:18:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbXLLORt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 09:10:36 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:58880 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751511AbXLLOKg (ORCPT
+	Wed, 12 Dec 2007 09:17:49 -0500
+Received: from mxintern.schlund.de ([212.227.126.204]:54044 "EHLO
+	mxintern.schlund.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbXLLORr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 09:10:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pt8FDocvgCZ76Ua97/YREyxLVkJQBgosdTY8P74QcHRgCne8PQs5dK8/4P2SSSI39gyTxyiF3AvxzfQL98D7CD19BrHuPKenBqCZKQKE/SrEQyjPVL34SBrkZq4pcMamUsxnhrMx35dJ6NBxHHGZJdy7ZBONxrLJHPm9sd5QQ/A=
-Message-ID: <d120d5000712120610m30c054f5w596c29a1700211f@mail.gmail.com>
-Date: Wed, 12 Dec 2007 09:10:31 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Stephen Hemminger" <shemminger@linux-foundation.org>
-Subject: Re: [PATCH] Fujitsu application panel driver
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Len Brown" <lenb@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-In-Reply-To: <20071023125555.38d63567@shemminger-laptop>
+	Wed, 12 Dec 2007 09:17:47 -0500
+Date: Wed, 12 Dec 2007 15:17:29 +0100
+From: Anders Henke <anders.henke@1und1.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: miquels@cistron.nl, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, matthew@wil.cx,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2 check page: bad entry in directory) (fwd)
+Message-ID: <20071212141729.GV6770@1und1.de>
+Mail-Followup-To: Anders Henke <anders.henke@1und1.de>,
+	Andrew Morton <akpm@linux-foundation.org>, miquels@cistron.nl,
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+	matthew@wil.cx, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+References: <20071212105841.GN6770@1und1.de> <20071212033808.6fb92139.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net>
-	 <200709140130.59732.dtor@insightbb.com>
-	 <20070916215516.2934abad@oldman.hemminger.net>
-	 <200709161623.00286.dtor@insightbb.com>
-	 <20071023125555.38d63567@shemminger-laptop>
+In-Reply-To: <20071212033808.6fb92139.akpm@linux-foundation.org>
+Organization: 1&1 Internet AG
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-UI-Msg-Verification: 795d6962cb299600c6cbfc4fde1a55f6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+Am 12.12.2007 schrieb Andrew Morton:
+> On Wed, 12 Dec 2007 11:58:41 +0100 Anders Henke <anders.henke@1und1.de> wrote:
+> 
+> > Hi,
+> > 
+> > I'd like to let you now that my boxes are running a 32-bit kernel, so
+> > the 64-bit-uncleanliness shouldn't apply to my boxes; however,
+> > 
+> > http://www.miquels.cistron.nl/linux/dpt_i2o-64bit-2.6.23.patch
+> > 
+> > fixed the issue on my testbox.
+> > 
+> > I took a clean 2.6.23, applied patch, recompiled the kernel, reboot: works.
+> 
+> What a huge patch :(
+> 
+> We already reverted the offening patch so I assume that 2.6.24-rc5 is
+> working for you?
 
-On Oct 23, 2007 2:55 PM, Stephen Hemminger
-<shemminger@linux-foundation.org> wrote:
-> +static void mail_led_set(struct led_classdev *led,
-> +                        enum led_brightness value)
-> +{
-> +       struct apanel *ap = container_of(led, struct apanel, mail_led);
-> +       if (value)
-> +               ap->led_bits |= 0x8000;
-> +       else
-> +               ap->led_bits &= ~0x8000;
-> +       ap->led_bits = value;
-> +       schedule_work(&ap->led_work);
-> +}
+Yes, the vanilla 2.6.24-rc5 works fine (at least it's booting :-).
 
-I was just about to apply the driver (and I folded in the other 4
-patches you sent to me) but then I noticed the code above. It looks
-like the conditional does not have any effect, ap->led_bits will be
-overwritten with the raw value anyway. Please advise.
+Linux rdb140 2.6.24-rc5 #1 SMP Wed Dec 12 15:06:05 CET 2007 i686 GNU/Linux
 
-Thank you.
+> I guess we need to look at restoring "dpt_i2o: convert to SCSI hotplug
+> model" and then absorbing what Miquel has done there.
 
+
+I've tried 2.6.23 with
+
+http://www.miquels.cistron.nl/linux/linux-2.6.23+24-dpt_i2o-dma64.patch
+
+... and that's enough to make my boxes boot again.
+
+
+Regards,
+
+Anders
 -- 
-Dmitry
+1&1 Internet AG            Enter any 11-digit prime number to continue.
+Brauerstrasse 48           v://49.721.91374.50
+D-76135 Karlsruhe          f://49.721.91374.225
+
+Amtsgericht Montabaur HRB 6484
+Vorstand: Henning Ahlert, Ralph Dommermuth, Matthias Ehrlich, Andreas Gauger,
+Thomas Gottschlich, Matthias Greve, Robert Hoffmann, Norbert Lang, Achim Weiss
+Aufsichtsratsvorsitzender: Michael Scheeren
