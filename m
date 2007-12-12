@@ -1,52 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbXLLKdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbXLLKel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759274AbXLLKdb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 05:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757787AbXLLKdY
+	id S1759354AbXLLKel (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 05:34:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbXLLKee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 05:33:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50547 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754237AbXLLKdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 05:33:23 -0500
-Date: Wed, 12 Dec 2007 11:33:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysctl : proc_dointvec_minmax() expects int values for
-	min/max guard values
-Message-ID: <20071212103310.GA1611@elte.hu>
-References: <20071212112247.9c30f0d0.dada1@cosmosbay.com>
+	Wed, 12 Dec 2007 05:34:34 -0500
+Received: from host86-138-52-41.range86-138.btcentralplus.com ([86.138.52.41]:40174
+	"EHLO oak.selfip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755312AbXLLKed (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 05:34:33 -0500
+Message-ID: <475FB92B.3060603@oak.selfip.net>
+Date: Wed, 12 Dec 2007 10:34:19 +0000
+From: Dave Haywood <tla@oak.selfip.net>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071212112247.9c30f0d0.dada1@cosmosbay.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+To: Rene Herman <rene.herman@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
+       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
+       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <475F1DC6.5090403@keyaccess.nl>
+In-Reply-To: <475F1DC6.5090403@keyaccess.nl>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rene Herman wrote:
+> Good day.
+>
+> Would some people on x86 (both 32 and 64) be kind enough to compile
+> and run the attached program? This is about testing how long I/O port
+> access to port 0x80 takes. It measures in CPU cycles so CPU speed is
+> crucial in reporting.
 
-* Eric Dumazet <dada1@cosmosbay.com> wrote:
+$ cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 8
+model name      : Pentium III (Coppermine)
+stepping        : 6
+cpu MHz         : 930.347
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 mmx fxsr sse
+bogomips        : 1861.99
+clflush size    : 32
 
-> min_sched_granularity_ns, max_sched_granularity_ns, 
-> min_wakeup_granularity_ns and max_wakeup_granularity_ns are declared 
-> "unsigned long".
-> 
-> This is incorrect since proc_dointvec_minmax() expects plain "int" 
-> guard values.
-> 
-> This bug only triggers on big endian 64 bit arches.
+cycles: out 1183, in 706
 
-thanks, applied it to the 2.6.24 fixes queue.
+cycles: out 1183, in 707
 
-	Ingo
+cycles: out 1182, in 706
+
+cycles: out 1182, in 706
+
+cycles: out 1183, in 706
+
+cycles: out 1182, in 706
+
+cycles: out 1182, in 706
+
+cycles: out 1183, in 706
+
+cycles: out 1183, in 707
+
+cycles: out 1183, in 707
+
+cycles: out 1183, in 706
+
+cycles: out 1183, in 706
+
+cycles: out 1183, in 706
+
+cycles: out 1182, in 706
+
+cycles: out 1183, in 707
+
+cycles: out 1183, in 707
+
+cycles: out 1183, in 706
+
+cycles: out 1183, in 706
+
+cycles: out 1182, in 706
+
+cycles: out 1183, in 706
+
+cycles: out 1183, in 706
+
+cycles: out 1183, in 706
+
+Dave.
+
+
