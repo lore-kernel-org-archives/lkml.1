@@ -1,155 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbXLLCH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbXLLCIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbXLLCH1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 21:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbXLLCHP
+	id S1757206AbXLLCIL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 21:08:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbXLLCH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 21:07:15 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42415 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751136AbXLLCHN (ORCPT
+	Tue, 11 Dec 2007 21:07:56 -0500
+Received: from home.nigel.suspend2.net ([203.171.70.205]:60561 "EHLO
+	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751511AbXLLCH4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 21:07:13 -0500
-Date: Tue, 11 Dec 2007 18:06:07 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Eric Van Hensbergen <ericvh@gmail.com>,
-       Ron Minnich <rminnich@sandia.gov>, Latchesar Ionkov <lucho@ionkov.net>,
-       v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] 9p util semaphore to mutex
-Message-Id: <20071211180607.c1f8b797.akpm@linux-foundation.org>
-In-Reply-To: <20071209171613.670807836@gmail.com>
-References: <20071209171509.601451827@gmail.com>
-	<20071209171613.670807836@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Dec 2007 21:07:56 -0500
+Message-ID: <475F4273.80905@nigel.suspend2.net>
+Date: Wed, 12 Dec 2007 13:07:47 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Rene Herman <rene.herman@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
+       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
+       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <475F1DC6.5090403@keyaccess.nl> <475F2358.6060006@nigel.suspend2.net> <475F24C1.2050807@keyaccess.nl>
+In-Reply-To: <475F24C1.2050807@keyaccess.nl>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 09 Dec 2007 13:15:11 -0400 Kevin Winchester <kjwinchester@gmail.com> wrote:
-
-> Convert the semaphore to a mutex in net/9p/util.c
+Rene Herman wrote:
+> On 12-12-07 00:55, Nigel Cunningham wrote:
 > 
-> Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
+>> (AMD 1.8GHz Turion, running at 800MHz. ATI RS480 - Mitac 8350 mobo)
+>>
+>> nigel@home:~/Downloads$ gcc port80.c -o port80
+>> nigel@home:~/Downloads$ sudo ./port80
+>> cycles: out 1235, in 1207
 > 
-> ---
->  net/9p/util.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+> Looking good.
 > 
-> Index: v2.6.24-rc4/net/9p/util.c
-> ===================================================================
-> --- v2.6.24-rc4.orig/net/9p/util.c
-> +++ v2.6.24-rc4/net/9p/util.c
-> @@ -33,7 +33,7 @@
->  #include <net/9p/9p.h>
->  
->  struct p9_idpool {
-> -	struct semaphore lock;
-> +	struct mutex lock;
->  	struct idr pool;
->  };
->  
-> @@ -45,7 +45,7 @@ struct p9_idpool *p9_idpool_create(void)
->  	if (!p)
->  		return ERR_PTR(-ENOMEM);
->  
-> -	init_MUTEX(&p->lock);
-> +	mutex_init(&p->lock);
->  	idr_init(&p->pool);
->  
->  	return p;
-> @@ -76,14 +76,14 @@ retry:
->  	if (idr_pre_get(&p->pool, GFP_KERNEL) == 0)
->  		return 0;
->  
-> -	if (down_interruptible(&p->lock) == -EINTR) {
-> +	if (mutex_lock_interruptible(&p->lock) == -EINTR) {
->  		P9_EPRINTK(KERN_WARNING, "Interrupted while locking\n");
->  		return -1;
->  	}
->  
->  	/* no need to store exactly p, we just need something non-null */
->  	error = idr_get_new(&p->pool, p, &i);
-> -	up(&p->lock);
-> +	mutex_unlock(&p->lock);
->  
->  	if (error == -EAGAIN)
->  		goto retry;
-> @@ -104,12 +104,12 @@ EXPORT_SYMBOL(p9_idpool_get);
->  
->  void p9_idpool_put(int id, struct p9_idpool *p)
->  {
-> -	if (down_interruptible(&p->lock) == -EINTR) {
-> +	if (mutex_lock_interruptible(&p->lock) == -EINTR) {
->  		P9_EPRINTK(KERN_WARNING, "Interrupted while locking\n");
->  		return;
->  	}
->  	idr_remove(&p->pool, id);
-> -	up(&p->lock);
-> +	mutex_unlock(&p->lock);
->  }
->  EXPORT_SYMBOL(p9_idpool_put);
+>> nigel@home:~/Downloads$ gcc -O2 port80.c -o port80
+>> nigel@home:~/Downloads$ sudo ./port80
+>> cycles: out 1844674407370794, in 1844674407369408
+> 
+> Obviously not. I suppose this changes with -m32 on the GCC command line?
+> (sorry for missing that, I have no 64-bit machines).
 
-I cannot see how the code which you are modifying could have been correct.
+Yes, it does:
 
-If the lock is contended and this task has signal_pending() then boom - we
-return from p9_idpool_put() without having removed the item from the IDR
-tree and then we just lose all track of this fact.  It is at a minimum a
-memory leak.
+nigel@home:~/Downloads$ gcc -m32 -o port80 port80.c
+nigel@home:~/Downloads$ sudo ./port80
+cycles: out 1231, in 1208
+nigel@home:~/Downloads$ sudo ./port80
+cycles: out 1233, in 1210
 
-I'm getting the feeling that we need to go and take a general look at the
-down_interuptible() and mutex_lock_interruptible() callers in the nether
-regions of the kernel...
+Incidentally:
 
-Meanwhile I'd propose this instead:
+nigel@home:~/Downloads$ processor_speed
 
+(A little script I made because my lappy does a solid lock every now and
+then that seems to be cpu-freq related - locking it to one frequency
+makes the lock far less common).
 
-From: Andrew Morton <akpm@linux-foundation.org>
+Speed is now 1800000.
+nigel@home:~/Downloads$ sudo ./port80
+cycles: out 2472, in 2505
+nigel@home:~/Downloads$ sudo ./port80
+cycles: out 2489, in 2515
+nigel@home:~/Downloads$ sudo ./port80
+cycles: out 2481, in 2503
+nigel@home:~/Downloads$ sudo ./port80
+cycles: out 2476, in 2507
 
-Don't use down_interruptible() in situations where we cannot handle the
-consequences.
+So the same effect Maxim reported is seen here.
 
-Cc: Kevin Winchester <kjwinchester@gmail.com>
-Cc: Eric Van Hensbergen <ericvh@gmail.com>
-Cc: Ron Minnich <rminnich@sandia.gov>
-Cc: Latchesar Ionkov <lucho@ionkov.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+Regards,
 
- net/9p/util.c |   11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
-
-diff -puN net/9p/util.c~9p-util-fix-semaphore-handling net/9p/util.c
---- a/net/9p/util.c~9p-util-fix-semaphore-handling
-+++ a/net/9p/util.c
-@@ -76,12 +76,8 @@ retry:
- 	if (idr_pre_get(&p->pool, GFP_KERNEL) == 0)
- 		return 0;
- 
--	if (down_interruptible(&p->lock) == -EINTR) {
--		P9_EPRINTK(KERN_WARNING, "Interrupted while locking\n");
--		return -1;
--	}
--
- 	/* no need to store exactly p, we just need something non-null */
-+	down(&p->lock);
- 	error = idr_get_new(&p->pool, p, &i);
- 	up(&p->lock);
- 
-@@ -104,10 +100,7 @@ EXPORT_SYMBOL(p9_idpool_get);
- 
- void p9_idpool_put(int id, struct p9_idpool *p)
- {
--	if (down_interruptible(&p->lock) == -EINTR) {
--		P9_EPRINTK(KERN_WARNING, "Interrupted while locking\n");
--		return;
--	}
-+	down(&p->lock);
- 	idr_remove(&p->pool, id);
- 	up(&p->lock);
- }
-_
-
+Nigel
