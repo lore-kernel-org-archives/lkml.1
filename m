@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759680AbXLLTI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759746AbXLLTJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759680AbXLLTI3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 14:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbXLLTIV
+	id S1759746AbXLLTJn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 14:09:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbXLLTJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 14:08:21 -0500
-Received: from hu-out-0506.google.com ([72.14.214.232]:30428 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755689AbXLLTIU (ORCPT
+	Wed, 12 Dec 2007 14:09:36 -0500
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:14969 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750773AbXLLTJe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 14:08:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=mcyVW3phyw6kqz6IMjs4MXjOrlAf9SN1axt/tawBlfwZfAEGKbzETvbXtv6cwZfgZS5rYUE1LAGhVbaw6BSztdgHQg47ti54r1FcWUvARyo8FaAibyFTIvtB3GN1Ch5HuTEOszae2X45ranuOzutTDj03Kvge2Tu7WRQpK7b7tA=
-Message-ID: <4760314B.4040109@keyaccess.nl>
-Date: Wed, 12 Dec 2007 20:06:51 +0100
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 12 Dec 2007 14:09:34 -0500
+To: Or Gerlitz <ogerlitz@voltaire.com>
+Cc: Joachim Fenkes <FENKES@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Christoph Raisch <raisch@de.ibm.com>,
+       OF-General <general@lists.openfabrics.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [ewg] Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
+X-Message-Flag: Warning: May contain useful information
+References: <OFD9564F75.44193623-ONC12573AE.002EA542-C12573AE.002F5FBC@de.ibm.com>
+	<475FD0A1.3090304@voltaire.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 12 Dec 2007 11:09:27 -0800
+In-Reply-To: <475FD0A1.3090304@voltaire.com> (Or Gerlitz's message of "Wed, 12 Dec 2007 14:14:25 +0200")
+Message-ID: <adabq8v91co.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-To: SL Baur <steve@xemacs.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFT] Port 0x80 I/O speed
-References: <475F1DC6.5090403@keyaccess.nl> <ed10ee420712121039j79af0eq7b5a994215044199@mail.gmail.com>
-In-Reply-To: <ed10ee420712121039j79af0eq7b5a994215044199@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Rene Herman <rene.herman@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 12 Dec 2007 19:09:28.0721 (UTC) FILETIME=[84C36810:01C83CF2]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12-12-07 19:39, SL Baur wrote:
+ > What is the fix you suggest, to add a device query that tells you for 
+ > which verbs the documentation does not apply? or enhance the code of the 
+ >   map_phys_fmr verb within the ehca driver to return error if called 
+ > from non-sleepable context?
 
-> model name      : Intel(R) Pentium(R) 4 CPU 3.20GHz
-> cpu MHz         : 3201.345
-> 
-> cycles: out 3026, in 2204
-> cycles: out 3031, in 2182
-> cycles: out 3019, in 2196
-> cycles: out 3030, in 2201
-> cycles: out 3013, in 2186
-
-Thank you. I just posted the combined results, although I see it's not made 
-it to the list yet, probably due to a somewhat overly broad CC...
-
-These results fit the pattern.
-
-Rene.
+I think the right fix for iSER would be to make iSER work even for
+devices that don't support FMRs.  For example cxgb3 doesn't implement
+FMRs so if anyone ever updates iSER to work on iWARP and not just IB,
+then this is something that has to be tackled anyway.  Then ehca could
+just get rid of the FMR support it has.
