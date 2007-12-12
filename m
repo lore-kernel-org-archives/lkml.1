@@ -1,127 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758356AbXLLIiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbXLLIox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758356AbXLLIiu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 03:38:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbXLLIim
+	id S1758185AbXLLIox (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 03:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbXLLIop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 03:38:42 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:26595 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbXLLIim (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 03:38:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qqwi9iKPVwnii3SZ4SBqfi2hQo+3B9aUkzx5VQRytgnryAi6CP8R9Cg5JjPMHKha90KjnrvSNMbXSeq2Z3UVm6rimPR9EsRMIm9hTO3vHwrcRMw7SByXvCPVf3SI1lwi5ERbeMmHNtfA/pRKSLRJxZMLSuL6G81lyGYdXU3nnak=
-Message-ID: <47847f440712120038i4133b630l142376728614a4e7@mail.gmail.com>
-Date: Wed, 12 Dec 2007 09:38:41 +0100
-From: "=?ISO-8859-1?Q?Edwin_de_Caluw=E9?=" <edwindecaluwe@gmail.com>
-To: "Paolo Ornati" <ornati@fastwebnet.it>
-Subject: Re: [RFT] Port 0x80 I/O speed
-Cc: "Rene Herman" <rene.herman@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz,
-       andi@firstfloor.org, rol@as2917.net, "Krzysztof Halasa" <khc@pm.waw.pl>,
-       david@davidnewall.com, hpa@zytor.com, john@stoffel.org,
-       linux-os@analogic.com
-In-Reply-To: <20071212091715.7f89fd22@fastwebnet.it>
+	Wed, 12 Dec 2007 03:44:45 -0500
+Received: from styx.suse.cz ([82.119.242.94]:51088 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755275AbXLLIoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 03:44:44 -0500
+Date: Wed, 12 Dec 2007 09:44:42 +0100
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org, gentuu@gmail.com
+Subject: Re: [PATCH] Improve inode list scanning in add_dquot_ref()
+Message-ID: <20071212084442.GA18343@duck.suse.cz>
+References: <20071211134319.GB8153@duck.suse.cz> <20071211154310.dd2a3065.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <475F1DC6.5090403@keyaccess.nl>
-	 <20071212091715.7f89fd22@fastwebnet.it>
+In-Reply-To: <20071211154310.dd2a3065.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Exactly constant timing in every iteration:
+On Tue 11-12-07 15:43:10, Andrew Morton wrote:
+> On Tue, 11 Dec 2007 14:43:19 +0100
+> Jan Kara <jack@suse.cz> wrote:
+> 
+> >   Hi,
+> > 
+> >   attached patch makes add_dquot_ref() quite faster if used on a life
+> > filesystem. It has survived some testing on my machine but there could be
+> > some subtle races I've missed so please leave it in -mm for a while (not
+> > that I'd think that people use quotas with -mm kernels but at least it
+> > should go into vanilla in -rc1...). Thanks.
+> > 
+> > 								Honza
+> > 
+> > ---
+> > We restarted scan of sb->s_inodes list whenever we had to drop inode_lock in
+> > add_dquot_ref(). This leads to overall quadratic running time and thus
+> > add_dquot_ref() can take several minutes when called on a life filesystem.  We
+> > fix the problem by using the fact that inode cannot be removed from s_inodes
+> > list while we hold a reference to it and thus we can safely restart the scan if
+> > we don't drop the reference. Here we use the fact that inodes freshly added to
+> > s_inodes list are already guaranteed to have quotas properly initialized and
+> > the ordering of inodes on s_inodes list does not change so we cannot skip any
+> > inode.  Thanks goes to Nick <gentuu@gmail.com> for analyzing the problem and
+> > testing the fix.
+> > 
+> > Signed-off-by: Jan Kara <jack@suse.cz>
+> > CC: Nick <gentuu@gmail.com>
+> > 
+> > diff --git a/fs/dquot.c b/fs/dquot.c
+> > index 2809768..ecea4be 100644
+> > --- a/fs/dquot.c
+> > +++ b/fs/dquot.c
+> > @@ -696,9 +696,8 @@ static int dqinit_needed(struct inode *inode, int type)
+> >  /* This routine is guarded by dqonoff_mutex mutex */
+> >  static void add_dquot_ref(struct super_block *sb, int type)
+> >  {
+> > -	struct inode *inode;
+> > +	struct inode *inode, *old_inode = NULL;
+> >  
+> > -restart:
+> >  	spin_lock(&inode_lock);
+> >  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> >  		if (!atomic_read(&inode->i_writecount))
+> > @@ -711,12 +710,20 @@ restart:
+> >  		__iget(inode);
+> >  		spin_unlock(&inode_lock);
+> >  
+> > +		if (old_inode)
+> > +			iput(old_inode);
+> >  		sb->dq_op->initialize(inode, type);
+> > -		iput(inode);
+> > -		/* As we may have blocked we had better restart... */
+> > -		goto restart;
+> > +		/* We hold a reference to 'inode' so it couldn't have been
+> > +		 * removed from s_inodes list while we dropped the inode_lock.
+> > +		 * We cannot iput the inode now as we can be holding the last
+> > +		 * reference and we cannot iput it under inode_lock. So we
+> > +		 * keep the reference and iput it later. */
+> > +		old_inode = inode;
+> > +		spin_lock(&inode_lock);
+> >  	}
+> >  	spin_unlock(&inode_lock);
+> > +	if (old_inode)
+> > +		iput(old_inode);
+> >  }
+> >  
+> 
+> iput(NULL) is legal.  In the great majority of cases old_inode!=NULL so I
+> think we should use that feature here?
+  OK. Thanks for the improvement.
 
-cycles: out 667, in 305
-
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 8
-model name      : Celeron (Coppermine)
-stepping        : 3
-cpu MHz         : 497.582
-cache size      : 128 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
-cmov pat pse36 mmx fxsr sse up
-bogomips        : 996.21
-clflush size    : 32
-
-
-On 12/12/07, Paolo Ornati <ornati@fastwebnet.it> wrote:
-> On Wed, 12 Dec 2007 00:31:18 +0100
-> Rene Herman <rene.herman@gmail.com> wrote:
-> >
-> > and on a PII 400 (Intel 440BX chipset) a constant:
-> >
-> > rene@6bap:~/src/port80$ su -c ./port80
-> > cycles: out 553, in 251
-> >
-> > Results are (mostly) independent of compiler optimisation, but testing
-> with
-> > an -O2 compile should be most useful. Thanks!
-> >
->
-> ### Core2 Duo 1.8 GHz ###
->
-> X86_64 -m32 -O2:
->
-> $ for i in `seq 5`; do sudo ./port80; sleep 1; done
-> cycles: out 1498, in 964
-> cycles: out 1498, in 964
-> cycles: out 1499, in 964
-> cycles: out 1498, in 964
-> cycles: out 1498, in 965
->
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 6
-> model		: 15
-> model name	: Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz
-> stepping	: 6
-> cpu MHz		: 1864.805
-> cache size	: 2048 KB
-> physical id	: 0
-> siblings	: 2
-> core id		: 0
-> cpu cores	: 2
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 10
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-> pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est tm2
-> ssse3 cx16 xtpr lahf_lm
-> bogomips	: 3731.82
-> clflush size	: 64
-> cache_alignment	: 64
-> address sizes	: 36 bits physical, 48 bits virtual
-> power management:
->
-> [...]
->
->
-> --
-> 	Paolo Ornati
-> 	Linux 2.6.24-rc4-g94545bad on x86_64
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> --- a/fs/dquot.c~quota-improve-inode-list-scanning-in-add_dquot_ref-fix
+> +++ a/fs/dquot.c
+> @@ -710,8 +710,7 @@ static void add_dquot_ref(struct super_b
+>  		__iget(inode);
+>  		spin_unlock(&inode_lock);
+>  
+> -		if (old_inode)
+> -			iput(old_inode);
+> +		iput(old_inode);
+>  		sb->dq_op->initialize(inode, type);
+>  		/* We hold a reference to 'inode' so it couldn't have been
+>  		 * removed from s_inodes list while we dropped the inode_lock.
+> @@ -722,8 +721,7 @@ static void add_dquot_ref(struct super_b
+>  		spin_lock(&inode_lock);
+>  	}
+>  	spin_unlock(&inode_lock);
+> -	if (old_inode)
+> -		iput(old_inode);
+> +	iput(old_inode);
+>  }
+>  
+>  /* Return 0 if dqput() won't block (note that 1 doesn't necessarily mean blocking) */
+> _
+> 
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
