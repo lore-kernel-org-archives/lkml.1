@@ -1,101 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbXLLUfD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbXLLUf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758646AbXLLUfD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 15:35:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbXLLUev
+	id S1759960AbXLLUf7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 15:35:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXLLUfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 15:34:51 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:3405 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752112AbXLLUeu (ORCPT
+	Wed, 12 Dec 2007 15:35:51 -0500
+Received: from nz-out-0506.google.com ([64.233.162.229]:10382 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753440AbXLLUfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 15:34:50 -0500
+	Wed, 12 Dec 2007 15:35:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=RfFOZU/z3o8GHSaQQo36IcdG6lOt6/Ryo1nULHQlZ9IknOc9Ay66euPg5j05V++pETsGR2Rdb9AKGbp+owTNd6wBlx3NxEC3+8GeV+AufxEyXSrIzRfCRrjL7eTBwXa/JZuTBRSCdXa9ij1tBR77Y3JO1sH5x4E+NVxnNtZZFP4=
-Subject: [PATCH] net: remove fastcall
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: linux-netdev <netdev@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain
-Date: Wed, 12 Dec 2007 12:34:49 -0800
-Message-Id: <1197491689.21291.16.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DHaRcBh1p23pbRUzQ2RqUWtrzZGggTlQYQX5jWyG+k1zGRqWljlJdOmlIKR9gLfTlRFCrknPmLKhH+Br2IQj5BZHnnh2RSy9/U+YnqBLvhYi/V+2lSmZpVVVBTbyxfxM955lUNuVUf20xzHyYzIGECOCwnyLK1Z5fa3RycNnaGE=
+Message-ID: <fa4052ef0712121235x54e1837cs2efe4ce5c6e0e84d@mail.gmail.com>
+Date: Wed, 12 Dec 2007 15:35:48 -0500
+From: Shane <gnome42@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: [2.6 patch] videobuf-core.c locking fixes
+Cc: "Mauro Carvalho Chehab" <mchehab@infradead.org>,
+       "Adrian Bunk" <bunk@kernel.org>, "Brandon Philips" <brandon@ifup.org>,
+       linux-kernel@vger.kernel.org,
+       video4linux-list <video4linux-list@redhat.com>
+In-Reply-To: <20071212194454.GF10069@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <fa4052ef0712112120l1165af5btc108ea2131760328@mail.gmail.com>
+	 <20071212090709.GF14204@stusta.de> <1197457394.4807.40.camel@gaivota>
+	 <20071212120308.GG14204@stusta.de> <1197469316.4744.22.camel@gaivota>
+	 <fa4052ef0712120837i36cee3elbe0a5170f5904d2f@mail.gmail.com>
+	 <fa4052ef0712121057o51230b22ycb79723091438779@mail.gmail.com>
+	 <20071212194454.GF10069@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fastcall is always empty, remove it from net/
+On Dec 12, 2007 2:44 PM, Adrian Bunk <bunk@stusta.de> wrote:
+> On Wed, Dec 12, 2007 at 01:57:27PM -0500, Shane wrote:
+> > On Dec 12, 2007 11:37 AM, Shane <gnome42@gmail.com> wrote:
+> > > On Dec 12, 2007 9:21 AM, Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
+> > > ...
+> > > > The proper solution is provided by this changeset:
+> > > > http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=19fb1457990b6b7e15586ec7331541a184233acc
+> > >
+> > > I applied this and it seems fine with a bttv card.
+> >
+> > Ugh, after further testing with a bttv card it seems this is not fine.
+> >
+> > vbi doesn't work anymore and my application gets stuck in a Zombie,
+> > unkillable, have to reboot state :(
+> >
+> > mythtv    3683     1  -3  2.4  0.0      0     0 ?        Z<l  13:40:35
+> > 00:00:06 [mythbackend] <defunct>
+> >
+> > Reverting Mauro's patch above does fix the problem.
+>
+> Thanks for testing, does the patch below fix it?
+>
+> > Shane
+>
+> cu
+> Adrian
+>
+>
+> <--  snip  -->
+>
+>
+> After commit 19fb1457990b6b7e15586ec7331541a184233acc the callers in
+> videobuf-core.c that already hold the lock must call
+> __videobuf_read_start() instead of videobuf_read_start().
+>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>
+> ---
+>
+>  drivers/media/video/videobuf-core.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> e1f8b4a49d86746f699919531c17fd154787e308
+> diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
+> index 81f77d2..c8a5cb5 100644
+> --- a/drivers/media/video/videobuf-core.c
+> +++ b/drivers/media/video/videobuf-core.c
+> @@ -909,7 +909,7 @@ ssize_t videobuf_read_stream(struct videobuf_queue *q,
+>         if (q->streaming)
+>                 goto done;
+>         if (!q->reading) {
+> -               retval = videobuf_read_start(q);
+> +               retval = __videobuf_read_start(q);
+>                 if (retval < 0)
+>                         goto done;
+>         }
+> @@ -982,7 +982,7 @@ unsigned int videobuf_poll_stream(struct file *file,
+>                                          struct videobuf_buffer, stream);
+>         } else {
+>                 if (!q->reading)
+> -                       videobuf_read_start(q);
+> +                       __videobuf_read_start(q);
+>                 if (!q->reading) {
+>                         rc = POLLERR;
+>                 } else if (NULL == q->read_buf) {
+>
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- net/bluetooth/rfcomm/core.c |    4 ++--
- net/core/dev.c              |    2 +-
- net/core/sock.c             |    4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+Yes it does! I was just going to send the same patch myself :)
 
-diff --git a/net/bluetooth/rfcomm/core.c b/net/bluetooth/rfcomm/core.c
-index e7ac6ba..fc98883 100644
---- a/net/bluetooth/rfcomm/core.c
-+++ b/net/bluetooth/rfcomm/core.c
-@@ -467,7 +467,7 @@ int rfcomm_dlc_send(struct rfcomm_dlc *d, struct sk_buff *skb)
- 	return len;
- }
- 
--void fastcall __rfcomm_dlc_throttle(struct rfcomm_dlc *d)
-+void __rfcomm_dlc_throttle(struct rfcomm_dlc *d)
- {
- 	BT_DBG("dlc %p state %ld", d, d->state);
- 
-@@ -478,7 +478,7 @@ void fastcall __rfcomm_dlc_throttle(struct rfcomm_dlc *d)
- 	rfcomm_schedule(RFCOMM_SCHED_TX);
- }
- 
--void fastcall __rfcomm_dlc_unthrottle(struct rfcomm_dlc *d)
-+void __rfcomm_dlc_unthrottle(struct rfcomm_dlc *d)
- {
- 	BT_DBG("dlc %p state %ld", d, d->state);
- 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 86d6261..acf71ba 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2138,7 +2138,7 @@ static int process_backlog(struct napi_struct *napi, int quota)
-  *
-  * The entry's receive function will be scheduled to run
-  */
--void fastcall __napi_schedule(struct napi_struct *n)
-+void __napi_schedule(struct napi_struct *n)
- {
- 	unsigned long flags;
- 
-diff --git a/net/core/sock.c b/net/core/sock.c
-index c519b43..c536149 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -1613,7 +1613,7 @@ void sock_init_data(struct socket *sock, struct sock *sk)
- 	atomic_set(&sk->sk_refcnt, 1);
- }
- 
--void fastcall lock_sock_nested(struct sock *sk, int subclass)
-+void lock_sock_nested(struct sock *sk, int subclass)
- {
- 	might_sleep();
- 	spin_lock_bh(&sk->sk_lock.slock);
-@@ -1630,7 +1630,7 @@ void fastcall lock_sock_nested(struct sock *sk, int subclass)
- 
- EXPORT_SYMBOL(lock_sock_nested);
- 
--void fastcall release_sock(struct sock *sk)
-+void release_sock(struct sock *sk)
- {
- 	/*
- 	 * The sk_lock has mutex_unlock() semantics:
--- 
-1.5.3.7.2212.gd092
-
-
-
+Shane
