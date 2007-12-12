@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbXLLVfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbXLLVg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758024AbXLLVfc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 16:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXLLVfY
+	id S1758918AbXLLVg0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 16:36:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXLLVgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 16:35:24 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38074 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750772AbXLLVfY (ORCPT
+	Wed, 12 Dec 2007 16:36:18 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46149 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751081AbXLLVgQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 16:35:24 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Andi Kleen <ak@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Ben Woodard <woodard@redhat.com>, Neil Horman <nhorman@redhat.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       hbabu@us.ibm.com, Andi Kleen <andi@firstfloor.org>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-References: <m1ve75z1v3.fsf@ebiederm.dsl.xmission.com>
-	<20071211182254.GB10999@hmsreliant.think-freely.org>
-	<m1ejdtysqd.fsf@ebiederm.dsl.xmission.com>
-	<20071211192434.GD10999@hmsreliant.think-freely.org>
-	<86802c440712111151t29acd38kf9fac8e41743f3e4@mail.gmail.com>
-	<20071211205955.GF10999@hmsreliant.think-freely.org>
-	<20071212142132.GC4889@bingen.suse.de>
-	<20071212155515.GA29735@hmsendeavour.rdu.redhat.com>
-	<20071212160722.GD4889@bingen.suse.de>
-	<m1prxbu2ah.fsf@ebiederm.dsl.xmission.com>
-	<20071212202215.GB29735@hmsendeavour.rdu.redhat.com>
-Date: Wed, 12 Dec 2007 14:32:02 -0700
-In-Reply-To: <20071212202215.GB29735@hmsendeavour.rdu.redhat.com> (Neil
-	Horman's message of "Wed, 12 Dec 2007 15:22:15 -0500")
-Message-ID: <m1lk7ztx9p.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 12 Dec 2007 16:36:16 -0500
+Date: Wed, 12 Dec 2007 21:29:22 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Rene Herman <rene.herman@gmail.com>, "David P. Reed" <dpreed@reed.com>,
+       Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
+       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       David Newall <david@davidnewall.com>, Paul Rolland <rol@as2917.net>,
+       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: More info on port 80 symptoms on MCP51 machine.
+Message-ID: <20071212212922.2cf5339b@the-village.bc.nu>
+In-Reply-To: <47604EA4.50504@zytor.com>
+References: <475DE6F4.80702@zytor.com>
+	<475DEB23.1000304@davidnewall.com>
+	<20071211084059.3d03e11d@tux.DEF.witbe.net>
+	<475E5D4B.8020101@keyaccess.nl>
+	<475E7DC2.4060509@davidnewall.com>
+	<475E8D91.20201@keyaccess.nl>
+	<475E95A3.3070801@davidnewall.com>
+	<Pine.LNX.4.61.0712111024060.22976@chaos.analogic.com>
+	<20071211163017.GD16750@one.firstfloor.org>
+	<475EBFBA.6090301@keyaccess.nl>
+	<20071211191649.GB3437@elf.ucw.cz>
+	<475EEC75.80609@keyaccess.nl>
+	<47603F66.3070108@reed.com>
+	<476043DA.5000602@keyaccess.nl>
+	<47604B71.7090902@keyaccess.nl>
+	<20071212210143.48721a41@the-village.bc.nu>
+	<47604EA4.50504@zytor.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman <nhorman@tuxdriver.com> writes:
+> One wonders if it does some SMM trick to capture port 0x80 writes and 
+> attempt to haul them off for debugging; it almost sounds like some kind 
+> of debugging code got let out into the field.
 
-> I think this just leaves us with deciding on a mechanism for how to do
-> single-application quirks.  I take Andi's point that adding a flag set to the
-> quirk data structure is a fine solution, but I'm really ok with static integers
-> in individual functions.  Do we have consensus on how to handle that?  I'm happy
-> either way, but I'd rather have agreement on how to handle it before I post
-> another iteration of this patch.  
-
-As long as the solution is simple, small and concise I don't care.
-
-And since what will make Andi happy seems to meet those criteria,
-that should be fine.
-
-
-Eric
+Not implausible. We've got a bug I've been dealing with where a vendor
+left debug stuff enabled via the parallel port and which clearly
+"escaped" from the test environment to the BIOS proper.
