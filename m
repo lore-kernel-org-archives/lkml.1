@@ -1,110 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbXLLUf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760590AbXLLUgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759960AbXLLUf7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 15:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXLLUfv
+	id S1760590AbXLLUgX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 15:36:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXLLUgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 15:35:51 -0500
-Received: from nz-out-0506.google.com ([64.233.162.229]:10382 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753440AbXLLUfu (ORCPT
+	Wed, 12 Dec 2007 15:36:11 -0500
+Received: from spirit.analogic.com ([204.178.40.4]:4579 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757492AbXLLUgJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 15:35:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DHaRcBh1p23pbRUzQ2RqUWtrzZGggTlQYQX5jWyG+k1zGRqWljlJdOmlIKR9gLfTlRFCrknPmLKhH+Br2IQj5BZHnnh2RSy9/U+YnqBLvhYi/V+2lSmZpVVVBTbyxfxM955lUNuVUf20xzHyYzIGECOCwnyLK1Z5fa3RycNnaGE=
-Message-ID: <fa4052ef0712121235x54e1837cs2efe4ce5c6e0e84d@mail.gmail.com>
-Date: Wed, 12 Dec 2007 15:35:48 -0500
-From: Shane <gnome42@gmail.com>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: [2.6 patch] videobuf-core.c locking fixes
-Cc: "Mauro Carvalho Chehab" <mchehab@infradead.org>,
-       "Adrian Bunk" <bunk@kernel.org>, "Brandon Philips" <brandon@ifup.org>,
-       linux-kernel@vger.kernel.org,
-       video4linux-list <video4linux-list@redhat.com>
-In-Reply-To: <20071212194454.GF10069@stusta.de>
+	Wed, 12 Dec 2007 15:36:09 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa4052ef0712112120l1165af5btc108ea2131760328@mail.gmail.com>
-	 <20071212090709.GF14204@stusta.de> <1197457394.4807.40.camel@gaivota>
-	 <20071212120308.GG14204@stusta.de> <1197469316.4744.22.camel@gaivota>
-	 <fa4052ef0712120837i36cee3elbe0a5170f5904d2f@mail.gmail.com>
-	 <fa4052ef0712121057o51230b22ycb79723091438779@mail.gmail.com>
-	 <20071212194454.GF10069@stusta.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 12 Dec 2007 20:31:34.0058 (UTC) FILETIME=[FC7E30A0:01C83CFD]
+Content-class: urn:content-classes:message
+Subject: Re: Attitude problems.
+Date: Wed, 12 Dec 2007 15:31:33 -0500
+Message-ID: <Pine.LNX.4.61.0712121520540.6100@chaos.analogic.com>
+in-reply-to: <476039AA.7010008@reed.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Attitude problems.
+thread-index: Acg8/fyMuvhX63CqSP2dvnApCY/Xxw==
+References: <475879CD.9080006@reed.com> <20071207160439.71b7f46a@the-village.bc.nu> <20071209125458.GB4381@ucw.cz> <20071209165908.GA15910@one.firstfloor.org> <20071209212513.GC24284@elf.ucw.cz> <475CBDD7.5050602@keyaccess.nl> <m3bq8y23de.fsf@maximus.localdomain> <475DE37F.20706@davidnewall.com> <475DE6F4.80702@zytor.com> <475DEB23.1000304@davidnewall.com> <20071211084059.3d03e11d@tux.DEF.witbe.net> <475E5D4B.8020101@keyaccess.nl> <475E7DC2.4060509@davidnewall.com> <475E8D91.20201@keyaccess.nl> <20071211143224.15900995@tux.DEF.witbe.net> <475E9B9B.2050709@keyaccess.nl> <475EACB8.7080608@keyaccess.nl> <20071211163706.2dc82275@tux.DEF.witbe.net> <475EB263.2050405@keyaccess.nl> <475EC1C0.2040000@reed.com> <20071211173231.2b87a81f@the-village.bc.nu> <475EE2CA.6020601@reed.com> <Pine.LNX.4.61.0712111513490.23653@chaos.analogic.com> <475F23BD.3040903@reed.com> <Pine.LNX.4.61.0712120802300.4443@chaos.analogic.com> <476039AA.7010008@reed.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Rene Herman" <rene.herman@keyaccess.nl>,
+       "Paul Rolland" <rol@as2917.net>, "David Newall" <david@davidnewall.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Krzysztof Halasa" <khc@pm.waw.pl>,
+       "Pavel Machek" <pavel@ucw.cz>, "Andi Kleen" <andi@firstfloor.org>,
+       <linux-kernel@vger.kernel.org>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@redhat.com>, <rol@witbe.net>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 12, 2007 2:44 PM, Adrian Bunk <bunk@stusta.de> wrote:
-> On Wed, Dec 12, 2007 at 01:57:27PM -0500, Shane wrote:
-> > On Dec 12, 2007 11:37 AM, Shane <gnome42@gmail.com> wrote:
-> > > On Dec 12, 2007 9:21 AM, Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
-> > > ...
-> > > > The proper solution is provided by this changeset:
-> > > > http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=19fb1457990b6b7e15586ec7331541a184233acc
-> > >
-> > > I applied this and it seems fine with a bttv card.
-> >
-> > Ugh, after further testing with a bttv card it seems this is not fine.
-> >
-> > vbi doesn't work anymore and my application gets stuck in a Zombie,
-> > unkillable, have to reboot state :(
-> >
-> > mythtv    3683     1  -3  2.4  0.0      0     0 ?        Z<l  13:40:35
-> > 00:00:06 [mythbackend] <defunct>
-> >
-> > Reverting Mauro's patch above does fix the problem.
->
-> Thanks for testing, does the patch below fix it?
->
-> > Shane
->
-> cu
-> Adrian
->
->
-> <--  snip  -->
->
->
-> After commit 19fb1457990b6b7e15586ec7331541a184233acc the callers in
-> videobuf-core.c that already hold the lock must call
-> __videobuf_read_start() instead of videobuf_read_start().
->
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->
-> ---
->
->  drivers/media/video/videobuf-core.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> e1f8b4a49d86746f699919531c17fd154787e308
-> diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
-> index 81f77d2..c8a5cb5 100644
-> --- a/drivers/media/video/videobuf-core.c
-> +++ b/drivers/media/video/videobuf-core.c
-> @@ -909,7 +909,7 @@ ssize_t videobuf_read_stream(struct videobuf_queue *q,
->         if (q->streaming)
->                 goto done;
->         if (!q->reading) {
-> -               retval = videobuf_read_start(q);
-> +               retval = __videobuf_read_start(q);
->                 if (retval < 0)
->                         goto done;
->         }
-> @@ -982,7 +982,7 @@ unsigned int videobuf_poll_stream(struct file *file,
->                                          struct videobuf_buffer, stream);
->         } else {
->                 if (!q->reading)
-> -                       videobuf_read_start(q);
-> +                       __videobuf_read_start(q);
->                 if (!q->reading) {
->                         rc = POLLERR;
->                 } else if (NULL == q->read_buf) {
->
 
-Yes it does! I was just going to send the same patch myself :)
+On Wed, 12 Dec 2007, David P. Reed wrote:
 
-Shane
+> Who has attitude problems here?  I have indeed learned a lot about assholes.
+>
+> linux-os (Dick Johnson) wrote:
+>> Yep. We are all wrong. You come out of nowhere and claim to
+>> be right. Goodbye.
+>>
+
+Hmmm, I gave you every opportunity to back off your pretense
+of writing code for the IBM/PC before it existed. You insisted
+upon continuing your diatribe. You are the one with the attitude
+problem. FYI, the last COMPLETE BIOS I wrote is on-line at:
+http://www.AbominableFirebug.com/Sources/pbios.zip
+It was written seven years ago. The first one I helped write
+was written 36 years ago. I do know something about this stuff.
+
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
