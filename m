@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbXLLTMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXLLTNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759368AbXLLTMJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 14:12:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbXLLTL4
+	id S1759905AbXLLTNB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 14:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXLLTMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 14:11:56 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:45604 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751746AbXLLTLy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 14:11:54 -0500
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-CC: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "j-nomura@ce.jp.nec.com" <j-nomura@ce.jp.nec.com>
-Date: Wed, 12 Dec 2007 19:08:09 +0000
-Subject: RE: [PATCH 21/30] blk_end_request: changing cciss (take 4)
-Thread-Topic: [PATCH 21/30] blk_end_request: changing cciss (take 4)
-Thread-Index: Acg85FbQTKQkjiDoQlyZ5XWTLglTkgADcbDQ
-Message-ID: <DEE40752C8AF224BB890E455C7B8E0FE15718F19@G6W0268.americas.hpqcorp.net>
-References: <20071211.175003.10249786.k-ueda@ct.jp.nec.com>
-	<DEE40752C8AF224BB890E455C7B8E0FE15718B35@G6W0268.americas.hpqcorp.net>
- <20071212.122752.104028559.k-ueda@ct.jp.nec.com>
-In-Reply-To: <20071212.122752.104028559.k-ueda@ct.jp.nec.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Wed, 12 Dec 2007 14:12:52 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:35768 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753892AbXLLTMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 14:12:52 -0500
+Date: Wed, 12 Dec 2007 20:12:47 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] MMC updates
+Message-ID: <20071212201247.64704150@poseidon.drzeus.cx>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >
-> > Why is this removed?
->
-> Sorry for the less explanation.
->
-> Because it is done in __end_that_request_first() called from
-> blk_end_request().
-> I'll add the explanation to the patch description when I
-> update the patch.
->
+Linus, please pull from
 
-Thank you. I've Acked the patch.
+        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
 
--- mikem
+to receive the following updates:
+
+ drivers/mmc/host/sdhci.c |   63 ++++++++++++++++++++++++++++++++++++++++++---
+ drivers/mmc/host/sdhci.h |    3 +-
+ include/linux/mmc/host.h |    4 ---
+ include/linux/pci_ids.h  |    1 +
+ 4 files changed, 61 insertions(+), 10 deletions(-)
+
+Nicolas Pitre (1):
+      mmc: remove unused 'mode' from the mmc_host structure
+
+Pierre Ossman (4):
+      sdhci: describe quirks
+      sdhci: don't warn about sdhci 2.0 controllers
+      sdhci: use PIO when DMA can't satisfy the request
+      sdhci: support JMicron JMB38x chips
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
