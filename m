@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbXLLLdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758860AbXLLLiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759373AbXLLLdr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 06:33:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXLLLdk
+	id S1758860AbXLLLiw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 06:38:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbXLLLin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 06:33:40 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59248 "EHLO
+	Wed, 12 Dec 2007 06:38:43 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50073 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752480AbXLLLdj (ORCPT
+	by vger.kernel.org with ESMTP id S1754773AbXLLLim (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 06:33:39 -0500
-Date: Wed, 12 Dec 2007 03:33:25 -0800
+	Wed, 12 Dec 2007 06:38:42 -0500
+Date: Wed, 12 Dec 2007 03:38:08 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 46/47] Update and improve CRISv32 kernel/time.c
-Message-Id: <20071212033325.5382fe3a.akpm@linux-foundation.org>
-In-Reply-To: <16367c7dcde15b42e831549e14f1d03439cc02b0.1196848533.git.jesper.nilsson@axis.com>
-References: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
-	<16367c7dcde15b42e831549e14f1d03439cc02b0.1196848533.git.jesper.nilsson@axis.com>
+To: Anders Henke <anders.henke@1und1.de>
+Cc: miquels@cistron.nl, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, matthew@wil.cx,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org
+Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2 check page: bad entry in
+ directory) (fwd)
+Message-Id: <20071212033808.6fb92139.akpm@linux-foundation.org>
+In-Reply-To: <20071212105841.GN6770@1und1.de>
+References: <20071212105841.GN6770@1und1.de>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,30 +30,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Dec 2007 17:25:45 +0100 Jesper Nilsson <jesper.nilsson@axis.com> wrote:
+On Wed, 12 Dec 2007 11:58:41 +0100 Anders Henke <anders.henke@1und1.de> wrote:
 
-> +#ifdef CONFIG_CPU_FREQ
-> +	cpufreq_register_notifier(&cris_time_freq_notifier_block,
-> +		CPUFREQ_TRANSITION_NOTIFIER);
->  #endif
+> Hi,
+> 
+> I'd like to let you now that my boxes are running a 32-bit kernel, so
+> the 64-bit-uncleanliness shouldn't apply to my boxes; however,
+> 
+> http://www.miquels.cistron.nl/linux/dpt_i2o-64bit-2.6.23.patch
+> 
+> fixed the issue on my testbox.
+> 
+> I took a clean 2.6.23, applied patch, recompiled the kernel, reboot: works.
 
-include/linux/cpufreq.h has
+What a huge patch :(
 
-#ifdef CONFIG_CPU_FREQ
-...
-#else		/* CONFIG_CPU_FREQ */
-static inline int cpufreq_register_notifier(struct notifier_block *nb,
-						unsigned int list)
-{
-	return 0;
-}
+We already reverted the offening patch so I assume that 2.6.24-rc5 is
+working for you?
 
+I guess we need to look at restoring "dpt_i2o: convert to SCSI hotplug
+model" and then absorbing what Miquel has done there.
 
-the idea is that you remove the above ifdefs and also the ifdefs around
-cris_time_freq_notifier_block and then gcc magically removes
-cris_time_freq_notifier_block from your generated code.
-
-Advantages: no ifdefs, and full typechecking even when CONFIG_CPU_FREQ=n.
-
-
-cpufreq_register_notifier() can fail but this code pretends otherwise...
