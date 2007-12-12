@@ -1,31 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759201AbXLLXLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbXLLXMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759201AbXLLXLk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 18:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbXLLXLc
+	id S1760079AbXLLXMr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 18:12:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbXLLXMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 18:11:32 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37517 "EHLO
+	Wed, 12 Dec 2007 18:12:40 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37524 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbXLLXLb (ORCPT
+	with ESMTP id S1751307AbXLLXMj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 18:11:31 -0500
+	Wed, 12 Dec 2007 18:12:39 -0500
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Greg KH <greg@kroah.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm -v2] x86 boot : export boot_params via sysfs
-References: <1197449991.14443.88.camel@caritas-dev.intel.com>
-	<20071212174613.GC16049@kroah.com> <47602044.9010104@zytor.com>
-	<20071212185935.GA5941@kroah.com> <47603109.6080909@zytor.com>
-	<20071212222146.GC16474@kroah.com>
-	<20071212144351.3fd0c6ec.randy.dunlap@oracle.com>
-Date: Wed, 12 Dec 2007 16:08:43 -0700
-In-Reply-To: <20071212144351.3fd0c6ec.randy.dunlap@oracle.com> (Randy Dunlap's
-	message of "Wed, 12 Dec 2007 14:43:51 -0800")
-Message-ID: <m17ijjtssk.fsf@ebiederm.dsl.xmission.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Linux Containers <containers@lists.osdl.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Mark timer_stats as incompatible with multiple pid namespaces
+Date: Wed, 12 Dec 2007 16:10:56 -0700
+Message-ID: <m13au7tsov.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -33,26 +24,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap <randy.dunlap@oracle.com> writes:
 
-> I don't know if this patch is trying to solve this (->) problem, but there
-> is a desire for drivers to have a decent way to tell if the kernel that
-> is executing is a kexec/crash kernel or not.  If it is a kexec/crash
-> kernel, then (some) drivers may not allocate as many buffers as they
-> normally do, since the kernel would likely be configured to use
-> less memory.  The solution doesn't have to involve sysfs .. or it could.
+/proc/timer_stats currently reports the user of a timer by pid,
+which is a reasonable approach.  However if you are not in
+the initial pid namespace the pid that is reported is nonsense.
 
-The patch is trying to make it easier to observe new fields passed to
-the kernel by the bootloader in user space.
+Therefore until we can make timer_stats pid namespace safe just
+disable it in the build if pid namespace support is selected
+so we at least know we have a conflict.
 
-The drivers should have a way to look at the amount of memory the
-kernel is configured to use and operate on that.  I expect this is a
-general embedded scenario.
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ lib/Kconfig.debug |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I don't think I have seen a driver concern in the kdump environment
-that is unique to that environment.  So in general I figure we should
-use whatever it is that is different about the kdump environment that
-the causes the drivers to want to do something differently, so the
-changes can ideally support more people.
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index cc42773..c8e81e6 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -146,7 +146,7 @@ config SCHEDSTATS
+ 
+ config TIMER_STATS
+ 	bool "Collect kernel timers statistics"
+-	depends on DEBUG_KERNEL && PROC_FS
++	depends on DEBUG_KERNEL && PROC_FS && !PID_NS
+ 	help
+ 	  If you say Y here, additional code will be inserted into the
+ 	  timer routines to collect statistics about kernel timers being
+-- 
+1.5.3.rc6.17.g1911
 
-Eric
