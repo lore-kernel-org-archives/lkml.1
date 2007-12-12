@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbXLLTtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761024AbXLLTue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760857AbXLLTtz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 14:49:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756975AbXLLTtq
+	id S1761024AbXLLTue (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 14:50:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758112AbXLLTuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 14:49:46 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:2472 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752228AbXLLTtq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 14:49:46 -0500
-Date: Wed, 12 Dec 2007 22:52:49 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andres Salomon <dilinger@queued.net>
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       akpm@linux-foundation.org, cbou@mail.ru
-Subject: Re: [PATCH 2/2] power: fix incorrect unregistration in power_supply_create_attrs error path
-Message-ID: <20071212195249.GB16241@localhost.localdomain>
-Reply-To: avorontsov@ru.mvista.com
-References: <20071212141259.67b4e1d9@ephemeral>
+	Wed, 12 Dec 2007 14:50:24 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:42597 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751264AbXLLTuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 14:50:23 -0500
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
+	settings for task actions [try #2]
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: casey@schaufler-ca.com
+Cc: David Howells <dhowells@redhat.com>, Karl MacMillan <kmacmill@redhat.com>,
+       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <830252.82380.qm@web36604.mail.mud.yahoo.com>
+References: <830252.82380.qm@web36604.mail.mud.yahoo.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 12 Dec 2007 14:49:06 -0500
+Message-Id: <1197488946.1125.151.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20071212141259.67b4e1d9@ephemeral>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 02:12:59PM -0500, Andres Salomon wrote:
+On Wed, 2007-12-12 at 11:44 -0800, Casey Schaufler wrote:
+> --- David Howells <dhowells@redhat.com> wrote:
 > 
-> In power_supply_create_attrs(), we create static attributes as referenced
-> by power_supply_static_attrs[i].  After that, if we fail, we unregister
-> via power_supply_static_attrs[psy->properties[i]].  This is incorrect, as
-> psy->properties has absolutely no bearing on static attribs.  This patch
-> fixes it to unregister the correct attrib.
+> > Casey Schaufler <casey@schaufler-ca.com> wrote:
+> > 
+> > > What sort of authorization are you thinking of? I would expect
+> > > that to have been done by cachefileselinuxcontext (or
+> > > cachefilesspiffylsmcontext) up in userspace. If you're going to
+> > > rely on userspace applications for policy enforcement they need
+> > > to be good enough to count on after all.
+> > 
+> > It can't be done in userspace, otherwise someone using the cachefilesd
+> > interface can pass an arbitrary context up.
 > 
-> Another line which was unnecessarily line wrapped is also unwrapped.
+> Yes, but I would expect that interface to be protected (owned by root,
+> mode 0400). If /dev/cachefiles has to be publicly accessable make it
+> a privileged ioctl.
 
-Will apply to battery-2.6.git, and will try to push this into 2.6.24.
+Uid 0 != CAP_MAC_OVERRIDE if you configure file caps and such.
 
-Much thanks.
-
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
-> ---
->  drivers/power/power_supply_sysfs.c |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
+> > The security context has to be
+> > passed across the file descriptor attached to /dev/cachefiles along with the
+> > other configuration parameters as a text string.
 > 
-> diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-> index 0331e82..8efedba 100644
-> --- a/drivers/power/power_supply_sysfs.c
-> +++ b/drivers/power/power_supply_sysfs.c
-> @@ -153,8 +153,7 @@ dynamics_failed:
->  			   &power_supply_attrs[psy->properties[j]]);
->  statics_failed:
->  	while (i--)
-> -		device_remove_file(psy->dev,
-> -			   &power_supply_static_attrs[psy->properties[i]]);
-> +		device_remove_file(psy->dev, &power_supply_static_attrs[i]);
->  succeed:
->  	return rc;
->  }
-> @@ -164,8 +163,7 @@ void power_supply_remove_attrs(struct power_supply *psy)
->  	int i;
->  
->  	for (i = 0; i < ARRAY_SIZE(power_supply_static_attrs); i++)
-> -		device_remove_file(psy->dev,
-> -			    &power_supply_static_attrs[i]);
-> +		device_remove_file(psy->dev, &power_supply_static_attrs[i]);
->  
->  	for (i = 0; i < psy->num_properties; i++)
->  		device_remove_file(psy->dev,
-> -- 
-> 1.5.3.5
+> I got that.
+> 
+> > This fd selects the
+> > particular cache context that a particular instance of a running daemon is
+> > using.
+> 
+> Yes, but forgive me being slow, I don't see the problem.
 > 
 > 
-
+> Casey Schaufler
+> casey@schaufler-ca.com
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Stephen Smalley
+National Security Agency
+
