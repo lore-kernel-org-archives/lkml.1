@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbXLLIbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758319AbXLLIbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbXLLIbV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 03:31:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXLLIbD
+	id S1758319AbXLLIbx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 03:31:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXLLIbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 03:31:03 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:55582 "EHLO
+	Wed, 12 Dec 2007 03:31:45 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:56560 "EHLO
 	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755492AbXLLIbB (ORCPT
+	with ESMTP id S1753517AbXLLIbo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 03:31:01 -0500
-Subject: Re: [PATCH 7/7] [NETDEV]: myri10ge Fix possible causing oops of
-	net_rx_action
+	Wed, 12 Dec 2007 03:31:44 -0500
+Subject: Re: [PATCH] pcie AER: don't check _OSC when acpi is disabled
 From: Subrata Modak <subrata@linux.vnet.ibm.com>
 Reply-To: subrata@linux.vnet.ibm.com
-To: Joonwoo Park <joonwpark81@gmail.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       help@myri.com
-In-Reply-To: <002801c83c73$af10f990$9c94fea9@jason>
-References: <002801c83c73$af10f990$9c94fea9@jason>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200712112013.48346.yinghai.lu@sun.com>
+References: <200712112013.48346.yinghai.lu@sun.com>
 Content-Type: text/plain
 Organization: IBM
-Date: Wed, 12 Dec 2007 14:00:57 +0530
-Message-Id: <1197448257.4710.31.camel@subratamodak.linux.ibm.com>
+Date: Wed, 12 Dec 2007 14:01:41 +0530
+Message-Id: <1197448301.4710.33.camel@subratamodak.linux.ibm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
@@ -42,29 +41,27 @@ Regards--
 Subrata
 (LTP Maintainer)
 
-On Wed, 2007-12-12 at 13:01 +0900, Joonwoo Park wrote:
-> [NETDEV]: myri10ge Fix possible causing oops of net_rx_action
+On Tue, 2007-12-11 at 20:13 -0800, Yinghai Lu wrote:
+> [PATCH] pcie AER: don't check _OSC when acpi is disabled
 > 
-> Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
-> ---
->  drivers/net/myri10ge/myri10ge.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+> when acpi=off and pci=nomsi, don't check _OSC in aer_osc_setup
 > 
-> diff --git a/drivers/net/myri10ge/myri10ge.c b/drivers/net/myri10ge/myri10ge.c
-> index 8def865..57311ed 100644
-> --- a/drivers/net/myri10ge/myri10ge.c
-> +++ b/drivers/net/myri10ge/myri10ge.c
-> @@ -1242,6 +1242,8 @@ static int myri10ge_poll(struct napi_struct *napi, int budget)
->  	if (work_done < budget || !netif_running(netdev)) {
->  		netif_rx_complete(netdev, napi);
->  		put_be32(htonl(3), mgp->irq_claim);
-> +		if (unlikely(work_done == napi->weight))
-> +			return work_done - 1;
->  	}
->  	return work_done;
->  }
-> ---
+> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 > 
+> diff --git a/drivers/pci/pcie/aer/aerdrv_acpi.c b/drivers/pci/pcie/aer/aerdrv_acpi.c
+> index 1a1eb45..dd38777 100644
+> --- a/drivers/pci/pcie/aer/aerdrv_acpi.c
+> +++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
+> @@ -34,6 +34,9 @@ int aer_osc_setup(struct pcie_device *pciedev)
+>  	acpi_handle handle = DEVICE_ACPI_HANDLE(&pdev->dev);
+>  	struct pci_bus *parent;
+> 
+> +	if (acpi_pci_disabled)
+> +		return -1;
+> +
+>  	while (!handle) {
+>  		if (!pdev || !pdev->bus->parent)
+>  			break;
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
