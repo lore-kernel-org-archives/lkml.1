@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbXLLQWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbXLLQ3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbXLLQWR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 11:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbXLLQVt
+	id S1757592AbXLLQ3W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 11:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbXLLQ3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 11:21:49 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:36218 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbXLLQVp (ORCPT
+	Wed, 12 Dec 2007 11:29:12 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:23606 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752312AbXLLQ3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 11:21:45 -0500
-Message-ID: <47600A6E.8000202@nortel.com>
-Date: Wed, 12 Dec 2007 10:21:02 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Wed, 12 Dec 2007 11:29:11 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: PNP: do not stop/start devices in suspend/resume path
+Date: Wed, 12 Dec 2007 09:29:06 -0700
+User-Agent: KMail/1.9.6
+Cc: Jiri Slaby <jirislaby@gmail.com>, matthew@wil.cx,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, drzeus@drzeus.cx,
+       linux-acpi@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Li Shaohua <shaohua.li@intel.com>, Len Brown <lenb@kernel.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <4745F77C.7040402@gmail.com> <200712061625.57660.bjorn.helgaas@hp.com> <20071212001610.6506c6d2.akpm@linux-foundation.org>
+In-Reply-To: <20071212001610.6506c6d2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: netdev@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Subject: Re: "ip neigh show" not showing arp cache entries?
-References: <475D7901.1040900@nortel.com> <475D7D70.5030502@nortel.com>
-In-Reply-To: <475D7D70.5030502@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Dec 2007 16:21:06.0088 (UTC) FILETIME=[FF1FF280:01C83CDA]
+Content-Disposition: inline
+Message-Id: <200712120929.07134.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I retested it on an x86 machine and am seeing similar problems.
+On Wednesday 12 December 2007 01:16:10 am Andrew Morton wrote:
+> On Thu, 6 Dec 2007 16:25:57 -0700 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> 
+> > Andrew, can you add this before
+> > pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch?
+> > 
+> > ...
+> >
+> > PNP: do not stop/start devices in suspend/resume path
+> 
+> I did, but I also temporarily dropped
+> pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch.
 
-First, "arp" gives the arp table as expected:
+Thanks.
 
-root@typhoon-base-unit0:/tftpboot/cnp/0-0-5-0/0-0-5-0> arp -n
-Address                  HWtype  HWaddress           Flags Mask 
-    Iface
-172.24.0.9               ether   00:03:CC:51:06:5E   C 
-    bond0
-10.41.18.101             ether   00:0E:0C:5E:95:BD   C 
-    eth6
-172.24.137.0             ether   00:C0:8B:08:E4:88   C 
-    bond0
-172.24.136.0             ether   00:C0:8B:07:B3:7E   C 
-    bond0
-10.41.18.1               ether   00:00:5E:00:01:01   C 
-    eth6
-172.24.0.5               ether   00:01:AF:15:E0:6A   C 
-    bond0
-172.24.0.13              ether   00:0E:0C:85:FD:D2   C 
-    bond0
-172.24.0.3               ether   00:01:AF:14:C8:CC   C 
-    bond0
-172.24.132.1             ether   00:01:AF:14:E9:88   C 
-    bond0
-172.24.0.7               ether   00:07:E9:41:4B:B4   C 
-    bond0
-192.168.24.81            ether   00:01:AF:14:E9:8A   C 
-    bond2
+> Is it expected that this patch will fix
+> pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch? 
+> Should I bring it back?
 
-"ip neigh show" gives nothing, but if I search for specific addresses 
-from the arp table listing they show up:
+No, not yet.  The "do not stop/start" patch should fix the kernel/resource.c
+warning, but I don't understand the "acpi reboots machine" (critical temp
+reached) problem yet.
 
-root@typhoon-base-unit0:/tftpboot/cnp/0-0-5-0/0-0-5-0> ip neigh show
-root@typhoon-base-unit0:/tftpboot/cnp/0-0-5-0/0-0-5-0> ip neigh show 
-172.24.0.9
-172.24.0.9 dev bond0 lladdr 00:03:cc:51:06:5e DELAY
-root@typhoon-base-unit0:/tftpboot/cnp/0-0-5-0/0-0-5-0> ip neigh show 
-10.41.18.101
-10.41.18.101 dev eth6 lladdr 00:0e:0c:5e:95:bd REACHABLE
-root@typhoon-base-unit0:/tftpboot/cnp/0-0-5-0/0-0-5-0> ip neigh show 
-172.24.137.0
-172.24.137.0 dev bond0 lladdr 00:c0:8b:08:e4:88 REACHABLE
-
-
-Is this expected behaviour?
-
-Thanks,
-
-Chris
+Bjorn
