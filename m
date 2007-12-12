@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbXLLHUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbXLLH2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbXLLHUK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 02:20:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbXLLHT7
+	id S1756348AbXLLH2F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 02:28:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbXLLH1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 02:19:59 -0500
-Received: from hu-out-0506.google.com ([72.14.214.226]:18849 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbXLLHT6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 02:19:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=I3unufqzX0HysD4XdfMaBMjrubPbehT4GOOYq1Ja0ltoFrj3jWX1hv+5D3tUXdCYBIu6lskTzHgBkPnDJwGy0UcE1T6ZZeyb9P17xoNBq62RnCEDsbQ9aoUz+QpH0DF/n3YGdfPR10DsQ6t4orxGwkC1qUhf6efLpRjSliQg0DU=
-Message-ID: <475F8B45.7060103@keyaccess.nl>
-Date: Wed, 12 Dec 2007 08:18:29 +0100
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 12 Dec 2007 02:27:54 -0500
+Received: from ext-ch1gw-5.online-age.net ([64.37.194.13]:60753 "EHLO
+	ext-ch1gw-5.online-age.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752480AbXLLH1x convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 02:27:53 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Kyle McMartin <kyle@mcmartin.ca>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
-       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
-       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
-Subject: Re: [RFT] Port 0x80 I/O speed
-References: <475F1DC6.5090403@keyaccess.nl> <20071212052304.GB20883@fattire.cabal.ca>
-In-Reply-To: <20071212052304.GB20883@fattire.cabal.ca>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Rene Herman <rene.herman@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH 1/1] replace 2.6.24-rc1 nfs_file_mmap by generic_file_mmap for nommu systems
+Date: Wed, 12 Dec 2007 08:27:32 +0100
+Message-ID: <050A770C1DB41144817F02E395E493105257D1@FLRMLVEM02.e2k.ad.ge.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] replace 2.6.24-rc1 nfs_file_mmap by generic_file_mmap for nommu systems
+Thread-Index: Acg8kHWh5SeFgTW1R8e5iQAveS2odg==
+From: "Berkhan, Enrik (GE Infra, Oil & Gas)" <enrik.berkhan@ge.com>
+To: <trond.myklebust@fys.uio.no>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 12 Dec 2007 07:27:47.0697 (UTC) FILETIME=[7E98F610:01C83C90]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12-12-07 06:23, Kyle McMartin wrote:
+Use generic_file_mmap (which is noop in this case) instead of nfs_file_mmap
+for nommu systems as suggested by Trond Myklebust.
 
-> On Wed, Dec 12, 2007 at 12:31:18AM +0100, Rene Herman wrote:
->> 	asm volatile ("rdtsc": "=A" (tsc));
-> 
-> rdtsc returns a 64-bit value in two 32-bit regs, you need to do
-> 
-> inline unsigned long long rdtsc(void)
-> {
-> 	unsigned int lo, hi;
-> 	asm volatile ("rdtsc": "=a" (lo), "=d" (hi));
-> 	return (unsigned long long)hi << 32 | lo;
-> }
-> 
-> as in msr.h, otherwise you'll only be looking at the value in %rax.
+Signed-Off-By: Enrik Berkhan <Enrik.Berkhan@ge.com>
 
-On 32-bit, "=A" is edx:eax. Not sure what the point is in not letting it be 
-that on 64-bit in fact, but yes, the thing should be compiled as 32-bit.
+---
+ fs/nfs/file.c |    8 ++++++++
+ 1 files changed, 8 insertions(+)
 
-Rene.
+Index: fs/nfs/file.c
+===================================================================
+--- fs/nfs/file.c.orig	2007-12-04 05:26:10.000000000 +0100
++++ fs/nfs/file.c	2007-12-12 08:15:16.000000000 +0100
+@@ -41,7 +41,9 @@
+ static int nfs_file_open(struct inode *, struct file *);
+ static int nfs_file_release(struct inode *, struct file *);
+ static loff_t nfs_file_llseek(struct file *file, loff_t offset, int origin);
++#ifdef CONFIG_MMU
+ static int  nfs_file_mmap(struct file *, struct vm_area_struct *);
++#endif
+ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
+ 					struct pipe_inode_info *pipe,
+ 					size_t count, unsigned int flags);
+@@ -64,7 +66,11 @@ const struct file_operations nfs_file_op
+ 	.write		= do_sync_write,
+ 	.aio_read	= nfs_file_read,
+ 	.aio_write	= nfs_file_write,
++#ifdef CONFIG_MMU
+ 	.mmap		= nfs_file_mmap,
++#else
++	.mmap		= generic_file_mmap,
++#endif
+ 	.open		= nfs_file_open,
+ 	.flush		= nfs_file_flush,
+ 	.release	= nfs_file_release,
+@@ -269,6 +275,7 @@ nfs_file_splice_read(struct file *filp, 
+ 	return res;
+ }
+ 
++#ifdef CONFIG_MMU
+ static int
+ nfs_file_mmap(struct file * file, struct vm_area_struct * vma)
+ {
+@@ -287,6 +294,7 @@ nfs_file_mmap(struct file * file, struct
+ 	}
+ 	return status;
+ }
++#endif
+ 
+ /*
+  * Flush any dirty pages for this process, and check for write errors.
