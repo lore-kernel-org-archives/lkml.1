@@ -1,100 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbXLLQvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbXLLQyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759346AbXLLQvm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 11:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756762AbXLLQve
+	id S1758890AbXLLQyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 11:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXLLQyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 11:51:34 -0500
-Received: from web36603.mail.mud.yahoo.com ([209.191.85.20]:38401 "HELO
-	web36603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755921AbXLLQvd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 11:51:33 -0500
-X-YMail-OSG: _Evh4QAVM1nxEc6lsujoExfOPRHa9v3ZXw2PKTh6
-X-RocketYMMF: rancidfat
-Date: Wed, 12 Dec 2007 08:51:31 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
-To: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com
-Cc: David Howells <dhowells@redhat.com>, Karl MacMillan <kmacmill@redhat.com>,
-       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <1197473127.1125.50.camel@moss-spartans.epoch.ncsc.mil>
+	Wed, 12 Dec 2007 11:54:05 -0500
+Received: from mail.atlantis.sk ([80.94.52.35]:51737 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753257AbXLLQyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 11:54:04 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Rene Herman <rene.herman@gmail.com>
+Subject: Re: [RFT] Port 0x80 I/O speed
+Date: Wed, 12 Dec 2007 17:53:50 +0100
+User-Agent: KMail/1.9.7
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
+       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
+       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
+References: <475F1DC6.5090403@keyaccess.nl>
+In-Reply-To: <475F1DC6.5090403@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <336290.70309.qm@web36603.mail.mud.yahoo.com>
+Content-Disposition: inline
+X-Length: 2664
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200712121753.54357.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 12 December 2007 00:31:18 Rene Herman wrote:
+> Good day.
+>
+> Would some people on x86 (both 32 and 64) be kind enough to compile and run
+> the attached program? This is about testing how long I/O port access to
+> port 0x80 takes. It measures in CPU cycles so CPU speed is crucial in
+> reporting.
+>
+> Posted a previous incarnation of this before, buried in the outb 0x80
+> thread which had a serialising problem. This one should as far as I can see
+> measure the right thing though. Please yell if you disagree...
+>
+> For me, on a Duron 1300 (AMD756 chipset) I have a constant:
+>
+> rene@7ixe4:~/src/port80$ su -c ./port80
+> cycles: out 2400, in 2400
+>
+> and on a PII 400 (Intel 440BX chipset) a constant:
+>
+> rene@6bap:~/src/port80$ su -c ./port80
+> cycles: out 553, in 251
+>
+> Results are (mostly) independent of compiler optimisation, but testing with
+> an -O2 compile should be most useful. Thanks!
+>
+> Rene.
 
---- Stephen Smalley <sds@tycho.nsa.gov> wrote:
+Cyrix MII PR300 (225MHz), i430TX:    cycles: out 263, in 93
+Pentium MMX 166MHz @133MHz, VIA VPX: cycles: out 163, in 163
+Celeron 433MHz, i440BX:              cycles: out 620, in 305
+Celeron 1.3GHz, i440BX:              cycles: out 2114, in 849
+Celeron 1.7GHz (P4-based), i845:     cycles: out 2178, in 1651
+Pentium 4 3.2GHz, i925X:             cycles: out 2824, in 1899
+Xeon E5310 1.6GHz, Dell PE1950       cycles: out 2631, in 1606
+Xeon 3050 2.13GHz, Dell PE860        cycles: out 3367, in 1959
 
-> On Tue, 2007-12-11 at 15:04 -0800, Casey Schaufler wrote:
-> > --- David Howells <dhowells@redhat.com> wrote:
-> > 
-> > > Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> > > 
-> > > > All your code has to do is invoke a function provided by libselinux.
-> > > 
-> > > Calling libselinux means it's a special case for a specific LSM.
-> > > 
-> > > I think the best way to do this, then, has to be to dlopen the
-> appropriate
-> > > LSM
-> > > library.  That way I don't need to do any conditional compilation or
-> linking,
-> > > but can build all the bits in to cachefilesd and have the appropriate one
-> > > selected by the /etc/cachefilesd.conf.
-> > > 
-> > > So, what do I invoke in libselinux, how do I configure it, and how do I
-> > > integrate the config into my RPM and install it?
-> > > 
-> > > And then what does it give me that I can hand to the kernel (a context
-> string
-> > > for SELinux, I presume), how do I get the kernel to make a check on it,
-> how
-> > > do
-> > > I configure the check and how do I install that config from my RPM (I
-> presume
-> > > I just need to modify the .fc, .if and .te files that I have already)?
-> > 
-> > That seems like an awful lot of work. I suggest that what you
-> > put in /etc/cachefilesd.conf is a line like:
-> > 
-> >    security_context:"<whatever>"
-> > 
-> > and have your daemon pass "<whatever>" into the kernel using
-> > a cachefile mechanism. The kernel code can call
-> > security_secctx_to_secid("<whatever>") to determine if it's valid.
-> > No need to invoke LSM specific code in your daemon. You may need
-> > to have an application, say cachefileselinuxcontext, that will
-> > read the current policy and spit out an appropriate value of
-> > "<whatever>", but that can be separate and LSM specific without
-> > mucking up your basic infrastructure applications. 
-> 
-> That sounds workable, although I think he will want a more specific hook
-> than security_secctx_to_secid(), or possibly a second hook call, that
-> would not only validate the context but authorize the use of it by the
-> cachefilesd process.
-
-What sort of authorization are you thinking of? I would expect
-that to have been done by cachefileselinuxcontext (or
-cachefilesspiffylsmcontext) up in userspace. If you're going to
-rely on userspace applications for policy enforcement they need
-to be good enough to count on after all.
-
-> And then the security_task_kernel_act_as() hook
-> just takes the secid as input rather than the task struct of the daemon,
-> and applies it.  At that point, nfsd can use the same mechanism for
-> setting the acting SID based on the client process after doing its own
-> authorization.
-
-good points all, in spite of my personal distaste for secids.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+-- 
+Ondrej Zary
