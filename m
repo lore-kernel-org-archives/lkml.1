@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbXLLCpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbXLLCut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757572AbXLLCpZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 21:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbXLLCpM
+	id S1755298AbXLLCut (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 21:50:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbXLLCul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 21:45:12 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38806 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751653AbXLLCpK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 21:45:10 -0500
-Date: Tue, 11 Dec 2007 18:44:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, bfields@fieldses.org,
-       neilb@suse.de, rjw@sisk.pl, gnome42@gmail.com,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com, den@openvz.org,
-       linux-nfs@vger.kernel.org
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression [SOLVED]
-Message-Id: <20071211184401.ab273c19.akpm@linux-foundation.org>
-In-Reply-To: <1197425940.27061.1.camel@heimdal.trondhjem.org>
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
-	<200712101705.30428.maximlevitsky@gmail.com>
-	<20071210130305.d8983fdc.akpm@linux-foundation.org>
-	<200712120401.57128.maximlevitsky@gmail.com>
-	<20071211181559.fe21687a.akpm@linux-foundation.org>
-	<1197425940.27061.1.camel@heimdal.trondhjem.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Dec 2007 21:50:41 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40456 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750772AbXLLCuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 21:50:40 -0500
+Date: Tue, 11 Dec 2007 21:50:32 -0500
+From: Dave Jones <davej@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Marcin __lusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org,
+       adaplas@gmail.com
+Subject: Re: [PATCH] fbcon: fix sparse warning about shadowing 'p' symbol
+Message-ID: <20071212025032.GA21298@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Marcin __lusarz <marcin.slusarz@gmail.com>,
+	linux-kernel@vger.kernel.org, adaplas@gmail.com
+References: <20071209213429.GE9440@joi> <20071211165700.fb20c939.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071211165700.fb20c939.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Dec 2007 21:19:00 -0500 Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+On Tue, Dec 11, 2007 at 04:57:00PM -0800, Andrew Morton wrote:
 
-> 
-> On Tue, 2007-12-11 at 18:15 -0800, Andrew Morton wrote:
-> > > 1) Stale handles - Trond's patch fixes it, but I somehow missed it.
-> > 
-> > What is "Trond's patch" and where is it now?
-> 
-> He means the one this whole thread started with. See attachment...
-> 
+ > > --- a/drivers/video/console/fbcon.c
+ > > +++ b/drivers/video/console/fbcon.c
+ > > @@ -2795,7 +2795,7 @@ static int fbcon_scrolldelta(struct vc_data *vc, int lines)
+ > >  {
+ > >  	struct fb_info *info = registered_fb[con2fb_map[fg_console]];
+ > >  	struct fbcon_ops *ops = info->fbcon_par;
+ > > -	struct display *p = &fb_display[fg_console];
+ > > +	struct display *disp = &fb_display[fg_console];
+ > 
+ > We have a global symbol called "p"?  That would be bad.  Where is it?
 
-Thanks.
+in the same function.
+We have quite a few shadow warnings in that file.
 
-Four days later that is not in mainline, not in -mm, not in git-nfs. 
-There is some disconnect here.
+drivers/video/console/fbcon.c:337:25: warning: symbol '_x' shadows an earlier one
+drivers/video/console/fbcon.c:337:25: originally declared here
+drivers/video/console/fbcon.c:337:25: warning: symbol '_x' shadows an earlier one
+drivers/video/console/fbcon.c:337:25: originally declared here
+drivers/video/console/fbcon.c:337:25: warning: symbol '_y' shadows an earlier one
+drivers/video/console/fbcon.c:337:25: originally declared here
+drivers/video/console/fbcon.c:2813:19: warning: symbol 'p' shadows an earlier one
+drivers/video/console/fbcon.c:2798:17: originally declared here
+drivers/video/console/fbcon.c:3336:6: warning: symbol 'rotate' shadows an earlier one
+drivers/video/console/fbcon.c:150:12: originally declared here
+drivers/video/console/fbcon.c:3361:6: warning: symbol 'rotate' shadows an earlier one
+drivers/video/console/fbcon.c:150:12: originally declared here
+drivers/video/console/fbcon.c:3385:6: warning: symbol 'rotate' shadows an earlier one
+drivers/video/console/fbcon.c:150:12: originally declared here
 
+	Dave 
+
+
+-- 
+http://www.codemonkey.org.uk
