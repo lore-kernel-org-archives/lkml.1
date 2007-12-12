@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbXLLPSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757629AbXLLPSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935AbXLLPSZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 10:18:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXLLPSR
+	id S1757629AbXLLPSs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 10:18:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbXLLPSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 10:18:17 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:51954 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbXLLPSQ (ORCPT
+	Wed, 12 Dec 2007 10:18:36 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60561
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752042AbXLLPSf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 10:18:16 -0500
-Date: Wed, 12 Dec 2007 08:18:14 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Hannes Reinecke <hare@suse.de>
-Subject: Re: [PATCH] REQ-flags to/from BIO-flags bugfix
-Message-ID: <20071212151813.GJ26334@parisc-linux.org>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <47462F3C.3040700@googlemail.com> <20071122201250.f957e280.akpm@linux-foundation.org> <47466B5D.90607@googlemail.com> <20071126221509.8f437b61.akpm@linux-foundation.org> <1197390783.3812.19.camel@localhost.localdomain> <475FB316.6040804@panasas.com> <475FBFEE.9010009@panasas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <475FBFEE.9010009@panasas.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 12 Dec 2007 10:18:35 -0500
+Date: Wed, 12 Dec 2007 07:18:32 -0800 (PST)
+Message-Id: <20071212.071832.07747779.davem@davemloft.net>
+To: joonwpark81@gmail.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       baum@tehutinetworks.net, andy@greyhouse.net
+Subject: Re: [PATCH 6/7] [NETDEV]: tehuti Fix possible causing oops of
+ net_rx_action
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <002901c83c73$b089b6e0$9c94fea9@jason>
+References: <002901c83c73$b089b6e0$9c94fea9@jason>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 01:03:10PM +0200, Boaz Harrosh wrote:
->  - BIO flags bio->bi_rw and REQ flags req->cmd_flags no longer match.
->    Remove comments and do a proper translation between the 2 systems.
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+Date: Wed, 12 Dec 2007 13:01:27 +0900
 
-I'd rather see them resynchronised ... in a way that makes it obvious
-that they should be desynced again:
+> @@ -305,6 +305,8 @@ static int bdx_poll(struct napi_struct *napi, int budget)
+>  
+>  		netif_rx_complete(dev, napi);
+>  		bdx_enable_interrupts(priv);
+> +		if (unlikely(work_done == napi->weight))
+> +			return work_done - 1;
+>  	}
+>  	return work_done;
+>  }
 
-I don't know whether BIO_RW_BARRIER is __REQ_SOFTBARRIER or
-__REQ_HARDBARRIER, so I didn't include that in this patch.  There also
-doesn't seem to be a __REQ equivalent to BIO_RW_AHEAD, but we can do
-the other four bits (and leave gaps for those two).
+Any time your trying to make a caller "happy" by adjusting
+a return value forcefully, it's a hack.
 
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index d18ee67..6aef34b 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -167,11 +167,13 @@ enum {
- };
- 
- /*
-- * request type modified bits. first three bits match BIO_RW* bits, important
-+ * request type modified bits.  Don't change without looking at bi_rw flags
-  */
- enum rq_flag_bits {
--	__REQ_RW,		/* not set, read. set, write */
--	__REQ_FAILFAST,		/* no low level driver retries */
-+	__REQ_RW = BIO_RW,	/* not set, read. set, write */
-+	__REQ_FAILFAST = BIO_RW_FAILFAST, /* no low level driver retries */
-+	__REQ_RW_SYNC = BIO_RW_SYNC,	/* request is sync (O_DIRECT) */
-+	__REQ_RW_META = BIO_RW_META,	/* metadata io request */
- 	__REQ_SORTED,		/* elevator knows about this request */
- 	__REQ_SOFTBARRIER,	/* may not be passed by ioscheduler */
- 	__REQ_HARDBARRIER,	/* may not be passed by drive either */
-@@ -185,9 +187,7 @@ enum rq_flag_bits {
- 	__REQ_QUIET,		/* don't worry about errors */
- 	__REQ_PREEMPT,		/* set for "ide_preempt" requests */
- 	__REQ_ORDERED_COLOR,	/* is before or after barrier */
--	__REQ_RW_SYNC,		/* request is sync (O_DIRECT) */
- 	__REQ_ALLOCED,		/* request came from our alloc pool */
--	__REQ_RW_META,		/* metadata io request */
- 	__REQ_NR_BITS,		/* stops here */
- };
- 
+And I stated this in another reply about this issue.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Please do not fix the problem this way.
+
+The correct way to fix this is, if we did process a full
+"weight" or work, we should not netif_rx_complete() and
+we should not re-enable chip interrupts.
+
+Instead we should return the true "work_done" value and
+allow the caller to thus poll us one more time.
