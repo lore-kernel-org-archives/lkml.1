@@ -1,94 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbXLLNIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbXLLNNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbXLLNIw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 08:08:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbXLLNIi
+	id S1754058AbXLLNNk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 08:13:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbXLLNNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 08:08:38 -0500
-Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:1220 "EHLO
-	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752851AbXLLNIg (ORCPT
+	Wed, 12 Dec 2007 08:13:32 -0500
+Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:1857 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751232AbXLLNNb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 08:08:36 -0500
-Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2 check page: bad entry in
-	directory) (fwd)
-From: Miquel van Smoorenburg <miquels@cistron.nl>
-To: Anders Henke <anders.henke@1und1.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, matthew@wil.cx,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20071212033808.6fb92139.akpm@linux-foundation.org>
-References: <20071212105841.GN6770@1und1.de>
-	 <20071212033808.6fb92139.akpm@linux-foundation.org>
-Content-Type: multipart/mixed; boundary="=-4P8+dsHXux8CM93aqNY6"
-Date: Wed, 12 Dec 2007 14:07:59 +0100
-Message-Id: <1197464879.20796.15.camel@n2o.xs4all.nl>
+	Wed, 12 Dec 2007 08:13:31 -0500
+Date: Wed, 12 Dec 2007 14:13:28 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux I2C <i2c@lm-sensors.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] more i2c fixes for 2.6.24
+Message-ID: <20071212141328.552aeebb@hyperion.delvare>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
---=-4P8+dsHXux8CM93aqNY6
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Please pull the i2c subsystem fixes for Linux 2.6.24 from:
 
-On Wed, 2007-12-12 at 03:38 -0800, Andrew Morton wrote:
-> On Wed, 12 Dec 2007 11:58:41 +0100 Anders Henke <anders.henke@1und1.de> wrote:
-> 
-> > Hi,
-> > 
-> > I'd like to let you now that my boxes are running a 32-bit kernel, so
-> > the 64-bit-uncleanliness shouldn't apply to my boxes; however,
-> > 
-> > http://www.miquels.cistron.nl/linux/dpt_i2o-64bit-2.6.23.patch
-> > 
-> > fixed the issue on my testbox.
-> > 
-> > I took a clean 2.6.23, applied patch, recompiled the kernel, reboot: works.
-> 
-> What a huge patch :(
-> 
-> We already reverted the offening patch so I assume that 2.6.24-rc5 is
-> working for you?
-> 
-> I guess we need to look at restoring "dpt_i2o: convert to SCSI hotplug
-> model" and then absorbing what Miquel has done there.
+git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
 
-This was just a patch I had lying around, if it worked it would confirm
-my suspicion, which it has.
 
-The minimal patch which is suitable for 2.6.23-stable and 2.6.24 would
-be the attached one-liner. The "dpt_i2o: convert to SCSI hotplug model"
-patch could be restored then.
+ Documentation/i2c/summary        |   45 +++----------------------------------
+ drivers/i2c/busses/i2c-davinci.c |    4 +-
+ drivers/i2c/busses/i2c-gpio.c    |    1 +
+ drivers/i2c/busses/i2c-omap.c    |    6 ++--
+ drivers/i2c/chips/isp1301_omap.c |    2 +-
+ 5 files changed, 11 insertions(+), 47 deletions(-)
 
-(if the list eats the attachment, it's also available here:
-http://www.miquels.cistron.nl/linux/linux-2.6.23+24-dpt_i2o-dma64.patch 
-)
+---------------
 
-Anders, does this one-liner patch work for you ?
+Atsushi Nemoto (1):
+      i2c-gpio: Initialize adapter class
 
-Mike.
+David Brownell (1):
+      i2c/isp1301_omap: Build fix
 
---=-4P8+dsHXux8CM93aqNY6
-Content-Disposition: attachment; filename=linux-2.6.23+24-dpt_i2o-dma64.patch
-Content-Type: text/x-patch; name=linux-2.6.23+24-dpt_i2o-dma64.patch; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Jean Delvare (1):
+      i2c: Delete an outdated piece of documentation
 
-diff -ruN linux-2.6.23.9.orig/drivers/scsi/dpt_i2o.c linux-2.6.23.9/drivers/scsi/dpt_i2o.c
---- linux-2.6.23.9.orig/drivers/scsi/dpt_i2o.c	2007-11-26 18:51:43.000000000 +0100
-+++ linux-2.6.23.9/drivers/scsi/dpt_i2o.c	2007-12-12 13:21:05.000000000 +0100
-@@ -905,8 +905,7 @@
- 	}
- 
- 	pci_set_master(pDev);
--	if (pci_set_dma_mask(pDev, DMA_64BIT_MASK) &&
--	    pci_set_dma_mask(pDev, DMA_32BIT_MASK))
-+	if (pci_set_dma_mask(pDev, DMA_32BIT_MASK))
- 		return -EINVAL;
- 
- 	base_addr0_phys = pci_resource_start(pDev,0);
+Joe Perches (1):
+      i2c: Add missing spaces in split log messages
 
---=-4P8+dsHXux8CM93aqNY6--
 
+Thanks,
+-- 
+Jean Delvare
