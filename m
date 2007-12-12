@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbXLLWT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbXLLWWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757190AbXLLWT4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 17:19:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbXLLWTs
+	id S1756942AbXLLWWp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 17:22:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbXLLWWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 17:19:48 -0500
-Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:3532 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751147AbXLLWTr (ORCPT
+	Wed, 12 Dec 2007 17:22:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45989 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752561AbXLLWWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 17:19:47 -0500
-Date: Wed, 12 Dec 2007 23:19:44 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Shane <gnome42@gmail.com>,
-       Brandon Philips <brandon@ifup.org>, linux-kernel@vger.kernel.org,
-       video4linux-list <video4linux-list@redhat.com>
-Subject: Re: 2.6.24-rc5 "videobuf_read_start"
- [drivers/media/video/videobuf-dvb.ko] undefined!
-Message-ID: <20071212231944.53f09d99@hyperion.delvare>
-In-Reply-To: <1197469316.4744.22.camel@gaivota>
-References: <fa4052ef0712112120l1165af5btc108ea2131760328@mail.gmail.com>
-	<20071212090709.GF14204@stusta.de>
-	<1197457394.4807.40.camel@gaivota>
-	<20071212120308.GG14204@stusta.de>
-	<1197469316.4744.22.camel@gaivota>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Wed, 12 Dec 2007 17:22:37 -0500
+Date: Wed, 12 Dec 2007 15:21:43 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: "Pavel Machek" <pavel@ucw.cz>, "Len Brown" <lenb@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fujitsu application panel led value
+Message-ID: <20071212152143.04c83e93@shemminger-laptop>
+In-Reply-To: <d120d5000712120610m30c054f5w596c29a1700211f@mail.gmail.com>
+References: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net>
+	<200709140130.59732.dtor@insightbb.com>
+	<20070916215516.2934abad@oldman.hemminger.net>
+	<200709161623.00286.dtor@insightbb.com>
+	<20071023125555.38d63567@shemminger-laptop>
+	<d120d5000712120610m30c054f5w596c29a1700211f@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,28 +33,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mauro,
+Use proper encoding for LED values.
 
-On Wed, 12 Dec 2007 12:21:56 -0200, Mauro Carvalho Chehab wrote:
-> What happened is that changeset 19bc5133dae9562e8824ef101464061f9854c1d8
-> fixed some bad locks. 
-> 
-> After this changeset, videobuf_read_stream() holds q->lock and calls
-> videobuf_read_start(). To avoid waiting forever for the lock to be
-> released, he removed the mutex from videobuf_read_start with this line
-> [1]:
-> 
-> -       err = videobuf_mmap_setup(q, count, size, V4L2_MEMORY_USERPTR);
-> +       err = __videobuf_mmap_setup(q, count, size, V4L2_MEMORY_USERPTR);
-> 
-> So, after the patch, videobuf_read_start() can't be safely called. So,
-> just adding EXPORT_SYMBOL_GPL() breaks videobuf-dvb at runtime.
-> 
-> The proper solution is provided by this changeset:
-> http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=19fb1457990b6b7e15586ec7331541a184233acc
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-There's a "static" missing in that patch: __videobuf_read_start is only
-used internally.
+---
+Note: earlier code worked because hardware only checks for zero.
 
--- 
-Jean Delvare
+--- a/drivers/input/misc/apanel.c	2007-12-12 13:07:03.000000000 -0700
++++ b/drivers/input/misc/apanel.c	2007-12-12 14:42:09.000000000 -0700
+@@ -132,11 +132,11 @@ static void mail_led_set(struct led_clas
+ 			 enum led_brightness value)
+ {
+ 	struct apanel *ap = container_of(led, struct apanel, mail_led);
+-	if (value)
++
++	if (value != LED_OFF)
+ 		ap->led_bits |= 0x8000;
+ 	else
+ 		ap->led_bits &= ~0x8000;
+-	ap->led_bits = value;
+ 	schedule_work(&ap->led_work);
+ }
+ 
