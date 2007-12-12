@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbXLLUuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbXLLUui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760914AbXLLUuO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 15:50:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760636AbXLLUtF
+	id S1761326AbXLLUui (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 15:50:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760671AbXLLUtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 15:49:05 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:40749 "EHLO
+	Wed, 12 Dec 2007 15:49:07 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:40750 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756360AbXLLUtC (ORCPT
+	with ESMTP id S1758477AbXLLUtF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 15:49:02 -0500
-Date: Wed, 12 Dec 2007 15:47:59 -0500
+	Wed, 12 Dec 2007 15:49:05 -0500
+Date: Wed, 12 Dec 2007 15:47:57 -0500
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 5/6] UML - Move sig_handler_common_skas
-Message-ID: <20071212204759.GA9139@c2.user-mode-linux.org>
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Stanislaw Gruszka <stf_xl@wp.pl>
+Subject: [PATCH 1/6] UML - tidy helper code
+Message-ID: <20071212204757.GA9119@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,207 +26,274 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves sig_handler_common_skas from
-arch/um/os-Linux/skas/trap.c to its only caller in
-arch/um/os-Linux/signal.c.  trap.c is now empty, so it can be removed.
+Style fixes to arch/um/os/helper.c and tidying up the breakpoint fix a
+bit.
 
-This is code movement only - the significant cleanup needed here is
-done in the next patch.
+helper.c gets all the usual style fixes -
+	 updated copyright
+	 all printks get severities
+
+Also -
+	 errval changes to err in helper_child
+	 fixed an obsolete comment
+	 run_helper was killing a child process which is guaranteed to
+be dead or dying anyway
+
+Removed the nohang and pname arguments from helper_wait and fixed the
+declaration and callers.  nohang was used only in the slirp driver and
+I don't think it was needed.  I think pname was a bit of overkill in
+putting out an error message when something goes wrong.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/include/os.h           |    3 -
- arch/um/os-Linux/signal.c      |   62 ++++++++++++++++++++++++++++++++++
- arch/um/os-Linux/skas/Makefile |    6 +--
- arch/um/os-Linux/skas/trap.c   |   73 -----------------------------------------
- 4 files changed, 65 insertions(+), 79 deletions(-)
+ arch/um/drivers/net_user.c               |    2 
+ arch/um/drivers/slip_user.c              |    2 
+ arch/um/drivers/slirp_user.c             |    2 
+ arch/um/include/os.h                     |    2 
+ arch/um/os-Linux/drivers/ethertap_user.c |    2 
+ arch/um/os-Linux/drivers/tuntap_user.c   |    2 
+ arch/um/os-Linux/helper.c                |   74 ++++++++++++-------------------
+ 7 files changed, 36 insertions(+), 50 deletions(-)
 
-Index: linux-2.6-git/arch/um/include/os.h
+Index: linux-2.6-git/arch/um/os-Linux/helper.c
 ===================================================================
---- linux-2.6-git.orig/arch/um/include/os.h	2007-12-12 15:06:13.000000000 -0500
-+++ linux-2.6-git/arch/um/include/os.h	2007-12-12 15:16:44.000000000 -0500
-@@ -292,9 +292,6 @@ extern int add_sigio_fd(int fd);
- extern int ignore_sigio_fd(int fd);
- extern void maybe_sigio_broken(int fd, int read);
+--- linux-2.6-git.orig/arch/um/os-Linux/helper.c	2007-12-12 14:10:34.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/helper.c	2007-12-12 14:10:44.000000000 -0500
+@@ -1,22 +1,19 @@
+ /*
+- * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
+  */
  
--/* skas/trap */
--extern void sig_handler_common_skas(int sig, void *sc_ptr);
--
- /* sys-x86_64/prctl.c */
- extern int os_arch_prctl(int pid, int code, unsigned long *addr);
- 
-Index: linux-2.6-git/arch/um/os-Linux/signal.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/signal.c	2007-12-12 15:06:13.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/signal.c	2007-12-12 15:17:45.000000000 -0500
-@@ -9,12 +9,74 @@
+-#include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
  #include <errno.h>
- #include <signal.h>
- #include <strings.h>
-+#include "as-layout.h"
+ #include <sched.h>
+-#include <limits.h>
+-#include <sys/signal.h>
+-#include <sys/wait.h>
+ #include <sys/socket.h>
+-#include "user.h"
++#include <sys/wait.h>
 +#include "kern_constants.h"
  #include "kern_util.h"
  #include "os.h"
- #include "sysdep/barrier.h"
- #include "sysdep/sigcontext.h"
-+#include "task.h"
- #include "user.h"
- 
-+void (*sig_info[NSIG])(int, struct uml_pt_regs *) = {
-+	[SIGTRAP]	= relay_signal,
-+	[SIGFPE]	= relay_signal,
-+	[SIGILL]	= relay_signal,
-+	[SIGWINCH]	= winch,
-+	[SIGBUS]	= bus_handler,
-+	[SIGSEGV]	= segv_handler,
-+	[SIGIO]		= sigio_handler,
-+	[SIGVTALRM]	= timer_handler };
-+
-+static struct uml_pt_regs ksig_regs[UM_NR_CPUS];
-+
-+void sig_handler_common_skas(int sig, void *sc_ptr)
-+{
-+	struct sigcontext *sc = sc_ptr;
-+	struct uml_pt_regs *r;
-+	void (*handler)(int, struct uml_pt_regs *);
-+	int save_user, save_errno = errno;
-+
-+	/*
-+	 * This is done because to allow SIGSEGV to be delivered inside a SEGV
-+	 * handler.  This can happen in copy_user, and if SEGV is disabled,
-+	 * the process will die.
-+	 * XXX Figure out why this is better than SA_NODEFER
-+	 */
-+	if (sig == SIGSEGV) {
-+		change_sig(SIGSEGV, 1);
-+		/*
-+		 * For segfaults, we want the data from the
-+		 * sigcontext.  In this case, we don't want to mangle
-+		 * the process registers, so use a static set of
-+		 * registers.  For other signals, the process
-+		 * registers are OK.
-+		 */
-+		r = &ksig_regs[cpu()];
-+		copy_sc(r, sc_ptr);
-+	} else
-+		r = TASK_REGS(get_current());
-+
-+	save_user = r->is_user;
-+	r->is_user = 0;
-+	if ((sig == SIGFPE) || (sig == SIGSEGV) || (sig == SIGBUS) ||
-+	    (sig == SIGILL) || (sig == SIGTRAP))
-+		GET_FAULTINFO_FROM_SC(r->faultinfo, sc);
-+
-+	change_sig(SIGUSR1, 1);
-+
-+	handler = sig_info[sig];
-+
-+	/* unblock SIGVTALRM, SIGIO if sig isn't IRQ signal */
-+	if ((sig != SIGIO) && (sig != SIGWINCH) && (sig != SIGVTALRM))
-+		unblock_signals();
-+
-+	handler(sig, r);
-+
-+	errno = save_errno;
-+	r->is_user = save_user;
-+}
-+
- /* Copied from linux/compiler-gcc.h since we can't include it directly */
- #define barrier() __asm__ __volatile__("": : :"memory")
- 
-Index: linux-2.6-git/arch/um/os-Linux/skas/Makefile
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/skas/Makefile	2007-12-12 15:06:13.000000000 -0500
-+++ linux-2.6-git/arch/um/os-Linux/skas/Makefile	2007-12-12 15:16:44.000000000 -0500
-@@ -1,10 +1,10 @@
- #
--# Copyright (C) 2002 - 2004 Jeff Dike (jdike@addtoit.com)
-+# Copyright (C) 2002 - 2007 Jeff Dike (jdike@{linux.intel,addtoit}.com)
- # Licensed under the GPL
- #
- 
--obj-y := mem.o process.o trap.o
-+obj-y := mem.o process.o
- 
--USER_OBJS := mem.o process.o trap.o
-+USER_OBJS := $(obj-y)
- 
- include arch/um/scripts/Makefile.rules
-Index: linux-2.6-git/arch/um/os-Linux/skas/trap.c
-===================================================================
---- linux-2.6-git.orig/arch/um/os-Linux/skas/trap.c	2007-12-12 15:06:13.000000000 -0500
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,73 +0,0 @@
--/*
-- * Copyright (C) 2002 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-- * Licensed under the GPL
-- */
--
--#include <errno.h>
--#include <signal.h>
--#include "sysdep/ptrace.h"
+ #include "um_malloc.h"
 -#include "kern_constants.h"
--#include "as-layout.h"
--#include "kern_util.h"
--#include "os.h"
--#include "sigcontext.h"
--#include "task.h"
++#include "user.h"
+ 
+ struct helper_data {
+ 	void (*pre_exec)(void*);
+@@ -30,21 +27,19 @@ static int helper_child(void *arg)
+ {
+ 	struct helper_data *data = arg;
+ 	char **argv = data->argv;
+-	int errval;
++	int err;
+ 
+ 	if (data->pre_exec != NULL)
+ 		(*data->pre_exec)(data->pre_data);
+-	errval = execvp_noalloc(data->buf, argv[0], argv);
+-	printk("helper_child - execvp of '%s' failed - errno = %d\n", argv[0],
+-	       -errval);
+-	write(data->fd, &errval, sizeof(errval));
+-	kill(os_getpid(), SIGKILL);
++	err = execvp_noalloc(data->buf, argv[0], argv);
++
++	/* If the exec succeeds, we don't get here */
++	write(data->fd, &err, sizeof(err));
++
+ 	return 0;
+ }
+ 
+-/* Returns either the pid of the child process we run or -E* on failure.
+- * XXX The alloc_stack here breaks if this is called in the tracing thread, so
+- * we need to receive a preallocated stack (a local buffer is ok). */
++/* Returns either the pid of the child process we run or -E* on failure. */
+ int run_helper(void (*pre_exec)(void *), void *pre_data, char **argv)
+ {
+ 	struct helper_data data;
+@@ -58,14 +53,15 @@ int run_helper(void (*pre_exec)(void *),
+ 	ret = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+ 	if (ret < 0) {
+ 		ret = -errno;
+-		printk("run_helper : pipe failed, errno = %d\n", errno);
++		printk(UM_KERN_ERR "run_helper : pipe failed, errno = %d\n",
++		       errno);
+ 		goto out_free;
+ 	}
+ 
+ 	ret = os_set_exec_close(fds[1]);
+ 	if (ret < 0) {
+-		printk("run_helper : setting FD_CLOEXEC failed, ret = %d\n",
+-		       -ret);
++		printk(UM_KERN_ERR "run_helper : setting FD_CLOEXEC failed, "
++		       "ret = %d\n", -ret);
+ 		goto out_close;
+ 	}
+ 
+@@ -79,7 +75,8 @@ int run_helper(void (*pre_exec)(void *),
+ 	pid = clone(helper_child, (void *) sp, CLONE_VM, &data);
+ 	if (pid < 0) {
+ 		ret = -errno;
+-		printk("run_helper : clone failed, errno = %d\n", errno);
++		printk(UM_KERN_ERR "run_helper : clone failed, errno = %d\n",
++		       errno);
+ 		goto out_free2;
+ 	}
+ 
+@@ -96,10 +93,9 @@ int run_helper(void (*pre_exec)(void *),
+ 	} else {
+ 		if (n < 0) {
+ 			n = -errno;
+-			printk("run_helper : read on pipe failed, ret = %d\n",
+-			       -n);
++			printk(UM_KERN_ERR "run_helper : read on pipe failed, "
++			       "ret = %d\n", -n);
+ 			ret = n;
+-			kill(pid, SIGKILL);
+ 		}
+ 		CATCH_EINTR(waitpid(pid, NULL, __WCLONE));
+ 	}
+@@ -129,50 +125,40 @@ int run_helper_thread(int (*proc)(void *
+ 	pid = clone(proc, (void *) sp, flags, arg);
+ 	if (pid < 0) {
+ 		err = -errno;
+-		printk("run_helper_thread : clone failed, errno = %d\n",
+-		       errno);
++		printk(UM_KERN_ERR "run_helper_thread : clone failed, "
++		       "errno = %d\n", errno);
+ 		return err;
+ 	}
+ 	if (stack_out == NULL) {
+ 		CATCH_EINTR(pid = waitpid(pid, &status, __WCLONE));
+ 		if (pid < 0) {
+ 			err = -errno;
+-			printk("run_helper_thread - wait failed, errno = %d\n",
+-			       errno);
++			printk(UM_KERN_ERR "run_helper_thread - wait failed, "
++			       "errno = %d\n", errno);
+ 			pid = err;
+ 		}
+ 		if (!WIFEXITED(status) || (WEXITSTATUS(status) != 0))
+-			printk("run_helper_thread - thread returned status "
+-			       "0x%x\n", status);
++			printk(UM_KERN_ERR "run_helper_thread - thread "
++			       "returned status 0x%x\n", status);
+ 		free_stack(stack, 0);
+ 	} else
+ 		*stack_out = stack;
+ 	return pid;
+ }
+ 
+-int helper_wait(int pid, int nohang, char *pname)
++int helper_wait(int pid)
+ {
+ 	int ret, status;
+ 	int wflags = __WCLONE;
+ 
+-	if (nohang)
+-		wflags |= WNOHANG;
 -
--void (*sig_info[NSIG])(int, struct uml_pt_regs *) = {
--	[SIGTRAP]	= relay_signal,
--	[SIGFPE]	= relay_signal,
--	[SIGILL]	= relay_signal,
--	[SIGWINCH]	= winch,
--	[SIGBUS]	= bus_handler,
--	[SIGSEGV]	= segv_handler,
--	[SIGIO]		= sigio_handler,
--	[SIGVTALRM]	= timer_handler };
+-	if (!pname)
+-		pname = "helper_wait";
 -
--static struct uml_pt_regs ksig_regs[UM_NR_CPUS];
--
--void sig_handler_common_skas(int sig, void *sc_ptr)
--{
--	struct sigcontext *sc = sc_ptr;
--	struct uml_pt_regs *r;
--	void (*handler)(int, struct uml_pt_regs *);
--	int save_user, save_errno = errno;
--
--	/*
--	 * This is done because to allow SIGSEGV to be delivered inside a SEGV
--	 * handler.  This can happen in copy_user, and if SEGV is disabled,
--	 * the process will die.
--	 * XXX Figure out why this is better than SA_NODEFER
--	 */
--	if (sig == SIGSEGV) {
--		change_sig(SIGSEGV, 1);
--		/*
--		 * For segfaults, we want the data from the
--		 * sigcontext.  In this case, we don't want to mangle
--		 * the process registers, so use a static set of
--		 * registers.  For other signals, the process
--		 * registers are OK.
--		 */
--		r = &ksig_regs[cpu()];
--		copy_sc(r, sc_ptr);
--	}
--	else r = TASK_REGS(get_current());
--
--	save_user = r->is_user;
--	r->is_user = 0;
--	if ((sig == SIGFPE) || (sig == SIGSEGV) || (sig == SIGBUS) ||
--	    (sig == SIGILL) || (sig == SIGTRAP))
--		GET_FAULTINFO_FROM_SC(r->faultinfo, sc);
--
--	change_sig(SIGUSR1, 1);
--
--	handler = sig_info[sig];
--
--	/* unblock SIGVTALRM, SIGIO if sig isn't IRQ signal */
--	if ((sig != SIGIO) && (sig != SIGWINCH) && (sig != SIGVTALRM))
--		unblock_signals();
--
--	handler(sig, r);
--
--	errno = save_errno;
--	r->is_user = save_user;
--}
+ 	CATCH_EINTR(ret = waitpid(pid, &status, wflags));
+ 	if (ret < 0) {
+-		printk(UM_KERN_ERR "%s : waitpid process %d failed, "
+-		       "errno = %d\n", pname, pid, errno);
++		printk(UM_KERN_ERR "helper_wait : waitpid process %d failed, "
++		       "errno = %d\n", pid, errno);
+ 		return -errno;
+-	} else if (nohang && ret == 0) {
+-		printk(UM_KERN_ERR "%s : process %d has not exited\n",
+-		       pname, pid);
+-		return -ECHILD;
+ 	} else if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+-		printk(UM_KERN_ERR "%s : process %d didn't exit with "
+-		       "status 0\n", pname, pid);
++		printk(UM_KERN_ERR "helper_wait : process %d exited with "
++		       "status 0x%x\n", pid, status);
+ 		return -ECHILD;
+ 	} else
+ 		return 0;
+Index: linux-2.6-git/arch/um/drivers/net_user.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/drivers/net_user.c	2007-12-12 14:10:35.000000000 -0500
++++ linux-2.6-git/arch/um/drivers/net_user.c	2007-12-12 14:10:44.000000000 -0500
+@@ -201,7 +201,7 @@ static int change_tramp(char **argv, cha
+ 	close(fds[1]);
+ 
+ 	if (pid > 0)
+-		helper_wait(pid, 0, "change_tramp");
++		helper_wait(pid);
+ 	return pid;
+ }
+ 
+Index: linux-2.6-git/arch/um/drivers/slip_user.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/drivers/slip_user.c	2007-12-12 14:10:35.000000000 -0500
++++ linux-2.6-git/arch/um/drivers/slip_user.c	2007-12-12 14:10:44.000000000 -0500
+@@ -109,7 +109,7 @@ static int slip_tramp(char **argv, int f
+ 	read_output(fds[0], output, output_len);
+ 	printk("%s", output);
+ 
+-	err = helper_wait(pid, 0, argv[0]);
++	err = helper_wait(pid);
+ 	close(fds[0]);
+ 
+ out_free:
+Index: linux-2.6-git/arch/um/drivers/slirp_user.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/drivers/slirp_user.c	2007-12-12 14:10:35.000000000 -0500
++++ linux-2.6-git/arch/um/drivers/slirp_user.c	2007-12-12 14:10:44.000000000 -0500
+@@ -98,7 +98,7 @@ static void slirp_close(int fd, void *da
+ 		       "(%d)\n", pri->pid, errno);
+ 	}
+ #endif
+-	err = helper_wait(pri->pid, 1, "slirp_close");
++	err = helper_wait(pri->pid);
+ 	if (err < 0)
+ 		return;
+ 
+Index: linux-2.6-git/arch/um/os-Linux/drivers/ethertap_user.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/os-Linux/drivers/ethertap_user.c	2007-12-12 14:10:35.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/drivers/ethertap_user.c	2007-12-12 14:10:44.000000000 -0500
+@@ -131,7 +131,7 @@ static int etap_tramp(char *dev, char *g
+ 	}
+ 	if (c != 1) {
+ 		printk(UM_KERN_ERR "etap_tramp : uml_net failed\n");
+-		err = helper_wait(pid, 0, "uml_net");
++		err = helper_wait(pid);
+ 	}
+ 	return err;
+ }
+Index: linux-2.6-git/arch/um/os-Linux/drivers/tuntap_user.c
+===================================================================
+--- linux-2.6-git.orig/arch/um/os-Linux/drivers/tuntap_user.c	2007-12-12 14:10:35.000000000 -0500
++++ linux-2.6-git/arch/um/os-Linux/drivers/tuntap_user.c	2007-12-12 14:10:44.000000000 -0500
+@@ -108,7 +108,7 @@ static int tuntap_open_tramp(char *gate,
+ 		       "errno = %d\n", errno);
+ 		return err;
+ 	}
+-	helper_wait(pid, 0, "tuntap_open_tramp");
++	helper_wait(pid);
+ 
+ 	cmsg = CMSG_FIRSTHDR(&msg);
+ 	if (cmsg == NULL) {
+Index: linux-2.6-git/arch/um/include/os.h
+===================================================================
+--- linux-2.6-git.orig/arch/um/include/os.h	2007-12-12 14:10:35.000000000 -0500
++++ linux-2.6-git/arch/um/include/os.h	2007-12-12 15:06:13.000000000 -0500
+@@ -207,7 +207,7 @@ extern int execvp_noalloc(char *buf, con
+ extern int run_helper(void (*pre_exec)(void *), void *pre_data, char **argv);
+ extern int run_helper_thread(int (*proc)(void *), void *arg,
+ 			     unsigned int flags, unsigned long *stack_out);
+-extern int helper_wait(int pid, int nohang, char *pname);
++extern int helper_wait(int pid);
+ 
+ 
+ /* tls.c */
