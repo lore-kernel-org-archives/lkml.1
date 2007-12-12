@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbXLLKwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbXLLLAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759393AbXLLKwz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 05:52:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbXLLKwp
+	id S1758821AbXLLLAU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 06:00:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbXLLLAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 05:52:45 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39930 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758123AbXLLKwp (ORCPT
+	Wed, 12 Dec 2007 06:00:07 -0500
+Received: from mxintern.schlund.de ([212.227.126.201]:61535 "EHLO
+	mxintern.schlund.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755071AbXLLLAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 05:52:45 -0500
-Date: Wed, 12 Dec 2007 02:52:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/47] CRIS patches for CRISv32 EtraxFS and ARTPEC-3
-Message-Id: <20071212025212.51eed892.akpm@linux-foundation.org>
-In-Reply-To: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
-References: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Dec 2007 06:00:05 -0500
+Date: Wed, 12 Dec 2007 11:58:41 +0100
+From: Anders Henke <anders.henke@1und1.de>
+To: miquels@cistron.nl, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, matthew@wil.cx, akpm@linux-foundation.org
+Subject: Re: broken dpt_i2o in 2.6.23 (was: ext2 check page: bad entry in directory) (fwd)
+Message-ID: <20071212105841.GN6770@1und1.de>
+Mail-Followup-To: Anders Henke <anders.henke@1und1.de>, miquels@cistron.nl,
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+	matthew@wil.cx, akpm@linux-foundation.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: 1&1 Internet AG
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-UI-Msg-Verification: 7a0d619491ecb39cc91cb9d567768563
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Nov 2007 17:02:22 +0100 Jesper Nilsson <jesper.nilsson@axis.com> wrote:
+Hi,
 
-> Hi,
-> 
-> This patchset contains the differences to add support for the EtraxFS and
-> ARTPEC-3 CPUs, both of the CRISv32 family.  Both chips can now be compiled
-> with minimal configs.
-> 
-> To compile you'll need the Axis gcc cross port for CRISv32, it is mentioned
-> in http://marc.info/?l=linux-kernel&m=119337976126184&w=2 how to get this.
-> 
-> Still missing to allow full compile is include/linux/mtd/mtdram.h,
-> see http://marc.info/?l=linux-kernel&m=119373777301863&w=2
-> 
-> This is step two in syncing the Axis internal changes with mainline Linux,
-> with the final goal being getting the CRIS port to the same level as
-> the rest of the kernel.
-> 
-> I've tried to remove as much checkpatch warnings and errors as possible,
-> but some remain, mostly (I think you'll agree) spurious warnings,
-> although there's also a bunch of generated files which don't conform,
-> but I hope to fix this at the source later on.
-> 
-> I realise this is a hefty chunk of code to review, but any suggestions
-> on improvements are thankfully received.
-> 
-> The changes are also available in the export2 branch at
-> 
-> git://www.jni.nu/axis.git
-> 
+I'd like to let you now that my boxes are running a 32-bit kernel, so
+the 64-bit-uncleanliness shouldn't apply to my boxes; however,
 
-I don't think there's much point in me merging these.  Please ask Linus to
-pull that tree once the 2.6.25 merge window opens.
+http://www.miquels.cistron.nl/linux/dpt_i2o-64bit-2.6.23.patch
 
+fixed the issue on my testbox.
+
+I took a clean 2.6.23, applied patch, recompiled the kernel, reboot: works.
+
+
+
+Regards,
+
+Anders
+
+PS: Sorry for breaking the threading, I'm not a regular subscriber to
+linux-kernel and haven't received Miguel's message by mail.
+-- 
+1&1 Internet AG              System Design
+Brauerstrasse 48             v://49.721.91374.50
+D-76135 Karlsruhe            f://49.721.91374.225
+
+Amtsgericht Montabaur HRB 6484
+Vorstand: Henning Ahlert, Ralph Dommermuth, Matthias Ehrlich, Andreas Gauger,
+Thomas Gottschlich, Matthias Greve, Robert Hoffmann, Norbert Lang, Achim Weiss
+Aufsichtsratsvorsitzender: Michael Scheeren
