@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbXLLKhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbXLLKph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbXLLKhc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 05:37:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758433AbXLLKhV
+	id S1758749AbXLLKph (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 05:45:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbXLLKp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 05:37:21 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:18403 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758552AbXLLKhT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 05:37:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=fFbxYqGj6qjvveCxukkg6EhvEF8UDzjoduVidtGS1Qj84tJfeegieuIO78MEe3URSautQ0kUNxu9bsXmo2OpYKpdVv4ZY+5Yh+R6eyuLw+G1sO4fUfOYjKiuQ9D977coXV0cfc9o8eLErOAU+rMlfSanTj0ljH7KgiQEZZsiJsY=
-Message-ID: <475FBA09.7060907@gmail.com>
-Date: Wed, 12 Dec 2007 13:38:01 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Wed, 12 Dec 2007 05:45:28 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41870 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757477AbXLLKp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 05:45:27 -0500
+Date: Wed, 12 Dec 2007 11:44:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Stefano Brivio <stefano.brivio@polimi.it>, Robert Love <rml@tech9.net>,
+       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] scheduler: fix x86 regression in native_sched_clock
+Message-ID: <20071212104441.GC1611@elte.hu>
+References: <20071207021952.6f0ac922@morte> <200712081157.27840.nickpiggin@yahoo.com.au> <20071208085207.GE30997@elte.hu> <200712121542.45957.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-To: bbpetkov@yahoo.de, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>, len.brown@intel.com,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc4-mm1: acpi reboots machine... solved
-References: <20071209075001.GA4686@gollum.tnic> <200712111300.24841.bjorn.helgaas@hp.com> <20071211205255.GB5013@gollum.tnic> <200712111709.00313.bjorn.helgaas@hp.com> <20071212101123.GA5619@gollum.tnic>
-In-Reply-To: <20071212101123.GA5619@gollum.tnic>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712121542.45957.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
-> On Tue, Dec 11, 2007 at 05:08:59PM -0700, Bjorn Helgaas wrote:
->   
->> On Tuesday 11 December 2007 01:52:55 pm Borislav Petkov wrote:
->>     
->>> From what i can roughly tell so far it seems like an resource conflict between acpi and
->>> the pnp requested regions in your patch which result in the acpi_thermal code
->>> to read the wrong (0xff) temperature value and halt the machine, but i might be
->>> wrong on the details since acpi is such a big code chunk to swallow.
->>>       
->> I don't see any obvious conflict from the log you posted.  For the sake
->> of comparison, can you post the corresponding dmesg log after you removed
->> the patch?
->>     
->
-> The only difference i see is that ACPI finds EC in DSDT in the working kernel
-> and in the broken case something silently fails. Please find attached the 2 bootlogs
-> and a disassembled DSDT.
->
->   
-This seems to be the start of trouble...
-    PCI: Cannot allocate resource region 4 of device 0000:00:1f.3
 
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> > the scariest bit is the adding of cpu_clock() to kernel/printk.c so 
+> > late in the game, and the anti-recursion code i did there. Maybe 
+> > because this only affects CONFIG_PRINTK_TIME we could try it even 
+> > for v2.6.24.
+> 
+> Printk recursion I guess shouldn't happen, but if there is a bug 
+> somewhere in eg. the scheduler locking, then it may trigger, right?
+
+or we just crash somewhere. It's all about risk management - printk is 
+crutial, and with more complex codepaths being touched in printk it 
+might make sense to just add built-in recursion protection into printk 
+via my patch.
+
+> Probably pretty rare case, however it would be nice to be able to find 
+> out where the recursion comes from? Can you put an instruction pointer 
+> in the recursion message perhaps?
+
+yeah, as i mentioned if this would be occuring in practice we can always 
+save the stacktrace of the incident and output that. I opted for the 
+simplest approach first. Thanks for your Reviewed-by, i've queued it up 
+for 2.6.25.
+
+	Ingo
