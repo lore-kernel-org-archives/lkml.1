@@ -1,74 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbXLLISs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbXLLIXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758016AbXLLISs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 03:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbXLLISk
+	id S1757986AbXLLIXt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 03:23:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbXLLIXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 03:18:40 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:39566 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755283AbXLLISj (ORCPT
+	Wed, 12 Dec 2007 03:23:41 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45577 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755025AbXLLIXk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 03:18:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=cJ8pOzjeMcVNc0XP3jg4s1W7dZNzLBbXRJoWDuij1D9zaBteB3OuZ2iEZKBL1JvzCUUpBaAQXFpAHilsKRmycx8ECragrI9DhpSli2x5gfWbmtoXfCvE0I6Ze3OiFnIkY+ahok9g+hFX2j/0pEt7Yrcz+KZ+fnwygq9VkC4aqT4=
-Message-ID: <475F994B.9090505@gmail.com>
-Date: Wed, 12 Dec 2007 17:18:19 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Kuan Luo <kluo@nvidia.com>
-CC: Jeff Garzik <jeff@garzik.org>, peer chen <peerchen@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] sata_nv,adma: fix error when rmmod sata_nv
-References: <200709251323031982245@gmail.com> <470FE47B.5060505@garzik.org> <cfaab6210710160108x1328086cse991f668e23e569e@mail.gmail.com> <47181CE1.4000802@garzik.org> <cfaab6210710182358t4de355f9wd6d605a7b8076ace@mail.gmail.com> <47185BFD.2010909@garzik.org> <cfaab6210710211855q7a2de35co13d3017b2a07d4cc@mail.gmail.com> <47352DD8.6040607@garzik.org> <47353AE8.5050900@garzik.org> <4735FFE6.6020705@shaw.ca> <15F501D1A78BD343BE8F4D8DB854566B1BFE2AAB@hkemmail01.nvidia.com>
-In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AAB@hkemmail01.nvidia.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 12 Dec 2007 03:23:40 -0500
+Date: Wed, 12 Dec 2007 00:23:33 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Byron Bradley <byron.bbradley@gmail.com>
+Cc: linux-kernel@vger.kernel.org, p_gortmaker@yahoo.com, timtimred@foonas.org
+Subject: Re: [PATCH] Add support for the S-35390A RTC chip.
+Message-Id: <20071212002333.dd4508dc.akpm@linux-foundation.org>
+In-Reply-To: <1196979027-2589-1-git-send-email-byron.bbradley@gmail.com>
+References: <1196979027-2589-1-git-send-email-byron.bbradley@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kuan Luo wrote:
-> hi,
-> The below error happens when i rmmod sata_nv in adma mode on ck804
-> chipset with 2.6.24 kernel.
-> I traced the code and found that the driver attempts to write device mem
-> that has been unmapped.
-> 
-> Only simply removing the code" writew(0, mmio + NV_ADMA_CTL);" in the
-> nv_adma_port_stop function or remove .port_stop field in nv_adma_ops,
-> rmmod is ok.
-> 
-> static void nv_adma_port_stop(struct ata_port *ap)
-> {
-> 	struct nv_adma_port_priv *pp = ap->private_data;
-> 	void __iomem *mmio = pp->ctl_block;
-> 
-> 	VPRINTK("ENTER\n");
-> -	writew(0, mmio + NV_ADMA_CTL);
-> }
-> 
-> Or
->  Place pcim_iomap_regions before ata_pci_prepare_native_host in
-> nv_init_one function.
-> This can guarantee that the code "writew(0, mmio + NV_ADMA_CTL) " write
-> device mem before the device mem is unmapped.
+On Thu,  6 Dec 2007 22:10:27 +0000 Byron Bradley <byron.bbradley@gmail.com> wrote:
 
-Which kernel version are you using?  The following commit should have
-fixed the problem.  Please give a shot at 2.6.24-rc5.  Thanks.
+> This adds basic get/set time support for the Seiko Instruments
+> S-35390A. This chip communicates using I2C and is used on the
+> QNAP TS-109/TS-209 NAS devices.
+> 
 
-commit 32ebbc0c0d5d18c0135b55d1eb0029f48c54aff0
-Author: Tejun Heo <htejun@gmail.com>
-Date:   Thu Nov 8 13:09:00 2007 +0900
+A nice looking little driver.
 
-libata: port and host should be stopped before hardware resources are
-released
+> +static inline char reverse(char x)
+> +{
+> +	x = ((x >> 1) & 0x55) | ((x << 1) & 0xaa);
+> +	x = ((x >> 2) & 0x33) | ((x << 2) & 0xcc);
+> +	return (x >> 4) | (x << 4);
+> +}
 
--- 
-tejun
+Please take a peek in include/linux/bitrev.h ;)
+
+(I worry about the handling of right-shift-of-negative-values
+in your version, too).
+
+Could you review and runtime test this please?
+
+--- a/drivers/rtc/rtc-s35390a.c~rtc-add-support-for-the-s-35390a-rtc-chip-fix
++++ a/drivers/rtc/rtc-s35390a.c
+@@ -12,6 +12,7 @@
+ #include <linux/module.h>
+ #include <linux/rtc.h>
+ #include <linux/i2c.h>
++#include <linux/bitrev.h>
+ #include <linux/bcd.h>
+ 
+ #define S35390A_CMD_STATUS1	0
+@@ -121,13 +122,6 @@ static int s35390a_reg2hr(struct s35390a
+ 	return hour;
+ }
+ 
+-static inline char reverse(char x)
+-{
+-	x = ((x >> 1) & 0x55) | ((x << 1) & 0xaa);
+-	x = ((x >> 2) & 0x33) | ((x << 2) & 0xcc);
+-	return (x >> 4) | (x << 4);
+-}
+-
+ static int s35390a_set_datetime(struct i2c_client *client, struct rtc_time *tm)
+ {
+ 	struct s35390a	*s35390a = i2c_get_clientdata(client);
+@@ -149,7 +143,7 @@ static int s35390a_set_datetime(struct i
+ 
+ 	/* This chip expects the bits of each byte to be in reverse order */
+ 	for (i = 0; i < 7; ++i)
+-		buf[i] = reverse(buf[i]);
++		buf[i] = bitrev8(buf[i]);
+ 
+ 	err = s35390a_set_reg(s35390a, S35390A_CMD_TIME1, buf, sizeof(buf));
+ 
+@@ -168,7 +162,7 @@ static int s35390a_get_datetime(struct i
+ 
+ 	/* This chip returns the bits of each byte in reverse order */
+ 	for (i = 0; i < 7; ++i)
+-		buf[i] = reverse(buf[i]);
++		buf[i] = bitrev8(buf[i]);
+ 
+ 	tm->tm_sec = BCD2BIN(buf[S35390A_BYTE_SECS]);
+ 	tm->tm_min = BCD2BIN(buf[S35390A_BYTE_MINS]);
+_
+
