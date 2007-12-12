@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbXLLSkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbXLLSkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbXLLSkA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 13:40:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758434AbXLLSjn
+	id S1758815AbXLLSkn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 13:40:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbXLLSkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 13:39:43 -0500
-Received: from nz-out-0506.google.com ([64.233.162.238]:56960 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758393AbXLLSjm (ORCPT
+	Wed, 12 Dec 2007 13:40:33 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55426 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755336AbXLLSka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 13:39:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=QNdXZUhXVoIKbGE0tleKaSGAPm5IwjgjesFUcKV2waXx79+Uy2CkjnEZpovQ9F5yu//GKlTnhK3HIYhDj9R7RxAi0gR51EJanASiJRz/Uu5HGEkIjx0AZaic4GowY7oXPcO0UzONJQthkmkfNyypDVPPwocv5QPBogmTjuLvpo8=
-Message-ID: <ed10ee420712121039j79af0eq7b5a994215044199@mail.gmail.com>
-Date: Wed, 12 Dec 2007 10:39:40 -0800
-From: "SL Baur" <steve@xemacs.org>
-To: "Rene Herman" <rene.herman@gmail.com>
-Subject: Re: [RFT] Port 0x80 I/O speed
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz,
-       andi@firstfloor.org, rol@as2917.net, "Krzysztof Halasa" <khc@pm.waw.pl>,
-       david@davidnewall.com, hpa@zytor.com, john@stoffel.org,
-       linux-os@analogic.com
-In-Reply-To: <475F1DC6.5090403@keyaccess.nl>
+	Wed, 12 Dec 2007 13:40:30 -0500
+Date: Wed, 12 Dec 2007 19:40:32 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Michael Krufky <mkrufky@linuxtv.org>,
+       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com
+Subject: [2.6 patch] drivers/media/Makefile: always enter video/
+Message-ID: <20071212184032.GE10069@stusta.de>
+References: <200712120934.46156.toralf.foerster@gmx.de> <475FE553.4020702@linuxtv.org> <1197470781.4744.41.camel@gaivota>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <475F1DC6.5090403@keyaccess.nl>
-X-Google-Sender-Auth: 6a48fc4a58a2e9f8
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1197470781.4744.41.camel@gaivota>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/11/07, Rene Herman <rene.herman@gmail.com> wrote:
-> Good day.
->
-> Would some people on x86 (both 32 and 64) be kind enough to compile and run
-> the attached program? This is about testing how long I/O port access to port
-> 0x80 takes. It measures in CPU cycles so CPU speed is crucial in reporting.
+On Wed, Dec 12, 2007 at 12:46:21PM -0200, Mauro Carvalho Chehab wrote:
+> Em Qua, 2007-12-12 às 08:42 -0500, Michael Krufky escreveu:
+> > > ERROR: "tea5761_attach" [drivers/media/video/tuner.ko] undefined!
+> > > ERROR: "tea5761_autodetection" [drivers/media/video/tuner.ko] undefined!
+> > > ERROR: "tea5767_autodetection" [drivers/media/video/tuner.ko] undefined!
+> > > ERROR: "tea5767_attach" [drivers/media/video/tuner.ko] undefined!
+> 
+> > It looks like the problem has something to do with VIDEO_TUNER=m while
+> > both TUNER_TEA5761 & TUNER_TEA5767 are set to 'y'.
+> > 
+> > I thought that we had already seen this issue and fixed it, but I guess
+> > not :-/
+> > 
+> > One would think that this could be fixed by making TUNER_TEA5761 &
+> > TUNER_TEA5767 both depend on VIDEO_TUNER , but that would be wrong,
+> > since each of those modules can be attached directly to a bridge driver
+> > without tuner.ko being present at all (although this is not done in
+> > practice right now, but it *is* the case with some other tuner drivers)
+> 
+> I don't see any issue on making both dependent on VIDEO_TUNER for
+> 2.6.24, since they are currently used only by tuner core module
+> (tuner.ko).
+>...
 
-model name      : Intel(R) Pentium(R) 4 CPU 3.20GHz
-cpu MHz         : 3201.345
+If "selected code isn't included" also counts as a bug at least dabusb 
+is also affected by the same bug.
 
-cycles: out 3026, in 2204
-cycles: out 3031, in 2182
-cycles: out 3019, in 2196
-cycles: out 3030, in 2201
-cycles: out 3013, in 2186
+What about the patch below instead that fixes the actual bug instead of 
+working around it?
 
--sb
+> Cheers,
+> Mauro
+
+cu
+Adrian
+
+
+<--  snip  -->
+
+
+Since not all code under drivers/media/video/ depends on 
+CONFIG_VIDEO_DEV we cannot only enter it depending
+on CONFIG_VIDEO_DEV.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+9c315b376729908cbdde8adaea0d7bc0a47a2c36 
+diff --git a/drivers/media/Makefile b/drivers/media/Makefile
+index 8fa1993..8cf9135 100644
+--- a/drivers/media/Makefile
++++ b/drivers/media/Makefile
+@@ -3,6 +3,6 @@
+ #
+ 
+ obj-y := common/
+-obj-$(CONFIG_VIDEO_DEV) += video/
++obj-y += video/
+ obj-$(CONFIG_VIDEO_DEV) += radio/
+ obj-$(CONFIG_DVB_CORE)  += dvb/
+
