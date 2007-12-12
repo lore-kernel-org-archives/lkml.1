@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbXLLR2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbXLLRa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755443AbXLLR2r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 12:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbXLLR2h
+	id S1754042AbXLLRa7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 12:30:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbXLLRas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 12:28:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52358 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751273AbXLLR2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 12:28:36 -0500
-Date: Wed, 12 Dec 2007 12:27:52 -0500 (EST)
-Message-Id: <20071212.122752.104028559.k-ueda@ct.jp.nec.com>
-To: Mike.Miller@hp.com
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: Re: [PATCH 21/30] blk_end_request: changing cciss (take 4)
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <DEE40752C8AF224BB890E455C7B8E0FE15718B35@G6W0268.americas.hpqcorp.net>
-References: <20071211.175003.10249786.k-ueda@ct.jp.nec.com>
-	<DEE40752C8AF224BB890E455C7B8E0FE15718B35@G6W0268.americas.hpqcorp.net>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 12 Dec 2007 12:30:48 -0500
+Received: from mailbox2.myri.com ([64.172.73.26]:1908 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750913AbXLLRar (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 12:30:47 -0500
+Message-ID: <47601A73.5010804@myri.com>
+Date: Wed, 12 Dec 2007 12:29:23 -0500
+From: Andrew Gallatin <gallatin@myri.com>
+User-Agent: Thunderbird 1.5.0.7 (Macintosh/20060909)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: joonwpark81@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [RFC] net: napi fix
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike,
+[I apologize for loosing threading, I'm replying from the archives]
 
-On Wed, 12 Dec 2007 15:25:10 +0000, "Miller, Mike (OS Dev)" <Mike.Miller@hp.com> wrote:
-> > Index: 2.6.24-rc4/drivers/block/cciss.c
-> > ===================================================================
-> > --- 2.6.24-rc4.orig/drivers/block/cciss.c
-> > +++ 2.6.24-rc4/drivers/block/cciss.c
-snip
-> > +2526,6 @@ after_error_processing:
-> >         }
-> >         cmd->rq->data_len = 0;
-> >         cmd->rq->completion_data = cmd;
-> > -       blk_add_trace_rq(cmd->rq->q, cmd->rq, BLK_TA_COMPLETE);
-> 
-> Why is this removed?
+ > The problem is that the driver is doing a NAPI completion and
+ > re-enabling chip interrupts with work_done == weight, and that is
+ > illegal.
 
-Sorry for the less explanation.
+The only time at least myri10ge will do this is due to
+the !netif_running(netdev) check.   Eg, from myri10ge's poll:
 
-Because it is done in __end_that_request_first() called from
-blk_end_request().
-I'll add the explanation to the patch description when I update
-the patch.
+	work_done = myri10ge_clean_rx_done(mgp, budget);
+
+	if (work_done < budget || !netif_running(netdev)) {
+		netif_rx_complete(netdev, napi);
+		put_be32(htonl(3), mgp->irq_claim);
+	}
+
+Is the netif_running() check even required? Is this just
+a bad way to solve a race with running NAPI at down() time
+that would be better solved by putting a napi_synchronize()
+in the driver's down() routine?
+
+I'd rather fix this right than add another check to a
+questionable code path.
 
 Thanks,
-Kiyoshi Ueda
+
+Drew
