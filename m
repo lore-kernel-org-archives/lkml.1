@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbXLLSCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbXLLSHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042AbXLLSCx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 13:02:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbXLLSCq
+	id S1754217AbXLLSHH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 13:07:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbXLLSG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 13:02:46 -0500
-Received: from phunq.net ([64.81.85.152]:60587 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751518AbXLLSCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 13:02:45 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Subject: Re: A peek at the future of storage
-Date: Wed, 12 Dec 2007 10:02:44 -0800
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200712120846.18320.phillips@phunq.net> <20071212174613.GA16656@fieldses.org>
-In-Reply-To: <20071212174613.GA16656@fieldses.org>
+	Wed, 12 Dec 2007 13:06:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45774 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750751AbXLLSG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 13:06:56 -0500
+Date: Wed, 12 Dec 2007 18:56:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
+       zach@vmware.com, roland@redhat.com
+Subject: Re: [PATCH 09/19] introduce fill_ldt
+Message-ID: <20071212175651.GA18545@elte.hu>
+References: <11974640441088-git-send-email-gcosta@redhat.com> <11974640522688-git-send-email-gcosta@redhat.com> <1197464057242-git-send-email-gcosta@redhat.com> <11974640653022-git-send-email-gcosta@redhat.com> <1197464070228-git-send-email-gcosta@redhat.com> <11974640752137-git-send-email-gcosta@redhat.com> <11974640813511-git-send-email-gcosta@redhat.com> <11974640872474-git-send-email-gcosta@redhat.com> <11974640932406-git-send-email-gcosta@redhat.com> <11974640983333-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712121002.44643.phillips@phunq.net>
+In-Reply-To: <11974640983333-git-send-email-gcosta@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 December 2007 09:46, J. Bruce Fields wrote:
-> On Wed, Dec 12, 2007 at 08:46:18AM -0800, Daniel Phillips wrote:
-> > Incidentally, we ran our tests with 128 knfsd threads.  The default
-> > of 8 threads produces miserable performance on the SSD, which gave
-> > us a good scare on our initial test run.  It would be very nice to
-> > implement an algorithm to scale the knfsd thread pool
-> > automatically, in order to eliminate this class of thing that can
-> > go wrong.  If somebody became inspired to take on that little
-> > project that would be great, otherwise it is in our pipeline for,
-> > hmm, Christmas delivery.  (Exactly which Christmas is left
-> > unspecified.)
->
-> People have proposed writing a daemon that just reads
-> /proc/net/rpc/nfsd periodically and uses that to adjust the number of
-> threads from userspace, probably subject to some limits in a config
-> file someplace. (Think that could do the job, or is there some reason
-> this would be easier in the kernel?)
 
-I didn't actually say "kernel", though that was what I was thinking, 
-perhaps just out of habit.  It seems to me it would be a relatively 
-small change to the existing code, essentially just finishing the idea, 
-without needing to be patched up by userspace. 
+* Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
 
-So how would a userspace daemon know that kernel is blocking and new 
-threads are needed?  In kernel this is pretty easy: when a new request 
-arrives, look on the thread list and if none are available, generate a 
-new one.  Something special needs to be done to handle the case where 
-there are no threads available because they are all piled up on a 
-semaphore due to, for example, somebody unplugging the network cable 
-for a remote disk.  We have to avoid generating infinite threads in 
-that case.  Ideas?
+> diff --git a/include/asm-x86/ldt.h b/include/asm-x86/ldt.h
+> index 20c5972..49013fd 100644
+> --- a/include/asm-x86/ldt.h
+> +++ b/include/asm-x86/ldt.h
+> @@ -5,6 +5,7 @@
+>   */
+>  #ifndef _ASM_X86_LDT_H
+>  #define _ASM_X86_LDT_H
+> +#include <asm/desc_defs.h>
 
-Daniel
+this breaks CONFIG_HEADERS_CHECK=y, because asm/desc_defs.h is not an 
+exported header.
+
+	Ingo
