@@ -1,81 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759872AbXLLPrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761388AbXLLPrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759872AbXLLPrc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 10:47:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761140AbXLLPq4
+	id S1761388AbXLLPrr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 10:47:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761242AbXLLPrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 10:46:56 -0500
-Received: from ic0245.upco.es ([130.206.70.245]:59281 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761130AbXLLPqy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 10:46:54 -0500
-Subject: Re: [RFT] Port 0x80 I/O speed
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <475F1DC6.5090403@keyaccess.nl>
-References: <475F1DC6.5090403@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Wed, 12 Dec 2007 10:57:19 +0100
-Message-Id: <1197453439.27741.6.camel@rukbat>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 12 Dec 2007 10:47:18 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36273 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761232AbXLLPrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 10:47:16 -0500
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
+       rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
+       Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: [PATCH 5/6] tweak io_64.h for paravirt.
+Date: Wed, 12 Dec 2007 10:57:26 -0200
+Message-Id: <11974642813710-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <11974642754014-git-send-email-gcosta@redhat.com>
+References: <11974642471600-git-send-email-gcosta@redhat.com> <11974642553841-git-send-email-gcosta@redhat.com> <11974642622800-git-send-email-gcosta@redhat.com> <11974642682229-git-send-email-gcosta@redhat.com> <11974642754014-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We need something here because we can't call in and out instructions
+directly. However, we have to be careful, because no indirections are
+allowed in misc_64.c , and paravirt_ops is a kind of one. So just
+call it directly there
 
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/x86/boot/compressed/misc_64.c |    6 +++++
+ include/asm-x86/io_64.h            |   37 +++++++++++++++++++++++++++++------
+ 2 files changed, 36 insertions(+), 7 deletions(-)
 
-On Wed, 2007-12-12 at 00:31 +0100, Rene Herman wrote:
-> cc -W -Wall -O2 -o port80 port80.c
-
-On a laptop with a CoreDuo T2080/1.73GHz, but running on battery at 
-800 MHz (on-demand):
-
-(0)rukbat:~/tmp% for i in {1..10}; do
-sudo ./port80
-done
-cycles: out 3575, in 2844
-cycles: out 3589, in 2923
-cycles: out 3672, in 2864
-cycles: out 3575, in 2843
-cycles: out 3607, in 2859
-cycles: out 3623, in 2877
-cycles: out 3604, in 2848
-cycles: out 3575, in 2849
-cycles: out 3598, in 2861
-cycles: out 3613, in 2861
-
-With a cpu-hog running, cpufreq reporting 1.73GHz:
-
+diff --git a/arch/x86/boot/compressed/misc_64.c b/arch/x86/boot/compressed/misc_64.c
+index 6ea015a..6640a17 100644
+--- a/arch/x86/boot/compressed/misc_64.c
++++ b/arch/x86/boot/compressed/misc_64.c
+@@ -9,6 +9,12 @@
+  * High loaded stuff by Hans Lermen & Werner Almesberger, Feb. 1996
+  */
  
-(0)rukbat:~/tmp% for i in {1..10}; do
-sudo ./port80
-done
-cycles: out 3446, in 2652
-cycles: out 3499, in 2668
-cycles: out 3395, in 2578
-cycles: out 3452, in 2662
-cycles: out 3448, in 2662
-cycles: out 3622, in 2754
-cycles: out 3457, in 2662
-cycles: out 3451, in 2660
-cycles: out 3581, in 2850
-cycles: out 3477, in 2696
-
-HTH,
-	Romano 
-
-Romano 
-
++/*
++ * we have to be careful, because no indirections are allowed here, and
++ * paravirt_ops is a kind of one. As it will only run in baremetal anyway,
++ * we just keep it from happening
++ */
++#undef CONFIG_PARAVIRT
+ #define _LINUX_STRING_H_ 1
+ #define __LINUX_BITMAP_H 1
+ 
+diff --git a/include/asm-x86/io_64.h b/include/asm-x86/io_64.h
+index a037b07..57fcdd9 100644
+--- a/include/asm-x86/io_64.h
++++ b/include/asm-x86/io_64.h
+@@ -35,12 +35,24 @@
+   *  - Arnaldo Carvalho de Melo <acme@conectiva.com.br>
+   */
+ 
+-#define __SLOW_DOWN_IO "\noutb %%al,$0x80"
++static inline void native_io_delay(void)
++{
++	asm volatile("outb %%al,$0x80" : : : "memory");
++}
+ 
+-#ifdef REALLY_SLOW_IO
+-#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO
++#if defined(CONFIG_PARAVIRT)
++#include <asm/paravirt.h>
+ #else
+-#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO
++
++static inline void slow_down_io(void)
++{
++	native_io_delay();
++#ifdef REALLY_SLOW_IO
++	native_io_delay();
++	native_io_delay();
++	native_io_delay();
++#endif
++}
+ #endif
+ 
+ /*
+@@ -52,9 +64,15 @@ static inline void out##s(unsigned x value, unsigned short port) {
+ #define __OUT2(s,s1,s2) \
+ __asm__ __volatile__ ("out" #s " %" s1 "0,%" s2 "1"
+ 
++#ifndef REALLY_SLOW_IO
++#define REALLY_SLOW_IO
++#define UNSET_REALLY_SLOW_IO
++#endif
++
+ #define __OUT(s,s1,x) \
+ __OUT1(s,x) __OUT2(s,s1,"w") : : "a" (value), "Nd" (port)); } \
+-__OUT1(s##_p,x) __OUT2(s,s1,"w") __FULL_SLOW_DOWN_IO : : "a" (value), "Nd" (port));} \
++__OUT1(s##_p, x) __OUT2(s, s1, "w") : : "a" (value), "Nd" (port)); \
++		slow_down_io(); }
+ 
+ #define __IN1(s) \
+ static inline RETURN_TYPE in##s(unsigned short port) { RETURN_TYPE _v;
+@@ -63,8 +81,13 @@ static inline RETURN_TYPE in##s(unsigned short port) { RETURN_TYPE _v;
+ __asm__ __volatile__ ("in" #s " %" s2 "1,%" s1 "0"
+ 
+ #define __IN(s,s1,i...) \
+-__IN1(s) __IN2(s,s1,"w") : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
+-__IN1(s##_p) __IN2(s,s1,"w") __FULL_SLOW_DOWN_IO : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
++__IN1(s) __IN2(s, s1, "w") : "=a" (_v) : "Nd" (port), ##i); return _v; } \
++__IN1(s##_p) __IN2(s, s1, "w") : "=a" (_v) : "Nd" (port), ##i);	  \
++				slow_down_io(); return _v; }
++
++#ifdef UNSET_REALLY_SLOW_IO
++#undef REALLY_SLOW_IO
++#endif
+ 
+ #define __INS(s) \
+ static inline void ins##s(unsigned short port, void * addr, unsigned long count) \
 -- 
-Sorry for the disclaimer --- ¡I cannot stop it!
+1.4.4.2
 
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
