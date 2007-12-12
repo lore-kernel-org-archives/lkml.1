@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757629AbXLLPSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757858AbXLLPTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757629AbXLLPSs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 10:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbXLLPSg
+	id S1757858AbXLLPTe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 10:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbXLLPTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 10:18:36 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60561
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752042AbXLLPSf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 10:18:35 -0500
-Date: Wed, 12 Dec 2007 07:18:32 -0800 (PST)
-Message-Id: <20071212.071832.07747779.davem@davemloft.net>
-To: joonwpark81@gmail.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       baum@tehutinetworks.net, andy@greyhouse.net
-Subject: Re: [PATCH 6/7] [NETDEV]: tehuti Fix possible causing oops of
- net_rx_action
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <002901c83c73$b089b6e0$9c94fea9@jason>
-References: <002901c83c73$b089b6e0$9c94fea9@jason>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 12 Dec 2007 10:19:25 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:20128
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753859AbXLLPTY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 10:19:24 -0500
+Message-Id: <47600A3D.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Wed, 12 Dec 2007 15:20:13 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <tony.luck@intel.com>
+Cc: <linux-ia64@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ia64: remove dead code
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Joonwoo Park" <joonwpark81@gmail.com>
-Date: Wed, 12 Dec 2007 13:01:27 +0900
+Neither __cpu_down() nor __cpu_die() are being referenced without
+CONFIG_HOTPLUG_CPU.
 
-> @@ -305,6 +305,8 @@ static int bdx_poll(struct napi_struct *napi, int budget)
->  
->  		netif_rx_complete(dev, napi);
->  		bdx_enable_interrupts(priv);
-> +		if (unlikely(work_done == napi->weight))
-> +			return work_done - 1;
->  	}
->  	return work_done;
->  }
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-Any time your trying to make a caller "happy" by adjusting
-a return value forcefully, it's a hack.
+ arch/ia64/kernel/smpboot.c |   11 -----------
+ 1 file changed, 11 deletions(-)
 
-And I stated this in another reply about this issue.
+--- linux-2.6.24-rc5/arch/ia64/kernel/smpboot.c	2007-12-12 12:27:11.000000000 +0100
++++ 2.6.24-rc5-ia64-cpu-die/arch/ia64/kernel/smpboot.c	2007-12-07 16:12:33.000000000 +0100
+@@ -767,17 +767,6 @@ void __cpu_die(unsigned int cpu)
+ 	}
+  	printk(KERN_ERR "CPU %u didn't die...\n", cpu);
+ }
+-#else /* !CONFIG_HOTPLUG_CPU */
+-int __cpu_disable(void)
+-{
+-	return -ENOSYS;
+-}
+-
+-void __cpu_die(unsigned int cpu)
+-{
+-	/* We said "no" in __cpu_disable */
+-	BUG();
+-}
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+ void
 
-Please do not fix the problem this way.
 
-The correct way to fix this is, if we did process a full
-"weight" or work, we should not netif_rx_complete() and
-we should not re-enable chip interrupts.
 
-Instead we should return the true "work_done" value and
-allow the caller to thus poll us one more time.
