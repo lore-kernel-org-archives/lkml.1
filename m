@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757853AbXLLQTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbXLLQV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757853AbXLLQTs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 11:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbXLLQTk
+	id S1758093AbXLLQV5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 11:21:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbXLLQVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 11:19:40 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33904 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751835AbXLLQTj (ORCPT
+	Wed, 12 Dec 2007 11:21:47 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:38407 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752401AbXLLQVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 11:19:39 -0500
-Date: Wed, 12 Dec 2007 16:12:45 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Rene Herman" <rene.herman@keyaccess.nl>, "Paul Rolland" <rol@as2917.net>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Krzysztof Halasa" <khc@pm.waw.pl>,
-       "Pavel Machek" <pavel@ucw.cz>, "Andi Kleen" <andi@firstfloor.org>,
-       <linux-kernel@vger.kernel.org>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@redhat.com>, <rol@witbe.net>
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-Message-ID: <20071212161245.3f388229@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.61.0712120802300.4443@chaos.analogic.com>
-References: <475879CD.9080006@reed.com>
-	<p733auekcly.fsf@bingen.suse.de>
-	<20071207160439.71b7f46a@the-village.bc.nu>
-	<20071209125458.GB4381@ucw.cz>
-	<20071209165908.GA15910@one.firstfloor.org>
-	<20071209212513.GC24284@elf.ucw.cz>
-	<475CBDD7.5050602@keyaccess.nl>
-	<m3bq8y23de.fsf@maximus.localdomain>
-	<475DE37F.20706@davidnewall.com>
-	<475DE6F4.80702@zytor.com>
-	<475DEB23.1000304@davidnewall.com>
-	<20071211084059.3d03e11d@tux.DEF.witbe.net>
-	<475E5D4B.8020101@keyaccess.nl>
-	<475E7DC2.4060509@davidnewall.com>
-	<475E8D91.20201@keyaccess.nl>
-	<20071211143224.15900995@tux.DEF.witbe.net>
-	<475E9B9B.2050709@keyaccess.nl>
-	<475EACB8.7080608@keyaccess.nl>
-	<20071211163706.2dc82275@tux.DEF.witbe.net>
-	<475EB263.2050405@keyaccess.nl>
-	<475EC1C0.2040000@reed.com>
-	<20071211173231.2b87a81f@the-village.bc.nu>
-	<475EE2CA.6020601@reed.com>
-	<Pine.LNX.4.61.0712111513490.23653@chaos.analogic.com>
-	<475F23BD.3040903@reed.com>
-	<Pine.LNX.4.61.0712120802300.4443@chaos.analogic.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 12 Dec 2007 11:21:45 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: bbpetkov@yahoo.de
+Subject: Re: 2.6.24-rc4-mm1: acpi reboots machine... solved
+Date: Wed, 12 Dec 2007 09:21:41 -0700
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, len.brown@intel.com,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20071209075001.GA4686@gollum.tnic> <200712111709.00313.bjorn.helgaas@hp.com> <20071212101123.GA5619@gollum.tnic>
+In-Reply-To: <20071212101123.GA5619@gollum.tnic>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+Content-Disposition: inline
+Message-Id: <200712120921.42430.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is another reason we can't just do a dumb changeover - two actually
+On Wednesday 12 December 2007 03:11:23 am Borislav Petkov wrote:
+> On Tue, Dec 11, 2007 at 05:08:59PM -0700, Bjorn Helgaas wrote:
+> > On Tuesday 11 December 2007 01:52:55 pm Borislav Petkov wrote:
+> > > From what i can roughly tell so far it seems like an resource conflict between acpi and
+> > > the pnp requested regions in your patch which result in the acpi_thermal code
+> > > to read the wrong (0xff) temperature value and halt the machine, but i might be
+> > > wrong on the details since acpi is such a big code chunk to swallow.
+> > 
+> > I don't see any obvious conflict from the log you posted.  For the sake
+> > of comparison, can you post the corresponding dmesg log after you removed
+> > the patch?
+> 
+> The only difference i see is that ACPI finds EC in DSDT in the working kernel
+> and in the broken case something silently fails. Please find attached the 2 bootlogs
+> and a disassembled DSDT.
 
-#1: Some drivers are using inb_p/outb_p in PCI cases which are going to
-cause PCI posting changes. Most are probably just wrong in the first
-place but they need hand checking
+Thanks very much!
 
-#2: We've got SMP cases that only 'work' because the odds of splitting
-the outb and the following port 0x80 cycle, which locks the bus, are tiny.
+"ACPI: EC: Look up EC in DSDT" appears in the working log, but not
+in the broken one.  But I think we *do* find the EC in both cases,
+because we see "ACPI: EC: non-query interrupt received" even before
+acpi_ec_add() (which prints the "ACPI: EC: GPE = 0x1c, ...".  Maybe
+the logs were collected with different log levels?
 
-That is we've got
+I think Alexey is on the right track with the PCI resource allocation
+failure.  On your working kernel, can you collect this:
 
-		CPU1			CPU2
-		main path		irq path
-		outb
-					outb
+  lspci -vv > lspci
+  cat /proc/ioports > ioports
+  cat /proc/iomem > iomem
+  grep . /sys/devices/pnp*/*/resources > pnp
+  tar -jcf resources.tar.bz2 lspci ioports iomem pnp
 
-		inb 0x80
-					inb 0x80
-
-races in one or two spots.
+Bjorn
