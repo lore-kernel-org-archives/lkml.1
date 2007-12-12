@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760826AbXLLTgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759052AbXLLTg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760826AbXLLTgo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 14:36:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758223AbXLLTgd
+	id S1759052AbXLLTg6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 14:36:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758223AbXLLTgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 14:36:33 -0500
-Received: from gw.goop.org ([64.81.55.164]:48989 "EHLO mail.goop.org"
+	Wed, 12 Dec 2007 14:36:47 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:54103 "EHLO zombie.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754625AbXLLTgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 14:36:32 -0500
-Message-ID: <4760383C.2040502@goop.org>
-Date: Wed, 12 Dec 2007 11:36:28 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: 7eggert@gmx.de, Andrew Morton <akpm@linux-foundation.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] xen: relax signature check
-References: <9yY38-5oa-11@gated-at.bofh.it>	<E1J27Or-00012X-DF@be1.7eggert.dyndns.org> <475EC5E5.80104@goop.org> <47603332.8060605@codemonkey.ws>
-In-Reply-To: <47603332.8060605@codemonkey.ws>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1760843AbXLLTgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 14:36:46 -0500
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
+	settings for task actions [try #2]
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: casey@schaufler-ca.com
+Cc: David Howells <dhowells@redhat.com>, Karl MacMillan <kmacmill@redhat.com>,
+       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <66139.71689.qm@web36604.mail.mud.yahoo.com>
+References: <66139.71689.qm@web36604.mail.mud.yahoo.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 12 Dec 2007 14:35:08 -0500
+Message-Id: <1197488108.1125.141.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> If xen-32.0 should be compatible than wouldn't xen-24.0 be compatible
-> too?  I think the point was that you should either be checking for
-> 'xen-3.x' or something more general that would accept anything >=
-> xen-3.0.
+On Wed, 2007-12-12 at 11:20 -0800, Casey Schaufler wrote:
+> --- David Howells <dhowells@redhat.com> wrote:
+> 
+> > Casey Schaufler <casey@schaufler-ca.com> wrote:
+> > 
+> > > You may need to have an application, say cachefileselinuxcontext, that will
+> > > read the current policy and spit out an appropriate value of "<whatever>",
+> > > but that can be separate and LSM specific without mucking up your basic
+> > > infrastructure applications.
+> > 
+> > What would I do with such a thing?  How would it get run?  Spat out to where?
+> 
+> Put it in /etc/init.d/cachefiles and run it at boot time. Put the
+> result into /etc/cachefiles.conf. Have cachefilesd read it and pass
+> it downward.
 
-The signature is supposed to be an ABI signature, so regardless of the
-actual hypervisor version, it should always present "xen-3.0"
-(presumably backwards compat if it also supports other versions of the
-ABI).  There was a bug in some versions where it puts the actual
-hypervisor version in there, requiring this patch.  Technically that
-means that looking for "xen-3." is more accurate, but frankly not
-important enough to bother raising a patch over.
+More likely, run it at build time in your .spec file to generate
+cachefiles.conf, then run it again maybe upon a policy update or if the
+user selects a different policy.
 
-    J
+-- 
+Stephen Smalley
+National Security Agency
+
