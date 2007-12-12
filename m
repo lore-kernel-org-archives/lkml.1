@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbXLLAYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbXLLA3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbXLLAYY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 19:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbXLLAYP
+	id S1755516AbXLLA3K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 19:29:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXLLA25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 19:24:15 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51234 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751901AbXLLAYO (ORCPT
+	Tue, 11 Dec 2007 19:28:57 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:4194 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751702AbXLLA24 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 19:24:14 -0500
-Date: Tue, 11 Dec 2007 16:24:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: recalljeffchang@gmail.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH acs_ame scsi driver 000 of 1] Introduction
-Message-Id: <20071211162408.54544ec3.akpm@linux-foundation.org>
-In-Reply-To: <20071210165548.GC26334@parisc-linux.org>
-References: <87d84fba0712092003h3eb90344o89f9b0bc9c65fdb7@mail.gmail.com>
-	<20071210165548.GC26334@parisc-linux.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Dec 2007 19:28:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=lG2C9eX0WtJ1+j1Ft/b9A46KayaXcwhrlQU7xbPHuYLqs9GJSmZoZeTOrsczcMssw+OVwV1WdoPKc5ajQlYrrQCAb4vyFyTCnYOSIrvUoEstyQ8DsyK+j+OHsUw1VYYfpKqBsoAXaWM3ndJ1k7M6otPG35eOxfXpF2B0knpaVvs=
+Message-ID: <475F2AF2.2060206@keyaccess.nl>
+Date: Wed, 12 Dec 2007 01:27:30 +0100
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
+       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
+       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <475F1DC6.5090403@keyaccess.nl> <200712120140.34697.maximlevitsky@gmail.com> <475F20EA.5050803@keyaccess.nl> <200712120214.21346.maximlevitsky@gmail.com>
+In-Reply-To: <200712120214.21346.maximlevitsky@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+From: Rene Herman <rene.herman@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Dec 2007 09:55:48 -0700
-Matthew Wilcox <matthew@wil.cx> wrote:
+On 12-12-07 01:14, Maxim Levitsky wrote:
 
-> On Mon, Dec 10, 2007 at 12:03:18PM +0800, chang jeff wrote:
-> > Dear Sir,
-> > 
-> > Following is patche for scsi driver in 2.6.23.9 what should get into
-> > 2.6.23.9-final if possible.
-> > 
-> > First refines a newly created scsi driver
-> > (/[kernel-version]/driver/scsi/acs_ame).
-> > 
-> > Thanks,
-> > JeffChang.
-> 
-> Hi Jeff,
-> 
-> You don't seem to have attached the driver ... maybe you sent a second
-> email that hasn't arrived yet?  I see Andrew sent a mail (possibly to
-> one of your colleagues?) that explains that he doesn't personally take
-> scsi driver patches: http://lkml.org/lkml/2007/8/30/7
-> 
+> CPU frequency locked to 2128.000 Mhz:
+> maxim@MAIN:~/tmp$ sudo ./port800
+> cycles: out 1650, in 1065
 
-Well, I'll pass an eye over them and will queue them up for a bit or
-review-and-test if it looks like they're being neglected.
+> CPU frequency locked to: 1596.000 Mhz
+> maxim@MAIN:~/tmp$ sudo ./port800
+> cycles: out 1730, in 1138
 
-However I can't queue this one because a) it's wordwrapped and b) there are
-patches in -mm which remove scsi_cmnd.request_buffer (and probably other
-things).
+> A bit strange, isn't it?
 
-But that doesn't prevent scsi developers from performing code review.
+Well, yes. Don't know what that effect is. A bus-clock divided from the CPU 
+clock comes to mind, but I believe that shouldn't happen to LPC.
+
+Anyways, we're looking for an upper bound and that's still nicely below 2 us 
+on everything upto now, so I guess it doesn't matter all that much. Thanks!
+
+Rene.
