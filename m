@@ -1,158 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbXLLR6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbXLLSCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757105AbXLLR6T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 12:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbXLLR6C
+	id S1756042AbXLLSCx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 13:02:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbXLLSCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 12:58:02 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:18458 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751866AbXLLR57 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 12:57:59 -0500
-Message-ID: <47602121.9080206@fr.ibm.com>
-Date: Wed, 12 Dec 2007 18:57:53 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 12 Dec 2007 13:02:46 -0500
+Received: from phunq.net ([64.81.85.152]:60587 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751518AbXLLSCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 13:02:45 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Subject: Re: A peek at the future of storage
+Date: Wed, 12 Dec 2007 10:02:44 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <200712120846.18320.phillips@phunq.net> <20071212174613.GA16656@fieldses.org>
+In-Reply-To: <20071212174613.GA16656@fieldses.org>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-CC: reuben-linuxkernel@reub.net, akpm@linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       auke-jan.h.kok@intel.com, David Miller <davem@davemloft.net>
-Subject: Re: 2.6.24-rc4-mm1
-References: <20071204211701.994dfce6.akpm@linux-foundation.org> <47579DD9.9030909@reub.net> <20071205.230925.99250129.davem@davemloft.net> <Pine.LNX.4.64.0712061146120.28055@kivilampi-30.cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0712061146120.28055@kivilampi-30.cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712121002.44643.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilpo Järvinen wrote:
-> On Wed, 5 Dec 2007, David Miller wrote:
-> 
->> From: Reuben Farrelly <reuben-linuxkernel@reub.net>
->> Date: Thu, 06 Dec 2007 17:59:37 +1100
->>
->>> On 5/12/2007 4:17 PM, Andrew Morton wrote:
->>>> - Lots of device IDs have been removed from the e1000 driver and moved over
->>>>   to e1000e.  So if your e1000 stops working, you forgot to set CONFIG_E1000E.
->>> This non fatal oops which I have just noticed may be related to this change then 
->>> - certainly looks networking related.
->>>
->>> WARNING: at net/ipv4/tcp_input.c:2518 tcp_fastretrans_alert()
->>> Pid: 0, comm: swapper Not tainted 2.6.24-rc4-mm1 #1
->>>
->>> Call Trace:
->>>   <IRQ>  [<ffffffff8046e038>] tcp_fastretrans_alert+0x229/0xe63
->>>   [<ffffffff80470975>] tcp_ack+0xa3f/0x127d
->>>   [<ffffffff804747b7>] tcp_rcv_established+0x55f/0x7f8
->>>   [<ffffffff8047b1aa>] tcp_v4_do_rcv+0xdb/0x3a7
->>>   [<ffffffff881148a8>] :nf_conntrack:nf_ct_deliver_cached_events+0x75/0x99
->> No, it's from TCP assertions and changes added by Ilpo to the
->> net-2.6.25 tree recently.
-> 
-> Yeah, this (very likely) due to the new SACK processing (in net-2.6.25). 
-> I'll look what could go wrong with fack_count calculations, most likely 
-> it's the reason (I've found earlier one out-of-place retransmission 
-> segment in one of my test case which already indicated that there's 
-> something incorrect with them but didn't have time to debug it yet).
-> 
-> Thanks for report. Some info about how easily you can reproduce & 
-> couple of sentences about the test case might be useful later on when 
-> evaluating the fix.
+On Wednesday 12 December 2007 09:46, J. Bruce Fields wrote:
+> On Wed, Dec 12, 2007 at 08:46:18AM -0800, Daniel Phillips wrote:
+> > Incidentally, we ran our tests with 128 knfsd threads.  The default
+> > of 8 threads produces miserable performance on the SSD, which gave
+> > us a good scare on our initial test run.  It would be very nice to
+> > implement an algorithm to scale the knfsd thread pool
+> > automatically, in order to eliminate this class of thing that can
+> > go wrong.  If somebody became inspired to take on that little
+> > project that would be great, otherwise it is in our pipeline for,
+> > hmm, Christmas delivery.  (Exactly which Christmas is left
+> > unspecified.)
+>
+> People have proposed writing a daemon that just reads
+> /proc/net/rpc/nfsd periodically and uses that to adjust the number of
+> threads from userspace, probably subject to some limits in a config
+> file someplace. (Think that could do the job, or is there some reason
+> this would be easier in the kernel?)
 
-I also got plenty of these when untaring a tarball on NFS.
+I didn't actually say "kernel", though that was what I was thinking, 
+perhaps just out of habit.  It seems to me it would be a relatively 
+small change to the existing code, essentially just finishing the idea, 
+without needing to be patched up by userspace. 
 
-C. 
+So how would a userspace daemon know that kernel is blocking and new 
+threads are needed?  In kernel this is pretty easy: when a new request 
+arrives, look on the thread list and if none are available, generate a 
+new one.  Something special needs to be done to handle the case where 
+there are no threads available because they are all piled up on a 
+semaphore due to, for example, somebody unplugging the network cable 
+for a remote disk.  We have to avoid generating infinite threads in 
+that case.  Ideas?
 
-WARNING: at /home/legoater/linux/2.6.24-rc4-mm1/net/ipv4/tcp_input.c:2518 tcp_fastretrans_alert()
-Pid: 0, comm: swapper Not tainted 2.6.24-rc4-mm1 #2
-
-Call Trace:
- <IRQ>  [<ffffffff804115bf>] tcp_fastretrans_alert+0xb6/0xbf2
- [<ffffffff80413f30>] tcp_ack+0xdf3/0xfbe
- [<ffffffff803da8fb>] sk_reset_timer+0x17/0x23
- [<ffffffff80416d1e>] tcp_rcv_established+0xf3/0x76d
- [<ffffffff8041d231>] tcp_v4_do_rcv+0x37/0x3aa
- [<ffffffff8041fb1f>] tcp_v4_rcv+0x9a9/0xa76
- [<ffffffff80402e4e>] ip_local_deliver_finish+0x161/0x23c
- [<ffffffff80403363>] ip_local_deliver+0x72/0x77
- [<ffffffff80402ca9>] ip_rcv_finish+0x371/0x3b5
- [<ffffffff804032bd>] ip_rcv+0x292/0x2c6
- [<ffffffff803e3dcc>] netif_receive_skb+0x267/0x340
- [<ffffffff8806eff4>] :tg3:tg3_poll+0x5d2/0x89e
- [<ffffffff803e639d>] net_rx_action+0xd5/0x1ad
- [<ffffffff8023b605>] __do_softirq+0x5f/0xe3
- [<ffffffff8020c86c>] call_softirq+0x1c/0x28
- [<ffffffff8020e739>] do_softirq+0x39/0x9f
- [<ffffffff8023b5a4>] irq_exit+0x4e/0x50
- [<ffffffff8020e880>] do_IRQ+0xb7/0xd7
- [<ffffffff8020a803>] mwait_idle+0x0/0x55
- [<ffffffff8020bb66>] ret_from_intr+0x0/0xf
- <EOI>  [<ffffffff8024d623>] __atomic_notifier_call_chain+0x20/0x83
- [<ffffffff8020a84b>] mwait_idle+0x48/0x55
- [<ffffffff80209e79>] enter_idle+0x22/0x24
- [<ffffffff8020a793>] cpu_idle+0xa1/0xc5
- [<ffffffff8021dfd5>] start_secondary+0x3b9/0x3c5
-
-WARNING: at /home/legoater/linux/2.6.24-rc4-mm1/net/ipv4/tcp_input.c:2518 tcp_fastretrans_alert()
-Pid: 0, comm: swapper Not tainted 2.6.24-rc4-mm1 #2
-
-Call Trace:
- <IRQ>  [<ffffffff804115bf>] tcp_fastretrans_alert+0xb6/0xbf2
- [<ffffffff80413f30>] tcp_ack+0xdf3/0xfbe
- [<ffffffff804153b8>] tcp_data_queue+0x5da/0xb0a
- [<ffffffff80416d1e>] tcp_rcv_established+0xf3/0x76d
- [<ffffffff8041d231>] tcp_v4_do_rcv+0x37/0x3aa
- [<ffffffff8041fb1f>] tcp_v4_rcv+0x9a9/0xa76
- [<ffffffff80402e4e>] ip_local_deliver_finish+0x161/0x23c
- [<ffffffff80403363>] ip_local_deliver+0x72/0x77
- [<ffffffff80402ca9>] ip_rcv_finish+0x371/0x3b5
- [<ffffffff804032bd>] ip_rcv+0x292/0x2c6
- [<ffffffff803e3dcc>] netif_receive_skb+0x267/0x340
- [<ffffffff8806eff4>] :tg3:tg3_poll+0x5d2/0x89e
- [<ffffffff803e639d>] net_rx_action+0xd5/0x1ad
- [<ffffffff8023b605>] __do_softirq+0x5f/0xe3
- [<ffffffff8020c86c>] call_softirq+0x1c/0x28
- [<ffffffff8020e739>] do_softirq+0x39/0x9f
- [<ffffffff8023b5a4>] irq_exit+0x4e/0x50
- [<ffffffff8020e880>] do_IRQ+0xb7/0xd7
- [<ffffffff8020a803>] mwait_idle+0x0/0x55
- [<ffffffff8020bb66>] ret_from_intr+0x0/0xf
- <EOI>  [<ffffffff8024d623>] __atomic_notifier_call_chain+0x20/0x83
- [<ffffffff8020a84b>] mwait_idle+0x48/0x55
- [<ffffffff80209e79>] enter_idle+0x22/0x24
- [<ffffffff8020a793>] cpu_idle+0xa1/0xc5
- [<ffffffff8021dfd5>] start_secondary+0x3b9/0x3c5
-
-WARNING: at /home/legoater/linux/2.6.24-rc4-mm1/net/ipv4/tcp_input.c:2518 tcp_fastretrans_alert()
-Pid: 0, comm: swapper Not tainted 2.6.24-rc4-mm1 #2
-
-Call Trace:
- <IRQ>  [<ffffffff804115bf>] tcp_fastretrans_alert+0xb6/0xbf2
- [<ffffffff80413f30>] tcp_ack+0xdf3/0xfbe
- [<ffffffff804153b8>] tcp_data_queue+0x5da/0xb0a
- [<ffffffff80416d1e>] tcp_rcv_established+0xf3/0x76d
- [<ffffffff8041d231>] tcp_v4_do_rcv+0x37/0x3aa
- [<ffffffff8041fb1f>] tcp_v4_rcv+0x9a9/0xa76
- [<ffffffff80402e4e>] ip_local_deliver_finish+0x161/0x23c
- [<ffffffff80403363>] ip_local_deliver+0x72/0x77
- [<ffffffff80402ca9>] ip_rcv_finish+0x371/0x3b5
- [<ffffffff804032bd>] ip_rcv+0x292/0x2c6
- [<ffffffff803e3dcc>] netif_receive_skb+0x267/0x340
- [<ffffffff8806eff4>] :tg3:tg3_poll+0x5d2/0x89e
- [<ffffffff803e639d>] net_rx_action+0xd5/0x1ad
- [<ffffffff8023b605>] __do_softirq+0x5f/0xe3
- [<ffffffff8020c86c>] call_softirq+0x1c/0x28
- [<ffffffff8020e739>] do_softirq+0x39/0x9f
- [<ffffffff8023b5a4>] irq_exit+0x4e/0x50
- [<ffffffff8020e880>] do_IRQ+0xb7/0xd7
- [<ffffffff8020a803>] mwait_idle+0x0/0x55
- [<ffffffff8020bb66>] ret_from_intr+0x0/0xf
- <EOI>  [<ffffffff8024d623>] __atomic_notifier_call_chain+0x20/0x83
- [<ffffffff8020a84b>] mwait_idle+0x48/0x55
- [<ffffffff80209e79>] enter_idle+0x22/0x24
- [<ffffffff8020a793>] cpu_idle+0xa1/0xc5
- [<ffffffff8021dfd5>] start_secondary+0x3b9/0x3c5
-
+Daniel
