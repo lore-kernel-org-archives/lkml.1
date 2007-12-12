@@ -1,54 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbXLLJ7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbXLLKCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758787AbXLLJ7S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 04:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbXLLJ7H
+	id S1758576AbXLLKCo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 05:02:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbXLLKCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 04:59:07 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51864 "EHLO mx2.mail.elte.hu"
+	Wed, 12 Dec 2007 05:02:36 -0500
+Received: from os.eurotux.com ([216.75.63.6]:44170 "EHLO os.eurotux.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756366AbXLLJ7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 04:59:05 -0500
-Date: Wed, 12 Dec 2007 10:58:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH] Add Documentation for FAIR_USER_SCHED sysfs files
-Message-ID: <20071212095843.GB24246@elte.hu>
-References: <20071212023836.GB1486@linux.vnet.ibm.com> <20071212053556.GA25334@suse.de> <20071212054859.GC1486@linux.vnet.ibm.com>
+	id S1754903AbXLLKCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 05:02:35 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Dec 2007 05:02:34 EST
+Date: Wed, 12 Dec 2007 09:55:47 +0000
+From: Luciano Rocha <luciano@eurotux.com>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
+       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
+       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
+Subject: Re: [RFT] Port 0x80 I/O speed
+Message-ID: <20071212095547.GB16469@bit.office.eurotux.com>
+Mail-Followup-To: Luciano Rocha <luciano@eurotux.com>,
+	Rene Herman <rene.herman@gmail.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz,
+	andi@firstfloor.org, rol@as2917.net,
+	Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
+	hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
+References: <475F1DC6.5090403@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="v9Ux+11Zm5mwPlX6"
 Content-Disposition: inline
-In-Reply-To: <20071212054859.GC1486@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <475F1DC6.5090403@keyaccess.nl>
+User-Agent: Mutt/1.5.14 (2007-03-31)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+--v9Ux+11Zm5mwPlX6
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > Hm, how about describing the units here?  Can you put "10" in each 
-> > file and everyone will get the same share?  100?  1?  1024 seems 
-> > like an odd "share" number.  Unless there is some other document you 
-> > wish to refer people to do help describe these values?
-> 
-> It is proportional. That is, if two users have same value for shares, 
-> they will get equal bandwidth on the CPU. If they are in the ratio 
-> 1:2, then they will share it in that ratio. I've updated the patch for 
-> this. Hope it is clearer.
+On Wed, Dec 12, 2007 at 12:31:18AM +0100, Rene Herman wrote:
+>  Good day.
+>=20
+>  Would some people on x86 (both 32 and 64) be kind enough to compile and =
+run=20
+>  the attached program? This is about testing how long I/O port access to =
+port=20
+>  0x80 takes. It measures in CPU cycles so CPU speed is crucial in reporti=
+ng.
+>=20
 
-thanks, applied.
+$ sudo ./port80
+cycles: out 2729, in 1872
+$ sudo ./port80
+cycles: out 2729, in 1872
+$ sudo ./port80
+cycles: out 2711, in 1856
+$ sudo ./port80
+cycles: out 2711, in 1856
 
-	Ingo
+model name      : Intel(R) Pentium(R) 4 CPU 1.90GHz
+stepping        : 2
+cpu MHz         : 1917.229
+cache size      : 256 KB
+
+--=20
+Luciano Rocha <luciano@eurotux.com>
+Eurotux Inform=E1tica, S.A. <http://www.eurotux.com/>
+
+--v9Ux+11Zm5mwPlX6
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHX7AjinSul6a7oB8RApWrAJ9J0zOwBU2Kh6NCpPG2kpWR2gxregCbBMUT
+0P8smb5N2/n1l3HrH7n1nSM=
+=a0da
+-----END PGP SIGNATURE-----
+
+--v9Ux+11Zm5mwPlX6--
