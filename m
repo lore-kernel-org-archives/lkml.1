@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbXLLMDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759618AbXLLMEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758677AbXLLMDS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 07:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbXLLMDI
+	id S1759618AbXLLMEN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 07:04:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXLLMD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 07:03:08 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:39768 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751899AbXLLMDH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 07:03:07 -0500
-Date: Wed, 12 Dec 2007 13:03:09 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Shane <gnome42@gmail.com>, Brandon Philips <brandon@ifup.org>,
-       linux-kernel@vger.kernel.org,
-       video4linux-list <video4linux-list@redhat.com>
-Subject: Re: 2.6.24-rc5 "videobuf_read_start"
-	[drivers/media/video/videobuf-dvb.ko] undefined!
-Message-ID: <20071212120308.GG14204@stusta.de>
-References: <fa4052ef0712112120l1165af5btc108ea2131760328@mail.gmail.com> <20071212090709.GF14204@stusta.de> <1197457394.4807.40.camel@gaivota>
+	Wed, 12 Dec 2007 07:03:57 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:6425 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751052AbXLLMD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 07:03:56 -0500
+Date: Wed, 12 Dec 2007 13:00:31 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
+Subject: Re: [PATCH 00/30] blk_end_request: full I/O completion handler
+	(take 4)
+Message-ID: <20071212120031.GB22544@kernel.dk>
+References: <20071211.173936.122828268.k-ueda@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1197457394.4807.40.camel@gaivota>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20071211.173936.122828268.k-ueda@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 09:03:14AM -0200, Mauro Carvalho Chehab wrote:
->...
-> I'm afraid that this wouldn't avoid this bug, however. 
+On Tue, Dec 11 2007, Kiyoshi Ueda wrote:
+> Hi Jens, Boaz,
 > 
-> The removal of the EXPORT_SYMBOL_GPL seemed to be the intention of
-> Brandon, since he renamed the function, removing the locks. I think he
-> didn't noticed that videobuf_dvb were using videobuf_read_start. The
-> patch I've just send fixes it properly.
+> The following is the updated patch-set for blk_end_request().
+> I have done some interface/implementation changes based on
+> feedbacks/discussions since the previous version.
+> (Although this patch-set was made on top of 2.6.24-rc4, I confirmed
+>  it can be applied to 2.6.24-rc5, too.  Also, I confirmed it has
+>  no build error on my IA64 box.)
 
-At least in the commit in Linus' tree, videobuf_read_start() stayed 
-nearly unchanged.
+Trying to apply this, but it fails from patch #24 and on:
 
-> Btw, Shane patch reveals a small trouble with EXPORT_SYMBOL_GPL: adding
-> the tag for a non-existing function didn't rise any error.
+patching file block/ll_rw_blk.c
+Hunk #1 succeeded at 3852 (offset 49 lines).
+Hunk #2 succeeded at 3867 with fuzz 2 (offset 49 lines).
+Hunk #3 succeeded at 3904 with fuzz 1 (offset 66 lines).
+Hunk #4 FAILED at 3916.
+Hunk #5 succeeded at 3967 with fuzz 2 (offset 60 lines).
+1 out of 5 hunks FAILED -- saving rejects to file block/ll_rw_blk.c.rej
+patching file include/linux/blkdev.h
+Reversed (or previously applied) patch detected!  Assume -R? [n] 
 
-See above.
-
-> IMO, it
-> should generate some compilation error, if you try to export a symbol
-> that doesn't exist at the file that is being compiled.
-
-It does give you a compile error when there's not at least a prototype 
-for the stuff to be exported, and a link error if there's no
-variable/function.
-
-> Cheers,
-> Mauro
-
-cu
-Adrian
+This is 2.6.24-rc5 (pretty close to at least, no changes to ll_rw_blk.c
+from that version). Are you using quilt and forgot to refresh, or
+something like that?
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Jens Axboe
 
