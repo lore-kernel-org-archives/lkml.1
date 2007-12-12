@@ -1,182 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbXLLUPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbXLLUVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760743AbXLLUPB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 15:15:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbXLLUOy
+	id S1756696AbXLLUVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 15:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbXLLUVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 15:14:54 -0500
-Received: from mxh.seznam.cz ([77.75.72.26]:46304 "HELO mxh.seznam.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751917AbXLLUOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 15:14:53 -0500
-In-Reply-To: <fa686aa40712120731y39a89b84m7f356ebd9c623dce@mail.gmail.com>
-Date: Wed, 12 Dec 2007 21:14:47 +0100 (CET)
-Cc: =?us-ascii?Q?Linux=20Kernel=20Mailing=20List?= 
-	<linux-kernel@vger.kernel.org>
-To: =?us-ascii?Q?Grant=20Likely?= <grant.likely@secretlab.ca>
-From: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
-Subject: =?us-ascii?Q?Re=3A=20uartlite=20driver?=
-Mime-Version: 1.0
-Message-Id: <1274.3754-2639-2096732183-1197490486@seznam.cz>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset="us-ascii"
-X-Abuse: helpdesk@seznam.cz
-X-Seznam-User: Monstr@seznam.cz
+	Wed, 12 Dec 2007 15:21:07 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:35570 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751397AbXLLUVG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 15:21:06 -0500
+Date: Wed, 12 Dec 2007 15:20:10 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Remy Bohmer <linux@bohmer.net>, Daniel Walker <dwalker@mvista.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Revert lazy irq disable for simple irqs
+Message-ID: <Pine.LNX.4.58.0712121516400.22305@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Hi Grant,
-> 
-> Hi Michal,
-> 
-> Sorry I didn't reply right away, got tied up with other stuff.
 
-No worries.
- 
->> I looked at your patches around uartlite. I have tryied to compile this driver for Microblaze
->> platform. I use the latest kernel from kernel.org with old uartlite(in front of
->> your patches) as stable version and seems to works well.
->>
->> But I would like to use the latest uartlite driver with your patches.
->>
->> I have error section type conflict which relates to uartlite driver
->> and the second are warnings with Section mismatch.
->>
->> I look at warnings Section mismatch: reference to on ARM mailing list but
->> conclusion is weird.
->>
->> Can you help me with these problems especially with uartlite?
->>
->> Important part of log is below.
-> 
-> I don't understand what I'm seeing here.  It looks like you're running
-> make multiple times and each time the error message changes.  Is that
-> correct?
+[This patch *is* for mainline Linux]
 
-yes. Because I tryied to erase labels __devinit or replaces by __init
- 
-> Off the top of my head, it looks like you're having problems with
-> functions labeled as __init; at least in the uartlite driver.
+In commit 76d2160147f43f982dfe881404cfde9fd0a9da21 lazy irq disabling
+was implemented, and the simple irq handler had a masking set to it.
 
-Yes.
-CONFIG_HOTPLUG is disabled.
+Remy Bohmer discovered that some devices in the ARM architecture
+would trigger the mask, but never unmask it. His patch to do the
+unmasking was questioned by Russell King about masking simple irqs
+to begin with. Looking further, it was discovered that the problems
+Remy was seeing was due to improper use of the simple handler by
+devices, and he later submitted patches to fix those. But the issue
+that was uncovered was that the simple handler should never mask.
 
-> What patches in particular of mine are you having problems with?
+This patch reverts the masking in the simple handler.
 
-Patches from 2007-10-03. The changes are in Linus git tree on kernel.org.
-All patches with label [POWERPC] Uartlite:...
-Driver in front of your changes works well.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 
-Regards,
-Michal Simek
+---
+ kernel/irq/chip.c |    9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+Index: linux-compile.git/kernel/irq/chip.c
+===================================================================
+--- linux-compile.git.orig/kernel/irq/chip.c	2007-10-19 12:37:51.000000000 -0400
++++ linux-compile.git/kernel/irq/chip.c	2007-12-12 15:03:43.000000000 -0500
+@@ -297,18 +297,13 @@ handle_simple_irq(unsigned int irq, stru
+
+ 	if (unlikely(desc->status & IRQ_INPROGRESS))
+ 		goto out_unlock;
++	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
+ 	kstat_cpu(cpu).irqs[irq]++;
+
+ 	action = desc->action;
+-	if (unlikely(!action || (desc->status & IRQ_DISABLED))) {
+-		if (desc->chip->mask)
+-			desc->chip->mask(irq);
+-		desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
+-		desc->status |= IRQ_PENDING;
++	if (unlikely(!action || (desc->status & IRQ_DISABLED)))
+ 		goto out_unlock;
+-	}
+
+-	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING | IRQ_PENDING);
+ 	desc->status |= IRQ_INPROGRESS;
+ 	spin_unlock(&desc->lock);
 
 
->>   CC      drivers/serial/serial_core.o
->>   CC      drivers/serial/uartlite.o
->> drivers/serial/uartlite.c: In function `ulite_console_setup':
->> drivers/serial/uartlite.c:404: error: ulite_console_setup causes a section type conflict
->> make[2]: *** [drivers/serial/uartlite.o] Error 1
->> make[1]: *** [drivers/serial] Error 2
->> make: *** [drivers] Error 2
->> [microblaze@monstr linux-2.6-last]$ make
->>   CHK     include/linux/version.h
->>   CHK     include/linux/utsrelease.h
->>   CALL    scripts/checksyscalls.sh
->>   CHK     include/linux/compile.h
->> dnsdomainname: Host name lookup failure
->>   CC      drivers/serial/uartlite.o
->> drivers/serial/uartlite.c: In function `ulite_console_init':
->> drivers/serial/uartlite.c:451: error: ulite_console_init causes a section type conflict
->> make[2]: *** [drivers/serial/uartlite.o] Error 1
->> make[1]: *** [drivers/serial] Error 2
->> make: *** [drivers] Error 2
->> [microblaze@monstr linux-2.6-last]$ make
->>   CHK     include/linux/version.h
->>   CHK     include/linux/utsrelease.h
->>   CALL    scripts/checksyscalls.sh
->>   CHK     include/linux/compile.h
->> dnsdomainname: Host name lookup failure
->>   CC      drivers/serial/uartlite.o
->> drivers/serial/uartlite.c: In function `ulite_assign':
->> drivers/serial/uartlite.c:486: error: ulite_assign causes a section type conflict
->> make[2]: *** [drivers/serial/uartlite.o] Error 1
->> make[1]: *** [drivers/serial] Error 2
->> make: *** [drivers] Error 2
->> [microblaze@monstr linux-2.6-last]$ make
->>   CHK     include/linux/version.h
->>   CHK     include/linux/utsrelease.h
->>   CALL    scripts/checksyscalls.sh
->>   CHK     include/linux/compile.h
->> dnsdomainname: Host name lookup failure
->>   CC      drivers/serial/uartlite.o
->> drivers/serial/uartlite.c: In function `ulite_release':
->> drivers/serial/uartlite.c:542: error: ulite_release causes a section type conflict
->> make[2]: *** [drivers/serial/uartlite.o] Error 1
->> make[1]: *** [drivers/serial] Error 2
->> make: *** [drivers] Error 2
->> [microblaze@monstr linux-2.6-last]$ make
->>   CHK     include/linux/version.h
->>   CHK     include/linux/utsrelease.h
->>   CALL    scripts/checksyscalls.sh
->>   CHK     include/linux/compile.h
->> dnsdomainname: Host name lookup failure
->>   CC      drivers/serial/uartlite.o
->> drivers/serial/uartlite.c: In function `ulite_probe':
->> drivers/serial/uartlite.c:560: error: ulite_probe causes a section type conflict
->> make[2]: *** [drivers/serial/uartlite.o] Error 1
->> make[1]: *** [drivers/serial] Error 2
->> make: *** [drivers] Error 2
->> [microblaze@monstr linux-2.6-last]$ make
->>   CHK     include/linux/version.h
->>   CHK     include/linux/utsrelease.h
->>   CALL    scripts/checksyscalls.sh
->>   CHK     include/linux/compile.h
->> dnsdomainname: Host name lookup failure
->>   CC      drivers/serial/uartlite.o
->> drivers/serial/uartlite.c: In function `ulite_of_probe':
->> drivers/serial/uartlite.c:594: error: ulite_of_probe causes a section type conflict
->> make[2]: *** [drivers/serial/uartlite.o] Error 1
->> make[1]: *** [drivers/serial] Error 2
->> make: *** [drivers] Error 2
->> [microblaze@monstr linux-2.6-last]$ make
->>   CHK     include/linux/version.h
->>   CHK     include/linux/utsrelease.h
->>   CALL    scripts/checksyscalls.sh
->>   CHK     include/linux/compile.h
->> dnsdomainname: Host name lookup failure
->>   CC      drivers/serial/uartlite.o
->> drivers/serial/uartlite.c: In function `ulite_init':
->> drivers/serial/uartlite.c:659: error: ulite_init causes a section type conflict
->> make[2]: *** [drivers/serial/uartlite.o] Error 1
->> make[1]: *** [drivers/serial] Error 2
->> make: *** [drivers] Error 2
->> [microblaze@monstr linux-2.6-last]$ make
->>   CHK     include/linux/version.h
->>   CHK     include/linux/utsrelease.h
->>   CALL    scripts/checksyscalls.sh
->>   CHK     include/linux/compile.h
->> dnsdomainname: Host name lookup failure
->>   CC      drivers/serial/uartlite.o
->>   LD      drivers/serial/built-in.o
->> ...
->>   LD      vmlinux.o
->>   MODPOST vmlinux.o
->> WARNING: vmlinux.o(.text+0x44): Section mismatch: reference to .init.text:start_kernel (between '_start' and 'run_init_process')
->> WARNING: vmlinux.o(.text+0xc9c): Section mismatch: reference to .init.text:early_init_devtree (between 'machine_early_init' and 'machine_restart')
->> WARNING: vmlinux.o(.text+0xca8): Section mismatch: reference to .init.data:default_command_line (between 'machine_early_init' and 'machine_restart')
->> WARNING: vmlinux.o(.text+0xd8798): Section mismatch: reference to .init.text:uart_parse_options (between 'ulite_console_setup' and 'ulite_console_init')
->> WARNING: vmlinux.o(.text+0xd87bc): Section mismatch: reference to .init.text:uart_set_options (between 'ulite_console_setup' and 'ulite_console_init')
->>   GEN     .version
->>   CHK     include/linux/compile.h
->> dnsdomainname: Host name lookup failure
->>   UPD     include/linux/compile.h
->>   CC      init/version.o
->>   LD      init/built-in.o
->>   LD      vmlinux
->>   SYSMAP  System.map
->>   OBJCOPY arch/microblaze/boot/linux.bin
->> Kernel: arch/microblaze/boot/linux.bin is ready  (#7)
->>   Building modules, stage 2.
->>   MODPOST 0 modules
