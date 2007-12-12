@@ -1,129 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761388AbXLLPrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbXLLPwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761388AbXLLPrr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 10:47:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761242AbXLLPrS
+	id S1754230AbXLLPwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 10:52:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXLLPwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 10:47:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36273 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761232AbXLLPrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 10:47:16 -0500
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
-       rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
-       Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 5/6] tweak io_64.h for paravirt.
-Date: Wed, 12 Dec 2007 10:57:26 -0200
-Message-Id: <11974642813710-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11974642754014-git-send-email-gcosta@redhat.com>
-References: <11974642471600-git-send-email-gcosta@redhat.com> <11974642553841-git-send-email-gcosta@redhat.com> <11974642622800-git-send-email-gcosta@redhat.com> <11974642682229-git-send-email-gcosta@redhat.com> <11974642754014-git-send-email-gcosta@redhat.com>
+	Wed, 12 Dec 2007 10:52:12 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:26980 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751818AbXLLPwK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 10:52:10 -0500
+In-Reply-To: <475FD0A1.3090304@voltaire.com>
+References: <OFD9564F75.44193623-ONC12573AE.002EA542-C12573AE.002F5FBC@de.ibm.com> <475FD0A1.3090304@voltaire.com>
+Subject: Re: [ewg] Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
+To: Or Gerlitz <ogerlitz@voltaire.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, OF-General <general@lists.openfabrics.org>,
+       Joachim Fenkes <FENKES@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Roland Dreier <rdreier@cisco.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+X-Mailer: Lotus Notes Release 8.0 August 02, 2007
+Message-ID: <OF2694B462.1504C1FC-ONC12573AF.0056AAC0-C12573AF.0056F862@de.ibm.com>
+From: Christoph Raisch <RAISCH@de.ibm.com>
+Date: Wed, 12 Dec 2007 17:02:23 +0100
+X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 12/12/2007 16:52:07
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need something here because we can't call in and out instructions
-directly. However, we have to be careful, because no indirections are
-allowed in misc_64.c , and paravirt_ops is a kind of one. So just
-call it directly there
+Or Gerlitz <ogerlitz@voltaire.com> wrote on 12.12.2007 13:14:25:
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- arch/x86/boot/compressed/misc_64.c |    6 +++++
- include/asm-x86/io_64.h            |   37 +++++++++++++++++++++++++++++------
- 2 files changed, 36 insertions(+), 7 deletions(-)
+> Joachim Fenkes wrote:
+> > Roland Dreier <rdreier@cisco.com> wrote on 10.12.2007 22:47:37:
+>
+> >> It's an optional device feature, so this should be OK
+> >> (although the iSER driver currently seems to depend on a device
+> >> supporting FMRs, which is probably going to be a problem with iWARP
+> >> support in the future anyway).
+>
+> > I don't feel very well with removing code from the driver that iSER
+seems
+> > to depend on. Are there plans to fix this in iSER?
+>
+> What is the fix you suggest, to add a device query that tells you for
+> which verbs the documentation does not apply? or enhance the code of the
+>   map_phys_fmr verb within the ehca driver to return error if called
+> from non-sleepable context?
 
-diff --git a/arch/x86/boot/compressed/misc_64.c b/arch/x86/boot/compressed/misc_64.c
-index 6ea015a..6640a17 100644
---- a/arch/x86/boot/compressed/misc_64.c
-+++ b/arch/x86/boot/compressed/misc_64.c
-@@ -9,6 +9,12 @@
-  * High loaded stuff by Hans Lermen & Werner Almesberger, Feb. 1996
-  */
- 
-+/*
-+ * we have to be careful, because no indirections are allowed here, and
-+ * paravirt_ops is a kind of one. As it will only run in baremetal anyway,
-+ * we just keep it from happening
-+ */
-+#undef CONFIG_PARAVIRT
- #define _LINUX_STRING_H_ 1
- #define __LINUX_BITMAP_H 1
- 
-diff --git a/include/asm-x86/io_64.h b/include/asm-x86/io_64.h
-index a037b07..57fcdd9 100644
---- a/include/asm-x86/io_64.h
-+++ b/include/asm-x86/io_64.h
-@@ -35,12 +35,24 @@
-   *  - Arnaldo Carvalho de Melo <acme@conectiva.com.br>
-   */
- 
--#define __SLOW_DOWN_IO "\noutb %%al,$0x80"
-+static inline void native_io_delay(void)
-+{
-+	asm volatile("outb %%al,$0x80" : : : "memory");
-+}
- 
--#ifdef REALLY_SLOW_IO
--#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO
-+#if defined(CONFIG_PARAVIRT)
-+#include <asm/paravirt.h>
- #else
--#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO
-+
-+static inline void slow_down_io(void)
-+{
-+	native_io_delay();
-+#ifdef REALLY_SLOW_IO
-+	native_io_delay();
-+	native_io_delay();
-+	native_io_delay();
-+#endif
-+}
- #endif
- 
- /*
-@@ -52,9 +64,15 @@ static inline void out##s(unsigned x value, unsigned short port) {
- #define __OUT2(s,s1,s2) \
- __asm__ __volatile__ ("out" #s " %" s1 "0,%" s2 "1"
- 
-+#ifndef REALLY_SLOW_IO
-+#define REALLY_SLOW_IO
-+#define UNSET_REALLY_SLOW_IO
-+#endif
-+
- #define __OUT(s,s1,x) \
- __OUT1(s,x) __OUT2(s,s1,"w") : : "a" (value), "Nd" (port)); } \
--__OUT1(s##_p,x) __OUT2(s,s1,"w") __FULL_SLOW_DOWN_IO : : "a" (value), "Nd" (port));} \
-+__OUT1(s##_p, x) __OUT2(s, s1, "w") : : "a" (value), "Nd" (port)); \
-+		slow_down_io(); }
- 
- #define __IN1(s) \
- static inline RETURN_TYPE in##s(unsigned short port) { RETURN_TYPE _v;
-@@ -63,8 +81,13 @@ static inline RETURN_TYPE in##s(unsigned short port) { RETURN_TYPE _v;
- __asm__ __volatile__ ("in" #s " %" s2 "1,%" s1 "0"
- 
- #define __IN(s,s1,i...) \
--__IN1(s) __IN2(s,s1,"w") : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
--__IN1(s##_p) __IN2(s,s1,"w") __FULL_SLOW_DOWN_IO : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
-+__IN1(s) __IN2(s, s1, "w") : "=a" (_v) : "Nd" (port), ##i); return _v; } \
-+__IN1(s##_p) __IN2(s, s1, "w") : "=a" (_v) : "Nd" (port), ##i);	  \
-+				slow_down_io(); return _v; }
-+
-+#ifdef UNSET_REALLY_SLOW_IO
-+#undef REALLY_SLOW_IO
-+#endif
- 
- #define __INS(s) \
- static inline void ins##s(unsigned short port, void * addr, unsigned long count) \
--- 
-1.4.4.2
+Roland,
+what is your suggestion here?
+
+We could implement both versions Or is proposing, but having both
+at the same time sound like overkill.
+
+Christoph R.
 
