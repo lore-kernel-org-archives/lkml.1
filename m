@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbXLLT5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbXLLUDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759426AbXLLT5n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 14:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbXLLT5g
+	id S1758638AbXLLUDj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 15:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXLLUDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 14:57:36 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:46820 "EHLO fieldses.org"
+	Wed, 12 Dec 2007 15:03:32 -0500
+Received: from pat.uio.no ([129.240.10.15]:58455 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754095AbXLLT5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 14:57:35 -0500
-Date: Wed, 12 Dec 2007 14:57:32 -0500
-To: Bernd Petrovitsch <bernd@firmix.at>
-Cc: Daniel Phillips <phillips@phunq.net>, linux-kernel@vger.kernel.org
-Subject: Re: A peek at the future of storage
-Message-ID: <20071212195732.GC31412@fieldses.org>
-References: <200712120846.18320.phillips@phunq.net> <20071212174613.GA16656@fieldses.org> <200712121002.44643.phillips@phunq.net> <1197484765.32283.106.camel@tara.firmix.at>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1197484765.32283.106.camel@tara.firmix.at>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	id S1751836AbXLLUDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 15:03:31 -0500
+Subject: Re: [PATCH 1/1] fix 2.6.24-rc1 nfs_file_mmap change for NOMMU
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: "Berkhan, Enrik (GE Infra, Oil & Gas)" <enrik.berkhan@ge.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <050A770C1DB41144817F02E395E493105257D4@FLRMLVEM02.e2k.ad.ge.com>
+References: <050A770C1DB41144817F02E395E493104CE014@FLRMLVEM02.e2k.ad.ge.com>
+	 <1197427230.27750.3.camel@heimdal.trondhjem.org>
+	 <050A770C1DB41144817F02E395E493105257D4@FLRMLVEM02.e2k.ad.ge.com>
+Content-Type: text/plain
+Date: Wed, 12 Dec 2007 15:03:24 -0500
+Message-Id: <1197489804.9042.9.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.8, required=5.0, autolearn=disabled, AWL=-0.824)
+X-UiO-Scanned: ED92D5D1AB227CAC6A589A62EAC1C62BCBF50B84
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -7 maxlevel 200 minaction 2 bait 0 mail/h: 44 total 5713250 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 07:39:25PM +0100, Bernd Petrovitsch wrote:
-> On Mit, 2007-12-12 at 10:02 -0800, Daniel Phillips wrote:
-> > On Wednesday 12 December 2007 09:46, J. Bruce Fields wrote:
-> [...]
-> > > People have proposed writing a daemon that just reads
-> > > /proc/net/rpc/nfsd periodically and uses that to adjust the number of
-> > > threads from userspace, probably subject to some limits in a config
-> > > file someplace. (Think that could do the job, or is there some reason
-> [...]
-> > So how would a userspace daemon know that kernel is blocking and new 
-> > threads are needed?
 
-The last number on the "th" line in /proc/net/rpc/nfsd should tell you
-how many seconds all threads have been busy (and previous lines tell you
-how much time they've been 90% busy, etc).  That seems like sufficient
-information at least for a rough guess.  It wouldn't allow as fast a
-response time, but perhaps that doesn't matter.
-
-> > In kernel this is pretty easy: when a new request 
-> > arrives, look on the thread list and if none are available, generate a 
-> > new one.  Something special needs to be done to handle the case where 
-> > there are no threads available because they are all piled up on a 
-> > semaphore due to, for example, somebody unplugging the network cable 
-> > for a remote disk.
-
-Ideally you'd like to limit the number of threads that that can happen
-to, so that we still have a few threads free to handle rpc requests that
-don't depend on some borked disk.  I don't know how to do that, though.
-
-> > We have to avoid generating infinite threads in 
-> > that case.  Ideas?
+On Wed, 2007-12-12 at 08:29 +0100, Berkhan, Enrik (GE Infra, Oil & Gas)
+wrote:
+> Trond Myklebust wrote:
+> > On Sun, 2007-12-09 at 19:52 +0100, Berkhan, Enrik (GE Infra, Oil & Gas)
+> > wrote:
+> >> - generic_file_mmap returns -ENOSYS for NOMMU systems; replicate this  
+> >> behaviour 
+> > 
+> > Why do that after going through the process of revalidating the inode
+> > etc.? Just replace nfs_file_mmap() with a function returning ENOSYS in
+> > the case of CONFIG_MMU.
+> > 
+> > Better still, in the case of CONFIG_MMU, instead of having an
+> > nfs_file_mmap(), just replace the .mmap field in nfs_file_operations
+> > with a call to generic_file_mmap().
 > 
-> Add a sysctl configurable maximum number of NFS threads and default it
-> to 8 (or whatever now the default value is).
-> And one wants probably some logic to kill them again if they are not
-> used long enough. And then you need/want another variable for the
-> minimum number of NFS threads around.
+> I just tried to make it work without really knowing what I do :)
+> 
+> I have mailed another patch implementing your second suggestion (the system
+> still boots with nfsroot).
 
-If that's enough configuration for everyone, then fine.  If we suspect
-people might need to do something more complicated, that might be an
-argument for trying to do the tuning in userspace until we figure out
-exactly what knobs are needed.
+Thanks. That patch looks better. I have 2 questions, though:
 
---b.
+     1. Is this urgent enough to warrant pushing into 2.6.24?
+     2. Are there any filesystems which support mmap() on !CONFIG_MMU?
+
+Cheers
+  Trond
+
