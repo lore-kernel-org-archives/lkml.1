@@ -1,58 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759618AbXLLMEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbXLLMNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759618AbXLLMEN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 07:04:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXLLMD5
+	id S1758165AbXLLMNZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 07:13:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbXLLMNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 07:03:57 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:6425 "EHLO kernel.dk"
+	Wed, 12 Dec 2007 07:13:15 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:58781 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbXLLMD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 07:03:56 -0500
-Date: Wed, 12 Dec 2007 13:00:31 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Cc: bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
-Subject: Re: [PATCH 00/30] blk_end_request: full I/O completion handler
-	(take 4)
-Message-ID: <20071212120031.GB22544@kernel.dk>
-References: <20071211.173936.122828268.k-ueda@ct.jp.nec.com>
+	id S1751948AbXLLMNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 07:13:14 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071211.173936.122828268.k-ueda@ct.jp.nec.com>
+Content-Transfer-Encoding: 7bit
+Message-ID: <18271.53321.104822.233365@harpo.it.uu.se>
+Date: Wed, 12 Dec 2007 13:12:57 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: acpi ->video_device_list corruption
+In-Reply-To: <20071212115655.GB18472@holomorphy.com>
+References: <20071212101505.GA18472@holomorphy.com>
+	<18271.51833.872482.880312@harpo.it.uu.se>
+	<20071212115655.GB18472@holomorphy.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 11 2007, Kiyoshi Ueda wrote:
-> Hi Jens, Boaz,
-> 
-> The following is the updated patch-set for blk_end_request().
-> I have done some interface/implementation changes based on
-> feedbacks/discussions since the previous version.
-> (Although this patch-set was made on top of 2.6.24-rc4, I confirmed
->  it can be applied to 2.6.24-rc5, too.  Also, I confirmed it has
->  no build error on my IA64 box.)
+William Lee Irwin III writes:
+ > On Wed, Dec 12, 2007 at 12:48:09PM +0100, Mikael Pettersson wrote:
+ > > IMO the memset(ptr, 0, sizeof(*ptr)) idiom is both safer
+ > > and avoids having to write an uninteresting type name.
+ > 
+ > How about this, then?
 
-Trying to apply this, but it fails from patch #24 and on:
+Looks good.
 
-patching file block/ll_rw_blk.c
-Hunk #1 succeeded at 3852 (offset 49 lines).
-Hunk #2 succeeded at 3867 with fuzz 2 (offset 49 lines).
-Hunk #3 succeeded at 3904 with fuzz 1 (offset 66 lines).
-Hunk #4 FAILED at 3916.
-Hunk #5 succeeded at 3967 with fuzz 2 (offset 60 lines).
-1 out of 5 hunks FAILED -- saving rejects to file block/ll_rw_blk.c.rej
-patching file include/linux/blkdev.h
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
+Acked-by: Mikael Pettersson <mikpe@it.uu.se>
 
-This is 2.6.24-rc5 (pretty close to at least, no changes to ll_rw_blk.c
-from that version). Are you using quilt and forgot to refresh, or
-something like that?
-
--- 
-Jens Axboe
-
+ > 
+ > The ->cap fields of struct acpi_video_device and struct acpi_video_bus
+ > are 1B each, not 4B. The oversized memset()'s corrupted the subsequent
+ > list_head fields. This resulted in silent corruption without
+ > CONFIG_DEBUG_LIST and BUG's with it. This patch uses sizeof() to pass
+ > the proper bounds to the memset() calls and thereby correct the bugs.
+ > 
+ > The patch was seen to resolve the issue on the affected system.
+ > 
+ > vs. 2.6.24-rc5
+ > 
+ > Signed-off-by: William Irwin <wli@holomorphy.com>
+ > 
+ > diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+ > index 44a0d9b..bd77e81 100644
+ > --- a/drivers/acpi/video.c
+ > +++ b/drivers/acpi/video.c
+ > @@ -577,7 +577,7 @@ static void acpi_video_device_find_cap(struct acpi_video_device *device)
+ >  	struct acpi_video_device_brightness *br = NULL;
+ >  
+ >  
+ > -	memset(&device->cap, 0, 4);
+ > +	memset(&device->cap, 0, sizeof(device->cap));
+ >  
+ >  	if (ACPI_SUCCESS(acpi_get_handle(device->dev->handle, "_ADR", &h_dummy1))) {
+ >  		device->cap._ADR = 1;
+ > @@ -697,7 +697,7 @@ static void acpi_video_bus_find_cap(struct acpi_video_bus *video)
+ >  {
+ >  	acpi_handle h_dummy1;
+ >  
+ > -	memset(&video->cap, 0, 4);
+ > +	memset(&video->cap, 0, sizeof(video->cap));
+ >  	if (ACPI_SUCCESS(acpi_get_handle(video->device->handle, "_DOS", &h_dummy1))) {
+ >  		video->cap._DOS = 1;
+ >  	}
+ > --
+ > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+ > the body of a message to majordomo@vger.kernel.org
+ > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ > Please read the FAQ at  http://www.tux.org/lkml/
+ > 
