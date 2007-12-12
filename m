@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbXLLKWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbXLLKWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759246AbXLLKWg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 05:22:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758228AbXLLKW1
+	id S1758606AbXLLKWv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 05:22:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759273AbXLLKWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 05:22:27 -0500
-Received: from web52902.mail.re2.yahoo.com ([206.190.49.12]:36645 "HELO
-	web52902.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758130AbXLLKW0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 05:22:26 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=WX33+ghK6K0tL2AizHFTRgu54eMACA8U5SUyT4Q6pmT24fyNeXljQsQeauxInsnnt4OtngGFDesgfJZBTr8fQFn5kn12new/59bnsvfrVydzyHJJkFCpfhYmF8VsnOtasg6DP3lRplTPrtt9SOoxGYTaxdJ/lzAV9R+DLWQ4/Vk=;
-X-YMail-OSG: X.ES1k8VM1lg3aFnxef9sAltXVb6NfjYN2hwY9.VzDwKnA.v3MIO2SRHV5OqbgGm9IOYbK_E3P_9yb6NHmx6NnLQuFL5sA3l0Rt2r07nDUxkcsDhwSKPMJi_wowghiGR2_.gvJu2LWqltOlIWCKcmLwE8A--
-Date: Wed, 12 Dec 2007 10:22:25 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: [2.6.23.9] hostap_plx locks up PC when reading PCI I/O memory
+	Wed, 12 Dec 2007 05:22:40 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:57323 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758228AbXLLKWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 05:22:39 -0500
+Date: Wed, 12 Dec 2007 11:22:47 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dcbw@redhat.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <20071212020325.96dbf41b.akpm@linux-foundation.org>
-MIME-Version: 1.0
+Cc: Ingo Molnar <mingo@elte.hu>, linux kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sysctl : proc_dointvec_minmax() expects int values for
+ min/max guard values
+Message-Id: <20071212112247.9c30f0d0.dada1@cosmosbay.com>
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <293380.40997.qm@web52902.mail.re2.yahoo.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Andrew Morton <akpm@linux-foundation.org> wrote:
-> hm.  Could be some platform thing.  Strange.  It might be worth checking
-> around that ioremap, make sure that the value which it returned is the one
-> which is being used in the function-which-hangs, etc.
+min_sched_granularity_ns, max_sched_granularity_ns, min_wakeup_granularity_ns 
+and max_wakeup_granularity_ns are declared "unsigned long".
 
-OK, not difficult to try. (This is x86, BTW.) But I'm still baffled as to precisely why it is
-hanging. Is it waiting for a value from the PCI bus that never appears, or something? Are there
-any other PCI-related tests that I can do to check that the device has been initialised correctly
-on the bus, please?
+This is incorrect since proc_dointvec_minmax() expects plain "int" guard values.
 
-> hostap_plx.c first appeared in 2.6.14.
+This bug only triggers on big endian 64 bit arches.
 
-OK, I can build one of those kernels. Before then, I think that hostap was provided as an external
-source package.
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
-Cheers,
-Chris
-
-
-      __________________________________________________________
-Sent from Yahoo! Mail - a smarter inbox http://uk.mail.yahoo.com
-
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 8ac5171..707a26b 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -225,10 +225,10 @@ static struct ctl_table root_table[] = {
+ };
+ 
+ #ifdef CONFIG_SCHED_DEBUG
+-static unsigned long min_sched_granularity_ns = 100000;		/* 100 usecs */
+-static unsigned long max_sched_granularity_ns = NSEC_PER_SEC;	/* 1 second */
+-static unsigned long min_wakeup_granularity_ns;			/* 0 usecs */
+-static unsigned long max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
++static int min_sched_granularity_ns = 100000;		/* 100 usecs */
++static int max_sched_granularity_ns = NSEC_PER_SEC;	/* 1 second */
++static int min_wakeup_granularity_ns;			/* 0 usecs */
++static int max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
+ #endif
+ 
+ static struct ctl_table kern_table[] = {
