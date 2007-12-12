@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbXLLTow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbXLLTpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760121AbXLLTow (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 14:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757020AbXLLTon
+	id S1760886AbXLLTpJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 14:45:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760227AbXLLToy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 14:44:43 -0500
-Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:43875 "HELO
-	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752616AbXLLTom (ORCPT
+	Wed, 12 Dec 2007 14:44:54 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35488 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760137AbXLLTox (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 14:44:42 -0500
-X-YMail-OSG: odxENXgVM1ktpQ2_bVmRBtw22DTNsmgdbCGz6vj5wdzsS8S2MVcI_ZaEvtnNX9DxG_t5Sx9WbQ--
-X-RocketYMMF: rancidfat
-Date: Wed, 12 Dec 2007 11:44:41 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
-To: David Howells <dhowells@redhat.com>, casey@schaufler-ca.com
-Cc: dhowells@redhat.com, Stephen Smalley <sds@tycho.nsa.gov>,
-       Karl MacMillan <kmacmill@redhat.com>, viro@ftp.linux.org.uk,
-       hch@infradead.org, Trond.Myklebust@netapp.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <32187.1197484466@redhat.com>
+	Wed, 12 Dec 2007 14:44:53 -0500
+Date: Wed, 12 Dec 2007 20:44:54 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Shane <gnome42@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Adrian Bunk <bunk@kernel.org>, Brandon Philips <brandon@ifup.org>,
+       linux-kernel@vger.kernel.org,
+       video4linux-list <video4linux-list@redhat.com>
+Subject: [2.6 patch] videobuf-core.c locking fixes
+Message-ID: <20071212194454.GF10069@stusta.de>
+References: <fa4052ef0712112120l1165af5btc108ea2131760328@mail.gmail.com> <20071212090709.GF14204@stusta.de> <1197457394.4807.40.camel@gaivota> <20071212120308.GG14204@stusta.de> <1197469316.4744.22.camel@gaivota> <fa4052ef0712120837i36cee3elbe0a5170f5904d2f@mail.gmail.com> <fa4052ef0712121057o51230b22ycb79723091438779@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <830252.82380.qm@web36604.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <fa4052ef0712121057o51230b22ycb79723091438779@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- David Howells <dhowells@redhat.com> wrote:
-
-> Casey Schaufler <casey@schaufler-ca.com> wrote:
+On Wed, Dec 12, 2007 at 01:57:27PM -0500, Shane wrote:
+> On Dec 12, 2007 11:37 AM, Shane <gnome42@gmail.com> wrote:
+> > On Dec 12, 2007 9:21 AM, Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
+> > ...
+> > > The proper solution is provided by this changeset:
+> > > http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=19fb1457990b6b7e15586ec7331541a184233acc
+> >
+> > I applied this and it seems fine with a bttv card.
 > 
-> > What sort of authorization are you thinking of? I would expect
-> > that to have been done by cachefileselinuxcontext (or
-> > cachefilesspiffylsmcontext) up in userspace. If you're going to
-> > rely on userspace applications for policy enforcement they need
-> > to be good enough to count on after all.
+> Ugh, after further testing with a bttv card it seems this is not fine.
 > 
-> It can't be done in userspace, otherwise someone using the cachefilesd
-> interface can pass an arbitrary context up.
+> vbi doesn't work anymore and my application gets stuck in a Zombie,
+> unkillable, have to reboot state :(
+> 
+> mythtv    3683     1  -3  2.4  0.0      0     0 ?        Z<l  13:40:35
+> 00:00:06 [mythbackend] <defunct>
+> 
+> Reverting Mauro's patch above does fix the problem.
 
-Yes, but I would expect that interface to be protected (owned by root,
-mode 0400). If /dev/cachefiles has to be publicly accessable make it
-a privileged ioctl.
+Thanks for testing, does the patch below fix it?
 
-> The security context has to be
-> passed across the file descriptor attached to /dev/cachefiles along with the
-> other configuration parameters as a text string.
+> Shane
 
-I got that.
-
-> This fd selects the
-> particular cache context that a particular instance of a running daemon is
-> using.
-
-Yes, but forgive me being slow, I don't see the problem.
+cu
+Adrian
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+<--  snip  -->
+
+
+After commit 19fb1457990b6b7e15586ec7331541a184233acc the callers in 
+videobuf-core.c that already hold the lock must call 
+__videobuf_read_start() instead of videobuf_read_start().
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+
+ drivers/media/video/videobuf-core.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+e1f8b4a49d86746f699919531c17fd154787e308 
+diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
+index 81f77d2..c8a5cb5 100644
+--- a/drivers/media/video/videobuf-core.c
++++ b/drivers/media/video/videobuf-core.c
+@@ -909,7 +909,7 @@ ssize_t videobuf_read_stream(struct videobuf_queue *q,
+ 	if (q->streaming)
+ 		goto done;
+ 	if (!q->reading) {
+-		retval = videobuf_read_start(q);
++		retval = __videobuf_read_start(q);
+ 		if (retval < 0)
+ 			goto done;
+ 	}
+@@ -982,7 +982,7 @@ unsigned int videobuf_poll_stream(struct file *file,
+ 					 struct videobuf_buffer, stream);
+ 	} else {
+ 		if (!q->reading)
+-			videobuf_read_start(q);
++			__videobuf_read_start(q);
+ 		if (!q->reading) {
+ 			rc = POLLERR;
+ 		} else if (NULL == q->read_buf) {
+
