@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758620AbXLLSpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbXLLSqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758620AbXLLSpj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 13:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbXLLSpL
+	id S1758906AbXLLSqM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 13:46:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756072AbXLLSp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 13:45:11 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:55234 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755471AbXLLSpJ (ORCPT
+	Wed, 12 Dec 2007 13:45:58 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:51951 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755949AbXLLSp5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 13:45:09 -0500
-Message-ID: <47602BF2.9030602@zytor.com>
-Date: Wed, 12 Dec 2007 10:44:02 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 12 Dec 2007 13:45:57 -0500
+Date: Wed, 12 Dec 2007 13:45:52 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: should all THREAD_SIZE macros be defined in thread_info.h headers?
+Message-ID: <alpine.LFD.0.9999.0712121342020.28488@localhost.localdomain>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Rene Herman <rene.herman@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
-       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
-       john@stoffel.org, linux-os@analogic.com
-Subject: Re: [RFT] Port 0x80 I/O speed
-References: <475F1DC6.5090403@keyaccess.nl> <475FA060.6070004@gmail.com> <4af2d03a0712120325n50d057baq7ec440c5e57fda39@mail.gmail.com>
-In-Reply-To: <4af2d03a0712120325n50d057baq7ec440c5e57fda39@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> On Dec 12, 2007 9:48 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
->> On 12/12/2007 12:31 AM, Rene Herman wrote:
->>> Good day.
->>>
->>> Would some people on x86 (both 32 and 64) be kind enough to compile and
->>> run the attached program? This is about testing how long I/O port access
-> 
-> model name      : Intel(R) Xeon(R) CPU           E5335  @ 2.00GHz 
-> cycles: out 3217, in 1898
 
-1.6 µs, on the high end....
+  just asking, given that:
 
-> model name      : Dual Core AMD Opteron(tm) Processor 275
-> cycles: out 5508, in 5524
+include/asm-x86/page_64.h:#define THREAD_SIZE  (PAGE_SIZE << THREAD_ORDER)
+include/asm-arm/page-nommu.h:#define KTHREAD_SIZE (8192)
+include/asm-arm/page-nommu.h:#define KTHREAD_SIZE PAGE_SIZE
+include/asm-cris/processor.h:#define THREAD_SIZE       PAGE_SIZE
+include/asm-m32r/processor.h:#define THREAD_SIZE (2*PAGE_SIZE)
+include/asm-m68k/page.h:#define THREAD_SIZE (8192)
 
-Definitely an outlier; 2.5 µs here.
+  all other arches seem to define that in their respective
+thread_info.h headers.
 
-	-hpa
+rday
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
