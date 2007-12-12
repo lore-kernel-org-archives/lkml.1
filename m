@@ -1,108 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758714AbXLLU1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759567AbXLLU16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758714AbXLLU1o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 15:27:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbXLLU1e
+	id S1759567AbXLLU16 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 15:27:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756617AbXLLU1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 15:27:34 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:37208 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbXLLU1d (ORCPT
+	Wed, 12 Dec 2007 15:27:40 -0500
+Received: from homer.mvista.com ([63.81.120.158]:16422 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754585AbXLLU1i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 15:27:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=Tm5zscxB2ExDRp9wlSd//mt1IyYtL4fwiArfHIL/vdNboZdKALH7mxP/ynrTulzT/c3ZIVL5aQwkBgAXJ25Dj6faLcjbUFB9Kb9hBgSYGWLj0aHPHka6/JAFpAZd+EXc+OG+/I+8+s9nkE4y05fw0LTJDnkQb0n+gjilfrUceSc=
-Message-ID: <476043DA.5000602@keyaccess.nl>
-Date: Wed, 12 Dec 2007 21:26:02 +0100
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: "David P. Reed" <dpreed@reed.com>
-CC: Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       David Newall <david@davidnewall.com>, Paul Rolland <rol@as2917.net>,
-       "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: More info on port 80 symptoms on MCP51 machine.
-References: <475DE6F4.80702@zytor.com> <475DEB23.1000304@davidnewall.com> <20071211084059.3d03e11d@tux.DEF.witbe.net> <475E5D4B.8020101@keyaccess.nl> <475E7DC2.4060509@davidnewall.com> <475E8D91.20201@keyaccess.nl> <475E95A3.3070801@davidnewall.com> <Pine.LNX.4.61.0712111024060.22976@chaos.analogic.com> <20071211163017.GD16750@one.firstfloor.org> <475EBFBA.6090301@keyaccess.nl> <20071211191649.GB3437@elf.ucw.cz> <475EEC75.80609@keyaccess.nl> <47603F66.3070108@reed.com>
-In-Reply-To: <47603F66.3070108@reed.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Rene Herman <rene.herman@gmail.com>
+	Wed, 12 Dec 2007 15:27:38 -0500
+Message-Id: <20071212201522.061896981@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 12 Dec 2007 12:15:22 -0800
+Message-Id: <20071212201258.890003246@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 12 Dec 2007 12:12:58 -0800
+From: Daniel Walker <dwalker@mvista.com>
+To: rostedt@goodmis.org
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, johnstul@us.ibm.com
+Subject: [PATCH -rt] cycles_to_usecs rounding fix
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12-12-07 21:07, David P. Reed wrote:
+do_div() rounds down, so we add have the divisor to round up. This effected my
+change to preempt_max_latency. Each time you read preempt_max_latency it gets 
+rounded lower.
 
-> Sadly, I've been busy with other crises in my day job for the last few 
-> days.   I did modify Rene's test program and ran it on my "problem" 
-> machine, with the results below.
-> 
-> The interesting part of this is that port 80 seems to respond to "in" 
-> instructions faster than the presumably "unused" ports 0xEC  and 0XEF  
-> (those were mentioned by someone as alternatives to port 80).
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-Don't know if someone else mentioned those but I only said 0xed. That's the 
-value Phoenix BIOSes use (yes, and which H. Peter Anvin) reported as being 
-generally problematic as well).
 
-It's in fact not all that unexpected it seems that port 0x80 responds to in 
-given that it's used by the DMA controller. It's a write that falls on deaf 
-ears. The read is going to be faster if it doesn't timeout on an unused port.
+---
+ kernel/time/timekeeping.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Although it's not faster for everyone, such as for me indicating that for us 
-port 0x80 is really-really unused, it is for many. See results here:
+Index: linux-2.6.23/kernel/time/timekeeping.c
+===================================================================
+--- linux-2.6.23.orig/kernel/time/timekeeping.c
++++ linux-2.6.23/kernel/time/timekeeping.c
+@@ -144,7 +144,8 @@ unsigned long notrace cycles_to_usecs(cy
+ {
+ 	u64 ret = cyc2ns(clock, cycles);
+ 
+-	do_div(ret, 1000);
++	ret += NSEC_PER_USEC/2; /* For rounding in do_div() */
++	do_div(ret, NSEC_PER_USEC);
+ 
+ 	return ret;
+ }
+-- 
 
-http://lkml.org/lkml/2007/12/12/309
-
-> That, and the fact that the port 80 test reliably freezes the machine 
-> solid the second time it is run, and the "hwclock" utility reliably 
-> hangs the machine if the port 80's are used in the CMOS_READ/CMOS_WRITE 
-> loop, seems to strongly indicate that this chipset or motherboard 
-> actually uses port 80, rather than there being a bus problem.
-
-Yes, so it seems. In this case we could in fact also "fix" your situation by 
-just going to 0xed depending on for example DMI. Alan Cox just posted a few 
-further problems with a simple udelay() replacement...
-
-> Someone might have an in to nVidia to clarify this, since I don't.  In 
-> any case, the udelay(2) approach seems to be a safe fix for this machine.
-> 
-> Hope input from an "outsider" is helpful in going forward.   I put a lot 
-> of time and effort into tracking down this problem on this particular 
-> machine model, largely because I like the machine.
-> 
-> Running the (slightly modified to test ports 80, ec, ef instead of just 
-> port 80) test when the 2 GHz max speed CPU is running at 800 MHz, here's 
-> what I get for port 80 and port ec and port ef.
-> 
-> port 80:   cycles: out 1430, in 792
-
-At 800 MHz, that's 1.79 / 0.99 microseconds. The precision of the "in" is 
-somewhat interesting. Did someone at nVidia think it's an "in" from 0x80 
-which should get the 1 microsec delay?
-
-> port ef:    cycles: out 1431, in 1378
-> port ec:   cycles: out 1432, in 1372
-
-Unused ports, bus timeouts.
-
-> ----------------------------
-> 
-> System info:  HP Pavilion dv9000z laptop (AMD64x2)
-> 
-> PCI bus controller is nVidia MCP51.
-> processor       : 0
-> vendor_id       : AuthenticAMD
-> cpu family      : 15
-> model           : 72
-> model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-60
-> stepping        : 2
-> cpu MHz         : 800.000
-> cache size      : 512 KB
-
-Rene.
+-- 
