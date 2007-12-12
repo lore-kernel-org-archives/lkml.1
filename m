@@ -1,117 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbXLLWaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbXLLWan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbXLLWaa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 17:30:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXLLWaP
+	id S1758012AbXLLWan (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 17:30:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbXLLWa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 17:30:15 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52604 "EHLO
+	Wed, 12 Dec 2007 17:30:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53803 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbXLLWaO (ORCPT
+	with ESMTP id S1754659AbXLLWa0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 17:30:14 -0500
-Date: Wed, 12 Dec 2007 14:16:27 -0800
+	Wed, 12 Dec 2007 17:30:26 -0500
+Date: Wed, 12 Dec 2007 14:18:22 -0800
 From: Greg KH <greg@kroah.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Miquel van Smoorenburg <miquels@cistron.nl>, linux-scsi@vger.kernel.org,
-       matthew@wil.cx, linux-kernel@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Anders Henke <anders.henke@1und1.de>, stable@kernel.org
-Subject: Re: [stable] broken dpt_i2o in 2.6.23 (was: ext2 check page: bad
-	entry in directory) (fwd)
-Message-ID: <20071212221627.GA16474@kroah.com>
-References: <20071212105841.GN6770@1und1.de> <20071212033808.6fb92139.akpm@linux-foundation.org> <1197464879.20796.15.camel@n2o.xs4all.nl> <20071212134342.GR6770@1und1.de> <20071212111629.9a4f7f73.akpm@linux-foundation.org> <1197489294.4203.40.camel@localhost.localdomain>
+To: Dave Jones <davej@redhat.com>, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       clameter@sgi.com
+Subject: Re: [PATCH -mm] x86 boot : export boot_params via sysfs (forward
+	to Greg)
+Message-ID: <20071212221822.GB16474@kroah.com>
+References: <1197443265.14443.59.camel@caritas-dev.intel.com> <20071212073502.GA31348@kroah.com> <1197447079.14443.82.camel@caritas-dev.intel.com> <20071212174507.GB16049@kroah.com> <20071212191535.GB31044@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1197489294.4203.40.camel@localhost.localdomain>
+In-Reply-To: <20071212191535.GB31044@redhat.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 02:54:54PM -0500, James Bottomley wrote:
+On Wed, Dec 12, 2007 at 02:15:35PM -0500, Dave Jones wrote:
+> On Wed, Dec 12, 2007 at 09:45:07AM -0800, Greg Kroah-Hartman wrote:
 > 
-> On Wed, 2007-12-12 at 11:16 -0800, Andrew Morton wrote:
-> > On Wed, 12 Dec 2007 14:43:42 +0100 Anders Henke <anders.henke@1und1.de> wrote:
-> > 
-> > > Am 12.12.2007 schrieb Miquel van Smoorenburg:
-> > > > On Wed, 2007-12-12 at 03:38 -0800, Andrew Morton wrote:
-> > > > > On Wed, 12 Dec 2007 11:58:41 +0100 Anders Henke <anders.henke@1und1.de> wrote:
-> > > > > 
-> > > > > > Hi,
-> > > > > > 
-> > > > > > I'd like to let you now that my boxes are running a 32-bit kernel, so
-> > > > > > the 64-bit-uncleanliness shouldn't apply to my boxes; however,
-> > > > > > 
-> > > > > > http://www.miquels.cistron.nl/linux/dpt_i2o-64bit-2.6.23.patch
-> > > > > > 
-> > > > > > fixed the issue on my testbox.
-> > > > > > 
-> > > > > > I took a clean 2.6.23, applied patch, recompiled the kernel, reboot: works.
-> > > > > 
-> > > > > What a huge patch :(
-> > > > > 
-> > > > > We already reverted the offening patch so I assume that 2.6.24-rc5 is
-> > > > > working for you?
-> > > > > 
-> > > > > I guess we need to look at restoring "dpt_i2o: convert to SCSI hotplug
-> > > > > model" and then absorbing what Miquel has done there.
-> > > > 
-> > > > This was just a patch I had lying around, if it worked it would confirm
-> > > > my suspicion, which it has.
-> > > > 
-> > > > The minimal patch which is suitable for 2.6.23-stable and 2.6.24 would
-> > > > be the attached one-liner. The "dpt_i2o: convert to SCSI hotplug model"
-> > > > patch could be restored then.
-> > > > 
-> > > > (if the list eats the attachment, it's also available here:
-> > > > http://www.miquels.cistron.nl/linux/linux-2.6.23+24-dpt_i2o-dma64.patch 
-> > > > )
-> > > > 
-> > > > Anders, does this one-liner patch work for you ?
-> > > 
-> > > Got it - and it works!
-> > > 
-> > > I took a clean 2.6.23, applied the patch, recompiled the kernel and
-> > > rebooted my testbox: came up with the fresh-compiled kernel 
-> > > (verified by "uname -a").
-> > > 
-> > 
-> > That looks appropriate for 2.6.23.x:
-> > 
-> > --- linux-2.6.23.9.orig/drivers/scsi/dpt_i2o.c	2007-11-26 18:51:43.000000000 +0100
-> > +++ linux-2.6.23.9/drivers/scsi/dpt_i2o.c	2007-12-12 13:21:05.000000000 +0100
-> > @@ -905,8 +905,7 @@
-> >  	}
-> >  
-> >  	pci_set_master(pDev);
-> > -	if (pci_set_dma_mask(pDev, DMA_64BIT_MASK) &&
-> > -	    pci_set_dma_mask(pDev, DMA_32BIT_MASK))
-> > +	if (pci_set_dma_mask(pDev, DMA_32BIT_MASK))
-> >  		return -EINVAL;
+>  > Well, I respectively disagree.  sysfs is NOT for exporting various
+>  > binary kernel structures to userspace directly.  Again, the binary files
+>  > in sysfs are for chunks of memory that are PASS-THROUGH from hardware to
+>  > userspace, with no kernel intervention at all.
+>  > If you really need such a thing, use debugfs, as the only rule for
+>  > debugfs is that there is no rules :)
 > 
-> Yes, this has to be in ... the mptr filling the scatterlist on the
-> current driver is only a u32 and so will silently truncate.
-> 
-> >  	base_addr0_phys = pci_resource_start(pDev,0);
-> > 
-> > 
-> > However it is a bit mystifying that
-> > 55d9fcf57ba5ec427544fca7abc335cf3da78160 would cause a dma mask problem
-> > (isn't it?)
-> > 
-> > The scsi people might want to restore
-> > 55d9fcf57ba5ec427544fca7abc335cf3da78160 and then apply Miquel's patch on
-> > top for 2.6.24, or do it for 2.6.25?
-> 
-> I think it's a bit late in the game for 2.6.24, so I'm happy to leave
-> the hotplug reverted.  We'll try adding back hotplug plus this for
-> 2.6.25 I think.
+> Whilst on the subject, why wasn't /sys/slab done in debugfs ?
+> The one-value-per-file thing has gone taken to ridiculous extremes there.
 
-So, what should be added to 2.6.23-stable then?  And, can I get a real
-changelog entry for it?
+Heh, I think most of those files only show up if you have
+CONFIG_SLUB_DEBUG enabled, and it's easier to add them to the original
+sysfs entries instead of creating new debugfs ones.
+
+> Having 3641 sysfs files that most people never use permanently taking up
+> memory seems to be a massive waste of resources.
+
+sysfs files have their dentries and inodes pushed out of memory if they
+are never accessed, so no huge ammounts of memory are used here.
+
+Otherwise we would never be able to support 20,000 block devices on a
+31bit s390 with 128Mb of ram :)
 
 thanks,
 
