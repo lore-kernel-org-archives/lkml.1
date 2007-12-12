@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbXLLPMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbXLLPNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756946AbXLLPMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 10:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbXLLPMa
+	id S1757395AbXLLPNQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 10:13:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbXLLPM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 10:12:30 -0500
-Received: from bender.weihenstephan.org ([62.245.246.226]:40764 "EHLO
-	bender.weihenstephan.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751160AbXLLPM3 (ORCPT
+	Wed, 12 Dec 2007 10:12:59 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59999
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753071AbXLLPM6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 10:12:29 -0500
-From: Juergen Beisert <juergen127@kreuzholzen.de>
-Organization: Privat
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [RFT] Port 0x80 I/O speed
-Date: Wed, 12 Dec 2007 16:12:25 +0100
-User-Agent: KMail/1.9.4
-Cc: linux-kernel@vger.kernel.org
-References: <475F1DC6.5090403@keyaccess.nl> <200712120959.59952.juergen127@kreuzholzen.de> <475FF094.8000709@keyaccess.nl>
-In-Reply-To: <475FF094.8000709@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Wed, 12 Dec 2007 10:12:58 -0500
+Date: Wed, 12 Dec 2007 07:12:54 -0800 (PST)
+Message-Id: <20071212.071254.180816076.davem@davemloft.net>
+To: jesse.brandeburg@intel.com
+Cc: joonwpark81@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
+       auke-jan.h.kok@intel.com
+Subject: Re: [PATCH] [NET]: Fix Ooops of napi net_rx_action.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F5203FBAF94@orsmsx418.amr.corp.intel.com>
+References: <36D9DB17C6DE9E40B059440DB8D95F5203F82FC3@orsmsx418.amr.corp.intel.com>
+	<b25c3fa70712111612o16a62b49g6709aa728f31e27a@mail.gmail.com>
+	<36D9DB17C6DE9E40B059440DB8D95F5203FBAF94@orsmsx418.amr.corp.intel.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712121612.25974.juergen127@kreuzholzen.de>
-X-CTCH-RefID: str=0001.0A0B0203.475FF963.026D,ss=1,fgs=0
-X-cff-SpamScore: 0(/)
-X-cff-SpamReport: ----- ----- Message is unknown to the spam scanner.
-X-cff-LastScanner: pcre
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 December 2007 15:30, Rene Herman wrote:
-> On 12-12-07 09:59, Juergen Beisert wrote:
-> > $ for i in `seq 5`; do ./port80; sleep 1; done
-> > cycles: out 5260, in 2372
-> > cycles: out 5260, in 2384
-> > cycles: out 5260, in 2323
-> > cycles: out 5270, in 2382
-> > cycles: out 5259, in 2323
-> >
-> > $ cat /proc/cpuinfo
-> > processor       : 0
-> > vendor_id       : GenuineIntel
-> > cpu family      : 6
-> > model           : 7
-> > model name      : Pentium III (Katmai)
-> > stepping        : 3
-> > cpu MHz         : 501.208
->
-> This one's really wrong. This would be 10 microsecs. I suppose the
-> machine/bus was heavily loaded or something?
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Date: Tue, 11 Dec 2007 16:38:37 -0800
 
-Ups, your are right:
+> @@ -3933,6 +3933,10 @@ quit_polling:
+>                         e1000_set_itr(adapter);
+>                 netif_rx_complete(poll_dev, napi);
+>                 e1000_irq_enable(adapter);
+> +               if (work_done == weight)
+> +                       return work_done - 1;
+> +               else
+> +                       return work_done;
 
-$ cat /proc/acpi/processor/CPU0/throttling
-state count:             2
-active state:            T1
-states:
-    T0:                  00%
-   *T1:                  50%
+Don't do this.
 
-With T0 it get:
+If you processed "weight" worth of packets, return that
+exact value and do not netif_rx_complete() and do not
+re-enable interrupts.
 
-$ for i in `seq 5`; do ./port80; sleep 1; done
-cycles: out 684, in 280
-cycles: out 684, in 280
-cycles: out 684, in 280
-cycles: out 684, in 280
-cycles: out 684, in 280
-
-Juergen
+That is the only correct fix.
