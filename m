@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbXLLCi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbXLLCkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756729AbXLLCi4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 21:38:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbXLLCis
+	id S1756845AbXLLCkm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 21:40:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbXLLCkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 21:38:48 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:34783 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751389AbXLLCir (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 21:38:47 -0500
-Date: Wed, 12 Dec 2007 08:08:36 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: gregkh@suse.de, lkml <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: [PATCH] Add Documentation for FAIR_USER_SCHED sysfs files
-Message-ID: <20071212023836.GB1486@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 11 Dec 2007 21:40:35 -0500
+Received: from pat.uio.no ([129.240.10.15]:42310 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751307AbXLLCke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 21:40:34 -0500
+Subject: Re: [PATCH 1/1] fix 2.6.24-rc1 nfs_file_mmap change for NOMMU
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: "Berkhan, Enrik (GE Infra, Oil & Gas)" <enrik.berkhan@ge.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <050A770C1DB41144817F02E395E493104CE014@FLRMLVEM02.e2k.ad.ge.com>
+References: <050A770C1DB41144817F02E395E493104CE014@FLRMLVEM02.e2k.ad.ge.com>
+Content-Type: text/plain
+Date: Tue, 11 Dec 2007 21:40:30 -0500
+Message-Id: <1197427230.27750.3.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=5.0, autolearn=disabled, AWL=-0.250)
+X-UiO-Scanned: 4ECA167DE81C82C281EA811CC47711568FB0DBEA
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 91 total 5695591 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This patch adds documentation about /sys/kernel/uids/<uid>/cpu_share
-to Documentation/ABI.
+On Sun, 2007-12-09 at 19:52 +0100, Berkhan, Enrik (GE Infra, Oil & Gas)
+wrote:
+> - generic_file_mmap returns -ENOSYS for NOMMU systems; replicate this
+>   behaviour
+> 
+> Signed-off-by: Enrik Berkhan <Enrik.Berkhan@ge.com>
+> ---
+>  fs/nfs/file.c |    4 ++++
+>  1 files changed, 4 insertions(+)
+> 
+> Index: fs/nfs/file.c
+> ===================================================================
+> --- fs/nfs/file.c.orig	2007-12-05 09:48:59.000000000 +0100
+> +++ fs/nfs/file.c	2007-12-05 09:49:56.000000000 +0100
+> @@ -283,7 +283,11 @@ nfs_file_mmap(struct file * file, struct
+>  	if (!status) {
+>  		vma->vm_ops = &nfs_file_vm_ops;
+>  		vma->vm_flags |= VM_CAN_NONLINEAR;
+> +#ifdef CONFIG_MMU
+>  		file_accessed(file);
+> +#else
+> +		return -ENOSYS;
+> +#endif
+>  	}
+>  	return status;
+>  }
 
-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Why do that after going through the process of revalidating the inode
+etc.? Just replace nfs_file_mmap() with a function returning ENOSYS in
+the case of CONFIG_MMU.
 
----
- Documentation/ABI/testing/sysfs-kernel-uids |   10 ++++++++++
- 1 files changed, 10 insertions(+)
+Better still, in the case of CONFIG_MMU, instead of having an
+nfs_file_mmap(), just replace the .mmap field in nfs_file_operations
+with a call to generic_file_mmap().
 
-Index: current/Documentation/ABI/testing/sysfs-kernel-uids
-===================================================================
---- /dev/null
-+++ current/Documentation/ABI/testing/sysfs-kernel-uids
-@@ -0,0 +1,10 @@
-+What:		/sys/kernel/uids/<uid>/cpu_shares
-+Date:		December 2007
-+Contact:	Dhaval Giani <dhaval@linux.vnet.ibm.com>
-+		Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-+Description:
-+		The /sys/kernel/uids/<uid>/cpu_shares tunable is used
-+		to set the cpu bandwidth a user is allowed. This is a
-+		propotional value. What that means is that if there
-+		are two users logged in, each with shares 1024, they
-+		will get equal CPU bandwidth.
--- 
-regards,
-Dhaval
+Trond
+
