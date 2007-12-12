@@ -1,249 +1,1154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759159AbXLLQ4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbXLLQ7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759159AbXLLQ4t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 11:56:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbXLLQ4k
+	id S1759519AbXLLQ7V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 11:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbXLLQ7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 11:56:40 -0500
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:2355 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbXLLQ4i (ORCPT
+	Wed, 12 Dec 2007 11:59:13 -0500
+Received: from an-out-0708.google.com ([209.85.132.251]:37243 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756979AbXLLQ7L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 11:56:38 -0500
-FCC: imap://tklein@imap.linux.ibm.com/Sent
-X-Identity-Key: id6
-Message-Id: <200712121753.43543.osstklei@de.ibm.com>
-Date: Wed, 12 Dec 2007 17:53:43 +0100
-From: Thomas Klein <osstklei@de.ibm.com>
-X-Mozilla-Draft-Info: internal/draft; vcard=0; receipt=0; uuencode=0
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 12 Dec 2007 11:59:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=WV6+15UnMsDb8VygLRrjkdOtiCb0fDEoWR/qju9LE4rJkXt/sXt7InTCGcnhjUSI6pYwO51BINwAIS0S1u6dxlA7P/UTcrQ9wvWEzOKuk92Qu4k5FjOuxcvH9z2S1d8JW+H+FRIdg8dHqMxG3xc88EFKIJNeb9u8YDWFPC+IP9U=
+Date: Wed, 12 Dec 2007 19:59:03 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFT] Port 0x80 I/O speed
+Message-ID: <20071212165903.GA7727@cvg.cvg>
+References: <475F1DC6.5090403@keyaccess.nl>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Michael Ellermann <michael@ellerman.id.au>,
-       Michael Neuling <mikey@neuling.org>
-Subject: [RFC] ehea: kdump support using new shutdown hook
-X-Length: 978
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <475F1DC6.5090403@keyaccess.nl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds kdump support using the new PPC crash shutdown hook to the
-ehea driver. The driver now keeps a list of firmware handles which have to
-be freed in case of a crash. The crash handler does the minimum required: it
-frees the firmware resource handles plus broadcast/multicast registrations.
+[Rene Herman - Wed, Dec 12, 2007 at 12:31:18AM +0100]
+> Good day.
+>
+> Would some people on x86 (both 32 and 64) be kind enough to compile and run 
+> the attached program? This is about testing how long I/O port access to 
+> port 0x80 takes. It measures in CPU cycles so CPU speed is crucial in 
+> reporting.
+>
+> Posted a previous incarnation of this before, buried in the outb 0x80 
+> thread which had a serialising problem. This one should as far as I can see 
+> measure the right thing though. Please yell if you disagree...
+>
+> For me, on a Duron 1300 (AMD756 chipset) I have a constant:
+>
+> rene@7ixe4:~/src/port80$ su -c ./port80
+> cycles: out 2400, in 2400
+>
+> and on a PII 400 (Intel 440BX chipset) a constant:
+>
+> rene@6bap:~/src/port80$ su -c ./port80
+> cycles: out 553, in 251
+>
+> Results are (mostly) independent of compiler optimisation, but testing with 
+> an -O2 compile should be most useful. Thanks!
+>
+> Rene.
 
-Please comment.
+| /* gcc -W -Wall -O2 -o port80 port80.c */
+| 
+| #include <stdlib.h>
+| #include <stdio.h>
+| 
+| #include <sys/io.h>
+| 
+| #define LOOPS 10000
+| 
+| inline unsigned long long rdtsc(void)
+| {
+| 	unsigned long long tsc;
+| 
+| 	asm volatile ("rdtsc": "=A" (tsc));
+| 
+| 	return tsc;
+| }
+| 
+| inline void serialize(void)
+| {
+| 	asm volatile ("cpuid": : : "eax", "ebx", "ecx", "edx");
+| }
+| 
+| int main(void)
+| {
+| 	unsigned long long start;
+| 	unsigned long long overhead; 
+| 	unsigned long long output;
+| 	unsigned long long input;
+| 	int i;
+| 
+| 	if (iopl(3) < 0) {
+| 		perror("iopl");
+| 		return EXIT_FAILURE;
+| 	}
+| 
+| 	asm volatile ("cli");
+| 	start = rdtsc();
+| 	for (i = 0; i < LOOPS; i++) {
+| 	 	serialize();	
+| 		serialize();
+| 	}
+| 	overhead = rdtsc() - start;
+| 
+| 	start = rdtsc() + overhead;
+| 	for (i = 0; i < LOOPS; i++) {
+| 		serialize();
+| 		asm volatile ("outb %al, $0x80");
+| 		serialize();
+| 	}
+| 	output = rdtsc() - start;
+| 
+| 	start = rdtsc() + overhead;
+| 	for (i = 0; i < LOOPS; i++) {
+| 		serialize();
+| 		asm volatile ("inb $0x80, %%al": : : "al");
+| 		serialize();
+| 	}
+| 	input = rdtsc() - start;
+| 	asm volatile ("sti");
+| 
+| 	output /= LOOPS;
+| 	input  /= LOOPS;
+| 	printf("cycles: out %llu, in %llu\n", output, input);
+| 
+| 	return EXIT_SUCCESS;
+| }
 
-Shutdown hook patches:
-  http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048058.html
-  http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048059.html
-
-
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+Here we go (for 1000 times started) ;)
 
 ---
-diff -Nurp -X dontdiff linux-2.6.24-rc5/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-2.6.24-rc5/drivers/net/ehea/ehea.h	2007-12-11 04:48:43.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea.h	2007-12-12 17:30:53.000000000 +0100
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0083"
-+#define DRV_VERSION	"EHEA_0084"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-@@ -386,6 +386,7 @@ struct ehea_port_res {
- 
- 
- #define EHEA_MAX_PORTS 16
-+#define EHEA_MAX_RES_HANDLES (100 * EHEA_MAX_PORTS + 10)
- struct ehea_adapter {
- 	u64 handle;
- 	struct of_device *ofdev;
-@@ -397,6 +398,7 @@ struct ehea_adapter {
- 	u64 max_mc_mac;            /* max number of multicast mac addresses */
- 	int active_ports;
- 	struct list_head list;
-+	u64 res_handles[EHEA_MAX_RES_HANDLES];
- };
- 
- 
-diff -Nurp -X dontdiff linux-2.6.24-rc5/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.24-rc5/drivers/net/ehea/ehea_main.c	2007-12-11 04:48:43.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-12-12 17:30:53.000000000 +0100
-@@ -35,6 +35,7 @@
- #include <linux/if_ether.h>
- #include <linux/notifier.h>
- #include <linux/reboot.h>
-+#include <asm-powerpc/kexec.h>
- 
- #include <net/ip.h>
- 
-@@ -2256,6 +2257,33 @@ static int ehea_clean_all_portres(struct
- 	return ret;
- }
- 
-+static void ehea_update_adapter_handles(struct ehea_adapter *adapter)
-+{
-+	int i, k;
-+	int j = 0;
-+
-+	memset(adapter->res_handles, sizeof(adapter->res_handles), 0);
-+
-+	for (k = 0; k < EHEA_MAX_PORTS; k++) {
-+		struct ehea_port *port = adapter->port[k];
-+
-+		if (!port || (port->state != EHEA_PORT_UP))
-+			continue;
-+
-+		for(i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++) {
-+			struct ehea_port_res *pr = &port->port_res[i];
-+
-+			adapter->res_handles[j++] = pr->qp->fw_handle;
-+			adapter->res_handles[j++] = pr->send_cq->fw_handle;
-+			adapter->res_handles[j++] = pr->recv_cq->fw_handle;
-+			adapter->res_handles[j++] = pr->eq->fw_handle;
-+			adapter->res_handles[j++] = pr->send_mr.handle;
-+			adapter->res_handles[j++] = pr->recv_mr.handle;
-+		}
-+		adapter->res_handles[j++] = port->qp_eq->fw_handle;
-+	}
-+}
-+
- static void ehea_remove_adapter_mr(struct ehea_adapter *adapter)
- {
- 	if (adapter->active_ports)
-@@ -2318,6 +2346,7 @@ static int ehea_up(struct net_device *de
- 
- 	ret = 0;
- 	port->state = EHEA_PORT_UP;
-+	ehea_update_adapter_handles(port->adapter);
- 	goto out;
- 
- out_free_irqs:
-@@ -2387,6 +2416,8 @@ static int ehea_down(struct net_device *
- 		ehea_info("Failed freeing resources for %s. ret=%i",
- 			  dev->name, ret);
- 
-+	ehea_update_adapter_handles(port->adapter);
-+
- 	return ret;
- }
- 
-@@ -3302,6 +3333,71 @@ static int __devexit ehea_remove(struct 
- 	return 0;
- }
- 
-+void ehea_crash_deregister(void)
-+{
-+	struct ehea_adapter *adapter;
-+	int i;
-+	u64 hret;
-+	u8 reg_type;
-+
-+	list_for_each_entry(adapter, &adapter_list, list) {
-+		for (i = 0; i < EHEA_MAX_PORTS; i++) {
-+			struct ehea_port *port = adapter->port[i];
-+			if (port->state == EHEA_PORT_UP) {
-+				struct ehea_mc_list *mc_entry = port->mc_list;
-+				struct list_head *pos;
-+				struct list_head *temp;
-+
-+				/* Undo multicast registrations */
-+				list_for_each_safe(pos, temp,
-+						   &(port->mc_list->list)) {
-+					mc_entry = list_entry(pos,
-+							    struct ehea_mc_list,
-+							    list);
-+					ehea_multicast_reg_helper(port,
-+							      mc_entry->macaddr,
-+							      H_DEREG_BCMC);
-+				}
-+
-+				/* Undo broad registration */
-+				reg_type = EHEA_BCMC_BROADCAST |
-+					   EHEA_BCMC_UNTAGGED;
-+				ehea_h_reg_dereg_bcmc(port->adapter->handle,
-+						      port->logical_port_id,
-+						      reg_type, port->mac_addr,
-+						      0, H_DEREG_BCMC);
-+
-+				reg_type = EHEA_BCMC_BROADCAST |
-+					   EHEA_BCMC_VLANID_ALL;
-+				ehea_h_reg_dereg_bcmc(port->adapter->handle,
-+						      port->logical_port_id,
-+						      reg_type, port->mac_addr,
-+						      0, H_DEREG_BCMC);
-+			}
-+		}
-+		for (i = 0; i < EHEA_MAX_RES_HANDLES; i++) {
-+			u64 handle = adapter->res_handles[i];
-+			if (handle) {
-+				hret = ehea_h_free_resource(adapter->handle,
-+							    handle,
-+							    FORCE_FREE);
-+			}
-+		}
-+
-+		if (adapter->neq) {
-+			hret = ehea_h_free_resource(adapter->handle,
-+						    adapter->neq->fw_handle,
-+						    FORCE_FREE);
-+		}
-+
-+		if (adapter->mr.handle) {
-+			hret = ehea_h_free_resource(adapter->handle,
-+						    adapter->mr.handle,
-+						    FORCE_FREE);
-+		}
-+	}
-+}
-+
- static int ehea_reboot_notifier(struct notifier_block *nb,
- 				unsigned long action, void *unused)
- {
-@@ -3373,6 +3469,9 @@ int __init ehea_module_init(void)
- 		goto out;
- 
- 	register_reboot_notifier(&ehea_reboot_nb);
-+	ret = crash_shutdown_register(&ehea_crash_deregister);
-+	if (ret)
-+		ehea_info("failed registering crash handler");
- 
- 	ret = ibmebus_register_driver(&ehea_driver);
- 	if (ret) {
-@@ -3386,6 +3485,7 @@ int __init ehea_module_init(void)
- 		ehea_error("failed to register capabilities attribute, ret=%d",
- 			   ret);
- 		unregister_reboot_notifier(&ehea_reboot_nb);
-+		crash_shutdown_unregister(&ehea_crash_deregister);
- 		ibmebus_unregister_driver(&ehea_driver);
- 		goto out;
- 	}
-@@ -3396,10 +3496,15 @@ out:
- 
- static void __exit ehea_module_exit(void)
- {
-+	int ret;
-+
- 	flush_scheduled_work();
- 	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
- 	ibmebus_unregister_driver(&ehea_driver);
- 	unregister_reboot_notifier(&ehea_reboot_nb);
-+	ret = crash_shutdown_unregister(&ehea_crash_deregister);
-+	if (ret)
-+		ehea_info("failed unregistering crash handler");
- 	ehea_destroy_busmap();
- }
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1427, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1449
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1427, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1449
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1449
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1449
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1429, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+cycles: out 1428, in 1450
+---
+
+processor	: 0
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 36
+model name	: AMD Turion(tm) 64 Mobile Technology ML-30
+stepping	: 2
+cpu MHz		: 800.000
+cache size	: 1024 KB
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 1
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext fxsr_opt lm 3dnowext 3dnow pni lahf_lm ts fid vid ttp tm stc
+bogomips	: 1601.04
+clflush size	: 64
+
+		Cyrill
+
