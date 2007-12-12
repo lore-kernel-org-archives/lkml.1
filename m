@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbXLLQV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbXLLQWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758093AbXLLQV5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 11:21:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbXLLQVr
+	id S1758792AbXLLQWR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 11:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbXLLQVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 11:21:47 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:38407 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752401AbXLLQVp (ORCPT
+	Wed, 12 Dec 2007 11:21:49 -0500
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:36218 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751835AbXLLQVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 12 Dec 2007 11:21:45 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: bbpetkov@yahoo.de
-Subject: Re: 2.6.24-rc4-mm1: acpi reboots machine... solved
-Date: Wed, 12 Dec 2007 09:21:41 -0700
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, len.brown@intel.com,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20071209075001.GA4686@gollum.tnic> <200712111709.00313.bjorn.helgaas@hp.com> <20071212101123.GA5619@gollum.tnic>
-In-Reply-To: <20071212101123.GA5619@gollum.tnic>
+Message-ID: <47600A6E.8000202@nortel.com>
+Date: Wed, 12 Dec 2007 10:21:02 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: netdev@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: Re: "ip neigh show" not showing arp cache entries?
+References: <475D7901.1040900@nortel.com> <475D7D70.5030502@nortel.com>
+In-Reply-To: <475D7D70.5030502@nortel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712120921.42430.bjorn.helgaas@hp.com>
+X-OriginalArrivalTime: 12 Dec 2007 16:21:06.0088 (UTC) FILETIME=[FF1FF280:01C83CDA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 December 2007 03:11:23 am Borislav Petkov wrote:
-> On Tue, Dec 11, 2007 at 05:08:59PM -0700, Bjorn Helgaas wrote:
-> > On Tuesday 11 December 2007 01:52:55 pm Borislav Petkov wrote:
-> > > From what i can roughly tell so far it seems like an resource conflict between acpi and
-> > > the pnp requested regions in your patch which result in the acpi_thermal code
-> > > to read the wrong (0xff) temperature value and halt the machine, but i might be
-> > > wrong on the details since acpi is such a big code chunk to swallow.
-> > 
-> > I don't see any obvious conflict from the log you posted.  For the sake
-> > of comparison, can you post the corresponding dmesg log after you removed
-> > the patch?
-> 
-> The only difference i see is that ACPI finds EC in DSDT in the working kernel
-> and in the broken case something silently fails. Please find attached the 2 bootlogs
-> and a disassembled DSDT.
+I retested it on an x86 machine and am seeing similar problems.
 
-Thanks very much!
+First, "arp" gives the arp table as expected:
 
-"ACPI: EC: Look up EC in DSDT" appears in the working log, but not
-in the broken one.  But I think we *do* find the EC in both cases,
-because we see "ACPI: EC: non-query interrupt received" even before
-acpi_ec_add() (which prints the "ACPI: EC: GPE = 0x1c, ...".  Maybe
-the logs were collected with different log levels?
+root@typhoon-base-unit0:/tftpboot/cnp/0-0-5-0/0-0-5-0> arp -n
+Address                  HWtype  HWaddress           Flags Mask 
+    Iface
+172.24.0.9               ether   00:03:CC:51:06:5E   C 
+    bond0
+10.41.18.101             ether   00:0E:0C:5E:95:BD   C 
+    eth6
+172.24.137.0             ether   00:C0:8B:08:E4:88   C 
+    bond0
+172.24.136.0             ether   00:C0:8B:07:B3:7E   C 
+    bond0
+10.41.18.1               ether   00:00:5E:00:01:01   C 
+    eth6
+172.24.0.5               ether   00:01:AF:15:E0:6A   C 
+    bond0
+172.24.0.13              ether   00:0E:0C:85:FD:D2   C 
+    bond0
+172.24.0.3               ether   00:01:AF:14:C8:CC   C 
+    bond0
+172.24.132.1             ether   00:01:AF:14:E9:88   C 
+    bond0
+172.24.0.7               ether   00:07:E9:41:4B:B4   C 
+    bond0
+192.168.24.81            ether   00:01:AF:14:E9:8A   C 
+    bond2
 
-I think Alexey is on the right track with the PCI resource allocation
-failure.  On your working kernel, can you collect this:
+"ip neigh show" gives nothing, but if I search for specific addresses 
+from the arp table listing they show up:
 
-  lspci -vv > lspci
-  cat /proc/ioports > ioports
-  cat /proc/iomem > iomem
-  grep . /sys/devices/pnp*/*/resources > pnp
-  tar -jcf resources.tar.bz2 lspci ioports iomem pnp
+root@typhoon-base-unit0:/tftpboot/cnp/0-0-5-0/0-0-5-0> ip neigh show
+root@typhoon-base-unit0:/tftpboot/cnp/0-0-5-0/0-0-5-0> ip neigh show 
+172.24.0.9
+172.24.0.9 dev bond0 lladdr 00:03:cc:51:06:5e DELAY
+root@typhoon-base-unit0:/tftpboot/cnp/0-0-5-0/0-0-5-0> ip neigh show 
+10.41.18.101
+10.41.18.101 dev eth6 lladdr 00:0e:0c:5e:95:bd REACHABLE
+root@typhoon-base-unit0:/tftpboot/cnp/0-0-5-0/0-0-5-0> ip neigh show 
+172.24.137.0
+172.24.137.0 dev bond0 lladdr 00:c0:8b:08:e4:88 REACHABLE
 
-Bjorn
+
+Is this expected behaviour?
+
+Thanks,
+
+Chris
