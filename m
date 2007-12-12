@@ -1,116 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbXLLBH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbXLLBJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756880AbXLLBH2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 20:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbXLLBHV
+	id S1757178AbXLLBJS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 20:09:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXLLBJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 20:07:21 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:58602 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751057AbXLLBHT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 20:07:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H6P77SE48W91lA53dzglAEHkv+f0AsyVoTEQG/0Kwol/i9ZlPRItbzpIlfW3ZjoLLUZPltTTyx7rK8mvCfcfHdg7Dr7oIWCLJln9iMlWCS3krtVwZ7Lhfk+xhCn2ncNQyncFoWmmwuLhEDoAfLXteZGYNY5PoA9IH4zrvNh2RBk=
-Message-ID: <86802c440712111707s2a7d0a1dy684b093e64c9f398@mail.gmail.com>
-Date: Tue, 11 Dec 2007 17:07:18 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Neil Horman" <nhorman@tuxdriver.com>
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Cc: "Ben Woodard" <woodard@redhat.com>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071212005202.GA19016@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Dec 2007 20:09:09 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42743 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751057AbXLLBJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 20:09:07 -0500
+Date: Tue, 11 Dec 2007 17:08:56 -0800
+From: Gary Hade <garyhade@us.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Gary Hade <garyhade@us.ibm.com>, Jan Beulich <jbeulich@novell.com>,
+       linux-kernel@vger.kernel.org, lcm@us.ibm.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, j-nomura@ce.jp.nec.com
+Subject: Re: Avoid creating P2P prefetch window for expansion ROMs
+Message-ID: <20071212010856.GB6755@us.ibm.com>
+References: <4742CB2C.76E4.0078.0@novell.com> <20071120174945.GA6024@us.ibm.com> <47440D1F.76E4.0078.0@novell.com> <20071126215953.GA23277@us.ibm.com> <20071126221545.GA15268@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071211034349.GA3635@localhost.localdomain>
-	 <20071211143910.GA10999@hmsreliant.think-freely.org>
-	 <m1ve75z1v3.fsf@ebiederm.dsl.xmission.com>
-	 <20071211182254.GB10999@hmsreliant.think-freely.org>
-	 <m1ejdtysqd.fsf@ebiederm.dsl.xmission.com>
-	 <20071211192434.GD10999@hmsreliant.think-freely.org>
-	 <86802c440712111151t29acd38kf9fac8e41743f3e4@mail.gmail.com>
-	 <20071211205955.GF10999@hmsreliant.think-freely.org>
-	 <475F2860.2080203@redhat.com>
-	 <20071212005202.GA19016@hmsreliant.think-freely.org>
+In-Reply-To: <20071126221545.GA15268@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 11, 2007 4:52 PM, Neil Horman <nhorman@tuxdriver.com> wrote:
-> On Tue, Dec 11, 2007 at 04:16:32PM -0800, Ben Woodard wrote:
-> > We may need to go back and do some additional work on this. It doesn't
-> > seem to be quite as cut and dried as we initially thought.
-> >
-> > This quirk doesn't appear to work on virtually the same motherboard with
-> > the barcelona processors in it. It also may be sensitive to the firmware
-> > version.  More extensive testing on a larger number of pre-production is
-> > not showing it to be as effective as it appeared to be initially on the
-> > testbed.
-> >
-> > I'm doing some retesting to figure out what exact situations and
-> > collection of patches were able to make it work before.
-> >
-> Ben, please lets be clear about this.  You say this patch doesn't help on a new
-> system.  Even thought its almost the exact same system, its not the same system.
-> Does this patch work consistently on the system you initially reported the
-> problem on?  I've done enough work on this at this point that I'm invested in
-> not abandoning this fix.  If this solves the problem on dual core system, but
-> not quad core, I'd much rather move forward with this fix and address your quad
-> core problem as a separate issue.
->
-> Neil
->
->
-> > -ben
-> >
-> >
-> >
-> > Neil Horman wrote:
-> > > Recently a kdump bug was discovered in which a system would hang inside
-> > > calibrate_delay during the booting of the kdump kernel.  This was caused by the
-> > > fact that the jiffies counter was not being incremented during timer
-> > > calibration.  The root cause of this problem was found to be a bios
-> > > misconfiguration of the hypertransport bus.  On system affected by this hang,
-> > > the bios had assigned APIC ids which used extended apic bits (more than the
-> > > nominal 4 bit ids's), but failed to configure bit 17 of the hypertransport
-> > > transaction config register, which indicated that the mask for the destination
-> > > field of interrupt packets accross the ht bus (see section 3.3.9 of
-> > > http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/26094.PDF).
-> > > If a crash occurs on a cpu with an APIC id that extends beyond 4 bits, it will
-> > > not recieve interrupts during the kdump kernel boot, and this hang will be the
-> > > result.  The fix is to add this patch, whcih add an early pci quirk check, to
-> > > forcibly enable this bit in the httcfg register.  This enables all cpus on a
-> > > system to receive interrupts, and allows kdump kernel bootup to procede
-> > > normally.
-> > >
-> > > Regards
-> > > Neil
-> > >
-> > >
-> > > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> > >
-...
-> > >  static struct chipset early_qrk[] __initdata = {
-> > > -   { PCI_VENDOR_ID_NVIDIA, nvidia_bugs },
-> > > -   { PCI_VENDOR_ID_VIA, via_bugs },
-> > > -   { PCI_VENDOR_ID_ATI, ati_bugs },
-> > > +   { PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, nvidia_bugs },
-> > > +   { PCI_VENDOR_ID_VIA, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, via_bugs },
-> > > +   { PCI_VENDOR_ID_ATI, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, ati_bugs },
-> > > +   { PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB, PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, fix_hypertransport_config },
+On Mon, Nov 26, 2007 at 02:15:45PM -0800, Greg KH wrote:
+> On Mon, Nov 26, 2007 at 01:59:54PM -0800, Gary Hade wrote:
+> > Greg, 
+> > Without a closer look at the code and the information I
+> > requested above I am not 100% certain that my expansion ROM
+> > allocation fix is incomplete but it seems pretty likely that
+> > it is.  If you feel that the possible regression that Jan
+> > reported is more important than the issue I was trying to solve
+> > feel free to remove the change until I can come up with
+> > something better.
+> 
+> If you want me to revert the changes in Linus's tree right now, that's
+> fine, I will, just send me a patch to do so.
+> 
+> But if you think you can work to solve this problem quickly, then I'm
+> more than willing to keep the changes in the tree.
 
-==>
+Greg/Jan, This took me a little longer than I expected.
+Thanks for your patience.
 
-+   { PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB,
-PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, fix_hypertransport_config },
-+   { PCI_VENDOR_ID_AMD, 0x1200 , PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID,
-fix_hypertransport_config },
+Because of the things that I learned from Jun'ichi Nomura
+during our discussions in relation to his proposed 
+"pci: Omit error message for benign allocation failure" change
+( re: http://marc.info/?l=linux-kernel&m=119679719828284&w=2 )
+and the below additional information that was provided by the
+BIOS engineer who I have also been talking to about the problem,
+I have decided to propose:
+  1. Elimination of the default expansion ROM memory allocation
+     attempts with old behavior accessible via pci=rom boot
+     option.
+  2. Revert my "Avoid creating P2P prefetch window for
+     expansion ROMs" change to eliminate the type of
+     regressions that Jan spotted for those that might
+     want to force the old behavior with pci=rom.
+Patches and more details for both of these to follow.
 
-I still think good way is that you ask Supermicro to update their BIOS
-to use newer code from AMD.
+BIOS engineer said:
+"Our BIOS is really not reserving any resources for the option roms.
+BIOS used the non-prefetchable window to shadow the option rom.
+So, there is room there for one option rom to be mapped at a time.
+If multiple option roms are on the same bus, there may be room for
+only one of them, as BIOS maps only one at a time to shadow it.
 
-YH
+BIOS is grouping option rom bar with the non-prefetchable window,
+because option rom bar and non-prefetchable window are 32-bit,
+while prefetchable window could be 64-bit. Also, the spec doesn't
+explicitly specify option rom bar as prefetchable. In fact, our BIOS
+ensures DWORD aligned read during option rom scan & shadow,
+as some devices had problem dealing with some alignment/size."
+
+Thanks,
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
+
