@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758739AbXLLARm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbXLLAYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758739AbXLLARm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 19:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbXLLARd
+	id S1756037AbXLLAYY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 19:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbXLLAYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 19:17:33 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:55668 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752125AbXLLARc (ORCPT
+	Tue, 11 Dec 2007 19:24:15 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51234 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751901AbXLLAYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 19:17:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=YzSVMEM5ktqQSrlLeCJnKipu47dmK+w5KuLIArq+csfEfcy2AjfaR6CXyZcKd1AUlDdECir2Sdc06xfKh5xbe0evox/JOnT3/8/C3KKf1n12GYAJK4ziBvoZcPaABKa2hyo2sjrahKUx0mGsIQuoqggFL6bAsmJvqjl3w3aOLyY=
-Message-ID: <475F2846.1010402@keyaccess.nl>
-Date: Wed, 12 Dec 2007 01:16:06 +0100
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: =?ISO-8859-15?Q?Alejandro_Riveira_Fern=E1ndez?= 
-	<ariveira@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
-       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
-       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
-Subject: Re: [RFT] Port 0x80 I/O speed
-References: <475F1DC6.5090403@keyaccess.nl>	<20071212004316.079e3a05@Varda>	<475F227D.7050203@keyaccess.nl> <20071212010928.3c763ccd@Varda>
-In-Reply-To: <20071212010928.3c763ccd@Varda>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
-From: Rene Herman <rene.herman@gmail.com>
+	Tue, 11 Dec 2007 19:24:14 -0500
+Date: Tue, 11 Dec 2007 16:24:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: recalljeffchang@gmail.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH acs_ame scsi driver 000 of 1] Introduction
+Message-Id: <20071211162408.54544ec3.akpm@linux-foundation.org>
+In-Reply-To: <20071210165548.GC26334@parisc-linux.org>
+References: <87d84fba0712092003h3eb90344o89f9b0bc9c65fdb7@mail.gmail.com>
+	<20071210165548.GC26334@parisc-linux.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12-12-07 01:09, Alejandro Riveira Fernández wrote:
+On Mon, 10 Dec 2007 09:55:48 -0700
+Matthew Wilcox <matthew@wil.cx> wrote:
 
->>>  On my AMD 3800 X2 (2000MHz) ULi M1697 2.6.24-rc5 i get:
->>>
->>>  cycles: out 1844674407370808, in 1844674407369087
->>>  
->>> It is not constant but variations are not significant afaics
->> Eh, oh, I guess you need to compile as a 32-bit binary...
->  
->  I tried without -O2 as Nigel Cunningham...
+> On Mon, Dec 10, 2007 at 12:03:18PM +0800, chang jeff wrote:
+> > Dear Sir,
+> > 
+> > Following is patche for scsi driver in 2.6.23.9 what should get into
+> > 2.6.23.9-final if possible.
+> > 
+> > First refines a newly created scsi driver
+> > (/[kernel-version]/driver/scsi/acs_ame).
+> > 
+> > Thanks,
+> > JeffChang.
 > 
->  cycles: out 1562, in 865
->  cycles: out 1562, in 866
->  cycles: out 1555, in 858
->  cycles: out 1562, in 866
->  
->  With -m32 -O2
->  cycles: out 1566, in 876
->  cycles: out 1555, in 865
->  cycles: out 1594, in 931
->  cycles: out 1559, in 874
+> Hi Jeff,
+> 
+> You don't seem to have attached the driver ... maybe you sent a second
+> email that hasn't arrived yet?  I see Andrew sent a mail (possibly to
+> one of your colleagues?) that explains that he doesn't personally take
+> scsi driver patches: http://lkml.org/lkml/2007/8/30/7
+> 
 
-Great, thanks much for reporting. Sort of interesting in itself that without 
--O2 you do still get correct results on 64-bit but for some other time.
+Well, I'll pass an eye over them and will queue them up for a bit or
+review-and-test if it looks like they're being neglected.
 
-You're the first one to go significantly below 1 us it seems.
+However I can't queue this one because a) it's wordwrapped and b) there are
+patches in -mm which remove scsi_cmnd.request_buffer (and probably other
+things).
 
-Rene.
+But that doesn't prevent scsi developers from performing code review.
