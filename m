@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbXLLMup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbXLLMyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbXLLMup (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 07:50:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbXLLMui
+	id S1753364AbXLLMyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 07:54:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbXLLMxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 07:50:38 -0500
-Received: from saeurebad.de ([85.214.36.134]:33652 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750772AbXLLMuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 07:50:37 -0500
-X-Greylist: delayed 1314 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Dec 2007 07:50:37 EST
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: Oleksandr Natalenko <pfactum@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Lnux 2.6.24-rc5
-References: <alpine.LFD.0.9999.0712102130370.28293@woody.linux-foundation.org>
-	<a8e1da0712102242l59d65ea1wdb8268b8f5f58e42@mail.gmail.com>
-	<alpine.LFD.0.9999.0712110856490.25032@woody.linux-foundation.org>
-	<loom.20071211T232219-634@post.gmane.org>
-Date: Wed, 12 Dec 2007 13:27:51 +0100
-In-Reply-To: <loom.20071211T232219-634@post.gmane.org> (Oleksandr Natalenko's
-	message of "Tue, 11 Dec 2007 23:23:50 +0000 (UTC)")
-Message-ID: <x7zlwgayig.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 12 Dec 2007 07:53:50 -0500
+Received: from adsl-76-243-235-52.dsl.chcgil.sbcglobal.net ([76.243.235.52]:58883
+	"EHLO accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750779AbXLLMxt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 07:53:49 -0500
+Subject: Re: [PATCH 01/30] blk_end_request: add new request completion
+	interface (take 4)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
+In-Reply-To: <20071211.174030.10291764.k-ueda@ct.jp.nec.com>
+References: <20071211.174030.10291764.k-ueda@ct.jp.nec.com>
+Content-Type: text/plain
+Date: Wed, 12 Dec 2007 07:53:36 -0500
+Message-Id: <1197464017.4203.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Oleksandr Natalenko <pfactum@gmail.com> writes:
+On Tue, 2007-12-11 at 17:40 -0500, Kiyoshi Ueda wrote:
+> This patch adds 2 new interfaces for request completion:
+>   o blk_end_request()   : called without queue lock
+>   o __blk_end_request() : called with queue lock held
+> 
+> blk_end_request takes 'error' as an argument instead of 'uptodate',
+> which current end_that_request_* take.
+> The meanings of values are below and the value is used when bio is
+> completed.
+>     0 : success
+>   < 0 : error
+> 
+> Some device drivers call some generic functions below between
+> end_that_request_{first/chunk} and end_that_request_last().
+>   o add_disk_randomness()
+>   o blk_queue_end_tag()
+>   o blkdev_dequeue_request()
 
-> And... Linus, why do yo make mistakes in headers of announces :)? Not first 
-> time.
+If we can roll the whole thing together, that would be nice.  However,
+the way you're doing it with this patch, we now have an asymmetrical
+interface:  The request routine must explicitly start the tag, but now
+doesn't have to end it.
 
-This is the effect of a plugin for the Linus-bot written in Lisp.  It's
-an output-scrambler that makes him act more human.
+We really need symmetry.  Either go back to start tag/end tag, or absorb
+the whole lot into the block infrastructure.
 
-	Hannes
+The original reason for the explicit start/end is that there are some
+requests on a tagged device that aren't able to be tagged by the block
+layer (some devices reserve tag numbers for specific meanings).
+However, I don't think there's any driver that actually implemented this
+feature.
+
+James
+
+
