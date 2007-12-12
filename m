@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbXLLXMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbXLLXVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760079AbXLLXMr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 18:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbXLLXMk
+	id S1756827AbXLLXVN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 18:21:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbXLLXU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 18:12:40 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37524 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbXLLXMj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 18:12:39 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux Containers <containers@lists.osdl.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Mark timer_stats as incompatible with multiple pid namespaces
-Date: Wed, 12 Dec 2007 16:10:56 -0700
-Message-ID: <m13au7tsov.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 12 Dec 2007 18:20:58 -0500
+Received: from gw.goop.org ([64.81.55.164]:45338 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751242AbXLLXU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 18:20:57 -0500
+Message-ID: <47606CD5.6050403@goop.org>
+Date: Wed, 12 Dec 2007 15:20:53 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Remove 'e' from kprope structure members
+References: <1197421087.8761.27.camel@brick>  <47602776.10408@zytor.com> <1197487642.21291.1.camel@brick> <47606804.1010709@goop.org> <47606A00.2080108@zytor.com>
+In-Reply-To: <47606A00.2080108@zytor.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+>> Harvey Harrison wrote:
+>>> Some kprobe structure members had a superfluous e in their
+>>> name.
+>>>
+>>> eflags -> flags
+>>> esp -> sp
+>>>   
+>>
+>> eflags and esp are the actual machine register names (at least in
+>> 32-bit), and therefore more distinctive than just "flags".
+>> If this is in preparation for a unification then OK, but I disagree if
+>> not (and technically 64-bit should be using rsp/rflags).
+>>
+>
+> Yes, that's the whole point (unification.) 
 
-/proc/timer_stats currently reports the user of a timer by pid,
-which is a reasonable approach.  However if you are not in
-the initial pid namespace the pid that is reported is nonsense.
+OK, great.  I was just confused because the patch changelog didn't give
+a proper rationale for the change (the 'e' isn't superfluous, and
+removing it isn't a goal in itself).
 
-Therefore until we can make timer_stats pid namespace safe just
-disable it in the build if pid namespace support is selected
-so we at least know we have a conflict.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- lib/Kconfig.debug |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index cc42773..c8e81e6 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -146,7 +146,7 @@ config SCHEDSTATS
- 
- config TIMER_STATS
- 	bool "Collect kernel timers statistics"
--	depends on DEBUG_KERNEL && PROC_FS
-+	depends on DEBUG_KERNEL && PROC_FS && !PID_NS
- 	help
- 	  If you say Y here, additional code will be inserted into the
- 	  timer routines to collect statistics about kernel timers being
--- 
-1.5.3.rc6.17.g1911
-
+    J
