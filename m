@@ -1,59 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbXLLKRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbXLLKUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759117AbXLLKRn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 05:17:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbXLLKRf
+	id S1758800AbXLLKUc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 05:20:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbXLLKUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 05:17:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44888 "EHLO mx2.mail.elte.hu"
+	Wed, 12 Dec 2007 05:20:22 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:35699 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758023AbXLLKRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 05:17:34 -0500
-Date: Wed, 12 Dec 2007 11:16:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH] Add Documentation for FAIR_USER_SCHED sysfs files
-Message-ID: <20071212101645.GA30004@elte.hu>
-References: <20071212023836.GB1486@linux.vnet.ibm.com> <20071212053556.GA25334@suse.de> <20071212054859.GC1486@linux.vnet.ibm.com> <20071212095843.GB24246@elte.hu>
-MIME-Version: 1.0
+	id S1755294AbXLLKUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 05:20:21 -0500
+Date: Wed, 12 Dec 2007 13:20:11 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [4/4] DST: Algorithms used in distributed storage.
+Message-ID: <20071212102011.GC13713@2ka.mipt.ru>
+References: <11972872511269@2ka.mipt.ru> <11972872511718@2ka.mipt.ru> <20071212091246.GA12871@dmon-lap.sw.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071212095843.GB24246@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071212091246.GA12871@dmon-lap.sw.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> 
-> > > Hm, how about describing the units here?  Can you put "10" in each 
-> > > file and everyone will get the same share?  100?  1?  1024 seems 
-> > > like an odd "share" number.  Unless there is some other document you 
-> > > wish to refer people to do help describe these values?
+On Wed, Dec 12, 2007 at 12:12:47PM +0300, Dmitry Monakhov (dmonakhov@sw.ru) wrote:
+> On 14:47 Mon 10 Dec     , Evgeniy Polyakov wrote:
 > > 
-> > It is proportional. That is, if two users have same value for shares, 
-> > they will get equal bandwidth on the CPU. If they are in the ratio 
-> > 1:2, then they will share it in that ratio. I've updated the patch for 
-> > this. Hope it is clearer.
-> 
-> thanks, applied.
+> > Algorithms used in distributed storage.
+> > Mirror and linear mapping code.
+> Hi, i've finally take a look on your DST solution.
+> It seems what your current implementation will not work on nonstandard
+> devices for example software raid0.
+> other comments are follows:
 
-unless Greg wants to push this via the sysfs git tree?
+> > +static int dst_mirror_process_node_data(struct dst_node *n,
+> > +		struct dst_mirror_node_data *ndata, int op)
 
-	Ingo
+> > +
+> > +	kunmap(cmp->page);
+> << MINOR_BUG:
+>    You has forgot to unmap page on error path, so IMHO it is better to move
+>    kunmap to "err_out_free_cmp" label.
+
+Yep, I will fix this.
+
+> > +	priv = kzalloc(sizeof(struct dst_mirror_priv), GFP_KERNEL);
+> > +	if (!priv)
+> > +		return -ENOMEM;
+> > +
+> > +	priv->chunk_num = st->disk_size;
+> > +
+> > +	priv->chunk = vmalloc(DIV_ROUND_UP(priv->chunk_num, BITS_PER_LONG) * sizeof(long));
+> << Ohhh. My. I want to add my 500G hdd. Do you really wanna
+>    say what i have to store 128Mb in memory object for this.
+
+Right now yes. There was a code which used single bit for bigger
+data units, but I dropped it because of resync troubles (i.e. when
+one single sector has been updated, it requires to resync the whole
+block). I can not say which case is better though.
+
+> > +		dprintk("%s: start: %llu, size: %llu/%u, bio: %p, req: %p, "
+> > +				"node: %p.\n",
+> > +				__func__, req->start, req->size, nr_pages, bio,
+> > +				req, req->node);
+> > +
+> > +		err = n->st->queue->make_request_fn(n->st->queue, bio);
+> << Why direct make_request_fn instead of generic_make_request?
+
+generic_make_request() will queue the bio in this case,
+so I call request_fn directly.
+
+> > +	for (i = 0; i < DIV_ROUND_UP(priv->chunk_num, BITS_PER_LONG); ++i) {
+> > +		int bit, num, start;
+> > +		unsigned long word = priv->chunk[i];
+> > +
+> > +		if (!word)
+> > +			continue;
+> > +
+> > +		num = 0;
+> > +		start = -1;
+> > +		while (word && num < BITS_PER_LONG) {
+> > +			bit = __ffs(word);
+> > +			if (start == -1)
+> > +				start = bit;
+> > +			num++;
+> << MINOR_BUG: Seems you have misstyped here. AFAIU @num represent position
+>    of last non zero bit (start + num == last_non_zero_bit_pos)
+> 			if (start == -1) {
+>                 		start = bit;
+>                      		num = 1;
+> 			} else
+>                                 num += bit;
+
+Yes, you are right of course.
+Since I shift word to more than a single bit, @num has to be update
+accordingly.
+
+> > +			word >>= (bit+1);
+
+Dmitry, thanks a lot for comments, I will fix issues you pointed in the
+next release, although will stay bitmap case opened for a while.
+
+-- 
+	Evgeniy Polyakov
