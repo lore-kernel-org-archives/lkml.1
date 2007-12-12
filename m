@@ -1,213 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbXLLJA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758437AbXLLJHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758472AbXLLJA1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 04:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756698AbXLLJAQ
+	id S1758437AbXLLJHX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 04:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbXLLJHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 04:00:16 -0500
-Received: from mga03.intel.com ([143.182.124.21]:53170 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756452AbXLLJAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 04:00:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,156,1196668800"; 
-   d="scan'208";a="339260121"
-Subject: [PATCH -mm -v2] x86 boot : export boot_params via sysfs
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Greg KH <greg@kroah.com>, akpm@linux-foundation.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 12 Dec 2007 16:59:51 +0800
-Message-Id: <1197449991.14443.88.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 12 Dec 2007 09:00:10.0551 (UTC) FILETIME=[66655C70:01C83C9D]
+	Wed, 12 Dec 2007 04:07:10 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:45487 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754479AbXLLJHJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 04:07:09 -0500
+Date: Wed, 12 Dec 2007 10:07:09 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Shane <gnome42@gmail.com>, Brandon Philips <brandon@ifup.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-kernel@vger.kernel.org,
+       video4linux-list <video4linux-list@redhat.com>
+Subject: Re: 2.6.24-rc5 "videobuf_read_start"
+	[drivers/media/video/videobuf-dvb.ko] undefined!
+Message-ID: <20071212090709.GF14204@stusta.de>
+References: <fa4052ef0712112120l1165af5btc108ea2131760328@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <fa4052ef0712112120l1165af5btc108ea2131760328@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch export the boot parameters via sysfs. This can be used for
-debugging and kexec.
+Patch looks good, it seems a merge conflict of
+commit 19bc5133dae9562e8824ef101464061f9854c1d8
+was resolved the wrong way.
 
-The files added are as follow:
+@Mauro:
+Any objections against a later path that changes the exports to the 
+general "immediately after the function" convention?
+It would have avoided at least two such bugs in this file alone since 
+2.6.23...
 
-/sys/kernel/boot_params/data	: binary file for struct boot_params
-/sys/kernel/boot_params/version	: boot protocol version
-
-This patch is based on 2.6.24-rc4-mm1 and has been tested on i386 and
-x86_64 platoform.
-
-This patch is based on the Peter Anvin's proposal.
-
-
-v2:
-
-- Add document in Document/ABI.
+cu
+Adrian
 
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+On Wed, Dec 12, 2007 at 12:20:31AM -0500, Shane wrote:
+> In 2.6.24-rc5+, I hit this problem with videobuf_read_start
+> not being exported. Patch attached, only compile tested.
+> 
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+>   CC [M]  drivers/media/video/videobuf-core.o
+>   Building modules, stage 2.
+> Kernel: arch/x86/boot/bzImage is ready  (#1)
+>   MODPOST 202 modules
+> ERROR: "videobuf_read_start" [drivers/media/video/videobuf-dvb.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+> 
+> Shane
 
----
- Documentation/ABI/testing/sysfs-kernel-boot_params |   14 +++
- arch/x86/kernel/Makefile_32                        |    1 
- arch/x86/kernel/Makefile_64                        |    1 
- arch/x86/kernel/ksysfs.c                           |   89 +++++++++++++++++++++
- arch/x86/kernel/setup64.c                          |    2 
- arch/x86/kernel/setup_32.c                         |    2 
- 6 files changed, 107 insertions(+), 2 deletions(-)
+> diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
+> index de2f56b..44fa76b 100644
+> --- a/drivers/media/video/videobuf-core.c
+> +++ b/drivers/media/video/videobuf-core.c
+> @@ -1058,6 +1058,7 @@ EXPORT_SYMBOL_GPL(videobuf_dqbuf);
+>  EXPORT_SYMBOL_GPL(videobuf_streamon);
+>  EXPORT_SYMBOL_GPL(videobuf_streamoff);
+>  
+> +EXPORT_SYMBOL_GPL(videobuf_read_start);
+>  EXPORT_SYMBOL_GPL(videobuf_read_stop);
+>  EXPORT_SYMBOL_GPL(videobuf_stop);
+>  EXPORT_SYMBOL_GPL(videobuf_read_stream);
 
---- a/arch/x86/kernel/Makefile_64
-+++ b/arch/x86/kernel/Makefile_64
-@@ -39,6 +39,7 @@ obj-$(CONFIG_X86_VSMP)		+= vsmp_64.o
- obj-$(CONFIG_K8_NB)		+= k8.o
- obj-$(CONFIG_AUDIT)		+= audit_64.o
- obj-$(CONFIG_EFI)		+= efi.o efi_64.o efi_stub_64.o
-+obj-$(CONFIG_SYSFS)		+= ksysfs.o
- 
- obj-$(CONFIG_MODULES)		+= module_64.o
- obj-$(CONFIG_PCI)		+= early-quirks.o
---- a/arch/x86/kernel/setup64.c
-+++ b/arch/x86/kernel/setup64.c
-@@ -24,7 +24,7 @@
- #include <asm/sections.h>
- #include <asm/setup.h>
- 
--struct boot_params __initdata boot_params;
-+struct boot_params boot_params;
- 
- cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
- 
---- /dev/null
-+++ b/arch/x86/kernel/ksysfs.c
-@@ -0,0 +1,89 @@
-+/*
-+ * Architecture specific sysfs attributes in /sys/kernel
-+ *
-+ * Copyright (C) 2007, Intel Corp.
-+ *      Huang Ying <ying.huang@intel.com>
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#include <linux/kobject.h>
-+#include <linux/string.h>
-+#include <linux/sysfs.h>
-+#include <linux/init.h>
-+#include <linux/stat.h>
-+#include <linux/mm.h>
-+
-+#include <asm/setup.h>
-+
-+static ssize_t boot_params_version_show(struct kobject *kobj,
-+					struct kobj_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "0x%04x\n", boot_params.hdr.version);
-+}
-+
-+static struct kobj_attribute boot_params_version_attr =
-+	__ATTR(version, S_IRUGO, boot_params_version_show, NULL);
-+
-+static struct attribute *boot_params_attrs[] = {
-+	&boot_params_version_attr.attr,
-+	NULL
-+};
-+
-+static struct attribute_group boot_params_attr_group = {
-+	.attrs = boot_params_attrs,
-+};
-+
-+static ssize_t boot_params_data_read(struct kobject *kobj,
-+				     struct bin_attribute *bin_attr,
-+				     char *buf, loff_t off, size_t count)
-+{
-+	memcpy(buf, (void *)&boot_params + off, count);
-+	return count;
-+}
-+
-+static struct bin_attribute boot_params_data_attr = {
-+	.attr = {
-+		.name = "data",
-+		.mode = S_IRUGO,
-+	},
-+	.read = boot_params_data_read,
-+	.size = sizeof(boot_params),
-+};
-+
-+static int __init boot_params_ksysfs_init(void)
-+{
-+	int error;
-+	struct kobject *boot_params_kobj;
-+
-+	boot_params_kobj = kobject_create_and_register("boot_params",
-+						       kernel_kobj);
-+	if (!boot_params_kobj) {
-+		error = -ENOMEM;
-+		goto err_return;
-+	}
-+	error = sysfs_create_group(boot_params_kobj,
-+				   &boot_params_attr_group);
-+	if (error)
-+		goto err_boot_params_subsys_unregister;
-+	error = sysfs_create_bin_file(boot_params_kobj,
-+				      &boot_params_data_attr);
-+	if (error)
-+		goto err_boot_params_subsys_unregister;
-+	return 0;
-+err_boot_params_subsys_unregister:
-+	kobject_unregister(boot_params_kobj);
-+err_return:
-+	return error;
-+}
-+
-+static int __init arch_ksysfs_init(void)
-+{
-+	int error;
-+
-+	error = boot_params_ksysfs_init();
-+
-+	return error;
-+}
-+
-+arch_initcall(arch_ksysfs_init);
---- a/arch/x86/kernel/Makefile_32
-+++ b/arch/x86/kernel/Makefile_32
-@@ -44,6 +44,7 @@ obj-$(CONFIG_EARLY_PRINTK)	+= early_prin
- obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
- obj-$(CONFIG_K8_NB)		+= k8.o
- obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
-+obj-$(CONFIG_SYSFS)		+= ksysfs.o
- 
- obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt_32.o
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -194,7 +194,7 @@ unsigned long saved_videomode;
- 
- static char __initdata command_line[COMMAND_LINE_SIZE];
- 
--struct boot_params __initdata boot_params;
-+struct boot_params boot_params;
- 
- #if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
- struct edd edd;
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-kernel-boot_params
-@@ -0,0 +1,14 @@
-+What:		/sys/kernel/boot_params
-+Date:		December 2007
-+Contact:	Huang Ying <ying.huang@intel.com>
-+Description:
-+		The /sys/kernel/boot_params directory contains two
-+		files: "data" and "version". It is used to export the
-+		kernel boot parameters of x86 platform to user space
-+		for debugging and kexec. The "data" file is the binary
-+		representation of struct boot_params. The "version"
-+		file is the string representation of boot protocol
-+		version.
-+
-+Users:
-+		Kexec Mailing List <kexec@lists.infradead.org>
+
