@@ -1,73 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757467AbXLLWhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758419AbXLLWih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757467AbXLLWhU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 17:37:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbXLLWhI
+	id S1758419AbXLLWih (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 17:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbXLLWi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 17:37:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52164 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751012AbXLLWhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 17:37:06 -0500
+	Wed, 12 Dec 2007 17:38:29 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53873 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752366AbXLLWi3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 17:38:29 -0500
+Message-ID: <476062B5.8010203@zytor.com>
+Date: Wed, 12 Dec 2007 14:37:41 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Greg KH <greg@kroah.com>
+CC: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm -v2] x86 boot : export boot_params via sysfs
+References: <1197449991.14443.88.camel@caritas-dev.intel.com> <20071212174613.GC16049@kroah.com> <47602044.9010104@zytor.com> <20071212185935.GA5941@kroah.com> <47603109.6080909@zytor.com> <20071212222146.GC16474@kroah.com>
+In-Reply-To: <20071212222146.GC16474@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Petr Tesarik <ptesarik@suse.cz>, tony.luck@intel.com
-Subject: Re: [PATCH] arch_ptrace_stop
-In-Reply-To: Andrew Morton's message of  Tuesday, 11 December 2007 21:51:35 -0800 <20071211215135.95ae3f6d.akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-References: <1196959793.6586.3.camel@elijah.suse.cz>
-	<20071208011152.CDA8E26F8EA@magilla.localdomain>
-	<20071211215135.95ae3f6d.akpm@linux-foundation.org>
-X-Zippy-Says: Now my EMOTIONAL RESOURCES are heavily committed to 23% of the
-    SMELTING and REFINING industry of the state of NEVADA!!
-Message-Id: <20071212223627.DDF1726F8D9@magilla.localdomain>
-Date: Wed, 12 Dec 2007 14:36:27 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Mutter.  These would be better as static inlines.  A macro just invites
-> variable-unused warnings on non-ia64 and outright compilation errors on
-> ia64.  Speaking from experience...
+Greg KH wrote:
+> On Wed, Dec 12, 2007 at 11:05:45AM -0800, H. Peter Anvin wrote:
+>> Greg KH wrote:
+>>>> This is a binary structure defined by protocol;
+>>> What protocol?  Is this a "standard" documented somewhere?
+>> Yes, see Documentation/i386/* (although some of it is documented by 
+>> reference to include/asm-x86/boot_params.h).
 > 
-> static inline void arch_ptrace_stop(int exit_code, siginfo_t *info)
-> {
-> }
-> #define arch_ptrace_stop arch_ptrace_stop
+> Ah, so the structure has changed over the years, making this not so much
+> a "firmware" field as originally thought :)
+
+The structure has been *amended* to over the years.  That's why the 
+format is so awkward...
+
+>>>> in that way it's not significantly different from something passed
+>>>> from the firmware (in fact, it might very well *be* passed from the
+>>>> firmware.)  We have in the past found platform bugs by looking at the
+>>>> contents of the whole structure, e.g.  to find that part of it has
+>>>> been inappropriately clobbered.
+>>> For debugging things, then just export it through debugfs.
+>> Fair enough, however...
+>>
+>>>> It is also in the form needed by e.g. kexec to operate.
+>>> Does kexec need this today to work properly?  Or is this something new?
+>> I believe kexec currently tries to reconstitute it from what data is 
+>> available to it.  This is incomplete, though, and has been flagged as a 
+>> problem for kexec.
 > 
-> should work?
+> Can't kexec get this from within the kernel itself when it is running?
+> It doesn't need to get this from userspace, does it?
 
-That's fine with me.  I just followed the example of e.g. arch_ptrace_attach.
+It probably could, but it probably needs to modify some fields.
 
-> >  /*
-> > + * Return nonzero if there is a SIGKILL that should be waking us up.
-> > + * Called with the siglock held.
-> > + */
-> > +static int sigkill_pending(struct task_struct *tsk)
-> > +{
-> > +	return ((sigismember(&tsk->pending.signal, SIGKILL) ||
-> > +		 sigismember(&tsk->signal->shared_pending.signal, SIGKILL)) &&
-> > +		!unlikely(sigismember(&tsk->blocked, SIGKILL)));
-> > +}
+>>> What userspace program is going to know the exact data format of this
+>>> blob, and where is it going to know that format from?  The kernel header
+>>> files in sanitized form?  Or something else?
+>> It can pick it up from <asm/boot_params.h> (which is now userspace-safe); 
+>> or it can decode it itself.  Programs like kexec can pass through most of 
+>> the data without examining it, this is the main reason for having it as a 
+>> blob.
 > 
-> Could you please take a peek at the infrastructure added by
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/add-lock_page_killable.patch
-> and see if there is exploitable commonality?
+> I just don't want kernel structures exported in binary fashions in
+> sysfs.  If there are specific portions that kexec currently can't figure
+> out, why not just export those fields?
+> 
+> And, by exporting the different fields (yeah, lots of files, no big
+> deal), you can handle the change in the structure over time much easier
+> than trying to "know" the layout of the binary blob.
 
-I haven't reviewed that whole set in detail yet.  So I'd rather leave this
-for a later cleanup.  (This ptrace change alone, along with its ia64
-pieces, can probably go in much earlier without disrupting anything else.)
+But if you kexec an older kernel from a newer kernel, the potential 
+additional information will be lost for a subsequent uprevision kexec, 
+for example.
 
-The fatal_signal_pending function in that patch is not exactly the same as
-this check, though it might turn out that it's actually equivalent due to
-higher-level constraints.  
+	-hpa
 
-
-Thanks,
-Roland
