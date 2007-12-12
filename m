@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759151AbXLLTHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbXLLTHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759151AbXLLTHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 14:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbXLLTHE
+	id S1755864AbXLLTHi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 14:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759167AbXLLTHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 14:07:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33201 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754269AbXLLTHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 14:07:01 -0500
-Message-ID: <476030F8.6090605@redhat.com>
-Date: Wed, 12 Dec 2007 17:05:28 -0200
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
+	Wed, 12 Dec 2007 14:07:19 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50768 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759124AbXLLTHR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 14:07:17 -0500
+Message-ID: <47603109.6080909@zytor.com>
+Date: Wed, 12 Dec 2007 11:05:45 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       zach@vmware.com, roland@redhat.com
-Subject: Re: [PATCH 0/19] desc_struct integration
-References: <1196957800568-git-send-email-gcosta@redhat.com> <11974640441088-git-send-email-gcosta@redhat.com> <20071212172019.GA11258@elte.hu> <20071212181111.GA23306@elte.hu> <20071212182057.GA26515@elte.hu> <476027F9.8020006@redhat.com> <20071212183327.GA30636@elte.hu>
-In-Reply-To: <20071212183327.GA30636@elte.hu>
+To: Greg KH <greg@kroah.com>
+CC: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm -v2] x86 boot : export boot_params via sysfs
+References: <1197449991.14443.88.camel@caritas-dev.intel.com> <20071212174613.GC16049@kroah.com> <47602044.9010104@zytor.com> <20071212185935.GA5941@kroah.com>
+In-Reply-To: <20071212185935.GA5941@kroah.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
+Greg KH wrote:
+>> This is a binary structure defined by protocol;
 > 
->> Ingo Molnar wrote:
->>> * Ingo Molnar <mingo@elte.hu> wrote:
->>>
->>>>>> Ingo, in the absense of further complaints, could you please push to 
->>>>>> the x86 tree?
->>>>> yeah, i've added them.
->>>> the patches cause a spontaneous reboot on x86 64-bit, around the time 
->>>> when bootup hits user-space. It's due to one of the 25 patches from you 
->>>> today. Config attached.
->>> likely caused by this patch:
->>>
->>>   Subject: unify non-paravirt parts of desc.h
->>>
->>> _please_ be more careful when unifying. Do check the before/after vmlinux 
->>> - the binary size at least. And watch out for compiler warnings as well:
->>>
->>>  arch/x86/kernel/process_64.c: In function 'read_32bit_tls':
->>>  arch/x86/kernel/process_64.c:454: warning: passing argument 1 of 'get_desc_base' from incompatible pointer type
-> 
->> I saw this warning, and this was fixed in the patch that follows. But 
->> yeah, I could have done a separate one, to avoid it. Do you have any 
->> other reason to believe this is the cause?
-> 
-> that is bisection-unfriendly - every patch has to work.
-I know, and I'm sorry. I thought it was not that bad, by being just a 
-warning due to a type cast. ;-)
-(famous last words, I know)
+> What protocol?  Is this a "standard" documented somewhere?
 
->> My box booted fine with the changes, but I'm re-verifying, and will 
->> send and update soon.
+Yes, see Documentation/i386/* (although some of it is documented by 
+reference to include/asm-x86/boot_params.h).
+
+>> in that way it's not significantly different from something passed
+>> from the firmware (in fact, it might very well *be* passed from the
+>> firmware.)  We have in the past found platform bugs by looking at the
+>> contents of the whole structure, e.g.  to find that part of it has
+>> been inappropriately clobbered.
 > 
-> please try the config i sent - does that boot fine on your box?
-No, it doesn't. I'll bisect it, and send an updated series, with your 3 
-concerns addressed.
+> For debugging things, then just export it through debugfs.
 
+Fair enough, however...
 
+>> It is also in the form needed by e.g. kexec to operate.
+> 
+> Does kexec need this today to work properly?  Or is this something new?
+
+I believe kexec currently tries to reconstitute it from what data is 
+available to it.  This is incomplete, though, and has been flagged as a 
+problem for kexec.
+
+> What userspace program is going to know the exact data format of this
+> blob, and where is it going to know that format from?  The kernel header
+> files in sanitized form?  Or something else?
+
+It can pick it up from <asm/boot_params.h> (which is now 
+userspace-safe); or it can decode it itself.  Programs like kexec can 
+pass through most of the data without examining it, this is the main 
+reason for having it as a blob.
+
+	-hpa
