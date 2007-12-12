@@ -1,90 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbXLLPaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758431AbXLLPao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757325AbXLLPaR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 10:30:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbXLLPaE
+	id S1758431AbXLLPao (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 10:30:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbXLLPa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 10:30:04 -0500
-Received: from os.eurotux.com ([216.75.63.6]:47108 "EHLO os.eurotux.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752147AbXLLPaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 10:30:01 -0500
-Date: Wed, 12 Dec 2007 15:29:55 +0000
-From: Luciano Rocha <luciano@eurotux.com>
-To: Alon Bar-Lev <alon.barlev@gmail.com>
-Cc: ldm@flatcap.org, ntfs-3g-devel@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-ntfs-dev@lists.sourceforge.net
-Subject: Re: ldminfo compilation
-Message-ID: <20071212152953.GA26544@bit.office.eurotux.com>
-Mail-Followup-To: Luciano Rocha <luciano@eurotux.com>,
-	Alon Bar-Lev <alon.barlev@gmail.com>, ldm@flatcap.org,
-	ntfs-3g-devel@lists.sourceforge.net,
-	LKML <linux-kernel@vger.kernel.org>,
-	linux-ntfs-dev@lists.sourceforge.net
-References: <9e0cf0bf0712120639r7bd5582bg63f8512164836989@mail.gmail.com> <20071212145241.GA25092@bit.office.eurotux.com> <9e0cf0bf0712120657p1a8fac7aoc5a82df1ff24daac@mail.gmail.com>
+	Wed, 12 Dec 2007 10:30:26 -0500
+Received: from ccerelbas04.cce.hp.com ([161.114.21.107]:59009 "EHLO
+	ccerelbas04.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753277AbXLLPaX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 10:30:23 -0500
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "j-nomura@ce.jp.nec.com" <j-nomura@ce.jp.nec.com>
+Date: Wed, 12 Dec 2007 15:25:52 +0000
+Subject: RE: [PATCH 22/30] blk_end_request: changing cpqarray (take 4)
+Thread-Topic: [PATCH 22/30] blk_end_request: changing cpqarray (take 4)
+Thread-Index: Acg8SDlX5BPojj5WT/K0Rs4l8oYyhgAivu+A
+Message-ID: <DEE40752C8AF224BB890E455C7B8E0FE15718B39@G6W0268.americas.hpqcorp.net>
+References: <20071211.175021.39666150.k-ueda@ct.jp.nec.com>
+In-Reply-To: <20071211.175021.39666150.k-ueda@ct.jp.nec.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ikeVEW9yuYc//A+q"
-Content-Disposition: inline
-In-Reply-To: <9e0cf0bf0712120657p1a8fac7aoc5a82df1ff24daac@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-03-31)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---ikeVEW9yuYc//A+q
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Dec 12, 2007 at 04:57:39PM +0200, Alon Bar-Lev wrote:
-> On 12/12/07, Luciano Rocha <luciano@eurotux.com> wrote:
-> > Those are for the kernel module setting the partition tables. If you're
-> > only interested in the ldminfo utility:
-> > make -C ldmutil CPP=3D'g++ -static'
-> >
-> > Substitute g++ for the C++ compiler you want to use.
->=20
-> Hi!
-> Thank you for your reply!
->=20
-> I don't really understand how to use the output of ldmutil in order to
-> do the dmsetup... All the instructions are for ldminfo...
+> -----Original Message-----
+> From: Kiyoshi Ueda [mailto:k-ueda@ct.jp.nec.com]
+> Sent: Tuesday, December 11, 2007 4:50 PM
+> To: jens.axboe@oracle.com
+> Cc: linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org;
+> linux-ide@vger.kernel.org; dm-devel@redhat.com;
+> j-nomura@ce.jp.nec.com; k-ueda@ct.jp.nec.com; Miller, Mike (OS Dev)
+> Subject: [PATCH 22/30] blk_end_request: changing cpqarray (take 4)
+>
+> This patch converts cpqarray to use blk_end_request interfaces.
+> Related 'ok' arguments are converted to 'error'.
+>
+> cpqarray is a little bit different from "normal" drivers.
+> cpqarray directly calls bio_endio() and disk_stat_add() when
+> completing request.  But those can be replaced with
+> __end_that_request_first().
+> After the replacement, request completion procedures of those
+> drivers become like the following:
+>     o end_that_request_first()
+>     o add_disk_randomness()
+>     o end_that_request_last()
+> This can be converted to __blk_end_request() by following the
+> rule (b) mentioned in the patch subject "[PATCH 01/30]
+> blk_end_request: add new request completion interface".
+>
+> Cc: Mike Miller <mike.miller@hp.com>
+> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 
-Ah, sorry. Somehow I got the impression that the ldmutil directory
-included the ldminfo binary. I'll see if I can compile the ldminfo
-statically in an older system I have.
+Acked-by: Mike Miller <mike.miller@hp.com>
 
->=20
-> And the C++ dependency does not work well with uclibc... I tried to
-> compile this using uclibc++, but the exception handling of uclibc++ is
-> broken for some strange reason... And I don't wish to introduce the
-> overhead of the C++ libraries to my system...
->=20
-> If ldmutil contain all the information, I will backport this to C and
-> be happy... :)
-> Can you please tell me how you use the output of this utility to merge
-> a spanned partition on two separate disks?
-
-I don't have a Windows dynamic disk, so I can't imagine out to convert
-the output for dmsetup. Do you have a sample output?
-
---=20
-Luciano Rocha <luciano@eurotux.com>
-Eurotux Inform=E1tica, S.A. <http://www.eurotux.com/>
-
---ikeVEW9yuYc//A+q
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHX/5xinSul6a7oB8RAsoHAJ4hW1uCixg0FtDTlTY1B2D41+Iq8ACeNSbT
-CJYzH/Y2AopqKoc9uPHMKXs=
-=eHQN
------END PGP SIGNATURE-----
-
---ikeVEW9yuYc//A+q--
+> ---
+>  drivers/block/cpqarray.c |   36 +++++++-----------------------------
+>  1 files changed, 7 insertions(+), 29 deletions(-)
+>
+> Index: 2.6.24-rc4/drivers/block/cpqarray.c
+> ===================================================================
+> --- 2.6.24-rc4.orig/drivers/block/cpqarray.c
+> +++ 2.6.24-rc4/drivers/block/cpqarray.c
+> @@ -167,7 +167,6 @@ static void start_io(ctlr_info_t *h);
+>
+>  static inline void addQ(cmdlist_t **Qptr, cmdlist_t *c);
+> static inline cmdlist_t *removeQ(cmdlist_t **Qptr, cmdlist_t
+> *c); -static inline void complete_buffers(struct bio *bio,
+> int ok);  static inline void complete_command(cmdlist_t *cmd,
+> int timeout);
+>
+>  static irqreturn_t do_ida_intr(int irq, void *dev_id); @@
+> -980,26 +979,13 @@ static void start_io(ctlr_info_t *h)
+>         }
+>  }
+>
+> -static inline void complete_buffers(struct bio *bio, int ok) -{
+> -       struct bio *xbh;
+> -
+> -       while (bio) {
+> -               xbh = bio->bi_next;
+> -               bio->bi_next = NULL;
+> -
+> -               bio_endio(bio, ok ? 0 : -EIO);
+> -
+> -               bio = xbh;
+> -       }
+> -}
+>  /*
+>   * Mark all buffers that cmd was responsible for
+>   */
+>  static inline void complete_command(cmdlist_t *cmd, int timeout)  {
+>         struct request *rq = cmd->rq;
+> -       int ok=1;
+> +       int error = 0;
+>         int i, ddir;
+>
+>         if (cmd->req.hdr.rcode & RCODE_NONFATAL && @@
+> -1011,16 +997,17 @@ static inline void complete_command(cmdl
+>         if (cmd->req.hdr.rcode & RCODE_FATAL) {
+>                 printk(KERN_WARNING "Fatal error on ida/c%dd%d\n",
+>                                 cmd->ctlr, cmd->hdr.unit);
+> -               ok = 0;
+> +               error = -EIO;
+>         }
+>         if (cmd->req.hdr.rcode & RCODE_INVREQ) {
+>                                 printk(KERN_WARNING "Invalid
+> request on ida/c%dd%d = (cmd=%x sect=%d cnt=%d sg=%d ret=%x)\n",
+>                                 cmd->ctlr, cmd->hdr.unit,
+> cmd->req.hdr.cmd,
+>                                 cmd->req.hdr.blk,
+> cmd->req.hdr.blk_cnt,
+>                                 cmd->req.hdr.sg_cnt,
+> cmd->req.hdr.rcode);
+> -               ok = 0;
+> +               error = -EIO;
+>         }
+> -       if (timeout) ok = 0;
+> +       if (timeout)
+> +               error = -EIO;
+>         /* unmap the DMA mapping for all the scatter gather
+> elements */
+>         if (cmd->req.hdr.cmd == IDA_READ)
+>                 ddir = PCI_DMA_FROMDEVICE; @@ -1030,18
+> +1017,9 @@ static inline void complete_command(cmdl
+>                  pci_unmap_page(hba[cmd->ctlr]->pci_dev,
+> cmd->req.sg[i].addr,
+>                                 cmd->req.sg[i].size, ddir);
+>
+> -       complete_buffers(rq->bio, ok);
+> -
+> -       if (blk_fs_request(rq)) {
+> -               const int rw = rq_data_dir(rq);
+> -
+> -               disk_stat_add(rq->rq_disk, sectors[rw],
+> rq->nr_sectors);
+> -       }
+> -
+> -       add_disk_randomness(rq->rq_disk);
+> -
+>         DBGPX(printk("Done with %p\n", rq););
+> -       end_that_request_last(rq, ok ? 1 : -EIO);
+> +       if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
+> +               BUG();
+>  }
+>
+>  /*
+>
