@@ -1,122 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbXLLUhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbXLLUj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760217AbXLLUhl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 15:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXLLUhd
+	id S1759368AbXLLUj0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 15:39:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbXLLUjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 15:37:33 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:54957 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751752AbXLLUhc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 15:37:32 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 18.85.9.165
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX195xun5SKuTrWFzaYXK5b89
-Message-ID: <47604673.8000509@reed.com>
-Date: Wed, 12 Dec 2007 15:37:07 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Rene Herman <rene.herman@gmail.com>
-CC: Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       David Newall <david@davidnewall.com>, Paul Rolland <rol@as2917.net>,
-       "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: More info on port 80 symptoms on MCP51 machine.
-References: <475DE6F4.80702@zytor.com> <475DEB23.1000304@davidnewall.com> <20071211084059.3d03e11d@tux.DEF.witbe.net> <475E5D4B.8020101@keyaccess.nl> <475E7DC2.4060509@davidnewall.com> <475E8D91.20201@keyaccess.nl> <475E95A3.3070801@davidnewall.com> <Pine.LNX.4.61.0712111024060.22976@chaos.analogic.com> <20071211163017.GD16750@one.firstfloor.org> <475EBFBA.6090301@keyaccess.nl> <20071211191649.GB3437@elf.ucw.cz> <475EEC75.80609@keyaccess.nl> <47603F66.3070108@reed.com> <476043DA.5000602@keyaccess.nl>
-In-Reply-To: <476043DA.5000602@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 12 Dec 2007 15:39:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57497 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751347AbXLLUjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 15:39:10 -0500
+Date: Wed, 12 Dec 2007 15:38:15 -0500 (EST)
+Message-Id: <20071212.153815.39152138.k-ueda@ct.jp.nec.com>
+To: zaitcev@redhat.com
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: Re: [PATCH 12/30] blk_end_request: changing ub (take 4)
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <20071211154803.58beb681.zaitcev@redhat.com>
+References: <20071211.174647.75757994.k-ueda@ct.jp.nec.com>
+	<20071211154803.58beb681.zaitcev@redhat.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Port 0xED, just FYI:
+Hi Pete,
 
-cycles: out 1430, in 1370
-cycles: out 1429, in 1370
+On Tue, 11 Dec 2007 15:48:03 -0800, Pete Zaitcev <zaitcev@redhat.com> wrote:
+> >  	if (scsi_status == 0) {
+> > -		uptodate = 1;
+> > +		error = 0;
+> >  	} else {
+> > -		uptodate = 0;
+> > +		error = -EIO;
+> >  		rq->errors = scsi_status;
+> >  	}
+> > -	end_that_request_first(rq, uptodate, rq->hard_nr_sectors);
+> > -	end_that_request_last(rq, uptodate);
+> > +	if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
+> > +		BUG();
+> 
+> Acked-by: Pete Zaitcev <zaitcev@redhat.com>
+> 
+> I follow the discussion, actually, and wanted to ask someone to look
+> closer if it's appropriate to use __blk_end_request() here.
+> My understanding was, blk_end_request() is the same thing, only
+> takes the queue lock. But then, should I refactor ub so that it
+> calls __blk_end_request if request function ends with an error
+> and blk_end_request if the end-of-IO even is processed? If not,
+> and the above is sufficient, why have blk_end_request at all?
 
-(800 Mhz)
+The difference between blk_end_request() and __blk_end_request() is
+whether the queue lock is held or not when end_that_request_last()
+is called.
+It's not relevant to the status of the request (error or not).
 
+I'm using __blk_end_request() here and I think it's sufficient, because:
+  o end_that_request_last() must be called with the queue lock held
+  o ub_end_rq() calls end_that_request_last() without taking
+    the queue lock in itself.
+    So the queue lock must have been taken outside ub_end_rq().
 
-Rene Herman wrote:
-> On 12-12-07 21:07, David P. Reed wrote:
->
->> Sadly, I've been busy with other crises in my day job for the last 
->> few days.   I did modify Rene's test program and ran it on my 
->> "problem" machine, with the results below.
->>
->> The interesting part of this is that port 80 seems to respond to "in" 
->> instructions faster than the presumably "unused" ports 0xEC  and 
->> 0XEF  (those were mentioned by someone as alternatives to port 80).
->
-> Don't know if someone else mentioned those but I only said 0xed. 
-> That's the value Phoenix BIOSes use (yes, and which H. Peter Anvin) 
-> reported as being generally problematic as well).
->
-> It's in fact not all that unexpected it seems that port 0x80 responds 
-> to in given that it's used by the DMA controller. It's a write that 
-> falls on deaf ears. The read is going to be faster if it doesn't 
-> timeout on an unused port.
->
-> Although it's not faster for everyone, such as for me indicating that 
-> for us port 0x80 is really-really unused, it is for many. See results 
-> here:
->
-> http://lkml.org/lkml/2007/12/12/309
->
->> That, and the fact that the port 80 test reliably freezes the machine 
->> solid the second time it is run, and the "hwclock" utility reliably 
->> hangs the machine if the port 80's are used in the 
->> CMOS_READ/CMOS_WRITE loop, seems to strongly indicate that this 
->> chipset or motherboard actually uses port 80, rather than there being 
->> a bus problem.
->
-> Yes, so it seems. In this case we could in fact also "fix" your 
-> situation by just going to 0xed depending on for example DMI. Alan Cox 
-> just posted a few further problems with a simple udelay() replacement...
->
->> Someone might have an in to nVidia to clarify this, since I don't.  
->> In any case, the udelay(2) approach seems to be a safe fix for this 
->> machine.
->>
->> Hope input from an "outsider" is helpful in going forward.   I put a 
->> lot of time and effort into tracking down this problem on this 
->> particular machine model, largely because I like the machine.
->>
->> Running the (slightly modified to test ports 80, ec, ef instead of 
->> just port 80) test when the 2 GHz max speed CPU is running at 800 
->> MHz, here's what I get for port 80 and port ec and port ef.
->>
->> port 80:   cycles: out 1430, in 792
->
-> At 800 MHz, that's 1.79 / 0.99 microseconds. The precision of the "in" 
-> is somewhat interesting. Did someone at nVidia think it's an "in" from 
-> 0x80 which should get the 1 microsec delay?
->
->> port ef:    cycles: out 1431, in 1378
->> port ec:   cycles: out 1432, in 1372
->
-> Unused ports, bus timeouts.
->
->> ----------------------------
->>
->> System info:  HP Pavilion dv9000z laptop (AMD64x2)
->>
->> PCI bus controller is nVidia MCP51.
->> processor       : 0
->> vendor_id       : AuthenticAMD
->> cpu family      : 15
->> model           : 72
->> model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-60
->> stepping        : 2
->> cpu MHz         : 800.000
->> cache size      : 512 KB
->
-> Rene.
->
+But, if ub is calling end_that_request_last() without the queue lock,
+it is a bug in the original code and we should use blk_end_request()
+to fix that.
+
+Does that answer satisfy you?
+
+Thanks,
+Kiyoshi Ueda
