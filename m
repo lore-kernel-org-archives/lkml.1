@@ -1,83 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbXLLHwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756484AbXLLIJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757423AbXLLHwa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 02:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbXLLHwV
+	id S1756484AbXLLIJV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 03:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbXLLIJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 02:52:21 -0500
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:46994 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754623AbXLLHwU (ORCPT
+	Wed, 12 Dec 2007 03:09:07 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:13942 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754504AbXLLIJF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 02:52:20 -0500
-Message-Id: <6.0.0.20.2.20071212132928.00388ac0@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Wed, 12 Dec 2007 16:51:24 +0900
-To: Zach Brown <zach.brown@oracle.com>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: Re: [PATCH] dio: falling through to buffered I/O when
-  invalidationof a page fails
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>
-In-Reply-To: <475F32B0.20107@oracle.com>
-References: <6.0.0.20.2.20071210164242.03915ca8@172.19.0.2>
- <475F32B0.20107@oracle.com>
+	Wed, 12 Dec 2007 03:09:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=NFp0uC1jz+YGz0rTXLfHVccd9V9hwdUuoDn2prEpWh2jSmj/0ZcLn2P6uQ2sgSZ8UAczohv6S6kXTWJnKQo3PD0HC6EvUu70TQIDgsb1wRtrSL+hS8cbi9+LspQbv9DhrTv2WmcjFhDBXimjLqbX2fjztwWRRCNOXIulV4aXenM=
+Subject: [PATCH] Net: Remove FASTCALL macro
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: netdev@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 12 Dec 2007 00:09:03 -0800
+Message-Id: <1197446943.5745.9.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+X86_32 was the last user of the FASTCALL macro, now that it
+uses regparm(3) by default, this macro expands to nothing.
 
- >
- >>
- >> Past discussion about this issue is as follows.
- >> http://marc.info/?t=119343431200004&r=1&w=2
- >> http://marc.info/?t=112656762800002&r=1&w=2
- >>
- >> 2, invalidate_inode_pages2_range() sets ret=-EIO when
- >> invalidate_complete_page2()
- >> fails, but this ret is cleared if do_launder_page() succeed on a page of
- >> next index.
- >
- >Oops.  That's too bad.  So maybe we should fix it by not stomping on
- >that return code?
- >
- >	ret2 = do_launder()
- >	if (ret2 == 0)
- >		ret2 = invalidate()
- >	if (ret == 0)
- >		ret = ret2
- >
- >I'd be surprised if we ever wanted to mask an -EIO when later pages
- >laundered successfully.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Should this be coordinated with the FASTCALL() removal in the
+x86 git tree?
 
-This can preserve ret of -EIO. But it cannot be distinguished between
-the error of invalidation and other error only by this fix.
+ drivers/net/ns83820.c          |    5 +----
+ include/net/bluetooth/rfcomm.h |    4 ++--
+ include/net/sock.h             |    4 ++--
+ 3 files changed, 5 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ns83820.c b/drivers/net/ns83820.c
+index ea71f6d..972acc3 100644
+--- a/drivers/net/ns83820.c
++++ b/drivers/net/ns83820.c
+@@ -611,7 +611,7 @@ static inline int rx_refill(struct net_device *ndev, gfp_t gfp)
+ 	return i ? 0 : -ENOMEM;
+ }
+ 
+-static void FASTCALL(rx_refill_atomic(struct net_device *ndev));
++static void rx_refill_atomic(struct net_device *ndev));
+ static void fastcall rx_refill_atomic(struct net_device *ndev)
+ {
+ 	rx_refill(ndev, GFP_ATOMIC);
+@@ -633,7 +633,6 @@ static inline void clear_rx_desc(struct ns83820 *dev, unsigned i)
+ 	build_rx_desc(dev, dev->rx_info.descs + (DESC_SIZE * i), 0, 0, CMDSTS_OWN, 0);
+ }
+ 
+-static void FASTCALL(phy_intr(struct net_device *ndev));
+ static void fastcall phy_intr(struct net_device *ndev)
+ {
+ 	struct ns83820 *dev = PRIV(ndev);
+@@ -832,7 +831,6 @@ static void ns83820_cleanup_rx(struct ns83820 *dev)
+ 	}
+ }
+ 
+-static void FASTCALL(ns83820_rx_kick(struct net_device *ndev));
+ static void fastcall ns83820_rx_kick(struct net_device *ndev)
+ {
+ 	struct ns83820 *dev = PRIV(ndev);
+@@ -854,7 +852,6 @@ static void fastcall ns83820_rx_kick(struct net_device *ndev)
+ /* rx_irq
+  *
+  */
+-static void FASTCALL(rx_irq(struct net_device *ndev));
+ static void fastcall rx_irq(struct net_device *ndev)
+ {
+ 	struct ns83820 *dev = PRIV(ndev);
+diff --git a/include/net/bluetooth/rfcomm.h b/include/net/bluetooth/rfcomm.h
+index 25aa575..98ec7a3 100644
+--- a/include/net/bluetooth/rfcomm.h
++++ b/include/net/bluetooth/rfcomm.h
+@@ -252,8 +252,8 @@ static inline void rfcomm_dlc_put(struct rfcomm_dlc *d)
+ 		rfcomm_dlc_free(d);
+ }
+ 
+-extern void FASTCALL(__rfcomm_dlc_throttle(struct rfcomm_dlc *d));
+-extern void FASTCALL(__rfcomm_dlc_unthrottle(struct rfcomm_dlc *d));
++extern void __rfcomm_dlc_throttle(struct rfcomm_dlc *d);
++extern void __rfcomm_dlc_unthrottle(struct rfcomm_dlc *d);
+ 
+ static inline void rfcomm_dlc_throttle(struct rfcomm_dlc *d)
+ {
+diff --git a/include/net/sock.h b/include/net/sock.h
+index 67e35c7..bdad9ba 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -812,14 +812,14 @@ do {									\
+ 	lockdep_init_map(&(sk)->sk_lock.dep_map, (name), (key), 0);	\
+ } while (0)
+ 
+-extern void FASTCALL(lock_sock_nested(struct sock *sk, int subclass));
++extern void lock_sock_nested(struct sock *sk, int subclass);
+ 
+ static inline void lock_sock(struct sock *sk)
+ {
+ 	lock_sock_nested(sk, 0);
+ }
+ 
+-extern void FASTCALL(release_sock(struct sock *sk));
++extern void release_sock(struct sock *sk);
+ 
+ /* BH context may only use the following locking interface. */
+ #define bh_lock_sock(__sk)	spin_lock(&((__sk)->sk_lock.slock))
+-- 
+1.5.3.7.2212.gd092
 
 
- >> I solved problems above by introducing invalidate_inode_pages3_range()
- >> and falling
- >> through to buffered I/O when invalidation of a page failed.
- >
- >Well, I like the idea of more intelligently dealing with the known
- >problem between dio and ext3.  I'm not sure that falling back to
- >buffered is right.
-
-In the past discussion above, it was said that dio was a sort of best
-effort function. So dio falls back to buffered IO when writing to hall, I think.
-My idea is that this notion applies to this issue.
-
- >
- >> We can distinguish between failure of page invalidation and other errors
- >> with the return value of invalidate_inode_pages3_range().
- >
- >I'm not sure duplicating the invalidation loop into a new function is
- >the right thing.  Maybe we'd just tweak inode_pages2 to indicate to the
- >caller the specific failing circumstances somehow.  Maybe.
-
-It will be better that adding one parameter to invalidate_inode_pages2_range so
-that caller can deal with a number of cases.
 
