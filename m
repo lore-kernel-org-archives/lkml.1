@@ -1,165 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758431AbXLLPao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbXLLPbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758431AbXLLPao (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 10:30:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbXLLPa0
+	id S1758527AbXLLPbk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 10:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbXLLPbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 10:30:26 -0500
-Received: from ccerelbas04.cce.hp.com ([161.114.21.107]:59009 "EHLO
-	ccerelbas04.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753277AbXLLPaX convert rfc822-to-8bit (ORCPT
+	Wed, 12 Dec 2007 10:31:32 -0500
+Received: from an-out-0708.google.com ([209.85.132.246]:48024 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754248AbXLLPbb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 10:30:23 -0500
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "j-nomura@ce.jp.nec.com" <j-nomura@ce.jp.nec.com>
-Date: Wed, 12 Dec 2007 15:25:52 +0000
-Subject: RE: [PATCH 22/30] blk_end_request: changing cpqarray (take 4)
-Thread-Topic: [PATCH 22/30] blk_end_request: changing cpqarray (take 4)
-Thread-Index: Acg8SDlX5BPojj5WT/K0Rs4l8oYyhgAivu+A
-Message-ID: <DEE40752C8AF224BB890E455C7B8E0FE15718B39@G6W0268.americas.hpqcorp.net>
-References: <20071211.175021.39666150.k-ueda@ct.jp.nec.com>
-In-Reply-To: <20071211.175021.39666150.k-ueda@ct.jp.nec.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 12 Dec 2007 10:31:31 -0500
+Message-ID: <fa686aa40712120731y39a89b84m7f356ebd9c623dce@mail.gmail.com>
+Date: Wed, 12 Dec 2007 08:31:30 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Michal Simek" <Monstr@seznam.cz>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: uartlite driver
+In-Reply-To: <3454.6513-24750-698925460-1197275267@seznam.cz>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3454.6513-24750-698925460-1197275267@seznam.cz>
+X-Google-Sender-Auth: 224044e6b16c7f5d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 12/10/07, Michal Simek <Monstr@seznam.cz> wrote:
+> Hi Grant,
+
+Hi Michal,
+
+Sorry I didn't reply right away, got tied up with other stuff.
+
+> I looked at your patches around uartlite. I have tryied to compile this driver for Microblaze
+> platform. I use the latest kernel from kernel.org with old uartlite(in front of
+> your patches) as stable version and seems to works well.
+>
+> But I would like to use the latest uartlite driver with your patches.
+>
+> I have error section type conflict which relates to uartlite driver
+> and the second are warnings with Section mismatch.
+>
+> I look at warnings Section mismatch: reference to on ARM mailing list but
+> conclusion is weird.
+>
+> Can you help me with these problems especially with uartlite?
+>
+> Important part of log is below.
+
+I don't understand what I'm seeing here.  It looks like you're running
+make multiple times and each time the error message changes.  Is that
+correct?
+
+Off the top of my head, it looks like you're having problems with
+functions labeled as __init; at least in the uartlite driver.
+
+What patches in particular of mine are you having problems with?
+
+Cheers,
+g.
+
+>
+> Regards,
+> Michal Simek
+>
+>
+>
+>   CC      drivers/serial/serial_core.o
+>   CC      drivers/serial/uartlite.o
+> drivers/serial/uartlite.c: In function `ulite_console_setup':
+> drivers/serial/uartlite.c:404: error: ulite_console_setup causes a section type conflict
+> make[2]: *** [drivers/serial/uartlite.o] Error 1
+> make[1]: *** [drivers/serial] Error 2
+> make: *** [drivers] Error 2
+> [microblaze@monstr linux-2.6-last]$ make
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+> dnsdomainname: Host name lookup failure
+>   CC      drivers/serial/uartlite.o
+> drivers/serial/uartlite.c: In function `ulite_console_init':
+> drivers/serial/uartlite.c:451: error: ulite_console_init causes a section type conflict
+> make[2]: *** [drivers/serial/uartlite.o] Error 1
+> make[1]: *** [drivers/serial] Error 2
+> make: *** [drivers] Error 2
+> [microblaze@monstr linux-2.6-last]$ make
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+> dnsdomainname: Host name lookup failure
+>   CC      drivers/serial/uartlite.o
+> drivers/serial/uartlite.c: In function `ulite_assign':
+> drivers/serial/uartlite.c:486: error: ulite_assign causes a section type conflict
+> make[2]: *** [drivers/serial/uartlite.o] Error 1
+> make[1]: *** [drivers/serial] Error 2
+> make: *** [drivers] Error 2
+> [microblaze@monstr linux-2.6-last]$ make
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+> dnsdomainname: Host name lookup failure
+>   CC      drivers/serial/uartlite.o
+> drivers/serial/uartlite.c: In function `ulite_release':
+> drivers/serial/uartlite.c:542: error: ulite_release causes a section type conflict
+> make[2]: *** [drivers/serial/uartlite.o] Error 1
+> make[1]: *** [drivers/serial] Error 2
+> make: *** [drivers] Error 2
+> [microblaze@monstr linux-2.6-last]$ make
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+> dnsdomainname: Host name lookup failure
+>   CC      drivers/serial/uartlite.o
+> drivers/serial/uartlite.c: In function `ulite_probe':
+> drivers/serial/uartlite.c:560: error: ulite_probe causes a section type conflict
+> make[2]: *** [drivers/serial/uartlite.o] Error 1
+> make[1]: *** [drivers/serial] Error 2
+> make: *** [drivers] Error 2
+> [microblaze@monstr linux-2.6-last]$ make
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+> dnsdomainname: Host name lookup failure
+>   CC      drivers/serial/uartlite.o
+> drivers/serial/uartlite.c: In function `ulite_of_probe':
+> drivers/serial/uartlite.c:594: error: ulite_of_probe causes a section type conflict
+> make[2]: *** [drivers/serial/uartlite.o] Error 1
+> make[1]: *** [drivers/serial] Error 2
+> make: *** [drivers] Error 2
+> [microblaze@monstr linux-2.6-last]$ make
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+> dnsdomainname: Host name lookup failure
+>   CC      drivers/serial/uartlite.o
+> drivers/serial/uartlite.c: In function `ulite_init':
+> drivers/serial/uartlite.c:659: error: ulite_init causes a section type conflict
+> make[2]: *** [drivers/serial/uartlite.o] Error 1
+> make[1]: *** [drivers/serial] Error 2
+> make: *** [drivers] Error 2
+> [microblaze@monstr linux-2.6-last]$ make
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+> dnsdomainname: Host name lookup failure
+>   CC      drivers/serial/uartlite.o
+>   LD      drivers/serial/built-in.o
+> ...
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+> WARNING: vmlinux.o(.text+0x44): Section mismatch: reference to .init.text:start_kernel (between '_start' and 'run_init_process')
+> WARNING: vmlinux.o(.text+0xc9c): Section mismatch: reference to .init.text:early_init_devtree (between 'machine_early_init' and 'machine_restart')
+> WARNING: vmlinux.o(.text+0xca8): Section mismatch: reference to .init.data:default_command_line (between 'machine_early_init' and 'machine_restart')
+> WARNING: vmlinux.o(.text+0xd8798): Section mismatch: reference to .init.text:uart_parse_options (between 'ulite_console_setup' and 'ulite_console_init')
+> WARNING: vmlinux.o(.text+0xd87bc): Section mismatch: reference to .init.text:uart_set_options (between 'ulite_console_setup' and 'ulite_console_init')
+>   GEN     .version
+>   CHK     include/linux/compile.h
+> dnsdomainname: Host name lookup failure
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      vmlinux
+>   SYSMAP  System.map
+>   OBJCOPY arch/microblaze/boot/linux.bin
+> Kernel: arch/microblaze/boot/linux.bin is ready  (#7)
+>   Building modules, stage 2.
+>   MODPOST 0 modules
+>
 
 
-> -----Original Message-----
-> From: Kiyoshi Ueda [mailto:k-ueda@ct.jp.nec.com]
-> Sent: Tuesday, December 11, 2007 4:50 PM
-> To: jens.axboe@oracle.com
-> Cc: linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org;
-> linux-ide@vger.kernel.org; dm-devel@redhat.com;
-> j-nomura@ce.jp.nec.com; k-ueda@ct.jp.nec.com; Miller, Mike (OS Dev)
-> Subject: [PATCH 22/30] blk_end_request: changing cpqarray (take 4)
->
-> This patch converts cpqarray to use blk_end_request interfaces.
-> Related 'ok' arguments are converted to 'error'.
->
-> cpqarray is a little bit different from "normal" drivers.
-> cpqarray directly calls bio_endio() and disk_stat_add() when
-> completing request.  But those can be replaced with
-> __end_that_request_first().
-> After the replacement, request completion procedures of those
-> drivers become like the following:
->     o end_that_request_first()
->     o add_disk_randomness()
->     o end_that_request_last()
-> This can be converted to __blk_end_request() by following the
-> rule (b) mentioned in the patch subject "[PATCH 01/30]
-> blk_end_request: add new request completion interface".
->
-> Cc: Mike Miller <mike.miller@hp.com>
-> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-
-Acked-by: Mike Miller <mike.miller@hp.com>
-
-> ---
->  drivers/block/cpqarray.c |   36 +++++++-----------------------------
->  1 files changed, 7 insertions(+), 29 deletions(-)
->
-> Index: 2.6.24-rc4/drivers/block/cpqarray.c
-> ===================================================================
-> --- 2.6.24-rc4.orig/drivers/block/cpqarray.c
-> +++ 2.6.24-rc4/drivers/block/cpqarray.c
-> @@ -167,7 +167,6 @@ static void start_io(ctlr_info_t *h);
->
->  static inline void addQ(cmdlist_t **Qptr, cmdlist_t *c);
-> static inline cmdlist_t *removeQ(cmdlist_t **Qptr, cmdlist_t
-> *c); -static inline void complete_buffers(struct bio *bio,
-> int ok);  static inline void complete_command(cmdlist_t *cmd,
-> int timeout);
->
->  static irqreturn_t do_ida_intr(int irq, void *dev_id); @@
-> -980,26 +979,13 @@ static void start_io(ctlr_info_t *h)
->         }
->  }
->
-> -static inline void complete_buffers(struct bio *bio, int ok) -{
-> -       struct bio *xbh;
-> -
-> -       while (bio) {
-> -               xbh = bio->bi_next;
-> -               bio->bi_next = NULL;
-> -
-> -               bio_endio(bio, ok ? 0 : -EIO);
-> -
-> -               bio = xbh;
-> -       }
-> -}
->  /*
->   * Mark all buffers that cmd was responsible for
->   */
->  static inline void complete_command(cmdlist_t *cmd, int timeout)  {
->         struct request *rq = cmd->rq;
-> -       int ok=1;
-> +       int error = 0;
->         int i, ddir;
->
->         if (cmd->req.hdr.rcode & RCODE_NONFATAL && @@
-> -1011,16 +997,17 @@ static inline void complete_command(cmdl
->         if (cmd->req.hdr.rcode & RCODE_FATAL) {
->                 printk(KERN_WARNING "Fatal error on ida/c%dd%d\n",
->                                 cmd->ctlr, cmd->hdr.unit);
-> -               ok = 0;
-> +               error = -EIO;
->         }
->         if (cmd->req.hdr.rcode & RCODE_INVREQ) {
->                                 printk(KERN_WARNING "Invalid
-> request on ida/c%dd%d = (cmd=%x sect=%d cnt=%d sg=%d ret=%x)\n",
->                                 cmd->ctlr, cmd->hdr.unit,
-> cmd->req.hdr.cmd,
->                                 cmd->req.hdr.blk,
-> cmd->req.hdr.blk_cnt,
->                                 cmd->req.hdr.sg_cnt,
-> cmd->req.hdr.rcode);
-> -               ok = 0;
-> +               error = -EIO;
->         }
-> -       if (timeout) ok = 0;
-> +       if (timeout)
-> +               error = -EIO;
->         /* unmap the DMA mapping for all the scatter gather
-> elements */
->         if (cmd->req.hdr.cmd == IDA_READ)
->                 ddir = PCI_DMA_FROMDEVICE; @@ -1030,18
-> +1017,9 @@ static inline void complete_command(cmdl
->                  pci_unmap_page(hba[cmd->ctlr]->pci_dev,
-> cmd->req.sg[i].addr,
->                                 cmd->req.sg[i].size, ddir);
->
-> -       complete_buffers(rq->bio, ok);
-> -
-> -       if (blk_fs_request(rq)) {
-> -               const int rw = rq_data_dir(rq);
-> -
-> -               disk_stat_add(rq->rq_disk, sectors[rw],
-> rq->nr_sectors);
-> -       }
-> -
-> -       add_disk_randomness(rq->rq_disk);
-> -
->         DBGPX(printk("Done with %p\n", rq););
-> -       end_that_request_last(rq, ok ? 1 : -EIO);
-> +       if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
-> +               BUG();
->  }
->
->  /*
->
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
