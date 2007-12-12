@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbXLLLNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbXLLLO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759065AbXLLLNi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 06:13:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbXLLLNb
+	id S1759505AbXLLLO0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 06:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757072AbXLLLOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 06:13:31 -0500
-Received: from nz-out-0506.google.com ([64.233.162.235]:3148 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754357AbXLLLNa (ORCPT
+	Wed, 12 Dec 2007 06:14:18 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48302 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754403AbXLLLOR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 06:13:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jNly5lYV1pt4aqHoi1xzUzKi/jHm1tp+HTmfgc97SGQguE/YoOWydQYIndG+S3E8gImSymykuTC4doO+ez1ck9Q1M9RPyzDFlvHA0JCSTjnmm7y2dw41JHl1xtr8qrSLve+trNxooja5f/lg275TLjmKBMsNY3awc+5PE5/GmVI=
-Message-ID: <cabda6420712120313t339fb5ccv9e8aebcbf75c7817@mail.gmail.com>
-Date: Wed, 12 Dec 2007 12:13:28 +0100
-From: chri <chripell@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] netmos 9855 fix
-Cc: linux-kernel@vger.kernel.org, "Thomas Richter" <thor@math.tu-berlin.de>,
-       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Martin Schitter" <ms@gewi.kfunigraz.ac.at>
-In-Reply-To: <20071212011625.598654e9.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 12 Dec 2007 06:14:17 -0500
+Date: Wed, 12 Dec 2007 03:14:11 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org
+Subject: Re: [PATCH 06/47] Add serial driver for CRISv32.
+Message-Id: <20071212031411.e8b00037.akpm@linux-foundation.org>
+In-Reply-To: <198a9a1fad3830f89aa033f38c7600ec512d1947.1196848533.git.jesper.nilsson@axis.com>
+References: <ca13018bb45763422de40e6109171637091a312e.1196848533.git.jesper.nilsson@axis.com>
+	<198a9a1fad3830f89aa033f38c7600ec512d1947.1196848533.git.jesper.nilsson@axis.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11968504473036-git-send-email-chripell@gmail.com>
-	 <20071212011625.598654e9.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 12, 2007 10:16 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thu, 29 Nov 2007 17:23:14 +0100 Jesper Nilsson <jesper.nilsson@axis.com> wrote:
 
-> What was wrong with it?
->
+> +static void serial_cris_set_mctrl(struct uart_port *port, unsigned int mctrl)
+> +{
+> +	struct uart_cris_port *up = (struct uart_cris_port *)port;
 
-Hi,
+use container_of() here
 
-on loading only one serial port was present and it wasn't working.
-After looking in the data sheet I realized that the base address was
-wrong. For further reference here is lspci and relevant dmesg output:
+> +static irqreturn_t dma_tr_interrupt(int irq, void *dev_id)
+> +{
+> +	struct uart_cris_port *up = (struct uart_cris_port *)dev_id;
 
-02:00.0 Communication controller: NetMos Technology PCI 9855 Multi-I/O
-Controller (rev 01) (prog-if 02)
-        Subsystem: LSI Logic / Symbios Logic Unknown device 0022
-        Flags: medium devsel, IRQ 19
-        I/O ports at df00 [size=8]
-        I/O ports at de00 [size=8]
-        I/O ports at dd00 [size=8]
-        I/O ports at dc00 [size=8]
-        I/O ports at db00 [size=8]
-        I/O ports at da00 [size=16]
-
-parport1: PC-style at 0xdd00 [PCSPP,TRISTATE]
-parport2: PC-style at 0xdf00 [PCSPP,TRISTATE,EPP]
-0000:02:00.0: ttyS0 at I/O 0xdb00 (irq = 19) is a 16550A
-0000:02:00.0: ttyS1 at I/O 0xda00 (irq = 19) is a 16550A
-
-
-
--- 
-Christian Pellegrin, see http://www.evolware.org/chri/
-"Real Programmers don't play tennis, or any other sport which requires
-you to change clothes. Mountain climbing is OK, and Real Programmers
-wear their climbing boots to work in case a mountain should suddenly
-spring up in the middle of the computer room."
+This driver is a somewhat depressing read too.
