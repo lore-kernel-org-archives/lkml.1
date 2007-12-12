@@ -1,119 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbXLLCCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbXLLCH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbXLLCCn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 21:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbXLLCCe
+	id S1755721AbXLLCH1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 21:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbXLLCHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 21:02:34 -0500
-Received: from mu-out-0910.google.com ([209.85.134.188]:60983 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbXLLCCd (ORCPT
+	Tue, 11 Dec 2007 21:07:15 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42415 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751136AbXLLCHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 21:02:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=CUdwcB2XsotjpnME9x57Bv+318+lfQg44hruWOlAsyw4qjUG7C+ON/HrvJrf3FokSc90swyu9B8cHEAMWaVKRXzBD3HwTnFQo1WHumjUVDdD0fewiF+1RBacI45e+saTCT45V+JGO6i1q4VwTHEYLWBZY4QJM+p2Ow9Gh4yOB/c=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression [SOLVED]
-Date: Wed, 12 Dec 2007 04:01:56 +0200
-User-Agent: KMail/1.9.6
-Cc: bfields@fieldses.org, neilb@suse.de, rjw@sisk.pl,
-       trond.myklebust@fys.uio.no, gnome42@gmail.com,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com, den@openvz.org,
-       linux-nfs@vger.kernel.org
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com> <200712101705.30428.maximlevitsky@gmail.com> <20071210130305.d8983fdc.akpm@linux-foundation.org>
-In-Reply-To: <20071210130305.d8983fdc.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 11 Dec 2007 21:07:13 -0500
+Date: Tue, 11 Dec 2007 18:06:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Eric Van Hensbergen <ericvh@gmail.com>,
+       Ron Minnich <rminnich@sandia.gov>, Latchesar Ionkov <lucho@ionkov.net>,
+       v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] 9p util semaphore to mutex
+Message-Id: <20071211180607.c1f8b797.akpm@linux-foundation.org>
+In-Reply-To: <20071209171613.670807836@gmail.com>
+References: <20071209171509.601451827@gmail.com>
+	<20071209171613.670807836@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712120401.57128.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 December 2007 23:03:05 Andrew Morton wrote:
-> On Mon, 10 Dec 2007 17:05:30 +0200
-> Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> 
-> > On Monday 10 December 2007 16:36:09 J. Bruce Fields wrote:
-> > > On Mon, Dec 10, 2007 at 04:19:12PM +0200, Maxim Levitsky wrote:
-> > > > ...
-> > > > > It is best not to use nohide - we should probably mark it as
-> > > > > 'legacy'.
-> > > > > 
-> > > > > Simply export the top level mountpoint as 'crossmnt'  and everything
-> > > > > below there will be exported.
-> > > > > 
-> > > > > > Where should I put those options in root file-system export or in submount export?
-> > > > > 
-> > > > > crossmnt goes at the top.  nohide goes in the submount.  Both have
-> > > > > the same general effect though with subtle differences.
-> > > > > You don't need both (though that doesn't hurt).
-> > > > > Just use crossmnt at the top,  Then you don't need to mention the
-> > > > > lower level filesystems at all.
-> > > > > 
-> > > > > > 
-> > > > ...
-> > > > > > (I decided to switch to NFS4 only due to the lack of ability to see underlying mounts)
-> > > > > > 
-> > > > > 
-> > > > > All of this should work fine with v3.  Once you have the right patch
-> > > > > for the crossmnt bug applied, if you have further problems post them
-> > > > > to linux-nfs@vger.kernel.org.
-> > > > > 
-> > > > > NeilBrown
-> > > > > 
-> > > > 
-> > > > Big thanks,
-> > > > 
-> > > > Still NFS server just don't want to accept the connection
-> > > > I noticed that if I first mount with
-> > > > -tnfs, unmount,  and then mount with -tnfs4, it works
-> > > 
-> > > OK, in that case, that's definitely the bug Eric sent out the patch for;
-> > > you may want to try applying his patch.
-> > You mean
-> > "[PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate" ?
-> > 
-> > I did apply it (on both kernel and server), and it doesn't help.
-> 
-> argh, this is getting bad.
-> 
-> Can you please test the below patch asap? Against 2.6.24-rc4 or latest-linus.
-> 
-> 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> Revert
-> 
->     commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416
->     Author: Eric W. Biederman <ebiederm@xmission.com>
->     Date:   Sun Dec 2 00:33:17 2007 +1100
-> 
+On Sun, 09 Dec 2007 13:15:11 -0400 Kevin Winchester <kjwinchester@gmail.com> wrote:
 
-Hi,
+> Convert the semaphore to a mutex in net/9p/util.c
+> 
+> Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
+> 
+> ---
+>  net/9p/util.c |   12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+> 
+> Index: v2.6.24-rc4/net/9p/util.c
+> ===================================================================
+> --- v2.6.24-rc4.orig/net/9p/util.c
+> +++ v2.6.24-rc4/net/9p/util.c
+> @@ -33,7 +33,7 @@
+>  #include <net/9p/9p.h>
+>  
+>  struct p9_idpool {
+> -	struct semaphore lock;
+> +	struct mutex lock;
+>  	struct idr pool;
+>  };
+>  
+> @@ -45,7 +45,7 @@ struct p9_idpool *p9_idpool_create(void)
+>  	if (!p)
+>  		return ERR_PTR(-ENOMEM);
+>  
+> -	init_MUTEX(&p->lock);
+> +	mutex_init(&p->lock);
+>  	idr_init(&p->pool);
+>  
+>  	return p;
+> @@ -76,14 +76,14 @@ retry:
+>  	if (idr_pre_get(&p->pool, GFP_KERNEL) == 0)
+>  		return 0;
+>  
+> -	if (down_interruptible(&p->lock) == -EINTR) {
+> +	if (mutex_lock_interruptible(&p->lock) == -EINTR) {
+>  		P9_EPRINTK(KERN_WARNING, "Interrupted while locking\n");
+>  		return -1;
+>  	}
+>  
+>  	/* no need to store exactly p, we just need something non-null */
+>  	error = idr_get_new(&p->pool, p, &i);
+> -	up(&p->lock);
+> +	mutex_unlock(&p->lock);
+>  
+>  	if (error == -EAGAIN)
+>  		goto retry;
+> @@ -104,12 +104,12 @@ EXPORT_SYMBOL(p9_idpool_get);
+>  
+>  void p9_idpool_put(int id, struct p9_idpool *p)
+>  {
+> -	if (down_interruptible(&p->lock) == -EINTR) {
+> +	if (mutex_lock_interruptible(&p->lock) == -EINTR) {
+>  		P9_EPRINTK(KERN_WARNING, "Interrupted while locking\n");
+>  		return;
+>  	}
+>  	idr_remove(&p->pool, id);
+> -	up(&p->lock);
+> +	mutex_unlock(&p->lock);
+>  }
+>  EXPORT_SYMBOL(p9_idpool_put);
 
-I finally solved this.
-There is no need to revert 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416.
+I cannot see how the code which you are modifying could have been correct.
 
-It was actually a deadly mixture of 3 bugs:
+If the lock is contended and this task has signal_pending() then boom - we
+return from p9_idpool_put() without having removed the item from the IDR
+tree and then we just lose all track of this fact.  It is at a minimum a
+memory leak.
 
-1) Stale handles - Trond's patch fixes it, but I somehow missed it.
-2) Empty /proc/fs/nfsd (which causes nfs4 failures, and masks the bug #1, since with it the subfolders are just empty)
-	[PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate fixes it
+I'm getting the feeling that we need to go and take a general look at the
+down_interuptible() and mutex_lock_interruptible() callers in the nether
+regions of the kernel...
 
-3) And as I expected, a userspace bug, which believe me or not has exactly the same symptoms
-like #2 (and doesn't depend on others)
+Meanwhile I'd propose this instead:
 
-It is a wrong boot script in BLFS that starts nfs daemons in wrong order.
-So there are 3 bugs and each masks the former one :-) .
 
-I revised boot script to use recommended order like in nfs-utils.
-And finally everything works....
+From: Andrew Morton <akpm@linux-foundation.org>
 
-Best regards,
-	Maxim Levitsky
+Don't use down_interruptible() in situations where we cannot handle the
+consequences.
+
+Cc: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Eric Van Hensbergen <ericvh@gmail.com>
+Cc: Ron Minnich <rminnich@sandia.gov>
+Cc: Latchesar Ionkov <lucho@ionkov.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ net/9p/util.c |   11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
+
+diff -puN net/9p/util.c~9p-util-fix-semaphore-handling net/9p/util.c
+--- a/net/9p/util.c~9p-util-fix-semaphore-handling
++++ a/net/9p/util.c
+@@ -76,12 +76,8 @@ retry:
+ 	if (idr_pre_get(&p->pool, GFP_KERNEL) == 0)
+ 		return 0;
+ 
+-	if (down_interruptible(&p->lock) == -EINTR) {
+-		P9_EPRINTK(KERN_WARNING, "Interrupted while locking\n");
+-		return -1;
+-	}
+-
+ 	/* no need to store exactly p, we just need something non-null */
++	down(&p->lock);
+ 	error = idr_get_new(&p->pool, p, &i);
+ 	up(&p->lock);
+ 
+@@ -104,10 +100,7 @@ EXPORT_SYMBOL(p9_idpool_get);
+ 
+ void p9_idpool_put(int id, struct p9_idpool *p)
+ {
+-	if (down_interruptible(&p->lock) == -EINTR) {
+-		P9_EPRINTK(KERN_WARNING, "Interrupted while locking\n");
+-		return;
+-	}
++	down(&p->lock);
+ 	idr_remove(&p->pool, id);
+ 	up(&p->lock);
+ }
+_
+
