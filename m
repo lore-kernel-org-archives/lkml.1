@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbXLLPwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbXLLPyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230AbXLLPwV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 10:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXLLPwM
+	id S1758768AbXLLPyN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 10:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbXLLPx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 10:52:12 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:26980 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbXLLPwK (ORCPT
+	Wed, 12 Dec 2007 10:53:58 -0500
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:50840 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754030AbXLLPx5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 10:52:10 -0500
-In-Reply-To: <475FD0A1.3090304@voltaire.com>
-References: <OFD9564F75.44193623-ONC12573AE.002EA542-C12573AE.002F5FBC@de.ibm.com> <475FD0A1.3090304@voltaire.com>
-Subject: Re: [ewg] Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
-To: Or Gerlitz <ogerlitz@voltaire.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, OF-General <general@lists.openfabrics.org>,
-       Joachim Fenkes <FENKES@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Roland Dreier <rdreier@cisco.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-X-Mailer: Lotus Notes Release 8.0 August 02, 2007
-Message-ID: <OF2694B462.1504C1FC-ONC12573AF.0056AAC0-C12573AF.0056F862@de.ibm.com>
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Wed, 12 Dec 2007 17:02:23 +0100
-X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
- 12/12/2007 16:52:07
+	Wed, 12 Dec 2007 10:53:57 -0500
+Message-ID: <47600350.3020000@keyaccess.nl>
+Date: Wed, 12 Dec 2007 16:50:40 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <475F1DC6.5090403@keyaccess.nl> <475FA060.6070004@gmail.com> <4af2d03a0712120325n50d057baq7ec440c5e57fda39@mail.gmail.com>
+In-Reply-To: <4af2d03a0712120325n50d057baq7ec440c5e57fda39@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Or Gerlitz <ogerlitz@voltaire.com> wrote on 12.12.2007 13:14:25:
+On 12-12-07 12:25, Jiri Slaby wrote:
 
-> Joachim Fenkes wrote:
-> > Roland Dreier <rdreier@cisco.com> wrote on 10.12.2007 22:47:37:
->
-> >> It's an optional device feature, so this should be OK
-> >> (although the iSER driver currently seems to depend on a device
-> >> supporting FMRs, which is probably going to be a problem with iWARP
-> >> support in the future anyway).
->
-> > I don't feel very well with removing code from the driver that iSER
-seems
-> > to depend on. Are there plans to fix this in iSER?
->
-> What is the fix you suggest, to add a device query that tells you for
-> which verbs the documentation does not apply? or enhance the code of the
->   map_phys_fmr verb within the ehca driver to return error if called
-> from non-sleepable context?
+Thanks for reporting! You have two results that are somewhat off:
 
-Roland,
-what is your suggestion here?
+> Intel(R) Core(TM)2 Duo CPU E6850 @ 3.00GHz
+> cycles: out 6500, in 3135
 
-We could implement both versions Or is proposing, but having both
-at the same time sound like overkill.
+6500 / 3000 = 2.17. Fairly high...
 
-Christoph R.
+> Intel(R) Xeon(R) CPU E5335 @ 2.00GHz
+> cycles: out 3217, in 1898
 
+3217 / 2000 = 1.61. Okay.
+
+> Dual Core AMD Opteron(tm) Processor 275
+> cycles: out 5508, in 5524
+
+2200 MHz right?
+
+5508 / 2200 = 2.50. Very high.
+
+Nothing was dozing off in some ACPI sleep state or something?
+
+Rene.
