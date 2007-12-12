@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757837AbXLLClh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757881AbXLLCnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757837AbXLLClh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 21:41:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbXLLCl3
+	id S1757881AbXLLCnb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 21:43:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbXLLCnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 21:41:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48446 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752635AbXLLCl3 (ORCPT
+	Tue, 11 Dec 2007 21:43:23 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:1369 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751993AbXLLCnW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 21:41:29 -0500
-Date: Tue, 11 Dec 2007 18:40:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH -mm] x86 boot : export boot_params via sysfs
-Message-Id: <20071211184012.a84fff36.akpm@linux-foundation.org>
-In-Reply-To: <1197391749.17188.8.camel@caritas-dev.intel.com>
-References: <1197391749.17188.8.camel@caritas-dev.intel.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 11 Dec 2007 21:43:22 -0500
+Date: Wed, 12 Dec 2007 10:43:08 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Jordan Crouse <jordan.crouse@amd.com>, davem@davemloft.net,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] crypto/geode-aes.c: add __dev{init,exit} annotations
+Message-ID: <20071212024308.GA21320@gondor.apana.org.au>
+References: <20071211221949.GB14204@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071211221949.GB14204@stusta.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Dec 2007 16:49:09 +0000 "Huang, Ying" <ying.huang@intel.com> wrote:
-
-> This patch export the boot parameters via sysfs. This can be used for
-> debugging and kexec.
+On Tue, Dec 11, 2007 at 11:19:50PM +0100, Adrian Bunk wrote:
+> This patch adds __dev{init,exit} annotations.
 > 
-> The files added are as follow:
-> 
-> /sys/kernel/boot_params/data	: binary file for struct boot_params
-> /sys/kernel/boot_params/version	: boot protocol version
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Your patch uses kobject_create_and_register() which was added in Greg's
-driver tree as of 2.6.24-rc4-mm1.
-
-However for some reason kobject_create_and_register() has magically vanished
-from Greg's current driver tree so I cannot carry this patch, sorry.
-
+Applied to cryptodev.  Thanks Adrian.
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
