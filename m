@@ -1,56 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbXLLGr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbXLLGvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756621AbXLLGr4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 01:47:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbXLLGrt
+	id S1757072AbXLLGvE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 01:51:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXLLGuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 01:47:49 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:49897 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750825AbXLLGrs (ORCPT
+	Wed, 12 Dec 2007 01:50:54 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:3034 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbXLLGux (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 01:47:48 -0500
-Date: Wed, 12 Dec 2007 07:47:31 +0100
-To: Peter Zijlstra <peterz@infradead.org>, Avi Kivity <avi@qumranet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       hugh <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: kernel BUG: Eeek! page_mapcount(page) went negative!
-Message-ID: <20071212064730.GI26785@gamma.logic.tuwien.ac.at>
-References: <20071210104859.GI7003@gamma.logic.tuwien.ac.at> <20071210112135.GA19783@gamma.logic.tuwien.ac.at> <200712102230.04342.rjw@sisk.pl> <20071210104859.GI7003@gamma.logic.tuwien.ac.at> <20071210112135.GA19783@gamma.logic.tuwien.ac.at> <475D37CE.8040602@qumranet.com> <20071210125938.GC25518@gamma.logic.tuwien.ac.at> <475D475A.8090007@qumranet.com> <20071210104859.GI7003@gamma.logic.tuwien.ac.at> <1197285967.31440.22.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712102230.04342.rjw@sisk.pl> <475D475A.8090007@qumranet.com> <1197285967.31440.22.camel@twins>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+	Wed, 12 Dec 2007 01:50:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=DEQfuJbDR+q9iJtAh7poIZqWTn5GdqwSKDFJOcOjSJM9ThO5RmojEC2yrJJ1E7IyggvF6wUEz2x7A+37Gymxbn1Ld15j1Oyboi/F+mzRNLlfP3zhdIwqBpq8t/wQoCzW24PM8+ITT/dM5xmIBcmHqzcHaz3UVxxx91bQHnxGXyY=
+Subject: [PATCH] x86: Remove FASTCALL macro from asm-x86/*.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 11 Dec 2007 22:50:43 -0800
+Message-Id: <1197442243.5745.3.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all!
+Now that X86_32 uses regparm(3) by default, FASTCALL() is no
+longer required.  Remove it from all headers in include/asm-x86
 
-On Mo, 10 Dez 2007, Peter Zijlstra wrote:
-> How reproducable is this? You make it sound like its easy to reproduce,
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ include/asm-x86/highmem.h   |    4 ++--
+ include/asm-x86/hw_irq_32.h |    2 +-
+ include/asm-x86/rwsem.h     |    8 ++++----
+ include/asm-x86/system.h    |    4 ++--
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
-I tried and re-tried and re-tried to reproduce this, without success.
-Sorry. 
+diff --git a/include/asm-x86/highmem.h b/include/asm-x86/highmem.h
+index 13cdcd6..66d2c6f 100644
+--- a/include/asm-x86/highmem.h
++++ b/include/asm-x86/highmem.h
+@@ -63,8 +63,8 @@ extern pte_t *pkmap_page_table;
+ #define PKMAP_NR(virt)  ((virt-PKMAP_BASE) >> PAGE_SHIFT)
+ #define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
+ 
+-extern void * FASTCALL(kmap_high(struct page *page));
+-extern void FASTCALL(kunmap_high(struct page *page));
++extern void * kmap_high(struct page *page);
++extern void kunmap_high(struct page *page);
+ 
+ void *kmap(struct page *page);
+ void kunmap(struct page *page);
+diff --git a/include/asm-x86/hw_irq_32.h b/include/asm-x86/hw_irq_32.h
+index 0bedbdf..ca6e9fa 100644
+--- a/include/asm-x86/hw_irq_32.h
++++ b/include/asm-x86/hw_irq_32.h
+@@ -47,7 +47,7 @@ void enable_8259A_irq(unsigned int irq);
+ int i8259A_irq_pending(unsigned int irq);
+ void make_8259A_irq(unsigned int irq);
+ void init_8259A(int aeoi);
+-void FASTCALL(send_IPI_self(int vector));
++void send_IPI_self(int vector);
+ void init_VISWS_APIC_irqs(void);
+ void setup_IO_APIC(void);
+ void disable_IO_APIC(void);
+diff --git a/include/asm-x86/rwsem.h b/include/asm-x86/rwsem.h
+index a7e7e14..eac6b1d 100644
+--- a/include/asm-x86/rwsem.h
++++ b/include/asm-x86/rwsem.h
+@@ -44,10 +44,10 @@
+ 
+ struct rwsem_waiter;
+ 
+-extern struct rw_semaphore *FASTCALL(rwsem_down_read_failed(struct rw_semaphore *sem));
+-extern struct rw_semaphore *FASTCALL(rwsem_down_write_failed(struct rw_semaphore *sem));
+-extern struct rw_semaphore *FASTCALL(rwsem_wake(struct rw_semaphore *));
+-extern struct rw_semaphore *FASTCALL(rwsem_downgrade_wake(struct rw_semaphore *sem));
++extern struct rw_semaphore *rwsem_down_read_failed(struct rw_semaphore *sem);
++extern struct rw_semaphore *rwsem_down_write_failed(struct rw_semaphore *sem);
++extern struct rw_semaphore *rwsem_wake(struct rw_semaphore *);
++extern struct rw_semaphore *rwsem_downgrade_wake(struct rw_semaphore *sem);
+ 
+ /*
+  * the semaphore definition
+diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
+index 6e39d31..a8ea6e8 100644
+--- a/include/asm-x86/system.h
++++ b/include/asm-x86/system.h
+@@ -13,8 +13,8 @@
+ #define AT_VECTOR_SIZE_ARCH 2 /* entries in ARCH_DLINFO */
+ 
+ struct task_struct; /* one of the stranger aspects of C forward declarations */
+-extern struct task_struct *FASTCALL(__switch_to(struct task_struct *prev,
+-						struct task_struct *next));
++extern struct task_struct *__switch_to(struct task_struct *prev,
++						struct task_struct *next);
+ 
+ /*
+  * Saving eflags is important. It switches not only IOPL between tasks,
+-- 
+1.5.3.7.2212.gd092
 
-I guess we can forget that one and assume that it was a strange
-coincidence.
 
-Sorry for the noise.
 
-Best wishes
-
-Norbert
-
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-PAPWORTH EVERARD (n.)
-Technical term for the third take of an orgasm scene during the making
-of a pornographic film.
-			--- Douglas Adams, The Meaning of Liff
