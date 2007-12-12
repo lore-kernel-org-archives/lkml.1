@@ -1,107 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbXLLKUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbXLLKVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758800AbXLLKUc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 05:20:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbXLLKUW
+	id S1759045AbXLLKVy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 05:21:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbXLLKVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 05:20:22 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:35699 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755294AbXLLKUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 05:20:21 -0500
-Date: Wed, 12 Dec 2007 13:20:11 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [4/4] DST: Algorithms used in distributed storage.
-Message-ID: <20071212102011.GC13713@2ka.mipt.ru>
-References: <11972872511269@2ka.mipt.ru> <11972872511718@2ka.mipt.ru> <20071212091246.GA12871@dmon-lap.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 12 Dec 2007 05:21:46 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:57470 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758129AbXLLKVq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 05:21:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tKbszuJfpsNy26Smde7XzoPT9geAYpQuOhUUvFes07FY8Al5dsWAtRzg2uTqDJcZR01RWofg1BY7/6MI0H60rlVIY5eNr6W1UvjBuS5CCaZo76RhRKEt7FFrFadxdGSSQ2EqP7KK2PJZlyNo9FvslaEEzBSsrQQP4xcODXcArBc=
+Message-ID: <b6fcc0a0712120221h51a27cc5s1e17d3607412eadc@mail.gmail.com>
+Date: Wed, 12 Dec 2007 13:21:44 +0300
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [crash] kernel BUG at drivers/cpufreq/cpufreq.c:1060!
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20071212091144.GA11986@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071212091246.GA12871@dmon-lap.sw.ru>
-User-Agent: Mutt/1.5.9i
+References: <20071212091144.GA11986@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 12:12:47PM +0300, Dmitry Monakhov (dmonakhov@sw.ru) wrote:
-> On 14:47 Mon 10 Dec     , Evgeniy Polyakov wrote:
-> > 
-> > Algorithms used in distributed storage.
-> > Mirror and linear mapping code.
-> Hi, i've finally take a look on your DST solution.
-> It seems what your current implementation will not work on nonstandard
-> devices for example software raid0.
-> other comments are follows:
+On 12/12/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> 2.6.24-rc4-git5, got this cpufreq crash on x86 64-bit, during 'make
+> randconfig' random bootup testing:
 
-> > +static int dst_mirror_process_node_data(struct dst_node *n,
-> > +		struct dst_mirror_node_data *ndata, int op)
+Ingo, since you already scripted this, maybe you can add
+"modprobe everything/rmmod everything" test after successful bootup.
+It will catch amazing amount of stuff, I promise.
 
-> > +
-> > +	kunmap(cmp->page);
-> << MINOR_BUG:
->    You has forgot to unmap page on error path, so IMHO it is better to move
->    kunmap to "err_out_free_cmp" label.
-
-Yep, I will fix this.
-
-> > +	priv = kzalloc(sizeof(struct dst_mirror_priv), GFP_KERNEL);
-> > +	if (!priv)
-> > +		return -ENOMEM;
-> > +
-> > +	priv->chunk_num = st->disk_size;
-> > +
-> > +	priv->chunk = vmalloc(DIV_ROUND_UP(priv->chunk_num, BITS_PER_LONG) * sizeof(long));
-> << Ohhh. My. I want to add my 500G hdd. Do you really wanna
->    say what i have to store 128Mb in memory object for this.
-
-Right now yes. There was a code which used single bit for bigger
-data units, but I dropped it because of resync troubles (i.e. when
-one single sector has been updated, it requires to resync the whole
-block). I can not say which case is better though.
-
-> > +		dprintk("%s: start: %llu, size: %llu/%u, bio: %p, req: %p, "
-> > +				"node: %p.\n",
-> > +				__func__, req->start, req->size, nr_pages, bio,
-> > +				req, req->node);
-> > +
-> > +		err = n->st->queue->make_request_fn(n->st->queue, bio);
-> << Why direct make_request_fn instead of generic_make_request?
-
-generic_make_request() will queue the bio in this case,
-so I call request_fn directly.
-
-> > +	for (i = 0; i < DIV_ROUND_UP(priv->chunk_num, BITS_PER_LONG); ++i) {
-> > +		int bit, num, start;
-> > +		unsigned long word = priv->chunk[i];
-> > +
-> > +		if (!word)
-> > +			continue;
-> > +
-> > +		num = 0;
-> > +		start = -1;
-> > +		while (word && num < BITS_PER_LONG) {
-> > +			bit = __ffs(word);
-> > +			if (start == -1)
-> > +				start = bit;
-> > +			num++;
-> << MINOR_BUG: Seems you have misstyped here. AFAIU @num represent position
->    of last non zero bit (start + num == last_non_zero_bit_pos)
-> 			if (start == -1) {
->                 		start = bit;
->                      		num = 1;
-> 			} else
->                                 num += bit;
-
-Yes, you are right of course.
-Since I shift word to more than a single bit, @num has to be update
-accordingly.
-
-> > +			word >>= (bit+1);
-
-Dmitry, thanks a lot for comments, I will fix issues you pointed in the
-next release, although will stay bitmap case opened for a while.
-
--- 
-	Evgeniy Polyakov
+Ditto for modprobe/rmmod/modprobe and modprobe/rmmod/cat /proc,
+cat /sys smoke tests.
