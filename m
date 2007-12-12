@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbXLLLsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbXLLLwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759246AbXLLLsk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 06:48:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757787AbXLLLsb
+	id S1758743AbXLLLwz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 06:52:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbXLLLws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 06:48:31 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:58523 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757072AbXLLLsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 06:48:30 -0500
+	Wed, 12 Dec 2007 06:52:48 -0500
+Received: from smtp-out001.kontent.com ([81.88.40.215]:56275 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753636AbXLLLwr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 06:52:47 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: 2.6.24-rc4: bluetooth device gone after suspend to ram
+Date: Wed, 12 Dec 2007 12:52:53 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+References: <1197455517.8814.10.camel@localhost>
+In-Reply-To: <1197455517.8814.10.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18271.51833.872482.880312@harpo.it.uu.se>
-Date: Wed, 12 Dec 2007 12:48:09 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: acpi ->video_device_list corruption
-In-Reply-To: <20071212101505.GA18472@holomorphy.com>
-References: <20071212101505.GA18472@holomorphy.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Disposition: inline
+Message-Id: <200712121252.54061.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III writes:
- > The ->cap fields of struct acpi_video_device and struct acpi_video_bus
- > are 1B each, not 4B. The oversized memset()'s corrupted the subsequent
- > list_head fields. This resulted in silent corruption without
- > CONFIG_DEBUG_LIST and BUG's with it. This patch uses sizeof() to pass
- > the proper bounds to the memset() calls and thereby correct the bugs.
- > 
- > Included as a MIME attachment is a compressed dmesg from an affected
- > system. The patch was seen to resolve the issue on the affected system.
- > 
- > vs. 2.6.24-rc5
- > 
- > Signed-off-by: William Irwin <wli@holomorphy.com>
- > 
- > 
- > -- wli
- > 
- > diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
- > index 44a0d9b..7895d57 100644
- > --- a/drivers/acpi/video.c
- > +++ b/drivers/acpi/video.c
- > @@ -577,7 +577,7 @@ static void acpi_video_device_find_cap(struct acpi_video_device *device)
- >  	struct acpi_video_device_brightness *br = NULL;
- >  
- >  
- > -	memset(&device->cap, 0, 4);
- > +	memset(&device->cap, 0, sizeof(struct acpi_video_device_cap));
+Am Mittwoch, 12. Dezember 2007 11:31:57 schrieb Soeren Sonnenburg:
+> Dear all,
+> 
+> I noticed that on my macbook pro1,1 the bluetooth device is gone after
+> suspend to ram, i.e.
 
-IMO the memset(ptr, 0, sizeof(*ptr)) idiom is both safer
-and avoids having to write an uninteresting type name.
+Is this a regression?
+Does it work if you unload hci_usb before you suspend?
+If so, please recompile with CONFIG_USB_DEBUG and provide
+dmesg.
+
+	Regards
+		Oliver
+
