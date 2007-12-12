@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbXLLIsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbXLLIsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758380AbXLLIsm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 03:48:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbXLLIsd
+	id S1758670AbXLLIsz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 03:48:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbXLLIsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 03:48:33 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60918 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754919AbXLLIsd (ORCPT
+	Wed, 12 Dec 2007 03:48:40 -0500
+Received: from an-out-0708.google.com ([209.85.132.244]:29388 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757978AbXLLIsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 03:48:33 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ben Woodard <woodard@redhat.com>,
-       Neil Horman <nhorman@redhat.com>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>, hbabu@us.ibm.com,
-       Andi Kleen <andi@firstfloor.org>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com
-Subject: Re: [PATCH] k8: Enable legacy irqs with  extended cpu ids
-References: <20071207175832.GA18485@hmsreliant.think-freely.org>
-	<m1k5nm2g3w.fsf@ebiederm.dsl.xmission.com>
-	<20071211034349.GA3635@localhost.localdomain>
-	<m1ejdt25x0.fsf@ebiederm.dsl.xmission.com>
-	<20071211143910.GA10999@hmsreliant.think-freely.org>
-	<m1ve75z1v3.fsf@ebiederm.dsl.xmission.com>
-	<20071211182254.GB10999@hmsreliant.think-freely.org>
-	<m1ejdtysqd.fsf@ebiederm.dsl.xmission.com>
-	<20071211192434.GD10999@hmsreliant.think-freely.org>
-	<86802c440712111151t29acd38kf9fac8e41743f3e4@mail.gmail.com>
-	<20071211205955.GF10999@hmsreliant.think-freely.org>
-Date: Wed, 12 Dec 2007 01:43:31 -0700
-In-Reply-To: <20071211205955.GF10999@hmsreliant.think-freely.org> (Neil
-	Horman's message of "Tue, 11 Dec 2007 15:59:55 -0500")
-Message-ID: <m17ijkz4jw.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 12 Dec 2007 03:48:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=KjC2uTOFtjrwk2DppLYt3hp8PzN3eUBMQj+ts1jN7flOI5foECyGphzh3tO0B/oYbs7WBq84MSQC5b4q984cx4nP1mjQbuaxMrgLJoU8CWwSf+W+f9ZJA7lgHRnyrgEIcZ9cBMKe9/HRTqf996UZNKDn8bStUgKoFPQb7nMDazc=
+Message-ID: <475FA060.6070004@gmail.com>
+Date: Wed, 12 Dec 2007 09:48:32 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Rene Herman <rene.herman@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
+       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
+       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <475F1DC6.5090403@keyaccess.nl>
+In-Reply-To: <475F1DC6.5090403@keyaccess.nl>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman <nhorman@tuxdriver.com> writes:
+On 12/12/2007 12:31 AM, Rene Herman wrote:
+> Good day.
+> 
+> Would some people on x86 (both 32 and 64) be kind enough to compile and
+> run the attached program? This is about testing how long I/O port access
 
-> Recently a kdump bug was discovered in which a system would hang inside
-> calibrate_delay during the booting of the kdump kernel.  This was caused by the
-> fact that the jiffies counter was not being incremented during timer
-> calibration.  The root cause of this problem was found to be a bios
-> misconfiguration of the hypertransport bus.  On system affected by this hang,
-> the bios had assigned APIC ids which used extended apic bits (more than the
-> nominal 4 bit ids's), but failed to configure bit 17 of the hypertransport
-> transaction config register, which indicated that the mask for the destination
-> field of interrupt packets accross the ht bus (see section 3.3.9 of
-> http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/26094.PDF).
-> If a crash occurs on a cpu with an APIC id that extends beyond 4 bits, it will
-> not recieve interrupts during the kdump kernel boot, and this hang will be the
-> result.  The fix is to add this patch, whcih add an early pci quirk check, to
-> forcibly enable this bit in the httcfg register.  This enables all cpus on a
-> system to receive interrupts, and allows kdump kernel bootup to procede
-> normally.
->
-> Regards
-> Neil
->
->
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+model name      : Intel(R) Core(TM)2 Duo CPU     E6850  @ 3.00GHz
 
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+cycles: out 6490, in 3135
+cycles: out 6484, in 3126
+cycles: out 6511, in 3128
+cycles: out 6500, in 3135
+cycles: out 6492, in 3154
+cycles: out 6506, in 3136
+cycles: out 6516, in 3144
+cycles: out 6489, in 3140
+cycles: out 6492, in 3129
+cycles: out 6507, in 3130
 
-Eric
