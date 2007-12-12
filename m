@@ -1,101 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbXLLAPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbXLLARS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758203AbXLLAPG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 19:15:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXLLAO4
+	id S1758609AbXLLARS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 19:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbXLLARF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 19:14:56 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:52222 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754945AbXLLAOz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 19:14:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=GAZRUaTtr3WRaYdNpLoElfEzGZvh6urMRSRPtGX4SwiprGp7ixYvEaunzONFn2TeUAOOcWQg5iFJLgJh+XWEMmRGr8/n2vR96ta8HQarRRPgEEwHkaMcJE+o++5B2cmRTuHuP38Tt/DVPcfyWv2wQLxx5r9I04EFV1TKfd4kYRU=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Rene Herman <rene.herman@gmail.com>
-Subject: Re: [RFT] Port 0x80 I/O speed
-Date: Wed, 12 Dec 2007 02:14:21 +0200
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
-       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
-       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
-References: <475F1DC6.5090403@keyaccess.nl> <200712120140.34697.maximlevitsky@gmail.com> <475F20EA.5050803@keyaccess.nl>
-In-Reply-To: <475F20EA.5050803@keyaccess.nl>
+	Tue, 11 Dec 2007 19:17:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45516 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755467AbXLLARE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 19:17:04 -0500
+Message-ID: <475F2860.2080203@redhat.com>
+Date: Tue, 11 Dec 2007 16:16:32 -0800
+From: Ben Woodard <woodard@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Neil Horman <nhorman@tuxdriver.com>
+CC: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on	boot
+ cpu
+References: <20071207175832.GA18485@hmsreliant.think-freely.org> <m1k5nm2g3w.fsf@ebiederm.dsl.xmission.com> <20071211034349.GA3635@localhost.localdomain> <m1ejdt25x0.fsf@ebiederm.dsl.xmission.com> <20071211143910.GA10999@hmsreliant.think-freely.org> <m1ve75z1v3.fsf@ebiederm.dsl.xmission.com> <20071211182254.GB10999@hmsreliant.think-freely.org> <m1ejdtysqd.fsf@ebiederm.dsl.xmission.com> <20071211192434.GD10999@hmsreliant.think-freely.org> <86802c440712111151t29acd38kf9fac8e41743f3e4@mail.gmail.com> <20071211205955.GF10999@hmsreliant.think-freely.org>
+In-Reply-To: <20071211205955.GF10999@hmsreliant.think-freely.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712120214.21346.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 December 2007 01:44:42 Rene Herman wrote:
-> On 12-12-07 00:40, Maxim Levitsky wrote:
+We may need to go back and do some additional work on this. It doesn't 
+seem to be quite as cut and dried as we initially thought.
+
+This quirk doesn't appear to work on virtually the same motherboard with 
+the barcelona processors in it. It also may be sensitive to the firmware 
+version.  More extensive testing on a larger number of pre-production is 
+not showing it to be as effective as it appeared to be initially on the 
+testbed.
+
+I'm doing some retesting to figure out what exact situations and 
+collection of patches were able to make it work before.
+
+-ben
+
+
+
+Neil Horman wrote:
+> Recently a kdump bug was discovered in which a system would hang inside
+> calibrate_delay during the booting of the kdump kernel.  This was caused by the
+> fact that the jiffies counter was not being incremented during timer
+> calibration.  The root cause of this problem was found to be a bios
+> misconfiguration of the hypertransport bus.  On system affected by this hang,
+> the bios had assigned APIC ids which used extended apic bits (more than the
+> nominal 4 bit ids's), but failed to configure bit 17 of the hypertransport
+> transaction config register, which indicated that the mask for the destination
+> field of interrupt packets accross the ht bus (see section 3.3.9 of
+> http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/26094.PDF).
+> If a crash occurs on a cpu with an APIC id that extends beyond 4 bits, it will
+> not recieve interrupts during the kdump kernel boot, and this hang will be the
+> result.  The fix is to add this patch, whcih add an early pci quirk check, to
+> forcibly enable this bit in the httcfg register.  This enables all cpus on a
+> system to receive interrupts, and allows kdump kernel bootup to procede
+> normally.
 > 
-> > maxim@MAIN:~/tmp$ sudo ./port800
-> > cycles: out 1767, in 1147
-> > maxim@MAIN:~/tmp$ sudo ./port800
-> > cycles: out 1774, in 1148
-> > maxim@MAIN:~/tmp$ sudo ./port800
-> > cycles: out 1769, in 1150
-> > maxim@MAIN:~/tmp$ sudo ./port800
-> > cycles: out 1769, in 1150
-> > maxim@MAIN:~/tmp$ sudo ./port800
-> > cycles: out 1777, in 1150
-> > maxim@MAIN:~/tmp$ sudo ./port800
-> > cycles: out 1766, in 1149
-> > maxim@MAIN:~/tmp$ sudo ./port800
-> > cycles: out 1768, in 1148
-> > maxim@MAIN:~/tmp$ sudo ./port800
-> > cycles: out 1765, in 1147
-> > 
-> > 
-> > Core 2 Duo system (ICH8/Intel DG965RY motherboard)
-> 
-> 1.8 Ghz?
-> 
-> Rene.
+> Regards
+> Neil
 > 
 > 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+> 
+>  early-quirks.c |   90 +++++++++++++++++++++++++++++++++++++++++++--------------
+>  1 file changed, 69 insertions(+), 21 deletions(-)
+> 
+> 
+> diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
+> index 88bb83e..c0d0c69 100644
+> --- a/arch/x86/kernel/early-quirks.c
+> +++ b/arch/x86/kernel/early-quirks.c
+> @@ -21,8 +21,36 @@
+>  #include <asm/gart.h>
+>  #endif
+>  
+> -static void __init via_bugs(void)
+> +static void __init fix_hypertransport_config(int num, int slot, int func)
+>  {
+> +	u32 htcfg;
+> +	/*
+> +	 *we found a hypertransport bus
+> +	 *make sure that are broadcasting
+> +	 *interrupts to all cpus on the ht bus
+> +	 *if we're using extended apic ids
+> +	 */
+> +	htcfg = read_pci_config(num, slot, func, 0x68);
+> +	if (htcfg & (1 << 18)) {	
+> +		printk(KERN_INFO "Detected use of extended apic ids on hypertransport bus\n");
+> +		if ((htcfg & (1 << 17)) == 0) {
+> +			printk(KERN_INFO "Enabling hypertransport extended apic interrupt broadcast\n");
+> +			printk(KERN_INFO "Note this is a bios bug, please contact your hw vendor\n");
+> +			htcfg |= (1 << 17);
+> +			write_pci_config(num, slot, func, 0x68, htcfg);
+> +		}
+> +	}
+> +
+> +	
+> +}
+> +
+> +static void __init via_bugs(int  num, int slot, int func)
+> +{
+> +	static int fix_applied = 0;
+> +
+> +	if (fix_applied++)
+> +		return;
+> +
+>  #ifdef CONFIG_GART_IOMMU
+>  	if ((end_pfn > MAX_DMA32_PFN ||  force_iommu) &&
+>  	    !gart_iommu_aperture_allowed) {
+> @@ -44,8 +72,13 @@ static int __init nvidia_hpet_check(struct acpi_table_header *header)
+>  #endif /* CONFIG_X86_IO_APIC */
+>  #endif /* CONFIG_ACPI */
+>  
+> -static void __init nvidia_bugs(void)
+> +static void __init nvidia_bugs(int num, int slot, int func)
+>  {
+> +	static int fix_applied = 0;
+> +
+> +	if (fix_applied++)
+> +		return;
+> +
+>  #ifdef CONFIG_ACPI
+>  #ifdef CONFIG_X86_IO_APIC
+>  	/*
+> @@ -72,8 +105,13 @@ static void __init nvidia_bugs(void)
+>  
+>  }
+>  
+> -static void __init ati_bugs(void)
+> +static void __init ati_bugs(int num, int slot, int func)
+>  {
+> +	static int fix_applied = 0;
+> +
+> +	if (fix_applied++)
+> +		return;
+> +
+>  #ifdef CONFIG_X86_IO_APIC
+>  	if (timer_over_8254 == 1) {
+>  		timer_over_8254 = 0;
+> @@ -84,14 +122,18 @@ static void __init ati_bugs(void)
+>  }
+>  
+>  struct chipset {
+> -	u16 vendor;
+> -	void (*f)(void);
+> +	u32 vendor;
+> +	u32 device;
+> +	u32 class;
+> +	u32 class_mask;
+> +	void (*f)(int num, int slot, int func);
+>  };
+>  
+>  static struct chipset early_qrk[] __initdata = {
+> -	{ PCI_VENDOR_ID_NVIDIA, nvidia_bugs },
+> -	{ PCI_VENDOR_ID_VIA, via_bugs },
+> -	{ PCI_VENDOR_ID_ATI, ati_bugs },
+> +	{ PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, nvidia_bugs },
+> +	{ PCI_VENDOR_ID_VIA, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, via_bugs },
+> +	{ PCI_VENDOR_ID_ATI, PCI_ANY_ID, PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, ati_bugs },
+> +	{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB, PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, fix_hypertransport_config },
+>  	{}
+>  };
+>  
+> @@ -106,27 +148,33 @@ void __init early_quirks(void)
+>  	for (num = 0; num < 32; num++) {
+>  		for (slot = 0; slot < 32; slot++) {
+>  			for (func = 0; func < 8; func++) {
+> -				u32 class;
+> -				u32 vendor;
+> +				u16 class;
+> +				u16 vendor;
+> +				u16 device;
+>  				u8 type;
+>  				int i;
+> -				class = read_pci_config(num,slot,func,
+> +
+> +				class = read_pci_config_16(num,slot,func,
+>  							PCI_CLASS_REVISION);
+> -				if (class == 0xffffffff)
+> +				if (class == 0xffff)
+>  					break;
+>  
+> -				if ((class >> 16) != PCI_CLASS_BRIDGE_PCI)
+> -					continue;
+> -
+> -				vendor = read_pci_config(num, slot, func,
+> +				vendor = read_pci_config_16(num, slot, func,
+>  							 PCI_VENDOR_ID);
+> -				vendor &= 0xffff;
+>  
+> -				for (i = 0; early_qrk[i].f; i++)
+> -					if (early_qrk[i].vendor == vendor) {
+> -						early_qrk[i].f();
+> -						return;
+> +				device = read_pci_config_16(num, slot, func,
+> +							PCI_DEVICE_ID);
+> +
+> +				for(i=0;early_qrk[i].f != NULL;i++) {
+> +					if (((early_qrk[i].vendor == PCI_ANY_ID) ||
+> +					    (early_qrk[i].vendor == vendor)) &&
+> +					   ((early_qrk[i].device == PCI_ANY_ID) ||
+> +					    (early_qrk[i].device == device)) &&
+> +					   (!((early_qrk[i].class ^ class) & 
+> +					     early_qrk[i].class_mask))) {
+> +						early_qrk[i].f(num, slot, func);
+>  					}
+> +				}
+>  
+>  				type = read_pci_config_byte(num, slot, func,
+>  							    PCI_HEADER_TYPE);
 
-2.1 GHZ. but usually reduced by EIST to 1.5 GHz
-(It can have just two values above)
 
-I did the tests again:
-
-
-CPU frequency locked to 2128.000 Mhz:
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1650, in 1065
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1648, in 1066
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1649, in 1065
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1648, in 1065
-maxim@MAIN:~/tmp$
-
-
-CPU frequency locked to: 1596.000 Mhz
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1730, in 1138
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1730, in 1138
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1735, in 1140
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1734, in 1139
-maxim@MAIN:~/tmp$ sudo ./port800
-cycles: out 1734, in 1138
-maxim@MAIN:~/tmp$ 2128.000    
-
-
-A bit strange, isn't it?
-Regards,
-	Maxim Levitsky
+-- 
+-ben
+-=-
