@@ -1,95 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbXLLIXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbXLLIbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757986AbXLLIXt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 03:23:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbXLLIXl
+	id S1758094AbXLLIbV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 03:31:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXLLIbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 03:23:41 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45577 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755025AbXLLIXk (ORCPT
+	Wed, 12 Dec 2007 03:31:03 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:55582 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755492AbXLLIbB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 03:23:40 -0500
-Date: Wed, 12 Dec 2007 00:23:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Byron Bradley <byron.bbradley@gmail.com>
-Cc: linux-kernel@vger.kernel.org, p_gortmaker@yahoo.com, timtimred@foonas.org
-Subject: Re: [PATCH] Add support for the S-35390A RTC chip.
-Message-Id: <20071212002333.dd4508dc.akpm@linux-foundation.org>
-In-Reply-To: <1196979027-2589-1-git-send-email-byron.bbradley@gmail.com>
-References: <1196979027-2589-1-git-send-email-byron.bbradley@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 12 Dec 2007 03:31:01 -0500
+Subject: Re: [PATCH 7/7] [NETDEV]: myri10ge Fix possible causing oops of
+	net_rx_action
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: Joonwoo Park <joonwpark81@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       help@myri.com
+In-Reply-To: <002801c83c73$af10f990$9c94fea9@jason>
+References: <002801c83c73$af10f990$9c94fea9@jason>
+Content-Type: text/plain
+Organization: IBM
+Date: Wed, 12 Dec 2007 14:00:57 +0530
+Message-Id: <1197448257.4710.31.camel@subratamodak.linux.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  6 Dec 2007 22:10:27 +0000 Byron Bradley <byron.bbradley@gmail.com> wrote:
+Would you like to submit the Driver Test Cases to LTP ? Or, if you have
+your Driver test cases written in C, we can port to LTP and have it
+inside the LTP package.
+You can also check out the following links for more info, and can always
+ping me for anything:
+http://ltp.cvs.sourceforge.net/ltp/ltp/testcases/kernel/device-drivers/,
+http://ltp.sourceforge.net/documentation/how-to/ltp.php?
 
-> This adds basic get/set time support for the Seiko Instruments
-> S-35390A. This chip communicates using I2C and is used on the
-> QNAP TS-109/TS-209 NAS devices.
+Regards--
+Subrata
+(LTP Maintainer)
+
+On Wed, 2007-12-12 at 13:01 +0900, Joonwoo Park wrote:
+> [NETDEV]: myri10ge Fix possible causing oops of net_rx_action
 > 
-
-A nice looking little driver.
-
-> +static inline char reverse(char x)
-> +{
-> +	x = ((x >> 1) & 0x55) | ((x << 1) & 0xaa);
-> +	x = ((x >> 2) & 0x33) | ((x << 2) & 0xcc);
-> +	return (x >> 4) | (x << 4);
-> +}
-
-Please take a peek in include/linux/bitrev.h ;)
-
-(I worry about the handling of right-shift-of-negative-values
-in your version, too).
-
-Could you review and runtime test this please?
-
---- a/drivers/rtc/rtc-s35390a.c~rtc-add-support-for-the-s-35390a-rtc-chip-fix
-+++ a/drivers/rtc/rtc-s35390a.c
-@@ -12,6 +12,7 @@
- #include <linux/module.h>
- #include <linux/rtc.h>
- #include <linux/i2c.h>
-+#include <linux/bitrev.h>
- #include <linux/bcd.h>
- 
- #define S35390A_CMD_STATUS1	0
-@@ -121,13 +122,6 @@ static int s35390a_reg2hr(struct s35390a
- 	return hour;
- }
- 
--static inline char reverse(char x)
--{
--	x = ((x >> 1) & 0x55) | ((x << 1) & 0xaa);
--	x = ((x >> 2) & 0x33) | ((x << 2) & 0xcc);
--	return (x >> 4) | (x << 4);
--}
--
- static int s35390a_set_datetime(struct i2c_client *client, struct rtc_time *tm)
- {
- 	struct s35390a	*s35390a = i2c_get_clientdata(client);
-@@ -149,7 +143,7 @@ static int s35390a_set_datetime(struct i
- 
- 	/* This chip expects the bits of each byte to be in reverse order */
- 	for (i = 0; i < 7; ++i)
--		buf[i] = reverse(buf[i]);
-+		buf[i] = bitrev8(buf[i]);
- 
- 	err = s35390a_set_reg(s35390a, S35390A_CMD_TIME1, buf, sizeof(buf));
- 
-@@ -168,7 +162,7 @@ static int s35390a_get_datetime(struct i
- 
- 	/* This chip returns the bits of each byte in reverse order */
- 	for (i = 0; i < 7; ++i)
--		buf[i] = reverse(buf[i]);
-+		buf[i] = bitrev8(buf[i]);
- 
- 	tm->tm_sec = BCD2BIN(buf[S35390A_BYTE_SECS]);
- 	tm->tm_min = BCD2BIN(buf[S35390A_BYTE_MINS]);
-_
+> Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
+> ---
+>  drivers/net/myri10ge/myri10ge.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/net/myri10ge/myri10ge.c b/drivers/net/myri10ge/myri10ge.c
+> index 8def865..57311ed 100644
+> --- a/drivers/net/myri10ge/myri10ge.c
+> +++ b/drivers/net/myri10ge/myri10ge.c
+> @@ -1242,6 +1242,8 @@ static int myri10ge_poll(struct napi_struct *napi, int budget)
+>  	if (work_done < budget || !netif_running(netdev)) {
+>  		netif_rx_complete(netdev, napi);
+>  		put_be32(htonl(3), mgp->irq_claim);
+> +		if (unlikely(work_done == napi->weight))
+> +			return work_done - 1;
+>  	}
+>  	return work_done;
+>  }
+> ---
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
