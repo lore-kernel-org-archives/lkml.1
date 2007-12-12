@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbXLLItY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbXLLI45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbXLLItY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 03:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756698AbXLLItG
+	id S1758299AbXLLI45 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 03:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbXLLI4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 03:49:06 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:43098 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756869AbXLLItC (ORCPT
+	Wed, 12 Dec 2007 03:56:47 -0500
+Received: from web52901.mail.re2.yahoo.com ([206.190.49.11]:41189 "HELO
+	web52901.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756265AbXLLI4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 03:49:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Ae0Qmn1irMOeO3vM+/AyZkCbCbsrryHgIDxwPWjedkYx6c7a7252c1lI6xfIUMiLwlayD5H7hMS3YsditcccyuXwDwRNjKO0Pd/Y8SzwkTfZkTihw5zPlS43WXtF8GWqM4uMMeeMrISDddvxq2t3bZ1xd1KFkDQpAam1tYm96ZI=
-Message-ID: <475FA071.1080201@gmail.com>
-Date: Wed, 12 Dec 2007 13:48:49 +0500
-From: "Alexander E. Patrakov" <patrakov@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); ru-RU; rv:1.8.0.13pre) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.11~pre071022-0etch1+lenny1) Mnenhy/0.7.5.666
+	Wed, 12 Dec 2007 03:56:46 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=S0Ocxijqb7ZJXWVLvq94uo5Sgq4Phwk21ykDoIvnYemWyN2jeSSrJmG4embwennQMKE84/ipxUxGJ4aMKUfUFsd7gac3TLdNFRdoE5KMO2oDhV6YHz7Xn0vTgz7s0Uvbb9rHgFg2gK3juMo2/tgzi4hUWBW23YHKNWO8Iu5loQQ=;
+X-YMail-OSG: oL3HntIVM1kcuzFyEZtjLMGyiDV4a49SJNcvbAHsFHI9wJbZTeYTPppC_u8BhVuvZxLp.wvAbuucphx1geUuyWQ8ul1G1lXDMr9VcfveeWrUtnw3Jqs.h0loYTGUHyCAGlH_xS2IXhRMai3e7YzMGig92g--
+Date: Wed, 12 Dec 2007 08:56:44 +0000 (GMT)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: [2.6.23.9] hostap_plx locks up PC when reading PCI I/O memory
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dcbw@redhat.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20071211171106.ec6f6d38.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Anas Nashif <nashif@linux.intel.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       andi@firstfloor.org, davem@davemloft.net
-Subject: Re: [PATCH] Intel Management Engine Interface
-References: <475EC9C1.9080708@linux.intel.com>
-In-Reply-To: <475EC9C1.9080708@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <788286.65300.qm@web52901.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anas Nashif wrote:
+--- Andrew Morton <akpm@linux-foundation.org> wrote:
+> It might be interesting to see what value of `i' is causing it to fall over.
 
-> The Intel Management Engine Interface (aka HECI: Host Embedded 
-> Controller Interface ) enables communication between the host OS and 
-> the Management Engine firmware. MEI is bi-directional, and either the 
-> host or Intel AMT firmware can initiate transactions.
+I tried unrolling the loop, but a single byte read for i = 0 is enough to lock things up.
 
-There is a little problem: the driver doesn't work at all with the "64-bit 
-kernel and 32-bit userspace" combination.
+> Did any earlier version of the 2.6 kernel work OK?
 
-ioctl32(lms:7759): Unknown cmd fd(0) cmd(c0084800){t:'H';sz:8} arg(ffdfea44) on 
-/dev/heci
+Unfortunately, I don't know. I swapped this card out of the old 2.4.x machine into a machine
+already running Fedora 7. The card works when I put it back into the 2.4 machine too, so it's not
+a hardware problem with the card.
 
-Could you please fix it?
+So I suppose the next step would be trying a linux 2.6.0 kernel? Or was hostap included in the
+kernel later than that?
 
--- 
-Alexander E. Patrakov
+Cheers,
+Chris
+
+
+
+
+      ___________________________________________________________
+Support the World Aids Awareness campaign this month with Yahoo! For Good http://uk.promotions.yahoo.com/forgood/
