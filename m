@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbXLLWbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759008AbXLLWbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752517AbXLLWbE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 17:31:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbXLLWas
+	id S1759008AbXLLWbX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 17:31:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758232AbXLLWau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 17:30:48 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53809 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755959AbXLLWar (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 17:30:47 -0500
-Date: Wed, 12 Dec 2007 14:21:46 -0800
-From: Greg KH <greg@kroah.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm -v2] x86 boot : export boot_params via sysfs
-Message-ID: <20071212222146.GC16474@kroah.com>
-References: <1197449991.14443.88.camel@caritas-dev.intel.com> <20071212174613.GC16049@kroah.com> <47602044.9010104@zytor.com> <20071212185935.GA5941@kroah.com> <47603109.6080909@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47603109.6080909@zytor.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 12 Dec 2007 17:30:50 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35311 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756846AbXLLWat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 17:30:49 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <483979.69273.qm@web36605.mail.mud.yahoo.com>
+References: <483979.69273.qm@web36605.mail.mud.yahoo.com>
+To: casey@schaufler-ca.com
+Cc: dhowells@redhat.com, Stephen Smalley <sds@tycho.nsa.gov>,
+       Karl MacMillan <kmacmill@redhat.com>, viro@ftp.linux.org.uk,
+       hch@infradead.org, Trond.Myklebust@netapp.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 12 Dec 2007 22:29:55 +0000
+Message-ID: <579.1197498595@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 11:05:45AM -0800, H. Peter Anvin wrote:
-> Greg KH wrote:
->>> This is a binary structure defined by protocol;
->> What protocol?  Is this a "standard" documented somewhere?
->
-> Yes, see Documentation/i386/* (although some of it is documented by 
-> reference to include/asm-x86/boot_params.h).
+Casey Schaufler <casey@schaufler-ca.com> wrote:
 
-Ah, so the structure has changed over the years, making this not so much
-a "firmware" field as originally thought :)
+> Yes, but we're talking about writing the configuration information
+> to the kernel, not actually making any access checks with it. I
+> think. What I think we're talking about (and please correct me David
+> if I've stepped into the wrong theatre) is getting the magic
+> secctx that cachefiles will use instead of the secctx that the task
+> would have otherwise. I don't think we're talking about recomputing
+> it on every access, I think David is looking for the blunderbuss
+> secctx that he can use any time he needs one.
 
->>> in that way it's not significantly different from something passed
->>> from the firmware (in fact, it might very well *be* passed from the
->>> firmware.)  We have in the past found platform bugs by looking at the
->>> contents of the whole structure, e.g.  to find that part of it has
->>> been inappropriately clobbered.
->> For debugging things, then just export it through debugfs.
->
-> Fair enough, however...
->
->>> It is also in the form needed by e.g. kexec to operate.
->> Does kexec need this today to work properly?  Or is this something new?
->
-> I believe kexec currently tries to reconstitute it from what data is 
-> available to it.  This is incomplete, though, and has been flagged as a 
-> problem for kexec.
+Indeed.
 
-Can't kexec get this from within the kernel itself when it is running?
-It doesn't need to get this from userspace, does it?
+The way I do it is:
 
->> What userspace program is going to know the exact data format of this
->> blob, and where is it going to know that format from?  The kernel header
->> files in sanitized form?  Or something else?
->
-> It can pick it up from <asm/boot_params.h> (which is now userspace-safe); 
-> or it can decode it itself.  Programs like kexec can pass through most of 
-> the data without examining it, this is the main reason for having it as a 
-> blob.
+ (1) The daemon opens /dev/cachefiles to being an instance of a cache.
 
-I just don't want kernel structures exported in binary fashions in
-sysfs.  If there are specific portions that kexec currently can't figure
-out, why not just export those fields?
+ (2) The daemon negotiates a security context for the module to use.
 
-And, by exporting the different fields (yeah, lots of files, no big
-deal), you can handle the change in the structure over time much easier
-than trying to "know" the layout of the binary blob.
+ (3) The security context is place in a task_security structure.
 
-thanks,
+ (4) This task_security struct is attached temporarily to task->act_as each
+     time any task attempts to access the cache through the module.
 
-greg k-h
+ (5) The task_security struct is discarded when the file descriptor that was
+     created in (1) is closed and the cache is withdrawn at the same time.
+
+David
