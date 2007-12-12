@@ -1,64 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756493AbXLLGFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbXLLG2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756493AbXLLGFl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 01:05:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbXLLGF3
+	id S1755846AbXLLG2N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 01:28:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbXLLG16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 01:05:29 -0500
-Received: from ro-out-1112.google.com ([72.14.202.180]:1695 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752289AbXLLGF2 (ORCPT
+	Wed, 12 Dec 2007 01:27:58 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:56031 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbXLLG15 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 01:05:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YWARxAyF65hPhI7lbNpTrTHoA9Fnwf3hdFAqmQLBkkalaKCn55SEPLnJ9HUa/NkQMs6xAfQNUevpbskvL7AN1MTsaxKaTKNok4RBT8wAbbw7W310tmURcE2BlLYW9Lr4TVRsML379iQeX9m0yeLsvj6zfDorr74yNRt9IvbUn6c=
-Message-ID: <b25c3fa70712112205l2e778bacx66470606272b199@mail.gmail.com>
-Date: Wed, 12 Dec 2007 15:05:26 +0900
-From: "Joonwoo Park" <joonwpark81@gmail.com>
-To: "Stephen Hemminger" <shemminger@linux-foundation.org>
-Subject: Re: [RFC] net: napi fix
-Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       baum@tehutinetworks.net, andy@greyhouse.net
-In-Reply-To: <20071211214634.4dedb274@freepuppy.rosehill>
+	Wed, 12 Dec 2007 01:27:57 -0500
+Date: Wed, 12 Dec 2007 11:18:59 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH] Add Documentation for FAIR_USER_SCHED sysfs files
+Message-ID: <20071212054859.GC1486@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20071212023836.GB1486@linux.vnet.ibm.com> <20071212053556.GA25334@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <002901c83c73$b089b6e0$9c94fea9@jason>
-	 <20071211213939.122de1db@freepuppy.rosehill>
-	 <20071211214634.4dedb274@freepuppy.rosehill>
+In-Reply-To: <20071212053556.GA25334@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/12/12, Stephen Hemminger <shemminger@linux-foundation.org>:
-> Isn't this a better fix for all drivers, rather than peppering every
-> driver with the special case. This is how the logic worked up until
-> 2.6.24.
->
->
-> --- a/net/core/dev.c    2007-12-11 12:16:20.000000000 -0800
-> +++ b/net/core/dev.c    2007-12-11 21:43:39.000000000 -0800
-> @@ -2184,7 +2184,7 @@ static void net_rx_action(struct softirq
->
->                have = netpoll_poll_lock(n);
->
-> -               weight = n->weight;
-> +               weight = min(n->weight, budget);
->
->                /* This NAPI_STATE_SCHED test is for avoiding a race
->                 * with netpoll's poll_napi().  Only the entity which
->
+On Tue, Dec 11, 2007 at 09:35:56PM -0800, Greg KH wrote:
+> On Wed, Dec 12, 2007 at 08:08:36AM +0530, Dhaval Giani wrote:
+> > 
+> > This patch adds documentation about /sys/kernel/uids/<uid>/cpu_share
+> > to Documentation/ABI.
+> > 
+> > Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > 
+> > ---
+> >  Documentation/ABI/testing/sysfs-kernel-uids |   10 ++++++++++
+> >  1 files changed, 10 insertions(+)
+> > 
+> > Index: current/Documentation/ABI/testing/sysfs-kernel-uids
+> > ===================================================================
+> > --- /dev/null
+> > +++ current/Documentation/ABI/testing/sysfs-kernel-uids
+> > @@ -0,0 +1,10 @@
+> > +What:		/sys/kernel/uids/<uid>/cpu_shares
+> > +Date:		December 2007
+> > +Contact:	Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > +		Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> > +Description:
+> > +		The /sys/kernel/uids/<uid>/cpu_shares tunable is used
+> > +		to set the cpu bandwidth a user is allowed. This is a
+> > +		propotional value. What that means is that if there
+> > +		are two users logged in, each with shares 1024, they
+> > +		will get equal CPU bandwidth.
+> 
+> Hm, how about describing the units here?  Can you put "10" in each file
+> and everyone will get the same share?  100?  1?  1024 seems like an odd
+> "share" number.  Unless there is some other document you wish to refer
+> people to do help describe these values?
+> 
 
-Stephen,
-Could you explain how it fix the problem?
-IMHO I think your patch cannot solve the problem.
-The drivers can call netif_rx_complete and net_rx_action can do
-list_move_tail also.
-Am I missing something?
+It is proportional. That is, if two users have same value for shares,
+they will get equal bandwidth on the CPU. If they are in the ratio 1:2,
+then they will share it in that ratio. I've updated the patch for this.
+Hope it is clearer.
 
-Thanks
-Joonwoo
+Thanks,
+--
+
+This patch adds documentation about /sys/kernel/uids/<uid>/cpu_share
+to Documentation/ABI.
+
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+
+---
+ Documentation/ABI/testing/sysfs-kernel-uids |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+)
+
+Index: current/Documentation/ABI/testing/sysfs-kernel-uids
+===================================================================
+--- /dev/null
++++ current/Documentation/ABI/testing/sysfs-kernel-uids
+@@ -0,0 +1,14 @@
++What:		/sys/kernel/uids/<uid>/cpu_shares
++Date:		December 2007
++Contact:	Dhaval Giani <dhaval@linux.vnet.ibm.com>
++		Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
++Description:
++		The /sys/kernel/uids/<uid>/cpu_shares tunable is used
++		to set the cpu bandwidth a user is allowed. This is a
++		propotional value. What that means is that if there
++		are two users logged in, each with an equal number of
++		shares, then they will get equal CPU bandwidth. Another
++		example would be, if User A has shares = 1024 and user
++		B has shares = 2048, User B will get twice the CPU
++		bandwidth user A will. For more details refer
++		Documentation/sched-design-CFS.txt
+
+-- 
+regards,
+Dhaval
