@@ -1,96 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbXLLBa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbXLLBey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbXLLBa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 20:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbXLLBaV
+	id S1755714AbXLLBey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 20:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbXLLBeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 20:30:21 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:12531 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbXLLBaU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 20:30:20 -0500
-Date: Tue, 11 Dec 2007 17:28:28 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
-       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
-       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
-Subject: Re: [RFT] Port 0x80 I/O speed
-Message-Id: <20071211172828.50e68804.randy.dunlap@oracle.com>
-In-Reply-To: <475F1DC6.5090403@keyaccess.nl>
-References: <475F1DC6.5090403@keyaccess.nl>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Dec 2007 20:34:46 -0500
+Received: from ozlabs.org ([203.10.76.45]:60001 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751248AbXLLBep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 20:34:45 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: Correct types for mod_devicetable.h (was: Re: m68k build failure)
+Date: Wed, 12 Dec 2007 12:34:34 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Pierre Ossman <drzeus@drzeus.cx>, Al Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Marcel Holtmann <marcel@holtmann.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>
+References: <20071127220723.e2e3d0b4.akpm@linux-foundation.org> <200712032102.20353.rusty@rustcorp.com.au> <20071208215811.GD20441@stusta.de>
+In-Reply-To: <20071208215811.GD20441@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200712121234.35471.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Dec 2007 00:31:18 +0100 Rene Herman wrote:
+On Sunday 09 December 2007 08:58:11 Adrian Bunk wrote:
+> On Mon, Dec 03, 2007 at 09:02:19PM +1100, Rusty Russell wrote:
+> > On Sunday 02 December 2007 22:22:31 Geert Uytterhoeven wrote:
+> > > On Sat, 1 Dec 2007, Pierre Ossman wrote:
+> > > > Yeah, that could work. Have a header with stuff like this:
+> > > >
+> > > > typedef u16 __attribute__((aligned(2))) aligned_u16;
+> > > > typedef u32 __attribute__((aligned(4))) aligned_u32;
+> > >
+> > > I gave it a try:
+> >
+> > This seems to turn a molehill into a mountain.
+> >
+> > We can change that mod_devicetable.h at any time; it's not supposed to be
+> > a userspace API (the kernel build system doesn't count).
+>
+> module-init-tools is userspace and not shipped as part of the kernel
+> build system...
 
-> Good day.
-> 
-> Would some people on x86 (both 32 and 64) be kind enough to compile and run 
-> the attached program? This is about testing how long I/O port access to port 
-> 0x80 takes. It measures in CPU cycles so CPU speed is crucial in reporting.
-> 
-> Posted a previous incarnation of this before, buried in the outb 0x80 thread 
-> which had a serialising problem. This one should as far as I can see measure 
-> the right thing though. Please yell if you disagree...
-> 
-> For me, on a Duron 1300 (AMD756 chipset) I have a constant:
-> 
-> rene@7ixe4:~/src/port80$ su -c ./port80
-> cycles: out 2400, in 2400
-> 
-> and on a PII 400 (Intel 440BX chipset) a constant:
-> 
-> rene@6bap:~/src/port80$ su -c ./port80
-> cycles: out 553, in 251
-> 
-> Results are (mostly) independent of compiler optimisation, but testing with 
-> an -O2 compile should be most useful. Thanks!
+But module-init-tools is *not* supposed to read this; that code is a 2.4 
+backwards compatibility layer which should be removed (and certainly not 
+enhanced to cover new types in mod_devicetable.h!).
 
-(-m32 build on x86_64)
+I repeat: this is *only* for the internal modpost code.  
 
-midway:/home/rddunlap/src # ./port80
-cycles: out 2702, in 1903
-midway:/home/rddunlap/src # ./port80
-cycles: out 2688, in 1893
-midway:/home/rddunlap/src # ./port80
-cycles: out 2703, in 1909
-midway:/home/rddunlap/src # ./port80
-cycles: out 2687, in 1893
-midway:/home/rddunlap/src # ./port80
-cycles: out 2687, in 1893
-midway:/home/rddunlap/src # ./port80
-cycles: out 2701, in 1907
-midway:/home/rddunlap/src # ./port80
-cycles: out 2701, in 1919
-midway:/home/rddunlap/src # ./port80
-cycles: out 2687, in 1893
-midway:/home/rddunlap/src # ./port80
-cycles: out 2701, in 1909
-midway:/home/rddunlap/src # ./port80
-cycles: out 2706, in 1906
+> > So, just insert two bits of padding in sdio_device_id and insert a
+> > comment saying "/* Explicit padding: works even if we're cross-compiling
+> > */".
+>
+> We had one such problem in 2.6.23 and now we had a similar one in 2.6.24.
+>
+> Getting the alignment issues automatically right would really be an
+> improvement...
 
-/proc/cpuinfo says CPU speed is
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 4
-model name      :               Intel(R) Pentium(R) D CPU 3.00GHz
-stepping        : 4
-cpu MHz         : 2999.988
+Not if it makes the code (even) more obscure.  Put an attribute((packed)) on 
+every structure and add an explanation at the top of the file if it makes you 
+feel safer (new additions to the file are likely to copy existing ones), and 
+that's sufficient.
 
-
----
-~Randy
+Hope that clarifies,
+Rusty.
