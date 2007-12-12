@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbXLLOql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbXLLOtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687AbXLLOql (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 09:46:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXLLOqd
+	id S1755826AbXLLOtN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 09:49:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXLLOs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 09:46:33 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46943 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751037AbXLLOqc (ORCPT
+	Wed, 12 Dec 2007 09:48:59 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:52638 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751659AbXLLOs4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 09:46:32 -0500
-Subject: Re: [v4l-dvb-maintainer] build #340 failed for 2.6.24-rc5-g75b8c13
-	in	linux/drivers/media/video/tuner.ko
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Michael Krufky <mkrufky@linuxtv.org>
-Cc: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com
-In-Reply-To: <475FE553.4020702@linuxtv.org>
-References: <200712120934.46156.toralf.foerster@gmx.de>
-	 <475FE553.4020702@linuxtv.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 12 Dec 2007 12:46:21 -0200
-Message-Id: <1197470781.4744.41.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 12 Dec 2007 09:48:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wg9TgUd9DOpZ6wLXyv0NIeLpFwxQfLDq5o7ExUlI6+9scgHL4QL/8kl2LKqbtTzqjFQMDOdm4cBWkNjxRhiesu7A3c7d9gco0ZT75u8KT9/+GLiqKPJ1mQZNiYtCtZ3sz7zuqpWMByxIIxR3rfqhrleLkthrM8FUg+rZp/+8PaA=
+Message-ID: <b25c3fa70712120648l23572f7cm51fb24f881c8f31b@mail.gmail.com>
+Date: Wed, 12 Dec 2007 23:48:52 +0900
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+To: subrata@linux.vnet.ibm.com
+Subject: Re: [PATCH 7/7] [NETDEV]: myri10ge Fix possible causing oops of net_rx_action
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       help@myri.com
+In-Reply-To: <1197448257.4710.31.camel@subratamodak.linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <002801c83c73$af10f990$9c94fea9@jason>
+	 <1197448257.4710.31.camel@subratamodak.linux.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Qua, 2007-12-12 às 08:42 -0500, Michael Krufky escreveu:
-> > ERROR: "tea5761_attach" [drivers/media/video/tuner.ko] undefined!
-> > ERROR: "tea5761_autodetection" [drivers/media/video/tuner.ko] undefined!
-> > ERROR: "tea5767_autodetection" [drivers/media/video/tuner.ko] undefined!
-> > ERROR: "tea5767_attach" [drivers/media/video/tuner.ko] undefined!
+2007/12/12, Subrata Modak <subrata@linux.vnet.ibm.com>:
+> Would you like to submit the Driver Test Cases to LTP ? Or, if you have
+> your Driver test cases written in C, we can port to LTP and have it
+> inside the LTP package.
+> You can also check out the following links for more info, and can always
+> ping me for anything:
+> http://ltp.cvs.sourceforge.net/ltp/ltp/testcases/kernel/device-drivers/,
+> http://ltp.sourceforge.net/documentation/how-to/ltp.php?
+>
+> Regards--
+> Subrata
+> (LTP Maintainer)
+>
 
-> It looks like the problem has something to do with VIDEO_TUNER=m while
-> both TUNER_TEA5761 & TUNER_TEA5767 are set to 'y'.
-> 
-> I thought that we had already seen this issue and fixed it, but I guess
-> not :-/
-> 
-> One would think that this could be fixed by making TUNER_TEA5761 &
-> TUNER_TEA5767 both depend on VIDEO_TUNER , but that would be wrong,
-> since each of those modules can be attached directly to a bridge driver
-> without tuner.ko being present at all (although this is not done in
-> practice right now, but it *is* the case with some other tuner drivers)
+Subrata,
+I can't sure it's possible since my test was needed some hardware
+stuffs but I'll try it in near future and contact you.
 
-I don't see any issue on making both dependent on VIDEO_TUNER for
-2.6.24, since they are currently used only by tuner core module
-(tuner.ko).
-
-Yet, the same kind of trouble can happen with other drivers that can be
-shared by both V4L and DVB cores, like tda9887 and tda8290.
-
-The proper solution for 2.6.25 seems to create a drivers/media/tuners
-directory and write some different rules at Kconfig.
-
--- 
-Cheers,
-Mauro
-
+Thanks.
+Joonwoo
