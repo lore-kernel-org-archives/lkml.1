@@ -1,49 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbXLLXld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbXLLXm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbXLLXld (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 18:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbXLLXlZ
+	id S1757749AbXLLXm6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 18:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbXLLXmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 18:41:25 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36392 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751735AbXLLXlY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 18:41:24 -0500
-Message-ID: <47607124.2020701@zytor.com>
-Date: Wed, 12 Dec 2007 15:39:16 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 12 Dec 2007 18:42:51 -0500
+Received: from mx2.suse.de ([195.135.220.15]:35139 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751047AbXLLXmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 18:42:50 -0500
+Date: Thu, 13 Dec 2007 00:42:48 +0100
+From: Andi Kleen <ak@suse.de>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org, akpm@osdl.org,
+       torvalds@osdl.org
+Subject: Re: BUG fs/dcache.c:595 in 2.4.24rc3-git3 during NFS umount
+Message-ID: <20071212234248.GD31699@bingen.suse.de>
+References: <200712031623.58223.ak@suse.de> <200712081422.30815.ak@suse.de> <1197243901.11792.1.camel@heimdal.trondhjem.org> <20071210185720.GA32466@bingen.suse.de> <1197428085.28126.3.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, zach@vmware.com,
-       roland@redhat.com
-Subject: Re: [PATCH 0/19] desc_struct integration
-References: <1196957800568-git-send-email-gcosta@redhat.com> <11974640441088-git-send-email-gcosta@redhat.com>
-In-Reply-To: <11974640441088-git-send-email-gcosta@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1197428085.28126.3.camel@heimdal.trondhjem.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> Since the last version of it received no comments on the interfaces, here
-> it goes a version, that I feel ready for inclusion.
-> 
-> The comments regarding style, specially the elimination of the #defines in
-> the desc_struct definition were merged. I also implemented the vmi
-> functions,
-> missing last time.
-> 
-> Ingo, in the absense of further complaints, could you please push to the
-> x86 tree?
-> 
+> I appear to have misread d_find_alias(). It would seem that the only way
+> to ensure that a mountpoint won't be found is to remove it altogether
+> from the inode->i_dentry list. AFAICS that should be largely harmless
+> since the nfs sb->s_root is never visible to users, and is never part of
+> a dentry tree.
 
-Looks fine to me...
+Hasn't BUGed so far with this patch. I'll watch it further but it looks
+good so far. Thanks. I would suggest to push the patch.
 
-	-hpa
+-Andi
+
