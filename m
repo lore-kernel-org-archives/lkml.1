@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbXLLNYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbXLLN1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbXLLNYr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 08:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXLLNYk
+	id S1754784AbXLLN1u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 08:27:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXLLN1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 08:24:40 -0500
-Received: from odyssey.analogic.com ([204.178.40.5]:1624 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751859AbXLLNYj convert rfc822-to-8bit (ORCPT
+	Wed, 12 Dec 2007 08:27:42 -0500
+Received: from ts.adaptec.com ([162.62.93.58]:49482 "EHLO mail-gw3.adaptec.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750856AbXLLN1l convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 08:24:39 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Wed, 12 Dec 2007 08:27:41 -0500
 X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 12 Dec 2007 13:23:10.0860 (UTC) FILETIME=[24316CC0:01C83CC2]
 Content-class: urn:content-classes:message
-Subject: Re: [RFT] Port 0x80 I/O speed
-Date: Wed, 12 Dec 2007 08:23:10 -0500
-Message-ID: <Pine.LNX.4.61.0712120822150.4529@chaos.analogic.com>
-in-reply-to: <475FE010.30208@keyaccess.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry indirectory) (fwd)
+Date: Wed, 12 Dec 2007 08:25:10 -0500
+Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF0101052210@otce2k301.adaptec.com>
+In-Reply-To: <1197409983.6288.9.camel@localhost.localdomain>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [RFT] Port 0x80 I/O speed
-thread-index: Acg8wiQ9/yMoy3Z0T7KD0aCX3xS/LA==
-References: <475F1DC6.5090403@keyaccess.nl> <20071212004316.079e3a05@Varda> <Pine.LNX.4.61.0712120753210.4443@chaos.analogic.com> <475FE010.30208@keyaccess.nl>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Rene Herman" <rene.herman@keyaccess.nl>
-Cc: =?ISO-8859-15?Q?Alejandro_Riveira_Fern=E1ndez?= 
-	<ariveira@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>, <dpreed@reed.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, <pavel@ucw.cz>,
-       <andi@firstfloor.org>, <rol@as2917.net>,
-       "Krzysztof Halasa" <khc@pm.waw.pl>, <david@davidnewall.com>,
-       <hpa@zytor.com>, <john@stoffel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Thread-Topic: broken dpt_i2o in 2.6.23 (was: ext2_check_page: bad entry indirectory) (fwd)
+Thread-Index: Acg8QI3zBRrFuZ7sT7KSs6cf95ES4gAgXnwg
+References: <20071129130319.GA2642@atrey.karlin.mff.cuni.cz> <20071129235813Y.tomof@acm.org> <20071129164557.GD30957@1und1.de> <20071130021226T.tomof@acm.org>  <20071130103450.GC7697@1und1.de> <1197384034.19679.13.camel@n2o.xs4all.nl> <1197409983.6288.9.camel@localhost.localdomain>
+From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+To: "Miquel van Smoorenburg" <miquels@cistron.nl>,
+       "Anders Henke" <anders.henke@1und1.de>
+Cc: "FUJITA Tomonori" <tomof@acm.org>, <matthew@wil.cx>, <jack@ucw.cz>,
+       <fujita.tomonori@lab.ntt.co.jp>, <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ACK, patch looks good. Thanks for composing this patch. Glad to hear of
+successful test results.
 
-On Wed, 12 Dec 2007, Rene Herman wrote:
+Sincerely -- Mark Salyzyn
 
-> On 12-12-07 13:59, linux-os (Dick Johnson) wrote:
->
->> On Tue, 11 Dec 2007, [utf-8] Alejandro Riveira Fern?ndez wrote:
->
->>> On my AMD 3800 X2 (2000MHz) ULi M1697 2.6.24-rc5 i get:
->>>
->>> cycles: out 1844674407370808, in 1844674407369087
->>>
->>> It is not constant but variations are not significant afaics
->>>
->>
->> It looks as though this hardware does not have a port 0x80
->> and its access is trapped by the hardware with a long time-out!
->> This may be the reason when the _p was called "harmful" on this
->> platform!
->>
->> I'm not sure the "rules" for port access allow for this kind of
->> behavior. This design may be defective, needing to be brought
->> to the attention of the vendor. A decent vendor would update
->> a FPGA and provide code to burn a new BIOS.
->
-> I'm afraid it's just the test that is "defective" as 64-bit code. For some
-> reason "=A" doesn't mean edx:eax on amd64 even though it's a useful register
-> pair to be able to name there as well. Didn't catch that being without amd64
-> machines myself.
->
-> Oh well. gcc -m32 fixes it...
->
-> Rene.
->
-
-Yep. By bad. I actually believed the returned value!
-
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+> -----Original Message-----
+> From: linux-scsi-owner@vger.kernel.org 
+> [mailto:linux-scsi-owner@vger.kernel.org] On Behalf Of Miquel 
+> van Smoorenburg
+. . .
+> 
+> I just recompiled 2.6.23.9 with the 64 bit patch for dpt_i2o 
+> and now it
+> boots just fine.
+> 
+> The patch is here:
+> http://www.miquels.cistron.nl/linux/dpt_i2o-64bit-2.6.23.patch
+> 
+> It's not the final version - it needs a few cleanups before it can be
+> submitted, but perhaps you can test if it also works for you.
+> 
+> Mike.
