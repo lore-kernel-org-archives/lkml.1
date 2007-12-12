@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbXLLWdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757467AbXLLWhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757749AbXLLWdf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 17:33:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbXLLWd0
+	id S1757467AbXLLWhU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 17:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbXLLWhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 17:33:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51241 "EHLO mx1.redhat.com"
+	Wed, 12 Dec 2007 17:37:08 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52164 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750913AbXLLWdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 17:33:25 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <830252.82380.qm@web36604.mail.mud.yahoo.com>
-References: <830252.82380.qm@web36604.mail.mud.yahoo.com>
-To: casey@schaufler-ca.com
-Cc: dhowells@redhat.com, Stephen Smalley <sds@tycho.nsa.gov>,
-       Karl MacMillan <kmacmill@redhat.com>, viro@ftp.linux.org.uk,
-       hch@infradead.org, Trond.Myklebust@netapp.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 12 Dec 2007 22:32:48 +0000
-Message-ID: <612.1197498768@redhat.com>
+	id S1751012AbXLLWhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 17:37:06 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Petr Tesarik <ptesarik@suse.cz>, tony.luck@intel.com
+Subject: Re: [PATCH] arch_ptrace_stop
+In-Reply-To: Andrew Morton's message of  Tuesday, 11 December 2007 21:51:35 -0800 <20071211215135.95ae3f6d.akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+References: <1196959793.6586.3.camel@elijah.suse.cz>
+	<20071208011152.CDA8E26F8EA@magilla.localdomain>
+	<20071211215135.95ae3f6d.akpm@linux-foundation.org>
+X-Zippy-Says: Now my EMOTIONAL RESOURCES are heavily committed to 23% of the
+    SMELTING and REFINING industry of the state of NEVADA!!
+Message-Id: <20071212223627.DDF1726F8D9@magilla.localdomain>
+Date: Wed, 12 Dec 2007 14:36:27 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler <casey@schaufler-ca.com> wrote:
-
-> > This fd selects the
-> > particular cache context that a particular instance of a running daemon is
-> > using.
+> Mutter.  These would be better as static inlines.  A macro just invites
+> variable-unused warnings on non-ia64 and outright compilation errors on
+> ia64.  Speaking from experience...
 > 
-> Yes, but forgive me being slow, I don't see the problem.
+> static inline void arch_ptrace_stop(int exit_code, siginfo_t *info)
+> {
+> }
+> #define arch_ptrace_stop arch_ptrace_stop
+> 
+> should work?
 
-I mean that it's not particularly sensible to have an auxiliary interface (say
-a separate /sys/cachefiles file) for setting the cache context as there may be
-several caches instantiated simply by opening /dev/cachefiles several times
-and retaining all the file descriptors involved.
+That's fine with me.  I just followed the example of e.g. arch_ptrace_attach.
 
-I meant this as information only.
+> >  /*
+> > + * Return nonzero if there is a SIGKILL that should be waking us up.
+> > + * Called with the siglock held.
+> > + */
+> > +static int sigkill_pending(struct task_struct *tsk)
+> > +{
+> > +	return ((sigismember(&tsk->pending.signal, SIGKILL) ||
+> > +		 sigismember(&tsk->signal->shared_pending.signal, SIGKILL)) &&
+> > +		!unlikely(sigismember(&tsk->blocked, SIGKILL)));
+> > +}
+> 
+> Could you please take a peek at the infrastructure added by
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/add-lock_page_killable.patch
+> and see if there is exploitable commonality?
 
-David
+I haven't reviewed that whole set in detail yet.  So I'd rather leave this
+for a later cleanup.  (This ptrace change alone, along with its ia64
+pieces, can probably go in much earlier without disrupting anything else.)
+
+The fatal_signal_pending function in that patch is not exactly the same as
+this check, though it might turn out that it's actually equivalent due to
+higher-level constraints.  
+
+
+Thanks,
+Roland
