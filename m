@@ -1,44 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbXLLRqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbXLLRqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753563AbXLLRqX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 12:46:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbXLLRqP
+	id S1756707AbXLLRqh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 12:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbXLLRq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 12:46:15 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:36187 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751669AbXLLRqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 12:46:15 -0500
-Date: Wed, 12 Dec 2007 12:46:13 -0500
-To: Daniel Phillips <phillips@phunq.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: A peek at the future of storage
-Message-ID: <20071212174613.GA16656@fieldses.org>
-References: <200712120846.18320.phillips@phunq.net>
+	Wed, 12 Dec 2007 12:46:27 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50625 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754551AbXLLRqZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 12:46:25 -0500
+Date: Wed, 12 Dec 2007 09:45:07 -0800
+From: Greg KH <greg@kroah.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] x86 boot : export boot_params via sysfs (forward
+	to Greg)
+Message-ID: <20071212174507.GB16049@kroah.com>
+References: <1197443265.14443.59.camel@caritas-dev.intel.com> <20071212073502.GA31348@kroah.com> <1197447079.14443.82.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200712120846.18320.phillips@phunq.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <1197447079.14443.82.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 08:46:18AM -0800, Daniel Phillips wrote:
-> Incidentally, we ran our tests with 128 knfsd threads.  The default of 8 
-> threads produces miserable performance on the SSD, which gave us a good 
-> scare on our initial test run.  It would be very nice to implement an 
-> algorithm to scale the knfsd thread pool automatically, in order to 
-> eliminate this class of thing that can go wrong.  If somebody became 
-> inspired to take on that little project that would be great, otherwise 
-> it is in our pipeline for, hmm, Christmas delivery.  (Exactly which 
-> Christmas is left unspecified.)
+On Wed, Dec 12, 2007 at 04:11:19PM +0800, Huang, Ying wrote:
+> On Tue, 2007-12-11 at 23:35 -0800, Greg KH wrote:
+> > > +static struct attribute *boot_params_attrs[] = {
+> > > +	&boot_params_version_attr.attr,
+> > > +	NULL
+> > > +};
+> > > +
+> > > +static struct attribute_group boot_params_attr_group = {
+> > > +	.attrs = boot_params_attrs,
+> > > +};
+> > > +
+> > > +static ssize_t boot_params_data_read(struct kobject *kobj,
+> > > +				     struct bin_attribute *bin_attr,
+> > > +				     char *buf, loff_t off, size_t count)
+> > > +{
+> > > +	memcpy(buf, (void *)&boot_params + off, count);
+> > > +	return count;
+> > > +}
+> > 
+> > Why is the whole structure being exported to userspace directly?
+> > Traditionally we only use the binary files for blobs that are not
+> > interpreted by the kernel in any way.  Is that what this structure
+> > really is?
+> 
+> The struct boot_params is not the case. But it is too complex (such as
+> the struct edd_info in it). It is very complex to output every fields
+> include the first level fields until the primary data type. And Peter
+> Anvin think it is OK to output it as a big binary file.
 
-People have proposed writing a daemon that just reads /proc/net/rpc/nfsd
-periodically and uses that to adjust the number of threads from
-userspace, probably subject to some limits in a config file someplace.
-(Think that could do the job, or is there some reason this would be
-easier in the kernel?)
+Well, I respectively disagree.  sysfs is NOT for exporting various
+binary kernel structures to userspace directly.  Again, the binary files
+in sysfs are for chunks of memory that are PASS-THROUGH from hardware to
+userspace, with no kernel intervention at all.
 
---b.
+If you really need such a thing, use debugfs, as the only rule for
+debugfs is that there is no rules :)
+
+So I do not agree with this change at this time, and do not want to see
+it applied to the tree.
+
+If you really need this kind of information exported to userspace
+through sysfs, then expand it all, in a one-text-value-per-file
+format.  I would have no objection to that.
+
+thanks,
+
+greg k-h
