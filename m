@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbXLLFMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbXLLFOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653AbXLLFMB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 00:12:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXLLFLx
+	id S1754596AbXLLFOM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 00:14:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbXLLFN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 00:11:53 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:58279 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbXLLFLw (ORCPT
+	Wed, 12 Dec 2007 00:13:58 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:45817 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752363AbXLLFN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 00:11:52 -0500
-Subject: Re: [rfc] lockless get_user_pages for dio (and more)
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Ken Chen <kenchen@google.com>, Badari Pulavarty <pbadari@gmail.com>,
-       linux-mm <linux-mm@kvack.org>, tony.luck@intel.com,
-       Adam Litke <agl@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200712121557.20807.nickpiggin@yahoo.com.au>
-References: <20071008225234.GC27824@linux-os.sc.intel.com>
-	 <200710152225.11433.nickpiggin@yahoo.com.au>
-	 <1197322257.11805.15.camel@norville.austin.ibm.com>
-	 <200712121557.20807.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Wed, 12 Dec 2007 05:11:46 +0000
-Message-Id: <1197436306.6367.12.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Dec 2007 00:13:57 -0500
+Date: Wed, 12 Dec 2007 05:01:51 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Chuck Ebbert <cebbert@redhat.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Willy Tarreau <wtarreau@hera.kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       stable@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tmpfs: restore missing clear_highpage
+In-Reply-To: <475F24A7.3020106@redhat.com>
+Message-ID: <Pine.LNX.4.64.0712120434410.9566@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0711281844370.25292@blonde.wat.veritas.com>
+ <475F24A7.3020106@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2007-12-12 at 15:57 +1100, Nick Piggin wrote:
-> On Tuesday 11 December 2007 08:30, Dave Kleikamp wrote:
-
-> > Nick,
-> > I've played with the fast_gup patch a bit.  I was able to find a problem
-> > in follow_hugetlb_page() that Adam Litke fixed.  I'm haven't been brave
-> > enough to implement it on any other architectures, but I did add  a
-> > default that takes mmap_sem and calls the normal get_user_pages() if the
-> > architecture doesn't define fast_gup().  I put it in linux/mm.h, for
-> > lack of a better place, but it's a little kludgy since I didn't want
-> > mm.h to have to include sched.h.  This patch is against 2.6.24-rc4.
-> > It's not ready for inclusion yet, of course.
+On Tue, 11 Dec 2007, Chuck Ebbert wrote:
+> On 11/28/2007 01:55 PM, Hugh Dickins wrote:
+> > tmpfs was misconverted to __GFP_ZERO in 2.6.11.  There's an unusual case in
+> > which shmem_getpage receives the page from its caller instead of allocating.
+> > We must cover this case by clear_highpage before SetPageUptodate, as before.
+> > 
+> > Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> > ---
 > 
-> Hi Dave,
-> 
-> Thanks so much. This makes it much more a complete patch (although
-> still missing the "normal page" detection).
-> 
-> I think I missed -- or forgot -- what was the follow_hugetlb_page
-> problem?
+> What are the symptoms of the bug this fixes?
 
-Badari found a problem running some tests and handed it off to me to
-look at.  I didn't share it publicly.  Anyway, we were finding that
-fastgup was taking the slow path almost all the time with huge pages.
-The problem was that follow_hugetlb_page was failing to fault on a
-non-writable page when it needed a writable one.  So we'd keep seeing a
-non-writable page over and over.  This is fixed in 2.6.24-rc5.
+I've not seen it in practice, just noticed it while working on that
+area in the code.  What's the polite way of describing these things
+in public?  It's a vulnerability which might allow an attacker to
+access data from inside the kernel which should have been zeroed -
+in very limited circumstances I'd prefer not to have to devise and
+announce.
 
-> Anyway, I am hoping that someone will one day and test if this and
-> find it helps their workload, but on the other hand, if it doesn't
-> help anyone then we don't have to worry about adding it to the
-> kernel ;) I don't have any real setups that hammers DIO with threads.
-> I'm guessing DB2 and/or Oracle does?
+It would also be wrong data, so could for example crash any program
+rightly relying on uninitialized static data to be zeroed - in the
+unlikely event that its data was coming via this route (in most setups
+it never can do, perhaps I'd conclude that's true of all setups).  It
+has escaped notice for nearly three years, so it's not a commonplace.
 
-I'll try to get someone to run a DB2 benchmark and see what it looks
-like.
--- 
-David Kleikamp
-IBM Linux Technology Center
+Further discussion offline if you like!
 
+Hugh
