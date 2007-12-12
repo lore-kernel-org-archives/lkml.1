@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbXLLOnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbXLLOql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbXLLOnI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 09:43:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXLLOmz
+	id S1754687AbXLLOql (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 09:46:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXLLOqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 09:42:55 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38470 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751131AbXLLOmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 09:42:53 -0500
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
-	settings for task actions [try #2]
-From: Karl MacMillan <kmacmill@redhat.com>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: David Howells <dhowells@redhat.com>, viro@ftp.linux.org.uk,
-       hch@infradead.org, Trond.Myklebust@netapp.com, casey@schaufler-ca.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <1197401823.28006.74.camel@moss-spartans.epoch.ncsc.mil>
-References: <1197322068.18120.176.camel@moss-spartans.epoch.ncsc.mil>
-	 <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil>
-	 <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil>
-	 <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
-	 <20071205193859.24617.36392.stgit@warthog.procyon.org.uk>
-	 <25037.1197306473@redhat.com> <25572.1197320887@redhat.com>
-	 <25965.1197329769@redhat.com>
-	 <1197401823.28006.74.camel@moss-spartans.epoch.ncsc.mil>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Wed, 12 Dec 2007 09:41:55 -0500
-Message-Id: <1197470515.3019.2.camel@localhost.localdomain>
+	Wed, 12 Dec 2007 09:46:33 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46943 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751037AbXLLOqc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 09:46:32 -0500
+Subject: Re: [v4l-dvb-maintainer] build #340 failed for 2.6.24-rc5-g75b8c13
+	in	linux/drivers/media/video/tuner.ko
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Michael Krufky <mkrufky@linuxtv.org>
+Cc: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com
+In-Reply-To: <475FE553.4020702@linuxtv.org>
+References: <200712120934.46156.toralf.foerster@gmx.de>
+	 <475FE553.4020702@linuxtv.org>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 12 Dec 2007 12:46:21 -0200
+Message-Id: <1197470781.4744.41.camel@gaivota>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Em Qua, 2007-12-12 às 08:42 -0500, Michael Krufky escreveu:
+> > ERROR: "tea5761_attach" [drivers/media/video/tuner.ko] undefined!
+> > ERROR: "tea5761_autodetection" [drivers/media/video/tuner.ko] undefined!
+> > ERROR: "tea5767_autodetection" [drivers/media/video/tuner.ko] undefined!
+> > ERROR: "tea5767_attach" [drivers/media/video/tuner.ko] undefined!
 
-On Tue, 2007-12-11 at 14:37 -0500, Stephen Smalley wrote:
-> On Mon, 2007-12-10 at 23:36 +0000, David Howells wrote:
-> > Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> > 
-> > > From a config file whose pathname would be provided by libselinux (ala
-> > > the way in which dbusd imports contexts), or directly as a context
-> > > returned by a libselinux function.
-> > 
-> > That sounds too SELinux specific.  How do I do it so that it works for any
-> > LSM?
+> It looks like the problem has something to do with VIDEO_TUNER=m while
+> both TUNER_TEA5761 & TUNER_TEA5767 are set to 'y'.
 > 
-> You can't.  There is no LSM for userspace; LSM specifically disavowed
-> any common userspace API, and that was one of our original
-> objections/concerns about it.
+> I thought that we had already seen this issue and fixed it, but I guess
+> not :-/
 > 
-> > Is linking against libselinux is a viable option if it's not available under
-> > all LSM models?  Is it available under all LSM models?  Perhaps Casey can
-> > answer this one.
-> 
-> Nope, they would all have their own libraries, if they have a library at
-> all.  But that isn't your problem - your kernel interface should be
-> generic, and your LSM hooks should be generic, but your userspace isn't
-> required to be.  Have a look at how many programs in the distribution
-> currently link against libselinux, whether directly or by dlopen'ing it.
-> 
-> > > > I use to do that, but someone objected...  Possibly Karl MacMillan.
-> > > 
-> > > Yes, but I think I disagreed then too.
-> > 
-> > So, who's right?
-> 
-> Karl isn't a maintainer of the SELinux kernel code.  And I had thought
-> that even he had reconsidered this idea after further discussion.
-> 
+> One would think that this could be fixed by making TUNER_TEA5761 &
+> TUNER_TEA5767 both depend on VIDEO_TUNER , but that would be wrong,
+> since each of those modules can be attached directly to a bridge driver
+> without tuner.ko being present at all (although this is not done in
+> practice right now, but it *is* the case with some other tuner drivers)
 
-That's what I remember as well - I suggested the transition idea and
-then, after discussion, agreed that it wasn't the best approach.
+I don't see any issue on making both dependent on VIDEO_TUNER for
+2.6.24, since they are currently used only by tuner core module
+(tuner.ko).
 
-And, as Steve points out, it's not my call to make.
+Yet, the same kind of trouble can happen with other drivers that can be
+shared by both V4L and DVB cores, like tda9887 and tda8290.
 
-Karl
+The proper solution for 2.6.25 seems to create a drivers/media/tuners
+directory and write some different rules at Kconfig.
+
+-- 
+Cheers,
+Mauro
 
