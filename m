@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbXLLQ3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758796AbXLLQ3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757592AbXLLQ3W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 11:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbXLLQ3M
+	id S1758796AbXLLQ3f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 11:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758145AbXLLQ3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 11:29:12 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:23606 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752312AbXLLQ3L (ORCPT
+	Wed, 12 Dec 2007 11:29:25 -0500
+Received: from ag-out-0708.google.com ([72.14.246.246]:61165 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757878AbXLLQ3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 11:29:11 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PNP: do not stop/start devices in suspend/resume path
-Date: Wed, 12 Dec 2007 09:29:06 -0700
-User-Agent: KMail/1.9.6
-Cc: Jiri Slaby <jirislaby@gmail.com>, matthew@wil.cx,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, drzeus@drzeus.cx,
-       linux-acpi@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Li Shaohua <shaohua.li@intel.com>, Len Brown <lenb@kernel.org>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <4745F77C.7040402@gmail.com> <200712061625.57660.bjorn.helgaas@hp.com> <20071212001610.6506c6d2.akpm@linux-foundation.org>
-In-Reply-To: <20071212001610.6506c6d2.akpm@linux-foundation.org>
+	Wed, 12 Dec 2007 11:29:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=fr9LlX793iV2seqsRyi1qUhr2HcFTm1BSNPeivqxswvuPSb1R7MmSs1S845T3TKIHIJW+vpdrJqpSjyybmcXIIVTTKKViQ6nMAh6pfdex1bxw1tR8K3hWFhth+MQhrf9pAQm50qCKpNnNt0zWqshrbwxuOqVbRwp/vtRa1s4K2U=
+Message-ID: <47600C0C.9010002@keyaccess.nl>
+Date: Wed, 12 Dec 2007 17:27:56 +0100
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Romano Giannetti <romanol@upcomillas.es>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <475F1DC6.5090403@keyaccess.nl> <1197453439.27741.6.camel@rukbat>
+In-Reply-To: <1197453439.27741.6.camel@rukbat>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712120929.07134.bjorn.helgaas@hp.com>
+From: Rene Herman <rene.herman@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 December 2007 01:16:10 am Andrew Morton wrote:
-> On Thu, 6 Dec 2007 16:25:57 -0700 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> 
-> > Andrew, can you add this before
-> > pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch?
-> > 
-> > ...
-> >
-> > PNP: do not stop/start devices in suspend/resume path
-> 
-> I did, but I also temporarily dropped
-> pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch.
+On 12-12-07 10:57, Romano Giannetti wrote:
 
-Thanks.
+> On a laptop with a CoreDuo T2080/1.73GHz, but running on battery at 
+> 800 MHz (on-demand):
 
-> Is it expected that this patch will fix
-> pnp-request-ioport-and-iomem-resources-used-by-active-devices.patch? 
-> Should I bring it back?
+> cycles: out 3575, in 2844
 
-No, not yet.  The "do not stop/start" patch should fix the kernel/resource.c
-warning, but I don't understand the "acpi reboots machine" (critical temp
-reached) problem yet.
+Okay, I'm going to ignore this one. This would be 4 microsecs but there are 
+sleep states involved, and if a piece of hardware would work only when the 
+system went to sleep I'd call it broken...
 
-Bjorn
+> With a cpu-hog running, cpufreq reporting 1.73GHz:
+
+> cycles: out 3446, in 2652
+
+So this one will do I guess. The test program disables interrupts and as 
+such, the cpu-hog shouldn't have interfered with the measurement. Thanks!
+
+Rene.
