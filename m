@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbXLLCIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbXLLCQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757591AbXLLCIo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 21:08:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbXLLCIg
+	id S1756236AbXLLCQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 21:16:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbXLLCQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 21:08:36 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:2495 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752239AbXLLCIf (ORCPT
+	Tue, 11 Dec 2007 21:16:50 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56088 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751334AbXLLCQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 21:08:35 -0500
-Message-Id: <20071212015650.481405953@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 11 Dec 2007 17:56:50 -0800
-Message-Id: <20071212015450.732327355@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 11 Dec 2007 17:54:50 -0800
-From: Daniel Walker <dwalker@mvista.com>
-To: akpm@linux-foundation.org
-Cc: matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] media: video: usbvision: add mutex_unlock() to error paths
+	Tue, 11 Dec 2007 21:16:48 -0500
+Date: Tue, 11 Dec 2007 18:15:59 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: bfields@fieldses.org, neilb@suse.de, rjw@sisk.pl,
+       trond.myklebust@fys.uio.no, gnome42@gmail.com,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com, den@openvz.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression [SOLVED]
+Message-Id: <20071211181559.fe21687a.akpm@linux-foundation.org>
+In-Reply-To: <200712120401.57128.maximlevitsky@gmail.com>
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
+	<200712101705.30428.maximlevitsky@gmail.com>
+	<20071210130305.d8983fdc.akpm@linux-foundation.org>
+	<200712120401.57128.maximlevitsky@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are a few error paths which don't unlock the usbvision->lock.
+On Wed, 12 Dec 2007 04:01:56 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 
-So I've added mutex_unlock() calls to fix those paths.
+> > 
+> > argh, this is getting bad.
+> > 
+> > Can you please test the below patch asap? Against 2.6.24-rc4 or latest-linus.
+> > 
+> > 
+> > From: Andrew Morton <akpm@linux-foundation.org>
+> > 
+> > Revert
+> > 
+> >     commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416
+> >     Author: Eric W. Biederman <ebiederm@xmission.com>
+> >     Date:   Sun Dec 2 00:33:17 2007 +1100
+> > 
+> 
+> Hi,
+> 
+> I finally solved this.
+> There is no need to revert 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416.
+> 
+> It was actually a deadly mixture of 3 bugs:
+> 
+> 1) Stale handles - Trond's patch fixes it, but I somehow missed it.
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+What is "Trond's patch" and where is it now?
 
----
- drivers/media/video/usbvision/usbvision-video.c |    2 ++
- 1 file changed, 2 insertions(+)
+> 2) Empty /proc/fs/nfsd (which causes nfs4 failures, and masks the bug #1, since with it the subfolders are just empty)
+> 	[PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate fixes it
 
-Index: linux-2.6.23/drivers/media/video/usbvision/usbvision-video.c
-===================================================================
---- linux-2.6.23.orig/drivers/media/video/usbvision/usbvision-video.c
-+++ linux-2.6.23/drivers/media/video/usbvision/usbvision-video.c
-@@ -1290,6 +1290,7 @@ static int usbvision_radio_open(struct i
- 		errCode = usbvision_set_alternate(usbvision);
- 		if (errCode < 0) {
- 			usbvision->last_error = errCode;
-+			mutex_unlock(&usbvision->lock);
- 			return -EBUSY;
- 		}
- 
-@@ -1806,6 +1807,7 @@ static int __devinit usbvision_probe(str
- 					      usbvision->num_alt,GFP_KERNEL);
- 	if (usbvision->alt_max_pkt_size == NULL) {
- 		err("usbvision: out of memory!\n");
-+		mutex_unlock(&usbvision->lock);
- 		return -ENOMEM;
- 	}
- 
--- 
+That patch was merged into Linus's tree just prior to 2.6.24-rc5.
 
--- 
+> 3) And as I expected, a userspace bug, which believe me or not has exactly the same symptoms
+> like #2 (and doesn't depend on others)
+> 
+> It is a wrong boot script in BLFS that starts nfs daemons in wrong order.
+> So there are 3 bugs and each masks the former one :-) .
+> 
+> I revised boot script to use recommended order like in nfs-utils.
+> And finally everything works....
+> 
+
+Well...  It's relatively common that insufficiently-robust userspace works
+OK under kernel N and then stops working under kernel N+1.  Even though the
+fault lies with userspace, we prefer that it continues to work.
+
+But it doesn't sounds like that'll be a concern here.
+
+Thanks for the followup.
