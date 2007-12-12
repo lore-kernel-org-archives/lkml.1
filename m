@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757726AbXLLU5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761343AbXLLU5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757726AbXLLU5c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 15:57:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756515AbXLLU5M
+	id S1761343AbXLLU5z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 15:57:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbXLLU5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 15:57:12 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:46380 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754790AbXLLU5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 15:57:11 -0500
-Date: Wed, 12 Dec 2007 14:57:05 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Linux Containers <containers@lists.osdl.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: tungstengraphics.com@sergelap.austin.ibm.com, zwane@infradead.org,
-       hugh@veritas.com, airlied@linux.ie
-Subject: [RFC] [PATCH -mm] agp: remove uid comparison as security check
-Message-ID: <20071212205704.GA24708@sergelap.austin.ibm.com>
-MIME-Version: 1.0
+	Wed, 12 Dec 2007 15:57:44 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:40810 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754388AbXLLU5o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 15:57:44 -0500
+Date: Wed, 12 Dec 2007 15:55:51 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
+Subject: Re: [PATCH 05/30] blk_end_request: changing um (take 4)
+Message-ID: <20071212205551.GC9244@c2.user-mode-linux.org>
+References: <20071211.174253.106440139.k-ueda@ct.jp.nec.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071211.174253.106440139.k-ueda@ct.jp.nec.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From d4ca1a9749c5b40325ec2db9fcde2f2cbd0e0978 Mon Sep 17 00:00:00 2001
-From: serue@us.ibm.com <serue@us.ibm.com>
-Date: Wed, 5 Dec 2007 13:55:36 -0800
-Subject: [RFC] [PATCH -mm] agp: remove uid comparison as security check
+On Tue, Dec 11, 2007 at 05:42:53PM -0500, Kiyoshi Ueda wrote:
+> This patch converts um to use blk_end_request interfaces.
+> Related 'uptodate' arguments are converted to 'error'.
+> 
+> As a result, the interface of internal function, ubd_end_request(),
+> is changed.
 
-In the face of containers and user namespaces, a uid==0 check for
-security is not safe.  Switch to a capability check.
+Looks OK to me...
 
-I'm not sure I picked the right capability, but this being AGP
-CAP_SYS_RAWIO seemed to make sense.
+		Jeff
 
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
----
- drivers/char/agp/frontend.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/char/agp/frontend.c b/drivers/char/agp/frontend.c
-index 9bd5a95..55d7a82 100644
---- a/drivers/char/agp/frontend.c
-+++ b/drivers/char/agp/frontend.c
-@@ -689,7 +689,7 @@ static int agp_open(struct inode *inode, struct file *file)
- 	set_bit(AGP_FF_ALLOW_CLIENT, &priv->access_flags);
- 	priv->my_pid = current->pid;
- 
--	if ((current->uid == 0) || (current->suid == 0)) {
-+	if (capable(CAP_SYS_RAWIO)) {
- 		/* Root priv, can be controller */
- 		set_bit(AGP_FF_ALLOW_CONTROLLER, &priv->access_flags);
- 	}
 -- 
-1.5.1
-
+Work email - jdike at linux dot intel dot com
