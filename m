@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbXLLTHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759680AbXLLTI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbXLLTHi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 14:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759167AbXLLTHT
+	id S1759680AbXLLTI3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 14:08:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbXLLTIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 14:07:19 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:50768 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759124AbXLLTHR (ORCPT
+	Wed, 12 Dec 2007 14:08:21 -0500
+Received: from hu-out-0506.google.com ([72.14.214.232]:30428 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755689AbXLLTIU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 14:07:17 -0500
-Message-ID: <47603109.6080909@zytor.com>
-Date: Wed, 12 Dec 2007 11:05:45 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 12 Dec 2007 14:08:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=mcyVW3phyw6kqz6IMjs4MXjOrlAf9SN1axt/tawBlfwZfAEGKbzETvbXtv6cwZfgZS5rYUE1LAGhVbaw6BSztdgHQg47ti54r1FcWUvARyo8FaAibyFTIvtB3GN1Ch5HuTEOszae2X45ranuOzutTDj03Kvge2Tu7WRQpK7b7tA=
+Message-ID: <4760314B.4040109@keyaccess.nl>
+Date: Wed, 12 Dec 2007 20:06:51 +0100
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm -v2] x86 boot : export boot_params via sysfs
-References: <1197449991.14443.88.camel@caritas-dev.intel.com> <20071212174613.GC16049@kroah.com> <47602044.9010104@zytor.com> <20071212185935.GA5941@kroah.com>
-In-Reply-To: <20071212185935.GA5941@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: SL Baur <steve@xemacs.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <475F1DC6.5090403@keyaccess.nl> <ed10ee420712121039j79af0eq7b5a994215044199@mail.gmail.com>
+In-Reply-To: <ed10ee420712121039j79af0eq7b5a994215044199@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+From: Rene Herman <rene.herman@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
->> This is a binary structure defined by protocol;
+On 12-12-07 19:39, SL Baur wrote:
+
+> model name      : Intel(R) Pentium(R) 4 CPU 3.20GHz
+> cpu MHz         : 3201.345
 > 
-> What protocol?  Is this a "standard" documented somewhere?
+> cycles: out 3026, in 2204
+> cycles: out 3031, in 2182
+> cycles: out 3019, in 2196
+> cycles: out 3030, in 2201
+> cycles: out 3013, in 2186
 
-Yes, see Documentation/i386/* (although some of it is documented by 
-reference to include/asm-x86/boot_params.h).
+Thank you. I just posted the combined results, although I see it's not made 
+it to the list yet, probably due to a somewhat overly broad CC...
 
->> in that way it's not significantly different from something passed
->> from the firmware (in fact, it might very well *be* passed from the
->> firmware.)  We have in the past found platform bugs by looking at the
->> contents of the whole structure, e.g.  to find that part of it has
->> been inappropriately clobbered.
-> 
-> For debugging things, then just export it through debugfs.
+These results fit the pattern.
 
-Fair enough, however...
-
->> It is also in the form needed by e.g. kexec to operate.
-> 
-> Does kexec need this today to work properly?  Or is this something new?
-
-I believe kexec currently tries to reconstitute it from what data is 
-available to it.  This is incomplete, though, and has been flagged as a 
-problem for kexec.
-
-> What userspace program is going to know the exact data format of this
-> blob, and where is it going to know that format from?  The kernel header
-> files in sanitized form?  Or something else?
-
-It can pick it up from <asm/boot_params.h> (which is now 
-userspace-safe); or it can decode it itself.  Programs like kexec can 
-pass through most of the data without examining it, this is the main 
-reason for having it as a blob.
-
-	-hpa
+Rene.
