@@ -1,88 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbXLLFtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbXLLFwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbXLLFtl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 00:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbXLLFtc
+	id S1756163AbXLLFwb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 00:52:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbXLLFwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 00:49:32 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:23516 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753965AbXLLFtb (ORCPT
+	Wed, 12 Dec 2007 00:52:22 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48799 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752105AbXLLFwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 00:49:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MVOSzEXL/bPVVJdNyM0yj8hSINC23mtLSMD255X8hLLYbxGp4ol8YLrQkCsq3H5Fr1GoqPO80t5kfjGRnmSBZR0txgaJTY/uB/dpP7zgSRJ7FXX7RLL9OcRjVh1cNAf1Z+Ur7tL58KwtnLA/8BQQqaL9nbFrN4ULQG/TaUJbQ/w=
-Message-ID: <86802c440712112149p5b405280xa846888fdb23d629@mail.gmail.com>
-Date: Tue, 11 Dec 2007 21:49:30 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] pci: don't load acpi_php when acpi is disabled
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071211204620.6c9acf54.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 12 Dec 2007 00:52:21 -0500
+Date: Tue, 11 Dec 2007 21:51:35 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Petr Tesarik <ptesarik@suse.cz>, tony.luck@intel.com
+Subject: Re: [PATCH] arch_ptrace_stop
+Message-Id: <20071211215135.95ae3f6d.akpm@linux-foundation.org>
+In-Reply-To: <20071208011152.CDA8E26F8EA@magilla.localdomain>
+References: <1196959793.6586.3.camel@elijah.suse.cz>
+	<20071208011152.CDA8E26F8EA@magilla.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200712112014.40923.yinghai.lu@sun.com>
-	 <20071211204620.6c9acf54.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 11, 2007 8:46 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Tue, 11 Dec 2007 20:14:40 -0800 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
->
-> > [PATCH] pci: don't load acpi_php when acpi is disabled
-> >
-> > when acpi=off and pci=nomsi, don't load acpiphp
-> >
-> > Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-> >
-> > diff --git a/drivers/pci/hotplug/acpiphp_core.c b/drivers/pci/hotplug/acpiphp_core.c
-> > index c8c2638..84d66ba 100644
-> > --- a/drivers/pci/hotplug/acpiphp_core.c
-> > +++ b/drivers/pci/hotplug/acpiphp_core.c
-> > @@ -392,6 +392,9 @@ static int __init acpiphp_init(void)
-> >  {
-> >       info(DRIVER_DESC " version: " DRIVER_VERSION "\n");
-> >
-> > +     if (acpi_pci_disabled)
-> > +             return 0;
-> > +
-> >       acpiphp_debug = debug;
-> >
-> >       /* read all the ACPI info from the system */
-> > @@ -401,6 +404,9 @@ static int __init acpiphp_init(void)
-> >
-> >  static void __exit acpiphp_exit(void)
-> >  {
-> > +     if (acpi_pci_disabled)
-> > +             return 0;
-> > +
-> >       /* deallocate internal data structures etc. */
-> >       acpiphp_glue_exit();
-> >  }
->
-> OK, but there is some information missing in your patch descriptions: what
-> effect do these patches have?  Does the kernel crash without them?  Or is
-> there no effect at all?  Or something in between?
+On Fri,  7 Dec 2007 17:11:52 -0800 (PST) Roland McGrath <roland@redhat.com> wrote:
 
-warning when use acpi=off to disable acpi in kernel
+> 
+> This adds support to allow asm/ptrace.h to define two new macros,
+> arch_ptrace_stop_needed and arch_ptrace_stop.  These control special
+> machine-specific actions to be done before a ptrace stop.  The new
+> code compiles away to nothing when the new macros are not defined.
+> This is the case on all machines to begin with.
+> 
+> On ia64, these macros will be defined to solve the long-standing
+> issue of ptrace vs register backing store.
+> 
+> Signed-off-by: Roland McGrath <roland@redhat.com>
+> CC: Petr Tesarik <ptesarik@suse.cz>
+> CC: Tony Luck <tony.luck@intel.com>
+> ---
+>  include/linux/ptrace.h |   35 +++++++++++++++++++++++++++++++++++
+>  kernel/signal.c        |   33 ++++++++++++++++++++++++++++++++-
+>  2 files changed, 67 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
+> index ae8146a..7168757 100644
+> --- a/include/linux/ptrace.h
+> +++ b/include/linux/ptrace.h
+> @@ -128,6 +128,41 @@ int generic_ptrace_pokedata(struct task_struct *tsk, long addr, long data);
+>  #define force_successful_syscall_return() do { } while (0)
+>  #endif
+>  
+> +#ifndef arch_ptrace_stop_needed
+> +/**
+> + * arch_ptrace_stop_needed - Decide whether arch_ptrace_stop() should be called
+> + * @code:	current->exit_code value ptrace will stop with
+> + * @info:	siginfo_t pointer (or %NULL) for signal ptrace will stop with
+> + *
+> + * This is called with the siglock held, to decide whether or not it's
+> + * necessary to release the siglock and call arch_ptrace_stop() with the
+> + * same @code and @info arguments.  It can be defined to a constant if
+> + * arch_ptrace_stop() is never required, or always is.  On machines where
+> + * this makes sense, it should be defined to a quick test to optimize out
+> + * calling arch_ptrace_stop() when it would be superfluous.  For example,
+> + * if the thread has not been back to user mode since the last stop, the
+> + * thread state might indicate that nothing needs to be done.
+> + */
+> +#define arch_ptrace_stop_needed(code, info)	(0)
+> +#endif
+> +
+> +#ifndef arch_ptrace_stop
+> +/**
+> + * arch_ptrace_stop - Do machine-specific work before stopping for ptrace
+> + * @code:	current->exit_code value ptrace will stop with
+> + * @info:	siginfo_t pointer (or %NULL) for signal ptrace will stop with
+> + *
+> + * This is called with no locks held when arch_ptrace_stop_needed() has
+> + * just returned nonzero.  It is allowed to block, e.g. for user memory
+> + * access.  The arch can have machine-specific work to be done before
+> + * ptrace stops.  On ia64, register backing store gets written back to user
+> + * memory here.  Since this can be costly (requires dropping the siglock),
+> + * we only do it when the arch requires it for this particular stop, as
+> + * indicated by arch_ptrace_stop_needed().
+> + */
+> +#define arch_ptrace_stop(code, info)		do { } while (0)
 
-AER service couldn't init device 0000:00:0a.0:pcie01 - no _OSC support
-AER service couldn't init device 0000:00:0e.0:pcie01 - no _OSC support
-AER service couldn't init device 0000:00:0f.0:pcie01 - no _OSC support
-AER service couldn't init device 0000:80:0b.0:pcie01 - no _OSC support
-AER service couldn't init device 0000:80:0e.0:pcie01 - no _OSC support
-AER service couldn't init device 0000:80:0f.0:pcie01 - no _OSC support
+Mutter.  These would be better as static inlines.  A macro just invites
+variable-unused warnings on non-ia64 and outright compilation errors on
+ia64.  Speaking from experience...
 
-pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
-ACPI Exception (utmutex-0263): AE_BAD_PARAMETER, Thread
-FFFF81103CC54000 could not acquire Mutex [1] [20070126]
+static inline void arch_ptrace_stop(int exit_code, siginfo_t *info)
+{
+}
+#define arch_ptrace_stop arch_ptrace_stop
 
-Thanks
+should work?
 
-Yinghai Lu
+>  /*
+> + * Return nonzero if there is a SIGKILL that should be waking us up.
+> + * Called with the siglock held.
+> + */
+> +static int sigkill_pending(struct task_struct *tsk)
+> +{
+> +	return ((sigismember(&tsk->pending.signal, SIGKILL) ||
+> +		 sigismember(&tsk->signal->shared_pending.signal, SIGKILL)) &&
+> +		!unlikely(sigismember(&tsk->blocked, SIGKILL)));
+> +}
+
+Could you please take a peek at the infrastructure added by
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/add-lock_page_killable.patch
+and see if there is exploitable commonality?
+
+
