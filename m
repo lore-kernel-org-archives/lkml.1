@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757662AbXLLRri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbXLLRr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757662AbXLLRri (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 12:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbXLLRrO
+	id S1758056AbXLLRr6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 12:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXLLRrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 12:47:14 -0500
-Received: from mailbox2.myri.com ([64.172.73.26]:1830 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751859AbXLLRrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 12:47:12 -0500
-Message-ID: <47601CF3.6030802@myri.com>
-Date: Wed, 12 Dec 2007 12:40:03 -0500
-From: Andrew Gallatin <gallatin@myri.com>
-User-Agent: Thunderbird 1.5.0.7 (Macintosh/20060909)
+	Wed, 12 Dec 2007 12:47:48 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50662 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751859AbXLLRrr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 12:47:47 -0500
+Date: Wed, 12 Dec 2007 09:46:13 -0800
+From: Greg KH <greg@kroah.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm -v2] x86 boot : export boot_params via sysfs
+Message-ID: <20071212174613.GC16049@kroah.com>
+References: <1197449991.14443.88.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: joonwpark81@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       shemminger@linux-foundation.org
-Subject: Re: [RFC] net: napi fix
-References: <47601A73.5010804@myri.com> <20071212.093819.205755031.davem@davemloft.net>
-In-Reply-To: <20071212.093819.205755031.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1197449991.14443.88.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Andrew Gallatin <gallatin@myri.com>
-> Date: Wed, 12 Dec 2007 12:29:23 -0500
+On Wed, Dec 12, 2007 at 04:59:51PM +0800, Huang, Ying wrote:
+> This patch export the boot parameters via sysfs. This can be used for
+> debugging and kexec.
 > 
->> Is the netif_running() check even required?
+> The files added are as follow:
 > 
-> No, it is not.
+> /sys/kernel/boot_params/data	: binary file for struct boot_params
+> /sys/kernel/boot_params/version	: boot protocol version
 > 
-> When a device is brought down, one of the first things
-> that happens is that we wait for all pending NAPI polls
-> to complete, then block any new polls from starting.
+> This patch is based on 2.6.24-rc4-mm1 and has been tested on i386 and
+> x86_64 platoform.
+> 
+> This patch is based on the Peter Anvin's proposal.
 
-Great, thanks.  I will submit a patch to remove the bogus
-check.  This should fix myri10ge properly.
+As outlined in a previous email, I object to the whole structure being
+exported to userspace as a binary blob.  Please change that.
 
+thanks,
 
-Thank you,
-
-Drew
+greg k-h
