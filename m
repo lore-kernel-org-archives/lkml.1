@@ -1,146 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbXLLCZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbXLLCeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbXLLCZR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 21:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbXLLCZE
+	id S1754291AbXLLCeN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 21:34:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbXLLCd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 21:25:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:12276 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbXLLCZB (ORCPT
+	Tue, 11 Dec 2007 21:33:58 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60890 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750921AbXLLCd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 21:25:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:message-id;
-        b=kxCBOlAb/xYovhRuSYlU2xDZxgWxZ1IkJhfASlxJSLWOKtmOr9inHBC0uGTfZgOfyFl7bapOXOZccdF08fjHeSnDcyKnmbGnNEIENSv41cGsW6/SUf0nbQeS37JfgWzBJ/z4L9DOhG+K25p/XfcBs/8PZcRUYgfO3hC9D9JGoB0=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression [SOLVED]
-Date: Wed, 12 Dec 2007 04:24:23 +0200
-User-Agent: KMail/1.9.6
-Cc: bfields@fieldses.org, neilb@suse.de, rjw@sisk.pl,
-       trond.myklebust@fys.uio.no, gnome42@gmail.com,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com, den@openvz.org,
-       linux-nfs@vger.kernel.org
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com> <200712120401.57128.maximlevitsky@gmail.com> <20071211181559.fe21687a.akpm@linux-foundation.org>
-In-Reply-To: <20071211181559.fe21687a.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_YZ0XHuruGgYZ4Pp"
-Message-Id: <200712120424.24029.maximlevitsky@gmail.com>
+	Tue, 11 Dec 2007 21:33:57 -0500
+Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB fixes
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Michael Krufky <mkrufky@linuxtv.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org,
+       Andrew Morton <akpm@linux-foundation.org>, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <475F4422.6050000@linuxtv.org>
+References: <1197424531.9563.6.camel@gaivota> <475F4422.6050000@linuxtv.org>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 12 Dec 2007 00:33:18 -0200
+Message-Id: <1197426798.9563.15.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_YZ0XHuruGgYZ4Pp
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On Wednesday 12 December 2007 04:15:59 Andrew Morton wrote:
-> On Wed, 12 Dec 2007 04:01:56 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+Em Ter, 2007-12-11 às 21:14 -0500, Michael Krufky escreveu:
+> Mauro Carvalho Chehab wrote:
+> > Please pull from:
+> >         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+> >
+> > [snip]
+> >
+> >   
+> Mauro,
+> > Mauro Carvalho Chehab (4):
+> >       V4L/DVB (6750): Fix in-kernel compilation for cxusb
+> >   
+> ^^ This patch fixes a build issue that only applies to new devices that
+> depend on the tuner-xc2028 module, which is planned to be added to
+> mainline for 2.6.25 ....  We don't need to send this patch upstream yet,
+> because the dependency doesn't exist in 2.6.24.
+
+Hmm... ok. Anyway, It won't hurt to apply it. The patch just adds a
+missing include directory to Makefile:
++EXTRA_CFLAGS += -Idrivers/media/video
+
+Anyway, I'll remove it from the tree and send to linus an updated pull
+request.
+
+> > Benoit Istin (1):
+> >       V4L/DVB (6746): saa7134-dvb: fix tuning for WinTV HVR-1110
+> >
+> >   
+> ^^ This patch is good for 2.6.24, but it is only the first half of the
+> fix.  This fixes digital tuning, but the analog fix is the following
+> changeset:
 > 
-> > > 
-> > > argh, this is getting bad.
-> > > 
-> > > Can you please test the below patch asap? Against 2.6.24-rc4 or latest-linus.
-> > > 
-> > > 
-> > > From: Andrew Morton <akpm@linux-foundation.org>
-> > > 
-> > > Revert
-> > > 
-> > >     commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416
-> > >     Author: Eric W. Biederman <ebiederm@xmission.com>
-> > >     Date:   Sun Dec 2 00:33:17 2007 +1100
-> > > 
-> > 
-> > Hi,
-> > 
-> > I finally solved this.
-> > There is no need to revert 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416.
-> > 
-> > It was actually a deadly mixture of 3 bugs:
-> > 
-> > 1) Stale handles - Trond's patch fixes it, but I somehow missed it.
+> saa7134: enable LNA in analog mode for Hauppauge WinTV HVR-1110
+> http://linuxtv.org/hg/~mkrufky/oxford2/rev/b227949c41ad
 > 
-> What is "Trond's patch" and where is it now?
-Message-Id: <1197053179.7532.23.camel@heimdal.trondhjem.org>
-It is in beginning of that thread.
-I attached it for reference.
+> Please send this one in your next pull request to Linus.
+Ok.
 
+I'll pull from your oxford2 tree and keep it for a while at development tree for testing.
+
+> Regards,
 > 
-> > 2) Empty /proc/fs/nfsd (which causes nfs4 failures, and masks the bug #1, since with it the subfolders are just empty)
-> > 	[PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate fixes it
-> 
-> That patch was merged into Linus's tree just prior to 2.6.24-rc5.
-Yes I know, I was testing -rc4, but I put this patch in
-> 
-> > 3) And as I expected, a userspace bug, which believe me or not has exactly the same symptoms
-> > like #2 (and doesn't depend on others)
-> > 
-> > It is a wrong boot script in BLFS that starts nfs daemons in wrong order.
-> > So there are 3 bugs and each masks the former one :-) .
-> > 
-> > I revised boot script to use recommended order like in nfs-utils.
-> > And finally everything works....
-> > 
-> 
-> Well...  It's relatively common that insufficiently-robust userspace works
-> OK under kernel N and then stops working under kernel N+1.  Even though the
-> fault lies with userspace, we prefer that it continues to work.
-> 
-> But it doesn't sounds like that'll be a concern here.
-Well, no.
-This boot script doesn't work in 2.6.23 ether.
-I just didn't use nfs4, and I thought that I don't understand how crossmnt/nohide work.
-> 
-> Thanks for the followup.
-> 
+> Mike
+-- 
+Cheers,
+Mauro
 
-
-Best regards,
-	Maxim Levitsky
-
---Boundary-00=_YZ0XHuruGgYZ4Pp
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="linux-2.6.24-001-fix_submounts.dif"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="linux-2.6.24-001-fix_submounts.dif"
-
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: 
-Subject: NFS: Fix NFS mountpoint crossing...
-Message-Id: <1197053179.7532.24.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-
-The check that was added to nfs_xdev_get_sb() to work around broken
-servers, works fine for NFSv2, but causes mountpoint crossing on NFSv3 to
-always return ESTALE.
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- fs/nfs/super.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index 2426e71..ea92920 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -1475,7 +1475,7 @@ static int nfs_xdev_get_sb(struct file_system_type *fs_type, int flags,
- 		error = PTR_ERR(mntroot);
- 		goto error_splat_super;
- 	}
--	if (mntroot->d_inode->i_op != &nfs_dir_inode_operations) {
-+	if (mntroot->d_inode->i_op != server->nfs_client->rpc_ops->dir_inode_ops) {
- 		dput(mntroot);
- 		error = -ESTALE;
- 		goto error_splat_super;
-
---Boundary-00=_YZ0XHuruGgYZ4Pp--
