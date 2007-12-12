@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbXLLTUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760235AbXLLTVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758945AbXLLTUx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 14:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754422AbXLLTUo
+	id S1760235AbXLLTVO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 14:21:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759011AbXLLTUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 14:20:44 -0500
-Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:48269 "HELO
-	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754019AbXLLTUl (ORCPT
+	Wed, 12 Dec 2007 14:20:50 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:62493 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758236AbXLLTUt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 14:20:41 -0500
-X-YMail-OSG: OkUb7JwVM1nHzSY_r2BNPgavx6YSkbxenHFliwU0cEj7yJlFSCk0UFyN8lSt1NK8uqE5SVFoPQ--
-X-RocketYMMF: rancidfat
-Date: Wed, 12 Dec 2007 11:20:40 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
-To: David Howells <dhowells@redhat.com>, casey@schaufler-ca.com
-Cc: dhowells@redhat.com, Stephen Smalley <sds@tycho.nsa.gov>,
-       Karl MacMillan <kmacmill@redhat.com>, viro@ftp.linux.org.uk,
-       hch@infradead.org, Trond.Myklebust@netapp.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <32137.1197483929@redhat.com>
+	Wed, 12 Dec 2007 14:20:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=SLggS8LodCBgUGt0OW5Zy20UvO91ZwrBvgcapkHoiQ0bHlzS1/S5p1O5cJf2IcAyiwO6XqDvEweaozD4lCl/KE0HVwyjO2L+P5hWUvLY2NoyWYfBVh3YnJXXS/DY2TblAqQQV64TflTy88Cl9yv27T7nAvd9k2Cy8GtuSRwCIqE=
+Message-ID: <47603437.905@keyaccess.nl>
+Date: Wed, 12 Dec 2007 20:19:19 +0100
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <66139.71689.qm@web36604.mail.mud.yahoo.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jiri Slaby <jirislaby@gmail.com>, Rene Herman <rene.herman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
+       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
+       john@stoffel.org, linux-os@analogic.com
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <475F1DC6.5090403@keyaccess.nl> <475FA060.6070004@gmail.com> <4af2d03a0712120325n50d057baq7ec440c5e57fda39@mail.gmail.com> <47602BF2.9030602@zytor.com>
+In-Reply-To: <47602BF2.9030602@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
+From: Rene Herman <rene.herman@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 12-12-07 19:44, H. Peter Anvin wrote:
 
---- David Howells <dhowells@redhat.com> wrote:
-
-> Casey Schaufler <casey@schaufler-ca.com> wrote:
+>> model name      : Intel(R) Xeon(R) CPU           E5335  @ 2.00GHz 
+>> cycles: out 3217, in 1898
 > 
-> > You may need to have an application, say cachefileselinuxcontext, that will
-> > read the current policy and spit out an appropriate value of "<whatever>",
-> > but that can be separate and LSM specific without mucking up your basic
-> > infrastructure applications.
+> 1.6 µs, on the high end....
 > 
-> What would I do with such a thing?  How would it get run?  Spat out to where?
+>> model name      : Dual Core AMD Opteron(tm) Processor 275
+>> cycles: out 5508, in 5524
+> 
+> Definitely an outlier; 2.5 µs here.
 
-Put it in /etc/init.d/cachefiles and run it at boot time. Put the
-result into /etc/cachefiles.conf. Have cachefilesd read it and pass
-it downward.
+Jah, I don't trust that one. Just posted the complete results:
 
+http://lkml.org/lkml/2007/12/12/309
 
-
-Casey Schaufler
-casey@schaufler-ca.com
+Rene.
