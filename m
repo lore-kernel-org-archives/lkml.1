@@ -1,137 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbXLLCTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbXLLCZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756538AbXLLCTo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 21:19:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbXLLCTg
+	id S1754904AbXLLCZR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 21:25:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbXLLCZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 21:19:36 -0500
-Received: from pat.uio.no ([129.240.10.15]:44652 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752077AbXLLCTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 21:19:34 -0500
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression [SOLVED]
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
+	Tue, 11 Dec 2007 21:25:04 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:12276 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbXLLCZB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Dec 2007 21:25:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:message-id;
+        b=kxCBOlAb/xYovhRuSYlU2xDZxgWxZ1IkJhfASlxJSLWOKtmOr9inHBC0uGTfZgOfyFl7bapOXOZccdF08fjHeSnDcyKnmbGnNEIENSv41cGsW6/SUf0nbQeS37JfgWzBJ/z4L9DOhG+K25p/XfcBs/8PZcRUYgfO3hC9D9JGoB0=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, bfields@fieldses.org,
-       neilb@suse.de, rjw@sisk.pl, gnome42@gmail.com,
+Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression [SOLVED]
+Date: Wed, 12 Dec 2007 04:24:23 +0200
+User-Agent: KMail/1.9.6
+Cc: bfields@fieldses.org, neilb@suse.de, rjw@sisk.pl,
+       trond.myklebust@fys.uio.no, gnome42@gmail.com,
        linux-kernel@vger.kernel.org, ebiederm@xmission.com, den@openvz.org,
        linux-nfs@vger.kernel.org
+References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com> <200712120401.57128.maximlevitsky@gmail.com> <20071211181559.fe21687a.akpm@linux-foundation.org>
 In-Reply-To: <20071211181559.fe21687a.akpm@linux-foundation.org>
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
-	 <200712101705.30428.maximlevitsky@gmail.com>
-	 <20071210130305.d8983fdc.akpm@linux-foundation.org>
-	 <200712120401.57128.maximlevitsky@gmail.com>
-	 <20071211181559.fe21687a.akpm@linux-foundation.org>
-Content-Type: multipart/mixed; boundary="=-TlI4Fg2n/Pv+WrlBB4oh"
-Date: Tue, 11 Dec 2007 21:19:00 -0500
-Message-Id: <1197425940.27061.1.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.3, required=5.0, autolearn=disabled, AWL=-0.321)
-X-UiO-Scanned: 63ADA5A7268ACA2967A0B3C1463A75CECE02A38E
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -2 maxlevel 200 minaction 2 bait 0 mail/h: 54 total 5695554 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_YZ0XHuruGgYZ4Pp"
+Message-Id: <200712120424.24029.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-TlI4Fg2n/Pv+WrlBB4oh
-Content-Type: text/plain
+--Boundary-00=_YZ0XHuruGgYZ4Pp
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-
-On Tue, 2007-12-11 at 18:15 -0800, Andrew Morton wrote:
+On Wednesday 12 December 2007 04:15:59 Andrew Morton wrote:
+> On Wed, 12 Dec 2007 04:01:56 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> 
+> > > 
+> > > argh, this is getting bad.
+> > > 
+> > > Can you please test the below patch asap? Against 2.6.24-rc4 or latest-linus.
+> > > 
+> > > 
+> > > From: Andrew Morton <akpm@linux-foundation.org>
+> > > 
+> > > Revert
+> > > 
+> > >     commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416
+> > >     Author: Eric W. Biederman <ebiederm@xmission.com>
+> > >     Date:   Sun Dec 2 00:33:17 2007 +1100
+> > > 
+> > 
+> > Hi,
+> > 
+> > I finally solved this.
+> > There is no need to revert 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416.
+> > 
+> > It was actually a deadly mixture of 3 bugs:
+> > 
 > > 1) Stale handles - Trond's patch fixes it, but I somehow missed it.
 > 
 > What is "Trond's patch" and where is it now?
-
-He means the one this whole thread started with. See attachment...
-
-Trond
-
-
---=-TlI4Fg2n/Pv+WrlBB4oh
-Content-Disposition: inline
-Content-Description: Attached message - Re: 2.6.24-rc3-git4 NFS crossmnt
-	regression
-Content-Type: message/rfc822
-
-Subject: Re: 2.6.24-rc3-git4 NFS crossmnt regression
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Shane <gnome42@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,  "J. Bruce Fields" <bfields@fieldses.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <fa4052ef0712071014l524951e2we4705d84c5005cf3@mail.gmail.com>
-References: <fa4052ef0712062045o743a2666u3562a3569c1aa989@mail.gmail.com>
-	 <20071207040219.e231cbc7.akpm@linux-foundation.org>
-	 <fa4052ef0712071014l524951e2we4705d84c5005cf3@mail.gmail.com>
-Content-Type: multipart/mixed; boundary="=-IBupBxkFjx7YOD4mPYpk"
 Message-Id: <1197053179.7532.23.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Date: Fri, 07 Dec 2007 13:46:22 -0500
-X-Evolution-Format: text/plain
-X-Evolution-Account: 1149135252.7829.2@lade.trondhjem.org
-X-Evolution-Transport: smtp://trondmy;auth=PLAIN@smtp.uio.no/;use_ssl=always
-X-Evolution-Fcc: imap://trondmy@imap.uio.no/INBOX/Sent
-X-Evolution-Source: imap://trondmy@imap.uio.no/
+It is in beginning of that thread.
+I attached it for reference.
+
+> 
+> > 2) Empty /proc/fs/nfsd (which causes nfs4 failures, and masks the bug #1, since with it the subfolders are just empty)
+> > 	[PATCH 2.6.24-rc4] proc: Remove/Fix proc generic d_revalidate fixes it
+> 
+> That patch was merged into Linus's tree just prior to 2.6.24-rc5.
+Yes I know, I was testing -rc4, but I put this patch in
+> 
+> > 3) And as I expected, a userspace bug, which believe me or not has exactly the same symptoms
+> > like #2 (and doesn't depend on others)
+> > 
+> > It is a wrong boot script in BLFS that starts nfs daemons in wrong order.
+> > So there are 3 bugs and each masks the former one :-) .
+> > 
+> > I revised boot script to use recommended order like in nfs-utils.
+> > And finally everything works....
+> > 
+> 
+> Well...  It's relatively common that insufficiently-robust userspace works
+> OK under kernel N and then stops working under kernel N+1.  Even though the
+> fault lies with userspace, we prefer that it continues to work.
+> 
+> But it doesn't sounds like that'll be a concern here.
+Well, no.
+This boot script doesn't work in 2.6.23 ether.
+I just didn't use nfs4, and I thought that I don't understand how crossmnt/nohide work.
+> 
+> Thanks for the followup.
+> 
 
 
---=-IBupBxkFjx7YOD4mPYpk
-Content-Type: text/plain
+Best regards,
+	Maxim Levitsky
+
+--Boundary-00=_YZ0XHuruGgYZ4Pp
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="linux-2.6.24-001-fix_submounts.dif"
 Content-Transfer-Encoding: 7bit
-
-
-On Fri, 2007-12-07 at 13:14 -0500, Shane wrote:
-> On Dec 7, 2007 7:02 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> ...
-> > > 2.6.24-rc3-git1 is last known good kernel. The problem also exists
-> > > with the latest snap 2.6.24-rc4-git4. NFS server is 2.6.23-rc9 and
-> > > is unchanged.
-> >
-> > hm, there have been no nfs changes since 2.6.24-rc4.
-> 
-> Ok, but the problem seems to have appeared before 2.6.24-rc4.
-> 
-> > > It is easily reproducible here, hopefully for the person who
-> > > knows how to debug it too :)
-> > >
-> >
-> > I guess a full set of the commands which you typed to reproduce this would
-> > help.
-> 
-> Server is 2.6.23-rc9 and is exporting:
-> 
-> /dirA/dirB
-> 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure,crossmnt)
-> /dirA/dirB/dirC
-> 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure)
-> /dirA/dirB/dirD
-> 10.10.20.0/255.255.255.0(rw,async,no_root_squash,no_subtree_check,insecure)
-> 
-> The NFS client (Core2 SMP) 2.6.24-rc3-git4:
-> 
-> NFS-server:/dirA/dirB     /dirA/dirB    nfs
-> auto,rsize=16384,wsize=16384,hard,intr,users,exec,nfsvers=3,tcp,nolock,actimeo=0
-> 
-> Then on the client when the new kernel has booted:
-> 
-> ls /dirA/dirB      --> normal listing
-> ls /dirA/dirB/dirC   -->  Stale NFS file handle
-> ls /dirA/dirB/dirD   -->  Stale NFS file handle
-> 
-> I will do a few more builds/boots and check -rc3-git2 and -rc3-git3.
-
-This problem has already been reported. The fix (which I'm planning on
-sending to Linus soon) is appended.
-
-Cheers
-  Trond
-
---=-IBupBxkFjx7YOD4mPYpk
-Content-Disposition: inline; filename=linux-2.6.24-001-fix_submounts.dif
-Content-Type: message/rfc822; name=linux-2.6.24-001-fix_submounts.dif
+Content-Disposition: attachment;
+	filename="linux-2.6.24-001-fix_submounts.dif"
 
 From: Trond Myklebust <Trond.Myklebust@netapp.com>
 Date: 
@@ -164,7 +143,4 @@ index 2426e71..ea92920 100644
  		error = -ESTALE;
  		goto error_splat_super;
 
---=-IBupBxkFjx7YOD4mPYpk--
-
---=-TlI4Fg2n/Pv+WrlBB4oh--
-
+--Boundary-00=_YZ0XHuruGgYZ4Pp--
