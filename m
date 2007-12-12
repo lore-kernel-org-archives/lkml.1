@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbXLLUsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760145AbXLLUs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758113AbXLLUsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 15:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbXLLUsL
+	id S1760145AbXLLUs5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 15:48:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbXLLUst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 15:48:11 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:27568 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752779AbXLLUsJ (ORCPT
+	Wed, 12 Dec 2007 15:48:49 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:40745 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413AbXLLUss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 15:48:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=J++kuZL6yNTwERYQkfPZ7VARmH4b3mrZGABdGZpazBSaCzy5I/lPlV0+oMIogiPGw+cxFGyxenCtFYujNh0a0skjYB2oHJIBON55iGheRbB20SSPxcc1LEvbKJDSLTma5HCuG7BQ8rrWULfUt+qdX7rWeAZEy6j1QliZx/mTY5w=
-Subject: [PATCH] net: remove remaining fastcall occurances in drivers/net
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: linux-netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 12 Dec 2007 12:48:09 -0800
-Message-Id: <1197492489.21291.21.camel@brick>
+	Wed, 12 Dec 2007 15:48:48 -0500
+Date: Wed, 12 Dec 2007 15:47:59 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 4/6] UML - Don't allow processes to call into stub
+Message-ID: <20071212204759.GA9134@c2.user-mode-linux.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fastcall is always defined to empty, remove it
+Kill a process that tries to branch into a stub and execute a system
+call.  There are no security implications here - a system call in a
+stub is treated the same as a system call anywhere else.  But if a
+process is trying to branch into a stub, either it is trying something
+nasty or it has gone haywire, so it's a good idea to get rid of it in
+either case.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- drivers/net/ns83820.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ arch/um/os-Linux/skas/process.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ns83820.c b/drivers/net/ns83820.c
-index 972acc3..5eed99e 100644
---- a/drivers/net/ns83820.c
-+++ b/drivers/net/ns83820.c
-@@ -612,7 +612,7 @@ static inline int rx_refill(struct net_device *ndev, gfp_t gfp)
- }
+Index: linux-2.6.22/arch/um/os-Linux/skas/process.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/skas/process.c	2007-12-05 12:51:53.000000000 -0500
++++ linux-2.6.22/arch/um/os-Linux/skas/process.c	2007-12-05 16:34:55.000000000 -0500
+@@ -146,6 +146,9 @@ static void handle_trap(int pid, struct 
+ {
+ 	int err, status;
  
- static void rx_refill_atomic(struct net_device *ndev));
--static void fastcall rx_refill_atomic(struct net_device *ndev)
-+static void rx_refill_atomic(struct net_device *ndev)
- {
- 	rx_refill(ndev, GFP_ATOMIC);
- }
-@@ -633,7 +633,7 @@ static inline void clear_rx_desc(struct ns83820 *dev, unsigned i)
- 	build_rx_desc(dev, dev->rx_info.descs + (DESC_SIZE * i), 0, 0, CMDSTS_OWN, 0);
- }
++	if ((UPT_IP(regs) >= STUB_START) && (UPT_IP(regs) < STUB_END))
++		fatal_sigsegv();
++
+ 	/* Mark this as a syscall */
+ 	UPT_SYSCALL_NR(regs) = PT_SYSCALL_NR(regs->gp);
  
--static void fastcall phy_intr(struct net_device *ndev)
-+static void phy_intr(struct net_device *ndev)
- {
- 	struct ns83820 *dev = PRIV(ndev);
- 	static const char *speeds[] = { "10", "100", "1000", "1000(?)", "1000F" };
-@@ -831,7 +831,7 @@ static void ns83820_cleanup_rx(struct ns83820 *dev)
- 	}
- }
- 
--static void fastcall ns83820_rx_kick(struct net_device *ndev)
-+static void ns83820_rx_kick(struct net_device *ndev)
- {
- 	struct ns83820 *dev = PRIV(ndev);
- 	/*if (nr_rx_empty(dev) >= NR_RX_DESC/4)*/ {
-@@ -852,7 +852,7 @@ static void fastcall ns83820_rx_kick(struct net_device *ndev)
- /* rx_irq
-  *
-  */
--static void fastcall rx_irq(struct net_device *ndev)
-+static void rx_irq(struct net_device *ndev)
- {
- 	struct ns83820 *dev = PRIV(ndev);
- 	struct rx_info *info = &dev->rx_info;
--- 
-1.5.3.7.2212.gd092
-
-
-
