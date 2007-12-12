@@ -1,264 +1,584 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbXLLG2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbXLLGnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbXLLG2b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 01:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbXLLG2F
+	id S1756246AbXLLGnY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 01:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbXLLGnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 01:28:05 -0500
-Received: from mga02.intel.com ([134.134.136.20]:10617 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754564AbXLLG2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 01:28:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,155,1196668800"; 
-   d="scan'208";a="294127305"
-Subject: Re: [PATCH 1/4 -mm] kexec based hibernation -v7 : kexec jump
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <m163z51sz3.fsf@ebiederm.dsl.xmission.com>
-References: <1197042810.24045.61.camel@caritas-dev.intel.com>
-	 <m1tzmq0xy0.fsf@ebiederm.dsl.xmission.com>
-	 <1197388219.11506.32.camel@caritas-dev.intel.com>
-	 <m163z51sz3.fsf@ebiederm.dsl.xmission.com>
+	Wed, 12 Dec 2007 01:43:15 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:54041 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752191AbXLLGnN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 01:43:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=h4syu3n5zq5KfF0mR1q3n+kuoFIy/X70YaZHLpjfuvana+/67ThsDWx909gZGdYfxghRw6VF9gHHW/kpkWKgIl0G3X9/Q144fJIwhchXlMhSAnmPTz4ETjNxuW5rbeEEAHPUZY5b441+hzo7VQL+7rvgcSZarWTHCd3TANiweKI=
+Subject: [PATCH] Get rid of FASTCALL() in include/linux/*.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 12 Dec 2007 14:27:36 +0800
-Message-Id: <1197440856.14443.53.camel@caritas-dev.intel.com>
+Date: Tue, 11 Dec 2007 22:43:10 -0800
+Message-Id: <1197441790.5745.1.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 12 Dec 2007 06:27:56.0474 (UTC) FILETIME=[220FD1A0:01C83C88]
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-12-11 at 02:27 -0700, Eric W. Biederman wrote:
-> "Huang, Ying" <ying.huang@intel.com> writes:
-> 
-> > On Mon, 2007-12-10 at 19:25 -0700, Eric W. Biederman wrote:
-> >> "Huang, Ying" <ying.huang@intel.com> writes:
-> > [...]
-> >> >  /*
-> >> >   * Do not allocate memory (or fail in any way) in machine_kexec().
-> >> >   * We are past the point of no return, committed to rebooting now.
-> >> >   */
-> >> > -NORET_TYPE void machine_kexec(struct kimage *image)
-> >> > +int machine_kexec_vcall(struct kimage *image, unsigned long *ret,
-> >> > +			 unsigned int argc, va_list args)
-> >> >  {
-> >> 
-> >> Why do we need var arg support?
-> >> Can't we do that with a shim we load from user space?
-> >
-> > If all parameters are provided in user space, the usage model may be as
-> > follow:
-> >
-> > - sys_kexec_load() /* with executable/data/parameters(A) loaded */
-> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with
-> > parameters(A)*/
-> > - /* jump back */
-> > - sys_kexec_load() /* with executable/data/parameters(B) loaded */
-> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with
-> > parameters(B)*/
-> > - /* jump back */
-> >
-> > That is, the kexec image should be re-loaded if the parameters are
-> > different, and there can be no state reserved in kexec image. This is OK
-> > for original kexec implementation, because there is no jumping back.
-> > But, for kexec with jumping back, another usage model may be useful too.
-> >
-> > - sys_kexec_load() /* with executable/data loaded */
-> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,parameters(A)) /* execute physical mode
-> > code with parameters(A)*/
-> > - sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,parameters(B)) /* execute physical mode
-> > code with parameters(B)*/
-> >
-> > This way the kexec image need not to be re-loaded, and the state of
-> > kexec image can be reserved across several invoking.
-> 
-> Interesting.  We wind up preserving the code in between invocations.
-> 
-> I don't know about your particular issue, but I can see that clearly
-> we need a way to read values back from our target image.
-> 
-> And if we can read everything back one way to proceed is to read
-> everything out modify it and then write it back.
-> 
-> Amending a kexec image that is already stored may also make sense.
-> 
-> I'm not convinced that the var arg parameters make sense, but you
-> added them because of a real need.
-> 
-> The kexec function is split into two separate calls so that we can
-> unmount the filesystem the kexec image comes from before actually
-> doing the kexec.
+Now that x86 uses regparm(3) by default, we can get rid of the
+FASTCALL() macro.  This gets rid of it in all linux/include
+header files.
 
-Yes. Reading/Modifying the loaded kexec image is another way to do
-necessary communication between the first kernel and the second kernel.
-In fact, the patch [4/4] of this series with title:
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+This should follow the patch in x86.git's mm branch removing the
+definition of the FASTCALL macro.
 
-[PATCH 4/4 -mm] kexec based hibernation -v7 : kimgcore
+ include/linux/aio.h            |   20 ++++++++++----------
+ include/linux/buffer_head.h    |    6 +++---
+ include/linux/file.h           |   16 ++++++++--------
+ include/linux/gfp.h            |   14 +++++++-------
+ include/linux/interrupt.h      |    8 ++++----
+ include/linux/mm.h             |    4 ++--
+ include/linux/mutex-debug.h    |    2 +-
+ include/linux/namei.h          |    6 +++---
+ include/linux/netdevice.h      |    2 +-
+ include/linux/pagemap.h        |    8 ++++----
+ include/linux/pid.h            |   22 +++++++++++-----------
+ include/linux/rcupdate.h       |    8 ++++----
+ include/linux/rwsem-spinlock.h |   16 ++++++++--------
+ include/linux/sched.h          |   12 ++++++------
+ include/linux/swap.h           |    8 ++++----
+ include/linux/wait.h           |   36 ++++++++++++++++++------------------
+ include/linux/workqueue.h      |   14 +++++++-------
+ 17 files changed, 101 insertions(+), 101 deletions(-)
 
-provide a ELF CORE file in /proc (/proc/kimgcore) to read the loaded
-kexec image. The writing function can be added easily.
+diff --git a/include/linux/aio.h b/include/linux/aio.h
+index 7ef8de6..3f2cce8 100644
+--- a/include/linux/aio.h
++++ b/include/linux/aio.h
+@@ -206,21 +206,21 @@ struct kioctx {
+ /* prototypes */
+ extern unsigned aio_max_size;
+ 
+-extern ssize_t FASTCALL(wait_on_sync_kiocb(struct kiocb *iocb));
+-extern int FASTCALL(aio_put_req(struct kiocb *iocb));
+-extern void FASTCALL(kick_iocb(struct kiocb *iocb));
+-extern int FASTCALL(aio_complete(struct kiocb *iocb, long res, long res2));
+-extern void FASTCALL(__put_ioctx(struct kioctx *ctx));
++extern ssize_t wait_on_sync_kiocb(struct kiocb *iocb);
++extern int aio_put_req(struct kiocb *iocb);
++extern void kick_iocb(struct kiocb *iocb);
++extern int aio_complete(struct kiocb *iocb, long res, long res2);
++extern void __put_ioctx(struct kioctx *ctx);
+ struct mm_struct;
+-extern void FASTCALL(exit_aio(struct mm_struct *mm));
++extern void exit_aio(struct mm_struct *mm);
+ extern struct kioctx *lookup_ioctx(unsigned long ctx_id);
+-extern int FASTCALL(io_submit_one(struct kioctx *ctx,
+-			struct iocb __user *user_iocb, struct iocb *iocb));
++extern int io_submit_one(struct kioctx *ctx,
++			struct iocb __user *user_iocb, struct iocb *iocb);
+ 
+ /* semi private, but used by the 32bit emulations: */
+ struct kioctx *lookup_ioctx(unsigned long ctx_id);
+-int FASTCALL(io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
+-				  struct iocb *iocb));
++int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
++				  struct iocb *iocb);
+ 
+ #define get_ioctx(kioctx) do {						\
+ 	BUG_ON(atomic_read(&(kioctx)->users) <= 0);			\
+diff --git a/include/linux/buffer_head.h b/include/linux/buffer_head.h
+index da0d83f..8e5f2e1 100644
+--- a/include/linux/buffer_head.h
++++ b/include/linux/buffer_head.h
+@@ -144,7 +144,7 @@ BUFFER_FNS(Unwritten, unwritten)
+  * Declarations
+  */
+ 
+-void FASTCALL(mark_buffer_dirty(struct buffer_head *bh));
++void mark_buffer_dirty(struct buffer_head *bh);
+ void init_buffer(struct buffer_head *, bh_end_io_t *, void *);
+ void set_bh_page(struct buffer_head *bh,
+ 		struct page *page, unsigned long offset);
+@@ -185,8 +185,8 @@ struct buffer_head *__bread(struct block_device *, sector_t block, unsigned size
+ void invalidate_bh_lrus(void);
+ struct buffer_head *alloc_buffer_head(gfp_t gfp_flags);
+ void free_buffer_head(struct buffer_head * bh);
+-void FASTCALL(unlock_buffer(struct buffer_head *bh));
+-void FASTCALL(__lock_buffer(struct buffer_head *bh));
++void unlock_buffer(struct buffer_head *bh);
++void __lock_buffer(struct buffer_head *bh);
+ void ll_rw_block(int, int, struct buffer_head * bh[]);
+ int sync_dirty_buffer(struct buffer_head *bh);
+ int submit_bh(int, struct buffer_head *);
+diff --git a/include/linux/file.h b/include/linux/file.h
+index 56023c7..7bf79c1 100644
+--- a/include/linux/file.h
++++ b/include/linux/file.h
+@@ -59,8 +59,8 @@ struct files_struct {
+ 
+ extern struct kmem_cache *filp_cachep;
+ 
+-extern void FASTCALL(__fput(struct file *));
+-extern void FASTCALL(fput(struct file *));
++extern void __fput(struct file *);
++extern void fput(struct file *);
+ 
+ struct file_operations;
+ struct vfsmount;
+@@ -77,13 +77,13 @@ static inline void fput_light(struct file *file, int fput_needed)
+ 		fput(file);
+ }
+ 
+-extern struct file * FASTCALL(fget(unsigned int fd));
+-extern struct file * FASTCALL(fget_light(unsigned int fd, int *fput_needed));
+-extern void FASTCALL(set_close_on_exec(unsigned int fd, int flag));
++extern struct file * fget(unsigned int fd);
++extern struct file * fget_light(unsigned int fd, int *fput_needed);
++extern void set_close_on_exec(unsigned int fd, int flag);
+ extern void put_filp(struct file *);
+ extern int get_unused_fd(void);
+ extern int get_unused_fd_flags(int flags);
+-extern void FASTCALL(put_unused_fd(unsigned int fd));
++extern void put_unused_fd(unsigned int fd);
+ struct kmem_cache;
+ 
+ extern int expand_files(struct files_struct *, int nr);
+@@ -110,12 +110,12 @@ static inline struct file * fcheck_files(struct files_struct *files, unsigned in
+  */
+ #define fcheck(fd)	fcheck_files(current->files, fd)
+ 
+-extern void FASTCALL(fd_install(unsigned int fd, struct file * file));
++extern void fd_install(unsigned int fd, struct file * file);
+ 
+ struct task_struct;
+ 
+ struct files_struct *get_files_struct(struct task_struct *);
+-void FASTCALL(put_files_struct(struct files_struct *fs));
++void put_files_struct(struct files_struct *fs);
+ void reset_files_struct(struct task_struct *, struct files_struct *);
+ 
+ extern struct kmem_cache *files_cachep;
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index 7e93a9a..ac793e5 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -173,7 +173,7 @@ static inline void arch_alloc_page(struct page *page, int order) { }
+ #endif
+ 
+ extern struct page *
+-FASTCALL(__alloc_pages(gfp_t, unsigned int, struct zonelist *));
++__alloc_pages(gfp_t, unsigned int, struct zonelist *);
+ 
+ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
+ 						unsigned int order)
+@@ -209,8 +209,8 @@ extern struct page *alloc_page_vma(gfp_t gfp_mask,
+ #endif
+ #define alloc_page(gfp_mask) alloc_pages(gfp_mask, 0)
+ 
+-extern unsigned long FASTCALL(__get_free_pages(gfp_t gfp_mask, unsigned int order));
+-extern unsigned long FASTCALL(get_zeroed_page(gfp_t gfp_mask));
++extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
++extern unsigned long get_zeroed_page(gfp_t gfp_mask);
+ 
+ #define __get_free_page(gfp_mask) \
+ 		__get_free_pages((gfp_mask),0)
+@@ -218,10 +218,10 @@ extern unsigned long FASTCALL(get_zeroed_page(gfp_t gfp_mask));
+ #define __get_dma_pages(gfp_mask, order) \
+ 		__get_free_pages((gfp_mask) | GFP_DMA,(order))
+ 
+-extern void FASTCALL(__free_pages(struct page *page, unsigned int order));
+-extern void FASTCALL(free_pages(unsigned long addr, unsigned int order));
+-extern void FASTCALL(free_hot_page(struct page *page));
+-extern void FASTCALL(free_cold_page(struct page *page));
++extern void __free_pages(struct page *page, unsigned int order);
++extern void free_pages(unsigned long addr, unsigned int order);
++extern void free_hot_page(struct page *page);
++extern void free_cold_page(struct page *page);
+ 
+ #define __free_page(page) __free_pages((page), 0)
+ #define free_page(addr) free_pages((addr),0)
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 2306920..88853e5 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -272,8 +272,8 @@ asmlinkage void do_softirq(void);
+ extern void open_softirq(int nr, void (*action)(struct softirq_action*), void *data);
+ extern void softirq_init(void);
+ #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
+-extern void FASTCALL(raise_softirq_irqoff(unsigned int nr));
+-extern void FASTCALL(raise_softirq(unsigned int nr));
++extern void raise_softirq_irqoff(unsigned int nr);
++extern void raise_softirq(unsigned int nr);
+ 
+ 
+ /* Tasklets --- multithreaded analogue of BHs.
+@@ -340,7 +340,7 @@ static inline void tasklet_unlock_wait(struct tasklet_struct *t)
+ #define tasklet_unlock(t) do { } while (0)
+ #endif
+ 
+-extern void FASTCALL(__tasklet_schedule(struct tasklet_struct *t));
++extern void __tasklet_schedule(struct tasklet_struct *t);
+ 
+ static inline void tasklet_schedule(struct tasklet_struct *t)
+ {
+@@ -348,7 +348,7 @@ static inline void tasklet_schedule(struct tasklet_struct *t)
+ 		__tasklet_schedule(t);
+ }
+ 
+-extern void FASTCALL(__tasklet_hi_schedule(struct tasklet_struct *t));
++extern void __tasklet_hi_schedule(struct tasklet_struct *t);
+ 
+ static inline void tasklet_hi_schedule(struct tasklet_struct *t)
+ {
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 1b7b95c..82ee5a0 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -751,7 +751,7 @@ int __set_page_dirty_nobuffers(struct page *page);
+ int __set_page_dirty_no_writeback(struct page *page);
+ int redirty_page_for_writepage(struct writeback_control *wbc,
+ 				struct page *page);
+-int FASTCALL(set_page_dirty(struct page *page));
++int set_page_dirty(struct page *page);
+ int set_page_dirty_lock(struct page *page);
+ int clear_page_dirty_for_io(struct page *page);
+ 
+@@ -794,7 +794,7 @@ extern void unregister_shrinker(struct shrinker *);
+ 
+ int vma_wants_writenotify(struct vm_area_struct *vma);
+ 
+-extern pte_t *FASTCALL(get_locked_pte(struct mm_struct *mm, unsigned long addr, spinlock_t **ptl));
++extern pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr, spinlock_t **ptl);
+ 
+ #ifdef __PAGETABLE_PUD_FOLDED
+ static inline int __pud_alloc(struct mm_struct *mm, pgd_t *pgd,
+diff --git a/include/linux/mutex-debug.h b/include/linux/mutex-debug.h
+index 2537285..731d77d 100644
+--- a/include/linux/mutex-debug.h
++++ b/include/linux/mutex-debug.h
+@@ -18,6 +18,6 @@ do {									\
+ 	__mutex_init((mutex), #mutex, &__key);				\
+ } while (0)
+ 
+-extern void FASTCALL(mutex_destroy(struct mutex *lock));
++extern void mutex_destroy(struct mutex *lock);
+ 
+ #endif
+diff --git a/include/linux/namei.h b/include/linux/namei.h
+index 4cb4f8d..c13e411 100644
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -62,13 +62,13 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT, LAST_BIND};
+ #define LOOKUP_ACCESS		(0x0400)
+ #define LOOKUP_CHDIR		(0x0800)
+ 
+-extern int FASTCALL(__user_walk(const char __user *, unsigned, struct nameidata *));
+-extern int FASTCALL(__user_walk_fd(int dfd, const char __user *, unsigned, struct nameidata *));
++extern int __user_walk(const char __user *, unsigned, struct nameidata *);
++extern int __user_walk_fd(int dfd, const char __user *, unsigned, struct nameidata *);
+ #define user_path_walk(name,nd) \
+ 	__user_walk_fd(AT_FDCWD, name, LOOKUP_FOLLOW, nd)
+ #define user_path_walk_link(name,nd) \
+ 	__user_walk_fd(AT_FDCWD, name, 0, nd)
+-extern int FASTCALL(path_lookup(const char *, unsigned, struct nameidata *));
++extern int path_lookup(const char *, unsigned, struct nameidata *);
+ extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
+ 			   const char *, unsigned int, struct nameidata *);
+ extern void path_release(struct nameidata *);
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 1e6af4f..7c03cd4 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -321,7 +321,7 @@ enum
+ 	NAPI_STATE_SCHED,	/* Poll is scheduled */
+ };
+ 
+-extern void FASTCALL(__napi_schedule(struct napi_struct *n));
++extern void __napi_schedule(struct napi_struct *n);
+ 
+ /**
+  *	napi_schedule_prep - check if napi can be scheduled
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index db8a410..bb2986b 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -156,9 +156,9 @@ static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
+ 	return pgoff >> (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+ }
+ 
+-extern void FASTCALL(__lock_page(struct page *page));
+-extern void FASTCALL(__lock_page_nosync(struct page *page));
+-extern void FASTCALL(unlock_page(struct page *page));
++extern void __lock_page(struct page *page);
++extern void __lock_page_nosync(struct page *page);
++extern void unlock_page(struct page *page);
+ 
+ /*
+  * lock_page may only be called if we have the page's inode pinned.
+@@ -185,7 +185,7 @@ static inline void lock_page_nosync(struct page *page)
+  * This is exported only for wait_on_page_locked/wait_on_page_writeback.
+  * Never use this directly!
+  */
+-extern void FASTCALL(wait_on_page_bit(struct page *page, int bit_nr));
++extern void wait_on_page_bit(struct page *page, int bit_nr);
+ 
+ /* 
+  * Wait for a page to be unlocked.
+diff --git a/include/linux/pid.h b/include/linux/pid.h
+index e29a900..5e045ea 100644
+--- a/include/linux/pid.h
++++ b/include/linux/pid.h
+@@ -79,10 +79,10 @@ static inline struct pid *get_pid(struct pid *pid)
+ 	return pid;
+ }
+ 
+-extern void FASTCALL(put_pid(struct pid *pid));
+-extern struct task_struct *FASTCALL(pid_task(struct pid *pid, enum pid_type));
+-extern struct task_struct *FASTCALL(get_pid_task(struct pid *pid,
+-						enum pid_type));
++extern void put_pid(struct pid *pid);
++extern struct task_struct *pid_task(struct pid *pid, enum pid_type);
++extern struct task_struct *get_pid_task(struct pid *pid,
++						enum pid_type);
+ 
+ extern struct pid *get_task_pid(struct task_struct *task, enum pid_type type);
+ 
+@@ -90,11 +90,11 @@ extern struct pid *get_task_pid(struct task_struct *task, enum pid_type type);
+  * attach_pid() and detach_pid() must be called with the tasklist_lock
+  * write-held.
+  */
+-extern int FASTCALL(attach_pid(struct task_struct *task,
+-				enum pid_type type, struct pid *pid));
+-extern void FASTCALL(detach_pid(struct task_struct *task, enum pid_type));
+-extern void FASTCALL(transfer_pid(struct task_struct *old,
+-				  struct task_struct *new, enum pid_type));
++extern int attach_pid(struct task_struct *task,
++				enum pid_type type, struct pid *pid);
++extern void detach_pid(struct task_struct *task, enum pid_type);
++extern void transfer_pid(struct task_struct *old,
++				  struct task_struct *new, enum pid_type);
+ 
+ struct pid_namespace;
+ extern struct pid_namespace init_pid_ns;
+@@ -109,7 +109,7 @@ extern struct pid_namespace init_pid_ns;
+  *
+  * see also find_task_by_pid() set in include/linux/sched.h
+  */
+-extern struct pid *FASTCALL(find_pid_ns(int nr, struct pid_namespace *ns));
++extern struct pid *find_pid_ns(int nr, struct pid_namespace *ns);
+ extern struct pid *find_vpid(int nr);
+ extern struct pid *find_pid(int nr);
+ 
+@@ -120,7 +120,7 @@ extern struct pid *find_get_pid(int nr);
+ extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
+ 
+ extern struct pid *alloc_pid(struct pid_namespace *ns);
+-extern void FASTCALL(free_pid(struct pid *pid));
++extern void free_pid(struct pid *pid);
+ extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
+ 
+ /*
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index cc24a01..68d8316 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -302,10 +302,10 @@ extern long rcu_batches_completed(void);
+ extern long rcu_batches_completed_bh(void);
+ 
+ /* Exported interfaces */
+-extern void FASTCALL(call_rcu(struct rcu_head *head, 
+-				void (*func)(struct rcu_head *head)));
+-extern void FASTCALL(call_rcu_bh(struct rcu_head *head,
+-				void (*func)(struct rcu_head *head)));
++extern void call_rcu(struct rcu_head *head, 
++				void (*func)(struct rcu_head *head));
++extern void call_rcu_bh(struct rcu_head *head,
++				void (*func)(struct rcu_head *head));
+ extern void synchronize_rcu(void);
+ extern void rcu_barrier(void);
+ 
+diff --git a/include/linux/rwsem-spinlock.h b/include/linux/rwsem-spinlock.h
+index 813cee1..6c3c0f6 100644
+--- a/include/linux/rwsem-spinlock.h
++++ b/include/linux/rwsem-spinlock.h
+@@ -60,14 +60,14 @@ do {								\
+ 	__init_rwsem((sem), #sem, &__key);			\
+ } while (0)
+ 
+-extern void FASTCALL(__down_read(struct rw_semaphore *sem));
+-extern int FASTCALL(__down_read_trylock(struct rw_semaphore *sem));
+-extern void FASTCALL(__down_write(struct rw_semaphore *sem));
+-extern void FASTCALL(__down_write_nested(struct rw_semaphore *sem, int subclass));
+-extern int FASTCALL(__down_write_trylock(struct rw_semaphore *sem));
+-extern void FASTCALL(__up_read(struct rw_semaphore *sem));
+-extern void FASTCALL(__up_write(struct rw_semaphore *sem));
+-extern void FASTCALL(__downgrade_write(struct rw_semaphore *sem));
++extern void __down_read(struct rw_semaphore *sem);
++extern int __down_read_trylock(struct rw_semaphore *sem);
++extern void __down_write(struct rw_semaphore *sem);
++extern void __down_write_nested(struct rw_semaphore *sem, int subclass);
++extern int __down_write_trylock(struct rw_semaphore *sem);
++extern void __up_read(struct rw_semaphore *sem);
++extern void __up_write(struct rw_semaphore *sem);
++extern void __downgrade_write(struct rw_semaphore *sem);
+ 
+ static inline int rwsem_is_locked(struct rw_semaphore *sem)
+ {
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index ac3d496..b23c009 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -290,7 +290,7 @@ extern char __sched_text_start[], __sched_text_end[];
+ extern int in_sched_functions(unsigned long addr);
+ 
+ #define	MAX_SCHEDULE_TIMEOUT	LONG_MAX
+-extern signed long FASTCALL(schedule_timeout(signed long timeout));
++extern signed long schedule_timeout(signed long timeout);
+ extern signed long schedule_timeout_interruptible(signed long timeout);
+ extern signed long schedule_timeout_uninterruptible(signed long timeout);
+ asmlinkage void schedule(void);
+@@ -1572,10 +1572,10 @@ extern void release_uids(struct user_namespace *ns);
+ 
+ extern void do_timer(unsigned long ticks);
+ 
+-extern int FASTCALL(wake_up_state(struct task_struct * tsk, unsigned int state));
+-extern int FASTCALL(wake_up_process(struct task_struct * tsk));
+-extern void FASTCALL(wake_up_new_task(struct task_struct * tsk,
+-						unsigned long clone_flags));
++extern int wake_up_state(struct task_struct * tsk, unsigned int state);
++extern int wake_up_process(struct task_struct * tsk);
++extern void wake_up_new_task(struct task_struct * tsk,
++						unsigned long clone_flags);
+ #ifdef CONFIG_SMP
+  extern void kick_process(struct task_struct *tsk);
+ #else
+@@ -1667,7 +1667,7 @@ static inline int sas_ss_flags(unsigned long sp)
+ extern struct mm_struct * mm_alloc(void);
+ 
+ /* mmdrop drops the mm and the page tables */
+-extern void FASTCALL(__mmdrop(struct mm_struct *));
++extern void __mmdrop(struct mm_struct *);
+ static inline void mmdrop(struct mm_struct * mm)
+ {
+ 	if (unlikely(atomic_dec_and_test(&mm->mm_count)))
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 4f3838a..da7bce8 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -173,10 +173,10 @@ extern unsigned int nr_free_pagecache_pages(void);
+ 
+ 
+ /* linux/mm/swap.c */
+-extern void FASTCALL(lru_cache_add(struct page *));
+-extern void FASTCALL(lru_cache_add_active(struct page *));
+-extern void FASTCALL(activate_page(struct page *));
+-extern void FASTCALL(mark_page_accessed(struct page *));
++extern void lru_cache_add(struct page *);
++extern void lru_cache_add_active(struct page *);
++extern void activate_page(struct page *);
++extern void mark_page_accessed(struct page *);
+ extern void lru_add_drain(void);
+ extern int lru_add_drain_all(void);
+ extern int rotate_reclaimable_page(struct page *page);
+diff --git a/include/linux/wait.h b/include/linux/wait.h
+index 0e68628..9a8f510 100644
+--- a/include/linux/wait.h
++++ b/include/linux/wait.h
+@@ -117,9 +117,9 @@ static inline int waitqueue_active(wait_queue_head_t *q)
+  */
+ #define is_sync_wait(wait)	(!(wait) || ((wait)->private))
+ 
+-extern void FASTCALL(add_wait_queue(wait_queue_head_t *q, wait_queue_t * wait));
+-extern void FASTCALL(add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t * wait));
+-extern void FASTCALL(remove_wait_queue(wait_queue_head_t *q, wait_queue_t * wait));
++extern void add_wait_queue(wait_queue_head_t *q, wait_queue_t * wait);
++extern void add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t * wait);
++extern void remove_wait_queue(wait_queue_head_t *q, wait_queue_t * wait);
+ 
+ static inline void __add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)
+ {
+@@ -141,16 +141,16 @@ static inline void __remove_wait_queue(wait_queue_head_t *head,
+ 	list_del(&old->task_list);
+ }
+ 
+-void FASTCALL(__wake_up(wait_queue_head_t *q, unsigned int mode, int nr, void *key));
+-extern void FASTCALL(__wake_up_locked(wait_queue_head_t *q, unsigned int mode));
+-extern void FASTCALL(__wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr));
+-void FASTCALL(__wake_up_bit(wait_queue_head_t *, void *, int));
+-int FASTCALL(__wait_on_bit(wait_queue_head_t *, struct wait_bit_queue *, int (*)(void *), unsigned));
+-int FASTCALL(__wait_on_bit_lock(wait_queue_head_t *, struct wait_bit_queue *, int (*)(void *), unsigned));
+-void FASTCALL(wake_up_bit(void *, int));
+-int FASTCALL(out_of_line_wait_on_bit(void *, int, int (*)(void *), unsigned));
+-int FASTCALL(out_of_line_wait_on_bit_lock(void *, int, int (*)(void *), unsigned));
+-wait_queue_head_t *FASTCALL(bit_waitqueue(void *, int));
++void __wake_up(wait_queue_head_t *q, unsigned int mode, int nr, void *key);
++extern void __wake_up_locked(wait_queue_head_t *q, unsigned int mode);
++extern void __wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr);
++void __wake_up_bit(wait_queue_head_t *, void *, int);
++int __wait_on_bit(wait_queue_head_t *, struct wait_bit_queue *, int (*)(void *), unsigned);
++int __wait_on_bit_lock(wait_queue_head_t *, struct wait_bit_queue *, int (*)(void *), unsigned);
++void wake_up_bit(void *, int);
++int out_of_line_wait_on_bit(void *, int, int (*)(void *), unsigned);
++int out_of_line_wait_on_bit_lock(void *, int, int (*)(void *), unsigned);
++wait_queue_head_t *bit_waitqueue(void *, int);
+ 
+ #define wake_up(x)			__wake_up(x, TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE, 1, NULL)
+ #define wake_up_nr(x, nr)		__wake_up(x, TASK_UNINTERRUPTIBLE | TASK_INTERRUPTIBLE, nr, NULL)
+@@ -379,11 +379,11 @@ extern long interruptible_sleep_on_timeout(wait_queue_head_t *q,
+ /*
+  * Waitqueues which are removed from the waitqueue_head at wakeup time
+  */
+-void FASTCALL(prepare_to_wait(wait_queue_head_t *q,
+-				wait_queue_t *wait, int state));
+-void FASTCALL(prepare_to_wait_exclusive(wait_queue_head_t *q,
+-				wait_queue_t *wait, int state));
+-void FASTCALL(finish_wait(wait_queue_head_t *q, wait_queue_t *wait));
++void prepare_to_wait(wait_queue_head_t *q,
++				wait_queue_t *wait, int state);
++void prepare_to_wait_exclusive(wait_queue_head_t *q,
++				wait_queue_t *wait, int state);
++void finish_wait(wait_queue_head_t *q, wait_queue_t *wait);
+ int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
+ int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
+ 
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index 7daafdc..85e312a 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -170,18 +170,18 @@ __create_workqueue_key(const char *name, int singlethread,
+ 
+ extern void destroy_workqueue(struct workqueue_struct *wq);
+ 
+-extern int FASTCALL(queue_work(struct workqueue_struct *wq, struct work_struct *work));
+-extern int FASTCALL(queue_delayed_work(struct workqueue_struct *wq,
+-			struct delayed_work *work, unsigned long delay));
++extern int queue_work(struct workqueue_struct *wq, struct work_struct *work);
++extern int queue_delayed_work(struct workqueue_struct *wq,
++			struct delayed_work *work, unsigned long delay);
+ extern int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
+ 			struct delayed_work *work, unsigned long delay);
+ 
+-extern void FASTCALL(flush_workqueue(struct workqueue_struct *wq));
++extern void flush_workqueue(struct workqueue_struct *wq);
+ extern void flush_scheduled_work(void);
+ 
+-extern int FASTCALL(schedule_work(struct work_struct *work));
+-extern int FASTCALL(schedule_delayed_work(struct delayed_work *work,
+-					unsigned long delay));
++extern int schedule_work(struct work_struct *work);
++extern int schedule_delayed_work(struct delayed_work *work,
++					unsigned long delay);
+ extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
+ 					unsigned long delay);
+ extern int schedule_on_each_cpu(work_func_t func);
+-- 
+1.5.3.7.2212.gd092
 
-But I think communication between the first kernel and the second kernel
-via reading/modifying the loaded kernel image is not very convenient
-way. The usage mode may be as follow:
 
-- sys_kexec_load() /* with executable/data loaded */
-- modify the loaded kexec image to set the parameters (A)
-- sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with parameters(A)*/
-- In physical mode code, check the parameters A and executing accordingly
-- modify the loaded kexec image to set the parameters (B)
-- sys_reboot(,,LINUX_REBOOT_CMD_KEXEC,) /* execute physical mode code with parameters(B)*/
-- In physical mode code, check the parameters B and executing accordingly
 
-There are some issues with this usage model:
-
-- Some parameters in kernel needed to be exported (such as the
-kimage->head to let the second kernel to read the memory contents of
-backupped memory).
-
-- The physical mode code invoker (the first kernel) need to know where
-to write the parameters. A common protocol or a protocol case by case
-should be defined. For example, the memory address after the entry point
-of kexec image is a good candidate. But for Linux kernel, there are two
-types of entry point, the "jump back entry" or "purgatory". Maybe
-different protocol should be defined for these two types of entry point.
-
-- For the user space of the second kernel to get the parameters. A
-interface (maybe a file in /proc or /sys) should be provided to export
-the parameters to user space.
-
-So I think the current parameters passing mechanism may be more simple
-and convenient (defined in Document/i386/jump_back_protocol.txt in the
-patch).
-
-There is only one user of var args. But I think it is simple to be
-implemented and may be used by others.
-
-> If extensive user space shutdown or startup is needed I will argue
-> that doing the work in the sys_reboot call is the wrong place to
-> do it.  Although if a jump back is happening we should not need
-> much restart.
-
-Now, the user space is not shut down or started up across kexec/jump
-back, just the sys_reboot call is used to trigger the kexec/jump back.
-Maybe sys_reboot is not the right place to do this. Can you recommended
-a more suitable place?
-
-> Can you generate a minimal patch with just the minimal necessary
-> support to return from a kexec operation?
-
-I plan to reduce the KEXEC_PRESERVE_XXX flags into one
-KEXEC_PRESERVE_CONTEXT. The var args part may be changed if we have the
-consensus.
-
-> > Another usage model may be useful is invoking the kexec image (such as
-> > firmware) from kernel space.
-> >
-> > - kmalloc the needed memory and loaded the firmware image (if needed)
-> > - sys_kexec_load() with a fake image (one segment with size 0), the
-> > entry point of the fake image is the entry point of the firmware image.
-> > - kexec_call(fake_image, ...) /* maybe change entry point if needed */
-> >
-> > This way, some kernel code can invoke the firmware in physical mode just
-> > like invoking an ordinary function.
-> 
-> That certainly seems interesting.  But that doesn't justify the vararg
-> part of this.
-> 
-> > [...]
-> >> > -	/* The segment registers are funny things, they have both a
-> >> > -	 * visible and an invisible part.  Whenever the visible part is
-> >> > -	 * set to a specific selector, the invisible part is loaded
-> >> > -	 * with from a table in memory.  At no other time is the
-> >> > -	 * descriptor table in memory accessed.
-> >> > -	 *
-> >> > -	 * I take advantage of this here by force loading the
-> >> > -	 * segments, before I zap the gdt with an invalid value.
-> >> > -	 */
-> >> > -	load_segments();
-> >> > -	/* The gdt & idt are now invalid.
-> >> > -	 * If you want to load them you must set up your own idt & gdt.
-> >> > -	 */
-> >> > -	set_gdt(phys_to_virt(0),0);
-> >> > -	set_idt(phys_to_virt(0),0);
-> >> > +	if (image->preserve_cpu_ext) {
-> >> > +		/* The segment registers are funny things, they have
-> >> > +		 * both a visible and an invisible part.  Whenever the
-> >> > +		 * visible part is set to a specific selector, the
-> >> > +		 * invisible part is loaded with from a table in
-> >> > +		 * memory.  At no other time is the descriptor table
-> >> > +		 * in memory accessed.
-> >> > +		 *
-> >> > +		 * I take advantage of this here by force loading the
-> >> > +		 * segments, before I zap the gdt with an invalid
-> >> > +		 * value.
-> >> > +		 */
-> >> > +		load_segments();
-> >> > +		/* The gdt & idt are now invalid.  If you want to load
-> >> > +		 * them you must set up your own idt & gdt.
-> >> > +		 */
-> >> > +		set_gdt(phys_to_virt(0), 0);
-> >> > +		set_idt(phys_to_virt(0), 0);
-> >> > +	}
-> >> 
-> >> We can't keep the same idt and gdt as the pages they are on will be
-> >> overwritten/reused.  So explictily stomping on them sounds better
-> >> so they never work.  We can restore them on kernel reentry.
-> >
-> > The original idea about this code is:
-> >
-> > If the kexec image is claimed that it need not to "perserving extensive
-> > CPU state" (such as FPU/MMX/GDT/LDT/IDT/CS/DS/ES/FS/GS/SS etc), the
-> > IDT/GDT/CS/DS/ES/FS/GS/SS are not touched in kexec image code. So the
-> > segment registers need not to be set.
-> >
-> > But this is not clear. At least more description should be provided for
-> > each preserve flag.
-> 
-> yes.
-> 
-> >> >  	/* now call it */
-> >> > -	relocate_kernel((unsigned long)image->head, (unsigned long)page_list,
-> >> > -			image->start, cpu_has_pae);
-> >> > +	relocate_kernel_ptr((unsigned long)image->head,
-> >> > +			    (unsigned long)page_list,
-> >> > +			    image->start, cpu_has_pae);
-> >> 
-> >> Why rename relocate_kernel?
-> >> Ah.  I see.  You need to make it into a pointer again.  The crazy don't
-> >> stop the pgd support strikes again.  It used to be named rnk.
-> >
-> > You mean I should change the function pointer name to rnk to keep
-> > consistency? I find rnk in IA64 implementation.
-> 
-> You were changing something that used to be a pointer back to a pointer
-> and I found that confusing.    See the last one or two commits to
-> machine_kexec_32.c for when this happened.
-
-After checking the history of machine_kexec_32.c, I find the pointer is
-removed because a specific PGD is used. My reason is a little different.
-I need save some information (the preserving registers, some control
-registers, swap page address etc) in control_page, it is more convenient
-to execute on identity map of control_page. I think it is not a big
-issue. In fact, my code can work without making relocate_kernel to
-pointer with some changes.
-
-> I get the feeling that we
-> need to put the page table creation logic into machine_kexec_prepare,
-> instead of in assembly.
-
-Yes. I think this is a good idea, and the kexec_pgd, kexec_pmd0/1,
-kexec_pte0/1 can be allocated in machine_kexec_prepare too to save the
-static memory usage.
-
-Best Regards,
-Huang Ying
