@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759052AbXLLTg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbXLLThn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759052AbXLLTg6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 14:36:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758223AbXLLTgr
+	id S1760960AbXLLThn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 14:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758664AbXLLThe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 14:36:47 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:54103 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760843AbXLLTgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 14:36:46 -0500
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
-	settings for task actions [try #2]
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: casey@schaufler-ca.com
-Cc: David Howells <dhowells@redhat.com>, Karl MacMillan <kmacmill@redhat.com>,
-       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+	Wed, 12 Dec 2007 14:37:34 -0500
+Received: from web36613.mail.mud.yahoo.com ([209.191.85.30]:31510 "HELO
+	web36613.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758306AbXLLThd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 14:37:33 -0500
+X-YMail-OSG: 6LJHd.4VM1l_xTu5oLI4QhWRMcZRp5JvV_ois5BSpnySgyymmQIwdS0lBiTDkS7m6EuAYDKpmA--
+X-RocketYMMF: rancidfat
+Date: Wed, 12 Dec 2007 11:37:32 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
+To: David Howells <dhowells@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>
+Cc: dhowells@redhat.com, casey@schaufler-ca.com,
+       Karl MacMillan <kmacmill@redhat.com>, viro@ftp.linux.org.uk,
+       hch@infradead.org, Trond.Myklebust@netapp.com,
        linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org
-In-Reply-To: <66139.71689.qm@web36604.mail.mud.yahoo.com>
-References: <66139.71689.qm@web36604.mail.mud.yahoo.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 12 Dec 2007 14:35:08 -0500
-Message-Id: <1197488108.1125.141.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <32168.1197484170@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <573241.88686.qm@web36613.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-12-12 at 11:20 -0800, Casey Schaufler wrote:
-> --- David Howells <dhowells@redhat.com> wrote:
+
+--- David Howells <dhowells@redhat.com> wrote:
+
+> Stephen Smalley <sds@tycho.nsa.gov> wrote:
 > 
-> > Casey Schaufler <casey@schaufler-ca.com> wrote:
-> > 
-> > > You may need to have an application, say cachefileselinuxcontext, that will
-> > > read the current policy and spit out an appropriate value of "<whatever>",
-> > > but that can be separate and LSM specific without mucking up your basic
-> > > infrastructure applications.
-> > 
-> > What would I do with such a thing?  How would it get run?  Spat out to where?
+> > That sounds workable, although I think he will want a more specific hook
+> > than security_secctx_to_secid(), or possibly a second hook call, that
+> > would not only validate the context but authorize the use of it by the
+> > cachefilesd process.  And then the security_task_kernel_act_as() hook
+> > just takes the secid as input rather than the task struct of the daemon,
+> > and applies it.  At that point, nfsd can use the same mechanism for
+> > setting the acting SID based on the client process after doing its own
+> > authorization.
 > 
-> Put it in /etc/init.d/cachefiles and run it at boot time. Put the
-> result into /etc/cachefiles.conf. Have cachefilesd read it and pass
-> it downward.
+> I thought using secids was verboten as it made things too specific.
 
-More likely, run it at build time in your .spec file to generate
-cachefiles.conf, then run it again maybe upon a policy update or if the
-user selects a different policy.
+I have argued that in the past. I'm reasonably convinced that I have
+lost that argument at least for the immediate future as audit, usb,
+and networking are all dependent on them. I can't image an LSM that
+manages to avoid them, at least for the short term. If secid's are
+ever expundged from the kernel cachefiles will require reeducation,
+but that will be a minor effort.
 
--- 
-Stephen Smalley
-National Security Agency
+> Have you example code for the security hook you mention?  I'm not sure I
+> understand why security_secctx_to_secid() is not sufficient.
+> 
+> Or is it that I need something that takes a secctx, converts it to a secid
+> and
+> authorises its use all in one go?
+> If it's this, why can't that be rolles
+> into
+> security_task_kernel_act_as()?  That sets up a task_security struct which is
+> then switched in and out without consultation of the LSM.
 
+It would seem to me that security_secctx_to_secid() ought to suffice
+if the application code was written correctly. Be aware that factors
+outside the LSM may be important, too. As Stephen points out elsewhere,
+Smack will require you have particular capabilities (CAP_MAC_OVERRIDE,
+CAP_MAC_ADMIN) while a DAC LSM may require CAP_DAC_OVERRIDE. SELinux
+is likely to be the odd duck in this pond in that it does not use the
+capability mechanism in the way Nature intends it to be, opting to
+treat "privilege" with a completely different model.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
