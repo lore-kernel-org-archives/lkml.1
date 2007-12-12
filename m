@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbXLLPy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbXLLPz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759330AbXLLPy3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 10:54:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbXLLPyK
+	id S1759912AbXLLPz2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 10:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757618AbXLLPzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 10:54:10 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:47802 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758665AbXLLPyI (ORCPT
+	Wed, 12 Dec 2007 10:55:17 -0500
+Received: from an-out-0708.google.com ([209.85.132.247]:28371 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756996AbXLLPzP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 10:54:08 -0500
-Date: Wed, 12 Dec 2007 08:54:07 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Hannes Reinecke <hare@suse.de>
-Subject: Re: [PATCH] REQ-flags to/from BIO-flags bugfix
-Message-ID: <20071212155407.GK26334@parisc-linux.org>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <47462F3C.3040700@googlemail.com> <20071122201250.f957e280.akpm@linux-foundation.org> <47466B5D.90607@googlemail.com> <20071126221509.8f437b61.akpm@linux-foundation.org> <1197390783.3812.19.camel@localhost.localdomain> <475FB316.6040804@panasas.com> <475FBFEE.9010009@panasas.com> <20071212151813.GJ26334@parisc-linux.org>
+	Wed, 12 Dec 2007 10:55:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=BvBRWmHHkvBv8ZzR/jLdvxCAiXFV/bdJAa/Q/Z/iVZdTufo2vtRx2eHrFH9nUO+xYkfQnGuD3taAJ43hhe7qcH9/7s4yvsEuh4OCNZ940ZfIFfTy2sWWeTiJRhdSKrCDZnwftamNi/5MSjmQKI9Tv8DLTSKnlNdi1wcCDusy6Z4=
+Message-ID: <4760040B.9000805@keyaccess.nl>
+Date: Wed, 12 Dec 2007 16:53:47 +0100
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071212151813.GJ26334@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <475F1DC6.5090403@keyaccess.nl> <475FA060.6070004@gmail.com> <4af2d03a0712120325n50d057baq7ec440c5e57fda39@mail.gmail.com>
+In-Reply-To: <4af2d03a0712120325n50d057baq7ec440c5e57fda39@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Rene Herman <rene.herman@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 08:18:14AM -0700, Matthew Wilcox wrote:
-> I don't know whether BIO_RW_BARRIER is __REQ_SOFTBARRIER or
-> __REQ_HARDBARRIER, so I didn't include that in this patch.  There also
-> doesn't seem to be a __REQ equivalent to BIO_RW_AHEAD, but we can do
-> the other four bits (and leave gaps for those two).
+On 12-12-07 12:25, Jiri Slaby wrote:
 
-Hm.  BIO_RW_AHEAD seems unused:
+Thanks for reporting! You have two results that are somewhat off:
 
-willy@honeydew:~/kernel/linux-2.6$ grep -r BIO_RW_AHEAD *
-block/blktrace.c:       (((rw) & (1 << BIO_RW_AHEAD)) << (2 - BIO_RW_AHEAD))
-include/linux/bio.h:#define BIO_RW_AHEAD        1
-include/linux/bio.h:#define bio_rw_ahead(bio)   ((bio)->bi_rw & (1 << BIO_RW_AHEAD))
-willy@honeydew:~/kernel/linux-2.6$ grep -r bio_rw_ahead *
-block/ll_rw_blk.c:      if (bio_rw_ahead(bio) || bio_failfast(bio))
-drivers/md/dm-mpath.c:  if ((error == -EWOULDBLOCK) && bio_rw_ahead(bio))
-drivers/md/multipath.c: else if (!bio_rw_ahead(bio)) {
-include/linux/bio.h:#define bio_rw_ahead(bio)   ((bio)->bi_rw & (1 << BIO_RW_AHEAD))
+> Intel(R) Core(TM)2 Duo CPU E6850 @ 3.00GHz
+> cycles: out 6500, in 3135
 
-BIO_RW_BARRIER seems to be __REQ_HARDBARRIER, but we set it
-explicitly in init_request_from_bio().  We could probably simplify
-init_request_from_bio() with the patch in the previous message.
+6500 / 3000 = 2.17. Fairly high...
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> Intel(R) Xeon(R) CPU E5335 @ 2.00GHz
+> cycles: out 3217, in 1898
+
+3217 / 2000 = 1.61. Okay.
+
+> Dual Core AMD Opteron(tm) Processor 275
+> cycles: out 5508, in 5524
+
+2200 MHz right?
+
+5508 / 2200 = 2.50. Very high.
+
+Nothing was dozing off in some ACPI sleep state or something?
+
+Rene.
