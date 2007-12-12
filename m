@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXLLTNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759085AbXLLTPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759905AbXLLTNB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 14:13:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXLLTMw
+	id S1759085AbXLLTPd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 14:15:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbXLLTP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 14:12:52 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:35768 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753892AbXLLTMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 14:12:52 -0500
-Date: Wed, 12 Dec 2007 20:12:47 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC updates
-Message-ID: <20071212201247.64704150@poseidon.drzeus.cx>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 12 Dec 2007 14:15:26 -0500
+Received: from an-out-0708.google.com ([209.85.132.250]:40077 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751527AbXLLTPZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 14:15:25 -0500
+Message-ID: <47603332.8060605@codemonkey.ws>
+Date: Wed, 12 Dec 2007 13:14:58 -0600
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: 7eggert@gmx.de, Andrew Morton <akpm@linux-foundation.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xen: relax signature check
+References: <9yY38-5oa-11@gated-at.bofh.it>	<E1J27Or-00012X-DF@be1.7eggert.dyndns.org> <475EC5E5.80104@goop.org>
+In-Reply-To: <475EC5E5.80104@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+Jeremy Fitzhardinge wrote:
+> Bodo Eggert wrote:
+>> Not BUG_ON(memcmp(xen_start_info->magic, "xen-3.", 6) != 0); ?
+>> I don't thin Xen version 32 will be compatible ...
+>>   
+> 
+> It had better be; if it loads the kernel, it should present a xen-3
+> compatible ABI.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
+If xen-32.0 should be compatible than wouldn't xen-24.0 be compatible 
+too?  I think the point was that you should either be checking for 
+'xen-3.x' or something more general that would accept anything >= xen-3.0.
 
-to receive the following updates:
+Regards,
 
- drivers/mmc/host/sdhci.c |   63 ++++++++++++++++++++++++++++++++++++++++++---
- drivers/mmc/host/sdhci.h |    3 +-
- include/linux/mmc/host.h |    4 ---
- include/linux/pci_ids.h  |    1 +
- 4 files changed, 61 insertions(+), 10 deletions(-)
+Anthony Liguori
 
-Nicolas Pitre (1):
-      mmc: remove unused 'mode' from the mmc_host structure
+> But this is just a sanity check to make sure things are basically OK;
+> BUG_ON is hardly nice error reporting (not that there's much else we can
+> do at that point).
+> 
+>     J
 
-Pierre Ossman (4):
-      sdhci: describe quirks
-      sdhci: don't warn about sdhci 2.0 controllers
-      sdhci: use PIO when DMA can't satisfy the request
-      sdhci: support JMicron JMB38x chips
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
