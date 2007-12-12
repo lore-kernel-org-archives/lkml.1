@@ -1,344 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbXLLBYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbXLLBa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbXLLBYj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Dec 2007 20:24:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXLLBYa
+	id S1756793AbXLLBa3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Dec 2007 20:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbXLLBaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Dec 2007 20:24:30 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54008 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752173AbXLLBY3 convert rfc822-to-8bit (ORCPT
+	Tue, 11 Dec 2007 20:30:21 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:12531 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbXLLBaU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Dec 2007 20:24:29 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.24-rc5-git1: Reported regressions from 2.6.23
-Date: Wed, 12 Dec 2007 02:43:26 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200712120243.27411.rjw@sisk.pl>
+	Tue, 11 Dec 2007 20:30:20 -0500
+Date: Tue, 11 Dec 2007 17:28:28 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
+       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
+       hpa@zytor.com, john@stoffel.org, linux-os@analogic.com
+Subject: Re: [RFT] Port 0x80 I/O speed
+Message-Id: <20071211172828.50e68804.randy.dunlap@oracle.com>
+In-Reply-To: <475F1DC6.5090403@keyaccess.nl>
+References: <475F1DC6.5090403@keyaccess.nl>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message contains a list of some regressions from 2.6.23 reported since
-2.6.24-rc1 was released, for which there are no fixes in the mainline I know
-of.  If any of them have been fixed already, please let me know.
-
-If you know of any other unresolved regressions from 2.6.23, please let me know
-either and I'll add them to the list.  Also, please let me know if any of the
-entries below are invalid.
-
-Listed regressions statistics:
-Date		Total	Pending
-Today		106	31
-2007-12-08	98	29
-2007-12-01	85	29
-2007-11-24	75	25
-2007-11-19	68	26
-2007-11-17	65	25
-
-
-Subject		: EHCI causes system to resume instantly from S4
-Submitter	: Maxim Levitsky <maximlevitsky@gmail.com>
-Date		: 2007-10-28 14:56
-References	: http://lkml.org/lkml/2007/10/27/66
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9258
-Handled-By	: "Rafael J. Wysocki" <rjw@sisk.pl>
-		  David Brownell <david-b@pacbell.net>
-		  Alan Stern <stern@rowland.harvard.edu>
-Patch		: 
-Workaround	: http://bugzilla.kernel.org/show_bug.cgi?id=9258#c30
-
-
-Subject		: PATA scan: ACPI Exception AE_AML_PACKAGE_LIMIT... is beyond end of object
-Submitter	: Hans de Bruin <bruinjm@xs4all.nl>
-Date		: 2007-11-07 13:34
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9320
-Handled-By	: Robert Moore <Robert.Moore@intel.com>
-		  Tejun Heo <htejun@gmail.com>
-		  Fu Michael <michael.fu@intel.com>
-Patch		: 
-
-
-Subject		: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
-Submitter	: Roland Dreier <rdreier@cisco.com>
-Date		: 2007-11-08 14:55
-References	: http://lkml.org/lkml/2007/11/8/255
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9332
-Handled-By	: Takashi Iwai <tiwai@suse.de>
-		  Ingo Molnar <mingo@elte.hu>
-Patch		: http://lkml.org/lkml/2007/11/16/66
-
-
-Subject		: system hangs after a few minutes
-Submitter	: Marcus Better <marcus@better.se>
-Date		: 2007-11-08 23:15
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9335
-Handled-By	: Andrew Morton <akpm@linux-foundation.org>
-		  Alan Stern <stern@rowland.harvard.edu>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=13871&action=view
-
-
-Subject		: cd/dvd inaccessible in 2.6.24-rc2
-Submitter	: Will Trives <will@trivescon.com.au>
-Date		: 2007-11-11 10:36
-References	: http://lkml.org/lkml/2007/11/9/290
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9346
-Handled-By	: Len Brown <lenb@kernel.org>
-		  Tejun Heo <htejun@gmail.com>
-Patch		: 
-
-
-Subject		: The keyboard doesn't work
-Submitter	: Francois Valenduc <francois.valenduc@skynet.be>
-Date		: 2007-11-13 00:52
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9362
-Handled-By	: Dmitry Torokhov <dtor@insightbb.com>
-		  Ingo Molnar <mingo@elte.hu>
-		  Alexey Starikovskiy <astarikovskiy@suse.de>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=13892&action=view
-		  http://bugzilla.kernel.org/attachment.cgi?id=13893&action=view
-		  http://bugzilla.kernel.org/attachment.cgi?id=13907&action=view
-Note		: patches to apply in this order, top-down
-
-
-Subject		: v2.6.24-rc2-409-g9418d5d: attempt to access beyond end of device
-Submitter	: Thomas Meyer <thomas@m3y3r.de>
-Date		: 2007-11-13 13:11
-References	: http://lkml.org/lkml/2007/11/13/250
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9370
-Handled-By	: Matthew Wilcox <matthew@wil.cx>
-Patch		: 
-
-
-Subject		: SError: { DevExch } occuring and causing disruption
-Submitter	: Avuton Olrich <avuton@gmail.com>
-Date		: 2007-11-15 22:39
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9393
-Handled-By	: Tejun Heo <htejun@gmail.com>
-		  Mark Lord <mlord@pobox.com>
-Patch		: 
-
-
-Subject		: Not work light of button-led with module b43 in chipset broadcom 4318
-Submitter	: Cristian Aravena Romero <caravena@gmail.com>
-Date		: 2007-11-19 20:15
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9414
-Handled-By	: Larry Finger <Larry.Finger@lwfinger.net>
-Patch		: 
-
-
-Subject		: unable to turn cooling device 'off' - LG LE50 Express laptop
-Submitter	: Marcus Better <marcus@better.se>
-Date		: 2007-11-22 01:32
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9432
-Handled-By	: Len Brown <lenb@kernel.org>
-		  Alexey Starikovskiy <astarikovskiy@suse.de>
-Patch		: 
-
-
-Subject		: 2.6.24-rc3 can't see sd partitions on Alpha
-Submitter	: Bob Tracy <rct@gherkin.frus.com>
-Date		: 2007-11-25 03:55
-References	: http://lkml.org/lkml/2007/11/18/3
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9457
-Handled-By	: Andrew Morton <akpm@linux-foundation.org>
-		  Kay Sievers <kay.sievers@vrfy.org>
-		  Ingo Molnar <mingo@elte.hu>
-		  Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Patch		: http://lkml.org/lkml/2007/12/11/141
-
-
-Subject		: 2.6.24-rc3-git2 softlockup detected
-Submitter	: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Date		: 2007-11-28 15:46
-References	: http://lkml.org/lkml/2007/11/28/16
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9472
-Handled-By	: Andrew Morton <akpm@linux-foundation.org>
-		  Ingo Molnar <mingo@elte.hu>
-Patch		: 
-
-
-Subject		: jiffies counter leaps in 2.6.24-rc3
-Submitter	: Stefano Brivio <stefano.brivio@polimi.it>
-Date		: 2007-11-29 08:36
-References	: http://lkml.org/lkml/2007/11/24/53
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9475
-Handled-By	: Ingo Molnar <mingo@elte.hu>
-Patch		: http://lkml.org/lkml/2007/12/7/132
-
-
-Subject		: kernel GPF in 2.6.24 (g09f345da)
-Submitter	: Jon Nelson <jnelson-kernel-bugzilla@jamponi.net>
-Date		: 2007-12-01 11:54
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9482
-Handled-By	: Andrew Morton <akpm@linux-foundation.org>
-Patch		: http://lkml.org/lkml/2007/12/8/235
-
-
-Subject		: 20000+ wake-ups/second in 2.6.24
-Submitter	: Mark Lord <lkml@rtr.ca>
-Date		: 2007-12-02 04:23
-References	: http://lkml.org/lkml/2007/12/1/141
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9489
-Handled-By	: Arjan van de Ven <arjan@infradead.org>
-Patch		: 
-
-
-Subject		: 2.6.24: false double-clicks from USB mouse
-Submitter	: Mark Lord <lkml@rtr.ca>
-Date		: 2007-12-02 12:05
-References	: http://lkml.org/lkml/2007/12/2/86
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9492
-Handled-By	: Jiri Kosina <jkosina@suse.cz>
-		  Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Patch		: 
-
-
-Subject		: Battery shows up twice in kpowersave
-Submitter	: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Date		: 2007-12-03 12:06
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9494
-Handled-By	: Alexey Starikovskiy <astarikovskiy@suse.de>
-Patch		: 
-
-
-Subject		: kobject ->k_name memory leak
-Submitter	: Alexey Dobriyan <adobriyan@sw.ru>
-Date		: 2007-12-03 13:42
-References	: http://lkml.org/lkml/2007/12/3/20
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9496
-Handled-By	: Greg KH <gregkh@suse.de>
-Patch		: 
-
-
-Subject		: PS3: trouble with SPARSEMEM_VMEMMAP and kexec
-Submitter	: Geoff Levand <geoffrey.levand@am.sony.com>
-Date		: 2007-12-03 14:12
-References	: http://lkml.org/lkml/2007/12/3/137
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9499
-Handled-By	: Milton Miller <miltonm@bga.com>
-		  Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-		  Yasunori Goto <y-goto@jp.fujitsu.com>
-Patch		: http://lkml.org/lkml/2007/12/5/73
-
-
-Subject		: 2.6.24-rc4 hwmon it87 probe fails
-Submitter	: Mike Houston <mikeserv@bmts.com>
-Date		: 2007-12-06 17:10
-References	: http://lkml.org/lkml/2007/12/4/466
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9514
-Handled-By	: Shaohua Li <shaohua.li@intel.com>
-Patch		: http://lkml.org/lkml/2007/12/9/186
-
-
-Subject		: 2.6.24-rc3-git4 NFS crossmnt regression
-Submitter	: Shane <gnome42@gmail.com>
-Date		: 2007-12-07 11:33
-References	: http://lkml.org/lkml/2007/12/6/410
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9522
-Handled-By	: "Trond Myklebust" <trond.myklebust@fys.uio.no>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=13908&action=view
-
-
-Subject		: soft lockup - CPU#1 stuck for 15s! [swapper:0]
-Submitter	: "Parag Warudkar" <parag.warudkar@gmail.com>
-Date		: 2007-12-07 18:14
-References	: http://lkml.org/lkml/2007/12/7/299
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9525
-Handled-By	: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-		  Thomas Gleixner <tglx@linutronix.de>
-		  Ingo Molnar <mingo@elte.hu>
-Patch		: 
-
-
-Subject		: STD regression rc1 -> rc234, suspend fails completely
-Submitter	: Andreas Mohr <andi@lisas.de>
-Date		: 2007-12-09 05:39
-References	: http://lkml.org/lkml/2007/12/8/34
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9530
-Handled-By	: Robert Hancock <hancockr@shaw.ca>
-		  Tejun Heo <htejun@gmail.com>
-Patch		: 
-
-
-Subject		: circular locking dependency when unplugging USB keyboard
-Submitter	: Marcus Better <marcus@better.se>
-Date		: 2007-12-10 05:30
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9532
-Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=13955&action=view
-
-
-Subject		: 2.6.24-rc4: some ahci/acpi interaction causes delays during boot
-Submitter	: PaX Team <pageexec@freemail.hu>
-Date		: 2007-12-10 05:55
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9533
-Handled-By	: Chuck Ebbert <cebbert@redhat.com>
-Patch		:
-Workaround	: http://bugzilla.kernel.org/show_bug.cgi?id=9533#c9
-
-
-Subject		: BUG fs/dcache.c:595 in 2.4.24rc3-git3 during NFS umount
-Submitter	: Andi Kleen <ak@suse.de>
-Date		: 2007-12-10 13:32
-References	: http://lkml.org/lkml/2007/12/8/58
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9536
-Handled-By	: Trond Myklebust <trond.myklebust@fys.uio.no>
-Patch		: 
-
-
-Subject		: System reboots after restoring hibernation image (s2disk)
-Submitter	: Adam Jones <adam@yggdrasl.demon.co.uk>
-Date		: 2007-12-11 02:11
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9541
-Handled-By	: Andrew Morton <akpm@linux-foundation.org>
-Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=9541#c2
-
-
-Subject		: BUG: bad unlock balance detected!
-Submitter	: Krzysztof Oledzki <olel@ans.pl>
-Date		: 2007-12-11 03:17
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9542
-Handled-By	: Andrew Morton <akpm@linux-foundation.org>
-Patch		: 
-
-
-Subject		: RTNL: assertion failed at net/ipv6/addrconf.c (2164)/RTNL: assertion failed at net/ipv4/devinet.c (1055)
-Submitter	: Krzysztof Oledzki <olel@ans.pl>
-Date		: 2007-12-11 03:20
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9543
-Handled-By	: Andrew Morton <akpm@linux-foundation.org>
-Patch		: 
-
-
-Subject		: Cannot bring up a bridge interface without a MAC address set
-Submitter	: Daniel Berrange <berrange@redhat.com>
-Date		: 2007-12-11 11:04
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9545
-Handled-By	: Andrew Morton <akpm@linux-foundation.org>
-		  Stephen Hemminger <shemminger@linux-foundation.org>
-Patch		: http://marc.info/?l=linux-netdev&m=119741724408852&w=2
-
-
-For details, please follow the links given in references.
-
-As you can see, there is a Bugzilla entry for each of the listed regressions.
-There also is a Bugzilla entry used for tracking the regressions from 2.6.23,
-unresolved as well as resolved, at:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=9243
-
-Please let me know if there are any Bugzilla entries that should be added to
-the list in there.
-
-Thanks,
-Rafael
+On Wed, 12 Dec 2007 00:31:18 +0100 Rene Herman wrote:
+
+> Good day.
+> 
+> Would some people on x86 (both 32 and 64) be kind enough to compile and run 
+> the attached program? This is about testing how long I/O port access to port 
+> 0x80 takes. It measures in CPU cycles so CPU speed is crucial in reporting.
+> 
+> Posted a previous incarnation of this before, buried in the outb 0x80 thread 
+> which had a serialising problem. This one should as far as I can see measure 
+> the right thing though. Please yell if you disagree...
+> 
+> For me, on a Duron 1300 (AMD756 chipset) I have a constant:
+> 
+> rene@7ixe4:~/src/port80$ su -c ./port80
+> cycles: out 2400, in 2400
+> 
+> and on a PII 400 (Intel 440BX chipset) a constant:
+> 
+> rene@6bap:~/src/port80$ su -c ./port80
+> cycles: out 553, in 251
+> 
+> Results are (mostly) independent of compiler optimisation, but testing with 
+> an -O2 compile should be most useful. Thanks!
+
+(-m32 build on x86_64)
+
+midway:/home/rddunlap/src # ./port80
+cycles: out 2702, in 1903
+midway:/home/rddunlap/src # ./port80
+cycles: out 2688, in 1893
+midway:/home/rddunlap/src # ./port80
+cycles: out 2703, in 1909
+midway:/home/rddunlap/src # ./port80
+cycles: out 2687, in 1893
+midway:/home/rddunlap/src # ./port80
+cycles: out 2687, in 1893
+midway:/home/rddunlap/src # ./port80
+cycles: out 2701, in 1907
+midway:/home/rddunlap/src # ./port80
+cycles: out 2701, in 1919
+midway:/home/rddunlap/src # ./port80
+cycles: out 2687, in 1893
+midway:/home/rddunlap/src # ./port80
+cycles: out 2701, in 1909
+midway:/home/rddunlap/src # ./port80
+cycles: out 2706, in 1906
+
+/proc/cpuinfo says CPU speed is
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 4
+model name      :               Intel(R) Pentium(R) D CPU 3.00GHz
+stepping        : 4
+cpu MHz         : 2999.988
+
+
+---
+~Randy
