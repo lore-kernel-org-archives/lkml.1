@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbXLLPVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbXLLPVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbXLLPVJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 10:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbXLLPUm
+	id S1758299AbXLLPVh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 10:21:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbXLLPVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 10:20:42 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:20196
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754659AbXLLPUj convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 10:20:39 -0500
-Message-Id: <47600A8A.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 12 Dec 2007 15:21:30 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <tony.luck@intel.com>
-Cc: <linux-ia64@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ia64: make flush_tlb_kernel_range() an inline function
+	Wed, 12 Dec 2007 10:21:25 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45162
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755295AbXLLPVY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 10:21:24 -0500
+Date: Wed, 12 Dec 2007 07:21:21 -0800 (PST)
+Message-Id: <20071212.072121.93137990.davem@davemloft.net>
+To: shemminger@linux-foundation.org
+Cc: joonwpark81@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       baum@tehutinetworks.net, andy@greyhouse.net
+Subject: Re: [RFC] net: napi fix
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071211214634.4dedb274@freepuppy.rosehill>
+References: <002901c83c73$b089b6e0$9c94fea9@jason>
+	<20071211213939.122de1db@freepuppy.rosehill>
+	<20071211214634.4dedb274@freepuppy.rosehill>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes an unused variable warning in mm/vmalloc.c.
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Date: Tue, 11 Dec 2007 21:46:34 -0800
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> Isn't this a better fix for all drivers, rather than peppering every
+> driver with the special case. This is how the logic worked up until
+> 2.6.24.
 
- include/asm-ia64/tlbflush.h |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Stephen this is not the problem.
 
---- linux-2.6.24-rc5/include/asm-ia64/tlbflush.h	2007-12-12 12:27:38.000000000 +0100
-+++ 2.6.24-rc5-ia64-flush-tlb-kernel-range/include/asm-ia64/tlbflush.h	2007-12-12 15:24:27.000000000 +0100
-@@ -92,6 +92,10 @@ void smp_local_flush_tlb(void);
- #define smp_local_flush_tlb()
- #endif
- 
--#define flush_tlb_kernel_range(start, end)	flush_tlb_all()	/* XXX fix me */
-+static inline void flush_tlb_kernel_range(unsigned long start,
-+					  unsigned long end)
-+{
-+	flush_tlb_all();	/* XXX fix me */
-+}
- 
- #endif /* _ASM_IA64_TLBFLUSH_H */
-
-
-
+The problem is that the driver is doing a NAPI completion and
+re-enabling chip interrupts with work_done == weight, and that is
+illegal.
