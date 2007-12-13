@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761849AbXLMGsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762222AbXLMGsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761849AbXLMGsd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758700AbXLMGic
+	id S1762222AbXLMGsv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759176AbXLMGif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:38:32 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56661 "EHLO
+	Thu, 13 Dec 2007 01:38:35 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56676 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752691AbXLMGia (ORCPT
+	with ESMTP id S1757821AbXLMGie (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:38:30 -0500
-Date: Wed, 12 Dec 2007 22:35:25 -0800
+	Thu, 13 Dec 2007 01:38:34 -0500
+Date: Wed, 12 Dec 2007 22:35:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 31/36] Revert "Fix SMP poweroff hangs"
-Message-ID: <20071213063525.GF25301@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, David Chinner <dgc@sgi.com>,
+       Lachlan McIlroy <lachlan@sgi.com>, Oliver Pintr <oliver.pntr@gmail.com>
+Subject: [patch 32/36] XFS: Make xfsbufd threads freezable
+Message-ID: <20071213063529.GG25301@kroah.com>
 References: <20071213062511.265908583@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="revert-fix-smp-poweroff-hangs.patch"
+Content-Disposition: inline; filename="xfs-make-xfsbufd-threads-freezable.patch"
 In-Reply-To: <20071213063308.GA25301@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,54 +40,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Greg Kroah-Hartman <gregkh@suse.de>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-This reverts the following changeset in 2.6.22.10 that caused a lot of
-reported problems.
+patch 978c7b2ff49597ab76ff7529a933bd366941ac25 in mainline
 
-	From: Mark Lord <lkml@rtr.ca>
+Fix breakage caused by commit 831441862956fffa17b9801db37e6ea1650b0f69
+that did not introduce the necessary call to set_freezable() in
+xfs/linux-2.6/xfs_buf.c .
 
-	commit 4047727e5ae33f9b8d2b7766d1994ea6e5ec2991 from upstream
+SGI-PV: 974224
+SGI-Modid: xfs-linux-melb:xfs-kern:30203a
 
-	We need to disable all CPUs other than the boot CPU (usually 0) before
-	attempting to power-off modern SMP machines.  This fixes the
-	hang-on-poweroff issue on my MythTV SMP box, and also on Thomas Gleixner's
-	new toybox.
-
-	Signed-off-by: Mark Lord <mlord@pobox.com>
-	Acked-by: Thomas Gleixner <tglx@linutronix.de>
-	Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-	Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-	Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-There still is a remaining shutdown problem in 2.6.22 with old APM based
-systems, but this fix is not the correct one
-
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: David Chinner <dgc@sgi.com>
+Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+Cc: Oliver Pintr <oliver.pntr@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- kernel/sys.c |    2 --
- 1 file changed, 2 deletions(-)
+ fs/xfs/linux-2.6/xfs_buf.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -31,7 +31,6 @@
- #include <linux/cn_proc.h>
- #include <linux/getcpu.h>
- #include <linux/task_io_accounting_ops.h>
--#include <linux/cpu.h>
+--- a/fs/xfs/linux-2.6/xfs_buf.c
++++ b/fs/xfs/linux-2.6/xfs_buf.c
+@@ -1733,6 +1733,8 @@ xfsbufd(
  
- #include <linux/compat.h>
- #include <linux/syscalls.h>
-@@ -866,7 +865,6 @@ EXPORT_SYMBOL_GPL(kernel_halt);
- void kernel_power_off(void)
- {
- 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
--	disable_nonboot_cpus();
- 	printk(KERN_EMERG "Power down.\n");
- 	machine_power_off();
- }
+ 	current->flags |= PF_MEMALLOC;
+ 
++	set_freezable();
++
+ 	do {
+ 		if (unlikely(freezing(current))) {
+ 			set_bit(XBT_FORCE_SLEEP, &target->bt_flags);
 
 -- 
