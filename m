@@ -1,47 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763026AbXLMTEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763982AbXLMTH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763026AbXLMTEW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 14:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbXLMTEF
+	id S1763982AbXLMTH2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 14:07:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbXLMTHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 14:04:05 -0500
-Received: from rtr.ca ([76.10.145.34]:4366 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753418AbXLMTEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 14:04:01 -0500
-Message-ID: <4761821F.3050602@rtr.ca>
-Date: Thu, 13 Dec 2007 14:03:59 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 13 Dec 2007 14:07:20 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:15311 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752663AbXLMTHS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 14:07:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Uc1vq4tiCOZ+Lge78RRrcLOe91G2kvLkO8/V8D6Ff0TTR/9uvqyOh8PAXuM1o+aWwE63B8sYfHmUXl9MNR44pX00VZJm1yQhDK+H6o0ry9z9Mk8HImNZYCj1TLTfbDPQyNPj+963ArJnBP+MGtPd752C/K53LM8CcKiQL+GT0rI=
+Message-ID: <6101e8c40712131107r23cda32p86d2a3e22a3adcb8@mail.gmail.com>
+Date: Thu, 13 Dec 2007 20:07:16 +0100
+From: "=?ISO-8859-1?Q?Oliv=E9r_Pint=E9r?=" <oliver.pntr@gmail.com>
+To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>
+Subject: Re: [patch 32/36] XFS: Make xfsbufd threads freezable
+Cc: "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, "Justin Forbes" <jmforbes@linuxtx.org>,
+       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Dave Jones" <davej@redhat.com>,
+       "Chuck Wolber" <chuckw@quantumlinux.com>,
+       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
+       "Michael Krufky" <mkrufky@linuxtv.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Domenico Andreoli" <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "David Chinner" <dgc@sgi.com>,
+       "Lachlan McIlroy" <lachlan@sgi.com>
+In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B001520239@ecqcmtlmail3.quebec.int.ec.gc.ca>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Jens Axboe <axboe@kernel.dk>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-References: <47617B92.6020908@rtr.ca> <47617C07.3020501@rtr.ca> <47617E72.6080504@rtr.ca> <20071213185326.GQ26334@parisc-linux.org>
-In-Reply-To: <20071213185326.GQ26334@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20071213062511.265908583@mini.kroah.org>
+	 <20071213063529.GG25301@kroah.com>
+	 <F1D642E5A91BC94D9504EC83AE19E6B001520239@ecqcmtlmail3.quebec.int.ec.gc.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Thu, Dec 13, 2007 at 01:48:18PM -0500, Mark Lord wrote:
->> Problem confirmed.  2.6.23.8 regularly generates segments up to 64KB for 
->> libata,
->> but 2.6.24 uses only 4KB segments and a *few* 8KB segments.
-> 
-> Just a suspicion ... could this be slab vs slub?  ie check your configs
-> are the same / similar between the two kernels.
-..
+http://lwn.net/Articles/235908/
 
-Mmmm.. a good thought, that one.
-But I just rechecked, and both have CONFIG_SLAB=y
+On 12/13/07, Fortier,Vincent [Montreal] <Vincent.Fortier1@ec.gc.ca> wrote:
+> > -----Message d'origine-----
+> > De : linux-kernel-owner@vger.kernel.org
+> > [mailto:linux-kernel-owner@vger.kernel.org] De la part de Greg KH
+> > Envoyé : 13 décembre 2007 01:35
+> >
+> > 2.6.22-stable review patch.  If anyone has any objections,
+> > please let us know.
+> >
+> > ------------------
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> >
+> > patch 978c7b2ff49597ab76ff7529a933bd366941ac25 in mainline
+> >
+> > Fix breakage caused by commit 831441862956fffa17b9801db37e6ea1650b0f69
+> > that did not introduce the necessary call to set_freezable()
+> > in xfs/linux-2.6/xfs_buf.c .
+> >
+> > SGI-PV: 974224
+> > SGI-Modid: xfs-linux-melb:xfs-kern:30203a
+> >
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > Signed-off-by: David Chinner <dgc@sgi.com>
+> > Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+> > Cc: Oliver Pintr <oliver.pntr@gmail.com>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> >
+> > ---
+>
+> Hi Greg,
+>
+> Don't know if it is related but I got this while building on Debian Etch
+> 4.0:
+>   Building modules, stage 2.
+>   MODPOST 1882 modules
+> ERROR: "set_freezable" [fs/xfs/xfs.ko] undefined!
+> make[2]: *** [__modpost] Error 1
+> make[1]: *** [modules] Error 2
+> make[1]: Leaving directory
+> `/usr/src/linux-headers-2.6.22.15-rc1-cfs-etch-686-envcan'
+> make: *** [debian/stamp-build-kernel] Error 2
+>
+> - vin
+>
 
-My guess is that something got changed around when Jens
-reworked the block layer for 2.6.24.
-I'm going to dig around in there now.
 
+-- 
+Thanks,
+Oliver
