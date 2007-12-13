@@ -1,132 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764733AbXLMRNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764634AbXLMROl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764733AbXLMRNv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 12:13:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761483AbXLMRNn
+	id S1764634AbXLMROl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 12:14:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750790AbXLMROb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 12:13:43 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51410 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761016AbXLMRNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 12:13:42 -0500
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
-       rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
-       Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH] avoid ifdefs in desc.h, getting rid of pack_ldt and pack_tss
-Date: Thu, 13 Dec 2007 12:29:31 -0200
-Message-Id: <11975561713425-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.4.4.2
+	Thu, 13 Dec 2007 12:14:31 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:36069 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761483AbXLMRO3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 12:14:29 -0500
+Date: Thu, 13 Dec 2007 22:44:04 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
+Cc: Paul E McKenney <paulmck@us.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Ted Tso <tytso@us.ibm.com>, dvhltc@us.ibm.com,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       Josh Triplett <josh@freedesktop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [RFC PATCH 1/6] Preempt-RCU: Use softirq instead of tasklets for
+	RCU
+Message-ID: <20071213171404.GB25981@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20071213170348.GA25981@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071213170348.GA25981@in.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By Andi Kleen's suggestion, this patch removes pack_ldt() and pack_tss()
-wrappers in favour of a general wrapper. It saves us an ifdef and some lines
-of code, but more importantly, it's more elegant.
+Preempt-RCU: Use softirq instead of tasklets for RCU
 
-No functional change is made.
+From: Dipankar Sarma <dipankar@in.ibm.com>
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+This patch makes RCU use softirq instead of tasklets.
+
+It also adds a memory barrier after raising the softirq
+inorder to ensure that the cpu sees the most recently updated
+value of rcu->cur while processing callbacks.
+The discussion of the related theoretical race pointed out
+by James Huang can be found here --> http://lkml.org/lkml/2007/11/20/603
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Dipankar Sarma <dipankar@in.ibm.com>
 ---
- include/asm-x86/desc.h |   55 ++++++++++++++---------------------------------
- 1 files changed, 17 insertions(+), 38 deletions(-)
 
-diff --git a/include/asm-x86/desc.h b/include/asm-x86/desc.h
-index 8849666..e302a02 100644
---- a/include/asm-x86/desc.h
-+++ b/include/asm-x86/desc.h
-@@ -125,21 +125,6 @@ static inline void native_write_gdt_entry(struct desc_struct *gdt, int entry,
- 	memcpy(&gdt[entry], desc, size);
- }
- 
--static inline void set_tssldt_descriptor(struct ldttss_desc64 *d,
--					 unsigned long tss, unsigned type,
--					 unsigned size)
--{
--	memset(d, 0, sizeof(*d));
--	d->limit0 = size & 0xFFFF;
--	d->base0 = PTR_LOW(tss);
--	d->base1 = PTR_MIDDLE(tss) & 0xFF;
--	d->type = type;
--	d->p = 1;
--	d->limit1 = (size >> 16) & 0xF;
--	d->base2 = (PTR_MIDDLE(tss) >> 8) & 0xFF;
--	d->base3 = PTR_HIGH(tss);
--}
--
- static inline void pack_descriptor(struct desc_struct *desc, unsigned long base,
- 				   unsigned long limit, unsigned char type,
- 				   unsigned char flags)
-@@ -151,30 +136,24 @@ static inline void pack_descriptor(struct desc_struct *desc, unsigned long base,
- 	desc->p = 1;
- }
- 
--static inline void pack_ldt(ldt_desc *ldt, unsigned long addr,
--			   unsigned size)
--{
- 
--#ifdef CONFIG_X86_64
--		set_tssldt_descriptor(ldt,
--			     addr, DESC_LDT, size);
--#else
--		pack_descriptor(ldt, (unsigned long)addr,
--				size,
--				0x80 | DESC_LDT, 0);
--#endif
--}
--
--static inline void pack_tss(tss_desc *tss, unsigned long addr,
--			   unsigned size, unsigned entry)
-+static inline void set_tssldt_descriptor(void *d, unsigned long addr,
-+					 unsigned type, unsigned size)
- {
- #ifdef CONFIG_X86_64
--		set_tssldt_descriptor(tss,
--			     addr, entry, size);
-+	struct ldttss_desc64 *desc = d;
-+	memset(desc, 0, sizeof(*desc));
-+	desc->limit0 = size & 0xFFFF;
-+	desc->base0 = PTR_LOW(addr);
-+	desc->base1 = PTR_MIDDLE(addr) & 0xFF;
-+	desc->type = type;
-+	desc->p = 1;
-+	desc->limit1 = (size >> 16) & 0xF;
-+	desc->base2 = (PTR_MIDDLE(addr) >> 8) & 0xFF;
-+	desc->base3 = PTR_HIGH(addr);
- #else
--		pack_descriptor(tss, (unsigned long)addr,
--				size,
--				0x80 | entry, 0);
-+
-+	pack_descriptor((struct desc_struct *)d, addr, size, 0x80 | type, 0);
+ include/linux/interrupt.h |    1 +
+ kernel/rcupdate.c         |   25 +++++++++++++++++--------
+ 2 files changed, 18 insertions(+), 8 deletions(-)
+
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 2306920..c3db4a0 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -256,6 +256,7 @@ enum
+ #ifdef CONFIG_HIGH_RES_TIMERS
+ 	HRTIMER_SOFTIRQ,
  #endif
++	RCU_SOFTIRQ, 	/* Preferable RCU should always be the last softirq */
+ };
+ 
+ /* softirq mask and active fields moved to irq_cpustat_t in
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index a66d4d1..8658948 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -73,8 +73,6 @@ static struct rcu_ctrlblk rcu_bh_ctrlblk = {
+ DEFINE_PER_CPU(struct rcu_data, rcu_data) = { 0L };
+ DEFINE_PER_CPU(struct rcu_data, rcu_bh_data) = { 0L };
+ 
+-/* Fake initialization required by compiler */
+-static DEFINE_PER_CPU(struct tasklet_struct, rcu_tasklet) = {NULL};
+ static int blimit = 10;
+ static int qhimark = 10000;
+ static int qlowmark = 100;
+@@ -231,6 +229,18 @@ void rcu_barrier(void)
+ }
+ EXPORT_SYMBOL_GPL(rcu_barrier);
+ 
++/* Raises the softirq for processing rcu_callbacks. */
++static inline void raise_rcu_softirq(void)
++{
++	raise_softirq(RCU_SOFTIRQ);
++	/*
++	 * The smp_mb() here is required to ensure that this cpu's
++	 * __rcu_process_callbacks() reads the most recently updated
++	 * value of rcu->cur.
++	 */
++	smp_mb();
++}
++
+ /*
+  * Invoke the completed RCU callbacks. They are expected to be in
+  * a per-cpu list.
+@@ -260,7 +270,7 @@ static void rcu_do_batch(struct rcu_data *rdp)
+ 	if (!rdp->donelist)
+ 		rdp->donetail = &rdp->donelist;
+ 	else
+-		tasklet_schedule(&per_cpu(rcu_tasklet, rdp->cpu));
++		raise_rcu_softirq();
  }
  
-@@ -190,7 +169,7 @@ static inline void __set_tss_desc(unsigned cpu, unsigned int entry, void *addr)
- 	 * -1? seg base+limit should be pointing to the address of the
- 	 * last valid byte
- 	 */
--	pack_tss(&tss, (unsigned long)addr,
-+	set_tssldt_descriptor(&tss, (unsigned long)addr,
- 		IO_BITMAP_OFFSET + IO_BITMAP_BYTES + sizeof(unsigned long) - 1,
- 		DESC_TSS);
- 	write_gdt_entry(d, entry, &tss, DESC_TSS);
-@@ -206,8 +185,8 @@ static inline void native_set_ldt(const void *addr, unsigned int entries)
- 		unsigned cpu = smp_processor_id();
- 		ldt_desc ldt;
+ /*
+@@ -412,7 +422,6 @@ static void rcu_offline_cpu(int cpu)
+ 					&per_cpu(rcu_bh_data, cpu));
+ 	put_cpu_var(rcu_data);
+ 	put_cpu_var(rcu_bh_data);
+-	tasklet_kill_immediate(&per_cpu(rcu_tasklet, cpu), cpu);
+ }
  
--		pack_ldt(&ldt, (unsigned long)addr,
--				entries * sizeof(ldt) - 1);
-+		set_tssldt_descriptor(&ldt, (unsigned long)addr,
-+				      DESC_LDT, entries * sizeof(ldt) - 1);
- 		write_gdt_entry(get_cpu_gdt_table(cpu), GDT_ENTRY_LDT,
- 				&ldt, DESC_LDT);
- 		__asm__ __volatile__("lldt %w0"::"q" (GDT_ENTRY_LDT*8));
+ #else
+@@ -424,7 +433,7 @@ static void rcu_offline_cpu(int cpu)
+ #endif
+ 
+ /*
+- * This does the RCU processing work from tasklet context. 
++ * This does the RCU processing work from softirq context.
+  */
+ static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
+ 					struct rcu_data *rdp)
+@@ -469,7 +478,7 @@ static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
+ 		rcu_do_batch(rdp);
+ }
+ 
+-static void rcu_process_callbacks(unsigned long unused)
++static void rcu_process_callbacks(struct softirq_action *unused)
+ {
+ 	__rcu_process_callbacks(&rcu_ctrlblk, &__get_cpu_var(rcu_data));
+ 	__rcu_process_callbacks(&rcu_bh_ctrlblk, &__get_cpu_var(rcu_bh_data));
+@@ -533,7 +542,7 @@ void rcu_check_callbacks(int cpu, int user)
+ 		rcu_bh_qsctr_inc(cpu);
+ 	} else if (!in_softirq())
+ 		rcu_bh_qsctr_inc(cpu);
+-	tasklet_schedule(&per_cpu(rcu_tasklet, cpu));
++	raise_rcu_softirq();
+ }
+ 
+ static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
+@@ -556,7 +565,7 @@ static void __devinit rcu_online_cpu(int cpu)
+ 
+ 	rcu_init_percpu_data(cpu, &rcu_ctrlblk, rdp);
+ 	rcu_init_percpu_data(cpu, &rcu_bh_ctrlblk, bh_rdp);
+-	tasklet_init(&per_cpu(rcu_tasklet, cpu), rcu_process_callbacks, 0UL);
++	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
+ }
+ 
+ static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
 -- 
-1.4.4.2
-
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
