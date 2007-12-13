@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763966AbXLMR2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764441AbXLMRaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763966AbXLMR2l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 12:28:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbXLMR2c
+	id S1764441AbXLMRaL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 12:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761130AbXLMR34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 12:28:32 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:41697 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758803AbXLMR2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 12:28:31 -0500
-Date: Thu, 13 Dec 2007 20:29:26 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Petr Tesarik <ptesarik@suse.cz>, Tony Luck <tony.luck@intel.com>,
-       Matthew Wilcox <willy@debian.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] arch_ptrace_stop
-Message-ID: <20071213172926.GA423@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Thu, 13 Dec 2007 12:29:56 -0500
+Received: from intcomgrp.com ([216.54.13.120]:33302 "EHLO
+	beta.support.intcomgrp.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1761079AbXLMR3z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 12:29:55 -0500
+X-Greylist: delayed 3733 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Dec 2007 12:29:55 EST
+Message-ID: <47615D81.30707@intcomgrp.com>
+Date: Thu, 13 Dec 2007 11:27:45 -0500
+From: James Kosin <jkosin@intcomgrp.com>
+Organization: International Communications Group, Inc.
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <9zmRR-3pA-25@gated-at.bofh.it>
+In-Reply-To: <9zmRR-3pA-25@gated-at.bofh.it>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath wrote:
->
-> +static int sigkill_pending(struct task_struct *tsk)
-> +{
-> +	return ((sigismember(&tsk->pending.signal, SIGKILL) ||
-> +		 sigismember(&tsk->signal->shared_pending.signal, SIGKILL)) &&
-> +		!unlikely(sigismember(&tsk->blocked, SIGKILL)));
-> +}
+Rene Herman wrote:
+> Good day.
+> 
+> Would some people on x86 (both 32 and 64) be kind enough to compile and
+> run the attached program? This is about testing how long I/O port access
+> to port 0x80 takes. It measures in CPU cycles so CPU speed is crucial in
+> reporting.
+> 
+> Posted a previous incarnation of this before, buried in the outb 0x80
+> thread which had a serialising problem. This one should as far as I can
+> see measure the right thing though. Please yell if you disagree...
+> 
+> For me, on a Duron 1300 (AMD756 chipset) I have a constant:
+> 
+> rene@7ixe4:~/src/port80$ su -c ./port80
+> cycles: out 2400, in 2400
+> 
+> and on a PII 400 (Intel 440BX chipset) a constant:
+> 
+> rene@6bap:~/src/port80$ su -c ./port80
+> cycles: out 553, in 251
+> 
+> Results are (mostly) independent of compiler optimisation, but testing
+> with an -O2 compile should be most useful. Thanks!
+> 
+> Rene.
+> 
+[root@beta jkosin]# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 7
+model name      : Pentium III (Katmai)
+stepping        : 3
+cpu MHz         : 499.156
+cache size      : 512 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
+cmov pat pse36 mmx fxsr sse
+bogomips        : 996.14
 
-How is it possible that SIGKILL is blocked?
+[root@beta jkosin]# ./a.out
+cycles: out 683, in 299
+[root@beta jkosin]# ./a.out
+cycles: out 683, in 299
+[root@beta jkosin]# ./a.out
+cycles: out 683, in 299
+[root@beta jkosin]#
 
->  static void ptrace_stop(int exit_code, int nostop_code, siginfo_t *info)
->  {
-> +	int killed = 0;
-> +
-> +	if (arch_ptrace_stop_needed(exit_code, info)) {
-> +		/*
-> +		 * The arch code has something special to do before a
-> +		 * ptrace stop.  This is allowed to block, e.g. for faults
-> +		 * on user stack pages.  We can't keep the siglock while
-> +		 * calling arch_ptrace_stop, so we must release it now.
-> +		 * To preserve proper semantics, we must do this before
-> +		 * any signal bookkeeping like checking group_stop_count.
-> +		 * Meanwhile, a SIGKILL could come in before we retake the
-> +		 * siglock.  That must prevent us from sleeping in TASK_TRACED.
-> +		 * So after regaining the lock, we must check for SIGKILL.
-> +		 */
-> +		spin_unlock_irq(&current->sighand->siglock);
-> +		arch_ptrace_stop(exit_code, info);
-> +		spin_lock_irq(&current->sighand->siglock);
-> +		killed = sigkill_pending(current);
-> +	}
-> +
->  	/*
->  	 * If there is a group stop in progress,
->  	 * we must participate in the bookkeeping.
-> @@ -1604,7 +1635,7 @@ static void ptrace_stop(int exit_code, i
->  	spin_unlock_irq(&current->sighand->siglock);
->  	try_to_freeze();
->  	read_lock(&tasklist_lock);
-> -	if (may_ptrace_stop()) {
-> +	if (!unlikely(killed) && may_ptrace_stop()) {
-
-Could you please explain this change in more details?
-
-Currently ptrace_stop() schedules in TASK_TRACED state even if we have a
-pending SIGKILL. With this patch this is still possible, but unless
-arch_ptrace_stop_needed() is true and thus we will check sigkill_pending().
-
-Suppose the task was SIGKILL'ed and does ptrace_notify(PTRACE_EVENT_EXIT),
-now the resulting action depends on arch_ptrace_stop_needed().
-
-I don't claim this is wrong, just trying to understand.
-
-Thanks,
-
-Oleg.
+-- 
+Scanned by ClamAV - http://www.clamav.net
 
