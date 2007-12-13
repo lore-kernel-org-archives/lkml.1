@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761242AbXLMM4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757690AbXLMM6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761242AbXLMM4S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 07:56:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbXLMM4I
+	id S1757690AbXLMM6W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 07:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbXLMM6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 07:56:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59912 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753841AbXLMM4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 07:56:07 -0500
-Date: Thu, 13 Dec 2007 13:55:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>,
-       Greg KH <gregkh@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, kay.sievers@vrfy.org,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
-Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
-Message-ID: <20071213125509.GA28340@elte.hu>
-References: <F1D642E5A91BC94D9504EC83AE19E6B0015201EF@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071211182015.GA22339@linux.vnet.ibm.com> <20071211182528.GA5597@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201F1@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071211210653.GA6902@elte.hu> <20071212070816.GA31455@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201F6@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071212134158.GA5547@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B00152021F@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071213114336.GA5400@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071213114336.GA5400@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 13 Dec 2007 07:58:13 -0500
+Received: from adsl-76-243-235-52.dsl.chcgil.sbcglobal.net ([76.243.235.52]:33792
+	"EHLO accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753403AbXLMM6M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 07:58:12 -0500
+Subject: Re: [PATCH] dpt_i2o: don't set DMA_64BIT_MASK [was: Re: [stable]
+	broken dpt_i2o in 2.6.23 (was: ext2 check page: bad entry in directory)
+	(fwd)]
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Miquel van Smoorenburg <miquels@cistron.nl>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi@vger.kernel.org, matthew@wil.cx,
+       linux-kernel@vger.kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Anders Henke <anders.henke@1und1.de>, stable@kernel.org
+In-Reply-To: <20071213101144.GA61767@xs4all.net>
+References: <20071212105841.GN6770@1und1.de>
+	 <20071212033808.6fb92139.akpm@linux-foundation.org>
+	 <1197464879.20796.15.camel@n2o.xs4all.nl> <20071212134342.GR6770@1und1.de>
+	 <20071212111629.9a4f7f73.akpm@linux-foundation.org>
+	 <1197489294.4203.40.camel@localhost.localdomain>
+	 <20071212221627.GA16474@kroah.com>  <20071213101144.GA61767@xs4all.net>
+Content-Type: text/plain
+Date: Thu, 13 Dec 2007 07:58:01 -0500
+Message-Id: <1197550681.3154.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-
-> Could you please see if the following patch removes the oops due to 
-> CFS sysfs files? (There might still be the other oops due to the 
-> floppy sysfs files)
+On Thu, 2007-12-13 at 11:11 +0100, Miquel van Smoorenburg wrote:
+> According to Greg KH:
+> > So, what should be added to 2.6.23-stable then?  And, can I get a real
+> > changelog entry for it?
 > 
-> Ingo, could you please add this patch in your CFS backport to 2.6.22 
-> and older kernels?
+> This is suitable for both 2.6.23.x and 2.6.24-rc5 :
+> 
+> linux-2.6-dpt_i2o-no-dma64.patch
 
-sure - i've updated the backport patches with this fix.
+Actually, this one's already queued:
 
->  static void user_attr_init(struct subsys_attribute *sa, char *name, int mode)
->  {
-> +	sa->attr.owner = NULL;
->  	sa->attr.name = name;
+http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-rc-fixes-2.6.git;a=commit;h=a066b307861238c1970310579c0bc2fe8c8dca51
 
-i'm wondering why doesnt this affect 2.6.23 and later? Does sysfs 
-initialize the owner field to NULL automatically?
+James
 
-	Ingo
+
