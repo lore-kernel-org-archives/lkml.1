@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932261AbXLMUrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbXLMUsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932261AbXLMUrm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 15:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbXLMUr3
+	id S932951AbXLMUsp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 15:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764459AbXLMUsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 15:47:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44491 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757399AbXLMUr2 (ORCPT
+	Thu, 13 Dec 2007 15:48:36 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45543 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764219AbXLMUsf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 15:47:28 -0500
-Message-ID: <476198F9.4020004@linux-foundation.org>
-Date: Thu, 13 Dec 2007 12:41:29 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Organization: Linux Foundation
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Thu, 13 Dec 2007 15:48:35 -0500
+Date: Thu, 13 Dec 2007 12:48:30 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@woody.linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: SLUB: Remove useless masking of GFP_ZERO
+Message-ID: <Pine.LNX.4.64.0712131246030.18254@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: jarkao2@gmail.com, auke-jan.h.kok@intel.com, gallatin@myri.com,
-       joonwpark81@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       jesse.brandeburg@intel.com
-Subject: Re: [RFC] net: napi fix
-References: <20071213134953.GA3806@ff.dom.local>	<20071213.055013.83963139.davem@davemloft.net>	<4761930C.3030504@gmail.com> <20071213.123727.224454625.davem@davemloft.net>
-In-Reply-To: <20071213.123727.224454625.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Thu, 13 Dec 2007 21:16:12 +0100
->
->   
->> I see in a nearby thread you would prefer to save some work to drivers
->> (like this netif_running() check), but I think this all is at the cost
->> of flexibility, and there will probably appear new problems, when a
->> driver simply can't wait till the next poll (which btw. looks strange
->> with all these hotplugging, usb and powersaving).
->>     
->
-> As someone who has actually had to edit the NAPI support of _EVERY_
-> single driver in the tree I can tell you that code duplication and
-> subtle semantic differences are a huge issue.
->
-> And when you talk about driver flexibility, it's wise to mention that
-> this comes at the expense of flexibility in the core implmentation.
-> For example, if we export the list handling widget into the ->poll()
-> routines, god help the person who wants to change how the poll list is
-> managed in net_rx_action() :-/
->
-> So we don't want to export datastructure details like that to the
-> driver.
->   
-Also, most of the drivers should/could be doing the same thing. It is 
-seems that
-driver writers just want to get "creative" and do things differently. 
-The code is
-cleaner, safer, and less buggy if every device uses the interface in the 
-same way.
+Remove a recently added useless masking of GFP_ZERO. GFP_ZERO is 
+already masked out in new_slab() (See how it calls allocate_slab). No need 
+to do it twice. This reverts the SLUB parts of 
+7fd272550bd43cc1d7289ef0ab2fa50de137e767.
 
-When I did the initial pass on this, I didn't see a single variation on 
-NAPI usage
-that was better than the simple "get N packets and return" variation.  
-But Dave
-did way more detailed grunt work on this.
+Cc: Linus Torvalds <torvalds@woody.linux-foundation.org>
+Cc: Matt Mackall <mpm@selenic.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-12-13 12:41:34.000000000 -0800
++++ linux-2.6/mm/slub.c	2007-12-13 12:42:03.000000000 -0800
+@@ -1468,9 +1468,6 @@ static void *__slab_alloc(struct kmem_ca
+ 	void **object;
+ 	struct page *new;
+ 
+-	/* We handle __GFP_ZERO in the caller */
+-	gfpflags &= ~__GFP_ZERO;
+-
+ 	if (!c->page)
+ 		goto new_slab;
+ 
