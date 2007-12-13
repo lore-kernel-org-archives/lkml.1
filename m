@@ -1,146 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760466AbXLMJVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbXLMJYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760466AbXLMJVj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 04:21:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbXLMJVX
+	id S1760746AbXLMJYT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 04:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbXLMJYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 04:21:23 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:55818 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbXLMJVW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 04:21:22 -0500
-Date: Thu, 13 Dec 2007 12:21:23 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Richard Henderson <rth@twiddle.net>, linux-kernel@vger.kernel.org
-Subject: [patch] alpha: build fixes
-Message-ID: <20071213122123.D21124@jurassic.park.msu.ru>
+	Thu, 13 Dec 2007 04:24:04 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:31772
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751866AbXLMJYB convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 04:24:01 -0500
+Message-Id: <47610870.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Thu, 13 Dec 2007 09:24:48 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <tglx@linutronix.de>, <mingo@redhat.com>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86-64: honor notify_die() returning NOTIFY_STOP
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes some of the alpha-specific build problems, except a) modpost
-warning about COMMON symbol "saved_config" and b) nasty final link
-failure with gcc-4.x, -Os and scsi-disk driver configured built-in
-(due to jump table in .rodata referencing discarded .exit.text).
+This requires making die() return a value, making its callers honor
+this (and be prepared that it may return), and making oops_end() have
+two additional parameters.
 
-- build failure with gcc-4.2.x: fix up casts in cia_io* routines to avoid
-  warnings ('discards qualifiers from pointer target type'), which are
-  failures, thanks to -Werror;
-- modpost warnings: add missing __init qualifier for titan and marvel;
-  for non-generic build, move machine vectors from .data to .data.init.refok
-  section;
-- unbreak CPU-specific optimization: rearrange cpuflags-y assignments
-  so that extended -mcpu value (ev56, pca56, ev67) overrides basic
-  one (ev5, ev6) and not vice versa.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+ arch/x86/kernel/cpu/mcheck/mce_64.c |    8 ++++----
+ arch/x86/kernel/traps_64.c          |   23 +++++++++++++++--------
+ arch/x86/mm/fault_64.c              |   12 ++++++------
+ include/asm-x86/kdebug.h            |    4 ++--
+ 4 files changed, 27 insertions(+), 20 deletions(-)
 
-Ivan.
-
---- 2.6.24-rc5/arch/alpha/Makefile	2007-12-04 13:08:46.000000000 +0300
-+++ linux/arch/alpha/Makefile	2007-12-04 13:24:22.000000000 +0300
-@@ -14,13 +14,13 @@ LDFLAGS_vmlinux	:= -static -N #-relax
- CHECKFLAGS	+= -D__alpha__ -m64
- cflags-y	:= -pipe -mno-fp-regs -ffixed-8 -msmall-data
+--- linux-2.6.24-rc5/arch/x86/kernel/cpu/mcheck/mce_64.c	2007-12-12 16:48:17.000000000 +0100
++++ 2.6.24-rc5-x86_64-notify-die-return/arch/x86/kernel/cpu/mcheck/mce_64.c	2007-12-04 16:20:14.000000000 +0100
+@@ -192,10 +192,10 @@ void do_machine_check(struct pt_regs * r
  
--cpuflags-$(CONFIG_ALPHA_EV67)		:= -mcpu=ev67
--cpuflags-$(CONFIG_ALPHA_EV6)		:= -mcpu=ev6
-+cpuflags-$(CONFIG_ALPHA_EV4)		:= -mcpu=ev4
-+cpuflags-$(CONFIG_ALPHA_EV5)		:= -mcpu=ev5
-+cpuflags-$(CONFIG_ALPHA_EV56)		:= -mcpu=ev56
- cpuflags-$(CONFIG_ALPHA_POLARIS)	:= -mcpu=pca56
- cpuflags-$(CONFIG_ALPHA_SX164)		:= -mcpu=pca56
--cpuflags-$(CONFIG_ALPHA_EV56)		:= -mcpu=ev56
--cpuflags-$(CONFIG_ALPHA_EV5)		:= -mcpu=ev5
--cpuflags-$(CONFIG_ALPHA_EV4)		:= -mcpu=ev4
-+cpuflags-$(CONFIG_ALPHA_EV6)		:= -mcpu=ev6
-+cpuflags-$(CONFIG_ALPHA_EV67)		:= -mcpu=ev67
- # If GENERIC, make sure to turn off any instruction set extensions that
- # the host compiler might have on by default.  Given that EV4 and EV5
- # have the same instruction set, prefer EV5 because an EV5 schedule is
---- 2.6.24-rc5/include/asm-alpha/io_trivial.h	2007-10-10 00:31:38.000000000 +0400
-+++ linux/include/asm-alpha/io_trivial.h	2007-12-04 14:30:13.000000000 +0300
-@@ -72,25 +72,29 @@ IO_CONCAT(__IO_PREFIX,writew)(u16 b, vol
- __EXTERN_INLINE u8
- IO_CONCAT(__IO_PREFIX,readb)(const volatile void __iomem *a)
- {
--	return IO_CONCAT(__IO_PREFIX,ioread8)((void __iomem *)a);
-+	void __iomem *addr = (void __iomem *)a;
-+	return IO_CONCAT(__IO_PREFIX,ioread8)(addr);
+ 	atomic_inc(&mce_entry);
+ 
+-	if (regs)
+-		notify_die(DIE_NMI, "machine check", regs, error_code, 18,
+-			   SIGKILL);
+-	if (!banks)
++	if ((regs
++	     && notify_die(DIE_NMI, "machine check", regs, error_code,
++			   18, SIGKILL) == NOTIFY_STOP)
++	    || !banks)
+ 		goto out2;
+ 
+ 	memset(&m, 0, sizeof(struct mce));
+--- linux-2.6.24-rc5/arch/x86/kernel/traps_64.c	2007-12-12 16:48:17.000000000 +0100
++++ 2.6.24-rc5-x86_64-notify-die-return/arch/x86/kernel/traps_64.c	2007-12-04 17:50:33.000000000 +0100
+@@ -496,7 +496,7 @@ unsigned __kprobes long oops_begin(void)
+ 	return flags;
  }
  
- __EXTERN_INLINE u16
- IO_CONCAT(__IO_PREFIX,readw)(const volatile void __iomem *a)
- {
--	return IO_CONCAT(__IO_PREFIX,ioread16)((void __iomem *)a);
-+	void __iomem *addr = (void __iomem *)a;
-+	return IO_CONCAT(__IO_PREFIX,ioread16)(addr);
+-void __kprobes oops_end(unsigned long flags)
++void __kprobes oops_end(unsigned long flags, struct pt_regs *regs, int signr)
+ { 
+ 	die_owner = -1;
+ 	bust_spinlocks(0);
+@@ -505,12 +505,17 @@ void __kprobes oops_end(unsigned long fl
+ 		/* Nest count reaches zero, release the lock. */
+ 		__raw_spin_unlock(&die_lock);
+ 	raw_local_irq_restore(flags);
++	if (!regs) {
++		oops_exit();
++		return;
++	}
+ 	if (panic_on_oops)
+ 		panic("Fatal exception");
+ 	oops_exit();
++	do_exit(signr);
  }
  
- __EXTERN_INLINE void
- IO_CONCAT(__IO_PREFIX,writeb)(u8 b, volatile void __iomem *a)
+-void __kprobes __die(const char * str, struct pt_regs * regs, long err)
++int __kprobes __die(const char * str, struct pt_regs * regs, long err)
  {
--	IO_CONCAT(__IO_PREFIX,iowrite8)(b, (void __iomem *)a);
-+	void __iomem *addr = (void __iomem *)a;
-+	IO_CONCAT(__IO_PREFIX,iowrite8)(b, addr);
- }
- 
- __EXTERN_INLINE void
- IO_CONCAT(__IO_PREFIX,writew)(u16 b, volatile void __iomem *a)
- {
--	IO_CONCAT(__IO_PREFIX,iowrite16)(b, (void __iomem *)a);
-+	void __iomem *addr = (void __iomem *)a;
-+	IO_CONCAT(__IO_PREFIX,iowrite16)(b, addr);
- }
+ 	static int die_counter;
+ 	printk(KERN_EMERG "%s: %04lx [%u] ", str, err & 0xffff,++die_counter);
+@@ -524,7 +529,8 @@ void __kprobes __die(const char * str, s
+ 	printk("DEBUG_PAGEALLOC");
  #endif
- 
---- 2.6.24-rc5/arch/alpha/kernel/err_marvel.c	Thu Dec  6 14:33:58 2007
-+++ linux/arch/alpha/kernel/err_marvel.c	Thu Dec  6 20:14:17 2007
-@@ -1152,7 +1152,7 @@ marvel_machine_check(u64 vector, u64 la_
- 	mb();
+ 	printk("\n");
+-	notify_die(DIE_OOPS, str, regs, err, current->thread.trap_no, SIGSEGV);
++	if (notify_die(DIE_OOPS, str, regs, err, current->thread.trap_no, SIGSEGV) == NOTIFY_STOP)
++		return 1;
+ 	show_registers(regs);
+ 	add_taint(TAINT_DIE);
+ 	/* Executive summary in case the oops scrolled away */
+@@ -533,6 +539,7 @@ void __kprobes __die(const char * str, s
+ 	printk(" RSP <%016lx>\n", regs->rsp); 
+ 	if (kexec_should_crash(current))
+ 		crash_kexec(regs);
++	return 0;
  }
  
--void
-+void __init
- marvel_register_error_handlers(void)
- {
- 	ev7_register_error_handlers();
---- 2.6.24-rc5/arch/alpha/kernel/machvec_impl.h	Wed Oct 10 00:31:38 2007
-+++ linux/arch/alpha/kernel/machvec_impl.h	Thu Dec  6 12:14:57 2007
-@@ -134,7 +134,7 @@
- #define __initmv __initdata
- #define ALIAS_MV(x)
- #else
--#define __initmv
-+#define __initmv __initdata_refok
+ void die(const char * str, struct pt_regs * regs, long err)
+@@ -542,9 +549,9 @@ void die(const char * str, struct pt_reg
+ 	if (!user_mode(regs))
+ 		report_bug(regs->rip, regs);
  
- /* GCC actually has a syntax for defining aliases, but is under some
-    delusion that you shouldn't be able to declare it extern somewhere
---- 2.6.24-rc5/arch/alpha/kernel/err_titan.c	Thu Dec  6 02:11:54 2007
-+++ linux/arch/alpha/kernel/err_titan.c	Thu Dec  6 20:03:15 2007
-@@ -564,7 +564,7 @@ static struct el_subpacket_handler titan
- 	SUBPACKET_HANDLER_INIT(EL_CLASS__REGATTA_FAMILY, 
- 			       el_process_regatta_subpacket);
+-	__die(str, regs, err);
+-	oops_end(flags);
+-	do_exit(SIGSEGV); 
++	if (__die(str, regs, err))
++		regs = NULL;
++	oops_end(flags, regs, SIGSEGV);
+ }
  
--void
-+void __init
- titan_register_error_handlers(void)
- {
- 	size_t i;
---- 2.6.24-rc5/arch/alpha/kernel/err_ev7.c	Wed Oct 10 00:31:38 2007
-+++ linux/arch/alpha/kernel/err_ev7.c	Thu Dec  6 20:02:28 2007
-@@ -273,7 +273,7 @@ ev7_process_pal_subpacket(struct el_subp
- struct el_subpacket_handler ev7_pal_subpacket_handler =
- 	SUBPACKET_HANDLER_INIT(EL_CLASS__PAL, ev7_process_pal_subpacket);
+ void __kprobes die_nmi(char *str, struct pt_regs *regs, int do_panic)
+@@ -561,10 +568,10 @@ void __kprobes die_nmi(char *str, struct
+ 		crash_kexec(regs);
+ 	if (do_panic || panic_on_oops)
+ 		panic("Non maskable interrupt");
+-	oops_end(flags);
++	oops_end(flags, NULL, SIGBUS);
+ 	nmi_exit();
+ 	local_irq_enable();
+-	do_exit(SIGSEGV);
++	do_exit(SIGBUS);
+ }
  
--void
-+void __init
- ev7_register_error_handlers(void)
- {
- 	int i;
+ static void __kprobes do_trap(int trapnr, int signr, char *str,
+--- linux-2.6.24-rc5/arch/x86/mm/fault_64.c	2007-12-12 16:48:17.000000000 +0100
++++ 2.6.24-rc5-x86_64-notify-die-return/arch/x86/mm/fault_64.c	2007-12-04 16:18:59.000000000 +0100
+@@ -228,9 +228,9 @@ static noinline void pgtable_bad(unsigne
+ 	tsk->thread.cr2 = address;
+ 	tsk->thread.trap_no = 14;
+ 	tsk->thread.error_code = error_code;
+-	__die("Bad pagetable", regs, error_code);
+-	oops_end(flags);
+-	do_exit(SIGKILL);
++	if (__die("Bad pagetable", regs, error_code))
++		regs = NULL;
++	oops_end(flags, regs, SIGKILL);
+ }
+ 
+ /*
+@@ -542,11 +542,11 @@ no_context:
+ 	tsk->thread.cr2 = address;
+ 	tsk->thread.trap_no = 14;
+ 	tsk->thread.error_code = error_code;
+-	__die("Oops", regs, error_code);
++	if (__die("Oops", regs, error_code))
++		regs = NULL;
+ 	/* Executive summary in case the body of the oops scrolled away */
+ 	printk(KERN_EMERG "CR2: %016lx\n", address);
+-	oops_end(flags);
+-	do_exit(SIGKILL);
++	oops_end(flags, regs, SIGKILL);
+ 
+ /*
+  * We ran out of memory, or some other thing happened to us that made
+--- linux-2.6.24-rc5/include/asm-x86/kdebug.h	2007-12-12 16:48:42.000000000 +0100
++++ 2.6.24-rc5-x86_64-notify-die-return/include/asm-x86/kdebug.h	2007-12-04 16:18:59.000000000 +0100
+@@ -24,10 +24,10 @@ enum die_val {
+ 
+ extern void printk_address(unsigned long address);
+ extern void die(const char *,struct pt_regs *,long);
+-extern void __die(const char *,struct pt_regs *,long);
++extern int __must_check __die(const char *, struct pt_regs *, long);
+ extern void show_registers(struct pt_regs *regs);
+ extern void dump_pagetable(unsigned long);
+ extern unsigned long oops_begin(void);
+-extern void oops_end(unsigned long);
++extern void oops_end(unsigned long, struct pt_regs *, int signr);
+ 
+ #endif
+
+
