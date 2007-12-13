@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934573AbXLMXQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765644AbXLMXUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934573AbXLMXQx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 18:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXLMXQp
+	id S1765644AbXLMXUc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 18:20:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXLMXUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 18:16:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:33670 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbXLMXQo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 18:16:44 -0500
-Date: Thu, 13 Dec 2007 20:45:31 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PATCHES] V4L/DVB fixes
-Message-Id: <1197587729.4864.13.camel@gaivota>
+	Thu, 13 Dec 2007 18:20:24 -0500
+Received: from gate.crashing.org ([63.228.1.57]:44947 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754669AbXLMXUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 18:20:23 -0500
+Subject: Re: What was the problem with quicklists and x86-64?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Asit Mallick <asit.k.mallick@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0712131514130.29017@schroedinger.engr.sgi.com>
+References: <47603321.4030700@goop.org>
+	 <Pine.LNX.4.64.0712131131540.13396@schroedinger.engr.sgi.com>
+	 <1197578876.15741.163.camel@pasglop>
+	 <Pine.LNX.4.64.0712131251300.18314@schroedinger.engr.sgi.com>
+	 <1197579788.15741.172.camel@pasglop>
+	 <Pine.LNX.4.64.0712131332100.24778@schroedinger.engr.sgi.com>
+	 <1197584859.15741.185.camel@pasglop>
+	 <Pine.LNX.4.64.0712131435520.25120@schroedinger.engr.sgi.com>
+	 <1197587431.15741.189.camel@pasglop>
+	 <Pine.LNX.4.64.0712131514130.29017@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Fri, 14 Dec 2007 10:19:28 +1100
+Message-Id: <1197587969.15741.191.camel@pasglop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+On Thu, 2007-12-13 at 15:14 -0800, Christoph Lameter wrote:
+> On Fri, 14 Dec 2007, Benjamin Herrenschmidt wrote:
+> 
+> > We have a separate batch to store page table pages with an RCU head on
+> > it, we fire it off when it's full or when tlb gather is complete.
+> 
+> full? You need to wait otill the tlb gather is complete.
 
-For the following:
+No, we fire it off with RCU, we don't need to wait for TLB gather to be
+complete. All we care about is sync with other CPUs doing a page table
+walk and it's enough for us. We do -not- need to synchronize with TLB
+invalidations and we don't use IPIs for those anyway.
 
-   - Regression fixes:
-	- Fix videobuf-core locks;
-	- Fix some troubles at building system.
+Ben.
 
-   - Three small driver fixes, on saa7134, bt866 and s5h1409.
-
-Cheers,
-Mauro.
-
----
-
- drivers/media/Makefile                      |    2 +-
- drivers/media/dvb/frontends/s5h1409.c       |   11 ++++++++---
- drivers/media/video/bt866.c                 |    1 -
- drivers/media/video/saa7134/saa7134-cards.c |    1 +
- drivers/media/video/videobuf-core.c         |    4 ++--
- 5 files changed, 12 insertions(+), 7 deletions(-)
-
-Adrian Bunk (2):
-      V4L/DVB (6803): buf-core.c locking fixes
-      V4L/DVB (6814): Makefile: always enter video/
-
-Andrew Morton (1):
-      V4L/DVB (6819): i2c: fix drivers/media/video/bt866.c
-
-Michael Krufky (1):
-      V4L/DVB (6798): saa7134: enable LNA in analog mode for Hauppauge WinTV HVR-1110
-
-Steven Toth (1):
-      V4L/DVB (6820): s5h1409: QAM SNR related fixes
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
 
