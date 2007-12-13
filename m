@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbXLMNla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbXLMNoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756540AbXLMNla (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 08:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbXLMNlW
+	id S1757251AbXLMNoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 08:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbXLMNoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 08:41:22 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:65227 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752821AbXLMNlV (ORCPT
+	Thu, 13 Dec 2007 08:44:05 -0500
+Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:45168 "EHLO
+	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753627AbXLMNoD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 08:41:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=m4dOvNU4XSi6uysmiKwbZ2hRd6sjIC1+ytBChaKFl9tNVBItvwqSCU6dgYKSVyb9Vw6PQTS7RdqO/MFDtVx2LbIEpG5pGmbRJ58yjxD8R+PMHm3x8af4mavxBXRNWEQ+DVuAf26jjZ0dFVgoqcClxVzz1EMjYAlfREBzBsVN5/U=
-Message-ID: <d120d5000712130541x13a645e0x7f2f3b31d80e1f35@mail.gmail.com>
-Date: Thu, 13 Dec 2007 08:41:20 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: [patch 09/60] Input: ALPS - add signature for ThinkPad R61
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       "Justin Forbes" <jmforbes@linuxtx.org>,
-       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Dave Jones" <davej@redhat.com>,
-       "Chuck Wolber" <chuckw@quantumlinux.com>,
-       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
-       "Michael Krufky" <mkrufky@linuxtv.org>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Domenico Andreoli" <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20071213065127.GJ6867@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 13 Dec 2007 08:44:03 -0500
+Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
+From: Vincent Fortier <vincent.fortier1@ec.gc.ca>
+Reply-To: vincent.fortier1@ec.gc.ca
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, Greg KH <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, kay.sievers@vrfy.org,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
+In-Reply-To: <20071213131242.GD28340@elte.hu>
+References: <20071211182528.GA5597@linux.vnet.ibm.com>
+	 <F1D642E5A91BC94D9504EC83AE19E6B0015201F1@ecqcmtlmail3.quebec.int.ec.gc.ca>
+	 <20071211210653.GA6902@elte.hu> <20071212070816.GA31455@linux.vnet.ibm.com>
+	 <F1D642E5A91BC94D9504EC83AE19E6B0015201F6@ecqcmtlmail3.quebec.int.ec.gc.ca>
+	 <20071212134158.GA5547@linux.vnet.ibm.com>
+	 <F1D642E5A91BC94D9504EC83AE19E6B00152021F@ecqcmtlmail3.quebec.int.ec.gc.ca>
+	 <20071213114336.GA5400@linux.vnet.ibm.com> <20071213125509.GA28340@elte.hu>
+	 <20071213130231.GB16905@linux.vnet.ibm.com>
+	 <20071213131242.GD28340@elte.hu>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071213064518.328162328@mini.kroah.org>
-	 <20071213065039.GA6867@kroah.com> <20071213065127.GJ6867@kroah.com>
+Organization: Environnement Canada
+Date: Thu, 13 Dec 2007 13:43:41 +0000
+Message-Id: <1197553421.4936.6.camel@kayak.wul.qc.ec.gc.ca>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+X-OriginalArrivalTime: 13 Dec 2007 13:43:42.0189 (UTC) FILETIME=[2C8911D0:01C83D8E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+On Thu, 2007-12-13 at 08:12 -0500, Ingo Molnar wrote:
+> 
+> * Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> 
+> > > >  static void user_attr_init(struct subsys_attribute *sa, char
+> *name, int mode)
+> > > >  {
+> > > > + sa->attr.owner = NULL;
+> > > >   sa->attr.name = name;
+> > >
+> > > i'm wondering why doesnt this affect 2.6.23 and later? Does sysfs
+> > > initialize the owner field to NULL automatically?
+> > >
+> >
+> > Going through git log, it seems that commit
+> > 7b595756ec1f49e0049a9e01a1298d53a7faaa15 deemed attribute->owner as
+> > unnecessary. I guess that answers the question.
+> 
+> thx. The only open question seems to be: Vincent had sysfs crashes
+> without the CFS patchset as well.
+> 
+> Wouldnt it be prudent to backport the core bits of the above commit
+> (attached below), to make sure the owner field is never utilized.
+> (because it seems it's so easy and common to not maintain it properly)
+> 
+> Vincent, does the patch below resolve the non-CFS crashes?
 
-On Dec 13, 2007 1:51 AM, Greg KH <gregkh@suse.de> wrote:
-> 2.6.23-stable review patch.  If anyone has any objections, please let us
-> know.
->
-> ------------------
-> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->
-> changeset f493018ebc3f94d64e12bc848db0906700bf73a2 in mainline.
->
-> Input: ALPS - add signature for ThinkPad R61
->
+I was about to test but it does not apply on a 2.6.22:
+[root@printemps linux-2.6.22.15-rc1-patched]# patch -p1
+< ../make_sure_owner_field_is_never_utilized.patch
+patching file fs/sysfs/bin.c
+Hunk #1 FAILED at 175.
+Hunk #2 FAILED at 198.
+Hunk #3 FAILED at 207.
+3 out of 3 hunks FAILED -- saving rejects to file fs/sysfs/bin.c.rej
+patching file fs/sysfs/file.c
+Hunk #1 FAILED at 241.
+Hunk #2 FAILED at 250.
+Hunk #3 FAILED at 266.
+Hunk #4 FAILED at 274.
+Hunk #5 FAILED at 283.
+Hunk #6 FAILED at 292.
+Hunk #7 FAILED at 304.
+Hunk #8 FAILED at 312.
+8 out of 8 hunks FAILED -- saving rejects to file fs/sysfs/file.c.rej
 
-Please drop this one... I think I have seen a report where it
-interferes with a regular logitech mouse. I will see if I fix it for
-.24 or revert if from mainline. Definitely not for stable.
+I was about to backport it but I find it's not that trivial...  Help
+would be appreciated.
 
--- 
-Dmitry
+- vin
