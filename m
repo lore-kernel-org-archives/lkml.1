@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932076AbXLMSb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762923AbXLMSgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932076AbXLMSb5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 13:31:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756921AbXLMSbt
+	id S1762923AbXLMSgU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 13:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbXLMSgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 13:31:49 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58089 "EHLO mx1.redhat.com"
+	Thu, 13 Dec 2007 13:36:07 -0500
+Received: from rtr.ca ([76.10.145.34]:2060 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756622AbXLMSbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 13:31:48 -0500
-Message-ID: <47617A11.80502@redhat.com>
-Date: Thu, 13 Dec 2007 19:29:37 +0100
-From: Jerome Marchand <jmarchan@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
+	id S1753036AbXLMSgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 13:36:03 -0500
+Message-ID: <47617B92.6020908@rtr.ca>
+Date: Thu, 13 Dec 2007 13:36:02 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: linux-kernel@vger.kernel.org, axboe@kernel.dk
-Subject: Re: [Patch 7/8] Enhanced partition statistics: procfs
-References: <47615B3C.6030404@redhat.com>	<20071213090756.73de4e3e.randy.dunlap@oracle.com>	<47616DAD.5020305@redhat.com> <20071213094744.eaa0b232.randy.dunlap@oracle.com>
-In-Reply-To: <20071213094744.eaa0b232.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+To: Jens Axboe <axboe@suse.de>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Thu, 13 Dec 2007 18:36:45 +0100 Jerome Marchand wrote:
-> 
->> Randy Dunlap wrote:
->>> The format of the /proc file is not changed except to add data
->>> at the end of each line.  Is that correct?
->>>
->> No. The line concerning partitions will display different data. The new format match the current format
->> concerning disks.
->>
->> Current partition format:
->> major minor name reads_issued sectors_read writes_issued sectors_written
->>
->> New partition format (current disk format):
->> major minor name reads_issued reads_merged sector_read ms_reading writes_completed writes_merged sectors_written ms_writing I/Os_running ms_I/O weighted_ms_I/O
-> 
-> 
-> I would have expected the /proc file contents to represent a user
-> interface that we shouldn't change, other than by adding to the end
-> of each line.
-> 
+Jens,
 
-I could eventually keep the old data and add the new ones at the end
-of the line, but it will leads to a less coherent interface. Moreover
-all the users of /proc/diskstats I know about use the number of field
-to make the distinction between current disk and partitions
-format. They all will be confused if we add new fields.
+I'm experimenting here with trying to generate large I/O through libata,
+and not having much luck.
 
-Jérôme
+The limit seems to be the number of hardware PRD (SG) entries permitted
+by the driver (libata:ata_piix), which is 128 by default.
 
+The problem is, the block layer *never* sends an SG entry larger than 8192 bytes,
+and even that size is exceptionally rare.  Nearly all I/O segments are 4096 bytes,
+so I never see a single I/O larger than 512KB (128 * 4096).
+
+If I patch various parts of block and SCSI, this limit doesn't budge,
+but when I change the hardware PRD limit in libata, it scales by exactly
+whatever I set the new value to.  This tells me that adjacent I/O segments
+are not being combined.
+
+I thought that QUEUE_FLAG_CLUSTER (aka. SCSI host .use_clustering=1) should
+result in adjacent single pages being combined into larger physical segments?
+
+This is x86-32 with latest 2.6.24-rc*.
+I'll re-test on older kernels next.
+
+???
