@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933996AbXLMWUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934066AbXLMWW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933996AbXLMWUv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:20:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757431AbXLMWUn
+	id S934066AbXLMWW3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:22:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761159AbXLMWWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:20:43 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39534 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755252AbXLMWUm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:20:42 -0500
-Date: Thu, 13 Dec 2007 23:20:44 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arch@vger.kernel.org
-Subject: RFC: remove __read_mostly
-Message-ID: <20071213222044.GH21616@stusta.de>
+	Thu, 13 Dec 2007 17:22:20 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:50304 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757431AbXLMWWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 17:22:19 -0500
+Date: Thu, 13 Dec 2007 14:22:18 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+In-Reply-To: <20071211143336.GA17866@elte.hu>
+Message-ID: <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com>
+References: <1197049846.1645.68.camel@localhost.localdomain>
+ <20071211143336.GA17866@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I tried the following patch with a full x86 .config [1]:
+On Tue, 11 Dec 2007, Ingo Molnar wrote:
 
---- a/include/asm-x86/cache.h
-+++ b/include/asm-x86/cache.h
--#define __read_mostly __attribute__((__section__(".data.read_mostly")))
-+/* #define __read_mostly __attribute__((__section__(".data.read_mostly"))) */
+>     hackbench-10:      1.12             2.99   (166%)
+>     hackbench-20:      2.04             6.67   (226%)
+>     hackbench-50:      5.03            17.50   (247%)
+> 
+> and hackbench overhead stands out, by a huge margin. Other stuff is 
+> within measurement noise. Neither SLUB nor SLAB debugging was turned on, 
+> all other debugging options were off too.
 
-The result [2,3] was:
+I just came back from vacation. The non linear growth of regression
+indicates lock contention somewhere. Must be something special that was 
+triggered by hackbench.
 
--rwxrwxr-x 1 bunk bunk 46607243 2007-12-13 19:50 vmlinux.old
--rwxrwxr-x 1 bunk bunk 46598691 2007-12-13 21:55 vmlinux
-
-It's not a surprise that the kernel can become bigger when __read_mostly 
-gets used, especially in cases where __read_mostly prevents gcc 
-optimizations.
-
-My question is:
-Is there anywhere in the kernel a case where __read_mostly brings a 
-measurable improvement or can it be removed?
-
-cu
-Adrian
-
-[1] mostly allyesconfig with CONFIG_MODULES=n
-[2] vmlinux.old is the unpatched kernel
-[3] gcc 4.2 was used
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+We have had a regression like that in 2.6.24 before due to order 1 allocs 
+in the network layer. The .24 modifications for SLUB introduced page 
+allocator pass through for allocations > PAGESIZE/2. Order 1 allocs could 
+serialize on zone locks.
