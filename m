@@ -1,89 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764179AbXLMRMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764733AbXLMRNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764179AbXLMRMx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 12:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758548AbXLMRMp
+	id S1764733AbXLMRNv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 12:13:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761483AbXLMRNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 12:12:45 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:37666 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbXLMRMp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 12:12:45 -0500
-Date: Thu, 13 Dec 2007 09:07:56 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jerome Marchand <jmarchan@redhat.com>
-Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk
-Subject: Re: [Patch 7/8] Enhanced partition statistics: procfs
-Message-Id: <20071213090756.73de4e3e.randy.dunlap@oracle.com>
-In-Reply-To: <47615B3C.6030404@redhat.com>
-References: <47615B3C.6030404@redhat.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 13 Dec 2007 12:13:43 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51410 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761016AbXLMRNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 12:13:42 -0500
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
+       rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
+       Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: [PATCH] avoid ifdefs in desc.h, getting rid of pack_ldt and pack_tss
+Date: Thu, 13 Dec 2007 12:29:31 -0200
+Message-Id: <11975561713425-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.4.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Dec 2007 17:18:04 +0100 Jerome Marchand wrote:
+By Andi Kleen's suggestion, this patch removes pack_ldt() and pack_tss()
+wrappers in favour of a general wrapper. It saves us an ifdef and some lines
+of code, but more importantly, it's more elegant.
 
-> Reports enhanced partition statistics in /proc/diskstats.
+No functional change is made.
 
-> Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
-> ---
->  genhd.c |   27 +++++++++++++++++++++------
->  1 file changed, 21 insertions(+), 6 deletions(-)
-> diff -urNp -X linux-2.6/Documentation/dontdiff linux-2.6.orig/block/genhd.c linux-2.6/block/genhd.c
-> --- linux-2.6.orig/block/genhd.c	2007-12-04 17:37:31.000000000 +0100
-> +++ linux-2.6/block/genhd.c	2007-12-05 13:52:55.000000000 +0100
-> @@ -655,12 +655,27 @@ static int diskstats_show(struct seq_fil
->  	for (n = 0; n < gp->minors - 1; n++) {
->  		struct hd_struct *hd = gp->part[n];
->  
-> -		if (hd && hd->nr_sects)
-> -			seq_printf(s, "%4d %4d %s %u %u %u %u\n",
-> -				gp->major, n + gp->first_minor + 1,
-> -				disk_name(gp, n + 1, buf),
-> -				hd->ios[0], hd->sectors[0],
-> -				hd->ios[1], hd->sectors[1]);
-> +		if (!hd || !hd->nr_sects) continue;
-
-Don't put if () and following statement on same line.
-
-> +
-> +		preempt_disable();
-> +		part_round_stats(hd);
-> +		preempt_enable();
-> +		seq_printf(s, "%4d %4d %s %lu %lu %llu "
-> +			   "%u %lu %lu %llu %u %u %u %u\n",
-> +			   gp->major, n + gp->first_minor + 1,
-> +			   disk_name(gp, n + 1, buf),
-> +			   part_stat_read(hd, ios[0]),
-> +			   part_stat_read(hd, merges[0]),
-> +			   (unsigned long long)part_stat_read(hd, sectors[0]),
-> +			   jiffies_to_msecs(part_stat_read(hd, ticks[0])),
-> +			   part_stat_read(hd, ios[1]),
-> +			   part_stat_read(hd, merges[1]),
-> +			   (unsigned long long)part_stat_read(hd, sectors[1]),
-> +			   jiffies_to_msecs(part_stat_read(hd, ticks[1])),
-> +			   hd->in_flight,
-> +			   jiffies_to_msecs(part_stat_read(hd, io_ticks)),
-> +			   jiffies_to_msecs(part_stat_read(hd, time_in_queue))
-> +			);
->  	}
->   
->  	return 0;
-> 
-> --
-
-The format of the /proc file is not changed except to add data
-at the end of each line.  Is that correct?
-
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 ---
-~Randy
+ include/asm-x86/desc.h |   55 ++++++++++++++---------------------------------
+ 1 files changed, 17 insertions(+), 38 deletions(-)
+
+diff --git a/include/asm-x86/desc.h b/include/asm-x86/desc.h
+index 8849666..e302a02 100644
+--- a/include/asm-x86/desc.h
++++ b/include/asm-x86/desc.h
+@@ -125,21 +125,6 @@ static inline void native_write_gdt_entry(struct desc_struct *gdt, int entry,
+ 	memcpy(&gdt[entry], desc, size);
+ }
+ 
+-static inline void set_tssldt_descriptor(struct ldttss_desc64 *d,
+-					 unsigned long tss, unsigned type,
+-					 unsigned size)
+-{
+-	memset(d, 0, sizeof(*d));
+-	d->limit0 = size & 0xFFFF;
+-	d->base0 = PTR_LOW(tss);
+-	d->base1 = PTR_MIDDLE(tss) & 0xFF;
+-	d->type = type;
+-	d->p = 1;
+-	d->limit1 = (size >> 16) & 0xF;
+-	d->base2 = (PTR_MIDDLE(tss) >> 8) & 0xFF;
+-	d->base3 = PTR_HIGH(tss);
+-}
+-
+ static inline void pack_descriptor(struct desc_struct *desc, unsigned long base,
+ 				   unsigned long limit, unsigned char type,
+ 				   unsigned char flags)
+@@ -151,30 +136,24 @@ static inline void pack_descriptor(struct desc_struct *desc, unsigned long base,
+ 	desc->p = 1;
+ }
+ 
+-static inline void pack_ldt(ldt_desc *ldt, unsigned long addr,
+-			   unsigned size)
+-{
+ 
+-#ifdef CONFIG_X86_64
+-		set_tssldt_descriptor(ldt,
+-			     addr, DESC_LDT, size);
+-#else
+-		pack_descriptor(ldt, (unsigned long)addr,
+-				size,
+-				0x80 | DESC_LDT, 0);
+-#endif
+-}
+-
+-static inline void pack_tss(tss_desc *tss, unsigned long addr,
+-			   unsigned size, unsigned entry)
++static inline void set_tssldt_descriptor(void *d, unsigned long addr,
++					 unsigned type, unsigned size)
+ {
+ #ifdef CONFIG_X86_64
+-		set_tssldt_descriptor(tss,
+-			     addr, entry, size);
++	struct ldttss_desc64 *desc = d;
++	memset(desc, 0, sizeof(*desc));
++	desc->limit0 = size & 0xFFFF;
++	desc->base0 = PTR_LOW(addr);
++	desc->base1 = PTR_MIDDLE(addr) & 0xFF;
++	desc->type = type;
++	desc->p = 1;
++	desc->limit1 = (size >> 16) & 0xF;
++	desc->base2 = (PTR_MIDDLE(addr) >> 8) & 0xFF;
++	desc->base3 = PTR_HIGH(addr);
+ #else
+-		pack_descriptor(tss, (unsigned long)addr,
+-				size,
+-				0x80 | entry, 0);
++
++	pack_descriptor((struct desc_struct *)d, addr, size, 0x80 | type, 0);
+ #endif
+ }
+ 
+@@ -190,7 +169,7 @@ static inline void __set_tss_desc(unsigned cpu, unsigned int entry, void *addr)
+ 	 * -1? seg base+limit should be pointing to the address of the
+ 	 * last valid byte
+ 	 */
+-	pack_tss(&tss, (unsigned long)addr,
++	set_tssldt_descriptor(&tss, (unsigned long)addr,
+ 		IO_BITMAP_OFFSET + IO_BITMAP_BYTES + sizeof(unsigned long) - 1,
+ 		DESC_TSS);
+ 	write_gdt_entry(d, entry, &tss, DESC_TSS);
+@@ -206,8 +185,8 @@ static inline void native_set_ldt(const void *addr, unsigned int entries)
+ 		unsigned cpu = smp_processor_id();
+ 		ldt_desc ldt;
+ 
+-		pack_ldt(&ldt, (unsigned long)addr,
+-				entries * sizeof(ldt) - 1);
++		set_tssldt_descriptor(&ldt, (unsigned long)addr,
++				      DESC_LDT, entries * sizeof(ldt) - 1);
+ 		write_gdt_entry(get_cpu_gdt_table(cpu), GDT_ENTRY_LDT,
+ 				&ldt, DESC_LDT);
+ 		__asm__ __volatile__("lldt %w0"::"q" (GDT_ENTRY_LDT*8));
+-- 
+1.4.4.2
+
