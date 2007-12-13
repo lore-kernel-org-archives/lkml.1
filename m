@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761984AbXLMSY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762635AbXLMSZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761984AbXLMSY3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 13:24:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXLMSYU
+	id S1762635AbXLMSZI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 13:25:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755917AbXLMSY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 13:24:20 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:35541 "EHLO pasmtpA.tele.dk"
+	Thu, 13 Dec 2007 13:24:56 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:35771 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752473AbXLMSYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 13:24:20 -0500
-Date: Thu, 13 Dec 2007 19:26:09 +0100
+	id S1754427AbXLMSYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 13:24:55 -0500
+Date: Thu, 13 Dec 2007 19:26:45 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: [GIT PATCH] kbuild fix
-Message-ID: <20071213182609.GA12134@uranus.ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Guillaume Chazarain <guichaz@yahoo.fr>, linux-kernel@vger.kernel.org
+Subject: Re: separate objdir Makefile regression in 2.6.24-rc*
+Message-ID: <20071213182645.GB12134@uranus.ravnborg.org>
+References: <20071213134841.GA25103@basil.nowhere.org> <3d8471ca0712130616w4a34b53bs2faafb159df17510@mail.gmail.com> <20071213143359.GA31269@one.firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071213143359.GA31269@one.firstfloor.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
+On Thu, Dec 13, 2007 at 03:33:59PM +0100, Andi Kleen wrote:
+> On Thu, Dec 13, 2007 at 03:16:27PM +0100, Guillaume Chazarain wrote:
+> > On Dec 13, 2007 2:48 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> > >
+> > > 2.6.24-rc5 doesn't seem to create Makefiles in empty obj dirs anymore
+> > 
+> > Known problem ;-)
+> > See http://groups.google.com/group/fa.linux.kernel/browse_thread/thread/188cbd12d7c0871b/194fbc7c94314b2c
+> 
+> Ah, thanks. But it looks like that patch isn't in Linus' tree yet. Sam? 
 
-Please pull following fix:
-
-Guillaume Chazarain (1):
-      kbuild: re-enable Makefile generation in a new O=... directory
-
-Pull from:
-   ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/fix-kbuild.git
-
+I have asked Linus to pull it.
 
 	Sam
-
-Diffstat + patch:
-
- scripts/mkmakefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/scripts/mkmakefile b/scripts/mkmakefile
-index 9ad1bd7..e0f54b9 100644
---- a/scripts/mkmakefile
-+++ b/scripts/mkmakefile
-@@ -13,7 +13,7 @@
- test ! -r $2/Makefile -o -O $2/Makefile || exit 0
- # Only overwrite automatically generated Makefiles
- # (so we do not overwrite kernel Makefile)
--if ! grep -q Automatically $2/Makefile
-+if test -e $2/Makefile && ! grep -q Automatically $2/Makefile
- then
- 	exit 0
- fi
-
-
