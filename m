@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763623AbXLMSmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764047AbXLMSpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763623AbXLMSmd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 13:42:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbXLMSmX
+	id S1764047AbXLMSpZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 13:45:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760067AbXLMSpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 13:42:23 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:56808 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754201AbXLMSmW (ORCPT
+	Thu, 13 Dec 2007 13:45:08 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33412 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759733AbXLMSpE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 13:42:22 -0500
-Date: Thu, 13 Dec 2007 11:42:21 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Jens Axboe <axboe@kernel.dk>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@steeleye.com>
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-Message-ID: <20071213184221.GP26334@parisc-linux.org>
-References: <47617B92.6020908@rtr.ca> <47617C07.3020501@rtr.ca>
+	Thu, 13 Dec 2007 13:45:04 -0500
+Date: Thu, 13 Dec 2007 19:45:07 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] x86: default to PCI=y
+Message-ID: <20071213184507.GC21616@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <47617C07.3020501@rtr.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 01:37:59PM -0500, Mark Lord wrote:
-> The problem is, the block layer *never* sends an SG entry larger than 8192 
-> bytes,
-> and even that size is exceptionally rare.  Nearly all I/O segments are 4096 
-> bytes,
-> so I never see a single I/O larger than 512KB (128 * 4096).
-> 
-> If I patch various parts of block and SCSI, this limit doesn't budge,
-> but when I change the hardware PRD limit in libata, it scales by exactly
-> whatever I set the new value to.  This tells me that adjacent I/O segments
-> are not being combined.
-> 
-> I thought that QUEUE_FLAG_CLUSTER (aka. SCSI host .use_clustering=1) should
-> result in adjacent single pages being combined into larger physical 
-> segments?
+PCI is one of the few hardware stuff where defaulting to y makes sense.
 
-I was recently debugging a driver and noticed that consecutive pages in
-an sg list are in the reverse order.  ie first you get page 918, then
-917, 916, 915, 914, etc.  I vaguely remember James having patches to
-correct this, but maybe they weren't merged?
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+---
+753cd05e76043bb56edb30b2277be9f3e77ee0c4 
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 80b7ba4..2897cc0 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1371,7 +1371,7 @@ menu "Bus options (PCI etc.)"
+ config PCI
+ 	bool "PCI support" if !X86_VISWS
+ 	depends on !X86_VOYAGER
+-	default y if X86_VISWS
++	default y
+ 	select ARCH_SUPPORTS_MSI if (X86_LOCAL_APIC && X86_IO_APIC)
+ 	help
+ 	  Find out whether you have a PCI motherboard. PCI is the name of a
+
