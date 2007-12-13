@@ -1,80 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933077AbXLMVWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbXLMVXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933077AbXLMVWo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 16:22:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762331AbXLMVWf
+	id S933167AbXLMVXb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 16:23:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbXLMVXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 16:22:35 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52496 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753288AbXLMVWe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 16:22:34 -0500
-Date: Thu, 13 Dec 2007 13:21:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Changli Gao" <xiaosuo@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: BUG: file descriptors leak when sys_pipe failed with -EFAULT
-Message-Id: <20071213132148.8f18a107.akpm@linux-foundation.org>
-In-Reply-To: <412e6f7f0712130434h93ce8ffi9f7d91ea1589f84c@mail.gmail.com>
-References: <412e6f7f0712130434h93ce8ffi9f7d91ea1589f84c@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Dec 2007 16:23:20 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45674 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753943AbXLMVXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 16:23:19 -0500
+Date: Thu, 13 Dec 2007 22:22:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
+       zach@vmware.com, roland@redhat.com
+Subject: Re: [PATCH] avoid ifdefs in desc.h, getting rid of pack_ldt and
+	pack_tss
+Message-ID: <20071213212221.GA16747@elte.hu>
+References: <11975561713425-git-send-email-gcosta@redhat.com> <20071213202800.GD25130@elte.hu> <20071213205838.GA9649@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071213205838.GA9649@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Dec 2007 20:34:11 +0800
-"Changli Gao" <xiaosuo@gmail.com> wrote:
 
-> If an invalid address is passed to system call pipe as argument, file
-> descriptors will leak.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Yup.  I added linux-kernel to cc.
+> just got the crash below. config attached. Suspects are:
+> 
+>  Subject: unify struct desc_ptr
+>  Subject: unify paravirt pieces of descriptor handling
 
-> System call pipe is implemented as following on most architectures:
-> 
->     int fd[2];
->     int error;
-> 
->     error = do_pipe(fd);
->     if (!error) {
->         if (copy_to_user(fildes, fd, 2*sizeof(int)))
->             error = -EFAULT;
->     }
->     return error;
-> 
-> Invalid memory address makes copy_to_user failed. But the descriptors
-> allocated for the pipe will be left open.
-> A workaround fix will be like this:
-> 
->     int fd[2];
->     int error;
-> 
->     error = do_pipe(fd);
->     if (!error) {
->         if (copy_to_user(fildes, fd, 2*sizeof(int))) {
->             sys_close(fd[0]);
->             sys_close(fd[1]);
->             error = -EFAULT;
->         }
->     }
->     return error;
-> 
-> I don't understand the others architectures(such as
-> sh/sh64/mips/sparc/sparc64)  which implement pipe in the other ways,
-> so I just indicate this bug and provide my fixing way instead of
-> patching it.
+i've bisected it down to:
 
-The consequences of this are that the application may eventually run out of
-file descriptors and they will be cleaned up when the application exits
-anyway, so it isn't terribly serious.
+ Subject: avoid ifdefs in desc.h, getting rid of pack_ldt and pack_tss
+ From: Glauber de Oliveira Costa <gcosta@redhat.com>
 
-However it does seem fairly dumb of us to leave the fds open given that
-at least one or possibly both of the file descriptors are unknown to the
-application anyway.  Probably it'd be better to close them off immediately.
+i have removed this patch from x86.git. Btw., note the advantage of 
+small deltas, so only your v3->v4 delta patch got reverted instead of 
+the whole 19-patch v3 kit ;-)
 
-This would be an application-visible change: subsequent open()s will return
-lower-numbered descriptors than they do at present.  That shouldn't matter.
+> could we _please_ use basic tools as vmlinux size comparison and 
+> objcompare when unifying, to make sure it's a 100% identity 
+> conversion?
+
+case in point, the patch claims:
+
+> > No functional change is made.
+
+but vmlinux before/after size comparison shows:
+
+    text    data     bss     dec     hex filename
+ 8802894 1224910 3526656 13554460         ced31c vmlinux.before
+ 8803042 1224910 3526656 13554608         ced3b0 vmlinux.after
+
+	Ingo
