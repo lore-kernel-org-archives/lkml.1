@@ -1,97 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764895AbXLMRQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764981AbXLMRRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764895AbXLMRQy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 12:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762450AbXLMRQm
+	id S1764981AbXLMRRY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 12:17:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762695AbXLMRQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 12:16:42 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:58461 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759538AbXLMRQk (ORCPT
+	Thu, 13 Dec 2007 12:16:43 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42800 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762403AbXLMRQl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 12:16:40 -0500
-Date: Thu, 13 Dec 2007 22:46:06 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
-Cc: Paul E McKenney <paulmck@us.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Ted Tso <tytso@us.ibm.com>, dvhltc@us.ibm.com,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       Josh Triplett <josh@freedesktop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC PATCH 3/6] Preempt-RCU: Fix rcu_barrier for preemptive
-	environment
-Message-ID: <20071213171606.GD25981@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20071213170348.GA25981@in.ibm.com>
+	Thu, 13 Dec 2007 12:16:41 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Mark timer_stats as incompatible with multiple pid namespaces
+References: <m13au7tsov.fsf@ebiederm.dsl.xmission.com>
+	<20071213090102.GB1926@elte.hu>
+	<m1r6hqstat.fsf@ebiederm.dsl.xmission.com>
+	<20071213130423.GB28340@elte.hu>
+Date: Thu, 13 Dec 2007 10:14:15 -0700
+In-Reply-To: <20071213130423.GB28340@elte.hu> (Ingo Molnar's message of "Thu,
+	13 Dec 2007 14:04:23 +0100")
+Message-ID: <m1ir32sejc.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071213170348.GA25981@in.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Preempt-RCU: Fix rcu_barrier for preemptive environment.
+Ingo Molnar <mingo@elte.hu> writes:
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> * Eric W. Biederman <ebiederm@xmission.com> wrote:
+>
+>> > What the heck??? Please solve this properly instead of hiding it. 
+>> > /proc/timer_stats is damn useful and it's a must-have for powertop 
+>> > to work.
+>> 
+>> Hmm.  Perhaps the dependency conflict should go in the other direction 
+>> then.
+>> 
+>> My goal is to document the issue while a proper fix is being written. 
+>> I have known about this for all of about 1 day now.  It was added 
+>> since last time I went through the kernel and made a thorough sweep of 
+>> pid users.
+>> 
+>> What the proper fix is isn't even obvious at this point. Possibly it 
+>> is making /proc/timer_stats disappear in child pid namespaces.
+>>   Which we don't currently have the infrastructure fore.
+>>
+>> Possibly it is reworking the stats collection so we store a struct pid 
+>> * instead of a pid_t value.  So we would know if the reader of the 
+>> value can even see processes you have collected stats for.
+>
+> the problem is, this interface stores historic PIDs too - i.e. PIDs of 
+> tasks that might have exited already.
 
-Fix rcu_barrier() to work properly in preemptive kernel environment.
-Also, the ordering of callback must be preserved while moving
-callbacks to another CPU during CPU hotplug.
+Well struct pid * works in that case if you grab the reference to it.
 
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-Signed-off-by: Dipankar Sarma <dipankar@in.ibm.com>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> the proper way would be to also store the namespace address, and to 
+> filter out non-matching entries.
+
+Sounds right.  If I have the struct pid I can do something like:
+pid_t upid = pid_nr_ns(pid, current->nsproxy->pid_ns);
+if (!upid)
+   	continue;
+
+If I get a pid value in the users pid namespace then the entry
+has not been filtered out and I need to display it.
+
+>  (If leakage of this data across 
+> namespace creation is of any concern then flush out existing namespace 
+> data when a namespace is destroyed)
+
+Given the structure I don't think flushing out the data makes much sense.
+Just filtering it should be fine.
+
+My first draft of a proper fix is below.  I don't recall if del_timer
+is required on timers or not.  If not then I have a struct_pid leak.
+Otherwise this generally works and happens to make timer_stats safe
+from misaccounting due to pid wrap around.
+
 ---
 
- kernel/rcuclassic.c |    2 +-
- kernel/rcupdate.c   |   10 ++++++++++
- 2 files changed, 11 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-index 11c16aa..deb2acc 100644
---- a/kernel/rcuclassic.c
-+++ b/kernel/rcuclassic.c
-@@ -371,9 +371,9 @@ static void __rcu_offline_cpu(struct rcu_data *this_rdp,
- 	if (rcp->cur != rcp->completed)
- 		cpu_quiet(rdp->cpu, rcp);
- 	spin_unlock_bh(&rcp->lock);
-+	rcu_move_batch(this_rdp, rdp->donelist, rdp->donetail);
- 	rcu_move_batch(this_rdp, rdp->curlist, rdp->curtail);
- 	rcu_move_batch(this_rdp, rdp->nxtlist, rdp->nxttail);
--	rcu_move_batch(this_rdp, rdp->donelist, rdp->donetail);
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+index 627767b..58ea150 100644
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -334,7 +334,7 @@ extern void sysrq_timer_list_show(void);
+  */
+ #ifdef CONFIG_TIMER_STATS
+ 
+-extern void timer_stats_update_stats(void *timer, pid_t pid, void *startf,
++extern void timer_stats_update_stats(void *timer, struct pid *pid, void *startf,
+ 				     void *timerf, char *comm,
+ 				     unsigned int timer_flag);
+ 
+@@ -355,6 +355,8 @@ static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
+ static inline void timer_stats_hrtimer_clear_start_info(struct hrtimer *timer)
+ {
+ 	timer->start_site = NULL;
++	pit_pid(timer->start_pid);
++	timer->start_pid = NULL;
+ }
+ #else
+ static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
+diff --git a/include/linux/timer.h b/include/linux/timer.h
+index de0e713..9d96943 100644
+--- a/include/linux/timer.h
++++ b/include/linux/timer.h
+@@ -18,7 +18,7 @@ struct timer_list {
+ #ifdef CONFIG_TIMER_STATS
+ 	void *start_site;
+ 	char start_comm[16];
+-	int start_pid;
++	struct pid *start_pid;
+ #endif
+ };
+ 
+@@ -109,6 +109,8 @@ static inline void timer_stats_timer_set_start_info(struct timer_list *timer)
+ static inline void timer_stats_timer_clear_start_info(struct timer_list *timer)
+ {
+ 	timer->start_site = NULL;
++	put_pid(timer->start_pid);
++	timer->start_pid = NULL;
+ }
+ #else
+ static inline void init_timer_stats(void)
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index e65dd0b..3d2b017 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -633,7 +633,7 @@ void __timer_stats_hrtimer_set_start_info(struct hrtimer *timer, void *addr)
+ 
+ 	timer->start_site = addr;
+ 	memcpy(timer->start_comm, current->comm, TASK_COMM_LEN);
+-	timer->start_pid = current->pid;
++	timer->start_pid = get_pid(task_pid(current));
+ }
+ #endif
+ 
+@@ -1005,7 +1005,7 @@ void hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
+ 
+ #ifdef CONFIG_TIMER_STATS
+ 	timer->start_site = NULL;
+-	timer->start_pid = -1;
++	timer->start_pid = NULL;
+ 	memset(timer->start_comm, 0, TASK_COMM_LEN);
+ #endif
+ }
+diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
+index 12c5f4c..41efe4a 100644
+--- a/kernel/time/timer_list.c
++++ b/kernel/time/timer_list.c
+@@ -51,6 +51,9 @@ print_timer(struct seq_file *m, struct hrtimer *timer, int idx, u64 now)
+ {
+ #ifdef CONFIG_TIMER_STATS
+ 	char tmp[TASK_COMM_LEN + 1];
++	pid_t upid = pid_vnr(timer->start_pid);
++	if (!upid)
++		return;
+ #endif
+ 	SEQ_printf(m, " #%d: ", idx);
+ 	print_name_offset(m, timer);
+@@ -62,7 +65,7 @@ print_timer(struct seq_file *m, struct hrtimer *timer, int idx, u64 now)
+ 	print_name_offset(m, timer->start_site);
+ 	memcpy(tmp, timer->start_comm, TASK_COMM_LEN);
+ 	tmp[TASK_COMM_LEN] = 0;
+-	SEQ_printf(m, ", %s/%d", tmp, timer->start_pid);
++	SEQ_printf(m, ", %s/%d", tmp, upid);
+ #endif
+ 	SEQ_printf(m, "\n");
+ 	SEQ_printf(m, " # expires at %Lu nsecs [in %Lu nsecs]\n",
+diff --git a/kernel/time/timer_stats.c b/kernel/time/timer_stats.c
+index 417da8c..203bf56 100644
+--- a/kernel/time/timer_stats.c
++++ b/kernel/time/timer_stats.c
+@@ -137,6 +137,9 @@ static struct entry *tstat_hash_table[TSTAT_HASH_SIZE] __read_mostly;
+ 
+ static void reset_entries(void)
+ {
++	unsigned long i;
++	for (i = 0; < nr_entries; i++)
++		put_pid(i);
+ 	nr_entries = 0;
+ 	memset(entries, 0, sizeof(entries));
+ 	memset(tstat_hash_table, 0, sizeof(tstat_hash_table));
+@@ -203,6 +206,7 @@ static struct entry *tstat_lookup(struct entry *entry, char *comm)
+ 	curr = alloc_entry();
+ 	if (curr) {
+ 		*curr = *entry;
++		get_pid(curr->pid);
+ 		curr->count = 0;
+ 		curr->next = NULL;
+ 		memcpy(curr->comm, comm, TASK_COMM_LEN);
+@@ -231,7 +235,7 @@ static struct entry *tstat_lookup(struct entry *entry, char *comm)
+  * When the timer is already registered, then the event counter is
+  * incremented. Otherwise the timer is registered in a free slot.
+  */
+-void timer_stats_update_stats(void *timer, pid_t pid, void *startf,
++void timer_stats_update_stats(void *timer, struct pid *pid, void *startf,
+ 			      void *timerf, char *comm,
+ 			      unsigned int timer_flag)
+ {
+@@ -305,13 +309,19 @@ static int tstats_show(struct seq_file *m, void *v)
+ 			atomic_read(&overflow_count));
+ 
+ 	for (i = 0; i < nr_entries; i++) {
++		pid_t upid;
++
+ 		entry = entries + i;
++		upid = pid_vnr(entry->pid);
++		if (!upid)
++			continue;
++
+  		if (entry->timer_flag & TIMER_STATS_FLAG_DEFERRABLE) {
+ 			seq_printf(m, "%4luD, %5d %-16s ",
+-				entry->count, entry->pid, entry->comm);
++				entry->count, upid, entry->comm);
+ 		} else {
+ 			seq_printf(m, " %4lu, %5d %-16s ",
+-				entry->count, entry->pid, entry->comm);
++				entry->count, upid, entry->comm);
+ 		}
+ 
+ 		print_name_offset(m, (unsigned long)entry->start_func);
+diff --git a/kernel/timer.c b/kernel/timer.c
+index f9419f2..b5b1495 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -302,7 +302,8 @@ void __timer_stats_timer_set_start_info(struct timer_list *timer, void *addr)
+ 
+ 	timer->start_site = addr;
+ 	memcpy(timer->start_comm, current->comm, TASK_COMM_LEN);
+-	timer->start_pid = current->pid;
++	put_pid(timer->start_pid);
++	timer->start_pid = get_pid(task_pid(current));
  }
  
- static void rcu_offline_cpu(int cpu)
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index 0ccd009..760dfc2 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -115,7 +115,17 @@ void rcu_barrier(void)
- 	mutex_lock(&rcu_barrier_mutex);
- 	init_completion(&rcu_barrier_completion);
- 	atomic_set(&rcu_barrier_cpu_count, 0);
-+	/*
-+	 * The queueing of callbacks in all CPUs must be atomic with
-+	 * respect to RCU, otherwise one CPU may queue a callback,
-+	 * wait for a grace period, decrement barrier count and call
-+	 * complete(), while other CPUs have not yet queued anything.
-+	 * So, we need to make sure that grace periods cannot complete
-+	 * until all the callbacks are queued.
-+	 */
-+	rcu_read_lock();
- 	on_each_cpu(rcu_barrier_func, NULL, 0, 1);
-+	rcu_read_unlock();
- 	wait_for_completion(&rcu_barrier_completion);
- 	mutex_unlock(&rcu_barrier_mutex);
+ static void timer_stats_account_timer(struct timer_list *timer)
+@@ -333,7 +334,7 @@ void fastcall init_timer(struct timer_list *timer)
+ 	timer->base = __raw_get_cpu_var(tvec_bases);
+ #ifdef CONFIG_TIMER_STATS
+ 	timer->start_site = NULL;
+-	timer->start_pid = -1;
++	timer->start_pid = NULL;
+ 	memset(timer->start_comm, 0, TASK_COMM_LEN);
+ #endif
  }
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
