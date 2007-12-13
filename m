@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934518AbXLMXAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934587AbXLMXA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934518AbXLMXAg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 18:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934477AbXLMXAQ
+	id S934587AbXLMXA7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 18:00:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934218AbXLMXAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 18:00:16 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:34699 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933966AbXLMXAN (ORCPT
+	Thu, 13 Dec 2007 18:00:43 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55722 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934535AbXLMXAl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 18:00:13 -0500
-Date: Fri, 14 Dec 2007 01:00:08 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Cedric Le Goater <clg@fr.ibm.com>, David Miller <davem@davemloft.net>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.24-rc4-mm1 - BUG in tcp_fragment
-In-Reply-To: <47616FA6.1010607@fr.ibm.com>
-Message-ID: <Pine.LNX.4.64.0712140024360.12376@kivilampi-30.cs.helsinki.fi>
-References: <20071204211701.994dfce6.akpm@linux-foundation.org>
- <47616FA6.1010607@fr.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Dec 2007 18:00:41 -0500
+Date: Fri, 14 Dec 2007 00:00:43 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: RFC: remove __read_mostly
+Message-ID: <20071213230043.GJ21616@stusta.de>
+References: <20071213222044.GH21616@stusta.de> <4761B6BB.1070504@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4761B6BB.1070504@cosmosbay.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Dec 2007, Cedric Le Goater wrote:
+On Thu, Dec 13, 2007 at 11:48:27PM +0100, Eric Dumazet wrote:
+> Adrian Bunk a écrit :
+>> I tried the following patch with a full x86 .config [1]:
+>>
+>> --- a/include/asm-x86/cache.h
+>> +++ b/include/asm-x86/cache.h
+>> -#define __read_mostly __attribute__((__section__(".data.read_mostly")))
+>> +/* #define __read_mostly __attribute__((__section__(".data.read_mostly"))) */
+>>
+>> The result [2,3] was:
+>>
+>> -rwxrwxr-x 1 bunk bunk 46607243 2007-12-13 19:50 vmlinux.old
+>> -rwxrwxr-x 1 bunk bunk 46598691 2007-12-13 21:55 vmlinux
+>>
+>> It's not a surprise that the kernel can become bigger when __read_mostly 
+>> gets used, especially in cases where __read_mostly prevents gcc 
+>> optimizations.
+>>
+>> My question is:
+>> Is there anywhere in the kernel a case where __read_mostly brings a 
+>> measurable improvement or can it be removed?
+>
+> Yes, there are many cases where read_mostly brings huge improvements.
+>
+> I did test your idea on a 4 CPUS server, and system time was roughly 
+> doubled, from 11% to 20%
 
-> I got this one while compiling on NFS.
-> 
-> C.
-> 
-> kernel BUG at /home/legoater/linux/2.6.24-rc4-mm1/include/net/tcp.h:1480!
+Thanks, that answered my question.
 
-I'm not exactly sure what patches you have applied and which patches are 
-not, with rc4-mm1 there are two patches (first one was incomplete, I 
-assume you had at least that one based on your other mail) to really fix 
-the issues in (__|)tcp_reset_fack_counts(...). However, there seems to be 
-so much breakage that I have a bit trouble to decide where to start...
-The situation seems bit scary :-).
+> Of course, you noticed that puting a __read_mostly attribute force the 
+> linker to reserve space for the variable. So a null variable previously in 
+> bss section (no space in vmlinux file) is now in .data.read_mostly. Not a 
+> big deal.
+>
+> If you want, you could play some .lds games to create sort of a 
+> "bss.read_mostly" section to save 10000 bytes in vmlinux.
 
-So, I might soon prepare a revert patch for most of the questionable 
-TCP parts and ask Dave to apply it (and drop them fully during next 
-rebase) unless I suddently figure something out soon which explains 
-all/most of the problems, then return to drawing board. ...As it seems 
-that the cumulative ACK processing problem discovered later on (having 
-rather cumbersome solution with skbs only) will make part of the work 
-that's currently in net-2.6.25 quite useless/duplicate effort. But thanks 
-anyway for reporting these.
+No, what I was thinking of kernel code like
 
+static int fooxxxvar = 0;
+static int __read_mostly fooyyyvar = 0;
+
+void mytest()
+{
+        if (fooxxxvar)
+                printk("fooxxx");
+
+        if (fooyyyvar)
+                printk("fooyyy");
+}
+
+If you run "strings file.c | grep foo" on the file it will only return
+"fooyyy" but not "fooxxx".
+
+It's not a big deal, but it's an area where __read_mostly affects gcc 
+and not ld.
+
+cu
+Adrian
 
 -- 
- i.
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
