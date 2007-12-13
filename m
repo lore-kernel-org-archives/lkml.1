@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764348AbXLMQ66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbXLMQ7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764348AbXLMQ66 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 11:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762245AbXLMQ6R
+	id S1762263AbXLMQ7e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 11:59:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762405AbXLMQ6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 11:58:17 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54276 "EHLO mx1.redhat.com"
+	Thu, 13 Dec 2007 11:58:18 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54279 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762227AbXLMQ6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 11:58:14 -0500
+	id S1762232AbXLMQ6Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 11:58:16 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
@@ -17,185 +17,139 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
        rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
        rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 12/19] change write_ldt_entry signature
-Date: Thu, 13 Dec 2007 11:58:00 -0200
-Message-Id: <11975543742848-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 05/19] introduce gate_desc type.
+Date: Thu, 13 Dec 2007 11:57:53 -0200
+Message-Id: <11975543382698-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11975543691134-git-send-email-gcosta@redhat.com>
-References: <11975113122984-git-send-email-gcosta@redhat.com> <1197554287294-git-send-email-gcosta@redhat.com> <11975542952896-git-send-email-gcosta@redhat.com> <11975543001070-git-send-email-gcosta@redhat.com> <1197554307167-git-send-email-gcosta@redhat.com> <11975543173017-git-send-email-gcosta@redhat.com> <11975543382698-git-send-email-gcosta@redhat.com> <11975543442801-git-send-email-gcosta@redhat.com> <11975543492215-git-send-email-gcosta@redhat.com> <11975543543850-git-send-email-gcosta@redhat.com> <11975543592701-git-send-email-gcosta@redhat.com> <11975543641360-git-send-email-gcosta@redhat.com> <11975543691134-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11975543173017-git-send-email-gcosta@redhat.com>
+References: <11975113122984-git-send-email-gcosta@redhat.com> <1197554287294-git-send-email-gcosta@redhat.com> <11975542952896-git-send-email-gcosta@redhat.com> <11975543001070-git-send-email-gcosta@redhat.com> <1197554307167-git-send-email-gcosta@redhat.com> <11975543173017-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this patch changes the signature of write_ldt_entry.
+To account for the differences in gate descriptor in i386 and x86_64
+a gate_desc type is introduced.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-CC: Zachary Amsden <zach@vmware.com>
-CC: Jeremy Fitzhardinge <Jeremy.Fitzhardinge.citrix.com>
 ---
- arch/x86/kernel/ldt.c         |    3 +--
- arch/x86/kernel/paravirt_32.c |    2 +-
- arch/x86/kernel/vmi_32.c      |   11 ++++++++++-
- arch/x86/xen/enlighten.c      |    4 ++--
- include/asm-x86/desc_32.h     |    9 ++++++++-
- include/asm-x86/desc_64.h     |    7 ++-----
- include/asm-x86/paravirt.h    |   10 ++++++----
- 7 files changed, 30 insertions(+), 16 deletions(-)
+ arch/x86/kernel/traps_32.c  |    3 ++-
+ include/asm-x86/desc_32.h   |   15 ++++++++-------
+ include/asm-x86/desc_64.h   |    4 ++--
+ include/asm-x86/desc_defs.h |    8 +++++++-
+ 4 files changed, 19 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/kernel/ldt.c b/arch/x86/kernel/ldt.c
-index 3e872b4..b8ef462 100644
---- a/arch/x86/kernel/ldt.c
-+++ b/arch/x86/kernel/ldt.c
-@@ -229,8 +229,7 @@ static int write_ldt(void __user *ptr, unsigned long bytecount, int oldmode)
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index 94c5aea..6b03d88 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -76,8 +76,8 @@ char ignore_fpu_irq = 0;
+  * F0 0F bug workaround.. We have a special link segment
+  * for this.
+  */
+-struct desc_struct idt_table[256]
+-	__attribute__((__section__(".data.idt"))) = { { { { 0, 0 } } }, };
++gate_desc idt_table[256]
++	__attribute__((__section__(".data.idt"))) = { { { { 0, 0 } } }, };
  
- 	/* Install the new entry ...  */
- install:
--	write_ldt_entry(mm->context.ldt, ldt_info.entry_number,
--			ldt.a, ldt.b);
-+	write_ldt_entry(mm->context.ldt, ldt_info.entry_number, &ldt);
- 	error = 0;
- 
- out_unlock:
-diff --git a/arch/x86/kernel/paravirt_32.c b/arch/x86/kernel/paravirt_32.c
-index 77602c1..dd063fb 100644
---- a/arch/x86/kernel/paravirt_32.c
-+++ b/arch/x86/kernel/paravirt_32.c
-@@ -379,7 +379,7 @@ struct pv_cpu_ops pv_cpu_ops = {
- 	.store_idt = native_store_idt,
- 	.store_tr = native_store_tr,
- 	.load_tls = native_load_tls,
--	.write_ldt_entry = write_dt_entry,
-+	.write_ldt_entry = native_write_ldt_entry,
- 	.write_gdt_entry = native_write_gdt_entry,
- 	.write_idt_entry = native_write_idt_entry,
- 	.load_sp0 = native_load_sp0,
-diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-index 21edd0d..10c4641 100644
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -64,6 +64,7 @@ static struct {
- 	void (*set_tr)(u32 selector);
- 	void (*write_idt_entry)(struct desc_struct *, int, u32, u32);
- 	void (*write_gdt_entry)(struct desc_struct *, int, u32, u32);
-+	void (*write_ldt_entry)(struct desc_struct *, int, u32, u32);
- 	void (*set_kernel_stack)(u32 selector, u32 sp0);
- 	void (*allocate_page)(u32, u32, u32, u32, u32);
- 	void (*release_page)(u32, u32);
-@@ -229,6 +230,13 @@ static void vmi_write_gdt_entry(struct desc_struct *dt, int entry,
- 	vmi_ops.write_gdt_entry(dt, entry, gdt_entry[0], gdt_entry[2]);
- }
- 
-+static void vmi_write_ldt_entry(struct desc_struct *dt, int entry,
-+				const void *desc)
-+{
-+	u32 *ldt_entry = (u32 *)desc;
-+	vmi_ops.write_idt_entry(dt, entry, ldt_entry[0], ldt_entry[2]);
-+}
-+
- static void vmi_load_sp0(struct tss_struct *tss,
- 				   struct thread_struct *thread)
- {
-@@ -805,7 +813,8 @@ static inline int __init activate_vmi(void)
- 	para_fill(pv_cpu_ops.store_idt, GetIDT);
- 	para_fill(pv_cpu_ops.store_tr, GetTR);
- 	pv_cpu_ops.load_tls = vmi_load_tls;
--	para_fill(pv_cpu_ops.write_ldt_entry, WriteLDTEntry);
-+	para_wrap(pv_cpu_ops.write_ldt_entry, vmi_write_ldt_entry,
-+		  write_ldt_entry, WriteLDTEntry);
- 	para_wrap(pv_cpu_ops.write_gdt_entry, vmi_write_gdt_entry,
- 		  write_gdt_entry, WriteGDTEntry);
- 	para_wrap(pv_cpu_ops.write_idt_entry, vmi_write_idt_entry,
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index c38240c..c904686 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -357,11 +357,11 @@ static void xen_load_tls(struct thread_struct *t, unsigned int cpu)
- }
- 
- static void xen_write_ldt_entry(struct desc_struct *dt, int entrynum,
--				u32 low, u32 high)
-+				const void *ptr)
- {
- 	unsigned long lp = (unsigned long)&dt[entrynum];
- 	xmaddr_t mach_lp = virt_to_machine(lp);
--	u64 entry = (u64)high << 32 | low;
-+	u64 entry = *(u64 *)ptr;
- 
- 	preempt_disable();
- 
+ asmlinkage void divide_error(void);
+ asmlinkage void debug(void);
 diff --git a/include/asm-x86/desc_32.h b/include/asm-x86/desc_32.h
-index 41d8214..92a72b0 100644
+index bc5ca34..77f1e5a 100644
 --- a/include/asm-x86/desc_32.h
 +++ b/include/asm-x86/desc_32.h
-@@ -69,12 +69,19 @@ static inline void pack_gate(gate_desc *gate,
- #define load_TLS(t, cpu) native_load_tls(t, cpu)
- #define set_ldt native_set_ldt
+@@ -3,6 +3,7 @@
  
--#define write_ldt_entry(dt, entry, a, b) write_dt_entry(dt, entry, a, b)
-+#define write_ldt_entry(dt, entry, desc) \
-+				native_write_ldt_entry(dt, entry, desc)
- #define write_gdt_entry(dt, entry, desc, type) \
- 				native_write_gdt_entry(dt, entry, desc, type)
- #define write_idt_entry(dt, entry, g) native_write_idt_entry(dt, entry, g)
- #endif
+ #include <asm/ldt.h>
+ #include <asm/segment.h>
++#include <asm/desc_defs.h>
  
-+static inline void native_write_ldt_entry(struct desc_struct *ldt, int entry,
-+					  const void *desc)
-+{
-+	memcpy(&ldt[entry], desc, sizeof(struct desc_struct));
-+}
-+
- static inline void native_write_idt_entry(gate_desc *idt, int entry,
- 					  const gate_desc *gate)
+ #ifndef __ASSEMBLY__
+ 
+@@ -24,7 +25,7 @@ static inline struct desc_struct *get_cpu_gdt_table(unsigned int cpu)
+ }
+ 
+ extern struct desc_ptr idt_descr;
+-extern struct desc_struct idt_table[];
++extern gate_desc idt_table[];
+ extern void set_intr_gate(unsigned int irq, void * addr);
+ 
+ static inline void pack_descriptor(__u32 *a, __u32 *b,
+@@ -35,11 +36,11 @@ static inline void pack_descriptor(__u32 *a, __u32 *b,
+ 		(limit & 0x000f0000) | ((type & 0xff) << 8) | ((flags & 0xf) << 20);
+ }
+ 
+-static inline void pack_gate(__u32 *a, __u32 *b,
++static inline void pack_gate(gate_desc *gate,
+ 	unsigned long base, unsigned short seg, unsigned char type, unsigned char flags)
  {
+-	*a = (seg << 16) | (base & 0xffff);
+-	*b = (base & 0xffff0000) | ((type & 0xff) << 8) | (flags & 0xff);
++	gate->a = (seg << 16) | (base & 0xffff);
++	gate->b = (base & 0xffff0000) | ((type & 0xff) << 8) | (flags & 0xff);
+ }
+ 
+ #define DESCTYPE_LDT 	0x82	/* present, system, DPL-0, LDT */
+@@ -139,9 +140,9 @@ static inline void native_load_tls(struct thread_struct *t, unsigned int cpu)
+ 
+ static inline void _set_gate(int gate, unsigned int type, void *addr, unsigned short seg)
+ {
+-	__u32 a, b;
+-	pack_gate(&a, &b, (unsigned long)addr, seg, type, 0);
+-	write_idt_entry(idt_table, gate, a, b);
++	gate_desc g;
++	pack_gate(&g, (unsigned long)addr, seg, type, 0);
++	write_idt_entry(idt_table, gate, g.a, g.b);
+ }
+ 
+ static inline void __set_tss_desc(unsigned int cpu, unsigned int entry, const void *addr)
 diff --git a/include/asm-x86/desc_64.h b/include/asm-x86/desc_64.h
-index e0aa4bc..3cd5f10 100644
+index 660cc84..ffc6c06 100644
 --- a/include/asm-x86/desc_64.h
 +++ b/include/asm-x86/desc_64.h
-@@ -34,12 +34,9 @@ extern gate_desc idt_table[];
+@@ -30,7 +30,7 @@ static inline unsigned long __store_tr(void)
+ 
+ #define store_tr(tr) (tr) = __store_tr()
+ 
+-extern struct gate_struct idt_table[];
++extern gate_desc idt_table[];
  extern struct desc_ptr cpu_gdt_descr[];
  
  static inline void write_ldt_entry(struct desc_struct *ldt,
--				   int entry, u32 entry_low, u32 entry_high)
-+				   int entry, void *ptr)
+@@ -58,7 +58,7 @@ static inline void store_gdt(struct desc_ptr *ptr)
+ static inline void _set_gate(void *adr, unsigned type, unsigned long func,
+ 			     unsigned dpl, unsigned ist)
  {
--	__u32 *lp = (__u32 *)((entry << 3) + (char *)ldt);
--
--	lp[0] = entry_low;
--	lp[1] = entry_high;
-+	memcpy(&ldt[entry], ptr, 8);
- }
+-	struct gate_struct s;
++	gate_desc s;
  
- /* the cpu gdt accessor */
-diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
-index 3f2abf2..4f23f43 100644
---- a/include/asm-x86/paravirt.h
-+++ b/include/asm-x86/paravirt.h
-@@ -96,8 +96,8 @@ struct pv_cpu_ops {
- 	void (*set_ldt)(const void *desc, unsigned entries);
- 	unsigned long (*store_tr)(void);
- 	void (*load_tls)(struct thread_struct *t, unsigned int cpu);
--	void (*write_ldt_entry)(struct desc_struct *,
--				int entrynum, u32 low, u32 high);
-+	void (*write_ldt_entry)(struct desc_struct *ldt, int entrynum,
-+				const void *desc);
- 	void (*write_gdt_entry)(struct desc_struct *,
- 				int entrynum, const void *desc, int size);
- 	void (*write_idt_entry)(gate_desc *,
-@@ -660,9 +660,11 @@ static inline void load_TLS(struct thread_struct *t, unsigned cpu)
- {
- 	PVOP_VCALL2(pv_cpu_ops.load_tls, t, cpu);
- }
--static inline void write_ldt_entry(void *dt, int entry, u32 low, u32 high)
+ 	s.offset_low = PTR_LOW(func);
+ 	s.segment = __KERNEL_CS;
+diff --git a/include/asm-x86/desc_defs.h b/include/asm-x86/desc_defs.h
+index f37b44c..05eff93 100644
+--- a/include/asm-x86/desc_defs.h
++++ b/include/asm-x86/desc_defs.h
+@@ -39,7 +39,7 @@ enum {
+ };
+ 
+ // 16byte gate
+-struct gate_struct {
++struct gate_struct64 {
+ 	u16 offset_low;
+ 	u16 segment;
+ 	unsigned ist : 3, zero0 : 5, type : 5, dpl : 2, p : 1;
+@@ -67,6 +67,12 @@ struct ldttss_desc {
+ 	u32 zero1;
+ } __attribute__((packed));
+ 
++#ifdef CONFIG_X86_64
++typedef struct gate_struct64 gate_desc;
++#else
++typedef struct desc_struct gate_desc;
++#endif
 +
-+static inline void write_ldt_entry(struct desc_struct *dt, int entry,
-+				   const void *desc)
- {
--	PVOP_VCALL4(pv_cpu_ops.write_ldt_entry, dt, entry, low, high);
-+	PVOP_VCALL3(pv_cpu_ops.write_ldt_entry, dt, entry, desc);
- }
- 
- static inline void write_gdt_entry(struct desc_struct *dt, int entry,
+ struct desc_ptr {
+ 	unsigned short size;
+ 	unsigned long address;
 -- 
 1.5.0.6
 
