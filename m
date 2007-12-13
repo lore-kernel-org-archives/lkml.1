@@ -1,106 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761258AbXLMOoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbXLMOvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761258AbXLMOoz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 09:44:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759440AbXLMOoo
+	id S1759371AbXLMOvn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 09:51:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbXLMOve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 09:44:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52901 "EHLO mx1.redhat.com"
+	Thu, 13 Dec 2007 09:51:34 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:61614 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758731AbXLMOom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 09:44:42 -0500
-Date: Thu, 13 Dec 2007 14:44:18 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Milan Broz <mbroz@redhat.com>, stable@kernel.org, dm-crypt@saout.de
-Subject: [2.6.24 PATCH 06/06] dm crypt: use bio_add_page
-Message-ID: <20071213144418.GY24157@agk.fab.redhat.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Milan Broz <mbroz@redhat.com>, stable@kernel.org, dm-crypt@saout.de
+	id S1754159AbXLMOvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 09:51:33 -0500
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
+	settings for task actions [try #2]
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: David Howells <dhowells@redhat.com>
+Cc: casey@schaufler-ca.com, Karl MacMillan <kmacmill@redhat.com>,
+       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <668.1197499783@redhat.com>
+References: <1197488021.1125.138.camel@moss-spartans.epoch.ncsc.mil>
+	 <1197473127.1125.50.camel@moss-spartans.epoch.ncsc.mil>
+	 <81862.27432.qm@web36605.mail.mud.yahoo.com> <32168.1197484170@redhat.com>
+	 <668.1197499783@redhat.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Thu, 13 Dec 2007 09:49:44 -0500
+Message-Id: <1197557384.20226.21.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Milan Broz <mbroz@redhat.com>
+On Wed, 2007-12-12 at 22:49 +0000, David Howells wrote:
+> Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> 
+> > > Have you example code for the security hook you mention?  I'm not sure I
+> > > understand why security_secctx_to_secid() is not sufficient.
+> > 
+> > security_secctx_to_secid() would just validate and map a context string to a
+> > secid.
+> 
+> Validate as in check it's a valid string?  Okay, I see that.
 
-Fix possible max_phys_segments violation in cloned dm-crypt bio.
+Yes.
 
-In write operation dm-crypt needs to allocate new bio request
-and run crypto operation on this clone. Cloned request has always
-the same size, but number of physical segments can be increased
-and violate max_phys_segments restriction.
+> > It wouldn't perform any permission check, as the caller might a
+> > kernel-internal user that is just mapping back and forth like current users
+> > of security_secid_to_secctx, or it might be something that ultimately
+> > originated from userspace but the hook has no way of knowing why or what set
+> > of checks would be appropriate.  You'd need a more specific hook for the
+> > authorization, one that would perform a permission check, e.g. an
+> > avc_has_perm() call.  Which likely requires defining a new class and
+> > permissions for your cachefiles kernel interface.
+> 
+> Hmmm...  This is sounding very not-simple.  I don't know how to do this.  I
+> can probably guess the kernel side by looking at how SECCLASS_KEY is done, but
+> it sounds like it involves changes to the userspace policy processing tools
+> too.
 
-This can lead to data corruption and serious hardware malfunction.
-This was observed when using XFS over dm-crypt and at least
-two HBA controller drivers (arcmsr, cciss) recently.
+Not the tools, just the policy definitions.  Dan can help with that.
+You add the definitions to the policy, then there is a script to
+regenerate the SELinux kernel headers that #define the SECCLASS_ and
+permission values.
 
-Fix it by using bio_add_page() call (which tests for other
-restrictions too) instead of constructing own biovec.
+> It also sounds a bit like overkill, but if it's the right way then I guess it
+> has to be done.
+> 
+> What does the security class represent in this case?  And can it be generalised
+> to apply to non-cachefiles stuff too?
 
-All versions of dm-crypt are affected by this bug.
+It is just a way of carving up the permission space, typically based on
+object type, but it can essentially be arbitrary.  The check in this
+case seems specific to cachefiles since it is controlling an operation
+on the /dev/cachefiles interface that only applies to cachefiles
+internal operations, so making a cachefiles class seems reasonable.
 
-Cc: stable@kernel.org
-Cc:  dm-crypt@saout.de
-Signed-off-by: Milan Broz <mbroz@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
----
- drivers/md/dm-crypt.c |   24 +++++++++++-------------
- 1 files changed, 11 insertions(+), 13 deletions(-)
+If this was instead just a generic "set my acting context to <value>"
+operation, then it could be a generic /proc/self/attr/active interface
+with an generic implementation and permission check, but here we aren't
+setting the active context of the cachefilesd daemon but rather of the
+cachefiles kernel module.
 
-Index: linux-2.6.24-rc5/drivers/md/dm-crypt.c
-===================================================================
---- linux-2.6.24-rc5.orig/drivers/md/dm-crypt.c	2007-12-12 15:43:11.000000000 +0000
-+++ linux-2.6.24-rc5/drivers/md/dm-crypt.c	2007-12-12 15:43:15.000000000 +0000
-@@ -398,7 +398,8 @@ static struct bio *crypt_alloc_buffer(st
- 	struct bio *clone;
- 	unsigned int nr_iovecs = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
- 	gfp_t gfp_mask = GFP_NOIO | __GFP_HIGHMEM;
--	unsigned int i;
-+	unsigned i, len;
-+	struct page *page;
- 
- 	clone = bio_alloc_bioset(GFP_NOIO, nr_iovecs, cc->bs);
- 	if (!clone)
-@@ -407,10 +408,8 @@ static struct bio *crypt_alloc_buffer(st
- 	clone_init(io, clone);
- 
- 	for (i = 0; i < nr_iovecs; i++) {
--		struct bio_vec *bv = bio_iovec_idx(clone, i);
--
--		bv->bv_page = mempool_alloc(cc->page_pool, gfp_mask);
--		if (!bv->bv_page)
-+		page = mempool_alloc(cc->page_pool, gfp_mask);
-+		if (!page)
- 			break;
- 
- 		/*
-@@ -421,15 +420,14 @@ static struct bio *crypt_alloc_buffer(st
- 		if (i == (MIN_BIO_PAGES - 1))
- 			gfp_mask = (gfp_mask | __GFP_NOWARN) & ~__GFP_WAIT;
- 
--		bv->bv_offset = 0;
--		if (size > PAGE_SIZE)
--			bv->bv_len = PAGE_SIZE;
--		else
--			bv->bv_len = size;
-+		len = (size > PAGE_SIZE) ? PAGE_SIZE : size;
-+
-+		if (!bio_add_page(clone, page, len, 0)) {
-+			mempool_free(page, cc->page_pool);
-+			break;
-+		}
- 
--		clone->bi_size += bv->bv_len;
--		clone->bi_vcnt++;
--		size -= bv->bv_len;
-+		size -= len;
- 	}
- 
- 	if (!clone->bi_size) {
+The other approach that I suggested a long time ago is to exempt the
+cachefiles kernel module internal operations from SELinux permission
+checks altogether by setting some task flag when performing those
+operations and checking for that flag either on entry to the security_
+static inlines, similar to the inode private flag, or within SELinux
+itself.  Rationale being that the cachefiles kernel module can already
+do what it wants and the SELinux permission checks are really about
+controlling what userspace can do.  Then we don't have to invent a
+context for the kernel module at all or worry about subtle breakage when
+some permission is missing from its policy.
+
+> > > Or is it that I need something that takes a secctx, converts it to a secid
+> > > and authorises its use all in one go?  If it's this, why can't that be
+> > > rolles into security_task_kernel_act_as()?  That sets up a task_security
+> > > struct which is then switched in and out without consultation of the LSM.
+> > 
+> > I was under the impression that security_task_kernel_act_as() was being used
+> > to switch the current task to an acting context, not to initially set up a
+> > struct for later use.
+> 
+> Definitely the latter.  I guess I wasn't very clear in the patch description.
+> It also sounds like I need to adjust the naming of certain functions.
+> 
+> > If you go with the latter approach, then what is the lifecycle on that
+> > struct?
+> 
+>  (1) You create a new task_security struct
+> 
+>  (2) You fill in the fsuid, fsgid, etc.
+> 
+>  (3) You request that the LSM security pointer in it be set to point to the
+>      context you want (at the moment this is done by attempting a transition
+>      from the daemon's context):
+> 
+> 	ret = security_transition_sid(dtsec->sid, SECINITSID_KERNEL,
+> 				      SECCLASS_PROCESS, &ksid);
+> 
+>      and, in the current code, it returns an error if you're not allowed to do
+>      that.  But instead you'd ask it to set a specific context, and it'd set
+>      that if you're permitted to do that, and give you an error if you're not.
+> 
+>  (4) You then use the task_security at will to override the task->act_as
+>      pointer in whatever task(s) you're operating on behalf of at the moment.
+> 
+>  (5) When you cease operating on the behalf of a task, you revert its act_as
+>      pointer and drop a reference to your task_security struct.
+> 
+>  (6) When the last ref to the task_security struct goes away, the LSM data
+>      attached to it is released, as are its groups and keyrings.
+> 
+> > BTW, it gets a little confusing with your use of task_security for the full
+> > task security state vs our existing use of task_security_struct within
+> > SELinux for the task's LSM security blob.
+> 
+> I know.  I thought about it quite a bit, but the problem is there's so much
+> overloading of various words (eg: security, context), and I wanted to avoid
+> struct cred for various other reasons.
+> 
+> > I suppose ours could be renamed to task_selinux.
+> 
+> Better still, perhaps, would be to prefix things with selinux_ to make it
+> namespace clean.
+
+-- 
+Stephen Smalley
+National Security Agency
+
