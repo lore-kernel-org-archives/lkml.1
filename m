@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760810AbXLMEvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbXLMEvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760810AbXLMEvW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 23:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbXLMErR
+	id S1760895AbXLMEvj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 23:51:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757486AbXLMErS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 23:47:17 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40538 "EHLO mx1.redhat.com"
+	Wed, 12 Dec 2007 23:47:18 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40539 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758848AbXLMErN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 23:47:13 -0500
+	id S1759259AbXLMErO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 23:47:14 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
@@ -17,185 +17,166 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
        rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
        rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 12/19] change write_ldt_entry signature
-Date: Thu, 13 Dec 2007 00:01:45 -0200
-Message-Id: <11975113721808-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 09/19] introduce fill_ldt
+Date: Thu, 13 Dec 2007 00:01:42 -0200
+Message-Id: <11975113583644-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11975113672937-git-send-email-gcosta@redhat.com>
-References: <1196957800568-git-send-email-gcosta@redhat.com> <11975113122984-git-send-email-gcosta@redhat.com> <11975113194101-git-send-email-gcosta@redhat.com> <11975113243875-git-send-email-gcosta@redhat.com> <11975113291722-git-send-email-gcosta@redhat.com> <1197511334416-git-send-email-gcosta@redhat.com> <1197511338810-git-send-email-gcosta@redhat.com> <1197511343355-git-send-email-gcosta@redhat.com> <11975113484194-git-send-email-gcosta@redhat.com> <11975113532186-git-send-email-gcosta@redhat.com> <11975113583644-git-send-email-gcosta@redhat.com> <1197511363887-git-send-email-gcosta@redhat.com> <11975113672937-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11975113532186-git-send-email-gcosta@redhat.com>
+References: <1196957800568-git-send-email-gcosta@redhat.com> <11975113122984-git-send-email-gcosta@redhat.com> <11975113194101-git-send-email-gcosta@redhat.com> <11975113243875-git-send-email-gcosta@redhat.com> <11975113291722-git-send-email-gcosta@redhat.com> <1197511334416-git-send-email-gcosta@redhat.com> <1197511338810-git-send-email-gcosta@redhat.com> <1197511343355-git-send-email-gcosta@redhat.com> <11975113484194-git-send-email-gcosta@redhat.com> <11975113532186-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this patch changes the signature of write_ldt_entry.
+This patch introduces fill_ldt(), which populates a ldt descriptor
+from a user_desc in once, instead of relying in the LDT_entry_a and
+LDT_entry_b macros
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-CC: Zachary Amsden <zach@vmware.com>
-CC: Jeremy Fitzhardinge <Jeremy.Fitzhardinge.citrix.com>
 ---
- arch/x86/kernel/ldt.c         |    3 +--
- arch/x86/kernel/paravirt_32.c |    2 +-
- arch/x86/kernel/vmi_32.c      |   11 ++++++++++-
- arch/x86/xen/enlighten.c      |    4 ++--
- include/asm-x86/desc_32.h     |    9 ++++++++-
- include/asm-x86/desc_64.h     |    7 ++-----
- include/asm-x86/paravirt.h    |   10 ++++++----
- 7 files changed, 30 insertions(+), 16 deletions(-)
+ arch/x86/kernel/ldt.c        |    3 +--
+ arch/x86/kernel/process_64.c |    3 +--
+ arch/x86/kernel/tls.c        |    7 +++----
+ include/asm-x86/desc_32.h    |   15 ---------------
+ include/asm-x86/desc_64.h    |   17 -----------------
+ include/asm-x86/ldt.h        |   19 +++++++++++++++++++
+ 6 files changed, 24 insertions(+), 40 deletions(-)
 
-diff --git a/arch/x86/kernel/ldt.c b/arch/x86/kernel/ldt.c
-index 3e872b4..b8ef462 100644
---- a/arch/x86/kernel/ldt.c
-+++ b/arch/x86/kernel/ldt.c
-@@ -229,8 +229,7 @@ static int write_ldt(void __user *ptr, unsigned long bytecount, int oldmode)
+Index: linux-2.6-x86/arch/x86/kernel/ldt.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/ldt.c
++++ linux-2.6-x86/arch/x86/kernel/ldt.c
+@@ -223,8 +223,7 @@ static int write_ldt(void __user *ptr, u
+ 		}
+ 	}
  
- 	/* Install the new entry ...  */
- install:
--	write_ldt_entry(mm->context.ldt, ldt_info.entry_number,
--			ldt.a, ldt.b);
-+	write_ldt_entry(mm->context.ldt, ldt_info.entry_number, &ldt);
- 	error = 0;
+-	ldt.a = LDT_entry_a(&ldt_info);
+-	ldt.b = LDT_entry_b(&ldt_info);
++	fill_ldt(&ldt, &ldt_info);
+ 	if (oldmode)
+ 		ldt.avl = 0;
  
- out_unlock:
-diff --git a/arch/x86/kernel/paravirt_32.c b/arch/x86/kernel/paravirt_32.c
-index 77602c1..dd063fb 100644
---- a/arch/x86/kernel/paravirt_32.c
-+++ b/arch/x86/kernel/paravirt_32.c
-@@ -379,7 +379,7 @@ struct pv_cpu_ops pv_cpu_ops = {
- 	.store_idt = native_store_idt,
- 	.store_tr = native_store_tr,
- 	.load_tls = native_load_tls,
--	.write_ldt_entry = write_dt_entry,
-+	.write_ldt_entry = native_write_ldt_entry,
- 	.write_gdt_entry = native_write_gdt_entry,
- 	.write_idt_entry = native_write_idt_entry,
- 	.load_sp0 = native_load_sp0,
-diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-index 21edd0d..10c4641 100644
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -64,6 +64,7 @@ static struct {
- 	void (*set_tr)(u32 selector);
- 	void (*write_idt_entry)(struct desc_struct *, int, u32, u32);
- 	void (*write_gdt_entry)(struct desc_struct *, int, u32, u32);
-+	void (*write_ldt_entry)(struct desc_struct *, int, u32, u32);
- 	void (*set_kernel_stack)(u32 selector, u32 sp0);
- 	void (*allocate_page)(u32, u32, u32, u32, u32);
- 	void (*release_page)(u32, u32);
-@@ -229,6 +230,13 @@ static void vmi_write_gdt_entry(struct desc_struct *dt, int entry,
- 	vmi_ops.write_gdt_entry(dt, entry, gdt_entry[0], gdt_entry[2]);
+Index: linux-2.6-x86/arch/x86/kernel/process_64.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/process_64.c
++++ linux-2.6-x86/arch/x86/kernel/process_64.c
+@@ -446,8 +446,7 @@ static inline void set_32bit_tls(struct 
+ 	};
+ 	struct desc_struct *desc = (void *)t->thread.tls_array;
+ 	desc += tls;
+-	desc->a = LDT_entry_a(&ud);
+-	desc->b = LDT_entry_b(&ud);
++	fill_ldt(desc, &ud);
  }
  
-+static void vmi_write_ldt_entry(struct desc_struct *dt, int entry,
-+				const void *desc)
-+{
-+	u32 *ldt_entry = (u32 *)desc;
-+	vmi_ops.write_idt_entry(dt, entry, ldt_entry[0], ldt_entry[2]);
-+}
+ static inline u32 read_32bit_tls(struct task_struct *t, int tls)
+Index: linux-2.6-x86/arch/x86/kernel/tls.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/tls.c
++++ linux-2.6-x86/arch/x86/kernel/tls.c
+@@ -67,10 +67,9 @@ int do_set_thread_area(struct task_struc
+ 	if (LDT_empty(&info)) {
+ 		desc[0] = 0;
+ 		desc[1] = 0;
+-	} else {
+-		desc[0] = LDT_entry_a(&info);
+-		desc[1] = LDT_entry_b(&info);
+-	}
++	} else
++		fill_ldt((struct desc_struct *)desc, &info);
 +
- static void vmi_load_sp0(struct tss_struct *tss,
- 				   struct thread_struct *thread)
- {
-@@ -805,7 +813,8 @@ static inline int __init activate_vmi(void)
- 	para_fill(pv_cpu_ops.store_idt, GetIDT);
- 	para_fill(pv_cpu_ops.store_tr, GetTR);
- 	pv_cpu_ops.load_tls = vmi_load_tls;
--	para_fill(pv_cpu_ops.write_ldt_entry, WriteLDTEntry);
-+	para_wrap(pv_cpu_ops.write_ldt_entry, vmi_write_ldt_entry,
-+		  write_ldt_entry, WriteLDTEntry);
- 	para_wrap(pv_cpu_ops.write_gdt_entry, vmi_write_gdt_entry,
- 		  write_gdt_entry, WriteGDTEntry);
- 	para_wrap(pv_cpu_ops.write_idt_entry, vmi_write_idt_entry,
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index c38240c..c904686 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -357,11 +357,11 @@ static void xen_load_tls(struct thread_struct *t, unsigned int cpu)
- }
+ 	if (t == &current->thread)
+ 		load_TLS(t, cpu);
  
- static void xen_write_ldt_entry(struct desc_struct *dt, int entrynum,
--				u32 low, u32 high)
-+				const void *ptr)
- {
- 	unsigned long lp = (unsigned long)&dt[entrynum];
- 	xmaddr_t mach_lp = virt_to_machine(lp);
--	u64 entry = (u64)high << 32 | low;
-+	u64 entry = *(u64 *)ptr;
+Index: linux-2.6-x86/include/asm-x86/desc_32.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/desc_32.h
++++ linux-2.6-x86/include/asm-x86/desc_32.h
+@@ -163,21 +163,6 @@ static inline void __set_tss_desc(unsign
  
- 	preempt_disable();
+ #define set_tss_desc(cpu,addr) __set_tss_desc(cpu, GDT_ENTRY_TSS, addr)
  
-diff --git a/include/asm-x86/desc_32.h b/include/asm-x86/desc_32.h
-index 41d8214..92a72b0 100644
---- a/include/asm-x86/desc_32.h
-+++ b/include/asm-x86/desc_32.h
-@@ -69,12 +69,19 @@ static inline void pack_gate(gate_desc *gate,
- #define load_TLS(t, cpu) native_load_tls(t, cpu)
- #define set_ldt native_set_ldt
- 
--#define write_ldt_entry(dt, entry, a, b) write_dt_entry(dt, entry, a, b)
-+#define write_ldt_entry(dt, entry, desc) \
-+				native_write_ldt_entry(dt, entry, desc)
- #define write_gdt_entry(dt, entry, desc, type) \
- 				native_write_gdt_entry(dt, entry, desc, type)
- #define write_idt_entry(dt, entry, g) native_write_idt_entry(dt, entry, g)
- #endif
- 
-+static inline void native_write_ldt_entry(struct desc_struct *ldt, int entry,
-+					  const void *desc)
-+{
-+	memcpy(&ldt[entry], desc, sizeof(struct desc_struct));
-+}
-+
- static inline void native_write_idt_entry(gate_desc *idt, int entry,
- 					  const gate_desc *gate)
- {
-diff --git a/include/asm-x86/desc_64.h b/include/asm-x86/desc_64.h
-index e0aa4bc..3cd5f10 100644
---- a/include/asm-x86/desc_64.h
-+++ b/include/asm-x86/desc_64.h
-@@ -34,12 +34,9 @@ extern gate_desc idt_table[];
- extern struct desc_ptr cpu_gdt_descr[];
- 
- static inline void write_ldt_entry(struct desc_struct *ldt,
--				   int entry, u32 entry_low, u32 entry_high)
-+				   int entry, void *ptr)
- {
--	__u32 *lp = (__u32 *)((entry << 3) + (char *)ldt);
+-#define LDT_entry_a(info) \
+-	((((info)->base_addr & 0x0000ffff) << 16) | ((info)->limit & 0x0ffff))
 -
--	lp[0] = entry_low;
--	lp[1] = entry_high;
-+	memcpy(&ldt[entry], ptr, 8);
+-#define LDT_entry_b(info) \
+-	(((info)->base_addr & 0xff000000) | \
+-	(((info)->base_addr & 0x00ff0000) >> 16) | \
+-	((info)->limit & 0xf0000) | \
+-	(((info)->read_exec_only ^ 1) << 9) | \
+-	((info)->contents << 10) | \
+-	(((info)->seg_not_present ^ 1) << 15) | \
+-	((info)->seg_32bit << 22) | \
+-	((info)->limit_in_pages << 23) | \
+-	((info)->useable << 20) | \
+-	0x7000)
+-
+ #define LDT_empty(info) (\
+ 	(info)->base_addr	== 0	&& \
+ 	(info)->limit		== 0	&& \
+Index: linux-2.6-x86/include/asm-x86/desc_64.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/desc_64.h
++++ linux-2.6-x86/include/asm-x86/desc_64.h
+@@ -147,23 +147,6 @@ static inline void set_ldt_desc(unsigned
+ 			     (unsigned long)addr, DESC_LDT, size * 8 - 1);
  }
  
- /* the cpu gdt accessor */
-diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
-index 3f2abf2..4f23f43 100644
---- a/include/asm-x86/paravirt.h
-+++ b/include/asm-x86/paravirt.h
-@@ -96,8 +96,8 @@ struct pv_cpu_ops {
- 	void (*set_ldt)(const void *desc, unsigned entries);
- 	unsigned long (*store_tr)(void);
- 	void (*load_tls)(struct thread_struct *t, unsigned int cpu);
--	void (*write_ldt_entry)(struct desc_struct *,
--				int entrynum, u32 low, u32 high);
-+	void (*write_ldt_entry)(struct desc_struct *ldt, int entrynum,
-+				const void *desc);
- 	void (*write_gdt_entry)(struct desc_struct *,
- 				int entrynum, const void *desc, int size);
- 	void (*write_idt_entry)(gate_desc *,
-@@ -660,9 +660,11 @@ static inline void load_TLS(struct thread_struct *t, unsigned cpu)
- {
- 	PVOP_VCALL2(pv_cpu_ops.load_tls, t, cpu);
- }
--static inline void write_ldt_entry(void *dt, int entry, u32 low, u32 high)
+-#define LDT_entry_a(info) \
+-	((((info)->base_addr & 0x0000ffff) << 16) | ((info)->limit & 0x0ffff))
+-/* Don't allow setting of the lm bit. It is useless anyways because
+-   64bit system calls require __USER_CS. */
+-#define LDT_entry_b(info) \
+-	(((info)->base_addr & 0xff000000) | \
+-	(((info)->base_addr & 0x00ff0000) >> 16) | \
+-	((info)->limit & 0xf0000) | \
+-	(((info)->read_exec_only ^ 1) << 9) | \
+-	((info)->contents << 10) | \
+-	(((info)->seg_not_present ^ 1) << 15) | \
+-	((info)->seg_32bit << 22) | \
+-	((info)->limit_in_pages << 23) | \
+-	((info)->useable << 20) | \
+-	/* ((info)->lm << 21) | */ \
+-	0x7000)
+-
+ #define LDT_empty(info) (\
+ 	(info)->base_addr	== 0	&& \
+ 	(info)->limit		== 0	&& \
+Index: linux-2.6-x86/include/asm-x86/desc.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/desc.h
++++ linux-2.6-x86/include/asm-x86/desc.h
+@@ -1,5 +1,34 @@
++#ifndef _ASM_DESC_H_
++#define _ASM_DESC_H_
 +
-+static inline void write_ldt_entry(struct desc_struct *dt, int entry,
-+				   const void *desc)
- {
--	PVOP_VCALL4(pv_cpu_ops.write_ldt_entry, dt, entry, low, high);
-+	PVOP_VCALL3(pv_cpu_ops.write_ldt_entry, dt, entry, desc);
- }
- 
- static inline void write_gdt_entry(struct desc_struct *dt, int entry,
--- 
-1.5.0.6
-
++#ifndef __ASSEMBLY__
++#include <asm/desc_defs.h>
++#include <asm/ldt.h>
++
++static inline void fill_ldt(struct desc_struct *desc, struct user_desc *info)
++{
++	desc->limit0 = info->limit & 0x0ffff;
++	desc->base0 = info->base_addr & 0x0000ffff;
++
++	desc->base1 = (info->base_addr & 0x00ff0000) >> 16;
++	desc->type = (info->read_exec_only ^ 1) << 1;
++	desc->type |= info->contents << 2;
++	desc->s = 1;
++	desc->dpl = 0x3;
++	desc->p = info->seg_not_present ^ 1;
++	desc->limit = (info->limit & 0xf0000) >> 16;
++	desc->avl = info->useable;
++	desc->d = info->seg_32bit;
++	desc->g = info->limit_in_pages;
++	desc->base2 = (info->base_addr & 0xff000000) >> 24;
++}
++
++#endif
++
+ #ifdef CONFIG_X86_32
+ # include "desc_32.h"
+ #else
+ # include "desc_64.h"
+ #endif
++
++#endif
