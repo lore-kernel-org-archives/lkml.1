@@ -1,138 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765647AbXLMUGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765965AbXLMUHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765647AbXLMUGl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 15:06:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbXLMUG2
+	id S1765965AbXLMUHZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 15:07:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbXLMUHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 15:06:28 -0500
-Received: from rtr.ca ([76.10.145.34]:4219 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750925AbXLMUG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 15:06:26 -0500
-Message-ID: <476190BE.9010405@rtr.ca>
-Date: Thu, 13 Dec 2007 15:06:22 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Mark Lord <lkml@rtr.ca>, Matthew Wilcox <matthew@wil.cx>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-References: <47617C07.3020501@rtr.ca> <47617E72.6080504@rtr.ca> <20071213185326.GQ26334@parisc-linux.org> <4761821F.3050602@rtr.ca> <20071213192633.GD10104@kernel.dk> <4761883A.7050908@rtr.ca> <476188C4.9030802@rtr.ca> <20071213193937.GG10104@kernel.dk> <47618B0B.8020203@rtr.ca> <20071213195350.GH10104@kernel.dk> <20071213200219.GI10104@kernel.dk>
-In-Reply-To: <20071213200219.GI10104@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 13 Dec 2007 15:07:08 -0500
+Received: from [194.117.236.238] ([194.117.236.238]:58686 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751763AbXLMUHG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 15:07:06 -0500
+Date: Fri, 14 Dec 2007 00:47:10 +0200
+From: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+Message-ID: <20071214004710.03f37774@linux360.ro>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, Dec 13 2007, Jens Axboe wrote:
->> On Thu, Dec 13 2007, Mark Lord wrote:
->>> Jens Axboe wrote:
->>>> On Thu, Dec 13 2007, Mark Lord wrote:
->>>>> Mark Lord wrote:
->>>>>> Jens Axboe wrote:
->>>>>>> On Thu, Dec 13 2007, Mark Lord wrote:
->>>>>>>> Matthew Wilcox wrote:
->>>>>>>>> On Thu, Dec 13, 2007 at 01:48:18PM -0500, Mark Lord wrote:
->>>>>>>>>> Problem confirmed.  2.6.23.8 regularly generates segments up to 
->>>>>>>>>> 64KB for libata,
->>>>>>>>>> but 2.6.24 uses only 4KB segments and a *few* 8KB segments.
->>>>>>>>> Just a suspicion ... could this be slab vs slub?  ie check your 
->>>>>>>>> configs
->>>>>>>>> are the same / similar between the two kernels.
->>>>>>>> ..
->>>>>>>>
->>>>>>>> Mmmm.. a good thought, that one.
->>>>>>>> But I just rechecked, and both have CONFIG_SLAB=y
->>>>>>>>
->>>>>>>> My guess is that something got changed around when Jens
->>>>>>>> reworked the block layer for 2.6.24.
->>>>>>>> I'm going to dig around in there now.
->>>>>>> I didn't rework the block layer for 2.6.24 :-). The core block layer
->>>>>>> changes since 2.6.23 are:
->>>>>>>
->>>>>>> - Support for empty barriers. Not a likely candidate.
->>>>>>> - Shared tag queue fixes. Totally unlikely.
->>>>>>> - sg chaining support. Not likely.
->>>>>>> - The bio changes from Neil. Of the bunch, the most likely suspects in
->>>>>>> this area, since it changes some of the code involved with merges and
->>>>>>> blk_rq_map_sg().
->>>>>>> - Lots of simple stuff, again very unlikely.
->>>>>>>
->>>>>>> Anyway, it sounds odd for this to be a block layer problem if you do see
->>>>>>> occasional segments being merged. So it sounds more like the input data
->>>>>>> having changed.
->>>>>>>
->>>>>>> Why not just bisect it?
->>>>>> ..
->>>>>>
->>>>>> Because the early 2.6.24 series failed to boot on this machine
->>>>>> due to bugs in the block layer -- so the code that caused this regression
->>>>>> is probably in the stuff from before the kernels became usable here.
->>>>> ..
->>>>>
->>>>> That sounds more harsh than intended --> the earlier 2.6.24 kernels (up to
->>>>> the first couple of -rc* ones failed here because of incompatibilities
->>>>> between the block/bio changes and libata.
->>>>>
->>>>> That's better, I think! 
->>>> No worries, I didn't pick it up as harsh just as an odd conclusion :-)
->>>>
->>>> If I were you, I'd just start from the first -rc that booted for you. If
->>>> THAT has the bug, then we'll think of something else. If you don't get
->>>> anywhere, I can run some tests tomorrow and see if I can reproduce it
->>>> here.
->>> ..
->>>
->>> I believe that *anyone* can reproduce it, since it's broken long before
->>> the requests ever get to SCSI or libata.  Which also means that *anyone*
->>> who wants to can bisect it, as well.
->>>
->>> I don't do "bisects".
->> It was just a suggestion on how to narrow it down, do as you see fit.
->>
->>> But I will dig a bit more and see if I can find the culprit.
->> Sure, I'll dig around as well.
-> 
-> Just tried something simple. I only see one 12kb segment so far, so not
-> a lot by any stretch. I also DONT see any missed merges signs, so it
-> would appear that the pages in the request are simply not contigious
-> physically.
-> 
-> diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-> index e30b1a4..1e34b6f 100644
-> --- a/block/ll_rw_blk.c
-> +++ b/block/ll_rw_blk.c
-> @@ -1330,6 +1330,8 @@ int blk_rq_map_sg(struct request_queue *q, struct request *rq,
->  				goto new_segment;
->  
->  			sg->length += nbytes;
-> +			if (sg->length > 8192)
-> +				printk("sg_len=%d\n", sg->length);
->  		} else {
->  new_segment:
->  			if (!sg)
-> @@ -1349,6 +1351,8 @@ new_segment:
->  				sg = sg_next(sg);
->  			}
->  
-> +			if (bvprv && (page_address(bvprv->bv_page) + bvprv->bv_len == page_address(bvec->bv_page)))
-> +				printk("missed merge\n");
->  			sg_set_page(sg, bvec->bv_page, nbytes, bvec->bv_offset);
->  			nsegs++;
->  		}
-> 
-..
+Some multiprocessor 64-bit AMD systems don't allow the user to disable
+the C1E C-state. The kernel detects C1E and marks the LAPIC as
+broken, thereby disabling dynticks. This patch adds an option to
+disable C1E when detected. It also allows the user to enable this
+processor feature even if that means disabling dynticks, which is
+useful in case C1E might provide better power savings (e.g.: C-states
+beyond C1 don't work). Tested on a Turion X2 TL-56 laptop. Thanks to
+Mikhail Kshevetskiy and FreeBSD for pointing out the relevant AMD docs.
 
-Yeah, the first part is similar to my own hack.
+Signed-off-by: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
 
-For testing, try "dd if=/dev/sda of=/dev/null bs=4096k".
-That *really* should end up using contiguous pages on most systems.
+---
+ Documentation/kernel-parameters.txt |    6 ++++++
+ arch/x86/Kconfig                    |   16 ++++++++++++++++
+ arch/x86/kernel/setup_64.c          |   27 +++++++++++++++++++++++++--
+ 3 files changed, 47 insertions(+), 2 deletions(-)
 
-I figured out the git thing, and am now building some in-between kernels to try.
-
-Cheers
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 33121d6..0deee7a 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -643,6 +643,12 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	floppy=		[HW]
+ 			See Documentation/floppy.txt.
+ 
++	force_amd_c1e	[KNL,SMP,HW,BUGS=X86-64]
++			Don't disable C1E on AMD systems even if this means
++			disabling nohz. This is _not_ automatically implied by
++			any other parameters, such as "nohz=off".
++			Depends on CONFIG_X86_AMD_C1E_WORKAROUND.
++	
+ 	gamecon.map[2|3]=
+ 			[HW,JOY] Multisystem joystick and NES/SNES/PSX pad
+ 			support via parallel port (up to 5 devices per port)
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 368864d..8b9bb49 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -198,6 +198,22 @@ config SMP
+ 
+ 	  If you don't know what to do here, say N.
+ 
++config X86_AMD_C1E_WORKAROUND
++	bool "Disable C1E on AMD systems to make dynticks work"
++	default y
++	depends on X86_64 && SMP && NO_HZ
++	---help---
++	  On some systems, the C1E C-state is enabled by default and cannot be
++	  disabled from the CMOS setup. Local APICs don't behave as they should
++	  in this case. If you say Y here, C1E will be disabled to allow
++	  dynamic ticks to work. It's safe to enable this option even if
++	  your system doesn't have an AMD CPU (there are no side-effects if
++	  such a CPU isn't detected).
++
++	  You can pass the "force_amd_c1e" boot parameter to the kernel to
++	  disable this workaround without recompiling.
++	  See Documentation/kernel-parameters.txt for more details.
++
+ choice
+ 	prompt "Subarchitecture Type"
+ 	default X86_PC
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index 30d94d1..15556a0 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -583,6 +583,17 @@ static void __init amd_detect_cmp(struct cpuinfo_x86 *c)
+ #endif
+ }
+ 
++#ifdef CONFIG_X86_AMD_C1E_WORKAROUND
++static int __cpuinit disable_amd_c1e = 1;
++
++static int __cpuinit force_amd_c1e(char *str) {
++	disable_amd_c1e = 0;
++	return 1;
++}
++
++__setup("force_amd_c1e", force_amd_c1e);
++#endif /* CONFIG_X86_AMD_C1E_WORKAROUND */
++
+ #define ENABLE_C1E_MASK		0x18000000
+ #define CPUID_PROCESSOR_SIGNATURE	1
+ #define CPUID_XFAM		0x0ff00000
+@@ -597,6 +608,7 @@ static __cpuinit int amd_apic_timer_broken(void)
+ {
+ 	u32 lo, hi;
+ 	u32 eax = cpuid_eax(CPUID_PROCESSOR_SIGNATURE);
++
+ 	switch (eax & CPUID_XFAM) {
+ 	case CPUID_XFAM_K8:
+ 		if ((eax & CPUID_XMOD) < CPUID_XMOD_REV_F)
+@@ -604,8 +616,19 @@ static __cpuinit int amd_apic_timer_broken(void)
+ 	case CPUID_XFAM_10H:
+ 	case CPUID_XFAM_11H:
+ 		rdmsr(MSR_K8_ENABLE_C1E, lo, hi);
+-		if (lo & ENABLE_C1E_MASK)
+-			return 1;
++#ifdef CONFIG_X86_AMD_C1E_WORKAROUND
++		if ((lo & ENABLE_C1E_MASK) && disable_amd_c1e) {
++			printk(KERN_INFO "Disabling AMD C1E on CPU %d\n",
++			       smp_processor_id());
++			/* 
++			 * See AMD's "BIOS and Kernel Developer's Guide for AMD
++			 * NPT Family 0Fh Processors", publication #32559,
++			 * for details.
++			 */
++			wrmsr(MSR_K8_ENABLE_C1E, lo & ~ENABLE_C1E_MASK, hi); 
++		} else 
++#endif /* CONFIG_X86_AMD_C1E_WORKAROUND */
++		if (lo & ENABLE_C1E_MASK) return 1;
+ 		break;
+ 	default:
+ 		/* err on the side of caution */
