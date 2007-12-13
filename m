@@ -1,44 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933064AbXLMVKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933132AbXLMVKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933064AbXLMVKM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 16:10:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764508AbXLMVJy
+	id S933132AbXLMVKo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 16:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932350AbXLMVKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 16:09:54 -0500
-Received: from iriserv.iradimed.com ([72.242.190.170]:52159 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765154AbXLMVJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 16:09:53 -0500
-Message-ID: <47619F9F.1080502@cfl.rr.com>
-Date: Thu, 13 Dec 2007 16:09:51 -0500
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Thu, 13 Dec 2007 16:10:06 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:38585 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932959AbXLMVKB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 16:10:01 -0500
+Date: Fri, 14 Dec 2007 02:39:36 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ted Tso <tytso@us.ibm.com>,
+       dvhltc@us.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       Josh Triplett <josh@freedesktop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC PATCH 0/6] RCU: Preemptible-RCU
+Message-ID: <20071213210936.GB7304@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20071213170348.GA25981@in.ibm.com> <Pine.LNX.4.58.0712131230220.3369@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: Remove all definitions with fastcall
-References: <1197491364.21291.14.camel@brick>  <47605238.9020402@cfl.rr.com> <1197495102.21291.28.camel@brick>
-In-Reply-To: <1197495102.21291.28.camel@brick>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Dec 2007 21:10:29.0794 (UTC) FILETIME=[971CF820:01C83DCC]
-X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1023-15604.001
-X-TM-AS-Result: No--10.487700-5.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0712131230220.3369@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
-> It was a leftover from before regparm(3) became the default on x86-32.
-> 
-> It doesn't have any use now.
-> 
-> Harvey
+Hi Steve, 
 
-You mean the default calling convention is now fastcall instead of cdecl 
-or stdcall?
+On Thu, Dec 13, 2007 at 12:36:47PM -0500, Steven Rostedt wrote:
+> On Thu, 13 Dec 2007, Gautham R Shenoy wrote:
+> 
+> >
+> > Currently it is based against the latest linux-2.6-sched-devel.git
+> >
+> > Awaiting your feedback!
+> 
+> Hi Gautham,
+> 
+> Thanks for posting this. I believe this is the same version of preempt RCU
+> as we have in the RT patch. It seems to be very stable. I ran the RT patch
+> version of the RCU Preempt (just the Preempt RCU patches without RT on
+> latest git) on a 64way box and the results seems just as good (if not
+> slightly better) than classic RCU!  I'll rerun this patch series on that
+> box and post the results.
 
+The version of synchronize_sched() that's implemented in this patchset
+requires these CPU-Hotplug patches -->
+http://lkml.org/lkml/2007/11/15/239.
+
+This is the reason why I rebased it against linux-2.6-sched-devel.git
+since it already has those patches.
+
+> 
+> >From what I'm seening with this, is that it is ready for mainline. These
+> patches should probably go into -mm and be ready for 2.6.25.  If Andrew
+> wants to wait for my results, I'll run them tonight.
+> 
+> Thanks Gautham, Paul and Dipankar for all this great work!
+> 
+
+Anytime! That probably the only way I could teach myself how RCU works!
+
+> -- Steve
+> 
+
+Thanks and Regards
+gautham.
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
