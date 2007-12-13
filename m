@@ -1,102 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932938AbXLMXmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933468AbXLMXn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932938AbXLMXmT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 18:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761208AbXLMXmD
+	id S933468AbXLMXn2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 18:43:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbXLMXnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 18:42:03 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:42800 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759694AbXLMXmA (ORCPT
+	Thu, 13 Dec 2007 18:43:18 -0500
+Received: from nz-out-0506.google.com ([64.233.162.235]:31740 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753299AbXLMXnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 18:42:00 -0500
-Date: Thu, 13 Dec 2007 15:41:34 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ted Tso <tytso@us.ibm.com>,
-       dvhltc@us.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       Josh Triplett <josh@freedesktop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH 0/6] RCU: Preemptible-RCU
-Message-ID: <20071213234134.GH10307@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20071213170348.GA25981@in.ibm.com> <20071213203804.GE25130@elte.hu>
+	Thu, 13 Dec 2007 18:43:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pJv5USv7WBNmscs4NBY40p8okUmUISaopdeh+AKLgLCHev3CRL/LoEGHf3CEU3Mnh4DwZyJB7j1KHEHlQGBRZ+guE3Kso+UPa01UGE7R5tWA+13ckKdr9MtP3wrAp1GSueEp3bzjBK7CMgq7xo2US7d7dVJ2SX3hnsq/78x4VLE=
+Message-ID: <b14f3e280712131543s5467be5cjf3df6049fb6dc645@mail.gmail.com>
+Date: Thu, 13 Dec 2007 21:43:15 -0200
+From: "Mauricio Mauad Menegaz Filho" <mmauad@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: Print taint info in more places.
+Cc: "Dave Jones" <davej@redhat.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <p73y7byfb0h.fsf@bingen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071213203804.GE25130@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20071213224927.GA18639@redhat.com>
+	 <p73y7byfb0h.fsf@bingen.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 09:38:04PM +0100, Ingo Molnar wrote:
-> 
-> * Gautham R Shenoy <ego@in.ibm.com> wrote:
-> 
-> > Hello everyone,
-> > 
-> > This patchset is an updated version of the preemptible RCU patchset 
-> > that Paul McKenney had posted it in September earlier this year that 
-> > can be found here --> http://lkml.org/lkml/2007/9/10/213
-> > 
-> > This patchset incorporates the review comments from Oleg Nesterov and 
-> > Steven Rostedt.
-> > 
-> > The testing report of the patchset is as follows:
-> > ====================================================================
-> > Patch-stack:  	2.6.23-rc3 + cpu-hotplug patches from 
-> > 		http://lkml.org/lkml/2007/11/15/239 + Preempt-RCU
-> > 		patches.
-> > Test:		RCU-Torture running parallelly with CPU-Hotplug
-> > 		operations.
-> > Duration:	24 hours.
-> > Architectures:	x86,x86_64, ppc64.
-> > ====================================================================
-> > 
-> > 
-> > Currently it is based against the latest linux-2.6-sched-devel.git
-> > 
-> > Awaiting your feedback!
-> 
-> thanks Gautham, the patchset from you and Paul looks good to me and i've 
-> applied it to sched-devel.git to get it tested and reviewed some more.
-> 
-> from the Nitpicking Police, there are a couple of minor style 
-> problems/warnings with the code, you can see it via:
-> 
->   scripts/checkpatch.pl --file kernel/rcu*.c
-> 
-> nothing serious - RCU is still one of the cleanest subsystems in the 
-> kernel:
-> 
->                                       errors   lines of code   errors/KLOC
-> kernel/rcuclassic.c                        0             575             0
-> kernel/rcupdate.c                          1             138           7.2
+2007/12/13, Andi Kleen <andi@firstfloor.org>:
+> Dave Jones <davej@redhat.com> writes:
+>
+> >  #define WARN_ON(condition) ({                                                \
+> >       int __ret_warn_on = !!(condition);                              \
+> >       if (unlikely(__ret_warn_on)) {                                  \
+> > -             printk("WARNING: at %s:%d %s()\n", __FILE__,            \
+> > -                     __LINE__, __FUNCTION__);                        \
+> > +             printk(KERN_ERR "WARNING: at %s:%d %s() (%s)\n",        \
+> > +                      __FILE__, __LINE__, __FUNCTION__,              \
+> > +                      print_tainted());                              \
+> >               dump_stack();                                           \
+>
+> Have you checked how this affects code size? It might be worth it
+> now to do a out of line helper.
+>
 
-This one is the exception to checkpatch.pl's rule against "volatile".  ;-)
-
-The volatile declaration is within the ACCESS_ONCE() macro that is used
-within rcu_read_lock() and rcu_read_unlock() to force the compiler to
-maintain ordering with respect to interrupt handler running only on that
-same CPU.
-
-> kernel/rcupreempt.c                        0             953             0
-> kernel/rcupreempt_trace.c                  0             330             0
-> kernel/rcutorture.c                        8             995           8.0
-
-Hmmm...  Definitely some old whitespace issues here...
-
-> the eventual goal would be to match:
-> 
->    scripts/checkpatch.pl --file kernel/sched*.[ch]
-> 
-> output ;-)
-
-We should be able to make some progress in that direction.  ;-)
-
-							Thanx, Paul
+Have you checked how does spotting a bug is worth the extra size
+sometimes (almost all the time)?
