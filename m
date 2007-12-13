@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbXLMHRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764773AbXLMHRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932119AbXLMHRR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:17:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760271AbXLMG6X
+	id S1764773AbXLMHRi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:17:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762615AbXLMG60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:58:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55649 "EHLO
+	Thu, 13 Dec 2007 01:58:26 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55666 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762671AbXLMG6U (ORCPT
+	with ESMTP id S1759655AbXLMG6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:58:20 -0500
-Date: Wed, 12 Dec 2007 22:53:27 -0800
+	Thu, 13 Dec 2007 01:58:24 -0500
+Date: Wed, 12 Dec 2007 22:53:30 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
+To: linux-kernel@vger.kernel.org, stable@kernel.org, bunk@kernel.org,
+       davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Steven Whitehouse <swhiteho@redhat.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 51/60] DECNET: dn_nl_deladdr() almost always returns no
-	error
-Message-ID: <20071213065327.GA6867@kroah.com>
+Subject: [patch 52/60] IPV6: Restore IPv6 when MTU is big enough
+Message-ID: <20071213065330.GB6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="decnet-dn_nl_deladdr-almost-always-returns-no-error.patch"
+Content-Disposition: inline; filename="ipv6-restore-ipv6-when-mtu-is-big-enough.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -43,49 +42,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Pavel Emelyanov <xemul@openvz.org>
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 
-[DECNET]: dn_nl_deladdr() almost always returns no error
+[IPV6]: Restore IPv6 when MTU is big enough
 
-[ Upstream commit: 3ccd86241b277249d5ac08e91eddfade47184520 ]
+[ Upstream commit: d31c7b8fa303eb81311f27b80595b8d2cbeef950 ]
 
-As far as I see from the err variable initialization
-the dn_nl_deladdr() routine was designed to report errors
-like "EADDRNOTAVAIL" and probaby "ENODEV".
+Avaid provided test application, so bug got fixed.
 
-But the code sets this err to 0 after the first nlmsg_parse
-and goes on, returning this 0 in any case.
+IPv6 addrconf removes ipv6 inner device from netdev each time cmu
+changes and new value is less than IPV6_MIN_MTU (1280 bytes).
+When mtu is changed and new value is greater than IPV6_MIN_MTU,
+it does not add ipv6 addresses and inner device bac.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-Acked-by: Steven Whitehouse <swhiteho@redhat.com>
+This patch fixes that.
+
+Tested with Avaid's application, which works ok now.
+
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/decnet/dn_dev.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ net/ipv6/addrconf.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
---- a/net/decnet/dn_dev.c
-+++ b/net/decnet/dn_dev.c
-@@ -650,16 +650,18 @@ static int dn_nl_deladdr(struct sk_buff 
- 	struct dn_dev *dn_db;
- 	struct ifaddrmsg *ifm;
- 	struct dn_ifaddr *ifa, **ifap;
--	int err = -EADDRNOTAVAIL;
-+	int err;
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -2281,6 +2281,9 @@ static int addrconf_notify(struct notifi
+ 				break;
+ 			}
  
- 	err = nlmsg_parse(nlh, sizeof(*ifm), tb, IFA_MAX, dn_ifa_policy);
- 	if (err < 0)
- 		goto errout;
++			if (!idev && dev->mtu >= IPV6_MIN_MTU)
++				idev = ipv6_add_dev(dev);
++
+ 			if (idev)
+ 				idev->if_flags |= IF_READY;
+ 		} else {
+@@ -2345,12 +2348,18 @@ static int addrconf_notify(struct notifi
+ 		break;
  
-+	err = -ENODEV;
- 	ifm = nlmsg_data(nlh);
- 	if ((dn_db = dn_dev_by_index(ifm->ifa_index)) == NULL)
- 		goto errout;
+ 	case NETDEV_CHANGEMTU:
+-		if ( idev && dev->mtu >= IPV6_MIN_MTU) {
++		if (idev && dev->mtu >= IPV6_MIN_MTU) {
+ 			rt6_mtu_change(dev, dev->mtu);
+ 			idev->cnf.mtu6 = dev->mtu;
+ 			break;
+ 		}
  
-+	err = -EADDRNOTAVAIL;
- 	for (ifap = &dn_db->ifa_list; (ifa = *ifap); ifap = &ifa->ifa_next) {
- 		if (tb[IFA_LOCAL] &&
- 		    nla_memcmp(tb[IFA_LOCAL], &ifa->ifa_local, 2))
++		if (!idev && dev->mtu >= IPV6_MIN_MTU) {
++			idev = ipv6_add_dev(dev);
++			if (idev)
++				break;
++		}
++
+ 		/* MTU falled under IPV6_MIN_MTU. Stop IPv6 on this interface. */
+ 
+ 	case NETDEV_DOWN:
 
 -- 
