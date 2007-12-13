@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762473AbXLMG5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762605AbXLMG6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762473AbXLMG5x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:57:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760901AbXLMGzo
+	id S1762605AbXLMG6Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:58:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761104AbXLMGzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:55:44 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55018 "EHLO
+	Thu, 13 Dec 2007 01:55:48 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55036 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760839AbXLMGzm (ORCPT
+	with ESMTP id S1760980AbXLMGzr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:55:42 -0500
-Date: Wed, 12 Dec 2007 22:51:19 -0800
+	Thu, 13 Dec 2007 01:55:47 -0500
+Date: Wed, 12 Dec 2007 22:51:21 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,15 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 06/60] PKT_SCHED: Check subqueue status before calling
-	hard_start_xmit
-Message-ID: <20071213065119.GG6867@kroah.com>
+       Thomas Gleixner <tglx@linutronix.de>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch 07/60] Fix synchronize_irq races with IRQ handler
+Message-ID: <20071213065121.GH6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pkt_sched-check-subqueue-status-before-calling-hard_start_xmit.patch"
+Content-Disposition: inline; filename="fix-synchronize_irq-races-with-irq-handler.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,53 +41,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-[PKT_SCHED]: Check subqueue status before calling hard_start_xmit
+patch a98ce5c6feead6bfedefabd46cb3d7f5be148d9a in mainline.
 
-[ Upstream commit: 5f1a485d5905aa641f33009019b3699076666a4c ]
+Fix synchronize_irq races with IRQ handler
 
-The only qdiscs that check subqueue state before dequeue'ing are PRIO
-and RR.  The other qdiscs, including the default pfifo_fast qdisc,
-will allow traffic bound for subqueue 0 through to hard_start_xmit.
-The check for netif_queue_stopped() is done above in pkt_sched.h, so
-it is unnecessary for qdisc_restart().  However, if the underlying
-driver is multiqueue capable, and only sets queue states on subqueues,
-this will allow packets to enter the driver when it's currently unable
-to process packets, resulting in expensive requeues and driver
-entries.  This patch re-adds the check for the subqueue status before
-calling hard_start_xmit, so we can try and avoid the driver entry when
-the queues are stopped.
+As it is some callers of synchronize_irq rely on memory barriers
+to provide synchronisation against the IRQ handlers.  For example,
+the tg3 driver does
 
-Signed-off-by: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
+tp->irq_sync = 1;
+smp_mb();
+synchronize_irq();
+
+and then in the IRQ handler:
+
+if (!tp->irq_sync)
+	netif_rx_schedule(dev, &tp->napi);
+
+Unfortunately memory barriers only work well when they come in
+pairs.  Because we don't actually have memory barriers on the
+IRQ path, the memory barrier before the synchronize_irq() doesn't
+actually protect us.
+
+In particular, synchronize_irq() may return followed by the
+result of netif_rx_schedule being made visible.
+
+This patch (mostly written by Linus) fixes this by using spin
+locks instead of memory barries on the synchronize_irq() path.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sched/sch_generic.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ kernel/irq/manage.c |   20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
---- a/net/sched/sch_generic.c
-+++ b/net/sched/sch_generic.c
-@@ -135,7 +135,7 @@ static inline int qdisc_restart(struct n
- 	struct Qdisc *q = dev->qdisc;
- 	struct sk_buff *skb;
- 	unsigned lockless;
--	int ret;
-+	int ret = NETDEV_TX_BUSY;
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -29,12 +29,28 @@
+ void synchronize_irq(unsigned int irq)
+ {
+ 	struct irq_desc *desc = irq_desc + irq;
++	unsigned int status;
  
- 	/* Dequeue packet */
- 	if (unlikely((skb = dev_dequeue_skb(dev, q)) == NULL))
-@@ -158,7 +158,8 @@ static inline int qdisc_restart(struct n
- 	/* And release queue */
- 	spin_unlock(&dev->queue_lock);
+ 	if (irq >= NR_IRQS)
+ 		return;
  
--	ret = dev_hard_start_xmit(skb, dev);
-+	if (!netif_subqueue_stopped(dev, skb->queue_mapping))
-+		ret = dev_hard_start_xmit(skb, dev);
+-	while (desc->status & IRQ_INPROGRESS)
+-		cpu_relax();
++	do {
++		unsigned long flags;
++
++		/*
++		 * Wait until we're out of the critical section.  This might
++		 * give the wrong answer due to the lack of memory barriers.
++		 */
++		while (desc->status & IRQ_INPROGRESS)
++			cpu_relax();
++
++		/* Ok, that indicated we're done: double-check carefully. */
++		spin_lock_irqsave(&desc->lock, flags);
++		status = desc->status;
++		spin_unlock_irqrestore(&desc->lock, flags);
++
++		/* Oops, that failed? */
++	} while (status & IRQ_INPROGRESS);
+ }
+ EXPORT_SYMBOL(synchronize_irq);
  
- 	if (!lockless)
- 		netif_tx_unlock(dev);
 
 -- 
