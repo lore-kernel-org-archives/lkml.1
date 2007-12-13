@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763923AbXLMHJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763707AbXLMHKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763923AbXLMHJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:09:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762469AbXLMG5V
+	id S1763707AbXLMHKk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:10:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761053AbXLMG53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:57:21 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55411 "EHLO
+	Thu, 13 Dec 2007 01:57:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55452 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762365AbXLMG5T (ORCPT
+	with ESMTP id S1762524AbXLMG51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:57:19 -0500
-Date: Wed, 12 Dec 2007 22:52:42 -0800
+	Thu, 13 Dec 2007 01:57:27 -0500
+Date: Wed, 12 Dec 2007 22:52:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        torvalds@linux-foundation.org
@@ -21,15 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, rleigh@whinlatter.ukfsn.org,
-       benh@kernel.crashing.org, mb@bu3sch.de, khali@linux-fr.org,
-       adaplas@pol.net
-Subject: [patch 33/60] fb_ddc: fix DDC lines quirk
-Message-ID: <20071213065242.GI6867@kroah.com>
+       alan@lxorguk.ukuu.org.uk, James.Bottomley@steeleye.com,
+       davem@davemloft.net, macro@linux-mips.org
+Subject: [patch 35/60] esp_scsi: fix reset cleanup spinlock recursion
+Message-ID: <20071213065248.GK6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fb_ddc-fix-ddc-lines-quirk.patch"
+Content-Disposition: inline; filename="esp_scsi-fix-reset-cleanup-spinlock-recursion.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,88 +41,110 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Jean Delvare <khali@linux-fr.org>
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
 
-patch b64d70825abbf706bbe80be1b11b09514b71f45e in mainline.
+patch 522939d45c293388e6a360210905f9230298df16 in mainline.
 
-The code in fb_ddc_read() is said to be based on the implementation of the
-radeon driver:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=fc5891c8a3ba284f13994d7bc1f1bfa8283982de
+The esp_reset_cleanup() function is called with the host lock held and
+invokes starget_for_each_device() which wants to take it too.  Here is a
+fix along the lines of shost_for_each_device()/__shost_for_each_device()
+adding a __starget_for_each_device() counterpart which assumes the lock
+has already been taken.
 
-However, comparing the old radeon driver code with the new fb_ddc code
-reveals some differences.  Most notably, the I2C bus lines are held at the
-end of the function, while the original code was releasing them (as the
-comment above correctly says.)
+Eventually, I think the driver should get modified so that more work is
+done as a softirq rather than in the interrupt context, but for now it
+fixes a bug that causes the spinlock debugger to fire.
 
-There are a few other differences, which appear to be responsible for read
-failures on my system.  While tracing low-level I2C code in i2c-algo-bit, I
-noticed that the initial attempt to read the EDID always failed.  It takes
-one retry for the read to succeed.  As we are about to remove this
-automatic retry property from i2c-algo-bit, reading the EDID would really
-fail.
+While at it, it fixes a small number of cosmetic problems with
+starget_for_each_device() too.
 
-As a summary, the I2C lines quirk which is supposedly needed to read EDID
-on some older monitors is currently breaking the (first) read on all other
-monitors (and might not even work with older ones - did anyone try since
-October 2006?)
-
-After applying the patch below, which makes the code in fb_ddc_read()
-really similar to what the radeon driver used to have, the first EDID read
-succeeds again.
-
-On top of that, as it appears that this code has been broken for one year
-now and nobody seems to have complained, I'm curious if it makes sense to
-keep this quirk in place.  It makes the code more complex and slower just
-for the sake of monitors which I guess nobody uses anymore.  Can't we just
-get rid of it?
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Tested-by: Roger Leigh <rleigh@whinlatter.ukfsn.org>
-Tested-by: Michael Buesch <mb@bu3sch.de>
-Cc: "Antonino A. Daplas" <adaplas@pol.net>
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+Acked-by: David S. Miller <davem@davemloft.net>
+Cc: James Bottomley <James.Bottomley@steeleye.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/fb_ddc.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/scsi/esp_scsi.c    |    4 ++--
+ drivers/scsi/scsi.c        |   31 +++++++++++++++++++++++++++++--
+ include/scsi/scsi_device.h |    3 +++
+ 3 files changed, 34 insertions(+), 4 deletions(-)
 
---- a/drivers/video/fb_ddc.c
-+++ b/drivers/video/fb_ddc.c
-@@ -56,13 +56,12 @@ unsigned char *fb_ddc_read(struct i2c_ad
- 	int i, j;
+--- a/drivers/scsi/esp_scsi.c
++++ b/drivers/scsi/esp_scsi.c
+@@ -2026,8 +2026,8 @@ static void esp_reset_cleanup(struct esp
+ 		tp->flags |= ESP_TGT_CHECK_NEGO;
  
- 	algo_data->setscl(algo_data->data, 1);
--	algo_data->setscl(algo_data->data, 0);
- 
- 	for (i = 0; i < 3; i++) {
- 		/* For some old monitors we need the
- 		 * following process to initialize/stop DDC
- 		 */
--		algo_data->setsda(algo_data->data, 0);
-+		algo_data->setsda(algo_data->data, 1);
- 		msleep(13);
- 
- 		algo_data->setscl(algo_data->data, 1);
-@@ -97,14 +96,15 @@ unsigned char *fb_ddc_read(struct i2c_ad
- 		algo_data->setsda(algo_data->data, 1);
- 		msleep(15);
- 		algo_data->setscl(algo_data->data, 0);
-+		algo_data->setsda(algo_data->data, 0);
- 		if (edid)
- 			break;
+ 		if (tp->starget)
+-			starget_for_each_device(tp->starget, NULL,
+-						esp_clear_hold);
++			__starget_for_each_device(tp->starget, NULL,
++						  esp_clear_hold);
  	}
- 	/* Release the DDC lines when done or the Apple Cinema HD display
- 	 * will switch off
- 	 */
--	algo_data->setsda(algo_data->data, 0);
--	algo_data->setscl(algo_data->data, 0);
-+	algo_data->setsda(algo_data->data, 1);
-+	algo_data->setscl(algo_data->data, 1);
- 
- 	return edid;
+ 	esp->flags &= ~ESP_FLAG_RESETTING;
  }
+--- a/drivers/scsi/scsi.c
++++ b/drivers/scsi/scsi.c
+@@ -886,11 +886,11 @@ EXPORT_SYMBOL(__scsi_iterate_devices);
+  * starget_for_each_device  -  helper to walk all devices of a target
+  * @starget:	target whose devices we want to iterate over.
+  *
+- * This traverses over each devices of @shost.  The devices have
++ * This traverses over each device of @starget.  The devices have
+  * a reference that must be released by scsi_host_put when breaking
+  * out of the loop.
+  */
+-void starget_for_each_device(struct scsi_target *starget, void * data,
++void starget_for_each_device(struct scsi_target *starget, void *data,
+ 		     void (*fn)(struct scsi_device *, void *))
+ {
+ 	struct Scsi_Host *shost = dev_to_shost(starget->dev.parent);
+@@ -905,6 +905,33 @@ void starget_for_each_device(struct scsi
+ EXPORT_SYMBOL(starget_for_each_device);
+ 
+ /**
++ * __starget_for_each_device  -  helper to walk all devices of a target
++ *				 (UNLOCKED)
++ * @starget:	target whose devices we want to iterate over.
++ *
++ * This traverses over each device of @starget.  It does _not_
++ * take a reference on the scsi_device, so the whole loop must be
++ * protected by shost->host_lock.
++ *
++ * Note:  The only reason why drivers would want to use this is because
++ * they need to access the device list in irq context.  Otherwise you
++ * really want to use starget_for_each_device instead.
++ **/
++void __starget_for_each_device(struct scsi_target *starget, void *data,
++			       void (*fn)(struct scsi_device *, void *))
++{
++	struct Scsi_Host *shost = dev_to_shost(starget->dev.parent);
++	struct scsi_device *sdev;
++
++	__shost_for_each_device(sdev, shost) {
++		if ((sdev->channel == starget->channel) &&
++		    (sdev->id == starget->id))
++			fn(sdev, data);
++	}
++}
++EXPORT_SYMBOL(__starget_for_each_device);
++
++/**
+  * __scsi_device_lookup_by_target - find a device given the target (UNLOCKED)
+  * @starget:	SCSI target pointer
+  * @lun:	SCSI Logical Unit Number
+--- a/include/scsi/scsi_device.h
++++ b/include/scsi/scsi_device.h
+@@ -222,6 +222,9 @@ extern struct scsi_device *__scsi_device
+ 							  uint);
+ extern void starget_for_each_device(struct scsi_target *, void *,
+ 		     void (*fn)(struct scsi_device *, void *));
++extern void __starget_for_each_device(struct scsi_target *, void *,
++				      void (*fn)(struct scsi_device *,
++						 void *));
+ 
+ /* only exposed to implement shost_for_each_device */
+ extern struct scsi_device *__scsi_iterate_devices(struct Scsi_Host *,
 
 -- 
