@@ -1,42 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934123AbXLMWdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbXLMWeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934123AbXLMWdy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:33:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934206AbXLMWdL
+	id S932158AbXLMWeW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762733AbXLMWdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:33:11 -0500
-Received: from mx2.suse.de ([195.135.220.15]:37558 "EHLO mx2.suse.de"
+	Thu, 13 Dec 2007 17:33:19 -0500
+Received: from rtr.ca ([76.10.145.34]:4890 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934139AbXLMWdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:33:09 -0500
-To: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
-From: Andi Kleen <andi@firstfloor.org>
-References: <20071214004442.5f9eba88@linux360.ro>
-Date: Thu, 13 Dec 2007 23:33:07 +0100
-In-Reply-To: <20071214004442.5f9eba88@linux360.ro> (Eduard-Gabriel Munteanu's message of "Fri\, 14 Dec 2007 00\:44\:42 +0200")
-Message-ID: <p737ijigr8c.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	id S934217AbXLMWdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 17:33:16 -0500
+Message-ID: <4761B32A.3070201@rtr.ca>
+Date: Thu, 13 Dec 2007 17:33:14 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       jens.axboe@oracle.com, lkml@rtr.ca, matthew@wil.cx,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-mm@kvack.org, mel@csn.ul.ie
+Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+References: <20071213185326.GQ26334@parisc-linux.org>	<4761821F.3050602@rtr.ca>	<20071213192633.GD10104@kernel.dk>	<4761883A.7050908@rtr.ca>	<476188C4.9030802@rtr.ca>	<20071213193937.GG10104@kernel.dk>	<47618B0B.8020203@rtr.ca>	<20071213195350.GH10104@kernel.dk>	<20071213200219.GI10104@kernel.dk>	<476190BE.9010405@rtr.ca>	<20071213200958.GK10104@kernel.dk>	<20071213140207.111f94e2.akpm@linux-foundation.org>	<1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org>
+In-Reply-To: <20071213142935.47ff19d9.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro> writes:
->  
-> +	force_amd_c1e	[KNL,SMP,HW,BUGS=X86-64]
-> +			Don't disable C1E on AMD systems even if this means
+Andrew Morton wrote:
+> On Thu, 13 Dec 2007 17:15:06 -0500
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+>> On Thu, 2007-12-13 at 14:02 -0800, Andrew Morton wrote:
+>>> On Thu, 13 Dec 2007 21:09:59 +0100
+>>> Jens Axboe <jens.axboe@oracle.com> wrote:
+>>>
+>>>> OK, it's a vm issue,
+>>> cc linux-mm and probable culprit.
+>>>
+>>>>  I have tens of thousand "backward" pages after a
+>>>> boot - IOW, bvec->bv_page is the page before bvprv->bv_page, not
+>>>> reverse. So it looks like that bug got reintroduced.
+>>> Bill Irwin fixed this a couple of years back: changed the page allocator so
+>>> that it mostly hands out pages in ascending physical-address order.
+>>>
+>>> I guess we broke that, quite possibly in Mel's page allocator rework.
+>>>
+>>> It would help if you could provide us with a simple recipe for
+>>> demonstrating this problem, please.
+>> The simple way seems to be to malloc a large area, touch every page and
+>> then look at the physical pages assigned ... they now mostly seem to be
+>> descending in physical address.
+>>
+> 
+> OIC.  -mm's /proc/pid/pagemap can be used to get the pfn's...
+..
 
-The description/option is not correct. The mainline kernel never disables C1e.
-Some distribution kernels and Xen do, perhaps you're confusing this 
-with them.
+I'm actually running the treadmill right now (have been for many hours, actually,
+to bisect it to a specific commit.
 
-You would rather need a "force_disable_c1e" option if anything.
+Thought I was almost done, and then noticed that git-bisect doesn't keep
+the Makefile VERSION lines the same, so I was actually running the wrong
+kernel after the first few times.. duh.
 
-Anyways this should be near all obsolete with forced HPET. With HPET
-dynticks can be used even with C1e. So in most cases you can just
-use hpet=force instead and get dynticks and C1e together.
+Wrote a script to fix it now.
 
--Andi
+-ml
