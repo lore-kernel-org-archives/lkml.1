@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbXLMOko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759535AbXLMOl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbXLMOko (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 09:40:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757726AbXLMOkd
+	id S1759535AbXLMOl7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 09:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXLMOlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 09:40:33 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40208 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753918AbXLMOka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 09:40:30 -0500
-Date: Thu, 13 Dec 2007 09:40:09 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NLM: Add lockd reference counting and clean up lockd
- startup and shutdown
-Message-ID: <20071213094009.7a7e1923@tleilax.poochiereds.net>
-In-Reply-To: <20071208140747.GA11675@infradead.org>
-References: <1197118932-4512-1-git-send-email-jlayton@redhat.com>
-	<20071208140747.GA11675@infradead.org>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Dec 2007 09:41:50 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:39646 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754725AbXLMOlt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 09:41:49 -0500
+Date: Thu, 13 Dec 2007 20:11:06 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Vincent Fortier <vincent.fortier1@EC.GC.CA>
+Cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, kay.sievers@vrfy.org,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
+Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
+Message-ID: <20071213144106.GA5676@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <F1D642E5A91BC94D9504EC83AE19E6B0015201F1@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071211210653.GA6902@elte.hu> <20071212070816.GA31455@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201F6@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071212134158.GA5547@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B00152021F@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071213114336.GA5400@linux.vnet.ibm.com> <20071213125509.GA28340@elte.hu> <20071213130231.GB16905@linux.vnet.ibm.com> <1197552266.4936.2.camel@kayak.wul.qc.ec.gc.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1197552266.4936.2.camel@kayak.wul.qc.ec.gc.ca>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Dec 2007 14:07:47 +0000
-Christoph Hellwig <hch@infradead.org> wrote:
-
-> > +	mutex_lock(&nlmsvc_mutex);
-> > +	while (atomic_read(&nlmsvc_ref) != 0) {
+On Thu, Dec 13, 2007 at 01:24:26PM +0000, Vincent Fortier wrote:
+> On Thu, 2007-12-13 at 18:32 +0530, Dhaval Giani wrote:
+> > On Thu, Dec 13, 2007 at 01:55:09PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > Could you please see if the following patch removes the oops due to 
+> > > > CFS sysfs files? (There might still be the other oops due to the 
+> > > > floppy sysfs files)
+> > > > 
+> > > > Ingo, could you please add this patch in your CFS backport to 2.6.22 
+> > > > and older kernels?
+> > > 
+> > > sure - i've updated the backport patches with this fix.
+> > > 
+> > 
+> > Thanks!
 > 
-> might be better to do the refcounting outside the thread and use the
-> kthread api, which is something we still need to do for lockd anyway.
-> 
+> CFS v24 now does not apply correctly on a 2.6.22.15-rc1 here:
 
-I took a swipe at doing this, and have a set of patches that make lockd
-use kthreads. It works well, but there's a problem once I add in the
-reference counting.
-
-In the situation that prompted this whole thing, the last nlmsvc_ref
-gets put by lockd itself. A kthread can't call kthread_stop on itself
-since it will deadlock.
-
-Is there a way to gracefully allow a kthread to shut itself down?
-Alternately, I suppose I could schedule_work() the kthread_stop, though
-that seems sort of ugly...
-
+Could you try on 2.6.22.13/14, while we wait for Ingo ;).
 -- 
-Jeff Layton <jlayton@redhat.com>
+regards,
+Dhaval
