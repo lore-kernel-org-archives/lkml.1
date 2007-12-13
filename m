@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbXLMSqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763054AbXLMSqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760008AbXLMSqH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 13:46:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764019AbXLMSpX
+	id S1763054AbXLMSqq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 13:46:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764211AbXLMSqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 13:45:23 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33418 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764003AbXLMSpV (ORCPT
+	Thu, 13 Dec 2007 13:46:09 -0500
+Received: from hancock.steeleye.com ([71.30.118.248]:49766 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763351AbXLMSqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 13:45:21 -0500
-Date: Thu, 13 Dec 2007 19:45:24 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Ungerer <gerg@uclinux.org>
-Subject: [2.6 patch] m68knommu: remove duplicate exports
-Message-ID: <20071213184524.GE21616@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 13 Dec 2007 13:46:06 -0500
+Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Mark Lord <lkml@rtr.ca>, Jens Axboe <axboe@kernel.dk>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <20071213184221.GP26334@parisc-linux.org>
+References: <47617B92.6020908@rtr.ca> <47617C07.3020501@rtr.ca>
+	 <20071213184221.GP26334@parisc-linux.org>
+Content-Type: text/plain
+Date: Thu, 13 Dec 2007 13:46:03 -0500
+Message-Id: <1197571563.3154.41.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One EXPORT_SYMBOL should be enough for everyone.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Acked-by: Greg Ungerer <gerg@uclinux.org>
+On Thu, 2007-12-13 at 11:42 -0700, Matthew Wilcox wrote:
+> On Thu, Dec 13, 2007 at 01:37:59PM -0500, Mark Lord wrote:
+> > The problem is, the block layer *never* sends an SG entry larger than 8192 
+> > bytes,
+> > and even that size is exceptionally rare.  Nearly all I/O segments are 4096 
+> > bytes,
+> > so I never see a single I/O larger than 512KB (128 * 4096).
+> > 
+> > If I patch various parts of block and SCSI, this limit doesn't budge,
+> > but when I change the hardware PRD limit in libata, it scales by exactly
+> > whatever I set the new value to.  This tells me that adjacent I/O segments
+> > are not being combined.
+> > 
+> > I thought that QUEUE_FLAG_CLUSTER (aka. SCSI host .use_clustering=1) should
+> > result in adjacent single pages being combined into larger physical 
+> > segments?
+> 
+> I was recently debugging a driver and noticed that consecutive pages in
+> an sg list are in the reverse order.  ie first you get page 918, then
+> 917, 916, 915, 914, etc.  I vaguely remember James having patches to
+> correct this, but maybe they weren't merged?
 
----
+Yes, they were ... it was actually Bill Irwin's patch.  The old problem
+was that we fault allocations in reverse order (because we were taking
+from the end of the zone list).  I can't remember when his patches went
+in, but it was several years ago.  After they did, I was getting a 33%
+chance of physical merging (as opposed to zero before).  Probably
+someone redid the vm or the zones without understanding this and we've
+gone back to the original position.
 
-This patch has been sent on:
-- 29 Oct 2007
+James
 
- arch/m68knommu/kernel/m68k_ksyms.c |   11 -----------
- 1 file changed, 11 deletions(-)
-
-db7c0d48feac0857d0bc2e79147b63d5f9675077 
-diff --git a/arch/m68knommu/kernel/m68k_ksyms.c b/arch/m68knommu/kernel/m68k_ksyms.c
-index f795062..53fad14 100644
---- a/arch/m68knommu/kernel/m68k_ksyms.c
-+++ b/arch/m68knommu/kernel/m68k_ksyms.c
-@@ -24,14 +24,6 @@ extern int dump_fpu(struct pt_regs *, elf_fpregset_t *);
- EXPORT_SYMBOL(__ioremap);
- EXPORT_SYMBOL(iounmap);
- EXPORT_SYMBOL(dump_fpu);
--EXPORT_SYMBOL(strnlen);
--EXPORT_SYMBOL(strrchr);
--EXPORT_SYMBOL(strstr);
--EXPORT_SYMBOL(strchr);
--EXPORT_SYMBOL(strcat);
--EXPORT_SYMBOL(strlen);
--EXPORT_SYMBOL(strcmp);
--EXPORT_SYMBOL(strncmp);
- 
- EXPORT_SYMBOL(ip_fast_csum);
- 
-@@ -46,9 +38,6 @@ EXPORT_SYMBOL(csum_partial_copy_nocheck);
-    it's OK to leave it out of version control.  */
- EXPORT_SYMBOL(memcpy);
- EXPORT_SYMBOL(memset);
--EXPORT_SYMBOL(memcmp);
--EXPORT_SYMBOL(memscan);
--EXPORT_SYMBOL(memmove);
- 
- EXPORT_SYMBOL(__down_failed);
- EXPORT_SYMBOL(__down_failed_interruptible);
 
