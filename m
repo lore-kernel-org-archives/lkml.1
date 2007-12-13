@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbXLMVAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbXLMVBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932819AbXLMVAR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 16:00:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763623AbXLMU74
+	id S932696AbXLMVBW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 16:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759911AbXLMVBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 15:59:56 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:2958 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763384AbXLMU7y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 15:59:54 -0500
-In-Reply-To: <469958e00712131122s661dd970ud359389e1c6637d4@mail.gmail.com>
-To: "Caitlin Bestler" <caitlin.bestler@neterion.com>
-Cc: "Arnd Bergmann" <arnd@arndb.de>, caitlin.bestler@gmail.com,
-       OF-General <general@lists.openfabrics.org>,
-       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       "Or Gerlitz" <ogerlitz@voltaire.com>,
-       "Roland Dreier" <rdreier@cisco.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-MIME-Version: 1.0
-Subject: Re: [ofa-general] Re: [ewg] Re: [PATCH] IB/ehca: Serialize HCA-related
- hCalls on POWER5
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OFD5B7D5E6.3538DC2A-ONC12573B0.0072D42A-C12573B0.00735730@de.ibm.com>
-Date: Thu, 13 Dec 2007 21:59:50 +0100
-X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
- 13/12/2007 21:59:51,
-	Serialize complete at 13/12/2007 21:59:51
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 13 Dec 2007 16:01:12 -0500
+Received: from mga09.intel.com ([134.134.136.24]:24236 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755492AbXLMVBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 16:01:10 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,163,1196668800"; 
+   d="scan'208";a="237353070"
+Date: Thu, 13 Dec 2007 12:54:17 -0800
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Asit Mallick <asit.k.mallick@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: What was the problem with quicklists and x86-64?
+Message-ID: <20071213205416.GA15807@linux-os.sc.intel.com>
+References: <47603321.4030700@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47603321.4030700@goop.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-caitlin.bestler@gmail.com wrote on 13.12.2007 20:22:49:
+On Wed, Dec 12, 2007 at 11:14:41AM -0800, Jeremy Fitzhardinge wrote:
+> I'm looking at unifying the various pgalloc+pgd_lists mechanisms between
+> 32-bit (PAE and non-PAE) and 64-bit, so I'm trying to understand why
+> these differences exist in the first place.
+> 
+> Change da8f153e51290e7438ba7da66234a864e5d3e1c1 reverted the use of
+> quicklists for allocating pagetables, because of concerns about ordering
+> with respect to tlb flushes.
 
-> On Dec 13, 2007 12:30 AM, Or Gerlitz <ogerlitz@voltaire.com> wrote:
-> > The current implementation of the open iscsi initiator makes sure to
-> > issue commands in thread (sleepable) context, see iscsi_xmitworker and
-> > references to it in drivers/scsi/libiscsi.c , so this keeps ehca users
-> > safe for the time being.
+Main thing to note is, while unmapping linear address space, we should not
+free underlying pages, page table pages (for all hierarchies), till we flush
+the active TLB caches in all the CPUs.
 
-> I agree, *some* form of FMR support is important for iSER (and probably
-> for NFS over RDMA as well). Rather than adding a crippled NO FMR
-> mode it would make more sense to add support for FMR Work Requests.
-> I'm not certain what, if any, impact that would have on the Power5 
-problem,
-> but that's certainly a cleaner path for iWARP.
+Violation of this can potentially cause SW failures and hard to debug issues
+like
+http://www.ussg.iu.edu/hypermail/linux/kernel/0205.2/1254.html
 
-Well, FMR WRs wouldn't change the eHCA issue -- the driver would have to 
-make an hCall in any case, and the architecture says that the hCalls used 
-in this scenario might return H_LONG_BUSY, causing the driver to sleep. No 
-way around that. Because of this, eHCA's FMRs are actually standard MRs 
-with a different API.
+For more info, you can refer 
+http://developer.intel.com/design/processor/applnots/317080.pdf
 
-If, as Or said, the iSCSI initiator issues commands in sleepable context 
-anyway, nothing would be lost by using standard MRs as a fallback solution 
-if FMRs aren't available, would it?
+> Some questions about this:
+> 
+>    1. What's the difference between quicklists and normal page
+>       allocation with respect to tlb flushing?
 
-J.
+Linus and Christoph went in detail about this.
 
+http://kerneltrap.org/mailarchive/linux-kernel/2007/9/21/271638
+
+There were some preemption and other concerns that Linus mentioned,
+and was referring to of integrating quicklists and mmu_gather operations
+and not keep them separate.
+
+>    2. Why doesn't this also affect i386's use of quicklists?
+>    3. Is there some way to resolve this tlb interaction so that
+>       quicklists can be used?
+>    4. Failing that, what's the cost of reverting i386's use of
+>       quicklists too?
+
+I have to look at i386 code but I don't think it was using quicklists
+as extensively as the previous x86_64 code does. Will take a look at it.
+
+thanks,
+suresh
