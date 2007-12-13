@@ -1,98 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbXLMOxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbXLMO4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761335AbXLMOxD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 09:53:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756395AbXLMOww
+	id S1761287AbXLMO4t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 09:56:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755128AbXLMO4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 09:52:52 -0500
-Received: from saeurebad.de ([85.214.36.134]:54687 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756240AbXLMOwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 09:52:51 -0500
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: Andre Haupt <andre@bitwigglers.org>
-Cc: kernel-janitors@vger.kernel.org, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH][KJ] 8250: remove unnecessary variable tmout from  wait_for_xmitr()
-References: <11975548843528-git-send-email-andre@bitwigglers.org>
-Date: Thu, 13 Dec 2007 15:51:54 +0100
-In-Reply-To: <11975548843528-git-send-email-andre@bitwigglers.org> (Andre
-	Haupt's message of "Thu, 13 Dec 2007 15:08:04 +0100")
-Message-ID: <x7hcim4ph1.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
+	Thu, 13 Dec 2007 09:56:42 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:45786 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755049AbXLMO4k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 09:56:40 -0500
+Message-ID: <47614815.8070007@linux.vnet.ibm.com>
+Date: Thu, 13 Dec 2007 20:26:21 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc5-mm1 regression - kernel warning on tcp_fastretrans_alert()
+References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
+In-Reply-To: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Andrew,
 
-Andre Haupt <andre@bitwigglers.org> writes:
+Following call trace is seen in 2.6.24-rc5-mm1 kernel also,it was reported
+for 2.6.24-rc4-mm1 kernel http://lkml.org/lkml/2007/12/6/22
 
-> This fixes a sparse warning about symbol tmout shadowing an earlier one.
->
-> Signed-off-by: Andre Haupt <andre@bitwigglers.org>
-> ---
->  drivers/serial/8250.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
+ls21b kernel: [ 7530.313408] WARNING: at net/ipv4/tcp_input.c:2533 tcp_fastretrans_alert()
+ls21b kernel: [ 7530.354051] Pid: 0, comm: swapper Not tainted 2.6.24-rc5-mm1 #1
+ls21b kernel: [ 7530.389487]
+ls21b kernel: [ 7530.389488] Call Trace:
+ls21b kernel: [ 7530.413030]  <IRQ>  [<ffffffff80482374>] tcp_fastretrans_alert+0x127/0xdaf
+ls21b kernel: [ 7530.454295]  [<ffffffff804850cd>] tcp_ack+0xf2f/0x10fe
+ls21b kernel: [ 7530.485066]  [<ffffffff80488503>] tcp_rcv_established+0x695/0x79a
+ls21b kernel: [ 7530.521542]  [<ffffffff8025c46a>] trace_hardirqs_off+0x39/0xdc
+ls21b kernel: [ 7530.556468]  [<ffffffff8048eb70>] tcp_v4_do_rcv+0x37/0x3e1
+ls21b kernel: [ 7530.589317]  [<ffffffff80491764>] tcp_v4_rcv+0xac7/0xb93
+ls21b kernel: [ 7530.621126]  [<ffffffff80472c40>] ip_local_deliver_finish+0x54/0x20f
+ls21b kernel: [ 7530.659168]  [<ffffffff80472d20>] ip_local_deliver_finish+0x134/0x20f
+ls21b kernel: [ 7530.697724]  [<ffffffff804732cc>] ip_local_deliver+0x72/0x7a
+ls21b kernel: [ 7530.731609]  [<ffffffff80472b7c>] ip_rcv_finish+0x3c0/0x430
+ls21b kernel: [ 7530.764977]  [<ffffffff8044d9a6>] netif_receive_skb+0x10e/0x44d
+ls21b kernel: [ 7530.800422]  [<ffffffff80473223>] ip_rcv+0x326/0x35d
+ls21b kernel: [ 7530.830148]  [<ffffffff8044dc77>] netif_receive_skb+0x3df/0x44d
+ls21b kernel: [ 7530.865603]  [<ffffffff8814d44a>] :bnx2:bnx2_poll+0x1262/0x14a4
+ls21b kernel: [ 7530.901039]  [<ffffffff8034817d>] __next_cpu+0x19/0x28
+ls21b kernel: [ 7530.931805]  [<ffffffff802323a1>] find_busiest_group+0x252/0x6da
+ls21b kernel: [ 7530.967768]  [<ffffffff8025c46a>] trace_hardirqs_off+0x39/0xdc
+ls21b kernel: [ 7531.002693]  [<ffffffff8025c46a>] trace_hardirqs_off+0x39/0xdc
+ls21b kernel: [ 7531.037612]  [<ffffffff8025c21f>] check_chain_key+0x9c/0x15f
+ls21b kernel: [ 7531.071501]  [<ffffffff8026012b>] __lock_acquire+0xdee/0xf06
+ls21b kernel: [ 7531.105386]  [<ffffffff80450476>] net_rx_action+0x75/0x234
+ls21b kernel: [ 7531.138233]  [<ffffffff80450476>] net_rx_action+0x75/0x234
+ls21b kernel: [ 7531.171074]  [<ffffffff804504ed>] net_rx_action+0xec/0x234
+ls21b kernel: [ 7531.203920]  [<ffffffff80243f02>] __do_softirq+0x5f/0xe3
+ls21b kernel: [ 7531.235721]  [<ffffffff8020d5cc>] call_softirq+0x1c/0x28
+ls21b kernel: [ 7531.267528]  [<ffffffff8020ecdf>] do_softirq+0x45/0x108
+ls21b kernel: [ 7531.298811]  [<ffffffff80243ea1>] irq_exit+0x4e/0x50
+ls21b kernel: [ 7531.328540]  [<ffffffff8020ef3d>] do_IRQ+0x171/0x194
+ls21b kernel: [ 7531.358267]  [<ffffffff8020c8c6>] ret_from_intr+0x0/0xf
+ls21b kernel: [ 7531.389549]  <EOI>  [<ffffffff8020b1ec>] default_idle+0x58/0x8a
+ls21b kernel: [ 7531.425096]  [<ffffffff8020b1ea>] default_idle+0x56/0x8a
+ls21b kernel: [ 7531.456900]  [<ffffffff8020b194>] default_idle+0x0/0x8a
+ls21b kernel: [ 7531.488186]  [<ffffffff8020b2d3>] cpu_idle+0xb5/0xec
+ls21b kernel: [ 7531.517913]  [<ffffffff802226f4>] start_secondary+0x3ca/0x3da
 
-The whole timeout loops look somewhat odd.  How about the following,
-totally untested, solution?
 
-This converts the function to use more common timeout-loop constructs,
-gets rid of the shadowed variable and localises another variable even
-more! Hooray!
-
-	Hannes
-
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
-
- drivers/serial/8250.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index f94109c..7215f6a 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1712,30 +1712,30 @@ static void serial8250_break_ctl(struct uart_port *port, int break_state)
-  */
- static inline void wait_for_xmitr(struct uart_8250_port *up, int bits)
- {
--	unsigned int status, tmout = 10000;
-+	unsigned int tmout;
- 
- 	/* Wait up to 10ms for the character(s) to be sent. */
-+	tmout = jiffies + jiffies_to_msecs(10);
- 	do {
--		status = serial_in(up, UART_LSR);
-+		unsigned int status = serial_in(up, UART_LSR);
- 
--		up->lsr_saved_flags |= status & LSR_SAVE_FLAGS;
--
--		if (--tmout == 0)
-+		up->lsr_saved_flags |= (status & LSR_SAVE_FLAGS);
-+		if ((status & bits) == bits)
- 			break;
- 		udelay(1);
--	} while ((status & bits) != bits);
-+	} while (time_after_eq(tmout, jiffies));
- 
- 	/* Wait up to 1s for flow control if necessary */
- 	if (up->port.flags & UPF_CONS_FLOW) {
--		unsigned int tmout;
--		for (tmout = 1000000; tmout; tmout--) {
-+		tmout = jiffies + jiffies_to_msecs(1000);
-+		do {
- 			unsigned int msr = serial_in(up, UART_MSR);
- 			up->msr_saved_flags |= msr & MSR_SAVE_FLAGS;
- 			if (msr & UART_MSR_CTS)
- 				break;
- 			udelay(1);
- 			touch_nmi_watchdog();
--		}
-+		} while (time_after_eq(tmout, jiffies));
- 	}
- }
- 
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
