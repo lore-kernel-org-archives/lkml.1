@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763283AbXLMUQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764046AbXLMUSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763283AbXLMUQU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 15:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbXLMUQF
+	id S1764046AbXLMUSZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 15:18:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbXLMUSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 15:16:05 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:57378 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755331AbXLMUQE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 15:16:04 -0500
-Date: Thu, 13 Dec 2007 21:16:01 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Could not set non-blocking flag with 2.6.24-rc5
-Message-ID: <20071213201601.GA5831@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Thu, 13 Dec 2007 15:18:14 -0500
+Received: from rtr.ca ([76.10.145.34]:3171 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755826AbXLMUSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 15:18:13 -0500
+Message-ID: <47619383.3050508@rtr.ca>
+Date: Thu, 13 Dec 2007 15:18:11 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Mark Lord <lkml@rtr.ca>, Matthew Wilcox <matthew@wil.cx>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+References: <20071213185326.GQ26334@parisc-linux.org> <4761821F.3050602@rtr.ca> <20071213192633.GD10104@kernel.dk> <4761883A.7050908@rtr.ca> <476188C4.9030802@rtr.ca> <20071213193937.GG10104@kernel.dk> <47618B0B.8020203@rtr.ca> <20071213195350.GH10104@kernel.dk> <20071213200219.GI10104@kernel.dk> <476190BE.9010405@rtr.ca> <20071213200958.GK10104@kernel.dk> <476192BF.5050308@rtr.ca>
+In-Reply-To: <476192BF.5050308@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+Mark Lord wrote:
+> Jens Axboe wrote:
+..
+>> OK, it's a vm issue, I have tens of thousand "backward" pages after a
+>> boot - IOW, bvec->bv_page is the page before bvprv->bv_page, not
+>> reverse. So it looks like that bug got reintroduced.
+> ...
+> 
+> Mmm.. shouldn't one of the front- or back- merge logics work for either order?
+..
 
-I often build Debian packages inside a chroot. Today I discovered a
-failure during an "aptitude update", which is a command to download new
-package lists for the package management. In strace, the lines around
-the failure look like this:
-
-99% [Working])         = 14 14
-[pid  5986] select(6, [3 4 5], [], NULL, {0, 500000}) = 0 (Timeout)
-[pid  5986] gettimeofday({1197576353, 670510}, NULL) = 0
-[pid  5986] rt_sigprocmask(SIG_BLOCK, [WINCH], [], 8) = 0
-[pid  5986] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
-99% [Working])         = 14 14
-[pid  5986] select(6, [3 4 5], [], NULL, {0, 500000}) = 0 (Timeout)
-[pid  5986] gettimeofday({1197576354, 173902}, NULL) = 0
-[pid  5986] rt_sigprocmask(SIG_BLOCK, [WINCH], [], 8) = 0
-[pid  5986] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
-99% [Working])         = 14 14
-[pid  5986] select(6, [3 4 5], [], NULL, {0, 500000} <unfinished ...>
-[pid  5988] <... select resumed> )      = 1 (in [3], left {105, 0})
-[pid  5988] read(3, "", 56559)          = 0
-[pid  5988] fcntl64(-1, F_GETFL)        = -1 EBADF (Bad file
-descriptor)
-[pid  5988] fcntl64(-1, F_SETFL,
-O_ACCMODE|O_CREAT|O_EXCL|O_NOCTTY|O_TRUNC|O_APPEND|O_SYNC|O_ASYNC|O_DIRECT|O_LARGEFILE|O_DIRECTORY|O_NOFOLLOW|O_NOATIME|0xfff8003c)
-= -1 EBADF (Bad file descriptor)
-[pid  5988] write(2, ""..., 41FATAL -> Could not set non-blocking flag
-)         = 41
-[pid  5988] write(2, ""..., 19Bad file descriptor)         = 19
-[pid  5988] write(2, ""..., 1
-)          = 1
-[pid  5988] exit_group(100)             = ?
-Process 5988 detached
-
-This happened with a kernel after 2.6.24-rc5
-(4af75653031c6d454b4ace47c1536f0d2e727e3e). I rebooted into 2.6.23.8
-and it worked. Now I rebooted into 2.6.24-rc5 again and was able to
-reproduce the failure, so it looks like a kernel issue to me.
-
-Regards,
-Tino
+Belay that thought.  I'm slowly remembering how this is supposed to work now.  :)
