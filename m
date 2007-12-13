@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934195AbXLMWzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934435AbXLMW6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934195AbXLMWzj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758499AbXLMWz1
+	id S934435AbXLMW6Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:58:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762826AbXLMW56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:55:27 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:44418 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbXLMWz0 (ORCPT
+	Thu, 13 Dec 2007 17:57:58 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:5831 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757199AbXLMW55 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:55:26 -0500
+	Thu, 13 Dec 2007 17:57:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=hvLnNS+rVB+PEvJSuVZRleMN4RrNcu6IJFWtXLAD2XVC31/KcBlUSeC0x1JjedNxI/0ToTA/vRvjGQE0KltV70XOl1rMY6CvGVkDkDjbg5sSJdUjjUk+atBrnMVbKxEXRqy6HiuMiKgMZpjdTXmKwMotVh+Qy9+wIw3ZnLqFisw=
-Message-ID: <4761B933.4030008@gmail.com>
-Date: Thu, 13 Dec 2007 23:58:59 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
+        b=BsGSYyuPreBtkdlSv6z6CDT1S78gLRfG/6yBVEkvr1bofNxlDfWZUJwnXfXA8rkYR0qnbkY3wfAFXgPjJzVcJzpGnk/9Ye4r/NWSIOG90g43w393/IQaPTXvb0gHl0O/717ilFdqIyFCIHDqJBhEe3LQFsKAXoAruD1IVCZ4Cvk=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Subject: [PATCH] UBI: silence warning about possibly uninitialized use of variable in drivers/mtd/ubi/vmt.c ...
+Date: Thu, 13 Dec 2007 23:53:08 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-mtd@lists.infradead.org, LKML <linux-kernel@vger.kernel.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: auke-jan.h.kok@intel.com, gallatin@myri.com, joonwpark81@gmail.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       shemminger@linux-foundation.org, jesse.brandeburg@intel.com
-Subject: Re: [RFC] net: napi fix
-References: <4761930C.3030504@gmail.com>	<20071213.123727.224454625.davem@davemloft.net>	<4761B219.1030303@gmail.com> <20071213.143425.142750733.davem@davemloft.net>
-In-Reply-To: <20071213.143425.142750733.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-ID: <4761b8f2.1c89420a.7f10.ffffe9db@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote, On 12/13/2007 11:34 PM:
+From: Jesper Juhl <jesper.juhl@gmail.com>
 
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Thu, 13 Dec 2007 23:28:41 +0100
-> 
->> ...I'm afraid I can't understand: I mean doing the same but without
->> passing this info with 'work == weight': if driver sends this info,
->> why it can't instead call something like napi_continue() with
->> this list_move_tail() (and probably additional local_irq_disable()/
->> enble() - but since it's unlikely()?) which looks much more readable,
->> and saves one whole unlikely if ()?
-> 
-> Because the poll list is private to net_rx_action() and we don't
-> want to expose implementation details like that to every
-> ->poll() implementation.
+This patch silences the following warning :
 
-So, it seems 'we' failed e.g. exposing napi_complete()...
-OK, no offense, I'll only mention at the end that there is
-always a possibility to redefine such a function to {} with any
-change of implementation.
+  drivers/mtd/ubi/vmt.c:73: warning: 'ret' may be used uninitialized in this function
 
-Jarek P.
+gcc can't see that we always initialize ret in all situations where it is 
+actually used. The one case where it's not initialized is when we BUG(), 
+but gcc doesn't know that we won't then continue and use an uninitialized 
+'ret'.
+
+This patch results in code that does exactely the same as before, but it 
+also makes gcc shut up, so we generate one less line of warning noise.
+
+
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+
+ vmt.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mtd/ubi/vmt.c b/drivers/mtd/ubi/vmt.c
+index 88629a3..e44948d 100644
+--- a/drivers/mtd/ubi/vmt.c
++++ b/drivers/mtd/ubi/vmt.c
+@@ -70,13 +70,14 @@ static struct device_attribute attr_vol_upd_marker =
+ static ssize_t vol_attribute_show(struct device *dev,
+ 				  struct device_attribute *attr, char *buf)
+ {
+-	int ret;
++	int ret = -ENODEV;
++
+ 	struct ubi_volume *vol = container_of(dev, struct ubi_volume, dev);
+ 
+ 	spin_lock(&vol->ubi->volumes_lock);
+ 	if (vol->removed) {
+ 		spin_unlock(&vol->ubi->volumes_lock);
+-		return -ENODEV;
++		return ret;
+ 	}
+ 	if (attr == &attr_vol_reserved_ebs)
+ 		ret = sprintf(buf, "%d\n", vol->reserved_pebs);
