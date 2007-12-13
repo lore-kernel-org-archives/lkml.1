@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933582AbXLMVhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933377AbXLMVlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933582AbXLMVhx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 16:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759381AbXLMVhg
+	id S933377AbXLMVlR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 16:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759565AbXLMVlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 16:37:36 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56507 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933539AbXLMVhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 16:37:35 -0500
-Date: Thu, 13 Dec 2007 22:37:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Mark timer_stats as incompatible with multiple pid
-	namespaces
-Message-ID: <20071213213710.GB25563@elte.hu>
-References: <m13au7tsov.fsf@ebiederm.dsl.xmission.com> <20071213090102.GB1926@elte.hu> <m1r6hqstat.fsf@ebiederm.dsl.xmission.com> <20071213130423.GB28340@elte.hu> <m1ir32sejc.fsf@ebiederm.dsl.xmission.com> <20071213202621.GC25130@elte.hu> <m1prxaqo62.fsf@ebiederm.dsl.xmission.com>
+	Thu, 13 Dec 2007 16:41:04 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:40327 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759381AbXLMVlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 16:41:03 -0500
+X-Greylist: delayed 449 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Dec 2007 16:41:03 EST
+Date: Thu, 13 Dec 2007 13:33:32 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Asit Mallick <asit.k.mallick@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: What was the problem with quicklists and x86-64?
+In-Reply-To: <1197579788.15741.172.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0712131332100.24778@schroedinger.engr.sgi.com>
+References: <47603321.4030700@goop.org>  <Pine.LNX.4.64.0712131131540.13396@schroedinger.engr.sgi.com>
+  <1197578876.15741.163.camel@pasglop>  <Pine.LNX.4.64.0712131251300.18314@schroedinger.engr.sgi.com>
+ <1197579788.15741.172.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1prxaqo62.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 14 Dec 2007, Benjamin Herrenschmidt wrote:
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
-
-> >> Well struct pid * works in that case if you grab the reference to 
-> >> it.
-> >
-> > but the display of the stats might happen much later. The point of 
-> > this API is to save pid+comm, which gives users a good idea about 
-> > what caused the events in the past - without having to pin any 
-> > resource of that task.
+> > This is a generic NUMA issue here! Quicklist pages that are not on 
+> > the current node are freed without waiting for the TLB flush. The patch 
+> > that I posted fixes that by requiring that all pages be flushed. 
 > 
-> Likewise struct pid is designed not to be a problem if pinned. It is a 
-> little heavier then it used to be with the addition of pid namespace 
-> support but not much.  And if it is to heavy struct pid needs to be 
-> fixed.
+> Ah ok, so that's a NUMA issue due to how the quicklists are implemented,
+> I see. Note that the flush isn't necessary a solution on all platforms.
+> On powerpc, I -still- need to defer with RCU as we don't do anything in
+> flush tlb. Our TLB invalidations are HW broadcast in the first place,
+> but what we need to sync with is the SW hash reload code.
 > 
-> Holding the struct pid very much does not pin the task struct, and it 
-> shouldn't pin any other resources.  I agree 64bytes or so is a bit 
-> more to pin then 4 bytes but it really isn't a lot.
+> So your solution in the quicklists doesn't solve the problem for us.
 
-yeah, and i have no conceptual objections - i just wanted to outline the 
-thinking behind /proc/timer_stats.
+No this may mean that the problem does not exist on powerpc since it 
+seems to be okay to free pages before all processors have flushed the 
+TLBs? Or are you deferrring the freeing of the pages via RCU?
 
-	Ingo
+
