@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761534AbXLMNDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761475AbXLMNEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761534AbXLMNDH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 08:03:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbXLMNCz
+	id S1761475AbXLMNEu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 08:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXLMNEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 08:02:55 -0500
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:57425 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752505AbXLMNCy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 08:02:54 -0500
-Date: Thu, 13 Dec 2007 18:32:31 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>,
-       Greg KH <gregkh@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, kay.sievers@vrfy.org,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
-Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
-Message-ID: <20071213130231.GB16905@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20071211182015.GA22339@linux.vnet.ibm.com> <20071211182528.GA5597@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201F1@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071211210653.GA6902@elte.hu> <20071212070816.GA31455@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201F6@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071212134158.GA5547@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B00152021F@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071213114336.GA5400@linux.vnet.ibm.com> <20071213125509.GA28340@elte.hu>
+	Thu, 13 Dec 2007 08:04:43 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37403 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752041AbXLMNEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 08:04:42 -0500
+Date: Thu, 13 Dec 2007 14:04:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Mark timer_stats as incompatible with multiple pid
+	namespaces
+Message-ID: <20071213130423.GB28340@elte.hu>
+References: <m13au7tsov.fsf@ebiederm.dsl.xmission.com> <20071213090102.GB1926@elte.hu> <m1r6hqstat.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071213125509.GA28340@elte.hu>
+In-Reply-To: <m1r6hqstat.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 01:55:09PM +0100, Ingo Molnar wrote:
-> 
-> * Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> 
-> > Could you please see if the following patch removes the oops due to 
-> > CFS sysfs files? (There might still be the other oops due to the 
-> > floppy sysfs files)
-> > 
-> > Ingo, could you please add this patch in your CFS backport to 2.6.22 
-> > and older kernels?
-> 
-> sure - i've updated the backport patches with this fix.
-> 
 
-Thanks!
+* Eric W. Biederman <ebiederm@xmission.com> wrote:
 
-> >  static void user_attr_init(struct subsys_attribute *sa, char *name, int mode)
-> >  {
-> > +	sa->attr.owner = NULL;
-> >  	sa->attr.name = name;
+> > What the heck??? Please solve this properly instead of hiding it. 
+> > /proc/timer_stats is damn useful and it's a must-have for powertop 
+> > to work.
 > 
-> i'm wondering why doesnt this affect 2.6.23 and later? Does sysfs 
-> initialize the owner field to NULL automatically?
+> Hmm.  Perhaps the dependency conflict should go in the other direction 
+> then.
 > 
+> My goal is to document the issue while a proper fix is being written. 
+> I have known about this for all of about 1 day now.  It was added 
+> since last time I went through the kernel and made a thorough sweep of 
+> pid users.
+> 
+> What the proper fix is isn't even obvious at this point. Possibly it 
+> is making /proc/timer_stats disappear in child pid namespaces.
+>   Which we don't currently have the infrastructure fore.
+>
+> Possibly it is reworking the stats collection so we store a struct pid 
+> * instead of a pid_t value.  So we would know if the reader of the 
+> value can even see processes you have collected stats for.
 
-Going through git log, it seems that commit
-7b595756ec1f49e0049a9e01a1298d53a7faaa15 deemed attribute->owner as
-unnecessary. I guess that answers the question.
+the problem is, this interface stores historic PIDs too - i.e. PIDs of 
+tasks that might have exited already.
 
--- 
-regards,
-Dhaval
+the proper way would be to also store the namespace address, and to 
+filter out non-matching entries. (If leakage of this data across 
+namespace creation is of any concern then flush out existing namespace 
+data when a namespace is destroyed)
+
+	Ingo
