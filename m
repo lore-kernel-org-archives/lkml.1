@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764904AbXLMHTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764956AbXLMHT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764904AbXLMHTd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:19:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762718AbXLMG6l
+	id S1764956AbXLMHT5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761285AbXLMG6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:58:41 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55746 "EHLO
+	Thu, 13 Dec 2007 01:58:47 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55761 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762653AbXLMG6j (ORCPT
+	with ESMTP id S1762315AbXLMG6n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:58:39 -0500
-Date: Wed, 12 Dec 2007 22:53:41 -0800
+	Thu, 13 Dec 2007 01:58:43 -0500
+Date: Wed, 12 Dec 2007 22:53:45 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Michael Tokarev <mjt@tls.msk.ru>, Jeff Garzik <jeff@garzik.org>,
-       Diego Torres <dtorres@coral.dnsalias.org>, Tejun Heo <htejun@gmail.com>
-Subject: [patch 56/60] libata: kill spurious NCQ completion detection
-Message-ID: <20071213065341.GF6867@kroah.com>
+       Patrick McHardy <kaber@trash.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [patch 57/60] XFRM: Fix leak of expired xfrm_states
+Message-ID: <20071213065345.GG6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="libata-kill-spurious-ncq-completion-detection.patch"
+Content-Disposition: inline; filename="xfrm-fix-leak-of-expired-xfrm_states.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -37,178 +36,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.23-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Tejun Heo <htejun@gmail.com>
+From: Patrick McHardy <kaber@trash.net>
 
-patch 459ad68893a84fb0881e57919340b97edbbc3dc7 in mainline.
+[XFRM]: Fix leak of expired xfrm_states
 
-Spurious NCQ completion detection implemented in ahci was incorrect.
-On AHCI receving and processing FISes and raising interrupts are not
-interlocked and spurious interrupts are expected.
+[ Upstream commit: 5dba4797115c8fa05c1a4d12927a6ae0b33ffc41 ]
 
-For example, if an interrupt occurs while interrupt handler is running
-and the running interrupt handler handles the event the new IRQ
-indicated, after IRQ handler finishes, it will be executed again
-because IRQ pending bit is set by the new interrupt but there won't be
-anything to process.
+The xfrm_timer calls __xfrm_state_delete, which drops the final reference
+manually without triggering destruction of the state. Change it to use
+xfrm_state_put to add the state to the gc list when we're dropping the
+last reference. The timer function may still continue to use the state
+safely since the final destruction does a del_timer_sync().
 
-Please read the following message for more information.
-
-  http://article.gmane.org/gmane.linux.ide/26012
-
-This patch...
-
-* Removes all spurious IRQ whining from ahci.  Spurious NCQ completion
-  detection was completely wrong.  Spurious D2H Register FIS taught us
-  that some early drives send spurious D2H Register FIS with I bit set
-  while NCQ commands are in progress but none of recent drives does
-  that and even the ones which show such behavior can do NCQ fine.
-
-* Kills all NCQ blacklist entries which were added because of spurious
-  NCQ completions.  I tracked down each commit and verified all
-  removed ones are actually added because of spurious completions.
-
-  WD740ADFD-00NLR1 wasn't deleted but moved upward because the drive
-  not only had spurious NCQ completions but also is slow on sequential
-  data transfers if NCQ is enabled.
-
-  Maxtor 7V300F0 was added by 0e3dbc01d53940fe10e5a5cfec15ede3e929c918
-  from Alan Cox.  I can only find evidences that the drive only had
-  troubles with spuruious completions by searching the mailing list.
-  This entry needs to be verified and removed if it doesn't have other
-  NCQ related problems.
-
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/ahci.c        |   65 ----------------------------------------------
- drivers/ata/libata-core.c |   17 ------------
- 2 files changed, 2 insertions(+), 80 deletions(-)
+ net/xfrm/xfrm_state.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -1432,7 +1432,7 @@ static void ahci_port_intr(struct ata_po
- 	struct ata_eh_info *ehi = &ap->eh_info;
- 	struct ahci_port_priv *pp = ap->private_data;
- 	u32 status, qc_active;
--	int rc, known_irq = 0;
-+	int rc;
- 
- 	status = readl(port_mmio + PORT_IRQ_STAT);
- 	writel(status, port_mmio + PORT_IRQ_STAT);
-@@ -1448,74 +1448,11 @@ static void ahci_port_intr(struct ata_po
- 		qc_active = readl(port_mmio + PORT_CMD_ISSUE);
- 
- 	rc = ata_qc_complete_multiple(ap, qc_active, NULL);
--	if (rc > 0)
--		return;
- 	if (rc < 0) {
- 		ehi->err_mask |= AC_ERR_HSM;
- 		ehi->action |= ATA_EH_SOFTRESET;
- 		ata_port_freeze(ap);
--		return;
--	}
--
--	/* hmmm... a spurious interupt */
--
--	/* if !NCQ, ignore.  No modern ATA device has broken HSM
--	 * implementation for non-NCQ commands.
--	 */
--	if (!ap->sactive)
--		return;
--
--	if (status & PORT_IRQ_D2H_REG_FIS) {
--		if (!pp->ncq_saw_d2h)
--			ata_port_printk(ap, KERN_INFO,
--				"D2H reg with I during NCQ, "
--				"this message won't be printed again\n");
--		pp->ncq_saw_d2h = 1;
--		known_irq = 1;
--	}
--
--	if (status & PORT_IRQ_DMAS_FIS) {
--		if (!pp->ncq_saw_dmas)
--			ata_port_printk(ap, KERN_INFO,
--				"DMAS FIS during NCQ, "
--				"this message won't be printed again\n");
--		pp->ncq_saw_dmas = 1;
--		known_irq = 1;
--	}
--
--	if (status & PORT_IRQ_SDB_FIS) {
--		const __le32 *f = pp->rx_fis + RX_FIS_SDB;
--
--		if (le32_to_cpu(f[1])) {
--			/* SDB FIS containing spurious completions
--			 * might be dangerous, whine and fail commands
--			 * with HSM violation.  EH will turn off NCQ
--			 * after several such failures.
--			 */
--			ata_ehi_push_desc(ehi,
--				"spurious completions during NCQ "
--				"issue=0x%x SAct=0x%x FIS=%08x:%08x",
--				readl(port_mmio + PORT_CMD_ISSUE),
--				readl(port_mmio + PORT_SCR_ACT),
--				le32_to_cpu(f[0]), le32_to_cpu(f[1]));
--			ehi->err_mask |= AC_ERR_HSM;
--			ehi->action |= ATA_EH_SOFTRESET;
--			ata_port_freeze(ap);
--		} else {
--			if (!pp->ncq_saw_sdb)
--				ata_port_printk(ap, KERN_INFO,
--					"spurious SDB FIS %08x:%08x during NCQ, "
--					"this message won't be printed again\n",
--					le32_to_cpu(f[0]), le32_to_cpu(f[1]));
--			pp->ncq_saw_sdb = 1;
--		}
--		known_irq = 1;
+--- a/net/xfrm/xfrm_state.c
++++ b/net/xfrm/xfrm_state.c
+@@ -370,7 +370,7 @@ int __xfrm_state_delete(struct xfrm_stat
+ 		 * The xfrm_state_alloc call gives a reference, and that
+ 		 * is what we are dropping here.
+ 		 */
+-		__xfrm_state_put(x);
++		xfrm_state_put(x);
+ 		err = 0;
  	}
--
--	if (!known_irq)
--		ata_port_printk(ap, KERN_INFO, "spurious interrupt "
--				"(irq_stat 0x%x active_tag 0x%x sactive 0x%x)\n",
--				status, ap->active_tag, ap->sactive);
- }
  
- static void ahci_irq_clear(struct ata_port *ap)
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -3772,6 +3772,7 @@ static const struct ata_blacklist_entry 
- 	/* Devices where NCQ should be avoided */
- 	/* NCQ is slow */
-         { "WDC WD740ADFD-00",   NULL,		ATA_HORKAGE_NONCQ },
-+	{ "WDC WD740ADFD-00NLR1", NULL,		ATA_HORKAGE_NONCQ, },
- 	/* http://thread.gmane.org/gmane.linux.ide/14907 */
- 	{ "FUJITSU MHT2060BH",	NULL,		ATA_HORKAGE_NONCQ },
- 	/* NCQ is broken */
-@@ -3790,22 +3791,6 @@ static const struct ata_blacklist_entry 
- 	{ "HTS541060G9SA00",    "MB3OC60D",     ATA_HORKAGE_NONCQ, },
- 	{ "HTS541080G9SA00",    "MB4OC60D",     ATA_HORKAGE_NONCQ, },
- 	{ "HTS541010G9SA00",    "MBZOC60D",     ATA_HORKAGE_NONCQ, },
--	/* Drives which do spurious command completion */
--	{ "HTS541680J9SA00",	"SB2IC7EP",	ATA_HORKAGE_NONCQ, },
--	{ "HTS541612J9SA00",	"SBDIC7JP",	ATA_HORKAGE_NONCQ, },
--	{ "HDT722516DLA380",	"V43OA96A",	ATA_HORKAGE_NONCQ, },
--	{ "Hitachi HTS541616J9SA00", "SB4OC70P", ATA_HORKAGE_NONCQ, },
--	{ "Hitachi HTS542525K9SA00", "BBFOC31P", ATA_HORKAGE_NONCQ, },
--	{ "WDC WD740ADFD-00NLR1", NULL,		ATA_HORKAGE_NONCQ, },
--	{ "WDC WD3200AAJS-00RYA0", "12.01B01",	ATA_HORKAGE_NONCQ, },
--	{ "FUJITSU MHV2080BH",	"00840028",	ATA_HORKAGE_NONCQ, },
--	{ "ST9120822AS",	"3.CLF",	ATA_HORKAGE_NONCQ, },
--	{ "ST9160821AS",	"3.CLF",	ATA_HORKAGE_NONCQ, },
--	{ "ST9160821AS",	"3.ALD",	ATA_HORKAGE_NONCQ, },
--	{ "ST9160821AS",	"3.CCD",	ATA_HORKAGE_NONCQ, },
--	{ "ST3160812AS",	"3.ADJ",	ATA_HORKAGE_NONCQ, },
--	{ "ST980813AS",		"3.ADB",	ATA_HORKAGE_NONCQ, },
--	{ "SAMSUNG HD401LJ",	"ZZ100-15",	ATA_HORKAGE_NONCQ, },
- 
- 	/* devices which puke on READ_NATIVE_MAX */
- 	{ "HDS724040KLSA80",	"KFAOA20N",	ATA_HORKAGE_BROKEN_HPA, },
 
 -- 
