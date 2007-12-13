@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760655AbXLMIdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbXLMIeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760655AbXLMIdg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 03:33:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbXLMId2
+	id S1761469AbXLMIeB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 03:34:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbXLMIdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 03:33:28 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:29007
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753288AbXLMId1 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 03:33:27 -0500
-Message-Id: <4760FC87.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Thu, 13 Dec 2007 08:33:59 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <len.brown@intel.com>
-Cc: "linux-acpi" <linux-acpi@intel.com>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] acpi: make __acpi_map_table() and __init function
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 13 Dec 2007 03:33:52 -0500
+Received: from il.qumranet.com ([82.166.9.18]:40302 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753288AbXLMIdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 03:33:51 -0500
+Message-ID: <4760EE69.2090006@qumranet.com>
+Date: Thu, 13 Dec 2007 10:33:45 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: kvm-devel@lists.sourceforge.net,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [kvm-devel] [RFC] Proposed new directory layout for kvm and virtualization
+References: <475E5CBB.9080608@qumranet.com> <20071211151143.GA7751@osiris.boeblingen.de.ibm.com> <475EB23E.1060002@qumranet.com> <200712120014.43314.arnd@arndb.de>
+In-Reply-To: <200712120014.43314.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.. as it it used only during early boot.
+Arnd Bergmann wrote:
+> On Tuesday 11 December 2007, Avi Kivity wrote:
+>   
+>> Heiko Carstens wrote:
+>>     
+>>> On Tue, Dec 11, 2007 at 11:47:39AM +0200, Avi Kivity wrote:
+>>>
+>>>       
+>>>>  arch/*/kvm/   arch dependent kvm code
+>>>>     
+>>>>         
+>>> Maybe arch/*/virt/ ? No need to add an own directory for each hypervisor.
+>>>
+>>>       
+>> There will be several kvm files in that directory for x86. If you have 
+>> just one file, I guess arch/*/virt/kvm.c is okay.
+>>     
+>
+> In that case, even arch/*/{mm,kernel}/kvm.c would work fine, as long as you
+> only want to support one hypervisor, or a small set of small files, there
+> is no need to have even have a virt directory.
+>
+> However, if you want to have symmetry across the architectures, I think
+> arch/*/kvm/ works out best, along the lines of 
+> arch/*/{perfmon,crypto,xen,power}. Neither of these is particularly large,
+> but arch/* is typically not that crowded either.
+>   
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+In the case of x86, we'll have 16 arch dependent files (i8259.[ch], 
+irq.[ch], lapic.c, mmu.c, paging_tmpl.[ch], svm.[ch], vmx.[ch], 
+x86.[ch], x86_emulate.[ch]) which warrant a kvm/ subdirectory IMO.
 
- arch/ia64/kernel/acpi.c     |    2 +-
- arch/x86/kernel/acpi/boot.c |    4 ++--
- drivers/acpi/osl.c          |    3 ++-
- 3 files changed, 5 insertions(+), 4 deletions(-)
-
---- linux-2.6.24-rc5/arch/ia64/kernel/acpi.c	2007-12-12 11:28:03.000000000 +0100
-+++ 2.6.24-rc5-acpi-map-table-init/arch/ia64/kernel/acpi.c	2007-12-04 16:09:33.000000000 +0100
-@@ -152,7 +152,7 @@ int acpi_request_vector(u32 int_type)
- 	return vector;
- }
- 
--char *__acpi_map_table(unsigned long phys_addr, unsigned long size)
-+char *__init __acpi_map_table(unsigned long phys_addr, unsigned long size)
- {
- 	return __va(phys_addr);
- }
---- linux-2.6.24-rc5/arch/x86/kernel/acpi/boot.c	2007-12-12 11:28:17.000000000 +0100
-+++ 2.6.24-rc5-acpi-map-table-init/arch/x86/kernel/acpi/boot.c	2007-12-04 16:09:33.000000000 +0100
-@@ -106,7 +106,7 @@ enum acpi_irq_model_id acpi_irq_model = 
- #ifdef	CONFIG_X86_64
- 
- /* rely on all ACPI tables being in the direct mapping */
--char *__acpi_map_table(unsigned long phys_addr, unsigned long size)
-+char *__init __acpi_map_table(unsigned long phys_addr, unsigned long size)
- {
- 	if (!phys_addr || !size)
- 		return NULL;
-@@ -131,7 +131,7 @@ char *__acpi_map_table(unsigned long phy
-  * from the fixed base.  That's why we start at FIX_IO_APIC_BASE_END and
-  * count idx down while incrementing the phys address.
-  */
--char *__acpi_map_table(unsigned long phys, unsigned long size)
-+char *__init __acpi_map_table(unsigned long phys, unsigned long size)
- {
- 	unsigned long base, offset, mapped_size;
- 	int idx;
---- linux-2.6.24-rc5/drivers/acpi/osl.c	2007-12-12 11:28:21.000000000 +0100
-+++ 2.6.24-rc5-acpi-map-table-init/drivers/acpi/osl.c	2007-12-04 16:09:33.000000000 +0100
-@@ -211,7 +211,8 @@ acpi_physical_address __init acpi_os_get
- 		return acpi_find_rsdp();
- }
- 
--void __iomem *acpi_os_map_memory(acpi_physical_address phys, acpi_size size)
-+void __iomem *__init_refok
-+acpi_os_map_memory(acpi_physical_address phys, acpi_size size)
- {
- 	if (phys > ULONG_MAX) {
- 		printk(KERN_ERR PREFIX "Cannot map memory that high\n");
-
-
+-- 
+error compiling committee.c: too many arguments to function
 
