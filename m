@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763707AbXLMHKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbXLMHLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763707AbXLMHKk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761053AbXLMG53
+	id S1761541AbXLMHLB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:11:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762383AbXLMG5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:57:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55452 "EHLO
+	Thu, 13 Dec 2007 01:57:30 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55456 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762524AbXLMG51 (ORCPT
+	with ESMTP id S1762527AbXLMG51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 13 Dec 2007 01:57:27 -0500
-Date: Wed, 12 Dec 2007 22:52:48 -0800
+Date: Wed, 12 Dec 2007 22:52:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        torvalds@linux-foundation.org
@@ -21,14 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, James.Bottomley@steeleye.com,
-       davem@davemloft.net, macro@linux-mips.org
-Subject: [patch 35/60] esp_scsi: fix reset cleanup spinlock recursion
-Message-ID: <20071213065248.GK6867@kroah.com>
+       alan@lxorguk.ukuu.org.uk, James.Bottomley@SteelEye.com, matthew@wil.cx,
+       fujita.tomonori@lab.ntt.co.jp, anders.henke@1und1.de,
+       mark_salyzyn@adaptec.com
+Subject: [patch 34/60] revert "dpt_i2o: convert to SCSI hotplug model"
+Message-ID: <20071213065244.GJ6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="esp_scsi-fix-reset-cleanup-spinlock-recursion.patch"
+Content-Disposition: inline; filename="revert-dpt_i2o-convert-to-scsi-hotplug-model.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,110 +42,310 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
+From: Andrew Morton <akpm@linux-foundation.org>
 
-patch 522939d45c293388e6a360210905f9230298df16 in mainline.
+patch 24601bbcacb3356657747f2e64317923feb7a1a2 in mainline.
 
-The esp_reset_cleanup() function is called with the host lock held and
-invokes starget_for_each_device() which wants to take it too.  Here is a
-fix along the lines of shost_for_each_device()/__shost_for_each_device()
-adding a __starget_for_each_device() counterpart which assumes the lock
-has already been taken.
+revert
 
-Eventually, I think the driver should get modified so that more work is
-done as a softirq rather than in the interrupt context, but for now it
-fixes a bug that causes the spinlock debugger to fire.
+    commit 55d9fcf57ba5ec427544fca7abc335cf3da78160
+    Author: Matthew Wilcox <matthew@wil.cx>
+    Date:   Mon Jul 30 15:19:18 2007 -0600
 
-While at it, it fixes a small number of cosmetic problems with
-starget_for_each_device() too.
+        [SCSI] dpt_i2o: convert to SCSI hotplug model
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-Acked-by: David S. Miller <davem@davemloft.net>
-Cc: James Bottomley <James.Bottomley@steeleye.com>
+         - Delete refereces to HOSTS_C
+         - Switch to module_init/module_exit instead of detect/release
+         - Don't pass around the host template and rename it to adpt_template
+         - Switch from scsi_register/scsi_unregister to scsi_host_alloc,
+           scsi_add_host, scsi_scan_host and scsi_host_put.
+
+Because it caused (for unknown reasons) Andres' all-data-reads-as-zeroes
+problem, reported at
+http://groups.google.com/group/fa.linux.kernel/msg/083a9acff0330234
+
+Cc: Matthew Wilcox <matthew@wil.cx>
+Cc: Mark Salyzyn <mark_salyzyn@adaptec.com>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>
+Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Anders Henke <anders.henke@1und1.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/esp_scsi.c    |    4 ++--
- drivers/scsi/scsi.c        |   31 +++++++++++++++++++++++++++++--
- include/scsi/scsi_device.h |    3 +++
- 3 files changed, 34 insertions(+), 4 deletions(-)
+ drivers/scsi/dpt_i2o.c |  132 ++++++++++++++++++++++---------------------------
+ drivers/scsi/dpti.h    |    9 ++-
+ 2 files changed, 68 insertions(+), 73 deletions(-)
 
---- a/drivers/scsi/esp_scsi.c
-+++ b/drivers/scsi/esp_scsi.c
-@@ -2026,8 +2026,8 @@ static void esp_reset_cleanup(struct esp
- 		tp->flags |= ESP_TGT_CHECK_NEGO;
+--- a/drivers/scsi/dpt_i2o.c
++++ b/drivers/scsi/dpt_i2o.c
+@@ -173,20 +173,20 @@ static struct pci_device_id dptids[] = {
+ };
+ MODULE_DEVICE_TABLE(pci,dptids);
  
- 		if (tp->starget)
--			starget_for_each_device(tp->starget, NULL,
--						esp_clear_hold);
-+			__starget_for_each_device(tp->starget, NULL,
-+						  esp_clear_hold);
- 	}
- 	esp->flags &= ~ESP_FLAG_RESETTING;
- }
---- a/drivers/scsi/scsi.c
-+++ b/drivers/scsi/scsi.c
-@@ -886,11 +886,11 @@ EXPORT_SYMBOL(__scsi_iterate_devices);
-  * starget_for_each_device  -  helper to walk all devices of a target
-  * @starget:	target whose devices we want to iterate over.
-  *
-- * This traverses over each devices of @shost.  The devices have
-+ * This traverses over each device of @starget.  The devices have
-  * a reference that must be released by scsi_host_put when breaking
-  * out of the loop.
-  */
--void starget_for_each_device(struct scsi_target *starget, void * data,
-+void starget_for_each_device(struct scsi_target *starget, void *data,
- 		     void (*fn)(struct scsi_device *, void *))
+-static void adpt_exit(void);
+-
+-static int adpt_detect(void)
++static int adpt_detect(struct scsi_host_template* sht)
  {
- 	struct Scsi_Host *shost = dev_to_shost(starget->dev.parent);
-@@ -905,6 +905,33 @@ void starget_for_each_device(struct scsi
- EXPORT_SYMBOL(starget_for_each_device);
+ 	struct pci_dev *pDev = NULL;
+ 	adpt_hba* pHba;
  
- /**
-+ * __starget_for_each_device  -  helper to walk all devices of a target
-+ *				 (UNLOCKED)
-+ * @starget:	target whose devices we want to iterate over.
-+ *
-+ * This traverses over each device of @starget.  It does _not_
-+ * take a reference on the scsi_device, so the whole loop must be
-+ * protected by shost->host_lock.
-+ *
-+ * Note:  The only reason why drivers would want to use this is because
-+ * they need to access the device list in irq context.  Otherwise you
-+ * really want to use starget_for_each_device instead.
-+ **/
-+void __starget_for_each_device(struct scsi_target *starget, void *data,
-+			       void (*fn)(struct scsi_device *, void *))
++	adpt_init();
++
+ 	PINFO("Detecting Adaptec I2O RAID controllers...\n");
+ 
+         /* search for all Adatpec I2O RAID cards */
+ 	while ((pDev = pci_get_device( PCI_DPT_VENDOR_ID, PCI_ANY_ID, pDev))) {
+ 		if(pDev->device == PCI_DPT_DEVICE_ID ||
+ 		   pDev->device == PCI_DPT_RAPTOR_DEVICE_ID){
+-			if(adpt_install_hba(pDev) ){
++			if(adpt_install_hba(sht, pDev) ){
+ 				PERROR("Could not Init an I2O RAID device\n");
+ 				PERROR("Will not try to detect others.\n");
+ 				return hba_count-1;
+@@ -248,33 +248,34 @@ rebuild_sys_tab:
+ 	}
+ 
+ 	for (pHba = hba_chain; pHba; pHba = pHba->next) {
+-		if (adpt_scsi_register(pHba) < 0) {
++		if( adpt_scsi_register(pHba,sht) < 0){
+ 			adpt_i2o_delete_hba(pHba);
+ 			continue;
+ 		}
+ 		pHba->initialized = TRUE;
+ 		pHba->state &= ~DPTI_STATE_RESET;
+-		scsi_scan_host(pHba->host);
+ 	}
+ 
+ 	// Register our control device node
+ 	// nodes will need to be created in /dev to access this
+ 	// the nodes can not be created from within the driver
+ 	if (hba_count && register_chrdev(DPTI_I2O_MAJOR, DPT_DRIVER, &adpt_fops)) {
+-		adpt_exit();
++		adpt_i2o_sys_shutdown();
+ 		return 0;
+ 	}
+ 	return hba_count;
+ }
+ 
+ 
+-static int adpt_release(adpt_hba *pHba)
++/*
++ * scsi_unregister will be called AFTER we return.
++ */
++static int adpt_release(struct Scsi_Host *host)
+ {
+-	struct Scsi_Host *shost = pHba->host;
+-	scsi_remove_host(shost);
++	adpt_hba* pHba = (adpt_hba*) host->hostdata[0];
+ //	adpt_i2o_quiesce_hba(pHba);
+ 	adpt_i2o_delete_hba(pHba);
+-	scsi_host_put(shost);
++	scsi_unregister(host);
+ 	return 0;
+ }
+ 
+@@ -881,7 +882,7 @@ static int adpt_reboot_event(struct noti
+ #endif
+ 
+ 
+-static int adpt_install_hba(struct pci_dev* pDev)
++static int adpt_install_hba(struct scsi_host_template* sht, struct pci_dev* pDev)
+ {
+ 
+ 	adpt_hba* pHba = NULL;
+@@ -1030,6 +1031,8 @@ static void adpt_i2o_delete_hba(adpt_hba
+ 
+ 
+ 	mutex_lock(&adpt_configuration_lock);
++	// scsi_unregister calls our adpt_release which
++	// does a quiese
+ 	if(pHba->host){
+ 		free_irq(pHba->host->irq, pHba);
+ 	}
+@@ -1081,6 +1084,17 @@ static void adpt_i2o_delete_hba(adpt_hba
+ }
+ 
+ 
++static int adpt_init(void)
 +{
-+	struct Scsi_Host *shost = dev_to_shost(starget->dev.parent);
-+	struct scsi_device *sdev;
++	printk("Loading Adaptec I2O RAID: Version " DPT_I2O_VERSION "\n");
++#ifdef REBOOT_NOTIFIER
++	register_reboot_notifier(&adpt_reboot_notifier);
++#endif
 +
-+	__shost_for_each_device(sdev, shost) {
-+		if ((sdev->channel == starget->channel) &&
-+		    (sdev->id == starget->id))
-+			fn(sdev, data);
-+	}
++	return 0;
 +}
-+EXPORT_SYMBOL(__starget_for_each_device);
 +
-+/**
-  * __scsi_device_lookup_by_target - find a device given the target (UNLOCKED)
-  * @starget:	SCSI target pointer
-  * @lun:	SCSI Logical Unit Number
---- a/include/scsi/scsi_device.h
-+++ b/include/scsi/scsi_device.h
-@@ -222,6 +222,9 @@ extern struct scsi_device *__scsi_device
- 							  uint);
- extern void starget_for_each_device(struct scsi_target *, void *,
- 		     void (*fn)(struct scsi_device *, void *));
-+extern void __starget_for_each_device(struct scsi_target *, void *,
-+				      void (*fn)(struct scsi_device *,
-+						 void *));
++
+ static struct adpt_device* adpt_find_device(adpt_hba* pHba, u32 chan, u32 id, u32 lun)
+ {
+ 	struct adpt_device* d;
+@@ -2166,6 +2180,37 @@ static s32 adpt_scsi_to_i2o(adpt_hba* pH
+ }
  
- /* only exposed to implement shost_for_each_device */
- extern struct scsi_device *__scsi_iterate_devices(struct Scsi_Host *,
+ 
++static s32 adpt_scsi_register(adpt_hba* pHba,struct scsi_host_template * sht)
++{
++	struct Scsi_Host *host = NULL;
++
++	host = scsi_register(sht, sizeof(adpt_hba*));
++	if (host == NULL) {
++		printk ("%s: scsi_register returned NULL\n",pHba->name);
++		return -1;
++	}
++	host->hostdata[0] = (unsigned long)pHba;
++	pHba->host = host;
++
++	host->irq = pHba->pDev->irq;
++	/* no IO ports, so don't have to set host->io_port and
++	 * host->n_io_port
++	 */
++	host->io_port = 0;
++	host->n_io_port = 0;
++				/* see comments in scsi_host.h */
++	host->max_id = 16;
++	host->max_lun = 256;
++	host->max_channel = pHba->top_scsi_channel + 1;
++	host->cmd_per_lun = 1;
++	host->unique_id = (uint) pHba;
++	host->sg_tablesize = pHba->sg_tablesize;
++	host->can_queue = pHba->post_fifo_size;
++
++	return 0;
++}
++
++
+ static s32 adpt_i2o_to_scsi(void __iomem *reply, struct scsi_cmnd* cmd)
+ {
+ 	adpt_hba* pHba;
+@@ -3284,10 +3329,12 @@ static static void adpt_delay(int millis
+ 
+ #endif
+ 
+-static struct scsi_host_template adpt_template = {
++static struct scsi_host_template driver_template = {
+ 	.name			= "dpt_i2o",
+ 	.proc_name		= "dpt_i2o",
+ 	.proc_info		= adpt_proc_info,
++	.detect			= adpt_detect,
++	.release		= adpt_release,
+ 	.info			= adpt_info,
+ 	.queuecommand		= adpt_queue,
+ 	.eh_abort_handler	= adpt_abort,
+@@ -3301,62 +3348,5 @@ static struct scsi_host_template adpt_te
+ 	.cmd_per_lun		= 1,
+ 	.use_clustering		= ENABLE_CLUSTERING,
+ };
+-
+-static s32 adpt_scsi_register(adpt_hba* pHba)
+-{
+-	struct Scsi_Host *host;
+-
+-	host = scsi_host_alloc(&adpt_template, sizeof(adpt_hba*));
+-	if (host == NULL) {
+-		printk ("%s: scsi_host_alloc returned NULL\n",pHba->name);
+-		return -1;
+-	}
+-	host->hostdata[0] = (unsigned long)pHba;
+-	pHba->host = host;
+-
+-	host->irq = pHba->pDev->irq;
+-	/* no IO ports, so don't have to set host->io_port and
+-	 * host->n_io_port
+-	 */
+-	host->io_port = 0;
+-	host->n_io_port = 0;
+-				/* see comments in scsi_host.h */
+-	host->max_id = 16;
+-	host->max_lun = 256;
+-	host->max_channel = pHba->top_scsi_channel + 1;
+-	host->cmd_per_lun = 1;
+-	host->unique_id = (uint) pHba;
+-	host->sg_tablesize = pHba->sg_tablesize;
+-	host->can_queue = pHba->post_fifo_size;
+-
+-	if (scsi_add_host(host, &pHba->pDev->dev)) {
+-		scsi_host_put(host);
+-		return -1;
+-	}
+-
+-	return 0;
+-}
+-
+-static int __init adpt_init(void)
+-{
+-	int count;
+-
+-	printk("Loading Adaptec I2O RAID: Version " DPT_I2O_VERSION "\n");
+-#ifdef REBOOT_NOTIFIER
+-	register_reboot_notifier(&adpt_reboot_notifier);
+-#endif
+-
+-	count = adpt_detect();
+-
+-	return count > 0 ? 0 : -ENODEV;
+-}
+-
+-static void __exit adpt_exit(void)
+-{
+-	while (hba_chain)
+-		adpt_release(hba_chain);
+-}
+-
+-module_init(adpt_init);
+-module_exit(adpt_exit);
++#include "scsi_module.c"
+ MODULE_LICENSE("GPL");
+--- a/drivers/scsi/dpti.h
++++ b/drivers/scsi/dpti.h
+@@ -28,9 +28,11 @@
+  * SCSI interface function Prototypes
+  */
+ 
++static int adpt_detect(struct scsi_host_template * sht);
+ static int adpt_queue(struct scsi_cmnd * cmd, void (*cmdcomplete) (struct scsi_cmnd *));
+ static int adpt_abort(struct scsi_cmnd * cmd);
+ static int adpt_reset(struct scsi_cmnd* cmd);
++static int adpt_release(struct Scsi_Host *host);
+ static int adpt_slave_configure(struct scsi_device *);
+ 
+ static const char *adpt_info(struct Scsi_Host *pSHost);
+@@ -47,6 +49,8 @@ static int adpt_device_reset(struct scsi
+ 
+ #define DPT_DRIVER_NAME	"Adaptec I2O RAID"
+ 
++#ifndef HOSTS_C
++
+ #include "dpt/sys_info.h"
+ #include <linux/wait.h>
+ #include "dpt/dpti_i2o.h"
+@@ -285,7 +289,7 @@ static s32 adpt_i2o_init_outbound_q(adpt
+ static s32 adpt_i2o_hrt_get(adpt_hba* pHba);
+ static s32 adpt_scsi_to_i2o(adpt_hba* pHba, struct scsi_cmnd* cmd, struct adpt_device* dptdevice);
+ static s32 adpt_i2o_to_scsi(void __iomem *reply, struct scsi_cmnd* cmd);
+-static s32 adpt_scsi_register(adpt_hba* pHba);
++static s32 adpt_scsi_register(adpt_hba* pHba,struct scsi_host_template * sht);
+ static s32 adpt_hba_reset(adpt_hba* pHba);
+ static s32 adpt_i2o_reset_hba(adpt_hba* pHba);
+ static s32 adpt_rescan(adpt_hba* pHba);
+@@ -295,7 +299,7 @@ static void adpt_i2o_delete_hba(adpt_hba
+ static void adpt_inquiry(adpt_hba* pHba);
+ static void adpt_fail_posted_scbs(adpt_hba* pHba);
+ static struct adpt_device* adpt_find_device(adpt_hba* pHba, u32 chan, u32 id, u32 lun);
+-static int adpt_install_hba(struct pci_dev* pDev) ;
++static int adpt_install_hba(struct scsi_host_template* sht, struct pci_dev* pDev) ;
+ static int adpt_i2o_online_hba(adpt_hba* pHba);
+ static void adpt_i2o_post_wait_complete(u32, int);
+ static int adpt_i2o_systab_send(adpt_hba* pHba);
+@@ -339,4 +343,5 @@ static void adpt_i386_info(sysInfo_S* si
+ #define FW_DEBUG_BLED_OFFSET       8
+ 
+ #define FW_DEBUG_FLAGS_NO_HEADERS_B    0x01
++#endif				/* !HOSTS_C */
+ #endif				/* _DPT_H */
 
 -- 
