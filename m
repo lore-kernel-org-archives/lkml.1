@@ -1,68 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763654AbXLMRLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764179AbXLMRMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763654AbXLMRLL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 12:11:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbXLMRK4
+	id S1764179AbXLMRMx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 12:12:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758548AbXLMRMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 12:10:56 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:62680 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751088AbXLMRKz (ORCPT
+	Thu, 13 Dec 2007 12:12:45 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:37666 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751628AbXLMRMp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 12:10:55 -0500
-Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: vincent.fortier1@ec.gc.ca, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Greg KH <gregkh@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
-In-Reply-To: <20071213165059.GC4865@elte.hu>
-References: <1197554397.19869.3.camel@lov.site>
-	 <1197558120.4936.34.camel@kayak.wul.qc.ec.gc.ca>
-	 <1197562981.19869.5.camel@lov.site>  <20071213165059.GC4865@elte.hu>
-Content-Type: text/plain
-Date: Thu, 13 Dec 2007 18:10:42 +0100
-Message-Id: <1197565842.19869.11.camel@lov.site>
+	Thu, 13 Dec 2007 12:12:45 -0500
+Date: Thu, 13 Dec 2007 09:07:56 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jerome Marchand <jmarchan@redhat.com>
+Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk
+Subject: Re: [Patch 7/8] Enhanced partition statistics: procfs
+Message-Id: <20071213090756.73de4e3e.randy.dunlap@oracle.com>
+In-Reply-To: <47615B3C.6030404@redhat.com>
+References: <47615B3C.6030404@redhat.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/YqT6p/PsbbSttCMw0Wp1zIDwkK/jYolzJtlI
- 9nSOONuZHnV+1MTvtOl55MxxVbzTdOVs1E7MbTV2zSfVDmF0Jq
- fIOYIgir+WFL3vhLWW1GWSxuxFw0DJb
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-12-13 at 17:50 +0100, Ingo Molnar wrote:
-> * Kay Sievers <kay.sievers@vrfy.org> wrote:
-> 
-> > > > > > +   sa->attr.owner = NULL;
-> > > > > >     sa->attr.name = name;
-> > > > >
-> > > > > i'm wondering why doesnt this affect 2.6.23 and later? Does sysfs
-> > > > > initialize the owner field to NULL automatically?
-> > > > 
-> > > > Attibutes do not have an owner anymore:
-> > > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7b595756ec1f49e0049a9e01a1298d53a7faaa15
-> > > 
-> > > This one also fails to apply properly at the exact same place has 
-> > > Ingo's previously posted patch.  Would need to backport his one.
-> > 
-> > It depends on a completely reworked sysfs logic, I don't think it 
-> > makes any sense to backport that.
-> 
-> well, if it fixes a live bug in a still supported stable kernel 
-> release...
-> 
-> Vincent, could you try to just get rid of all actual uses of 
-> se->attr.owner, within fs/sysfs/*.c? Something like the patch below. 
-> (totally untested - might be fatally broken as well)
+On Thu, 13 Dec 2007 17:18:04 +0100 Jerome Marchand wrote:
 
-How can you think that this is not needed? You can not remove it with
-sysfs you are patching. Hope this explains it:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0ab66088c855eca68513bdd7442a426c4b374ced
+> Reports enhanced partition statistics in /proc/diskstats.
 
-Kay
+> Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
+> ---
+>  genhd.c |   27 +++++++++++++++++++++------
+>  1 file changed, 21 insertions(+), 6 deletions(-)
+> diff -urNp -X linux-2.6/Documentation/dontdiff linux-2.6.orig/block/genhd.c linux-2.6/block/genhd.c
+> --- linux-2.6.orig/block/genhd.c	2007-12-04 17:37:31.000000000 +0100
+> +++ linux-2.6/block/genhd.c	2007-12-05 13:52:55.000000000 +0100
+> @@ -655,12 +655,27 @@ static int diskstats_show(struct seq_fil
+>  	for (n = 0; n < gp->minors - 1; n++) {
+>  		struct hd_struct *hd = gp->part[n];
+>  
+> -		if (hd && hd->nr_sects)
+> -			seq_printf(s, "%4d %4d %s %u %u %u %u\n",
+> -				gp->major, n + gp->first_minor + 1,
+> -				disk_name(gp, n + 1, buf),
+> -				hd->ios[0], hd->sectors[0],
+> -				hd->ios[1], hd->sectors[1]);
+> +		if (!hd || !hd->nr_sects) continue;
 
+Don't put if () and following statement on same line.
+
+> +
+> +		preempt_disable();
+> +		part_round_stats(hd);
+> +		preempt_enable();
+> +		seq_printf(s, "%4d %4d %s %lu %lu %llu "
+> +			   "%u %lu %lu %llu %u %u %u %u\n",
+> +			   gp->major, n + gp->first_minor + 1,
+> +			   disk_name(gp, n + 1, buf),
+> +			   part_stat_read(hd, ios[0]),
+> +			   part_stat_read(hd, merges[0]),
+> +			   (unsigned long long)part_stat_read(hd, sectors[0]),
+> +			   jiffies_to_msecs(part_stat_read(hd, ticks[0])),
+> +			   part_stat_read(hd, ios[1]),
+> +			   part_stat_read(hd, merges[1]),
+> +			   (unsigned long long)part_stat_read(hd, sectors[1]),
+> +			   jiffies_to_msecs(part_stat_read(hd, ticks[1])),
+> +			   hd->in_flight,
+> +			   jiffies_to_msecs(part_stat_read(hd, io_ticks)),
+> +			   jiffies_to_msecs(part_stat_read(hd, time_in_queue))
+> +			);
+>  	}
+>   
+>  	return 0;
+> 
+> --
+
+The format of the /proc file is not changed except to add data
+at the end of each line.  Is that correct?
+
+---
+~Randy
