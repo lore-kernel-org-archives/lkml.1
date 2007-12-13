@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934831AbXLNAFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934940AbXLNAGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934831AbXLNAFo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 19:05:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934797AbXLNAES
+	id S934940AbXLNAGQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 19:06:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933630AbXLNAEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 19:04:18 -0500
-Received: from mga03.intel.com ([143.182.124.21]:58030 "EHLO mga03.intel.com"
+	Thu, 13 Dec 2007 19:04:20 -0500
+Received: from mga03.intel.com ([143.182.124.21]:58012 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934788AbXLNAEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 19:04:14 -0500
+	id S932298AbXLNAEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 19:04:15 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.24,163,1196668800"; 
-   d="scan'208";a="340710601"
-Message-Id: <20071213235713.287720000@intel.com>
+   d="scan'208";a="340710598"
+Message-Id: <20071213235712.813201000@intel.com>
 References: <20071213235543.568682000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 13 Dec 2007 15:55:53 -0800
+Date: Thu, 13 Dec 2007 15:55:51 -0800
 From: venkatesh.pallipadi@intel.com
 To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
        torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
@@ -24,194 +24,187 @@ To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
 Cc: linux-kernel@vger.kernel.org,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [RFC PATCH 10/12] PAT 64b: Make acpi use early map instead of assuming identity map
-Content-Disposition: inline; filename=acpi_use_early_ioremap.patch
+Subject: [RFC PATCH 08/12] PAT 64b: coherent mmap and sysfs bin ioctl
+Content-Disposition: inline; filename=sysfs-bin-ioctl.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACPI boot code has assumptions about entire memory being mapped in identity
-mapping at:
-* Generic __acpi_map_table
-* Looking for RSD PTR at boot time
-* Looking for mp table
+Forward port of coherent-mmap.patch and sysfs-bin-ioctl.patch to x86 tree.
 
-Fix all these to use early_ioremap and early_iounmap.
+TBD: Do we need the ioctl interface to sysfs or get the type attribute
+through a different sysfs file. And then actually specify the attribute
+while doing pci_mmap_page_range ;-)
+
+And when this interface is in place, X server has to use this interface for WC
+mapping.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
 
-Index: linux-2.6.24-rc/arch/x86/kernel/acpi/boot.c
+Index: linux-2.6.24-rc4/fs/sysfs/bin.c
 ===================================================================
---- linux-2.6.24-rc.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-2.6.24-rc/arch/x86/kernel/acpi/boot.c
-@@ -105,16 +105,20 @@ enum acpi_irq_model_id acpi_irq_model = 
- 
- #ifdef	CONFIG_X86_64
- 
--/* rely on all ACPI tables being in the direct mapping */
- char *__acpi_map_table(unsigned long phys_addr, unsigned long size)
- {
- 	if (!phys_addr || !size)
- 		return NULL;
- 
--	if (phys_addr+size <= (end_pfn_map << PAGE_SHIFT) + PAGE_SIZE)
--		return __va(phys_addr);
-+	return early_ioremap(phys_addr, size);
-+}
- 
--	return NULL;
-+void __acpi_unmap_table(void * addr, unsigned long size)
-+{
-+	if (!addr || !size)
-+		return;
-+
-+	early_iounmap(addr, size);
- }
- 
- #else
-@@ -158,6 +162,11 @@ char *__acpi_map_table(unsigned long phy
- 
- 	return ((unsigned char *)base + offset);
- }
-+
-+void __acpi_unmap_table(void * addr, unsigned long size)
-+{
-+}
-+
- #endif
- 
- #ifdef CONFIG_PCI_MMCONFIG
-@@ -586,17 +595,23 @@ acpi_scan_rsdp(unsigned long start, unsi
- {
- 	unsigned long offset = 0;
- 	unsigned long sig_len = sizeof("RSD PTR ") - 1;
-+	char * virt_addr;
- 
-+	virt_addr = __acpi_map_table(start, length);
-+	if (!virt_addr)
-+		return 0;
- 	/*
- 	 * Scan all 16-byte boundaries of the physical memory region for the
- 	 * RSDP signature.
- 	 */
- 	for (offset = 0; offset < length; offset += 16) {
--		if (strncmp((char *)(phys_to_virt(start) + offset), "RSD PTR ", sig_len))
-+		if (strncmp(virt_addr + offset, "RSD PTR ", sig_len))
- 			continue;
-+		__acpi_unmap_table(virt_addr, length);
- 		return (start + offset);
- 	}
- 
-+	__acpi_unmap_table(virt_addr, length);
+--- linux-2.6.24-rc4.orig/fs/sysfs/bin.c	2007-12-11 16:23:26.000000000 -0800
++++ linux-2.6.24-rc4/fs/sysfs/bin.c	2007-12-11 16:32:01.000000000 -0800
+@@ -221,6 +221,19 @@
  	return 0;
  }
  
-Index: linux-2.6.24-rc/drivers/acpi/osl.c
-===================================================================
---- linux-2.6.24-rc.orig/drivers/acpi/osl.c
-+++ linux-2.6.24-rc/drivers/acpi/osl.c
-@@ -231,6 +231,8 @@ void acpi_os_unmap_memory(void __iomem *
- {
- 	if (acpi_gbl_permanent_mmap) {
- 		iounmap(virt);
-+	} else {
-+		__acpi_unmap_table(virt, size);
- 	}
- }
- EXPORT_SYMBOL_GPL(acpi_os_unmap_memory);
-Index: linux-2.6.24-rc/include/linux/acpi.h
-===================================================================
---- linux-2.6.24-rc.orig/include/linux/acpi.h
-+++ linux-2.6.24-rc/include/linux/acpi.h
-@@ -79,6 +79,7 @@ typedef int (*acpi_table_handler) (struc
- typedef int (*acpi_table_entry_handler) (struct acpi_subtable_header *header, const unsigned long end);
- 
- char * __acpi_map_table (unsigned long phys_addr, unsigned long size);
-+void __acpi_unmap_table (void * addr, unsigned long size);
- unsigned long acpi_find_rsdp (void);
- int acpi_boot_init (void);
- int acpi_boot_table_init (void);
-Index: linux-2.6.24-rc/arch/x86/kernel/mpparse_64.c
-===================================================================
---- linux-2.6.24-rc.orig/arch/x86/kernel/mpparse_64.c
-+++ linux-2.6.24-rc/arch/x86/kernel/mpparse_64.c
-@@ -535,9 +535,12 @@ void __init get_smp_config (void)
- static int __init smp_scan_config (unsigned long base, unsigned long length)
- {
- 	extern void __bad_mpf_size(void); 
--	unsigned int *bp = phys_to_virt(base);
-+	unsigned int *bp = (unsigned int *)__acpi_map_table(base, length);
- 	struct intel_mp_floating *mpf;
- 
-+	if (!bp)
-+		return 0;
++static int ioctl(struct inode *i, struct file *f, unsigned cmd,
++		 unsigned long arg)
++{
++	struct sysfs_dirent *attr_sd = f->f_path.dentry->d_fsdata;
++	struct bin_attribute *attr = attr_sd->s_bin_attr.bin_attr;
++	struct kobject *kobj = attr_sd->s_parent->s_dir.kobj;
 +
- 	Dprintk("Scan SMP from %p for %ld bytes.\n", bp,length);
- 	if (sizeof(*mpf) != 16)
- 		__bad_mpf_size();
-@@ -555,17 +558,20 @@ static int __init smp_scan_config (unsig
- 			if (mpf->mpf_physptr)
- 				reserve_bootmem_generic(mpf->mpf_physptr, PAGE_SIZE);
- 			mpf_found = mpf;
-+			__acpi_unmap_table((char *)bp, length);
- 			return 1;
++	if (!attr->ioctl)
++		return -EINVAL;
++
++	return attr->ioctl(kobj, attr, cmd, arg);
++}
++
+ const struct file_operations bin_fops = {
+ 	.read		= read,
+ 	.write		= write,
+@@ -228,6 +241,7 @@
+ 	.llseek		= generic_file_llseek,
+ 	.open		= open,
+ 	.release	= release,
++	.ioctl		= ioctl,
+ };
+ 
+ /**
+Index: linux-2.6.24-rc4/include/linux/sysfs.h
+===================================================================
+--- linux-2.6.24-rc4.orig/include/linux/sysfs.h	2007-12-11 16:23:26.000000000 -0800
++++ linux-2.6.24-rc4/include/linux/sysfs.h	2007-12-11 16:29:07.000000000 -0800
+@@ -69,6 +69,8 @@
+ 			 char *, loff_t, size_t);
+ 	int (*mmap)(struct kobject *, struct bin_attribute *attr,
+ 		    struct vm_area_struct *vma);
++	int (*ioctl)(struct kobject *, struct bin_attribute *attr,
++			unsigned cmd, unsigned long arg);
+ };
+ 
+ struct sysfs_ops {
+Index: linux-2.6.24-rc4/drivers/pci/pci-sysfs.c
+===================================================================
+--- linux-2.6.24-rc4.orig/drivers/pci/pci-sysfs.c	2007-12-11 16:03:55.000000000 -0800
++++ linux-2.6.24-rc4/drivers/pci/pci-sysfs.c	2007-12-11 16:29:07.000000000 -0800
+@@ -473,8 +473,56 @@
+ 			kfree(res_attr);
  		}
- 		bp += 4;
- 		length -= 16;
  	}
-+	__acpi_unmap_table((char *)bp, length);
- 	return 0;
++
++#ifdef HAVE_PCI_COHERENT_MMAP
++	sysfs_remove_bin_file(&pdev->dev.kobj, pdev->coherent_attr);
++	kfree(pdev->coherent_attr);
++#endif
++}
++
++#ifdef HAVE_PCI_COHERENT_MMAP
++
++struct coh_mmap_data {
++	void *map;
++	struct device *dev;
++	dma_addr_t busadr;
++};
++
++void pci_coherent_mmap_close(struct vm_area_struct *vma)
++{
++	struct coh_mmap_data *cm = vma->vm_private_data;
++	dma_free_coherent(cm->dev, vma->vm_end - vma->vm_start, cm->map,
++			  cm->busadr);
  }
  
- void __init find_smp_config(void)
- {
- 	unsigned int address;
-+	unsigned short *bp;
- 
- 	/*
- 	 * FIXME: Linux assumes you have 640K of base ram..
-@@ -592,11 +598,17 @@ void __init find_smp_config(void)
- 	 * should be fixed.
- 	 */
- 
--	address = *(unsigned short *)phys_to_virt(0x40E);
-+	bp = (unsigned short *)__acpi_map_table(0x40E, 2);
-+	if (!bp)
-+		return;
++static struct vm_operations_struct pci_coherent_vmops = {
++	.close = pci_coherent_mmap_close,
++};
 +
-+	address = *bp;
- 	address <<= 4;
- 	if (smp_scan_config(address, 0x1000))
- 		return;
- 
-+	__acpi_unmap_table((char *)bp, 2);
++static int
++pci_mmap_coherent_mem(struct kobject *kobj, struct bin_attribute *attr,
++		  struct vm_area_struct *vma)
++{
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct coh_mmap_data *cm = kmalloc(sizeof(struct coh_mmap_data),
++					   GFP_KERNEL);
++	if (!cm)
++		return -ENOMEM;
++	cm->map = dma_alloc_coherent(dev, vma->vm_end - vma->vm_start,
++				     &cm->busadr, GFP_KERNEL);
++	cm->dev = dev;
++	if (!cm->map) {
++		kfree(cm->map);
++		return -ENOMEM;
++	}
++	vma->vm_private_data = cm;
++	vma->vm_pgoff = cm->busadr >> PAGE_SHIFT;
++	vma->vm_ops = &pci_coherent_vmops;
++	return pci_mmap_page_range(pdev, vma, pci_mmap_coherent, 0);
++}
++#endif
 +
- 	/* If we have come this far, we did not find an MP table  */
- 	 printk(KERN_INFO "No mptable found.\n");
+ /**
+  * pci_create_resource_files - create resource files in sysfs for @dev
+  * @dev: dev in question
+@@ -692,6 +740,22 @@
+ 			kfree(pdev->rom_attr);
+ 		}
+ 	}
++#ifdef HAVE_PCI_COHERENT_MMAP
++	{
++		struct bin_attribute *a = kzalloc(sizeof(struct bin_attribute),
++						  GFP_KERNEL);
++		if (!a)
++			return;
++		pdev->coherent_attr = a;
++		a->attr.name = "coherent_mem";
++		a->attr.mode = S_IRUSR | S_IWUSR;
++		a->attr.owner = THIS_MODULE;
++		a->size = *(pdev->dev.dma_mask);
++		a->mmap = pci_mmap_coherent_mem;
++		a->private = NULL;
++		sysfs_create_bin_file(&pdev->dev.kobj, a);
++	}
++#endif
  }
-Index: linux-2.6.24-rc/arch/x86/mm/init_64.c
+ 
+ static int __init pci_sysfs_init(void)
+Index: linux-2.6.24-rc4/include/asm-x86/pci.h
 ===================================================================
---- linux-2.6.24-rc.orig/arch/x86/mm/init_64.c
-+++ linux-2.6.24-rc/arch/x86/mm/init_64.c
-@@ -206,7 +206,7 @@ static __meminit void unmap_low_page(voi
- } 
+--- linux-2.6.24-rc4.orig/include/asm-x86/pci.h	2007-12-11 16:03:55.000000000 -0800
++++ linux-2.6.24-rc4/include/asm-x86/pci.h	2007-12-11 16:29:07.000000000 -0800
+@@ -61,6 +61,7 @@
  
- /* Must run before zap_low_mappings */
--__meminit void *early_ioremap(unsigned long addr, unsigned long size)
-+void *early_ioremap(unsigned long addr, unsigned long size)
- {
- 	unsigned long vaddr;
- 	pmd_t *pmd, *last_pmd;
-@@ -235,7 +235,7 @@ __meminit void *early_ioremap(unsigned l
- }
  
- /* To avoid virtual aliases later */
--__meminit void early_iounmap(void *addr, unsigned long size)
-+void early_iounmap(void *addr, unsigned long size)
- {
- 	unsigned long vaddr;
- 	pmd_t *pmd;
+ #define HAVE_PCI_MMAP
++#define HAVE_PCI_COHERENT_MMAP
+ extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+ 			       enum pci_mmap_state mmap_state, int write_combine);
+ 
+Index: linux-2.6.24-rc4/include/linux/pci.h
+===================================================================
+--- linux-2.6.24-rc4.orig/include/linux/pci.h	2007-12-11 16:03:55.000000000 -0800
++++ linux-2.6.24-rc4/include/linux/pci.h	2007-12-11 16:29:07.000000000 -0800
+@@ -57,7 +57,8 @@
+ /* File state for mmap()s on /proc/bus/pci/X/Y */
+ enum pci_mmap_state {
+ 	pci_mmap_io,
+-	pci_mmap_mem
++	pci_mmap_mem,
++	pci_mmap_coherent
+ };
+ 
+ /* This defines the direction arg to the DMA mapping routines. */
+@@ -201,6 +202,7 @@
+ 	struct bin_attribute *rom_attr; /* attribute descriptor for sysfs ROM entry */
+ 	int rom_attr_enabled;		/* has display of the rom attribute been enabled? */
+ 	struct bin_attribute *res_attr[DEVICE_COUNT_RESOURCE]; /* sysfs file for resources */
++	struct bin_attribute *coherent_attr;
+ #ifdef CONFIG_PCI_MSI
+ 	struct list_head msi_list;
+ #endif
 
 -- 
