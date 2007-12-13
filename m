@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933203AbXLMVLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932989AbXLMVMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933203AbXLMVLV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 16:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932352AbXLMVLH
+	id S932989AbXLMVMo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 16:12:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbXLMVMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 16:11:07 -0500
-Received: from picture.zai.com ([12.47.112.36]:48555 "EHLO york.rivers.zai.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765022AbXLMVLG convert rfc822-to-8bit (ORCPT
+	Thu, 13 Dec 2007 16:12:30 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:48939 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753394AbXLMVM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 16:11:06 -0500
-X-Greylist: delayed 974 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Dec 2007 16:11:05 EST
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: Per process control of core file naming
-Date: Thu, 13 Dec 2007 15:54:48 -0500
-Message-ID: <D108F32273D3044F8C7B24328CB7713701A365@york.rivers.zai.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Per process control of core file naming
-Thread-Index: Acg9ymX8tBIyOxDkSdyEnAvGDNUWcw==
-From: "Sanders, Rob M." <sanders-rob@zai.com>
-To: <linux-kernel@vger.kernel.org>
+	Thu, 13 Dec 2007 16:12:29 -0500
+Date: Fri, 14 Dec 2007 00:12:39 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Jesse Barnes <jesse.barnes@intel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Robert Hancock <hancockr@shaw.ca>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Possible issue with dangling PCI BARs
+Message-ID: <20071214001239.B21652@jurassic.park.msu.ru>
+References: <fa.YfTvVN5C3e6zwXPW5biWgeZ9XXc@ifi.uio.no> <1197544621.15741.132.camel@pasglop> <1197544820.15741.137.camel@pasglop> <200712131204.18227.jesse.barnes@intel.com> <1197579066.15741.167.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+In-Reply-To: <1197579066.15741.167.camel@pasglop>; from benh@kernel.crashing.org on Fri, Dec 14, 2007 at 07:51:06AM +1100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
-  I know I can use the /proc/sys/kernel/core_pattern and /proc/sys/kernel/core_uses_pid files to 
-control core filenaming for *all* core files on a system, but is there a way for a particular 
-process to have control of its own core file names?  The down side to the current way Linux does this now
-is that *all* processes are affected, requiring someone with root/sudo access (or someone with
-said privs to chmod these files) to change the behavior.  It would be nice for a process/programmer
-to have finer grain control (subject to override by /proc/sys/kernel/core*) on the names of the 
-core files.
-  Tru64's has this, as 'enhanced core file naming', where a process can decide at runtime how a 
-file will be named (still being written to the CWD if space/permissions allow).
-  I'd found this feature to be quite useful several years ago on a Tru64 cluster, where I had 
-multiple instances of the same executable running across the cluster.  It was very nice
-to be able to turn on and off the enhanced naming ( core.program_name.host_name.numeric_tag)
-as I needed to, without requiring everyone *else* to use the same naming conventions.
-   
-Thanks...
+On Fri, Dec 14, 2007 at 07:51:06AM +1100, Benjamin Herrenschmidt wrote:
+> If the device is behind a P2P bridge and the BIOS has set the windows of
+> that bridge so tightly that there is no room to allocate the MMIO BAR,
+> then a full disable/full enable would fail on a device that would
+> otherwise work using only PIO.
 
-Rob
+It won't be a problem with separate io/mmio enable.
+
+> However, I'd be curious to see that happening in practice :-)
+> 
+> But I think it's fair enough to do an IO only / MEM only approach. I've
+> seen cases where IO is just not useable because of other constraints and
+> so I expect the MEM-only case to be more common, especially on non-x86.
+
+Everybody wants MEM if it's available - it's just faster :-)
+So I guess a common case will be
+
+	if (pci_enable_device_mmio(dev)) {
+		/* failed, fallback to IO */
+		if (pci_enable_device_io(dev))
+			return -ENODEV;
+		...
+	}
+
+Ivan.
