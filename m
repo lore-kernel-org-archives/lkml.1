@@ -1,96 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759821AbXLMI0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbXLMIbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759821AbXLMI0i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 03:26:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbXLMI02
+	id S1760165AbXLMIbQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 03:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbXLMIbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 03:26:28 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:55561 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752740AbXLMI01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 03:26:27 -0500
-Date: Thu, 13 Dec 2007 09:26:21 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, matthew@wil.cx,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org,
-       Adam Belay <ambx1@neo.rr.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Li Shaohua <shaohua.li@intel.com>, Len Brown <lenb@kernel.org>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: PNP: do not stop/start devices in suspend/resume path
-Message-ID: <20071213092621.7cf6ee87@poseidon.drzeus.cx>
-In-Reply-To: <200712061625.57660.bjorn.helgaas@hp.com>
-References: <4745F77C.7040402@gmail.com>
-	<47514CE2.3000600@gmail.com>
-	<200712051124.18852.bjorn.helgaas@hp.com>
-	<200712061625.57660.bjorn.helgaas@hp.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-25559-1197534386-0001-2"
+	Thu, 13 Dec 2007 03:31:00 -0500
+Received: from fwil.voltaire.com ([193.47.165.2]:16927 "EHLO exil.voltaire.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753026AbXLMIbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 03:31:00 -0500
+Message-ID: <4760EDC0.5020703@voltaire.com>
+Date: Thu, 13 Dec 2007 10:30:56 +0200
+From: Or Gerlitz <ogerlitz@voltaire.com>
+User-Agent: Thunderbird 1.4.1 (Windows/20051006)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: Joachim Fenkes <FENKES@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Christoph Raisch <raisch@de.ibm.com>,
+       OF-General <general@lists.openfabrics.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [ewg] Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
+References: <OFD9564F75.44193623-ONC12573AE.002EA542-C12573AE.002F5FBC@de.ibm.com><475FD0A1.3090304@voltaire.com> <adabq8v91co.fsf@cisco.com>
+In-Reply-To: <adabq8v91co.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Dec 2007 08:30:57.0761 (UTC) FILETIME=[7C109510:01C83D62]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Roland Dreier wrote:
+> I think the right fix for iSER would be to make iSER work even for
+> devices that don't support FMRs.  For example cxgb3 doesn't implement
+> FMRs so if anyone ever updates iSER to work on iWARP and not just IB,
+> then this is something that has to be tackled anyway.  Then ehca could
+> just get rid of the FMR support it has.
 
---=_hera.drzeus.cx-25559-1197534386-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+OK, The iSER design took into account the case of many initiators 
+running on strong/modern machines talking to possibly lightweight 
+embedded target for which the processing cost per I/O at the target side 
+should be minimized, that is at most --one-- RDMA operation should be 
+issued by the target to serve an I/O request.
 
-On Thu, 6 Dec 2007 16:25:57 -0700
-Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+For that end, iSER works with one descriptor (called stag in iWARP and 
+rkey in IB) per I/O direction sent from the initiator to the target and 
+hence can't work without some sort of FMR implementation.
 
-> PNP: do not stop/start devices in suspend/resume path
->=20
-> Do not disable PNP devices in the suspend path.  We still call
-> the driver's suspend method, which should prevent further use of
-> the device, and the protocol suspend method, which may put the
-> device in a low-power state.
->=20
-> I'm told that Windows puts devices in a low-power state (Linux
-> does this in the protocol suspend method), but does not use _DIS
-> in the suspend path.  Other relevant references:
->=20
->   - In the ACPI 3.0b spec, I can't find any mention of _DIS in
->     connection with sleep.  And Device Object Notifications,
->     Section 5.6.3, Table 5-43, says we should get a bus check
->     after awakening if hardware was removed while we slept.
->=20
->   - This: http://msdn2.microsoft.com/en-us/library/ms810079.aspx
->     makes a similar point about how the OS re-enumerates devices
->     as a result of a power state change (3rd last paragraph of
->     text).
->=20
->   - This: http://msdn2.microsoft.com/en-us/library/aa489874.aspx
->     suggests that Windows only stops a device to rebalance hardware
->     resources.
->=20
-> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
->=20
+The current implementation of the open iscsi initiator makes sure to 
+issue commands in thread (sleepable) context, see iscsi_xmitworker and 
+references to it in drivers/scsi/libiscsi.c , so this keeps ehca users 
+safe for the time being.
 
-Tested-by: Pierre Ossman <drzeus@drzeus.cx>
+Or.
 
-No noticeable issues with suspend or hibernate using this patch.
 
-Rgds
-Pierre
 
---=_hera.drzeus.cx-25559-1197534386-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHYOyt7b8eESbyJLgRAkFQAJ9DDfb9L2gXYVF32hxFgu9hpHPNfwCguypF
-kLYBUDCTxW9Rm445Ts7Iiq4=
-=9Wkm
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-25559-1197534386-0001-2--
