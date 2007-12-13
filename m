@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763958AbXLMRhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764954AbXLMRib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763958AbXLMRhR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 12:37:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761397AbXLMRhB
+	id S1764954AbXLMRib (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 12:38:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762384AbXLMRiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 12:37:01 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:52289 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760431AbXLMRg7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 12:36:59 -0500
-Date: Thu, 13 Dec 2007 12:36:47 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gautham R Shenoy <ego@in.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ted Tso <tytso@us.ibm.com>,
-       dvhltc@us.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       Josh Triplett <josh@freedesktop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH 0/6] RCU: Preemptible-RCU
-In-Reply-To: <20071213170348.GA25981@in.ibm.com>
-Message-ID: <Pine.LNX.4.58.0712131230220.3369@gandalf.stny.rr.com>
-References: <20071213170348.GA25981@in.ibm.com>
+	Thu, 13 Dec 2007 12:38:22 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55858 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761922AbXLMRiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 12:38:21 -0500
+Message-ID: <47616DAD.5020305@redhat.com>
+Date: Thu, 13 Dec 2007 18:36:45 +0100
+From: Jerome Marchand <jmarchan@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: linux-kernel@vger.kernel.org, axboe@kernel.dk
+Subject: Re: [Patch 7/8] Enhanced partition statistics: procfs
+References: <47615B3C.6030404@redhat.com> <20071213090756.73de4e3e.randy.dunlap@oracle.com>
+In-Reply-To: <20071213090756.73de4e3e.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Dec 2007, Gautham R Shenoy wrote:
+Randy Dunlap wrote:
+> 
+> The format of the /proc file is not changed except to add data
+> at the end of each line.  Is that correct?
+> 
 
->
-> Currently it is based against the latest linux-2.6-sched-devel.git
->
-> Awaiting your feedback!
+No. The line concerning partitions will display different data. The new format match the current format
+concerning disks.
 
-Hi Gautham,
+Current partition format:
+major minor name reads_issued sectors_read writes_issued sectors_written
 
-Thanks for posting this. I believe this is the same version of preempt RCU
-as we have in the RT patch. It seems to be very stable. I ran the RT patch
-version of the RCU Preempt (just the Preempt RCU patches without RT on
-latest git) on a 64way box and the results seems just as good (if not
-slightly better) than classic RCU!  I'll rerun this patch series on that
-box and post the results.
+New partition format (current disk format):
+major minor name reads_issued reads_merged sector_read ms_reading writes_completed writes_merged sectors_written ms_writing I/Os_running ms_I/O weighted_ms_I/O
 
->From what I'm seening with this, is that it is ready for mainline. These
-patches should probably go into -mm and be ready for 2.6.25.  If Andrew
-wants to wait for my results, I'll run them tonight.
-
-Thanks Gautham, Paul and Dipankar for all this great work!
-
--- Steve
-
+Jérôme
