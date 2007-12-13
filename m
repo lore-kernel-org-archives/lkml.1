@@ -1,103 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764047AbXLMTyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765654AbXLMTz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764047AbXLMTyf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 14:54:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763095AbXLMTx6
+	id S1765654AbXLMTz7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 14:55:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759303AbXLMTzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 14:53:58 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:19316 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762769AbXLMTxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 14:53:55 -0500
-Date: Thu, 13 Dec 2007 20:53:50 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mark Lord <liml@rtr.ca>
-Cc: Mark Lord <lkml@rtr.ca>, Matthew Wilcox <matthew@wil.cx>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-Message-ID: <20071213195350.GH10104@kernel.dk>
-References: <47617B92.6020908@rtr.ca> <47617C07.3020501@rtr.ca> <47617E72.6080504@rtr.ca> <20071213185326.GQ26334@parisc-linux.org> <4761821F.3050602@rtr.ca> <20071213192633.GD10104@kernel.dk> <4761883A.7050908@rtr.ca> <476188C4.9030802@rtr.ca> <20071213193937.GG10104@kernel.dk> <47618B0B.8020203@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47618B0B.8020203@rtr.ca>
+	Thu, 13 Dec 2007 14:55:48 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50792 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762851AbXLMTzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 14:55:46 -0500
+Date: Thu, 13 Dec 2007 11:55:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, netdev@vger.kernel.org
+Subject: Re: 2.6.24-rc5-mm1 regression - kernel warning on
+ tcp_fastretrans_alert()
+Message-Id: <20071213115526.3b790bad.akpm@linux-foundation.org>
+In-Reply-To: <47614815.8070007@linux.vnet.ibm.com>
+References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
+	<47614815.8070007@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13 2007, Mark Lord wrote:
-> Jens Axboe wrote:
-> >On Thu, Dec 13 2007, Mark Lord wrote:
-> >>Mark Lord wrote:
-> >>>Jens Axboe wrote:
-> >>>>On Thu, Dec 13 2007, Mark Lord wrote:
-> >>>>>Matthew Wilcox wrote:
-> >>>>>>On Thu, Dec 13, 2007 at 01:48:18PM -0500, Mark Lord wrote:
-> >>>>>>>Problem confirmed.  2.6.23.8 regularly generates segments up to 
-> >>>>>>>64KB for libata,
-> >>>>>>>but 2.6.24 uses only 4KB segments and a *few* 8KB segments.
-> >>>>>>Just a suspicion ... could this be slab vs slub?  ie check your 
-> >>>>>>configs
-> >>>>>>are the same / similar between the two kernels.
-> >>>>>..
-> >>>>>
-> >>>>>Mmmm.. a good thought, that one.
-> >>>>>But I just rechecked, and both have CONFIG_SLAB=y
-> >>>>>
-> >>>>>My guess is that something got changed around when Jens
-> >>>>>reworked the block layer for 2.6.24.
-> >>>>>I'm going to dig around in there now.
-> >>>>I didn't rework the block layer for 2.6.24 :-). The core block layer
-> >>>>changes since 2.6.23 are:
-> >>>>
-> >>>>- Support for empty barriers. Not a likely candidate.
-> >>>>- Shared tag queue fixes. Totally unlikely.
-> >>>>- sg chaining support. Not likely.
-> >>>>- The bio changes from Neil. Of the bunch, the most likely suspects in
-> >>>> this area, since it changes some of the code involved with merges and
-> >>>> blk_rq_map_sg().
-> >>>>- Lots of simple stuff, again very unlikely.
-> >>>>
-> >>>>Anyway, it sounds odd for this to be a block layer problem if you do see
-> >>>>occasional segments being merged. So it sounds more like the input data
-> >>>>having changed.
-> >>>>
-> >>>>Why not just bisect it?
-> >>>..
-> >>>
-> >>>Because the early 2.6.24 series failed to boot on this machine
-> >>>due to bugs in the block layer -- so the code that caused this regression
-> >>>is probably in the stuff from before the kernels became usable here.
-> >>..
-> >>
-> >>That sounds more harsh than intended --> the earlier 2.6.24 kernels (up to
-> >>the first couple of -rc* ones failed here because of incompatibilities
-> >>between the block/bio changes and libata.
-> >>
-> >>That's better, I think! 
-> >
-> >No worries, I didn't pick it up as harsh just as an odd conclusion :-)
-> >
-> >If I were you, I'd just start from the first -rc that booted for you. If
-> >THAT has the bug, then we'll think of something else. If you don't get
-> >anywhere, I can run some tests tomorrow and see if I can reproduce it
-> >here.
-> ..
+On Thu, 13 Dec 2007 20:26:21 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+
+> Hi Andrew,
+
+Hi.  Please do try to cc netdev@vger.kernel.org on net-related problems. 
+Doing so will often save multiple hours latency and will optimise away one
+entire email (ie: this one).
+
+> Following call trace is seen in 2.6.24-rc5-mm1 kernel also,it was reported
+> for 2.6.24-rc4-mm1 kernel http://lkml.org/lkml/2007/12/6/22
 > 
-> I believe that *anyone* can reproduce it, since it's broken long before
-> the requests ever get to SCSI or libata.  Which also means that *anyone*
-> who wants to can bisect it, as well.
+> ls21b kernel: [ 7530.313408] WARNING: at net/ipv4/tcp_input.c:2533 tcp_fastretrans_alert()
+> ls21b kernel: [ 7530.354051] Pid: 0, comm: swapper Not tainted 2.6.24-rc5-mm1 #1
+> ls21b kernel: [ 7530.389487]
+> ls21b kernel: [ 7530.389488] Call Trace:
+> ls21b kernel: [ 7530.413030]  <IRQ>  [<ffffffff80482374>] tcp_fastretrans_alert+0x127/0xdaf
+> ls21b kernel: [ 7530.454295]  [<ffffffff804850cd>] tcp_ack+0xf2f/0x10fe
+> ls21b kernel: [ 7530.485066]  [<ffffffff80488503>] tcp_rcv_established+0x695/0x79a
+> ls21b kernel: [ 7530.521542]  [<ffffffff8025c46a>] trace_hardirqs_off+0x39/0xdc
+> ls21b kernel: [ 7530.556468]  [<ffffffff8048eb70>] tcp_v4_do_rcv+0x37/0x3e1
+> ls21b kernel: [ 7530.589317]  [<ffffffff80491764>] tcp_v4_rcv+0xac7/0xb93
+> ls21b kernel: [ 7530.621126]  [<ffffffff80472c40>] ip_local_deliver_finish+0x54/0x20f
+> ls21b kernel: [ 7530.659168]  [<ffffffff80472d20>] ip_local_deliver_finish+0x134/0x20f
+> ls21b kernel: [ 7530.697724]  [<ffffffff804732cc>] ip_local_deliver+0x72/0x7a
+> ls21b kernel: [ 7530.731609]  [<ffffffff80472b7c>] ip_rcv_finish+0x3c0/0x430
+> ls21b kernel: [ 7530.764977]  [<ffffffff8044d9a6>] netif_receive_skb+0x10e/0x44d
+> ls21b kernel: [ 7530.800422]  [<ffffffff80473223>] ip_rcv+0x326/0x35d
+> ls21b kernel: [ 7530.830148]  [<ffffffff8044dc77>] netif_receive_skb+0x3df/0x44d
+> ls21b kernel: [ 7530.865603]  [<ffffffff8814d44a>] :bnx2:bnx2_poll+0x1262/0x14a4
+> ls21b kernel: [ 7530.901039]  [<ffffffff8034817d>] __next_cpu+0x19/0x28
+> ls21b kernel: [ 7530.931805]  [<ffffffff802323a1>] find_busiest_group+0x252/0x6da
+> ls21b kernel: [ 7530.967768]  [<ffffffff8025c46a>] trace_hardirqs_off+0x39/0xdc
+> ls21b kernel: [ 7531.002693]  [<ffffffff8025c46a>] trace_hardirqs_off+0x39/0xdc
+> ls21b kernel: [ 7531.037612]  [<ffffffff8025c21f>] check_chain_key+0x9c/0x15f
+> ls21b kernel: [ 7531.071501]  [<ffffffff8026012b>] __lock_acquire+0xdee/0xf06
+> ls21b kernel: [ 7531.105386]  [<ffffffff80450476>] net_rx_action+0x75/0x234
+> ls21b kernel: [ 7531.138233]  [<ffffffff80450476>] net_rx_action+0x75/0x234
+> ls21b kernel: [ 7531.171074]  [<ffffffff804504ed>] net_rx_action+0xec/0x234
+> ls21b kernel: [ 7531.203920]  [<ffffffff80243f02>] __do_softirq+0x5f/0xe3
+> ls21b kernel: [ 7531.235721]  [<ffffffff8020d5cc>] call_softirq+0x1c/0x28
+> ls21b kernel: [ 7531.267528]  [<ffffffff8020ecdf>] do_softirq+0x45/0x108
+> ls21b kernel: [ 7531.298811]  [<ffffffff80243ea1>] irq_exit+0x4e/0x50
+> ls21b kernel: [ 7531.328540]  [<ffffffff8020ef3d>] do_IRQ+0x171/0x194
+> ls21b kernel: [ 7531.358267]  [<ffffffff8020c8c6>] ret_from_intr+0x0/0xf
+> ls21b kernel: [ 7531.389549]  <EOI>  [<ffffffff8020b1ec>] default_idle+0x58/0x8a
+> ls21b kernel: [ 7531.425096]  [<ffffffff8020b1ea>] default_idle+0x56/0x8a
+> ls21b kernel: [ 7531.456900]  [<ffffffff8020b194>] default_idle+0x0/0x8a
+> ls21b kernel: [ 7531.488186]  [<ffffffff8020b2d3>] cpu_idle+0xb5/0xec
+> ls21b kernel: [ 7531.517913]  [<ffffffff802226f4>] start_secondary+0x3ca/0x3da
 > 
-> I don't do "bisects".
 
-It was just a suggestion on how to narrow it down, do as you see fit.
+That is
 
-> But I will dig a bit more and see if I can find the culprit.
-
-Sure, I'll dig around as well.
-
--- 
-Jens Axboe
+	if (WARN_ON(!tp->sacked_out && tp->fackets_out))
+		tp->fackets_out = 0;
 
