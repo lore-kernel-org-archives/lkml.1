@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764542AbXLMHQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764731AbXLMHQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764542AbXLMHQY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:16:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762667AbXLMG6Q
+	id S1764731AbXLMHQq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:16:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762668AbXLMG6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:58:16 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55622 "EHLO
+	Thu, 13 Dec 2007 01:58:19 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55631 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762661AbXLMG6O (ORCPT
+	with ESMTP id S1762661AbXLMG6R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:58:14 -0500
-Date: Wed, 12 Dec 2007 22:53:23 -0800
+	Thu, 13 Dec 2007 01:58:17 -0500
+Date: Wed, 12 Dec 2007 22:53:25 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
+To: linux-kernel@vger.kernel.org, stable@kernel.org, bunk@kernel.org,
+       davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Pablo Neira Ayuso <pablo@netfilter.org>,
-       Patrick McHardy <kaber@trash.net>,
+       Joonwoo Park <joonwpark81@gmail.com>,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 49/60] TEXTSEARCH: Do not allow zero length patterns in the
-	textsearch infrastructure
-Message-ID: <20071213065323.GY6867@kroah.com>
+Subject: [patch 50/60] VLAN: Fix nested VLAN transmit bug
+Message-ID: <20071213065325.GZ6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="textsearch-do-not-allow-zero-length-patterns-in-the-textsearch-infrastructure.patch"
+Content-Disposition: inline; filename="vlan-fix-nested-vlan-transmit-bug.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -43,54 +42,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Pablo Neira Ayuso <pablo@netfilter.org>
+From: Joonwoo Park <joonwpark81@gmail.com>
 
-[TEXTSEARCH]: Do not allow zero length patterns in the textsearch infrastructure
+[VLAN]: Fix nested VLAN transmit bug
 
-[ Upstream commit: e03ba84adb62fbc6049325a5bc00ef6932fa5e39 ]
+[ Upstream commit: 6ab3b487db77fa98a24560f11a5a8e744b98d877 ]
 
-If a zero length pattern is passed then return EINVAL.
-Avoids infinite loops (bm) or invalid memory accesses (kmp).
+Fix misbehavior of vlan_dev_hard_start_xmit() for recursive encapsulations.
 
-Signed-off-by: Pablo Neira Ayuso <pablo@netfilter.org>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- lib/textsearch.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ net/8021q/vlan_dev.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/lib/textsearch.c
-+++ b/lib/textsearch.c
-@@ -7,7 +7,7 @@
-  *		2 of the License, or (at your option) any later version.
-  *
-  * Authors:	Thomas Graf <tgraf@suug.ch>
-- * 		Pablo Neira Ayuso <pablo@eurodev.net>
-+ * 		Pablo Neira Ayuso <pablo@netfilter.org>
-  *
-  * ==========================================================================
-  *
-@@ -250,7 +250,8 @@ unsigned int textsearch_find_continuous(
-  *       the various search algorithms.
-  *
-  * Returns a new textsearch configuration according to the specified
-- *         parameters or a ERR_PTR().
-+ * parameters or a ERR_PTR(). If a zero length pattern is passed, this
-+ * function returns EINVAL.
-  */
- struct ts_config *textsearch_prepare(const char *algo, const void *pattern,
- 				     unsigned int len, gfp_t gfp_mask, int flags)
-@@ -259,6 +260,9 @@ struct ts_config *textsearch_prepare(con
- 	struct ts_config *conf;
- 	struct ts_ops *ops;
- 	
-+	if (len == 0)
-+		return ERR_PTR(-EINVAL);
-+
- 	ops = lookup_ts_algo(algo);
- #ifdef CONFIG_KMOD
- 	/*
+--- a/net/8021q/vlan_dev.c
++++ b/net/8021q/vlan_dev.c
+@@ -459,7 +459,8 @@ int vlan_dev_hard_start_xmit(struct sk_b
+ 	 * OTHER THINGS LIKE FDDI/TokenRing/802.3 SNAPs...
+ 	 */
+ 
+-	if (veth->h_vlan_proto != htons(ETH_P_8021Q)) {
++	if (veth->h_vlan_proto != htons(ETH_P_8021Q) ||
++		VLAN_DEV_INFO(dev)->flags & VLAN_FLAG_REORDER_HDR) {
+ 		int orig_headroom = skb_headroom(skb);
+ 		unsigned short veth_TCI;
+ 
 
 -- 
