@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762708AbXLMHBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762946AbXLMHBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762708AbXLMHBN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:01:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760305AbXLMG4F
+	id S1762946AbXLMHBc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761292AbXLMG4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:56:05 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55098 "EHLO
+	Thu, 13 Dec 2007 01:56:07 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55107 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759366AbXLMG4D (ORCPT
+	with ESMTP id S1758911AbXLMG4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:56:03 -0500
-Date: Wed, 12 Dec 2007 22:51:34 -0800
+	Thu, 13 Dec 2007 01:56:04 -0500
+Date: Wed, 12 Dec 2007 22:51:37 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,15 +21,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Adrian Bunk <bunk@kernel.org>,
-       Willy Tarreau <wtarreau@hera.kernel.org>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: [patch 12/60] tmpfs: restore missing clear_highpage
-Message-ID: <20071213065134.GM6867@kroah.com>
+       alan@lxorguk.ukuu.org.uk, adlab@venustech.com.cn, kkeil@suse.de
+Subject: [patch 13/60] I4L: fix isdn_ioctl memory overrun vulnerability
+Message-ID: <20071213065137.GN6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tmpfs-restore-missing-clear_highpage.patch"
+Content-Disposition: inline; filename="i4l-fix-isdn_ioctl-memory-overrun-vulnerability.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -37,53 +35,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.23-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Hugh Dickins <hugh@veritas.com>
+From: Karsten Keil <kkeil@suse.de>
 
-patch e84e2e132c9c66d8498e7710d4ea532d1feaaac5 in mainline
+patch eafe1aa37e6ec2d56f14732b5240c4dd09f0613a in mainline.
 
-tmpfs was misconverted to __GFP_ZERO in 2.6.11.  There's an unusual case in
-which shmem_getpage receives the page from its caller instead of allocating.
-We must cover this case by clear_highpage before SetPageUptodate, as before.
+Fix possible memory overrun issue in the isdn ioctl code.  Found by ADLAB
+<adlab@venustech.com.cn>
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Karsten Keil <kkeil@suse.de>
+Cc: ADLAB <adlab@venustech.com.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/shmem.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/isdn/i4l/isdn_common.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1071,7 +1071,7 @@ shmem_alloc_page(gfp_t gfp, struct shmem
- 	pvma.vm_policy = mpol_shared_policy_lookup(&info->policy, idx);
- 	pvma.vm_pgoff = idx;
- 	pvma.vm_end = PAGE_SIZE;
--	page = alloc_page_vma(gfp | __GFP_ZERO, &pvma, 0);
-+	page = alloc_page_vma(gfp, &pvma, 0);
- 	mpol_free(pvma.vm_policy);
- 	return page;
- }
-@@ -1091,7 +1091,7 @@ shmem_swapin(struct shmem_inode_info *in
- static inline struct page *
- shmem_alloc_page(gfp_t gfp,struct shmem_inode_info *info, unsigned long idx)
- {
--	return alloc_page(gfp | __GFP_ZERO);
-+	return alloc_page(gfp);
- }
- #endif
- 
-@@ -1304,6 +1304,7 @@ repeat:
- 
- 		info->alloced++;
- 		spin_unlock(&info->lock);
-+		clear_highpage(filepage);
- 		flush_dcache_page(filepage);
- 		SetPageUptodate(filepage);
- 	}
+--- a/drivers/isdn/i4l/isdn_common.c
++++ b/drivers/isdn/i4l/isdn_common.c
+@@ -1515,6 +1515,7 @@ isdn_ioctl(struct inode *inode, struct f
+ 					if (copy_from_user(&iocts, argp,
+ 					     sizeof(isdn_ioctl_struct)))
+ 						return -EFAULT;
++					iocts.drvid[sizeof(iocts.drvid)-1] = 0;
+ 					if (strlen(iocts.drvid)) {
+ 						if ((p = strchr(iocts.drvid, ',')))
+ 							*p = 0;
+@@ -1599,6 +1600,7 @@ isdn_ioctl(struct inode *inode, struct f
+ 					if (copy_from_user(&iocts, argp,
+ 					     sizeof(isdn_ioctl_struct)))
+ 						return -EFAULT;
++					iocts.drvid[sizeof(iocts.drvid)-1] = 0;
+ 					if (strlen(iocts.drvid)) {
+ 						drvidx = -1;
+ 						for (i = 0; i < ISDN_MAX_DRIVERS; i++)
+@@ -1643,7 +1645,7 @@ isdn_ioctl(struct inode *inode, struct f
+ 					} else {
+ 						p = (char __user *) iocts.arg;
+ 						for (i = 0; i < 10; i++) {
+-							sprintf(bname, "%s%s",
++							snprintf(bname, sizeof(bname), "%s%s",
+ 								strlen(dev->drv[drvidx]->msn2eaz[i]) ?
+ 								dev->drv[drvidx]->msn2eaz[i] : "_",
+ 								(i < 9) ? "," : "\0");
+@@ -1673,6 +1675,7 @@ isdn_ioctl(struct inode *inode, struct f
+ 					char *p;
+ 					if (copy_from_user(&iocts, argp, sizeof(isdn_ioctl_struct)))
+ 						return -EFAULT;
++					iocts.drvid[sizeof(iocts.drvid)-1] = 0;
+ 					if (strlen(iocts.drvid)) {
+ 						if ((p = strchr(iocts.drvid, ',')))
+ 							*p = 0;
 
 -- 
