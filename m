@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763650AbXLMRwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762682AbXLMRyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763650AbXLMRwT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 12:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbXLMRwI
+	id S1762682AbXLMRyo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 12:54:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758629AbXLMRye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 12:52:08 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:54175 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754298AbXLMRwG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 12:52:06 -0500
-Date: Thu, 13 Dec 2007 09:47:44 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jerome Marchand <jmarchan@redhat.com>
-Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk
-Subject: Re: [Patch 7/8] Enhanced partition statistics: procfs
-Message-Id: <20071213094744.eaa0b232.randy.dunlap@oracle.com>
-In-Reply-To: <47616DAD.5020305@redhat.com>
-References: <47615B3C.6030404@redhat.com>
-	<20071213090756.73de4e3e.randy.dunlap@oracle.com>
-	<47616DAD.5020305@redhat.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 13 Dec 2007 12:54:34 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:41775 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755560AbXLMRyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 12:54:32 -0500
+Date: Thu, 13 Dec 2007 12:50:38 -0500
+From: Dave Jones <davej@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       venkatesh.pallipadi@intel.com
+Subject: Re: [crash] kernel BUG at drivers/cpufreq/cpufreq.c:1060!
+Message-ID: <20071213175038.GD28148@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, venkatesh.pallipadi@intel.com
+References: <20071212091144.GA11986@elte.hu> <20071212164013.GA2359@redhat.com> <20071212181828.GA27675@redhat.com> <20071213101711.GN8977@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071213101711.GN8977@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Dec 2007 18:36:45 +0100 Jerome Marchand wrote:
+On Thu, Dec 13, 2007 at 11:17:11AM +0100, Ingo Molnar wrote:
+ > 
+ > * Dave Jones <davej@redhat.com> wrote:
+ > 
+ > >  > It _looks_ like we're leaking a refcount on that lock, but I don't 
+ > >  > see where.  It's a shame you can't reproduce this easily, as 
+ > >  > cpufreq.debug=7 would give us more clues. (And 
+ > >  > CONFIG_CPUFREQ_DEBUG=y)
+ > > 
+ > > So we're missing some unlocks in some error paths. It's feasible you 
+ > > hit one of those. This patch should be the fix for that.
+ > 
+ > since it's not really reproducible (i failed to get it since then), how 
+ > about you push your fix upstream (it's an obviously correct fix), we 
+ > consider this regression fixed and i'll re-notify you if there's still 
+ > any problem left. It's not like there's any escape from make randconfig 
+ > bootup test coverage in the long run ;-)
 
-> Randy Dunlap wrote:
-> > 
-> > The format of the /proc file is not changed except to add data
-> > at the end of each line.  Is that correct?
-> > 
-> 
-> No. The line concerning partitions will display different data. The new format match the current format
-> concerning disks.
-> 
-> Current partition format:
-> major minor name reads_issued sectors_read writes_issued sectors_written
-> 
-> New partition format (current disk format):
-> major minor name reads_issued reads_merged sector_read ms_reading writes_completed writes_merged sectors_written ms_writing I/Os_running ms_I/O weighted_ms_I/O
+Yeah, will push it to Linus today.
 
+	Dave
 
-I would have expected the /proc file contents to represent a user
-interface that we shouldn't change, other than by adding to the end
-of each line.
-
-
----
-~Randy
+-- 
+http://www.codemonkey.org.uk
