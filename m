@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761478AbXLMKa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761590AbXLMKay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761478AbXLMKa1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 05:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbXLMKaP
+	id S1761590AbXLMKay (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 05:30:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbXLMKap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 05:30:15 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48961 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755753AbXLMKaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 05:30:13 -0500
-Date: Thu, 13 Dec 2007 11:29:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, markus.t.metzger@gmail.com,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, roland@redhat.com,
-       akpm@linux-foundation.org, mtk.manpages@gmail.com,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: x86, ptrace: support for branch trace store(BTS)
-Message-ID: <20071213102939.GS8977@elte.hu>
-References: <20071210123809.A14251@sedona.ch.intel.com> <20071210202052.GA26002@elte.hu> <029E5BE7F699594398CA44E3DDF5544401130A1E@swsmsx413.ger.corp.intel.com> <20071211145301.GA19427@elte.hu> <029E5BE7F699594398CA44E3DDF554440115D3C5@swsmsx413.ger.corp.intel.com> <20071212110330.GD1611@elte.hu> <029E5BE7F699594398CA44E3DDF554440115D6DC@swsmsx413.ger.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <029E5BE7F699594398CA44E3DDF554440115D6DC@swsmsx413.ger.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 13 Dec 2007 05:30:45 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43446 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752847AbXLMKan (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 05:30:43 -0500
+Date: Thu, 13 Dec 2007 10:24:24 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Robert Hancock <hancockr@shaw.ca>, benh@kernel.crashing.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Possible issue with dangling PCI BARs
+Message-ID: <20071213102424.18b621a7@the-village.bc.nu>
+In-Reply-To: <20071213120403.B21124@jurassic.park.msu.ru>
+References: <fa.YfTvVN5C3e6zwXPW5biWgeZ9XXc@ifi.uio.no>
+	<fa.EhUqlM3V3y3HCcQkLBLSEKTJxBs@ifi.uio.no>
+	<fa.4FjaYKIciOijtgO+0DDrMkrLjv0@ifi.uio.no>
+	<4760B37E.3010002@shaw.ca>
+	<20071213120403.B21124@jurassic.park.msu.ru>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> So disabling memory or IO decode in a command register seems to be
+> the only safe option. This depends on architecture, though.
 
-* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
+You are assuming a degree of sanity that seems unwise (at least for PC
+class hardware).
 
-> Users who want to process that huge amount of data would be better off 
-> using a file-based approach (well, if it cannot be held in physical 
-> memory, they will spend most of their time swapping, anyway). Those 
-> users would typically wait for the 'buffer full' event and drain the 
-> buffer into a file - whether this is the real buffer or a bigger 
-> virtual buffer.
-> 
-> The two-buffer approach would only benefit users who want to hold the 
-> full profile in memory - or who want to stall the debuggee until they 
-> processed or somehow compressed the data collected so far. Those 
-> approaches would not scale for very big profiles. The small profile 
-> cases would already be covered with a reasonably big real buffer.
+Whether a given BAR is decoded depends not only on the contents of the
+BAR but also the hardware configuration *specific* to the device.
 
-well, the two-buffer approach would just be a general API with no 
-limitations. It would make the internal buffer mostly a pure performance 
-detail.
+The SIL680 for example has an MMIO BAR at BAR5. Control for that BAR is
+via MMIO_EN which is a bit in PCI config register 0x8A.
 
-	Ingo
+So if we disable the device because of a dangling BAR the users root file
+system goes away. If we leave it as is we have to know the
+firmware/hardware came up with that BAR disabled or how to control it at
+a per device level.
+
+Supporting pci_enable_device_io / pci_enable_device_mmio / pci_iomap_io /
+pci_iomap_mmio seems to cover pretty much all the use cases we have. 
+
+The users we have right now that are:
+
+	- pata_cs5520   (can be dealt with easily)
+	- old IDE	(with the new resource handling for legacy IDE
+can use pci_enable_device_io I think, ditto pci/cs5520)
+	- scx200_acb	(looks like a simple substitution works)
+	- lpfc		pci_enable_device_mmio
+	- qla2xxx	pci_enable_device ? (enables IO and MMIO)
+
+Alan
