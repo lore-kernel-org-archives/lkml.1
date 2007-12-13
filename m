@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758802AbXLMJEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbXLMJFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758802AbXLMJEa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 04:04:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbXLMJEL
+	id S1759525AbXLMJFm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 04:05:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbXLMJF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 04:04:11 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:52958 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687AbXLMJED (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 04:04:03 -0500
-Date: Thu, 13 Dec 2007 12:04:03 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: benh@kernel.crashing.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Possible issue with dangling PCI BARs
-Message-ID: <20071213120403.B21124@jurassic.park.msu.ru>
-References: <fa.YfTvVN5C3e6zwXPW5biWgeZ9XXc@ifi.uio.no> <fa.EhUqlM3V3y3HCcQkLBLSEKTJxBs@ifi.uio.no> <fa.4FjaYKIciOijtgO+0DDrMkrLjv0@ifi.uio.no> <4760B37E.3010002@shaw.ca>
+	Thu, 13 Dec 2007 04:05:26 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:30672
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751673AbXLMJFY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 04:05:24 -0500
+Message-Id: <47610414.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Thu, 13 Dec 2007 09:06:12 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <dbrownell@users.sourceforge.net>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ohci: avoid an unused variable warning
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-In-Reply-To: <4760B37E.3010002@shaw.ca>; from hancockr@shaw.ca on Wed, Dec 12, 2007 at 10:22:22PM -0600
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 10:22:22PM -0600, Robert Hancock wrote:
-> For the case where you say "I want to enable decoding for this MMIO BAR, 
-> but not that one", though, I don't see an obvious way to provide that 
-> guarantee with certainty. Normally, one would expect that if a BAR is 
-> mapped safely outside the decode window of a PCI bridge it's behind, 
-> that it won't ever see the requests and can't respond to them. However, 
-> the Intel chipset MMCONFIG overlap fiasco appears to show that this is 
-> not always the case and in some cases the device can see and respond to 
-> requests outside of the bridge's decode window (with higher decode 
-> priority than the MMCONFIG aperture, even)..
+With CONFIG_PM, but without CONFIG_PM_SLEEP, the intention of the
+conditional in ohci_pci_start() doesn't work since device_may_wakeup()
+references pdev only with the latter config option.
 
->From my reading of Intel specs, these priority decode rules apply only
-to legacy VGA aperture (which doesn't have a BAR anyway) - that's why you
-cannot have both internal and external VGA working together on these
-chipsets. But for any normal BAR classic PCI bridge decode still works
-as expected.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-However, mapping a BAR outside the decode window of a PCI bridge
-can be dangerous for another reason - it could clash with DMA from
-a sibling device. Either with DMA to system RAM, if you put that BAR
-below the parent bridge window, or with MSI, if you put it above...
+ drivers/usb/host/ohci-pci.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-So disabling memory or IO decode in a command register seems to be
-the only safe option. This depends on architecture, though.
+--- linux-2.6.24-rc5/drivers/usb/host/ohci-pci.c	2007-12-12 11:29:07.000000000 +0100
++++ 2.6.24-rc5-ohci-pm-sleep/drivers/usb/host/ohci-pci.c	2007-12-04 16:09:33.000000000 +0100
+@@ -217,7 +217,7 @@ static int __devinit ohci_pci_start (str
+ 	struct ohci_hcd	*ohci = hcd_to_ohci (hcd);
+ 	int		ret;
+ 
+-#ifdef CONFIG_PM /* avoid warnings about unused pdev */
++#ifdef CONFIG_PM_SLEEP /* avoid warnings about unused pdev */
+ 	if (hcd->self.controller) {
+ 		struct pci_dev *pdev = to_pci_dev(hcd->self.controller);
+ 
 
-Ivan.
+
+
