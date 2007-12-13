@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933677AbXLMV7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765638AbXLMV7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933677AbXLMV7S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 16:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758573AbXLMV66
+	id S1765638AbXLMV7n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 16:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933152AbXLMV7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 16:58:58 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54836 "EHLO mx1.redhat.com"
+	Thu, 13 Dec 2007 16:59:14 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54853 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752057AbXLMV64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 16:58:56 -0500
-Date: Thu, 13 Dec 2007 13:59:16 -0800
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, zaitcev@redhat.com
-Subject: Re: [PATCH 12/30] blk_end_request: changing ub (take 4)
-Message-Id: <20071213135916.27ebe3f9.zaitcev@redhat.com>
-In-Reply-To: <20071212.153815.39152138.k-ueda@ct.jp.nec.com>
-References: <20071211.174647.75757994.k-ueda@ct.jp.nec.com>
-	<20071211154803.58beb681.zaitcev@redhat.com>
-	<20071212.153815.39152138.k-ueda@ct.jp.nec.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S933069AbXLMV7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 16:59:13 -0500
+Date: Thu, 13 Dec 2007 16:59:11 -0500
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Subject: Fix implicit declaration in via-pmu.c
+Message-ID: <20071213215911.GA8591@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Dec 2007 15:38:15 -0500 (EST), Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote:
-> On Tue, 11 Dec 2007 15:48:03 -0800, Pete Zaitcev <zaitcev@redhat.com> wrote:
+drivers/macintosh/via-pmu.c: In function 'register_pmu_pm_ops':
+drivers/macintosh/via-pmu.c:2481: error: implicit declaration of function 'pm_set_ops'
 
-> > > -	end_that_request_first(rq, uptodate, rq->hard_nr_sectors);
-> > > -	end_that_request_last(rq, uptodate);
-> > > +	if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
-> > > +		BUG();
+Signed-off-by Dave Jones <davej@redhat.com>
 
-> > My understanding was, blk_end_request() is the same thing, only
-> > takes the queue lock. But then, should I refactor ub so that it
-> > calls __blk_end_request if request function ends with an error
-> > and blk_end_request if the end-of-IO even is processed?
+--- linux-2.6.23.noarch/drivers/macintosh/via-pmu.c~	2007-11-07 16:54:46.000000000 -0500
++++ linux-2.6.23.noarch/drivers/macintosh/via-pmu.c	2007-11-07 16:55:02.000000000 -0500
+@@ -2469,7 +2469,7 @@ static int pmu_sleep_valid(suspend_state
+ 		&& (pmac_call_feature(PMAC_FTR_SLEEP_STATE, NULL, 0, -1) >= 0);
+ }
+ 
+-static struct pm_ops pmu_pm_ops = {
++static struct platform_suspend_ops pmu_pm_ops = {
+ 	.prepare = powerbook_prepare_sleep,
+ 	.enter = powerbook_sleep,
+ 	.finish = powerbook_finish_sleep,
+@@ -2478,7 +2478,7 @@ static struct pm_ops pmu_pm_ops = {
+ 
+ static int register_pmu_pm_ops(void)
+ {
+-	pm_set_ops(&pmu_pm_ops);
++	suspend_set_ops(&pmu_pm_ops);
+ 
+ 	return 0;
+ }
 
-> I'm using __blk_end_request() here and I think it's sufficient, because:
->   o end_that_request_last() must be called with the queue lock held
->   o ub_end_rq() calls end_that_request_last() without taking
->     the queue lock in itself.
->     So the queue lock must have been taken outside ub_end_rq().
 
-> But, if ub is calling end_that_request_last() without the queue lock,
-> it is a bug in the original code and we should use blk_end_request()
-> to fix that.
-
-So, I have to rewrite ub to split the paths after all, right?
-Let's do this then: I'll wait until your patch gets to Linus and
-then update it with the split. The reason is, I need the whole
-enchilada applied and I don't want to bother tracking iterations
-and all the little segments (of which you already have 30).
-Until then, ub will have a race by using your original small patch.
-
-Best wishes,
--- Pete
+-- 
+http://www.codemonkey.org.uk
