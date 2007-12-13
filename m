@@ -1,82 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934178AbXLMW3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765718AbXLMWaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934178AbXLMW3x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932698AbXLMW3T
+	id S1765718AbXLMWaj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763274AbXLMWaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:29:19 -0500
-Received: from mga02.intel.com ([134.134.136.20]:4117 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932469AbXLMW3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:29:18 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,163,1196668800"; 
-   d="scan'208";a="295453266"
-Date: Thu, 13 Dec 2007 14:27:16 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Tony Luck <tony.luck@intel.com>,
-       Asit Mallick <asit.k.mallick@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, benh@kernel.crashing.org
-Subject: Re: What was the problem with quicklists and x86-64?
-Message-ID: <20071213222716.GA20208@linux-os.sc.intel.com>
-References: <47603321.4030700@goop.org> <Pine.LNX.4.64.0712131131540.13396@schroedinger.engr.sgi.com>
+	Thu, 13 Dec 2007 17:30:11 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60844 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762372AbXLMWaG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 17:30:06 -0500
+Date: Thu, 13 Dec 2007 14:29:35 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: jens.axboe@oracle.com, liml@rtr.ca, lkml@rtr.ca, matthew@wil.cx,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-mm@kvack.org, mel@csn.ul.ie
+Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+Message-Id: <20071213142935.47ff19d9.akpm@linux-foundation.org>
+In-Reply-To: <1197584106.3154.55.camel@localhost.localdomain>
+References: <20071213185326.GQ26334@parisc-linux.org>
+	<4761821F.3050602@rtr.ca>
+	<20071213192633.GD10104@kernel.dk>
+	<4761883A.7050908@rtr.ca>
+	<476188C4.9030802@rtr.ca>
+	<20071213193937.GG10104@kernel.dk>
+	<47618B0B.8020203@rtr.ca>
+	<20071213195350.GH10104@kernel.dk>
+	<20071213200219.GI10104@kernel.dk>
+	<476190BE.9010405@rtr.ca>
+	<20071213200958.GK10104@kernel.dk>
+	<20071213140207.111f94e2.akpm@linux-foundation.org>
+	<1197584106.3154.55.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712131131540.13396@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 11:47:29AM -0800, Christoph Lameter wrote:
-> On Wed, 12 Dec 2007, Jeremy Fitzhardinge wrote:
+On Thu, 13 Dec 2007 17:15:06 -0500
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
 > 
-> > I'm looking at unifying the various pgalloc+pgd_lists mechanisms between
-> > 32-bit (PAE and non-PAE) and 64-bit, so I'm trying to understand why
-> > these differences exist in the first place.
+> On Thu, 2007-12-13 at 14:02 -0800, Andrew Morton wrote:
+> > On Thu, 13 Dec 2007 21:09:59 +0100
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
 > > 
-> > Change da8f153e51290e7438ba7da66234a864e5d3e1c1 reverted the use of
-> > quicklists for allocating pagetables, because of concerns about ordering
-> > with respect to tlb flushes.
+> > >
+> > > OK, it's a vm issue,
+> > 
+> > cc linux-mm and probable culprit.
+> > 
+> > >  I have tens of thousand "backward" pages after a
+> > > boot - IOW, bvec->bv_page is the page before bvprv->bv_page, not
+> > > reverse. So it looks like that bug got reintroduced.
+> > 
+> > Bill Irwin fixed this a couple of years back: changed the page allocator so
+> > that it mostly hands out pages in ascending physical-address order.
+> > 
+> > I guess we broke that, quite possibly in Mel's page allocator rework.
+> > 
+> > It would help if you could provide us with a simple recipe for
+> > demonstrating this problem, please.
 > 
-> These issues only exist with NUMA because of the freeing of off node pages 
-> before the TLB flush was done. There was a discussion about this issue and 
-> my fix of simply not freeing the offnode pages early was ignored. Instead 
-> the x86_64 implementation (which has no problems that I know of) was 
+> The simple way seems to be to malloc a large area, touch every page and
+> then look at the physical pages assigned ... they now mostly seem to be
+> descending in physical address.
+> 
 
-NUMA  bug might not be the only problem. I think there are more issues
-as Linus noticed.
-
-<snip>
-Oh, and I see what's wrong: you not only switched "free_page()" to 
-"quicklist_free()", you *also* switched "tlb_remove_page()" to 
-"quicklist_free()".
-</snip>
-
-The above comment is in reference to below portion of code:
-
--#define __pte_free_tlb(tlb,pte) tlb_remove_page((tlb),(pte))
-+#define __pte_free_tlb(tlb,pte) quicklist_free_page(QUICK_PT, NULL,(pte))
-
-tlb_remove_page() was marking tlb->need_flush. Which is later used
-by tlb_flush_mmu(). With quicklist_free_page() we loose all that..
-
-Now in a corner case scenario  with a big munmap() which calls unmap_region()
-and if it so happens that the region getting unmapped just has page
-tables setup but with all PTE's set to NULL, unmap_region() may
-potentially free the page table pages
-	[ tlb_finish_mmu() calls check_pgt_cache() which trims quicklist ]
-with out flushing the TLB's.
-	[ (tlb_finish_mmu() calls the tlb_flush_mmu() but it will not do
-           much as need_flush is not set ]
-
-Similarly Linus brought pre-emptions issues associated with quicklist usage..
-
-thanks,
-suresh
+OIC.  -mm's /proc/pid/pagemap can be used to get the pfn's...
