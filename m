@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933341AbXLMWoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934166AbXLMWs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933341AbXLMWoZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:44:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761977AbXLMWoP
+	id S934166AbXLMWs6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758216AbXLMWsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:44:15 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:31741 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756097AbXLMWoO (ORCPT
+	Thu, 13 Dec 2007 17:48:47 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:50902 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755331AbXLMWsq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:44:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=R3MXLhH0igSW/xLFHSFtWkPO2R+fHKLemKx3w+UZrY7rn13AjoJACHOvT8IL6cOXBGI79SJ8nnQt6Kcwbs0MAl99W31q1/L2n6vqf4IuZeNM3fmUi3ogDvbO0OaiMaBREO736dCODWWt9xOzlIImCG0GB02tS7JQ7puHM3F/gM0=
+	Thu, 13 Dec 2007 17:48:46 -0500
+Message-ID: <4761B6BB.1070504@cosmosbay.com>
+Date: Thu, 13 Dec 2007 23:48:27 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
 Subject: Re: RFC: remove __read_mostly
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: bunk@kernel.org, linux-kernel@vger.kernel.org,
-       linux-arch <linux-arch@vger.kernel.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <20071213.143246.175833292.davem@davemloft.net>
 References: <20071213222044.GH21616@stusta.de>
-	 <20071213.143246.175833292.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 13 Dec 2007 14:44:15 -0800
-Message-Id: <1197585855.898.33.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20071213222044.GH21616@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 13 Dec 2007 23:48:34 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-12-13 at 14:32 -0800, David Miller wrote:
-> From: Adrian Bunk <bunk@kernel.org>
-> Date: Thu, 13 Dec 2007 23:20:44 +0100
+Adrian Bunk a écrit :
+> I tried the following patch with a full x86 .config [1]:
 > 
-> > My question is:
-> > Is there anywhere in the kernel a case where __read_mostly brings a 
-> > measurable improvement or can it be removed?
+> --- a/include/asm-x86/cache.h
+> +++ b/include/asm-x86/cache.h
+> -#define __read_mostly __attribute__((__section__(".data.read_mostly")))
+> +/* #define __read_mostly __attribute__((__section__(".data.read_mostly"))) */
 > 
-> Yes, on SMP when read-mostly objects share cache lines
-> with other objects which are frequently written to.
+> The result [2,3] was:
 > 
-> That is the whole reason we created __read_mostly
+> -rwxrwxr-x 1 bunk bunk 46607243 2007-12-13 19:50 vmlinux.old
+> -rwxrwxr-x 1 bunk bunk 46598691 2007-12-13 21:55 vmlinux
+> 
+> It's not a surprise that the kernel can become bigger when __read_mostly 
+> gets used, especially in cases where __read_mostly prevents gcc 
+> optimizations.
+> 
+> My question is:
+> Is there anywhere in the kernel a case where __read_mostly brings a 
+> measurable improvement or can it be removed?
 
-I'm curious if anyone has been looking into replacing the __read_mostly
-approach with Mathieu's immediate values patchset.  Wouldn't they solve
-the cacheline sharing as well (perhaps more eficiently even with trading
-some icache for dcache)?
+Yes, there are many cases where read_mostly brings huge improvements.
 
-Harvey
+I did test your idea on a 4 CPUS server, and system time was roughly doubled, 
+from 11% to 20%
+
+Of course, you noticed that puting a __read_mostly attribute force the linker 
+to reserve space for the variable. So a null variable previously in bss 
+section (no space in vmlinux file) is now in .data.read_mostly. Not a big deal.
+
+If you want, you could play some .lds games to create sort of a 
+"bss.read_mostly" section to save 10000 bytes in vmlinux.
 
