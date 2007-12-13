@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbXLMAWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759155AbXLMAXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758735AbXLMAWV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 19:22:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbXLMAWN
+	id S1759155AbXLMAXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 19:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbXLMAXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 19:22:13 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36388 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752317AbXLMAWM (ORCPT
+	Wed, 12 Dec 2007 19:23:11 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:59308 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897AbXLMAXK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 19:22:12 -0500
-Date: Thu, 13 Dec 2007 09:23:38 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       clameter@sgi.com
-Subject: Re: [PATCH 0/6] Use two zonelists per node instead of multiple
- zonelists v11r2
-Message-Id: <20071213092338.8b10944c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1197495172.5029.62.camel@localhost>
-References: <20071211202157.1961.27940.sendpatchset@skynet.skynet.ie>
-	<1197495172.5029.62.camel@localhost>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Dec 2007 19:23:10 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 12 Dec 2007 19:23:08 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Dave Jones <davej@redhat.com>
+Cc: Peter Stahlir <peter.stahlir@googlemail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Linux kernel history from 0.0.1
+In-reply-to: <alpine.LFD.0.99999.0712121911490.20487@xanadu.home>
+Message-id: <alpine.LFD.0.99999.0712121918230.20487@xanadu.home>
+References: <fbe8b1780712121410u41517699v6e0b991d1a262ffd@mail.gmail.com>
+ <20071212234640.GA452@redhat.com>
+ <alpine.LFD.0.99999.0712121911490.20487@xanadu.home>
+User-Agent: Alpine 0.99999 (LFD 814 2007-11-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Dec 2007 16:32:51 -0500
-Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+On Wed, 12 Dec 2007, Nicolas Pitre wrote:
 
-> Just this afternoon, I hit a null pointer deref in
-> __mem_cgroup_remove_list() [called from mem_cgroup_uncharge() if I can
-> trust the stack trace] attempting to unmap a page for migration.  I'm
-> just starting to investigate this.
+> On Wed, 12 Dec 2007, Dave Jones wrote:
 > 
-> I'll replace the series I have [~V10] with V11r2 and continue testing in
-> anticipation of the day that we can get this into -mm.
+> > Nico's archive had some bits I missed, and there were some bits
+> > in his that I had got, so where possible, I stole some of his changelogs.
+> > I think my variant is as complete as we're going to get.
 > 
-Hi, Lee-san.
+> Good!  I'll certainly have a look.
 
-Could you know what is the caller of page migration ?
-system call ? hot removal ? or some new thing ?
+First issue with your repo is that all dates are wrong.  In my repo I 
+paid particular attention to author original email addresses, date and 
+time zone for each commit, taken from the announcement messages, etc. or 
+from the file with the latest date in tar archives, or from the date of 
+the used patch file when it made sense.
 
-Note: 2.6.24-rc4-mm1's cgroup/migration logic.
 
-In 2.6.24-rc4-mm1, in page migration, mem_cgroup_prepare_migration() increments
-page_cgroup's refcnt before calling try_to_unmap(). This extra refcnt guarantees 
-the page_cgroup's refcnt will not drop to 0 in sequence of
-unmap_and_move() -> try_to_unmap() -> page_remove_rmap() -> mem_cgroup_unchage(). 
 
-Thanks,
--Kame
 
+> 
+> I was a bit sad not being able to continue my archive, but this became 
+> really too time consuming for me.  I always planned to get back to it 
+> but...
+> 
+> 
+> Nicolas
+> 
+
+
+Nicolas
