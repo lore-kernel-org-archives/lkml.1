@@ -1,81 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766010AbXLMUON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762206AbXLMUPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766010AbXLMUON (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 15:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762714AbXLMUNx
+	id S1762206AbXLMUPV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 15:15:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbXLMUO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 15:13:53 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:52460 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762196AbXLMUNw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 15:13:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Chdhx4nd1a2agQ7sfaR3gjwmgJq6sI73gEPrXngZ6KoJg/8HK/gdZSiwztfNlBfl62q4eUOl3rB8U2RhNzfmSjoiZ1zd/YHIqM7umdm9soJH5hM6HwgLGhIwqCe5POyG4RukaZp5JleRyT6R60mOVNvWlUhVFKVz3NVRVzOQ3Sg=
-Message-ID: <4761930C.3030504@gmail.com>
-Date: Thu, 13 Dec 2007 21:16:12 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+	Thu, 13 Dec 2007 15:14:59 -0500
+Received: from rtr.ca ([76.10.145.34]:1121 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751009AbXLMUO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 15:14:57 -0500
+Message-ID: <476192BF.5050308@rtr.ca>
+Date: Thu, 13 Dec 2007 15:14:55 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: auke-jan.h.kok@intel.com, gallatin@myri.com, joonwpark81@gmail.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       shemminger@linux-foundation.org, jesse.brandeburg@intel.com
-Subject: Re: [RFC] net: napi fix
-References: <47602B77.2090202@intel.com>	<20071213134953.GA3806@ff.dom.local> <20071213.055013.83963139.davem@davemloft.net>
-In-Reply-To: <20071213.055013.83963139.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Mark Lord <lkml@rtr.ca>, Matthew Wilcox <matthew@wil.cx>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+References: <20071213185326.GQ26334@parisc-linux.org> <4761821F.3050602@rtr.ca> <20071213192633.GD10104@kernel.dk> <4761883A.7050908@rtr.ca> <476188C4.9030802@rtr.ca> <20071213193937.GG10104@kernel.dk> <47618B0B.8020203@rtr.ca> <20071213195350.GH10104@kernel.dk> <20071213200219.GI10104@kernel.dk> <476190BE.9010405@rtr.ca> <20071213200958.GK10104@kernel.dk>
+In-Reply-To: <20071213200958.GK10104@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote, On 12/13/2007 02:50 PM:
-
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Thu, 13 Dec 2007 14:49:53 +0100
+Jens Axboe wrote:
+> On Thu, Dec 13 2007, Mark Lord wrote:
+>> Jens Axboe wrote:
+>>> On Thu, Dec 13 2007, Jens Axboe wrote:
+>>>> On Thu, Dec 13 2007, Mark Lord wrote:
+>>>>> Jens Axboe wrote:
+>>>>>> On Thu, Dec 13 2007, Mark Lord wrote:
+>>>>>>> Mark Lord wrote:
+>>>>>>>> Jens Axboe wrote:
+>>>>>>>>> On Thu, Dec 13 2007, Mark Lord wrote:
+>>>>>>>>>> Matthew Wilcox wrote:
+>>>>>>>>>>> On Thu, Dec 13, 2007 at 01:48:18PM -0500, Mark Lord wrote:
+>>>>>>>>>>>> Problem confirmed.  2.6.23.8 regularly generates segments up to 
+>>>>>>>>>>>> 64KB for libata,
+>>>>>>>>>>>> but 2.6.24 uses only 4KB segments and a *few* 8KB segments.
+>>>>>>>>>>> Just a suspicion ... could this be slab vs slub?  ie check your 
+>>>>>>>>>>> configs
+>>>>>>>>>>> are the same / similar between the two kernels.
+>>>>>>>>>> ..
+>>>>>>>>>>
+>>>>>>>>>> Mmmm.. a good thought, that one.
+>>>>>>>>>> But I just rechecked, and both have CONFIG_SLAB=y
+>>>>>>>>>>
+>>>>>>>>>> My guess is that something got changed around when Jens
+>>>>>>>>>> reworked the block layer for 2.6.24.
+>>>>>>>>>> I'm going to dig around in there now.
+>>>>>>>>> I didn't rework the block layer for 2.6.24 :-). The core block layer
+>>>>>>>>> changes since 2.6.23 are:
+>>>>>>>>>
+>>>>>>>>> - Support for empty barriers. Not a likely candidate.
+>>>>>>>>> - Shared tag queue fixes. Totally unlikely.
+>>>>>>>>> - sg chaining support. Not likely.
+>>>>>>>>> - The bio changes from Neil. Of the bunch, the most likely suspects 
+>>>>>>>>> in
+>>>>>>>>> this area, since it changes some of the code involved with merges and
+>>>>>>>>> blk_rq_map_sg().
+>>>>>>>>> - Lots of simple stuff, again very unlikely.
+>>>>>>>>>
+>>>>>>>>> Anyway, it sounds odd for this to be a block layer problem if you do 
+>>>>>>>>> see
+>>>>>>>>> occasional segments being merged. So it sounds more like the input 
+>>>>>>>>> data
+>>>>>>>>> having changed.
+>>>>>>>>>
+>>>>>>>>> Why not just bisect it?
+>>>>>>>> ..
+>>>>>>>>
+>>>>>>>> Because the early 2.6.24 series failed to boot on this machine
+>>>>>>>> due to bugs in the block layer -- so the code that caused this 
+>>>>>>>> regression
+>>>>>>>> is probably in the stuff from before the kernels became usable here.
+>>>>>>> ..
+>>>>>>>
+>>>>>>> That sounds more harsh than intended --> the earlier 2.6.24 kernels 
+>>>>>>> (up to
+>>>>>>> the first couple of -rc* ones failed here because of incompatibilities
+>>>>>>> between the block/bio changes and libata.
+>>>>>>>
+>>>>>>> That's better, I think! 
+>>>>>> No worries, I didn't pick it up as harsh just as an odd conclusion :-)
+>>>>>>
+>>>>>> If I were you, I'd just start from the first -rc that booted for you. If
+>>>>>> THAT has the bug, then we'll think of something else. If you don't get
+>>>>>> anywhere, I can run some tests tomorrow and see if I can reproduce it
+>>>>>> here.
+>>>>> ..
+>>>>>
+>>>>> I believe that *anyone* can reproduce it, since it's broken long before
+>>>>> the requests ever get to SCSI or libata.  Which also means that *anyone*
+>>>>> who wants to can bisect it, as well.
+>>>>>
+>>>>> I don't do "bisects".
+>>>> It was just a suggestion on how to narrow it down, do as you see fit.
+>>>>
+>>>>> But I will dig a bit more and see if I can find the culprit.
+>>>> Sure, I'll dig around as well.
+>>> Just tried something simple. I only see one 12kb segment so far, so not
+>>> a lot by any stretch. I also DONT see any missed merges signs, so it
+>>> would appear that the pages in the request are simply not contigious
+>>> physically.
+>>>
+>>> diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
+>>> index e30b1a4..1e34b6f 100644
+>>> --- a/block/ll_rw_blk.c
+>>> +++ b/block/ll_rw_blk.c
+>>> @@ -1330,6 +1330,8 @@ int blk_rq_map_sg(struct request_queue *q, struct 
+>>> request *rq,
+>>> 				goto new_segment;
+>>>
+>>> 			sg->length += nbytes;
+>>> +			if (sg->length > 8192)
+>>> +				printk("sg_len=%d\n", sg->length);
+>>> 		} else {
+>>> new_segment:
+>>> 			if (!sg)
+>>> @@ -1349,6 +1351,8 @@ new_segment:
+>>> 				sg = sg_next(sg);
+>>> 			}
+>>>
+>>> +			if (bvprv && (page_address(bvprv->bv_page) + 
+>>> bvprv->bv_len == page_address(bvec->bv_page)))
+>>> +				printk("missed merge\n");
+>>> 			sg_set_page(sg, bvec->bv_page, nbytes, 
+>>> 			bvec->bv_offset);
+>>> 			nsegs++;
+>>> 		}
+>>>
+>> ..
+>>
+>> Yeah, the first part is similar to my own hack.
+>>
+>> For testing, try "dd if=/dev/sda of=/dev/null bs=4096k".
+>> That *really* should end up using contiguous pages on most systems.
+>>
+>> I figured out the git thing, and am now building some in-between kernels to 
+>> try.
 > 
->> As a matter of fact, since it's "unlikely()" in net_rx_action() anyway,
->> I wonder what is the main reason or gain of leaving such a tricky
->> exception, instead of letting drivers to always decide which is the
->> best moment for napi_complete()? (Or maybe even, in such a case, they
->> should call some function with this list_move_tail() if it's so
->> useful?)
-> 
-> It is the only sane way to synchronize the list manipulations.
-> 
-> There has to be a way for ->poll() to tell net_rx_action() two things:
-> 
-> 1) How much work was completed, so we can adjust 'budget'
+> OK, it's a vm issue, I have tens of thousand "backward" pages after a
+> boot - IOW, bvec->bv_page is the page before bvprv->bv_page, not
+> reverse. So it looks like that bug got reintroduced.
+...
+
+Mmm.. shouldn't one of the front- or back- merge logics work for either order?
 
 
-The 'budget' line would stay where it is. IMHO, it's only about this
-list_move_tail(). (Probably also doing netpoll_poll_unlock()
-during n->poll() could be considered to let the driver even destroy
-napi just after napi_complete() - but it's another subject.)
-
-> 2) Was the NAPI quota exhausted?  So that we know that
->    net_rx_action() still "owns" the polling context and
->    thus can do the list manipulation safely.
-> 
-> And these both need to be encoded into one single return value, thus
-> the adopted convention that "work == weight" means that the device has
-> not done a NAPI complete.
-
-Of course, with some care and explanations to driver maintainers, like in
-this case, this all should probably work like it is. But IMHO it would be
-easier to remember and maintain if there are some simple rules with no
-exceptions, so here e.g. driver always "owns" (with functions like
-napi_schedule(), napi_complete(), and maybe napi_move_tail()), and
-net_rx_action() only reads the list and runs these functions?!
-
-I see in a nearby thread you would prefer to save some work to drivers
-(like this netif_running() check), but I think this all is at the cost
-of flexibility, and there will probably appear new problems, when a
-driver simply can't wait till the next poll (which btw. looks strange
-with all these hotplugging, usb and powersaving).
-
-Regards,
-Jarek P.
