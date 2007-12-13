@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761633AbXLMHNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764094AbXLMHOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761633AbXLMHNy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:13:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762346AbXLMG55
+	id S1764094AbXLMHOW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762650AbXLMG57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:57:57 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55552 "EHLO
+	Thu, 13 Dec 2007 01:57:59 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55564 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762472AbXLMG5y (ORCPT
+	with ESMTP id S1762647AbXLMG55 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:57:54 -0500
-Date: Wed, 12 Dec 2007 22:53:08 -0800
+	Thu, 13 Dec 2007 01:57:57 -0500
+Date: Wed, 12 Dec 2007 22:53:11 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,12 +22,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 43/60] CRYPTO api: Fix potential race in crypto_remove_spawn
-Message-ID: <20071213065308.GS6867@kroah.com>
+Subject: [patch 44/60] TCP: Fix TCP header misalignment
+Message-ID: <20071213065311.GT6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="crypto-api-fix-potential-race-in-crypto_remove_spawn.patch"
+Content-Disposition: inline; filename="tcp-fix-tcp-header-misalignment.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,47 +41,45 @@ know.
 ------------------
 From: Herbert Xu <herbert@gondor.apana.org.au>
 
-[CRYPTO] api: Fix potential race in crypto_remove_spawn
+[TCP]: Fix TCP header misalignment
 
-[ Upstream commit: 38cb2419f544ad413c7f7aa8c17fd7377610cdd8 ]
+[ Upstream commit: 21df56c6e2372e09c916111efb6c14c372a5ab2e ]
 
-As it is crypto_remove_spawn may try to unregister an instance which is
-yet to be registered.  This patch fixes this by checking whether the
-instance has been registered before attempting to remove it.
+Indeed my previous change to alloc_pskb has made it possible
+for the TCP header to be misaligned iff the MTU is not a multiple
+of 4 (and less than a page).  So I suspect the optimised IPsec
+MTU calculation is giving you just such an MTU :)
 
-It also removes a bogus cra_destroy check in crypto_register_instance as
-1) it's outside the mutex;
-2) we have a check in __crypto_register_alg already.
+This patch fixes it by changing alloc_pskb to make sure that
+the size is at least 32-bit aligned.  This does not cause the
+problem fixed by the previous patch because max_header is always
+32-bit aligned which means that in the SG/NOTSO case this will
+be a no-op.
+
+I thought about putting this in the callers but all the current
+callers are from TCP.  If and when we get a non-TCP caller we
+can always create a TCP wrapper for this function and move the
+alignment over there.
 
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David Miller <davem@davemloft.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- crypto/algapi.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ include/net/sock.h |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/crypto/algapi.c
-+++ b/crypto/algapi.c
-@@ -98,6 +98,9 @@ static void crypto_remove_spawn(struct c
- 		return;
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -1200,6 +1200,9 @@ static inline struct sk_buff *sk_stream_
+ {
+ 	struct sk_buff *skb;
  
- 	inst->alg.cra_flags |= CRYPTO_ALG_DEAD;
-+	if (hlist_unhashed(&inst->list))
-+		return;
++	/* The TCP header must be at least 32-bit aligned.  */
++	size = ALIGN(size, 4);
 +
- 	if (!tmpl || !crypto_tmpl_get(tmpl))
- 		return;
- 
-@@ -333,9 +336,6 @@ int crypto_register_instance(struct cryp
- 	LIST_HEAD(list);
- 	int err = -EINVAL;
- 
--	if (inst->alg.cra_destroy)
--		goto err;
--
- 	err = crypto_check_alg(&inst->alg);
- 	if (err)
- 		goto err;
+ 	skb = alloc_skb_fclone(size + sk->sk_prot->max_header, gfp);
+ 	if (skb) {
+ 		skb->truesize += mem;
 
 -- 
