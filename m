@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763969AbXLMHJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763923AbXLMHJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763969AbXLMHJh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760980AbXLMG5Q
+	id S1763923AbXLMHJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:09:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762469AbXLMG5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:57:16 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55390 "EHLO
+	Thu, 13 Dec 2007 01:57:21 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55411 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761933AbXLMG5O (ORCPT
+	with ESMTP id S1762365AbXLMG5T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:57:14 -0500
-Date: Wed, 12 Dec 2007 22:52:40 -0800
+	Thu, 13 Dec 2007 01:57:19 -0500
+Date: Wed, 12 Dec 2007 22:52:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        torvalds@linux-foundation.org
@@ -21,15 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, oleg@tv-sign.ru, roland@redhat.com,
-       scott@ubuntu.com
-Subject: [patch 32/60] wait_task_stopped(): pass correct exit_code to
-	wait_noreap_copyout()
-Message-ID: <20071213065240.GH6867@kroah.com>
+       alan@lxorguk.ukuu.org.uk, rleigh@whinlatter.ukfsn.org,
+       benh@kernel.crashing.org, mb@bu3sch.de, khali@linux-fr.org,
+       adaplas@pol.net
+Subject: [patch 33/60] fb_ddc: fix DDC lines quirk
+Message-ID: <20071213065242.GI6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="wait_task_stopped-pass-correct-exit_code-to-wait_noreap_copyout.patch"
+Content-Disposition: inline; filename="fb_ddc-fix-ddc-lines-quirk.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,43 +42,88 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Scott James Remnant <scott@ubuntu.com>
+From: Jean Delvare <khali@linux-fr.org>
 
-patch e6ceb32aa25fc33f21af84cc7a32fe289b3e860c in mainline.
+patch b64d70825abbf706bbe80be1b11b09514b71f45e in mainline.
 
-In wait_task_stopped() exit_code already contains the right value for the
-si_status member of siginfo, and this is simply set in the non WNOWAIT
-case.
+The code in fb_ddc_read() is said to be based on the implementation of the
+radeon driver:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=fc5891c8a3ba284f13994d7bc1f1bfa8283982de
 
-If you call waitid() with a stopped or traced process, you'll get the signal
-in siginfo.si_status as expected -- however if you call waitid(WNOWAIT) at the
-same time, you'll get the signal << 8 | 0x7f
+However, comparing the old radeon driver code with the new fb_ddc code
+reveals some differences.  Most notably, the I2C bus lines are held at the
+end of the function, while the original code was releasing them (as the
+comment above correctly says.)
 
-Pass it unchanged to wait_noreap_copyout(); we would only need to shift it
-and add 0x7f if we were returning it in the user status field and that
-isn't used for any function that permits WNOWAIT.
+There are a few other differences, which appear to be responsible for read
+failures on my system.  While tracing low-level I2C code in i2c-algo-bit, I
+noticed that the initial attempt to read the EDID always failed.  It takes
+one retry for the read to succeed.  As we are about to remove this
+automatic retry property from i2c-algo-bit, reading the EDID would really
+fail.
 
-Signed-off-by: Scott James Remnant <scott@ubuntu.com>
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Roland McGrath <roland@redhat.com>
+As a summary, the I2C lines quirk which is supposedly needed to read EDID
+on some older monitors is currently breaking the (first) read on all other
+monitors (and might not even work with older ones - did anyone try since
+October 2006?)
+
+After applying the patch below, which makes the code in fb_ddc_read()
+really similar to what the radeon driver used to have, the first EDID read
+succeeds again.
+
+On top of that, as it appears that this code has been broken for one year
+now and nobody seems to have complained, I'm curious if it makes sense to
+keep this quirk in place.  It makes the code more complex and slower just
+for the sake of monitors which I guess nobody uses anymore.  Can't we just
+get rid of it?
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Tested-by: Roger Leigh <rleigh@whinlatter.ukfsn.org>
+Tested-by: Michael Buesch <mb@bu3sch.de>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/exit.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fb_ddc.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1365,7 +1365,7 @@ static int wait_task_stopped(struct task
- 		if (unlikely(!exit_code) || unlikely(p->exit_state))
- 			goto bail_ref;
- 		return wait_noreap_copyout(p, pid, uid,
--					   why, (exit_code << 8) | 0x7f,
-+					   why, exit_code,
- 					   infop, ru);
- 	}
+--- a/drivers/video/fb_ddc.c
++++ b/drivers/video/fb_ddc.c
+@@ -56,13 +56,12 @@ unsigned char *fb_ddc_read(struct i2c_ad
+ 	int i, j;
  
+ 	algo_data->setscl(algo_data->data, 1);
+-	algo_data->setscl(algo_data->data, 0);
+ 
+ 	for (i = 0; i < 3; i++) {
+ 		/* For some old monitors we need the
+ 		 * following process to initialize/stop DDC
+ 		 */
+-		algo_data->setsda(algo_data->data, 0);
++		algo_data->setsda(algo_data->data, 1);
+ 		msleep(13);
+ 
+ 		algo_data->setscl(algo_data->data, 1);
+@@ -97,14 +96,15 @@ unsigned char *fb_ddc_read(struct i2c_ad
+ 		algo_data->setsda(algo_data->data, 1);
+ 		msleep(15);
+ 		algo_data->setscl(algo_data->data, 0);
++		algo_data->setsda(algo_data->data, 0);
+ 		if (edid)
+ 			break;
+ 	}
+ 	/* Release the DDC lines when done or the Apple Cinema HD display
+ 	 * will switch off
+ 	 */
+-	algo_data->setsda(algo_data->data, 0);
+-	algo_data->setscl(algo_data->data, 0);
++	algo_data->setsda(algo_data->data, 1);
++	algo_data->setscl(algo_data->data, 1);
+ 
+ 	return edid;
+ }
 
 -- 
