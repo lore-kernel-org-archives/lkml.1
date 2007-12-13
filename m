@@ -1,153 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765488AbXLMUK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763163AbXLMUKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765488AbXLMUK1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 15:10:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbXLMUKG
+	id S1763163AbXLMUKr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 15:10:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765322AbXLMUKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 15:10:06 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:12215 "EHLO kernel.dk"
+	Thu, 13 Dec 2007 15:10:25 -0500
+Received: from mga03.intel.com ([143.182.124.21]:60612 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752593AbXLMUKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 15:10:04 -0500
-Date: Thu, 13 Dec 2007 21:09:59 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mark Lord <liml@rtr.ca>
-Cc: Mark Lord <lkml@rtr.ca>, Matthew Wilcox <matthew@wil.cx>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-Message-ID: <20071213200958.GK10104@kernel.dk>
-References: <20071213185326.GQ26334@parisc-linux.org> <4761821F.3050602@rtr.ca> <20071213192633.GD10104@kernel.dk> <4761883A.7050908@rtr.ca> <476188C4.9030802@rtr.ca> <20071213193937.GG10104@kernel.dk> <47618B0B.8020203@rtr.ca> <20071213195350.GH10104@kernel.dk> <20071213200219.GI10104@kernel.dk> <476190BE.9010405@rtr.ca>
+	id S1764560AbXLMUKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 15:10:23 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,163,1196668800"; 
+   d="scan'208";a="340550452"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: benh@kernel.crashing.org
+Subject: Re: Possible issue with dangling PCI BARs
+Date: Thu, 13 Dec 2007 12:04:17 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Robert Hancock <hancockr@shaw.ca>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <fa.YfTvVN5C3e6zwXPW5biWgeZ9XXc@ifi.uio.no> <1197544621.15741.132.camel@pasglop> <1197544820.15741.137.camel@pasglop>
+In-Reply-To: <1197544820.15741.137.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <476190BE.9010405@rtr.ca>
+Message-Id: <200712131204.18227.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13 2007, Mark Lord wrote:
-> Jens Axboe wrote:
-> >On Thu, Dec 13 2007, Jens Axboe wrote:
-> >>On Thu, Dec 13 2007, Mark Lord wrote:
-> >>>Jens Axboe wrote:
-> >>>>On Thu, Dec 13 2007, Mark Lord wrote:
-> >>>>>Mark Lord wrote:
-> >>>>>>Jens Axboe wrote:
-> >>>>>>>On Thu, Dec 13 2007, Mark Lord wrote:
-> >>>>>>>>Matthew Wilcox wrote:
-> >>>>>>>>>On Thu, Dec 13, 2007 at 01:48:18PM -0500, Mark Lord wrote:
-> >>>>>>>>>>Problem confirmed.  2.6.23.8 regularly generates segments up to 
-> >>>>>>>>>>64KB for libata,
-> >>>>>>>>>>but 2.6.24 uses only 4KB segments and a *few* 8KB segments.
-> >>>>>>>>>Just a suspicion ... could this be slab vs slub?  ie check your 
-> >>>>>>>>>configs
-> >>>>>>>>>are the same / similar between the two kernels.
-> >>>>>>>>..
-> >>>>>>>>
-> >>>>>>>>Mmmm.. a good thought, that one.
-> >>>>>>>>But I just rechecked, and both have CONFIG_SLAB=y
-> >>>>>>>>
-> >>>>>>>>My guess is that something got changed around when Jens
-> >>>>>>>>reworked the block layer for 2.6.24.
-> >>>>>>>>I'm going to dig around in there now.
-> >>>>>>>I didn't rework the block layer for 2.6.24 :-). The core block layer
-> >>>>>>>changes since 2.6.23 are:
-> >>>>>>>
-> >>>>>>>- Support for empty barriers. Not a likely candidate.
-> >>>>>>>- Shared tag queue fixes. Totally unlikely.
-> >>>>>>>- sg chaining support. Not likely.
-> >>>>>>>- The bio changes from Neil. Of the bunch, the most likely suspects 
-> >>>>>>>in
-> >>>>>>>this area, since it changes some of the code involved with merges and
-> >>>>>>>blk_rq_map_sg().
-> >>>>>>>- Lots of simple stuff, again very unlikely.
-> >>>>>>>
-> >>>>>>>Anyway, it sounds odd for this to be a block layer problem if you do 
-> >>>>>>>see
-> >>>>>>>occasional segments being merged. So it sounds more like the input 
-> >>>>>>>data
-> >>>>>>>having changed.
-> >>>>>>>
-> >>>>>>>Why not just bisect it?
-> >>>>>>..
-> >>>>>>
-> >>>>>>Because the early 2.6.24 series failed to boot on this machine
-> >>>>>>due to bugs in the block layer -- so the code that caused this 
-> >>>>>>regression
-> >>>>>>is probably in the stuff from before the kernels became usable here.
-> >>>>>..
-> >>>>>
-> >>>>>That sounds more harsh than intended --> the earlier 2.6.24 kernels 
-> >>>>>(up to
-> >>>>>the first couple of -rc* ones failed here because of incompatibilities
-> >>>>>between the block/bio changes and libata.
-> >>>>>
-> >>>>>That's better, I think! 
-> >>>>No worries, I didn't pick it up as harsh just as an odd conclusion :-)
-> >>>>
-> >>>>If I were you, I'd just start from the first -rc that booted for you. If
-> >>>>THAT has the bug, then we'll think of something else. If you don't get
-> >>>>anywhere, I can run some tests tomorrow and see if I can reproduce it
-> >>>>here.
-> >>>..
-> >>>
-> >>>I believe that *anyone* can reproduce it, since it's broken long before
-> >>>the requests ever get to SCSI or libata.  Which also means that *anyone*
-> >>>who wants to can bisect it, as well.
-> >>>
-> >>>I don't do "bisects".
-> >>It was just a suggestion on how to narrow it down, do as you see fit.
-> >>
-> >>>But I will dig a bit more and see if I can find the culprit.
-> >>Sure, I'll dig around as well.
-> >
-> >Just tried something simple. I only see one 12kb segment so far, so not
-> >a lot by any stretch. I also DONT see any missed merges signs, so it
-> >would appear that the pages in the request are simply not contigious
-> >physically.
-> >
-> >diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-> >index e30b1a4..1e34b6f 100644
-> >--- a/block/ll_rw_blk.c
-> >+++ b/block/ll_rw_blk.c
-> >@@ -1330,6 +1330,8 @@ int blk_rq_map_sg(struct request_queue *q, struct 
-> >request *rq,
-> > 				goto new_segment;
-> > 
-> > 			sg->length += nbytes;
-> >+			if (sg->length > 8192)
-> >+				printk("sg_len=%d\n", sg->length);
-> > 		} else {
-> > new_segment:
-> > 			if (!sg)
-> >@@ -1349,6 +1351,8 @@ new_segment:
-> > 				sg = sg_next(sg);
-> > 			}
-> > 
-> >+			if (bvprv && (page_address(bvprv->bv_page) + 
-> >bvprv->bv_len == page_address(bvec->bv_page)))
-> >+				printk("missed merge\n");
-> > 			sg_set_page(sg, bvec->bv_page, nbytes, 
-> > 			bvec->bv_offset);
-> > 			nsegs++;
-> > 		}
-> >
-> ..
-> 
-> Yeah, the first part is similar to my own hack.
-> 
-> For testing, try "dd if=/dev/sda of=/dev/null bs=4096k".
-> That *really* should end up using contiguous pages on most systems.
-> 
-> I figured out the git thing, and am now building some in-between kernels to 
-> try.
+On Thursday, December 13, 2007 3:20 Benjamin Herrenschmidt wrote:
+> > > Supporting pci_enable_device_io / pci_enable_device_mmio /
+> > > pci_iomap_io / pci_iomap_mmio seems to cover pretty much all the
+> > > use cases we have.
+> > >
+> > > The users we have right now that are:
+> > >
+> > >         - pata_cs5520   (can be dealt with easily)
+> > >         - old IDE       (with the new resource handling for
+> > > legacy IDE can use pci_enable_device_io I think, ditto
+> > > pci/cs5520)
+> > >         - scx200_acb    (looks like a simple substitution works)
+> > >         - lpfc          pci_enable_device_mmio
+> > >         - qla2xxx       pci_enable_device ? (enables IO and MMIO)
+>
+> I may have not fully undestood you in my previous reply. You are
+> proposing replacing pci_enable_device_bars() with a pair of
+> pci_enable_device_io/mem ?
+>
+> I think that would be a good idea indeed.
 
-OK, it's a vm issue, I have tens of thousand "backward" pages after a
-boot - IOW, bvec->bv_page is the page before bvprv->bv_page, not
-reverse. So it looks like that bug got reintroduced.
+Yeah, that seems like a reasonable compromise.  Though in practice I'd 
+expect the full disable decode approach to work fairly well too.  I 
+mean, if we really end up failing to allocate space for the device with 
+the root drive on it, there are probably bigger issues than just 
+failing to get a few bytes of I/O space for it...
 
--- 
-Jens Axboe
+OTOH like Robert said, many devices really only need either MMIO or IO 
+space enabled, not both, so having separate enable/disable routines for 
+them makes a lot of sense.
 
+Jesse
