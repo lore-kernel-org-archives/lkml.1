@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757690AbXLMM6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756375AbXLMNCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757690AbXLMM6W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 07:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbXLMM6N
+	id S1756375AbXLMNCN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 08:02:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbXLMNB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 07:58:13 -0500
-Received: from adsl-76-243-235-52.dsl.chcgil.sbcglobal.net ([76.243.235.52]:33792
-	"EHLO accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753403AbXLMM6M (ORCPT
+	Thu, 13 Dec 2007 08:01:58 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:58370 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbXLMNB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 07:58:12 -0500
-Subject: Re: [PATCH] dpt_i2o: don't set DMA_64BIT_MASK [was: Re: [stable]
-	broken dpt_i2o in 2.6.23 (was: ext2 check page: bad entry in directory)
-	(fwd)]
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Miquel van Smoorenburg <miquels@cistron.nl>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi@vger.kernel.org, matthew@wil.cx,
-       linux-kernel@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Anders Henke <anders.henke@1und1.de>, stable@kernel.org
-In-Reply-To: <20071213101144.GA61767@xs4all.net>
-References: <20071212105841.GN6770@1und1.de>
-	 <20071212033808.6fb92139.akpm@linux-foundation.org>
-	 <1197464879.20796.15.camel@n2o.xs4all.nl> <20071212134342.GR6770@1und1.de>
-	 <20071212111629.9a4f7f73.akpm@linux-foundation.org>
-	 <1197489294.4203.40.camel@localhost.localdomain>
-	 <20071212221627.GA16474@kroah.com>  <20071213101144.GA61767@xs4all.net>
-Content-Type: text/plain
-Date: Thu, 13 Dec 2007 07:58:01 -0500
-Message-Id: <1197550681.3154.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Dec 2007 08:01:57 -0500
+Date: Thu, 13 Dec 2007 08:00:38 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Thomas Gleixner <tglx@linutronix.de>, Remy Bohmer <linux@bohmer.net>,
+       Daniel Walker <dwalker@mvista.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Revert lazy irq disable for simple irqs
+In-Reply-To: <20071213102259.GQ8977@elte.hu>
+Message-ID: <Pine.LNX.4.58.0712130756060.27141@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0712121516400.22305@gandalf.stny.rr.com>
+ <20071213102259.GQ8977@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2007-12-13 at 11:11 +0100, Miquel van Smoorenburg wrote:
-> According to Greg KH:
-> > So, what should be added to 2.6.23-stable then?  And, can I get a real
-> > changelog entry for it?
-> 
-> This is suitable for both 2.6.23.x and 2.6.24-rc5 :
-> 
-> linux-2.6-dpt_i2o-no-dma64.patch
+On Thu, 13 Dec 2007, Ingo Molnar wrote:
 
-Actually, this one's already queued:
+>
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+> > [This patch *is* for mainline Linux]
+> >
+> > In commit 76d2160147f43f982dfe881404cfde9fd0a9da21 lazy irq disabling
+> > was implemented, and the simple irq handler had a masking set to it.
 
-http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-rc-fixes-2.6.git;a=commit;h=a066b307861238c1970310579c0bc2fe8c8dca51
+>
+> thanks, applied. This is for v2.6.24 too, right?
+>
 
-James
+Probably should be. The patch only reverts the change for
+handle_simple_irq that shouldn't have been done in the first place. At
+worse, this patch just takes us back to what handle_simple_irq use to do,
+and at best, it prevents bugs where we somehow fall into the "mask" path
+of handle_simple_irq and never unmask. But to hit that path, the driver
+probably shouldn't be using handle_simple_irq ;-)
 
+Thanks,
+
+-- Steve
 
