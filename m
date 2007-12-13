@@ -1,95 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764759AbXLMTIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764515AbXLMTJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764759AbXLMTIU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 14:08:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757504AbXLMTIH
+	id S1764515AbXLMTJk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 14:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760342AbXLMTJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 14:08:07 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:11832 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756758AbXLMTIF (ORCPT
+	Thu, 13 Dec 2007 14:09:30 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45856
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1760271AbXLMTJ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 14:08:05 -0500
-Date: Thu, 13 Dec 2007 12:08:02 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Len Brown <lenb@kernel.org>
-Cc: akpm@linux-foundation.org, linux-acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [RFC] Expose _SUN in /proc/acpi/processor/<...>/info
-Message-ID: <20071213190801.GA7747@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Len Brown <lenb@kernel.org>, akpm@linux-foundation.org,
-	linux-acpi <linux-acpi@vger.kernel.org>, linux-kernel@vger.kernel.org
-References: <20071019193844.GL8122@ldl.fc.hp.com> <20071030235057.GD3127@ldl.fc.hp.com> <200711191254.33682.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200711191254.33682.lenb@kernel.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 13 Dec 2007 14:09:28 -0500
+Date: Thu, 13 Dec 2007 11:09:28 -0800 (PST)
+Message-Id: <20071213.110928.26060224.davem@davemloft.net>
+To: gallatin@myri.com
+Cc: shemminger@linux-foundation.org, joonwpark81@gmail.com,
+       auke-jan.h.kok@intel.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       jesse.brandeburg@intel.com
+Subject: Re: [RFC] net: napi fix
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <476181C1.3060204@myri.com>
+References: <20071213.061938.86541759.davem@davemloft.net>
+	<20071213102233.3727e9a0@freepuppy.rosehill>
+	<476181C1.3060204@myri.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Len,
+From: Andrew Gallatin <gallatin@myri.com>
+Date: Thu, 13 Dec 2007 14:02:25 -0500
 
-* Len Brown <lenb@kernel.org>:
-> On Tuesday 30 October 2007 19:50, Alex Chiang wrote:
-> > 
-> > I'm looking for comments on the following patch that exposes _SUN
-> > on processor objects in /proc/acpi/processor/<...>/info. 
-> > 
-> > This didn't get many comments on the linux-acpi list, so I'm
-> > sending to a wider distribution.
-> > 
-> > I notice that acpiphp exposes _SUN for (hotpluggable) PCI slots
-> > in /sys/bus/pci/slots/N/, where N is the value of _SUN. I'm not
-> > so sure we want to go *exactly* in the same direction for CPUs,
-> > because:
-> > 
-> >   - x86 systems might not implement _SUN for processors
-> >   - ia64 systems that implement ACPI 2.x do not have unique
-> >     values for _SUN across the entire system
-> > 
-> > Nonetheless, even non-unique values of _SUN are still helpful for
-> > userspace to figure out which physical socket a CPU might be in,
-> > especially when combined with information from /proc/cpuinfo.
-> > 
-> > Thoughts?
-> 
-> We've not allowed new features in /proc/acpi
-> since we started removing /proc/acpi.
-> ie. we don't want to update the API, we want to delete it.
- 
-Ok.
+> Or perhaps we should just leave things as is.
 
-> If this is a useful thing for user-space to know, then you need
-> to figure out a generic way to present it -- likely under
-> /sys/devices/system/cpu/
- 
-There are lots of ways to go with this, and I'd like to get an
-idea of what you think makes most sense before going off and
-spending tons of time here.
+We should probably add a "disabling" state bit to the
+napi struct flags, this will be set by napi_disable()
+before it loops trying to set the sched bit.
 
-I see possible choices as:
-
-  1) create something like:
-  
-	/sys/devices/system/cpu/cpuN/topology/socket_id
-
-     And leave it up to the arch to figure if/how they want to
-     implement it. On ia64 systems, we can get this information
-     from the _SUN method.
-
-  2) create something like:
-
-  	/sys/devices/system/cpu/cpuN/acpi/
-
-     And port over the stuff from /proc/acpi, adding in a new
-     field for _SUN.
-
-Thoughts?
-
-Thanks.
-
-/ac
-
+net_rx_action() can then check this.
