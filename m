@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbXLMGlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761088AbXLMGlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753105AbXLMGlh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:41:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbXLMGhU
+	id S1761088AbXLMGlz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758909AbXLMGhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:37:20 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56290 "EHLO
+	Thu, 13 Dec 2007 01:37:23 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56304 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758699AbXLMGhQ (ORCPT
+	with ESMTP id S1758244AbXLMGhV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:37:16 -0500
-Date: Wed, 12 Dec 2007 22:34:34 -0800
+	Thu, 13 Dec 2007 01:37:21 -0500
+Date: Wed, 12 Dec 2007 22:34:37 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,14 +21,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 12/36] futex: fix for futex_wait signal stack corruption
-Message-ID: <20071213063434.GM25301@kroah.com>
+       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 13/36] forcedeth: new mcp79 pci ids
+Message-ID: <20071213063437.GN25301@kroah.com>
 References: <20071213062511.265908583@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="futex-fix-for-futex_wait-signal-stack-corruption.patch"
+Content-Disposition: inline; filename="forcedeth-new-mcp79-pci-ids.patch"
 In-Reply-To: <20071213063308.GA25301@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,216 +40,60 @@ know.
 
 ------------------
 
-From: Steven Rostedt <srostedt@redhat.com>
+From: Ayaz Abdulla <aabdulla@nvidia.com>
 
-patch ce6bd420f43b28038a2c6e8fbb86ad24014727b6 in mainline.
+patch 490dde8990c55662596a4be71b5070bd7d382d4a in mainline.
 
-David Holmes found a bug in the -rt tree with respect to
-pthread_cond_timedwait. After trying his test program on the latest git
-from mainline, I found the bug was there too.  The bug he was seeing
-that his test program showed, was that if one were to do a "Ctrl-Z" on a
-process that was in the pthread_cond_timedwait, and then did a "bg" on
-that process, it would return with a "-ETIMEDOUT" but early. That is,
-the timer would go off early.
+This patch adds new device ids and features for mcp79 devices into the
+forcedeth driver.
 
-Looking into this, I found the source of the problem. And it is a rather
-nasty bug at that.
-
-Here's the relevant code from kernel/futex.c: (not in order in the file)
-
-[...]
-smlinkage long sys_futex(u32 __user *uaddr, int op, u32 val,
-                          struct timespec __user *utime, u32 __user *uaddr2,
-                          u32 val3)
-{
-        struct timespec ts;
-        ktime_t t, *tp = NULL;
-        u32 val2 = 0;
-        int cmd = op & FUTEX_CMD_MASK;
-
-        if (utime && (cmd == FUTEX_WAIT || cmd == FUTEX_LOCK_PI)) {
-                if (copy_from_user(&ts, utime, sizeof(ts)) != 0)
-                        return -EFAULT;
-                if (!timespec_valid(&ts))
-                        return -EINVAL;
-
-                t = timespec_to_ktime(ts);
-                if (cmd == FUTEX_WAIT)
-                        t = ktime_add(ktime_get(), t);
-                tp = &t;
-        }
-[...]
-        return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
-}
-
-[...]
-
-long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
-                u32 __user *uaddr2, u32 val2, u32 val3)
-{
-        int ret;
-        int cmd = op & FUTEX_CMD_MASK;
-        struct rw_semaphore *fshared = NULL;
-
-        if (!(op & FUTEX_PRIVATE_FLAG))
-                fshared = &current->mm->mmap_sem;
-
-        switch (cmd) {
-        case FUTEX_WAIT:
-                ret = futex_wait(uaddr, fshared, val, timeout);
-
-[...]
-
-static int futex_wait(u32 __user *uaddr, struct rw_semaphore *fshared,
-                      u32 val, ktime_t *abs_time)
-{
-[...]
-               struct restart_block *restart;
-                restart = &current_thread_info()->restart_block;
-                restart->fn = futex_wait_restart;
-                restart->arg0 = (unsigned long)uaddr;
-                restart->arg1 = (unsigned long)val;
-                restart->arg2 = (unsigned long)abs_time;
-                restart->arg3 = 0;
-                if (fshared)
-                        restart->arg3 |= ARG3_SHARED;
-                return -ERESTART_RESTARTBLOCK;
-[...]
-
-static long futex_wait_restart(struct restart_block *restart)
-{
-        u32 __user *uaddr = (u32 __user *)restart->arg0;
-        u32 val = (u32)restart->arg1;
-        ktime_t *abs_time = (ktime_t *)restart->arg2;
-        struct rw_semaphore *fshared = NULL;
-
-        restart->fn = do_no_restart_syscall;
-        if (restart->arg3 & ARG3_SHARED)
-                fshared = &current->mm->mmap_sem;
-        return (long)futex_wait(uaddr, fshared, val, abs_time);
-}
-
-So when the futex_wait is interrupt by a signal we break out of the
-hrtimer code and set up or return from signal. This code does not return
-back to userspace, so we set up a RESTARTBLOCK.  The bug here is that we
-save the "abs_time" which is a pointer to the stack variable "ktime_t t"
-from sys_futex.
-
-This returns and unwinds the stack before we get to call our signal. On
-return from the signal we go to futex_wait_restart, where we update all
-the parameters for futex_wait and call it. But here we have a problem
-where abs_time is no longer valid.
-
-I verified this with print statements, and sure enough, what abs_time
-was set to ends up being garbage when we get to futex_wait_restart.
-
-The solution I did to solve this (with input from Linus Torvalds)
-was to add unions to the restart_block to allow system calls to
-use the restart with specific parameters.  This way the futex code now
-saves the time in a 64bit value in the restart block instead of storing
-it on the stack.
-
-Note: I'm a bit nervious to add "linux/types.h" and use u32 and u64
-in thread_info.h, when there's a #ifdef __KERNEL__ just below that.
-Not sure what that is there for.  If this turns out to be a problem, I've
-tested this with using "unsigned int" for u32 and "unsigned long long" for
-u64 and it worked just the same. I'm using u32 and u64 just to be
-consistent with what the futex code uses.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Ayaz Abdulla <aabdulla@nvidia.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
+index 92ce2e3..f9ba0ac 100644
 ---
- include/linux/thread_info.h |   17 +++++++++++++++--
- kernel/futex.c              |   25 +++++++++++++------------
- 2 files changed, 28 insertions(+), 14 deletions(-)
+ drivers/net/forcedeth.c |   16 ++++++++++++++++
+ include/linux/pci_ids.h |    4 ++++
+ 2 files changed, 20 insertions(+)
 
---- a/include/linux/thread_info.h
-+++ b/include/linux/thread_info.h
-@@ -7,12 +7,25 @@
- #ifndef _LINUX_THREAD_INFO_H
- #define _LINUX_THREAD_INFO_H
- 
-+#include <linux/types.h>
-+
- /*
-- * System call restart block. 
-+ * System call restart block.
-  */
- struct restart_block {
- 	long (*fn)(struct restart_block *);
--	unsigned long arg0, arg1, arg2, arg3;
-+	union {
-+		struct {
-+			unsigned long arg0, arg1, arg2, arg3;
-+		};
-+		/* For futex_wait */
-+		struct {
-+			u32 *uaddr;
-+			u32 val;
-+			u32 flags;
-+			u64 time;
-+		} futex;
-+	};
+--- a/drivers/net/forcedeth.c
++++ b/drivers/net/forcedeth.c
+@@ -5553,6 +5553,22 @@ static struct pci_device_id pci_tbl[] = 
+ 		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_27),
+ 		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_HIGH_DMA|DEV_HAS_POWER_CNTRL|DEV_HAS_MSI|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
+ 	},
++	{	/* MCP79 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_36),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_CHECKSUM|DEV_HAS_HIGH_DMA|DEV_HAS_MSI|DEV_HAS_POWER_CNTRL|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
++	{	/* MCP79 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_37),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_CHECKSUM|DEV_HAS_HIGH_DMA|DEV_HAS_MSI|DEV_HAS_POWER_CNTRL|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
++	{	/* MCP79 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_38),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_CHECKSUM|DEV_HAS_HIGH_DMA|DEV_HAS_MSI|DEV_HAS_POWER_CNTRL|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
++	{	/* MCP79 Ethernet Controller */
++		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NVENET_39),
++		.driver_data = DEV_NEED_TIMERIRQ|DEV_NEED_LINKTIMER|DEV_HAS_CHECKSUM|DEV_HAS_HIGH_DMA|DEV_HAS_MSI|DEV_HAS_POWER_CNTRL|DEV_HAS_PAUSEFRAME_TX|DEV_HAS_STATISTICS_V2|DEV_HAS_TEST_EXTENDED|DEV_HAS_MGMT_UNIT,
++	},
+ 	{0,},
  };
  
- extern long do_no_restart_syscall(struct restart_block *parm);
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1129,9 +1129,9 @@ static int fixup_pi_state_owner(u32 __us
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -1239,6 +1239,10 @@
+ #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP67_IDE       0x0560
+ #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP73_IDE       0x056C
+ #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP77_IDE       0x0759
++#define PCI_DEVICE_ID_NVIDIA_NVENET_36              0x0AB0
++#define PCI_DEVICE_ID_NVIDIA_NVENET_37              0x0AB1
++#define PCI_DEVICE_ID_NVIDIA_NVENET_38              0x0AB2
++#define PCI_DEVICE_ID_NVIDIA_NVENET_39              0x0AB3
  
- /*
-  * In case we must use restart_block to restart a futex_wait,
-- * we encode in the 'arg3' shared capability
-+ * we encode in the 'flags' shared capability
-  */
--#define ARG3_SHARED  1
-+#define FLAGS_SHARED  1
- 
- static long futex_wait_restart(struct restart_block *restart);
- static int futex_wait(u32 __user *uaddr, struct rw_semaphore *fshared,
-@@ -1272,12 +1272,13 @@ static int futex_wait(u32 __user *uaddr,
- 		struct restart_block *restart;
- 		restart = &current_thread_info()->restart_block;
- 		restart->fn = futex_wait_restart;
--		restart->arg0 = (unsigned long)uaddr;
--		restart->arg1 = (unsigned long)val;
--		restart->arg2 = (unsigned long)abs_time;
--		restart->arg3 = 0;
-+		restart->futex.uaddr = (u32 *)uaddr;
-+		restart->futex.val = val;
-+		restart->futex.time = abs_time->tv64;
-+		restart->futex.flags = 0;
-+
- 		if (fshared)
--			restart->arg3 |= ARG3_SHARED;
-+			restart->futex.flags |= FLAGS_SHARED;
- 		return -ERESTART_RESTARTBLOCK;
- 	}
- 
-@@ -1293,15 +1294,15 @@ static int futex_wait(u32 __user *uaddr,
- 
- static long futex_wait_restart(struct restart_block *restart)
- {
--	u32 __user *uaddr = (u32 __user *)restart->arg0;
--	u32 val = (u32)restart->arg1;
--	ktime_t *abs_time = (ktime_t *)restart->arg2;
-+	u32 __user *uaddr = (u32 __user *)restart->futex.uaddr;
- 	struct rw_semaphore *fshared = NULL;
-+	ktime_t t;
- 
-+	t.tv64 = restart->futex.time;
- 	restart->fn = do_no_restart_syscall;
--	if (restart->arg3 & ARG3_SHARED)
-+	if (restart->futex.flags & FLAGS_SHARED)
- 		fshared = &current->mm->mmap_sem;
--	return (long)futex_wait(uaddr, fshared, val, abs_time);
-+	return (long)futex_wait(uaddr, fshared, restart->futex.val, &t);
- }
- 
- 
+ #define PCI_VENDOR_ID_IMS		0x10e0
+ #define PCI_DEVICE_ID_IMS_TT128		0x9128
 
 -- 
