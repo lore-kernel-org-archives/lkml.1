@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbXLMGoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbXLMGom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761479AbXLMGoT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759196AbXLMGhm
+	id S1761560AbXLMGom (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:44:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759290AbXLMGhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:37:42 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56418 "EHLO
+	Thu, 13 Dec 2007 01:37:45 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56443 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758638AbXLMGhj (ORCPT
+	with ESMTP id S1759251AbXLMGhn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:37:39 -0500
-Date: Wed, 12 Dec 2007 22:34:53 -0800
+	Thu, 13 Dec 2007 01:37:43 -0500
+Date: Wed, 12 Dec 2007 22:34:55 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
+To: linux-kernel@vger.kernel.org, stable@kernel.org, bunk@kernel.org,
+       davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Dumazet <dada1@cosmosbay.com>,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 19/36] NET: Corrects a bug in ip_rt_acct_read()
-Message-ID: <20071213063453.GT25301@kroah.com>
+Subject: [patch 20/36] IPV4: Remove bogus ifdef mess in arp_process
+Message-ID: <20071213063455.GU25301@kroah.com>
 References: <20071213062511.265908583@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="net-corrects-a-bug-in-ip_rt_acct_read.patch"
+Content-Disposition: inline; filename="ipv4-remove-bogus-ifdef-mess-in-arp_process.patch"
 In-Reply-To: <20071213063308.GA25301@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -36,53 +36,92 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.22-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Eric Dumazet <dada1@cosmosbay.com>
+From: Adrian Bunk <bunk@kernel.org>
 
-[NET]: Corrects a bug in ip_rt_acct_read()
+[IPV4]: Remove bogus ifdef mess in arp_process
 
-[ Upstream commit: 483b23ffa3a5f44767038b0a676d757e0668437e ]
+[ Upstream commit: 3660019e5f96fd9a8b7d4214a96523c0bf7b676d ]
 
-It seems that stats of cpu 0 are counted twice, since
-for_each_possible_cpu() is looping on all possible cpus, including 0
+The #ifdef's in arp_process() were not only a mess, they were also wrong
+in the CONFIG_NET_ETHERNET=n and (CONFIG_NETDEV_1000=y or
+CONFIG_NETDEV_10000=y) cases.
 
-Before percpu conversion of ip_rt_acct, we should also remove the
-assumption that CPU 0 is online (or even possible)
+Since they are not required this patch removes them.
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Also removed are some #ifdef's around #include's that caused compile
+errors after this change.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: David Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/route.c |    8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ net/ipv4/arp.c |   19 -------------------
+ 1 file changed, 19 deletions(-)
 
---- a/net/ipv4/route.c
-+++ b/net/ipv4/route.c
-@@ -3150,18 +3150,14 @@ static int ip_rt_acct_read(char *buffer,
- 	offset /= sizeof(u32);
+--- a/net/ipv4/arp.c
++++ b/net/ipv4/arp.c
+@@ -110,12 +110,8 @@
+ #include <net/tcp.h>
+ #include <net/sock.h>
+ #include <net/arp.h>
+-#if defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
+ #include <net/ax25.h>
+-#if defined(CONFIG_NETROM) || defined(CONFIG_NETROM_MODULE)
+ #include <net/netrom.h>
+-#endif
+-#endif
+ #if defined(CONFIG_ATM_CLIP) || defined(CONFIG_ATM_CLIP_MODULE)
+ #include <net/atmclip.h>
+ struct neigh_table *clip_tbl_hook;
+@@ -729,20 +725,10 @@ static int arp_process(struct sk_buff *s
+ 		    htons(dev_type) != arp->ar_hrd)
+ 			goto out;
+ 		break;
+-#ifdef CONFIG_NET_ETHERNET
+ 	case ARPHRD_ETHER:
+-#endif
+-#ifdef CONFIG_TR
+ 	case ARPHRD_IEEE802_TR:
+-#endif
+-#ifdef CONFIG_FDDI
+ 	case ARPHRD_FDDI:
+-#endif
+-#ifdef CONFIG_NET_FC
+ 	case ARPHRD_IEEE802:
+-#endif
+-#if defined(CONFIG_NET_ETHERNET) || defined(CONFIG_TR) || \
+-    defined(CONFIG_FDDI)	 || defined(CONFIG_NET_FC)
+ 		/*
+ 		 * ETHERNET, Token Ring and Fibre Channel (which are IEEE 802
+ 		 * devices, according to RFC 2625) devices will accept ARP
+@@ -757,21 +743,16 @@ static int arp_process(struct sk_buff *s
+ 		    arp->ar_pro != htons(ETH_P_IP))
+ 			goto out;
+ 		break;
+-#endif
+-#if defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
+ 	case ARPHRD_AX25:
+ 		if (arp->ar_pro != htons(AX25_P_IP) ||
+ 		    arp->ar_hrd != htons(ARPHRD_AX25))
+ 			goto out;
+ 		break;
+-#if defined(CONFIG_NETROM) || defined(CONFIG_NETROM_MODULE)
+ 	case ARPHRD_NETROM:
+ 		if (arp->ar_pro != htons(AX25_P_IP) ||
+ 		    arp->ar_hrd != htons(ARPHRD_NETROM))
+ 			goto out;
+ 		break;
+-#endif
+-#endif
+ 	}
  
- 	if (length > 0) {
--		u32 *src = ((u32 *) IP_RT_ACCT_CPU(0)) + offset;
- 		u32 *dst = (u32 *) buffer;
- 
--		/* Copy first cpu. */
- 		*start = buffer;
--		memcpy(dst, src, length);
-+		memset(dst, 0, length);
- 
--		/* Add the other cpus in, one int at a time */
- 		for_each_possible_cpu(i) {
- 			unsigned int j;
--
--			src = ((u32 *) IP_RT_ACCT_CPU(i)) + offset;
-+			u32 *src = ((u32 *) IP_RT_ACCT_CPU(i)) + offset;
- 
- 			for (j = 0; j < length/4; j++)
- 				dst[j] += src[j];
+ 	/* Understand only these message types */
 
 -- 
