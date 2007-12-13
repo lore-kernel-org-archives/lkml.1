@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761272AbXLMGzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761629AbXLMG4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761272AbXLMGzy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:55:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757851AbXLMGz3
+	id S1761629AbXLMG4X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:56:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759601AbXLMGzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:55:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54975 "EHLO
+	Thu, 13 Dec 2007 01:55:32 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:54981 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755208AbXLMGz2 (ORCPT
+	with ESMTP id S1759125AbXLMGzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:55:28 -0500
-Date: Wed, 12 Dec 2007 22:50:57 -0800
+	Thu, 13 Dec 2007 01:55:31 -0500
+Date: Wed, 12 Dec 2007 22:51:07 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,15 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Marcelo Tosatti <marcelo@kvack.org>,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 01/60] libertas: properly account for queue commands
-Message-ID: <20071213065056.GB6867@kroah.com>
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [patch 02/60] NET: random : secure_tcp_sequence_number should not
+	assume CONFIG_KTIME_SCALAR
+Message-ID: <20071213065107.GC6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="libertas-properly-account-for-queue-commands.patch"
+Content-Disposition: inline; filename="net-random-secure_tcp_sequence_number-should-not-assume-config_ktime_scalar.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -37,60 +37,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.23-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Marcelo Tosatti <marcelo@kvack.org>
+From: Eric Dumazet <dada1@cosmosbay.com>
 
-patch 29f5f2a19b055feabfcc6f92e1d40ec092c373ea in mainline.
+[NET] random : secure_tcp_sequence_number should not assume CONFIG_KTIME_SCALAR
 
-Properly account for queue commands, this fixes a problem reported
-by Holger Schurig when using the debugfs interface.
+[ Upstream commit: 6dd10a62353a50b30b30e0c18653650975b29c71 ]
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+All 32 bits machines but i386 dont have CONFIG_KTIME_SCALAR. On these
+machines, ktime.tv64 is more than 4 times the (correct) result given
+by ktime_to_ns()
+
+Again on these machines, using ktime_get_real().tv64 >> 6 give a
+32bits rollover every 64 seconds, which is not wanted (less than the
+120 s MSL)
+
+Using ktime_to_ns() is the portable way to get nsecs from a ktime, and
+have correct code.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/libertas/cmd.c |   10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/char/random.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/net/wireless/libertas/cmd.c
-+++ b/drivers/net/wireless/libertas/cmd.c
-@@ -881,6 +881,10 @@ static int wlan_cmd_mesh_access(wlan_pri
- 	return 0;
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -1494,7 +1494,7 @@ __u32 secure_tcpv6_sequence_number(__be3
+ 	seq = twothirdsMD4Transform((const __u32 *)daddr, hash) & HASH_MASK;
+ 	seq += keyptr->count;
+ 
+-	seq += ktime_get_real().tv64;
++	seq += ktime_to_ns(ktime_get_real());
+ 
+ 	return seq;
  }
+@@ -1556,7 +1556,7 @@ __u32 secure_tcp_sequence_number(__be32 
+ 	 *	overlaps less than one time per MSL (2 minutes).
+ 	 *	Choosing a clock of 64 ns period is OK. (period of 274 s)
+ 	 */
+-	seq += ktime_get_real().tv64 >> 6;
++	seq += ktime_to_ns(ktime_get_real()) >> 6;
+ #if 0
+ 	printk("init_seq(%lx, %lx, %d, %d) = %d\n",
+ 	       saddr, daddr, sport, dport, seq);
+@@ -1616,7 +1616,7 @@ u64 secure_dccp_sequence_number(__be32 s
+ 	seq = half_md4_transform(hash, keyptr->secret);
+ 	seq |= ((u64)keyptr->count) << (32 - HASH_BITS);
  
-+/*
-+ * Note: NEVER use libertas_queue_cmd() with addtail==0 other than for
-+ * the command timer, because it does not account for queued commands.
-+ */
- void libertas_queue_cmd(wlan_adapter * adapter, struct cmd_ctrl_node *cmdnode, u8 addtail)
- {
- 	unsigned long flags;
-@@ -910,10 +914,11 @@ void libertas_queue_cmd(wlan_adapter * a
- 
- 	spin_lock_irqsave(&adapter->driver_lock, flags);
- 
--	if (addtail)
-+	if (addtail) {
- 		list_add_tail((struct list_head *)cmdnode,
- 			      &adapter->cmdpendingq);
--	else
-+		adapter->nr_cmd_pending++;
-+	} else
- 		list_add((struct list_head *)cmdnode, &adapter->cmdpendingq);
- 
- 	spin_unlock_irqrestore(&adapter->driver_lock, flags);
-@@ -1400,7 +1405,6 @@ int libertas_prepare_and_send_command(wl
- 	cmdnode->cmdwaitqwoken = 0;
- 
- 	libertas_queue_cmd(adapter, cmdnode, 1);
--	adapter->nr_cmd_pending++;
- 	wake_up_interruptible(&priv->mainthread.waitq);
- 
- 	if (wait_option & cmd_option_waitforrsp) {
+-	seq += ktime_get_real().tv64;
++	seq += ktime_to_ns(ktime_get_real());
+ 	seq &= (1ull << 48) - 1;
+ #if 0
+ 	printk("dccp init_seq(%lx, %lx, %d, %d) = %d\n",
 
 -- 
