@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbXLMVPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932352AbXLMVTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932765AbXLMVPz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 16:15:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760764AbXLMVPr
+	id S932352AbXLMVTd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 16:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXLMVTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 16:15:47 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51388 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759264AbXLMVPq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 16:15:46 -0500
-Date: Thu, 13 Dec 2007 13:15:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ego@in.ibm.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, jirislaby@gmail.com
-Subject: Re: 2.6.24-rc5-mm1
-Message-Id: <20071213131504.41e1ad55.akpm@linux-foundation.org>
-In-Reply-To: <20071213122802.GA30427@in.ibm.com>
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
-	<20071213122802.GA30427@in.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 13 Dec 2007 16:19:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45873 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761990AbXLMVTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 16:19:21 -0500
+Date: Thu, 13 Dec 2007 16:18:58 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       nfsv4@linux-nfs.org
+Subject: Re: [PATCH 2/6] SUNRPC: Break up __svc_create_thread and make
+ svc_create_kthread
+Message-ID: <20071213161858.4bf8b770@tleilax.poochiereds.net>
+In-Reply-To: <20071213210643.GA28117@infradead.org>
+References: <1197578428-26815-1-git-send-email-jlayton@redhat.com>
+	<1197578428-26815-2-git-send-email-jlayton@redhat.com>
+	<1197578428-26815-3-git-send-email-jlayton@redhat.com>
+	<20071213210643.GA28117@infradead.org>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,29 +30,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Dec 2007 17:58:02 +0530
-Gautham R Shenoy <ego@in.ibm.com> wrote:
+On Thu, 13 Dec 2007 21:06:44 +0000
+Christoph Hellwig <hch@infradead.org> wrote:
 
-> Hi Andrew, 
-> On Thu, Dec 13, 2007 at 02:40:50AM -0800, Andrew Morton wrote:
+> On Thu, Dec 13, 2007 at 03:40:24PM -0500, Jeff Layton wrote:
+> > Move the initialization that happens prior to thread creation to a
+> > new function (svc_prepare_thread) so that we can call it from a new
+> > thread creation routine. Add a new function svc_create_kthread that
+> > spawns svc threads using kthread API.
 > > 
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/
-> > 
-> > - If something goes wrong with a PCI device's probing or initialisation, try
-> >   reverting pci-disable-decoding-during-sizing-of-bars.patch.
-> > 
-> > - git-sched was dropped due to breaking suspend-to-RAM.
+> > We should be able to eventually convert all of the callers to the
+> > kthread API, at which point we can drop __svc_create_thread.
 > 
-> Is it the same suspend-to-RAM problem that Jiri Slaby reported 
-> here --> http://lkml.org/lkml/2007/12/7/125
+> > +static struct svc_rqst *
+> > +svc_prepare_thread(svc_thread_fn func, struct svc_serv *serv,
+> > +		   struct svc_pool *pool)
+> 
+> Could you just export this helper? I'd rather have callers have full
+> control over how they create their threads and call into a helper to
+> initialize the sunrpc state.
+> 
 
-Don't think so (I hit that one too, I think).
+Sure, sounds reasonable. Once I collect comments on this patch and do a
+respin, I'll plan to export that symbol.
 
-There's no mention of get_online_cpus() in git-sched's watchdog(), and my
-symptoms are that the machine appears to suspend to RAM OK (but it might
-take longer to do this with git-sched applied).  But it never comes back to
-life after you hit the power button to resume it.  
-
-I guess I need to bisect it.  That'll be novel.
-
+Thanks,
+-- 
+Jeff Layton <jlayton@redhat.com>
