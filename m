@@ -1,88 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764441AbXLMRaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763470AbXLMRbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764441AbXLMRaL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 12:30:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761130AbXLMR34
+	id S1763470AbXLMRbr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 12:31:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762127AbXLMRbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 12:29:56 -0500
-Received: from intcomgrp.com ([216.54.13.120]:33302 "EHLO
-	beta.support.intcomgrp.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761079AbXLMR3z (ORCPT
+	Thu, 13 Dec 2007 12:31:38 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:43872 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761079AbXLMRbh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 12:29:55 -0500
-X-Greylist: delayed 3733 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Dec 2007 12:29:55 EST
-Message-ID: <47615D81.30707@intcomgrp.com>
-Date: Thu, 13 Dec 2007 11:27:45 -0500
-From: James Kosin <jkosin@intcomgrp.com>
-Organization: International Communications Group, Inc.
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Thu, 13 Dec 2007 12:31:37 -0500
+Date: Thu, 13 Dec 2007 10:31:36 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Roland McGrath <roland@redhat.com>, Petr Tesarik <ptesarik@suse.cz>,
+       Tony Luck <tony.luck@intel.com>, Matthew Wilcox <willy@debian.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] arch_ptrace_stop
+Message-ID: <20071213173136.GO26334@parisc-linux.org>
+References: <20071213172926.GA423@tv-sign.ru>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFT] Port 0x80 I/O speed
-References: <9zmRR-3pA-25@gated-at.bofh.it>
-In-Reply-To: <9zmRR-3pA-25@gated-at.bofh.it>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071213172926.GA423@tv-sign.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> Good day.
-> 
-> Would some people on x86 (both 32 and 64) be kind enough to compile and
-> run the attached program? This is about testing how long I/O port access
-> to port 0x80 takes. It measures in CPU cycles so CPU speed is crucial in
-> reporting.
-> 
-> Posted a previous incarnation of this before, buried in the outb 0x80
-> thread which had a serialising problem. This one should as far as I can
-> see measure the right thing though. Please yell if you disagree...
-> 
-> For me, on a Duron 1300 (AMD756 chipset) I have a constant:
-> 
-> rene@7ixe4:~/src/port80$ su -c ./port80
-> cycles: out 2400, in 2400
-> 
-> and on a PII 400 (Intel 440BX chipset) a constant:
-> 
-> rene@6bap:~/src/port80$ su -c ./port80
-> cycles: out 553, in 251
-> 
-> Results are (mostly) independent of compiler optimisation, but testing
-> with an -O2 compile should be most useful. Thanks!
-> 
-> Rene.
-> 
-[root@beta jkosin]# cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 7
-model name      : Pentium III (Katmai)
-stepping        : 3
-cpu MHz         : 499.156
-cache size      : 512 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
-cmov pat pse36 mmx fxsr sse
-bogomips        : 996.14
+On Thu, Dec 13, 2007 at 08:29:26PM +0300, Oleg Nesterov wrote:
+> How is it possible that SIGKILL is blocked?
 
-[root@beta jkosin]# ./a.out
-cycles: out 683, in 299
-[root@beta jkosin]# ./a.out
-cycles: out 683, in 299
-[root@beta jkosin]# ./a.out
-cycles: out 683, in 299
-[root@beta jkosin]#
+I *think* it's possible that kernel threads may block SIGKILL.
+And I think init (pid 1) gets SIGKILL blocked.
 
 -- 
-Scanned by ClamAV - http://www.clamav.net
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
