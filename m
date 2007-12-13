@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765027AbXLMHUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765040AbXLMHVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765027AbXLMHUx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762432AbXLMG6w
+	id S1765040AbXLMHVa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:21:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762733AbXLMG65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:58:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55788 "EHLO
+	Thu, 13 Dec 2007 01:58:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55801 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761901AbXLMG6u (ORCPT
+	with ESMTP id S1761855AbXLMG6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:58:50 -0500
-Date: Wed, 12 Dec 2007 22:53:53 -0800
+	Thu, 13 Dec 2007 01:58:55 -0500
+Date: Wed, 12 Dec 2007 22:53:55 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,15 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       davem@davemloft.net, Pavel Emelyanov <xemul@openvz.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 59/60] BRIDGE: Properly dereference the br_should_route_hook
-Message-ID: <20071213065353.GI6867@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, David Chinner <dgc@sgi.com>,
+       Lachlan McIlroy <lachlan@sgi.com>, Oliver Pintr <oliver.pntr@gmail.com>
+Subject: [patch 60/60] XFS: Make xfsbufd threads freezable
+Message-ID: <20071213065355.GJ6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="bridge-properly-dereference-the-br_should_route_hook.patch"
+Content-Disposition: inline; filename="xfs-make-xfsbufd-threads-freezable.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -36,77 +36,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.23-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Pavel Emelyanov <xemul@openvz.org>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-[BRIDGE]: Properly dereference the br_should_route_hook
+patch 978c7b2ff49597ab76ff7529a933bd366941ac25 in mainline
 
-[ Upstream commit: 82de382ce8e1c7645984616728dc7aaa057821e4 ]
+Fix breakage caused by commit 831441862956fffa17b9801db37e6ea1650b0f69
+that did not introduce the necessary call to set_freezable() in
+xfs/linux-2.6/xfs_buf.c .
 
-This hook is protected with the RCU, so simple
+SGI-PV: 974224
+SGI-Modid: xfs-linux-melb:xfs-kern:30203a
 
-if (br_should_route_hook)
-	br_should_route_hook(...)
-
-is not enough on some architectures.
-
-Use the rcu_dereference/rcu_assign_pointer in this case.
-
-Fixed Stephen's comment concerning using the typeof().
-
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: David Chinner <dgc@sgi.com>
+Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+Cc: Oliver Pintr <oliver.pntr@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/bridge/br_input.c                 |    7 ++++---
- net/bridge/netfilter/ebtable_broute.c |    4 ++--
- 2 files changed, 6 insertions(+), 5 deletions(-)
+ fs/xfs/linux-2.6/xfs_buf.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/net/bridge/br_input.c
-+++ b/net/bridge/br_input.c
-@@ -122,6 +122,7 @@ static inline int is_link_local(const un
- struct sk_buff *br_handle_frame(struct net_bridge_port *p, struct sk_buff *skb)
- {
- 	const unsigned char *dest = eth_hdr(skb)->h_dest;
-+	int (*rhook)(struct sk_buff **pskb);
+--- a/fs/xfs/linux-2.6/xfs_buf.c
++++ b/fs/xfs/linux-2.6/xfs_buf.c
+@@ -1744,6 +1744,8 @@ xfsbufd(
  
- 	if (!is_valid_ether_addr(eth_hdr(skb)->h_source))
- 		goto drop;
-@@ -143,9 +144,9 @@ struct sk_buff *br_handle_frame(struct n
+ 	current->flags |= PF_MEMALLOC;
  
- 	switch (p->state) {
- 	case BR_STATE_FORWARDING:
--
--		if (br_should_route_hook) {
--			if (br_should_route_hook(&skb))
-+		rhook = rcu_dereference(br_should_route_hook);
-+		if (rhook != NULL) {
-+			if (rhook(&skb))
- 				return skb;
- 			dest = eth_hdr(skb)->h_dest;
- 		}
---- a/net/bridge/netfilter/ebtable_broute.c
-+++ b/net/bridge/netfilter/ebtable_broute.c
-@@ -70,13 +70,13 @@ static int __init ebtable_broute_init(vo
- 	if (ret < 0)
- 		return ret;
- 	/* see br_input.c */
--	br_should_route_hook = ebt_broute;
-+	rcu_assign_pointer(br_should_route_hook, ebt_broute);
- 	return ret;
- }
- 
- static void __exit ebtable_broute_fini(void)
- {
--	br_should_route_hook = NULL;
-+	rcu_assign_pointer(br_should_route_hook, NULL);
- 	synchronize_net();
- 	ebt_unregister_table(&broute_table);
- }
++	set_freezable();
++
+ 	do {
+ 		if (unlikely(freezing(current))) {
+ 			set_bit(XBT_FORCE_SLEEP, &target->bt_flags);
 
 -- 
