@@ -1,290 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbXLMMeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbXLMMgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760984AbXLMMeX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 07:34:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbXLMMeP
+	id S1761346AbXLMMgQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 07:36:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbXLMMgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 07:34:15 -0500
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:49555 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751496AbXLMMeO (ORCPT
+	Thu, 13 Dec 2007 07:36:04 -0500
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:58877 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbXLMMgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 07:34:14 -0500
-Date: Thu, 13 Dec 2007 18:03:33 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: gregkh@suse.de, htejun@gmail.com, stable@kernel.org
-Cc: lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Gautham Shenoy <ego@in.ibm.com>
-Subject: 2.6.22-stable causes oomkiller to be invoked
-Message-ID: <20071213123333.GA16905@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+	Thu, 13 Dec 2007 07:36:03 -0500
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH] IB/ehca: Fix lock flag location, bump version number
+User-Agent: KMail/1.8.2
+Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Marcus Eder <meder@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Length: 2328
+Date: Thu, 13 Dec 2007 13:35:57 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200712131335.58136.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg, Tejun,
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
 
-The following script causes oomkiller to be invoked on my system here.
+This addresses a comment of Roland and bumps the version number. If it's not
+too late, please apply for 2.6.24. Thanks!
 
-while echo; do cat /sys/kernel/kexec_crash_loaded; done
+ drivers/infiniband/hw/ehca/ehca_classes.h |    1 +
+ drivers/infiniband/hw/ehca/ehca_main.c    |    2 +-
+ drivers/infiniband/hw/ehca/hcp_if.c       |    1 -
+ 3 files changed, 2 insertions(+), 2 deletions(-)
 
-It gets invoked within 10 mins.
-
-[root@llm11 ~]# cat /proc/cpuinfo 
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) Xeon(TM) MP CPU 2.50GHz
-stepping        : 5
-cpu MHz         : 2500.000
-cache size      : 1024 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-xtpr
-bogomips        : 4981.41
-clflush size    : 64
-
-processor       : 1
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) Xeon(TM) MP CPU 2.50GHz
-stepping        : 5
-cpu MHz         : 2500.000
-cache size      : 1024 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-xtpr
-bogomips        : 4976.80
-clflush size    : 64
-
-processor       : 2
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) Xeon(TM) MP CPU 2.50GHz
-stepping        : 5
-cpu MHz         : 2500.000
-cache size      : 1024 KB
-physical id     : 1
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-xtpr
-bogomips        : 4977.07
-clflush size    : 64
-
-processor       : 3
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) Xeon(TM) MP CPU 2.50GHz
-stepping        : 5
-cpu MHz         : 2500.000
-cache size      : 1024 KB
-physical id     : 1
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-xtpr
-bogomips        : 4977.20
-clflush size    : 64
-
-processor       : 4
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) Xeon(TM) MP CPU 2.50GHz
-stepping        : 5
-cpu MHz         : 2500.000
-cache size      : 1024 KB
-physical id     : 2
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-xtpr
-bogomips        : 4976.94
-clflush size    : 64
-
-processor       : 5
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) Xeon(TM) MP CPU 2.50GHz
-stepping        : 5
-cpu MHz         : 2500.000
-cache size      : 1024 KB
-physical id     : 2
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-xtpr
-bogomips        : 4977.08
-clflush size    : 64
-
-processor       : 6
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) Xeon(TM) MP CPU 2.50GHz
-stepping        : 5
-cpu MHz         : 2500.000
-cache size      : 1024 KB
-physical id     : 3
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-xtpr
-bogomips        : 4976.88
-clflush size    : 64
-
-processor       : 7
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) Xeon(TM) MP CPU 2.50GHz
-stepping        : 5
-cpu MHz         : 2500.000
-cache size      : 1024 KB
-physical id     : 3
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-xtpr
-bogomips        : 4977.02
-clflush size    : 64
-
-[root@llm11 ~]# 
-
-[root@llm11 ~]# cat /proc/meminfo 
-MemTotal:      4733124 kB
-MemFree:       3949016 kB
-Buffers:           248 kB
-Cached:           8980 kB
-SwapCached:          0 kB
-Active:           7652 kB
-Inactive:         4192 kB
-HighTotal:     3956692 kB
-HighFree:      3940608 kB
-LowTotal:       776432 kB
-LowFree:          8408 kB
-SwapTotal:     1863532 kB
-SwapFree:      1863532 kB
-Dirty:              12 kB
-Writeback:           0 kB
-AnonPages:        2644 kB
-Mapped:           3028 kB
-Slab:             9872 kB
-SReclaimable:     2900 kB
-SUnreclaim:       6972 kB
-PageTables:        416 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:   4230092 kB
-Committed_AS:    11284 kB
-VmallocTotal:   116728 kB
-VmallocUsed:      1084 kB
-VmallocChunk:   115616 kB
-HugePages_Total:     0
-HugePages_Free:      0
-HugePages_Rsvd:      0
-Hugepagesize:     2048 kB
-[root@llm11 ~]# 
-
-
-Will send config if required.
-
-Thanks
+diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
+index 87f12d4..74d2b72 100644
+--- a/drivers/infiniband/hw/ehca/ehca_classes.h
++++ b/drivers/infiniband/hw/ehca/ehca_classes.h
+@@ -322,6 +322,7 @@ extern int ehca_static_rate;
+ extern int ehca_port_act_time;
+ extern int ehca_use_hp_mr;
+ extern int ehca_scaling_code;
++extern int ehca_lock_hcalls;
+ 
+ struct ipzu_queue_resp {
+ 	u32 qe_size;      /* queue entry size */
+diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+index c7bff3e..6a56d86 100644
+--- a/drivers/infiniband/hw/ehca/ehca_main.c
++++ b/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -50,7 +50,7 @@
+ #include "ehca_tools.h"
+ #include "hcp_if.h"
+ 
+-#define HCAD_VERSION "0024"
++#define HCAD_VERSION "0025"
+ 
+ MODULE_LICENSE("Dual BSD/GPL");
+ MODULE_AUTHOR("Christoph Raisch <raisch@de.ibm.com>");
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+index 331b5e8..7029aa6 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.c
++++ b/drivers/infiniband/hw/ehca/hcp_if.c
+@@ -89,7 +89,6 @@
+ #define HCALL9_REGS_FORMAT HCALL7_REGS_FORMAT " r11=%lx r12=%lx"
+ 
+ static DEFINE_SPINLOCK(hcall_lock);
+-extern int ehca_lock_hcalls;
+ 
+ static u32 get_longbusy_msecs(int longbusy_rc)
+ {
 -- 
-regards,
-Dhaval
+1.5.2
+
+
+
