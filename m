@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933817AbXLMXI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934324AbXLMXKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933817AbXLMXI4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 18:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbXLMXIs
+	id S934324AbXLMXKU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 18:10:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764163AbXLMXKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 18:08:48 -0500
-Received: from mx1.suse.de ([195.135.220.2]:48585 "EHLO mx1.suse.de"
+	Thu, 13 Dec 2007 18:10:07 -0500
+Received: from gate.crashing.org ([63.228.1.57]:33041 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752953AbXLMXIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 18:08:47 -0500
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Print taint info in more places.
-From: Andi Kleen <andi@firstfloor.org>
-References: <20071213224927.GA18639@redhat.com>
-Date: Fri, 14 Dec 2007 00:08:46 +0100
-In-Reply-To: <20071213224927.GA18639@redhat.com> (Dave Jones's message of "Thu\, 13 Dec 2007 17\:49\:27 -0500")
-Message-ID: <p73y7byfb0h.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1762708AbXLMXKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 18:10:05 -0500
+Subject: Re: Possible issue with dangling PCI BARs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Jesse Barnes <jesse.barnes@intel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Robert Hancock <hancockr@shaw.ca>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20071214001239.B21652@jurassic.park.msu.ru>
+References: <fa.YfTvVN5C3e6zwXPW5biWgeZ9XXc@ifi.uio.no>
+	 <1197544621.15741.132.camel@pasglop> <1197544820.15741.137.camel@pasglop>
+	 <200712131204.18227.jesse.barnes@intel.com>
+	 <1197579066.15741.167.camel@pasglop>
+	 <20071214001239.B21652@jurassic.park.msu.ru>
+Content-Type: text/plain
+Date: Fri, 14 Dec 2007 10:09:28 +1100
+Message-Id: <1197587368.15741.187.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones <davej@redhat.com> writes:
 
->  #define WARN_ON(condition) ({						\
->  	int __ret_warn_on = !!(condition);				\
->  	if (unlikely(__ret_warn_on)) {					\
-> -		printk("WARNING: at %s:%d %s()\n", __FILE__,		\
-> -			__LINE__, __FUNCTION__);			\
-> +		printk(KERN_ERR "WARNING: at %s:%d %s() (%s)\n",	\
-> +			 __FILE__, __LINE__, __FUNCTION__,		\
-> +			 print_tainted());				\
->  		dump_stack();						\
+On Fri, 2007-12-14 at 00:12 +0300, Ivan Kokshaysky wrote:
+> On Fri, Dec 14, 2007 at 07:51:06AM +1100, Benjamin Herrenschmidt wrote:
+> > If the device is behind a P2P bridge and the BIOS has set the windows of
+> > that bridge so tightly that there is no room to allocate the MMIO BAR,
+> > then a full disable/full enable would fail on a device that would
+> > otherwise work using only PIO.
+> 
+> It won't be a problem with separate io/mmio enable.
+> 
+> > However, I'd be curious to see that happening in practice :-)
+> > 
+> > But I think it's fair enough to do an IO only / MEM only approach. I've
+> > seen cases where IO is just not useable because of other constraints and
+> > so I expect the MEM-only case to be more common, especially on non-x86.
+> 
+> Everybody wants MEM if it's available - it's just faster :-)
+> So I guess a common case will be
 
-Have you checked how this affects code size? It might be worth it 
-now to do a out of line helper.
+ .../...
 
--Andi
+Right, I'm going to cook up some patch as time permit, maybe not before
+next week tho.
+
+Cheers,
+Ben.
+
+
