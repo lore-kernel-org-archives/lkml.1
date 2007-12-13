@@ -1,35 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760297AbXLMGjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760527AbXLMGj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760297AbXLMGjA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:39:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758269AbXLMGhA
+	id S1760527AbXLMGj2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:39:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758304AbXLMGhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:37:00 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56232 "EHLO
+	Thu, 13 Dec 2007 01:37:04 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56237 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757985AbXLMGg4 (ORCPT
+	with ESMTP id S1758251AbXLMGg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:36:56 -0500
-Date: Wed, 12 Dec 2007 22:34:09 -0800
+	Thu, 13 Dec 2007 01:36:59 -0500
+Date: Wed, 12 Dec 2007 22:34:17 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, linux-usb@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Dave Miller <davem@davemloft.net>, Dely Sy <dely.l.sy@intel.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 05/36] USB: fix up EHCI startup synchronization
-Message-ID: <20071213063409.GF25301@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Adrian Bunk <bunk@kernel.org>,
+       Willy Tarreau <wtarreau@hera.kernel.org>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: [patch 06/36] tmpfs: restore missing clear_highpage
+Message-ID: <20071213063417.GG25301@kroah.com>
 References: <20071213062511.265908583@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-fix-up-ehci-startup-synchronization.patch"
+Content-Disposition: inline; filename="tmpfs-restore-missing-clear_highpage.patch"
 In-Reply-To: <20071213063308.GA25301@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -37,50 +37,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.22-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
 
-From: David Brownell <david-b@pacbell.net>
+From: Hugh Dickins <hugh@veritas.com>
 
-patch 1cb52658b4f5b10a9e91f8e1c21ca2bcc1b9a3ca in mainline.
+patch e84e2e132c9c66d8498e7710d4ea532d1feaaac5 in mainline
 
-A recent patch added software synchronization during EHCI startup,
-so ports aren't switched away from the companion controllers after
-resets have started.  This patch adds a short delay letting hardware
-finish that port switching before any new resets begin ... so both
-ends of that hardware race window are closed.
+tmpfs was misconverted to __GFP_ZERO in 2.6.11.  There's an unusual case in
+which shmem_getpage receives the page from its caller instead of allocating.
+We must cover this case by clear_highpage before SetPageUptodate, as before.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Dave Miller <davem@davemloft.net>
-Cc: Dely Sy <dely.l.sy@intel.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ehci-hcd.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ mm/shmem.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -571,12 +571,15 @@ static int ehci_run (struct usb_hcd *hcd
- 	 * from the companions to the EHCI controller.  If any of the
- 	 * companions are in the middle of a port reset at the time, it
- 	 * could cause trouble.  Write-locking ehci_cf_port_reset_rwsem
--	 * guarantees that no resets are in progress.
-+	 * guarantees that no resets are in progress.  After we set CF,
-+	 * a short delay lets the hardware catch up; new resets shouldn't
-+	 * be started before the port switching actions could complete.
- 	 */
- 	down_write(&ehci_cf_port_reset_rwsem);
- 	hcd->state = HC_STATE_RUNNING;
- 	ehci_writel(ehci, FLAG_CF, &ehci->regs->configured_flag);
- 	ehci_readl(ehci, &ehci->regs->command);	/* unblock posted writes */
-+	msleep(5);
- 	up_write(&ehci_cf_port_reset_rwsem);
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -1066,7 +1066,7 @@ shmem_alloc_page(gfp_t gfp, struct shmem
+ 	pvma.vm_policy = mpol_shared_policy_lookup(&info->policy, idx);
+ 	pvma.vm_pgoff = idx;
+ 	pvma.vm_end = PAGE_SIZE;
+-	page = alloc_page_vma(gfp | __GFP_ZERO, &pvma, 0);
++	page = alloc_page_vma(gfp, &pvma, 0);
+ 	mpol_free(pvma.vm_policy);
+ 	return page;
+ }
+@@ -1086,7 +1086,7 @@ shmem_swapin(struct shmem_inode_info *in
+ static inline struct page *
+ shmem_alloc_page(gfp_t gfp,struct shmem_inode_info *info, unsigned long idx)
+ {
+-	return alloc_page(gfp | __GFP_ZERO);
++	return alloc_page(gfp);
+ }
+ #endif
  
- 	temp = HC_VERSION(ehci_readl(ehci, &ehci->caps->hc_capbase));
+@@ -1295,6 +1295,7 @@ repeat:
+ 
+ 		info->alloced++;
+ 		spin_unlock(&info->lock);
++		clear_highpage(filepage);
+ 		flush_dcache_page(filepage);
+ 		SetPageUptodate(filepage);
+ 	}
 
 -- 
