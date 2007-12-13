@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932989AbXLMVMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbXLMVPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932989AbXLMVMo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 16:12:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbXLMVMa
+	id S932765AbXLMVPz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 16:15:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760764AbXLMVPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 16:12:30 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:48939 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753394AbXLMVM3 (ORCPT
+	Thu, 13 Dec 2007 16:15:47 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51388 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759264AbXLMVPq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 16:12:29 -0500
-Date: Fri, 14 Dec 2007 00:12:39 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jesse Barnes <jesse.barnes@intel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Robert Hancock <hancockr@shaw.ca>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Possible issue with dangling PCI BARs
-Message-ID: <20071214001239.B21652@jurassic.park.msu.ru>
-References: <fa.YfTvVN5C3e6zwXPW5biWgeZ9XXc@ifi.uio.no> <1197544621.15741.132.camel@pasglop> <1197544820.15741.137.camel@pasglop> <200712131204.18227.jesse.barnes@intel.com> <1197579066.15741.167.camel@pasglop>
+	Thu, 13 Dec 2007 16:15:46 -0500
+Date: Thu, 13 Dec 2007 13:15:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ego@in.ibm.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, jirislaby@gmail.com
+Subject: Re: 2.6.24-rc5-mm1
+Message-Id: <20071213131504.41e1ad55.akpm@linux-foundation.org>
+In-Reply-To: <20071213122802.GA30427@in.ibm.com>
+References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
+	<20071213122802.GA30427@in.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-In-Reply-To: <1197579066.15741.167.camel@pasglop>; from benh@kernel.crashing.org on Fri, Dec 14, 2007 at 07:51:06AM +1100
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 14, 2007 at 07:51:06AM +1100, Benjamin Herrenschmidt wrote:
-> If the device is behind a P2P bridge and the BIOS has set the windows of
-> that bridge so tightly that there is no room to allocate the MMIO BAR,
-> then a full disable/full enable would fail on a device that would
-> otherwise work using only PIO.
+On Thu, 13 Dec 2007 17:58:02 +0530
+Gautham R Shenoy <ego@in.ibm.com> wrote:
 
-It won't be a problem with separate io/mmio enable.
-
-> However, I'd be curious to see that happening in practice :-)
+> Hi Andrew, 
+> On Thu, Dec 13, 2007 at 02:40:50AM -0800, Andrew Morton wrote:
+> > 
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/
+> > 
+> > - If something goes wrong with a PCI device's probing or initialisation, try
+> >   reverting pci-disable-decoding-during-sizing-of-bars.patch.
+> > 
+> > - git-sched was dropped due to breaking suspend-to-RAM.
 > 
-> But I think it's fair enough to do an IO only / MEM only approach. I've
-> seen cases where IO is just not useable because of other constraints and
-> so I expect the MEM-only case to be more common, especially on non-x86.
+> Is it the same suspend-to-RAM problem that Jiri Slaby reported 
+> here --> http://lkml.org/lkml/2007/12/7/125
 
-Everybody wants MEM if it's available - it's just faster :-)
-So I guess a common case will be
+Don't think so (I hit that one too, I think).
 
-	if (pci_enable_device_mmio(dev)) {
-		/* failed, fallback to IO */
-		if (pci_enable_device_io(dev))
-			return -ENODEV;
-		...
-	}
+There's no mention of get_online_cpus() in git-sched's watchdog(), and my
+symptoms are that the machine appears to suspend to RAM OK (but it might
+take longer to do this with git-sched applied).  But it never comes back to
+life after you hit the power button to resume it.  
 
-Ivan.
+I guess I need to bisect it.  That'll be novel.
+
