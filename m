@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762150AbXLMHNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764307AbXLMHNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762150AbXLMHNJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:13:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762621AbXLMG5t
+	id S1764307AbXLMHNf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762639AbXLMG5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:57:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55528 "EHLO
+	Thu, 13 Dec 2007 01:57:52 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55540 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762616AbXLMG5r (ORCPT
+	with ESMTP id S1762453AbXLMG5v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:57:47 -0500
-Date: Wed, 12 Dec 2007 22:53:03 -0800
+	Thu, 13 Dec 2007 01:57:51 -0500
+Date: Wed, 12 Dec 2007 22:53:06 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, bunk@kernel.org,
-       davem@davemloft.net
+To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       chas williams <chas@cmf.nrl.navy.mil>,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 41/60] ATM: initialize lock and tasklet earlier
-Message-ID: <20071213065303.GQ6867@kroah.com>
+Subject: [patch 42/60] TCP: Problem bug with sysctl_tcp_congestion_control
+	function
+Message-ID: <20071213065306.GR6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="atm-initialize-lock-and-tasklet-earlier.patch"
+Content-Disposition: inline; filename="tcp-problem-bug-with-sysctl_tcp_congestion_control-function.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,50 +41,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: chas williams <chas@cmf.nrl.navy.mil>
+From: Sam Jansen <sjansen@google.com>
 
-[ATM]: [he] initialize lock and tasklet earlier
+[TCP]: Problem bug with sysctl_tcp_congestion_control function
 
-[ Upstream commit: 8a8037ac9dbe4eb20ce50aa20244faf77444f4a3 ]
+[ Upstream commit: 5487796f0c9475586277a0a7a91211ce5746fa6a ]
 
-if you are lucky (unlucky?) enough to have shared interrupts, the
-interrupt handler can be called before the tasklet and lock are ready
-for use.
+sysctl_tcp_congestion_control seems to have a bug that prevents it
+from actually calling the tcp_set_default_congestion_control
+function. This is not so apparent because it does not return an error
+and generally the /proc interface is used to configure the default TCP
+congestion control algorithm.  This is present in 2.6.18 onwards and
+probably earlier, though I have not inspected 2.6.15--2.6.17.
 
-Signed-off-by: chas williams <chas@cmf.nrl.navy.mil>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David Miller <davem@davemloft.net>
+sysctl_tcp_congestion_control calls sysctl_string and expects a successful
+return code of 0. In such a case it actually sets the congestion control
+algorithm with tcp_set_default_congestion_control. Otherwise, it returns the
+value returned by sysctl_string. This was correct in 2.6.14, as sysctl_string
+returned 0 on success. However, sysctl_string was updated to return 1 on
+success around about 2.6.15 and sysctl_tcp_congestion_control was not updated.
+Even though sysctl_tcp_congestion_control returns 1, do_sysctl_strategy
+converts this return code to '0', so the caller never notices the error.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/atm/he.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ net/ipv4/sysctl_net_ipv4.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/atm/he.c
-+++ b/drivers/atm/he.c
-@@ -394,6 +394,11 @@ he_init_one(struct pci_dev *pci_dev, con
- 	he_dev->atm_dev->dev_data = he_dev;
- 	atm_dev->dev_data = he_dev;
- 	he_dev->number = atm_dev->number;
-+#ifdef USE_TASKLET
-+	tasklet_init(&he_dev->tasklet, he_tasklet, (unsigned long) he_dev);
-+#endif
-+	spin_lock_init(&he_dev->global_lock);
-+
- 	if (he_start(atm_dev)) {
- 		he_stop(he_dev);
- 		err = -ENODEV;
-@@ -1173,11 +1178,6 @@ he_start(struct atm_dev *dev)
- 	if ((err = he_init_irq(he_dev)) != 0)
- 		return err;
+--- a/net/ipv4/sysctl_net_ipv4.c
++++ b/net/ipv4/sysctl_net_ipv4.c
+@@ -121,7 +121,7 @@ static int sysctl_tcp_congestion_control
  
--#ifdef USE_TASKLET
--	tasklet_init(&he_dev->tasklet, he_tasklet, (unsigned long) he_dev);
--#endif
--	spin_lock_init(&he_dev->global_lock);
--
- 	/* 4.11 enable pci bus controller state machines */
- 	host_cntl |= (OUTFF_ENB | CMDFF_ENB |
- 				QUICK_RD_RETRY | QUICK_WR_RETRY | PERR_INT_ENB);
+ 	tcp_get_default_congestion_control(val);
+ 	ret = sysctl_string(&tbl, name, nlen, oldval, oldlenp, newval, newlen);
+-	if (ret == 0 && newval && newlen)
++	if (ret == 1 && newval && newlen)
+ 		ret = tcp_set_default_congestion_control(val);
+ 	return ret;
+ }
 
 -- 
