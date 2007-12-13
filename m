@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbXLMHSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764702AbXLMHSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761255AbXLMHSD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:18:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762426AbXLMG63
+	id S1764702AbXLMHSc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762326AbXLMG6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:58:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55689 "EHLO
+	Thu, 13 Dec 2007 01:58:32 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55694 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759781AbXLMG62 (ORCPT
+	with ESMTP id S1762611AbXLMG6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:58:28 -0500
-Date: Wed, 12 Dec 2007 22:53:32 -0800
+	Thu, 13 Dec 2007 01:58:30 -0500
+Date: Wed, 12 Dec 2007 22:53:35 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
+To: linux-kernel@vger.kernel.org, stable@kernel.org, bunk@kernel.org,
+       davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Florian Zumbiehl <florz@florz.de>,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 53/60] TCP: illinois: Incorrect beta usage
-Message-ID: <20071213065332.GC6867@kroah.com>
+Subject: [patch 54/60] UNIX: EOF on non-blocking SOCK_SEQPACKET
+Message-ID: <20071213065335.GD6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tcp-illinois-incorrect-beta-usage.patch"
+Content-Disposition: inline; filename="unix-eof-on-non-blocking-sock_seqpacket.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,42 +42,84 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+From: Florian Zumbiehl <florz@florz.de>
 
-[TCP] illinois: Incorrect beta usage
+[UNIX]: EOF on non-blocking SOCK_SEQPACKET
 
-[ Upstream commit: a357dde9df33f28611e6a3d4f88265e39bcc8880 ]
+[ Upstream commit: 0a11225887fe6cbccd882404dc36ddc50f47daf9 ]
 
-Lachlan Andrew observed that my TCP-Illinois implementation uses the
-beta value incorrectly:
-The parameter  beta  in the paper specifies the amount to decrease
-*by*:  that is, on loss,
- W <-  W -  beta*W
-but in   tcp_illinois_ssthresh() uses  beta  as the amount
-to decrease  *to*: W <- beta*W
+I am not absolutely sure whether this actually is a bug (as in: I've got
+no clue what the standards say or what other implementations do), but at
+least I was pretty surprised when I noticed that a recv() on a
+non-blocking unix domain socket of type SOCK_SEQPACKET (which is connection
+oriented, after all) where the remote end has closed the connection
+returned -1 (EAGAIN) rather than 0 to indicate end of file.
 
-This bug makes the Linux TCP-Illinois get less-aggressive on uncongested network,
-hurting performance. Note: since the base beta value is .5, it has no
-impact on a congested network.
+This is a test case:
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+| #include <sys/types.h>
+| #include <unistd.h>
+| #include <sys/socket.h>
+| #include <sys/un.h>
+| #include <fcntl.h>
+| #include <string.h>
+| #include <stdlib.h>
+|
+| int main(){
+| 	int sock;
+| 	struct sockaddr_un addr;
+| 	char buf[4096];
+| 	int pfds[2];
+|
+| 	pipe(pfds);
+| 	sock=socket(PF_UNIX,SOCK_SEQPACKET,0);
+| 	addr.sun_family=AF_UNIX;
+| 	strcpy(addr.sun_path,"/tmp/foobar_testsock");
+| 	bind(sock,(struct sockaddr *)&addr,sizeof(addr));
+| 	listen(sock,1);
+| 	if(fork()){
+| 		close(sock);
+| 		sock=socket(PF_UNIX,SOCK_SEQPACKET,0);
+| 		connect(sock,(struct sockaddr *)&addr,sizeof(addr));
+| 		fcntl(sock,F_SETFL,fcntl(sock,F_GETFL)|O_NONBLOCK);
+| 		close(pfds[1]);
+| 		read(pfds[0],buf,sizeof(buf));
+| 		recv(sock,buf,sizeof(buf),0); // <-- this one
+| 	}else accept(sock,NULL,NULL);
+| 	exit(0);
+| }
+
+If you try it, make sure /tmp/foobar_testsock doesn't exist.
+
+The marked recv() returns -1 (EAGAIN) on 2.6.23.9. Below you find a
+patch that fixes that.
+
+Signed-off-by: Florian Zumbiehl <florz@florz.de>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp_illinois.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/unix/af_unix.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
---- a/net/ipv4/tcp_illinois.c
-+++ b/net/ipv4/tcp_illinois.c
-@@ -298,7 +298,7 @@ static u32 tcp_illinois_ssthresh(struct 
- 	struct illinois *ca = inet_csk_ca(sk);
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -1632,8 +1632,15 @@ static int unix_dgram_recvmsg(struct kio
+ 	mutex_lock(&u->readlock);
  
- 	/* Multiplicative decrease */
--	return max((tp->snd_cwnd * ca->beta) >> BETA_SHIFT, 2U);
-+	return max(tp->snd_cwnd - ((tp->snd_cwnd * ca->beta) >> BETA_SHIFT), 2U);
- }
+ 	skb = skb_recv_datagram(sk, flags, noblock, &err);
+-	if (!skb)
++	if (!skb) {
++		unix_state_lock(sk);
++		/* Signal EOF on disconnected non-blocking SEQPACKET socket. */
++		if (sk->sk_type == SOCK_SEQPACKET && err == -EAGAIN &&
++		    (sk->sk_shutdown & RCV_SHUTDOWN))
++			err = 0;
++		unix_state_unlock(sk);
+ 		goto out_unlock;
++	}
  
+ 	wake_up_interruptible(&u->peer_wait);
  
 
 -- 
