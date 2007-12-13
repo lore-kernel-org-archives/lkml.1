@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbXLMGom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761443AbXLMGo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761560AbXLMGom (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:44:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759290AbXLMGhp
+	id S1761443AbXLMGo4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:44:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759397AbXLMGht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:37:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56443 "EHLO
+	Thu, 13 Dec 2007 01:37:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56471 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759251AbXLMGhn (ORCPT
+	with ESMTP id S1759371AbXLMGhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:37:43 -0500
-Date: Wed, 12 Dec 2007 22:34:55 -0800
+	Thu, 13 Dec 2007 01:37:47 -0500
+Date: Wed, 12 Dec 2007 22:34:58 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, bunk@kernel.org,
-       davem@davemloft.net
+To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,12 +22,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 20/36] IPV4: Remove bogus ifdef mess in arp_process
-Message-ID: <20071213063455.GU25301@kroah.com>
+Subject: [patch 21/36] CRYPTO api: Fix potential race in crypto_remove_spawn
+Message-ID: <20071213063458.GV25301@kroah.com>
 References: <20071213062511.265908583@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipv4-remove-bogus-ifdef-mess-in-arp_process.patch"
+Content-Disposition: inline; filename="crypto-api-fix-potential-race-in-crypto_remove_spawn.patch"
 In-Reply-To: <20071213063308.GA25301@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -36,92 +35,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.22-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Adrian Bunk <bunk@kernel.org>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-[IPV4]: Remove bogus ifdef mess in arp_process
+[CRYPTO] api: Fix potential race in crypto_remove_spawn
 
-[ Upstream commit: 3660019e5f96fd9a8b7d4214a96523c0bf7b676d ]
+[ Upstream commit: 38cb2419f544ad413c7f7aa8c17fd7377610cdd8 ]
 
-The #ifdef's in arp_process() were not only a mess, they were also wrong
-in the CONFIG_NET_ETHERNET=n and (CONFIG_NETDEV_1000=y or
-CONFIG_NETDEV_10000=y) cases.
+As it is crypto_remove_spawn may try to unregister an instance which is
+yet to be registered.  This patch fixes this by checking whether the
+instance has been registered before attempting to remove it.
 
-Since they are not required this patch removes them.
+It also removes a bogus cra_destroy check in crypto_register_instance as
+1) it's outside the mutex;
+2) we have a check in __crypto_register_alg already.
 
-Also removed are some #ifdef's around #include's that caused compile
-errors after this change.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Cc: David Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/arp.c |   19 -------------------
- 1 file changed, 19 deletions(-)
+ crypto/algapi.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/net/ipv4/arp.c
-+++ b/net/ipv4/arp.c
-@@ -110,12 +110,8 @@
- #include <net/tcp.h>
- #include <net/sock.h>
- #include <net/arp.h>
--#if defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
- #include <net/ax25.h>
--#if defined(CONFIG_NETROM) || defined(CONFIG_NETROM_MODULE)
- #include <net/netrom.h>
--#endif
--#endif
- #if defined(CONFIG_ATM_CLIP) || defined(CONFIG_ATM_CLIP_MODULE)
- #include <net/atmclip.h>
- struct neigh_table *clip_tbl_hook;
-@@ -729,20 +725,10 @@ static int arp_process(struct sk_buff *s
- 		    htons(dev_type) != arp->ar_hrd)
- 			goto out;
- 		break;
--#ifdef CONFIG_NET_ETHERNET
- 	case ARPHRD_ETHER:
--#endif
--#ifdef CONFIG_TR
- 	case ARPHRD_IEEE802_TR:
--#endif
--#ifdef CONFIG_FDDI
- 	case ARPHRD_FDDI:
--#endif
--#ifdef CONFIG_NET_FC
- 	case ARPHRD_IEEE802:
--#endif
--#if defined(CONFIG_NET_ETHERNET) || defined(CONFIG_TR) || \
--    defined(CONFIG_FDDI)	 || defined(CONFIG_NET_FC)
- 		/*
- 		 * ETHERNET, Token Ring and Fibre Channel (which are IEEE 802
- 		 * devices, according to RFC 2625) devices will accept ARP
-@@ -757,21 +743,16 @@ static int arp_process(struct sk_buff *s
- 		    arp->ar_pro != htons(ETH_P_IP))
- 			goto out;
- 		break;
--#endif
--#if defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
- 	case ARPHRD_AX25:
- 		if (arp->ar_pro != htons(AX25_P_IP) ||
- 		    arp->ar_hrd != htons(ARPHRD_AX25))
- 			goto out;
- 		break;
--#if defined(CONFIG_NETROM) || defined(CONFIG_NETROM_MODULE)
- 	case ARPHRD_NETROM:
- 		if (arp->ar_pro != htons(AX25_P_IP) ||
- 		    arp->ar_hrd != htons(ARPHRD_NETROM))
- 			goto out;
- 		break;
--#endif
--#endif
- 	}
+--- a/crypto/algapi.c
++++ b/crypto/algapi.c
+@@ -98,6 +98,9 @@ static void crypto_remove_spawn(struct c
+ 		return;
  
- 	/* Understand only these message types */
+ 	inst->alg.cra_flags |= CRYPTO_ALG_DEAD;
++	if (hlist_unhashed(&inst->list))
++		return;
++
+ 	if (!tmpl || !crypto_tmpl_get(tmpl))
+ 		return;
+ 
+@@ -333,9 +336,6 @@ int crypto_register_instance(struct cryp
+ 	LIST_HEAD(list);
+ 	int err = -EINVAL;
+ 
+-	if (inst->alg.cra_destroy)
+-		goto err;
+-
+ 	err = crypto_check_alg(&inst->alg);
+ 	if (err)
+ 		goto err;
 
 -- 
