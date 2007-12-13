@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbXLMBIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbXLMBR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755826AbXLMBIF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 20:08:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbXLMBHz
+	id S1756794AbXLMBR1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 20:17:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbXLMBRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 20:07:55 -0500
-Received: from pat.uio.no ([129.240.10.15]:59735 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750897AbXLMBHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 20:07:55 -0500
-Subject: Re: BUG fs/dcache.c:595 in 2.4.24rc3-git3 during NFS umount
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, torvalds@osdl.org
-In-Reply-To: <20071212234248.GD31699@bingen.suse.de>
-References: <200712031623.58223.ak@suse.de> <200712081422.30815.ak@suse.de>
-	 <1197243901.11792.1.camel@heimdal.trondhjem.org>
-	 <20071210185720.GA32466@bingen.suse.de>
-	 <1197428085.28126.3.camel@heimdal.trondhjem.org>
-	 <20071212234248.GD31699@bingen.suse.de>
-Content-Type: text/plain
-Date: Wed, 12 Dec 2007 20:02:30 -0500
-Message-Id: <1197507750.8554.4.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 12 Dec 2007 20:17:19 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:5415 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751081AbXLMBRS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 20:17:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=XD+8/ulMGDayZBb9ktWpPvQHITI5Nn2IBGV8gNJoHyLx52VpRdvhQTDkgwKQgNI5vdOXrKN0NIl1MQNKkRihInEcIVdYzfdz1S5tBBp0Yb+zGuQM0WZfMx7kQoVLnzr4yFGKHf8ZGYFrlfIozhSJ7HwGycsaZo6RNatfYJZQ1iE=
+Message-ID: <2c0942db0712121717x59af3922na33d274cf5a8c7db@mail.gmail.com>
+Date: Wed, 12 Dec 2007 17:17:16 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
+Cc: "Daniel Walker" <dwalker@mvista.com>, akpm@linux-foundation.org,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, linux@bohmer.net,
+       jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
+       kjwinchester@gmail.com, mbuesch@freenet.de
+In-Reply-To: <200712130148.22727.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.3, required=5.0, autolearn=disabled, AWL=-0.341)
-X-UiO-Scanned: 384250BC2EFBA371F1284D739C623DDAF4A1F6DB
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -2 maxlevel 200 minaction 2 bait 0 mail/h: 31 total 5715949 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+References: <20071213003028.676998182@mvista.com>
+	 <20071213003032.547362071@mvista.com>
+	 <200712130148.22727.mb@bu3sch.de>
+X-Google-Sender-Auth: efd337e027362898
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Dec 12, 2007 4:48 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> This driver is scheduled for removal, so I'd not touch it anymore
+> to avoid the possibility to introduce a lastminute regression.
+> The new drivers (b43 and b43legacy) have this fixed (in a different
+> way by completely removing it).
 
-On Thu, 2007-12-13 at 00:42 +0100, Andi Kleen wrote:
-> > I appear to have misread d_find_alias(). It would seem that the only way
-> > to ensure that a mountpoint won't be found is to remove it altogether
-> > from the inode->i_dentry list. AFAICS that should be largely harmless
-> > since the nfs sb->s_root is never visible to users, and is never part of
-> > a dentry tree.
-> 
-> Hasn't BUGed so far with this patch. I'll watch it further but it looks
-> good so far. Thanks. I would suggest to push the patch.
-> 
-> -Andi
+Uhm, hijacking the thread a bit here, but which driver is supposed to
+be supporting my 4309? Neither b43 nor b43legacy found my wireless,
+and I'm not seeing its PCI ID anywhere either of those...
 
-Thanks Andi! I'll push it together with the other patches asap.
+$ lspci -s 02:02 -v;  lspci -n -s 02:02 -v -x
+02:02.0 Network controller: Broadcom Corporation BCM4309 802.11a/b/g (rev 03)
+        Subsystem: Hewlett-Packard Company Unknown device 12f9
+        Flags: bus master, fast devsel, latency 64, IRQ 22
+        Memory at d0010000 (32-bit, non-prefetchable) [size=8K]
 
-Cheers
-  Trond
-
+02:02.0 0280: 14e4:4324 (rev 03)
+        Subsystem: 103c:12f9
+        Flags: bus master, fast devsel, latency 64, IRQ 22
+        Memory at d0010000 (32-bit, non-prefetchable) [size=8K]
+00: e4 14 24 43 06 00 00 00 03 00 80 02 00 40 00 00
+10: 00 00 01 d0 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 3c 10 f9 12
+30: 00 00 00 00 00 00 00 00 00 00 00 00 05 01 00 00
