@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbXLMCpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbXLMDAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbXLMCpU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 21:45:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbXLMCpG
+	id S1754080AbXLMDAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 22:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXLMDA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 21:45:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:55457 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbXLMCpE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 21:45:04 -0500
-Message-ID: <47609BCB.30702@zytor.com>
-Date: Wed, 12 Dec 2007 18:41:15 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Rene Herman <rene.herman@gmail.com>
-CC: Kyle McMartin <kyle@mcmartin.ca>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
-       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
-       john@stoffel.org, linux-os@analogic.com
-Subject: Re: [RFT] Port 0x80 I/O speed
-References: <475F1DC6.5090403@keyaccess.nl> <20071212052304.GB20883@fattire.cabal.ca> <475F8B45.7060103@keyaccess.nl>
-In-Reply-To: <475F8B45.7060103@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 12 Dec 2007 22:00:27 -0500
+Received: from gate.crashing.org ([63.228.1.57]:53023 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751002AbXLMDA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 22:00:27 -0500
+Subject: Possible issue with dangling PCI BARs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 13 Dec 2007 14:00:04 +1100
+Message-Id: <1197514804.15741.60.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 12-12-07 06:23, Kyle McMartin wrote:
-> 
->> On Wed, Dec 12, 2007 at 12:31:18AM +0100, Rene Herman wrote:
->>>     asm volatile ("rdtsc": "=A" (tsc));
->>
->> rdtsc returns a 64-bit value in two 32-bit regs, you need to do
->>
->> inline unsigned long long rdtsc(void)
->> {
->>     unsigned int lo, hi;
->>     asm volatile ("rdtsc": "=a" (lo), "=d" (hi));
->>     return (unsigned long long)hi << 32 | lo;
->> }
->>
->> as in msr.h, otherwise you'll only be looking at the value in %rax.
-> 
-> On 32-bit, "=A" is edx:eax. Not sure what the point is in not letting it 
-> be that on 64-bit in fact, but yes, the thing should be compiled as 32-bit.
+While reworking the powerpc PCI resource management, to make it more
+x86-like and use more of the generic code in setup-bus.c and
+setup-res.c, I noticed something a bit fishy in the way we deal with
+resources that we failed to assign.
 
-On 64-bit, "=A" is rdx:rax, which means that a 64-bit value ends up in 
-rax only (a 128-bit value, which gcc does support on 128-bit platforms, 
-would be in rdx:rax.)
+That's especially problematic for us as we have to deal with all sort of
+more or less crappy firmwares, so we need our PCI code to be as robust
+as possible vs. whatever might have been there before the kernel kicks
+in.
 
-gcc can't deal internally with values that span partial registers.
+Now, let's say that we have a device for which a BAR contain a value out
+of whack or conflicting with something else. We "see" that in
+pcibios_allocate_resources() and set res->start to 0 (and offset
+res->end accordingly).
 
-	-hpa
+At this stage, we thus have a resource that is marked as unassigned.
+However, we haven't actually modified the BAR content. So the device is
+still potentially decoding the conflicting addresses (which may have
+been allocated to some other device).
+
+Now, normally, pci_assign_unassigned_resources() will take care of that
+and assign some new address to this device. However, that may fail
+(bridge window too small for example). Which mean we leave a device with
+a dangling BAR. In fact, a driver may even successfully call
+pci_enable_device_bars() on it, provided that the device has several
+resources and that the one that is/are requested by the driver (via the
+bitmask argument) are not the one(s) that failed to allocate.
+
+So not only we can have a dangling BAR, but nothing prevent us to
+actually go turn IO or MEM decoding on in case it wasn't already the
+case on that device.
+
+Ben.
+
+
