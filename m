@@ -1,72 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbXLMNOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761337AbXLMNOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754106AbXLMNOR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 08:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbXLMNOA
+	id S1761337AbXLMNOd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 08:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbXLMNOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 08:14:00 -0500
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:50218 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751699AbXLMNN7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 08:13:59 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 216.15.117.105
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18gARDt+r01IyYEVtETsSMg
-Message-ID: <47612FF9.8060402@reed.com>
-Date: Thu, 13 Dec 2007 08:13:29 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
+	Thu, 13 Dec 2007 08:14:12 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47990 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753523AbXLMNOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 08:14:09 -0500
+Date: Thu, 13 Dec 2007 14:12:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>,
+       Greg KH <gregkh@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, kay.sievers@vrfy.org,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
+Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
+Message-ID: <20071213131242.GD28340@elte.hu>
+References: <20071211182528.GA5597@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201F1@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071211210653.GA6902@elte.hu> <20071212070816.GA31455@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201F6@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071212134158.GA5547@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B00152021F@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071213114336.GA5400@linux.vnet.ibm.com> <20071213125509.GA28340@elte.hu> <20071213130231.GB16905@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: David Newall <david@davidnewall.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, Paul Rolland <rol@as2917.net>,
-       "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-References: <475879CD.9080006@reed.com>	<p733auekcly.fsf@bingen.suse.de>	<20071207160439.71b7f46a@the-village.bc.nu>	<20071209125458.GB4381@ucw.cz>	<20071209165908.GA15910@one.firstfloor.org>	<20071209212513.GC24284@elf.ucw.cz>	<475CBDD7.5050602@keyaccess.nl>	<m3bq8y23de.fsf@maximus.localdomain>	<475DE37F.20706@davidnewall.com>	<475DE6F4.80702@zytor.com>	<475DEB23.1000304@davidnewall.com>	<20071211084059.3d03e11d@tux.DEF.witbe.net>	<475E5D4B.8020101@keyaccess.nl>	<475E7DC2.4060509@davidnewall.com>	<475E8D91.20201@keyaccess.nl>	<475E95A3.3070801@davidnewall.com>	<20071211142552.2ae6ea9a@the-village.bc.nu>	<47605E4B.6050904@davidnewall.com> <20071212230030.00511c3f@the-village.bc.nu>
-In-Reply-To: <20071212230030.00511c3f@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071213130231.GB16905@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Perhaps what was meant is that ISA-tuned timings make little sense on 
-devices that are part of the chipset or on the PCI or PCI-X buses?
 
-On the other hand, since we don't know in many cases whether the "_p" 
-was supposed to mean "the time it takes to execute an "out al,80h" on 
-whatever bus structure happens to be on whatever machine, the problem is 
-unsolvable.
+* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 
-Ranting about whether ISA/LPC is on what machines seems to be of little 
-value in contributing to a constructive solution.
+> > >  static void user_attr_init(struct subsys_attribute *sa, char *name, int mode)
+> > >  {
+> > > +	sa->attr.owner = NULL;
+> > >  	sa->attr.name = name;
+> > 
+> > i'm wondering why doesnt this affect 2.6.23 and later? Does sysfs 
+> > initialize the owner field to NULL automatically?
+> > 
+> 
+> Going through git log, it seems that commit 
+> 7b595756ec1f49e0049a9e01a1298d53a7faaa15 deemed attribute->owner as 
+> unnecessary. I guess that answers the question.
 
-It seems to me that in the long term, driver writers would do well to 
-think more clearly about the timings their devices require, when that is 
-possible.   They are probably implementation dependent - depending on 
-the clock speed of the particular clock that is driving the particular 
-i/o device.
+thx. The only open question seems to be: Vincent had sysfs crashes 
+without the CFS patchset as well.
 
-Then there's the social problem of a community development project - 
-which is to get people to tune their code but preserve its ability to 
-run on older and variant machines.
+Wouldnt it be prudent to backport the core bits of the above commit 
+(attached below), to make sure the owner field is never utilized. 
+(because it seems it's so easy and common to not maintain it properly) 
 
-Alan Cox wrote:
->> Yes, it's now clear that all of this is so.  Regrettably, it's used in 
->> dozens of drivers, most having nothing to do with an ISA/LPC bus.
->>
->> If it really is specific to the ISA architecture, then it should only be 
->> used in architecture specific code.
->>     
->
-> ISA/LPC is not architecture specific. In fact ISA/LPC bus components get
-> everywhere because the PC market drives the cost per unit for those
-> components down to nearly nothing.
->
->   
+Vincent, does the patch below resolve the non-CFS crashes?
+
+	Ingo
+
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index 618b8ae..3c5574a 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -175,25 +175,20 @@ static int open(struct inode * inode, struct file * file)
+ 	if (!sysfs_get_active(attr_sd))
+ 		return -ENODEV;
+ 
+-	/* Grab the module reference for this attribute */
+-	error = -ENODEV;
+-	if (!try_module_get(attr->attr.owner))
+-		goto err_sput;
+-
+ 	error = -EACCES;
+ 	if ((file->f_mode & FMODE_WRITE) && !(attr->write || attr->mmap))
+-		goto err_mput;
++		goto err_out;
+ 	if ((file->f_mode & FMODE_READ) && !(attr->read || attr->mmap))
+-		goto err_mput;
++		goto err_out;
+ 
+ 	error = -ENOMEM;
+ 	bb = kzalloc(sizeof(*bb), GFP_KERNEL);
+ 	if (!bb)
+-		goto err_mput;
++		goto err_out;
+ 
+ 	bb->buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
+ 	if (!bb->buffer)
+-		goto err_mput;
++		goto err_out;
+ 
+ 	mutex_init(&bb->mutex);
+ 	file->private_data = bb;
+@@ -203,9 +198,7 @@ static int open(struct inode * inode, struct file * file)
+ 	sysfs_get(attr_sd);
+ 	return 0;
+ 
+- err_mput:
+-	module_put(attr->attr.owner);
+- err_sput:
++ err_out:
+ 	sysfs_put_active(attr_sd);
+ 	kfree(bb);
+ 	return error;
+@@ -214,13 +207,11 @@ static int open(struct inode * inode, struct file * file)
+ static int release(struct inode * inode, struct file * file)
+ {
+ 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
+-	struct bin_attribute *attr = attr_sd->s_elem.bin_attr.bin_attr;
+ 	struct bin_buffer *bb = file->private_data;
+ 
+ 	if (bb->mmapped)
+ 		sysfs_put_active_two(attr_sd);
+ 	sysfs_put(attr_sd);
+-	module_put(attr->attr.owner);
+ 	kfree(bb->buffer);
+ 	kfree(bb);
+ 	return 0;
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index d673d9b..a84b734 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -241,7 +241,6 @@ sysfs_write_file(struct file *file, const char __user *buf, size_t count, loff_t
+ static int sysfs_open_file(struct inode *inode, struct file *file)
+ {
+ 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
+-	struct attribute *attr = attr_sd->s_elem.attr.attr;
+ 	struct kobject *kobj = attr_sd->s_parent->s_elem.dir.kobj;
+ 	struct sysfs_buffer * buffer;
+ 	struct sysfs_ops * ops = NULL;
+@@ -251,11 +250,6 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+ 	if (!sysfs_get_active_two(attr_sd))
+ 		return -ENODEV;
+ 
+-	/* Grab the module reference for this attribute */
+-	error = -ENODEV;
+-	if (!try_module_get(attr->owner))
+-		goto err_sput;
+-
+ 	/* if the kobject has no ktype, then we assume that it is a subsystem
+ 	 * itself, and use ops for it.
+ 	 */
+@@ -272,7 +266,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+ 	 * or the subsystem have no operations.
+ 	 */
+ 	if (!ops)
+-		goto err_mput;
++		goto err_out;
+ 
+ 	/* File needs write support.
+ 	 * The inode's perms must say it's ok, 
+@@ -280,7 +274,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+ 	 */
+ 	if (file->f_mode & FMODE_WRITE) {
+ 		if (!(inode->i_mode & S_IWUGO) || !ops->store)
+-			goto err_mput;
++			goto err_out;
+ 	}
+ 
+ 	/* File needs read support.
+@@ -289,7 +283,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+ 	 */
+ 	if (file->f_mode & FMODE_READ) {
+ 		if (!(inode->i_mode & S_IRUGO) || !ops->show)
+-			goto err_mput;
++			goto err_out;
+ 	}
+ 
+ 	/* No error? Great, allocate a buffer for the file, and store it
+@@ -298,7 +292,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+ 	error = -ENOMEM;
+ 	buffer = kzalloc(sizeof(struct sysfs_buffer), GFP_KERNEL);
+ 	if (!buffer)
+-		goto err_mput;
++		goto err_out;
+ 
+ 	init_MUTEX(&buffer->sem);
+ 	buffer->needs_read_fill = 1;
+@@ -310,9 +304,7 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+ 	sysfs_get(attr_sd);
+ 	return 0;
+ 
+- err_mput:
+-	module_put(attr->owner);
+- err_sput:
++ err_out:
+ 	sysfs_put_active_two(attr_sd);
+ 	return error;
+ }
+@@ -320,12 +312,9 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+ static int sysfs_release(struct inode * inode, struct file * filp)
+ {
+ 	struct sysfs_dirent *attr_sd = filp->f_path.dentry->d_fsdata;
+-	struct attribute *attr = attr_sd->s_elem.attr.attr;
+ 	struct sysfs_buffer *buffer = filp->private_data;
+ 
+ 	sysfs_put(attr_sd);
+-	/* After this point, attr should not be accessed. */
+-	module_put(attr->owner);
+ 
+ 	if (buffer) {
+ 		if (buffer->page)
+
