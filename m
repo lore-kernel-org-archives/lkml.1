@@ -1,68 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935574AbXLNA5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933712AbXLNBC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935574AbXLNA5x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 19:57:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761373AbXLNA5k
+	id S933712AbXLNBC5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 20:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbXLNBCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 19:57:40 -0500
-Received: from adsl-76-243-235-52.dsl.chcgil.sbcglobal.net ([76.243.235.52]:48385
-	"EHLO accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753320AbXLNA5i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 19:57:38 -0500
-Subject: Re: [PATCH] fix page_alloc for larger I/O segments (improved)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Mark Lord <liml@rtr.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jens.axboe@oracle.com,
-       lkml@rtr.ca, matthew@wil.cx, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-mm@kvack.org, mel@csn.ul.ie
-In-Reply-To: <4761D279.6050500@rtr.ca>
-References: <20071213185326.GQ26334@parisc-linux.org>
-	 <4761821F.3050602@rtr.ca>	<20071213192633.GD10104@kernel.dk>
-	 <4761883A.7050908@rtr.ca>	<476188C4.9030802@rtr.ca>
-	 <20071213193937.GG10104@kernel.dk>	<47618B0B.8020203@rtr.ca>
-	 <20071213195350.GH10104@kernel.dk>	<20071213200219.GI10104@kernel.dk>
-	 <476190BE.9010405@rtr.ca>	<20071213200958.GK10104@kernel.dk>
-	 <20071213140207.111f94e2.akpm@linux-foundation.org>
-	 <1197584106.3154.55.camel@localhost.localdomain>
-	 <20071213142935.47ff19d9.akpm@linux-foundation.org>
-	 <4761B32A.3070201@rtr.ca>	<4761BCB4.1060601@rtr.ca>
-	 <4761C8E4.2010900@rtr.ca>	<4761CE88.9070406@rtr.ca>
-	 <20071213163726.3bb601fa.akpm@linux-foundation.org>
-	 <4761D160.7060603@rtr.ca>  <4761D279.6050500@rtr.ca>
-Content-Type: text/plain
-Date: Thu, 13 Dec 2007 19:57:29 -0500
-Message-Id: <1197593849.3154.62.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+	Thu, 13 Dec 2007 20:02:49 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:36125 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752419AbXLNBCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 20:02:48 -0500
+X-Greylist: delayed 2108 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Dec 2007 20:02:47 EST
+Message-ID: <47619E29.10101@tycho.nsa.gov>
+Date: Thu, 13 Dec 2007 16:03:37 -0500
+From: Eamon Walsh <ewalsh@tycho.nsa.gov>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH] apm_event{,info}_t are userspace types.
+References: <1196452963295-git-send-email-ajax@redhat.com> <20071212024700.19560b60.akpm@linux-foundation.org>
+In-Reply-To: <20071212024700.19560b60.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2007-12-13 at 19:46 -0500, Mark Lord wrote:
-> "Improved version", more similar to the 2.6.23 code:
+Andrew Morton wrote:
+> On Fri, 30 Nov 2007 15:02:43 -0500 Adam Jackson <ajax@redhat.com> wrote:
 > 
-> Fix page allocator to give better chance of larger contiguous segments (again).
+>> These types define the size of data read from /dev/apm_bios.  They
+>> should not be hidden behind #ifdef __KERNEL__.
 > 
-> Signed-off-by: Mark Lord <mlord@pobox.com
-> ---
+> Missing info: what are the consequences of this fix?  What id broken when
+> it it not applied?
+
+This is killing my xserver compile, apm_event_t is used in the xserver 
+source.  The commit that introduced the problem is:
+
+commit ee8e7cfe9d330d6f1ce0b9b1620d6df5d9cf6b70
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Mon Oct 22 10:56:19 2007 +1000
+
+     Make asm-x86/bootparam.h includable from userspace.
+
+     To actually write a bootloader (or, say, the lguest launcher)
+     currently requires duplication of these structures.  Making them
+     includable from userspace is much nicer.
+
+     We merge the common userspace-required definitions of e820_32/64.h
+     into e820.h for export.
+
+     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
 > 
-> --- old/mm/page_alloc.c	2007-12-13 19:25:15.000000000 -0500
-> +++ linux-2.6/mm/page_alloc.c	2007-12-13 19:43:07.000000000 -0500
-> @@ -760,7 +760,7 @@
->  		struct page *page = __rmqueue(zone, order, migratetype);
->  		if (unlikely(page == NULL))
->  			break;
-> -		list_add(&page->lru, list);
-> +		list_add_tail(&page->lru, list);
+> 
+>> ---
+>>  include/linux/apm_bios.h |    6 +++---
+>>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> Please include Signed-off-by:, as per Documentation/SubmittingPatches,
+> thanks.
+> 
+>> diff --git a/include/linux/apm_bios.h b/include/linux/apm_bios.h
+>> index 9754baa..01a6244 100644
+>> --- a/include/linux/apm_bios.h
+>> +++ b/include/linux/apm_bios.h
+>> @@ -18,6 +18,9 @@
+>>  
+>>  #include <linux/types.h>
+>>  
+>> +typedef unsigned short	apm_event_t;
+>> +typedef unsigned short	apm_eventinfo_t;
+>> +
+>>  struct apm_bios_info {
+>>  	__u16	version;
+>>  	__u16	cseg;
+>> @@ -32,9 +35,6 @@ struct apm_bios_info {
+>>  
+>>  #ifdef __KERNEL__
+>>  
+>> -typedef unsigned short	apm_event_t;
+>> -typedef unsigned short	apm_eventinfo_t;
+>> -
+>>  #define APM_CS		(GDT_ENTRY_APMBIOS_BASE * 8)
+>>  #define APM_CS_16	(APM_CS + 8)
+>>  #define APM_DS		(APM_CS_16 + 8)
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Could we put a big comment above this explaining to the would be vm
-tweakers why this has to be a list_add_tail, so we don't end up back in
-this position after another two years?
 
-James
-
-
+-- 
+Eamon Walsh <ewalsh@tycho.nsa.gov>
+National Security Agency
