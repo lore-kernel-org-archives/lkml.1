@@ -1,48 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932766AbXLMVwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933552AbXLMVym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932766AbXLMVwq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 16:52:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933677AbXLMVw0
+	id S933552AbXLMVym (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 16:54:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762459AbXLMVye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 16:52:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54507 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933661AbXLMVwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 16:52:25 -0500
-Message-ID: <4761A944.1050503@redhat.com>
-Date: Thu, 13 Dec 2007 19:51:00 -0200
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
-       ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
-       rostedt@goodmis.org, zach@vmware.com, roland@redhat.com
-Subject: Re: [PATCH] avoid ifdefs in desc.h, getting rid of pack_ldt and	pack_tss
-References: <11975561713425-git-send-email-gcosta@redhat.com> <20071213202800.GD25130@elte.hu> <20071213205838.GA9649@elte.hu> <20071213212221.GA16747@elte.hu> <4761A385.1080301@zytor.com> <20071213213517.GA25563@elte.hu> <4761A6E7.7030602@zytor.com>
-In-Reply-To: <4761A6E7.7030602@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 13 Dec 2007 16:54:34 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56866 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754823AbXLMVyd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 16:54:33 -0500
+Subject: Re: [PATCH]Avoid the overflow when calculate the proportion of bdi
+	quota
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: zhejiang <zhe.jiang@intel.com>
+Cc: linux-kernel@vger.kernel.org, yanmin_zhang@linux.intel.com
+In-Reply-To: <1197516632.18076.5.camel@localhost.localdomain>
+References: <1197516632.18076.5.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 13 Dec 2007 22:54:31 +0100
+Message-Id: <1197582871.3430.1.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Ingo Molnar wrote:
->>> Well, "no functional changes" is not quite the same thing as "no 
->>> object code changes".
->>
->> yeah, true, but the safest way to ensure no functional changes is to 
->> get identical object code. In sched-devel.git i include obj 
->> comparisons to cleanup patches as a self-assurance (and later bughunt 
->> helper) to make sure a cleanup is really just a cleanup.
+
+On Thu, 2007-12-13 at 11:30 +0800, zhejiang wrote:
+> __percpu_counter_add() cache the result in percpu variable until it
+> exceeds the batch.
+> The prop_norm_percpu() use the percpu_counter_read(&pl->events) to read
+> the counter ,and use percpu_counter_add(&pl->events, -half) to half the
+> counter.
 > 
-> Of course.  "No object code changes" is a stronger statement, however, 
-> not all types of cleanups result in that.
+> There are potential problems:
+> 1.The counter may be negative 
+> 2.After some calculation, it may be converted to a big positive number.
 > 
-Which is the case here. I wasn't expecting the same object code. Anyway, 
-the mistake is explained, and I'm about to send the correct version. 
-Sorry again.
+> 1.
+> For example, the batch is 32, when the bdi add 32 to the pl->events,
+> the pl->events->count will be 32.Suppose one of the percpu counter is 1.
+> 
+> In the prop_norm_percpu(),the half will be 16.Because it is under the
+> batch, the pl->events->count won't be modified and one of the percpu
+> counter may be -15. If call the prop_norm_percpu() again, the half will
+> still be 16,though it should be 8.The percpu counter may be -31.
+> Now, there pl->events->count is still 32.
+> If do the third calculation, the percpu counter will be -47, it will
+> be merged into the pl->evnets->count.Then pl->events->count will be
+> negative.
+> 
+> 2.When the pl->events->count is negative,
+> unsigned long val = percpu_counter_read(&pl->events);
+> This statement may return a negative number, so the val would be a big
+> number.Because of the overflow, the pl->events->count will be converted
+> into a big positive number after some calculation.
+> 
+> Because of the overflow, I catch some very big numerators when call the
+> prop_fraction_percpu().
+> 
+> I think that it should use percpu_counter_sum() instead of the
+> percpu_counter_read() to be more robust.
+> 
+> diff -Nur a/proportions.c b/proportions.c
+> --- a/proportions.c     2007-12-12 11:05:59.000000000 +0800
+> +++ b/proportions.c     2007-12-13 11:05:40.000000000 +0800
+> @@ -241,7 +241,7 @@
+>          * can never result in a negative number.
+>          */
+>         while (pl->period != global_period) {
+> -               unsigned long val = percpu_counter_read(&pl->events);
+> +               unsigned long val = percpu_counter_sum(&pl->events);
+>                 unsigned long half = (val + 1) >> 1;
+>  
+>                 /*
+> 
+
+_sum is unacceptably slow here. I'm thinking something like
+bdi_stat_error() as used in balance_dirty_pages() would also solve this
+issue, no?
+
+
