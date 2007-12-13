@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbXLMFeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbXLMFqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbXLMFeb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 00:34:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbXLMFeW
+	id S1754818AbXLMFqU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 00:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbXLMFqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 00:34:22 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:52319 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751436AbXLMFeV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 00:34:21 -0500
-Subject: 2.6.23.9-rt13
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Thu, 13 Dec 2007 00:33:56 -0500
-Message-Id: <1197524036.15001.15.camel@localhost.localdomain>
+	Thu, 13 Dec 2007 00:46:06 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:36101 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750821AbXLMFqF (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 00:46:05 -0500
+X-Greylist: delayed 552 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Dec 2007 00:46:04 EST
+Date: Thu, 13 Dec 2007 16:36:21 +1100
+From: David Chinner <dgc@sgi.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Boaz Harrosh <bharrosh@panasas.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Hannes Reinecke <hare@suse.de>
+Subject: Re: [PATCH] REQ-flags to/from BIO-flags bugfix
+Message-ID: <20071213053621.GC4396912@sgi.com>
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <47462F3C.3040700@googlemail.com> <20071122201250.f957e280.akpm@linux-foundation.org> <47466B5D.90607@googlemail.com> <20071126221509.8f437b61.akpm@linux-foundation.org> <1197390783.3812.19.camel@localhost.localdomain> <475FB316.6040804@panasas.com> <475FBFEE.9010009@panasas.com> <20071212151813.GJ26334@parisc-linux.org> <20071212155407.GK26334@parisc-linux.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071212155407.GK26334@parisc-linux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the 2.6.23.9-rt13 tree, which can be
-downloaded from the location:
+On Wed, Dec 12, 2007 at 08:54:07AM -0700, Matthew Wilcox wrote:
+> On Wed, Dec 12, 2007 at 08:18:14AM -0700, Matthew Wilcox wrote:
+> > I don't know whether BIO_RW_BARRIER is __REQ_SOFTBARRIER or
+> > __REQ_HARDBARRIER, so I didn't include that in this patch.  There also
+> > doesn't seem to be a __REQ equivalent to BIO_RW_AHEAD, but we can do
+> > the other four bits (and leave gaps for those two).
+> 
+> Hm.  BIO_RW_AHEAD seems unused:
+> 
+> willy@honeydew:~/kernel/linux-2.6$ grep -r BIO_RW_AHEAD *
+> block/blktrace.c:       (((rw) & (1 << BIO_RW_AHEAD)) << (2 - BIO_RW_AHEAD))
+> include/linux/bio.h:#define BIO_RW_AHEAD        1
+> include/linux/bio.h:#define bio_rw_ahead(bio)   ((bio)->bi_rw & (1 << BIO_RW_AHEAD))
+> willy@honeydew:~/kernel/linux-2.6$ grep -r bio_rw_ahead *
+> block/ll_rw_blk.c:      if (bio_rw_ahead(bio) || bio_failfast(bio))
+> drivers/md/dm-mpath.c:  if ((error == -EWOULDBLOCK) && bio_rw_ahead(bio))
+> drivers/md/multipath.c: else if (!bio_rw_ahead(bio)) {
+> include/linux/bio.h:#define bio_rw_ahead(bio)   ((bio)->bi_rw & (1 << BIO_RW_AHEAD))
 
- http://www.kernel.org/pub/linux/kernel/projects/rt/
+That would say to me that READA is not hooked up correctly. i.e:
 
-Changes since 2.6.23.9-rt12
+#define READ 0
+#define WRITE 1
+#define READA 2         /* read-ahead  - don't block if no resources */
+#define SWRITE 3        /* for ll_rw_block() - wait for buffer lock */
+#define READ_SYNC       (READ | (1 << BIO_RW_SYNC))
+#define READ_META       (READ | (1 << BIO_RW_META))
+#define WRITE_SYNC      (WRITE | (1 << BIO_RW_SYNC))
+#define WRITE_BARRIER   ((1 << BIO_RW) | (1 << BIO_RW_BARRIER))
 
-  - Backported the new RT Balancing code from sched-devel
-       New changes by Steven Rostedt, Gregory Haskins,
-        Ingo Molnar, and Dmitry Adamushko
+i.e. it should be:
 
-  - 2 dimension CPU Prio RT balancing search (Gregory Haskins)
+#define READA		(1 << BIO_RW_AHEAD)
 
-  - ARM compile fix (Kevin Hilman)
+Right?
 
-  - Disable HPET legacy replacement for kdump (OGAWA Hirofumi)
+FWIW, dm does this:
 
-  - disable HPET on shutdown (OGAWA Hirofumi)
+		if (bio_rw(bio) != READA)
 
-  - fix for futex_wait signal stack corruption (Steven Rostedt)
+Which really should be if (bio_rw_ahead(bio)).....
 
-  - Handle IRQ_PENDING for simple irq thread (Steven Rostedt)
+Cheers,
 
-  - latency tracer updates (Daniel Walker)
-
-  - Remove warning in local_bh_enable (Kevin Hilman)
-
-  - use real time pcp locking for page draining during cpu (Andi Kleen)
-
-  - Revert lazy disable irq from simple irq handler (Steven Rostedt)
-
-  - AT91 switch to edge from simple irq (Remy Bohmer)
-
-
-to build a 2.6.23.9-rt13 tree, the following patches should be applied:
-
-  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.23.9.tar.bz2 
-  http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.23.9-rt13.bz2
-
-And like always, my RT version of Matt Mackall's ketchup will get this
-for you nicely:
-
-  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt2
-
-
-The broken out patches are also available.
-
--- Steve
-
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
