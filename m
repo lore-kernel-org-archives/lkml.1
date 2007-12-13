@@ -1,60 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765644AbXLMXUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765059AbXLMXjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765644AbXLMXUc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 18:20:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXLMXUY
+	id S1765059AbXLMXjq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 18:39:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759269AbXLMXjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 18:20:24 -0500
-Received: from gate.crashing.org ([63.228.1.57]:44947 "EHLO gate.crashing.org"
+	Thu, 13 Dec 2007 18:39:08 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:4210 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754669AbXLMXUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 18:20:23 -0500
-Subject: Re: What was the problem with quicklists and x86-64?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Tony Luck <tony.luck@intel.com>,
-       Asit Mallick <asit.k.mallick@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0712131514130.29017@schroedinger.engr.sgi.com>
-References: <47603321.4030700@goop.org>
-	 <Pine.LNX.4.64.0712131131540.13396@schroedinger.engr.sgi.com>
-	 <1197578876.15741.163.camel@pasglop>
-	 <Pine.LNX.4.64.0712131251300.18314@schroedinger.engr.sgi.com>
-	 <1197579788.15741.172.camel@pasglop>
-	 <Pine.LNX.4.64.0712131332100.24778@schroedinger.engr.sgi.com>
-	 <1197584859.15741.185.camel@pasglop>
-	 <Pine.LNX.4.64.0712131435520.25120@schroedinger.engr.sgi.com>
-	 <1197587431.15741.189.camel@pasglop>
-	 <Pine.LNX.4.64.0712131514130.29017@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 10:19:28 +1100
-Message-Id: <1197587969.15741.191.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1752426AbXLMXjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 18:39:05 -0500
+From: Joe Perches <joe@perches.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH net-2.6.25 1/8] Create ipv4_is_<type>(__be32 addr) functions
+Date: Thu, 13 Dec 2007 15:38:54 -0800
+Message-Id: <1197589141-7020-1-git-send-email-joe@perches.com>
+X-Mailer: git-send-email 1.5.3.7.949.g2221a6
+Message-Id: <e2ebcbf24539c0a3ef2ac77147dbfa55d8ac9e33.1197432867.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Change IPV4 specific macros LOOPBACK MULTICAST LOCAL_MCAST BADCLASS and ZERONET
+macros to inline functions ipv4_is_<type>(__be32 addr)
 
-On Thu, 2007-12-13 at 15:14 -0800, Christoph Lameter wrote:
-> On Fri, 14 Dec 2007, Benjamin Herrenschmidt wrote:
-> 
-> > We have a separate batch to store page table pages with an RCU head on
-> > it, we fire it off when it's full or when tlb gather is complete.
-> 
-> full? You need to wait otill the tlb gather is complete.
+Adds type safety and arguably some readability.
 
-No, we fire it off with RCU, we don't need to wait for TLB gather to be
-complete. All we care about is sync with other CPUs doing a page table
-walk and it's enough for us. We do -not- need to synchronize with TLB
-invalidations and we don't use IPIs for those anyway.
+Changes since last submission:
 
-Ben.
+Removed ipv4_addr_octets function
+Used hex constants
+Converted recently added rfc3330 macros
 
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ include/linux/in.h |   87 ++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 74 insertions(+), 13 deletions(-)
+
+diff --git a/include/linux/in.h b/include/linux/in.h
+index a8f00ca..f8d6073 100644
+--- a/include/linux/in.h
++++ b/include/linux/in.h
+@@ -246,21 +246,82 @@ struct sockaddr_in {
+ #include <asm/byteorder.h> 
+ 
+ #ifdef __KERNEL__
+-/* Some random defines to make it easier in the kernel.. */
+-#define LOOPBACK(x)	(((x) & htonl(0xff000000)) == htonl(0x7f000000))
+-#define MULTICAST(x)	(((x) & htonl(0xf0000000)) == htonl(0xe0000000))
+-#define BADCLASS(x)	(((x) & htonl(0xf0000000)) == htonl(0xf0000000))
+-#define ZERONET(x)	(((x) & htonl(0xff000000)) == htonl(0x00000000))
+-#define LOCAL_MCAST(x)	(((x) & htonl(0xFFFFFF00)) == htonl(0xE0000000))
++
++static inline bool ipv4_is_loopback(__be32 addr)
++{
++	return (addr & htonl(0xff000000)) == htonl(0x7f000000);
++}
++
++static inline bool ipv4_is_multicast(__be32 addr)
++{
++	return (addr & htonl(0xf0000000)) == htonl(0xe0000000);
++}
++
++static inline bool ipv4_is_local_multicast(__be32 addr)
++{
++	return (addr & htonl(0xffffff00)) == htonl(0xe0000000);
++}
++
++static inline bool ipv4_is_badclass(__be32 addr)
++{
++	return (addr & htonl(0xf0000000)) == htonl(0xf0000000);
++}
++
++static inline bool ipv4_is_zeronet(__be32 addr)
++{
++	return (addr & htonl(0xff000000)) == htonl(0x00000000);
++}
++
++#define LOOPBACK(x)		ipv4_is_loopback(x)
++#define MULTICAST(x)		ipv4_is_multicast(x)
++#define BADCLASS(x)		ipv4_is_badclass(x)
++#define ZERONET(x)		ipv4_is_zeronet(x)
++#define LOCAL_MCAST(x)		ipv4_is_local_multicast(x)
+ 
+ /* Special-Use IPv4 Addresses (RFC3330) */
+-#define PRIVATE_10(x)	(((x) & htonl(0xff000000)) == htonl(0x0A000000))
+-#define LINKLOCAL_169(x) (((x) & htonl(0xffff0000)) == htonl(0xA9FE0000))
+-#define PRIVATE_172(x)	(((x) & htonl(0xfff00000)) == htonl(0xAC100000))
+-#define TEST_192(x)	(((x) & htonl(0xffffff00)) == htonl(0xC0000200))
+-#define ANYCAST_6TO4(x)	(((x) & htonl(0xffffff00)) == htonl(0xC0586300))
+-#define PRIVATE_192(x)	(((x) & htonl(0xffff0000)) == htonl(0xC0A80000))
+-#define TEST_198(x)	(((x) & htonl(0xfffe0000)) == htonl(0xC6120000))
++
++static inline bool ipv4_is_private_10(__be32 addr)
++{
++	return (addr & htonl(0xff000000)) == htonl(0x0a000000);
++}
++
++static inline bool ipv4_is_private_172(__be32 addr)
++{
++	return (addr & htonl(0xfff00000)) == htonl(0xac100000);
++}
++
++static inline bool ipv4_is_private_192(__be32 addr)
++{
++	return (addr & htonl(0xffff0000)) == htonl(0xc0a80000);
++}
++
++static inline bool ipv4_is_linklocal_169(__be32 addr)
++{
++	return (addr & htonl(0xffff0000)) == htonl(0xa9fe0000);
++}
++
++static inline bool ipv4_is_anycast_6to4(__be32 addr)
++{
++	return (addr & htonl(0xffffff00)) == htonl(0xc0586300);
++}
++
++static inline bool ipv4_is_test_192(__be32 addr)
++{
++	return (addr & htonl(0xffffff00)) == htonl(0xc0000200);
++}
++
++static inline bool ipv4_is_test_198(__be32 addr)
++{
++	return (addr & htonl(0xfffe0000)) == htonl(0xc6120000);
++}
+ #endif
+ 
++#define PRIVATE_10(x)		ipv4_is_private_10(x)
++#define LINKLOCAL_169(x)	ipv4_is_linklocal_169(x)
++#define PRIVATE_172(x)		ipv4_is_private_172(x)
++#define TEST_192(x)		ipv4_is_test_192(x)
++#define ANYCAST_6TO4(x)		ipv4_is_anycast_6to4(x)
++#define PRIVATE_192(x)		ipv4_is_private_192(x)
++#define TEST_198(x)		ipv4_is_test_198(x)
++
+ #endif	/* _LINUX_IN_H */
+-- 
+1.5.3.7.949.g2221a6
 
