@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764773AbXLMHRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbXLMHSD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764773AbXLMHRi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:17:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762615AbXLMG60
+	id S1761255AbXLMHSD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:18:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762426AbXLMG63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:58:26 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55666 "EHLO
+	Thu, 13 Dec 2007 01:58:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55689 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759655AbXLMG6Y (ORCPT
+	with ESMTP id S1759781AbXLMG62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:58:24 -0500
-Date: Wed, 12 Dec 2007 22:53:30 -0800
+	Thu, 13 Dec 2007 01:58:28 -0500
+Date: Wed, 12 Dec 2007 22:53:32 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, bunk@kernel.org,
-       davem@davemloft.net
+To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 52/60] IPV6: Restore IPv6 when MTU is big enough
-Message-ID: <20071213065330.GB6867@kroah.com>
+Subject: [patch 53/60] TCP: illinois: Incorrect beta usage
+Message-ID: <20071213065332.GC6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipv6-restore-ipv6-when-mtu-is-big-enough.patch"
+Content-Disposition: inline; filename="tcp-illinois-incorrect-beta-usage.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,62 +41,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-[IPV6]: Restore IPv6 when MTU is big enough
+[TCP] illinois: Incorrect beta usage
 
-[ Upstream commit: d31c7b8fa303eb81311f27b80595b8d2cbeef950 ]
+[ Upstream commit: a357dde9df33f28611e6a3d4f88265e39bcc8880 ]
 
-Avaid provided test application, so bug got fixed.
+Lachlan Andrew observed that my TCP-Illinois implementation uses the
+beta value incorrectly:
+The parameter  beta  in the paper specifies the amount to decrease
+*by*:  that is, on loss,
+ W <-  W -  beta*W
+but in   tcp_illinois_ssthresh() uses  beta  as the amount
+to decrease  *to*: W <- beta*W
 
-IPv6 addrconf removes ipv6 inner device from netdev each time cmu
-changes and new value is less than IPV6_MIN_MTU (1280 bytes).
-When mtu is changed and new value is greater than IPV6_MIN_MTU,
-it does not add ipv6 addresses and inner device bac.
+This bug makes the Linux TCP-Illinois get less-aggressive on uncongested network,
+hurting performance. Note: since the base beta value is .5, it has no
+impact on a congested network.
 
-This patch fixes that.
-
-Tested with Avaid's application, which works ok now.
-
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv6/addrconf.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ net/ipv4/tcp_illinois.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/ipv6/addrconf.c
-+++ b/net/ipv6/addrconf.c
-@@ -2281,6 +2281,9 @@ static int addrconf_notify(struct notifi
- 				break;
- 			}
+--- a/net/ipv4/tcp_illinois.c
++++ b/net/ipv4/tcp_illinois.c
+@@ -298,7 +298,7 @@ static u32 tcp_illinois_ssthresh(struct 
+ 	struct illinois *ca = inet_csk_ca(sk);
  
-+			if (!idev && dev->mtu >= IPV6_MIN_MTU)
-+				idev = ipv6_add_dev(dev);
-+
- 			if (idev)
- 				idev->if_flags |= IF_READY;
- 		} else {
-@@ -2345,12 +2348,18 @@ static int addrconf_notify(struct notifi
- 		break;
+ 	/* Multiplicative decrease */
+-	return max((tp->snd_cwnd * ca->beta) >> BETA_SHIFT, 2U);
++	return max(tp->snd_cwnd - ((tp->snd_cwnd * ca->beta) >> BETA_SHIFT), 2U);
+ }
  
- 	case NETDEV_CHANGEMTU:
--		if ( idev && dev->mtu >= IPV6_MIN_MTU) {
-+		if (idev && dev->mtu >= IPV6_MIN_MTU) {
- 			rt6_mtu_change(dev, dev->mtu);
- 			idev->cnf.mtu6 = dev->mtu;
- 			break;
- 		}
  
-+		if (!idev && dev->mtu >= IPV6_MIN_MTU) {
-+			idev = ipv6_add_dev(dev);
-+			if (idev)
-+				break;
-+		}
-+
- 		/* MTU falled under IPV6_MIN_MTU. Stop IPv6 on this interface. */
- 
- 	case NETDEV_DOWN:
 
 -- 
