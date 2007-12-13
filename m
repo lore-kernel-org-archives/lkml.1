@@ -1,36 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbXLMGhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759957AbXLMGiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758470AbXLMGhy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:37:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbXLMGgt
+	id S1759957AbXLMGiW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:38:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXLMGgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:36:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56217 "EHLO
+	Thu, 13 Dec 2007 01:36:51 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56222 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752847AbXLMGgr (ORCPT
+	with ESMTP id S1753186AbXLMGgu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:36:47 -0500
-Date: Wed, 12 Dec 2007 22:33:53 -0800
+	Thu, 13 Dec 2007 01:36:50 -0500
+Date: Wed, 12 Dec 2007 22:34:04 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Christian Borntraeger <borntraeger@de.ibm.com>, Jan Kara <jack@suse.cz>,
-       Nick Piggin <npiggin@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [patch 02/36] rd: fix data corruption on memory pressure Future of
-	Linux 2.6.22.y series
-Message-ID: <20071213063353.GC25301@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, oleg@tv-sign.ru, roland@redhat.com,
+       scott@ubuntu.com
+Subject: [patch 03/36] wait_task_stopped(): pass correct exit_code to
+	wait_noreap_copyout()
+Message-ID: <20071213063404.GD25301@kroah.com>
 References: <20071213062511.265908583@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="rd-fix-data-corruption-on-memory-pressure.patch"
+Content-Disposition: inline; filename="wait_task_stopped-pass-correct-exit_code-to-wait_noreap_copyout.patch"
 In-Reply-To: <20071213063308.GA25301@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,73 +37,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.22-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+From: Scott James Remnant <scott@ubuntu.com>
 
-commit 5d0360ee96a5ef953dbea45873c2a8c87e77d59b upstream.
+patch e6ceb32aa25fc33f21af84cc7a32fe289b3e860c in mainline.
 
-We have seen ramdisk based install systems, where some pages of mapped
-libraries and programs were suddendly zeroed under memory pressure. This
-should not happen, as the ramdisk avoids freeing its pages by keeping
-them dirty all the time.
+In wait_task_stopped() exit_code already contains the right value for the
+si_status member of siginfo, and this is simply set in the non WNOWAIT
+case.
 
-It turns out that there is a case, where the VM makes a ramdisk page
-clean, without telling the ramdisk driver.  On memory pressure
-shrink_zone runs and it starts to run shrink_active_list.  There is a
-check for buffer_heads_over_limit, and if true, pagevec_strip is called.
-pagevec_strip calls try_to_release_page. If the mapping has no
-releasepage callback, try_to_free_buffers is called. try_to_free_buffers
-has now a special logic for some file systems to make a dirty page
-clean, if all buffers are clean. Thats what happened in our test case.
+If you call waitid() with a stopped or traced process, you'll get the signal
+in siginfo.si_status as expected -- however if you call waitid(WNOWAIT) at the
+same time, you'll get the signal << 8 | 0x7f
 
-The simplest solution is to provide a noop-releasepage callback for the
-ramdisk driver. This avoids try_to_free_buffers for ramdisk pages.
+Pass it unchanged to wait_noreap_copyout(); we would only need to shift it
+and add 0x7f if we were returning it in the user status field and that
+isn't used for any function that permits WNOWAIT.
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Jan Kara <jack@suse.cz>
-Acked-by: Nick Piggin <npiggin@suse.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Signed-off-by: Scott James Remnant <scott@ubuntu.com>
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Roland McGrath <roland@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- drivers/block/rd.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ kernel/exit.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/block/rd.c
-+++ b/drivers/block/rd.c
-@@ -189,6 +189,18 @@ static int ramdisk_set_page_dirty(struct
- 	return 0;
- }
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -1339,7 +1339,7 @@ static int wait_task_stopped(struct task
+ 		if (unlikely(!exit_code) || unlikely(p->exit_state))
+ 			goto bail_ref;
+ 		return wait_noreap_copyout(p, pid, uid,
+-					   why, (exit_code << 8) | 0x7f,
++					   why, exit_code,
+ 					   infop, ru);
+ 	}
  
-+/*
-+ * releasepage is called by pagevec_strip/try_to_release_page if
-+ * buffers_heads_over_limit is true. Without a releasepage function
-+ * try_to_free_buffers is called instead. That can unset the dirty
-+ * bit of our ram disk pages, which will be eventually freed, even
-+ * if the page is still in use.
-+ */
-+static int ramdisk_releasepage(struct page *page, gfp_t dummy)
-+{
-+	return 0;
-+}
-+
- static const struct address_space_operations ramdisk_aops = {
- 	.readpage	= ramdisk_readpage,
- 	.prepare_write	= ramdisk_prepare_write,
-@@ -196,6 +208,7 @@ static const struct address_space_operat
- 	.writepage	= ramdisk_writepage,
- 	.set_page_dirty	= ramdisk_set_page_dirty,
- 	.writepages	= ramdisk_writepages,
-+	.releasepage	= ramdisk_releasepage,
- };
- 
- static int rd_blkdev_pagecache_IO(int rw, struct bio_vec *vec, sector_t sector,
 
 -- 
