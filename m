@@ -1,29 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762923AbXLMSgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762919AbXLMSiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762923AbXLMSgU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 13:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbXLMSgH
+	id S1762919AbXLMSiT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 13:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbXLMSiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 13:36:07 -0500
-Received: from rtr.ca ([76.10.145.34]:2060 "EHLO mail.rtr.ca"
+	Thu, 13 Dec 2007 13:38:03 -0500
+Received: from rtr.ca ([76.10.145.34]:3827 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753036AbXLMSgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 13:36:03 -0500
-Message-ID: <47617B92.6020908@rtr.ca>
-Date: Thu, 13 Dec 2007 13:36:02 -0500
+	id S1754492AbXLMSiA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 13:38:00 -0500
+Message-ID: <47617C07.3020501@rtr.ca>
+Date: Thu, 13 Dec 2007 13:37:59 -0500
 From: Mark Lord <lkml@rtr.ca>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Jens Axboe <axboe@suse.de>,
+To: Jens Axboe <axboe@kernel.dk>,
        IDE/ATA development list <linux-ide@vger.kernel.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
        linux-scsi <linux-scsi@vger.kernel.org>
 Subject: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+References: <47617B92.6020908@rtr.ca>
+In-Reply-To: <47617B92.6020908@rtr.ca>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+(resending with corrected email address for Jens)
 
 Jens,
 
