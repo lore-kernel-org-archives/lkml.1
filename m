@@ -1,120 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760808AbXLMHVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764988AbXLMHWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760808AbXLMHVy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763151AbXLMHDH
+	id S1764988AbXLMHWa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:22:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762353AbXLMHHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 02:03:07 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54458 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762788AbXLMHDF (ORCPT
+	Thu, 13 Dec 2007 02:07:32 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:56127 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763598AbXLMHH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 02:03:05 -0500
-Date: Wed, 12 Dec 2007 23:02:08 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/60] 2.6.23-stable review
-Message-ID: <20071213070208.GA12118@kroah.com>
-References: <20071213065039.GA6867@kroah.com>
+	Thu, 13 Dec 2007 02:07:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tk1Xl5HBmzYxGvGN/h7P0zJ8c/8HLy9qInzl40nOK68d9jlV/uQMGMuPu76HSWl3vHILYAjUXNLolU9XpyEFtL8DmLkVbTnHchj2ga/c9vNKNHCSgLdekLVkX0iGzPIG/FcvFCnqaEK0bwCmW8yNXR2r8x2hWD45j/eNwdH+GjM=
+Message-ID: <b25c3fa70712122307q88cae7pa6a464d75a27db2@mail.gmail.com>
+Date: Thu, 13 Dec 2007 16:07:29 +0900
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 6/7] [NETDEV]: tehuti Fix possible causing oops of net_rx_action
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       baum@tehutinetworks.net, andy@greyhouse.net
+In-Reply-To: <20071212.071832.07747779.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071213065039.GA6867@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <002901c83c73$b089b6e0$9c94fea9@jason>
+	 <20071212.071832.07747779.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 10:50:39PM -0800, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.23.10 release.
-> There are 60 patches in this series, all will be posted as a response to
-> this one.  If anyone has any issues with these being applied, please let
-> us know.  If anyone is a maintainer of the proper subsystem, and wants
-> to add a Signed-off-by: line to the patch, please respond with it.
+2007/12/13, David Miller <davem@davemloft.net>:
+> From: "Joonwoo Park" <joonwpark81@gmail.com>
+> Date: Wed, 12 Dec 2007 13:01:27 +0900
+>
+>
+> Any time your trying to make a caller "happy" by adjusting
+> a return value forcefully, it's a hack.
+>
+> And I stated this in another reply about this issue.
+>
+> Please do not fix the problem this way.
+>
+> The correct way to fix this is, if we did process a full
+> "weight" or work, we should not netif_rx_complete() and
+> we should not re-enable chip interrupts.
+>
+> Instead we should return the true "work_done" value and
+> allow the caller to thus poll us one more time.
+>
 
-Rolled up patch can be found at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.23.10-rc1.gz
+Thanks so much for your advice.
+I agree, returning work_done itself exactly.
+I will rework for these drivers.
 
-with a full diffstat below.
-
-thanks,
-
-greg k-h
-
-------------
-
- Makefile                              |    2 
- arch/i386/boot/pmjump.S               |    4 -
- crypto/algapi.c                       |    6 -
- drivers/ata/ahci.c                    |   65 ----------------
- drivers/ata/libata-core.c             |   17 ----
- drivers/atm/he.c                      |   10 +-
- drivers/base/core.c                   |    4 -
- drivers/base/power/Makefile           |    3 
- drivers/base/power/main.c             |    8 --
- drivers/base/power/power.h            |   25 ++++--
- drivers/block/rd.c                    |   13 +++
- drivers/char/apm-emulation.c          |   15 ++-
- drivers/char/random.c                 |    6 -
- drivers/input/mouse/alps.c            |    2 
- drivers/isdn/i4l/isdn_common.c        |    5 +
- drivers/isdn/i4l/isdn_net.c           |    8 +-
- drivers/kvm/kvm_main.c                |   16 ++--
- drivers/kvm/mmu.c                     |    1 
- drivers/kvm/svm.c                     |    4 +
- drivers/kvm/vmx.c                     |    3 
- drivers/kvm/x86_emulate.c             |   30 ++++++-
- drivers/net/forcedeth.c               |   38 ++++++---
- drivers/net/wireless/libertas/cmd.c   |   10 +-
- drivers/pnp/pnpacpi/rsparser.c        |   15 +++
- drivers/scsi/dpt_i2o.c                |  132 +++++++++++++++-------------------
- drivers/scsi/dpti.h                   |    9 +-
- drivers/scsi/esp_scsi.c               |    4 -
- drivers/scsi/scsi.c                   |   31 +++++++
- drivers/usb/host/ehci-hcd.c           |    5 +
- drivers/usb/image/microtek.c          |    2 
- drivers/video/fb_ddc.c                |    8 +-
- fs/xfs/linux-2.6/xfs_buf.c            |    2 
- include/linux/pci_ids.h               |    4 +
- include/linux/pnp.h                   |    4 -
- include/linux/thread_info.h           |   17 +++-
- include/net/sock.h                    |    3 
- include/net/tcp.h                     |    3 
- include/scsi/scsi_device.h            |    3 
- kernel/exit.c                         |    2 
- kernel/futex.c                        |   25 +++---
- kernel/hrtimer.c                      |    8 ++
- kernel/irq/manage.c                   |   20 ++++-
- kernel/sched.c                        |    6 -
- lib/textsearch.c                      |    8 +-
- mm/shmem.c                            |    5 -
- net/8021q/vlan_dev.c                  |    3 
- net/bridge/br.c                       |    4 -
- net/bridge/br_input.c                 |    7 +
- net/bridge/netfilter/ebtable_broute.c |    4 -
- net/decnet/dn_dev.c                   |    4 -
- net/ipv4/arp.c                        |   19 ----
- net/ipv4/netfilter/nf_nat_core.c      |    7 -
- net/ipv4/route.c                      |    8 --
- net/ipv4/sysctl_net_ipv4.c            |    2 
- net/ipv4/tcp_illinois.c               |    2 
- net/ipv4/tcp_output.c                 |    1 
- net/ipv6/addrconf.c                   |   11 ++
- net/key/af_key.c                      |    2 
- net/netfilter/nf_conntrack_extend.c   |    2 
- net/netfilter/xt_CONNMARK.c           |   10 +-
- net/netfilter/xt_CONNSECMARK.c        |   10 +-
- net/netfilter/xt_TCPMSS.c             |    4 -
- net/rxrpc/Kconfig                     |    1 
- net/sched/sch_generic.c               |    5 -
- net/unix/af_unix.c                    |    9 ++
- net/xfrm/xfrm_state.c                 |    2 
- 66 files changed, 409 insertions(+), 319 deletions(-)
+Thanks.
+Joonwoo
