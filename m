@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762121AbXLMPDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761482AbXLMPGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762121AbXLMPDm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 10:03:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbXLMPDe
+	id S1761482AbXLMPGJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 10:06:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbXLMPFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 10:03:34 -0500
-Received: from host.infinivid.com ([64.119.179.76]:54944 "EHLO
-	host.infinivid.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754133AbXLMPDd (ORCPT
+	Thu, 13 Dec 2007 10:05:55 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:47543 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754629AbXLMPFy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 10:03:33 -0500
-X-Greylist: delayed 405 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Dec 2007 10:03:33 EST
-Subject: PCI resource unavailable on mips
-From: Jon Dufresne <jon.dufresne@infinitevideocorporation.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 13 Dec 2007 09:56:46 -0500
-Message-Id: <1197557806.3370.7.camel@microwave.infinitevideocorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Dec 2007 10:05:54 -0500
+Date: Thu, 13 Dec 2007 10:05:13 -0500
+Message-Id: <200712131505.lBDF5DVS031168@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, hch@infradead.org, viro@ftp.linux.org.uk,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 33/42] MM: extern for drop_pagecache_sb 
+In-reply-to: Your message of "Mon, 10 Dec 2007 15:04:26 +0100."
+             <20071210140426.GL20441@stusta.de> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+In message <20071210140426.GL20441@stusta.de>, Adrian Bunk writes:
+> On Sun, Dec 09, 2007 at 09:42:06PM -0500, Erez Zadok wrote:
+> > Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+> > ---
+> >  include/linux/mm.h |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/linux/mm.h b/include/linux/mm.h
+> > index 1b7b95c..fc61bd3 100644
+> > --- a/include/linux/mm.h
+> > +++ b/include/linux/mm.h
+> >...
+> > @@ -1135,6 +1136,7 @@ int drop_caches_sysctl_handler(struct ctl_table *, int, struct file *,
+> >  					void __user *, size_t *, loff_t *);
+> >  unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+> >  			unsigned long lru_pages);
+> > +extern void drop_pagecache_sb(struct super_block *);
+> >  void drop_pagecache(void);
+> >  void drop_slab(void);
+> 
+> This breaks compilation (and therefore bisecting) until the function 
+> becomes non-static in patch #36.
+> 
+> Please merge patches #33 and #36 into one patch.
+> 
+> That's not terribly important now that you've sent the patches for 
+> review, but keep in mind that the tree should compile at all stages for 
+> making bisecting possible when preparing the final submission.
+> 
+> cu
+> Adrian
 
-I've done a bit of linux driver development on x86 in the past.
-Currently I am working on my first ever linux driver for a mips box. I
-started by testing the device in an x86 box and got it reasonable stable
-and am now testing it in the mips box. There appears to be a major
-problem, one unlike I have ever seen before.
+Adrian, having used git-bisect successfully before, I agree with you.  I've
+reorganized my patches now, and merged a few small ones, so they all build
+incrementally.
 
-My PCI device has three BARS. This can be confirmed by the Technical
-documentation and the x86 code. When the pci device is first probed, I
-run a loop to printk out the bar information, this is just as a sanity
-check. Here is the output on the x86:
-
-Bar0:PHYS=e0000000 LEN=04000000
-Bar1:PHYS=efa00000 LEN=00200000
-Bar2:PHYS=e8000000 LEN=04000000
-
-but here is the output on the mips:
-Bar0:PHYS=20000000 LEN=04000000
-Bar1:PHYS=24000000 LEN=00200000
-Bar2:PHYS=00000000 LEN=00000000
-
-notice, BAR2 has no valid information on the mips. I tried to run
-"pci_enable_device" before printing this information, as suggested by
-LDD but it did not help.
-
-Has anyone seen a problem like this before and any idea how I can get
-BAR2 a proper address?
-
-If I examine the config space directly there is an address in BAR2's
-register, however it isn't in the 0x20000000 range like the other two,
-instead it is 0x1c000000. Also if I do a ``cat /proc/iomem'' I correctly
-see BAR0 and BAR1 in the output, but not BAR2.
-
-Thanks for any help,
-Jon
-
+Cheers,
+Erez.
