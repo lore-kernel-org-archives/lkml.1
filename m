@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934288AbXLMXOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932968AbXLMXOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934288AbXLMXOT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 18:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbXLMXOA
+	id S932968AbXLMXOo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 18:14:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbXLMXOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 18:14:00 -0500
-Received: from rtr.ca ([76.10.145.34]:4304 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752058AbXLMXN7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 18:13:59 -0500
-Message-ID: <4761BCB4.1060601@rtr.ca>
-Date: Thu, 13 Dec 2007 18:13:56 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 13 Dec 2007 18:14:31 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51464 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755240AbXLMXO3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 18:14:29 -0500
+Date: Thu, 13 Dec 2007 15:14:29 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Asit Mallick <asit.k.mallick@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: What was the problem with quicklists and x86-64?
+In-Reply-To: <1197587431.15741.189.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0712131514130.29017@schroedinger.engr.sgi.com>
+References: <47603321.4030700@goop.org>  <Pine.LNX.4.64.0712131131540.13396@schroedinger.engr.sgi.com>
+  <1197578876.15741.163.camel@pasglop>  <Pine.LNX.4.64.0712131251300.18314@schroedinger.engr.sgi.com>
+  <1197579788.15741.172.camel@pasglop>  <Pine.LNX.4.64.0712131332100.24778@schroedinger.engr.sgi.com>
+  <1197584859.15741.185.camel@pasglop>  <Pine.LNX.4.64.0712131435520.25120@schroedinger.engr.sgi.com>
+ <1197587431.15741.189.camel@pasglop>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       jens.axboe@oracle.com, lkml@rtr.ca, matthew@wil.cx,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-mm@kvack.org, mel@csn.ul.ie
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-References: <20071213185326.GQ26334@parisc-linux.org>	<4761821F.3050602@rtr.ca>	<20071213192633.GD10104@kernel.dk>	<4761883A.7050908@rtr.ca>	<476188C4.9030802@rtr.ca>	<20071213193937.GG10104@kernel.dk>	<47618B0B.8020203@rtr.ca>	<20071213195350.GH10104@kernel.dk>	<20071213200219.GI10104@kernel.dk>	<476190BE.9010405@rtr.ca>	<20071213200958.GK10104@kernel.dk>	<20071213140207.111f94e2.akpm@linux-foundation.org>	<1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org> <4761B32A.3070201@rtr.ca>
-In-Reply-To: <4761B32A.3070201@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Andrew Morton wrote:
->> On Thu, 13 Dec 2007 17:15:06 -0500
->> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
->>
->>> On Thu, 2007-12-13 at 14:02 -0800, Andrew Morton wrote:
->>>> On Thu, 13 Dec 2007 21:09:59 +0100
->>>> Jens Axboe <jens.axboe@oracle.com> wrote:
->>>>
->>>>> OK, it's a vm issue,
->>>> cc linux-mm and probable culprit.
->>>>
->>>>>  I have tens of thousand "backward" pages after a
->>>>> boot - IOW, bvec->bv_page is the page before bvprv->bv_page, not
->>>>> reverse. So it looks like that bug got reintroduced.
->>>> Bill Irwin fixed this a couple of years back: changed the page 
->>>> allocator so
->>>> that it mostly hands out pages in ascending physical-address order.
->>>>
->>>> I guess we broke that, quite possibly in Mel's page allocator rework.
->>>>
->>>> It would help if you could provide us with a simple recipe for
->>>> demonstrating this problem, please.
->>> The simple way seems to be to malloc a large area, touch every page and
->>> then look at the physical pages assigned ... they now mostly seem to be
->>> descending in physical address.
->>>
->>
->> OIC.  -mm's /proc/pid/pagemap can be used to get the pfn's...
-> ..
-> 
-> I'm actually running the treadmill right now (have been for many hours, 
-> actually,
-> to bisect it to a specific commit.
-> 
-> Thought I was almost done, and then noticed that git-bisect doesn't keep
-> the Makefile VERSION lines the same, so I was actually running the wrong
-> kernel after the first few times.. duh.
-> 
-> Wrote a script to fix it now.
-..
+On Fri, 14 Dec 2007, Benjamin Herrenschmidt wrote:
 
-Well, that was a waste of three hours.
+> We have a separate batch to store page table pages with an RCU head on
+> it, we fire it off when it's full or when tlb gather is complete.
 
-Somebody else can try it now.
+full? You need to wait otill the tlb gather is complete.
+
