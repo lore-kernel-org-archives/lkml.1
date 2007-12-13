@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764686AbXLMRCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764359AbXLMREZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764686AbXLMRCJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 12:02:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760358AbXLMRBx
+	id S1764359AbXLMREZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 12:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbXLMREN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 12:01:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54544 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760404AbXLMRBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 12:01:52 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1197563033.20226.110.camel@moss-spartans.epoch.ncsc.mil>
-References: <1197563033.20226.110.camel@moss-spartans.epoch.ncsc.mil> <1197557384.20226.21.camel@moss-spartans.epoch.ncsc.mil> <1197488021.1125.138.camel@moss-spartans.epoch.ncsc.mil> <1197473127.1125.50.camel@moss-spartans.epoch.ncsc.mil> <81862.27432.qm@web36605.mail.mud.yahoo.com> <32168.1197484170@redhat.com> <668.1197499783@redhat.com> <21666.1197560219@redhat.com> 
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: dhowells@redhat.com, casey@schaufler-ca.com,
-       Karl MacMillan <kmacmill@redhat.com>, viro@ftp.linux.org.uk,
-       hch@infradead.org, Trond.Myklebust@netapp.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Thu, 13 Dec 2007 17:01:11 +0000
-Message-ID: <22549.1197565271@redhat.com>
+	Thu, 13 Dec 2007 12:04:13 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:57871 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751660AbXLMREM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 12:04:12 -0500
+Date: Thu, 13 Dec 2007 22:33:49 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
+Cc: Paul E McKenney <paulmck@us.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Ted Tso <tytso@us.ibm.com>, dvhltc@us.ibm.com,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       Josh Triplett <josh@freedesktop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [RFC PATCH 0/6] RCU: Preemptible-RCU
+Message-ID: <20071213170348.GA25981@in.ibm.com>
+Reply-To: ego@in.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Smalley <sds@tycho.nsa.gov> wrote:
+Hello everyone, 
 
-> They would correspond with the operations provided by the /dev/cachefiles
-> interface, at the granularity you want to support distinctions to be made.
+This patchset is an updated version of the preemptible RCU patchset that
+Paul McKenney had posted it in September earlier this year that can be
+found here --> http://lkml.org/lkml/2007/9/10/213
 
-Can this be made simpler by the fact that /dev/cachefiles has its own unique
-label (cachefiles_dev_t).
+This patchset incorporates the review comments from Oleg Nesterov
+and Steven Rostedt.
 
-> Could just be a single 'setcontext' permission if that is all you want to
-> control distinctly, or could be a permission per operation.
+The testing report of the patchset is as follows:
+====================================================================
+Patch-stack:  	2.6.23-rc3 + cpu-hotplug patches from 
+		http://lkml.org/lkml/2007/11/15/239 + Preempt-RCU
+		patches.
+Test:		RCU-Torture running parallelly with CPU-Hotplug
+		operations.
+Duration:	24 hours.
+Architectures:	x86,x86_64, ppc64.
+====================================================================
 
-There is only one operation that makes sense to have a permission: "set
-context and begin caching".
 
-All the other operations on a file descriptor attached to /dev/cachfiles are
-necessary for there to be a managed cache at all, and given that you've
-managed to open /dev/cachefiles that's sufficient access for those, I think.
+Currently it is based against the latest linux-2.6-sched-devel.git
 
-> If the latter, you don't really need a label for the object, and can
-> just use the supplied context/secid as the object of the permission
-> check, ala:
-> 	rc = avc_has_perm(tsec->sid, secid, SECCLASS_CACHEFILES,
-> CACHEFILES__SETCONTEXT);
+Awaiting your feedback!
 
-Ummm.   I was under the impression that the target SID had to be a member of
-target class.
-
-David
+Thanks and Regards
+gautham.
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
