@@ -1,94 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760085AbXLMQrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758772AbXLMQsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760085AbXLMQrs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 11:47:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763463AbXLMQqB
+	id S1758772AbXLMQsQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 11:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763822AbXLMQqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 11:46:01 -0500
-Received: from piware.de ([213.9.79.162]:51619 "EHLO box79162.elkhouse.de"
+	Thu, 13 Dec 2007 11:46:15 -0500
+Received: from mga11.intel.com ([192.55.52.93]:51857 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763275AbXLMQqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 11:46:00 -0500
-X-Greylist: delayed 1273 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Dec 2007 11:45:59 EST
-Date: Thu, 13 Dec 2007 17:24:48 +0100
-From: Martin Pitt <martin.pitt@ubuntu.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ben Collins <ben.collins@ubuntu.com>
-Subject: Providing an ELF flag for disabling LD_PRELOAD/ptrace()
-Message-ID: <20071213162448.GG6173@piware.de>
+	id S1760453AbXLMQqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 11:46:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,162,1196668800"; 
+   d="scan'208";a="237097461"
+Message-ID: <476161AB.2080306@intel.com>
+Date: Thu, 13 Dec 2007 08:45:31 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Xm/fll+QQv+hsKip"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: David Miller <davem@davemloft.net>
+CC: gallatin@myri.com, joonwpark81@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       shemminger@linux-foundation.org, jesse.brandeburg@intel.com
+Subject: Re: [RFC] net: napi fix
+References: <47602B77.2090202@intel.com>	<b25c3fa70712122341q3ba282cdqda3fa56901b14484@mail.gmail.com>	<47613E22.6060705@myri.com> <20071213.061938.86541759.davem@davemloft.net>
+In-Reply-To: <20071213.061938.86541759.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Dec 2007 16:46:10.0782 (UTC) FILETIME=[AA67C7E0:01C83DA7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller wrote:
+> From: Andrew Gallatin <gallatin@myri.com>
+> Date: Thu, 13 Dec 2007 09:13:54 -0500
+> 
+>> If the netif_running() check is indeed required to make a device break
+>> out of napi polling and respond to an ifconfig down, then I think the
+>> netif_running() check should be moved up into net_rx_action() to avoid
+>> potential for driver complexity and bugs like the ones you found.
+> 
+> That, or something like it, definitely sounds reasonable and much
+> better than putting the check into every driver :-)
 
---Xm/fll+QQv+hsKip
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+hear hear!
 
-Hi kernel developers,
-
-one thing that has bothered me for a long time already is the
-complete lack of a security boundary between processes of the same
-user. Things like LD_PRELOAD and ptrace() (IOW, gdb) are enabled by
-default for all users, and especially for developers this is a good
-thing.
-
-However, a lot of programs that we have deal with passwords and other
-secrets which deserve some protection, like passwords you type into
-ssh, screensavers, seahorse, etc.
-
-This problem has become more pressing with the advent of PolicyKit,
-where even fewer processes have the in-built privilege separation
-between root and users.
-
-This concerns a scenario where you might have a rogue trojan in your
-session (e. g. a malicious firefox plugin or an autostart shell
-script). Admittedly, if an attacker gets that far he has almost won
-the machine and can easily get more privileges with some social
-engineering and spoofing, but I feel it is worth the small effort to
-at least not allow reading passwords from other processes' memory
-without making any noise at all. This would also greatly reduce the
-potential of a local trojan spreading itself over existing ssh
-connections to other hosts (provided that the ssh executable is
-protected like that, which it should be anyway because it deals with
-passwords).
-
-What I want is the behaviour of suid/sgid executables (which do
-something like an atomic prctl(PR_SET_DUMPABLE, 0) to disable vectors
-like ptrace(), LD_PRELOAD, etc. However, making binaries setugid just
-for that is less than ideal, since it requires a lot of code patching
-(to reset the group) and packaging changes (to maintain the
-sgid setting), as well as confusing security scanners, etc.
-
-So I wonder whether we can define a flag in the ELF header which
-triggers the same behaviour? Can we define an e_flags bit for that?
-
-Thanks in advance for any comment or idea,
-
-Martin
-
---=20
-Martin Pitt        http://www.piware.de
-Ubuntu Developer   http://www.ubuntu.com
-Debian Developer   http://www.debian.org
-
---Xm/fll+QQv+hsKip
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHYVzQDecnbV4Fd/IRAsjNAJ9zPD3FZK/IUzPy6JJpRiprdrGsfwCgnS+9
-7zjxVmXY9CZBv7ehNGHSvO0=
-=crjf
------END PGP SIGNATURE-----
-
---Xm/fll+QQv+hsKip--
+Auke
