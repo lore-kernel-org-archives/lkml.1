@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbXLMBrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbXLMCAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbXLMBrd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 20:47:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbXLMBrZ
+	id S1756103AbXLMCAd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 21:00:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbXLMCAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 20:47:25 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:10401 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751863AbXLMBrY (ORCPT
+	Wed, 12 Dec 2007 21:00:25 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:35136 "EHLO
+	outbound8-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751944AbXLMCAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 20:47:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=bJ5qGWPYyawAGwzr5xhqUH4K1wkjUAhS3G4KJh4PgyBTQm8FSc6pX62jXnjdjJ/aa/zRKMKEQPz1kmZ3ZOwMlUt8cJ8Y3PIx9M75olZIFo3tLDSCRQQ97p3aNhS0JJ2xJox6GbTyvB5VEQ2kshg8G7PJzGf6PFyTiI50pkrls2g=
-Message-ID: <ed10ee420712121747v69b68c2cy6c5014ea51066d7d@mail.gmail.com>
-Date: Wed, 12 Dec 2007 17:47:23 -0800
-From: "SL Baur" <steve@xemacs.org>
-To: "Dave Jones" <davej@redhat.com>,
-       "Peter Stahlir" <peter.stahlir@googlemail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux kernel history from 0.0.1
-In-Reply-To: <20071212234640.GA452@redhat.com>
+	Wed, 12 Dec 2007 21:00:24 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <4760922C.2060908@am.sony.com>
+Date: Wed, 12 Dec 2007 18:00:12 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: akpm@linux-foundation.org
+CC: Daniel Walker <dwalker@mvista.com>, matthias.kaehlcke@gmail.com,
+       linux-kernel@vger.kernel.org, linux@bohmer.net, linuxppc-dev@ozlabs.org,
+       mingo@elte.hu, kjwinchester@gmail.com
+Subject: Re: [PATCH 1/3] ps3: vuart: fix error path locking
+References: <20071213003028.676998182@mvista.com>
+In-Reply-To: <20071213003028.676998182@mvista.com>
+X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fbe8b1780712121410u41517699v6e0b991d1a262ffd@mail.gmail.com>
-	 <20071212234640.GA452@redhat.com>
-X-Google-Sender-Auth: 4416f1ab1af1ea87
+X-OriginalArrivalTime: 13 Dec 2007 02:00:16.0851 (UTC) FILETIME=[E8319230:01C83D2B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/12/07, Dave Jones <davej@redhat.com> wrote:
+> This stray down would cause a permanent sleep which doesn't seem correct. 
+> The other uses of this semaphore appear fairly mutex like it's even initialized
+> with init_MUTEX() ..  So here a patch for removing this one down().
+> 
+> Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> 
+> ---
+>  drivers/ps3/ps3-vuart.c |    1 -
+>  1 file changed, 1 deletion(-)
 
->     Sadly there doesn't seem to be any online archives of the period between
->     Linux-activists ending in 1993 and Linux Kernel from 1998. Anyone?
->     (I find it amazing that five whole years of history have disappeared
->      from the net).
 
-I have mail archives from ~1.3.30 through around 2000 that I'm in the
-process of recovering.  They won't be complete, but they'll include any
-and all release announcements and patches Linus and Alan posted to
-the list.  You're welcome to whatever I have when I get it back.
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
--sb
+
+Looks, good. 
+Andrew, Please apply.
+
+-Geoff 
+
+
+
