@@ -1,51 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933857AbXLMWIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933916AbXLMWKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933857AbXLMWIt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:08:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbXLMWIk
+	id S933916AbXLMWKV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:10:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbXLMWJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:08:40 -0500
-Received: from hs-out-0708.google.com ([64.233.178.241]:2400 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751763AbXLMWIj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:08:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=w6B3m50adwbfS3d3m8wvodbvWT9ODQCngPNGx05YZryWnZ6WrMhHauZbB4zMgCvkjoTEy9ct14+RjW8FfOKN0NJMAJcdyoFcgZD59tOepkueWHPMEcxwTxcGKSICjrF5huiiNZx9nTh8dyHBqfdFPjnvUkPWtXBRbc5LyqPyLXg=
-Message-ID: <4761AD0A.5010700@gmail.com>
-Date: Thu, 13 Dec 2007 23:07:06 +0100
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 13 Dec 2007 17:09:57 -0500
+Received: from mail.tmr.com ([64.65.253.246]:50720 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751763AbXLMWJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 17:09:55 -0500
+Message-ID: <4761B1DB.20600@tmr.com>
+Date: Thu, 13 Dec 2007 17:27:39 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: James Kosin <jkosin@intcomgrp.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [RFT] Port 0x80 I/O speed
-References: <9zmRR-3pA-25@gated-at.bofh.it> <47615D81.30707@intcomgrp.com>
-In-Reply-To: <47615D81.30707@intcomgrp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Tejun Heo <htejun@gmail.com>
+CC: Jan Engelhardt <jengelh@computergmbh.de>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-ide@vger.kernel.org,
+       apiszcz@solarrain.com
+Subject: Re: Kernel 2.6.23.9 / P35 Chipset + WD 750GB Drives (reset port)
+References: <Pine.LNX.4.64.0712010619150.25643@p34.internal.lan> <Pine.LNX.4.64.0712011310410.30316@fbirervta.pbzchgretzou.qr> <4751AB91.2000207@tmr.com> <475CF57E.7060406@gmail.com>
+In-Reply-To: <475CF57E.7060406@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13-12-07 17:27, James Kosin wrote:
+Tejun Heo wrote:
+> Bill Davidsen wrote:
+>   
+>> Jan Engelhardt wrote:
+>>     
+>>> On Dec 1 2007 06:26, Justin Piszcz wrote:
+>>>       
+>>>> I ran the following:
+>>>>
+>>>> dd if=/dev/zero of=/dev/sdc
+>>>> dd if=/dev/zero of=/dev/sdd
+>>>> dd if=/dev/zero of=/dev/sde
+>>>>
+>>>> (as it is always a very good idea to do this with any new disk)
+>>>>         
+>>> Why would you care about what's on the disk? fdisk, mkfs and
+>>> the day-to-day operation will overwrite it _anyway_.
+>>>
+>>> (If you think the disk is not empty, you should look at it
+>>> and copy off all usable warez beforehand :-)
+>>>
+>>>       
+>> Do you not test your drive for minimum functionality before using them?
+>>     
+>
+> I personally don't.
+>
+>   
+>> Also, if you have the tools to check for relocated sectors before and
+>> after doing this, that's a good idea as well. S.M.A.R.T is your friend.
+>> And when writing /dev/zero to a drive, if it craps out you have less
+>> emotional attachment to the data.
+>>     
+>
+> Writing all zero isn't too useful tho.  Drive failing reallocation on
+> write is catastrophic failure.  It means that the drive wanna relocate
+> but can't because it used up all its extra space which usually indicates
+> something else is seriously wrong with the drive.  The drive will have
+> to go to the trash can.  This is all serious and bad but the catch is
+> that in such cases the problem usually stands like a sore thumb so
+> either vendor doesn't ship such drive or you'll find the failure very
+> early.  I personally haven't seen any such failure yet.  Maybe I'm lucky.
+>   
 
-> model name      : Pentium III (Katmai)
-> cpu MHz         : 499.156
+The problem is usually not with what the vendor ships, but what the 
+carrier delivers. Bad handling does happen, "drop ship" can have several 
+meanings, and I have received shipments with the "G sensor" in the case 
+triggered. Zero is a handy source of data, but the important thing is to 
+look at the relocated sector count before and after the write. If there 
+are a lot of bad sectors initially, the drive is probably a poor choice 
+for anything critical.
+> Most data loss occurs when the drive fails to read what it thought it
+> wrote successfully and the opposite - reading and dumping the whole disk
+> to /dev/null periodically is probably much better than writing zeros as
+> it allows the drive to find out deteriorating sector early while it's
+> still readable and relocate.  But then again I think it's an overkill.
+>
+> Writing zeros to sectors is more useful as cure rather than prevention.
+>  If your drive fails to read a sector, write whatever value to the
+> sector.  The drive will forget about the data on the damaged sector and
+> reallocate and write new data to it.  Of course, you lose data which was
+> originally on the sector.
+>
+> I personally think it's enough to just throw in an extra disk and make
+> it RAID0 or 5 and rebuild the array if read fails on one of the disks.
+> If write fails or read fail continues, replace the disk.  Of course, if
+> you wanna be extra cautious, good for you.  :-)
+>
+>   
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "Woe unto the statesman who makes war without a reason that will still
+  be valid when the war is over..." Otto von Bismark 
 
-> [root@beta jkosin]# ./a.out
-> cycles: out 683, in 299
 
-Thanks much, you made spot 32 ;-)
-
-http://lkml.org/lkml/2007/12/12/309
-
-By the way, if anyone in this/these thread(s) wrote something today (*) they 
-would like me to reply to -- my horseshit ISP is completely crapping out on 
-me and I haven't seen your message. Resends ofcourse welcome.
-
-(*) [now - 16 hours, now]
-
-Rene.
