@@ -1,83 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbXLMFqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbXLMGKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818AbXLMFqU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 00:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbXLMFqG
+	id S1755029AbXLMGKt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:10:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbXLMGKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 00:46:06 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:36101 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750821AbXLMFqF (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 00:46:05 -0500
-X-Greylist: delayed 552 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Dec 2007 00:46:04 EST
-Date: Thu, 13 Dec 2007 16:36:21 +1100
-From: David Chinner <dgc@sgi.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Boaz Harrosh <bharrosh@panasas.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Hannes Reinecke <hare@suse.de>
-Subject: Re: [PATCH] REQ-flags to/from BIO-flags bugfix
-Message-ID: <20071213053621.GC4396912@sgi.com>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org> <47462F3C.3040700@googlemail.com> <20071122201250.f957e280.akpm@linux-foundation.org> <47466B5D.90607@googlemail.com> <20071126221509.8f437b61.akpm@linux-foundation.org> <1197390783.3812.19.camel@localhost.localdomain> <475FB316.6040804@panasas.com> <475FBFEE.9010009@panasas.com> <20071212151813.GJ26334@parisc-linux.org> <20071212155407.GK26334@parisc-linux.org>
-Mime-Version: 1.0
+	Thu, 13 Dec 2007 01:10:39 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:58366 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbXLMGKh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 01:10:37 -0500
+Date: Wed, 12 Dec 2007 22:10:29 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, tony@bakeyournoodle.com, paulus@samba.org,
+       benh@kernel.crashing.org, dino@in.ibm.com, tytso@us.ibm.com,
+       dvhltc@us.ibm.com, antonb@us.ibm.com
+Subject: Re: [PATCH, RFC] hacks to allow -rt to run kernbench on POWER
+Message-ID: <20071213061029.GB25047@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20071029185044.GA23413@linux.vnet.ibm.com> <Pine.LNX.4.58.0712122253390.19475@gandalf.stny.rr.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071212155407.GK26334@parisc-linux.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.58.0712122253390.19475@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 08:54:07AM -0700, Matthew Wilcox wrote:
-> On Wed, Dec 12, 2007 at 08:18:14AM -0700, Matthew Wilcox wrote:
-> > I don't know whether BIO_RW_BARRIER is __REQ_SOFTBARRIER or
-> > __REQ_HARDBARRIER, so I didn't include that in this patch.  There also
-> > doesn't seem to be a __REQ equivalent to BIO_RW_AHEAD, but we can do
-> > the other four bits (and leave gaps for those two).
+On Wed, Dec 12, 2007 at 10:56:12PM -0500, Steven Rostedt wrote:
 > 
-> Hm.  BIO_RW_AHEAD seems unused:
+> On Mon, 29 Oct 2007, Paul E. McKenney wrote:
+> > diff -urpNa -X dontdiff linux-2.6.23.1-rt4/mm/memory.c linux-2.6.23.1-rt4-fix/mm/memory.c
+> > --- linux-2.6.23.1-rt4/mm/memory.c	2007-10-27 22:20:57.000000000 -0700
+> > +++ linux-2.6.23.1-rt4-fix/mm/memory.c	2007-10-28 15:40:36.000000000 -0700
+> > @@ -664,6 +664,7 @@ static unsigned long zap_pte_range(struc
+> >  	int anon_rss = 0;
+> >
+> >  	pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
+> > +	preempt_disable();
+> >  	arch_enter_lazy_mmu_mode();
+> >  	do {
+> >  		pte_t ptent = *pte;
+> > @@ -732,6 +733,7 @@ static unsigned long zap_pte_range(struc
+> >
+> >  	add_mm_rss(mm, file_rss, anon_rss);
+> >  	arch_leave_lazy_mmu_mode();
+> > +	preempt_enable();
+> >  	pte_unmap_unlock(pte - 1, ptl);
+> >
+> >  	return addr;
 > 
-> willy@honeydew:~/kernel/linux-2.6$ grep -r BIO_RW_AHEAD *
-> block/blktrace.c:       (((rw) & (1 << BIO_RW_AHEAD)) << (2 - BIO_RW_AHEAD))
-> include/linux/bio.h:#define BIO_RW_AHEAD        1
-> include/linux/bio.h:#define bio_rw_ahead(bio)   ((bio)->bi_rw & (1 << BIO_RW_AHEAD))
-> willy@honeydew:~/kernel/linux-2.6$ grep -r bio_rw_ahead *
-> block/ll_rw_blk.c:      if (bio_rw_ahead(bio) || bio_failfast(bio))
-> drivers/md/dm-mpath.c:  if ((error == -EWOULDBLOCK) && bio_rw_ahead(bio))
-> drivers/md/multipath.c: else if (!bio_rw_ahead(bio)) {
-> include/linux/bio.h:#define bio_rw_ahead(bio)   ((bio)->bi_rw & (1 << BIO_RW_AHEAD))
+> I'm pulling your patch for the above added code. Took me a few hours to
+> find the culprit, but I was getting scheduling in atomic bugs. Turns out
+> that this code you put "preempt_disable" in calls sleeping spinlocks.
+> 
+> Might want to run with DEBUG_PREEMPT.
 
-That would say to me that READA is not hooked up correctly. i.e:
+I thought that you had already pulled the above version...
 
-#define READ 0
-#define WRITE 1
-#define READA 2         /* read-ahead  - don't block if no resources */
-#define SWRITE 3        /* for ll_rw_block() - wait for buffer lock */
-#define READ_SYNC       (READ | (1 << BIO_RW_SYNC))
-#define READ_META       (READ | (1 << BIO_RW_META))
-#define WRITE_SYNC      (WRITE | (1 << BIO_RW_SYNC))
-#define WRITE_BARRIER   ((1 << BIO_RW) | (1 << BIO_RW_BARRIER))
+Here is the replacement that I posted on November 9th (with much help
+from Ben H):
 
-i.e. it should be:
+http://lkml.org/lkml/2007/11/9/114
 
-#define READA		(1 << BIO_RW_AHEAD)
+							Thanx, Paul
 
-Right?
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-FWIW, dm does this:
-
-		if (bio_rw(bio) != READA)
-
-Which really should be if (bio_rw_ahead(bio)).....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+diff -urpNa -X dontdiff linux-2.6.23.1-rt4/arch/powerpc/kernel/process.c linux-2.6.23.1-rt4-fix/arch/powerpc/kernel/process.c
+--- linux-2.6.23.1-rt4/arch/powerpc/kernel/process.c	2007-10-12 09:43:44.000000000 -0700
++++ linux-2.6.23.1-rt4-fix/arch/powerpc/kernel/process.c	2007-11-12 09:18:55.000000000 -0800
+@@ -245,6 +245,10 @@ struct task_struct *__switch_to(struct t
+ 	struct thread_struct *new_thread, *old_thread;
+ 	unsigned long flags;
+ 	struct task_struct *last;
++#ifdef CONFIG_PREEMPT_RT
++	struct ppc64_tlb_batch *batch;
++	int hadbatch;
++#endif /* #ifdef CONFIG_PREEMPT_RT */
+ 
+ #ifdef CONFIG_SMP
+ 	/* avoid complexity of lazy save/restore of fpu
+@@ -325,6 +329,17 @@ struct task_struct *__switch_to(struct t
+ 	}
+ #endif
+ 
++#ifdef CONFIG_PREEMPT_RT
++	batch = &__get_cpu_var(ppc64_tlb_batch);
++	if (batch->active) {
++		hadbatch = 1;
++		if (batch->index) {
++			__flush_tlb_pending(batch);
++		}
++		batch->active = 0;
++	}
++#endif /* #ifdef CONFIG_PREEMPT_RT */
++
+ 	local_irq_save(flags);
+ 
+ 	account_system_vtime(current);
+@@ -335,6 +350,13 @@ struct task_struct *__switch_to(struct t
+ 
+ 	local_irq_restore(flags);
+ 
++#ifdef CONFIG_PREEMPT_RT
++	if (hadbatch) {
++		batch = &__get_cpu_var(ppc64_tlb_batch);
++		batch->active = 1;
++	}
++#endif /* #ifdef CONFIG_PREEMPT_RT */
++
+ 	return last;
+ }
+ 
+diff -urpNa -X dontdiff linux-2.6.23.1-rt4/arch/powerpc/kernel/prom.c linux-2.6.23.1-rt4-fix/arch/powerpc/kernel/prom.c
+--- linux-2.6.23.1-rt4/arch/powerpc/kernel/prom.c	2007-10-12 09:43:44.000000000 -0700
++++ linux-2.6.23.1-rt4-fix/arch/powerpc/kernel/prom.c	2007-10-28 13:37:23.000000000 -0700
+@@ -80,7 +80,7 @@ struct boot_param_header *initial_boot_p
+ 
+ extern struct device_node *allnodes;	/* temporary while merging */
+ 
+-extern rwlock_t devtree_lock;	/* temporary while merging */
++extern raw_rwlock_t devtree_lock;	/* temporary while merging */
+ 
+ /* export that to outside world */
+ struct device_node *of_chosen;
+diff -urpNa -X dontdiff linux-2.6.23.1-rt4/arch/powerpc/mm/tlb_64.c linux-2.6.23.1-rt4-fix/arch/powerpc/mm/tlb_64.c
+--- linux-2.6.23.1-rt4/arch/powerpc/mm/tlb_64.c	2007-10-27 22:20:57.000000000 -0700
++++ linux-2.6.23.1-rt4-fix/arch/powerpc/mm/tlb_64.c	2007-11-08 16:49:04.000000000 -0800
+@@ -133,7 +133,7 @@ void pgtable_free_tlb(struct mmu_gather 
+ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
+ 		     pte_t *ptep, unsigned long pte, int huge)
+ {
+-	struct ppc64_tlb_batch *batch = &__get_cpu_var(ppc64_tlb_batch);
++	struct ppc64_tlb_batch *batch = &get_cpu_var(ppc64_tlb_batch);
+ 	unsigned long vsid, vaddr;
+ 	unsigned int psize;
+ 	real_pte_t rpte;
+@@ -180,6 +180,7 @@ void hpte_need_flush(struct mm_struct *m
+ 	 */
+ 	if (!batch->active) {
+ 		flush_hash_page(vaddr, rpte, psize, 0);
++		put_cpu_var(ppc64_tlb_batch);
+ 		return;
+ 	}
+ 
+@@ -212,12 +213,14 @@ void hpte_need_flush(struct mm_struct *m
+ 	 */
+ 	if (machine_is(celleb)) {
+ 		__flush_tlb_pending(batch);
++		put_cpu_var(ppc64_tlb_batch);
+ 		return;
+ 	}
+ #endif /* CONFIG_PREEMPT_RT */
+ 
+ 	if (i >= PPC64_TLB_BATCH_NR)
+ 		__flush_tlb_pending(batch);
++	put_cpu_var(ppc64_tlb_batch);
+ }
+ 
+ /*
+diff -urpNa -X dontdiff linux-2.6.23.1-rt4/arch/powerpc/platforms/pseries/eeh.c linux-2.6.23.1-rt4-fix/arch/powerpc/platforms/pseries/eeh.c
+--- linux-2.6.23.1-rt4/arch/powerpc/platforms/pseries/eeh.c	2007-10-12 09:43:44.000000000 -0700
++++ linux-2.6.23.1-rt4-fix/arch/powerpc/platforms/pseries/eeh.c	2007-10-28 15:43:54.000000000 -0700
+@@ -97,7 +97,7 @@ int eeh_subsystem_enabled;
+ EXPORT_SYMBOL(eeh_subsystem_enabled);
+ 
+ /* Lock to avoid races due to multiple reports of an error */
+-static DEFINE_SPINLOCK(confirm_error_lock);
++static DEFINE_RAW_SPINLOCK(confirm_error_lock);
+ 
+ /* Buffer for reporting slot-error-detail rtas calls. Its here
+  * in BSS, and not dynamically alloced, so that it ends up in
+diff -urpNa -X dontdiff linux-2.6.23.1-rt4/drivers/of/base.c linux-2.6.23.1-rt4-fix/drivers/of/base.c
+--- linux-2.6.23.1-rt4/drivers/of/base.c	2007-10-12 09:43:44.000000000 -0700
++++ linux-2.6.23.1-rt4-fix/drivers/of/base.c	2007-10-28 13:38:36.000000000 -0700
+@@ -25,7 +25,7 @@ struct device_node *allnodes;
+ /* use when traversing tree through the allnext, child, sibling,
+  * or parent members of struct device_node.
+  */
+-DEFINE_RWLOCK(devtree_lock);
++DEFINE_RAW_RWLOCK(devtree_lock);
+ 
+ int of_n_addr_cells(struct device_node *np)
+ {
+diff -urpNa -X dontdiff linux-2.6.23.1-rt4/include/asm-powerpc/tlbflush.h linux-2.6.23.1-rt4-fix/include/asm-powerpc/tlbflush.h
+--- linux-2.6.23.1-rt4/include/asm-powerpc/tlbflush.h	2007-10-12 09:43:44.000000000 -0700
++++ linux-2.6.23.1-rt4-fix/include/asm-powerpc/tlbflush.h	2007-11-08 17:11:18.000000000 -0800
+@@ -109,18 +109,23 @@ extern void hpte_need_flush(struct mm_st
+ 
+ static inline void arch_enter_lazy_mmu_mode(void)
+ {
+-	struct ppc64_tlb_batch *batch = &__get_cpu_var(ppc64_tlb_batch);
++	struct ppc64_tlb_batch *batch = &get_cpu_var(ppc64_tlb_batch);
+ 
+ 	batch->active = 1;
++	put_cpu_var(ppc64_tlb_batch);
+ }
+ 
+ static inline void arch_leave_lazy_mmu_mode(void)
+ {
+-	struct ppc64_tlb_batch *batch = &__get_cpu_var(ppc64_tlb_batch);
++	struct ppc64_tlb_batch *batch = &get_cpu_var(ppc64_tlb_batch);
+ 
+-	if (batch->index)
+-		__flush_tlb_pending(batch);
+-	batch->active = 0;
++	if (batch->active) {
++		if (batch->index) {
++			__flush_tlb_pending(batch);
++		}
++		batch->active = 0;
++	}
++	put_cpu_var(ppc64_tlb_batch);
+ }
+ 
+ #define arch_flush_lazy_mmu_mode()      do {} while (0)
+diff -urpNa -X dontdiff linux-2.6.23.1-rt4/include/asm-powerpc/tlb.h linux-2.6.23.1-rt4-fix/include/asm-powerpc/tlb.h
+--- linux-2.6.23.1-rt4/include/asm-powerpc/tlb.h	2007-10-12 09:43:44.000000000 -0700
++++ linux-2.6.23.1-rt4-fix/include/asm-powerpc/tlb.h	2007-10-28 11:36:05.000000000 -0700
+@@ -44,8 +44,11 @@ static inline void tlb_flush(struct mmu_
+ 	 * pages are going to be freed and we really don't want to have a CPU
+ 	 * access a freed page because it has a stale TLB
+ 	 */
+-	if (tlbbatch->index)
++	if (tlbbatch->index) {
++		preempt_disable();
+ 		__flush_tlb_pending(tlbbatch);
++		preempt_enable();
++	}
+ 
+ 	pte_free_finish();
+ }
