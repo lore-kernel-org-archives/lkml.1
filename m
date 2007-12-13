@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765786AbXLMW3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762561AbXLMW3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765786AbXLMW3K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:29:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761385AbXLMW24
+	id S1762561AbXLMW3a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:29:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766000AbXLMW3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:28:56 -0500
-Received: from gate.crashing.org ([63.228.1.57]:57384 "EHLO gate.crashing.org"
+	Thu, 13 Dec 2007 17:29:11 -0500
+Received: from ns.suse.de ([195.135.220.2]:41895 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752477AbXLMW24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:28:56 -0500
-Subject: Re: What was the problem with quicklists and x86-64?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Tony Luck <tony.luck@intel.com>,
-       Asit Mallick <asit.k.mallick@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0712131332100.24778@schroedinger.engr.sgi.com>
-References: <47603321.4030700@goop.org>
-	 <Pine.LNX.4.64.0712131131540.13396@schroedinger.engr.sgi.com>
-	 <1197578876.15741.163.camel@pasglop>
-	 <Pine.LNX.4.64.0712131251300.18314@schroedinger.engr.sgi.com>
-	 <1197579788.15741.172.camel@pasglop>
-	 <Pine.LNX.4.64.0712131332100.24778@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 09:27:39 +1100
-Message-Id: <1197584859.15741.185.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1765706AbXLMW3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 17:29:09 -0500
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: RFC: remove __read_mostly
+From: Andi Kleen <andi@firstfloor.org>
+References: <20071213222044.GH21616@stusta.de>
+Date: Thu, 13 Dec 2007 23:29:08 +0100
+In-Reply-To: <20071213222044.GH21616@stusta.de> (Adrian Bunk's message of "Thu\, 13 Dec 2007 23\:20\:44 +0100")
+Message-ID: <p73bq8ugrez.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adrian Bunk <bunk@kernel.org> writes:
+>
+> -rwxrwxr-x 1 bunk bunk 46607243 2007-12-13 19:50 vmlinux.old
+> -rwxrwxr-x 1 bunk bunk 46598691 2007-12-13 21:55 vmlinux
 
-On Thu, 2007-12-13 at 13:33 -0800, Christoph Lameter wrote:
-> > 
-> > Ah ok, so that's a NUMA issue due to how the quicklists are
-> implemented,
-> > I see. Note that the flush isn't necessary a solution on all
-> platforms.
-> > On powerpc, I -still- need to defer with RCU as we don't do anything
-> in
-> > flush tlb. Our TLB invalidations are HW broadcast in the first
-> place,
-> > but what we need to sync with is the SW hash reload code.
-> > 
-> > So your solution in the quicklists doesn't solve the problem for us.
-> 
-> No this may mean that the problem does not exist on powerpc since it 
-> seems to be okay to free pages before all processors have flushed the 
-> TLBs? Or are you deferrring the freeing of the pages via RCU?
+File sizes are useless -- check size output.
 
-I'm deferring the freeing with RCU.
+> It's not a surprise that the kernel can become bigger when __read_mostly 
+> gets used, especially in cases where __read_mostly prevents gcc 
+> optimizations.
 
-Ben.
+What optimizations do you think it prevents?  I don't think it 
+should change the gcc generated code at all; the only difference
+should be to the linker.
 
+-Andi
 
