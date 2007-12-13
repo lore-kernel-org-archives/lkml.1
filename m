@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759286AbXLMLZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759748AbXLMLoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759286AbXLMLZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 06:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbXLMLZR
+	id S1759748AbXLMLoZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 06:44:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbXLMLoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 06:25:17 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:53223 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751694AbXLMLZP (ORCPT
+	Thu, 13 Dec 2007 06:44:17 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:50901 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753839AbXLMLoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 06:25:15 -0500
-Date: Thu, 13 Dec 2007 12:25:14 +0100
-From: Jan Kara <jack@suse.cz>
-To: Mitch <Mitch@0Bits.COM>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ext3 SMP bug  ?  PANIC in __d_find_alias
-Message-ID: <20071213112514.GC15541@atrey.karlin.mff.cuni.cz>
-References: <475FD03A.7080401@0Bits.COM>
+	Thu, 13 Dec 2007 06:44:16 -0500
+Date: Thu, 13 Dec 2007 17:13:36 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+Cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, kay.sievers@vrfy.org,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
+Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
+Message-ID: <20071213114336.GA5400@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20071211172338.GA17896@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201EF@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071211182015.GA22339@linux.vnet.ibm.com> <20071211182528.GA5597@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201F1@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071211210653.GA6902@elte.hu> <20071212070816.GA31455@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B0015201F6@ecqcmtlmail3.quebec.int.ec.gc.ca> <20071212134158.GA5547@linux.vnet.ibm.com> <F1D642E5A91BC94D9504EC83AE19E6B00152021F@ecqcmtlmail3.quebec.int.ec.gc.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <475FD03A.7080401@0Bits.COM>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B00152021F@ecqcmtlmail3.quebec.int.ec.gc.ca>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Can anyone help with this ? This seems to be a true SMP bug - the same 
-> kernel on another UP machine is working fine (although different h/w). 
-> Seems like stress (find for example) can easily trigger this. Does it 
-> look like i have a bad filesystem ? Can anyone help me figure out which 
-> one ? The fact that this is tainted (due to nvidia) is a red herring i 
-> think because both my machines (the SMP and UP one) are using the same 
-> nvidia module and the panic is in ext3 code.
-> 
-> Help
-> Mitch
-> 
-> Dec 10 03:02:43 home kernel: BUG: unable to handle kernel NULL pointer 
-> dereference at virtual address 00000000
-> Dec 10 03:02:43 home kernel:  printing eip:
-> Dec 10 03:02:43 home kernel: c01761fc
-> Dec 10 03:02:43 home kernel: *pdpt = 00000000198a6001
-> Dec 10 03:02:43 home kernel: *pde = 0000000000000000
-> Dec 10 03:02:43 home kernel: Oops: 0000 [#1]
-> Dec 10 03:02:43 home kernel: PREEMPT SMP
-> Dec 10 03:02:43 home kernel: Modules linked in: loop nls_iso8859_1 
-> nls_cp437 vfat fat tun iptable_nat nvidia(P) appletalk psnap llc nfsd expo
-> rtfs lockd sunrpc xt_limit xt_tcpudp iptable_mangle ipt_LOG 
-> ipt_MASQUERADE nf_nat ipt_TOS ipt_REJECT nf_conntrack_irc 
-> nf_conntrack_ftp nf_con
-> ntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables 
-> ftdi_sio usbserial forcedeth snd_hda_intel snd_seq_oss snd_seq_midi_event
->  snd_seq snd_seq_device snd_pcm_oss snd_pcm snd_timer snd_page_alloc 
-> snd_mixer_oss snd usb_storage ehci_hcd ohci_hcd it87 hwmon_vid i2c_dev i
-> 2c_core
-> Dec 10 03:02:43 home kernel: CPU:    1
-> Dec 10 03:02:43 home kernel: EIP:    0060:[__d_find_alias+44/192] 
-  Looks like inode->i_dentry.next has been NULL. But I don't really
-understand how that could be ever NULL because list_heads are always
-cyclic lists... Can you try enabling "Debug linked list manipulation" and
-also "Debug slab memory allocations" in Kernel hacking menu and see
-whether some other errors appear?
+Hi Vincent,
 
-								Honza
+Could you please see if the following patch removes the oops due to CFS
+sysfs files? (There might still be the other oops due to the floppy
+sysfs files)
+
+Ingo, could you please add this patch in your CFS backport to 2.6.22 and
+older kernels?
+
+Thanks,
+--
+
+kdump showed that the owner field had some junk value which caused
+the oops reported at http://lkml.org/lkml/2007/12/10/113 . This
+patch sets the value of that field to NULL.
+
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Signed-off-by: Maneesh Soni <maneesh@in.ibm.com>
+
+---
+ kernel/user.c |    1 +
+ 1 files changed, 1 insertion(+)
+
+Index: linux-2.6.22.13/kernel/user.c
+===================================================================
+--- linux-2.6.22.13.orig/kernel/user.c
++++ linux-2.6.22.13/kernel/user.c
+@@ -145,6 +145,7 @@ ssize_t cpu_shares_store(struct kset *ks
+ 
+ static void user_attr_init(struct subsys_attribute *sa, char *name, int mode)
+ {
++	sa->attr.owner = NULL;
+ 	sa->attr.name = name;
+ 	sa->attr.mode = mode;
+ 	sa->show = cpu_shares_show;
 
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+regards,
+Dhaval
