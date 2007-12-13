@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761688AbXLMGqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761701AbXLMGqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761688AbXLMGqQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759702AbXLMGiA
+	id S1761701AbXLMGqf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:46:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759733AbXLMGiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:38:00 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56536 "EHLO
+	Thu, 13 Dec 2007 01:38:04 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56551 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759664AbXLMGh6 (ORCPT
+	with ESMTP id S1759720AbXLMGiB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:37:58 -0500
-Date: Wed, 12 Dec 2007 22:35:05 -0800
+	Thu, 13 Dec 2007 01:38:01 -0500
+Date: Wed, 12 Dec 2007 22:35:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,16 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Pablo Neira Ayuso <pablo@netfilter.org>,
-       Patrick McHardy <kaber@trash.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 24/36] TEXTSEARCH: Do not allow zero length patterns in the
-	textsearch infrastructure
-Message-ID: <20071213063505.GY25301@kroah.com>
+Subject: [patch 25/36] TCP: illinois: Incorrect beta usage
+Message-ID: <20071213063509.GZ25301@kroah.com>
 References: <20071213062511.265908583@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="textsearch-do-not-allow-zero-length-patterns-in-the-textsearch-infrastructure.patch"
+Content-Disposition: inline; filename="tcp-illinois-incorrect-beta-usage.patch"
 In-Reply-To: <20071213063308.GA25301@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -43,54 +41,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Pablo Neira Ayuso <pablo@netfilter.org>
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-[TEXTSEARCH]: Do not allow zero length patterns in the textsearch infrastructure
+[TCP] illinois: Incorrect beta usage
 
-[ Upstream commit: e03ba84adb62fbc6049325a5bc00ef6932fa5e39 ]
+[ Upstream commit: a357dde9df33f28611e6a3d4f88265e39bcc8880 ]
 
-If a zero length pattern is passed then return EINVAL.
-Avoids infinite loops (bm) or invalid memory accesses (kmp).
+Lachlan Andrew observed that my TCP-Illinois implementation uses the
+beta value incorrectly:
+The parameter  beta  in the paper specifies the amount to decrease
+*by*:  that is, on loss,
+ W <-  W -  beta*W
+but in   tcp_illinois_ssthresh() uses  beta  as the amount
+to decrease  *to*: W <- beta*W
 
-Signed-off-by: Pablo Neira Ayuso <pablo@netfilter.org>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+This bug makes the Linux TCP-Illinois get less-aggressive on uncongested network,
+hurting performance. Note: since the base beta value is .5, it has no
+impact on a congested network.
+
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- lib/textsearch.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ net/ipv4/tcp_illinois.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/lib/textsearch.c
-+++ b/lib/textsearch.c
-@@ -7,7 +7,7 @@
-  *		2 of the License, or (at your option) any later version.
-  *
-  * Authors:	Thomas Graf <tgraf@suug.ch>
-- * 		Pablo Neira Ayuso <pablo@eurodev.net>
-+ * 		Pablo Neira Ayuso <pablo@netfilter.org>
-  *
-  * ==========================================================================
-  *
-@@ -250,7 +250,8 @@ unsigned int textsearch_find_continuous(
-  *       the various search algorithms.
-  *
-  * Returns a new textsearch configuration according to the specified
-- *         parameters or a ERR_PTR().
-+ * parameters or a ERR_PTR(). If a zero length pattern is passed, this
-+ * function returns EINVAL.
-  */
- struct ts_config *textsearch_prepare(const char *algo, const void *pattern,
- 				     unsigned int len, gfp_t gfp_mask, int flags)
-@@ -259,6 +260,9 @@ struct ts_config *textsearch_prepare(con
- 	struct ts_config *conf;
- 	struct ts_ops *ops;
- 	
-+	if (len == 0)
-+		return ERR_PTR(-EINVAL);
-+
- 	ops = lookup_ts_algo(algo);
- #ifdef CONFIG_KMOD
- 	/*
+--- a/net/ipv4/tcp_illinois.c
++++ b/net/ipv4/tcp_illinois.c
+@@ -300,7 +300,7 @@ static u32 tcp_illinois_ssthresh(struct 
+ 	struct illinois *ca = inet_csk_ca(sk);
+ 
+ 	/* Multiplicative decrease */
+-	return max((tp->snd_cwnd * ca->beta) >> BETA_SHIFT, 2U);
++	return max(tp->snd_cwnd - ((tp->snd_cwnd * ca->beta) >> BETA_SHIFT), 2U);
+ }
+ 
+ 
 
 -- 
