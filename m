@@ -1,167 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764532AbXLMUVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765064AbXLMUWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764532AbXLMUVX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 15:21:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbXLMUVL
+	id S1765064AbXLMUWl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 15:22:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbXLMUWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 15:21:11 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:2514 "EHLO kernel.dk"
+	Thu, 13 Dec 2007 15:22:32 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33789 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753288AbXLMUVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 15:21:09 -0500
-Date: Thu, 13 Dec 2007 21:21:03 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mark Lord <liml@rtr.ca>
-Cc: Mark Lord <lkml@rtr.ca>, Matthew Wilcox <matthew@wil.cx>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-Message-ID: <20071213202102.GL10104@kernel.dk>
-References: <20071213192633.GD10104@kernel.dk> <4761883A.7050908@rtr.ca> <476188C4.9030802@rtr.ca> <20071213193937.GG10104@kernel.dk> <47618B0B.8020203@rtr.ca> <20071213195350.GH10104@kernel.dk> <20071213200219.GI10104@kernel.dk> <476190BE.9010405@rtr.ca> <20071213200958.GK10104@kernel.dk> <476192BF.5050308@rtr.ca>
+	id S1751641AbXLMUWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 15:22:30 -0500
+Date: Thu, 13 Dec 2007 21:21:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: vincent.fortier1@ec.gc.ca, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Greg KH <gregkh@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
+Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
+Message-ID: <20071213202125.GA25130@elte.hu>
+References: <1197554397.19869.3.camel@lov.site> <1197558120.4936.34.camel@kayak.wul.qc.ec.gc.ca> <1197562981.19869.5.camel@lov.site> <20071213165059.GC4865@elte.hu> <1197565842.19869.11.camel@lov.site>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <476192BF.5050308@rtr.ca>
+In-Reply-To: <1197565842.19869.11.camel@lov.site>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13 2007, Mark Lord wrote:
-> Jens Axboe wrote:
-> >On Thu, Dec 13 2007, Mark Lord wrote:
-> >>Jens Axboe wrote:
-> >>>On Thu, Dec 13 2007, Jens Axboe wrote:
-> >>>>On Thu, Dec 13 2007, Mark Lord wrote:
-> >>>>>Jens Axboe wrote:
-> >>>>>>On Thu, Dec 13 2007, Mark Lord wrote:
-> >>>>>>>Mark Lord wrote:
-> >>>>>>>>Jens Axboe wrote:
-> >>>>>>>>>On Thu, Dec 13 2007, Mark Lord wrote:
-> >>>>>>>>>>Matthew Wilcox wrote:
-> >>>>>>>>>>>On Thu, Dec 13, 2007 at 01:48:18PM -0500, Mark Lord wrote:
-> >>>>>>>>>>>>Problem confirmed.  2.6.23.8 regularly generates segments up to 
-> >>>>>>>>>>>>64KB for libata,
-> >>>>>>>>>>>>but 2.6.24 uses only 4KB segments and a *few* 8KB segments.
-> >>>>>>>>>>>Just a suspicion ... could this be slab vs slub?  ie check your 
-> >>>>>>>>>>>configs
-> >>>>>>>>>>>are the same / similar between the two kernels.
-> >>>>>>>>>>..
-> >>>>>>>>>>
-> >>>>>>>>>>Mmmm.. a good thought, that one.
-> >>>>>>>>>>But I just rechecked, and both have CONFIG_SLAB=y
-> >>>>>>>>>>
-> >>>>>>>>>>My guess is that something got changed around when Jens
-> >>>>>>>>>>reworked the block layer for 2.6.24.
-> >>>>>>>>>>I'm going to dig around in there now.
-> >>>>>>>>>I didn't rework the block layer for 2.6.24 :-). The core block 
-> >>>>>>>>>layer
-> >>>>>>>>>changes since 2.6.23 are:
-> >>>>>>>>>
-> >>>>>>>>>- Support for empty barriers. Not a likely candidate.
-> >>>>>>>>>- Shared tag queue fixes. Totally unlikely.
-> >>>>>>>>>- sg chaining support. Not likely.
-> >>>>>>>>>- The bio changes from Neil. Of the bunch, the most likely 
-> >>>>>>>>>suspects in
-> >>>>>>>>>this area, since it changes some of the code involved with merges 
-> >>>>>>>>>and
-> >>>>>>>>>blk_rq_map_sg().
-> >>>>>>>>>- Lots of simple stuff, again very unlikely.
-> >>>>>>>>>
-> >>>>>>>>>Anyway, it sounds odd for this to be a block layer problem if you 
-> >>>>>>>>>do see
-> >>>>>>>>>occasional segments being merged. So it sounds more like the input 
-> >>>>>>>>>data
-> >>>>>>>>>having changed.
-> >>>>>>>>>
-> >>>>>>>>>Why not just bisect it?
-> >>>>>>>>..
-> >>>>>>>>
-> >>>>>>>>Because the early 2.6.24 series failed to boot on this machine
-> >>>>>>>>due to bugs in the block layer -- so the code that caused this 
-> >>>>>>>>regression
-> >>>>>>>>is probably in the stuff from before the kernels became usable here.
-> >>>>>>>..
-> >>>>>>>
-> >>>>>>>That sounds more harsh than intended --> the earlier 2.6.24 kernels 
-> >>>>>>>(up to
-> >>>>>>>the first couple of -rc* ones failed here because of 
-> >>>>>>>incompatibilities
-> >>>>>>>between the block/bio changes and libata.
-> >>>>>>>
-> >>>>>>>That's better, I think! 
-> >>>>>>No worries, I didn't pick it up as harsh just as an odd conclusion :-)
-> >>>>>>
-> >>>>>>If I were you, I'd just start from the first -rc that booted for you. 
-> >>>>>>If
-> >>>>>>THAT has the bug, then we'll think of something else. If you don't get
-> >>>>>>anywhere, I can run some tests tomorrow and see if I can reproduce it
-> >>>>>>here.
-> >>>>>..
-> >>>>>
-> >>>>>I believe that *anyone* can reproduce it, since it's broken long before
-> >>>>>the requests ever get to SCSI or libata.  Which also means that 
-> >>>>>*anyone*
-> >>>>>who wants to can bisect it, as well.
-> >>>>>
-> >>>>>I don't do "bisects".
-> >>>>It was just a suggestion on how to narrow it down, do as you see fit.
-> >>>>
-> >>>>>But I will dig a bit more and see if I can find the culprit.
-> >>>>Sure, I'll dig around as well.
-> >>>Just tried something simple. I only see one 12kb segment so far, so not
-> >>>a lot by any stretch. I also DONT see any missed merges signs, so it
-> >>>would appear that the pages in the request are simply not contigious
-> >>>physically.
-> >>>
-> >>>diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-> >>>index e30b1a4..1e34b6f 100644
-> >>>--- a/block/ll_rw_blk.c
-> >>>+++ b/block/ll_rw_blk.c
-> >>>@@ -1330,6 +1330,8 @@ int blk_rq_map_sg(struct request_queue *q, struct 
-> >>>request *rq,
-> >>>				goto new_segment;
-> >>>
-> >>>			sg->length += nbytes;
-> >>>+			if (sg->length > 8192)
-> >>>+				printk("sg_len=%d\n", sg->length);
-> >>>		} else {
-> >>>new_segment:
-> >>>			if (!sg)
-> >>>@@ -1349,6 +1351,8 @@ new_segment:
-> >>>				sg = sg_next(sg);
-> >>>			}
-> >>>
-> >>>+			if (bvprv && (page_address(bvprv->bv_page) + 
-> >>>bvprv->bv_len == page_address(bvec->bv_page)))
-> >>>+				printk("missed merge\n");
-> >>>			sg_set_page(sg, bvec->bv_page, nbytes, 
-> >>>			bvec->bv_offset);
-> >>>			nsegs++;
-> >>>		}
-> >>>
-> >>..
-> >>
-> >>Yeah, the first part is similar to my own hack.
-> >>
-> >>For testing, try "dd if=/dev/sda of=/dev/null bs=4096k".
-> >>That *really* should end up using contiguous pages on most systems.
-> >>
-> >>I figured out the git thing, and am now building some in-between kernels 
-> >>to try.
-> >
-> >OK, it's a vm issue, I have tens of thousand "backward" pages after a
-> >boot - IOW, bvec->bv_page is the page before bvprv->bv_page, not
-> >reverse. So it looks like that bug got reintroduced.
-> ...
+
+* Kay Sievers <kay.sievers@vrfy.org> wrote:
+
+> > > > This one also fails to apply properly at the exact same place 
+> > > > has Ingo's previously posted patch.  Would need to backport his 
+> > > > one.
+> > > 
+> > > It depends on a completely reworked sysfs logic, I don't think it 
+> > > makes any sense to backport that.
+> > 
+> > well, if it fixes a live bug in a still supported stable kernel 
+> > release...
+> > 
+> > Vincent, could you try to just get rid of all actual uses of 
+> > se->attr.owner, within fs/sysfs/*.c? Something like the patch below. 
+> > (totally untested - might be fatally broken as well)
 > 
-> Mmm.. shouldn't one of the front- or back- merge logics work for either 
-> order?
+> How can you think that this is not needed? You can not remove it with 
+> sysfs you are patching. Hope this explains it: 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0ab66088c855eca68513bdd7442a426c4b374ced
 
-I think you are misunderstanding the merging. The front/back bits are
-for contig on disk, this is sg segment merging. We can only join pieces
-that are contig in memory, otherwise the result would not be pretty :-)
+yeah - as i said it might be fatally broken (in fact it is). Do we 
+understand why Vincent got the crashes with vanilla 2.6.22.14 ?
 
--- 
-Jens Axboe
-
+	Ingo
