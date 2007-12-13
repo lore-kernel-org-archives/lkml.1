@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764094AbXLMHOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764484AbXLMHOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764094AbXLMHOW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:14:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762650AbXLMG57
+	id S1764484AbXLMHOl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:14:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762657AbXLMG6C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:57:59 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55564 "EHLO
+	Thu, 13 Dec 2007 01:58:02 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55572 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762647AbXLMG55 (ORCPT
+	with ESMTP id S1760761AbXLMG6A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:57:57 -0500
-Date: Wed, 12 Dec 2007 22:53:11 -0800
+	Thu, 13 Dec 2007 01:58:00 -0500
+Date: Wed, 12 Dec 2007 22:53:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Ilpo J?rvinen <ilpo.jarvinen@helsinki.fi>,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 44/60] TCP: Fix TCP header misalignment
-Message-ID: <20071213065311.GT6867@kroah.com>
+Subject: [patch 45/60] TCP: MTUprobe: fix potential sk_send_head corruption
+Message-ID: <20071213065313.GU6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tcp-fix-tcp-header-misalignment.patch"
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: inline; filename="tcp-mtuprobe-fix-potential-sk_send_head-corruption.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,47 +41,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 
-[TCP]: Fix TCP header misalignment
+[TCP] MTUprobe: fix potential sk_send_head corruption
 
-[ Upstream commit: 21df56c6e2372e09c916111efb6c14c372a5ab2e ]
+[ Upstream commit: 6e42141009ff18297fe19d19296738b742f861db ]
 
-Indeed my previous change to alloc_pskb has made it possible
-for the TCP header to be misaligned iff the MTU is not a multiple
-of 4 (and less than a page).  So I suspect the optimised IPsec
-MTU calculation is giving you just such an MTU :)
+When the abstraction functions got added, conversion here was
+made incorrectly. As a result, the skb may end up pointing
+to skb which got included to the probe skb and then was freed.
+For it to trigger, however, skb_transmit must fail sending as
+well.
 
-This patch fixes it by changing alloc_pskb to make sure that
-the size is at least 32-bit aligned.  This does not cause the
-problem fixed by the previous patch because max_header is always
-32-bit aligned which means that in the SG/NOTSO case this will
-be a no-op.
-
-I thought about putting this in the callers but all the current
-callers are from TCP.  If and when we get a non-TCP caller we
-can always create a TCP wrapper for this function and move the
-alignment over there.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/net/sock.h |    3 +++
- 1 file changed, 3 insertions(+)
+ include/net/tcp.h     |    3 +++
+ net/ipv4/tcp_output.c |    1 -
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -1200,6 +1200,9 @@ static inline struct sk_buff *sk_stream_
+--- a/include/net/tcp.h
++++ b/include/net/tcp.h
+@@ -1256,6 +1256,9 @@ static inline void tcp_insert_write_queu
+ 						  struct sock *sk)
  {
- 	struct sk_buff *skb;
- 
-+	/* The TCP header must be at least 32-bit aligned.  */
-+	size = ALIGN(size, 4);
+ 	__skb_insert(new, skb->prev, skb, &sk->sk_write_queue);
 +
- 	skb = alloc_skb_fclone(size + sk->sk_prot->max_header, gfp);
- 	if (skb) {
- 		skb->truesize += mem;
++	if (sk->sk_send_head == skb)
++		sk->sk_send_head = new;
+ }
+ 
+ static inline void tcp_unlink_write_queue(struct sk_buff *skb, struct sock *sk)
+--- a/net/ipv4/tcp_output.c
++++ b/net/ipv4/tcp_output.c
+@@ -1287,7 +1287,6 @@ static int tcp_mtu_probe(struct sock *sk
+ 
+ 	skb = tcp_send_head(sk);
+ 	tcp_insert_write_queue_before(nskb, skb, sk);
+-	tcp_advance_send_head(sk, skb);
+ 
+ 	TCP_SKB_CB(nskb)->seq = TCP_SKB_CB(skb)->seq;
+ 	TCP_SKB_CB(nskb)->end_seq = TCP_SKB_CB(skb)->seq + probe_size;
 
 -- 
