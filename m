@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761043AbXLMEyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753770AbXLMFUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761043AbXLMEyR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 23:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757679AbXLMEx7
+	id S1753770AbXLMFUl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 00:20:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743AbXLMFUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 23:53:59 -0500
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:48634 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754322AbXLMEx6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 23:53:58 -0500
-Message-Id: <6.0.0.20.2.20071213133952.03e19d70@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Thu, 13 Dec 2007 13:50:41 +0900
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: [PATCH] fix invalidate_inode_pages2_range not to clear ret
+	Thu, 13 Dec 2007 00:20:32 -0500
+Received: from mga09.intel.com ([134.134.136.24]:45069 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750724AbXLMFUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 00:20:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,160,1196668800"; 
+   d="scan'208";a="236584038"
+Subject: [RFC] move free page back to MIGRATE_MOVABLE?
+From: Shaohua Li <shaohua.li@intel.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: mel@csn.ul.ie, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 13 Dec 2007 13:19:59 +0800
+Message-Id: <1197523199.3410.1.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+pages are MIGRATE_MOVABLE initially, and fallback to other types. If the
+pages are freed, I wonder why not move them back to MIGRATE_MOVABLE.
+This, for example, can help memory remove.
 
-DIO invalidates page cache through invalidate_inode_pages2_range().
-invalidate_inode_pages2_range() sets ret=-EIO when invalidate_complete_page2()
-fails, but this ret is cleared if do_launder_page() succeed on a page of 
-next index.
-In this case, dio is carried out even if invalidate_complete_page2() fails 
-on some pages.
-This can cause inconsistency between memory and blocks on HDD because the page
-cache still exists.
+Thanks,
+Shaohua 
 
-Following patch fixes this issue.
-
-Thanks.
-
-Signed-off-by :Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-
-diff -Nrup linux-2.6.24-rc5.org/mm/truncate.c linux-2.6.24-rc5/mm/truncate.c
---- linux-2.6.24-rc5.org/mm/truncate.c	2007-12-12 16:32:45.000000000 +0900
-+++ linux-2.6.24-rc5/mm/truncate.c	2007-12-13 11:45:29.000000000 +0900
-@@ -392,6 +392,7 @@ int invalidate_inode_pages2_range(struct
-  	pgoff_t next;
-  	int i;
-  	int ret = 0;
-+	int ret2 = 0;
-  	int did_range_unmap = 0;
-  	int wrapped = 0;
-
-@@ -441,13 +442,13 @@ int invalidate_inode_pages2_range(struct
-  			BUG_ON(page_mapped(page));
-  			ret = do_launder_page(mapping, page);
-  			if (ret == 0 && !invalidate_complete_page2(mapping, page))
--				ret = -EIO;
-+				ret2 = -EIO;
-  			unlock_page(page);
-  		}
-  		pagevec_release(&pvec);
-  		cond_resched();
-  	}
--	return ret;
-+	return !ret ? ret2 : ret;
-  }
-  EXPORT_SYMBOL_GPL(invalidate_inode_pages2_range);
-  
-
+Index: linux/mm/page_alloc.c
+===================================================================
+--- linux.orig/mm/page_alloc.c	2007-12-13 11:44:36.000000000 +0800
++++ linux/mm/page_alloc.c	2007-12-13 12:04:59.000000000 +0800
+@@ -386,6 +386,9 @@ static inline int page_is_buddy(struct p
+ 	return 0;
+ }
+ 
++int move_freepages(struct zone *zone,
++			struct page *start_page, struct page *end_page,
++			int migratetype);
+ /*
+  * Freeing function for a buddy system allocator.
+  *
+@@ -446,6 +449,17 @@ static inline void __free_one_page(struc
+ 	list_add(&page->lru,
+ 		&zone->free_area[order].free_list[migratetype]);
+ 	zone->free_area[order].nr_free++;
++
++	if (order >= pageblock_order && migratetype != MIGRATE_MOVABLE) {
++		struct page *tmp = page;
++
++		move_freepages(zone, page, page + (1 << order) - 1, MIGRATE_MOVABLE);
++
++		while (tmp < page + (1 << order)) {
++			set_pageblock_migratetype(tmp, MIGRATE_MOVABLE);
++			tmp += pageblock_nr_pages;
++		}
++	}
+ }
+ 
+ static inline int free_pages_check(struct page *page)
