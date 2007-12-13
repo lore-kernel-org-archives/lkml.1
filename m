@@ -1,106 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933916AbXLMWKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934056AbXLMWKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933916AbXLMWKV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:10:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbXLMWJ5
+	id S934056AbXLMWKl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765783AbXLMWKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:09:57 -0500
-Received: from mail.tmr.com ([64.65.253.246]:50720 "EHLO gaimboi.tmr.com"
+	Thu, 13 Dec 2007 17:10:04 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57408 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751763AbXLMWJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:09:55 -0500
-Message-ID: <4761B1DB.20600@tmr.com>
-Date: Thu, 13 Dec 2007 17:27:39 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Jan Engelhardt <jengelh@computergmbh.de>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, linux-ide@vger.kernel.org,
-       apiszcz@solarrain.com
-Subject: Re: Kernel 2.6.23.9 / P35 Chipset + WD 750GB Drives (reset port)
-References: <Pine.LNX.4.64.0712010619150.25643@p34.internal.lan> <Pine.LNX.4.64.0712011310410.30316@fbirervta.pbzchgretzou.qr> <4751AB91.2000207@tmr.com> <475CF57E.7060406@gmail.com>
-In-Reply-To: <475CF57E.7060406@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1765444AbXLMWJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 17:09:59 -0500
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
+       rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
+       Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: [PATCH] avoid ifdefs in desc.h, getting rid of pack_ldt and pack_tss
+Date: Thu, 13 Dec 2007 17:25:37 -0200
+Message-Id: <11975739373761-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.4.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Bill Davidsen wrote:
->   
->> Jan Engelhardt wrote:
->>     
->>> On Dec 1 2007 06:26, Justin Piszcz wrote:
->>>       
->>>> I ran the following:
->>>>
->>>> dd if=/dev/zero of=/dev/sdc
->>>> dd if=/dev/zero of=/dev/sdd
->>>> dd if=/dev/zero of=/dev/sde
->>>>
->>>> (as it is always a very good idea to do this with any new disk)
->>>>         
->>> Why would you care about what's on the disk? fdisk, mkfs and
->>> the day-to-day operation will overwrite it _anyway_.
->>>
->>> (If you think the disk is not empty, you should look at it
->>> and copy off all usable warez beforehand :-)
->>>
->>>       
->> Do you not test your drive for minimum functionality before using them?
->>     
->
-> I personally don't.
->
->   
->> Also, if you have the tools to check for relocated sectors before and
->> after doing this, that's a good idea as well. S.M.A.R.T is your friend.
->> And when writing /dev/zero to a drive, if it craps out you have less
->> emotional attachment to the data.
->>     
->
-> Writing all zero isn't too useful tho.  Drive failing reallocation on
-> write is catastrophic failure.  It means that the drive wanna relocate
-> but can't because it used up all its extra space which usually indicates
-> something else is seriously wrong with the drive.  The drive will have
-> to go to the trash can.  This is all serious and bad but the catch is
-> that in such cases the problem usually stands like a sore thumb so
-> either vendor doesn't ship such drive or you'll find the failure very
-> early.  I personally haven't seen any such failure yet.  Maybe I'm lucky.
->   
+By Andi Kleen's suggestion, this patch removes pack_ldt() and pack_tss()
+wrappers in favour of a general wrapper. It saves us an ifdef and some lines
+of code, but more importantly, it's more elegant.
 
-The problem is usually not with what the vendor ships, but what the 
-carrier delivers. Bad handling does happen, "drop ship" can have several 
-meanings, and I have received shipments with the "G sensor" in the case 
-triggered. Zero is a handy source of data, but the important thing is to 
-look at the relocated sector count before and after the write. If there 
-are a lot of bad sectors initially, the drive is probably a poor choice 
-for anything critical.
-> Most data loss occurs when the drive fails to read what it thought it
-> wrote successfully and the opposite - reading and dumping the whole disk
-> to /dev/null periodically is probably much better than writing zeros as
-> it allows the drive to find out deteriorating sector early while it's
-> still readable and relocate.  But then again I think it's an overkill.
->
-> Writing zeros to sectors is more useful as cure rather than prevention.
->  If your drive fails to read a sector, write whatever value to the
-> sector.  The drive will forget about the data on the damaged sector and
-> reallocate and write new data to it.  Of course, you lose data which was
-> originally on the sector.
->
-> I personally think it's enough to just throw in an extra disk and make
-> it RAID0 or 5 and rebuild the array if read fails on one of the disks.
-> If write fails or read fail continues, replace the disk.  Of course, if
-> you wanna be extra cautious, good for you.  :-)
->
->   
+No functional change is made, although the object code is expected to be
+different.
+
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+---
+ include/asm-x86/desc.h |   58 +++++++++++++++---------------------------------
+ 1 files changed, 18 insertions(+), 40 deletions(-)
+
+diff --git a/include/asm-x86/desc.h b/include/asm-x86/desc.h
+index 8849666..161a6d6 100644
+--- a/include/asm-x86/desc.h
++++ b/include/asm-x86/desc.h
+@@ -125,21 +125,6 @@ static inline void native_write_gdt_entry(struct desc_struct *gdt, int entry,
+ 	memcpy(&gdt[entry], desc, size);
+ }
+ 
+-static inline void set_tssldt_descriptor(struct ldttss_desc64 *d,
+-					 unsigned long tss, unsigned type,
+-					 unsigned size)
+-{
+-	memset(d, 0, sizeof(*d));
+-	d->limit0 = size & 0xFFFF;
+-	d->base0 = PTR_LOW(tss);
+-	d->base1 = PTR_MIDDLE(tss) & 0xFF;
+-	d->type = type;
+-	d->p = 1;
+-	d->limit1 = (size >> 16) & 0xF;
+-	d->base2 = (PTR_MIDDLE(tss) >> 8) & 0xFF;
+-	d->base3 = PTR_HIGH(tss);
+-}
+-
+ static inline void pack_descriptor(struct desc_struct *desc, unsigned long base,
+ 				   unsigned long limit, unsigned char type,
+ 				   unsigned char flags)
+@@ -151,30 +136,24 @@ static inline void pack_descriptor(struct desc_struct *desc, unsigned long base,
+ 	desc->p = 1;
+ }
+ 
+-static inline void pack_ldt(ldt_desc *ldt, unsigned long addr,
+-			   unsigned size)
+-{
+ 
+-#ifdef CONFIG_X86_64
+-		set_tssldt_descriptor(ldt,
+-			     addr, DESC_LDT, size);
+-#else
+-		pack_descriptor(ldt, (unsigned long)addr,
+-				size,
+-				0x80 | DESC_LDT, 0);
+-#endif
+-}
+-
+-static inline void pack_tss(tss_desc *tss, unsigned long addr,
+-			   unsigned size, unsigned entry)
++static inline void set_tssldt_descriptor(void *d, unsigned long addr,
++					 unsigned type, unsigned size)
+ {
+ #ifdef CONFIG_X86_64
+-		set_tssldt_descriptor(tss,
+-			     addr, entry, size);
++	struct ldttss_desc64 *desc = d;
++	memset(desc, 0, sizeof(*desc));
++	desc->limit0 = size & 0xFFFF;
++	desc->base0 = PTR_LOW(addr);
++	desc->base1 = PTR_MIDDLE(addr) & 0xFF;
++	desc->type = type;
++	desc->p = 1;
++	desc->limit1 = (size >> 16) & 0xF;
++	desc->base2 = (PTR_MIDDLE(addr) >> 8) & 0xFF;
++	desc->base3 = PTR_HIGH(addr);
+ #else
+-		pack_descriptor(tss, (unsigned long)addr,
+-				size,
+-				0x80 | entry, 0);
++
++	pack_descriptor((struct desc_struct *)d, addr, size, 0x80 | type, 0);
+ #endif
+ }
+ 
+@@ -190,9 +169,8 @@ static inline void __set_tss_desc(unsigned cpu, unsigned int entry, void *addr)
+ 	 * -1? seg base+limit should be pointing to the address of the
+ 	 * last valid byte
+ 	 */
+-	pack_tss(&tss, (unsigned long)addr,
+-		IO_BITMAP_OFFSET + IO_BITMAP_BYTES + sizeof(unsigned long) - 1,
+-		DESC_TSS);
++	set_tssldt_descriptor(&tss, (unsigned long)addr, DESC_TSS,
++		IO_BITMAP_OFFSET + IO_BITMAP_BYTES + sizeof(unsigned long) - 1);
+ 	write_gdt_entry(d, entry, &tss, DESC_TSS);
+ }
+ 
+@@ -206,8 +184,8 @@ static inline void native_set_ldt(const void *addr, unsigned int entries)
+ 		unsigned cpu = smp_processor_id();
+ 		ldt_desc ldt;
+ 
+-		pack_ldt(&ldt, (unsigned long)addr,
+-				entries * sizeof(ldt) - 1);
++		set_tssldt_descriptor(&ldt, (unsigned long)addr,
++				      DESC_LDT, entries * sizeof(ldt) - 1);
+ 		write_gdt_entry(get_cpu_gdt_table(cpu), GDT_ENTRY_LDT,
+ 				&ldt, DESC_LDT);
+ 		__asm__ __volatile__("lldt %w0"::"q" (GDT_ENTRY_LDT*8));
 -- 
-Bill Davidsen <davidsen@tmr.com>
-  "Woe unto the statesman who makes war without a reason that will still
-  be valid when the war is over..." Otto von Bismark 
-
+1.4.4.2
 
