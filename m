@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761701AbXLMGqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761998AbXLMGqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761701AbXLMGqf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759733AbXLMGiE
+	id S1761998AbXLMGqv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:46:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759772AbXLMGiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:38:04 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56551 "EHLO
+	Thu, 13 Dec 2007 01:38:06 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56573 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759720AbXLMGiB (ORCPT
+	with ESMTP id S1758775AbXLMGiF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:38:01 -0500
-Date: Wed, 12 Dec 2007 22:35:09 -0800
+	Thu, 13 Dec 2007 01:38:05 -0500
+Date: Wed, 12 Dec 2007 22:35:11 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,14 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 25/36] TCP: illinois: Incorrect beta usage
-Message-ID: <20071213063509.GZ25301@kroah.com>
+Subject: [patch 26/36] RXRPC: Add missing select on CRYPTO
+Message-ID: <20071213063511.GA25301@kroah.com>
 References: <20071213062511.265908583@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tcp-illinois-incorrect-beta-usage.patch"
+Content-Disposition: inline; filename="rxrpc-add-missing-select-on-crypto.patch"
 In-Reply-To: <20071213063308.GA25301@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,42 +41,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+From: David Howells <dhowells@redhat.com>
 
-[TCP] illinois: Incorrect beta usage
+[RXRPC]: Add missing select on CRYPTO
 
-[ Upstream commit: a357dde9df33f28611e6a3d4f88265e39bcc8880 ]
+[ Upstream commit: d5a784b3719ae364f49ecff12a0248f6e4252720 ]
 
-Lachlan Andrew observed that my TCP-Illinois implementation uses the
-beta value incorrectly:
-The parameter  beta  in the paper specifies the amount to decrease
-*by*:  that is, on loss,
- W <-  W -  beta*W
-but in   tcp_illinois_ssthresh() uses  beta  as the amount
-to decrease  *to*: W <- beta*W
+AF_RXRPC uses the crypto services, so should depend on or select CRYPTO.
 
-This bug makes the Linux TCP-Illinois get less-aggressive on uncongested network,
-hurting performance. Note: since the base beta value is .5, it has no
-impact on a congested network.
-
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp_illinois.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/rxrpc/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/net/ipv4/tcp_illinois.c
-+++ b/net/ipv4/tcp_illinois.c
-@@ -300,7 +300,7 @@ static u32 tcp_illinois_ssthresh(struct 
- 	struct illinois *ca = inet_csk_ca(sk);
- 
- 	/* Multiplicative decrease */
--	return max((tp->snd_cwnd * ca->beta) >> BETA_SHIFT, 2U);
-+	return max(tp->snd_cwnd - ((tp->snd_cwnd * ca->beta) >> BETA_SHIFT), 2U);
- }
- 
- 
+--- a/net/rxrpc/Kconfig
++++ b/net/rxrpc/Kconfig
+@@ -5,6 +5,7 @@
+ config AF_RXRPC
+ 	tristate "RxRPC session sockets"
+ 	depends on INET && EXPERIMENTAL
++	select CRYPTO
+ 	select KEYS
+ 	help
+ 	  Say Y or M here to include support for RxRPC session sockets (just
 
 -- 
