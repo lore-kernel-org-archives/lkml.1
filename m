@@ -1,96 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934587AbXLMXA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934537AbXLMXDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934587AbXLMXA7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 18:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934218AbXLMXAn
+	id S934537AbXLMXDd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 18:03:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763293AbXLMXDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 18:00:43 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55722 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934535AbXLMXAl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 18:00:41 -0500
-Date: Fri, 14 Dec 2007 00:00:43 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: RFC: remove __read_mostly
-Message-ID: <20071213230043.GJ21616@stusta.de>
-References: <20071213222044.GH21616@stusta.de> <4761B6BB.1070504@cosmosbay.com>
+	Thu, 13 Dec 2007 18:03:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53142 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762826AbXLMXDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 18:03:24 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [PATCH] acpi: make __acpi_map_table() and __init function
+Date: Thu, 13 Dec 2007 18:03:07 -0500
+User-Agent: KMail/1.9.5
+Cc: "linux-acpi" <linux-acpi@intel.com>, linux-kernel@vger.kernel.org
+References: <4760FC87.76E4.0078.0@novell.com>
+In-Reply-To: <4760FC87.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4761B6BB.1070504@cosmosbay.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200712131803.07985.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 11:48:27PM +0100, Eric Dumazet wrote:
-> Adrian Bunk a écrit :
->> I tried the following patch with a full x86 .config [1]:
->>
->> --- a/include/asm-x86/cache.h
->> +++ b/include/asm-x86/cache.h
->> -#define __read_mostly __attribute__((__section__(".data.read_mostly")))
->> +/* #define __read_mostly __attribute__((__section__(".data.read_mostly"))) */
->>
->> The result [2,3] was:
->>
->> -rwxrwxr-x 1 bunk bunk 46607243 2007-12-13 19:50 vmlinux.old
->> -rwxrwxr-x 1 bunk bunk 46598691 2007-12-13 21:55 vmlinux
->>
->> It's not a surprise that the kernel can become bigger when __read_mostly 
->> gets used, especially in cases where __read_mostly prevents gcc 
->> optimizations.
->>
->> My question is:
->> Is there anywhere in the kernel a case where __read_mostly brings a 
->> measurable improvement or can it be removed?
->
-> Yes, there are many cases where read_mostly brings huge improvements.
->
-> I did test your idea on a 4 CPUS server, and system time was roughly 
-> doubled, from 11% to 20%
+Applied to 2.6.25 queue
 
-Thanks, that answered my question.
+thanks,
+-Len
 
-> Of course, you noticed that puting a __read_mostly attribute force the 
-> linker to reserve space for the variable. So a null variable previously in 
-> bss section (no space in vmlinux file) is now in .data.read_mostly. Not a 
-> big deal.
->
-> If you want, you could play some .lds games to create sort of a 
-> "bss.read_mostly" section to save 10000 bytes in vmlinux.
-
-No, what I was thinking of kernel code like
-
-static int fooxxxvar = 0;
-static int __read_mostly fooyyyvar = 0;
-
-void mytest()
-{
-        if (fooxxxvar)
-                printk("fooxxx");
-
-        if (fooyyyvar)
-                printk("fooyyy");
-}
-
-If you run "strings file.c | grep foo" on the file it will only return
-"fooyyy" but not "fooxxx".
-
-It's not a big deal, but it's an area where __read_mostly affects gcc 
-and not ld.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+On Thursday 13 December 2007 03:33, Jan Beulich wrote:
+> .. as it it used only during early boot.
+> 
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> 
+>  arch/ia64/kernel/acpi.c     |    2 +-
+>  arch/x86/kernel/acpi/boot.c |    4 ++--
+>  drivers/acpi/osl.c          |    3 ++-
+>  3 files changed, 5 insertions(+), 4 deletions(-)
+> 
+> --- linux-2.6.24-rc5/arch/ia64/kernel/acpi.c	2007-12-12 11:28:03.000000000 +0100
+> +++ 2.6.24-rc5-acpi-map-table-init/arch/ia64/kernel/acpi.c	2007-12-04 16:09:33.000000000 +0100
+> @@ -152,7 +152,7 @@ int acpi_request_vector(u32 int_type)
+>  	return vector;
+>  }
+>  
+> -char *__acpi_map_table(unsigned long phys_addr, unsigned long size)
+> +char *__init __acpi_map_table(unsigned long phys_addr, unsigned long size)
+>  {
+>  	return __va(phys_addr);
+>  }
+> --- linux-2.6.24-rc5/arch/x86/kernel/acpi/boot.c	2007-12-12 11:28:17.000000000 +0100
+> +++ 2.6.24-rc5-acpi-map-table-init/arch/x86/kernel/acpi/boot.c	2007-12-04 16:09:33.000000000 +0100
+> @@ -106,7 +106,7 @@ enum acpi_irq_model_id acpi_irq_model = 
+>  #ifdef	CONFIG_X86_64
+>  
+>  /* rely on all ACPI tables being in the direct mapping */
+> -char *__acpi_map_table(unsigned long phys_addr, unsigned long size)
+> +char *__init __acpi_map_table(unsigned long phys_addr, unsigned long size)
+>  {
+>  	if (!phys_addr || !size)
+>  		return NULL;
+> @@ -131,7 +131,7 @@ char *__acpi_map_table(unsigned long phy
+>   * from the fixed base.  That's why we start at FIX_IO_APIC_BASE_END and
+>   * count idx down while incrementing the phys address.
+>   */
+> -char *__acpi_map_table(unsigned long phys, unsigned long size)
+> +char *__init __acpi_map_table(unsigned long phys, unsigned long size)
+>  {
+>  	unsigned long base, offset, mapped_size;
+>  	int idx;
+> --- linux-2.6.24-rc5/drivers/acpi/osl.c	2007-12-12 11:28:21.000000000 +0100
+> +++ 2.6.24-rc5-acpi-map-table-init/drivers/acpi/osl.c	2007-12-04 16:09:33.000000000 +0100
+> @@ -211,7 +211,8 @@ acpi_physical_address __init acpi_os_get
+>  		return acpi_find_rsdp();
+>  }
+>  
+> -void __iomem *acpi_os_map_memory(acpi_physical_address phys, acpi_size size)
+> +void __iomem *__init_refok
+> +acpi_os_map_memory(acpi_physical_address phys, acpi_size size)
+>  {
+>  	if (phys > ULONG_MAX) {
+>  		printk(KERN_ERR PREFIX "Cannot map memory that high\n");
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
