@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762979AbXLMHEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763253AbXLMHEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762979AbXLMHEM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:04:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761064AbXLMG4a
+	id S1763253AbXLMHEd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:04:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759010AbXLMG4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:56:30 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55210 "EHLO
+	Thu, 13 Dec 2007 01:56:33 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55226 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761269AbXLMG41 (ORCPT
+	with ESMTP id S1760778AbXLMG4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:56:27 -0500
-Date: Wed, 12 Dec 2007 22:51:58 -0800
+	Thu, 13 Dec 2007 01:56:31 -0500
+Date: Wed, 12 Dec 2007 22:52:01 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>
-Subject: [patch 20/60] KVM: SVM: Intercept the invd and wbinvd instructions
-Message-ID: <20071213065158.GU6867@kroah.com>
+       kvm-devel@lists.sourceforge.net, Amit Shah <amit.shah@qumranet.com>,
+       Avi Kivity <avi@qumranet.com>
+Subject: [patch 21/60] KVM: x86 emulator: Use emulator_write_emulated and
+	not emulator_write_std
+Message-ID: <20071213065201.GV6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="kvm-svm-intercept-the-invd-and-wbinvd-instructions.patch"
+Content-Disposition: inline; filename="kvm-x86-emulator-use-emulator_write_emulated-and-not-emulator_write_std.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -35,59 +37,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.23-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Avi Kivity <avi@qumranet.com>
+From: Amit Shah <amit.shah@qumranet.com>
 
-patch cf5a94d1331b411b84414c13e43f578260942d6b in mainline.
+patch 00b2ef475d4728ca53a2bc788c7978042907e354 in mainline.
 
-'invd' can destroy host data, and 'wbinvd' allows the guest to induce
-long (milliseconds) latencies.
+emulator_write_std() is not implemented, and calling write_emulated should
+work just as well in place of write_std.
 
-Noted by Ben Serebrin.
+Fixes emulator failures with the push r/m instruction.
 
+Signed-off-by: Amit Shah <amit.shah@qumranet.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/kvm/svm.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/kvm/x86_emulate.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -506,6 +506,7 @@ static void init_vmcb(struct vmcb *vmcb)
- 		 */
- 		/*              (1ULL << INTERCEPT_SELECTIVE_CR0) | */
- 				(1ULL << INTERCEPT_CPUID) |
-+				(1ULL << INTERCEPT_INVD) |
- 				(1ULL << INTERCEPT_HLT) |
- 				(1ULL << INTERCEPT_INVLPGA) |
- 				(1ULL << INTERCEPT_IOIO_PROT) |
-@@ -519,6 +520,7 @@ static void init_vmcb(struct vmcb *vmcb)
- 				(1ULL << INTERCEPT_STGI) |
- 				(1ULL << INTERCEPT_CLGI) |
- 				(1ULL << INTERCEPT_SKINIT) |
-+				(1ULL << INTERCEPT_WBINVD) |
- 				(1ULL << INTERCEPT_MONITOR) |
- 				(1ULL << INTERCEPT_MWAIT);
- 
-@@ -1319,6 +1321,7 @@ static int (*svm_exit_handlers[])(struct
- 	[SVM_EXIT_VINTR]			= interrupt_window_interception,
- 	/* [SVM_EXIT_CR0_SEL_WRITE]		= emulate_on_interception, */
- 	[SVM_EXIT_CPUID]			= cpuid_interception,
-+	[SVM_EXIT_INVD]                         = emulate_on_interception,
- 	[SVM_EXIT_HLT]				= halt_interception,
- 	[SVM_EXIT_INVLPG]			= emulate_on_interception,
- 	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
-@@ -1333,6 +1336,7 @@ static int (*svm_exit_handlers[])(struct
- 	[SVM_EXIT_STGI]				= invalid_op_interception,
- 	[SVM_EXIT_CLGI]				= invalid_op_interception,
- 	[SVM_EXIT_SKINIT]			= invalid_op_interception,
-+	[SVM_EXIT_WBINVD]                       = emulate_on_interception,
- 	[SVM_EXIT_MONITOR]			= invalid_op_interception,
- 	[SVM_EXIT_MWAIT]			= invalid_op_interception,
- };
+--- a/drivers/kvm/x86_emulate.c
++++ b/drivers/kvm/x86_emulate.c
+@@ -1066,7 +1066,7 @@ done_prefixes:
+ 			}
+ 			register_address_increment(_regs[VCPU_REGS_RSP],
+ 						   -dst.bytes);
+-			if ((rc = ops->write_std(
++			if ((rc = ops->write_emulated(
+ 				     register_address(ctxt->ss_base,
+ 						      _regs[VCPU_REGS_RSP]),
+ 				     &dst.val, dst.bytes, ctxt)) != 0)
 
 -- 
