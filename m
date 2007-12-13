@@ -1,96 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762331AbXLMQJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbXLMQMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762331AbXLMQJf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 11:09:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757827AbXLMQJT
+	id S1760036AbXLMQMy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 11:12:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbXLMQMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 11:09:19 -0500
-Received: from smtp104.plus.mail.re1.yahoo.com ([69.147.102.67]:26089 "HELO
-	smtp104.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756846AbXLMQJR (ORCPT
+	Thu, 13 Dec 2007 11:12:46 -0500
+Received: from mga01.intel.com ([192.55.52.88]:6280 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753186AbXLMQMo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 11:09:17 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:Mail-Followup-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=cafqCp4AvOgVxhXrR1PP5k0PMvSNgPSHxMIo4bGefSbmn9mPekw4q9SWCwJs56iUcNmSR4htNfjdSl98lEJXFZIvZNBBWxXR4PpltdX5T4/OYt2yj8brpu71PHMM9Jy8JCn8OPc5USVsMGnidm9V8SqpIv/jXk+VQD4pTsb2+Uc=  ;
-X-YMail-OSG: 3PdCG_oVM1lp7S5zSGk8ggaZivf8798ElTwDygX_eEEJYab2p9yyAplnCf.UlCAxM1vMdZACh3H_I9KPPxWxImO2pMZbCIc4Sx.5kCW3XFIBzHhMDA--
-Date: Thu, 13 Dec 2007 17:07:44 +0100
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Benjamin Thery <benjamin.thery@bull.net>
-Cc: Pierre Peiffer <pierre.peiffer@bull.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: 2.6.24-rc5-mm1
-Message-ID: <20071213160744.GA4509@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-Mail-Followup-To: bbpetkov@yahoo.de,
-	Benjamin Thery <benjamin.thery@bull.net>,
-	Pierre Peiffer <pierre.peiffer@bull.net>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	Herbert Xu <herbert@gondor.apana.org.au>
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org> <47613F18.6080601@bull.net> <4761494E.1050704@bull.net>
+	Thu, 13 Dec 2007 11:12:44 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,162,1196668800"; 
+   d="scan'208";a="436868341"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4761494E.1050704@bull.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Subject: RE: x86, ptrace: support for branch trace store(BTS)
+Date: Thu, 13 Dec 2007 16:06:15 -0000
+Message-ID: <029E5BE7F699594398CA44E3DDF5544401187085@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <20071213130814.GC28340@elte.hu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: x86, ptrace: support for branch trace store(BTS)
+thread-index: Acg9iUL+TBkmgnUAQpCHzXICUyBu4gAAfTgA
+References: <20071210123809.A14251@sedona.ch.intel.com> <20071210202052.GA26002@elte.hu> <029E5BE7F699594398CA44E3DDF5544401130A1E@swsmsx413.ger.corp.intel.com> <20071211145301.GA19427@elte.hu> <029E5BE7F699594398CA44E3DDF554440115D3C5@swsmsx413.ger.corp.intel.com> <20071212110330.GD1611@elte.hu> <029E5BE7F699594398CA44E3DDF554440115D6DC@swsmsx413.ger.corp.intel.com> <20071213102939.GS8977@elte.hu> <029E5BE7F699594398CA44E3DDF5544401186D54@swsmsx413.ger.corp.intel.com> <20071213130814.GC28340@elte.hu>
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <ak@suse.de>, <hpa@zytor.com>, <linux-kernel@vger.kernel.org>,
+       <tglx@linutronix.de>, <markus.t.metzger@gmail.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, <roland@redhat.com>,
+       <akpm@linux-foundation.org>, <mtk.manpages@gmail.com>,
+       "Alan Stern" <stern@rowland.harvard.edu>
+X-OriginalArrivalTime: 13 Dec 2007 16:06:16.0940 (UTC) FILETIME=[17907AC0:01C83DA2]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 04:01:34PM +0100, Benjamin Thery wrote:
-> The problem comes from the new macro UDPX_INC_STATS_BH introduced
-> by Herbert, which was a nice addition to increment the correct 
-> UDP MIB depending on the socket family, but unfortunately 
-> the use of this macro from kernel code (I mean code not compiled 
-> as module) requires that IPv6 is also compiled in kernel 
-> (CONFIG_IPv6=y) in order to have udp_stats_in6 defined at link 
-> time.
-> 
-> Benjamin
-> 
-> Pierre Peiffer wrote:
-> > Hi,
-> > 
-> > 	My config does not link any more:
-> > 
-> > ...
-> >   CHK     include/linux/compile.h
-> >   UPD     include/linux/compile.h
-> >   CC      init/version.o
-> >   LD      init/built-in.o
-> >   LD      .tmp_vmlinux1
-> > net/built-in.o: In function `xs_udp_data_ready':
-> > /home/peifferp/containers/kernel/linux-2.6.24-rc5-mm1/net/sunrpc/xprtsock.c:842:
-> > undefined reference to `udp_stats_in6'
-> > /home/peifferp/containers/kernel/linux-2.6.24-rc5-mm1/net/sunrpc/xprtsock.c:846:
-> > undefined reference to `udp_stats_in6'
-> > make[1]: *** [.tmp_vmlinux1] Error 1
-> > make: *** [sub-make] Error 2
-> > 
-> > After a first look, udp_stats_in6 seems to be defined in ipv6 (file
-> > net/ipv6/udp.c) but I have
-> > 
-> > CONFIG_IPV6=m
-> > and
-> > CONFIG_SUNRPC=y
-> > 
-> > So, SUNRPC uses something defined in a module in my case ?
-> > 
-> > ... looking more, this dependency seems to have been introduced by the patch
-> > [UDP]: Restore missing inDatagrams increments
-> > ( http://thread.gmane.org/gmane.linux.network/79716/focus=79831 )
-> > 
-> > (I cc netdev)
-> > 
-> > I don't know what is the right way to fix this ... ?
+>-----Original Message-----
+>From: Ingo Molnar [mailto:mingo@elte.hu] 
+>Sent: Donnerstag, 13. Dezember 2007 14:08
 
-you might do "select IPV6" in the SUNRPC section of fs/Kconfig, however select is
-evil...
+>> Are you OK with this?
+>
+>this sounds a lot more flexible to me. Please, once it looks 
+>good to all 
 
--- 
-Regards/Gruß,
-    Boris.
+I will implement the ptrace ABI and the man pages and send them out for
+review (I'll return -EOPNOTSUPP a few times) tomorrow.
+I'll add support for the overflow signal in a later patch, once I
+figured out how to do it.
+
+
+>of us also extend LTP's ptrace bits with unit tests for these API 
+>additions. (Cc: such LTP bits to subrata@linux.vnet.ibm.com)
+
+I need to look into this. This will take some time, as well.
+
+regards,
+markus.
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
