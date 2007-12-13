@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbXLMHHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761848AbXLMHIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761497AbXLMHHu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:07:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759713AbXLMG46
+	id S1761848AbXLMHIK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:08:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760877AbXLMG5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:56:58 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55321 "EHLO
+	Thu, 13 Dec 2007 01:57:04 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55342 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760763AbXLMG44 (ORCPT
+	with ESMTP id S1762321AbXLMG5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:56:56 -0500
-Date: Wed, 12 Dec 2007 22:52:21 -0800
+	Thu, 13 Dec 2007 01:57:01 -0500
+Date: Wed, 12 Dec 2007 22:52:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Karsten Keil <kkeil@suse.de>
-Subject: [patch 28/60] isdn: avoid copying overly-long strings
-Message-ID: <20071213065221.GC6867@kroah.com>
+       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 29/60] futex: fix for futex_wait signal stack corruption
+Message-ID: <20071213065224.GD6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="isdn-avoid-copying-overly-long-strings.patch"
+Content-Disposition: inline; filename="futex-fix-for-futex_wait-signal-stack-corruption.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,58 +40,216 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Karsten Keil <kkeil@suse.de>
+>From Steven Rostedt <srostedt@redhat.com>
 
-patch 0f13864e5b24d9cbe18d125d41bfa4b726a82e40 in mainline.
+patch ce6bd420f43b28038a2c6e8fbb86ad24014727b6 in mainline.
 
-Addresses http://bugzilla.kernel.org/show_bug.cgi?id=9416
+David Holmes found a bug in the -rt tree with respect to
+pthread_cond_timedwait. After trying his test program on the latest git
+from mainline, I found the bug was there too.  The bug he was seeing
+that his test program showed, was that if one were to do a "Ctrl-Z" on a
+process that was in the pthread_cond_timedwait, and then did a "bg" on
+that process, it would return with a "-ETIMEDOUT" but early. That is,
+the timer would go off early.
 
-Signed-off-by: Karsten Keil <kkeil@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Looking into this, I found the source of the problem. And it is a rather
+nasty bug at that.
+
+Here's the relevant code from kernel/futex.c: (not in order in the file)
+
+[...]
+smlinkage long sys_futex(u32 __user *uaddr, int op, u32 val,
+                          struct timespec __user *utime, u32 __user *uaddr2,
+                          u32 val3)
+{
+        struct timespec ts;
+        ktime_t t, *tp = NULL;
+        u32 val2 = 0;
+        int cmd = op & FUTEX_CMD_MASK;
+
+        if (utime && (cmd == FUTEX_WAIT || cmd == FUTEX_LOCK_PI)) {
+                if (copy_from_user(&ts, utime, sizeof(ts)) != 0)
+                        return -EFAULT;
+                if (!timespec_valid(&ts))
+                        return -EINVAL;
+
+                t = timespec_to_ktime(ts);
+                if (cmd == FUTEX_WAIT)
+                        t = ktime_add(ktime_get(), t);
+                tp = &t;
+        }
+[...]
+        return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
+}
+
+[...]
+
+long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
+                u32 __user *uaddr2, u32 val2, u32 val3)
+{
+        int ret;
+        int cmd = op & FUTEX_CMD_MASK;
+        struct rw_semaphore *fshared = NULL;
+
+        if (!(op & FUTEX_PRIVATE_FLAG))
+                fshared = &current->mm->mmap_sem;
+
+        switch (cmd) {
+        case FUTEX_WAIT:
+                ret = futex_wait(uaddr, fshared, val, timeout);
+
+[...]
+
+static int futex_wait(u32 __user *uaddr, struct rw_semaphore *fshared,
+                      u32 val, ktime_t *abs_time)
+{
+[...]
+               struct restart_block *restart;
+                restart = &current_thread_info()->restart_block;
+                restart->fn = futex_wait_restart;
+                restart->arg0 = (unsigned long)uaddr;
+                restart->arg1 = (unsigned long)val;
+                restart->arg2 = (unsigned long)abs_time;
+                restart->arg3 = 0;
+                if (fshared)
+                        restart->arg3 |= ARG3_SHARED;
+                return -ERESTART_RESTARTBLOCK;
+[...]
+
+static long futex_wait_restart(struct restart_block *restart)
+{
+        u32 __user *uaddr = (u32 __user *)restart->arg0;
+        u32 val = (u32)restart->arg1;
+        ktime_t *abs_time = (ktime_t *)restart->arg2;
+        struct rw_semaphore *fshared = NULL;
+
+        restart->fn = do_no_restart_syscall;
+        if (restart->arg3 & ARG3_SHARED)
+                fshared = &current->mm->mmap_sem;
+        return (long)futex_wait(uaddr, fshared, val, abs_time);
+}
+
+So when the futex_wait is interrupt by a signal we break out of the
+hrtimer code and set up or return from signal. This code does not return
+back to userspace, so we set up a RESTARTBLOCK.  The bug here is that we
+save the "abs_time" which is a pointer to the stack variable "ktime_t t"
+from sys_futex.
+
+This returns and unwinds the stack before we get to call our signal. On
+return from the signal we go to futex_wait_restart, where we update all
+the parameters for futex_wait and call it. But here we have a problem
+where abs_time is no longer valid.
+
+I verified this with print statements, and sure enough, what abs_time
+was set to ends up being garbage when we get to futex_wait_restart.
+
+The solution I did to solve this (with input from Linus Torvalds)
+was to add unions to the restart_block to allow system calls to
+use the restart with specific parameters.  This way the futex code now
+saves the time in a 64bit value in the restart block instead of storing
+it on the stack.
+
+Note: I'm a bit nervious to add "linux/types.h" and use u32 and u64
+in thread_info.h, when there's a #ifdef __KERNEL__ just below that.
+Not sure what that is there for.  If this turns out to be a problem, I've
+tested this with using "unsigned int" for u32 and "unsigned long long" for
+u64 and it worked just the same. I'm using u32 and u64 just to be
+consistent with what the futex code uses.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/isdn/i4l/isdn_net.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ include/linux/thread_info.h |   17 +++++++++++++++--
+ kernel/futex.c              |   25 +++++++++++++------------
+ 2 files changed, 28 insertions(+), 14 deletions(-)
 
---- a/drivers/isdn/i4l/isdn_net.c
-+++ b/drivers/isdn/i4l/isdn_net.c
-@@ -2126,7 +2126,7 @@ isdn_net_find_icall(int di, int ch, int 
- 	u_long flags;
- 	isdn_net_dev *p;
- 	isdn_net_phone *n;
--	char nr[32];
-+	char nr[ISDN_MSNLEN];
- 	char *my_eaz;
+--- a/include/linux/thread_info.h
++++ b/include/linux/thread_info.h
+@@ -7,12 +7,25 @@
+ #ifndef _LINUX_THREAD_INFO_H
+ #define _LINUX_THREAD_INFO_H
  
- 	/* Search name in netdev-chain */
-@@ -2135,7 +2135,7 @@ isdn_net_find_icall(int di, int ch, int 
- 		nr[1] = '\0';
- 		printk(KERN_INFO "isdn_net: Incoming call without OAD, assuming '0'\n");
- 	} else
--		strcpy(nr, setup->phone);
-+		strlcpy(nr, setup->phone, ISDN_MSNLEN);
- 	si1 = (int) setup->si1;
- 	si2 = (int) setup->si2;
- 	if (!setup->eazmsn[0]) {
-@@ -2802,7 +2802,7 @@ isdn_net_setcfg(isdn_net_ioctl_cfg * cfg
- 				chidx = -1;
- 			}
- 		}
--		strcpy(lp->msn, cfg->eaz);
-+		strlcpy(lp->msn, cfg->eaz, sizeof(lp->msn));
- 		lp->pre_device = drvidx;
- 		lp->pre_channel = chidx;
- 		lp->onhtime = cfg->onhtime;
-@@ -2951,7 +2951,7 @@ isdn_net_addphone(isdn_net_ioctl_phone *
- 	if (p) {
- 		if (!(n = kmalloc(sizeof(isdn_net_phone), GFP_KERNEL)))
- 			return -ENOMEM;
--		strcpy(n->num, phone->phone);
-+		strlcpy(n->num, phone->phone, sizeof(n->num));
- 		n->next = p->local->phone[phone->outgoing & 1];
- 		p->local->phone[phone->outgoing & 1] = n;
- 		return 0;
++#include <linux/types.h>
++
+ /*
+- * System call restart block. 
++ * System call restart block.
+  */
+ struct restart_block {
+ 	long (*fn)(struct restart_block *);
+-	unsigned long arg0, arg1, arg2, arg3;
++	union {
++		struct {
++			unsigned long arg0, arg1, arg2, arg3;
++		};
++		/* For futex_wait */
++		struct {
++			u32 *uaddr;
++			u32 val;
++			u32 flags;
++			u64 time;
++		} futex;
++	};
+ };
+ 
+ extern long do_no_restart_syscall(struct restart_block *parm);
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1149,9 +1149,9 @@ static int fixup_pi_state_owner(u32 __us
+ 
+ /*
+  * In case we must use restart_block to restart a futex_wait,
+- * we encode in the 'arg3' shared capability
++ * we encode in the 'flags' shared capability
+  */
+-#define ARG3_SHARED  1
++#define FLAGS_SHARED  1
+ 
+ static long futex_wait_restart(struct restart_block *restart);
+ 
+@@ -1290,12 +1290,13 @@ static int futex_wait(u32 __user *uaddr,
+ 		struct restart_block *restart;
+ 		restart = &current_thread_info()->restart_block;
+ 		restart->fn = futex_wait_restart;
+-		restart->arg0 = (unsigned long)uaddr;
+-		restart->arg1 = (unsigned long)val;
+-		restart->arg2 = (unsigned long)abs_time;
+-		restart->arg3 = 0;
++		restart->futex.uaddr = (u32 *)uaddr;
++		restart->futex.val = val;
++		restart->futex.time = abs_time->tv64;
++		restart->futex.flags = 0;
++
+ 		if (fshared)
+-			restart->arg3 |= ARG3_SHARED;
++			restart->futex.flags |= FLAGS_SHARED;
+ 		return -ERESTART_RESTARTBLOCK;
+ 	}
+ 
+@@ -1310,15 +1311,15 @@ static int futex_wait(u32 __user *uaddr,
+ 
+ static long futex_wait_restart(struct restart_block *restart)
+ {
+-	u32 __user *uaddr = (u32 __user *)restart->arg0;
+-	u32 val = (u32)restart->arg1;
+-	ktime_t *abs_time = (ktime_t *)restart->arg2;
++	u32 __user *uaddr = (u32 __user *)restart->futex.uaddr;
+ 	struct rw_semaphore *fshared = NULL;
++	ktime_t t;
+ 
++	t.tv64 = restart->futex.time;
+ 	restart->fn = do_no_restart_syscall;
+-	if (restart->arg3 & ARG3_SHARED)
++	if (restart->futex.flags & FLAGS_SHARED)
+ 		fshared = &current->mm->mmap_sem;
+-	return (long)futex_wait(uaddr, fshared, val, abs_time);
++	return (long)futex_wait(uaddr, fshared, restart->futex.val, &t);
+ }
+ 
+ 
 
 -- 
