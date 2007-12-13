@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761660AbXLMGsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761849AbXLMGsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761660AbXLMGsL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:48:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760008AbXLMGia
+	id S1761849AbXLMGsd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758700AbXLMGic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:38:30 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56650 "EHLO
+	Thu, 13 Dec 2007 01:38:32 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56661 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759977AbXLMGi2 (ORCPT
+	with ESMTP id S1752691AbXLMGia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:38:28 -0500
-Date: Wed, 12 Dec 2007 22:35:23 -0800
+	Thu, 13 Dec 2007 01:38:30 -0500
+Date: Wed, 12 Dec 2007 22:35:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,17 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Neil Brown <neilb@suse.de>,
-       "Luiz Fernando N. Capitulino" <lcapitulino@gmail.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       Oliver Pintr <oliver.pntr@gmail.com>
-Subject: [patch 30/36] knfsd: Validate filehandle type in fsid_source
-Message-ID: <20071213063523.GE25301@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 31/36] Revert "Fix SMP poweroff hangs"
+Message-ID: <20071213063525.GF25301@kroah.com>
 References: <20071213062511.265908583@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="knfsd-validate-filehandle-type-in-fsid_source.patch"
+Content-Disposition: inline; filename="revert-fix-smp-poweroff-hangs.patch"
 In-Reply-To: <20071213063308.GA25301@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,61 +38,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Neil Brown <neilb@suse.de>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-patch b8da0d1c27f144bce999c653467106f3f0d5a308 in mainline.
+This reverts the following changeset in 2.6.22.10 that caused a lot of
+reported problems.
 
-fsid_source decided where to get the 'fsid' number to
-return for a GETATTR based on the type of filehandle.
-It can be from the device, from the fsid, or from the
-UUID.
+	From: Mark Lord <lkml@rtr.ca>
 
-It is possible for the filehandle to be inconsistent
-with the export information, so make sure the export information
-actually has the info implied by the value returned by
-fsid_source.
+	commit 4047727e5ae33f9b8d2b7766d1994ea6e5ec2991 from upstream
 
-Signed-off-by: Neil Brown <neilb@suse.de>
-Cc: "Luiz Fernando N. Capitulino" <lcapitulino@gmail.com>
-Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Oliver Pintr <oliver.pntr@gmail.com>
+	We need to disable all CPUs other than the boot CPU (usually 0) before
+	attempting to power-off modern SMP machines.  This fixes the
+	hang-on-poweroff issue on my MythTV SMP box, and also on Thomas Gleixner's
+	new toybox.
+
+	Signed-off-by: Mark Lord <mlord@pobox.com>
+	Acked-by: Thomas Gleixner <tglx@linutronix.de>
+	Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+	Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+There still is a remaining shutdown problem in 2.6.22 with old APM based
+systems, but this fix is not the correct one
+
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- fs/nfsd/nfsfh.c |   20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
 
---- a/fs/nfsd/nfsfh.c
-+++ b/fs/nfsd/nfsfh.c
-@@ -565,13 +565,23 @@ enum fsid_source fsid_source(struct svc_
- 	case FSID_DEV:
- 	case FSID_ENCODE_DEV:
- 	case FSID_MAJOR_MINOR:
--		return FSIDSOURCE_DEV;
-+		if (fhp->fh_export->ex_dentry->d_inode->i_sb->s_type->fs_flags
-+		    & FS_REQUIRES_DEV)
-+			return FSIDSOURCE_DEV;
-+		break;
- 	case FSID_NUM:
--		return FSIDSOURCE_FSID;
--	default:
- 		if (fhp->fh_export->ex_flags & NFSEXP_FSID)
- 			return FSIDSOURCE_FSID;
--		else
--			return FSIDSOURCE_UUID;
-+		break;
-+	default:
-+		break;
- 	}
-+	/* either a UUID type filehandle, or the filehandle doesn't
-+	 * match the export.
-+	 */
-+	if (fhp->fh_export->ex_flags & NFSEXP_FSID)
-+		return FSIDSOURCE_FSID;
-+	if (fhp->fh_export->ex_uuid)
-+		return FSIDSOURCE_UUID;
-+	return FSIDSOURCE_DEV;
+---
+ kernel/sys.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -31,7 +31,6 @@
+ #include <linux/cn_proc.h>
+ #include <linux/getcpu.h>
+ #include <linux/task_io_accounting_ops.h>
+-#include <linux/cpu.h>
+ 
+ #include <linux/compat.h>
+ #include <linux/syscalls.h>
+@@ -866,7 +865,6 @@ EXPORT_SYMBOL_GPL(kernel_halt);
+ void kernel_power_off(void)
+ {
+ 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
+-	disable_nonboot_cpus();
+ 	printk(KERN_EMERG "Power down.\n");
+ 	machine_power_off();
  }
 
 -- 
