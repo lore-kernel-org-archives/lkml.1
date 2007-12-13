@@ -1,31 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934324AbXLMXKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934517AbXLMXLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934324AbXLMXKU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 18:10:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764163AbXLMXKH
+	id S934517AbXLMXLd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 18:11:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbXLMXLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 18:10:07 -0500
-Received: from gate.crashing.org ([63.228.1.57]:33041 "EHLO gate.crashing.org"
+	Thu, 13 Dec 2007 18:11:25 -0500
+Received: from gate.crashing.org ([63.228.1.57]:33059 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762708AbXLMXKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 18:10:05 -0500
-Subject: Re: Possible issue with dangling PCI BARs
+	id S1753710AbXLMXLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 18:11:24 -0500
+Subject: Re: What was the problem with quicklists and x86-64?
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Reply-To: benh@kernel.crashing.org
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Jesse Barnes <jesse.barnes@intel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Robert Hancock <hancockr@shaw.ca>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20071214001239.B21652@jurassic.park.msu.ru>
-References: <fa.YfTvVN5C3e6zwXPW5biWgeZ9XXc@ifi.uio.no>
-	 <1197544621.15741.132.camel@pasglop> <1197544820.15741.137.camel@pasglop>
-	 <200712131204.18227.jesse.barnes@intel.com>
-	 <1197579066.15741.167.camel@pasglop>
-	 <20071214001239.B21652@jurassic.park.msu.ru>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Asit Mallick <asit.k.mallick@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0712131435520.25120@schroedinger.engr.sgi.com>
+References: <47603321.4030700@goop.org>
+	 <Pine.LNX.4.64.0712131131540.13396@schroedinger.engr.sgi.com>
+	 <1197578876.15741.163.camel@pasglop>
+	 <Pine.LNX.4.64.0712131251300.18314@schroedinger.engr.sgi.com>
+	 <1197579788.15741.172.camel@pasglop>
+	 <Pine.LNX.4.64.0712131332100.24778@schroedinger.engr.sgi.com>
+	 <1197584859.15741.185.camel@pasglop>
+	 <Pine.LNX.4.64.0712131435520.25120@schroedinger.engr.sgi.com>
 Content-Type: text/plain
-Date: Fri, 14 Dec 2007 10:09:28 +1100
-Message-Id: <1197587368.15741.187.camel@pasglop>
+Date: Fri, 14 Dec 2007 10:10:30 +1100
+Message-Id: <1197587431.15741.189.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -34,30 +40,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2007-12-14 at 00:12 +0300, Ivan Kokshaysky wrote:
-> On Fri, Dec 14, 2007 at 07:51:06AM +1100, Benjamin Herrenschmidt wrote:
-> > If the device is behind a P2P bridge and the BIOS has set the windows of
-> > that bridge so tightly that there is no room to allocate the MMIO BAR,
-> > then a full disable/full enable would fail on a device that would
-> > otherwise work using only PIO.
+On Thu, 2007-12-13 at 14:36 -0800, Christoph Lameter wrote:
+> On Fri, 14 Dec 2007, Benjamin Herrenschmidt wrote:
 > 
-> It won't be a problem with separate io/mmio enable.
-> 
-> > However, I'd be curious to see that happening in practice :-)
+> > > No this may mean that the problem does not exist on powerpc since it 
+> > > seems to be okay to free pages before all processors have flushed the 
+> > > TLBs? Or are you deferrring the freeing of the pages via RCU?
 > > 
-> > But I think it's fair enough to do an IO only / MEM only approach. I've
-> > seen cases where IO is just not useable because of other constraints and
-> > so I expect the MEM-only case to be more common, especially on non-x86.
+> > I'm deferring the freeing with RCU.
 > 
-> Everybody wants MEM if it's available - it's just faster :-)
-> So I guess a common case will be
+> The deferral works on a page level or for the whole list of pages that 
+> have been gathered?
 
- .../...
+We have a separate batch to store page table pages with an RCU head on
+it, we fire it off when it's full or when tlb gather is complete.
 
-Right, I'm going to cook up some patch as time permit, maybe not before
-next week tho.
-
-Cheers,
 Ben.
-
 
