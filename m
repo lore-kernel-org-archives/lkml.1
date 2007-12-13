@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762926AbXLMS0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763275AbXLMSaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762926AbXLMS0R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 13:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755917AbXLMS0E
+	id S1763275AbXLMSaa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 13:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbXLMSaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 13:26:04 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:47057 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756752AbXLMS0D (ORCPT
+	Thu, 13 Dec 2007 13:30:15 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35769 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752611AbXLMSaN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 13:26:03 -0500
-Date: Thu, 13 Dec 2007 10:25:29 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, tony@bakeyournoodle.com, paulus@samba.org,
-       benh@kernel.crashing.org, dino@in.ibm.com, tytso@us.ibm.com,
-       dvhltc@us.ibm.com, antonb@us.ibm.com
-Subject: Re: [PATCH, RFC] hacks to allow -rt to run kernbench on POWER
-Message-ID: <20071213182529.GD10307@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20071029185044.GA23413@linux.vnet.ibm.com> <Pine.LNX.4.58.0712122253390.19475@gandalf.stny.rr.com> <20071213061029.GB25047@linux.vnet.ibm.com> <Pine.LNX.4.58.0712130748230.27141@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0712130748230.27141@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 13 Dec 2007 13:30:13 -0500
+Date: Thu, 13 Dec 2007 10:22:33 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: gallatin@myri.com, joonwpark81@gmail.com, auke-jan.h.kok@intel.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       jesse.brandeburg@intel.com
+Subject: Re: [RFC] net: napi fix
+Message-ID: <20071213102233.3727e9a0@freepuppy.rosehill>
+In-Reply-To: <20071213.061938.86541759.davem@davemloft.net>
+References: <47602B77.2090202@intel.com>
+	<b25c3fa70712122341q3ba282cdqda3fa56901b14484@mail.gmail.com>
+	<47613E22.6060705@myri.com>
+	<20071213.061938.86541759.davem@davemloft.net>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 07:52:41AM -0500, Steven Rostedt wrote:
+On Thu, 13 Dec 2007 06:19:38 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
+
+> From: Andrew Gallatin <gallatin@myri.com>
+> Date: Thu, 13 Dec 2007 09:13:54 -0500
 > 
+> > If the netif_running() check is indeed required to make a device break
+> > out of napi polling and respond to an ifconfig down, then I think the
+> > netif_running() check should be moved up into net_rx_action() to avoid
+> > potential for driver complexity and bugs like the ones you found.
 > 
-> On Wed, 12 Dec 2007, Paul E. McKenney wrote:
-> 
-> > >
-> > > I'm pulling your patch for the above added code. Took me a few hours to
-> > > find the culprit, but I was getting scheduling in atomic bugs. Turns out
-> > > that this code you put "preempt_disable" in calls sleeping spinlocks.
-> > >
-> > > Might want to run with DEBUG_PREEMPT.
-> >
-> > I thought that you had already pulled the above version...
-> >
-> > Here is the replacement that I posted on November 9th (with much help
-> > from Ben H):
-> >
-> > http://lkml.org/lkml/2007/11/9/114
-> 
-> OK, sorry, I somehow got the two reversed, and I think I replaced the new
-> one with the old one :-(
+> That, or something like it, definitely sounds reasonable and much
+> better than putting the check into every driver :-)
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-That sounds like something -I- would do!!!  ;-)
+It is not possible to do netif_running() check in generic code as currently
+written because of the case of devices where a single NAPI object is
+being used to handle two devices. The association between napi and netdevice
+is M to N.  There are cases like niu that have multiple NAPI's and one
+netdevice; and devices like sky2 that can have one NAPI and 2 netdevice's.
 
-> I blame the expresso!
+The existing pointer from napi to netdevice is only used by netconsole
+now. For devices like sky2 it means that netconsole can't work on the the
+second port which is a not a big problem. But adding a netif_running()
+check would be a big issue.
 
-If you give -me- espresso, you also have to give me a putty knife so that
-I can scrape myself off of the ceiling!
-
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> OK, will apply to -rt14
-
-Thank you!
-
-							Thanx, Paul
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
