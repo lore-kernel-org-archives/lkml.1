@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764262AbXLMW1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765786AbXLMW3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764262AbXLMW1m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759986AbXLMW1e
+	id S1765786AbXLMW3K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:29:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761385AbXLMW24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:27:34 -0500
-Received: from gw.goop.org ([64.81.55.164]:38773 "EHLO mail.goop.org"
+	Thu, 13 Dec 2007 17:28:56 -0500
+Received: from gate.crashing.org ([63.228.1.57]:57384 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759028AbXLMW1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:27:33 -0500
-Message-ID: <4761B1C3.2000606@goop.org>
-Date: Thu, 13 Dec 2007 14:27:15 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: Re: [PATCH 1/3] x86: clean up asm-x86/page*.h
-References: <476030CE.4050203@goop.org> <20071213102110.GP8977@elte.hu> <47619D0D.4010909@goop.org> <20071213213226.GA11442@elte.hu>
-In-Reply-To: <20071213213226.GA11442@elte.hu>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752477AbXLMW24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 17:28:56 -0500
+Subject: Re: What was the problem with quicklists and x86-64?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Asit Mallick <asit.k.mallick@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0712131332100.24778@schroedinger.engr.sgi.com>
+References: <47603321.4030700@goop.org>
+	 <Pine.LNX.4.64.0712131131540.13396@schroedinger.engr.sgi.com>
+	 <1197578876.15741.163.camel@pasglop>
+	 <Pine.LNX.4.64.0712131251300.18314@schroedinger.engr.sgi.com>
+	 <1197579788.15741.172.camel@pasglop>
+	 <Pine.LNX.4.64.0712131332100.24778@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Fri, 14 Dec 2007 09:27:39 +1100
+Message-Id: <1197584859.15741.185.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> You can force git to non-append jump-pull the remote via changing 
-> .git/refs/remotes/origin/HEAD from:
->
->  ref: refs/remotes/origin/master
->
-> to:
->
->  ref: +refs/remotes/origin/master
->   
 
-This just gets me lots of "error: refs/remotes/origin/HEAD points
-nowhere!" messages.  Maybe it will work now I've properly set up a local
-branch to track the remote branch.  We'll see...
+On Thu, 2007-12-13 at 13:33 -0800, Christoph Lameter wrote:
+> > 
+> > Ah ok, so that's a NUMA issue due to how the quicklists are
+> implemented,
+> > I see. Note that the flush isn't necessary a solution on all
+> platforms.
+> > On powerpc, I -still- need to defer with RCU as we don't do anything
+> in
+> > flush tlb. Our TLB invalidations are HW broadcast in the first
+> place,
+> > but what we need to sync with is the SW hash reload code.
+> > 
+> > So your solution in the quicklists doesn't solve the problem for us.
+> 
+> No this may mean that the problem does not exist on powerpc since it 
+> seems to be okay to free pages before all processors have flushed the 
+> TLBs? Or are you deferrring the freeing of the pages via RCU?
 
-    J
+I'm deferring the freeing with RCU.
+
+Ben.
+
+
