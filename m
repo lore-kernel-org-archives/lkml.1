@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760831AbXLMGkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760195AbXLMGkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760831AbXLMGkB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:40:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbXLMGhI
+	id S1760195AbXLMGkb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:40:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758645AbXLMGhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:37:08 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56255 "EHLO
+	Thu, 13 Dec 2007 01:37:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56258 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758500AbXLMGhG (ORCPT
+	with ESMTP id S1758598AbXLMGhH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:37:06 -0500
-Date: Wed, 12 Dec 2007 22:34:22 -0800
+	Thu, 13 Dec 2007 01:37:07 -0500
+Date: Wed, 12 Dec 2007 22:34:25 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,14 +21,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Benny Halevy <bhalevy@fs1.bhalevy.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 08/36] libcrc32c: keep intermediate crc state in cpu order
-Message-ID: <20071213063422.GI25301@kroah.com>
+       Karsten Keil <kkeil@suse.de>
+Subject: [patch 09/36] isdn: avoid copying overly-long strings
+Message-ID: <20071213063425.GJ25301@kroah.com>
 References: <20071213062511.265908583@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="libcrc32c-keep-intermediate-crc-state-in-cpu-order.patch"
+Content-Disposition: inline; filename="isdn-avoid-copying-overly-long-strings.patch"
 In-Reply-To: <20071213063308.GA25301@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,53 +40,58 @@ know.
 
 ------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Karsten Keil <kkeil@suse.de>
 
-It's upstream changeset ef19454bd437b2ba14c9cda1de85debd9f383484.
+patch 0f13864e5b24d9cbe18d125d41bfa4b726a82e40 in mainline.
 
-[LIB] crc32c: Keep intermediate crc state in cpu order
+Addresses http://bugzilla.kernel.org/show_bug.cgi?id=9416
 
-crypto/crc32.c:chksum_final() is computing the digest as
-*(__le32 *)out = ~cpu_to_le32(mctx->crc);
-so the low-level crc32c_le routines should just keep
-the crc in cpu order, otherwise it is getting swabbed
-one too many times on big-endian machines.
-
-Signed-off-by: Benny Halevy <bhalevy@fs1.bhalevy.com>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: Karsten Keil <kkeil@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- lib/libcrc32c.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/isdn/i4l/isdn_net.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/lib/libcrc32c.c
-+++ b/lib/libcrc32c.c
-@@ -33,7 +33,6 @@
- #include <linux/crc32c.h>
- #include <linux/compiler.h>
- #include <linux/module.h>
--#include <asm/byteorder.h>
+--- a/drivers/isdn/i4l/isdn_net.c
++++ b/drivers/isdn/i4l/isdn_net.c
+@@ -2126,7 +2126,7 @@ isdn_net_find_icall(int di, int ch, int 
+ 	u_long flags;
+ 	isdn_net_dev *p;
+ 	isdn_net_phone *n;
+-	char nr[32];
++	char nr[ISDN_MSNLEN];
+ 	char *my_eaz;
  
- MODULE_AUTHOR("Clay Haapala <chaapala@cisco.com>");
- MODULE_DESCRIPTION("CRC32c (Castagnoli) calculations");
-@@ -161,15 +160,13 @@ static const u32 crc32c_table[256] = {
-  */
- 
- u32 __attribute_pure__
--crc32c_le(u32 seed, unsigned char const *data, size_t length)
-+crc32c_le(u32 crc, unsigned char const *data, size_t length)
- {
--	u32 crc = __cpu_to_le32(seed);
--	
- 	while (length--)
- 		crc =
- 		    crc32c_table[(crc ^ *data++) & 0xFFL] ^ (crc >> 8);
- 
--	return __le32_to_cpu(crc);
-+	return crc;
- }
- 
- #endif	/* CRC_LE_BITS == 8 */
+ 	/* Search name in netdev-chain */
+@@ -2135,7 +2135,7 @@ isdn_net_find_icall(int di, int ch, int 
+ 		nr[1] = '\0';
+ 		printk(KERN_INFO "isdn_net: Incoming call without OAD, assuming '0'\n");
+ 	} else
+-		strcpy(nr, setup->phone);
++		strlcpy(nr, setup->phone, ISDN_MSNLEN);
+ 	si1 = (int) setup->si1;
+ 	si2 = (int) setup->si2;
+ 	if (!setup->eazmsn[0]) {
+@@ -2802,7 +2802,7 @@ isdn_net_setcfg(isdn_net_ioctl_cfg * cfg
+ 				chidx = -1;
+ 			}
+ 		}
+-		strcpy(lp->msn, cfg->eaz);
++		strlcpy(lp->msn, cfg->eaz, sizeof(lp->msn));
+ 		lp->pre_device = drvidx;
+ 		lp->pre_channel = chidx;
+ 		lp->onhtime = cfg->onhtime;
+@@ -2951,7 +2951,7 @@ isdn_net_addphone(isdn_net_ioctl_phone *
+ 	if (p) {
+ 		if (!(n = kmalloc(sizeof(isdn_net_phone), GFP_KERNEL)))
+ 			return -ENOMEM;
+-		strcpy(n->num, phone->phone);
++		strlcpy(n->num, phone->phone, sizeof(n->num));
+ 		n->next = p->local->phone[phone->outgoing & 1];
+ 		p->local->phone[phone->outgoing & 1] = n;
+ 		return 0;
 
 -- 
