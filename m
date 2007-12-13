@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbXLMVbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933303AbXLMVbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933036AbXLMVbY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 16:31:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763667AbXLMVbP
+	id S933303AbXLMVbn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 16:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764111AbXLMVbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 16:31:15 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52980 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754007AbXLMVbO (ORCPT
+	Thu, 13 Dec 2007 16:31:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:49610 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752212AbXLMVbO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 13 Dec 2007 16:31:14 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Mark timer_stats as incompatible with multiple pid namespaces
-References: <m13au7tsov.fsf@ebiederm.dsl.xmission.com>
-	<20071213090102.GB1926@elte.hu>
-	<m1r6hqstat.fsf@ebiederm.dsl.xmission.com>
-	<20071213130423.GB28340@elte.hu>
-	<m1ir32sejc.fsf@ebiederm.dsl.xmission.com>
-	<20071213202621.GC25130@elte.hu>
-Date: Thu, 13 Dec 2007 14:29:09 -0700
-In-Reply-To: <20071213202621.GC25130@elte.hu> (Ingo Molnar's message of "Thu,
-	13 Dec 2007 21:26:21 +0100")
-Message-ID: <m1prxaqo62.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Message-ID: <4761A385.1080301@zytor.com>
+Date: Thu, 13 Dec 2007 13:26:29 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: Glauber de Oliveira Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       glommer@gmail.com, tglx@linutronix.de, ehabkost@redhat.com,
+       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, zach@vmware.com,
+       roland@redhat.com
+Subject: Re: [PATCH] avoid ifdefs in desc.h, getting rid of pack_ldt and	pack_tss
+References: <11975561713425-git-send-email-gcosta@redhat.com> <20071213202800.GD25130@elte.hu> <20071213205838.GA9649@elte.hu> <20071213212221.GA16747@elte.hu>
+In-Reply-To: <20071213212221.GA16747@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Ingo Molnar wrote:
+> 
+>> could we _please_ use basic tools as vmlinux size comparison and 
+>> objcompare when unifying, to make sure it's a 100% identity 
+>> conversion?
+> 
+> case in point, the patch claims:
+> 
+>>> No functional change is made.
+> 
+> but vmlinux before/after size comparison shows:
+> 
+>     text    data     bss     dec     hex filename
+>  8802894 1224910 3526656 13554460         ced31c vmlinux.before
+>  8803042 1224910 3526656 13554608         ced3b0 vmlinux.after
+> 
 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
->
->> > the problem is, this interface stores historic PIDs too - i.e. PIDs 
->> > of tasks that might have exited already.
->> 
->> Well struct pid * works in that case if you grab the reference to it.
->
-> but the display of the stats might happen much later. The point of this 
-> API is to save pid+comm, which gives users a good idea about what caused 
-> the events in the past - without having to pin any resource of that 
-> task.
+Well, "no functional changes" is not quite the same thing as "no object 
+code changes".
 
-Likewise struct pid is designed not to be a problem if pinned. It is a
-little heavier then it used to be with the addition of pid namespace
-support but not much.  And if it is to heavy struct pid needs to be
-fixed.
-
-Holding the struct pid very much does not pin the task struct, and it
-shouldn't pin any other resources.  I agree 64bytes or so is a bit
-more to pin then 4 bytes but it really isn't a lot.
-
->>  {
->>  	timer->start_site = NULL;
->> +	pit_pid(timer->start_pid);
->> +	timer->start_pid = NULL;
->
-> s/pit/put, right?
-
-Yes.  Clearly I haven't tested it yet.
-
-Eric
-
-
+	-hpa
