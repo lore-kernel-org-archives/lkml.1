@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762739AbXLMReT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763958AbXLMRhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762739AbXLMReT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 12:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759856AbXLMReK
+	id S1763958AbXLMRhR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 12:37:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761397AbXLMRhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 12:34:10 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36237
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1759804AbXLMReI (ORCPT
+	Thu, 13 Dec 2007 12:37:01 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:52289 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760431AbXLMRg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 12:34:08 -0500
-Date: Thu, 13 Dec 2007 09:34:07 -0800 (PST)
-Message-Id: <20071213.093407.42002244.davem@davemloft.net>
-To: tcallawa@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix compiler warning noise with FORE200E driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1197562900.17945.16.camel@localhost.localdomain>
-References: <1197562900.17945.16.camel@localhost.localdomain>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Dec 2007 12:36:59 -0500
+Date: Thu, 13 Dec 2007 12:36:47 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gautham R Shenoy <ego@in.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ted Tso <tytso@us.ibm.com>,
+       dvhltc@us.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       Josh Triplett <josh@freedesktop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC PATCH 0/6] RCU: Preemptible-RCU
+In-Reply-To: <20071213170348.GA25981@in.ibm.com>
+Message-ID: <Pine.LNX.4.58.0712131230220.3369@gandalf.stny.rr.com>
+References: <20071213170348.GA25981@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Tom \"spot\" Callaway" <tcallawa@redhat.com>
-Date: Thu, 13 Dec 2007 11:21:40 -0500
+On Thu, 13 Dec 2007, Gautham R Shenoy wrote:
 
-> gcc throws these warnings with:
-> 
-> CONFIG_ATM_FORE200E=m
-> # CONFIG_ATM_FORE200E_PCA is not set
-> 
-> drivers/atm/fore200e.c:2695: warning: 'fore200e_pca_detect' defined but
-> not used
-> drivers/atm/fore200e.c:2748: warning: 'fore200e_pca_remove_one' defined
-> but not used
-> 
-> By moving the #ifdef CONFIG_ATM_FORE200E_PCA around those two functions,
-> the compiler warnings are silenced.
-> 
-> (btw, I'm not subscribed to lkml, so please CC me on any responses,
-> although this is a wholly trivial patch, so I'm not expecting any.)
-> 
-> Signed-off-by: Tom "spot" Callaway <tcallawa@redhat.com>
+>
+> Currently it is based against the latest linux-2.6-sched-devel.git
+>
+> Awaiting your feedback!
 
-Applied, thanks Tom.
+Hi Gautham,
+
+Thanks for posting this. I believe this is the same version of preempt RCU
+as we have in the RT patch. It seems to be very stable. I ran the RT patch
+version of the RCU Preempt (just the Preempt RCU patches without RT on
+latest git) on a 64way box and the results seems just as good (if not
+slightly better) than classic RCU!  I'll rerun this patch series on that
+box and post the results.
+
+>From what I'm seening with this, is that it is ready for mainline. These
+patches should probably go into -mm and be ready for 2.6.25.  If Andrew
+wants to wait for my results, I'll run them tonight.
+
+Thanks Gautham, Paul and Dipankar for all this great work!
+
+-- Steve
 
