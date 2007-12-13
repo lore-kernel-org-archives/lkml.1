@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbXLMPUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761154AbXLMPYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762038AbXLMPUG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 10:20:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbXLMPTz
+	id S1761154AbXLMPYu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 10:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbXLMPYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 10:19:55 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:53699 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753036AbXLMPTy (ORCPT
+	Thu, 13 Dec 2007 10:24:40 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49284 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753873AbXLMPYi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 10:19:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=j7UqD36ZcMI2yqZuiPfhfuYMW1Sy/MtkYD7Qo/y6wJZs0jkatpJn0uwYt8m6fgdNhd6UeeFZFK3HZP/h+WSYC5mH1/C1JbvRRmaMPr5INxRub9xlLQV3D03Wak9YO2IjP08U/RA1zN1/PihCmEsfzOcUrNr2IGLJojDsAvisXz8=
-Message-ID: <47614D99.7090505@gmail.com>
-Date: Thu, 13 Dec 2007 16:19:53 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Rene Herman <rene.herman@gmail.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
-       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
-       john@stoffel.org, linux-os@analogic.com
-Subject: Re: [RFT] Port 0x80 I/O speed
-References: <475F1DC6.5090403@keyaccess.nl> <475FA060.6070004@gmail.com> <4af2d03a0712120325n50d057baq7ec440c5e57fda39@mail.gmail.com> <47602BF2.9030602@zytor.com> <47603437.905@keyaccess.nl>
-In-Reply-To: <47603437.905@keyaccess.nl>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 13 Dec 2007 10:24:38 -0500
+Date: Thu, 13 Dec 2007 10:24:17 -0500
+Message-Id: <200712131524.lBDFOHBv024206@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, hch@infradead.org, viro@ftp.linux.org.uk,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 36/42] VFS: export drop_pagecache_sb 
+In-reply-to: Your message of "Wed, 12 Dec 2007 16:38:34 +1100."
+             <200712121638.35167.nickpiggin@yahoo.com.au> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman napsal(a):
-> On 12-12-07 19:44, H. Peter Anvin wrote:
+In message <200712121638.35167.nickpiggin@yahoo.com.au>, Nick Piggin writes:
+> On Monday 10 December 2007 13:42, Erez Zadok wrote:
+> > Needed to maintain cache coherency after branch management.
+> >
 > 
->>> model name      : Intel(R) Xeon(R) CPU           E5335  @ 2.00GHz
->>> cycles: out 3217, in 1898
->>
->> 1.6 µs, on the high end....
->>
->>> model name      : Dual Core AMD Opteron(tm) Processor 275
->>> cycles: out 5508, in 5524
->>
->> Definitely an outlier; 2.5 µs here.
+> Hmm, I'd much prefer to be able to sleep in invalidate_mapping_pages
+> before this function gets exported.
+> 
+> As it is, it can cause massive latencies on preemption and the inode_lock
+> so it is pretty much debug-only IMO. I'd rather it didn't escape into the
+> wild as is.
+> 
+> Either that or rework your cache coherency somehow.
 
-Now, it's around
-cycles: out 4763, in 5515
+Nick, thanks for the advice.
 
-It's
-cpu MHz         : 2205.209
+We use a generation number after each successful branch configuration
+command, so that ->d_revalidate later on can discover that change, and
+rebuild the union of objects.  At ->remount time, I figured it'd be nice to
+"encourage" that revalidation to happen sooner, by invalidating as many
+upper pages as possible, thus causing ->d_revalidate/->readpage to take
+place sooner.  So we used to call drop_pagecache_sb from our remount code:
+it was the only caller of drop_pagecache_sb.  It wasn't too much of an
+latency issue to call drop_pagecache_sb there: the VFS remount code path is
+already pretty slow (dropping temporarily to readonly mode, and dropping
+other caches), and remount isn't an operation used often, so a little bit
+more latency would probably not have been noticed by users.
+
+Nevertheless, it was not strictly necessary to call drop_pagecache_sb in
+unionfs_remount, because the objects in question will have gotten
+revalidated sooner or later anyway; the call to drop_pagecache_sb was just
+an optimization (one which I wasn't 100% sure about anyway, as per my long
+"XXX" comment above that call in unionfs_remount).
+
+So I agree with you: if this symbol can be abused by modules and cause
+problems, then exporting it to modules is too risky.  I've reworked my code
+to avoid calling drop_pagecache_sb and I'll [sic] drop that patch.
+
+Cheers,
+Erez.
