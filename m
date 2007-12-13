@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbXLMCAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbXLMCIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756103AbXLMCAd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 21:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbXLMCAZ
+	id S1756717AbXLMCIp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 21:08:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXLMCIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 21:00:25 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:35136 "EHLO
-	outbound8-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751944AbXLMCAY (ORCPT
+	Wed, 12 Dec 2007 21:08:36 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53462 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbXLMCIg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 21:00:24 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
-Message-ID: <4760922C.2060908@am.sony.com>
-Date: Wed, 12 Dec 2007 18:00:12 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+	Wed, 12 Dec 2007 21:08:36 -0500
+Message-ID: <476093B6.7080306@zytor.com>
+Date: Wed, 12 Dec 2007 18:06:46 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: Daniel Walker <dwalker@mvista.com>, matthias.kaehlcke@gmail.com,
-       linux-kernel@vger.kernel.org, linux@bohmer.net, linuxppc-dev@ozlabs.org,
-       mingo@elte.hu, kjwinchester@gmail.com
-Subject: Re: [PATCH 1/3] ps3: vuart: fix error path locking
-References: <20071213003028.676998182@mvista.com>
-In-Reply-To: <20071213003028.676998182@mvista.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Rene Herman <rene.herman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
+       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
+       john@stoffel.org, linux-os@analogic.com
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <475F1DC6.5090403@keyaccess.nl> <Pine.LNX.4.64.0712130041590.32346@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0712130041590.32346@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Dec 2007 02:00:16.0851 (UTC) FILETIME=[E8319230:01C83D2B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This stray down would cause a permanent sleep which doesn't seem correct. 
-> The other uses of this semaphore appear fairly mutex like it's even initialized
-> with init_MUTEX() ..  So here a patch for removing this one down().
+Jan Engelhardt wrote:
+> On Dec 12 2007 00:31, Rene Herman wrote:
+>> Would some people on x86 (both 32 and 64) be kind enough to compile and run the
+>> attached program? This is about testing how long I/O port access to port 0x80
+>> takes. It measures in CPU cycles so CPU speed is crucial in reporting.
+>>
 > 
-> Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> Transmeta TM5800 CPU with nominal frequency 933 MHz, but it has a
+> hardware(!) 'ondemand' governor over the range of frequencies that
+> the user allowed scaling over, irrespective of the software governor.
+> (That is, if the CPU can do 300,533 and 933 MHz, and setting the
+> min/max to 300/533 will cause the hardware to 'ondemand' between 300
+> and 533 only. And that even if 'performance' is set on the software
+> side - so the only way to enforce 'performance' is to actually set
+> min=933.)
 > 
-> ---
->  drivers/ps3/ps3-vuart.c |    1 -
->  1 file changed, 1 deletion(-)
 
+Actually it has two different ones (economy and performance), you can 
+use the "longrun" utility to select which one.
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Either way, all Transmeta processors have a fixed TSC, so there is no issue.
 
-
-Looks, good. 
-Andrew, Please apply.
-
--Geoff 
-
-
-
+	-hpa
