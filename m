@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbXLMGhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbXLMGhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758240AbXLMGhY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 01:37:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbXLMGgs
+	id S1758470AbXLMGhy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 01:37:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbXLMGgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:36:48 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56216 "EHLO
+	Thu, 13 Dec 2007 01:36:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56217 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752778AbXLMGgq (ORCPT
+	with ESMTP id S1752847AbXLMGgr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:36:46 -0500
-Date: Wed, 12 Dec 2007 22:33:48 -0800
+	Thu, 13 Dec 2007 01:36:47 -0500
+Date: Wed, 12 Dec 2007 22:33:53 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, greg@kroah.com,
-       chrisw@sous-sol.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,15 +20,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, csnook@redhat.com,
-       kronos.it@gmail.com, Jay Cliburn <jacliburn@bellsouth.net>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: [patch 01/36] atl1: disable broken 64-bit DMA
-Message-ID: <20071213063348.GB25301@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Christian Borntraeger <borntraeger@de.ibm.com>, Jan Kara <jack@suse.cz>,
+       Nick Piggin <npiggin@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [patch 02/36] rd: fix data corruption on memory pressure Future of
+	Linux 2.6.22.y series
+Message-ID: <20071213063353.GC25301@kroah.com>
 References: <20071213062511.265908583@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="atl1-disable-broken-64-bit-dma.patch"
+Content-Disposition: inline; filename="rd-fix-data-corruption-on-memory-pressure.patch"
 In-Reply-To: <20071213063308.GA25301@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -42,84 +43,68 @@ know.
 
 ------------------
 
-From: Luca Tettamanti <kronos.it@gmail.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-atl1: disable broken 64-bit DMA
+commit 5d0360ee96a5ef953dbea45873c2a8c87e77d59b upstream.
 
-[ Upstream commit: 5f08e46b621a769e52a9545a23ab1d5fb2aec1d4 ]
+We have seen ramdisk based install systems, where some pages of mapped
+libraries and programs were suddendly zeroed under memory pressure. This
+should not happen, as the ramdisk avoids freeing its pages by keeping
+them dirty all the time.
 
-The L1 network chip can DMA to 64-bit addresses, but multiple descriptor
-rings share a single register for the high 32 bits of their address, so
-only a single, aligned, 4 GB physical address range can be used at a time.
-As a result, we need to confine the driver to a 32-bit DMA mask, otherwise
-we see occasional data corruption errors in systems containing 4 or more
-gigabytes of RAM.
+It turns out that there is a case, where the VM makes a ramdisk page
+clean, without telling the ramdisk driver.  On memory pressure
+shrink_zone runs and it starts to run shrink_active_list.  There is a
+check for buffer_heads_over_limit, and if true, pagevec_strip is called.
+pagevec_strip calls try_to_release_page. If the mapping has no
+releasepage callback, try_to_free_buffers is called. try_to_free_buffers
+has now a special logic for some file systems to make a dirty page
+clean, if all buffers are clean. Thats what happened in our test case.
 
-Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
-Acked-by: Chris Snook <csnook@redhat.com>
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
+The simplest solution is to provide a noop-releasepage callback for the
+ramdisk driver. This avoids try_to_free_buffers for ramdisk pages.
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
+Acked-by: Nick Piggin <npiggin@suse.de>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 
 ---
- drivers/net/atl1/atl1_main.c |   25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+ drivers/block/rd.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
---- a/drivers/net/atl1/atl1_main.c
-+++ b/drivers/net/atl1/atl1_main.c
-@@ -2097,21 +2097,26 @@ static int __devinit atl1_probe(struct p
- 	struct net_device *netdev;
- 	struct atl1_adapter *adapter;
- 	static int cards_found = 0;
--	bool pci_using_64 = true;
- 	int err;
+--- a/drivers/block/rd.c
++++ b/drivers/block/rd.c
+@@ -189,6 +189,18 @@ static int ramdisk_set_page_dirty(struct
+ 	return 0;
+ }
  
- 	err = pci_enable_device(pdev);
- 	if (err)
- 		return err;
++/*
++ * releasepage is called by pagevec_strip/try_to_release_page if
++ * buffers_heads_over_limit is true. Without a releasepage function
++ * try_to_free_buffers is called instead. That can unset the dirty
++ * bit of our ram disk pages, which will be eventually freed, even
++ * if the page is still in use.
++ */
++static int ramdisk_releasepage(struct page *page, gfp_t dummy)
++{
++	return 0;
++}
++
+ static const struct address_space_operations ramdisk_aops = {
+ 	.readpage	= ramdisk_readpage,
+ 	.prepare_write	= ramdisk_prepare_write,
+@@ -196,6 +208,7 @@ static const struct address_space_operat
+ 	.writepage	= ramdisk_writepage,
+ 	.set_page_dirty	= ramdisk_set_page_dirty,
+ 	.writepages	= ramdisk_writepages,
++	.releasepage	= ramdisk_releasepage,
+ };
  
--	err = pci_set_dma_mask(pdev, DMA_64BIT_MASK);
-+	/*
-+	 * The atl1 chip can DMA to 64-bit addresses, but it uses a single
-+	 * shared register for the high 32 bits, so only a single, aligned,
-+	 * 4 GB physical address range can be used at a time.
-+	 *
-+	 * Supporting 64-bit DMA on this hardware is more trouble than it's
-+	 * worth.  It is far easier to limit to 32-bit DMA than update
-+	 * various kernel subsystems to support the mechanics required by a
-+	 * fixed-high-32-bit system.
-+	 */
-+	err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
- 	if (err) {
--		err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
--		if (err) {
--			dev_err(&pdev->dev, "no usable DMA configuration\n");
--			goto err_dma;
--		}
--		pci_using_64 = false;
-+		dev_err(&pdev->dev, "no usable DMA configuration\n");
-+		goto err_dma;
- 	}
- 	/* Mark all PCI regions associated with PCI device
- 	 * pdev as being reserved by owner atl1_driver_name
-@@ -2176,7 +2181,6 @@ static int __devinit atl1_probe(struct p
- 
- 	netdev->ethtool_ops = &atl1_ethtool_ops;
- 	adapter->bd_number = cards_found;
--	adapter->pci_using_64 = pci_using_64;
- 
- 	/* setup the private structure */
- 	err = atl1_sw_init(adapter);
-@@ -2193,9 +2197,6 @@ static int __devinit atl1_probe(struct p
- 	 */
- 	/* netdev->features |= NETIF_F_TSO; */
- 
--	if (pci_using_64)
--		netdev->features |= NETIF_F_HIGHDMA;
--
- 	netdev->features |= NETIF_F_LLTX;
- 
- 	/*
+ static int rd_blkdev_pagecache_IO(int rw, struct bio_vec *vec, sector_t sector,
 
 -- 
