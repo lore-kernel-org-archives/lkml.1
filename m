@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbXLMQMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761163AbXLMQQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760036AbXLMQMy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 11:12:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbXLMQMq
+	id S1761163AbXLMQQL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 11:16:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbXLMQPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 11:12:46 -0500
-Received: from mga01.intel.com ([192.55.52.88]:6280 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753186AbXLMQMo convert rfc822-to-8bit (ORCPT
+	Thu, 13 Dec 2007 11:15:55 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:48905 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087AbXLMQPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 11:12:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,162,1196668800"; 
-   d="scan'208";a="436868341"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Subject: RE: x86, ptrace: support for branch trace store(BTS)
-Date: Thu, 13 Dec 2007 16:06:15 -0000
-Message-ID: <029E5BE7F699594398CA44E3DDF5544401187085@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <20071213130814.GC28340@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: x86, ptrace: support for branch trace store(BTS)
-thread-index: Acg9iUL+TBkmgnUAQpCHzXICUyBu4gAAfTgA
-References: <20071210123809.A14251@sedona.ch.intel.com> <20071210202052.GA26002@elte.hu> <029E5BE7F699594398CA44E3DDF5544401130A1E@swsmsx413.ger.corp.intel.com> <20071211145301.GA19427@elte.hu> <029E5BE7F699594398CA44E3DDF554440115D3C5@swsmsx413.ger.corp.intel.com> <20071212110330.GD1611@elte.hu> <029E5BE7F699594398CA44E3DDF554440115D6DC@swsmsx413.ger.corp.intel.com> <20071213102939.GS8977@elte.hu> <029E5BE7F699594398CA44E3DDF5544401186D54@swsmsx413.ger.corp.intel.com> <20071213130814.GC28340@elte.hu>
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <ak@suse.de>, <hpa@zytor.com>, <linux-kernel@vger.kernel.org>,
-       <tglx@linutronix.de>, <markus.t.metzger@gmail.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, <roland@redhat.com>,
-       <akpm@linux-foundation.org>, <mtk.manpages@gmail.com>,
-       "Alan Stern" <stern@rowland.harvard.edu>
-X-OriginalArrivalTime: 13 Dec 2007 16:06:16.0940 (UTC) FILETIME=[17907AC0:01C83DA2]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 13 Dec 2007 11:15:53 -0500
+Subject: Re: [PATCH 0/6] Use two zonelists per node instead of multiple
+	zonelists v11r2
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
+       clameter@sgi.com
+In-Reply-To: <20071213092338.8b10944c.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20071211202157.1961.27940.sendpatchset@skynet.skynet.ie>
+	 <1197495172.5029.62.camel@localhost>
+	 <20071213092338.8b10944c.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 13 Dec 2007 11:16:09 -0500
+Message-Id: <1197562570.5031.44.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu] 
->Sent: Donnerstag, 13. Dezember 2007 14:08
+On Thu, 2007-12-13 at 09:23 +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 12 Dec 2007 16:32:51 -0500
+> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> 
+> > Just this afternoon, I hit a null pointer deref in
+> > __mem_cgroup_remove_list() [called from mem_cgroup_uncharge() if I can
+> > trust the stack trace] attempting to unmap a page for migration.  I'm
+> > just starting to investigate this.
+> > 
+> > I'll replace the series I have [~V10] with V11r2 and continue testing in
+> > anticipation of the day that we can get this into -mm.
+> > 
+> Hi, Lee-san.
+> 
+> Could you know what is the caller of page migration ?
+> system call ? hot removal ? or some new thing ?
 
->> Are you OK with this?
->
->this sounds a lot more flexible to me. Please, once it looks 
->good to all 
+Kame-san:
 
-I will implement the ptrace ABI and the man pages and send them out for
-review (I'll return -EOPNOTSUPP a few times) tomorrow.
-I'll add support for the overflow signal in a later patch, once I
-figured out how to do it.
+I was testing with my out-of-tree automatic-lazy migration patches.  See
+http://mirror.linux.org.au/pub/linux.conf.au/2007/video/talks/197.pdf
+for an overview.  These patches arrange to unmap [remove ptes] for all
+anon pages in a task's vmas with default/local policy [and with mapcount
+below a tunable threshold] when the load balancer moves the task to a
+different node.  Then, the pages will migrate on next touch/fault, if
+they are misplaced relative to the policy--which is likely for many of
+the pages, as the task is executing on a different node.  With respect
+to file backed pages, automatic migration will only unmap the current
+task's pte so that the task will take a fault on next touch and Nick
+Piggin's pagecache replication patches will make, if necessary, or use
+an existing local copy of the page.
 
+The stack trace was:
 
->of us also extend LTP's ptrace bits with unit tests for these API 
->additions. (Cc: such LTP bits to subrata@linux.vnet.ibm.com)
+try_to_unmap_one -> page_remove_rmap -> mem_cgroup_uncharge, with the
+faulting instruction apparently in __mem_cgroup_remove_list().
 
-I need to look into this. This will take some time, as well.
+> 
+> Note: 2.6.24-rc4-mm1's cgroup/migration logic.
+> 
+> In 2.6.24-rc4-mm1, in page migration, mem_cgroup_prepare_migration() increments
+> page_cgroup's refcnt before calling try_to_unmap(). This extra refcnt guarantees 
+> the page_cgroup's refcnt will not drop to 0 in sequence of
+> unmap_and_move() -> try_to_unmap() -> page_remove_rmap() -> mem_cgroup_unchage(). 
 
-regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+Yes, I've seen that code.  I'm working on page migration/replication in
+the background, keeping the patches up to date and tested, so I haven't
+had a lot of time to investigate.
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+I do have a heavy-handed instrumentation patch to try to trap any null
+pointers or stale {page|mem}_cgroup pointers.  [I can send, if you're
+interested.]  I restarted the stress test with that patch.  The test ran
+quite a bit longer and then hit a different bug.  So, I have a race
+somewhere.   If I can definitely pin it on the memory controller or an
+iteraction of the memory controller with page migration/replication,
+I'll let you know--and try to come up with a patch.  Otherwise, you
+probably don't need to worry.
+
+Lee
+> 
+> Thanks,
+> -Kame
+> 
 
