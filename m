@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764241AbXLMHMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762150AbXLMHNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764241AbXLMHMr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762253AbXLMG5q
+	id S1762150AbXLMHNJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:13:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762621AbXLMG5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:57:46 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55519 "EHLO
+	Thu, 13 Dec 2007 01:57:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55528 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762611AbXLMG5p (ORCPT
+	with ESMTP id S1762616AbXLMG5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:57:45 -0500
-Date: Wed, 12 Dec 2007 22:53:01 -0800
+	Thu, 13 Dec 2007 01:57:47 -0500
+Date: Wed, 12 Dec 2007 22:53:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, bunk@kernel.org,
        davem@davemloft.net
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       chas williams <chas@cmf.nrl.navy.mil>,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 40/60] IPV4: Remove bogus ifdef mess in arp_process
-Message-ID: <20071213065301.GP6867@kroah.com>
+Subject: [patch 41/60] ATM: initialize lock and tasklet earlier
+Message-ID: <20071213065303.GQ6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipv4-remove-bogus-ifdef-mess-in-arp_process.patch"
+Content-Disposition: inline; filename="atm-initialize-lock-and-tasklet-earlier.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,87 +42,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Adrian Bunk <bunk@kernel.org>
+From: chas williams <chas@cmf.nrl.navy.mil>
 
-[IPV4]: Remove bogus ifdef mess in arp_process
+[ATM]: [he] initialize lock and tasklet earlier
 
-[ Upstream commit: 3660019e5f96fd9a8b7d4214a96523c0bf7b676d ]
+[ Upstream commit: 8a8037ac9dbe4eb20ce50aa20244faf77444f4a3 ]
 
-The #ifdef's in arp_process() were not only a mess, they were also wrong
-in the CONFIG_NET_ETHERNET=n and (CONFIG_NETDEV_1000=y or
-CONFIG_NETDEV_10000=y) cases.
+if you are lucky (unlucky?) enough to have shared interrupts, the
+interrupt handler can be called before the tasklet and lock are ready
+for use.
 
-Since they are not required this patch removes them.
-
-Also removed are some #ifdef's around #include's that caused compile
-errors after this change.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: chas williams <chas@cmf.nrl.navy.mil>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Cc: David Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/arp.c |   19 -------------------
- 1 file changed, 19 deletions(-)
+ drivers/atm/he.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- a/net/ipv4/arp.c
-+++ b/net/ipv4/arp.c
-@@ -110,12 +110,8 @@
- #include <net/tcp.h>
- #include <net/sock.h>
- #include <net/arp.h>
--#if defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
- #include <net/ax25.h>
--#if defined(CONFIG_NETROM) || defined(CONFIG_NETROM_MODULE)
- #include <net/netrom.h>
--#endif
--#endif
- #if defined(CONFIG_ATM_CLIP) || defined(CONFIG_ATM_CLIP_MODULE)
- #include <net/atmclip.h>
- struct neigh_table *clip_tbl_hook;
-@@ -729,20 +725,10 @@ static int arp_process(struct sk_buff *s
- 		    htons(dev_type) != arp->ar_hrd)
- 			goto out;
- 		break;
--#ifdef CONFIG_NET_ETHERNET
- 	case ARPHRD_ETHER:
--#endif
--#ifdef CONFIG_TR
- 	case ARPHRD_IEEE802_TR:
--#endif
--#ifdef CONFIG_FDDI
- 	case ARPHRD_FDDI:
--#endif
--#ifdef CONFIG_NET_FC
- 	case ARPHRD_IEEE802:
--#endif
--#if defined(CONFIG_NET_ETHERNET) || defined(CONFIG_TR) || \
--    defined(CONFIG_FDDI)	 || defined(CONFIG_NET_FC)
- 		/*
- 		 * ETHERNET, Token Ring and Fibre Channel (which are IEEE 802
- 		 * devices, according to RFC 2625) devices will accept ARP
-@@ -757,21 +743,16 @@ static int arp_process(struct sk_buff *s
- 		    arp->ar_pro != htons(ETH_P_IP))
- 			goto out;
- 		break;
--#endif
--#if defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
- 	case ARPHRD_AX25:
- 		if (arp->ar_pro != htons(AX25_P_IP) ||
- 		    arp->ar_hrd != htons(ARPHRD_AX25))
- 			goto out;
- 		break;
--#if defined(CONFIG_NETROM) || defined(CONFIG_NETROM_MODULE)
- 	case ARPHRD_NETROM:
- 		if (arp->ar_pro != htons(AX25_P_IP) ||
- 		    arp->ar_hrd != htons(ARPHRD_NETROM))
- 			goto out;
- 		break;
--#endif
--#endif
- 	}
+--- a/drivers/atm/he.c
++++ b/drivers/atm/he.c
+@@ -394,6 +394,11 @@ he_init_one(struct pci_dev *pci_dev, con
+ 	he_dev->atm_dev->dev_data = he_dev;
+ 	atm_dev->dev_data = he_dev;
+ 	he_dev->number = atm_dev->number;
++#ifdef USE_TASKLET
++	tasklet_init(&he_dev->tasklet, he_tasklet, (unsigned long) he_dev);
++#endif
++	spin_lock_init(&he_dev->global_lock);
++
+ 	if (he_start(atm_dev)) {
+ 		he_stop(he_dev);
+ 		err = -ENODEV;
+@@ -1173,11 +1178,6 @@ he_start(struct atm_dev *dev)
+ 	if ((err = he_init_irq(he_dev)) != 0)
+ 		return err;
  
- 	/* Understand only these message types */
+-#ifdef USE_TASKLET
+-	tasklet_init(&he_dev->tasklet, he_tasklet, (unsigned long) he_dev);
+-#endif
+-	spin_lock_init(&he_dev->global_lock);
+-
+ 	/* 4.11 enable pci bus controller state machines */
+ 	host_cntl |= (OUTFF_ENB | CMDFF_ENB |
+ 				QUICK_RD_RETRY | QUICK_WR_RETRY | PERR_INT_ENB);
 
 -- 
