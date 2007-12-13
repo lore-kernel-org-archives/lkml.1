@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765218AbXLMU0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763690AbXLMU3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765218AbXLMU0u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 15:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbXLMU0l
+	id S1763690AbXLMU3U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 15:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbXLMU3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 15:26:41 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51166 "EHLO mx3.mail.elte.hu"
+	Thu, 13 Dec 2007 15:29:07 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49606 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbXLMU0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 15:26:40 -0500
-Date: Thu, 13 Dec 2007 21:26:21 +0100
+	id S1752826AbXLMU3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 15:29:05 -0500
+Date: Thu, 13 Dec 2007 21:28:00 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Mark timer_stats as incompatible with multiple pid
-	namespaces
-Message-ID: <20071213202621.GC25130@elte.hu>
-References: <m13au7tsov.fsf@ebiederm.dsl.xmission.com> <20071213090102.GB1926@elte.hu> <m1r6hqstat.fsf@ebiederm.dsl.xmission.com> <20071213130423.GB28340@elte.hu> <m1ir32sejc.fsf@ebiederm.dsl.xmission.com>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
+       zach@vmware.com, roland@redhat.com
+Subject: Re: [PATCH] avoid ifdefs in desc.h, getting rid of pack_ldt and
+	pack_tss
+Message-ID: <20071213202800.GD25130@elte.hu>
+References: <11975561713425-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1ir32sejc.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <11975561713425-git-send-email-gcosta@redhat.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,23 +40,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
+* Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
 
-> > the problem is, this interface stores historic PIDs too - i.e. PIDs 
-> > of tasks that might have exited already.
+> By Andi Kleen's suggestion, this patch removes pack_ldt() and 
+> pack_tss() wrappers in favour of a general wrapper. It saves us an 
+> ifdef and some lines of code, but more importantly, it's more elegant.
 > 
-> Well struct pid * works in that case if you grab the reference to it.
+> No functional change is made.
+> 
+> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 
-but the display of the stats might happen much later. The point of this 
-API is to save pid+comm, which gives users a good idea about what caused 
-the events in the past - without having to pin any resource of that 
-task.
-
->  {
->  	timer->start_site = NULL;
-> +	pit_pid(timer->start_pid);
-> +	timer->start_pid = NULL;
-
-s/pit/put, right?
+thanks, applied.
 
 	Ingo
