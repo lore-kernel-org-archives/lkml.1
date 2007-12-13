@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763631AbXLMHJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763969AbXLMHJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763631AbXLMHJP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:09:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762419AbXLMG5N
+	id S1763969AbXLMHJh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:09:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760980AbXLMG5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:57:13 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55380 "EHLO
+	Thu, 13 Dec 2007 01:57:16 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55390 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762402AbXLMG5L (ORCPT
+	with ESMTP id S1761933AbXLMG5O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:57:11 -0500
-Date: Wed, 12 Dec 2007 22:52:37 -0800
+	Thu, 13 Dec 2007 01:57:14 -0500
+Date: Wed, 12 Dec 2007 22:52:40 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        torvalds@linux-foundation.org
@@ -25,7 +25,7 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        scott@ubuntu.com
 Subject: [patch 32/60] wait_task_stopped(): pass correct exit_code to
 	wait_noreap_copyout()
-Message-ID: <20071213065237.GG6867@kroah.com>
+Message-ID: <20071213065240.GH6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
