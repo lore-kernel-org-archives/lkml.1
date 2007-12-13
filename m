@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764612AbXLMHP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764542AbXLMHQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764612AbXLMHP5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 02:15:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762477AbXLMG6N
+	id S1764542AbXLMHQY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 02:16:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762667AbXLMG6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 01:58:13 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55610 "EHLO
+	Thu, 13 Dec 2007 01:58:16 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55622 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762661AbXLMG6L (ORCPT
+	with ESMTP id S1762661AbXLMG6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 01:58:11 -0500
-Date: Wed, 12 Dec 2007 22:53:20 -0800
+	Thu, 13 Dec 2007 01:58:14 -0500
+Date: Wed, 12 Dec 2007 22:53:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,14 +21,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Howells <dhowells@redhat.com>,
+       Pablo Neira Ayuso <pablo@netfilter.org>,
+       Patrick McHardy <kaber@trash.net>,
        Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 48/60] RXRPC: Add missing select on CRYPTO
-Message-ID: <20071213065320.GX6867@kroah.com>
+Subject: [patch 49/60] TEXTSEARCH: Do not allow zero length patterns in the
+	textsearch infrastructure
+Message-ID: <20071213065323.GY6867@kroah.com>
 References: <20071213064518.328162328@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="rxrpc-add-missing-select-on-crypto.patch"
+Content-Disposition: inline; filename="textsearch-do-not-allow-zero-length-patterns-in-the-textsearch-infrastructure.patch"
 In-Reply-To: <20071213065039.GA6867@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,31 +43,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: David Howells <dhowells@redhat.com>
+From: Pablo Neira Ayuso <pablo@netfilter.org>
 
-[RXRPC]: Add missing select on CRYPTO
+[TEXTSEARCH]: Do not allow zero length patterns in the textsearch infrastructure
 
-[ Upstream commit: d5a784b3719ae364f49ecff12a0248f6e4252720 ]
+[ Upstream commit: e03ba84adb62fbc6049325a5bc00ef6932fa5e39 ]
 
-AF_RXRPC uses the crypto services, so should depend on or select CRYPTO.
+If a zero length pattern is passed then return EINVAL.
+Avoids infinite loops (bm) or invalid memory accesses (kmp).
 
-Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Pablo Neira Ayuso <pablo@netfilter.org>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/rxrpc/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+ lib/textsearch.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
---- a/net/rxrpc/Kconfig
-+++ b/net/rxrpc/Kconfig
-@@ -5,6 +5,7 @@
- config AF_RXRPC
- 	tristate "RxRPC session sockets"
- 	depends on INET && EXPERIMENTAL
-+	select CRYPTO
- 	select KEYS
- 	help
- 	  Say Y or M here to include support for RxRPC session sockets (just
+--- a/lib/textsearch.c
++++ b/lib/textsearch.c
+@@ -7,7 +7,7 @@
+  *		2 of the License, or (at your option) any later version.
+  *
+  * Authors:	Thomas Graf <tgraf@suug.ch>
+- * 		Pablo Neira Ayuso <pablo@eurodev.net>
++ * 		Pablo Neira Ayuso <pablo@netfilter.org>
+  *
+  * ==========================================================================
+  *
+@@ -250,7 +250,8 @@ unsigned int textsearch_find_continuous(
+  *       the various search algorithms.
+  *
+  * Returns a new textsearch configuration according to the specified
+- *         parameters or a ERR_PTR().
++ * parameters or a ERR_PTR(). If a zero length pattern is passed, this
++ * function returns EINVAL.
+  */
+ struct ts_config *textsearch_prepare(const char *algo, const void *pattern,
+ 				     unsigned int len, gfp_t gfp_mask, int flags)
+@@ -259,6 +260,9 @@ struct ts_config *textsearch_prepare(con
+ 	struct ts_config *conf;
+ 	struct ts_ops *ops;
+ 	
++	if (len == 0)
++		return ERR_PTR(-EINVAL);
++
+ 	ops = lookup_ts_algo(algo);
+ #ifdef CONFIG_KMOD
+ 	/*
 
 -- 
