@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932352AbXLMVTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932667AbXLMVVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932352AbXLMVTd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 16:19:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXLMVTX
+	id S932667AbXLMVVZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 16:21:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbXLMVVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 16:19:23 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45873 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761990AbXLMVTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 16:19:21 -0500
-Date: Thu, 13 Dec 2007 16:18:58 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       nfsv4@linux-nfs.org
-Subject: Re: [PATCH 2/6] SUNRPC: Break up __svc_create_thread and make
- svc_create_kthread
-Message-ID: <20071213161858.4bf8b770@tleilax.poochiereds.net>
-In-Reply-To: <20071213210643.GA28117@infradead.org>
-References: <1197578428-26815-1-git-send-email-jlayton@redhat.com>
-	<1197578428-26815-2-git-send-email-jlayton@redhat.com>
-	<1197578428-26815-3-git-send-email-jlayton@redhat.com>
-	<20071213210643.GA28117@infradead.org>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Dec 2007 16:21:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60831 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754775AbXLMVVP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 16:21:15 -0500
+Message-ID: <4761A227.70809@zytor.com>
+Date: Thu, 13 Dec 2007 13:20:39 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Phillip Susi <psusi@cfl.rr.com>
+CC: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: Remove all definitions with fastcall
+References: <1197491364.21291.14.camel@brick>  <47605238.9020402@cfl.rr.com> <1197495102.21291.28.camel@brick> <47619F9F.1080502@cfl.rr.com>
+In-Reply-To: <47619F9F.1080502@cfl.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Dec 2007 21:06:44 +0000
-Christoph Hellwig <hch@infradead.org> wrote:
-
-> On Thu, Dec 13, 2007 at 03:40:24PM -0500, Jeff Layton wrote:
-> > Move the initialization that happens prior to thread creation to a
-> > new function (svc_prepare_thread) so that we can call it from a new
-> > thread creation routine. Add a new function svc_create_kthread that
-> > spawns svc threads using kthread API.
-> > 
-> > We should be able to eventually convert all of the callers to the
-> > kthread API, at which point we can drop __svc_create_thread.
+Phillip Susi wrote:
+> Harvey Harrison wrote:
+>> It was a leftover from before regparm(3) became the default on x86-32.
+>>
+>> It doesn't have any use now.
+>>
+>> Harvey
 > 
-> > +static struct svc_rqst *
-> > +svc_prepare_thread(svc_thread_fn func, struct svc_serv *serv,
-> > +		   struct svc_pool *pool)
-> 
-> Could you just export this helper? I'd rather have callers have full
-> control over how they create their threads and call into a helper to
-> initialize the sunrpc state.
+> You mean the default calling convention is now fastcall instead of cdecl 
+> or stdcall?
 > 
 
-Sure, sounds reasonable. Once I collect comments on this patch and do a
-respin, I'll plan to export that symbol.
+Not just default, it's the only thing supported.
 
-Thanks,
--- 
-Jeff Layton <jlayton@redhat.com>
+	-hpa
