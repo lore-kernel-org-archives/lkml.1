@@ -1,97 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934457AbXLMW76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934518AbXLMXAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934457AbXLMW76 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:59:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764154AbXLMW7v
+	id S934518AbXLMXAg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 18:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934477AbXLMXAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:59:51 -0500
-Received: from saeurebad.de ([85.214.36.134]:33487 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762561AbXLMW7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:59:50 -0500
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
-References: <20071214004710.03f37774@linux360.ro>
-Date: Thu, 13 Dec 2007 23:58:50 +0100
-In-Reply-To: <20071214004710.03f37774@linux360.ro> (Eduard-Gabriel Munteanu's
-	message of "Fri, 14 Dec 2007 00:47:10 +0200")
-Message-ID: <x77ijiryl1.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 13 Dec 2007 18:00:16 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:34699 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933966AbXLMXAN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 18:00:13 -0500
+Date: Fri, 14 Dec 2007 01:00:08 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Cedric Le Goater <clg@fr.ibm.com>, David Miller <davem@davemloft.net>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.24-rc4-mm1 - BUG in tcp_fragment
+In-Reply-To: <47616FA6.1010607@fr.ibm.com>
+Message-ID: <Pine.LNX.4.64.0712140024360.12376@kivilampi-30.cs.helsinki.fi>
+References: <20071204211701.994dfce6.akpm@linux-foundation.org>
+ <47616FA6.1010607@fr.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 13 Dec 2007, Cedric Le Goater wrote:
 
-Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro> writes:
+> I got this one while compiling on NFS.
+> 
+> C.
+> 
+> kernel BUG at /home/legoater/linux/2.6.24-rc4-mm1/include/net/tcp.h:1480!
 
-> diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-> index 30d94d1..15556a0 100644
-> --- a/arch/x86/kernel/setup_64.c
-> +++ b/arch/x86/kernel/setup_64.c
-> @@ -583,6 +583,17 @@ static void __init amd_detect_cmp(struct cpuinfo_x86 *c)
->  #endif
->  }
->  
-> +#ifdef CONFIG_X86_AMD_C1E_WORKAROUND
-> +static int __cpuinit disable_amd_c1e = 1;
-> +
-> +static int __cpuinit force_amd_c1e(char *str) {
-> +	disable_amd_c1e = 0;
-> +	return 1;
-> +}
-> +
-> +__setup("force_amd_c1e", force_amd_c1e);
-> +#endif /* CONFIG_X86_AMD_C1E_WORKAROUND */
-> +
->  #define ENABLE_C1E_MASK		0x18000000
->  #define CPUID_PROCESSOR_SIGNATURE	1
->  #define CPUID_XFAM		0x0ff00000
-> @@ -597,6 +608,7 @@ static __cpuinit int amd_apic_timer_broken(void)
->  {
->  	u32 lo, hi;
->  	u32 eax = cpuid_eax(CPUID_PROCESSOR_SIGNATURE);
-> +
->  	switch (eax & CPUID_XFAM) {
->  	case CPUID_XFAM_K8:
->  		if ((eax & CPUID_XMOD) < CPUID_XMOD_REV_F)
-> @@ -604,8 +616,19 @@ static __cpuinit int amd_apic_timer_broken(void)
->  	case CPUID_XFAM_10H:
->  	case CPUID_XFAM_11H:
->  		rdmsr(MSR_K8_ENABLE_C1E, lo, hi);
-> -		if (lo & ENABLE_C1E_MASK)
-> -			return 1;
-> +#ifdef CONFIG_X86_AMD_C1E_WORKAROUND
-> +		if ((lo & ENABLE_C1E_MASK) && disable_amd_c1e) {
-> +			printk(KERN_INFO "Disabling AMD C1E on CPU %d\n",
-> +			       smp_processor_id());
-> +			/* 
-> +			 * See AMD's "BIOS and Kernel Developer's Guide for AMD
-> +			 * NPT Family 0Fh Processors", publication #32559,
-> +			 * for details.
-> +			 */
-> +			wrmsr(MSR_K8_ENABLE_C1E, lo & ~ENABLE_C1E_MASK, hi); 
-> +		} else 
-> +#endif /* CONFIG_X86_AMD_C1E_WORKAROUND */
-> +		if (lo & ENABLE_C1E_MASK) return 1;
+I'm not exactly sure what patches you have applied and which patches are 
+not, with rc4-mm1 there are two patches (first one was incomplete, I 
+assume you had at least that one based on your other mail) to really fix 
+the issues in (__|)tcp_reset_fack_counts(...). However, there seems to be 
+so much breakage that I have a bit trouble to decide where to start...
+The situation seems bit scary :-).
 
-I would find this way more readable:
+So, I might soon prepare a revert patch for most of the questionable 
+TCP parts and ask Dave to apply it (and drop them fully during next 
+rebase) unless I suddently figure something out soon which explains 
+all/most of the problems, then return to drawing board. ...As it seems 
+that the cumulative ACK processing problem discovered later on (having 
+rather cumbersome solution with skbs only) will make part of the work 
+that's currently in net-2.6.25 quite useless/duplicate effort. But thanks 
+anyway for reporting these.
 
-	if (lo & ENABLE_C1E_MASK) {
-#ifdef CONFIG_X86_AMD_C1E_WORKAROUND
-		if (disable_amd_c1e) {
-			...
-#else
-		return 1;
-#endif
-	}
 
-Why does it require to be enabled by compile-time AND run-time?  Is that
-something you might want to decide on every boot?  Could we make it
-settable at boot-time xor at compile-time?
-
-	Hannes
+-- 
+ i.
