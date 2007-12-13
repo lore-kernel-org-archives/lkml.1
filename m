@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765381AbXLMRjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765467AbXLMRjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765381AbXLMRjZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 12:39:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762720AbXLMRjH
+	id S1765467AbXLMRjq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 12:39:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765396AbXLMRjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 12:39:07 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:50103 "EHLO mail.screens.ru"
+	Thu, 13 Dec 2007 12:39:31 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:39427 "EHLO zombie.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763712AbXLMRjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 12:39:06 -0500
-Date: Thu, 13 Dec 2007 20:39:56 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Roland McGrath <roland@redhat.com>, Petr Tesarik <ptesarik@suse.cz>,
-       Tony Luck <tony.luck@intel.com>, Matthew Wilcox <willy@debian.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] arch_ptrace_stop
-Message-ID: <20071213173956.GA436@tv-sign.ru>
-References: <20071213172926.GA423@tv-sign.ru> <20071213173136.GO26334@parisc-linux.org>
+	id S1765392AbXLMRj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 12:39:28 -0500
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
+	settings for task actions [try #2]
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: David Howells <dhowells@redhat.com>
+Cc: casey@schaufler-ca.com, Karl MacMillan <kmacmill@redhat.com>,
+       viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <22549.1197565271@redhat.com>
+References: <1197563033.20226.110.camel@moss-spartans.epoch.ncsc.mil>
+	 <1197557384.20226.21.camel@moss-spartans.epoch.ncsc.mil>
+	 <1197488021.1125.138.camel@moss-spartans.epoch.ncsc.mil>
+	 <1197473127.1125.50.camel@moss-spartans.epoch.ncsc.mil>
+	 <81862.27432.qm@web36605.mail.mud.yahoo.com> <32168.1197484170@redhat.com>
+	 <668.1197499783@redhat.com> <21666.1197560219@redhat.com>
+	 <22549.1197565271@redhat.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Thu, 13 Dec 2007 12:27:57 -0500
+Message-Id: <1197566877.20226.130.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071213173136.GO26334@parisc-linux.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/13, Matthew Wilcox wrote:
->
-> On Thu, Dec 13, 2007 at 08:29:26PM +0300, Oleg Nesterov wrote:
-> > How is it possible that SIGKILL is blocked?
+On Thu, 2007-12-13 at 17:01 +0000, David Howells wrote:
+> Stephen Smalley <sds@tycho.nsa.gov> wrote:
 > 
-> I *think* it's possible that kernel threads may block SIGKILL.
-> And I think init (pid 1) gets SIGKILL blocked.
+> > They would correspond with the operations provided by the /dev/cachefiles
+> > interface, at the granularity you want to support distinctions to be made.
+> 
+> Can this be made simpler by the fact that /dev/cachefiles has its own unique
+> label (cachefiles_dev_t).
 
-Yes. But this shouldn't matter because we can't ptrace them. /sbin/init
-doesn't block SIGKILL, but it can't be ptraced either.
+That lets you control who can use the interface at all, but not what
+operations they can invoke on it.
 
-Also, SIGKILL is blocked only if kthread was created by kernel_thread() and
-then it does daemonize(). kthread_create()'ed kthreads don't block SIGKILL
-but ignore it. The latter behaviour is more correct, but we can't do the same
-for kernel_thread() threads.
+> > Could just be a single 'setcontext' permission if that is all you want to
+> > control distinctly, or could be a permission per operation.
+> 
+> There is only one operation that makes sense to have a permission: "set
+> context and begin caching".
+> 
+> All the other operations on a file descriptor attached to /dev/cachfiles are
+> necessary for there to be a managed cache at all, and given that you've
+> managed to open /dev/cachefiles that's sufficient access for those, I think.
 
-Oleg.
+Do any of the interfaces allow a task to act on a cache other than one
+it has created?  How does the task identify the desired cache?  What if
+there is a conflict between multiple tasks asking for the same cache?
+
+> > If the latter, you don't really need a label for the object, and can
+> > just use the supplied context/secid as the object of the permission
+> > check, ala:
+> > 	rc = avc_has_perm(tsec->sid, secid, SECCLASS_CACHEFILES,
+> > CACHEFILES__SETCONTEXT);
+> 
+> Ummm.   I was under the impression that the target SID had to be a member of
+> target class.
+
+Not necessarily.
+
+secid is being applied as the acting context for the cachefiles kernel
+module, so the above makes sense, even though there isn't really any
+"object" in view here.  Abstractly, the question we are asking above is:
+
+Can this task set the context of the cachefiles kernel module to this
+value?
+
+-- 
+Stephen Smalley
+National Security Agency
 
