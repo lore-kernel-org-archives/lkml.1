@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763550AbXLMTbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765330AbXLMTce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763550AbXLMTbo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 14:31:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759060AbXLMTbg
+	id S1765330AbXLMTce (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 14:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762111AbXLMTcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 14:31:36 -0500
-Received: from blue.zero.ad.jp ([211.11.96.147]:37031 "EHLO blue.zero.ad.jp"
+	Thu, 13 Dec 2007 14:32:23 -0500
+Received: from rtr.ca ([76.10.145.34]:4517 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757501AbXLMTbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 14:31:35 -0500
-X-Greylist: delayed 2066 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Dec 2007 14:31:35 EST
-Date: Thu, 13 Dec 2007 13:57:11 -0500 (EST)
-Message-Id: <20071213.135711.59651704.k-ueda@ct.jp.nec.com>
-To: Mike.Miller@hp.com, jmarchan@redhat.com, axboe@kernel.dk
-Cc: linux-kernel@vger.kernel.org, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: Re: [Patch 4/8] Enhanced partition statistics: cciss fix
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <DEE40752C8AF224BB890E455C7B8E0FE157ACB37@G6W0268.americas.hpqcorp.net>
-References: <47615B2E.1040608@redhat.com>
-	<DEE40752C8AF224BB890E455C7B8E0FE157ACB37@G6W0268.americas.hpqcorp.net>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1762079AbXLMTcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 14:32:22 -0500
+Message-ID: <476188C4.9030802@rtr.ca>
+Date: Thu, 13 Dec 2007 14:32:20 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Mark Lord <liml@rtr.ca>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Matthew Wilcox <matthew@wil.cx>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+References: <47617B92.6020908@rtr.ca> <47617C07.3020501@rtr.ca> <47617E72.6080504@rtr.ca> <20071213185326.GQ26334@parisc-linux.org> <4761821F.3050602@rtr.ca> <20071213192633.GD10104@kernel.dk> <4761883A.7050908@rtr.ca>
+In-Reply-To: <4761883A.7050908@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Thank you for noticing this, Mike.
-
-On Thu, 13 Dec 2007 16:55:06 +0000, "Miller, Mike" wrote:
-> > Updates the enhanced partition statistics in cciss driver.
-> >
-> > Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
-> > ---
-> >  cciss.c |    3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-) diff -urNp -X
-> > linux-2.6/Documentation/dontdiff
-> > linux-2.6.orig/drivers/block/cciss.c linux-2.6/drivers/block/cciss.c
-> > --- linux-2.6.orig/drivers/block/cciss.c        2007-12-04
-> > 17:37:13.000000000 +0100
-> > +++ linux-2.6/drivers/block/cciss.c     2007-12-05
-> > 13:46:29.000000000 +0100
-> > @@ -1268,7 +1268,8 @@ static void cciss_softirq_done(struct re
-> >         if (blk_fs_request(rq)) {
-> >                 const int rw = rq_data_dir(rq);
-> >
-> > -               disk_stat_add(rq->rq_disk, sectors[rw],
-> > rq->nr_sectors);
-> > +               all_stat_add(rq->rq_disk, sectors[rw],
-> > +                            rq->nr_sectors, rq->sector);
-> >         }
+Mark Lord wrote:
+> Jens Axboe wrote:
+>> On Thu, Dec 13 2007, Mark Lord wrote:
+>>> Matthew Wilcox wrote:
+>>>> On Thu, Dec 13, 2007 at 01:48:18PM -0500, Mark Lord wrote:
+>>>>> Problem confirmed.  2.6.23.8 regularly generates segments up to 
+>>>>> 64KB for libata,
+>>>>> but 2.6.24 uses only 4KB segments and a *few* 8KB segments.
+>>>> Just a suspicion ... could this be slab vs slub?  ie check your configs
+>>>> are the same / similar between the two kernels.
+>>> ..
+>>>
+>>> Mmmm.. a good thought, that one.
+>>> But I just rechecked, and both have CONFIG_SLAB=y
+>>>
+>>> My guess is that something got changed around when Jens
+>>> reworked the block layer for 2.6.24.
+>>> I'm going to dig around in there now.
+>>
+>> I didn't rework the block layer for 2.6.24 :-). The core block layer
+>> changes since 2.6.23 are:
+>>
+>> - Support for empty barriers. Not a likely candidate.
+>> - Shared tag queue fixes. Totally unlikely.
+>> - sg chaining support. Not likely.
+>> - The bio changes from Neil. Of the bunch, the most likely suspects in
+>>   this area, since it changes some of the code involved with merges and
+>>   blk_rq_map_sg().
+>> - Lots of simple stuff, again very unlikely.
+>>
+>> Anyway, it sounds odd for this to be a block layer problem if you do see
+>> occasional segments being merged. So it sounds more like the input data
+>> having changed.
+>>
+>> Why not just bisect it?
+> ..
 > 
-> How does this mesh with the changes submitted by Kiyoshi Ueda? Any conflicts?
- 
-I think no conflict with my patch technically.
+> Because the early 2.6.24 series failed to boot on this machine
+> due to bugs in the block layer -- so the code that caused this regression
+> is probably in the stuff from before the kernels became usable here.
+..
 
-Jerome's patch changes __end_that_request_first(), too, as same as
-the change above.
-And my patch changes cciss/cpqarray to use blk_end_request, which
-uses __end_that_request_first() internally, instead of doing
-disk_stat_add() by themselves.
-(http://marc.info/?l=linux-kernel&m=119741542206258&w=2)
+That sounds more harsh than intended --> the earlier 2.6.24 kernels (up to
+the first couple of -rc* ones failed here because of incompatibilities
+between the block/bio changes and libata.
 
-So Jerome can just drop the cciss/cpqarray changes from his patch-set,
-if my patch-set is merged.
+That's better, I think! 
 
-> -- mikem
-
-Thanks,
-Kiyoshi Ueda
+Cheers
