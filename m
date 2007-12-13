@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933679AbXLMWH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933857AbXLMWIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933679AbXLMWH2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762858AbXLMWHR
+	id S933857AbXLMWIt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbXLMWIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:07:17 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49067 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762600AbXLMWHP (ORCPT
+	Thu, 13 Dec 2007 17:08:40 -0500
+Received: from hs-out-0708.google.com ([64.233.178.241]:2400 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751763AbXLMWIj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:07:15 -0500
-Date: Thu, 13 Dec 2007 14:07:14 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52,
- [2.6.24-rc4-git5: Reported regressions from 2.6.23]
-In-Reply-To: <20071209085030.GA14264@elte.hu>
-Message-ID: <Pine.LNX.4.64.0712131405390.25120@schroedinger.engr.sgi.com>
-References: <200712080340.49546.rjw@sisk.pl> <20071208093039.GA28054@elte.hu>
- <20071208163749.GI19691@waste.org> <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org>
- <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org>
- <20071208100950.a3547868.akpm@linux-foundation.org>
- <alpine.LFD.0.9999.0712081034470.12046@woody.linux-foundation.org>
- <20071208195211.GA3727@elte.hu> <20071208202930.GA17934@elte.hu>
- <84144f020712090020o5bdeb54fqaa9e6578bd066f29@mail.gmail.com>
- <20071209085030.GA14264@elte.hu>
+	Thu, 13 Dec 2007 17:08:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=w6B3m50adwbfS3d3m8wvodbvWT9ODQCngPNGx05YZryWnZ6WrMhHauZbB4zMgCvkjoTEy9ct14+RjW8FfOKN0NJMAJcdyoFcgZD59tOepkueWHPMEcxwTxcGKSICjrF5huiiNZx9nTh8dyHBqfdFPjnvUkPWtXBRbc5LyqPyLXg=
+Message-ID: <4761AD0A.5010700@gmail.com>
+Date: Thu, 13 Dec 2007 23:07:06 +0100
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: James Kosin <jkosin@intcomgrp.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <9zmRR-3pA-25@gated-at.bofh.it> <47615D81.30707@intcomgrp.com>
+In-Reply-To: <47615D81.30707@intcomgrp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Dec 2007, Ingo Molnar wrote:
+On 13-12-07 17:27, James Kosin wrote:
 
-> unless i'm missing something obvious (and i easily might), i see SLUB as 
-> SLAB reimplemented with a different queueing model. Not "without 
-> queueing".
+> model name      : Pentium III (Katmai)
+> cpu MHz         : 499.156
 
-The "queue" that you are talking about is the freelist of a slab. It exist 
-for each slab. SLAB uses a table of free entries there. The freelist is 
-limited to a slab and thus the locality of the freelist is bound to 
-the same page which avoids NUMA locality checks.
+> [root@beta jkosin]# ./a.out
+> cycles: out 683, in 299
 
+Thanks much, you made spot 32 ;-)
 
+http://lkml.org/lkml/2007/12/12/309
+
+By the way, if anyone in this/these thread(s) wrote something today (*) they 
+would like me to reply to -- my horseshit ISP is completely crapping out on 
+me and I haven't seen your message. Resends ofcourse welcome.
+
+(*) [now - 16 hours, now]
+
+Rene.
