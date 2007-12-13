@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932700AbXLMUwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932775AbXLMUx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932700AbXLMUwH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 15:52:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932343AbXLMUvi
+	id S932775AbXLMUx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 15:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759658AbXLMUxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 15:51:38 -0500
-Received: from gate.crashing.org ([63.228.1.57]:44750 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932180AbXLMUvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 15:51:36 -0500
-Subject: Re: Possible issue with dangling PCI BARs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Jesse Barnes <jesse.barnes@intel.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Robert Hancock <hancockr@shaw.ca>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <200712131204.18227.jesse.barnes@intel.com>
-References: <fa.YfTvVN5C3e6zwXPW5biWgeZ9XXc@ifi.uio.no>
-	 <1197544621.15741.132.camel@pasglop> <1197544820.15741.137.camel@pasglop>
-	 <200712131204.18227.jesse.barnes@intel.com>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 07:51:06 +1100
-Message-Id: <1197579066.15741.167.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Dec 2007 15:53:17 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45678 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759528AbXLMUxQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 15:53:16 -0500
+Date: Thu, 13 Dec 2007 12:53:11 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Asit Mallick <asit.k.mallick@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: What was the problem with quicklists and x86-64?
+In-Reply-To: <1197578876.15741.163.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0712131251300.18314@schroedinger.engr.sgi.com>
+References: <47603321.4030700@goop.org>  <Pine.LNX.4.64.0712131131540.13396@schroedinger.engr.sgi.com>
+ <1197578876.15741.163.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 14 Dec 2007, Benjamin Herrenschmidt wrote:
 
-On Thu, 2007-12-13 at 12:04 -0800, Jesse Barnes wrote:
+> > These issues only exist with NUMA because of the freeing of off node pages 
+> > before the TLB flush was done. There was a discussion about this issue and 
+> > my fix of simply not freeing the offnode pages early was ignored. Instead 
+> > the x86_64 implementation (which has no problems that I know of) was 
+> > pulled leaving the issue open in the core. Benjamin Herrrenschmidt 
+> > wanted to take a look at these issues (CCing him).
 > 
-> Yeah, that seems like a reasonable compromise.  Though in practice
-> I'd 
-> expect the full disable decode approach to work fairly well too.  I 
-> mean, if we really end up failing to allocate space for the device
-> with 
-> the root drive on it, there are probably bigger issues than just 
-> failing to get a few bytes of I/O space for it...
-> 
+> I don't know how NUMA gets in the picture there, it's probably very x86
+> specific thing. The issue we have here happens on other platforms
+> unrelated to NUMA. The fact that is tired to NUMA on x86 might be due to
+> the way the HW tablewalk operates on these. 
 
-The really bad scenario would be something like the Sil680 that Alan
-talked about setup by a BIOS that "knows" about the unused BAR when
-MMIO_EN is not set.
-
-If the device is behind a P2P bridge and the BIOS has set the windows of
-that bridge so tightly that there is no room to allocate the MMIO BAR,
-then a full disable/full enable would fail on a device that would
-otherwise work using only PIO.
-
-However, I'd be curious to see that happening in practice :-)
-
-But I think it's fair enough to do an IO only / MEM only approach. I've
-seen cases where IO is just not useable because of other constraints and
-so I expect the MEM-only case to be more common, especially on non-x86.
-
-Ben.
-
-
+This is a generic NUMA issue here! Quicklist pages that are not on 
+the current node are freed without waiting for the TLB flush. The patch 
+that I posted fixes that by requiring that all pages be flushed. 
