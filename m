@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761475AbXLMNEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbXLMNIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761475AbXLMNEu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 08:04:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXLMNEn
+	id S1754737AbXLMNIu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 08:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXLMNIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 08:04:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37403 "EHLO mx2.mail.elte.hu"
+	Thu, 13 Dec 2007 08:08:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60536 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752041AbXLMNEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 08:04:42 -0500
-Date: Thu, 13 Dec 2007 14:04:23 +0100
+	id S1752041AbXLMNIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 08:08:41 -0500
+Date: Thu, 13 Dec 2007 14:08:14 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Mark timer_stats as incompatible with multiple pid
-	namespaces
-Message-ID: <20071213130423.GB28340@elte.hu>
-References: <m13au7tsov.fsf@ebiederm.dsl.xmission.com> <20071213090102.GB1926@elte.hu> <m1r6hqstat.fsf@ebiederm.dsl.xmission.com>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, markus.t.metzger@gmail.com,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, roland@redhat.com,
+       akpm@linux-foundation.org, mtk.manpages@gmail.com,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: x86, ptrace: support for branch trace store(BTS)
+Message-ID: <20071213130814.GC28340@elte.hu>
+References: <20071210123809.A14251@sedona.ch.intel.com> <20071210202052.GA26002@elte.hu> <029E5BE7F699594398CA44E3DDF5544401130A1E@swsmsx413.ger.corp.intel.com> <20071211145301.GA19427@elte.hu> <029E5BE7F699594398CA44E3DDF554440115D3C5@swsmsx413.ger.corp.intel.com> <20071212110330.GD1611@elte.hu> <029E5BE7F699594398CA44E3DDF554440115D6DC@swsmsx413.ger.corp.intel.com> <20071213102939.GS8977@elte.hu> <029E5BE7F699594398CA44E3DDF5544401186D54@swsmsx413.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1r6hqstat.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <029E5BE7F699594398CA44E3DDF5544401186D54@swsmsx413.ger.corp.intel.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,34 +38,32 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
+* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
 
-> > What the heck??? Please solve this properly instead of hiding it. 
-> > /proc/timer_stats is damn useful and it's a must-have for powertop 
-> > to work.
+> The ptrace API would allow the user to:
+> - define (and query) the overflow mechanism 
+>   (wrap-around or event)
+> - define (and query) the size of the buffer within certain limits
+>   (we could either give an error or cut off)
+> - define (and query) events to be monitored
+>   (last branch trace, scheduling timestamps)
+> - get a single BTS record
+> - query the number of BTS records
+>   (to find out how big your drain buffer needs to be; it may be bigger
+> than you requested)
+> - drain all BTS records (copy, then clear)
+> - clear all BTS records
 > 
-> Hmm.  Perhaps the dependency conflict should go in the other direction 
-> then.
+> Draining would require the user to allocate a buffer to hold the data, 
+> which might not be feasible when he is near his memory limit. He could 
+> fall back to looping over the single-entry get. It is questionable, 
+> how useful the drain ptrace command would actually be; we might want 
+> to replace it with a get range command.
 > 
-> My goal is to document the issue while a proper fix is being written. 
-> I have known about this for all of about 1 day now.  It was added 
-> since last time I went through the kernel and made a thorough sweep of 
-> pid users.
-> 
-> What the proper fix is isn't even obvious at this point. Possibly it 
-> is making /proc/timer_stats disappear in child pid namespaces.
->   Which we don't currently have the infrastructure fore.
->
-> Possibly it is reworking the stats collection so we store a struct pid 
-> * instead of a pid_t value.  So we would know if the reader of the 
-> value can even see processes you have collected stats for.
+> Are you OK with this?
 
-the problem is, this interface stores historic PIDs too - i.e. PIDs of 
-tasks that might have exited already.
-
-the proper way would be to also store the namespace address, and to 
-filter out non-matching entries. (If leakage of this data across 
-namespace creation is of any concern then flush out existing namespace 
-data when a namespace is destroyed)
+this sounds a lot more flexible to me. Please, once it looks good to all 
+of us also extend LTP's ptrace bits with unit tests for these API 
+additions. (Cc: such LTP bits to subrata@linux.vnet.ibm.com)
 
 	Ingo
