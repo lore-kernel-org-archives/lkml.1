@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXLMX7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765262AbXLNAA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932290AbXLMX7k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 18:59:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934166AbXLMX6U
+	id S1765262AbXLNAA2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 19:00:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934158AbXLMX6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 18:58:20 -0500
+	Thu, 13 Dec 2007 18:58:23 -0500
 Received: from mga09.intel.com ([134.134.136.24]:60218 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764708AbXLMX6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 18:58:17 -0500
+	id S1765008AbXLMX6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 18:58:19 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.24,163,1196668800"; 
-   d="scan'208";a="237491366"
-Message-Id: <20071213235712.584411000@intel.com>
+   d="scan'208";a="237491374"
+Message-Id: <20071213235713.061041000@intel.com>
 References: <20071213235543.568682000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 13 Dec 2007 15:55:50 -0800
+Date: Thu, 13 Dec 2007 15:55:52 -0800
 From: venkatesh.pallipadi@intel.com
 To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
        torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
@@ -24,232 +24,299 @@ To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
 Cc: linux-kernel@vger.kernel.org,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [RFC PATCH 07/12] PAT 64b: dev mem chanegs for pat
-Content-Disposition: inline; filename=devmem.patch
+Subject: [RFC PATCH 09/12] PAT 64b: map only usable memory in identity mapping
+Content-Disposition: inline; filename=usable_only_map.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forward port of devmem.patch to x86 tree. With added bug fix of doing
-cpa only with non zero flags.
+Map only the usable memory, i.e., memory mapped in e820 and not marked as
+reserved, in the identity mapping. This includes 'usable' and 'ACPI *' regions.
 
-TBD:
+Mapping reserved regions in identity map, even though it has worked in practise,
+can potentially be problematic. With identity map, there can be speculative
+access to these reserved regions which can have undetermined behavior.
 
-1. Handle RAM pages with UC/WC and /dev/mem mapping conflicts. This
-conflict with RAM mapped as UC (identity mapping) and /dev/mem mapping
-is already there in current mainline kernel.
+Caveat is that the legacy ISA address (0xa0000 - 0x100000) is always mapped,
+even when it is reserved in e820. VGA seems to depend on this.
 
-2. For fork(), for every /dev/mem mapping, we have to keep track
-of the usage by doing reserve_mattr().
+TODO:
+* Clean up early table space allocation, avoiding overallocation there.
+* Avoid mapping 0 - 1M physical addresses in kernel text mapping.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
 
-Index: linux-2.6.24-rc4/arch/x86/mm/pat.c
+Index: linux-2.6.24-rc/arch/x86/kernel/e820_64.c
 ===================================================================
---- linux-2.6.24-rc4.orig/arch/x86/mm/pat.c	2007-12-11 15:39:28.000000000 -0800
-+++ linux-2.6.24-rc4/arch/x86/mm/pat.c	2007-12-11 15:59:29.000000000 -0800
-@@ -3,11 +3,14 @@
- #include <linux/kernel.h>
- #include <linux/rbtree.h>
- #include <linux/gfp.h>
-+#include <linux/fs.h>
- #include <asm/msr.h>
- #include <asm/tlbflush.h>
- #include <asm/processor.h>
- #include <asm/pgtable.h>
- #include <asm/pat.h>
-+#include <asm/cacheflush.h>
-+#include <asm/fcntl.h>
+--- linux-2.6.24-rc.orig/arch/x86/kernel/e820_64.c
++++ linux-2.6.24-rc/arch/x86/kernel/e820_64.c
+@@ -121,6 +121,35 @@ e820_any_mapped(unsigned long start, uns
+ }
+ EXPORT_SYMBOL_GPL(e820_any_mapped);
  
- static u64 boot_pat_state;
- 
-@@ -57,6 +60,16 @@
- 	}
++int e820_any_non_reserved(unsigned long start, unsigned long end)
++{
++	int i;
++	for (i = 0; i < e820.nr_map; i++) {
++		struct e820entry *ei = &e820.map[i];
++		if (ei->type == E820_RESERVED)
++			continue;
++		if (ei->addr >= end || ei->addr + ei->size <= start)
++			continue;
++		return 1;
++	}
++	return 0;
++}
++EXPORT_SYMBOL_GPL(e820_any_non_reserved);
++
++int is_memory_any_valid(unsigned long start, unsigned long end)
++{
++	/*
++	 * Keep low PCI/ISA area always mapped.
++	 * Note: end address is exclusive and start is inclusive here
++	 */
++	if (start >= ISA_START_ADDRESS && end <= ISA_END_ADDRESS)
++		return 1;
++
++	/* Switch to efi or e820 in future here */
++	return e820_any_non_reserved(start, end);
++}
++EXPORT_SYMBOL_GPL(is_memory_any_valid);
++
+ /*
+  * This function checks if the entire range <start,end> is mapped with type.
+  *
+@@ -150,6 +179,47 @@ int __init e820_all_mapped(unsigned long
+ 	return 0;
  }
  
-+static char *cattr_name(unsigned long flags)
++int e820_all_non_reserved(unsigned long start, unsigned long end)
 +{
-+	switch (flags & _PAGE_CACHE_MASK) {
-+	case _PAGE_WC:  return "write combining";
-+	case _PAGE_PCD: return "uncached";
-+	case 0: 	return "default";
-+	default: 	return "broken";
++	int i;
++	for (i = 0; i < e820.nr_map; i++) {
++		struct e820entry *ei = &e820.map[i];
++		if (ei->type == E820_RESERVED)
++			continue;
++
++		/* is the region (part) in overlap with the current region ?*/
++		if (ei->addr >= end || ei->addr + ei->size <= start)
++			continue;
++
++		/*
++		 * if the region is at the beginning of <start,end> we move
++		 * start to the end of the region since it's ok until there
++		 */
++		if (ei->addr <= start)
++			start = ei->addr + ei->size;
++
++		/* if start is at or beyond end, we're done, full coverage */
++		if (start >= end)
++			return 1; /* we're done */
++	}
++	return 0;
++}
++EXPORT_SYMBOL_GPL(e820_all_non_reserved);
++
++int is_memory_all_valid(unsigned long start, unsigned long end)
++{
++	/*
++	 * Keep low PCI/ISA area always mapped.
++	 * Note: end address is exclusive and start is inclusive here
++	 */
++	if (start >= ISA_START_ADDRESS && end <= ISA_END_ADDRESS)
++		return 1;
++
++	/* Switch to efi or e820 in future here */
++	return e820_all_non_reserved(start, end);
++}
++EXPORT_SYMBOL_GPL(is_memory_all_valid);
++
+ /* 
+  * Find a free area in a specific range. 
+  */ 
+Index: linux-2.6.24-rc/arch/x86/mm/init_64.c
+===================================================================
+--- linux-2.6.24-rc.orig/arch/x86/mm/init_64.c
++++ linux-2.6.24-rc/arch/x86/mm/init_64.c
+@@ -250,13 +250,46 @@ __meminit void early_iounmap(void *addr,
+ }
+ 
+ static void __meminit
++phys_pte_init(pte_t *pte_page, unsigned long address, unsigned long end)
++{
++	int i = pte_index(address); // (address % PMD_SIZE) >> PAGE_SHIFT;
++
++	for (; i < PTRS_PER_PTE; i++, address += PAGE_SIZE) {
++		unsigned long entry;
++		pte_t *pte = pte_page + i;
++
++		if (address >= end) {
++			if (!after_bootmem)
++				for (; i < PTRS_PER_PTE; i++, pte++)
++					set_pte(pte, __pte(0));
++			break;
++		}
++
++		if (pte_val(*pte))
++			continue;
++
++		/* Nothing to map */
++		if (!is_memory_any_valid(address, address + PAGE_SIZE)) {
++			set_pte(pte, __pte(0));
++			continue;
++		}
++
++		entry = _PAGE_NX|_KERNPG_TABLE|_PAGE_GLOBAL|address;
++		entry &= __supported_pte_mask;
++		set_pte(pte, __pte(entry));
 +	}
 +}
 +
- /* The global memattr list keeps track of caching attributes for specific
-    physical memory areas. Conflicting caching attributes in different
-    mappings can cause CPU cache corruption. To avoid this we keep track.
-@@ -105,9 +118,10 @@
- 			}
- 			if (attr != ml->attr) {
- 				printk(
--	KERN_ERR "%s:%d conflicting cache attribute %Lx-%Lx %lx<->%lx\n",
-+	KERN_ERR "%s:%d conflicting cache attribute %Lx-%Lx %s<->%s\n",
- 					current->comm, current->pid,
--					start, end, attr, ml->attr);
-+					start, end,
-+					cattr_name(attr), cattr_name(ml->attr));
- 				err = -EBUSY;
- 				break;
- 			}
-@@ -134,19 +148,60 @@
- 		if (ml->start == start && ml->end == end) {
- 			if (ml->attr != attr)
- 				printk(KERN_ERR
--	"%s:%d conflicting cache attributes on free %Lx-%Lx %lx<->%lx\n",
--			current->comm, current->pid, start, end, attr,ml->attr);
-+	"%s:%d conflicting cache attributes on free %Lx-%Lx %s<->%s\n",
-+			current->comm, current->pid, start, end,
-+			cattr_name(attr), cattr_name(ml->attr));
- 			list_del(&ml->nd);
- 			kfree(ml);
- 			err = 0;
++static void __meminit
+ phys_pmd_init(pmd_t *pmd_page, unsigned long address, unsigned long end)
+ {
+ 	int i = pmd_index(address);
+ 
+ 	for (; i < PTRS_PER_PMD; i++, address += PMD_SIZE) {
+ 		unsigned long entry;
+-		pmd_t *pmd = pmd_page + pmd_index(address);
++		pmd_t *pmd = pmd_page + i; // pmd_index(address);
++		pte_t *pte;
++		unsigned long pte_phys;
+ 
+ 		if (address >= end) {
+ 			if (!after_bootmem)
+@@ -268,9 +301,27 @@ phys_pmd_init(pmd_t *pmd_page, unsigned 
+ 		if (pmd_val(*pmd))
+ 			continue;
+ 
+-		entry = _PAGE_NX|_PAGE_PSE|_KERNPG_TABLE|_PAGE_GLOBAL|address;
+-		entry &= __supported_pte_mask;
+-		set_pmd(pmd, __pmd(entry));
++		/* Nothing to map */
++		if (!is_memory_any_valid(address, address + PMD_SIZE)) {
++			set_pmd(pmd, __pmd(0));
++			continue;
++		}
++
++		/* Map with 2M pages */
++		if (is_memory_all_valid(address, address + PUD_SIZE)) {
++			entry = _PAGE_NX|_PAGE_PSE|_KERNPG_TABLE|
++				_PAGE_GLOBAL|address;
++			entry &= __supported_pte_mask;
++			set_pmd(pmd, __pmd(entry));
++			continue;
++		}
++
++		/* Map with 4k pages */
++		pte = alloc_low_page(&pte_phys);
++		set_pmd(pmd, __pmd(pte_phys | _KERNPG_TABLE));
++		phys_pte_init(pte, address, address + PMD_SIZE);
++		unmap_low_page(pte);
++
+ 	}
+ }
+ 
+@@ -291,14 +342,15 @@ static void __meminit phys_pud_init(pud_
+ 
+ 	for (; i < PTRS_PER_PUD; i++, addr = (addr & PUD_MASK) + PUD_SIZE ) {
+ 		unsigned long pmd_phys;
+-		pud_t *pud = pud_page + pud_index(addr);
++		pud_t *pud = pud_page + i; // pud_index(addr);
+ 		pmd_t *pmd;
+ 
+ 		if (addr >= end)
  			break;
- 		}
+ 
+-		if (!after_bootmem && !e820_any_mapped(addr,addr+PUD_SIZE,0)) {
+-			set_pud(pud, __pud(0)); 
++		if (!after_bootmem &&
++		    !is_memory_any_valid(addr, addr+PUD_SIZE)) {
++			set_pud(pud, __pud(0));
+ 			continue;
+ 		} 
+ 
+@@ -310,7 +362,7 @@ static void __meminit phys_pud_init(pud_
+ 		pmd = alloc_low_page(&pmd_phys);
+ 		spin_lock(&init_mm.page_table_lock);
+ 		set_pud(pud, __pud(pmd_phys | _KERNPG_TABLE));
+-		phys_pmd_init(pmd, addr, end);
++		phys_pmd_init(pmd, addr, addr + PUD_SIZE);
+ 		spin_unlock(&init_mm.page_table_lock);
+ 		unmap_low_page(pmd);
  	}
- 	spin_unlock(&mattr_lock);
- 	if (err)
--		printk(KERN_ERR "%s:%d freeing invalid mattr %Lx-%Lx %lx\n",
-+		printk(KERN_ERR "%s:%d freeing invalid mattr %Lx-%Lx %s\n",
- 			current->comm, current->pid,
--			start, end, attr);
-+			start, end, cattr_name(attr));
- 	return err;
- }
+@@ -319,12 +371,14 @@ static void __meminit phys_pud_init(pud_
  
-+/* /dev/mem interface. Use the previous mapping */
-+pgprot_t
-+phys_mem_access_prot(struct file *file, unsigned long pfn, unsigned long size,
-+		     pgprot_t vma_prot)
-+{
-+	u64 offset = pfn << PAGE_SHIFT;
-+	unsigned long flags;
-+	unsigned long want_flags = 0;
-+	if ((file->f_flags & O_SYNC) || (offset >= __pa(high_memory)))
-+		want_flags = _PAGE_PCD;
-+
-+	/* ignore error because we can't handle it here */
-+	reserve_mattr(offset, offset+size, want_flags, &flags);
-+	if (flags != want_flags) {
-+		printk(KERN_INFO
-+	"%s:%d /dev/mem expected mapping type %s for %Lx-%Lx, got %s\n",
-+			current->comm, current->pid,
-+			cattr_name(want_flags),
-+			offset, offset+size,
-+			cattr_name(flags));
-+	}
-+
-+	if (offset < __pa(high_memory) && flags) {
-+		/* RED-PEN when the kernel memory was write protected
-+		   or similar before we'll destroy that here. need a pgprot
-+		   mask in cpa? */
-+		change_page_attr_addr(offset, size >> PAGE_SHIFT,
-+				     __pgprot(__PAGE_KERNEL | flags));
-+	}
-+	return __pgprot((pgprot_val(vma_prot) & ~_PAGE_CACHE_MASK)|flags);
-+}
-+
-+void unmap_devmem(unsigned long pfn, unsigned long size, pgprot_t vma_prot)
-+{
-+	u64 addr = (u64)pfn << PAGE_SHIFT;
-+	free_mattr(addr, size, 0);
-+	if (addr < __pa(high_memory) &&
-+	   (pgprot_val(vma_prot) & _PAGE_CACHE_MASK))
-+		change_page_attr_addr(addr, size >> PAGE_SHIFT, PAGE_KERNEL);
-+}
-Index: linux-2.6.24-rc4/drivers/char/mem.c
-===================================================================
---- linux-2.6.24-rc4.orig/drivers/char/mem.c	2007-12-11 14:24:56.000000000 -0800
-+++ linux-2.6.24-rc4/drivers/char/mem.c	2007-12-11 15:59:29.000000000 -0800
-@@ -41,36 +41,7 @@
-  */
- static inline int uncached_access(struct file *file, unsigned long addr)
+ static void __init find_early_table_space(unsigned long end)
  {
--#if defined(__i386__) && !defined(__arch_um__)
--	/*
--	 * On the PPro and successors, the MTRRs are used to set
--	 * memory types for physical addresses outside main memory,
--	 * so blindly setting PCD or PWT on those pages is wrong.
--	 * For Pentiums and earlier, the surround logic should disable
--	 * caching for the high addresses through the KEN pin, but
--	 * we maintain the tradition of paranoia in this code.
--	 */
--	if (file->f_flags & O_SYNC)
--		return 1;
-- 	return !( test_bit(X86_FEATURE_MTRR, boot_cpu_data.x86_capability) ||
--		  test_bit(X86_FEATURE_K6_MTRR, boot_cpu_data.x86_capability) ||
--		  test_bit(X86_FEATURE_CYRIX_ARR, boot_cpu_data.x86_capability) ||
--		  test_bit(X86_FEATURE_CENTAUR_MCR, boot_cpu_data.x86_capability) )
--	  && addr >= __pa(high_memory);
--#elif defined(__x86_64__) && !defined(__arch_um__)
--	/* 
--	 * This is broken because it can generate memory type aliases,
--	 * which can cause cache corruptions
--	 * But it is only available for root and we have to be bug-to-bug
--	 * compatible with i386.
--	 */
--	if (file->f_flags & O_SYNC)
--		return 1;
--	/* same behaviour as i386. PAT always set to cached and MTRRs control the
--	   caching behaviour. 
--	   Hopefully a full PAT implementation will fix that soon. */	   
--	return 0;
--#elif defined(CONFIG_IA64)
-+#if defined(CONFIG_IA64)
- 	/*
- 	 * On ia64, we ignore O_SYNC because we cannot tolerate memory attribute aliases.
- 	 */
-@@ -271,6 +242,22 @@
- }
- #endif
+-	unsigned long puds, pmds, tables, start;
++	unsigned long puds, pmds, ptes, tables, start;
  
-+void __attribute__((weak))
-+unmap_devmem(unsigned long pfn, unsigned long len, pgprot_t prot)
-+{
-+	/* nothing. architectures can override. */
-+}
-+
-+static void mmap_mem_close(struct vm_area_struct *vma)
-+{
-+	unmap_devmem(vma->vm_pgoff,  vma->vm_end - vma->vm_start,
-+		     vma->vm_page_prot);
-+}
-+
-+static struct vm_operations_struct mmap_mem_ops = {
-+	.close = mmap_mem_close
-+};
-+
- static int mmap_mem(struct file * file, struct vm_area_struct * vma)
- {
- 	size_t size = vma->vm_end - vma->vm_start;
-@@ -285,6 +272,8 @@
- 						 size,
- 						 vma->vm_page_prot);
+ 	puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
+ 	pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
++	ptes = (end + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 	tables = round_up(puds * sizeof(pud_t), PAGE_SIZE) +
+-		 round_up(pmds * sizeof(pmd_t), PAGE_SIZE);
++		 round_up(pmds * sizeof(pmd_t), PAGE_SIZE) +
++		 round_up(ptes * sizeof(pte_t), PAGE_SIZE);
  
-+	vma->vm_ops = &mmap_mem_ops;
-+
- 	/* Remap-pfn-range will mark the range VM_IO and VM_RESERVED */
- 	if (remap_pfn_range(vma,
- 			    vma->vm_start,
-Index: linux-2.6.24-rc4/include/asm-x86/pgtable_64.h
+  	/* RED-PEN putting page tables only on node 0 could
+  	   cause a hotspot and fill up ZONE_DMA. The page tables
+Index: linux-2.6.24-rc/include/asm-x86/e820_64.h
 ===================================================================
---- linux-2.6.24-rc4.orig/include/asm-x86/pgtable_64.h	2007-12-11 15:08:12.000000000 -0800
-+++ linux-2.6.24-rc4/include/asm-x86/pgtable_64.h	2007-12-11 15:59:29.000000000 -0800
-@@ -452,6 +452,12 @@
- #define __HAVE_ARCH_PTEP_SET_WRPROTECT
- #define __HAVE_ARCH_PTE_SAME
- #include <asm-generic/pgtable.h>
-+
-+#define __HAVE_PHYS_MEM_ACCESS_PROT
-+struct file;
-+pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
-+                              unsigned long size, pgprot_t vma_prot);
-+
- #endif /* !__ASSEMBLY__ */
+--- linux-2.6.24-rc.orig/include/asm-x86/e820_64.h
++++ linux-2.6.24-rc/include/asm-x86/e820_64.h
+@@ -24,6 +24,10 @@ extern void e820_mark_nosave_regions(voi
+ extern void e820_print_map(char *who);
+ extern int e820_any_mapped(unsigned long start, unsigned long end, unsigned type);
+ extern int e820_all_mapped(unsigned long start, unsigned long end, unsigned type);
++extern int e820_any_non_reserved(unsigned long start, unsigned long end);
++extern int is_memory_any_valid(unsigned long start, unsigned long end);
++extern int e820_all_non_reserved(unsigned long start, unsigned long end);
++extern int is_memory_all_valid(unsigned long start, unsigned long end);
+ extern unsigned long e820_hole_size(unsigned long start, unsigned long end);
  
- #endif /* _X86_64_PGTABLE_H */
+ extern void e820_setup_gap(void);
+@@ -36,6 +40,10 @@ extern struct e820map e820;
+ 
+ extern unsigned ebda_addr, ebda_size;
+ extern unsigned long nodemap_addr, nodemap_size;
++
++#define ISA_START_ADDRESS	0xa0000
++#define ISA_END_ADDRESS		0x100000
++
+ #endif/*!__ASSEMBLY__*/
+ 
+ #endif/*__E820_HEADER*/
+Index: linux-2.6.24-rc/arch/x86/mm/pageattr_64.c
+===================================================================
+--- linux-2.6.24-rc.orig/arch/x86/mm/pageattr_64.c
++++ linux-2.6.24-rc/arch/x86/mm/pageattr_64.c
+@@ -160,9 +160,6 @@ __change_page_attr(unsigned long address
+ 	} else
+ 		BUG();
+ 
+-	/* on x86-64 the direct mapping set at boot is not using 4k pages */
+- 	BUG_ON(PageReserved(kpte_page));
+-
+ 	save_page(kpte_page);
+ 	if (page_private(kpte_page) == 0)
+ 		revert_page(address, ref_prot);
+Index: linux-2.6.24-rc/arch/x86/mm/ioremap_64.c
+===================================================================
+--- linux-2.6.24-rc.orig/arch/x86/mm/ioremap_64.c
++++ linux-2.6.24-rc/arch/x86/mm/ioremap_64.c
+@@ -28,9 +29,6 @@ unsigned long __phys_addr(unsigned long 
+ }
+ EXPORT_SYMBOL(__phys_addr);
+ 
+-#define ISA_START_ADDRESS      0xa0000
+-#define ISA_END_ADDRESS                0x100000
+-
+ /*
+  * Fix up the linear direct mapping of the kernel to avoid cache attribute
+  * conflicts.
 
 -- 
