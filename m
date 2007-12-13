@@ -1,97 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934537AbXLMXDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932556AbXLMXGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934537AbXLMXDd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 18:03:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763293AbXLMXDZ
+	id S932556AbXLMXGT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 18:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbXLMXGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 18:03:25 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53142 "EHLO hera.kernel.org"
+	Thu, 13 Dec 2007 18:06:06 -0500
+Received: from cantor.suse.de ([195.135.220.2]:47879 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762826AbXLMXDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 18:03:24 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [PATCH] acpi: make __acpi_map_table() and __init function
-Date: Thu, 13 Dec 2007 18:03:07 -0500
-User-Agent: KMail/1.9.5
-Cc: "linux-acpi" <linux-acpi@intel.com>, linux-kernel@vger.kernel.org
-References: <4760FC87.76E4.0078.0@novell.com>
-In-Reply-To: <4760FC87.76E4.0078.0@novell.com>
+	id S1753772AbXLMXGD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 18:06:03 -0500
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: David Miller <davem@davemloft.net>, bunk@kernel.org,
+       linux-kernel@vger.kernel.org, linux-arch <linux-arch@vger.kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: RFC: remove __read_mostly
+From: Andi Kleen <andi@firstfloor.org>
+References: <20071213222044.GH21616@stusta.de>
+	<20071213.143246.175833292.davem@davemloft.net>
+	<1197585855.898.33.camel@brick>
+Date: Fri, 14 Dec 2007 00:06:02 +0100
+In-Reply-To: <1197585855.898.33.camel@brick> (Harvey Harrison's message of "Thu\, 13 Dec 2007 14\:44\:15 -0800")
+Message-ID: <p733au6gpph.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712131803.07985.lenb@kernel.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied to 2.6.25 queue
+Harvey Harrison <harvey.harrison@gmail.com> writes:
 
-thanks,
--Len
+> On Thu, 2007-12-13 at 14:32 -0800, David Miller wrote:
+>> From: Adrian Bunk <bunk@kernel.org>
+>> Date: Thu, 13 Dec 2007 23:20:44 +0100
+>> 
+>> > My question is:
+>> > Is there anywhere in the kernel a case where __read_mostly brings a 
+>> > measurable improvement or can it be removed?
+>> 
+>> Yes, on SMP when read-mostly objects share cache lines
+>> with other objects which are frequently written to.
+>> 
+>> That is the whole reason we created __read_mostly
+>
+> I'm curious if anyone has been looking into replacing the __read_mostly
+> approach with Mathieu's immediate values patchset.  Wouldn't they solve
+> the cacheline sharing as well
 
-On Thursday 13 December 2007 03:33, Jan Beulich wrote:
-> .. as it it used only during early boot.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> 
->  arch/ia64/kernel/acpi.c     |    2 +-
->  arch/x86/kernel/acpi/boot.c |    4 ++--
->  drivers/acpi/osl.c          |    3 ++-
->  3 files changed, 5 insertions(+), 4 deletions(-)
-> 
-> --- linux-2.6.24-rc5/arch/ia64/kernel/acpi.c	2007-12-12 11:28:03.000000000 +0100
-> +++ 2.6.24-rc5-acpi-map-table-init/arch/ia64/kernel/acpi.c	2007-12-04 16:09:33.000000000 +0100
-> @@ -152,7 +152,7 @@ int acpi_request_vector(u32 int_type)
->  	return vector;
->  }
->  
-> -char *__acpi_map_table(unsigned long phys_addr, unsigned long size)
-> +char *__init __acpi_map_table(unsigned long phys_addr, unsigned long size)
->  {
->  	return __va(phys_addr);
->  }
-> --- linux-2.6.24-rc5/arch/x86/kernel/acpi/boot.c	2007-12-12 11:28:17.000000000 +0100
-> +++ 2.6.24-rc5-acpi-map-table-init/arch/x86/kernel/acpi/boot.c	2007-12-04 16:09:33.000000000 +0100
-> @@ -106,7 +106,7 @@ enum acpi_irq_model_id acpi_irq_model = 
->  #ifdef	CONFIG_X86_64
->  
->  /* rely on all ACPI tables being in the direct mapping */
-> -char *__acpi_map_table(unsigned long phys_addr, unsigned long size)
-> +char *__init __acpi_map_table(unsigned long phys_addr, unsigned long size)
->  {
->  	if (!phys_addr || !size)
->  		return NULL;
-> @@ -131,7 +131,7 @@ char *__acpi_map_table(unsigned long phy
->   * from the fixed base.  That's why we start at FIX_IO_APIC_BASE_END and
->   * count idx down while incrementing the phys address.
->   */
-> -char *__acpi_map_table(unsigned long phys, unsigned long size)
-> +char *__init __acpi_map_table(unsigned long phys, unsigned long size)
->  {
->  	unsigned long base, offset, mapped_size;
->  	int idx;
-> --- linux-2.6.24-rc5/drivers/acpi/osl.c	2007-12-12 11:28:21.000000000 +0100
-> +++ 2.6.24-rc5-acpi-map-table-init/drivers/acpi/osl.c	2007-12-04 16:09:33.000000000 +0100
-> @@ -211,7 +211,8 @@ acpi_physical_address __init acpi_os_get
->  		return acpi_find_rsdp();
->  }
->  
-> -void __iomem *acpi_os_map_memory(acpi_physical_address phys, acpi_size size)
-> +void __iomem *__init_refok
-> +acpi_os_map_memory(acpi_physical_address phys, acpi_size size)
->  {
->  	if (phys > ULONG_MAX) {
->  		printk(KERN_ERR PREFIX "Cannot map memory that high\n");
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Yes it would in most cases.  This means the writing case is much
+more expensive with them, so if there is anything which is still
+relatively frequently written (just not "mostly") it would be 
+probably not a good idea. It should be only done for settings
+that practically never change.
+
+The other problem is that you have to change all accesses to the new
+accessor macros which is potentially a lot. Also you have to add
+sync calls for the writing case, which means that sysctl etc. setup
+will be more complicated because you need "strategy" functions now.
+
+Also for things that are not that critical the uglification in
+the source is likely not worth it.
+
+I would suggest to only do it after looking at oprofile cache miss
+profiles.
+
+> (perhaps more eficiently even with trading
+> some icache for dcache)?
+
+It should be more efficient because there will be less dcache misses.
+icache is typically already prefetched by the CPU. This is especially
+useful for the kernel because it often runs cache cold because user
+space used all the cache.
+
+-Andi
