@@ -1,39 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934170AbXLMWdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934123AbXLMWdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934170AbXLMWdd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:33:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932702AbXLMWct
+	id S934123AbXLMWdy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:33:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934206AbXLMWdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:32:49 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50638
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S932421AbXLMWcs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:32:48 -0500
-Date: Thu, 13 Dec 2007 14:32:46 -0800 (PST)
-Message-Id: <20071213.143246.175833292.davem@davemloft.net>
-To: bunk@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: RFC: remove __read_mostly
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071213222044.GH21616@stusta.de>
-References: <20071213222044.GH21616@stusta.de>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Dec 2007 17:33:11 -0500
+Received: from mx2.suse.de ([195.135.220.15]:37558 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934139AbXLMWdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 17:33:09 -0500
+To: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+From: Andi Kleen <andi@firstfloor.org>
+References: <20071214004442.5f9eba88@linux360.ro>
+Date: Thu, 13 Dec 2007 23:33:07 +0100
+In-Reply-To: <20071214004442.5f9eba88@linux360.ro> (Eduard-Gabriel Munteanu's message of "Fri\, 14 Dec 2007 00\:44\:42 +0200")
+Message-ID: <p737ijigr8c.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
-Date: Thu, 13 Dec 2007 23:20:44 +0100
+Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro> writes:
+>  
+> +	force_amd_c1e	[KNL,SMP,HW,BUGS=X86-64]
+> +			Don't disable C1E on AMD systems even if this means
 
-> My question is:
-> Is there anywhere in the kernel a case where __read_mostly brings a 
-> measurable improvement or can it be removed?
+The description/option is not correct. The mainline kernel never disables C1e.
+Some distribution kernels and Xen do, perhaps you're confusing this 
+with them.
 
-Yes, on SMP when read-mostly objects share cache lines
-with other objects which are frequently written to.
+You would rather need a "force_disable_c1e" option if anything.
 
-That is the whole reason we created __read_mostly
+Anyways this should be near all obsolete with forced HPET. With HPET
+dynticks can be used even with C1e. So in most cases you can just
+use hpet=force instead and get dynticks and C1e together.
+
+-Andi
