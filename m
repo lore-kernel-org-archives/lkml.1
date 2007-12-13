@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763690AbXLMU3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762566AbXLMUhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763690AbXLMU3U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 15:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbXLMU3H
+	id S1762566AbXLMUhl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 15:37:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbXLMUh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 15:29:07 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49606 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbXLMU3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 15:29:05 -0500
-Date: Thu, 13 Dec 2007 21:28:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       zach@vmware.com, roland@redhat.com
-Subject: Re: [PATCH] avoid ifdefs in desc.h, getting rid of pack_ldt and
-	pack_tss
-Message-ID: <20071213202800.GD25130@elte.hu>
-References: <11975561713425-git-send-email-gcosta@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <11975561713425-git-send-email-gcosta@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 13 Dec 2007 15:37:29 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57378
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751641AbXLMUh2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 15:37:28 -0500
+Date: Thu, 13 Dec 2007 12:37:27 -0800 (PST)
+Message-Id: <20071213.123727.224454625.davem@davemloft.net>
+To: jarkao2@gmail.com
+Cc: auke-jan.h.kok@intel.com, gallatin@myri.com, joonwpark81@gmail.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       shemminger@linux-foundation.org, jesse.brandeburg@intel.com
+Subject: Re: [RFC] net: napi fix
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4761930C.3030504@gmail.com>
+References: <20071213134953.GA3806@ff.dom.local>
+	<20071213.055013.83963139.davem@davemloft.net>
+	<4761930C.3030504@gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jarek Poplawski <jarkao2@gmail.com>
+Date: Thu, 13 Dec 2007 21:16:12 +0100
 
-* Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
+> I see in a nearby thread you would prefer to save some work to drivers
+> (like this netif_running() check), but I think this all is at the cost
+> of flexibility, and there will probably appear new problems, when a
+> driver simply can't wait till the next poll (which btw. looks strange
+> with all these hotplugging, usb and powersaving).
 
-> By Andi Kleen's suggestion, this patch removes pack_ldt() and 
-> pack_tss() wrappers in favour of a general wrapper. It saves us an 
-> ifdef and some lines of code, but more importantly, it's more elegant.
-> 
-> No functional change is made.
-> 
-> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+As someone who has actually had to edit the NAPI support of _EVERY_
+single driver in the tree I can tell you that code duplication and
+subtle semantic differences are a huge issue.
 
-thanks, applied.
+And when you talk about driver flexibility, it's wise to mention that
+this comes at the expense of flexibility in the core implmentation.
+For example, if we export the list handling widget into the ->poll()
+routines, god help the person who wants to change how the poll list is
+managed in net_rx_action() :-/
 
-	Ingo
+So we don't want to export datastructure details like that to the
+driver.
