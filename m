@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbXLMCIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbXLMCK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717AbXLMCIp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 21:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXLMCIg
+	id S1758130AbXLMCK0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 21:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbXLMCKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 21:08:36 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:53462 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751096AbXLMCIg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 21:08:36 -0500
-Message-ID: <476093B6.7080306@zytor.com>
-Date: Wed, 12 Dec 2007 18:06:46 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 12 Dec 2007 21:10:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35939 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751229AbXLMCKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 21:10:18 -0500
+Date: Wed, 12 Dec 2007 21:10:15 -0500
+From: Dave Jones <davej@redhat.com>
+To: SL Baur <steve@xemacs.org>
+Cc: Peter Stahlir <peter.stahlir@googlemail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Linux kernel history from 0.0.1
+Message-ID: <20071213021015.GA25356@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, SL Baur <steve@xemacs.org>,
+	Peter Stahlir <peter.stahlir@googlemail.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <fbe8b1780712121410u41517699v6e0b991d1a262ffd@mail.gmail.com> <20071212234640.GA452@redhat.com> <ed10ee420712121747v69b68c2cy6c5014ea51066d7d@mail.gmail.com>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Rene Herman <rene.herman@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, dpreed@reed.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, pavel@ucw.cz, andi@firstfloor.org,
-       rol@as2917.net, Krzysztof Halasa <khc@pm.waw.pl>, david@davidnewall.com,
-       john@stoffel.org, linux-os@analogic.com
-Subject: Re: [RFT] Port 0x80 I/O speed
-References: <475F1DC6.5090403@keyaccess.nl> <Pine.LNX.4.64.0712130041590.32346@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0712130041590.32346@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ed10ee420712121747v69b68c2cy6c5014ea51066d7d@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Dec 12 2007 00:31, Rene Herman wrote:
->> Would some people on x86 (both 32 and 64) be kind enough to compile and run the
->> attached program? This is about testing how long I/O port access to port 0x80
->> takes. It measures in CPU cycles so CPU speed is crucial in reporting.
->>
-> 
-> Transmeta TM5800 CPU with nominal frequency 933 MHz, but it has a
-> hardware(!) 'ondemand' governor over the range of frequencies that
-> the user allowed scaling over, irrespective of the software governor.
-> (That is, if the CPU can do 300,533 and 933 MHz, and setting the
-> min/max to 300/533 will cause the hardware to 'ondemand' between 300
-> and 533 only. And that even if 'performance' is set on the software
-> side - so the only way to enforce 'performance' is to actually set
-> min=933.)
-> 
+On Wed, Dec 12, 2007 at 05:47:23PM -0800, SL Baur wrote:
+ > On 12/12/07, Dave Jones <davej@redhat.com> wrote:
+ > 
+ > >     Sadly there doesn't seem to be any online archives of the period between
+ > >     Linux-activists ending in 1993 and Linux Kernel from 1998. Anyone?
+ > >     (I find it amazing that five whole years of history have disappeared
+ > >      from the net).
+ > 
+ > I have mail archives from ~1.3.30 through around 2000 that I'm in the
+ > process of recovering.  They won't be complete, but they'll include any
+ > and all release announcements and patches Linus and Alan posted to
+ > the list.  You're welcome to whatever I have when I get it back.
 
-Actually it has two different ones (economy and performance), you can 
-use the "longrun" utility to select which one.
+If you could put those up for download somewhere when you've got them,
+that would be great.  I know that others have also been trying to piece
+together some of the older lkml history (All the online web-archives
+I tried also start around `97-98)
 
-Either way, all Transmeta processors have a fixed TSC, so there is no issue.
+	Dave
 
-	-hpa
+-- 
+http://www.codemonkey.org.uk
