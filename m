@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933489AbXLMWvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934401AbXLMWwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933489AbXLMWvW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 17:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763113AbXLMWvM
+	id S934401AbXLMWwt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 17:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760780AbXLMWwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 17:51:12 -0500
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:44722 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762272AbXLMWvK (ORCPT
+	Thu, 13 Dec 2007 17:52:41 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50707 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759688AbXLMWwk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 17:51:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Lg3rzoI+phmgOEo4XM2hkufix/YHVrsNCnRuiyMdv7NSXHbAuVpFW24sPO8eyCCclUtzJPsUFGLkb3OVwV1tyXAU9tCIb41eX60Xqy4xvhonPhJ0esNkeNxiI0bPW7pMiP+cHPY2Kx9fPOtk5urzZCnU3jQD/VqcJxRBtEFc3Dk=  ;
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Subject: Re: [PATCH 36/42] VFS: export drop_pagecache_sb
-Date: Fri, 14 Dec 2007 09:47:10 +1100
-User-Agent: KMail/1.9.5
-Cc: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <200712131524.lBDFOHBv024206@agora.fsl.cs.sunysb.edu>
-In-Reply-To: <200712131524.lBDFOHBv024206@agora.fsl.cs.sunysb.edu>
+	Thu, 13 Dec 2007 17:52:40 -0500
+Date: Thu, 13 Dec 2007 14:52:32 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Asit Mallick <asit.k.mallick@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, benh@kernel.crashing.org
+Subject: Re: What was the problem with quicklists and x86-64?
+In-Reply-To: <20071213222716.GA20208@linux-os.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0712131437080.25120@schroedinger.engr.sgi.com>
+References: <47603321.4030700@goop.org> <Pine.LNX.4.64.0712131131540.13396@schroedinger.engr.sgi.com>
+ <20071213222716.GA20208@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712140947.11049.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 14 December 2007 02:24, Erez Zadok wrote:
-> In message <200712121638.35167.nickpiggin@yahoo.com.au>, Nick Piggin writes:
-> > On Monday 10 December 2007 13:42, Erez Zadok wrote:
-> > > Needed to maintain cache coherency after branch management.
-> >
-> > Hmm, I'd much prefer to be able to sleep in invalidate_mapping_pages
-> > before this function gets exported.
-> >
-> > As it is, it can cause massive latencies on preemption and the inode_lock
-> > so it is pretty much debug-only IMO. I'd rather it didn't escape into the
-> > wild as is.
-> >
-> > Either that or rework your cache coherency somehow.
->
-> Nick, thanks for the advice.
->
-> We use a generation number after each successful branch configuration
-> command, so that ->d_revalidate later on can discover that change, and
-> rebuild the union of objects.  At ->remount time, I figured it'd be nice to
-> "encourage" that revalidation to happen sooner, by invalidating as many
-> upper pages as possible, thus causing ->d_revalidate/->readpage to take
-> place sooner.  So we used to call drop_pagecache_sb from our remount code:
-> it was the only caller of drop_pagecache_sb.  It wasn't too much of an
-> latency issue to call drop_pagecache_sb there: the VFS remount code path is
-> already pretty slow (dropping temporarily to readonly mode, and dropping
-> other caches), and remount isn't an operation used often, so a little bit
-> more latency would probably not have been noticed by users.
+On Thu, 13 Dec 2007, Siddha, Suresh B wrote:
 
-Well a large, infrequent spike is the most damaging to latency sensitive
-users. And anyway, I guess the infrequency of remount means it doesn't
-have to be really efficient with invalidating pagecache either.
+> <snip>
+> Oh, and I see what's wrong: you not only switched "free_page()" to 
+> "quicklist_free()", you *also* switched "tlb_remove_page()" to 
+> "quicklist_free()".
+> </snip>
+> 
+> The above comment is in reference to below portion of code:
+> 
+> -#define __pte_free_tlb(tlb,pte) tlb_remove_page((tlb),(pte))
+> +#define __pte_free_tlb(tlb,pte) quicklist_free_page(QUICK_PT, NULL,(pte))
+> 
+> tlb_remove_page() was marking tlb->need_flush. Which is later used
+> by tlb_flush_mmu(). With quicklist_free_page() we loose all that..
+
+Aha. So we need to flush if there is a page on the quicklist. Patch 
+follows.
+
+> Now in a corner case scenario  with a big munmap() which calls unmap_region()
+> and if it so happens that the region getting unmapped just has page
+> tables setup but with all PTE's set to NULL, unmap_region() may
+> potentially free the page table pages
+> 	[ tlb_finish_mmu() calls check_pgt_cache() which trims quicklist ]
+> with out flushing the TLB's.
+> 	[ (tlb_finish_mmu() calls the tlb_flush_mmu() but it will not do
+>            much as need_flush is not set ]
+> 
+> Similarly Linus brought pre-emptions issues associated with quicklist usage..
+
+AFAICT page table shootdown cannot be preempted. What where the preemption issues?
 
 
-> Nevertheless, it was not strictly necessary to call drop_pagecache_sb in
-> unionfs_remount, because the objects in question will have gotten
-> revalidated sooner or later anyway; the call to drop_pagecache_sb was just
-> an optimization (one which I wasn't 100% sure about anyway, as per my long
-> "XXX" comment above that call in unionfs_remount).
->
-> So I agree with you: if this symbol can be abused by modules and cause
-> problems, then exporting it to modules is too risky.  I've reworked my code
-> to avoid calling drop_pagecache_sb and I'll [sic] drop that patch.
 
-Thanks, I'd be much happier with that.
+
+Index: linux-2.6/include/asm-generic/tlb.h
+===================================================================
+--- linux-2.6.orig/include/asm-generic/tlb.h	2007-12-13 14:45:38.000000000 -0800
++++ linux-2.6/include/asm-generic/tlb.h	2007-12-13 14:51:07.000000000 -0800
+@@ -14,6 +14,7 @@
+ #define _ASM_GENERIC__TLB_H
+ 
+ #include <linux/swap.h>
++#include <linux/quicklist.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
+ 
+@@ -85,6 +86,9 @@ tlb_flush_mmu(struct mmu_gather *tlb, un
+ static inline void
+ tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
+ {
++#ifdef CONFIG_QUICKLIST
++	tlb->need_flush += &__get_cpu_var(quicklist)[0].nr_pages != 0;
++#endif
+ 	tlb_flush_mmu(tlb, start, end);
+ 
+ 	/* keep the page table cache within bounds */
