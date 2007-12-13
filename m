@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbXLMEsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760324AbXLMEs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760211AbXLMEsm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 23:48:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXLMErD
+	id S1760324AbXLMEs6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 23:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758798AbXLMErF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 23:47:03 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40488 "EHLO mx1.redhat.com"
+	Wed, 12 Dec 2007 23:47:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40493 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759533AbXLMErA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 23:47:00 -0500
+	id S1753470AbXLMErD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 23:47:03 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
@@ -17,66 +17,289 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
        rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
        rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 08/19] modify write_ldt function
-Date: Thu, 13 Dec 2007 00:01:41 -0200
-Message-Id: <11975113532186-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 18/19] move _set_gate and its users to a common location
+Date: Thu, 13 Dec 2007 00:01:51 -0200
+Message-Id: <1197511401733-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11975113484194-git-send-email-gcosta@redhat.com>
-References: <1196957800568-git-send-email-gcosta@redhat.com> <11975113122984-git-send-email-gcosta@redhat.com> <11975113194101-git-send-email-gcosta@redhat.com> <11975113243875-git-send-email-gcosta@redhat.com> <11975113291722-git-send-email-gcosta@redhat.com> <1197511334416-git-send-email-gcosta@redhat.com> <1197511338810-git-send-email-gcosta@redhat.com> <1197511343355-git-send-email-gcosta@redhat.com> <11975113484194-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11975113961144-git-send-email-gcosta@redhat.com>
+References: <1196957800568-git-send-email-gcosta@redhat.com> <11975113122984-git-send-email-gcosta@redhat.com> <11975113194101-git-send-email-gcosta@redhat.com> <11975113243875-git-send-email-gcosta@redhat.com> <11975113291722-git-send-email-gcosta@redhat.com> <1197511334416-git-send-email-gcosta@redhat.com> <1197511338810-git-send-email-gcosta@redhat.com> <1197511343355-git-send-email-gcosta@redhat.com> <11975113484194-git-send-email-gcosta@redhat.com> <11975113532186-git-send-email-gcosta@redhat.com> <11975113583644-git-send-email-gcosta@redhat.com> <1197511363887-git-send-email-gcosta@redhat.com> <11975113672937-git-send-email-gcosta@redhat.com> <11975113721808-git-send-email-gcosta@redhat.com> <11975113771692-git-send-email-gcosta@redhat.com> <11975113821418-git-send-email-gcosta@redhat.com> <11975113873364-git-send-email-gcosta@redhat.com> <11975113923422-git-send-email-gcosta@redhat.com> <11975113961144-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch modifies the write_ldt() function to make use
-of the new struct desc_struct instead of entry_1 and entry_2
-entries
+This patch moves _set_gate and its users to desc.h. We can now
+use common code for x86_64 and i386.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/ldt.c |   15 +++++++--------
- 1 files changed, 7 insertions(+), 8 deletions(-)
+ arch/x86/kernel/traps_32.c  |   34 ----------------
+ include/asm-x86/desc.h      |   88 +++++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/desc_32.h   |   16 --------
+ include/asm-x86/desc_64.h   |   45 ----------------------
+ include/asm-x86/desc_defs.h |    5 +--
+ 5 files changed, 89 insertions(+), 99 deletions(-)
 
-diff --git a/arch/x86/kernel/ldt.c b/arch/x86/kernel/ldt.c
-index a8cdca3..7eb0c8a 100644
---- a/arch/x86/kernel/ldt.c
-+++ b/arch/x86/kernel/ldt.c
-@@ -186,7 +186,7 @@ static int read_default_ldt(void __user *ptr, unsigned long bytecount)
- static int write_ldt(void __user *ptr, unsigned long bytecount, int oldmode)
+Index: linux-2.6-x86/arch/x86/kernel/traps_32.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/traps_32.c
++++ linux-2.6-x86/arch/x86/kernel/traps_32.c
+@@ -1102,40 +1102,6 @@ asmlinkage void math_emulate(long arg)
+ 
+ #endif /* CONFIG_MATH_EMULATION */
+ 
+-/*
+- * This needs to use 'idt_table' rather than 'idt', and
+- * thus use the _nonmapped_ version of the IDT, as the
+- * Pentium F0 0F bugfix can have resulted in the mapped
+- * IDT being write-protected.
+- */
+-void set_intr_gate(unsigned int n, void *addr)
+-{
+-	_set_gate(n, DESCTYPE_INT, addr, __KERNEL_CS);
+-}
+-
+-/*
+- * This routine sets up an interrupt gate at directory privilege level 3.
+- */
+-static inline void set_system_intr_gate(unsigned int n, void *addr)
+-{
+-	_set_gate(n, DESCTYPE_INT | DESCTYPE_DPL3, addr, __KERNEL_CS);
+-}
+-
+-static void __init set_trap_gate(unsigned int n, void *addr)
+-{
+-	_set_gate(n, DESCTYPE_TRAP, addr, __KERNEL_CS);
+-}
+-
+-static void __init set_system_gate(unsigned int n, void *addr)
+-{
+-	_set_gate(n, DESCTYPE_TRAP | DESCTYPE_DPL3, addr, __KERNEL_CS);
+-}
+-
+-static void __init set_task_gate(unsigned int n, unsigned int gdt_entry)
+-{
+-	_set_gate(n, DESCTYPE_TASK, (void *)0, (gdt_entry<<3));
+-}
+-
+ 
+ void __init trap_init(void)
  {
- 	struct mm_struct *mm = current->mm;
--	__u32 entry_1, entry_2;
-+	struct desc_struct ldt;
- 	int error;
- 	struct user_desc ldt_info;
+Index: linux-2.6-x86/include/asm-x86/desc.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/desc.h
++++ linux-2.6-x86/include/asm-x86/desc.h
+@@ -33,6 +33,22 @@ extern struct desc_struct cpu_gdt_table[
+ extern struct desc_ptr cpu_gdt_descr[];
+ /* the cpu gdt accessor */
+ #define get_cpu_gdt_table(x) ((struct desc_struct *)cpu_gdt_descr[x].address)
++
++static inline void pack_gate(gate_desc *gate, unsigned type, unsigned long func,
++			     unsigned dpl, unsigned ist, unsigned seg)
++{
++	gate->offset_low = PTR_LOW(func);
++	gate->segment = __KERNEL_CS;
++	gate->ist = ist;
++	gate->p = 1;
++	gate->dpl = dpl;
++	gate->zero0 = 0;
++	gate->zero1 = 0;
++	gate->type = type;
++	gate->offset_middle = PTR_MIDDLE(func);
++	gate->offset_high = PTR_HIGH(func);
++}
++
+ #else
+ struct gdt_page {
+ 	struct desc_struct gdt[GDT_ENTRIES];
+@@ -43,6 +59,16 @@ static inline struct desc_struct *get_cp
+ {
+ 	return per_cpu(gdt_page, cpu).gdt;
+ }
++
++static inline void pack_gate(gate_desc *gate, unsigned char type,
++       unsigned long base, unsigned dpl, unsigned flags, unsigned short seg)
++
++{
++	gate->a = (seg << 16) | (base & 0xffff);
++	gate->b = (base & 0xffff0000) |
++		  (((0x80 | type | (dpl << 5)) & 0xff) << 8);
++}
++
+ #endif
  
-@@ -218,21 +218,20 @@ static int write_ldt(void __user *ptr, unsigned long bytecount, int oldmode)
- 	/* Allow LDTs to be cleared by the user. */
- 	if (ldt_info.base_addr == 0 && ldt_info.limit == 0) {
- 		if (oldmode || LDT_empty(&ldt_info)) {
--			entry_1 = 0;
--			entry_2 = 0;
-+			memset(&ldt, 0, sizeof(ldt));
- 			goto install;
- 		}
- 	}
+ #ifdef CONFIG_PARAVIRT
+@@ -242,6 +268,68 @@ static inline unsigned long get_desc_bas
+ {
+ 	return desc->base0 | ((desc->base1) << 16) | ((desc->base2) << 24);
+ }
++static inline void _set_gate(int gate, unsigned type, void *addr,
++			      unsigned dpl, unsigned ist, unsigned seg)
++{
++	gate_desc s;
++	pack_gate(&s, type, (unsigned long)addr, dpl, ist, seg);
++	/*
++	 * does not need to be atomic because it is only done once at
++	 * setup time
++	 */
++	write_idt_entry(idt_table, gate, &s);
++}
++
++/*
++ * This needs to use 'idt_table' rather than 'idt', and
++ * thus use the _nonmapped_ version of the IDT, as the
++ * Pentium F0 0F bugfix can have resulted in the mapped
++ * IDT being write-protected.
++ */
++static inline void set_intr_gate(unsigned int n, void *addr)
++{
++	BUG_ON((unsigned)n > 0xFF);
++	_set_gate(n, GATE_INTERRUPT, addr, 0, 0, __KERNEL_CS);
++}
++
++/*
++ * This routine sets up an interrupt gate at directory privilege level 3.
++ */
++static inline void set_system_intr_gate(unsigned int n, void *addr)
++{
++	BUG_ON((unsigned)n > 0xFF);
++	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS);
++}
++
++static inline void set_trap_gate(unsigned int n, void *addr)
++{
++	BUG_ON((unsigned)n > 0xFF);
++	_set_gate(n, GATE_TRAP, addr, 0, 0, __KERNEL_CS);
++}
++
++static inline void set_system_gate(unsigned int n, void *addr)
++{
++	BUG_ON((unsigned)n > 0xFF);
++	_set_gate(n, GATE_TRAP, addr, 0x3, 0, __KERNEL_CS);
++}
++
++static inline void set_task_gate(unsigned int n, unsigned int gdt_entry)
++{
++	BUG_ON((unsigned)n > 0xFF);
++	_set_gate(n, GATE_TASK, (void *)0, 0, 0, (gdt_entry<<3));
++}
++
++static inline void set_intr_gate_ist(int n, void *addr, unsigned ist)
++{
++	BUG_ON((unsigned)n > 0xFF);
++	_set_gate(n, GATE_INTERRUPT, addr, 0, ist, __KERNEL_CS);
++}
++
++static inline void set_system_gate_ist(int n, void *addr, unsigned ist)
++{
++	BUG_ON((unsigned)n > 0xFF);
++	_set_gate(n, GATE_INTERRUPT, addr, 0x3, ist, __KERNEL_CS);
++}
  
--	entry_1 = LDT_entry_a(&ldt_info);
--	entry_2 = LDT_entry_b(&ldt_info);
-+	ldt.a = LDT_entry_a(&ldt_info);
-+	ldt.b = LDT_entry_b(&ldt_info);
- 	if (oldmode)
--		entry_2 &= ~(1 << 20);
-+		ldt.avl = 0;
+ #else
+ /*
+Index: linux-2.6-x86/include/asm-x86/desc_32.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/desc_32.h
++++ linux-2.6-x86/include/asm-x86/desc_32.h
+@@ -10,22 +10,6 @@
+ #include <linux/preempt.h>
+ #include <linux/percpu.h>
  
- 	/* Install the new entry ...  */
- install:
--	write_ldt_entry(mm->context.ldt, ldt_info.entry_number, entry_1,
--			entry_2);
-+	write_ldt_entry(mm->context.ldt, ldt_info.entry_number,
-+			ldt.a, ldt.b);
- 	error = 0;
+-extern void set_intr_gate(unsigned int irq, void * addr);
+-
+-static inline void pack_gate(gate_desc *gate,
+-	unsigned long base, unsigned short seg, unsigned char type, unsigned char flags)
+-{
+-	gate->a = (seg << 16) | (base & 0xffff);
+-	gate->b = (base & 0xffff0000) | ((type & 0xff) << 8) | (flags & 0xff);
+-}
+-
+-static inline void _set_gate(int gate, unsigned int type, void *addr, unsigned short seg)
+-{
+-	gate_desc g;
+-	pack_gate(&g, (unsigned long)addr, seg, type, 0);
+-	write_idt_entry(idt_table, gate, &g);
+-}
+-
+ static inline void __set_tss_desc(unsigned int cpu, unsigned int entry, const void *addr)
+ {
+ 	tss_desc tss;
+Index: linux-2.6-x86/include/asm-x86/desc_64.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/desc_64.h
++++ linux-2.6-x86/include/asm-x86/desc_64.h
+@@ -11,51 +11,6 @@
  
- out_unlock:
--- 
-1.5.0.6
-
+ #include <asm/segment.h>
+ 
+-static inline void _set_gate(int gate, unsigned type, unsigned long func,
+-			     unsigned dpl, unsigned ist)
+-{
+-	gate_desc s;
+-
+-	s.offset_low = PTR_LOW(func);
+-	s.segment = __KERNEL_CS;
+-	s.ist = ist;
+-	s.p = 1;
+-	s.dpl = dpl;
+-	s.zero0 = 0;
+-	s.zero1 = 0;
+-	s.type = type;
+-	s.offset_middle = PTR_MIDDLE(func);
+-	s.offset_high = PTR_HIGH(func);
+-	/*
+-	 * does not need to be atomic because it is only done once at
+-	 * setup time
+-	 */
+-	write_idt_entry(idt_table, gate, &s);
+-}
+-
+-static inline void set_intr_gate(int nr, void *func)
+-{
+-	BUG_ON((unsigned)nr > 0xFF);
+-	_set_gate(nr, GATE_INTERRUPT, (unsigned long) func, 0, 0);
+-}
+-
+-static inline void set_intr_gate_ist(int nr, void *func, unsigned ist)
+-{
+-	BUG_ON((unsigned)nr > 0xFF);
+-	_set_gate(nr, GATE_INTERRUPT, (unsigned long) func, 0, ist);
+-}
+-
+-static inline void set_system_gate(int nr, void *func)
+-{
+-	BUG_ON((unsigned)nr > 0xFF);
+-	_set_gate(nr, GATE_INTERRUPT, (unsigned long) func, 3, 0);
+-}
+-
+-static inline void set_system_gate_ist(int nr, void *func, unsigned ist)
+-{
+-	_set_gate(nr, GATE_INTERRUPT, (unsigned long) func, 3, ist);
+-}
+-
+ static inline void set_tss_desc(unsigned cpu, void *addr)
+ {
+ 	struct desc_struct *d = get_cpu_gdt_table(cpu);
+Index: linux-2.6-x86/include/asm-x86/desc_defs.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/desc_defs.h
++++ linux-2.6-x86/include/asm-x86/desc_defs.h
+@@ -36,6 +36,7 @@ enum {
+ 	GATE_INTERRUPT = 0xE,
+ 	GATE_TRAP = 0xF,
+ 	GATE_CALL = 0xC,
++	GATE_TASK = 0x5,
+ };
+ 
+ // 16byte gate
+@@ -55,10 +56,6 @@ struct gate_struct64 {
+ enum {
+ 	DESC_TSS = 0x9,
+ 	DESC_LDT = 0x2,
+-	DESCTYPE_TASK = 0x85,   /* present, system, DPL-0, task gate */
+-	DESCTYPE_INT =  0x8e,   /* present, system, DPL-0, interrupt gate */
+-	DESCTYPE_TRAP = 0x8f,   /* present, system, DPL-0, trap gate */
+-	DESCTYPE_DPL3 = 0x60,   /* DPL-3 */
+ 	DESCTYPE_S =	0x10,	/* !system */
+ };
+ 
