@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbXLMO4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbXLMPAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761287AbXLMO4t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 09:56:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755128AbXLMO4m
+	id S1758424AbXLMPAR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 10:00:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbXLMPAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 09:56:42 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:45786 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755049AbXLMO4k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 09:56:40 -0500
-Message-ID: <47614815.8070007@linux.vnet.ibm.com>
-Date: Thu, 13 Dec 2007 20:26:21 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Thu, 13 Dec 2007 10:00:00 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:3074 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755220AbXLMO77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 09:59:59 -0500
+Date: Thu, 13 Dec 2007 09:23:02 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Daniel Walker <dwalker@mvista.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
+       kjwinchester@gmail.com, mbuesch@freenet.de
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
+	to mutex
+Message-ID: <20071213142302.GC3083@tuxdriver.com>
+References: <20071213003028.676998182@mvista.com> <1197508801.22951.40.camel@imap.mvista.com> <20071213101327.GM8977@elte.hu> <200712131211.32899.mb@bu3sch.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: 2.6.24-rc5-mm1 regression - kernel warning on tcp_fastretrans_alert()
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
-In-Reply-To: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712131211.32899.mb@bu3sch.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Thu, Dec 13, 2007 at 12:11:32PM +0100, Michael Buesch wrote:
+> On Thursday 13 December 2007 11:13:27 Ingo Molnar wrote:
+> > 
+> > * Daniel Walker <dwalker@mvista.com> wrote:
+> > 
+> > > > This driver is scheduled for removal, so I'd not touch it anymore to 
+> > > > avoid the possibility to introduce a lastminute regression. The new 
+> > > > drivers (b43 and b43legacy) have this fixed (in a different way by 
+> > > > completely removing it).
+> > > 
+> > > When is the removal scheduled?
+> > 
+> > $ grep -i bcm Documentation/feature-removal-schedule.txt
+> > $
+> > 
+> > might make sense to update this file.
+> 
+> Patches are on their way.
+> I think it's scheduled to be removed after 2.6.25 was released.
 
-Following call trace is seen in 2.6.24-rc5-mm1 kernel also,it was reported
-for 2.6.24-rc4-mm1 kernel http://lkml.org/lkml/2007/12/6/22
+A patch w/ subject "bcm43xx: mark as obsolete and schedule for removal"
+is queued in net-2.6.25 and waiting for the 2.6.25 merge window.
+It includes this hunk:
 
-ls21b kernel: [ 7530.313408] WARNING: at net/ipv4/tcp_input.c:2533 tcp_fastretrans_alert()
-ls21b kernel: [ 7530.354051] Pid: 0, comm: swapper Not tainted 2.6.24-rc5-mm1 #1
-ls21b kernel: [ 7530.389487]
-ls21b kernel: [ 7530.389488] Call Trace:
-ls21b kernel: [ 7530.413030]  <IRQ>  [<ffffffff80482374>] tcp_fastretrans_alert+0x127/0xdaf
-ls21b kernel: [ 7530.454295]  [<ffffffff804850cd>] tcp_ack+0xf2f/0x10fe
-ls21b kernel: [ 7530.485066]  [<ffffffff80488503>] tcp_rcv_established+0x695/0x79a
-ls21b kernel: [ 7530.521542]  [<ffffffff8025c46a>] trace_hardirqs_off+0x39/0xdc
-ls21b kernel: [ 7530.556468]  [<ffffffff8048eb70>] tcp_v4_do_rcv+0x37/0x3e1
-ls21b kernel: [ 7530.589317]  [<ffffffff80491764>] tcp_v4_rcv+0xac7/0xb93
-ls21b kernel: [ 7530.621126]  [<ffffffff80472c40>] ip_local_deliver_finish+0x54/0x20f
-ls21b kernel: [ 7530.659168]  [<ffffffff80472d20>] ip_local_deliver_finish+0x134/0x20f
-ls21b kernel: [ 7530.697724]  [<ffffffff804732cc>] ip_local_deliver+0x72/0x7a
-ls21b kernel: [ 7530.731609]  [<ffffffff80472b7c>] ip_rcv_finish+0x3c0/0x430
-ls21b kernel: [ 7530.764977]  [<ffffffff8044d9a6>] netif_receive_skb+0x10e/0x44d
-ls21b kernel: [ 7530.800422]  [<ffffffff80473223>] ip_rcv+0x326/0x35d
-ls21b kernel: [ 7530.830148]  [<ffffffff8044dc77>] netif_receive_skb+0x3df/0x44d
-ls21b kernel: [ 7530.865603]  [<ffffffff8814d44a>] :bnx2:bnx2_poll+0x1262/0x14a4
-ls21b kernel: [ 7530.901039]  [<ffffffff8034817d>] __next_cpu+0x19/0x28
-ls21b kernel: [ 7530.931805]  [<ffffffff802323a1>] find_busiest_group+0x252/0x6da
-ls21b kernel: [ 7530.967768]  [<ffffffff8025c46a>] trace_hardirqs_off+0x39/0xdc
-ls21b kernel: [ 7531.002693]  [<ffffffff8025c46a>] trace_hardirqs_off+0x39/0xdc
-ls21b kernel: [ 7531.037612]  [<ffffffff8025c21f>] check_chain_key+0x9c/0x15f
-ls21b kernel: [ 7531.071501]  [<ffffffff8026012b>] __lock_acquire+0xdee/0xf06
-ls21b kernel: [ 7531.105386]  [<ffffffff80450476>] net_rx_action+0x75/0x234
-ls21b kernel: [ 7531.138233]  [<ffffffff80450476>] net_rx_action+0x75/0x234
-ls21b kernel: [ 7531.171074]  [<ffffffff804504ed>] net_rx_action+0xec/0x234
-ls21b kernel: [ 7531.203920]  [<ffffffff80243f02>] __do_softirq+0x5f/0xe3
-ls21b kernel: [ 7531.235721]  [<ffffffff8020d5cc>] call_softirq+0x1c/0x28
-ls21b kernel: [ 7531.267528]  [<ffffffff8020ecdf>] do_softirq+0x45/0x108
-ls21b kernel: [ 7531.298811]  [<ffffffff80243ea1>] irq_exit+0x4e/0x50
-ls21b kernel: [ 7531.328540]  [<ffffffff8020ef3d>] do_IRQ+0x171/0x194
-ls21b kernel: [ 7531.358267]  [<ffffffff8020c8c6>] ret_from_intr+0x0/0xf
-ls21b kernel: [ 7531.389549]  <EOI>  [<ffffffff8020b1ec>] default_idle+0x58/0x8a
-ls21b kernel: [ 7531.425096]  [<ffffffff8020b1ea>] default_idle+0x56/0x8a
-ls21b kernel: [ 7531.456900]  [<ffffffff8020b194>] default_idle+0x0/0x8a
-ls21b kernel: [ 7531.488186]  [<ffffffff8020b2d3>] cpu_idle+0xb5/0xec
-ls21b kernel: [ 7531.517913]  [<ffffffff802226f4>] start_secondary+0x3ca/0x3da
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -333,3 +333,12 @@ Why:	This driver has been marked obsolete for many years.
+ Who:	Stephen Hemminger <shemminger@linux-foundation.org>
+ 
+ ---------------------------
++
++What:	bcm43xx wireless network driver
++When:	2.6.26
++Files:	drivers/net/wireless/bcm43xx
++Why:	This driver's functionality has been replaced by the
++	mac80211-based b43 and b43legacy drivers.
++Who:	John W. Linville <linville@tuxdriver.com>
++
++---------------------------
 
+Hth!
 
+John
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+John W. Linville
+linville@tuxdriver.com
