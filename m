@@ -1,44 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763767AbXLMSxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763836AbXLMS66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763767AbXLMSxj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 13:53:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759021AbXLMSx2
+	id S1763836AbXLMS66 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 13:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758144AbXLMS6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 13:53:28 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:49717 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758783AbXLMSx1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 13:53:27 -0500
-Date: Thu, 13 Dec 2007 11:53:26 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Jens Axboe <axboe@kernel.dk>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-Message-ID: <20071213185326.GQ26334@parisc-linux.org>
-References: <47617B92.6020908@rtr.ca> <47617C07.3020501@rtr.ca> <47617E72.6080504@rtr.ca>
+	Thu, 13 Dec 2007 13:58:49 -0500
+Received: from tetsuo.zabbo.net ([207.173.201.20]:37616 "EHLO tetsuo.zabbo.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757085AbXLMS6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 13:58:47 -0500
+Message-ID: <476180DB.8000801@oracle.com>
+Date: Thu, 13 Dec 2007 10:58:35 -0800
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47617E72.6080504@rtr.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fix invalidate_inode_pages2_range not to clear ret
+References: <6.0.0.20.2.20071213133952.03e19d70@172.19.0.2>
+In-Reply-To: <6.0.0.20.2.20071213133952.03e19d70@172.19.0.2>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 01:48:18PM -0500, Mark Lord wrote:
-> Problem confirmed.  2.6.23.8 regularly generates segments up to 64KB for 
-> libata,
-> but 2.6.24 uses only 4KB segments and a *few* 8KB segments.
+Hisashi Hifumi wrote:
+> Hi.
+> 
+> DIO invalidates page cache through invalidate_inode_pages2_range().
+> invalidate_inode_pages2_range() sets ret=-EIO when
+> invalidate_complete_page2()
+> fails, but this ret is cleared if do_launder_page() succeed on a page of
+> next index.
+> In this case, dio is carried out even if invalidate_complete_page2()
+> fails on some pages.
+> This can cause inconsistency between memory and blocks on HDD because
+> the page
+> cache still exists.
+> 
+> Following patch fixes this issue.
 
-Just a suspicion ... could this be slab vs slub?  ie check your configs
-are the same / similar between the two kernels.
+I like the idea of fixing this in a separate patch, yes, thanks!  But...
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> 
+> Thanks.
+> 
+> Signed-off-by :Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+> 
+> diff -Nrup linux-2.6.24-rc5.org/mm/truncate.c
+> linux-2.6.24-rc5/mm/truncate.c
+> --- linux-2.6.24-rc5.org/mm/truncate.c    2007-12-12 16:32:45.000000000
+> +0900
+> +++ linux-2.6.24-rc5/mm/truncate.c    2007-12-13 11:45:29.000000000 +0900
+> @@ -392,6 +392,7 @@ int invalidate_inode_pages2_range(struct
+>      pgoff_t next;
+>      int i;
+>      int ret = 0;
+> +    int ret2 = 0;
+>      int did_range_unmap = 0;
+>      int wrapped = 0;
+> 
+> @@ -441,13 +442,13 @@ int invalidate_inode_pages2_range(struct
+>              BUG_ON(page_mapped(page));
+>              ret = do_launder_page(mapping, page);
+>              if (ret == 0 && !invalidate_complete_page2(mapping, page))
+> -                ret = -EIO;
+> +                ret2 = -EIO;
+>              unlock_page(page);
+>          }
+>          pagevec_release(&pvec);
+>          cond_resched();
+>      }
+> -    return ret;
+> +    return !ret ? ret2 : ret;
+>  }
+>  EXPORT_SYMBOL_GPL(invalidate_inode_pages2_range);
+
+... this doesn't work. Notice that it only propagates the -EIO into ret2? It can lose errors from do_launder_page() itself because they aren't stored into ret2, which is what's returned if the last do_launder_page() succeeds.
+
+This isn't I meant when I mentioned that 'ret2' pattern. The idea is to store the errors from inner calls into some private var and then only promote those errors as the function's return code (ret) if there was an error and ret wasn't already set.  We do this in a few places in dio, you'll notice.  This patch gets the meaning of 'ret' and 'ret2' opposite from those uses, which is kind of confusing.
+
+So, uh, how about the following. Totally untested, but compiled.
+
+-------
+
+invalidate_inode_pages2_range(): consistently return first error
+
+Hisashi Hifumi noticed that we were losing errors in
+invalidate_inode_pages2_range().  Later do_launder_page() calls could overwrite
+errors generated by earlier calls.  Fix this by storing do_launder_page in a
+temporary variable which is only promoted to the function's return code if it
+hadn't already generated an error.
+
+Signed-off-by: Zach Brown <zach.brown@oracle.com>
+Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> 
+
+diff --git a/mm/truncate.c b/mm/truncate.c
+index cadc156..24578b3 100644
+--- a/mm/truncate.c
++++ b/mm/truncate.c
+@@ -392,6 +392,7 @@ int invalidate_inode_pages2_range(struct address_space *mapping,
+ 	pgoff_t next;
+ 	int i;
+ 	int ret = 0;
++	int rc;
+ 	int did_range_unmap = 0;
+ 	int wrapped = 0;
+ 
+@@ -439,9 +440,11 @@ int invalidate_inode_pages2_range(struct address_space *mapping,
+ 				}
+ 			}
+ 			BUG_ON(page_mapped(page));
+-			ret = do_launder_page(mapping, page);
+-			if (ret == 0 && !invalidate_complete_page2(mapping, page))
+-				ret = -EIO;
++			rc = do_launder_page(mapping, page);
++			if (rc == 0 && !invalidate_complete_page2(mapping, page))
++				rc = -EIO;
++			if (rc && ret == 0)
++				ret = rc;
+ 			unlock_page(page);
+ 		}
+ 		pagevec_release(&pvec);
+
+>  
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
