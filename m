@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbXLMAuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759739AbXLMAxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759639AbXLMAuk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 19:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXLMAud
+	id S1759739AbXLMAxR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 19:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbXLMAxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 19:50:33 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:34179 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbXLMAuc (ORCPT
+	Wed, 12 Dec 2007 19:53:06 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:62880 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752359AbXLMAxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 19:50:32 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
-Date: Thu, 13 Dec 2007 01:48:22 +0100
-User-Agent: KMail/1.9.6
-Cc: akpm@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       linux@bohmer.net, jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
-       kjwinchester@gmail.com, mbuesch@freenet.de
-References: <20071213003028.676998182@mvista.com> <20071213003032.547362071@mvista.com>
-In-Reply-To: <20071213003032.547362071@mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712130148.22727.mb@bu3sch.de>
+	Wed, 12 Dec 2007 19:53:05 -0500
+Date: Wed, 12 Dec 2007 18:52:11 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: mmaping an IO port device
+In-reply-to: <fa.noVJACisdR+sMNi3JjMxD+zdqf8@ifi.uio.no>
+To: Aras Vaichas <arasv@magtech.com.au>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <4760823B.30901@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.noVJACisdR+sMNi3JjMxD+zdqf8@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 December 2007 09:00:03 Daniel Walker wrote:
+Aras Vaichas wrote:
+> Hi,
 > 
-> Signed-Off-By: Daniel Walker <dwalker@mvista.com>
+> Can I implement mmap with an io port connected device on an x86 based CPU?
 > 
-> ---
->  drivers/net/wireless/bcm43xx/bcm43xx_debugfs.c |   30 ++++++++++++-------------
->  1 file changed, 15 insertions(+), 15 deletions(-)
 > 
-> Index: linux-2.6.23/drivers/net/wireless/bcm43xx/bcm43xx_debugfs.c
-> ===================================================================
-> --- linux-2.6.23.orig/drivers/net/wireless/bcm43xx/bcm43xx_debugfs.c
-> +++ linux-2.6.23/drivers/net/wireless/bcm43xx/bcm43xx_debugfs.c
-> @@ -43,7 +43,7 @@
->  
->  static struct bcm43xx_debugfs fs;
->  static char really_big_buffer[REALLY_BIG_BUFFER_SIZE];
-> -static DECLARE_MUTEX(big_buffer_sem);
-> +static DEFINE_MUTEX(big_buffer_mutex);
+> Background:
+> 
+> I've got a device driver which can be compiled for either x86 or ARM. 
+> The driver provides an interface to an FPGA via either an IO port 
+> (0x180) on the x86 or as a memory mapped SRAM-like device (0x30000000) 
+> on the ARM.
+> 
+> To get myself an "address" for ioread calls I use:
+> 
+> FPGA_base = (u32) ioremap_nocache(FPGA_REG_IO_BASE, SZ_4K) for both CPU 
+> types.
+> 
+> FPGA_REG_IO_BASE is set to either 0x180 or 0x30000000 for x86 and ARM 
+> respectively.
+> 
+> I then call ioread16(FPGA_base + FPGA_register) for both x86 and ARM and 
+> it all works perfectly. No problems there.
+> 
+> My problem is that I am now moving from ioctl calls to a mmap interface. 
+> This isn't a problem with ARM as I can pass (0x30000000 >> PAGE_SHIFT) 
+> to remap_pfn_range() in the .mmap fops function but I can't pass 0x180 
+> because ... well, it's obvious.
+> 
+> Is there a trick?
+> 
+> Aras
 
-This driver is scheduled for removal, so I'd not touch it anymore
-to avoid the possibility to introduce a lastminute regression.
-The new drivers (b43 and b43legacy) have this fixed (in a different
-way by completely removing it).
+It's impossible to mmap an IO port area on x86 since IO ports are not 
+accessible as part of the normal memory space. The only way to get 
+access to IO ports in userspace is to use iopl (which requires root 
+privileges) and then executing inl/outl, etc. instructions directly.
 
 -- 
-Greetings Michael.
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
