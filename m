@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbXLMErW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651AbXLMEro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758803AbXLMErW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Dec 2007 23:47:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbXLMEq0
+	id S1753651AbXLMEro (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Dec 2007 23:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758776AbXLMEq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Dec 2007 23:46:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57264 "EHLO mx1.redhat.com"
+	Wed, 12 Dec 2007 23:46:27 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57267 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758666AbXLMEqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Dec 2007 23:46:24 -0500
+	id S1758700AbXLMEqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Dec 2007 23:46:25 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
@@ -17,381 +17,39 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
        rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
        rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 02/19] unify struct desc_ptr
-Date: Thu, 13 Dec 2007 00:01:35 -0200
-Message-Id: <11975113243875-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 04/19] removed unused variable
+Date: Thu, 13 Dec 2007 00:01:37 -0200
+Message-Id: <1197511334416-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11975113194101-git-send-email-gcosta@redhat.com>
-References: <1196957800568-git-send-email-gcosta@redhat.com> <11975113122984-git-send-email-gcosta@redhat.com> <11975113194101-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11975113291722-git-send-email-gcosta@redhat.com>
+References: <1196957800568-git-send-email-gcosta@redhat.com> <11975113122984-git-send-email-gcosta@redhat.com> <11975113194101-git-send-email-gcosta@redhat.com> <11975113243875-git-send-email-gcosta@redhat.com> <11975113291722-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch unifies struct desc_ptr between i386 and x86_64.
-They can be expressed in the exact same way in C code, only
-having to change the name of one of them. As Xgt_desc_struct
-is ugly and big, this is the one that goes away.
-
-There's also a padding field in i386, but it is not really
-needed in the C structure definition.
+This variable is not used anywere, and is then removed
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/asm-offsets_32.c   |    5 ++---
- arch/x86/kernel/cpu/common.c       |    2 +-
- arch/x86/kernel/doublefault_32.c   |    2 +-
- arch/x86/kernel/efi_32.c           |    4 ++--
- arch/x86/kernel/machine_kexec_32.c |    4 ++--
- arch/x86/kernel/reboot_32.c        |    2 +-
- arch/x86/lguest/boot.c             |    4 ++--
- arch/x86/xen/enlighten.c           |   10 +++++-----
- drivers/kvm/svm.c                  |    2 +-
- include/asm-x86/desc_32.h          |   16 +++++-----------
- include/asm-x86/lguest.h           |    8 ++++----
- include/asm-x86/paravirt.h         |   18 +++++++++---------
- include/asm-x86/processor_32.h     |    2 +-
- include/asm-x86/suspend_32.h       |    4 ++--
- 14 files changed, 38 insertions(+), 45 deletions(-)
+ include/asm-x86/desc_64.h |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
 
-Index: linux-2.6-x86/arch/x86/kernel/asm-offsets_32.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/asm-offsets_32.c
-+++ linux-2.6-x86/arch/x86/kernel/asm-offsets_32.c
-@@ -70,9 +70,8 @@ void foo(void)
- 	OFFSET(TI_cpu, thread_info, cpu);
- 	BLANK();
+diff --git a/include/asm-x86/desc_64.h b/include/asm-x86/desc_64.h
+index 1c26dbb..660cc84 100644
+--- a/include/asm-x86/desc_64.h
++++ b/include/asm-x86/desc_64.h
+@@ -30,11 +30,6 @@ static inline unsigned long __store_tr(void)
  
--	OFFSET(GDS_size, Xgt_desc_struct, size);
--	OFFSET(GDS_address, Xgt_desc_struct, address);
--	OFFSET(GDS_pad, Xgt_desc_struct, pad);
-+	OFFSET(GDS_size, desc_ptr, size);
-+	OFFSET(GDS_address, desc_ptr, address);
- 	BLANK();
+ #define store_tr(tr) (tr) = __store_tr()
  
- 	OFFSET(PT_EBX, pt_regs, bx);
-Index: linux-2.6-x86/arch/x86/kernel/cpu/common.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/cpu/common.c
-+++ linux-2.6-x86/arch/x86/kernel/cpu/common.c
-@@ -649,7 +649,7 @@ struct pt_regs * __devinit idle_regs(str
-  * it's on the real one. */
- void switch_to_new_gdt(void)
- {
--	struct Xgt_desc_struct gdt_descr;
-+	struct desc_ptr gdt_descr;
+-/*
+- * This is the ldt that every process will get unless we need
+- * something other than this.
+- */
+-extern struct desc_struct default_ldt[];
+ extern struct gate_struct idt_table[];
+ extern struct desc_ptr cpu_gdt_descr[];
  
- 	gdt_descr.address = (long)get_cpu_gdt_table(smp_processor_id());
- 	gdt_descr.size = GDT_SIZE - 1;
-Index: linux-2.6-x86/arch/x86/kernel/doublefault_32.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/doublefault_32.c
-+++ linux-2.6-x86/arch/x86/kernel/doublefault_32.c
-@@ -17,7 +17,7 @@ static unsigned long doublefault_stack[D
- 
- static void doublefault_fn(void)
- {
--	struct Xgt_desc_struct gdt_desc = {0, 0};
-+	struct desc_ptr gdt_desc = {0, 0};
- 	unsigned long gdt, tss;
- 
- 	store_gdt(&gdt_desc);
-Index: linux-2.6-x86/arch/x86/kernel/efi_32.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/efi_32.c
-+++ linux-2.6-x86/arch/x86/kernel/efi_32.c
-@@ -69,7 +69,7 @@ static void efi_call_phys_prelog(void) _
- {
- 	unsigned long cr4;
- 	unsigned long temp;
--	struct Xgt_desc_struct gdt_descr;
-+	struct desc_ptr gdt_descr;
- 
- 	spin_lock(&efi_rt_lock);
- 	local_irq_save(efi_rt_eflags);
-@@ -111,7 +111,7 @@ static void efi_call_phys_prelog(void) _
- static void efi_call_phys_epilog(void) __releases(efi_rt_lock)
- {
- 	unsigned long cr4;
--	struct Xgt_desc_struct gdt_descr;
-+	struct desc_ptr gdt_descr;
- 
- 	gdt_descr.address = (unsigned long)get_cpu_gdt_table(0);
- 	gdt_descr.size = GDT_SIZE - 1;
-Index: linux-2.6-x86/arch/x86/kernel/machine_kexec_32.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/machine_kexec_32.c
-+++ linux-2.6-x86/arch/x86/kernel/machine_kexec_32.c
-@@ -32,7 +32,7 @@ static u32 kexec_pte1[1024] PAGE_ALIGNED
- 
- static void set_idt(void *newidt, __u16 limit)
- {
--	struct Xgt_desc_struct curidt;
-+	struct desc_ptr curidt;
- 
- 	/* ia32 supports unaliged loads & stores */
- 	curidt.size    = limit;
-@@ -44,7 +44,7 @@ static void set_idt(void *newidt, __u16 
- 
- static void set_gdt(void *newgdt, __u16 limit)
- {
--	struct Xgt_desc_struct curgdt;
-+	struct desc_ptr curgdt;
- 
- 	/* ia32 supports unaligned loads & stores */
- 	curgdt.size    = limit;
-Index: linux-2.6-x86/arch/x86/kernel/reboot_32.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/reboot_32.c
-+++ linux-2.6-x86/arch/x86/kernel/reboot_32.c
-@@ -161,7 +161,7 @@ real_mode_gdt_entries [3] =
- 	0x000092000100ffffULL	/* 16-bit real-mode 64k data at 0x00000100 */
- };
- 
--static struct Xgt_desc_struct
-+static struct desc_ptr
- real_mode_gdt = { sizeof (real_mode_gdt_entries) - 1, (long)real_mode_gdt_entries },
- real_mode_idt = { 0x3ff, 0 },
- no_idt = { 0, 0 };
-Index: linux-2.6-x86/arch/x86/lguest/boot.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/lguest/boot.c
-+++ linux-2.6-x86/arch/x86/lguest/boot.c
-@@ -229,7 +229,7 @@ static void lguest_write_idt_entry(struc
- /* Changing to a different IDT is very rare: we keep the IDT up-to-date every
-  * time it is written, so we can simply loop through all entries and tell the
-  * Host about them. */
--static void lguest_load_idt(const struct Xgt_desc_struct *desc)
-+static void lguest_load_idt(const struct desc_ptr *desc)
- {
- 	unsigned int i;
- 	struct desc_struct *idt = (void *)desc->address;
-@@ -252,7 +252,7 @@ static void lguest_load_idt(const struct
-  * hypercall and use that repeatedly to load a new IDT.  I don't think it
-  * really matters, but wouldn't it be nice if they were the same?
-  */
--static void lguest_load_gdt(const struct Xgt_desc_struct *desc)
-+static void lguest_load_gdt(const struct desc_ptr *desc)
- {
- 	BUG_ON((desc->size+1)/8 != GDT_ENTRIES);
- 	hcall(LHCALL_LOAD_GDT, __pa(desc->address), GDT_ENTRIES, 0);
-Index: linux-2.6-x86/arch/x86/xen/enlighten.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/xen/enlighten.c
-+++ linux-2.6-x86/arch/x86/xen/enlighten.c
-@@ -295,7 +295,7 @@ static void xen_set_ldt(const void *addr
- 	xen_mc_issue(PARAVIRT_LAZY_CPU);
- }
- 
--static void xen_load_gdt(const struct Xgt_desc_struct *dtr)
-+static void xen_load_gdt(const struct desc_ptr *dtr)
- {
- 	unsigned long *frames;
- 	unsigned long va = dtr->address;
-@@ -395,7 +395,7 @@ static int cvt_gate_to_trap(int vector, 
- }
- 
- /* Locations of each CPU's IDT */
--static DEFINE_PER_CPU(struct Xgt_desc_struct, idt_desc);
-+static DEFINE_PER_CPU(struct desc_ptr, idt_desc);
- 
- /* Set an IDT entry.  If the entry is part of the current IDT, then
-    also update Xen. */
-@@ -427,7 +427,7 @@ static void xen_write_idt_entry(struct d
- 	preempt_enable();
- }
- 
--static void xen_convert_trap_info(const struct Xgt_desc_struct *desc,
-+static void xen_convert_trap_info(const struct desc_ptr *desc,
- 				  struct trap_info *traps)
- {
- 	unsigned in, out, count;
-@@ -446,7 +446,7 @@ static void xen_convert_trap_info(const 
- 
- void xen_copy_trap_info(struct trap_info *traps)
- {
--	const struct Xgt_desc_struct *desc = &__get_cpu_var(idt_desc);
-+	const struct desc_ptr *desc = &__get_cpu_var(idt_desc);
- 
- 	xen_convert_trap_info(desc, traps);
- }
-@@ -454,7 +454,7 @@ void xen_copy_trap_info(struct trap_info
- /* Load a new IDT into Xen.  In principle this can be per-CPU, so we
-    hold a spinlock to protect the static traps[] array (static because
-    it avoids allocation, and saves stack space). */
--static void xen_load_idt(const struct Xgt_desc_struct *desc)
-+static void xen_load_idt(const struct desc_ptr *desc)
- {
- 	static DEFINE_SPINLOCK(lock);
- 	static struct trap_info traps[257];
-Index: linux-2.6-x86/drivers/kvm/svm.c
-===================================================================
---- linux-2.6-x86.orig/drivers/kvm/svm.c
-+++ linux-2.6-x86/drivers/kvm/svm.c
-@@ -290,7 +290,7 @@ static void svm_hardware_enable(void *ga
- #ifdef CONFIG_X86_64
- 	struct desc_ptr gdt_descr;
- #else
--	struct Xgt_desc_struct gdt_descr;
-+	struct desc_ptr gdt_descr;
- #endif
- 	struct desc_struct *gdt;
- 	int me = raw_smp_processor_id();
-Index: linux-2.6-x86/include/asm-x86/desc_32.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/desc_32.h
-+++ linux-2.6-x86/include/asm-x86/desc_32.h
-@@ -12,12 +12,6 @@
- 
- #include <asm/mmu.h>
- 
--struct Xgt_desc_struct {
--	unsigned short size;
--	unsigned long address __attribute__((packed));
--	unsigned short pad;
--} __attribute__ ((packed));
--
- struct gdt_page
- {
- 	struct desc_struct gdt[GDT_ENTRIES];
-@@ -29,7 +23,7 @@ static inline struct desc_struct *get_cp
- 	return per_cpu(gdt_page, cpu).gdt;
- }
- 
--extern struct Xgt_desc_struct idt_descr;
-+extern struct desc_ptr idt_descr;
- extern struct desc_struct idt_table[];
- extern void set_intr_gate(unsigned int irq, void * addr);
- 
-@@ -107,22 +101,22 @@ static inline void native_load_tr_desc(v
- 	asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
- }
- 
--static inline void native_load_gdt(const struct Xgt_desc_struct *dtr)
-+static inline void native_load_gdt(const struct desc_ptr *dtr)
- {
- 	asm volatile("lgdt %0"::"m" (*dtr));
- }
- 
--static inline void native_load_idt(const struct Xgt_desc_struct *dtr)
-+static inline void native_load_idt(const struct desc_ptr *dtr)
- {
- 	asm volatile("lidt %0"::"m" (*dtr));
- }
- 
--static inline void native_store_gdt(struct Xgt_desc_struct *dtr)
-+static inline void native_store_gdt(struct desc_ptr *dtr)
- {
- 	asm ("sgdt %0":"=m" (*dtr));
- }
- 
--static inline void native_store_idt(struct Xgt_desc_struct *dtr)
-+static inline void native_store_idt(struct desc_ptr *dtr)
- {
- 	asm ("sidt %0":"=m" (*dtr));
- }
-Index: linux-2.6-x86/include/asm-x86/lguest.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/lguest.h
-+++ linux-2.6-x86/include/asm-x86/lguest.h
-@@ -44,13 +44,13 @@ struct lguest_ro_state
- {
- 	/* Host information we need to restore when we switch back. */
- 	u32 host_cr3;
--	struct Xgt_desc_struct host_idt_desc;
--	struct Xgt_desc_struct host_gdt_desc;
-+	struct desc_ptr host_idt_desc;
-+	struct desc_ptr host_gdt_desc;
- 	u32 host_sp;
- 
- 	/* Fields which are used when guest is running. */
--	struct Xgt_desc_struct guest_idt_desc;
--	struct Xgt_desc_struct guest_gdt_desc;
-+	struct desc_ptr guest_idt_desc;
-+	struct desc_ptr guest_gdt_desc;
- 	struct i386_hw_tss guest_tss;
- 	struct desc_struct guest_idt[IDT_ENTRIES];
- 	struct desc_struct guest_gdt[GDT_ENTRIES];
-Index: linux-2.6-x86/include/asm-x86/paravirt.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/paravirt.h
-+++ linux-2.6-x86/include/asm-x86/paravirt.h
-@@ -20,7 +20,7 @@
- 
- struct page;
- struct thread_struct;
--struct Xgt_desc_struct;
-+struct desc_ptr;
- struct tss_struct;
- struct mm_struct;
- struct desc_struct;
-@@ -88,10 +88,10 @@ struct pv_cpu_ops {
- 
- 	/* Segment descriptor handling */
- 	void (*load_tr_desc)(void);
--	void (*load_gdt)(const struct Xgt_desc_struct *);
--	void (*load_idt)(const struct Xgt_desc_struct *);
--	void (*store_gdt)(struct Xgt_desc_struct *);
--	void (*store_idt)(struct Xgt_desc_struct *);
-+	void (*load_gdt)(const struct desc_ptr *);
-+	void (*load_idt)(const struct desc_ptr *);
-+	void (*store_gdt)(struct desc_ptr *);
-+	void (*store_idt)(struct desc_ptr *);
- 	void (*set_ldt)(const void *desc, unsigned entries);
- 	unsigned long (*store_tr)(void);
- 	void (*load_tls)(struct thread_struct *t, unsigned int cpu);
-@@ -630,11 +630,11 @@ static inline void load_TR_desc(void)
- {
- 	PVOP_VCALL0(pv_cpu_ops.load_tr_desc);
- }
--static inline void load_gdt(const struct Xgt_desc_struct *dtr)
-+static inline void load_gdt(const struct desc_ptr *dtr)
- {
- 	PVOP_VCALL1(pv_cpu_ops.load_gdt, dtr);
- }
--static inline void load_idt(const struct Xgt_desc_struct *dtr)
-+static inline void load_idt(const struct desc_ptr *dtr)
- {
- 	PVOP_VCALL1(pv_cpu_ops.load_idt, dtr);
- }
-@@ -642,11 +642,11 @@ static inline void set_ldt(const void *a
- {
- 	PVOP_VCALL2(pv_cpu_ops.set_ldt, addr, entries);
- }
--static inline void store_gdt(struct Xgt_desc_struct *dtr)
-+static inline void store_gdt(struct desc_ptr *dtr)
- {
- 	PVOP_VCALL1(pv_cpu_ops.store_gdt, dtr);
- }
--static inline void store_idt(struct Xgt_desc_struct *dtr)
-+static inline void store_idt(struct desc_ptr *dtr)
- {
- 	PVOP_VCALL1(pv_cpu_ops.store_idt, dtr);
- }
-Index: linux-2.6-x86/include/asm-x86/processor_32.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/processor_32.h
-+++ linux-2.6-x86/include/asm-x86/processor_32.h
-@@ -707,7 +707,7 @@ extern void enable_sep_cpu(void);
- extern int sysenter_setup(void);
- 
- /* Defined in head.S */
--extern struct Xgt_desc_struct early_gdt_descr;
-+extern struct desc_ptr early_gdt_descr;
- 
- extern void cpu_set_gdt(int);
- extern void switch_to_new_gdt(void);
-Index: linux-2.6-x86/include/asm-x86/suspend_32.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/suspend_32.h
-+++ linux-2.6-x86/include/asm-x86/suspend_32.h
-@@ -12,8 +12,8 @@ static inline int arch_prepare_suspend(v
- struct saved_context {
-   	u16 es, fs, gs, ss;
- 	unsigned long cr0, cr2, cr3, cr4;
--	struct Xgt_desc_struct gdt;
--	struct Xgt_desc_struct idt;
-+	struct desc_ptr gdt;
-+	struct desc_ptr idt;
- 	u16 ldt;
- 	u16 tss;
- 	unsigned long tr;
+-- 
+1.5.0.6
+
