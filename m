@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762954AbXLNGbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762359AbXLNGbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762954AbXLNGbJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 01:31:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761880AbXLNG27
+	id S1762359AbXLNGbq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 01:31:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763437AbXLNGbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 01:28:59 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:31767 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763647AbXLNG24 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 01:28:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=elxDtNWhhQ1Y31qpTVqPRiJqUsd225r1soT9/BnHUNhf2pVdNtoHcNIe2VHRQcCmgYlWmxmpy0SNx474yKbZyKm3fB1GeTAJ3CMMF3YIuCPx76yD/n4vsjrmu6eVLan8TLh7ObhxTUoT0srPo8rhZ439k2YtWms+ZXTyLfL4y6w=
-Message-ID: <4762229F.8020900@gmail.com>
-Date: Fri, 14 Dec 2007 15:28:47 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 14 Dec 2007 01:31:31 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:55212 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762511AbXLNGb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 01:31:27 -0500
+Date: Thu, 13 Dec 2007 22:34:24 -0800
+From: Greg KH <gregkh@suse.de>
+To: David Miller <davem@davemloft.net>
+Cc: venkatesh.pallipadi@intel.com, ak@muc.de, ebiederm@xmission.com,
+       rdreier@cisco.com, torvalds@linux-foundation.org, airlied@skynet.ie,
+       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
+Subject: Re: [RFC PATCH 08/12] PAT 64b: coherent mmap and sysfs bin ioctl
+Message-ID: <20071214063424.GB10100@suse.de>
+References: <20071213235543.568682000@intel.com> <20071213235712.813201000@intel.com> <20071214001932.GA10389@suse.de> <20071213.163505.14070110.davem@davemloft.net>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: ATA ACPI needs "Mr interpreter, would you please shut up?" flag
-References: <47620E5E.5020001@gmail.com> <4762129F.6060209@shaw.ca>
-In-Reply-To: <4762129F.6060209@shaw.ca>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071213.163505.14070110.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
->> Problem is that _GTM implementation on certain BIOSen crap themselves if
->> invoked on empty channels.  However, as written above, because initial
->> _GTM caching is done before any actual operation is performed on the
->> port, libata can't determine whether the port is occupied or not when
->> trying to cache _GTM result.  Unfortunately, VIA PATA is on both
->> categories - it needs _GTM caching but can't cope with _GTM invocation
->> on empty ports.  Yay!
+On Thu, Dec 13, 2007 at 04:35:05PM -0800, David Miller wrote:
+> From: Greg KH <gregkh@suse.de>
+> Date: Thu, 13 Dec 2007 16:19:32 -0800
 > 
-> I seem to have lost the thread/bug report where we decided that one
-> board always choked on an empty channel. Maybe it's not that and it's
-> just another case of the same issue where our resetting default timing
-> values on the controller before calling _GTM would choke the _GTM method?
+> > On Thu, Dec 13, 2007 at 03:55:51PM -0800, venkatesh.pallipadi@intel.com wrote:
+> > > Forward port of coherent-mmap.patch and sysfs-bin-ioctl.patch to x86 tree.
+> > > 
+> > > TBD: Do we need the ioctl interface to sysfs or get the type attribute
+> > > through a different sysfs file. And then actually specify the attribute
+> > > while doing pci_mmap_page_range ;-)
+> > 
+> > Woah!  No, no ioctls on sysfs files, sorry.  Not going to happen, do
+> > this on a /dev file if you want to have ioctls...
+> 
+> Well since we told people to move over to sysfs for PCI
+> accesses, and that's where mmap() is done via too,
+> it should be no surprise that we run into problems when
+> people want to set attributes for the mmap() as was done
+> for the procfs case.
+> 
+> So you have two choices:
+> 
+> 1) Balk on the sysfs pci usage, and erase years of effort
+>    of moving people over to sysfs.  Tell them to go back to
+>    procfs so we can add the attribute setting via ioctl()
+>    which is absolutely needed.
 
-Could be.  Hans' machine on bug 9320 is the affected one (PATA on via
-CN700).  I asked him to test the final version.  If it indeed is caused
-by the same problem, there won't be evaluation failures.
+Ok, sorry, it wasn't blindingly obvious that this was for pci sysfs
+devices that are mmaped, that makes a bit more sense.
 
-Anyways, table-based implementations like the NVidia and VIA ones are
-bound to fail on certain conditions.  libata reconfigures transfer mode
-aggressively under certain failure conditions and _GTM invocation will
-fail if the port is in a mode which is not on ACPI's mode table (which
-doesn't seem to be too comprehensive anyway).  So, there's always
-possibility of _GTM failure for those boards, which in turn can fail
-_GTF evaluation.
+But I'd like to see what ioctl is wanted here first.
 
-As _GTM, _STM and _GTF aren't strictly necessary for operation anyway, I
-think it's better to print ATA ACPI evaluation failure messages using
-KERN_DEBUG.
+thanks,
 
-Thanks.
-
--- 
-tejun
+greg k-h
