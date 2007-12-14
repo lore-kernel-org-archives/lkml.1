@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759684AbXLNGLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760177AbXLNGQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759684AbXLNGLe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 01:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbXLNGLZ
+	id S1760177AbXLNGQT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 01:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbXLNGQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 01:11:25 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:41636 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbXLNGLY (ORCPT
+	Fri, 14 Dec 2007 01:16:00 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:50785 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752938AbXLNGP5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 01:11:24 -0500
-From: Darren Hart <dvhltc@linux.vnet.ibm.com>
-Reply-To: Darren Hart <dvhltc@us.ibm.com>
-Organization: IBM Linux Technology Center
-To: linux-rt-users@vger.kernel.org
-Subject: Using CONFIG_FUNCTION_TRACE
-Date: Thu, 13 Dec 2007 22:11:22 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "lkml, " <linux-kernel@vger.kernel.org>
+	Fri, 14 Dec 2007 01:15:57 -0500
+Message-Id: <200712140615.lBE6FX4b058136@www262.sakura.ne.jp>
+Subject: Re: [2.6.24-rc5-mm1] Why CONFIG_BLK_DEV_RAM=m makes \\\"#ifdef CONFIG_BLK_DEV_RAM\\\" false?
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712132211.23003.dvhltc@linux.vnet.ibm.com>
+Date: Fri, 14 Dec 2007 15:15:32 +0900
+References: <200712140504.lBE54Jpa044093@www262.sakura.ne.jp> <20071213214509.f27c2717.randy.dunlap@oracle.com>
+In-Reply-To: <20071213214509.f27c2717.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was trying to use CONFIG_FUNCTION_TRACE with the example trace-it.c in 
-linux/scripts.  On both 2.6.23.9-rt13 and 2.6.24-rc2-rt1 the system 
-slower becomes less responsive (measured by typing in ssh and a serial 
-console) until after a couple minutes it doesn't respond to anything 
-including sysrq, requiring a power cycle.
+Hello.
 
-The trace-it.c program defaults to 10 seconds of tracing, I even tried 
-dropping that to 100 us in case it just added so much overhead that 10 
-seconds of idle turned into minutes.  But the 100us sleep hung too.
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> I don't think that this is a change from the recent past.
 
-I tested on a 4 way (2x2) opteron.  
+Oh, it is my mistake.
 
-I enabled:
+I found that choosing CONFIG_BLK_DEV_RAM=m makes
+impossible to pass an initrd image since
+populate_rootfs() in init/initramfs.c omits
+code for checking whether the image is an initrd or not.
+But I didn't know CONFIG_BLK_DEV_RAM is tristate.
+So, I have to change to CONFIG_BLK_DEV_RAM=y when
+I want to pass an initrd image after "make allmodconfig".
 
-CONFIG_EVENT_TRACE
-CONFIG_FUNCTION_TRACE
-
-Thanks,
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+Thank you.
