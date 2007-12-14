@@ -1,168 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761310AbXLNHRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761425AbXLNHZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761310AbXLNHRZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 02:17:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbXLNHRR
+	id S1761425AbXLNHZg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 02:25:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755731AbXLNHZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 02:17:17 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:57503 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753942AbXLNHRQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 02:17:16 -0500
-Message-ID: <47622DD2.10405@cosmosbay.com>
-Date: Fri, 14 Dec 2007 08:16:34 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 14 Dec 2007 02:25:27 -0500
+Received: from gw.goop.org ([64.81.55.164]:48376 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755037AbXLNHZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 02:25:26 -0500
+Message-ID: <47622FD2.2030607@goop.org>
+Date: Thu, 13 Dec 2007 23:25:06 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52, [2.6.24-rc4-git5:
- Reported regressions from 2.6.23]
-References: <200712080340.49546.rjw@sisk.pl> <20071208093039.GA28054@elte.hu> <20071208163749.GI19691@waste.org> <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org> <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org> <20071208100950.a3547868.akpm@linux-foundation.org> <alpine.LFD.0.9999.0712081034470.12046@woody.linux-foundation.org> <20071208195211.GA3727@elte.hu> <Pine.LNX.4.64.0712131954440.30721@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0712131954440.30721@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Fri, 14 Dec 2007 08:16:42 +0100 (CET)
+To: Dave Jones <davej@redhat.com>, Adrian Bunk <bunk@kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@muc.de>
+Subject: Re: Print taint info in more places.
+References: <20071213224927.GA18639@redhat.com> <20071214000350.GK21616@stusta.de> <20071214013041.GH22304@redhat.com>
+In-Reply-To: <20071214013041.GH22304@redhat.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> On Sat, 8 Dec 2007, Ingo Molnar wrote:
-> 
->>> Good. Although we should perhaps look at that reported performance 
->>> problem with SLUB. It looks like SLUB will do a memclear() for the 
->>> area twice (first for the whole page, then for the thing it allocated) 
->>> for the slow case. Maybe that exacerbates the problem.
->> i dont think the SLUB problem could be explained purely via a double 
->> memset(). [which ought to be extremely fast anyway] We are talking about 
->> a 10 times slowdown on a 64-way box of a workload that is fairly 
->> common-sense. (tasks sending messages to each other via bog standard 
->> means)
->>
->> while i dont want to jump to conclusions without looking at some 
->> profiles, i think the SLUB performance regression is indicative of the 
->> following fallacy: "SLAB can be done significantly simpler while keeping 
->> the same performance".
-> 
-> Well this is double crap. First of all SLUB does not do memclear twice. 
-> There is no reason to assume that SLUB has the problem just because SLOB 
-> hat that. A "fix" for that nonexistent problem went into Linus tree. WTH 
-> is going on?
-> 
-> SLUB was done because of a series of problem with the basic concepts of 
-> SLAB that treaten it usability in the future.
->  
->> I couldnt point to any particular aspect of SLAB that i could 
->> characterise as "needless bloat".
-> 
-> I agree, SLABs architecture is pretty tight and I was one of those who 
-> helped it along to be that way.
-> 
-> However, SLAB is just fundamentally wrong for todays machine. The key 
-> problem today is cacheline fetch latency and that problem will increase 
-> significantly in the future. Sure under some circumstances that exploit 
-> the fact that SLAB sometimes gets its guesses on the cpu cache right SLAB 
-> can still win but the more processors and nodes we get the more it will 
-> become difficult to keep SLAB around and the more it will become 
-> difficult to establish what cachelines are in the cpu cache.
-> 
->> I think we should we make SLAB the default for v2.6.24 ...
-> 
-> If you guarantee that all the regression of SLAB vs. SLUB are addressed 
-> then thats fine but AFAICT that is not possible.
-> 
-> Here is a list of some of the benefits of SLUB just in case we forgot:
-> 
-> 
-> - SLUB is performance wise much faster than SLAB. This can be more than a
->   factor of 10 (case of concurrent allocations / frees on multiple
->   processors). See http://lkml.org/lkml/2007/10/27/245
-> 
-> - Single threaded allocation speed is up to double that of SLAB
-> 
-> - Remote freeing of objectcs in a NUMA systems is typically 30% faster.
-> 
-> - Debugging on SLAB is difficult. Requires recompile of the kernel
->   and the resulting output is difficult to interpret. SLUB can apply
->   debugging options to a subset of the slabcaches in order to allow
->   the system to work with maximum speed. This is necessary to detect
->   difficult to reproduce race conditions.
-> 
-> - SLAB can capture huge amounts of memory in its queues. The problem
->   gets worse the more processors and NUMA nodes are in the system. The 
->   amount of memory limits the number of per cpu objects one can configure.
-> 
-> - SLAB requires a pass through all slab caches every 2 seconds to
->   expire objects. This is a problem both for realtime and MPI jobs
->   that cannot take such a processor outage.
-> 
-> - SLAB does not have a sophisticated slabinfo tool to report the
->   state of slab objects on the system. Can provide details of
->   object use.
-> 
-> - SLAB requires the update of two words for freeing
->   and allocation. SLUB can do that by updating a single
->   word which allows to avoid enabling and disabling interrupts if
->   the processor supports an atomic instruction for that purpose.
->   This is important for realtime kernels where special measures
->   may have to be implemented if one wants to disable interrupts.
-> 
-> - SLAB requires memory to be set aside for queues (processors
->   times number of slabs times queue size). SLUB requires none of that.
-> 
-> - SLUB merges slab caches with similar characteristics to
->   reduce the memory footprint even further.
-> 
-> - SLAB performs object level NUMA management which creates
->   a complex allocator complexity. SLUB manages NUMA on the level of
->   slab pages reducing object management overhead.
-> 
-> - SLUB allows remote node defragmentation to avoid the buildup
->   of large partial lists on a single node.
-> 
-> - SLUB can actively reduce the fragmentation of slabs through
->   slab cache specific callbacks (not merged yet)
-> 
-> - SLUB has resiliency features that allow it to isolate a problem
->   object and continue after diagnostics have been performed.
-> 
-> - SLUB creates rarely used DMA caches on demand instead of creating
->   them all on bootup (SLAB).
-> 
+Dave Jones wrote:
+> On Fri, Dec 14, 2007 at 01:03:50AM +0100, Adrian Bunk wrote:
+>
+>  > >  #ifndef HAVE_ARCH_BUG
+>  > >  #define BUG() do { \
+>  > > -	printk("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__); \
+>  > > +	printk(KERN_ERR "BUG: failure at %s:%d/%s()! (%s)\n",
+>  > > +		__FILE__, __LINE__, __FUNCTION__, print_tainted()); \
+>  > >  	panic("BUG!"); \
+>  > >  } while (0)
+>  > >  #endif
+>  > >...
+>  > 
+>  > Note that this only changes a handful of architectures and most likely 
+>  > not the ones you are interested in.
+>
+> Hmm, it appears that I was mistaken, and we never did patch x86.
+> Which leaves me wondering if its worth it or not to  patch BUG()
+> Anyways, here's the latest rev with the out-of-line changes as
+> suggested by Andi.
+>
+> init/main.c may not be the best place for the ool variant. suggestions?
+>   
 
-Yes, SLUB should be the way to go, but some issues are not yet solved.
+lib/bug.c would be the place for architectures using
+CONFIG_GENERIC_BUG.  x86 could be converted to use the BUG-trapping
+mechanism for WARN_ON like Power does, so it would be inherently out of
+line anyway.
 
-I had to switch back to SLAB on a production NUMA server, with 2 nodes and 8GB 
-ram. Using a lot of sockets, so a large part of memory was used by kernel.
-
-SLUB kernel was hitting OOM after 2 or 3 days of uptime.
-SLAB kernel never hit this.
-
-Unfortunatly I dont have a test machine to reproduce the setup.
-
-Maybe the problem is not related to SLUB at all, but an underlying VM/NUMA bug.
-
-The /proc/buddyinfo showed that :
-
-Node 0 contained two zones (DMA and DMA32) total 4 GB
-Node 1 contained one zone (Normal) total 4 GB
-
-So Node 0 contained no (Normal) zone
-
-part of /proc/meminfo
-
-Slab:          3338512 kB
-SReclaimable:   789716 kB
-SUnreclaim:    2548796 kB
-
-I remember network interrupts were taken by CPU 1, so most allocations were 
-done by CPU 1 (node 1), and many freeing were done on CPU 0
-
-Hope this helps
-
+    J
