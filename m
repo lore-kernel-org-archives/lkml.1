@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765467AbXLNERh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765982AbXLNEVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765467AbXLNERh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 23:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758820AbXLNER2
+	id S1765982AbXLNEVm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 23:21:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761693AbXLNEVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 23:17:28 -0500
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:58139 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756308AbXLNER1 (ORCPT
+	Thu, 13 Dec 2007 23:21:33 -0500
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:35694 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761335AbXLNEVc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 23:17:27 -0500
-To: venkatesh.pallipadi@intel.com
-Cc: ak@muc.de, ebiederm@xmission.com, torvalds@linux-foundation.org,
-       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, akpm@linux-foundation.org,
-       arjan@infradead.org, jesse.barnes@intel.com,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [RFC PATCH 06/12] PAT 64b: Add ioremap_wc support
-X-Message-Flag: Warning: May contain useful information
-References: <20071213235543.568682000@intel.com>
-	<20071213235712.339088000@intel.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 13 Dec 2007 20:17:14 -0800
-In-Reply-To: <20071213235712.339088000@intel.com> (venkatesh pallipadi's message of "Thu, 13 Dec 2007 15:55:49 -0800")
-Message-ID: <ada8x3x7vw5.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Thu, 13 Dec 2007 23:21:32 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=kBtRdnE/lFmEsX1XWlkMPttYjS5TAaiTQEDFJgslxYpCwCVMorHR5AAxGSn3Ahut8l4evCQ1cEc1wRkL8Z8iJ5dlZCg67ZTbmHS9f1fbSba5qjmJghv7jbtW3FaDdznbxmhCZSqBZfgO2ZSLgt6xrZY4MnEZoUtiyFRy4LXBM0A=  ;
+X-YMail-OSG: 4VzOFRQVM1lAtW.2HJv8RmAjdgfcxexcba15y6OaMMwjAtph8OJzzVIhy0horvGx0tR68pby_Q--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 24/28] AFS: Add a function to excise a rejected write from the pagecache [try #2]
+Date: Fri, 14 Dec 2007 15:21:23 +1100
+User-Agent: KMail/1.9.5
+Cc: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       sds@tycho.nsa.gov, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+References: <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205194020.24617.28880.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20071205194020.24617.28880.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Dec 2007 04:17:15.0108 (UTC) FILETIME=[3511D240:01C83E08]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712141521.24227.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > --- linux-2.6.24-rc4.orig/include/asm-x86/io_64.h	2007-12-11 14:24:56.000000000 -0800
- > +++ linux-2.6.24-rc4/include/asm-x86/io_64.h	2007-12-11 15:49:52.000000000 -0800
- > @@ -142,7 +142,8 @@
- >   * it's useful if some control registers are in such an area and write combining
- >   * or read caching is not desirable:
- >   */
- > -extern void __iomem * ioremap_nocache (unsigned long offset, unsigned long size);
- > +extern void __iomem * ioremap_nocache(unsigned long offset, unsigned long size);
- > +extern void __iomem * ioremap_wc(unsigned long offset, unsigned long size);
+On Thursday 06 December 2007 06:40, David Howells wrote:
+> Add a function - cancel_rejected_write() - to excise a rejected write from
+> the pagecache.  This function is related to the truncation family of
+> routines.  It permits the pages modified by a network filesystem client
+> (such as AFS) to be excised and discarded from the pagecache if the attempt
+> to write them back to the server fails.
+>
+> The dirty and writeback states of the afflicted pages are cancelled and the
+> pages themselves are detached for recycling.  All PTEs referring to those
+> pages are removed.
+>
+> Note that the locking is tricky as it's very easy to deadlock against
+> truncate() and other routines once the pages have been unlocked as part of
+> the writeback process.  To this end, the PG_error flag is set, then the
+> PG_writeback flag is cleared, and only *then* can lock_page() be called.
 
-I think ioremap_wc() needs to be available on all archs for this to be
-really useful to drivers.  It can be a fallback to ioremap_nocache()
-everywhere except 64-bit x86, but it's not nice for every driver that
-wants to use this to need an "#ifdef X86" or whatever.
+This reintroduces the fault vs truncate race window, which must be fixed.
 
-Also I didn't see anything like pgprot_wc() in the patchset (although
-I just skimmed quickly for now).  The use case I actually have would
-be in a a driver's .mmap method, where I want to map device registers
-into userspace with write-combining turned on:
+Also, it is adding a fair bit of complexity in an area where we should
+instead be reducing it. I think your filesystem should not be doing
+writeback caching of dirty data in the cases where it is so problematic
+(or at least, disallow mmap and read on the dirty data until it has been
+written back or failed).
 
-	vma->vm_page_prot = pgprot_wc(vma->vm_page_prot);
-	io_remap_pfn_range(vma, vma->vm_start, pfn, PAGE_SIZE, vma->vm_page_prot);
-
-where the pfn points into a PCI BAR (which will only be mapped once,
-so no issues with conflicting PATs or anything like that).
-
- - R.
+But otherwise I guess if you really want to discard the dirty data after
+a failed writeback attempt, what's wrong with just invalidate_inode_pages2?
