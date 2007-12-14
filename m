@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759668AbXLNR3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbXLNRaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759668AbXLNR3Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 12:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbXLNR3Q
+	id S1758296AbXLNRaq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 12:30:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbXLNRah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 12:29:16 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47851 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750777AbXLNR3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 12:29:16 -0500
-Date: Fri, 14 Dec 2007 09:28:14 -0800
-From: Greg KH <gregkh@suse.de>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Kay Sievers <kay.sievers@vrfy.org>,
-       vincent.fortier1@ec.gc.ca, Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
-Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
-Message-ID: <20071214172814.GA14597@suse.de>
-References: <1197554397.19869.3.camel@lov.site> <1197558120.4936.34.camel@kayak.wul.qc.ec.gc.ca> <1197562981.19869.5.camel@lov.site> <20071213165059.GC4865@elte.hu> <1197565842.19869.11.camel@lov.site> <20071213202125.GA25130@elte.hu> <20071214162642.GA13898@suse.de> <20071214170739.GA2576@linux.vnet.ibm.com>
+	Fri, 14 Dec 2007 12:30:37 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:33002 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750794AbXLNRag convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 12:30:36 -0500
+X-Greylist: delayed 608 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Dec 2007 12:30:36 EST
+From: "de Dinechin, Christophe (Integrity VM)" 
+	<christophe.de-dinechin@hp.com>
+To: "Luck, Tony" <tony.luck@intel.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Picco, Robert W." <robert.picco@hp.com>
+Date: Fri, 14 Dec 2007 17:17:10 +0000
+Subject: RE: [PATCH] ia64: Avoid unnecessary TLB flushes when allocating
+ memory
+Thread-Topic: [PATCH] ia64: Avoid unnecessary TLB flushes when allocating
+ memory
+Thread-Index: Acg9mUUMdTafVzrMTvSV0jj3/Kue7QAMQ8LQACnTR+A=
+Message-ID: <7575980D7C4188408E8BDB171DA164B73A875EC00C@G3W1111.americas.hpqcorp.net>
+References: <7575980D7C4188408E8BDB171DA164B73A875A92A6@G3W1111.americas.hpqcorp.net>
+ <1FE6DD409037234FAB833C420AA843EC1A3F5B@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC1A3F5B@orsmsx424.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071214170739.GA2576@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 14, 2007 at 10:37:39PM +0530, Dhaval Giani wrote:
-> On Fri, Dec 14, 2007 at 08:26:42AM -0800, Greg KH wrote:
-> > On Thu, Dec 13, 2007 at 09:21:26PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Kay Sievers <kay.sievers@vrfy.org> wrote:
-> > > 
-> > > > > > > This one also fails to apply properly at the exact same place 
-> > > > > > > has Ingo's previously posted patch.  Would need to backport his 
-> > > > > > > one.
-> > > > > > 
-> > > > > > It depends on a completely reworked sysfs logic, I don't think it 
-> > > > > > makes any sense to backport that.
-> > > > > 
-> > > > > well, if it fixes a live bug in a still supported stable kernel 
-> > > > > release...
-> > > > > 
-> > > > > Vincent, could you try to just get rid of all actual uses of 
-> > > > > se->attr.owner, within fs/sysfs/*.c? Something like the patch below. 
-> > > > > (totally untested - might be fatally broken as well)
-> > > > 
-> > > > How can you think that this is not needed? You can not remove it with 
-> > > > sysfs you are patching. Hope this explains it: 
-> > > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0ab66088c855eca68513bdd7442a426c4b374ced
-> > > 
-> > > yeah - as i said it might be fatally broken (in fact it is). Do we 
-> > > understand why Vincent got the crashes with vanilla 2.6.22.14 ?
-> > 
-> > No, and I can't seem to duplicate them here at all.
-> > 
-> > Does anyone have a test case for this that I can work on trying to
-> > duplicate?
-> > 
-> 
-> If you apply CFS without my fix, and try to constantly check cpu_shares
-> for a user who is logging and logging out, you should hit it. (That's
-> what I was doing).
+Hi Tony,
 
-Hm, how about a "vanilla 2.6.22.14 kernel _without_ any patches".
-That's what I am most worried about :)
 
-thanks,
+Thanks for testing this. I just tried the following on a 4-way virtual machine with 2G of memory running on a 4-way rx5670 host with 14G:
 
-greg k-h
+        # One window: Fill the buffer cache with some stuff
+        while true; do find / -type f | xargs cat > /dev/null; done
+
+        # Another window: do some memory allocations
+        cd /usr/src/linux-2.6.23.9
+        while true; do gmake clean; gmake -j50; done
+
+I also added some instrumentation that shows old and new PTC.E in /proc/meminfo. Here is what a grep of PTC.E in /proc/meminfo gives me every second under that load, after waiting until the buffer cache fills up:
+
+        Fri Dec 14 23:27:16 CET 2007: PTC.E: 1161198 (old) 0 (new)
+        Fri Dec 14 23:27:17 CET 2007: PTC.E: 1166233 (old) 0 (new)
+        Fri Dec 14 23:27:19 CET 2007: PTC.E: 1174342 (old) 0 (new)
+        Fri Dec 14 23:27:20 CET 2007: PTC.E: 1175436 (old) 0 (new)
+        Fri Dec 14 23:27:21 CET 2007: PTC.E: 1176494 (old) 0 (new)
+        Fri Dec 14 23:27:22 CET 2007: PTC.E: 1176756 (old) 0 (new)
+
+As you can see, the global purge rates can be pretty respectable under this kind of load. I chose -j50 to generate enough processes to stress my own system, you may need more with 4G. Check with xosview or similar that the buffer cache fills up memory but is kept relatively small by user-space memory pressure (at around 5-10% for my own testing).
+
+If for some reason the same effect does not show up on your system, then that would be very interesting... Please let me know.
+
+
+Regards
+Christophe
+
+-----Original Message-----
+From: linux-ia64-owner@vger.kernel.org [mailto:linux-ia64-owner@vger.kernel.org] On Behalf Of Luck, Tony
+Sent: Thursday, December 13, 2007 10:07 PM
+To: de Dinechin, Christophe (Integrity VM); linux-ia64@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org; Picco, Robert W.
+Subject: RE: [PATCH] ia64: Avoid unnecessary TLB flushes when allocating memory
+
+> Test case: Run 'find /usr -type f | xargs cat > /dev/null'
+> in the background to fill the buffer cache, then run something that
+> uses memory, e.g. 'gmake -j50 install'.
+> Instrumentation showed that the number of global TLB purges went from
+> a few millions down to about 170 over a 12 hours run of the above.
+
+What was your system configuration for this test.  I'm running on a 4 socket Montecito (with HT enabled, so 16 logical cpus) with 4G of memory.  In the first hour of my test I've only seen 125 calls where the old code would have called flush_tlb_all().
+The new code managed to avoid all of these ... so it is batting 100%. This is out of just over a million calls to ia64_global_tlb_purge().
+
+So clearly I'm not manage to stress the system as heavily as you did.
+
+-Tony
+-
+To unsubscribe from this list: send the line "unsubscribe linux-ia64" in the body of a message to majordomo@vger.kernel.org More majordomo info at  http://vger.kernel.org/majordomo-info.html
