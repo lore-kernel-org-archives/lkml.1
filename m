@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbXLNGJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759684AbXLNGLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758601AbXLNGJj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 01:09:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbXLNGJa
+	id S1759684AbXLNGLe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 01:11:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbXLNGLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 01:09:30 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:41109 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751866AbXLNGJ3 (ORCPT
+	Fri, 14 Dec 2007 01:11:25 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:41636 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751919AbXLNGLY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 01:09:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:x-image-url:content-type:content-transfer-encoding:mime-version:subject:date:x-mailer;
-        b=o8nTSD3O6iqeaXCF+qaGLXjBxODAYwBw2U3NdA9ORooGmtbUPAYDz6jQrtTGsKaEd/i5nXQS+n3vCEVQZmKqjuffYd3wCC9VHBZKCRk3S8j5BFTVAiIoHhjK3PQixSAxmOnJxbkUAPINtMl+vYMA1z97MTIdSAGSIViIx8IfkI4=
-Message-Id: <755EFE0F-D503-4DD7-9FEC-277DDD5FB097@gmail.com>
-From: Roberto Jung Drebes <drebes@gmail.com>
-To: linux-kernel@vger.kernel.org
-X-Image-Url: http://www.hal.rcast.u-tokyo.ac.jp/~drebes/drebes.tif
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Fri, 14 Dec 2007 01:11:24 -0500
+From: Darren Hart <dvhltc@linux.vnet.ibm.com>
+Reply-To: Darren Hart <dvhltc@us.ibm.com>
+Organization: IBM Linux Technology Center
+To: linux-rt-users@vger.kernel.org
+Subject: Using CONFIG_FUNCTION_TRACE
+Date: Thu, 13 Dec 2007 22:11:22 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "lkml, " <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Fault injection capability not exported
-Date: Fri, 14 Dec 2007 15:09:22 +0900
-X-Mailer: Apple Mail (2.915)
+Content-Disposition: inline
+Message-Id: <200712132211.23003.dvhltc@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I was trying to use CONFIG_FUNCTION_TRACE with the example trace-it.c in 
+linux/scripts.  On both 2.6.23.9-rt13 and 2.6.24-rc2-rt1 the system 
+slower becomes less responsive (measured by typing in ssh and a serial 
+console) until after a couple minutes it doesn't respond to anything 
+including sysrq, requiring a power cycle.
 
-Hello there,
+The trace-it.c program defaults to 10 seconds of tracing, I even tried 
+dropping that to 100 us in case it just added so much overhead that 10 
+seconds of idle turned into minutes.  But the 100us sleep hung too.
 
-I want to use the fault injection capability infrastructure to  
-implement a simple fault injector which I can use in one of my  
-modules. But when trying to call init_fault_attr_dentries (*), I got  
-an undefined warning and noticed that this symbol is not exported even  
-when CONFIG_FAULT_INJECTION and CONFIG_FAULT_INJECTION_DEBUG_FS are  
-defined.
+I tested on a 4 way (2x2) opteron.  
 
-Then, I checked the implementation of the framework in lib/fault- 
-injection.c and noticed that, really, it doesn't export any symbol.
+I enabled:
 
-Is the infrastructure unavailable to be used by kernel modules?
+CONFIG_EVENT_TRACE
+CONFIG_FUNCTION_TRACE
 
-(*) I noticed some inconsistencies in the documentation, like calling  
-the init function as init_fault_attr_entries instead of  
-init_fault_attr_dentries. I can submit an updated documentation after  
-I can make it work.
-
-Please CC me any reply,
-
-Thanks in advance,
+Thanks,
 
 -- 
-Roberto Jung Drebes - Tokyo, Japan
-<drebes@gmail.com>
-http://dorebesu.blogspot.com/
-
-
-
-
-
-
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
