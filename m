@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbXLNU2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764898AbXLNU2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760886AbXLNU2L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 15:28:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbXLNU1z
+	id S1764898AbXLNU2s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 15:28:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756265AbXLNU2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 15:27:55 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:43009 "EHLO mail.dvmed.net"
+	Fri, 14 Dec 2007 15:28:38 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:33949 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756047AbXLNU1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 15:27:54 -0500
-Message-ID: <4762E746.8050405@pobox.com>
-Date: Fri, 14 Dec 2007 15:27:50 -0500
+	id S1756075AbXLNU2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 15:28:37 -0500
+Message-ID: <4762E763.5070800@pobox.com>
+Date: Fri, 14 Dec 2007 15:28:19 -0500
 From: Jeff Garzik <jgarzik@pobox.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Adrian Bunk <bunk@kernel.org>
-CC: romieu@fr.zoreil.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] drivers/net/sis190.c section fix
-References: <20071211222356.GA14204@stusta.de>
-In-Reply-To: <20071211222356.GA14204@stusta.de>
+CC: ram.vepa@neterion.com, santosh.rastapur@neterion.com,
+       sivakumar.subramani@neterion.com, sreenivasa.honnur@neterion.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/net/s2io.c section fixes
+References: <20071211222306.GV14204@stusta.de>
+In-Reply-To: <20071211222306.GV14204@stusta.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -29,12 +31,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Adrian Bunk wrote:
+> Code used by the non-__devinit s2io_open() mustn't be __devinit.
+> 
 > This patch fixes the following section mismatch with CONFIG_HOTPLUG=n:
 > 
 > <--  snip  -->
 > 
 > ...
-> WARNING: vmlinux.o(.init.text.20+0x4cb25): Section mismatch: reference to .exit.text:sis190_mii_remove (between 'sis190_init_one' and 'read_eeprom')
+> WARNING: vmlinux.o(.text+0x6f6e3e): Section mismatch: reference to .init.text.20:s2io_test_intr (between 's2io_open' and 's2io_ethtool_sset')
 > ...
 > 
 > <--  snip  -->
@@ -42,21 +46,8 @@ Adrian Bunk wrote:
 > Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
 > ---
-> 29fae057ba15a552a7cad1e731d3238d567032ba 
-> diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
-> index 7200883..49f767b 100644
-> --- a/drivers/net/sis190.c
-> +++ b/drivers/net/sis190.c
-> @@ -1381,7 +1381,7 @@ out:
->  	return rc;
->  }
->  
-> -static void __devexit sis190_mii_remove(struct net_device *dev)
-> +static void sis190_mii_remove(struct net_device *dev)
->  {
->  	struct sis190_private *tp = netdev_priv(dev);
->  
 > 
+>  drivers/net/s2io.c |    4 ++--
 
 applied #upstream-fixes
 
