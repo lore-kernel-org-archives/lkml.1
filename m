@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762280AbXLNIMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbXLNINA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762280AbXLNIMo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 03:12:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761344AbXLNIM0
+	id S1757099AbXLNINA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 03:13:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761910AbXLNIMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 03:12:26 -0500
-Received: from gw.goop.org ([64.81.55.164]:42968 "EHLO mail.goop.org"
+	Fri, 14 Dec 2007 03:12:34 -0500
+Received: from gw.goop.org ([64.81.55.164]:42975 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759615AbXLNIMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 03:12:24 -0500
-Message-ID: <47623AD6.6090403@goop.org>
-Date: Fri, 14 Dec 2007 00:12:06 -0800
+	id S1761632AbXLNIMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 03:12:31 -0500
+Message-ID: <47623ADD.9090607@goop.org>
+Date: Fri, 14 Dec 2007 00:12:13 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
@@ -18,7 +18,7 @@ To: Ingo Molnar <mingo@elte.hu>
 CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Jan Beulich <jbeulich@novell.com>,
        Glauber de Oliveira Costa <glommer@gmail.com>
-Subject: [PATCH 1/4] x86: clean up asm-x86/page*.h
+Subject: [PATCH 2/4] x86: unify pgtable*.h
 X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
@@ -26,915 +26,1194 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unify common definitions in page*.h.  To simplify other code, I added
-typedefs for the value of pte/pmd/pud/pgd values, so they can be used
-symbolically elsewhere without needing to have lots of 32/64/PAE
-tests.
+All x86 modes and architectures have very similar pagetable
+structures: the page flags, the accessors for testing/setting them,
+and the combinations of page flags used for kernel and usermode
+mappings are all the same.  The main difference is between 32 and
+64-bit pagetable entries, with the latter supporting the NX bit.
 
-Also, add PAGETABLE_LEVELS define so that other definitions can test
-for it directly rather than using indirect 32/64/PAE tests.
+The most significant difference between the modes/architectures is the
+number of levels in the pagetable (4 for 64-bit, 3 for 32-bit/PAE, 2
+for non-PAE 32-bit).  This accounts for the remaining code in the
+various mode-specific headers.
+
+I've tried to avoid changing formatting as much as possible, so that
+the code motion is more obvious.  A subsequent patch will clean things
+up in place.
 
 Signed-off-by: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
 
 ---
- arch/x86/mm/fault_64.c       |    8 
- arch/x86/mm/init_32.c        |    2 
- include/asm-x86/page.h       |  345 ++++++++++++++++++++++++++++++++++++++++--
- include/asm-x86/page_32.h    |  233 ----------------------------
- include/asm-x86/page_64.h    |  158 -------------------
- include/asm-x86/pgtable_64.h |   39 ++--
- 6 files changed, 360 insertions(+), 425 deletions(-)
+ arch/x86/kernel/setup_32.c       |    6 
+ include/asm-x86/pgtable-2level.h |   17 -
+ include/asm-x86/pgtable-3level.h |   38 ----
+ include/asm-x86/pgtable.h        |  344 ++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/pgtable_32.h     |  228 -------------------------
+ include/asm-x86/pgtable_64.h     |  284 ++++++-------------------------
+ 6 files changed, 414 insertions(+), 503 deletions(-)
 
 ===================================================================
---- a/arch/x86/mm/fault_64.c
-+++ b/arch/x86/mm/fault_64.c
-@@ -158,22 +158,22 @@ void dump_pagetable(unsigned long addres
- 	pgd = __va((unsigned long)pgd & PHYSICAL_PAGE_MASK); 
- 	pgd += pgd_index(address);
- 	if (bad_address(pgd)) goto bad;
--	printk("PGD %lx ", pgd_val(*pgd));
-+	printk("PGD %lx ", (unsigned long)pgd_val(*pgd));
- 	if (!pgd_present(*pgd)) goto ret; 
- 
- 	pud = pud_offset(pgd, address);
- 	if (bad_address(pud)) goto bad;
--	printk("PUD %lx ", pud_val(*pud));
-+	printk("PUD %lx ", (unsigned long)pud_val(*pud));
- 	if (!pud_present(*pud))	goto ret;
- 
- 	pmd = pmd_offset(pud, address);
- 	if (bad_address(pmd)) goto bad;
--	printk("PMD %lx ", pmd_val(*pmd));
-+	printk("PMD %lx ", (unsigned long)pmd_val(*pmd));
- 	if (!pmd_present(*pmd) || pmd_large(*pmd)) goto ret;
- 
- 	pte = pte_offset_kernel(pmd, address);
- 	if (bad_address(pte)) goto bad;
--	printk("PTE %lx", pte_val(*pte)); 
-+	printk("PTE %lx", (unsigned long)pte_val(*pte));
- ret:
- 	printk("\n");
- 	return;
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -334,7 +334,7 @@ unsigned long __init find_max_low_pfn(vo
+ 		if (highmem_pages + MAXMEM_PFN < max_pfn)
+ 			max_pfn = MAXMEM_PFN + highmem_pages;
+ 		if (highmem_pages + MAXMEM_PFN > max_pfn) {
+-			printk("only %luMB highmem pages available, ignoring highmem size of %uMB.\n", pages_to_mb(max_pfn - MAXMEM_PFN), pages_to_mb(highmem_pages));
++			printk("only %luMB highmem pages available, ignoring highmem size of %luMB.\n", pages_to_mb(max_pfn - MAXMEM_PFN), pages_to_mb(highmem_pages));
+ 			highmem_pages = 0;
+ 		}
+ 		max_low_pfn = MAXMEM_PFN;
+@@ -361,12 +361,12 @@ unsigned long __init find_max_low_pfn(vo
+ 			highmem_pages = 0;
+ #ifdef CONFIG_HIGHMEM
+ 		if (highmem_pages >= max_pfn) {
+-			printk(KERN_ERR "highmem size specified (%uMB) is bigger than pages available (%luMB)!.\n", pages_to_mb(highmem_pages), pages_to_mb(max_pfn));
++			printk(KERN_ERR "highmem size specified (%luMB) is bigger than pages available (%luMB)!.\n", pages_to_mb(highmem_pages), pages_to_mb(max_pfn));
+ 			highmem_pages = 0;
+ 		}
+ 		if (highmem_pages) {
+ 			if (max_low_pfn-highmem_pages < 64*1024*1024/PAGE_SIZE){
+-				printk(KERN_ERR "highmem size %uMB results in smaller than 64MB lowmem, ignoring it.\n", pages_to_mb(highmem_pages));
++				printk(KERN_ERR "highmem size %luMB results in smaller than 64MB lowmem, ignoring it.\n", pages_to_mb(highmem_pages));
+ 				highmem_pages = 0;
+ 			}
+ 			max_low_pfn -= highmem_pages;
 ===================================================================
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -45,7 +45,7 @@
- #include <asm/sections.h>
- #include <asm/paravirt.h>
+--- a/include/asm-x86/pgtable-2level.h
++++ b/include/asm-x86/pgtable-2level.h
+@@ -15,25 +15,24 @@ static inline void native_set_pte(pte_t 
+ {
+ 	*ptep = pte;
+ }
++
+ static inline void native_set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 				     pte_t *ptep , pte_t pte)
+ {
+ 	native_set_pte(ptep, pte);
+ }
++
+ static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
+ {
+ 	*pmdp = pmd;
+ }
+-#ifndef CONFIG_PARAVIRT
+-#define set_pte(pteptr, pteval)		native_set_pte(pteptr, pteval)
+-#define set_pte_at(mm,addr,ptep,pteval) native_set_pte_at(mm, addr, ptep, pteval)
+-#define set_pmd(pmdptr, pmdval)		native_set_pmd(pmdptr, pmdval)
+-#endif
  
--unsigned int __VMALLOC_RESERVE = 128 << 20;
-+unsigned long __VMALLOC_RESERVE = 128 << 20;
++#undef set_pte_atomic
+ #define set_pte_atomic(pteptr, pteval) set_pte(pteptr,pteval)
+ #define set_pte_present(mm,addr,ptep,pteval) set_pte_at(mm,addr,ptep,pteval)
  
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- unsigned long highstart_pfn, highend_pfn;
+ #define pte_clear(mm,addr,xp)	do { set_pte_at(mm, addr, xp, __pte(0)); } while (0)
++#undef pmd_clear
+ #define pmd_clear(xp)	do { set_pmd(xp, __pmd(0)); } while (0)
+ 
+ static inline void native_pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *xp)
+@@ -50,12 +49,6 @@ static inline pte_t native_ptep_get_and_
+ #define native_ptep_get_and_clear(xp) native_local_ptep_get_and_clear(xp)
+ #endif
+ 
+-#define pte_page(x)		pfn_to_page(pte_pfn(x))
+-#define pte_none(x)		(!(x).pte_low)
+-#define pte_pfn(x)		(pte_val(x) >> PAGE_SHIFT)
+-#define pfn_pte(pfn, prot)	__pte(((pfn) << PAGE_SHIFT) | pgprot_val(prot))
+-#define pfn_pmd(pfn, prot)	__pmd(((pfn) << PAGE_SHIFT) | pgprot_val(prot))
+-
+ /*
+  * All present pages are kernel-executable:
+  */
+@@ -63,6 +56,8 @@ static inline int pte_exec_kernel(pte_t 
+ {
+ 	return 1;
+ }
++
++#define __supported_pte_mask	(~0ul)
+ 
+ /*
+  * Bits 0, 6 and 7 are taken, split up the 29 bits of offset
 ===================================================================
---- a/include/asm-x86/page.h
-+++ b/include/asm-x86/page.h
-@@ -1,13 +1,338 @@
-+#ifndef _ASM_X86_PAGE_H
-+#define _ASM_X86_PAGE_H
+--- a/include/asm-x86/pgtable-3level.h
++++ b/include/asm-x86/pgtable-3level.h
+@@ -94,17 +94,6 @@ static inline void native_pmd_clear(pmd_
+ 	*(tmp + 1) = 0;
+ }
+ 
+-#ifndef CONFIG_PARAVIRT
+-#define set_pte(ptep, pte)			native_set_pte(ptep, pte)
+-#define set_pte_at(mm, addr, ptep, pte)		native_set_pte_at(mm, addr, ptep, pte)
+-#define set_pte_present(mm, addr, ptep, pte)	native_set_pte_present(mm, addr, ptep, pte)
+-#define set_pte_atomic(ptep, pte)		native_set_pte_atomic(ptep, pte)
+-#define set_pmd(pmdp, pmd)			native_set_pmd(pmdp, pmd)
+-#define set_pud(pudp, pud)			native_set_pud(pudp, pud)
+-#define pte_clear(mm, addr, ptep)		native_pte_clear(mm, addr, ptep)
+-#define pmd_clear(pmd)				native_pmd_clear(pmd)
+-#endif
+-
+ /*
+  * Pentium-II erratum A13: in PAE mode we explicitly have to flush
+  * the TLB via cr3 if the top-level pgd is changed...
+@@ -119,10 +108,6 @@ static inline void pud_clear (pud_t * pu
+ #define pud_page_vaddr(pud) \
+ ((unsigned long) __va(pud_val(pud) & PAGE_MASK))
+ 
+-
+-/* Find an entry in the second-level page table.. */
+-#define pmd_offset(pud, address) ((pmd_t *) pud_page(*(pud)) + \
+-			pmd_index(address))
+ 
+ #ifdef CONFIG_SMP
+ static inline pte_t native_ptep_get_and_clear(pte_t *ptep)
+@@ -146,31 +131,8 @@ static inline int pte_same(pte_t a, pte_
+ 	return a.pte_low == b.pte_low && a.pte_high == b.pte_high;
+ }
+ 
+-#define pte_page(x)	pfn_to_page(pte_pfn(x))
+-
+-static inline int pte_none(pte_t pte)
+-{
+-	return !pte.pte_low && !pte.pte_high;
+-}
+-
+-static inline unsigned long pte_pfn(pte_t pte)
+-{
+-	return pte_val(pte) >> PAGE_SHIFT;
+-}
+-
+ extern unsigned long long __supported_pte_mask;
+ 
+-static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
+-{
+-	return __pte((((unsigned long long)page_nr << PAGE_SHIFT) |
+-		      pgprot_val(pgprot)) & __supported_pte_mask);
+-}
+-
+-static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
+-{
+-	return __pmd((((unsigned long long)page_nr << PAGE_SHIFT) |
+-		      pgprot_val(pgprot)) & __supported_pte_mask);
+-}
+ 
+ /*
+  * Bits 0, 6 and 7 are taken in the low part of the pte,
+===================================================================
+--- a/include/asm-x86/pgtable.h
++++ b/include/asm-x86/pgtable.h
+@@ -1,5 +1,349 @@
++#ifndef _ASM_X86_PGTABLE_H
++#define _ASM_X86_PGTABLE_H
 +
 +#include <linux/const.h>
-+#include <linux/compiler.h>
-+
-+/* PAGE_SHIFT determines the page size */
-+#define PAGE_SHIFT	12
-+#define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
-+#define PAGE_MASK	(~(PAGE_SIZE-1))
-+#define PHYSICAL_PAGE_MASK	(~(PAGE_SIZE-1) & __PHYSICAL_MASK)
-+
-+#define LARGE_PAGE_MASK (~(LARGE_PAGE_SIZE-1))
-+#define LARGE_PAGE_SIZE (_AC(1,UL) << PMD_SHIFT)
-+
-+#define HPAGE_SIZE	(_AC(1,UL) << HPAGE_SHIFT)
-+#define HPAGE_MASK	(~(HPAGE_SIZE - 1))
-+#define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
-+
- #ifdef __KERNEL__
--# ifdef CONFIG_X86_32
--#  include "page_32.h"
--# else
--#  include "page_64.h"
--# endif
-+
-+#ifdef CONFIG_X86_32
-+#ifdef CONFIG_X86_USE_3DNOW
-+
-+#include <asm/mmx.h>
-+
-+static inline void clear_page(void *page)
-+{
-+	mmx_clear_page(page);
-+}
-+
-+static inline void copy_page(void *to, const void *from)
-+{
-+	mmx_copy_page(to, from);
-+}
-+
-+#else  /* !CONFIG_X86_USE_3DNOW */
-+
-+/*
-+ *	On older X86 processors it's not a win to use MMX here it seems.
-+ *	Maybe the K6-III ?
-+ */
-+
-+#define clear_page(page)	memset((void *)(page), 0, PAGE_SIZE)
-+#define copy_page(to,from)	memcpy((void *)(to), (void *)(from), PAGE_SIZE)
-+
-+#endif	/* CONFIG_X86_USE_3DNOW */
-+
-+#define __phys_addr(x)		((unsigned long)(x)-PAGE_OFFSET)
-+
-+#define __PAGE_OFFSET		_AC(CONFIG_PAGE_OFFSET, UL)
-+
-+#define VMALLOC_RESERVE		(__VMALLOC_RESERVE)
-+#define MAXMEM			(-__PAGE_OFFSET-__VMALLOC_RESERVE)
++#include <asm/page.h>
 +
 +#ifndef __ASSEMBLY__
-+extern unsigned long __VMALLOC_RESERVE;
-+extern int nx_enabled;
++/*
++ * ZERO_PAGE is a global shared page that is always zero: used
++ * for zero-mapped memory areas etc..
++ */
++extern unsigned long empty_zero_page[PAGE_SIZE/sizeof(unsigned long)];
++#define ZERO_PAGE(vaddr) (virt_to_page(empty_zero_page))
 +
-+#include <linux/types.h>
++void paging_init(void);
++
++#endif /* !__ASSEMBLY__ */
++
++
++/*
++ * _PAGE_PSE set in the page directory entry just means that
++ * the page directory entry points directly to a 4MB-aligned block of
++ * memory.
++ */
++#define _PAGE_BIT_PRESENT	0
++#define _PAGE_BIT_RW		1
++#define _PAGE_BIT_USER		2
++#define _PAGE_BIT_PWT		3
++#define _PAGE_BIT_PCD		4
++#define _PAGE_BIT_ACCESSED	5
++#define _PAGE_BIT_DIRTY		6
++#define _PAGE_BIT_FILE		6
++#define _PAGE_BIT_PSE		7	/* 4 MB (or 2MB) page */
++#define _PAGE_BIT_GLOBAL	8	/* Global TLB entry PPro+ */
++#define _PAGE_BIT_UNUSED1	9	/* available for programmer */
++#define _PAGE_BIT_UNUSED2	10
++#define _PAGE_BIT_UNUSED3	11
++#define _PAGE_BIT_NX		63	/* No execute: only valid after cpuid check */
++
++
++#define _PAGE_PRESENT	(_AC(1, UL) << _PAGE_BIT_PRESENT)
++#define _PAGE_RW	(_AC(1, UL) << _PAGE_BIT_RW)
++#define _PAGE_USER	(_AC(1, UL) << _PAGE_BIT_USER)
++#define _PAGE_PWT	(_AC(1, UL) << _PAGE_BIT_PWT)
++#define _PAGE_PCD	(_AC(1, UL) << _PAGE_BIT_PCD)
++#define _PAGE_ACCESSED	(_AC(1, UL) << _PAGE_BIT_ACCESSED)
++#define _PAGE_DIRTY	(_AC(1, UL) << _PAGE_BIT_DIRTY)
++#define _PAGE_PSE	(_AC(1, UL) << _PAGE_BIT_PSE)
++#define _PAGE_GLOBAL	(_AC(1, UL) << _PAGE_BIT_GLOBAL)
++#define _PAGE_UNUSED1	(_AC(1, UL) << _PAGE_BIT_UNUSED1)
++#define _PAGE_UNUSED2	(_AC(1, UL) << _PAGE_BIT_UNUSED2)
++#define _PAGE_UNUSED3	(_AC(1, UL) << _PAGE_BIT_UNUSED3)
++
++#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
++#define _PAGE_NX	(_AC(1, ULL) << _PAGE_BIT_NX)
++#else
++#define _PAGE_NX	0
 +#endif
 +
-+#ifdef CONFIG_HUGETLB_PAGE
-+#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
-+#endif
-+
-+#ifndef CONFIG_X86_PAE
-+/*
-+ * 32 bit mode.  2 level pagetable, 32 bit physical, 32 bit virtual
-+ */
-+#define PAGETABLE_LEVELS	2
-+#define __PHYSICAL_MASK_SHIFT	32
-+#define __VIRTUAL_MASK_SHIFT	32
-+#define HPAGE_SHIFT		PGDIR_SHIFT
++/* If _PAGE_PRESENT is clear, we use these: */
++#define _PAGE_FILE	_PAGE_DIRTY	/* nonlinear file mapping, saved PTE; unset:swap */
++#define _PAGE_PROTNONE	_PAGE_PSE	/* if the user mapped it with PROT_NONE;
++					   pte_present gives true */
 +
 +#ifndef __ASSEMBLY__
-+typedef u32	pteval_t;
-+typedef u32	pmdval_t;
-+typedef u32	pudval_t;
-+typedef u32	pgdval_t;
-+typedef u32	pgprotval_t;
-+
-+typedef struct { unsigned long pte_low; } pte_t, boot_pte_t;
-+
-+static inline pteval_t native_pte_val(pte_t pte)
-+{
-+	return pte.pte_low;
-+}
-+
-+static inline pte_t native_make_pte(pteval_t val)
-+{
-+	return (pte_t) { val };
-+}
-+#endif	/* __ASSEMBLY__ */
-+
-+#else	/* CONFIG_X86_PAE */
 +/*
-+ * 32 bit PAE mode.  3 level pagetable, 36 bit physical, 32 bit virtual
++ * The following only work if pte_present() is true.
++ * Undefined behaviour if not..
 + */
-+#define PAGETABLE_LEVELS	3
-+#define __PHYSICAL_MASK_SHIFT	36
-+#define __VIRTUAL_MASK_SHIFT	32
-+#define HPAGE_SHIFT		PMD_SHIFT
++static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
++static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
++static inline int pte_write(pte_t pte)		{ return pte_val(pte) & _PAGE_RW; }
++static inline int pte_file(pte_t pte)		{ return pte_val(pte) & _PAGE_FILE; }
++static inline int pte_huge(pte_t pte)		{ return pte_val(pte) & _PAGE_PSE; }
 +
-+#ifndef __ASSEMBLY__
-+typedef u64	pteval_t;
-+typedef u64	pmdval_t;
-+typedef u64	pudval_t;
-+typedef u64	pgdval_t;
-+typedef u64	pgprotval_t;
-+
-+typedef struct { unsigned long pte_low, pte_high; } pte_t;
-+
-+static inline pteval_t native_pte_val(pte_t pte)
-+{
-+	return pte.pte_low | ((unsigned long long)pte.pte_high << 32);
-+}
-+
-+static inline pte_t native_make_pte(pteval_t val)
-+{
-+	return (pte_t) { .pte_low = val, .pte_high = (val >> 32) } ;
-+}
 +#endif	/* __ASSEMBLY__ */
 +
-+#endif	 /* CONFIG_X86_PAE */
++#ifdef CONFIG_PARAVIRT
++#include <asm/paravirt.h>
++#else
++#define set_pte(ptep, pte)			native_set_pte(ptep, pte)
++#define set_pte_at(mm, addr, ptep, pte)		\
++	native_set_pte_at(mm, addr, ptep, pte)
 +
-+#else  /* !CONFIG_X86_32 */
-+/*
-+ *  64 bit mode.  4 level pagetable, 46 bit physical, 48 bit virtual
-+ */
-+#define PAGETABLE_LEVELS	4
-+#define __PHYSICAL_MASK_SHIFT	46
-+#define __VIRTUAL_MASK_SHIFT	48
-+#define HPAGE_SHIFT		PMD_SHIFT
++#define set_pte_present(mm, addr, ptep, pte)		\
++	native_set_pte_present(mm, addr, ptep, pte)
++#define set_pte_atomic(ptep, pte)		\
++	native_set_pte_atomic(ptep, pte)
 +
-+#ifndef __ASSEMBLY__
-+typedef u64	pteval_t;
-+typedef u64	pmdval_t;
-+typedef u64	pudval_t;
-+typedef u64	pgdval_t;
-+typedef u64	pgprotval_t;
-+
-+typedef struct { pteval_t pte; } pte_t;
-+
-+static inline pteval_t native_pte_val(pte_t pte)
-+{
-+	return pte.pte;
-+}
-+
-+static inline pte_t native_make_pte(pteval_t pte)
-+{
-+	return (pte_t){ pte };
-+}
-+
-+extern unsigned long phys_base;
-+extern unsigned long end_pfn;
-+extern unsigned long end_pfn_map;
-+
-+void clear_page(void *);
-+void copy_page(void *, const void *);
-+unsigned long __phys_addr(unsigned long);
-+
-+struct page;
-+
-+static inline void clear_user_page(void *page, unsigned long vaddr, struct page *pg)
-+{
-+	clear_page(page);
-+}
-+
-+static inline void copy_user_page(void *to, const void *from, unsigned long vaddr, struct page *topg)
-+{
-+	copy_page(to, from);
-+}
-+
-+#endif	/* __ASSEMBLY__ */
-+#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
-+	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
-+#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
-+
-+#ifdef CONFIG_THREAD_ORDER
-+# define THREAD_ORDER  CONFIG_THREAD_ORDER
- #else
--# ifdef __i386__
--#  include "page_32.h"
--# else
--#  include "page_64.h"
--# endif
-+# define THREAD_ORDER  1
- #endif
-+#define THREAD_SIZE  (PAGE_SIZE << THREAD_ORDER)
-+#define CURRENT_MASK (~(THREAD_SIZE-1))
-+
-+#define EXCEPTION_STACK_ORDER 0
-+#define EXCEPTION_STKSZ (PAGE_SIZE << EXCEPTION_STACK_ORDER)
-+
-+#define DEBUG_STACK_ORDER (EXCEPTION_STACK_ORDER + 1)
-+#define DEBUG_STKSZ (PAGE_SIZE << DEBUG_STACK_ORDER)
-+
-+#define IRQSTACK_ORDER 2
-+#define IRQSTACKSIZE (PAGE_SIZE << IRQSTACK_ORDER)
-+
-+#define STACKFAULT_STACK 1
-+#define DOUBLEFAULT_STACK 2
-+#define NMI_STACK 3
-+#define DEBUG_STACK 4
-+#define MCE_STACK 5
-+#define N_EXCEPTION_STACKS 5  /* hw limit: 7 */
-+
-+#define __PHYSICAL_START	CONFIG_PHYSICAL_START
-+#define __KERNEL_ALIGN		0x200000
-+
-+#define KERNEL_TEXT_SIZE  (40*1024*1024)
-+#define KERNEL_TEXT_START _AC(0xffffffff80000000, UL)
-+
-+/*
-+ * Make sure kernel is aligned to 2MB address. Catching it at compile
-+ * time is better. Change your config file and compile the kernel
-+ * for a 2MB aligned address (CONFIG_PHYSICAL_START)
-+ */
-+#if (CONFIG_PHYSICAL_START % __KERNEL_ALIGN) != 0
-+#error "CONFIG_PHYSICAL_START must be a multiple of 2MB"
-+#endif
-+
-+#define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
-+#define __START_KERNEL_map	_AC(0xffffffff80000000, UL)
-+#define __PAGE_OFFSET           _AC(0xffff810000000000, UL)
-+
-+#define vmemmap ((struct page *)VMEMMAP_START)
-+
-+#endif	/* CONFIG_X86_32 */
-+
-+#ifndef __ASSEMBLY__
-+typedef struct { pgprotval_t pgprot; } pgprot_t;
-+typedef struct { pgdval_t pgd; } pgd_t;
-+
-+/* Macro so it can be used as lvalue */
-+#define pgprot_val(prot)	((prot).pgprot)
-+
-+/* Must be macro so it can be used in initializers */
-+#define __pgprot(x) ((pgprot_t) { (x) })
-+
-+static inline pgdval_t native_pgd_val(pgd_t pgd)
-+{
-+	return pgd.pgd;
-+}
-+
-+static inline pgd_t native_make_pgd(pgdval_t val)
-+{
-+	return (pgd_t) { val };
-+}
-+
-+#if PAGETABLE_LEVELS >= 3
-+
-+typedef struct { pmdval_t pmd; } pmd_t;
-+
-+static inline pmdval_t native_pmd_val(pmd_t pmd)
-+{
-+	return pmd.pmd;
-+}
-+
-+static inline pmd_t native_make_pmd(unsigned long long pmd)
-+{
-+	return (pmd_t){ pmd };
-+}
-+
-+#if PAGETABLE_LEVELS == 4
-+
-+typedef struct { pudval_t pud; } pud_t;
-+
-+static inline pud_t native_make_pud(unsigned long long pud)
-+{
-+	return (pud_t){ pud };
-+}
-+
-+static inline pudval_t native_pud_val(pud_t pud)
-+{
-+	return pud.pud;
-+}
-+#else  /* PAGETABLE_LEVELS == 3 */
-+#include <asm-generic/pgtable-nopud.h>
-+#endif	/* PAGETABLE_LEVELS == 4 */
-+#else  /* PAGETABLE_LEVELS == 2 */
-+#include <asm-generic/pgtable-nopmd.h>
-+#endif	/* PAGETABLE_LEVELS >= 3 */
-+#endif	/* __ASSEMBLY__ */
-+
-+#ifndef CONFIG_PARAVIRT
-+#define pgd_val(x)	native_pgd_val(x)
-+#define __pgd(x)	native_make_pgd(x)
++#define set_pmd(pmdp, pmd)			native_set_pmd(pmdp, pmd)
 +
 +#ifndef __PAGETABLE_PUD_FOLDED
-+# define pud_val(x)	native_pud_val(x)
-+# define __pud(x)	native_make_pud(x)
++#define set_pgd(pgdp, pgd)			native_set_pgd(pgdp, pgd)
++#define set_pud(pudp, pud)			native_set_pud(pudp, pud)
++#define pgd_clear(pgd)				native_pgd_clear(pgd)
 +#endif
 +
 +#ifndef __PAGETABLE_PMD_FOLDED
-+# define pmd_val(x)	native_pmd_val(x)
-+# define __pmd(x)	native_make_pmd(x)
++#define pud_clear(pud)				native_pud_clear(pud)
 +#endif
 +
-+#define pte_val(x)	native_pte_val(x)
-+#define __pte(x)	native_make_pte(x)
++#define pte_clear(mm, addr, ptep)		native_pte_clear(mm, addr, ptep)
++#define pmd_clear(pmd)				native_pmd_clear(pmd)
++
++#define pte_update(mm, addr, ptep)              do { } while (0)
++#define pte_update_defer(mm, addr, ptep)        do { } while (0)
++
 +#endif	/* CONFIG_PARAVIRT */
 +
-+#define PTE_MASK	PHYSICAL_PAGE_MASK
+ #ifdef CONFIG_X86_32
+ # include "pgtable_32.h"
+ #else
+ # include "pgtable_64.h"
+ #endif
 +
-+#define __PHYSICAL_MASK		((_AC(1,ULL) << __PHYSICAL_MASK_SHIFT) - 1)
-+#define __VIRTUAL_MASK		((_AC(1,ULL) << __VIRTUAL_MASK_SHIFT) - 1)
++#ifndef __PAGETABLE_PUD_FOLDED
++#define PUD_SIZE	(_AC(1,UL) << PUD_SHIFT)
++#define PUD_MASK	(~(PUD_SIZE-1))
++#endif
 +
-+#define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
++#ifndef __PAGETABLE_PMD_FOLDED
++#define PMD_SIZE	(_AC(1,UL) << PMD_SHIFT)
++#define PMD_MASK	(~(PMD_SIZE-1))
++#endif
 +
-+/* to align the pointer to the (next) page boundary */
-+#define PAGE_ALIGN(addr)	(((addr)+PAGE_SIZE-1)&PAGE_MASK)
++#define PGDIR_SIZE	(_AC(1,UL) << PGDIR_SHIFT)
++#define PGDIR_MASK	(~(PGDIR_SIZE-1))
 +
-+#define __pa(x)		__phys_addr((unsigned long)(x))
-+#define __pa_symbol(x)	__phys_addr(RELOC_HIDE((unsigned long)(x), 0))
-+#define __va(x)		((void *)((unsigned long)(x)+PAGE_OFFSET))
++#define USER_PTRS_PER_PGD	((TASK_SIZE-1)/PGDIR_SIZE+1)
 +
-+#ifdef CONFIG_FLATMEM
-+#define pfn_valid(pfn)		((pfn) < max_mapnr)
-+#endif /* CONFIG_FLATMEM */
-+#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
-+#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
-+#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
++#define FIRST_USER_ADDRESS	0
 +
-+#define VM_DATA_DEFAULT_FLAGS \
-+	(((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
-+	 VM_READ | VM_WRITE | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
++#define USER_PGD_PTRS (PAGE_OFFSET >> PGDIR_SHIFT)
++#define KERNEL_PGD_PTRS (PTRS_PER_PGD-USER_PGD_PTRS)
 +
-+#define clear_user_page(page, vaddr, pg)	clear_page(page)
-+#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
++#define _PAGE_TABLE	\
++	(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_ACCESSED | _PAGE_DIRTY)
++#define _KERNPG_TABLE	\
++	(_PAGE_PRESENT | _PAGE_RW | _PAGE_ACCESSED | _PAGE_DIRTY)
++#define _PAGE_CHG_MASK	\
++	(PTE_MASK | _PAGE_ACCESSED | _PAGE_DIRTY)
 +
-+#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
-+	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
-+#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
++#ifndef __ASSEMBLY__
 +
-+#define __HAVE_ARCH_GATE_AREA 1
++#define PAGE_NONE	\
++	__pgprot(_PAGE_PROTNONE | _PAGE_ACCESSED)
++#define PAGE_SHARED	\
++	__pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_ACCESSED)
 +
-+#include <asm-generic/memory_model.h>
-+#include <asm-generic/page.h>
++#define PAGE_SHARED_EXEC	\
++	__pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_ACCESSED)
++#define PAGE_COPY_NOEXEC	\
++	__pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED | _PAGE_NX)
++#define PAGE_COPY_EXEC		\
++	__pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED)
++#define PAGE_COPY		\
++	PAGE_COPY_NOEXEC
++#define PAGE_READONLY		\
++	__pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED | _PAGE_NX)
++#define PAGE_READONLY_EXEC	\
++	__pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED)
++#endif	/* __ASSEMBLY__ */
 +
-+#endif	/* __KERNEL__ */
-+#endif	/* _ASM_X86_PAGE_H */
-===================================================================
---- a/include/asm-x86/page_32.h
-+++ /dev/null
-@@ -1,233 +0,0 @@
--#ifndef _I386_PAGE_H
--#define _I386_PAGE_H
--
--/* PAGE_SHIFT determines the page size */
--#define PAGE_SHIFT	12
--#define PAGE_SIZE	(1UL << PAGE_SHIFT)
--#define PAGE_MASK	(~(PAGE_SIZE-1))
--
--#define LARGE_PAGE_MASK (~(LARGE_PAGE_SIZE-1))
--#define LARGE_PAGE_SIZE (1UL << PMD_SHIFT)
--
--#ifdef __KERNEL__
--#ifndef __ASSEMBLY__
--
--#include <linux/string.h>
--
--#ifdef CONFIG_X86_USE_3DNOW
--
--#include <asm/mmx.h>
--
--static inline void clear_page(void *page)
--{
--	mmx_clear_page(page);
--}
--
--static inline void copy_page(void *to, void *from)
--{
--	mmx_copy_page(to, from);
--}
--
--#else
--
--/*
-- *	On older X86 processors it's not a win to use MMX here it seems.
-- *	Maybe the K6-III ?
-- */
-- 
--static inline void clear_page(void *page)
--{
--	memset(page, 0, PAGE_SIZE);
--}
--
--static inline void copy_page(void *to, void *from)
--{
--	memcpy(to, from, PAGE_SIZE);
--}
--
--#endif
--
--struct page;
--
--static void inline clear_user_page(void *page, unsigned long vaddr,
--				struct page *pg)
--{
--	clear_page(page);
--}
--
--static void inline copy_user_page(void *to, void *from, unsigned long vaddr,
--				struct page *topage)
--{
--	copy_page(to, from);
--}
--
--#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
--	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
--#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
--
--/*
-- * These are used to make use of C type-checking..
-- */
--extern int nx_enabled;
--
--#ifdef CONFIG_X86_PAE
--typedef struct { unsigned long pte_low, pte_high; } pte_t;
--typedef struct { unsigned long long pmd; } pmd_t;
--typedef struct { unsigned long long pgd; } pgd_t;
--typedef struct { unsigned long long pgprot; } pgprot_t;
--
--static inline unsigned long long native_pgd_val(pgd_t pgd)
--{
--	return pgd.pgd;
--}
--
--static inline unsigned long long native_pmd_val(pmd_t pmd)
--{
--	return pmd.pmd;
--}
--
--static inline unsigned long long native_pte_val(pte_t pte)
--{
--	return pte.pte_low | ((unsigned long long)pte.pte_high << 32);
--}
--
--static inline pgd_t native_make_pgd(unsigned long long val)
--{
--	return (pgd_t) { val };
--}
--
--static inline pmd_t native_make_pmd(unsigned long long val)
--{
--	return (pmd_t) { val };
--}
--
--static inline pte_t native_make_pte(unsigned long long val)
--{
--	return (pte_t) { .pte_low = val, .pte_high = (val >> 32) } ;
--}
--
--#ifndef CONFIG_PARAVIRT
--#define pmd_val(x)	native_pmd_val(x)
--#define __pmd(x)	native_make_pmd(x)
--#endif
--
--#define HPAGE_SHIFT	21
--#include <asm-generic/pgtable-nopud.h>
--#else  /* !CONFIG_X86_PAE */
--typedef struct { unsigned long pte_low; } pte_t;
--typedef struct { unsigned long pgd; } pgd_t;
--typedef struct { unsigned long pgprot; } pgprot_t;
--#define boot_pte_t pte_t /* or would you rather have a typedef */
--
--static inline unsigned long native_pgd_val(pgd_t pgd)
--{
--	return pgd.pgd;
--}
--
--static inline unsigned long native_pte_val(pte_t pte)
--{
--	return pte.pte_low;
--}
--
--static inline pgd_t native_make_pgd(unsigned long val)
--{
--	return (pgd_t) { val };
--}
--
--static inline pte_t native_make_pte(unsigned long val)
--{
--	return (pte_t) { .pte_low = val };
--}
--
--#define HPAGE_SHIFT	22
--#include <asm-generic/pgtable-nopmd.h>
--#endif	/* CONFIG_X86_PAE */
--
--#define PTE_MASK	PAGE_MASK
--
--#ifdef CONFIG_HUGETLB_PAGE
--#define HPAGE_SIZE	((1UL) << HPAGE_SHIFT)
--#define HPAGE_MASK	(~(HPAGE_SIZE - 1))
--#define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
--#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
--#endif
--
--#define pgprot_val(x)	((x).pgprot)
--#define __pgprot(x)	((pgprot_t) { (x) } )
--
--#ifndef CONFIG_PARAVIRT
--#define pgd_val(x)	native_pgd_val(x)
--#define __pgd(x)	native_make_pgd(x)
--#define pte_val(x)	native_pte_val(x)
--#define __pte(x)	native_make_pte(x)
--#endif
--
--#endif /* !__ASSEMBLY__ */
--
--/* to align the pointer to the (next) page boundary */
--#define PAGE_ALIGN(addr)	(((addr)+PAGE_SIZE-1)&PAGE_MASK)
--
--/*
-- * This handles the memory map.. We could make this a config
-- * option, but too many people screw it up, and too few need
-- * it.
-- *
-- * A __PAGE_OFFSET of 0xC0000000 means that the kernel has
-- * a virtual address space of one gigabyte, which limits the
-- * amount of physical memory you can use to about 950MB. 
-- *
-- * If you want more physical memory than this then see the CONFIG_HIGHMEM4G
-- * and CONFIG_HIGHMEM64G options in the kernel configuration.
-- */
--
--#ifndef __ASSEMBLY__
--
--struct vm_area_struct;
--
--/*
-- * This much address space is reserved for vmalloc() and iomap()
-- * as well as fixmap mappings.
-- */
--extern unsigned int __VMALLOC_RESERVE;
--
--extern int sysctl_legacy_va_layout;
--
--extern int page_is_ram(unsigned long pagenr);
--
--#endif /* __ASSEMBLY__ */
--
--#ifdef __ASSEMBLY__
--#define __PAGE_OFFSET		CONFIG_PAGE_OFFSET
--#else
--#define __PAGE_OFFSET		((unsigned long)CONFIG_PAGE_OFFSET)
--#endif
--
--
--#define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
--#define VMALLOC_RESERVE		((unsigned long)__VMALLOC_RESERVE)
--#define MAXMEM			(-__PAGE_OFFSET-__VMALLOC_RESERVE)
--#define __pa(x)			((unsigned long)(x)-PAGE_OFFSET)
--/* __pa_symbol should be used for C visible symbols.
--   This seems to be the official gcc blessed way to do such arithmetic. */
--#define __pa_symbol(x)          __pa(RELOC_HIDE((unsigned long)(x),0))
--#define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
--#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
--#ifdef CONFIG_FLATMEM
--#define pfn_valid(pfn)		((pfn) < max_mapnr)
--#endif /* CONFIG_FLATMEM */
--#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
--
--#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
--
--#define VM_DATA_DEFAULT_FLAGS \
--	(VM_READ | VM_WRITE | \
--	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
--		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
--
--#include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
--
--#define __HAVE_ARCH_GATE_AREA 1
--#endif /* __KERNEL__ */
--
--#endif /* _I386_PAGE_H */
-===================================================================
---- a/include/asm-x86/page_64.h
-+++ /dev/null
-@@ -1,158 +0,0 @@
--#ifndef _X86_64_PAGE_H
--#define _X86_64_PAGE_H
--
--#include <linux/const.h>
--
--/* PAGE_SHIFT determines the page size */
--#define PAGE_SHIFT	12
--#define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
--#define PAGE_MASK	(~(PAGE_SIZE-1))
--#define PHYSICAL_PAGE_MASK	(~(PAGE_SIZE-1) & __PHYSICAL_MASK)
--
--#ifdef CONFIG_THREAD_ORDER
--# define THREAD_ORDER	CONFIG_THREAD_ORDER
--#else
--# define THREAD_ORDER	1
--#endif
--
--#define THREAD_SIZE  (PAGE_SIZE << THREAD_ORDER)
--#define CURRENT_MASK (~(THREAD_SIZE-1))
--
--#define EXCEPTION_STACK_ORDER 0
--#define EXCEPTION_STKSZ (PAGE_SIZE << EXCEPTION_STACK_ORDER)
--
--#define DEBUG_STACK_ORDER (EXCEPTION_STACK_ORDER + 1)
--#define DEBUG_STKSZ (PAGE_SIZE << DEBUG_STACK_ORDER)
--
--#define IRQSTACK_ORDER 2
--#define IRQSTACKSIZE (PAGE_SIZE << IRQSTACK_ORDER)
--
--#define STACKFAULT_STACK 1
--#define DOUBLEFAULT_STACK 2
--#define NMI_STACK 3
--#define DEBUG_STACK 4
--#define MCE_STACK 5
--#define N_EXCEPTION_STACKS 5  /* hw limit: 7 */
--
--#define LARGE_PAGE_MASK (~(LARGE_PAGE_SIZE-1))
--#define LARGE_PAGE_SIZE (_AC(1,UL) << PMD_SHIFT)
--
--#define HPAGE_SHIFT PMD_SHIFT
--#define HPAGE_SIZE	(_AC(1,UL) << HPAGE_SHIFT)
--#define HPAGE_MASK	(~(HPAGE_SIZE - 1))
--#define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
--
--#ifdef __KERNEL__
--#ifndef __ASSEMBLY__
--
--extern unsigned long end_pfn;
--extern unsigned long end_pfn_map;
--
--void clear_page(void *page);
--void copy_page(void *to, void *from);
--
--struct page;
--
--static void inline clear_user_page(void *page, unsigned long vaddr,
--				struct page *pg)
--{
--	clear_page(page);
--}
--
--static void inline copy_user_page(void *to, void *from, unsigned long vaddr,
--				struct page *topage)
--{
--	copy_page(to, from);
--}
--
--#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
--	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
--#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
--/*
-- * These are used to make use of C type-checking..
-- */
--typedef struct { unsigned long pte; } pte_t;
--typedef struct { unsigned long pmd; } pmd_t;
--typedef struct { unsigned long pud; } pud_t;
--typedef struct { unsigned long pgd; } pgd_t;
--#define PTE_MASK	PHYSICAL_PAGE_MASK
--
--typedef struct { unsigned long pgprot; } pgprot_t;
--
--extern unsigned long phys_base;
--
--#define pte_val(x)	((x).pte)
--#define pmd_val(x)	((x).pmd)
--#define pud_val(x)	((x).pud)
--#define pgd_val(x)	((x).pgd)
--#define pgprot_val(x)	((x).pgprot)
--
--#define __pte(x) ((pte_t) { (x) } )
--#define __pmd(x) ((pmd_t) { (x) } )
--#define __pud(x) ((pud_t) { (x) } )
--#define __pgd(x) ((pgd_t) { (x) } )
--#define __pgprot(x)	((pgprot_t) { (x) } )
--
--#endif /* !__ASSEMBLY__ */
--
--#define __PHYSICAL_START	CONFIG_PHYSICAL_START
--#define __KERNEL_ALIGN		0x200000
--
--/*
-- * Make sure kernel is aligned to 2MB address. Catching it at compile
-- * time is better. Change your config file and compile the kernel
-- * for a 2MB aligned address (CONFIG_PHYSICAL_START)
-- */
--#if (CONFIG_PHYSICAL_START % __KERNEL_ALIGN) != 0
--#error "CONFIG_PHYSICAL_START must be a multiple of 2MB"
--#endif
--
--#define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
--#define __START_KERNEL_map	_AC(0xffffffff80000000, UL)
--#define __PAGE_OFFSET           _AC(0xffff810000000000, UL)
--
--/* to align the pointer to the (next) page boundary */
--#define PAGE_ALIGN(addr)	(((addr)+PAGE_SIZE-1)&PAGE_MASK)
--
--/* See Documentation/x86_64/mm.txt for a description of the memory map. */
--#define __PHYSICAL_MASK_SHIFT	46
--#define __PHYSICAL_MASK		((_AC(1,UL) << __PHYSICAL_MASK_SHIFT) - 1)
--#define __VIRTUAL_MASK_SHIFT	48
--#define __VIRTUAL_MASK		((_AC(1,UL) << __VIRTUAL_MASK_SHIFT) - 1)
--
--#define KERNEL_TEXT_SIZE  (40*1024*1024)
--#define KERNEL_TEXT_START _AC(0xffffffff80000000, UL)
--#define PAGE_OFFSET		__PAGE_OFFSET
--
--#ifndef __ASSEMBLY__
--
--#include <asm/bug.h>
--
--extern unsigned long __phys_addr(unsigned long);
--
--#endif /* __ASSEMBLY__ */
--
--#define __pa(x)		__phys_addr((unsigned long)(x))
--#define __pa_symbol(x)	__phys_addr((unsigned long)(x))
--
--#define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
--#define __boot_va(x)		__va(x)
--#define __boot_pa(x)		__pa(x)
--
--#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
--#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
--#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
--
--#define VM_DATA_DEFAULT_FLAGS \
--	(((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
--	 VM_READ | VM_WRITE | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
--
--#define __HAVE_ARCH_GATE_AREA 1	
--#define vmemmap ((struct page *)VMEMMAP_START)
--
--#include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
--
--#endif /* __KERNEL__ */
--
--#endif /* _X86_64_PAGE_H */
-===================================================================
---- a/include/asm-x86/pgtable_64.h
-+++ b/include/asm-x86/pgtable_64.h
-@@ -60,31 +60,31 @@ extern unsigned long empty_zero_page[PAG
- #ifndef __ASSEMBLY__
- 
- #define pte_ERROR(e) \
--	printk("%s:%d: bad pte %p(%016lx).\n", __FILE__, __LINE__, &(e), pte_val(e))
-+	printk("%s:%d: bad pte %p(%016lx).\n", __FILE__, __LINE__, &(e), (unsigned long)pte_val(e))
- #define pmd_ERROR(e) \
--	printk("%s:%d: bad pmd %p(%016lx).\n", __FILE__, __LINE__, &(e), pmd_val(e))
-+	printk("%s:%d: bad pmd %p(%016lx).\n", __FILE__, __LINE__, &(e), (unsigned long)pmd_val(e))
- #define pud_ERROR(e) \
--	printk("%s:%d: bad pud %p(%016lx).\n", __FILE__, __LINE__, &(e), pud_val(e))
-+	printk("%s:%d: bad pud %p(%016lx).\n", __FILE__, __LINE__, &(e), (unsigned long)pud_val(e))
- #define pgd_ERROR(e) \
--	printk("%s:%d: bad pgd %p(%016lx).\n", __FILE__, __LINE__, &(e), pgd_val(e))
-+	printk("%s:%d: bad pgd %p(%016lx).\n", __FILE__, __LINE__, &(e), (unsigned long)pgd_val(e))
- 
- #define pgd_none(x)	(!pgd_val(x))
- #define pud_none(x)	(!pud_val(x))
- 
- static inline void set_pte(pte_t *dst, pte_t val)
- {
--	pte_val(*dst) = pte_val(val);
-+	*dst = val;
- } 
- #define set_pte_at(mm,addr,ptep,pteval) set_pte(ptep,pteval)
- 
- static inline void set_pmd(pmd_t *dst, pmd_t val)
- {
--        pmd_val(*dst) = pmd_val(val); 
-+        *dst = val;
- } 
- 
- static inline void set_pud(pud_t *dst, pud_t val)
- {
--	pud_val(*dst) = pud_val(val);
-+	*dst = val;
- }
- 
- static inline void pud_clear (pud_t *pud)
-@@ -94,7 +94,7 @@ static inline void pud_clear (pud_t *pud
- 
- static inline void set_pgd(pgd_t *dst, pgd_t val)
- {
--	pgd_val(*dst) = pgd_val(val); 
-+	*dst = val;
- } 
- 
- static inline void pgd_clear (pgd_t * pgd)
-@@ -258,11 +258,11 @@ static inline unsigned long pmd_bad(pmd_
- 
- static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
- {
--	pte_t pte;
--	pte_val(pte) = (page_nr << PAGE_SHIFT);
--	pte_val(pte) |= pgprot_val(pgprot);
--	pte_val(pte) &= __supported_pte_mask;
--	return pte;
-+	pteval_t pte;
++#define _PAGE_KERNEL		\
++	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_NX)
++#define _PAGE_KERNEL_EXEC	\
++	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
++
++
++#define __PAGE_KERNEL_RO		(__PAGE_KERNEL & ~_PAGE_RW)
++#define __PAGE_KERNEL_RX		(__PAGE_KERNEL_EXEC & ~_PAGE_RW)
++#define __PAGE_KERNEL_NOCACHE		(__PAGE_KERNEL | _PAGE_PCD)
++#define __PAGE_KERNEL_LARGE		(__PAGE_KERNEL | _PAGE_PSE)
++#define __PAGE_KERNEL_LARGE_EXEC	(__PAGE_KERNEL_EXEC | _PAGE_PSE)
++#define __PAGE_KERNEL_VSYSCALL		\
++	(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED)
++#define __PAGE_KERNEL_VSYSCALL_NOCACHE	\
++	(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED | _PAGE_PCD)
++
++
++#define PAGE_KERNEL		__pgprot(__PAGE_KERNEL)
++#define PAGE_KERNEL_EXEC	__pgprot(__PAGE_KERNEL_EXEC)
++#define PAGE_KERNEL_LARGE_EXEC	__pgprot(__PAGE_KERNEL_LARGE_EXEC)
++#define PAGE_KERNEL_RO		__pgprot(__PAGE_KERNEL_RO)
++#define PAGE_KERNEL_NOCACHE	__pgprot(__PAGE_KERNEL_NOCACHE)
++#define PAGE_KERNEL_VSYSCALL32	__pgprot(__PAGE_KERNEL_VSYSCALL)
++#define PAGE_KERNEL_VSYSCALL	__pgprot(__PAGE_KERNEL_VSYSCALL)
++#define PAGE_KERNEL_LARGE	__pgprot(__PAGE_KERNEL_LARGE)
++#define PAGE_KERNEL_VSYSCALL_NOCACHE	__pgprot(__PAGE_KERNEL_VSYSCALL_NOCACHE)
++
++/*
++ * Without NX, the i386 can't do page protection for execute, and
++ * considers that the same are read. Also, write permissions imply
++ * read permissions.  This is the closest we can get..
++ */
++#define __P000	PAGE_NONE
++#define __P001	PAGE_READONLY
++#define __P010	PAGE_COPY
++#define __P011	PAGE_COPY
++#define __P100	PAGE_READONLY_EXEC
++#define __P101	PAGE_READONLY_EXEC
++#define __P110	PAGE_COPY_EXEC
++#define __P111	PAGE_COPY_EXEC
++
++#define __S000	PAGE_NONE
++#define __S001	PAGE_READONLY
++#define __S010	PAGE_SHARED
++#define __S011	PAGE_SHARED
++#define __S100	PAGE_READONLY_EXEC
++#define __S101	PAGE_READONLY_EXEC
++#define __S110	PAGE_SHARED_EXEC
++#define __S111	PAGE_SHARED_EXEC
++
++#ifndef __ASSEMBLY__
++
++static inline pte_t pte_mkclean(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_DIRTY)); return pte; }
++static inline pte_t pte_mkold(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_ACCESSED)); return pte; }
++static inline pte_t pte_wrprotect(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_RW)); return pte; }
++static inline pte_t pte_mkexec(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_NX)); return pte; }
++static inline pte_t pte_mkdirty(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_DIRTY)); return pte; }
++static inline pte_t pte_mkyoung(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_ACCESSED)); return pte; }
++static inline pte_t pte_mkwrite(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_RW)); return pte; }
++static inline pte_t pte_mkhuge(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_PSE)); return pte; }
++static inline pte_t pte_clrhuge(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_PSE)); return pte; }
++
++#ifndef __PAGETABLE_PUD_FOLDED
++static inline bool pgd_bad(pgd_t pgd)
++{
++	return (pgd_val(pgd) & ~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER)) != 0;
++}
++
++static inline bool pud_bad(pud_t pud)
++{
++	return (pud_val(pud) & ~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER)) != 0;
++}
++#endif
++
++static inline bool pmd_bad(pmd_t pmd)
++{
++	return (pmd_val(pmd) & ~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER)) != 0;
++}
++
++/* Change flags of a PTE */
++static inline pte_t pte_modify(pte_t pte_old, pgprot_t newprot)
++{
++	pteval_t pte = pte_val(pte_old);
++	pte &= _PAGE_CHG_MASK;
++	pte |= pgprot_val(newprot);
++	pte &= __supported_pte_mask;
++	return __pte(pte);
++}
++
++/* page, protection -> pte */
++#define mk_pte(page, pgprot)	pfn_pte(page_to_pfn(page), (pgprot))
++
++static inline int pmd_large(pmd_t pte)
++{
++	return (pmd_val(pte) & (_PAGE_PSE | _PAGE_PRESENT)) ==
++		((_PAGE_PSE | _PAGE_PRESENT));
++}
++
++/* PMD  - Level 2 access */
++#define pmd_page_vaddr(pmd) ((unsigned long) __va(pmd_val(pmd) & PTE_MASK))
++#define pmd_page(pmd)		(pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT))
++
++/*
++ * the pmd page can be thought of an array like this: pmd_t[PTRS_PER_PMD]
++ *
++ * this macro returns the index of the entry in the pmd page which would
++ * control the given virtual address
++ */
++#define pmd_index(address) (((address) >> PMD_SHIFT) & (PTRS_PER_PMD-1))
++
++static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
++{
++	return __pmd((((unsigned long long)page_nr << PAGE_SHIFT) |
++		      pgprot_val(pgprot)) & __supported_pte_mask);
++}
++
++#ifndef __PAGETABLE_PMD_FOLDED
++/* Find an entry in the second-level page table.. */
++#define pmd_offset(dir, address)		\
++	((pmd_t *) pud_page_vaddr(*(dir)) + pmd_index(address))
++
++#define pmd_pfn(x)  ((pmd_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
++
++#endif	/* PAGETABLE_PMD_FOLDED */
++
++/* To avoid harmful races, pmd_none(x) should check only the lower when PAE */
++#define pmd_none(x)	(!(unsigned long)pmd_val(x))
++#define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
++
++/*
++ * the pte page can be thought of an array like this: pte_t[PTRS_PER_PTE]
++ *
++ * this macro returns the index of the entry in the pte page which would
++ * control the given virtual address
++ */
++#define pte_index(address)					\
++	(((address) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1))
++#define pte_offset_kernel(dir, address)					\
++	((pte_t *) pmd_page_vaddr(*(dir)) +  pte_index(address))
++
++#define pte_none(x)	(!pte_val(x))
++#define pte_present(x)	(pte_val(x) & (_PAGE_PRESENT | _PAGE_PROTNONE))
++
++#define pages_to_mb(x)	((unsigned long)((x) >> (20-PAGE_SHIFT)))
++#define pte_page(x)	pfn_to_page(pte_pfn(x))
++#define pte_pfn(x)	((pte_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
++
++static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
++{
++	unsigned long pte;
 +	pte = (page_nr << PAGE_SHIFT);
 +	pte |= pgprot_val(pgprot);
 +	pte &= __supported_pte_mask;
 +	return __pte(pte);
- }
++}
++
++static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
++{
++	pte_t pte = native_ptep_get_and_clear(ptep);
++	pte_update(mm, addr, ptep);
++	return pte;
++}
++
++static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm, unsigned long addr, pte_t *ptep, int full)
++{
++	pte_t pte;
++	if (full) {
++		/*
++		 * Full address destruction in progress; paravirt does not
++		 * care about updates and native needs no locking
++		 */
++		pte = native_local_ptep_get_and_clear(ptep);
++	} else {
++		pte = ptep_get_and_clear(mm, addr, ptep);
++	}
++	return pte;
++}
++
++
++#define __HAVE_ARCH_PTEP_GET_AND_CLEAR
++#define __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
++
++#include <asm-generic/pgtable.h>
++
++#endif	/* __ASSEMBLY__ */
++#endif	/* _ASM_X86_PGTABLE_H */
+===================================================================
+--- a/include/asm-x86/pgtable_32.h
++++ b/include/asm-x86/pgtable_32.h
+@@ -25,12 +25,6 @@ struct mm_struct;
+ struct mm_struct;
+ struct vm_area_struct;
+ 
+-/*
+- * ZERO_PAGE is a global shared page that is always zero: used
+- * for zero-mapped memory areas etc..
+- */
+-#define ZERO_PAGE(vaddr) (virt_to_page(empty_zero_page))
+-extern unsigned long empty_zero_page[1024];
+ extern pgd_t swapper_pg_dir[1024];
+ extern struct kmem_cache *pmd_cache;
+ extern spinlock_t pgd_lock;
+@@ -39,8 +33,8 @@ void check_pgt_cache(void);
+ 
+ void pmd_ctor(struct kmem_cache *, void *);
+ void pgtable_cache_init(void);
+-void paging_init(void);
+ 
++extern unsigned long long __PAGE_KERNEL, __PAGE_KERNEL_EXEC;
  
  /*
-@@ -292,12 +292,12 @@ static inline int ptep_test_and_clear_yo
- {
- 	if (!pte_young(*ptep))
- 		return 0;
--	return test_and_clear_bit(_PAGE_BIT_ACCESSED, &ptep->pte);
-+	return test_and_clear_bit(_PAGE_BIT_ACCESSED, (unsigned long *)&ptep->pte);
- }
+  * The Linux x86 paging architecture is 'compile-time dual-mode', it
+@@ -49,20 +43,9 @@ void paging_init(void);
+  */
+ #ifdef CONFIG_X86_PAE
+ # include <asm/pgtable-3level-defs.h>
+-# define PMD_SIZE	(1UL << PMD_SHIFT)
+-# define PMD_MASK	(~(PMD_SIZE-1))
+ #else
+ # include <asm/pgtable-2level-defs.h>
+ #endif
+-
+-#define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
+-#define PGDIR_MASK	(~(PGDIR_SIZE-1))
+-
+-#define USER_PTRS_PER_PGD	(TASK_SIZE/PGDIR_SIZE)
+-#define FIRST_USER_ADDRESS	0
+-
+-#define USER_PGD_PTRS (PAGE_OFFSET >> PGDIR_SHIFT)
+-#define KERNEL_PGD_PTRS (PTRS_PER_PGD-USER_PGD_PTRS)
  
+ #define TWOLEVEL_PGDIR_SHIFT	22
+ #define BOOT_USER_PGD_PTRS (__PAGE_OFFSET >> TWOLEVEL_PGDIR_SHIFT)
+@@ -84,112 +67,6 @@ void paging_init(void);
+ # define VMALLOC_END	(FIXADDR_START-2*PAGE_SIZE)
+ #endif
+ 
+-/*
+- * _PAGE_PSE set in the page directory entry just means that
+- * the page directory entry points directly to a 4MB-aligned block of
+- * memory. 
+- */
+-#define _PAGE_BIT_PRESENT	0
+-#define _PAGE_BIT_RW		1
+-#define _PAGE_BIT_USER		2
+-#define _PAGE_BIT_PWT		3
+-#define _PAGE_BIT_PCD		4
+-#define _PAGE_BIT_ACCESSED	5
+-#define _PAGE_BIT_DIRTY		6
+-#define _PAGE_BIT_PSE		7	/* 4 MB (or 2MB) page, Pentium+, if present.. */
+-#define _PAGE_BIT_GLOBAL	8	/* Global TLB entry PPro+ */
+-#define _PAGE_BIT_UNUSED1	9	/* available for programmer */
+-#define _PAGE_BIT_UNUSED2	10
+-#define _PAGE_BIT_UNUSED3	11
+-#define _PAGE_BIT_NX		63
+-
+-#define _PAGE_PRESENT	0x001
+-#define _PAGE_RW	0x002
+-#define _PAGE_USER	0x004
+-#define _PAGE_PWT	0x008
+-#define _PAGE_PCD	0x010
+-#define _PAGE_ACCESSED	0x020
+-#define _PAGE_DIRTY	0x040
+-#define _PAGE_PSE	0x080	/* 4 MB (or 2MB) page, Pentium+, if present.. */
+-#define _PAGE_GLOBAL	0x100	/* Global TLB entry PPro+ */
+-#define _PAGE_UNUSED1	0x200	/* available for programmer */
+-#define _PAGE_UNUSED2	0x400
+-#define _PAGE_UNUSED3	0x800
+-
+-/* If _PAGE_PRESENT is clear, we use these: */
+-#define _PAGE_FILE	0x040	/* nonlinear file mapping, saved PTE; unset:swap */
+-#define _PAGE_PROTNONE	0x080	/* if the user mapped it with PROT_NONE;
+-				   pte_present gives true */
+-#ifdef CONFIG_X86_PAE
+-#define _PAGE_NX	(1ULL<<_PAGE_BIT_NX)
+-#else
+-#define _PAGE_NX	0
+-#endif
+-
+-#define _PAGE_TABLE	(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_ACCESSED | _PAGE_DIRTY)
+-#define _KERNPG_TABLE	(_PAGE_PRESENT | _PAGE_RW | _PAGE_ACCESSED | _PAGE_DIRTY)
+-#define _PAGE_CHG_MASK	(PTE_MASK | _PAGE_ACCESSED | _PAGE_DIRTY)
+-
+-#define PAGE_NONE \
+-	__pgprot(_PAGE_PROTNONE | _PAGE_ACCESSED)
+-#define PAGE_SHARED \
+-	__pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_ACCESSED)
+-
+-#define PAGE_SHARED_EXEC \
+-	__pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_ACCESSED)
+-#define PAGE_COPY_NOEXEC \
+-	__pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED | _PAGE_NX)
+-#define PAGE_COPY_EXEC \
+-	__pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED)
+-#define PAGE_COPY \
+-	PAGE_COPY_NOEXEC
+-#define PAGE_READONLY \
+-	__pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED | _PAGE_NX)
+-#define PAGE_READONLY_EXEC \
+-	__pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED)
+-
+-#define _PAGE_KERNEL \
+-	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_NX)
+-#define _PAGE_KERNEL_EXEC \
+-	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
+-
+-extern unsigned long long __PAGE_KERNEL, __PAGE_KERNEL_EXEC;
+-#define __PAGE_KERNEL_RO		(__PAGE_KERNEL & ~_PAGE_RW)
+-#define __PAGE_KERNEL_RX		(__PAGE_KERNEL_EXEC & ~_PAGE_RW)
+-#define __PAGE_KERNEL_NOCACHE		(__PAGE_KERNEL | _PAGE_PCD)
+-#define __PAGE_KERNEL_LARGE		(__PAGE_KERNEL | _PAGE_PSE)
+-#define __PAGE_KERNEL_LARGE_EXEC	(__PAGE_KERNEL_EXEC | _PAGE_PSE)
+-
+-#define PAGE_KERNEL		__pgprot(__PAGE_KERNEL)
+-#define PAGE_KERNEL_RO		__pgprot(__PAGE_KERNEL_RO)
+-#define PAGE_KERNEL_EXEC	__pgprot(__PAGE_KERNEL_EXEC)
+-#define PAGE_KERNEL_RX		__pgprot(__PAGE_KERNEL_RX)
+-#define PAGE_KERNEL_NOCACHE	__pgprot(__PAGE_KERNEL_NOCACHE)
+-#define PAGE_KERNEL_LARGE	__pgprot(__PAGE_KERNEL_LARGE)
+-#define PAGE_KERNEL_LARGE_EXEC	__pgprot(__PAGE_KERNEL_LARGE_EXEC)
+-
+-/*
+- * The i386 can't do page protection for execute, and considers that
+- * the same are read. Also, write permissions imply read permissions.
+- * This is the closest we can get..
+- */
+-#define __P000	PAGE_NONE
+-#define __P001	PAGE_READONLY
+-#define __P010	PAGE_COPY
+-#define __P011	PAGE_COPY
+-#define __P100	PAGE_READONLY_EXEC
+-#define __P101	PAGE_READONLY_EXEC
+-#define __P110	PAGE_COPY_EXEC
+-#define __P111	PAGE_COPY_EXEC
+-
+-#define __S000	PAGE_NONE
+-#define __S001	PAGE_READONLY
+-#define __S010	PAGE_SHARED
+-#define __S011	PAGE_SHARED
+-#define __S100	PAGE_READONLY_EXEC
+-#define __S101	PAGE_READONLY_EXEC
+-#define __S110	PAGE_SHARED_EXEC
+-#define __S111	PAGE_SHARED_EXEC
+ 
+ /*
+  * Define this if things work differently on an i386 and an i486:
+@@ -201,37 +78,6 @@ extern unsigned long long __PAGE_KERNEL,
+ /* The boot page tables (all created as a single array) */
+ extern unsigned long pg0[];
+ 
+-#define pte_present(x)	((x).pte_low & (_PAGE_PRESENT | _PAGE_PROTNONE))
+-
+-/* To avoid harmful races, pmd_none(x) should check only the lower when PAE */
+-#define pmd_none(x)	(!(unsigned long)pmd_val(x))
+-#define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
+-#define	pmd_bad(x)	((pmd_val(x) & (~PAGE_MASK & ~_PAGE_USER)) != _KERNPG_TABLE)
+-
+-
+-#define pages_to_mb(x) ((x) >> (20-PAGE_SHIFT))
+-
+-/*
+- * The following only work if pte_present() is true.
+- * Undefined behaviour if not..
+- */
+-static inline int pte_dirty(pte_t pte)		{ return (pte).pte_low & _PAGE_DIRTY; }
+-static inline int pte_young(pte_t pte)		{ return (pte).pte_low & _PAGE_ACCESSED; }
+-static inline int pte_write(pte_t pte)		{ return (pte).pte_low & _PAGE_RW; }
+-static inline int pte_huge(pte_t pte)		{ return (pte).pte_low & _PAGE_PSE; }
+-
+-/*
+- * The following only works if pte_present() is not true.
+- */
+-static inline int pte_file(pte_t pte)		{ return (pte).pte_low & _PAGE_FILE; }
+-
+-static inline pte_t pte_mkclean(pte_t pte)	{ (pte).pte_low &= ~_PAGE_DIRTY; return pte; }
+-static inline pte_t pte_mkold(pte_t pte)	{ (pte).pte_low &= ~_PAGE_ACCESSED; return pte; }
+-static inline pte_t pte_wrprotect(pte_t pte)	{ (pte).pte_low &= ~_PAGE_RW; return pte; }
+-static inline pte_t pte_mkdirty(pte_t pte)	{ (pte).pte_low |= _PAGE_DIRTY; return pte; }
+-static inline pte_t pte_mkyoung(pte_t pte)	{ (pte).pte_low |= _PAGE_ACCESSED; return pte; }
+-static inline pte_t pte_mkwrite(pte_t pte)	{ (pte).pte_low |= _PAGE_RW; return pte; }
+-static inline pte_t pte_mkhuge(pte_t pte)	{ (pte).pte_low |= _PAGE_PSE; return pte; }
+ 
+ #ifdef CONFIG_X86_PAE
+ # include <asm/pgtable-3level.h>
+@@ -307,30 +153,6 @@ static inline pte_t native_local_ptep_ge
+ 	__young;							\
+ })
+ 
+-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR
+-static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
+-{
+-	pte_t pte = native_ptep_get_and_clear(ptep);
+-	pte_update(mm, addr, ptep);
+-	return pte;
+-}
+-
+-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
+-static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm, unsigned long addr, pte_t *ptep, int full)
+-{
+-	pte_t pte;
+-	if (full) {
+-		/*
+-		 * Full address destruction in progress; paravirt does not
+-		 * care about updates and native needs no locking
+-		 */
+-		pte = native_local_ptep_get_and_clear(ptep);
+-	} else {
+-		pte = ptep_get_and_clear(mm, addr, ptep);
+-	}
+-	return pte;
+-}
+-
+ #define __HAVE_ARCH_PTEP_SET_WRPROTECT
  static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
  {
--	clear_bit(_PAGE_BIT_RW, &ptep->pte);
-+	clear_bit(_PAGE_BIT_RW, (unsigned long *)&ptep->pte);
- }
+@@ -365,27 +187,6 @@ static inline void clone_pgd_range(pgd_t
+  * and a page entry and page directory to the page they refer to.
+  */
+ 
+-#define mk_pte(page, pgprot)	pfn_pte(page_to_pfn(page), (pgprot))
+-
+-static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+-{
+-	pte.pte_low &= _PAGE_CHG_MASK;
+-	pte.pte_low |= pgprot_val(newprot);
+-#ifdef CONFIG_X86_PAE
+-	/*
+-	 * Chop off the NX bit (if present), and add the NX portion of
+-	 * the newprot (if present):
+-	 */
+-	pte.pte_high &= ~(1 << (_PAGE_BIT_NX - 32));
+-	pte.pte_high |= (pgprot_val(newprot) >> 32) & \
+-					(__supported_pte_mask >> 32);
+-#endif
+-	return pte;
+-}
+-
+-#define pmd_large(pmd) \
+-((pmd_val(pmd) & (_PAGE_PSE|_PAGE_PRESENT)) == (_PAGE_PSE|_PAGE_PRESENT))
+-
+ /*
+  * the pgd page can be thought of an array like this: pgd_t[PTRS_PER_PGD]
+  *
+@@ -406,31 +207,6 @@ static inline pte_t pte_modify(pte_t pte
+  * of a process's
+  */
+ #define pgd_offset_k(address) pgd_offset(&init_mm, address)
+-
+-/*
+- * the pmd page can be thought of an array like this: pmd_t[PTRS_PER_PMD]
+- *
+- * this macro returns the index of the entry in the pmd page which would
+- * control the given virtual address
+- */
+-#define pmd_index(address) \
+-		(((address) >> PMD_SHIFT) & (PTRS_PER_PMD-1))
+-
+-/*
+- * the pte page can be thought of an array like this: pte_t[PTRS_PER_PTE]
+- *
+- * this macro returns the index of the entry in the pte page which would
+- * control the given virtual address
+- */
+-#define pte_index(address) \
+-		(((address) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1))
+-#define pte_offset_kernel(dir, address) \
+-	((pte_t *) pmd_page_vaddr(*(dir)) +  pte_index(address))
+-
+-#define pmd_page(pmd) (pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT))
+-
+-#define pmd_page_vaddr(pmd) \
+-		((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
  
  /*
-@@ -359,10 +359,11 @@ static inline int pmd_large(pmd_t pte) {
- /* Change flags of a PTE */
- static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
- { 
--	pte_val(pte) &= _PAGE_CHG_MASK;
--	pte_val(pte) |= pgprot_val(newprot);
--	pte_val(pte) &= __supported_pte_mask;
--       return pte; 
-+	pteval_t val = pte_val(pte);
-+	val &= _PAGE_CHG_MASK;
-+	val |= pgprot_val(newprot);
-+	val &= __supported_pte_mask;
-+	return __pte(val);
+  * Helper function that returns the kernel pagetable entry controlling
+@@ -510,6 +286,4 @@ static inline void paravirt_pagetable_se
+ #define io_remap_pfn_range(vma, vaddr, pfn, size, prot)		\
+ 		remap_pfn_range(vma, vaddr, pfn, size, prot)
+ 
+-#include <asm-generic/pgtable.h>
+-
+ #endif /* _I386_PGTABLE_H */
+===================================================================
+--- a/include/asm-x86/pgtable_64.h
++++ b/include/asm-x86/pgtable_64.h
+@@ -21,17 +21,14 @@ extern unsigned long __supported_pte_mas
+ 
+ #define swapper_pg_dir init_level4_pgt
+ 
+-extern void paging_init(void);
+ extern void clear_kernel_mapping(unsigned long addr, unsigned long size);
+ 
+-/*
+- * ZERO_PAGE is a global shared page that is always zero: used
+- * for zero-mapped memory areas etc..
+- */
+-extern unsigned long empty_zero_page[PAGE_SIZE/sizeof(unsigned long)];
+-#define ZERO_PAGE(vaddr) (virt_to_page(empty_zero_page))
++#endif /* !__ASSEMBLY__ */
+ 
+-#endif /* !__ASSEMBLY__ */
++#define __PAGE_KERNEL \
++	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_NX | _PAGE_GLOBAL)
++#define __PAGE_KERNEL_EXEC \
++	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_GLOBAL)
+ 
+ /*
+  * PGDIR_SHIFT determines what a top-level page table entry can map
+@@ -71,51 +68,71 @@ extern unsigned long empty_zero_page[PAG
+ #define pgd_none(x)	(!pgd_val(x))
+ #define pud_none(x)	(!pud_val(x))
+ 
+-static inline void set_pte(pte_t *dst, pte_t val)
++struct mm_struct;
++
++static inline void native_pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *xp)
+ {
+-	*dst = val;
+-} 
+-#define set_pte_at(mm,addr,ptep,pteval) set_pte(ptep,pteval)
+-
+-static inline void set_pmd(pmd_t *dst, pmd_t val)
+-{
+-        *dst = val;
+-} 
+-
+-static inline void set_pud(pud_t *dst, pud_t val)
+-{
+-	*dst = val;
++	*xp = native_make_pte(0);
  }
  
- #define pte_index(address) \
+-static inline void pud_clear (pud_t *pud)
++/* local pte updates need not use xchg for locking */
++static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
+ {
+-	set_pud(pud, __pud(0));
++	pte_t res = *ptep;
++
++	/* Pure native function needs no input for mm, addr */
++	native_pte_clear(NULL, 0, ptep);
++	return res;
+ }
+ 
+-static inline void set_pgd(pgd_t *dst, pgd_t val)
++static inline pte_t native_ptep_get_and_clear(pte_t *xp)
+ {
+-	*dst = val;
+-} 
+-
+-static inline void pgd_clear (pgd_t * pgd)
+-{
+-	set_pgd(pgd, __pgd(0));
++#ifdef CONFIG_SMP
++	return native_make_pte(xchg(&xp->pte, 0));
++#else
++	return native_local_ptep_get_and_clear(xp);
++#endif
+ }
+ 
+-#define ptep_get_and_clear(mm,addr,xp)	__pte(xchg(&(xp)->pte, 0))
++static inline void native_set_pte(pte_t *ptep , pte_t pte)
++{
++	*ptep = pte;
++}
+ 
+-struct mm_struct;
++static inline void native_set_pte_at(struct mm_struct *mm, unsigned long addr,
++				     pte_t *ptep , pte_t pte)
++{
++	native_set_pte(ptep, pte);
++}
+ 
+-static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm, unsigned long addr, pte_t *ptep, int full)
++static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
+ {
+-	pte_t pte;
+-	if (full) {
+-		pte = *ptep;
+-		*ptep = __pte(0);
+-	} else {
+-		pte = ptep_get_and_clear(mm, addr, ptep);
+-	}
+-	return pte;
++	*pmdp = pmd;
++}
++
++static inline void native_pmd_clear(pmd_t *pmd)
++{
++	native_set_pmd(pmd, native_make_pmd(0));
++}
++
++static inline void native_set_pud(pud_t *pudp, pud_t pud)
++{
++	*pudp = pud;
++}
++
++static inline void native_pud_clear(pud_t *pud)
++{
++	native_set_pud(pud, native_make_pud(0));
++}
++
++static inline void native_set_pgd(pgd_t *pgdp, pgd_t pgd)
++{
++	*pgdp = pgd;
++}
++
++static inline void native_pgd_clear(pgd_t * pgd)
++{
++	native_set_pgd(pgd, native_make_pgd(0));
+ }
+ 
+ #define pte_same(a, b)		((a).pte == (b).pte)
+@@ -123,16 +140,6 @@ static inline pte_t ptep_get_and_clear_f
+ #define pte_pgprot(a)	(__pgprot((a).pte & ~PHYSICAL_PAGE_MASK))
+ 
+ #endif /* !__ASSEMBLY__ */
+-
+-#define PMD_SIZE	(_AC(1,UL) << PMD_SHIFT)
+-#define PMD_MASK	(~(PMD_SIZE-1))
+-#define PUD_SIZE	(_AC(1,UL) << PUD_SHIFT)
+-#define PUD_MASK	(~(PUD_SIZE-1))
+-#define PGDIR_SIZE	(_AC(1,UL) << PGDIR_SHIFT)
+-#define PGDIR_MASK	(~(PGDIR_SIZE-1))
+-
+-#define USER_PTRS_PER_PGD	((TASK_SIZE-1)/PGDIR_SIZE+1)
+-#define FIRST_USER_ADDRESS	0
+ 
+ #define MAXMEM		 _AC(0x3fffffffffff, UL)
+ #define VMALLOC_START    _AC(0xffffc20000000000, UL)
+@@ -142,149 +149,7 @@ static inline pte_t ptep_get_and_clear_f
+ #define MODULES_END      _AC(0xfffffffffff00000, UL)
+ #define MODULES_LEN   (MODULES_END - MODULES_VADDR)
+ 
+-#define _PAGE_BIT_PRESENT	0
+-#define _PAGE_BIT_RW		1
+-#define _PAGE_BIT_USER		2
+-#define _PAGE_BIT_PWT		3
+-#define _PAGE_BIT_PCD		4
+-#define _PAGE_BIT_ACCESSED	5
+-#define _PAGE_BIT_DIRTY		6
+-#define _PAGE_BIT_PSE		7	/* 4 MB (or 2MB) page */
+-#define _PAGE_BIT_FILE		6
+-#define _PAGE_BIT_GLOBAL	8	/* Global TLB entry PPro+ */
+-#define _PAGE_BIT_NX           63       /* No execute: only valid after cpuid check */
+-
+-#define _PAGE_PRESENT	(_AC(1, UL)<<_PAGE_BIT_PRESENT)
+-#define _PAGE_RW	(_AC(1, UL)<<_PAGE_BIT_RW)
+-#define _PAGE_USER	(_AC(1, UL)<<_PAGE_BIT_USER)
+-#define _PAGE_PWT	(_AC(1, UL)<<_PAGE_BIT_PWT)
+-#define _PAGE_PCD	(_AC(1, UL)<<_PAGE_BIT_PCD)
+-#define _PAGE_ACCESSED	(_AC(1, UL)<<_PAGE_BIT_ACCESSED)
+-#define _PAGE_DIRTY	(_AC(1, UL)<<_PAGE_BIT_DIRTY)
+-/* 2MB page */
+-#define _PAGE_PSE	(_AC(1, UL)<<_PAGE_BIT_PSE)
+-/* nonlinear file mapping, saved PTE; unset:swap */
+-#define _PAGE_FILE	(_AC(1, UL)<<_PAGE_BIT_FILE)
+-/* Global TLB entry */
+-#define _PAGE_GLOBAL	(_AC(1, UL)<<_PAGE_BIT_GLOBAL)
+-
+-#define _PAGE_PROTNONE	0x080	/* If not present */
+-#define _PAGE_NX        (_AC(1, UL)<<_PAGE_BIT_NX)
+-
+-#define _PAGE_TABLE	(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_ACCESSED | _PAGE_DIRTY)
+-#define _KERNPG_TABLE	(_PAGE_PRESENT | _PAGE_RW | _PAGE_ACCESSED | _PAGE_DIRTY)
+-
+-#define _PAGE_CHG_MASK	(PTE_MASK | _PAGE_ACCESSED | _PAGE_DIRTY)
+-
+-#define PAGE_NONE	__pgprot(_PAGE_PROTNONE | _PAGE_ACCESSED)
+-#define PAGE_SHARED	__pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_ACCESSED | _PAGE_NX)
+-#define PAGE_SHARED_EXEC __pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_ACCESSED)
+-#define PAGE_COPY_NOEXEC __pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED | _PAGE_NX)
+-#define PAGE_COPY PAGE_COPY_NOEXEC
+-#define PAGE_COPY_EXEC __pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED)
+-#define PAGE_READONLY	__pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED | _PAGE_NX)
+-#define PAGE_READONLY_EXEC __pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED)
+-#define __PAGE_KERNEL \
+-	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_NX)
+-#define __PAGE_KERNEL_EXEC \
+-	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
+-#define __PAGE_KERNEL_NOCACHE \
+-	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_PCD | _PAGE_ACCESSED | _PAGE_NX)
+-#define __PAGE_KERNEL_RO \
+-	(_PAGE_PRESENT | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_NX)
+-#define __PAGE_KERNEL_VSYSCALL \
+-	(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED)
+-#define __PAGE_KERNEL_VSYSCALL_NOCACHE \
+-	(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED | _PAGE_PCD)
+-#define __PAGE_KERNEL_LARGE \
+-	(__PAGE_KERNEL | _PAGE_PSE)
+-#define __PAGE_KERNEL_LARGE_EXEC \
+-	(__PAGE_KERNEL_EXEC | _PAGE_PSE)
+-
+-#define MAKE_GLOBAL(x) __pgprot((x) | _PAGE_GLOBAL)
+-
+-#define PAGE_KERNEL MAKE_GLOBAL(__PAGE_KERNEL)
+-#define PAGE_KERNEL_EXEC MAKE_GLOBAL(__PAGE_KERNEL_EXEC)
+-#define PAGE_KERNEL_RO MAKE_GLOBAL(__PAGE_KERNEL_RO)
+-#define PAGE_KERNEL_NOCACHE MAKE_GLOBAL(__PAGE_KERNEL_NOCACHE)
+-#define PAGE_KERNEL_VSYSCALL32 __pgprot(__PAGE_KERNEL_VSYSCALL)
+-#define PAGE_KERNEL_VSYSCALL MAKE_GLOBAL(__PAGE_KERNEL_VSYSCALL)
+-#define PAGE_KERNEL_LARGE MAKE_GLOBAL(__PAGE_KERNEL_LARGE)
+-#define PAGE_KERNEL_VSYSCALL_NOCACHE MAKE_GLOBAL(__PAGE_KERNEL_VSYSCALL_NOCACHE)
+-
+-/*         xwr */
+-#define __P000	PAGE_NONE
+-#define __P001	PAGE_READONLY
+-#define __P010	PAGE_COPY
+-#define __P011	PAGE_COPY
+-#define __P100	PAGE_READONLY_EXEC
+-#define __P101	PAGE_READONLY_EXEC
+-#define __P110	PAGE_COPY_EXEC
+-#define __P111	PAGE_COPY_EXEC
+-
+-#define __S000	PAGE_NONE
+-#define __S001	PAGE_READONLY
+-#define __S010	PAGE_SHARED
+-#define __S011	PAGE_SHARED
+-#define __S100	PAGE_READONLY_EXEC
+-#define __S101	PAGE_READONLY_EXEC
+-#define __S110	PAGE_SHARED_EXEC
+-#define __S111	PAGE_SHARED_EXEC
+-
+ #ifndef __ASSEMBLY__
+-
+-static inline unsigned long pgd_bad(pgd_t pgd)
+-{
+-	return pgd_val(pgd) & ~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER);
+-}
+-
+-static inline unsigned long pud_bad(pud_t pud)
+-{
+-	return pud_val(pud) & ~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER);
+-}
+-
+-static inline unsigned long pmd_bad(pmd_t pmd)
+-{
+-	return pmd_val(pmd) & ~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER);
+-}
+-
+-#define pte_none(x)	(!pte_val(x))
+-#define pte_present(x)	(pte_val(x) & (_PAGE_PRESENT | _PAGE_PROTNONE))
+-#define pte_clear(mm,addr,xp)	do { set_pte_at(mm, addr, xp, __pte(0)); } while (0)
+-
+-#define pages_to_mb(x) ((x) >> (20-PAGE_SHIFT))	/* FIXME: is this right? */
+-#define pte_page(x)	pfn_to_page(pte_pfn(x))
+-#define pte_pfn(x)  ((pte_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
+-
+-static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
+-{
+-	pteval_t pte;
+-	pte = (page_nr << PAGE_SHIFT);
+-	pte |= pgprot_val(pgprot);
+-	pte &= __supported_pte_mask;
+-	return __pte(pte);
+-}
+-
+-/*
+- * The following only work if pte_present() is true.
+- * Undefined behaviour if not..
+- */
+-#define __LARGE_PTE (_PAGE_PSE|_PAGE_PRESENT)
+-static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+-static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
+-static inline int pte_write(pte_t pte)		{ return pte_val(pte) & _PAGE_RW; }
+-static inline int pte_file(pte_t pte)		{ return pte_val(pte) & _PAGE_FILE; }
+-static inline int pte_huge(pte_t pte)		{ return pte_val(pte) & _PAGE_PSE; }
+-
+-static inline pte_t pte_mkclean(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_DIRTY)); return pte; }
+-static inline pte_t pte_mkold(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_ACCESSED)); return pte; }
+-static inline pte_t pte_wrprotect(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_RW)); return pte; }
+-static inline pte_t pte_mkexec(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_NX)); return pte; }
+-static inline pte_t pte_mkdirty(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_DIRTY)); return pte; }
+-static inline pte_t pte_mkyoung(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_ACCESSED)); return pte; }
+-static inline pte_t pte_mkwrite(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_RW)); return pte; }
+-static inline pte_t pte_mkhuge(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_PSE)); return pte; }
+-static inline pte_t pte_clrhuge(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_PSE)); return pte; }
+ 
+ struct vm_area_struct;
+ 
+@@ -305,11 +170,6 @@ static inline void ptep_set_wrprotect(st
+  */
+ #define pgprot_noncached(prot)	(__pgprot(pgprot_val(prot) | _PAGE_PCD | _PAGE_PWT))
+ 
+-static inline int pmd_large(pmd_t pte) { 
+-	return (pmd_val(pte) & __LARGE_PTE) == __LARGE_PTE; 
+-} 	
+-
+-
+ /*
+  * Conversion functions: convert a page and protection to a page entry,
+  * and a page entry and page directory to the page they refer to.
+@@ -326,7 +186,7 @@ static inline int pmd_large(pmd_t pte) {
+ #define pgd_present(pgd) (pgd_val(pgd) & _PAGE_PRESENT)
+ #define mk_kernel_pgd(address) ((pgd_t){ (address) | _KERNPG_TABLE })
+ 
+-/* PUD - Level3 access */
++/* PUD - Level 3 access */
+ /* to find an entry in a page-table-directory. */
+ #define pud_page_vaddr(pud) ((unsigned long) __va(pud_val(pud) & PHYSICAL_PAGE_MASK))
+ #define pud_page(pud)		(pfn_to_page(pud_val(pud) >> PAGE_SHIFT))
+@@ -341,36 +201,14 @@ static inline int pmd_large(pmd_t pte) {
+ #define pmd_index(address) (((address) >> PMD_SHIFT) & (PTRS_PER_PMD-1))
+ #define pmd_offset(dir, address) ((pmd_t *) pud_page_vaddr(*(dir)) + \
+ 			pmd_index(address))
+-#define pmd_none(x)	(!pmd_val(x))
+ #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
+-#define pmd_clear(xp)	do { set_pmd(xp, __pmd(0)); } while (0)
+-#define pfn_pmd(nr,prot) (__pmd(((nr) << PAGE_SHIFT) | pgprot_val(prot)))
+-#define pmd_pfn(x)  ((pmd_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
+ 
+ #define pte_to_pgoff(pte) ((pte_val(pte) & PHYSICAL_PAGE_MASK) >> PAGE_SHIFT)
+ #define pgoff_to_pte(off) ((pte_t) { ((off) << PAGE_SHIFT) | _PAGE_FILE })
+ #define PTE_FILE_MAX_BITS __PHYSICAL_MASK_SHIFT
+ 
+ /* PTE - Level 1 access. */
+-
+-/* page, protection -> pte */
+-#define mk_pte(page, pgprot)	pfn_pte(page_to_pfn(page), (pgprot))
+  
+-/* Change flags of a PTE */
+-static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+-{ 
+-	pteval_t val = pte_val(pte);
+-	val &= _PAGE_CHG_MASK;
+-	val |= pgprot_val(newprot);
+-	val &= __supported_pte_mask;
+-	return __pte(val);
+-}
+-
+-#define pte_index(address) \
+-		(((address) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1))
+-#define pte_offset_kernel(dir, address) ((pte_t *) pmd_page_vaddr(*(dir)) + \
+-			pte_index(address))
+-
+ /* x86-64 always has all page tables mapped. */
+ #define pte_offset_map(dir,address) pte_offset_kernel(dir,address)
+ #define pte_offset_map_nested(dir,address) pte_offset_kernel(dir,address)
+@@ -427,11 +265,9 @@ pte_t *lookup_address(unsigned long addr
+    (((o) & (1UL << (__VIRTUAL_MASK_SHIFT-1))) ? ((o) | (~__VIRTUAL_MASK)) : (o))
+ 
+ #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR
+-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
+ #define __HAVE_ARCH_PTEP_SET_WRPROTECT
+ #define __HAVE_ARCH_PTE_SAME
+-#include <asm-generic/pgtable.h>
++
+ #endif /* !__ASSEMBLY__ */
+ 
+ #endif /* _X86_64_PGTABLE_H */
 
