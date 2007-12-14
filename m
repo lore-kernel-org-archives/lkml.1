@@ -1,105 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbXLNVdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760747AbXLNVjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758712AbXLNVdR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 16:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbXLNVdE
+	id S1760747AbXLNVjY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 16:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756169AbXLNVjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 16:33:04 -0500
-Received: from nz-out-0506.google.com ([64.233.162.235]:27854 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753054AbXLNVdB convert rfc822-to-8bit (ORCPT
+	Fri, 14 Dec 2007 16:39:15 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:15208 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377AbXLNVjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 16:33:01 -0500
+	Fri, 14 Dec 2007 16:39:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=B3o5xtZPYIzs/4DApHLn9/PGAr7efQFWG4EfmVCx9n/Z6rKotbuA4OtZg/vfpT+Y9SNCFE0NWpGIPT3GCh+2LcJDhsBg1kqJTFPfpFa7KqCT8OCdktJm/zXjjJ8hDtF+/ThURxJzAZZX85wsYFIyWJ6ck4xeej1XxFA11JsFlwU=
-Message-ID: <e9aeeef80712141333n557325e3v11231b8bbe1b0963@mail.gmail.com>
-Date: Fri, 14 Dec 2007 19:33:00 -0200
-From: Denis <denismpa@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Fwd: NFS , Kjournald - status D (uninterruptible sleep) - maquina lenta.
-In-Reply-To: <e9aeeef80712141211v7cec29fdt7e2ec76bf877053f@mail.gmail.com>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=PVXudKMPhXxP3QWDfVnBURgYRhi+C4rK0u5pJT5vN5JEK9Nvg3jkpVHrZczfS1y+hswDieaVEqzrkm72AuLVhU+jI5EJv/jGPu+r13MeoU/Su3S1xgiAA8NnqiBIYi+VEAwSrMXFe2V2zAheS7hNO07ea4fQPICrP1Ag1fAZleM=
+Message-ID: <2c0942db0712141339t4aa96045m1f6c57b53efb5f75@mail.gmail.com>
+Date: Fri, 14 Dec 2007 13:39:10 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
+Cc: "Ingo Molnar" <mingo@elte.hu>, bcm43xx-dev@lists.berlios.de,
+       "Daniel Walker" <dwalker@mvista.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux@bohmer.net, jonathan@jonmasters.org,
+       matthias.kaehlcke@gmail.com, kjwinchester@gmail.com,
+       "John Linville" <linville@tuxdriver.com>,
+       "Larry Finger" <Larry.Finger@lwfinger.net>
+In-Reply-To: <200712142113.09119.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <e9aeeef80712141011i139e6ec2pe04250bd56f338d8@mail.gmail.com>
-	 <e9aeeef80712141211v7cec29fdt7e2ec76bf877053f@mail.gmail.com>
+References: <20071213003028.676998182@mvista.com>
+	 <200712142038.58400.mb@bu3sch.de>
+	 <2c0942db0712141155n40ba60agde79e436aa5cb8f2@mail.gmail.com>
+	 <200712142113.09119.mb@bu3sch.de>
+X-Google-Sender-Auth: d59678d66cca577d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dears, I've got a double dual xeon wich sometimes is getting too slow.
+On Dec 14, 2007 12:13 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> Ray, I _do_ want to understand what is going on in your machine.
+> I _have_ to understand it. But I currently do not understand how the
+> quoted patch could fix modprobe of b43 or rfkill. I'd simply call that
+> impossible.
 
+Then perhaps it is. Perhaps it's a race condition in my userspace
+where something NetworkManager related is trying to up the interface,
+I don't know. More below.
 
-While i was observing one of these slowly times, I realized the time
-wait of processors come close to 100% and nfsd and kjournald process
-become to D status (uniterruptible sleep) .Does someone know why this
-can be happening or how can I troubleshoot it?
+Regardless, I'm going to have to put off doing more debugging until
+tomorrow. I've rebooted back into 2.6.23.0 as wireshark doesn't show
+any packets using 2.6.24-rc3 (the version I've been testing), reported
+elsewhere, and that's preventing me from doing actual work with my
+system, as I'm in the middle of trying to enhance a network server for
+a client.
 
-Below is a 'draw' of my top at one of these moments.
+Note, the wireshark issue is very much not a bcm43xx/b43 issue; I'm
+not trying to lay that at your feet.
 
-[root@cromo src]# top
-top - 10:59:02 up 6 days, 19:30, 17 users,  load average: 14.77, 13.46, 13.00
-Tasks: 189 total,   1 running, 188 sleeping,   0 stopped,   0 zombie
-Cpu0  :  0.0% us,  0.4% sy,  0.0% ni,  0.2% id, 98.5% wa,  0.0% hi,  0.9% si
-Cpu1  :  0.0% us,  0.4% sy,  0.0% ni,  0.0% id, 99.6% wa,  0.0% hi,  0.0% si
-Cpu2  :  0.0% us,  0.2% sy,  0.0% ni,  7.8% id, 92.0% wa,  0.0% hi,  0.0% si
-Cpu3  :  0.2% us,  0.8% sy,  0.0% ni,  0.0% id, 98.7% wa,  0.2% hi,  0.0% si
-Mem:   4025540k total,  4018264k used,     7276k free,     7908k buffers
-Swap:  4096564k total,     3288k used,  4093276k free,  3553252k cached
+> So could you please try to reproduce the breakage by reverting that
+> patch again? Just to make really sure it is this patch fixing the issue
+> and not just some coincidence.
 
- 3941 root      15   0     0    0    0 D    2  0.0  80:29.30 nfsd
- 3938 root      15   0     0    0    0 D    1  0.0  81:02.02 nfsd
- 2459 root      15   0     0    0    0 D    1  0.0  30:57.04 kjournald
- 3937 root      15   0     0    0    0 D    1  0.0  82:07.99 nfsd
-   96 root      15   0     0    0    0 S    0  0.0  34:12.48 kswapd0
- 3940 root      15   0     0    0    0 D    0  0.0  80:22.55 nfsd
- 3942 root      15   0     0    0    0 D    0  0.0  80:23.66 nfsd
- 3939 root      15   0     0    0    0 D    0  0.0  82:22.55 nfsd
- 4283 root      16   0 20936 8136 1276 S    0  0.2   0:44.47 hald
-21289 denismpa  16   0  6280 1092  776 R    0  0.0   0:00.12 top
-    1 root      16   0  4752  552  460 S    0  0.0   0:01.28 init
-    2 root      RT   0     0    0    0 S    0  0.0   0:00.21 migration/0
-    3 root      34  19     0    0    0 S    0  0.0   0:00.05 ksoftirqd/0
-    4 root      RT   0     0    0    0 S    0  0.0   0:00.28 migration/1
-    5 root      34  19     0    0    0 S    0  0.0   0:00.09 ksoftirqd/1
-    6 root      RT   0     0    0    0 S    0  0.0   0:00.15 migration/2
-    7 root      34  19     0    0    0 S    0  0.0   0:00.05 ksoftirqd/2
-    8 root      RT   0     0    0    0 S    0  0.0   0:00.15 migration/3
-    9 root      34  19     0    0    0 S    0  0.0   0:00.06 ksoftirqd/3
-   10 root       5 -10     0    0    0 S    0  0.0   0:01.01 events/0
-   11 root       5 -10     0    0    0 S    0  0.0   0:00.11 events/1
-   12 root       5 -10     0    0    0 S    0  0.0   0:00.06 events/2
-   13 root       5 -10     0    0    0 S    0  0.0    0:00.12 events/3
-   14 root       5 -10     0    0    0 S    0  0.0   0:00.00 khelper
-   15 root      15 -10     0    0    0 S    0  0.0   0:00.00 kacpid
-   63 root       5 -10     0    0    0 S    0  0.0   0: 00.00 kblockd/0
-   64 root       5 -10     0    0    0 S    0  0.0   0:00.00 kblockd/1
-   65 root       5 -10     0    0    0 S    0  0.0   0:00.00 kblockd/2
-   66 root       5 -10     0    0    0 S    0  0.0   0: 00.00 kblockd/3
-   67 root      15   0     0    0    0 S    0  0.0   0:00.06 khubd
-   97 root      12 -10     0    0    0 S    0  0.0   0:00.00 aio/0
-   98 root       5 -10     0    0    0 S    0  0.0   0:00.00 aio/1
-   99 root       5 -10     0    0    0 S    0  0.0   0:00.00 aio/2
-  100 root       5 -10     0    0    0 S    0  0.0   0:00.00 aio/3
-  244 root      23   0     0    0    0 S    0  0.0   0:00.00 kseriod
-  359 root      20   0     0    0    0 S    0  0.0   0:00.00 scsi_eh_0
-  360 root      15   0     0    0    0 S    0  0.0   0:00.00 aacraid
-  379 root       5 -10     0    0    0 S    0  0.0   0:00.00 ata/0
-  380 root       5 -10     0    0    0 S    0  0.0   0: 00.00 ata/1
-  381 root       5 -10     0    0    0 S    0  0.0   0:00.00 ata/2
-  382 root       8 -10     0    0    0 S    0  0.0   0:00.00 ata/3
-  388 root      20   0     0    0    0 S    0  0.0   0:00.00 scsi_eh_1
-  389 root      21   0     0    0    0 S    0  0.0   0:00.00 scsi_eh_2
-  403 root      15   0     0    0    0 D    0  0.0   0:03.87 kjournald
- 1708 root       6 -10  3604  444  364 S    0  0.0   0:00.00 udevd
+I don't have the patch applied, so that's at least part of the
+misunderstanding here. All I have is my sequence of "load b43, ssb,
+nothing happens, unload them, load rfkill, rfkill-input, ssb, b43 and
+something happens." I could very well be wrong. But I'm at the limit
+of what I care to know about the b43 driver, and this is where I'm
+asking for your help.
 
+Hopefully tomorrow, I'll be able to build current tip and try this all
+again, and I'll also try to do it with NetworkManager killed in the
+background in case it was trying to bring the interfaces up behind my
+back.
 
-Thanks and regards
- --
-Denis Anjos.
-Cisco Certified Network Associate.
-Universidade Federal do ABC
-Santo André - SP - BR
+> Thanks for your help.
+
+Thanks for treating me like an adult.
