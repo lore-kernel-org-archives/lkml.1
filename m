@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761903AbXLNUDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759988AbXLNUF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761903AbXLNUDn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 15:03:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbXLNUDe
+	id S1759988AbXLNUF6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 15:05:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXLNUFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 15:03:34 -0500
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:45157 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751410AbXLNUDd (ORCPT
+	Fri, 14 Dec 2007 15:05:49 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:48342 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbXLNUFt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 15:03:33 -0500
-Date: Fri, 14 Dec 2007 21:03:18 +0100
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: hskinnemoen@atmel.com, linux-kernel@vger.kernel.org
-Message-ID: <20071214200318.GM3851@pengutronix.de>
-References: <20071213195617.GF21616@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Fri, 14 Dec 2007 15:05:49 -0500
+Date: Fri, 14 Dec 2007 21:06:05 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+Message-ID: <20071214200605.GA17424@one.firstfloor.org>
+References: <20071214004442.5f9eba88@linux360.ro> <p737ijigr8c.fsf@bingen.suse.de> <20071214143941.2c7dcfb4@linux360.ro> <20071214101720.GA10981@one.firstfloor.org> <20071214154106.4f0b2d8c@linux360.ro> <20071214122048.GA12550@one.firstfloor.org> <20071214180119.4c492f6c@linux360.ro> <alpine.LFD.0.99999.0712141835510.3668@localhost.localdomain> <20071214181233.GB16351@one.firstfloor.org> <alpine.LFD.0.99999.0712142053400.3668@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071213195617.GF21616@stusta.de>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Hannoversche Str. 2, 31134 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 21:02:39 up 28 days, 22:54, 10 users,  load average: 0.17, 0.25, 0.19
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: rsc@pengutronix.de
-Subject: Re: Working upstream toolchain for avr32?
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.extern.pengutronix.de)
+In-Reply-To: <alpine.LFD.0.99999.0712142053400.3668@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 08:56:17PM +0100, Adrian Bunk wrote:
-> AFAIK the latest available AVR32 toolchains are some patched gcc 4.0 and 
-> some patched binutils 2.17, and avr32 is currently the only architecture 
-> in the kernel where upstream of both of them is not capable of building 
-> a kernel for the architecture.
+> Well, that would interfere with the acpi-idle code.
 
-Is an upstream toolchain available which is able to build blackfin?
+How so? idle notifiers should work for acpi idle too.
 
-rsc
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+> Anyway the idle notifiers is a pretty artificial interface which is on
+> my get rid of it list anyway.
+
+The original use cases were: 
+- Accounting for idle time with stopped counters in oprofile and eliminate
+the need for idle=poll.
+That never was implemented unfortunately but would be still a worthy
+feature I think.
+- Perfmon for similar uses.
+- noidletick -- my original noidletick implementation used the idle
+notifiers similar to the s390 implementation. Obsolete now. 
+
+Right now it is used for the machine check early notification, but I never
+liked that (imho it just "fixes" a non problem only relevant 
+in non realistic testing situations) and it would be fine to drop that one 
+I think.  In fact I already made it a config in the patchkit to use the 64bit
+mce code on 32bit too.
+
+-Andi
 
