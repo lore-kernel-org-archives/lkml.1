@@ -1,233 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763625AbXLNVVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763852AbXLNVXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763625AbXLNVVu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 16:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbXLNVVm
+	id S1763852AbXLNVXX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 16:23:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbXLNVXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 16:21:42 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53939 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753476AbXLNVVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 16:21:41 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: [GIT PATCH] ACPI patches for 2.6.24-rc5 (take 2)
-Date: Fri, 14 Dec 2007 16:20:21 -0500
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+	Fri, 14 Dec 2007 16:23:16 -0500
+Received: from wr-out-0506.google.com ([64.233.184.237]:4869 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752148AbXLNVXP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 16:23:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=si1YtzK0C2xNhhHQTsT31XDYAM2Tp8oXnU2fNxnzhe4ZXXfrNJsfqDVj0JGscyvT1ZCT0gkHTb2ZkQ67mtogv+6NAMzycvRYYBPKHOV9CoExvPGUIecaNAkDYE0aJCrw/4VUyHvjXfCrQtJ9tz3QzdHsnGBxwA0BZk/cwgxesY4=
+Message-ID: <8bd0f97a0712141323k7aae718ag4d0fd8a8f13d933f@mail.gmail.com>
+Date: Fri, 14 Dec 2007 16:23:12 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Robert Schwebel" <r.schwebel@pengutronix.de>
+Subject: Re: Working upstream toolchain for avr32?
+Cc: "Adrian Bunk" <bunk@kernel.org>, hskinnemoen@atmel.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071214205542.GO3851@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712141620.21559.lenb@kernel.org>
+References: <20071213195617.GF21616@stusta.de>
+	 <20071214200318.GM3851@pengutronix.de>
+	 <8bd0f97a0712141221o3a65a5efo40c19ab12f7078c6@mail.gmail.com>
+	 <20071214202829.GN3851@pengutronix.de>
+	 <8bd0f97a0712141235h48c3062cl139e4c2883a815a9@mail.gmail.com>
+	 <20071214205542.GO3851@pengutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Dec 14, 2007 3:55 PM, Robert Schwebel <r.schwebel@pengutronix.de> wrote:
+> On Fri, Dec 14, 2007 at 03:35:36PM -0500, Mike Frysinger wrote:
+> > > Upstream plus a well defined patch stack with well documented patches
+> > > would definitely be preferred here.
+>
+> Well, tell me that it is wrong, but isn't it common community
+> methodology to have rebasable things like patch stacks or git trees
+> against mainline instead of disconnected vendor trees?
 
-please pull from: 
+it depends on the community.  both methods are quite common.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+> > as you've been told in the past, the things are documented. go read
+> > the ChangeLog.bfin file.
+>
+> You didn't explain how for example your trunk [1] is related to mainline
+> [2].
 
-This augments the pull request I made yesterday with a fix
-for the 2.6.24 SBS regression and some dmesg spam removal.
+nano `find -name ChangeLog.bfin`
 
-This will update the files shown below.
+read the ChangeLog and the associated commit.  this is exactly the
+same way gcc works.  you want to know what changed for ChangeLog entry
+$foo, you look at the commit surrounding it.
 
-thanks!
+> > > Ah, that sounds pretty good! At the moment we still need three different
+> > > toolchains to build u-boot, the kernel
+> >
+> > maybe, if you're using different version of u-boot and the kernel.
+> > but that isnt a good idea anyways.
+>
+> We use mainline linux and u-boot-v2, which is surely not what ADI
+> supplies officially to their random commercial customers. Nevertheless,
+> it is the way community technology works elsewhere.
 
--Len
+i dont know what "u-boot-v2" is, but if you're referring to mainline
+u-boot, then it too is not in a usable state.  it isnt just random
+commercial customers as we support anyone using a Blackfin (students,
+hobbyists, whoever).  but only if they're using the same source base
+we've tested.  once we finish moving things to mainline, that will
+become our source base.  until then, it is not supportable.
 
-ps. individual patches are available on linux-acpi@vger.kernel.org
-and a consolidated plain patch is available here:
-ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.24/acpi-release-20070126-2.6.24-rc5.diff.gz
+> > > and the icebear tools, which is not very satisfying.
+> >
+> > there's nothing we can do about this and you're complaining to the
+> > wrong people. icebear is a third party binary-only tool.
+>
+> Hmm, the sources are here: http://www.section5.ch/dsp/icebear/bfloader-1.2.tgz
 
- drivers/acpi/battery.c       |    2 +-
- drivers/acpi/numa.c          |    4 ++--
- drivers/acpi/pci_bind.c      |    3 ---
- drivers/acpi/sbs.c           |   27 ++++++++++++---------------
- drivers/acpi/sbshc.c         |   17 +++++++++++++----
- drivers/acpi/sbshc.h         |    6 ++++++
- drivers/acpi/video.c         |    4 ++--
- drivers/misc/thinkpad_acpi.c |    4 ++--
- 8 files changed, 38 insertions(+), 29 deletions(-)
+*some* of the sources.  icebear requires usage of binary blobs in
+there to communicate with their USB JTAG.
 
-through these commits:
+> Do you have a good hint for a better low level debug tool? For all other
+> processors like ARM, PowerPC and ColdFire we use a BDI2000, but it seems
+> not to be available for blackfin.
 
-Alexey Starikovskiy (3):
-      ACPI: SBS: Reset alarm bit
-      ACPI: SBS: Ignore alarms coming from unknown devices
-      ACPI: SBS: Return rate in mW if capacity in mWh
+there are parallel port jtags available for cheap as well as an
+ethernet solution.  links can be found in the Blackfin docs wiki.
 
-Andrey Borzenkov (1):
-      ACPI: battery: fix ACPI battery technology reporting
+> > if you dont like the way the third party does things, complain to
+> > the third party. or dont buy their product.
+>
+> Thanks for the constructive comments.
 
-Gary Hade (1):
-      ACPI: acpiphp: Remove dmesg spam on device remove
+they are constructive and quite in the open source spirit.  if you
+dont like dealing with binary blobs, then dont complain to people who
+can literally do noting about it, do something yourself about it.  put
+your money where your mouth is.
 
-Henrique de Moraes Holschuh (1):
-      ACPI: thinkpad-acpi: fix lenovo keymap for brightness
+> > we are upstream and we've given you blessed toolchains.
+>
+> "Trust us, we are $BIG_VENDOR" is not the way these things are usually
+> done. Sorry, I don't buy this. Chip vendors just too often lose interest
+> in supporting their users once they have moved to the next generations
+> of chips or whatever.
 
-Jan Beulich (1):
-      ACPI: fix modpost warnings
+<insert generalities about "big corporations here" and assume everyone
+is the same.  it's easier when making assumptions that way!>
 
-William Lee Irwin III (1):
-      ACPI: video_device_list corruption
+> Can you explain why bfin should not have gcc.gnu.org as it's upstream?
 
-with this log:
-
-commit 6e3013932e97a0e034d55419c60ae4a8a229ceb8
-Merge: 5889ba0... 5a21e4f...
-Author: Len Brown <len.brown@intel.com>
-Date:   Fri Dec 14 15:14:52 2007 -0500
-
-    Pull bugzilla-9362 into release branch
-
-commit 5a21e4fe587ebb793bf3a1c02755f8a845170328
-Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-Date:   Sat Dec 8 13:02:46 2007 +0300
-
-    ACPI: SBS: Return rate in mW if capacity in mWh
-    
-    klaptopd assumes rate to be in same units as capacity.
-    
-    http://bugzilla.kernel.org/show_bug.cgi?id=9362
-    
-    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit c2d00f2d1bf8dd721f5557b0df23729addc1898d
-Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-Date:   Sat Dec 8 13:02:40 2007 +0300
-
-    ACPI: SBS: Ignore alarms coming from unknown devices
-    
-    http://bugzilla.kernel.org/show_bug.cgi?id=9362
-    
-    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 09f1fb41ad45bc18abe07c62f7b56560571584d1
-Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-Date:   Sat Dec 8 13:02:33 2007 +0300
-
-    ACPI: SBS: Reset alarm bit
-    
-    Alarm bit should be cleared in order for other alarms to be sent.
-    http://bugzilla.kernel.org/show_bug.cgi?id=9362
-    
-    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 5889ba0a6a1174ac38d7045824a2d2ed8e93d756
-Merge: d020c36... 6ce7641...
-Author: Len Brown <len.brown@intel.com>
-Date:   Fri Dec 14 14:54:09 2007 -0500
-
-    Pull hotplug into release branch
-
-commit d020c36685a35f66be89700e911c7d77a67bdc43
-Merge: 6790acb... ad40e68...
-Author: Len Brown <len.brown@intel.com>
-Date:   Thu Dec 13 22:16:14 2007 -0500
-
-    Pull battery-2.6.24 into release branch
-
-commit 6790acb14d264d874ff8cbae1a72e72883ec3678
-Merge: ffada89... 56a185b...
-Author: Len Brown <len.brown@intel.com>
-Date:   Thu Dec 13 22:12:38 2007 -0500
-
-    Pull thinkpad-2.6.24 into release branch
-
-commit 56a185b43be05e48da7428e6a1d3e2585b232b1d
-Author: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Date:   Thu Dec 13 12:14:09 2007 -0200
-
-    ACPI: thinkpad-acpi: fix lenovo keymap for brightness
-    
-    Starting in 2.6.23...
-    
-    Several reports from X60 users complained that the default Lenovo keymap
-    issuing EV_KEY KEY_BRIGHTNESS_UP/DOWN input events caused major issues when
-    the proper brightness support through ACPI video.c was loaded.
-    
-    Therefore, remove the generation of these events by default, which is the
-    right thing for T60, X60, R60, T61, X61 and R61 with their latest BIOSes.
-    
-    Distros that want to misuse these events into OSD reporting (which requires
-    an ugly hack from hell in HAL) are welcome to set up the key map they need
-    through HAL.  That way, we don't break everyone else's systems.
-    
-    Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit ffada8913e39e6fd35e95d7040ccac57b45812c9
-Author: Jan Beulich <jbeulich@novell.com>
-Date:   Thu Dec 13 08:32:26 2007 +0000
-
-    ACPI: fix modpost warnings
-    
-    for sn2_defconfig:
-    
-    WARNING: vmlinux.o(.text+0x4b8601): Section mismatch: reference to .init.data:node_to_pxm_map (between '__acpi_map_pxm_to_node' and 'acpi_get_pxm')
-    WARNING: vmlinux.o(.text+0x4b8741): Section mismatch: reference to .init.data:pxm_to_node_map (between 'acpi_map_pxm_to_node' and 'acpi_get_node')
-    
-    Signed-off-by: Jan Beulich <jbeulich@novell.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 98934def70b48dac74fac3738b78ab2d1a28edda
-Author: William Lee Irwin III <wli@holomorphy.com>
-Date:   Wed Dec 12 03:56:55 2007 -0800
-
-    ACPI: video_device_list corruption
-    
-    The ->cap fields of struct acpi_video_device and struct acpi_video_bus
-    are 1B each, not 4B. The oversized memset()'s corrupted the subsequent
-    list_head fields. This resulted in silent corruption without
-    CONFIG_DEBUG_LIST and BUG's with it. This patch uses sizeof() to pass
-    the proper bounds to the memset() calls and thereby correct the bugs.
-    
-    Signed-off-by: William Irwin <wli@holomorphy.com>
-    Acked-by: Mikael Pettersson <mikpe@it.uu.se>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit ad40e68bf5c54831cd6b2199fd24d616bac179f7
-Author: Andrey Borzenkov <arvidjaar@mail.ru>
-Date:   Sat Nov 10 20:02:49 2007 +0300
-
-    ACPI: battery: fix ACPI battery technology reporting
-    
-    At least some systems report technology information with trailing spaces:
-    
-    {pts/1}% cat -E /var/tmp/bat/2.6.23 | grep type
-    battery type:            Li-ION  $
-    
-    Use strncasecmp to compare model string to skip trailing part
-    
-    Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
-    Acked-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 6ce7641b879e4b9ead46e14275d9d3645b47fa63
-Author: Gary Hade <garyhade@us.ibm.com>
-Date:   Tue Nov 20 12:19:12 2007 -0800
-
-    ACPI: acpiphp: Remove dmesg spam on device remove
-    
-    In cases where acpi_pci_bind() does not
-    attach device data, acpi_pci_unbind()
-    complains via an ACPI exception about the missing data when
-    the device is removed.  For example, acpi_pci_bind() does not
-    attach data for non-existent device functions so when the device
-    is removed using the ACPI PCI hotplug driver 'acpiphp' an ACPI
-    exception is logged for every non-existent function.  This patch
-    avoids the confusing log messages by removing the unnecessary
-    ACPI exception.
-    
-    Signed-off-by: Gary Hade <garyhade@us.ibm.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+as you've been told multiple times, that is where we are heading.
+asking the same question multiple times but expecting a different
+response is the definition of madness is it not ?
+-mike
