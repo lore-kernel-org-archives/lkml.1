@@ -1,121 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbXLNOwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbXLNO6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756437AbXLNOwZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 09:52:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbXLNOwR
+	id S1754720AbXLNO6k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 09:58:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXLNO6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 09:52:17 -0500
-Received: from saeurebad.de ([85.214.36.134]:46694 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752223AbXLNOwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 09:52:16 -0500
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: ego@in.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul E McKenney <paulmck@us.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ted Tso <tytso@us.ibm.com>,
-       dvhltc@us.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       Josh Triplett <josh@freedesktop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH 2/6] Preempt-RCU: Reorganize RCU code into rcuclassic.c and rcupdate.c
-References: <20071213170348.GA25981@in.ibm.com>
-	<20071213171508.GC25981@in.ibm.com>
-Date: Fri, 14 Dec 2007 15:51:14 +0100
-In-Reply-To: <20071213171508.GC25981@in.ibm.com> (Gautham R. Shenoy's message
-	of "Thu, 13 Dec 2007 22:45:08 +0530")
-Message-ID: <x7fxy572jh.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
+	Fri, 14 Dec 2007 09:58:32 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:56653 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751633AbXLNO6b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 09:58:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=OMrL2XWy28RnCDI+WM22ksLpeO+6zUcnP14maa1vGM92v5BqQfWoRfY5lJdsDV1NO/zDjmJe5cTnYPdeULHG01PH+5YX1Pfm45BjF1pItnGaRoeHlUIi3ThakpGRHj4VZHaZsfCWFHa3hrnEJtinRSKKTpuEwZxudUpG1Eidz4g=
+Message-ID: <476299B7.8030908@keyaccess.nl>
+Date: Fri, 14 Dec 2007 15:56:55 +0100
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rene Herman <rene.herman@gmail.com>, "David P. Reed" <dpreed@reed.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
+ on some AMD64x2 laptops, etc.
+References: <1184216528.12353.203.camel@chaos> <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <476250D5.8000409@gmail.com> <20071214142355.GA10130@elte.hu> <476294D3.4060609@keyaccess.nl> <20071214144628.GA16074@elte.hu>
+In-Reply-To: <20071214144628.GA16074@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Rene Herman <rene.herman@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 14-12-07 15:46, Ingo Molnar wrote:
 
-Gautham R Shenoy <ego@in.ibm.com> writes:
+> * Rene Herman <rene.herman@gmail.com> wrote:
+> 
+>>>>  /*
+>>>> - * This should be approx 2 Bo*oMips to start (note initial shift), and will
+>>>> - * still work even if initially too large, it will just take slightly longer
+>>>> + * Initial value roughly corresponds to a 1 GHz CPU
+>>>>   */
+>>>> -unsigned long loops_per_jiffy = (1<<12);
+>>>> +unsigned long loops_per_jiffy = 1000000000 / HZ;
+>>>>
+>>>>  EXPORT_SYMBOL(loops_per_jiffy);
+>>> this is a factor of ~2400 increase - this will take an eternity to boot on 
+>>> any older CPU.
+>> Only any outb_p's used before loops_per_jiffy is calibrated are 
+>> affected.
+> 
+> yes - but there are a couple of early udelays, which would thus be 
+> affected.
 
-> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-> new file mode 100644
-> index 0000000..11c16aa
-> --- /dev/null
-> +++ b/kernel/rcuclassic.c
-> +/**
-> + * call_rcu - Queue an RCU callback for invocation after a grace period.
-> + * @head: structure to be used for queueing the RCU updates.
-> + * @func: actual update function to be invoked after the grace period
-> + *
-> + * The update function will be invoked some time after a full grace
-> + * period elapses, in other words after all currently executing RCU
-> + * read-side critical sections have completed.  RCU read-side critical
-> + * sections are delimited by rcu_read_lock() and rcu_read_unlock(),
-> + * and may be nested.
-> + */
-> +void call_rcu(struct rcu_head *head,
-> +				void (*func)(struct rcu_head *rcu))
-> +{
-> +	unsigned long flags;
-> +	struct rcu_data *rdp;
-> +
-> +	head->func = func;
-> +	head->next = NULL;
-> +	local_irq_save(flags);
-> +	rdp = &__get_cpu_var(rcu_data);
-> +	*rdp->nxttail = head;
-> +	rdp->nxttail = &head->next;
-> +	if (unlikely(++rdp->qlen > qhimark)) {
-> +		rdp->blimit = INT_MAX;
-> +		force_quiescent_state(rdp, &rcu_ctrlblk);
-> +	}
-> +	local_irq_restore(flags);
-> +}
-> +EXPORT_SYMBOL_GPL(call_rcu);
-> +
-> +/**
-> + * call_rcu_bh - Queue an RCU for invocation after a quicker grace period.
-> + * @head: structure to be used for queueing the RCU updates.
-> + * @func: actual update function to be invoked after the grace period
-> + *
-> + * The update function will be invoked some time after a full grace
-> + * period elapses, in other words after all currently executing RCU
-> + * read-side critical sections have completed. call_rcu_bh() assumes
-> + * that the read-side critical sections end on completion of a softirq
-> + * handler. This means that read-side critical sections in process
-> + * context must not be interrupted by softirqs. This interface is to be
-> + * used when most of the read-side critical sections are in softirq context.
-> + * RCU read-side critical sections are delimited by rcu_read_lock() and
-> + * rcu_read_unlock(), * if in interrupt context or rcu_read_lock_bh()
-> + * and rcu_read_unlock_bh(), if in process context. These may be nested.
-> + */
-> +void call_rcu_bh(struct rcu_head *head,
-> +				void (*func)(struct rcu_head *rcu))
-> +{
-> +	unsigned long flags;
-> +	struct rcu_data *rdp;
-> +
-> +	head->func = func;
-> +	head->next = NULL;
-> +	local_irq_save(flags);
-> +	rdp = &__get_cpu_var(rcu_bh_data);
-> +	*rdp->nxttail = head;
-> +	rdp->nxttail = &head->next;
-> +
-> +	if (unlikely(++rdp->qlen > qhimark)) {
-> +		rdp->blimit = INT_MAX;
-> +		force_quiescent_state(rdp, &rcu_bh_ctrlblk);
-> +	}
-> +
-> +	local_irq_restore(flags);
-> +}
-> +EXPORT_SYMBOL_GPL(call_rcu_bh);
+True. At the moment though they're just always not delaying anywhere close 
+the intended amount (on anything with more than 2 bogomips). Pre-calibration 
+all this stuff is just broken it seems.
 
-Those two functions are identical beside the difference of `rcu_data'
-<-> `rcu_bh_data' and `rcu_ctrlblk' <-> `rcu_bh_ctrlblk'.
+>> This pre-calibation thing is what's historically held this change back 
+>> (it's been discussed dozens of times before). At 4096, not any machine 
+>> is going to have an appreciable delay before calibration when 
+>> switching from the outb to 0x80.
+> 
+> i dont think this should matter: old systems that truly _need_ the ISA 
+> delay will be slow enough to not trip up. (nor are they really affected 
+> by these early delays - the delays were more for crappy ISA devices that 
+> get initialized later down, when the delay loop is already calibrated)
 
-Is there a way to collapse the code into one helper function or would
-that effect performance too much?
+8253 (DMAC) and 8254 (PIT) have been reported in earlier versions of the 
+thread. By Alan, I believe.
 
-	Hannes
+Rene.
