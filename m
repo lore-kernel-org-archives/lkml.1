@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762625AbXLNAOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935170AbXLNAQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762625AbXLNAOf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 19:14:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933490AbXLNAOT
+	id S935170AbXLNAQj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 19:16:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932240AbXLNAQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 19:14:19 -0500
-Received: from mu-out-0910.google.com ([209.85.134.185]:18376 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933046AbXLNAOR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 19:14:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=AH/ADN9TNyjiTrbts39NHUTDEhrUxbbW5pxz5eq1t4MQfPkSC3+aEpU3zk7Z1eb98BkH7OCLTXTEH9Dwjfrqarch2hqimLCZml4Gq8TtAFcQMYYXXOjiwGuv2NfXlarfuf1+GpmNVILxRzA+dJhrq6g6aS8RSMGp1XNhrluD0Ug=
-Message-ID: <b70f2f960712131614u7515f0fcxf17d9791eb33c5eb@mail.gmail.com>
-Date: Fri, 14 Dec 2007 03:14:14 +0300
-From: "Mikhail Kshevetskiy" <mikhail.kshevetskiy@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+	Thu, 13 Dec 2007 19:16:29 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38895 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765792AbXLNAQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 19:16:28 -0500
+Date: Thu, 13 Dec 2007 19:16:05 -0500
+From: Dave Jones <davej@redhat.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Print taint info in more places.
+Message-ID: <20071214001605.GC22304@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Adrian Bunk <bunk@kernel.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20071213224927.GA18639@redhat.com> <20071214000350.GK21616@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071214000350.GK21616@stusta.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Eduard-Gabriel,
+On Fri, Dec 14, 2007 at 01:03:50AM +0100, Adrian Bunk wrote:
 
-You write:
+ > >  #ifndef HAVE_ARCH_BUG
+ > >  #define BUG() do { \
+ > > -	printk("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__); \
+ > > +	printk(KERN_ERR "BUG: failure at %s:%d/%s()! (%s)\n",
+ > > +		__FILE__, __LINE__, __FUNCTION__, print_tainted()); \
+ > >  	panic("BUG!"); \
+ > >  } while (0)
+ > >  #endif
+ > >...
+ > 
+ > Note that this only changes a handful of architectures and most likely 
+ > not the ones you are interested in.
 
-> +	  dynamic ticks to work. It's safe to enable this option even if
-> +	  your system doesn't have an AMD CPU (there are no side-effects if
-> +	  such a CPU isn't detected).
+Good catch.  I'm sure we had coverage on at least x86 before, so
+it seems over the many rediffs this patch has had, some chunks got lost.
+I'll resurrect that.
 
-It's definitely not safe. There are the computers with totally broken
-BIOSes, they setup C1e flags  for one core only. If you try to disable
-C1e on such machine, you most likely kill the kernel.
+thanks,
 
->From my point of view, you patch should work in both directions, i.e.
-1) user should be allowed to force disable C1e for all cores.
-2) user should be allowed to force enable C1e for both cores.
+	Dave
 
-and if the user don't use this flag, the C1e state should be untouched.
-
-Mikhail Kshevetskiy
+-- 
+http://www.codemonkey.org.uk
