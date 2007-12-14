@@ -1,101 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933989AbXLNXWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934844AbXLNXYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933989AbXLNXWo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 18:22:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbXLNXWd
+	id S934844AbXLNXYQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 18:24:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbXLNXYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 18:22:33 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49978 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751539AbXLNXWc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 18:22:32 -0500
-Date: Fri, 14 Dec 2007 15:22:15 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: netdev@vger.kernel.org, randy.dunlap@oracle.com, auke-jan.h.kok@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/10] e1000e: make E1000E default to the same kconfig
- setting as E1000
-Message-Id: <20071214152215.55ef46e8.akpm@linux-foundation.org>
-In-Reply-To: <4762E9FE.1070707@garzik.org>
-References: <200712140002.lBE02pUb025505@imap1.linux-foundation.org>
-	<4762E9FE.1070707@garzik.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Dec 2007 18:24:01 -0500
+Received: from thunk.org ([69.25.196.29]:43655 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753501AbXLNXYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 18:24:00 -0500
+Date: Fri, 14 Dec 2007 18:23:23 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: John Reiser <jreiser@BitWagon.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       security@kernel.org
+Subject: Re: /dev/urandom uses uninit bytes, leaks user data
+Message-ID: <20071214232322.GE17344@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	John Reiser <jreiser@BitWagon.com>, Matt Mackall <mpm@selenic.com>,
+	linux-kernel@vger.kernel.org, security@kernel.org
+References: <4762DAB1.1020807@BitWagon.com> <20071214201305.GL19691@waste.org> <4762EB63.8070100@BitWagon.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4762EB63.8070100@BitWagon.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Dec 2007 15:39:26 -0500
-Jeff Garzik <jeff@garzik.org> wrote:
-
-> akpm@linux-foundation.org wrote:
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Make E1000E default to the same kconfig setting as E1000.  So people's
-> > machiens don't stop working when they use oldconfig.
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > Cc: Jeff Garzik <jeff@garzik.org>
-> > Cc: Auke Kok <auke-jan.h.kok@intel.com>
-> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > ---
-> > 
-> >  drivers/net/Kconfig |    1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff -puN drivers/net/Kconfig~e1000e-make-e1000e-default-to-the-same-kconfig-setting-as-e1000 drivers/net/Kconfig
-> > --- a/drivers/net/Kconfig~e1000e-make-e1000e-default-to-the-same-kconfig-setting-as-e1000
-> > +++ a/drivers/net/Kconfig
-> > @@ -1986,6 +1986,7 @@ config E1000_DISABLE_PACKET_SPLIT
-> >  config E1000E
-> >  	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
-> >  	depends on PCI
-> > +	default E1000
+On Fri, Dec 14, 2007 at 12:45:23PM -0800, John Reiser wrote:
+> > It's getting folded into the random number pool, where it will be
+> > impossible to recover it unless you already know what was in the
+> > pool.  And if you know what's in the pool, you've already broken into
+> > the kernel.
 > 
-> I am not inclined to apply this one.  This practice, applied over time, 
-> will tend to accumulate weird 'default' and 'select' statements.
-> 
-> So I think the breakage that occurs is mitigated by two factors:
-> 1) kernel hackers that do their own configs are expected to be able to 
-> figure this stuff.
-> 2) kernel builders (read: distros, mainly) are expected to have put 
-> thought into the Kconfig selection and driver migration strategies.
-> 
-> PCI IDs move across drivers from time, and we don't want to apply these 
-> sorts changes:  Viewed in the long term, the suggested patch is merely a 
-> temporary change to allow kernel experts to more easily deal with the 
-> PCI ID migration across drivers.
-> 
-> I would prefer simply to communicate to kernel experts and builders 
-> about a Kconfig issue that could potentially their booting/networking... 
->   because this patch is only needed if the kernel experts do not already 
-> know about a necessary config update.
+> The combination of capturing data from other users, plus seeding
+> the pool with your own data, just might be powerful enough to help
+> steal secrets, sometime in the next five years, from data that is
+> recorded today.
 
-You can take it out again later on - most people's .configs will then have
-E1000E set.   People who still do `cp ancientconfig .config ; make oldconfig'
-remain screwed.
+Um, no.  Just seeding the pool with your own data won't help, since
+that still won't tell you the initial contents of the pool.  And if
+you know the initial contents of the pool, then you've broken root.
+And being able to steal from the pool also assumes that you've broken
+into the system; it is never, ever exported to userspace, even if
+you're root (unless you use something like /dev/kmem).  Furthermore,
+if you don't know the previous contents of the pool, you'll never be
+able to recover the information, either now or five years in the
+future, since information is XOR'ed into the pool.
 
-I dunno.  I guess I'm not into causing people pain in an attempt to train
-them to do what we want.  This is a popular driver and a *lot* of people
-are going to:
+> > But I'm sympathetic to making Valgrind happy.  ...
 
-- build new kernel
+How about wrapping it in a #ifdef CONFIG_UML, which is the only way
+you can use Valgrind?  The memset will slow down things unnecessarily,
+and mixing in the unknown previous contents of the stack (a) doesn't
+hurt, and (b) could make life more complicated for an attacker.
 
-- install new kernel
-
-- find it doesn't work, go through quite large amounts of hassle trying
-  to work out why it stopped working.  Eventually work out that e1000
-  stopped working.  Eventually work out that it stopped working because we
-  forcibly switched them to a new driver which they didn't know about.
-
-- reconfigure kernel
-
-- rebuild, reinstall
-
-Multiply that by 100s of people (at least).  All because Jeff wouldn't
-apply a one-liner?
-
+            	      	    	      - Ted
