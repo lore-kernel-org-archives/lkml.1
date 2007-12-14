@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932931AbXLNCBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932921AbXLNCER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932931AbXLNCBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 21:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760943AbXLNCBH
+	id S932921AbXLNCER (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 21:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760577AbXLNCEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 21:01:07 -0500
-Received: from wr-out-0506.google.com ([64.233.184.235]:58122 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759694AbXLNCBF (ORCPT
+	Thu, 13 Dec 2007 21:04:05 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:41521 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760943AbXLNCEE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 21:01:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Gk2cWw2x03R+OuXSFnVYGLcmwje5jT41MhzSvWZ0De8YwTS5c+5CBCTm+sadmm3HmWehAJKDxxwAcM/uqJiTx36HaaZ539fIBi2YlNEbIQ5ztygG6CG5Eg37XNQEYYFRrHy6jid8L3n5WahLznk7QAGHTsjuUqPgNdxo1zpWbRg=
-Message-ID: <9c9fda240712131801w5aec854eg71f3dc7ad49ddeb@mail.gmail.com>
-Date: Fri, 14 Dec 2007 11:01:03 +0900
-From: "Kyungmin Park" <kmpark@infradead.org>
-To: "Pierre Ossman" <drzeus-list@drzeus.cx>
-Subject: Re: [PATCH][MMC] Fix wrong EXT_CSD_REV handling
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071213092437.7aa2b928@poseidon.drzeus.cx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071213071311.GA2970@party>
-	 <20071213085332.18d2790d@poseidon.drzeus.cx>
-	 <9c9fda240712130008s227a77dsbd9333c5227d51eb@mail.gmail.com>
-	 <20071213092437.7aa2b928@poseidon.drzeus.cx>
-X-Google-Sender-Auth: 44ad475f1634e31f
+	Thu, 13 Dec 2007 21:04:04 -0500
+Date: Thu, 13 Dec 2007 21:03:46 -0500
+Message-Id: <200712140203.lBE23kF6021203@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: herbert@gondor.apana.org.au, davem@davemloft.net,
+       akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org
+Subject: aead_geniv_* [crypto/seqiv.ko] undefined! (MMOTM stamp-2007-12-13-15-37)
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 13, 2007 5:24 PM, Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-> On Thu, 13 Dec 2007 17:08:16 +0900
-> "Kyungmin Park" <kmpark@infradead.org> wrote:
->
-> >
-> > In my MMC Spec. (v4.2), there's no problem to read it even though it's
-> > revision 1.1
-> >
->
-> Well, the spec says that those reserved fields "should be zero". Unfortunately, people seem to have read this in the IETF sense and not as "the fields MUST be zero". I.e. I've seen cards where reserved fields contain junk.
->
+I'm getting undefined symbols while building MMOTM kernel
+stamp-2007-12-13-15-37:
 
-Yes, reserved word should or must be zero, then it should check "if
-(ext_csd_struct <= 2)" instead of ">= 2".
-In the Spec. 4.2, it can have three value 0, 1, or 2. There's no other
-restriction.
+  MODPOST 32 modules
+ERROR: "aead_geniv_exit" [crypto/seqiv.ko] undefined!
+ERROR: "aead_geniv_alloc" [crypto/seqiv.ko] undefined!
+ERROR: "aead_geniv_init" [crypto/seqiv.ko] undefined!
+ERROR: "aead_geniv_free" [crypto/seqiv.ko] undefined!
+make[1]: *** [__modpost] Error 1
 
-Thank you,
-Kyungmin Park.
+My defined kernel symbols which are relevant are:
+
+CONFIG_CRYPTO=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_SEQIV=m
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_MD5=m
+CONFIG_CRYPTO_SHA1=y
+CONFIG_CRYPTO_SHA256=y
+CONFIG_CRYPTO_ECB=y
+CONFIG_CRYPTO_CBC=y
+CONFIG_CRYPTO_PCBC=y
+CONFIG_CRYPTO_CTR=m
+CONFIG_CRYPTO_DES=m
+CONFIG_CRYPTO_CAST5=m
+
+The missing symbols are in crypto/aead.c, but aead.c doesn't get compiled
+in.  It can't be compiled in b/c the config option for it doesn't seem to
+show up in "make menuconfig".  This simple patch makes the symbol show up in
+menuconfig so I can turn it on:
+
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index 304ecc7..6876abe 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -25,7 +25,7 @@ config CRYPTO_ALGAPI
+ 	  This option provides the API for cryptographic algorithms.
+ 
+ config CRYPTO_AEAD
+-	tristate
++	tristate "AEAD: Authenticated Encryption with Associated Data"
+ 	select CRYPTO_ALGAPI
+ 
+ config CRYPTO_BLKCIPHER
+
+*However*, while the above small patch resolves the symbols, there's still a
+problem: crypto/seqiv.c seems to depend unconditionally on symbols in
+crypto/aead.c, so maybe seqiv.c needs some #ifdef CONFIG_CRYPTO_AEAD or
+something.
+
+Cheers,
+Erez.
