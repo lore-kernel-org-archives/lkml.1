@@ -1,101 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933712AbXLNBC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935275AbXLNBDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933712AbXLNBC5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 20:02:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbXLNBCt
+	id S935275AbXLNBDo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 20:03:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbXLNBDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 20:02:49 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:36125 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752419AbXLNBCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 20:02:48 -0500
-X-Greylist: delayed 2108 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Dec 2007 20:02:47 EST
-Message-ID: <47619E29.10101@tycho.nsa.gov>
-Date: Thu, 13 Dec 2007 16:03:37 -0500
-From: Eamon Walsh <ewalsh@tycho.nsa.gov>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au
-Subject: Re: [PATCH] apm_event{,info}_t are userspace types.
-References: <1196452963295-git-send-email-ajax@redhat.com> <20071212024700.19560b60.akpm@linux-foundation.org>
-In-Reply-To: <20071212024700.19560b60.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 13 Dec 2007 20:03:33 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35481 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755841AbXLNBDa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 20:03:30 -0500
+Date: Thu, 13 Dec 2007 17:03:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Lord <liml@rtr.ca>
+Cc: James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com, lkml@rtr.ca,
+       matthew@wil.cx, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-mm@kvack.org, mel@csn.ul.ie
+Subject: Re: [PATCH] fix page_alloc for larger I/O segments
+Message-Id: <20071213170308.d4ce5889.akpm@linux-foundation.org>
+In-Reply-To: <4761D0E9.4010701@rtr.ca>
+References: <20071213185326.GQ26334@parisc-linux.org>
+	<4761821F.3050602@rtr.ca>
+	<20071213192633.GD10104@kernel.dk>
+	<4761883A.7050908@rtr.ca>
+	<476188C4.9030802@rtr.ca>
+	<20071213193937.GG10104@kernel.dk>
+	<47618B0B.8020203@rtr.ca>
+	<20071213195350.GH10104@kernel.dk>
+	<20071213200219.GI10104@kernel.dk>
+	<476190BE.9010405@rtr.ca>
+	<20071213200958.GK10104@kernel.dk>
+	<20071213140207.111f94e2.akpm@linux-foundation.org>
+	<1197584106.3154.55.camel@localhost.localdomain>
+	<20071213142935.47ff19d9.akpm@linux-foundation.org>
+	<4761B32A.3070201@rtr.ca>
+	<4761BCB4.1060601@rtr.ca>
+	<4761C8E4.2010900@rtr.ca>
+	<4761CE88.9070406@rtr.ca>
+	<4761D0E9.4010701@rtr.ca>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 30 Nov 2007 15:02:43 -0500 Adam Jackson <ajax@redhat.com> wrote:
+On Thu, 13 Dec 2007 19:40:09 -0500
+Mark Lord <liml@rtr.ca> wrote:
+
+> And here is a patch that seems to fix it for me here:
 > 
->> These types define the size of data read from /dev/apm_bios.  They
->> should not be hidden behind #ifdef __KERNEL__.
+> * * * *
 > 
-> Missing info: what are the consequences of this fix?  What id broken when
-> it it not applied?
-
-This is killing my xserver compile, apm_event_t is used in the xserver 
-source.  The commit that introduced the problem is:
-
-commit ee8e7cfe9d330d6f1ce0b9b1620d6df5d9cf6b70
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Mon Oct 22 10:56:19 2007 +1000
-
-     Make asm-x86/bootparam.h includable from userspace.
-
-     To actually write a bootloader (or, say, the lguest launcher)
-     currently requires duplication of these structures.  Making them
-     includable from userspace is much nicer.
-
-     We merge the common userspace-required definitions of e820_32/64.h
-     into e820.h for export.
-
-     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
+> Fix page allocator to give better change of larger contiguous segments (again).
+> 
+> Signed-off-by: Mark Lord <mlord@pobox.com
+> ---
 > 
 > 
->> ---
->>  include/linux/apm_bios.h |    6 +++---
->>  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> Please include Signed-off-by:, as per Documentation/SubmittingPatches,
-> thanks.
-> 
->> diff --git a/include/linux/apm_bios.h b/include/linux/apm_bios.h
->> index 9754baa..01a6244 100644
->> --- a/include/linux/apm_bios.h
->> +++ b/include/linux/apm_bios.h
->> @@ -18,6 +18,9 @@
->>  
->>  #include <linux/types.h>
->>  
->> +typedef unsigned short	apm_event_t;
->> +typedef unsigned short	apm_eventinfo_t;
->> +
->>  struct apm_bios_info {
->>  	__u16	version;
->>  	__u16	cseg;
->> @@ -32,9 +35,6 @@ struct apm_bios_info {
->>  
->>  #ifdef __KERNEL__
->>  
->> -typedef unsigned short	apm_event_t;
->> -typedef unsigned short	apm_eventinfo_t;
->> -
->>  #define APM_CS		(GDT_ENTRY_APMBIOS_BASE * 8)
->>  #define APM_CS_16	(APM_CS + 8)
->>  #define APM_DS		(APM_CS_16 + 8)
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> --- old/mm/page_alloc.c.orig	2007-12-13 19:25:15.000000000 -0500
+> +++ linux-2.6/mm/page_alloc.c	2007-12-13 19:35:50.000000000 -0500
+> @@ -954,7 +954,7 @@
+>  				goto failed;
+>  		}
+>  		/* Find a page of the appropriate migrate type */
+> -		list_for_each_entry(page, &pcp->list, lru) {
+> +		list_for_each_entry_reverse(page, &pcp->list, lru) {
+>  			if (page_private(page) == migratetype) {
+>  				list_del(&page->lru);
+>  				pcp->count--;
+
+- needs help to make it apply to mainline
+
+- needs a comment, methinks...
 
 
--- 
-Eamon Walsh <ewalsh@tycho.nsa.gov>
-National Security Agency
+--- a/mm/page_alloc.c~fix-page-allocator-to-give-better-chance-of-larger-contiguous-segments-again
++++ a/mm/page_alloc.c
+@@ -1060,8 +1060,12 @@ again:
+ 				goto failed;
+ 		}
+ 
+-		/* Find a page of the appropriate migrate type */
+-		list_for_each_entry(page, &pcp->list, lru)
++		/*
++		 * Find a page of the appropriate migrate type.  Doing a
++		 * reverse-order search here helps us to hand out pages in
++		 * ascending physical-address order.
++		 */
++		list_for_each_entry_reverse(page, &pcp->list, lru)
+ 			if (page_private(page) == migratetype)
+ 				break;
+ 
+_
+
