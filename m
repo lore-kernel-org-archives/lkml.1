@@ -1,106 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbXLNOeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbXLNOhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444AbXLNOeH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 09:34:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXLNOd4
+	id S1754657AbXLNOhs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 09:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbXLNOhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 09:33:56 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55408 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752015AbXLNOdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 09:33:55 -0500
-Date: Fri, 14 Dec 2007 15:33:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: unlisted-recipients: no@elvis.elte.hu, To-header@elvis.elte.hu,
-       on@elvis.elte.hu, "input <"@elvis.elte.hu,
-       ";
-	Rene Herman" <rene.herman@keyaccess.nl>,
-       Paul Rolland <rol@as2917.net>, "H. Peter Anvin" <hpa@zytor.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>, Pavel Machek <pavel@ucw.cz>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
-	Cc:	;Rene Herman <rene.herman@keyaccess.nl>
-			^-extraneous tokens in mailbox, missing end of mailbox
-Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
-	Cc:	;Rene Herman <rene.herman@keyaccess.nl>
-			^-extraneous tokens in mailbox, missing end of mailbox
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
-	with MCP51 laptops
-Message-ID: <20071214143328.GB10130@elte.hu>
-References: <475EACB8.7080608@keyaccess.nl> <20071211163706.2dc82275@tux.DEF.witbe.net> <475EB263.2050405@keyaccess.nl> <475EC1C0.2040000@reed.com> <20071211173231.2b87a81f@the-village.bc.nu> <475EE2CA.6020601@reed.com> <Pine.LNX.4.61.0712111513490.23653@chaos.analogic.com> <475F23BD.3040903@reed.com> <Pine.LNX.4.61.0712120802300.4443@chaos.analogic.com> <20071212161245.3f388229@the-village.bc.nu>
+	Fri, 14 Dec 2007 09:37:41 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:22892 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbXLNOhk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 09:37:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=e/C/q5hjcf+oXUADY7FjasaLQstrcunmBGfiPNQNxsK7UrG+bM/aJ+89lQXwKDV0XbzGvbIlbLsa44n2T8qdycuc9qkVB9r6AWCKf/WaIunEas/Ln54lDvnozOVjirzV2HJXzOPS9+NFkNkGWUiVXfBpTt6HTXQGo7t5PEBO2XA=
+Message-ID: <476294D3.4060609@keyaccess.nl>
+Date: Fri, 14 Dec 2007 15:36:03 +0100
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071212161245.3f388229@the-village.bc.nu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rene Herman <rene.herman@gmail.com>, "David P. Reed" <dpreed@reed.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
+ on some AMD64x2 laptops, etc.
+References: <1181682498.8176.224.camel@chaos> <469578CD.3080609@reed.com> <1184216528.12353.203.camel@chaos> <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <476250D5.8000409@gmail.com> <20071214142355.GA10130@elte.hu>
+In-Reply-To: <20071214142355.GA10130@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Rene Herman <rene.herman@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 14-12-07 15:23, Ingo Molnar wrote:
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> There is another reason we can't just do a dumb changeover - two 
-> actually
+> * Rene Herman <rene.herman@gmail.com> wrote:
 > 
-> #1: Some drivers are using inb_p/outb_p in PCI cases which are going 
-> #to cause PCI posting changes. Most are probably just wrong in the 
-> #first place but they need hand checking
-
-hm, any intelligent way to force PCI posting? I guess not.
-
-here's a list of candidate drivers (match the out*_p() pattern and do 
-pci)
-
-./char/epca.c 
-./char/sonypi.c
-./scsi/megaraid.c
-./ide/pci/serverworks.c
-./ide/pci/cmd640.c
-./input/mouse/pc110pad.c
-./i2c/busses/i2c-amd756.c
-./i2c/busses/i2c-ali15x3.c
-./i2c/busses/i2c-ali1563.c
-./i2c/busses/i2c-ali1535.c
-./i2c/busses/i2c-viapro.c
-./i2c/busses/i2c-nforce2.c
-./i2c/busses/i2c-i801.c
-./i2c/busses/i2c-piix4.c
-./hwmon/vt8231.c
-./hwmon/via686a.c
-./hwmon/sis5595.c
-./telephony/ixj.c
-./net/irda/donauboe.c
-./watchdog/pcwd_pci.c
-./watchdog/wdt_pci.c
-
-> #2: We've got SMP cases that only 'work' because the odds of splitting
-> the outb and the following port 0x80 cycle, which locks the bus, are tiny.
+>> --- a/init/main.c
+>> +++ b/init/main.c
+>> @@ -229,10 +229,9 @@ static int __init obsolete_checksetup(char *line)
+>>  }
+>>
+>>  /*
+>> - * This should be approx 2 Bo*oMips to start (note initial shift), and will
+>> - * still work even if initially too large, it will just take slightly longer
+>> + * Initial value roughly corresponds to a 1 GHz CPU
+>>   */
+>> -unsigned long loops_per_jiffy = (1<<12);
+>> +unsigned long loops_per_jiffy = 1000000000 / HZ;
+>>
+>>  EXPORT_SYMBOL(loops_per_jiffy);
 > 
-> That is we've got
-> 
-> 		CPU1			CPU2
-> 		main path		irq path
-> 		outb
-> 					outb
-> 
-> 		inb 0x80
-> 					inb 0x80
-> 
-> races in one or two spots.
+> this is a factor of ~2400 increase - this will take an eternity to boot 
+> on any older CPU.
 
-which seems to suggest we are better off not doing the port 0x80 trick 
-at all.
+Only any outb_p's used before loops_per_jiffy is calibrated are affected.
 
-	Ingo
+This pre-calibation thing is what's historically held this change back (it's 
+been discussed dozens of times before). At 4096, not any machine is going to 
+have an appreciable delay before calibration when switching from the outb to 
+  0x80.
+
+Rene.
