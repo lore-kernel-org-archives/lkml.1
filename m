@@ -1,103 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932372AbXLNXGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934157AbXLNXGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932372AbXLNXGR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 18:06:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbXLNXGA
+	id S934157AbXLNXGp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 18:06:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933124AbXLNXG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 18:06:00 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:61331 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752611AbXLNXF7 (ORCPT
+	Fri, 14 Dec 2007 18:06:29 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:4623 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756172AbXLNXG1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 18:05:59 -0500
+	Fri, 14 Dec 2007 18:06:27 -0500
+Message-ID: <47630C3B.602@chelsio.com>
+Date: Fri, 14 Dec 2007 15:05:31 -0800
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jeff Garzik <jeff@garzik.org>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Steve Wise <swise@opengridcomputing.com>, wenxiong@us.ibm.com
+Subject: Re: [PATCH 2/2] cxgb3 - Parity initialization for T3C adapters
+References: <20071205181527.22106.73134.stgit@speedy5> <4759A6EA.1050106@garzik.org> <4759CD92.2070604@chelsio.com> <4759D6AF.5050205@garzik.org> <4759E200.3050607@chelsio.com>
+In-Reply-To: <4759E200.3050607@chelsio.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18275.3156.745358.12056@stoffel.org>
-Date: Fri, 14 Dec 2007 18:05:56 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: linux-kernel@vger.kernel.org
-CC: linux-scsi@vger.kernel.org
-Subject: 2.6.24-rc5-mm1:  kernel BUG at include/linux/scatterlist.h:59!
-X-Mailer: VM 7.19 under Emacs 21.4.1
+X-OriginalArrivalTime: 14 Dec 2007 23:04:14.0468 (UTC) FILETIME=[A5595440:01C83EA5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Divy Le Ray wrote:
+> Jeff Garzik wrote:
+>>
+>> Divy Le Ray wrote:
+>> > Jeff Garzik wrote:
+>> >> Divy Le Ray wrote:
+>> >>> From: Divy Le Ray <divy@chelsio.com>
+>> >>>
+>> >>> Add parity initialization for T3C adapters.
+>> >>>
+>> >>> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+>> >>> ---
+>> >>>
+>> >>>  drivers/net/cxgb3/adapter.h       |    1
+>> >>>  drivers/net/cxgb3/cxgb3_main.c    |   82 ++++++++++++
+>> >>>  drivers/net/cxgb3/cxgb3_offload.c |   15 ++
+>> >>>  drivers/net/cxgb3/regs.h          |  248
+>> >>> +++++++++++++++++++++++++++++++++++++
+>> >>>  drivers/net/cxgb3/sge.c           |   24 +++-
+>> >>>  drivers/net/cxgb3/t3_hw.c         |  131 +++++++++++++++++---
+>> >>>  6 files changed, 472 insertions(+), 29 deletions(-)
+>> >>
+>> >> dropped patches 2-3, did not apply
+>> >>
+>> >>
+>> >
+>> > Hi Jeff,
+>> >
+>> > I noticed that you applied the first one of this 3 patches series 
+>> to the
+>> > #upstream-fixes branch.
+>> > These patches are intended to the #upstream (2.6.25) branch, as 
+>> they are
+>> > built on top of the
+>> > last 10 patches committed - 9 from me, and the white space clean up
+>> > (thanks!).
+>> > May be this is the reason why they did not apply.
+>>
+>> Ah... you need to tell me these things.  I looked for a kernel version
+>> in your messages but did not see one.
+>>
+> I had put it in the introduction mail, I should have added the kernel 
+> version in the patch titles.
+> I'll do from now on.
+>
+>>
+>> Does the patch #1 need to be reverted for 2.6.24?
+>>
+> No, it can be applied to 2.6.24.
+> The 2 next patches seem to apply cleanly on #upstream when patch #1 is 
+> popped out the patch stack.
+>
+Hi Jeff,
 
-Hi,
+Did you get a chance to apply these patches #upstream ?
 
-Just fired up 2.6.24-rc5-mm1 on a Dual CPU PIII 550mhz system with 2gb
-of RAM.  Got the following error.  Let me know if you need more
-details or want me to run tests or make changes.  Looks like something
-in the SCSI st driver, which makes sense since I have a pair of DLT 7k
-drives hooked upto this system via a Symbios PCI card.  I've also got
-a P1000 jukebox on there as well.
-
-  [  354.338667] kernel BUG at include/linux/scatterlist.h:59!
-  [  354.403311] invalid opcode: 0000 [#1] SMP 
-  [  354.452774] last sysfs file:
-  /sys/devices/pci0000:00/0000:00:0d.1/host3/target3:0:3/3:0:3:0/vendor
-  [  354.560099] Modules linked in:
-  [  354.596859] 
-  [  354.614753] Pid: 1795, comm: stinit Not tainted (2.6.24-rc5-mm1 #3)
-  [  354.689825] EIP: 0060:[<c0356bd0>] EFLAGS: 00010213 CPU: 0
-  [  354.755538] EIP is at st_do_scsi+0x2e0/0x340
-  [  354.806668] EAX: 00000000 EBX: 00000000 ECX: c16e1f80 EDX: f7f87050
-  [  354.881731] ESI: f7f877d0 EDI: 00001000 EBP: f7f87000 ESP: f7167db0
-  [  354.956788]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-  [  355.021452] Process stinit (pid: 1795, ti=f7167000 task=f74d7030
-  task.ti=f7167000)
-  [  355.110028] Stack: 00000003 f7f87050 00000000 00000000 00d59f80
-  00000000 f75cf9e0 c0359840 
-  [  355.211879]        000000d0 f7167e54 f7d2bc00 f75cf9e0 f7d2bc18
-  00000000 00000006 f7167e54 
-  [  355.313757]        f7d2bc00 f7167e64 f7f87000 c0358730 00000006
-  00000002 000dbba0 00000000 
-  [  355.415639] Call Trace:
-  [  355.447258]  [<c0359840>] st_sleep_done+0x0/0x70
-  [  355.502773]  [<c0358730>] check_tape+0x510/0x640
-  [  355.558284]  [<c0359c9b>] st_open+0x18b/0x220
-  [  355.610677]  [<c0171850>] exact_match+0x0/0x10
-  [  355.664113]  [<c0359b10>] st_open+0x0/0x220
-  [  355.714429]  [<c0171f2f>] chrdev_open+0x9f/0x190
-  [  355.769945]  [<c0171e90>] chrdev_open+0x0/0x190
-  [  355.824418]  [<c016d685>] __dentry_open+0xb5/0x2a0
-  [  355.882013]  [<c01762cb>] permission+0xdb/0x100
-  [  355.936486]  [<c016d937>] nameidata_to_filp+0x47/0x60
-  [  355.997200]  [<c017985d>] open_pathname+0x17d/0x740
-  [  356.055831]  [<c011fa10>] update_curr+0x80/0x110
-  [  356.111345]  [<c0123792>] scheduler_tick+0xe2/0x130
-  [  356.169979]  [<c0177765>] getname+0xa5/0xc0
-  [  356.220294]  [<c016d4bc>] do_sys_open+0x4c/0xe0
-  [  356.274770]  [<c016d58c>] sys_open+0x1c/0x20
-  [  356.326123]  [<c0103f6e>] syscall_call+0x7/0xb
-  [  356.379559]  =======================
-  [  356.422393] Code: 32 8b 54 24 28 89 44 24 2c 89 50 74 e9 ba fd ff ff 0f 0b eb fe 8d b6 00 00 00 00 0f 0b eb fe 0f 0b eb fe 0f 0b eb fe 8d 74 26 00 <0f> 0b eb fe 0f 0b eb fe 64 a1 00 50 6e c0 8b 40 04 8b 40 08 a8 
-  [  356.661693] EIP: [<c0356bd0>] st_do_scsi+0x2e0/0x340 SS:ESP
-  0068:f7167db0
+Cheers,
+Divy
 
 
-My system is pretty loaded with the following stuff in lspci:
-
-  00:00.0 Host bridge: Intel Corporation 440GX - 82443GX Host bridge
-  00:01.0 PCI bridge: Intel Corporation 440GX - 82443GX AGP bridge
-  00:07.0 ISA bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 02)
-  00:07.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE (rev 01)
-  00:07.2 USB Controller: Intel Corporation 82371AB/EB/MB PIIX4 USB (rev 01)
-  00:07.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 02)
-  00:0d.0 SCSI storage controller: LSI Logic / Symbios Logic 53c875 (rev 14)
-  00:0d.1 SCSI storage controller: LSI Logic / Symbios Logic 53c875 (rev 14)
-  00:0e.0 RAID bus controller: Silicon Image, Inc. SiI 3114 [SATALink/SATARaid] Serial ATA Controller (rev 02)
-  00:10.0 PCI bridge: Hint Corp HB6 Universal PCI-PCI bridge (non-transparent mode) (rev 13)
-  00:11.0 Ethernet controller: 3Com Corporation 3c905B 100BaseTX [Cyclone] (rev 24)
-  00:13.0 PCI bridge: Digital Equipment Corporation DECchip 21152 (rev 03)
-  01:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G400/G450 (rev 82)
-  02:08.0 USB Controller: NEC Corporation USB (rev 41)
-  02:08.1 USB Controller: NEC Corporation USB (rev 41)
-  02:08.2 USB Controller: NEC Corporation USB 2.0 (rev 02)
-  02:0b.0 FireWire (IEEE 1394): Texas Instruments TSB12LV26 IEEE-1394 Controller (Link)
-  03:06.0 RAID bus controller: Triones Technologies, Inc. HPT302/302N (rev 01)
-  03:09.0 Communication controller: Cyclades Corporation Cyclom-8Y above first megabyte (rev 01)
-  03:0a.0 SCSI storage controller: Adaptec AHA-2940U2/U2W / 7890/7891
-  03:0e.0 SCSI storage controller: Adaptec AIC-7880U (rev 01)
