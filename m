@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbXLNR7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbXLNR7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbXLNR7T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 12:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbXLNR7L
+	id S1753233AbXLNR7c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 12:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbXLNR7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 12:59:11 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41274 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750785AbXLNR7K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 12:59:10 -0500
-Date: Fri, 14 Dec 2007 09:58:40 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] UML - Add asm/fixmap.h include
-Message-Id: <20071214095840.28736204.akpm@linux-foundation.org>
-In-Reply-To: <20071214161647.GA5802@c2.user-mode-linux.org>
-References: <20071214161647.GA5802@c2.user-mode-linux.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 14 Dec 2007 12:59:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57521 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752415AbXLNR7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 12:59:17 -0500
+Message-ID: <4762C470.8040003@redhat.com>
+Date: Fri, 14 Dec 2007 11:59:12 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@osdl.org>,
+       ext4 development <linux-ext4@vger.kernel.org>
+Subject: [PATCH] export iov_shorten for ext4's use
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Dec 2007 11:16:47 -0500 Jeff Dike <jdike@addtoit.com> wrote:
+ext4 needs to deal with 2 different max file offsets for block- and 
+extent-allocated file formats, whereas the s_maxbytes scheme can only deal 
+with one.  So, for block-allocated files, we must catch and fix up
+too-large offsets from within the filesystem.
 
-> [ This needs to go into 2.6.24, as it fixes a build breakage seen on x86_64 ]
-> 
-> um_uaccess.h refers to FIXADDR_USER_*, so it should include fixmap.h.
-> 
-> I also changed the non-UML includes to use <> instead of "".
-> 
-> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-> ---
->  arch/um/include/um_uaccess.h |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.22/arch/um/include/um_uaccess.h
-> ===================================================================
-> --- linux-2.6.22.orig/arch/um/include/um_uaccess.h	2007-12-13 10:09:22.000000000 -0500
-> +++ linux-2.6.22/arch/um/include/um_uaccess.h	2007-12-13 15:11:42.000000000 -0500
-> @@ -6,7 +6,8 @@
->  #ifndef __ARCH_UM_UACCESS_H
->  #define __ARCH_UM_UACCESS_H
->  
-> -#include "asm/elf.h"
-> +#include <asm/elf.h>
-> +#include <asm/fixmap.h>
->  #include "sysdep/archsetjmp.h"
->  
->  #define __under_task_size(addr, size) \
+Having iov_shorten exported allows such things as:
 
-arch/um/include/um_uaccess.h already includes fixmap.h.  Is this a -mm-only
-fix?
+		if (pos + length > sbi->s_bitmap_maxbytes) {
+			nr_segs = iov_shorten((struct iovec *)iov, nr_segs,
+					      sbi->s_bitmap_maxbytes - pos);
+		}
+
+to fix up too-large writes to these files in ext4_file_write().
+
+This patch is currently living in the ext4 patch queue.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+
+---
+
+Index: linux-2.6.24-rc3/fs/read_write.c
+===================================================================
+--- linux-2.6.24-rc3.orig/fs/read_write.c
++++ linux-2.6.24-rc3/fs/read_write.c
+@@ -451,6 +451,8 @@ unsigned long iov_shorten(struct iovec *
+ 	return seg;
+ }
+ 
++EXPORT_SYMBOL(iov_shorten);
++
+ ssize_t do_sync_readv_writev(struct file *filp, const struct iovec *iov,
+ 		unsigned long nr_segs, size_t len, loff_t *ppos, iov_fn_t fn)
+ {
+
+
 
