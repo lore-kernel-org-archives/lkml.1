@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbXLNTBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbXLNTCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758582AbXLNTBZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:01:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbXLNTBQ
+	id S1758736AbXLNTCb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:02:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbXLNTCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:01:16 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45141 "EHLO
+	Fri, 14 Dec 2007 14:02:22 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45155 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754753AbXLNTBP (ORCPT
+	with ESMTP id S1754953AbXLNTCW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 14:01:15 -0500
-Message-ID: <4762D2CC.1030109@zytor.com>
-Date: Fri, 14 Dec 2007 11:00:28 -0800
+	Fri, 14 Dec 2007 14:02:22 -0500
+Message-ID: <4762D322.2060101@zytor.com>
+Date: Fri, 14 Dec 2007 11:01:54 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm -v3] x86 boot : export boot_params via sysfs
-References: <1197620206.12999.12.camel@caritas-dev.intel.com> <20071214155228.GA13342@kroah.com> <4762C78D.9080107@zytor.com>
-In-Reply-To: <4762C78D.9080107@zytor.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Jiri Slaby <jirislaby@gmail.com>, Arun Thomas <arun.thomas@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: PROBLEM: E6850 has an 8+ minute delay during boot
+References: <9a8cbed90712140110l156a34e3x38533b7710544cf8@mail.gmail.com>  <20071214015315.09829a99.akpm@linux-foundation.org> <9a8cbed90712140201r6cb287d9w99cc1210c68e8e60@mail.gmail.com> <4762586F.8090603@gmail.com> <alpine.LFD.0.99999.0712141140310.10584@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.99999.0712141140310.10584@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Greg KH wrote:
->>
->> But it ignored the fact that I said I didn't want this binary file in
->> sysfs :)
->>
->> Please take Eric's suggestion and split it up into the different pieces.
->> Some of the fields can be binary files, as they come directly from the
->> firmware, but the others should be text.
->>
+Thomas Gleixner wrote:
 > 
-> But PLEASE include the full structure as a ready-to-eat object.  PLEASE.
+> The problem is caused by an SMI during the calibration routine. We
+> really need to come up with a solid solution which does not rely on
+> the periodic timer coming in, when there is something else (HPET,
+> pm_timer) available.
+> 
+> I have a look into this.
+> 
+> Arun, do you have an USB keyboard plugged in ? If not, can you connect
+> one and check, whether it changes things or not ?
 > 
 
-I should clarify this.
-
-By all means go ahead and provide broken-out fields where it makes 
-sense.  However:
-
-- this *IS* a structure defined by protocol, and which, for all users 
-except the 16-bit entry, comes from outside the kernel (bootloader or 
-firmware.)
-
-- a newer kernel version can add fields to this structure, but can never 
-remove them.  This would cause a potential information loss if the 
-current kernel doesn't have all fields available.
-
-- the binary structure is the format that the majority of users will need.
-
-This is directly analogous to how we treat identity information in IDE, 
-or PCI configuration space -- some fields are pre-digested, but the 
-entire raw information is also available.
+How long is the SMI?
 
 	-hpa
