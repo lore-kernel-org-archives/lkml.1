@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbXLNOrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbXLNOvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbXLNOrW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 09:47:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbXLNOrO
+	id S1755970AbXLNOvS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 09:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbXLNOvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 09:47:14 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50408 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755938AbXLNOrN (ORCPT
+	Fri, 14 Dec 2007 09:51:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60737 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752813AbXLNOvJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 09:47:13 -0500
-Date: Fri, 14 Dec 2007 14:46:28 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Natalie Protasevich <protasnb@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-dvb@linuxtv.org, linux-acpi@vger.kernel.org,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [BUG] Kernel Bugs Weekly (maybe bi-weekly)
-Message-ID: <20071214144628.GB15149@flint.arm.linux.org.uk>
-Mail-Followup-To: Natalie Protasevich <protasnb@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, linux-ide@vger.kernel.org,
-	linux-pcmcia@lists.infradead.org,
-	linux-input@atrey.karlin.mff.cuni.cz, linux-dvb@linuxtv.org,
-	linux-acpi@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
-References: <32209efe0712132057x247219e0m602f24d1e3a2c20b@mail.gmail.com>
+	Fri, 14 Dec 2007 09:51:09 -0500
+Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, greg@kroah.com,
+       Miklos Szeredi <miklos@szeredi.hu>, Neil Brown <neilb@suse.de>
+In-Reply-To: <1193416643.7486.8.camel@heimdal.trondhjem.org>
+References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
+	 <3ae72650710020421t711caaa8o13d2e685a98e5fe8@mail.gmail.com>
+	 <1191325226.13204.63.camel@twins>
+	 <200710022205.05295.nickpiggin@yahoo.com.au>
+	 <1191406506.4093.35.camel@lov.localdomain>  <1191407872.5572.7.camel@lappy>
+	 <1191418525.4093.87.camel@lov.localdomain> <1193410087.6914.34.camel@twins>
+	 <1193416643.7486.8.camel@heimdal.trondhjem.org>
+Content-Type: text/plain
+Date: Fri, 14 Dec 2007 15:50:56 +0100
+Message-Id: <1197643856.21927.7.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <32209efe0712132057x247219e0m602f24d1e3a2c20b@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 08:57:24PM -0800, Natalie Protasevich wrote:
-> PLATFORM======================================================================
+
+On Fri, 2007-10-26 at 12:37 -0400, Trond Myklebust wrote:
+> On Fri, 2007-10-26 at 16:48 +0200, Peter Zijlstra wrote:
 > 
-> s3c2440_clk_add disables inactive clocks _ARM_
-> http://bugzilla.kernel.org/show_bug.cgi?id=9040
-> Kernel: 2.6.22
-> ARM, assigned to Ben Dooks (question is if he knows this :)
+> > Miklos, Trond: could you suggest a better fmt for the bdi_init_fmt() for your
+> > respective filesystems?
+> <snip>
+> > Index: linux-2.6-2/fs/nfs/client.c
+> > ===================================================================
+> > --- linux-2.6-2.orig/fs/nfs/client.c
+> > +++ linux-2.6-2/fs/nfs/client.c
+> > @@ -678,7 +678,7 @@ static int nfs_probe_fsinfo(struct nfs_s
+> >  		goto out_error;
+> >  
+> >  	nfs_server_set_fsinfo(server, &fsinfo);
+> > -	error = bdi_init(&server->backing_dev_info);
+> > +	error = bdi_init_fmt(&server->backing_dev_info, "nfs-%s-%p", clp->cl_hostname, server);
+> 
+> In our debugging printks, we usually use the superblock->s_id, but that
+> only gets initialised later.
+> 
+> I'd suggest passing the 'dev_name' from *_get_sb() into
+> *_create_server().
 
-Not quite sure what the point of putting it in an email he hasn't seen
-is either.
+I just realised that such a name would contain '/' and I'm quite sure
+that makes filesystems unhappy.
 
-Adding Ben as a CC.
+Neil suggested using device numbers which would work, however I think
+those might not be human friendly. While its easy to find the device
+number of a given path (eg.: stat -c %d /), its rather hard to find the
+path belonging to a given device number.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+
