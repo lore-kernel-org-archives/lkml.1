@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbXLNT5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933101AbXLNT6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760570AbXLNT5s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:57:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbXLNT5j
+	id S933101AbXLNT6J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:58:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762058AbXLNT5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:57:39 -0500
-Received: from www.tglx.de ([62.245.132.106]:42606 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754056AbXLNT5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 14:57:38 -0500
-Date: Fri, 14 Dec 2007 20:57:14 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
-In-Reply-To: <20071214181233.GB16351@one.firstfloor.org>
-Message-ID: <alpine.LFD.0.99999.0712142053400.3668@localhost.localdomain>
-References: <20071214004442.5f9eba88@linux360.ro> <p737ijigr8c.fsf@bingen.suse.de> <20071214143941.2c7dcfb4@linux360.ro> <20071214101720.GA10981@one.firstfloor.org> <20071214154106.4f0b2d8c@linux360.ro> <20071214122048.GA12550@one.firstfloor.org>
- <20071214180119.4c492f6c@linux360.ro> <alpine.LFD.0.99999.0712141835510.3668@localhost.localdomain> <20071214181233.GB16351@one.firstfloor.org>
-User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
+	Fri, 14 Dec 2007 14:57:50 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44221 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760928AbXLNT5s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 14:57:48 -0500
+Message-ID: <4762DD62.6060803@zytor.com>
+Date: Fri, 14 Dec 2007 11:45:38 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <ak@muc.de>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, venkatesh.pallipadi@intel.com,
+       rdreier@cisco.com, torvalds@linux-foundation.org, gregkh@suse.de,
+       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [RFC PATCH 02/12] PAT 64b: Basic PAT implementation
+References: <20071213235543.568682000@intel.com> <20071213235711.464325000@intel.com> <m1d4taq6le.fsf@ebiederm.dsl.xmission.com> <20071214102535.GB9705@muc.de>
+In-Reply-To: <20071214102535.GB9705@muc.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Dec 2007, Andi Kleen wrote:
-
-> > magically in the SMM code. To work around this is we would need to add
-> > the broadcast notification to the halt(), safe_halt(), pm_idle_halt()
-> > variants which float around in the kernel and make this conditional on
-> > the C1E detection. That's nasty, but it seems the only solution for
-> > now.
+Andi Kleen wrote:
+>> I do know we need to use the low 4 pat mappings to avoid most of the PAT
+>> errata issues.
 > 
-> On 64bit it would be easy using the idle notifiers. Perhaps they need
-> to be extended to pass in the sleep state though.
+> They don't really matter. These are all very old systems who have run 
+> fine for many years without PAT. It is no problem to let them
+> continue to do so and just disable PAT for them. So just clear pat bit in
+> CPU initialization for any CPUs with non trivial erratas in this
+> area.
+> 
+> PAT is only really needed on modern boxes.
 
-Well, that would interfere with the acpi-idle code.
+How many mapping types do we actually need?  The only ones which are 
+likely to be used in practice are WB, UC, WC, which still leaves a 
+spare.  (Any intended users of WP or WT?)
 
-Anyway the idle notifiers is a pretty artificial interface which is on
-my get rid of it list anyway.
-
-Thanks,
-
-	tglx
-
+	-hpa
