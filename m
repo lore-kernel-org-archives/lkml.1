@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932801AbXLNE0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932859AbXLNEbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932801AbXLNE0m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 23:26:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbXLNE0e
+	id S932859AbXLNEbc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 23:31:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbXLNEbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 23:26:34 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36952 "EHLO
+	Thu, 13 Dec 2007 23:31:23 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56377 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754201AbXLNE0d (ORCPT
+	with ESMTP id S1755754AbXLNEbW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 23:26:33 -0500
+	Thu, 13 Dec 2007 23:31:22 -0500
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: venkatesh.pallipadi@intel.com
-Cc: ak@muc.de, rdreier@cisco.com, torvalds@linux-foundation.org,
-       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, akpm@linux-foundation.org,
-       arjan@infradead.org, jesse.barnes@intel.com,
+To: Roland Dreier <rdreier@cisco.com>
+Cc: venkatesh.pallipadi@intel.com, ak@muc.de, ebiederm@xmission.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
+       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
        linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [RFC PATCH 02/12] PAT 64b: Basic PAT implementation
+Subject: Re: [RFC PATCH 06/12] PAT 64b: Add ioremap_wc support
 References: <20071213235543.568682000@intel.com>
-	<20071213235711.464325000@intel.com>
-	<m1d4taq6le.fsf@ebiederm.dsl.xmission.com>
-Date: Thu, 13 Dec 2007 21:23:26 -0700
-In-Reply-To: <m1d4taq6le.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
-	message of "Thu, 13 Dec 2007 20:48:45 -0700")
-Message-ID: <m1wsrhq4zl.fsf@ebiederm.dsl.xmission.com>
+	<20071213235712.339088000@intel.com> <ada8x3x7vw5.fsf@cisco.com>
+Date: Thu, 13 Dec 2007 21:28:23 -0700
+In-Reply-To: <ada8x3x7vw5.fsf@cisco.com> (Roland Dreier's message of "Thu, 13
+	Dec 2007 20:17:14 -0800")
+Message-ID: <m1sl25q4rc.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -32,55 +31,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
+Roland Dreier <rdreier@cisco.com> writes:
 
-
-> We should use:
->> +		pat = PAT(0,WB) | PAT(1,WT) | PAT(2,WC) | PAT(3,UC) |
->> +		      PAT(4,WB) | PAT(5,WT) | PAT(6,WC) | PAT(7,UC);
+>  > --- linux-2.6.24-rc4.orig/include/asm-x86/io_64.h 2007-12-11
+> 14:24:56.000000000 -0800
+>  > +++ linux-2.6.24-rc4/include/asm-x86/io_64.h 2007-12-11 15:49:52.000000000
+> -0800
+>  > @@ -142,7 +142,8 @@
+>  > * it's useful if some control registers are in such an area and write
+> combining
+>  >   * or read caching is not desirable:
+>  >   */
+>  > -extern void __iomem * ioremap_nocache (unsigned long offset, unsigned long
+> size);
+>  > +extern void __iomem * ioremap_nocache(unsigned long offset, unsigned long
+> size);
+>  > +extern void __iomem * ioremap_wc(unsigned long offset, unsigned long size);
 >
-> Changing the UC- which currently allows write-combining if the MTRRs specify it,
-> to WC.  This grandfathers in all of our current usage and changes the one
-> PAT type that could today and in legacy mode specify WC to really specify WC.
+> I think ioremap_wc() needs to be available on all archs for this to be
+> really useful to drivers.  It can be a fallback to ioremap_nocache()
+> everywhere except 64-bit x86, but it's not nice for every driver that
+> wants to use this to need an "#ifdef X86" or whatever.
 >
-> I don't know if we need to set the high half or not, that would depend
-> on the state of the PAT errata.
+> Also I didn't see anything like pgprot_wc() in the patchset (although
+pgprot_writcombined.
+
+> I just skimmed quickly for now).  The use case I actually have would
+> be in a a driver's .mmap method, where I want to map device registers
+> into userspace with write-combining turned on:
 >
-> I do know we need to use the low 4 pat mappings to avoid most of the PAT
-> errata issues.
+> 	vma->vm_page_prot = pgprot_wc(vma->vm_page_prot);
+> 	io_remap_pfn_range(vma, vma->vm_start, pfn, PAGE_SIZE,
+> vma->vm_page_prot);
 >
-> As for Andi's concern about modules playing games with the PAT mappings
-> if we don't redefine how we use the page table entries our exposure to
-> badly behaved modules more limited.
-
-Ok.  My analysis here was wrong.  Currently pgprot_noncached and
-ioremap_nocache are out of sync.  With ioremap_nocache only specifying
-_PAGE_PCD and pgprot_noncached specifying _PAGE_PCD | _PAGE_PWT.
-
-So I don't have a clue how someone could reprogram the mtrrs currently
-and expect things to work.
-
-...
-
-If we bother to ask ioremap for memory that is not cached, the last
-thing in the world we want is the MTRRs upgrading that to write combining.
-So ioremap_nocache has been slightly buggy for ages.  ioremap_nocache
-and PAGE_KERNEL_NOCACHE should get _PAGE_PWT added to their
-definitions.
-
-Could we please get a cleanup patch at the beginning of this patchset
-or that comes before it that fixes ioremap_nocache on x86?
-
-That will make us a lot more git-bisect safe.
-
+> where the pfn points into a PCI BAR (which will only be mapped once,
+> so no issues with conflicting PATs or anything like that).
 
 Eric
-
-
-
-
-
-
-
-
 
