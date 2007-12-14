@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764303AbXLNKH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764152AbXLNKKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764303AbXLNKH1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 05:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbXLNKHS
+	id S1764152AbXLNKKN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 05:10:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbXLNKKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 05:07:18 -0500
-Received: from fb1.tech.numericable.fr ([82.216.111.51]:56869 "EHLO
-	fb1.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752845AbXLNKHP (ORCPT
+	Fri, 14 Dec 2007 05:10:00 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:39426 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbXLNKJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 05:07:15 -0500
-Subject: [PATCH] usb/hid: Blacklist the Gretag-Macbeth Huey display
-	colorimeter
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-To: jkosina@suse.cz
-Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, argyllcms@freelists.org,
-       Frederic Crozat <fcrozat@mandriva.com>, Greg KH <greg@kroah.com>
-In-Reply-To: <20071214053853.GD7765@kroah.com>
-References: <1197585460.28927.2.camel@rousalka.dyndns.org>
-	 <20071214053853.GD7765@kroah.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: Perso
-Date: Fri, 14 Dec 2007 11:04:56 +0100
-Message-Id: <1197626696.5281.5.camel@rousalka.dyndns.org>
+	Fri, 14 Dec 2007 05:09:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=lOg5mcDqCeoQizmmdCFoD30MTMPN8WL0ZPGUbvkh1soT3UMlQssJrjxLw42Q8m2Ud0gQGO4PYB/0fzu+Sn/iACmNcv/QJESCoqomZAEB1xOxXfbdpoORWQE0MEW21Um2TilJa/upNu35sBAVWHjrBiOnJEUd8YDRBC2JqMJ++fQ=
+Subject: Re: [PATCH 1/4] x86: clean up asm-x86/page*.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+In-Reply-To: <47623AD6.6090403@goop.org>
+References: <47623AD6.6090403@goop.org>
+Content-Type: text/plain
+Date: Fri, 14 Dec 2007 02:10:02 -0800
+Message-Id: <1197627002.898.58.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.3 (2.21.3-4.fc9) 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-12-14 at 00:12 -0800, Jeremy Fitzhardinge wrote:
+> Unify common definitions in page*.h.  To simplify other code, I added
+> typedefs for the value of pte/pmd/pud/pgd values, so they can be used
+> symbolically elsewhere without needing to have lots of 32/64/PAE
+> tests.
+> 
+> Also, add PAGETABLE_LEVELS define so that other definitions can test
+> for it directly rather than using indirect 32/64/PAE tests.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
 
-Le jeudi 13 décembre 2007 à 21:38 -0800, Greg KH a écrit : 
-> On Thu, Dec 13, 2007 at 11:37:40PM +0100, Nicolas Mailhot wrote:
+I've been looking at unifying pageattr_32|64.c, if you're headed there
+soon I'll look elsewhere, otherwise I'll build on top of this work.
 
-> > The Gretag-Macbeth Huey display colorimeter claims to be an HID device
-> > but isn't. As a result the linux HID device will claim it, preventing
-> > FLOSS software like Argyll CMS (http://www.argyllcms.com/) from talking
-> > to it,
-
-> > Frédéric Crozat from Mandriva has such a device and may provide more
-> > info.
-
-> Care to make up a patch as per the Documentation/SubmittingPatches file
-> and send it to this list and the HID driver maintainer?  That way you
-> get the proper credit for this change.
-
-The things I do as a public service, I don't even have the damn Huey
-myself:(
-
-There seems to be some complains about libusb BTW
-(http://www.freelists.org/archives/argyllcms/12-2007/msg00068.html)
-
-
-Signed-off-by: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-
-diff -uNr linux-2.6.24-rc5.orig/drivers/hid/usbhid/hid-quirks.c linux-2.6.24-rc5/drivers/hid/usbhid/hid-quirks.c
---- linux-2.6.24-rc5.orig/drivers/hid/usbhid/hid-quirks.c	2007-12-11 04:48:43.000000000 +0100
-+++ linux-2.6.24-rc5/drivers/hid/usbhid/hid-quirks.c	2007-12-14 10:41:01.000000000 +0100
-@@ -85,6 +85,9 @@
- #define USB_VENDOR_ID_CHIC		0x05fe
- #define USB_DEVICE_ID_CHIC_GAMEPAD	0x0014
- 
-+#define USB_VENDOR_ID_GRETAGMACBETH	0x0971
-+#define USB_DEVICE_ID_GRETAGMACBETH_HUEY	0x2005
-+
- #define USB_VENDOR_ID_CIDC		0x1677
- 
- #define USB_VENDOR_ID_CMEDIA		0x0d8c
-@@ -423,6 +426,7 @@
- 	{ USB_VENDOR_ID_GOTOP, USB_DEVICE_ID_SUPER_Q2, HID_QUIRK_IGNORE },
- 	{ USB_VENDOR_ID_GOTOP, USB_DEVICE_ID_GOGOPEN, HID_QUIRK_IGNORE },
- 	{ USB_VENDOR_ID_GOTOP, USB_DEVICE_ID_PENPOWER, HID_QUIRK_IGNORE },
-+	{ USB_VENDOR_ID_GRETAGMACBETH, USB_DEVICE_ID_GRETAGMACBETH_HUEY, HID_QUIRK_IGNORE },
- 	{ USB_VENDOR_ID_GRIFFIN, USB_DEVICE_ID_POWERMATE, HID_QUIRK_IGNORE },
- 	{ USB_VENDOR_ID_GRIFFIN, USB_DEVICE_ID_SOUNDKNOB, HID_QUIRK_IGNORE },
-
--- 
-Nicolas Mailhot
+Harvey
 
