@@ -1,78 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbXLNGRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758342AbXLNG01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761470AbXLNGRK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 01:17:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbXLNGQ4
+	id S1758342AbXLNG01 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 01:26:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbXLNG0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 01:16:56 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:44055 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753162AbXLNGQz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 01:16:55 -0500
-Date: Fri, 14 Dec 2007 01:15:54 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-In-Reply-To: <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.58.0712140106470.11089@gandalf.stny.rr.com>
-References: <1197049846.1645.68.camel@localhost.localdomain>
- <20071211143336.GA17866@elte.hu> <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 14 Dec 2007 01:26:07 -0500
+Received: from mail.suse.de ([195.135.220.2]:34021 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751658AbXLNG0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 01:26:06 -0500
+From: NeilBrown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 14 Dec 2007 17:26:02 +1100
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 000 of 7] md: Introduction EXPLAIN PATCH SET HERE
+Message-ID: <20071214171950.1308.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Following are 7 md related patches are suitable for the next -mm
+and maybe for 2.6.25.
 
-Christoph,
+They move towards giving user-space programs more fine control of an
+array so that we can add support for more complex metadata formats
+(e.g. DDF) without bothering the kernel with such things.
 
-Welcome back from your vacation! :-)
+The last patch isn't strictly md related.  It adds an ioctl which
+allows mapping from an open file descriptor on a block device to
+a name in /sys.  This makes finding name of things in /sys more practical.
+As I put this in block-layer code, I have Cc:ed Jens Axboe.
 
-On Thu, 13 Dec 2007, Christoph Lameter wrote:
->
-> In an extreme case (boot with slub_min_order=9 to get huge page sized
-> slabs) SLUB can win against SLAB:
->
-> N=10 Time: 0.338	Minimally faster
-> N=20 Time: 0.560	10% faster
-> N=50 Time: 1.353	15% faster
->
-
-I booted back to slub with slub_min_order=9 on the 64way and you are
-indeed right about this.
-
-# tests/hackbench 90
-Time: 2.109
-# chrt -f 10 tests/hackbench 90
-Time: 3.775
-# tests/hackbench 90
-Time: 1.583
-# chrt -f 10 tests/hackbench 90
-Time: 1.833
-# tests/hackbench 90
-Time: 1.601
-# chrt -f 10 tests/hackbench 90
-Time: 3.078
-# tests/hackbench 90
-Time: 1.321
-# chrt -f 10 tests/hackbench 90
-Time: 1.933
-
-
-
-A flux between 1.321 and 3.775 (*)(the rt runs were higher). But still,
-good job at narrowing this down. Now the hard part. Figuring out a way
-that will be nice to all users.
-
--- Steve
-
-(*) The previous runs (without the command line option) were 13 seconds or
-so.
+ [PATCH 001 of 7] md: Support 'external' metadata for md arrays.
+ [PATCH 002 of 7] md: Give userspace control over removing failed devices when external metdata in use
+ [PATCH 003 of 7] md: Allow a maximum extent to be set for resyncing.
+ [PATCH 004 of 7] md: Allow devices to be shared between md arrays.
+ [PATCH 005 of 7] md: Lock address when changing attributes of component devices.
+ [PATCH 006 of 7] md: Allow an md array to appear with 0 drives if it has external metadata.
+ [PATCH 007 of 7] md: Get name for block device in sysfs
