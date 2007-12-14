@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933903AbXLNXMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934002AbXLNXQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933903AbXLNXMx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 18:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbXLNXMl
+	id S934002AbXLNXQo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 18:16:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbXLNXQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 18:12:41 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:62261 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752407AbXLNXMk (ORCPT
+	Fri, 14 Dec 2007 18:16:34 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50208 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753756AbXLNXQe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 18:12:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:content-type;
-        b=aBtWu/DC919APIYAKsybJqm6fYTP2FvwNkPd+iiAuA9c2uwY150855xwzEkyZFQ9STrFnaH09wiSPa29OTwQ5fpxL1g9BV1xVPu7vunn6h7EFYcP2DxY0pW0pwzSIQ7ms0/g0cyrPhevp5VNgHwNSRc1O02kB0IiAvn/wka1jTU=
-Message-ID: <47631BC0.5090500@googlemail.com>
-Date: Sat, 15 Dec 2007 01:11:44 +0100
-From: =?ISO-8859-15?Q?Michael_K=FChn?= <breiteseite1337@googlemail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071214)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [x86_64] remove unused variable from drivers/ata/ahci.c
-Content-Type: multipart/mixed;
- boundary="------------080708020404020106060908"
+	Fri, 14 Dec 2007 18:16:34 -0500
+Date: Fri, 14 Dec 2007 15:15:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Nelson, Shannon" <shannon.nelson@intel.com>
+Cc: caglar@pardus.org.tr, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/dma/ioat_dma.c: inlining failed
+Message-Id: <20071214151532.f79ec86e.akpm@linux-foundation.org>
+In-Reply-To: <BAE9DCEF64577A439B3A37F36F9B691C03A18730@orsmsx418.amr.corp.intel.com>
+References: <200712142144.47310.caglar@pardus.org.tr>
+	<BAE9DCEF64577A439B3A37F36F9B691C03A18730@orsmsx418.amr.corp.intel.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080708020404020106060908
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+On Fri, 14 Dec 2007 11:53:28 -0800
+"Nelson, Shannon" <shannon.nelson@intel.com> wrote:
 
-Hi,
+> >-----Original Message-----
+> >From: S.__a__lar Onur [mailto:caglar@pardus.org.tr] 
+> >Sent: Friday, December 14, 2007 11:45 AM
+> >To: linux-kernel@vger.kernel.org
+> >Cc: Nelson, Shannon
+> >Subject: [PATCH] drivers/dma/ioat_dma.c: inlining failed
+> >
+> >Hi;
+> >
+> >After commit 7bb67c14fd3778504fb77da30ce11582336dfced, Linus's 
+> >git tree gaves following compiliation error with gcc-3.4.6. 
+> >Following patch solves this issue for me;
+> >
+> >
+> >[...]
+> >  CC [M]  drivers/dma/ioat.o
+> >  CC [M]  drivers/dma/ioat_dma.o
+> >drivers/dma/ioat_dma.c: In function `ioat1_tx_submit':
+> >drivers/dma/ioat_dma.c:177: sorry, unimplemented: inlining 
+> >failed in call to '__ioat1_dma_memcpy_issue_pending': function 
+> >body not available
+> >drivers/dma/ioat_dma.c:268: sorry, unimplemented: called from here
+> >make[2]: *** [drivers/dma/ioat_dma.o] Hata 1
+> >make[1]: *** [drivers/dma] Hata 2
+> >make: *** [drivers] Hata 2
+> >
+> >Signed-off-by: S.__a__lar Onur <caglar@pardus.org.tr>
+> [...]
+> 
+> Yep.  I posted a similar patch with a couple more tweaks after a month ago after Andrew's comments, which hasn't yet moved from -mm to Linus' tree.  See http://lkml.org/lkml/2007/11/16/336
+> 
 
-my first kernel patch, yay. :-)
-
-On the file drivers/ata/ahci.c in line 1433 is declared a variable that
-is never used in the function. I removed it.
-
-Patch is in attachments (based on 2.6.23.10).
-
---------------080708020404020106060908
-Content-Type: text/x-patch;
- name="ahci.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ahci.patch"
-
---- linux-2.6.23.10/drivers/ata/ahci.c	2007-12-14 19:01:59.000000000 +0100
-+++ linux-2.6.23.10.new/drivers/ata/ahci.c	2007-12-15 01:03:41.000000000 +0100
-@@ -1430,7 +1430,6 @@
- {
- 	void __iomem *port_mmio = ap->ioaddr.cmd_addr;
- 	struct ata_eh_info *ehi = &ap->eh_info;
--	struct ahci_port_priv *pp = ap->private_data;
- 	u32 status, qc_active;
- 	int rc;
- 
-
---------------080708020404020106060908--
+Nobody told me that it fixed anything serious so I had it scheduled for
+2.6.25.  I'll move it up.
