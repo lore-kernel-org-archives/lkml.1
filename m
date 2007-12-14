@@ -1,76 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761285AbXLNHIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761960AbXLNHLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761285AbXLNHIx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 02:08:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbXLNHIq
+	id S1761960AbXLNHLR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 02:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbXLNHLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 02:08:46 -0500
-Received: from gw.goop.org ([64.81.55.164]:47628 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753942AbXLNHIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 02:08:45 -0500
-Message-ID: <47622BEA.9030808@goop.org>
-Date: Thu, 13 Dec 2007 23:08:26 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: Re: [PATCH] i386: XEN config option should not depend on	X86_TSC/X86_CMPXCHG
-References: <476102D1.76E4.0078.0@novell.com>
-In-Reply-To: <476102D1.76E4.0078.0@novell.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 14 Dec 2007 02:11:05 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56905 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751807AbXLNHLE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 02:11:04 -0500
+Date: Thu, 13 Dec 2007 23:09:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Srinivasa Ds <srinivasa@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, ananth@in.ibm.com,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, rusty@rustcorp.com.au
+Subject: Re: [RFC] [patch 1/2] add non_init_kernel_text_address
+Message-Id: <20071213230916.cd30de8c.akpm@linux-foundation.org>
+In-Reply-To: <200712141225.30099.srinivasa@in.ibm.com>
+References: <200712141225.30099.srinivasa@in.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> The way X86_TSC works and the fact that Xen itself won't work on
-> systems without TSC (really any systems pre-dating i686) makes it
-> unnecessary for XEN to depend on it.
->
-> Similarly, X86_CMPXCHG isn't needed here either as Xen for the above
-> reason guarantees its availability.
->
-> This allows the option to be available when selecting M386, M486, or
-> M586.
->
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
->   
+On Fri, 14 Dec 2007 12:25:30 +0530 Srinivasa Ds <srinivasa@in.ibm.com> wrote:
 
-Oh, I thought this had already happened.  Guess not.
+> Since __init functions are discarded and its memory freed once
+> initialization completes, It would be better if we enable kprobes 
+> to refuse probing __init functions. The attached patchset will do 
+> that.
+> 
+> This patch creates non_init_kernel_text_address() to identify
+> non_init text area.
+> 
+> Iam open to suggestions for a better functionname. 
+> 
 
-Anyway:
+It's not a great name.  One wonders how it handles __exit text, for example.
 
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-
-    J
->  arch/x86/xen/Kconfig |    2 +-
->  1 files changed, 1 insertion(+), 1 deletion(-)
->
-> --- linux-2.6.24-rc5/arch/x86/xen/Kconfig	2007-12-12 11:28:18.000000000 +0100
-> +++ 2.6.24-rc5-i386-xen-no-tsc/arch/x86/xen/Kconfig	2007-12-07 14:53:28.000000000 +0100
-> @@ -5,7 +5,7 @@
->  config XEN
->  	bool "Xen guest support"
->  	select PARAVIRT
-> -	depends on X86_CMPXCHG && X86_TSC && !NEED_MULTIPLE_NODES && !(X86_VISWS || X86_VOYAGER)
-> +	depends on !NEED_MULTIPLE_NODES && !(X86_VISWS || X86_VOYAGER)
->  	help
->  	  This is the Linux Xen port.  Enabling this will allow the
->  	  kernel to boot in a paravirtualized environment under the
->
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
+regular_kernel_text_address()?  Dunno.
 
