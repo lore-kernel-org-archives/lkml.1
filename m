@@ -1,148 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbXLNTAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbXLNTBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbXLNTAt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbXLNTAl
+	id S1758582AbXLNTBZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:01:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbXLNTBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:00:41 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:4841 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753963AbXLNTAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 14:00:40 -0500
-Subject: [PATCH] printk_ratelimit functions should use CONFIG_PRINTK
-From: Joe Perches <joe@perches.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Matt Mackall <mpm@selenic.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 11:00:35 -0800
-Message-Id: <1197658835.4861.45.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+	Fri, 14 Dec 2007 14:01:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45141 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754753AbXLNTBP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 14:01:15 -0500
+Message-ID: <4762D2CC.1030109@zytor.com>
+Date: Fri, 14 Dec 2007 11:00:28 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm -v3] x86 boot : export boot_params via sysfs
+References: <1197620206.12999.12.camel@caritas-dev.intel.com> <20071214155228.GA13342@kroah.com> <4762C78D.9080107@zytor.com>
+In-Reply-To: <4762C78D.9080107@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Makes an embedded image a bit smaller
+H. Peter Anvin wrote:
+> Greg KH wrote:
+>>
+>> But it ignored the fact that I said I didn't want this binary file in
+>> sysfs :)
+>>
+>> Please take Eric's suggestion and split it up into the different pieces.
+>> Some of the fields can be binary files, as they come directly from the
+>> firmware, but the others should be text.
+>>
+> 
+> But PLEASE include the full structure as a ready-to-eat object.  PLEASE.
+> 
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- include/linux/kernel.h |   20 +++++++++++++++-----
- kernel/printk.c        |    2 ++
- kernel/sysctl.c        |   20 ++++++++++----------
- 3 files changed, 27 insertions(+), 15 deletions(-)
+I should clarify this.
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 94bc996..db2d5e7 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -182,6 +182,13 @@ asmlinkage int printk(const char * fmt, ...)
- extern int log_buf_get_len(void);
- extern int log_buf_read(int idx);
- extern int log_buf_copy(char *dest, int idx, int len);
-+
-+extern int printk_ratelimit_jiffies;
-+extern int printk_ratelimit_burst;
-+extern int printk_ratelimit(void);
-+extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
-+extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
-+				   unsigned int interval_msec);
- #else
- static inline int vprintk(const char *s, va_list args)
- 	__attribute__ ((format (printf, 1, 0)));
-@@ -192,15 +199,18 @@ static inline int __cold printk(const char *s, ...) { return 0; }
- static inline int log_buf_get_len(void) { return 0; }
- static inline int log_buf_read(int idx) { return 0; }
- static inline int log_buf_copy(char *dest, int idx, int len) { return 0; }
-+
-+static inline int printk_ratelimit(void) { return 0; }
-+static inline int __printk_ratelimit(int ratelimit_jiffies, \
-+				     int ratelimit_burst) { return 0; }
-+static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
-+					  unsigned int interval_msec)	\
-+		{ return false; }
-+
- #endif
- 
- unsigned long int_sqrt(unsigned long);
- 
--extern int printk_ratelimit(void);
--extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
--extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
--				unsigned int interval_msec);
--
- static inline void console_silent(void)
- {
- 	console_loglevel = 0;
-diff --git a/kernel/printk.c b/kernel/printk.c
-index a30fe33..2259540 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -1235,6 +1235,7 @@ void tty_write_message(struct tty_struct *tty, char *msg)
- 	return;
- }
- 
-+#if defined CONFIG_PRINTK
- /*
-  * printk rate limiting, lifted from the networking subsystem.
-  *
-@@ -1304,3 +1305,4 @@ bool printk_timed_ratelimit(unsigned long *caller_jiffies,
- 	return false;
- }
- EXPORT_SYMBOL(printk_timed_ratelimit);
-+#endif
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 8ac5171..f60b9e4 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -72,8 +72,6 @@ extern int suid_dumpable;
- extern char core_pattern[];
- extern int pid_max;
- extern int min_free_kbytes;
--extern int printk_ratelimit_jiffies;
--extern int printk_ratelimit_burst;
- extern int pid_max_min, pid_max_max;
- extern int sysctl_drop_caches;
- extern int percpu_pagelist_fraction;
-@@ -462,14 +460,6 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
--	{
--		.ctl_name	= KERN_PRINTK,
--		.procname	= "printk",
--		.data		= &console_loglevel,
--		.maxlen		= 4*sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
--	},
- #ifdef CONFIG_KMOD
- 	{
- 		.ctl_name	= KERN_MODPROBE,
-@@ -616,6 +606,15 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+#if defined CONFIG_PRINTK
-+	{
-+		.ctl_name	= KERN_PRINTK,
-+		.procname	= "printk",
-+		.data		= &console_loglevel,
-+		.maxlen		= 4*sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
- 	{
- 		.ctl_name	= KERN_PRINTK_RATELIMIT,
- 		.procname	= "printk_ratelimit",
-@@ -633,6 +632,7 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+#endif
- 	{
- 		.ctl_name	= KERN_NGROUPS_MAX,
- 		.procname	= "ngroups_max",
+By all means go ahead and provide broken-out fields where it makes 
+sense.  However:
 
+- this *IS* a structure defined by protocol, and which, for all users 
+except the 16-bit entry, comes from outside the kernel (bootloader or 
+firmware.)
 
+- a newer kernel version can add fields to this structure, but can never 
+remove them.  This would cause a potential information loss if the 
+current kernel doesn't have all fields available.
+
+- the binary structure is the format that the majority of users will need.
+
+This is directly analogous to how we treat identity information in IDE, 
+or PCI configuration space -- some fields are pre-digested, but the 
+entire raw information is also available.
+
+	-hpa
