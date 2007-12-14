@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933173AbXLNMxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933327AbXLNMyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933173AbXLNMxx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 07:53:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbXLNMxp
+	id S933327AbXLNMyh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 07:54:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762593AbXLNMy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 07:53:45 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:37934 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbXLNMxo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 07:53:44 -0500
-Date: Fri, 14 Dec 2007 09:39:46 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Jon Dufresne <jon.dufresne@infinitevideocorporation.com>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: PCI resource unavailable on mips
-Message-ID: <20071214093945.GA25186@linux-mips.org>
-References: <1197557806.3370.7.camel@microwave.infinitevideocorporation.com>
+	Fri, 14 Dec 2007 07:54:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54745 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752098AbXLNMy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 07:54:27 -0500
+Date: Fri, 14 Dec 2007 13:53:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Ray Lee <ray-lk@madrabbit.org>, bcm43xx-dev@lists.berlios.de,
+       Daniel Walker <dwalker@mvista.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux@bohmer.net, jonathan@jonmasters.org,
+       matthias.kaehlcke@gmail.com, kjwinchester@gmail.com,
+       John Linville <linville@tuxdriver.com>
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
+	to mutex
+Message-ID: <20071214125327.GA10995@elte.hu>
+References: <20071213003028.676998182@mvista.com> <200712141239.51809.mb@bu3sch.de> <20071214121617.GE23964@elte.hu> <200712141331.59410.mb@bu3sch.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1197557806.3370.7.camel@microwave.infinitevideocorporation.com>
+In-Reply-To: <200712141331.59410.mb@bu3sch.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 09:56:46AM -0500, Jon Dufresne wrote:
 
-> I've done a bit of linux driver development on x86 in the past.
-> Currently I am working on my first ever linux driver for a mips box. I
-> started by testing the device in an x86 box and got it reasonable stable
-> and am now testing it in the mips box. There appears to be a major
-> problem, one unlike I have ever seen before.
+* Michael Buesch <mb@bu3sch.de> wrote:
+
+> This user did get the following messages in dmesg:
 > 
-> My PCI device has three BARS. This can be confirmed by the Technical
-> documentation and the x86 code. When the pci device is first probed, I
-> run a loop to printk out the bar information, this is just as a sanity
-> check. Here is the output on the x86:
+> b43err(dev->wl, "Firmware file \"%s\" not found "
+>        "or load failed.\n", path);
+> b43err(wl, "You must go to "
+>        "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
+>        "and download the correct firmware (version 4).\n");
 > 
-> Bar0:PHYS=e0000000 LEN=04000000
-> Bar1:PHYS=efa00000 LEN=00200000
-> Bar2:PHYS=e8000000 LEN=04000000
-> 
-> but here is the output on the mips:
-> Bar0:PHYS=20000000 LEN=04000000
-> Bar1:PHYS=24000000 LEN=00200000
-> Bar2:PHYS=00000000 LEN=00000000
-> 
-> notice, BAR2 has no valid information on the mips. I tried to run
-> "pci_enable_device" before printing this information, as suggested by
-> LDD but it did not help.
+> I'm not sure how I can improve that even more. There is a full URL 
+> describing how to get the device workin in _full_ detail.
 
-Resources are assigned on bootup by MIPS, not yet by pci_enable_device,
-so that was expected.
+well i dont have this hardware, but the following description in this 
+thread seems to contradict that:
 
-> Has anyone seen a problem like this before and any idea how I can get
-> BAR2 a proper address?
-> 
-> If I examine the config space directly there is an address in BAR2's
-> register, however it isn't in the 0x20000000 range like the other two,
-> instead it is 0x1c000000. Also if I do a ``cat /proc/iomem'' I correctly
-> see BAR0 and BAR1 in the output, but not BAR2.
+|| Well, doing an `rmmod bcm43xx ; modprobe ssb b43` gives me nothing in 
+|| dmesg other than lines related to the bcm43xx driver. 
+|| iwconfig/ifconfig do not see the interface either.
 
-Odd.  I knew the resource allocation stuff has it's issues for some
-non-trivial configuration but that one is a new one.  Which makes me
-wonder if your platform runs the PCI code in probe-only mode where it
-will not actually assign resources but only inherit the whole PCI setup
-except interrupt routing from the firmware.
-
-What MIPS platform do you use?  I'd like to take a look at its PCI setup
-code.
-
-  Ralf
+	Ingo
