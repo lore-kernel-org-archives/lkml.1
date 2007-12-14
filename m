@@ -1,161 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934512AbXLNREG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934334AbXLNRFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934512AbXLNREG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 12:04:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbXLNRDy
+	id S934334AbXLNRFz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 12:05:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbXLNRFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 12:03:54 -0500
-Received: from mga11.intel.com ([192.55.52.93]:41845 "EHLO mga11.intel.com"
+	Fri, 14 Dec 2007 12:05:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43969 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752520AbXLNRDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 12:03:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,168,1196668800"; 
-   d="scan'208";a="438988170"
-Date: Fri, 14 Dec 2007 17:55:30 +0100
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com,
-       suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Subject: [patch 3/5] x86, ptrace: change BTS GET ptrace interface
-Message-ID: <20071214175530.A20623@sedona.ch.intel.com>
+	id S1752520AbXLNRFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 12:05:41 -0500
+Date: Fri, 14 Dec 2007 12:04:54 -0500 (EST)
+Message-Id: <20071214.120454.39153297.k-ueda@ct.jp.nec.com>
+To: zaitcev@redhat.com
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: Re: [PATCH 12/30] blk_end_request: changing ub (take 4)
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <20071213135916.27ebe3f9.zaitcev@redhat.com>
+References: <20071211154803.58beb681.zaitcev@redhat.com>
+	<20071212.153815.39152138.k-ueda@ct.jp.nec.com>
+	<20071213135916.27ebe3f9.zaitcev@redhat.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
 Mime-Version: 1.0
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the ptrace interface to mimick an array from newst to oldest.
+Hi Pete,
 
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
+On Thu, 13 Dec 2007 13:59:16 -0800, Pete Zaitcev <zaitcev@redhat.com> wrote:
+> > > > -	end_that_request_first(rq, uptodate, rq->hard_nr_sectors);
+> > > > -	end_that_request_last(rq, uptodate);
+> > > > +	if (__blk_end_request(rq, error, blk_rq_bytes(rq)))
+> > > > +		BUG();
+> > >
+> > > My understanding was, blk_end_request() is the same thing, only
+> > > takes the queue lock. But then, should I refactor ub so that it
+> > > calls __blk_end_request if request function ends with an error
+> > > and blk_end_request if the end-of-IO even is processed?
+> >
+> > I'm using __blk_end_request() here and I think it's sufficient, because:
+> >   o end_that_request_last() must be called with the queue lock held
+> >   o ub_end_rq() calls end_that_request_last() without taking
+> >     the queue lock in itself.
+> >     So the queue lock must have been taken outside ub_end_rq().
+> >
+> > But, if ub is calling end_that_request_last() without the queue lock,
+> > it is a bug in the original code and we should use blk_end_request()
+> > to fix that.
+> 
+> So, I have to rewrite ub to split the paths after all, right?
+> Let's do this then: I'll wait until your patch gets to Linus and
+> then update it with the split. The reason is, I need the whole
+> enchilada applied and I don't want to bother tracking iterations
+> and all the little segments (of which you already have 30).
+> Until then, ub will have a race by using your original small patch.
 
-Index: linux-2.6-x86/arch/x86/kernel/ptrace.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/ptrace.c	2007-12-10 11:14:26.%N +0100
-+++ linux-2.6-x86/arch/x86/kernel/ptrace.c	2007-12-10 11:34:20.%N +0100
-@@ -479,26 +479,33 @@
- 	return ds_get_bts_size((void *)child->thread.ds_area_msr);
- }
- 
--static int ptrace_bts_get_index(struct task_struct *child)
--{
--	if (!child->thread.ds_area_msr)
--		return -ENXIO;
--
--	return ds_get_bts_index((void *)child->thread.ds_area_msr);
--}
--
- static int ptrace_bts_read_record(struct task_struct *child,
- 				  long index,
- 				  struct bts_struct __user *out)
- {
- 	struct bts_struct ret;
- 	int retval;
-+	int bts_size;
-+	int bts_index;
- 
- 	if (!child->thread.ds_area_msr)
- 		return -ENXIO;
- 
-+	if (index < 0)
-+		return -EINVAL;
-+
-+	bts_size = ds_get_bts_size((void *)child->thread.ds_area_msr);
-+	if (bts_size <= index)
-+		return -EINVAL;
-+
-+	/* translate the ptrace bts index into the ds bts index */
-+	bts_index = ds_get_bts_index((void *)child->thread.ds_area_msr);
-+	bts_index -= (index + 1);
-+	if (bts_index < 0)
-+		bts_index += bts_size;
-+
- 	retval = ds_read_bts((void *)child->thread.ds_area_msr,
--			     index, &ret);
-+			     bts_index, &ret);
- 	if (retval)
- 		return retval;
- 
-@@ -813,10 +820,6 @@
- 		ret = ptrace_bts_get_buffer_size(child);
- 		break;
- 
--	case PTRACE_BTS_GET_INDEX:
--		ret = ptrace_bts_get_index(child);
--		break;
--
- 	case PTRACE_BTS_READ_RECORD:
- 		ret = ptrace_bts_read_record
- 			(child, data,
-@@ -1017,7 +1020,6 @@
- 	case PTRACE_BTS_MAX_BUFFER_SIZE:
- 	case PTRACE_BTS_ALLOCATE_BUFFER:
- 	case PTRACE_BTS_GET_BUFFER_SIZE:
--	case PTRACE_BTS_GET_INDEX:
- 	case PTRACE_BTS_READ_RECORD:
- 	case PTRACE_BTS_CONFIG:
- 	case PTRACE_BTS_STATUS:
-Index: linux-2.6-x86/include/asm-x86/ptrace-abi.h
-===================================================================
---- linux-2.6-x86.orig/include/asm-x86/ptrace-abi.h	2007-12-10 11:14:26.%N +0100
-+++ linux-2.6-x86/include/asm-x86/ptrace-abi.h	2007-12-10 11:16:27.%N +0100
-@@ -99,32 +99,27 @@
-    ENXIO........no buffer allocated */
- #define PTRACE_BTS_GET_BUFFER_SIZE 42
- 
--/* Return the index of the next bts record to be written,
--   if successful; -1, otherwise.
--   EOPNOTSUPP...processor does not support bts tracing
--   ENXIO........no buffer allocated
--   After the first warp-around, this is the start of the circular bts buffer. */
--#define PTRACE_BTS_GET_INDEX 43
--
--/* Read the DATA'th bts record into a ptrace_bts_record buffer provided in ADDR.
-+/* Read the DATA'th bts record into a ptrace_bts_record buffer
-+   provided in ADDR.
-+   Records are ordered from newest to oldest.
-    Return 0, if successful; -1, otherwise
-    EOPNOTSUPP...processor does not support bts tracing
-    ENXIO........no buffer allocated
-    EINVAL.......invalid index */
--#define PTRACE_BTS_READ_RECORD 44
-+#define PTRACE_BTS_READ_RECORD 43
- 
- /* Configure last branch trace; the configuration is given as a bit-mask of
-    PTRACE_BTS_O_* options in DATA; parameter ADDR is ignored.
-    Return 0, if successful; -1, otherwise
-    EOPNOTSUPP...processor does not support bts tracing
-    ENXIO........no buffer allocated */
--#define PTRACE_BTS_CONFIG 45
-+#define PTRACE_BTS_CONFIG 44
- 
- /* Return the configuration as bit-mask of PTRACE_BTS_O_* options
-    if successful; -1, otherwise.
-    EOPNOTSUPP...processor does not support bts tracing
-    ENXIO........no buffer allocated */
--#define PTRACE_BTS_STATUS 46
-+#define PTRACE_BTS_STATUS 45
- 
- /* Trace configuration options */
- /* Collect last branch trace */
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+No.
+Are you doubting that the current ub code has the problem, aren't you?
+My patch shouldn't introduce a NEW problem to ub.
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+I have investigated all code paths which call ub_end_rq() in ub.c,
+and confirmed that ub_end_rq() is always called with the queue lock
+held.  (sc->lock is registered as a queue lock.)
 
+So there is no such race in the current ub code.
+You don't need to rewrite ub.
+
+Thanks,
+Kiyoshi Ueda
