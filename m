@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbXLNGHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbXLNGJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757522AbXLNGHc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 01:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbXLNGHY
+	id S1758601AbXLNGJj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 01:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbXLNGJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 01:07:24 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50625 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbXLNGHY (ORCPT
+	Fri, 14 Dec 2007 01:09:30 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:41109 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751866AbXLNGJ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 01:07:24 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <gregkh@suse.de>
-Cc: venkatesh.pallipadi@intel.com, ak@muc.de, rdreier@cisco.com,
-       torvalds@linux-foundation.org, airlied@skynet.ie, davej@redhat.com,
-       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [RFC PATCH 08/12] PAT 64b: coherent mmap and sysfs bin ioctl
-References: <20071213235543.568682000@intel.com>
-	<20071213235712.813201000@intel.com>
-	<m18x3yq633.fsf@ebiederm.dsl.xmission.com>
-	<20071214060203.GA10100@suse.de>
-Date: Thu, 13 Dec 2007 23:04:21 -0700
-In-Reply-To: <20071214060203.GA10100@suse.de> (Greg KH's message of "Thu, 13
-	Dec 2007 22:02:03 -0800")
-Message-ID: <m1k5nhq0be.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 14 Dec 2007 01:09:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:x-image-url:content-type:content-transfer-encoding:mime-version:subject:date:x-mailer;
+        b=o8nTSD3O6iqeaXCF+qaGLXjBxODAYwBw2U3NdA9ORooGmtbUPAYDz6jQrtTGsKaEd/i5nXQS+n3vCEVQZmKqjuffYd3wCC9VHBZKCRk3S8j5BFTVAiIoHhjK3PQixSAxmOnJxbkUAPINtMl+vYMA1z97MTIdSAGSIViIx8IfkI4=
+Message-Id: <755EFE0F-D503-4DD7-9FEC-277DDD5FB097@gmail.com>
+From: Roberto Jung Drebes <drebes@gmail.com>
+To: linux-kernel@vger.kernel.org
+X-Image-Url: http://www.hal.rcast.u-tokyo.ac.jp/~drebes/drebes.tif
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Fault injection capability not exported
+Date: Fri, 14 Dec 2007 15:09:22 +0900
+X-Mailer: Apple Mail (2.915)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <gregkh@suse.de> writes:
 
-> On Thu, Dec 13, 2007 at 08:59:44PM -0700, Eric W. Biederman wrote:
->> venkatesh.pallipadi@intel.com writes:
->> 
->> > Forward port of coherent-mmap.patch and sysfs-bin-ioctl.patch to x86 tree.
->> >
->> > TBD: Do we need the ioctl interface to sysfs or get the type attribute
->> > through a different sysfs file. And then actually specify the attribute
->> > while doing pci_mmap_page_range ;-)
->> 
->> This ioctl is not connected up.  So regardless of the wisdom of ioctls on
->> sysfs adding the infrastructure and then not using it is broken.
->
-> Ok, I guess the "use an ioctl on a binary file in sysfs for PCI devices"
-> makes a bit more sense (hint, next time explain this in the changelog
-> instead of just saying that it is being added), but I would like to see
-> how this is all hooked up before passing final judgement on it.
+Hello there,
+
+I want to use the fault injection capability infrastructure to  
+implement a simple fault injector which I can use in one of my  
+modules. But when trying to call init_fault_attr_dentries (*), I got  
+an undefined warning and noticed that this symbol is not exported even  
+when CONFIG_FAULT_INJECTION and CONFIG_FAULT_INJECTION_DEBUG_FS are  
+defined.
+
+Then, I checked the implementation of the framework in lib/fault- 
+injection.c and noticed that, really, it doesn't export any symbol.
+
+Is the infrastructure unavailable to be used by kernel modules?
+
+(*) I noticed some inconsistencies in the documentation, like calling  
+the init function as init_fault_attr_entries instead of  
+init_fault_attr_dentries. I can submit an updated documentation after  
+I can make it work.
+
+Please CC me any reply,
+
+Thanks in advance,
+
+-- 
+Roberto Jung Drebes - Tokyo, Japan
+<drebes@gmail.com>
+http://dorebesu.blogspot.com/
 
 
-The obvious thing to do would be to hook it up like:
-drivers/pci/proc.c:proc_bus_pci_ioctl.
 
-Eric
+
+
+
