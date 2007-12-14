@@ -1,113 +1,412 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbXLNQHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbXLNQIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756615AbXLNQHF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 11:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762546AbXLNQGn
+	id S933565AbXLNQIb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 11:08:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756816AbXLNQIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 11:06:43 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:57859 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758029AbXLNQGl (ORCPT
+	Fri, 14 Dec 2007 11:08:23 -0500
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:4791 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754510AbXLNQIV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 11:06:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=AST5jgW0TiAUV9Up1cTpQ8Ux8TIgbEiZSM1kUK50xXFhwUxPY7JwBQhyZFyPVzpmWYKLciuom61QxbsZRi1qp+6C7KTSmiN1jtFUcRFz10OTeazAA587/Igaepv7D8G+W3RsmwWY/WLFCX+VueUprP5o7ldwxBndqZUNdJ3F3/c=
-Message-ID: <2c0942db0712140806p61ec06d5nf3289dab938fd93a@mail.gmail.com>
-Date: Fri, 14 Dec 2007 08:06:39 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Michael Buesch" <mb@bu3sch.de>
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
-Cc: "Ingo Molnar" <mingo@elte.hu>, bcm43xx-dev@lists.berlios.de,
-       "Daniel Walker" <dwalker@mvista.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux@bohmer.net, jonathan@jonmasters.org,
-       matthias.kaehlcke@gmail.com, kjwinchester@gmail.com,
-       "John Linville" <linville@tuxdriver.com>
-In-Reply-To: <200712141409.00311.mb@bu3sch.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 14 Dec 2007 11:08:21 -0500
+Date: Fri, 14 Dec 2007 17:08:18 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: "eric miao" <eric.y.miao@gmail.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 2.6.24-rc4-mm 1/2] gpiolib: basic support for  16-bit
+ PCA9539 GPIO expander[
+Message-ID: <20071214170818.72838f75@hyperion.delvare>
+In-Reply-To: <200712112029.49692.david-b@pacbell.net>
+References: <f17812d70712100139q31c95d6er12105ebbe94b3909@mail.gmail.com>
+	<200712112029.49692.david-b@pacbell.net>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071213003028.676998182@mvista.com>
-	 <200712141331.59410.mb@bu3sch.de> <20071214125327.GA10995@elte.hu>
-	 <200712141409.00311.mb@bu3sch.de>
-X-Google-Sender-Auth: c7f2793dc18465b8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all. Perhaps I can inject some facts into this?
+Hi David,
 
-On Dec 14, 2007 5:08 AM, Michael Buesch <mb@bu3sch.de> wrote:
-> > > This user did get the following messages in dmesg:
-> > >
-> > > b43err(dev->wl, "Firmware file \"%s\" not found "
-> > >        "or load failed.\n", path);
-> > > b43err(wl, "You must go to "
-> > >        "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
-> > >        "and download the correct firmware (version 4).\n");
-> > >
-> > > I'm not sure how I can improve that even more. There is a full URL
-> > > describing how to get the device workin in _full_ detail.
+On Tue, 11 Dec 2007 20:29:49 -0800, David Brownell wrote:
+> > +static int __devinit pca9539_probe(struct i2c_client *client)
+> > +{
+> > +	...
+> > +	/* initialize registers */
+> > +	chip->reg_output = 0xffff;
+> > +	chip->reg_direction = 0xffff;
+> > +
+> > +	pca9539_write_reg(chip, PCA9539_OUTPUT, chip->reg_output);
+> > +	pca9539_write_reg(chip, PCA9539_DIRECTION, chip->reg_direction);
+> 
+> I thought you were going to change that code to use whatever values
+> were previously found in those registers?  What this does is change
+> those values to act as if the chip just came from reset.  Which isn't
+> the best approach when a bootloader initialized it, or if the values
+> were otherwise set up by something ... the previous kernel before a
+> kexec, this one before "rmmod pca9539", or something similar.
 
-Yes, but only if you load rfkill-input and rfkill by hand, prior.
-Without those, dmesg is entirely silent, and nothing works even to the
-stage that I got it to last night. I had to search the bcm43xx-dev
-archives to find that out, and it was a message from Larry saying that
-he'd finally tracked down why it was working for some people and not
-others -- some of us build fully modular kernels.
+I fully agree, preserving the initial values as much as possible is
+better.
 
-That I'm one of the first people to hit that makes me think that your
-testing base so far has been miniscule.
+> > +MODULE_AUTHOR("Ben Gardner <bgardner@wabtec.com>");
+> 
+> But not you?
 
-Once I did that, the dmesg after loading did indeed contain the URL,
-and thank you for that.
+I'm not even sure if Ben can be said to be an author of this new
+driver, as there is almost no common code between the old driver and
+the new one.
 
-> > well i dont have this hardware, but the following description in this
-> > thread seems to contradict that:
-> >
-> > || Well, doing an `rmmod bcm43xx ; modprobe ssb b43` gives me nothing in
-> > || dmesg other than lines related to the bcm43xx driver.
-> > || iwconfig/ifconfig do not see the interface either.
+> Here's a slightly cleaned up version ... address the issues above
+> and I'd say this one is ready to join the queue (after the other
+> gpiolib patches).
+> 
+> - Dave
+> 
+> ============	SNIP
+> From: eric miao <eric.miao@marvell.com>
+> 
+> Basic support for 16-bit PCA9539 GPIO expander
+> 
+>  1. use 16-bit register access to simplify the logic, cache OUTPUT
+>     and DIRECTION registers for fast access
+> 
+>  2. platform code is required to setup
+>    (a) the numbering of GPIO for PCA9539 (base and number)
+>    (b) pass "pca9539_platform_data" within "i2c_board_info"
+> 
+> Derived from drivers/i2c/chips/pca9539.c (which has no current known users).
+> 
+> Signed-off-by: eric miao <eric.miao@marvell.com>
+> Acked-by: Ben Gardner <bgardner@wabtec.com>
+> 
+>  - Alphabetized Kconfig and Makefile
+>  - Corrected description:  not "Philips", but NXP or TI
+>  - Use dev_err() not printk
+>  - Move module_{init,exit} next to those routines
+>  - Did NOT change clobber of output and direction registers
 
-See above. Without a modprobe of rfkill, rfkill-input that is the case.
+I think you should.
 
-> Let's quote another of Ray's statements:
-> "And ifconfig -a does indeed show it, sorry about that."
->
-> So if he did then try to initialize that device, that clearly
-> _did_ show up in a standard place where network devices are
-> expected to show up, he did see the message I quoted.
-> Well, what if he did not try to initialize the device by doing
-> an "ifconfig wlanX up"? That can hardly be my fault, right?
+> 
+> ---
+>  drivers/gpio/Kconfig        |   10 +
+>  drivers/gpio/Makefile       |    1 
+>  drivers/gpio/pca9539.c      |  249 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/i2c/pca9539.h |   18 +++
+>  4 files changed, 278 insertions(+)
+> 
+> --- a/drivers/gpio/Kconfig	2007-12-11 09:30:43.000000000 -0800
+> +++ b/drivers/gpio/Kconfig	2007-12-11 17:16:16.000000000 -0800
+> @@ -9,6 +9,16 @@ menu "GPIO Expanders"
+>  
+>  comment "I2C GPIO expanders:"
+>  
+> +config GPIO_PCA9539
+> +	tristate "PCA9539 16-bit I/O port"
+> +	depends on I2C
+> +	help
+> +	  Say yes here to support the PCA9539 16-bit I/O port.  These
+> +	  parts are made by NXP and TI.
+> +
+> +	  This driver can also be built as a module.  If so, the module
+> +	  will be called pca9539.
+> +
+>  config GPIO_PCF857X
+>  	tristate "PCF857x, PCA857x, and PCA967x I2C GPIO expanders"
+>  	depends on I2C
+> --- a/drivers/gpio/Makefile	2007-12-11 09:30:43.000000000 -0800
+> +++ b/drivers/gpio/Makefile	2007-12-11 17:15:18.000000000 -0800
+> @@ -1,4 +1,5 @@
+>  # gpio support: dedicated expander chips, etc
+>  
+>  obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
+> +obj-$(CONFIG_GPIO_PCA9539)	+= pca9539.o
+>  obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ b/drivers/gpio/pca9539.c	2007-12-11 19:54:57.000000000 -0800
+> @@ -0,0 +1,249 @@
+> +/*
+> +    pca9539.c - 16-bit I/O port with interrupt and reset
+> +
+> +    Copyright (C) 2005 Ben Gardner <bgardner@wabtec.com>
+> +    Copyright (C) 2007 Marvell Internation Ltd.
+> +
+> +    This program is free software; you can redistribute it and/or modify
+> +    it under the terms of the GNU General Public License as published by
+> +    the Free Software Foundation; version 2 of the License.
+> +*/
+> +
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/i2c.h>
+> +#include <linux/i2c/pca9539.h>
+> +
+> +#include <asm/gpio.h>
+> +
+> +
+> +#define NR_PCA9539_GPIOS	16
+> +
+> +#define PCA9539_INPUT		0
+> +#define PCA9539_OUTPUT		2
+> +#define PCA9539_INVERT		4
+> +#define PCA9539_DIRECTION	6
+> +
+> +struct pca9539_chip {
+> +	unsigned gpio_start;
+> +	uint16_t reg_output;
+> +	uint16_t reg_direction;
+> +
+> +	struct i2c_client *client;
+> +	struct gpio_chip gpio_chip;
+> +};
+> +
+> +static int pca9539_write_reg(struct pca9539_chip *chip, int reg, uint16_t val)
+> +{
+> +	return i2c_smbus_write_word_data(chip->client, reg, val);
+> +}
+> +
+> +static int pca9539_read_reg(struct pca9539_chip *chip, int reg, uint16_t *val)
+> +{
+> +	int ret;
+> +
+> +	ret = i2c_smbus_read_word_data(chip->client, reg);
+> +	if (ret < 0) {
+> +		dev_err(&chip->client->dev, "read error %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	*val = (uint16_t)ret;
+> +	return 0;
+> +}
+> +
+> +static int pca9539_gpio_direction_input(struct gpio_chip *gc, unsigned off)
+> +{
+> +	struct pca9539_chip *chip;
+> +	uint16_t reg_val;
+> +	int ret;
+> +
+> +	chip = container_of(gc, struct pca9539_chip, gpio_chip);
+> +
+> +	reg_val = chip->reg_direction | (1u << off);
+> +	ret = pca9539_write_reg(chip, PCA9539_DIRECTION, reg_val);
+> +	if (ret)
+> +		return ret;
+> +
+> +	chip->reg_direction = reg_val;
+> +	return 0;
+> +}
+> +
+> +static int pca9539_gpio_direction_output(struct gpio_chip *gc,
+> +		unsigned off, int val)
+> +{
+> +	struct pca9539_chip *chip;
+> +	uint16_t reg_val;
+> +	int ret;
+> +
+> +	chip = container_of(gc, struct pca9539_chip, gpio_chip);
+> +
+> +	/* set output level */
+> +	if (val)
+> +		reg_val = chip->reg_output | (1u << off);
+> +	else
+> +		reg_val = chip->reg_output & ~(1u << off);
+> +
+> +	ret = pca9539_write_reg(chip, PCA9539_OUTPUT, reg_val);
+> +	if (ret)
+> +		return ret;
+> +
+> +	chip->reg_output = reg_val;
+> +
+> +	/* then direction */
+> +	reg_val = chip->reg_direction & ~(1u << off);
+> +	ret = pca9539_write_reg(chip, PCA9539_DIRECTION, reg_val);
+> +	if (ret)
+> +		return ret;
+> +
+> +	chip->reg_direction = reg_val;
+> +	return 0;
+> +}
+> +
+> +static int pca9539_gpio_get_value(struct gpio_chip *gc, unsigned off)
+> +{
+> +	struct pca9539_chip *chip;
+> +	uint16_t reg_val;
+> +	int ret;
+> +
+> +	chip = container_of(gc, struct pca9539_chip, gpio_chip);
+> +
+> +	ret = pca9539_read_reg(chip, PCA9539_INPUT, &reg_val);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return (reg_val & (1u << off)) ? 1 : 0;
 
-Heeeeellooooo? I tried that. It failed. What *I'm* talking about here
-is that this everyone needs to be aware that this is *not* a drop in
-replacement for bcm43xx, and if I'm having problems (not a kernel
-hacker, but I make my living writing code), then sheesh, you're gonna
-have a flood of people needing hand-holding on this.
+As I recall, this function doesn't need to return exactly one for
+"set", so the code can be simplified a bit.
 
-I still don't understand why bcm43xx is sane enough to create an eth1
-entry, and b43 needs more handholding, but I'm going to hold off on
-commenting farther on that until I download the newer firmware. As it
-stands, I haven't given b43 an honest test yet.
+> +}
+> +
+> +static void pca9539_gpio_set_value(struct gpio_chip *gc, unsigned off, int val)
+> +{
+> +	struct pca9539_chip *chip;
+> +	uint16_t reg_val;
+> +	int ret;
+> +
+> +	chip = container_of(gc, struct pca9539_chip, gpio_chip);
+> +
+> +	if (val)
+> +		reg_val = chip->reg_output | (1u << off);
+> +	else
+> +		reg_val = chip->reg_output & ~(1u << off);
+> +
+> +	ret = pca9539_write_reg(chip, PCA9539_OUTPUT, reg_val);
+> +	if (ret)
+> +		return;
+> +
+> +	chip->reg_output = reg_val;
+> +}
+> +
+> +static int pca9539_init_gpio(struct pca9539_chip *chip)
+> +{
+> +	struct gpio_chip *gc;
+> +
+> +	gc = &chip->gpio_chip;
+> +
+> +	gc->direction_input  = pca9539_gpio_direction_input;
+> +	gc->direction_output = pca9539_gpio_direction_output;
+> +	gc->get = pca9539_gpio_get_value;
+> +	gc->set = pca9539_gpio_set_value;
+> +
+> +	gc->base = chip->gpio_start;
+> +	gc->ngpio = NR_PCA9539_GPIOS;
+> +	gc->label = "pca9539";
+> +
+> +	return gpiochip_add(gc);
+> +}
+> +
+> +static int __devinit pca9539_probe(struct i2c_client *client)
+> +{
+> +	struct pca9539_platform_data *pdata;
+> +	struct pca9539_chip *chip;
+> +	int ret;
+> +
+> +	pdata = client->dev.platform_data;
+> +	if (pdata == NULL)
+> +		return -ENODEV;
+> +
+> +	chip = kzalloc(sizeof(struct pca9539_chip), GFP_KERNEL);
+> +	if (chip == NULL)
+> +		return -ENOMEM;
+> +
+> +	chip->client = client;
+> +
+> +	chip->gpio_start = pdata->gpio_base;
+> +
+> +	/* initialize registers */
+> +	chip->reg_output = 0xffff;
+> +	chip->reg_direction = 0xffff;
+> +
+> +	pca9539_write_reg(chip, PCA9539_OUTPUT, chip->reg_output);
+> +	pca9539_write_reg(chip, PCA9539_DIRECTION, chip->reg_direction);
+> +
+> +	/* set platform specific polarity inversion */
+> +	pca9539_write_reg(chip, PCA9539_INVERT, pdata->invert);
+> +
+> +	ret = pca9539_init_gpio(chip);
+> +	if (ret)
+> +		goto out_failed;
+> +
+> +	if (pdata->setup) {
+> +		ret = pdata->setup(client, chip->gpio_chip.base,
+> +				chip->gpio_chip.ngpio, pdata->context);
+> +		if (ret < 0)
+> +			dev_dbg(&client->dev, "setup failed, %d\n", ret);
+> +	}
+> +
+> +	i2c_set_clientdata(client, chip);
+> +	return 0;
+> +
+> +out_failed:
+> +	kfree(chip);
+> +	return ret;
+> +}
+> +
+> +static int pca9539_remove(struct i2c_client *client)
+> +{
+> +	struct pca9539_platform_data *pdata = client->dev.platform_data;
+> +	struct pca9539_chip *chip = i2c_get_clientdata(client);
+> +	int ret = 0;
+> +
+> +	if (pdata->teardown) {
+> +		ret = pdata->teardown(client, chip->gpio_chip.base,
+> +				chip->gpio_chip.ngpio, pdata->context);
+> +		if (ret < 0)
+> +			dev_dbg(&client->dev, "teardown failed, %d\n", ret);
+> +	}
+> +
+> +	ret = gpiochip_remove(&chip->gpio_chip);
+> +	if (ret) {
+> +		dev_err(&client->dev, "failed remove gpio_chip\n");
+> +		return ret;
+> +	}
+> +
+> +	kfree(chip);
+> +	return 0;
+> +}
+> +
+> +static struct i2c_driver pca9539_driver = {
+> +	.driver = {
+> +		.name	= "pca9539",
+> +	},
+> +	.probe		= pca9539_probe,
+> +	.remove		= pca9539_remove,
+> +};
+> +
+> +static int __init pca9539_init(void)
+> +{
+> +	return i2c_add_driver(&pca9539_driver);
+> +}
+> +module_init(pca9539_init);
+> +
+> +static void __exit pca9539_exit(void)
+> +{
+> +	i2c_del_driver(&pca9539_driver);
+> +}
+> +module_exit(pca9539_exit);
+> +
+> +MODULE_AUTHOR("Ben Gardner <bgardner@wabtec.com>");
+> +MODULE_DESCRIPTION("PCA9539 driver");
+> +MODULE_LICENSE("GPL");
+> +
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ b/include/linux/i2c/pca9539.h	2007-12-11 09:30:44.000000000 -0800
+> @@ -0,0 +1,18 @@
+> +/* platform data for the PCA9539 16-bit I/O expander driver */
+> +
+> +struct pca9539_platform_data {
+> +	/* number of the first GPIO */
+> +	unsigned	gpio_base;
+> +
+> +	/* initial polarity inversion setting */
+> +	uint16_t	invert;
+> +
+> +	void		*context;	/* param to setup/teardown */
+> +
+> +	int		(*setup)(struct i2c_client *client,
+> +				unsigned gpio, unsigned ngpio,
+> +				void *context);
+> +	int		(*teardown)(struct i2c_client *client,
+> +				unsigned gpio, unsigned ngpio,
+> +				void *context);
+> +};
+> 
 
-Please keep in mind that I'm really just trying to report my issues
-with the code before others hit the same thing, and trying to do this
-in a way that's productive for you all. I actually do understand what
-an amazing amount of effort you've poured into bcm43xx and the b43's,
-and again, I am thankful. I understand that bcm43xx is effectively
-dead, and it has architectural problems (locking, at minimum), that
-have been a problem for at least the past two years that *I've* been
-using it, probably more.
+No other objection.
 
-The goal here is to make sure that your shiny new code will *work* for
-everyone, okay? Not to attack you, as I don't think you in any way
-deserve an attack. If I come off that way, I'm sorry. But likewise, if
-you could give me the benefit of the doubt, this conversation would go
-a lot smoother.
-
-Thanks.
-
-Ray
+-- 
+Jean Delvare
