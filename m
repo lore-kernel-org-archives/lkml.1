@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935124AbXLNAqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935399AbXLNAqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935124AbXLNAqL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 19:46:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764368AbXLNAp5
+	id S935399AbXLNAqf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 19:46:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933862AbXLNAp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 19:45:57 -0500
-Received: from ns1.suse.de ([195.135.220.2]:36029 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762584AbXLNAp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 19:45:56 -0500
-Date: Thu, 13 Dec 2007 16:34:26 -0800
-From: Greg KH <gregkh@suse.de>
-To: Oliv?r Pint?r <oliver.pntr@gmail.com>
-Cc: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, David Chinner <dgc@sgi.com>,
-       Lachlan McIlroy <lachlan@sgi.com>
-Subject: Re: [patch 32/36] XFS: Make xfsbufd threads freezable
-Message-ID: <20071214003426.GB10642@suse.de>
-References: <20071213062511.265908583@mini.kroah.org> <20071213063529.GG25301@kroah.com> <F1D642E5A91BC94D9504EC83AE19E6B001520239@ecqcmtlmail3.quebec.int.ec.gc.ca> <6101e8c40712131107r23cda32p86d2a3e22a3adcb8@mail.gmail.com> <6101e8c40712131116n6446d564s1046e5f8914e7a0a@mail.gmail.com>
+	Thu, 13 Dec 2007 19:45:59 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:42688 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932997AbXLNAp6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 19:45:58 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
+Date: Fri, 14 Dec 2007 01:43:15 +0100
+User-Agent: KMail/1.9.6
+Cc: bcm43xx-dev@lists.berlios.de, "Daniel Walker" <dwalker@mvista.com>,
+       akpm@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
+       kjwinchester@gmail.com, mbuesch@freenet.de,
+       "John Linville" <linville@tuxdriver.com>
+References: <20071213003028.676998182@mvista.com> <200712131445.39770.mb@bu3sch.de> <2c0942db0712131604m41c34da9hf3122b0603f3af96@mail.gmail.com>
+In-Reply-To: <2c0942db0712131604m41c34da9hf3122b0603f3af96@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <6101e8c40712131116n6446d564s1046e5f8914e7a0a@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200712140143.16451.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 08:16:46PM +0100, Oliv?r Pint?r wrote:
-> http://lwn.net/Articles/235908/
+On Friday 14 December 2007 01:05:00 Ray Lee wrote:
+> Okay, I had to modprobe rfkill-input and rfkill by hand, didn't
+> realize that. Hopefully that'll be automatic soon. Regardless, upon
+> doing so, and loading ssb and b43, it sees my card, but is still not
+> fully functional. iwconfig sees:
 > 
-> or then drop this patch... while to big change are im kernel
+> lo        no wireless extensions.
+> eth0      no wireless extensions.
+> tun0      no wireless extensions.
+> eth1      no wireless extensions.
+> wlan0_rename  IEEE 802.11g  ESSID:""
+>           Mode:Managed  Channel:0  Access Point: Not-Associated
+>           Tx-Power=0 dBm
+>           Retry min limit:7   RTS thr:off   Fragment thr=2346 B
+>           Link Quality:0  Signal level:0  Noise level:0
+>           Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
+>           Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+> 
+> (eth0 is ethernet, eth1 doesn't exist -- usually it's the wireless.)
+> 
+> `ifconfig` doesn't see eth1 or wlan0_rename.
+> 
+> What else might I be doing wrong?
 
-It's now dropped.
+I don't know. Try ifconfig -a
+Or tell udev to not crap up your device names.
 
-Oliver, in the future, can you at least test the patches you wish to
-have applied to the -stable tree?  :)
+> Regardless, perhaps scheduling 
+> bcm43xx for removal in 2.6.26 is a bit premature.
 
-thanks,
+Oh come on. b43 is more than a year old now. How long should we wait?
+Two or three? Forever?
 
-greg k-h
+-- 
+Greetings Michael.
