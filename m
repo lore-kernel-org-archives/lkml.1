@@ -1,66 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935099AbXLNCJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934183AbXLNCNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935099AbXLNCJz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 21:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763276AbXLNCJq
+	id S934183AbXLNCNU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 21:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764820AbXLNCNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 21:09:46 -0500
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:63893 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762927AbXLNCJp (ORCPT
+	Thu, 13 Dec 2007 21:13:10 -0500
+Received: from wr-out-0506.google.com ([64.233.184.234]:64649 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759381AbXLNCNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 21:09:45 -0500
-Message-ID: <4761E5D6.7040801@lwfinger.net>
-Date: Thu, 13 Dec 2007 18:09:26 -0800
-From: Larry Finger <larry.finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 13 Dec 2007 21:13:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ucVQQM9sLDDTn0cZmNMzCHvyWMKsMjr8T8vux4wBlpKkp+oJmaqBljmtucidHoDB/UGAC5Y3gi3lTR7Cr/ZnKuZpBHX7d613pv5gPeyke21QKUBlRClLOHY+8/o+a9ZCf/MYTQ/DQpiXJLNLQ8lK5wuF2MvLWWASundZPEDkpOk=
+Message-ID: <a8e1da0712131813w1b651cf5x4048e2362659cc43@mail.gmail.com>
+Date: Fri, 14 Dec 2007 10:13:06 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Nick Kossifidis" <mickflemm@gmail.com>
+Subject: 2.6.24-rc5-mm1 ath5k build issue
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jirislaby@gmail.com, mcgrof@gmail.com, linux-wireless@vger.kernel.org,
+       ath5k-devel@lists.ath5k.org,
+       "John W. Linville" <linville@tuxdriver.com>
 MIME-Version: 1.0
-To: Michael Buesch <mb@bu3sch.de>
-CC: Ray Lee <ray-lk@madrabbit.org>, Daniel Walker <dwalker@mvista.com>,
-       matthias.kaehlcke@gmail.com, mbuesch@freenet.de,
-       linux-kernel@vger.kernel.org, bcm43xx-dev@lists.berlios.de,
-       linux@bohmer.net, kjwinchester@gmail.com, jonathan@jonmasters.org,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
- to	mutex
-References: <20071213003028.676998182@mvista.com>	<200712131445.39770.mb@bu3sch.de>	<2c0942db0712131604m41c34da9hf3122b0603f3af96@mail.gmail.com> <200712140143.16451.mb@bu3sch.de>
-In-Reply-To: <200712140143.16451.mb@bu3sch.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Buesch wrote:
-> On Friday 14 December 2007 01:05:00 Ray Lee wrote:
->> Okay, I had to modprobe rfkill-input and rfkill by hand, didn't
->> realize that. Hopefully that'll be automatic soon. Regardless, upon
->> doing so, and loading ssb and b43, it sees my card, but is still not
->> fully functional. iwconfig sees:
->>
->> lo        no wireless extensions.
->> eth0      no wireless extensions.
->> tun0      no wireless extensions.
->> eth1      no wireless extensions.
->> wlan0_rename  IEEE 802.11g  ESSID:""
->>           Mode:Managed  Channel:0  Access Point: Not-Associated
->>           Tx-Power=0 dBm
->>           Retry min limit:7   RTS thr:off   Fragment thr=2346 B
->>           Link Quality:0  Signal level:0  Noise level:0
->>           Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
->>           Tx excessive retries:0  Invalid misc:0   Missed beacon:0
->>
->> (eth0 is ethernet, eth1 doesn't exist -- usually it's the wireless.)
->>
->> `ifconfig` doesn't see eth1 or wlan0_rename.
->>
->> What else might I be doing wrong?
+On Dec 10, 2007 1:55 AM, Nick Kossifidis <mickflemm@gmail.com> wrote:
+> 2007/12/7, Dave Young <hidave.darkstar@gmail.com>:
+>
+> > Hi,
+> >
+> > 2.6.24-rc4-mm1 build failed at drivers/net/wireless/ath5k/base.c for some inline functions like this:
+> > drivers/net/wireless/ath5k/base.c:292: sorry, unimplemented: inlining failed in call to 'ath5k_extend_tsf': function body not available
+> >
+> > fix it with adjust the order of inline function body.
+> >
+> > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> >
+> > ---
+> > drivers/net/wireless/ath5k/base.c |   67 ++++++++++++++++----------------------
+> > 1 file changed, 29 insertions(+), 38 deletions(-)
+> >
+> > diff -upr linux/drivers/net/wireless/ath5k/base.c linux.new/drivers/net/wireless/ath5k/base.c
+> > --- linux/drivers/net/wireless/ath5k/base.c     2007-12-07 10:01:42.000000000 +0800
+> > +++ linux.new/drivers/net/wireless/ath5k/base.c 2007-12-07 10:01:49.000000000 +0800
+> > @@ -250,8 +250,19 @@ static int         ath5k_rxbuf_setup(struct ath
+> >  static int     ath5k_txbuf_setup(struct ath5k_softc *sc,
+> >                                 struct ath5k_buf *bf,
+> >                                 struct ieee80211_tx_control *ctl);
+> > +
+> >  static inline void ath5k_txbuf_free(struct ath5k_softc *sc,
+> > -                               struct ath5k_buf *bf);
+> > +                               struct ath5k_buf *bf)
+> > +{
+> > +       BUG_ON(!bf);
+> > +       if (!bf->skb)
+> > +               return;
+> > +       pci_unmap_single(sc->pdev, bf->skbaddr, bf->skb->len,
+> > +                       PCI_DMA_TODEVICE);
+> > +       dev_kfree_skb(bf->skb);
+> > +       bf->skb = NULL;
+> > +}
+> > +
+> >  /* Queues setup */
+> >  static struct  ath5k_txq *ath5k_txq_setup(struct ath5k_softc *sc,
+> >                                 int qtype, int subtype);
+> > @@ -278,14 +289,29 @@ static int        ath5k_beacon_setup(struct at
+> >                                 struct ieee80211_tx_control *ctl);
+> >  static void    ath5k_beacon_send(struct ath5k_softc *sc);
+> >  static void    ath5k_beacon_config(struct ath5k_softc *sc);
+> > -static inline u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp);
+> > +
+> > +static inline u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp)
+> > +{
+> > +       u64 tsf = ath5k_hw_get_tsf64(ah);
+> > +
+> > +       if ((tsf & 0x7fff) < rstamp)
+> > +               tsf -= 0x8000;
+> > +
+> > +       return (tsf & ~0x7fff) | rstamp;
+> > +}
+> > +
+> >  /* Interrupt handling */
+> >  static int     ath5k_init(struct ath5k_softc *sc);
+> >  static int     ath5k_stop_locked(struct ath5k_softc *sc);
+> >  static int     ath5k_stop_hw(struct ath5k_softc *sc);
+> >  static irqreturn_t ath5k_intr(int irq, void *dev_id);
+> >  static void    ath5k_tasklet_reset(unsigned long data);
+> > -static inline void ath5k_update_txpow(struct ath5k_softc *sc);
+> > +
+> > +static inline void ath5k_update_txpow(struct ath5k_softc *sc)
+> > +{
+> > +       ath5k_hw_set_txpower_limit(sc->ah, 0);
+> > +}
+> > +
+> >  static void    ath5k_calibrate(unsigned long data);
+> >  /* LED functions */
+> >  static void    ath5k_led_off(unsigned long data);
+> > @@ -1341,21 +1367,6 @@ err_unmap:
+> >         return ret;
+> >  }
+> >
+> > -static inline void
+> > -ath5k_txbuf_free(struct ath5k_softc *sc, struct ath5k_buf *bf)
+> > -{
+> > -       BUG_ON(!bf);
+> > -       if (!bf->skb)
+> > -               return;
+> > -       pci_unmap_single(sc->pdev, bf->skbaddr, bf->skb->len,
+> > -                       PCI_DMA_TODEVICE);
+> > -       dev_kfree_skb(bf->skb);
+> > -       bf->skb = NULL;
+> > -}
+> > -
+> > -
+> > -
+> > -
+> >  /**************\
+> >  * Queues setup *
+> >  \**************/
+> > @@ -2046,20 +2057,6 @@ ath5k_beacon_config(struct ath5k_softc *
+> >  #undef TSF_TO_TU
+> >  }
+> >
+> > -static inline
+> > -u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp)
+> > -{
+> > -       u64 tsf = ath5k_hw_get_tsf64(ah);
+> > -
+> > -       if ((tsf & 0x7fff) < rstamp)
+> > -               tsf -= 0x8000;
+> > -
+> > -       return (tsf & ~0x7fff) | rstamp;
+> > -}
+> > -
+> > -
+> > -
+> > -
+> >  /********************\
+> >  * Interrupt handling *
+> >  \********************/
+> > @@ -2295,12 +2292,6 @@ ath5k_tasklet_reset(unsigned long data)
+> >         ath5k_reset(sc->hw);
+> >  }
+> >
+> > -static inline void
+> > -ath5k_update_txpow(struct ath5k_softc *sc)
+> > -{
+> > -       ath5k_hw_set_txpower_limit(sc->ah, 0);
+> > -}
+> > -
+> >  /*
+> >   * Periodically recalibrate the PHY to account
+> >   * for temperature/environment changes.
+> >
+>
+> We'll change their order in the code, plz keep prototype declarations
+> clean. I'll submit a patch asap on this.
+>
 
-Your udev rules are screwed up. In /etc/udev/rules.d/70-persistent-net.rules, you should have a line 
-that looks like
+Hi,
 
-SUBSYSTEM=="net", DRIVERS=="?*", ATTR{address}=="00:1a:73:6b:28:5a", ATTR{type}=="1", NAME="eth1"
+2.6.24-rc5-mm1 still can't built.
 
-with the MAC address for your device. You probably have the ATTR{type}=="1" clause missing.
+Regards
+dave
 
-Larry
+> --
+> GPG ID: 0xD21DB2DB
+> As you read this post global entropy rises. Have Fun ;-)
+> Nick
+>
