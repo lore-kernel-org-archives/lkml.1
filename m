@@ -1,72 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbXLNOvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbXLNOwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbXLNOvS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 09:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbXLNOvK
+	id S1756437AbXLNOwZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 09:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbXLNOwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 09:51:10 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60737 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752813AbXLNOvJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 09:51:09 -0500
-Subject: Re: per BDI dirty limit (was Re: -mm merge plans for 2.6.24)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, greg@kroah.com,
-       Miklos Szeredi <miklos@szeredi.hu>, Neil Brown <neilb@suse.de>
-In-Reply-To: <1193416643.7486.8.camel@heimdal.trondhjem.org>
-References: <20071001142222.fcaa8d57.akpm@linux-foundation.org>
-	 <3ae72650710020421t711caaa8o13d2e685a98e5fe8@mail.gmail.com>
-	 <1191325226.13204.63.camel@twins>
-	 <200710022205.05295.nickpiggin@yahoo.com.au>
-	 <1191406506.4093.35.camel@lov.localdomain>  <1191407872.5572.7.camel@lappy>
-	 <1191418525.4093.87.camel@lov.localdomain> <1193410087.6914.34.camel@twins>
-	 <1193416643.7486.8.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 15:50:56 +0100
-Message-Id: <1197643856.21927.7.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Dec 2007 09:52:17 -0500
+Received: from saeurebad.de ([85.214.36.134]:46694 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752223AbXLNOwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 09:52:16 -0500
+From: Johannes Weiner <hannes-kernel@saeurebad.de>
+To: ego@in.ibm.com
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Paul E McKenney <paulmck@us.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ted Tso <tytso@us.ibm.com>,
+       dvhltc@us.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       Josh Triplett <josh@freedesktop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC PATCH 2/6] Preempt-RCU: Reorganize RCU code into rcuclassic.c and rcupdate.c
+References: <20071213170348.GA25981@in.ibm.com>
+	<20071213171508.GC25981@in.ibm.com>
+Date: Fri, 14 Dec 2007 15:51:14 +0100
+In-Reply-To: <20071213171508.GC25981@in.ibm.com> (Gautham R. Shenoy's message
+	of "Thu, 13 Dec 2007 22:45:08 +0530")
+Message-ID: <x7fxy572jh.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Fri, 2007-10-26 at 12:37 -0400, Trond Myklebust wrote:
-> On Fri, 2007-10-26 at 16:48 +0200, Peter Zijlstra wrote:
-> 
-> > Miklos, Trond: could you suggest a better fmt for the bdi_init_fmt() for your
-> > respective filesystems?
-> <snip>
-> > Index: linux-2.6-2/fs/nfs/client.c
-> > ===================================================================
-> > --- linux-2.6-2.orig/fs/nfs/client.c
-> > +++ linux-2.6-2/fs/nfs/client.c
-> > @@ -678,7 +678,7 @@ static int nfs_probe_fsinfo(struct nfs_s
-> >  		goto out_error;
-> >  
-> >  	nfs_server_set_fsinfo(server, &fsinfo);
-> > -	error = bdi_init(&server->backing_dev_info);
-> > +	error = bdi_init_fmt(&server->backing_dev_info, "nfs-%s-%p", clp->cl_hostname, server);
-> 
-> In our debugging printks, we usually use the superblock->s_id, but that
-> only gets initialised later.
-> 
-> I'd suggest passing the 'dev_name' from *_get_sb() into
-> *_create_server().
+Gautham R Shenoy <ego@in.ibm.com> writes:
 
-I just realised that such a name would contain '/' and I'm quite sure
-that makes filesystems unhappy.
+> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+> new file mode 100644
+> index 0000000..11c16aa
+> --- /dev/null
+> +++ b/kernel/rcuclassic.c
+> +/**
+> + * call_rcu - Queue an RCU callback for invocation after a grace period.
+> + * @head: structure to be used for queueing the RCU updates.
+> + * @func: actual update function to be invoked after the grace period
+> + *
+> + * The update function will be invoked some time after a full grace
+> + * period elapses, in other words after all currently executing RCU
+> + * read-side critical sections have completed.  RCU read-side critical
+> + * sections are delimited by rcu_read_lock() and rcu_read_unlock(),
+> + * and may be nested.
+> + */
+> +void call_rcu(struct rcu_head *head,
+> +				void (*func)(struct rcu_head *rcu))
+> +{
+> +	unsigned long flags;
+> +	struct rcu_data *rdp;
+> +
+> +	head->func = func;
+> +	head->next = NULL;
+> +	local_irq_save(flags);
+> +	rdp = &__get_cpu_var(rcu_data);
+> +	*rdp->nxttail = head;
+> +	rdp->nxttail = &head->next;
+> +	if (unlikely(++rdp->qlen > qhimark)) {
+> +		rdp->blimit = INT_MAX;
+> +		force_quiescent_state(rdp, &rcu_ctrlblk);
+> +	}
+> +	local_irq_restore(flags);
+> +}
+> +EXPORT_SYMBOL_GPL(call_rcu);
+> +
+> +/**
+> + * call_rcu_bh - Queue an RCU for invocation after a quicker grace period.
+> + * @head: structure to be used for queueing the RCU updates.
+> + * @func: actual update function to be invoked after the grace period
+> + *
+> + * The update function will be invoked some time after a full grace
+> + * period elapses, in other words after all currently executing RCU
+> + * read-side critical sections have completed. call_rcu_bh() assumes
+> + * that the read-side critical sections end on completion of a softirq
+> + * handler. This means that read-side critical sections in process
+> + * context must not be interrupted by softirqs. This interface is to be
+> + * used when most of the read-side critical sections are in softirq context.
+> + * RCU read-side critical sections are delimited by rcu_read_lock() and
+> + * rcu_read_unlock(), * if in interrupt context or rcu_read_lock_bh()
+> + * and rcu_read_unlock_bh(), if in process context. These may be nested.
+> + */
+> +void call_rcu_bh(struct rcu_head *head,
+> +				void (*func)(struct rcu_head *rcu))
+> +{
+> +	unsigned long flags;
+> +	struct rcu_data *rdp;
+> +
+> +	head->func = func;
+> +	head->next = NULL;
+> +	local_irq_save(flags);
+> +	rdp = &__get_cpu_var(rcu_bh_data);
+> +	*rdp->nxttail = head;
+> +	rdp->nxttail = &head->next;
+> +
+> +	if (unlikely(++rdp->qlen > qhimark)) {
+> +		rdp->blimit = INT_MAX;
+> +		force_quiescent_state(rdp, &rcu_bh_ctrlblk);
+> +	}
+> +
+> +	local_irq_restore(flags);
+> +}
+> +EXPORT_SYMBOL_GPL(call_rcu_bh);
 
-Neil suggested using device numbers which would work, however I think
-those might not be human friendly. While its easy to find the device
-number of a given path (eg.: stat -c %d /), its rather hard to find the
-path belonging to a given device number.
+Those two functions are identical beside the difference of `rcu_data'
+<-> `rcu_bh_data' and `rcu_ctrlblk' <-> `rcu_bh_ctrlblk'.
 
+Is there a way to collapse the code into one helper function or would
+that effect performance too much?
 
-
+	Hannes
