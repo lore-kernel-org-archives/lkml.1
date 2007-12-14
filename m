@@ -1,74 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763943AbXLNN5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbXLNOCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763943AbXLNN5f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 08:57:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbXLNN5Y
+	id S1752709AbXLNOCT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 09:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbXLNOCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 08:57:24 -0500
-Received: from rtr.ca ([76.10.145.34]:2385 "EHLO mail.rtr.ca"
+	Fri, 14 Dec 2007 09:02:04 -0500
+Received: from rtr.ca ([76.10.145.34]:1336 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbXLNN5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 08:57:23 -0500
-Message-ID: <47628BC0.7020506@rtr.ca>
-Date: Fri, 14 Dec 2007 08:57:20 -0500
+	id S1750879AbXLNOCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 09:02:01 -0500
+Message-ID: <47628CD8.2050504@rtr.ca>
+Date: Fri, 14 Dec 2007 09:02:00 -0500
 From: Mark Lord <liml@rtr.ca>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
-       lkml@rtr.ca, matthew@wil.cx, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-References: <476190BE.9010405@rtr.ca> <20071213200958.GK10104@kernel.dk> <20071213140207.111f94e2.akpm@linux-foundation.org> <1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org> <4761B32A.3070201@rtr.ca> <4761BCB4.1060601@rtr.ca> <4761C8E4.2010900@rtr.ca> <4761CE88.9070406@rtr.ca> <20071213163726.3bb601fa.akpm@linux-foundation.org> <20071214115038.GB11046@csn.ul.ie>
-In-Reply-To: <20071214115038.GB11046@csn.ul.ie>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>,
+       Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: ATA ACPI needs "Mr interpreter, would you please shut up?" flag
+References: <47620E5E.5020001@gmail.com> <4762743F.4070605@gmail.com>
+In-Reply-To: <4762743F.4070605@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel Gorman wrote:
-> On (13/12/07 16:37), Andrew Morton didst pronounce:
->> On Thu, 13 Dec 2007 19:30:00 -0500
->> Mark Lord <liml@rtr.ca> wrote:
->>
->>> Here's the commit that causes the regression:
->>>
->>> ...
->>>
->>> --- a/mm/page_alloc.c
->>> +++ b/mm/page_alloc.c
->>> @@ -760,7 +760,8 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
->>>  		struct page *page = __rmqueue(zone, order, migratetype);
->>>  		if (unlikely(page == NULL))
->>>  			break;
->>> -		list_add_tail(&page->lru, list);
->>> +		list_add(&page->lru, list);
->> well that looks fishy.
->>
-> 
-> The reasoning behind the change was the first page encountered on the list
-> by the caller would have a matching migratetype. I failed to take into
-> account the physical ordering of pages returned. I'm setting up to run some
-> performance benchmarks of the candidate fix merged into the -mm tree to see
-> if the search shows up or not. I'm testing against 2.6.25-rc5 but it'll
-> take a few hours to complete.
+Tejun Heo wrote:
+> I take it back.  I found how to satisfy neurotic BIOSen.
 ..
 
-Thanks, Mel.  This is all with CONFIG_SLAB=y, by the way.
-
-Note that it did appear to behave better with CONFIG_SLUB=y when I accidently
-used that .config on my 4GB machine here.  Physical segments of 4-10 pages
-happended much more common than with CONFIG_SLAB=y on my 3GB machine
-Slightly "apples and oranges" there, I know, but at least both were x86-32.  :)
-
-So I would expect CONFIG_SLAB to be well off with this patch under most (all?)
-conditions, but dunno about CONFIG_SLUB.
-
-Cheers
-
-
-
-
+Aaaa.. excellent!  
