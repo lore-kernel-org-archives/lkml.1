@@ -1,204 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbXLNOlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbXLNOnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbXLNOlo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 09:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbXLNOla
+	id S1755219AbXLNOnS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 09:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbXLNOnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 09:41:30 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46780 "EHLO mx2.mail.elte.hu"
+	Fri, 14 Dec 2007 09:43:05 -0500
+Received: from mail.polimi.it ([131.175.12.3]:50334 "EHLO polimi.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754785AbXLNOl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 09:41:29 -0500
-Date: Fri, 14 Dec 2007 15:41:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "David P. Reed" <dpreed@reed.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
-	on some AMD64x2 laptops, etc.
-Message-ID: <20071214144106.GA14497@elte.hu>
-References: <1184216528.12353.203.camel@chaos> <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <20071214131502.GA14359@elte.hu> <20071214132409.GA22390@elte.hu> <20071214134704.GA463@elte.hu>
+	id S1752591AbXLNOnD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 09:43:03 -0500
+From: stefano.brivio@polimi.it
+Message-ID: <20071214154022.v5w0eqwwiogws8cw@webmail.polimi.it>
+Date: Fri, 14 Dec 2007 15:40:22 +0100
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Daniel Walker <dwalker@mvista.com>,
+       Ray Lee <ray-lk@madrabbit.org>, matthias.kaehlcke@gmail.com,
+       linux-kernel@vger.kernel.org, mbuesch@freenet.de, linux@bohmer.net,
+       Michael Buesch <mb@bu3sch.de>, kjwinchester@gmail.com,
+       jonathan@jonmasters.org, akpm@linux-foundation.org,
+       bcm43xx-dev@lists.berlios.de
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
+	to mutex
+References: <20071213003028.676998182@mvista.com>
+	<200712131445.39770.mb@bu3sch.de>
+	<2c0942db0712131604m41c34da9hf3122b0603f3af96@mail.gmail.com>
+	<200712140143.16451.mb@bu3sch.de> <20071214105624.GC23964@elte.hu>
+	<20071214141446.GA3096@tuxdriver.com>
+In-Reply-To: <20071214141446.GA3096@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
 Content-Disposition: inline
-In-Reply-To: <20071214134704.GA463@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.5)
+X-PMX-Version: 5.3.3.310218, Antispam-Engine: 2.5.2.311128, Antispam-Data: 2007.12.14.61522
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='NO_REAL_NAME 0, __CD 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"John W. Linville" <linville@tuxdriver.com> wrote:
 
-> > updated patch attached. (from the MakeItBuild'n'Stuff dept)
-> 
-> the one below is against current upstream. (previous ones were against 
-> x86.git)
+> On Fri, Dec 14, 2007 at 11:56:24AM +0100, Ingo Molnar wrote:
+>>
+>> * Michael Buesch <mb@bu3sch.de> wrote:
+>
+>> > Oh come on. b43 is more than a year old now. How long should we wait?
+>> > Two or three? Forever?
+>>
+>> possibly forever, if you dont get obvious regressions like "my wlan does
+>> not work" (reported in this very thread), resolved. Pushing the blame to
+>> udev (in a rather unfriendly way) wont give users a working system and
+>> wont get you many new testers for the new driver either.
+>
+> It is true that Michael can be a little unpleasant at times.
+> The colloquialism that comes to mind is that he "does not suffer fools
+> lightly".  Hopefully he will take your counseling to heart and learn
+> to be a bit more moderate in his tone.  FWIW, he is still young. :-)
 
-the last version is the one below. Pending further discussion and 
-testing. And David, i nominate your fix as the coolest Linux kernel fix 
-of 2007 :-)
+No way. He's just inhuman. :P
 
-	Ingo
+> That said, it is also true that the b43[legacy] driver[s] do a more
+> than adequate job of replacing the old bcm43xx driver provided that
+> one (re-)installs the proper firmware.  And I know of no other driver
+> that goes to more trouble to tell you how to get the proper firmware
+> installed than this one.
+>
+> The bcm43xx driver will be added to the feature removal schedule
+> in 2.6.25.  Proper judgment will be used in deciding the actual date
+> of its removal.  In the meantime hopefully every distribution will
+> have or obtain a working udev configuration.  If things don't work
+> out as planned then we will re-evaluate.
+>
+> Let's stop this now please.
 
--------------------------------->
+Agreed. As a b43legacy maintainer, I'd be happy to know if Ingo  
+suggests other ways to smooth out the transition. I haven't read  
+proposals yet.
 
-Subject: x86: fix in_p/out_p crashes
-From: David P. Reed <dpreed@reed.com>
 
-Do not use port 0x80, it can cause crashes, see:
+--
+Ciao
+Stefano
 
- http://bugzilla.kernel.org/show_bug.cgi?id=6307
- http://bugzilla.kernel.org/show_bug.cgi?id=9511
 
-Replace use of outb to "unused" diagnostic port 0x80 for time delay
-with udelay based time delay on x86_64 architecture machines.  Fix for
-bugs 9511 and 6307 in bugzilla, plus bugs reported in
-bugzilla.redhat.com.
 
-Derived from suggestion (that didn't compile) by Pavel Machek, and
-tested, also based on measurements of typical timings of out's
-collated by Rene Herman from many in the community.
-
-This patch fixes a number of bugs known to cause problems on HP
-Pavilion dv9000z and dv6000z laptops - in the form of solid freezes
-when hwclock is used to show or set the time.  Also, it potentially
-improves bus utilization on SMP machines, by using a waiting process
-that doesn't tie up the ISA/LPC bus for 1 or 2 microseconds.
-
-[ mingo@elte.hu: minor restructuring, 32-bit support. ]
-
-Signed-off-by: David P. Reed <dpreed@reed.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/boot/compressed/misc_32.c |    8 ++++----
- arch/x86/boot/compressed/misc_64.c |    8 ++++----
- arch/x86/kernel/quirks.c           |   10 ++++++++++
- include/asm-x86/io_32.h            |    5 +----
- include/asm-x86/io_64.h            |   14 +++++---------
- 5 files changed, 24 insertions(+), 21 deletions(-)
-
-Index: linux-x86.q/arch/x86/boot/compressed/misc_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/boot/compressed/misc_32.c
-+++ linux-x86.q/arch/x86/boot/compressed/misc_32.c
-@@ -276,10 +276,10 @@ static void putstr(const char *s)
- 	RM_SCREEN_INFO.orig_y = y;
- 
- 	pos = (x + cols * y) * 2;	/* Update cursor position */
--	outb_p(14, vidport);
--	outb_p(0xff & (pos >> 9), vidport+1);
--	outb_p(15, vidport);
--	outb_p(0xff & (pos >> 1), vidport+1);
-+	outb(14, vidport);
-+	outb(0xff & (pos >> 9), vidport+1);
-+	outb(15, vidport);
-+	outb(0xff & (pos >> 1), vidport+1);
- }
- 
- static void* memset(void* s, int c, unsigned n)
-Index: linux-x86.q/arch/x86/boot/compressed/misc_64.c
-===================================================================
---- linux-x86.q.orig/arch/x86/boot/compressed/misc_64.c
-+++ linux-x86.q/arch/x86/boot/compressed/misc_64.c
-@@ -269,10 +269,10 @@ static void putstr(const char *s)
- 	RM_SCREEN_INFO.orig_y = y;
- 
- 	pos = (x + cols * y) * 2;	/* Update cursor position */
--	outb_p(14, vidport);
--	outb_p(0xff & (pos >> 9), vidport+1);
--	outb_p(15, vidport);
--	outb_p(0xff & (pos >> 1), vidport+1);
-+	outb(14, vidport);
-+	outb(0xff & (pos >> 9), vidport+1);
-+	outb(15, vidport);
-+	outb(0xff & (pos >> 1), vidport+1);
- }
- 
- static void* memset(void* s, int c, unsigned n)
-Index: linux-x86.q/arch/x86/kernel/quirks.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/quirks.c
-+++ linux-x86.q/arch/x86/kernel/quirks.c
-@@ -3,9 +3,19 @@
-  */
- #include <linux/pci.h>
- #include <linux/irq.h>
-+#include <linux/delay.h>
- 
- #include <asm/hpet.h>
- 
-+/*
-+ * Some legacy devices need delays for IN/OUT sequences. Most are
-+ * probably not needed but it's the safest to just do this short delay:
-+ */
-+void native_io_delay(void)
-+{
-+	udelay(2);
-+}
-+
- #if defined(CONFIG_X86_IO_APIC) && defined(CONFIG_SMP) && defined(CONFIG_PCI)
- 
- static void __devinit quirk_intel_irqbalance(struct pci_dev *dev)
-Index: linux-x86.q/include/asm-x86/io_32.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/io_32.h
-+++ linux-x86.q/include/asm-x86/io_32.h
-@@ -250,10 +250,7 @@ static inline void flush_write_buffers(v
- 
- #endif /* __KERNEL__ */
- 
--static inline void native_io_delay(void)
--{
--	asm volatile("outb %%al,$0x80" : : : "memory");
--}
-+extern void native_io_delay(void);
- 
- #if defined(CONFIG_PARAVIRT)
- #include <asm/paravirt.h>
-Index: linux-x86.q/include/asm-x86/io_64.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/io_64.h
-+++ linux-x86.q/include/asm-x86/io_64.h
-@@ -35,13 +35,7 @@
-   *  - Arnaldo Carvalho de Melo <acme@conectiva.com.br>
-   */
- 
--#define __SLOW_DOWN_IO "\noutb %%al,$0x80"
--
--#ifdef REALLY_SLOW_IO
--#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO
--#else
--#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO
--#endif
-+extern void native_io_delay(void);
- 
- /*
-  * Talk about misusing macros..
-@@ -54,7 +48,8 @@ __asm__ __volatile__ ("out" #s " %" s1 "
- 
- #define __OUT(s,s1,x) \
- __OUT1(s,x) __OUT2(s,s1,"w") : : "a" (value), "Nd" (port)); } \
--__OUT1(s##_p,x) __OUT2(s,s1,"w") __FULL_SLOW_DOWN_IO : : "a" (value), "Nd" (port));} \
-+__OUT1(s##_p,x) __OUT2(s,s1,"w") : : "a" (value), "Nd" (port)); \
-+native_io_delay(); } \
- 
- #define __IN1(s) \
- static inline RETURN_TYPE in##s(unsigned short port) { RETURN_TYPE _v;
-@@ -64,7 +59,8 @@ __asm__ __volatile__ ("in" #s " %" s2 "1
- 
- #define __IN(s,s1,i...) \
- __IN1(s) __IN2(s,s1,"w") : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
--__IN1(s##_p) __IN2(s,s1,"w") __FULL_SLOW_DOWN_IO : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
-+__IN1(s##_p) __IN2(s,s1,"w") : "=a" (_v) : "Nd" (port) ,##i ); return _v; \
-+native_io_delay(); } \
- 
- #define __INS(s) \
- static inline void ins##s(unsigned short port, void * addr, unsigned long count) \
