@@ -1,52 +1,462 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbXLNPQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbXLNPRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbXLNPQq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 10:16:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756588AbXLNPQY
+	id S1758038AbXLNPRK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 10:17:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757305AbXLNPQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 10:16:24 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:20892 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756539AbXLNPQX (ORCPT
+	Fri, 14 Dec 2007 10:16:40 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:59122 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757195AbXLNPQi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 10:16:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=HHxgUWYEpB+12r4lX1GjFcuOpVnl8Dp/QW8+e9d8/iNQMWk9TUNWmYUlh6TQoDDCTQwXJtPdFL6Pi7B5Di/Kqos0QwzJJn6qFtUF4MnRCeJii8hrIKvVhIBAlHRz5W4pk8kSyOpFtM18Ol2/3hpigGiUTXJxIgXYzRxTMXzWHFs=
-Message-ID: <47629E40.5020007@gmail.com>
-Date: Sat, 15 Dec 2007 00:16:16 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Christoph Anton Mitterer <calestyo@scientia.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Strange ATA problems
-References: <1197591699.3453.38.camel@fermat.scientia.net>
-In-Reply-To: <1197591699.3453.38.camel@fermat.scientia.net>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
+	Fri, 14 Dec 2007 10:16:38 -0500
+Date: Fri, 14 Dec 2007 17:16:36 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: alan@redhat.com, viro@zeniv.linux.org.uk, hch@infradead.org,
+       peterz@infradead.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: [RFC/PATCH 3/8] revoke: file, inode, and address space operations
+ V7
+Message-ID: <Pine.LNX.4.64.0712141716180.28689@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Anton Mitterer wrote:
-> I have a CD/DVD drive connected via USB,... and while woking the system
-> suddenly freezed (at least those processes that tried to access the
-> hardsisk).
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Do you have log with timestamp?  It's difficult to tell what's going on
-without knowing what happened when.  Also, please post the result of
-'cat /proc/interrupts'.
+Add file, inode, and addresspace operations for inodes that represent revoked
+files.
 
-If your USB cdrom is bus powered and you yanked it, it could have caused
-fluctuation in power which in turn can cause disruption on serial ATA
-bus leading to transmission error and timeouts.  There are other
-possibilities but this kind of thing does happen often with SATA.  Those
-highspeed low-voltage serial links are very susceptible to interferences.
+Cc: Alan Cox <alan@redhat.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ fs/revoked_inode.c |  416 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 416 insertions(+)
 
-As long as EH recovered it properly, there's nothing to worry about.
-
--- 
-tejun
+Index: 2.6/fs/revoked_inode.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ 2.6/fs/revoked_inode.c	2007-12-14 16:40:53.000000000 +0200
+@@ -0,0 +1,416 @@
++/*
++ * fs/revoked_inode.c
++ *
++ * Copyright (C) 2007  Pekka Enberg
++ *
++ * Provide stub functions for revoked inodes. Based on fs/bad_inode.c which is
++ *
++ * Copyright (C) 1997  Stephen Tweedie
++ *
++ * This file is released under the GPLv2.
++ */
++
++#include <linux/fs.h>
++#include <linux/module.h>
++#include <linux/stat.h>
++#include <linux/time.h>
++#include <linux/smp_lock.h>
++#include <linux/namei.h>
++#include <linux/poll.h>
++
++static loff_t revoked_file_llseek(struct file *file, loff_t offset, int origin)
++{
++	return -EBADF;
++}
++
++static ssize_t revoked_file_read(struct file *filp, char __user *buf,
++				 size_t size, loff_t *ppos)
++{
++	return -EBADF;
++}
++
++static ssize_t revoked_special_file_read(struct file *filp, char __user *buf,
++					 size_t size, loff_t *ppos)
++{
++	return 0;
++}
++
++static ssize_t revoked_file_write(struct file *filp, const char __user *buf,
++				  size_t siz, loff_t *ppos)
++{
++	return -EBADF;
++}
++
++static ssize_t revoked_file_aio_read(struct kiocb *iocb,
++				     const struct iovec *iov,
++				     unsigned long nr_segs, loff_t pos)
++{
++	return -EBADF;
++}
++
++static ssize_t revoked_file_aio_write(struct kiocb *iocb,
++				      const struct iovec *iov,
++				      unsigned long nr_segs, loff_t pos)
++{
++	return -EBADF;
++}
++
++static int revoked_file_readdir(struct file *filp, void *dirent,
++				filldir_t filldir)
++{
++	return -EBADF;
++}
++
++static unsigned int revoked_file_poll(struct file *filp, poll_table *wait)
++{
++	return POLLERR;
++}
++
++static int revoked_file_ioctl(struct inode *inode, struct file *filp,
++			      unsigned int cmd, unsigned long arg)
++{
++	return -EBADF;
++}
++
++static long revoked_file_unlocked_ioctl(struct file *file, unsigned cmd,
++					unsigned long arg)
++{
++	return -EBADF;
++}
++
++static long revoked_file_compat_ioctl(struct file *file, unsigned int cmd,
++				      unsigned long arg)
++{
++	return -EBADF;
++}
++
++static int revoked_file_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	return -EBADF;
++}
++
++static int revoked_file_open(struct inode *inode, struct file *filp)
++{
++	return -EBADF;
++}
++
++static int revoked_file_flush(struct file *file, fl_owner_t id)
++{
++	return 0;
++}
++
++static int revoked_file_release(struct inode *inode, struct file *filp)
++{
++	return -EBADF;
++}
++
++static int revoked_file_fsync(struct file *file, struct dentry *dentry,
++			      int datasync)
++{
++	return -EBADF;
++}
++
++static int revoked_file_aio_fsync(struct kiocb *iocb, int datasync)
++{
++	return -EBADF;
++}
++
++static int revoked_file_fasync(int fd, struct file *filp, int on)
++{
++	return -EBADF;
++}
++
++static int revoked_file_lock(struct file *file, int cmd, struct file_lock *fl)
++{
++	return -EBADF;
++}
++
++static ssize_t revoked_file_sendpage(struct file *file, struct page *page,
++				     int off, size_t len, loff_t *pos,
++				     int more)
++{
++	return -EBADF;
++}
++
++static unsigned long revoked_file_get_unmapped_area(struct file *file,
++						    unsigned long addr,
++						    unsigned long len,
++						    unsigned long pgoff,
++						    unsigned long flags)
++{
++	return -EBADF;
++}
++
++static int revoked_file_check_flags(int flags)
++{
++	return -EBADF;
++}
++
++static int revoked_file_dir_notify(struct file *file, unsigned long arg)
++{
++	return -EBADF;
++}
++
++static int revoked_file_flock(struct file *filp, int cmd, struct file_lock *fl)
++{
++	return -EBADF;
++}
++
++static ssize_t revoked_file_splice_write(struct pipe_inode_info *pipe,
++					 struct file *out, loff_t *ppos,
++					 size_t len, unsigned int flags)
++{
++	return -EBADF;
++}
++
++static ssize_t revoked_file_splice_read(struct file *in, loff_t *ppos,
++					struct pipe_inode_info *pipe,
++					size_t len, unsigned int flags)
++{
++	return -EBADF;
++}
++
++static const struct file_operations revoked_file_ops = {
++	.llseek = revoked_file_llseek,
++	.read = revoked_file_read,
++	.write = revoked_file_write,
++	.aio_read = revoked_file_aio_read,
++	.aio_write = revoked_file_aio_write,
++	.readdir = revoked_file_readdir,
++	.poll = revoked_file_poll,
++	.ioctl = revoked_file_ioctl,
++	.unlocked_ioctl = revoked_file_unlocked_ioctl,
++	.compat_ioctl = revoked_file_compat_ioctl,
++	.mmap = revoked_file_mmap,
++	.open = revoked_file_open,
++	.flush = revoked_file_flush,
++	.release = revoked_file_release,
++	.fsync = revoked_file_fsync,
++	.aio_fsync = revoked_file_aio_fsync,
++	.fasync = revoked_file_fasync,
++	.lock = revoked_file_lock,
++	.sendpage = revoked_file_sendpage,
++	.get_unmapped_area = revoked_file_get_unmapped_area,
++	.check_flags = revoked_file_check_flags,
++	.dir_notify = revoked_file_dir_notify,
++	.flock = revoked_file_flock,
++	.splice_write = revoked_file_splice_write,
++	.splice_read = revoked_file_splice_read,
++};
++
++static const struct file_operations revoked_special_file_ops = {
++	.llseek = revoked_file_llseek,
++	.read = revoked_special_file_read,
++	.write = revoked_file_write,
++	.aio_read = revoked_file_aio_read,
++	.aio_write = revoked_file_aio_write,
++	.readdir = revoked_file_readdir,
++	.poll = revoked_file_poll,
++	.ioctl = revoked_file_ioctl,
++	.unlocked_ioctl = revoked_file_unlocked_ioctl,
++	.compat_ioctl = revoked_file_compat_ioctl,
++	.mmap = revoked_file_mmap,
++	.open = revoked_file_open,
++	.flush = revoked_file_flush,
++	.release = revoked_file_release,
++	.fsync = revoked_file_fsync,
++	.aio_fsync = revoked_file_aio_fsync,
++	.fasync = revoked_file_fasync,
++	.lock = revoked_file_lock,
++	.sendpage = revoked_file_sendpage,
++	.get_unmapped_area = revoked_file_get_unmapped_area,
++	.check_flags = revoked_file_check_flags,
++	.dir_notify = revoked_file_dir_notify,
++	.flock = revoked_file_flock,
++	.splice_write = revoked_file_splice_write,
++	.splice_read = revoked_file_splice_read,
++};
++
++static int revoked_inode_create(struct inode *dir, struct dentry *dentry,
++				int mode, struct nameidata *nd)
++{
++	return -EBADF;
++}
++
++static struct dentry *revoked_inode_lookup(struct inode *dir,
++					   struct dentry *dentry,
++					   struct nameidata *nd)
++{
++	return ERR_PTR(-EBADF);
++}
++
++static int revoked_inode_link(struct dentry *old_dentry, struct inode *dir,
++			      struct dentry *dentry)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_unlink(struct inode *dir, struct dentry *dentry)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_symlink(struct inode *dir, struct dentry *dentry,
++				 const char *symname)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_mkdir(struct inode *dir, struct dentry *dentry,
++			       int mode)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_rmdir(struct inode *dir, struct dentry *dentry)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_mknod(struct inode *dir, struct dentry *dentry,
++			       int mode, dev_t rdev)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_rename(struct inode *old_dir,
++				struct dentry *old_dentry,
++				struct inode *new_dir,
++				struct dentry *new_dentry)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_readlink(struct dentry *dentry, char __user *buffer,
++				  int buflen)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_permission(struct inode *inode, int mask,
++				    struct nameidata *nd)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_getattr(struct vfsmount *mnt, struct dentry *dentry,
++				 struct kstat *stat)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_setattr(struct dentry *direntry, struct iattr *attrs)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_setxattr(struct dentry *dentry, const char *name,
++				  const void *value, size_t size, int flags)
++{
++	return -EBADF;
++}
++
++static ssize_t revoked_inode_getxattr(struct dentry *dentry, const char *name,
++				      void *buffer, size_t size)
++{
++	return -EBADF;
++}
++
++static ssize_t revoked_inode_listxattr(struct dentry *dentry, char *buffer,
++				       size_t buffer_size)
++{
++	return -EBADF;
++}
++
++static int revoked_inode_removexattr(struct dentry *dentry, const char *name)
++{
++	return -EBADF;
++}
++
++static struct inode_operations revoked_inode_ops = {
++	.create = revoked_inode_create,
++	.lookup = revoked_inode_lookup,
++	.link = revoked_inode_link,
++	.unlink = revoked_inode_unlink,
++	.symlink = revoked_inode_symlink,
++	.mkdir = revoked_inode_mkdir,
++	.rmdir = revoked_inode_rmdir,
++	.mknod = revoked_inode_mknod,
++	.rename = revoked_inode_rename,
++	.readlink = revoked_inode_readlink,
++	/* follow_link must be no-op, otherwise unmounting this inode
++	   won't work */
++	/* put_link returns void */
++	/* truncate returns void */
++	.permission = revoked_inode_permission,
++	.getattr = revoked_inode_getattr,
++	.setattr = revoked_inode_setattr,
++	.setxattr = revoked_inode_setxattr,
++	.getxattr = revoked_inode_getxattr,
++	.listxattr = revoked_inode_listxattr,
++	.removexattr = revoked_inode_removexattr,
++	/* truncate_range returns void */
++};
++
++static int revoked_readpage(struct file *file, struct page *page)
++{
++	return -EIO;
++}
++
++static int revoked_writepage(struct page *page, struct writeback_control *wbc)
++{
++	return -EIO;
++}
++
++static int revoked_prepare_write(struct file *file, struct page *page,
++				 unsigned from, unsigned to)
++{
++	return -EIO;
++}
++
++static int revoked_commit_write(struct file *file, struct page *page,
++				unsigned from, unsigned to)
++{
++	return -EIO;
++}
++
++static ssize_t revoked_direct_IO(int rw, struct kiocb *iocb,
++				 const struct iovec *iov, loff_t offset,
++				 unsigned long nr_segs)
++{
++	return -EIO;
++}
++
++static const struct address_space_operations revoked_aops = {
++	.readpage	= revoked_readpage,
++	.writepage	= revoked_writepage,
++	.prepare_write	= revoked_prepare_write,
++	.commit_write	= revoked_commit_write,
++	.direct_IO	= revoked_direct_IO,
++};
++
++void make_revoked_file(struct inode *inode, struct file *file)
++{
++	if (special_file(inode->i_mode))
++		file->f_op = &revoked_special_file_ops;
++	else
++		file->f_op = &revoked_file_ops;
++
++	file->f_pos = 0;
++}
++
++void make_revoked_inode(struct inode *inode)
++{
++	remove_inode_hash(inode);
++
++	inode->i_atime = inode->i_mtime = inode->i_ctime =
++	    current_fs_time(inode->i_sb);
++	inode->i_op = &revoked_inode_ops;
++
++	if (special_file(inode->i_mode))
++		inode->i_fop = &revoked_special_file_ops;
++	else
++		inode->i_fop = &revoked_file_ops;
++
++	inode->i_mapping->a_ops = &revoked_aops;
++}
