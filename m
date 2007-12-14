@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765429AbXLNKrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765526AbXLNKt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765429AbXLNKrj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 05:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758155AbXLNKrb
+	id S1765526AbXLNKt3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 05:49:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756636AbXLNKtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 05:47:31 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:37224 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758524AbXLNKra (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 05:47:30 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
-Date: Fri, 14 Dec 2007 11:45:11 +0100
-User-Agent: KMail/1.9.6
-Cc: Ray Lee <ray-lk@madrabbit.org>, bcm43xx-dev@lists.berlios.de,
-       Daniel Walker <dwalker@mvista.com>, akpm@linux-foundation.org,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, linux@bohmer.net,
-       jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
-       kjwinchester@gmail.com, mbuesch@freenet.de,
-       John Linville <linville@tuxdriver.com>
-References: <20071213003028.676998182@mvista.com> <200712140143.16451.mb@bu3sch.de> <1197593750.898.34.camel@brick>
-In-Reply-To: <1197593750.898.34.camel@brick>
+	Fri, 14 Dec 2007 05:49:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57626 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757892AbXLNKtU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 05:49:20 -0500
+Date: Fri, 14 Dec 2007 11:49:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: Re: [PATCH 1/3] x86: clean up asm-x86/page*.h
+Message-ID: <20071214104907.GB23964@elte.hu>
+References: <476030CE.4050203@goop.org> <20071213102110.GP8977@elte.hu> <47619D0D.4010909@goop.org> <20071213213226.GA11442@elte.hu> <4761B1C3.2000606@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712141145.12442.mb@bu3sch.de>
+In-Reply-To: <4761B1C3.2000606@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 14 December 2007 01:55:50 Harvey Harrison wrote:
-> On Fri, 2007-12-14 at 01:43 +0100, Michael Buesch wrote:
-> > Oh come on. b43 is more than a year old now. How long should we wait?
-> > Two or three? Forever?
-> > 
+
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> Ingo Molnar wrote:
+> > You can force git to non-append jump-pull the remote via changing 
+> > .git/refs/remotes/origin/HEAD from:
+> >
+> >  ref: refs/remotes/origin/master
+> >
+> > to:
+> >
+> >  ref: +refs/remotes/origin/master
+> >   
 > 
-> Any pointers to the advantages of b43?
+> This just gets me lots of "error: refs/remotes/origin/HEAD points 
+> nowhere!" messages.  Maybe it will work now I've properly set up a 
+> local branch to track the remote branch.  We'll see...
 
-http://www.linuxwireless.org/en/users/Drivers/b43
+maybe i mis-remembered the syntax.
 
--- 
-Greetings Michael.
+/me googles around
+
+couldnt find the right syntax :(
+
+	Ingo
