@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934386AbXLNWfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934271AbXLNWgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934386AbXLNWfk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 17:35:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762735AbXLNWeU
+	id S934271AbXLNWgH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 17:36:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763623AbXLNWeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 17:34:20 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:4981 "EHLO perches.com"
+	Fri, 14 Dec 2007 17:34:22 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:4988 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754753AbXLNWeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 17:34:17 -0500
+	id S1755039AbXLNWeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 17:34:18 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Jeff Garzik <jgarzik@pobox.com>, Paul Gortmaker <p_gortmaker@yahoo.com>,
+Cc: Don Fry <pcnet32@verizon.net>, Jeff Garzik <jgarzik@pobox.com>,
        netdev@vger.kernel.org
-Subject: [PATCH 03/11] drivers/net/mac8390.c: Use print_mac
-Date: Fri, 14 Dec 2007 14:34:04 -0800
-Message-Id: <1197671652-32492-3-git-send-email-joe@perches.com>
+Subject: [PATCH 06/11] drivers/net/pcnet32.c: Use print_mac
+Date: Fri, 14 Dec 2007 14:34:07 -0800
+Message-Id: <1197671652-32492-6-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.7.949.g2221a6
-In-Reply-To: <1197671652-32492-2-git-send-email-joe@perches.com>
+In-Reply-To: <1197671652-32492-5-git-send-email-joe@perches.com>
 References: <1197671652-32492-1-git-send-email-joe@perches.com>
  <1197671652-32492-2-git-send-email-joe@perches.com>
-Message-Id: <a737529b0fd2d0a3ea1dcdf684e5b869a347726c.1197671367.git.joe@perches.com>
+ <1197671652-32492-3-git-send-email-joe@perches.com>
+ <1197671652-32492-4-git-send-email-joe@perches.com>
+ <1197671652-32492-5-git-send-email-joe@perches.com>
+Message-Id: <8fd9b582c10ca4d7ba53b76f68f19b608d755843.1197671367.git.joe@perches.com>
 In-Reply-To: <9fc484fc034428ab68ecb2711c8456df9e98d56d.1197671367.git.joe@perches.com>
 References: <9fc484fc034428ab68ecb2711c8456df9e98d56d.1197671367.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,45 +33,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/mac8390.c |   18 ++++++------------
- 1 files changed, 6 insertions(+), 12 deletions(-)
+ drivers/net/pcnet32.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/mac8390.c b/drivers/net/mac8390.c
-index 9e70074..4eccebb 100644
---- a/drivers/net/mac8390.c
-+++ b/drivers/net/mac8390.c
-@@ -483,6 +483,7 @@ void cleanup_module(void)
- static int __init mac8390_initdev(struct net_device * dev, struct nubus_dev * ndev,
- 			    enum mac8390_type type)
- {
-+	DECLARE_MAC_BUF(mac);
- 	static u32 fwrd4_offsets[16]={
- 		0,      4,      8,      12,
- 		16,     20,     24,     28,
-@@ -612,18 +613,11 @@ static int __init mac8390_initdev(struct net_device * dev, struct nubus_dev * nd
- 	/* Good, done, now spit out some messages */
- 	printk(KERN_INFO "%s: %s in slot %X (type %s)\n",
- 		   dev->name, ndev->board->name, ndev->board->slot, cardname[type]);
--	printk(KERN_INFO "MAC ");
--	{
--		int i;
--		for (i = 0; i < 6; i++) {
--			printk("%2.2x", dev->dev_addr[i]);
--			if (i < 5)
--				printk(":");
--		}
--	}
--	printk(" IRQ %d, %d KB shared memory at %#lx,  %d-bit access.\n",
--		   dev->irq, (int)((dev->mem_end - dev->mem_start)/0x1000) * 4,
--		   dev->mem_start, access_bitmode?32:16);
-+	printk(KERN_INFO "MAC %s IRQ %d, %d KB shared memory at %#lx, "
-+	       "%d-bit access.\n",
-+	       print_mac(mac, dev->dev_addr), dev->irq,
-+	       (int)((dev->mem_end - dev->mem_start)/0x1000) * 4,
-+	       dev->mem_start, access_bitmode?32:16);
- 	return 0;
- }
+diff --git a/drivers/net/pcnet32.c b/drivers/net/pcnet32.c
+index ff92aca..87edeb6 100644
+--- a/drivers/net/pcnet32.c
++++ b/drivers/net/pcnet32.c
+@@ -1769,8 +1769,8 @@ pcnet32_probe1(unsigned long ioaddr, int shared, struct pci_dev *pdev)
+ 		memset(dev->dev_addr, 0, sizeof(dev->dev_addr));
  
+ 	if (pcnet32_debug & NETIF_MSG_PROBE) {
+-		for (i = 0; i < 6; i++)
+-			printk(" %2.2x", dev->dev_addr[i]);
++		DECLARE_MAC_BUF(mac);
++		printk(" %s", print_mac(mac, dev->dev_addr));
+ 
+ 		/* Version 0x2623 and 0x2624 */
+ 		if (((chip_version + 1) & 0xfffe) == 0x2624) {
 -- 
 1.5.3.7.949.g2221a6
 
