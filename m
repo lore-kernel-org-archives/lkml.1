@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762359AbXLNGbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763122AbXLNGgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762359AbXLNGbq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 01:31:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763437AbXLNGbb
+	id S1763122AbXLNGgU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 01:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbXLNGgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 01:31:31 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:55212 "EHLO mx2.suse.de"
+	Fri, 14 Dec 2007 01:36:03 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:46588 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762511AbXLNGb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 01:31:27 -0500
-Date: Thu, 13 Dec 2007 22:34:24 -0800
-From: Greg KH <gregkh@suse.de>
-To: David Miller <davem@davemloft.net>
-Cc: venkatesh.pallipadi@intel.com, ak@muc.de, ebiederm@xmission.com,
-       rdreier@cisco.com, torvalds@linux-foundation.org, airlied@skynet.ie,
-       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
-Subject: Re: [RFC PATCH 08/12] PAT 64b: coherent mmap and sysfs bin ioctl
-Message-ID: <20071214063424.GB10100@suse.de>
-References: <20071213235543.568682000@intel.com> <20071213235712.813201000@intel.com> <20071214001932.GA10389@suse.de> <20071213.163505.14070110.davem@davemloft.net>
-MIME-Version: 1.0
+	id S1752571AbXLNGgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 01:36:00 -0500
+Date: Fri, 14 Dec 2007 09:35:58 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Cc: "dmonakhov@sw.ru" <DmitryMonakhov@2ka.mipt.ru>
+Subject: Re: [3/4] DST: Network state machine.
+Message-ID: <20071214063558.GA12017@2ka.mipt.ru>
+References: <1197287250388@2ka.mipt.ru> <11972872511269@2ka.mipt.ru> <20071213204343.GC27398@dmon-lap.sw.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071213.163505.14070110.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20071213204343.GC27398@dmon-lap.sw.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 04:35:05PM -0800, David Miller wrote:
-> From: Greg KH <gregkh@suse.de>
-> Date: Thu, 13 Dec 2007 16:19:32 -0800
-> 
-> > On Thu, Dec 13, 2007 at 03:55:51PM -0800, venkatesh.pallipadi@intel.com wrote:
-> > > Forward port of coherent-mmap.patch and sysfs-bin-ioctl.patch to x86 tree.
-> > > 
-> > > TBD: Do we need the ioctl interface to sysfs or get the type attribute
-> > > through a different sysfs file. And then actually specify the attribute
-> > > while doing pci_mmap_page_range ;-)
+On Thu, Dec 13, 2007 at 11:43:43PM +0300, Dmitry Monakhov (dmonakhov@sw.ru) wrote:
+> On 14:47 Mon 10 Dec     , Evgeniy Polyakov wrote:
 > > 
-> > Woah!  No, no ioctls on sysfs files, sorry.  Not going to happen, do
-> > this on a /dev file if you want to have ioctls...
+> > Network state machine.
+> > 
+> > Includes network async processing state machine and related tasks.
+> Hi, I've tried to play a little bit with DST and discover huge memory
+> leak. Every read request from remote node result in bio + bio's pages leak.
 > 
-> Well since we told people to move over to sysfs for PCI
-> accesses, and that's where mmap() is done via too,
-> it should be no surprise that we run into problems when
-> people want to set attributes for the mmap() as was done
-> for the procfs case.
+> Data flow:
+> ->kst_export_ready 		## prepare and submit bio 
+>   ->generic_make_request(bio) 	## submit it
 > 
-> So you have two choices:
+> ->kst_export_read_end_io	## block layer call bio_end_io callback
 > 
-> 1) Balk on the sysfs pci usage, and erase years of effort
->    of moving people over to sysfs.  Tell them to go back to
->    procfs so we can add the attribute setting via ioctl()
->    which is absolutely needed.
+> ->kst_thread_process_state	## process ready requests
+>   ->kst_data_callback
+>      ->kst_data_process_bio	## submit pages to network layer
+>   ->kst_complete_req
+>      ->kst_bio_endio
+>        ->kst_export_read_end_io ## WoW we calling the same bio_end_io 
+> 				## callback twice 
+>      ->dst_free_request(req);   ## request will be destroyed but it's bio
+> 				## and all bio's pages wasn't released.
+> We may release bio's pages after it was sent to network, it is safe because
+> sendpage() already called get_page(). I've attached simple patch which 
+> this this.
 
-Ok, sorry, it wasn't blindingly obvious that this was for pci sysfs
-devices that are mmaped, that makes a bit more sense.
+Yes, your patch looks good.
+Thanks a lot, Dmitry.
 
-But I'd like to see what ioctl is wanted here first.
-
-thanks,
-
-greg k-h
+-- 
+	Evgeniy Polyakov
