@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934179AbXLNRm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbXLNRng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934179AbXLNRm4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 12:42:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933698AbXLNRmm
+	id S1755842AbXLNRng (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 12:43:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbXLNRnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 12:42:42 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:54869 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754828AbXLNRmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 12:42:40 -0500
-Date: Fri, 14 Dec 2007 17:42:37 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Mark Lord <liml@rtr.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
-       lkml@rtr.ca, matthew@wil.cx, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] fix page_alloc for larger I/O segments (improved)
-Message-ID: <20071214174236.GA28613@csn.ul.ie>
-References: <20071213140207.111f94e2.akpm@linux-foundation.org> <1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org> <4761B32A.3070201@rtr.ca> <4761BCB4.1060601@rtr.ca> <4761C8E4.2010900@rtr.ca> <4761CE88.9070406@rtr.ca> <20071213163726.3bb601fa.akpm@linux-foundation.org> <4761D160.7060603@rtr.ca> <4761D279.6050500@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <4761D279.6050500@rtr.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 14 Dec 2007 12:43:25 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53112 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754523AbXLNRnY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 12:43:24 -0500
+Date: Fri, 14 Dec 2007 09:41:44 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Satyam Sharma <satyam@infradead.org>, David Jones <davej@redhat.com>
+Subject: Re: [PATCH] Don't mark cpufreq_stats_free_table with __cpuexit
+Message-Id: <20071214094144.601dcddf.akpm@linux-foundation.org>
+In-Reply-To: <20071214134548.GA15149@flint.arm.linux.org.uk>
+References: <20071214134548.GA15149@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (13/12/07 19:46), Mark Lord didst pronounce:
+On Fri, 14 Dec 2007 13:45:48 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+
+> Commit 55395ae72b6e5ae614d28df74158c47454652583 introduced:
 > 
-> "Improved version", more similar to the 2.6.23 code:
+> `.exit.text' referenced in section `.init.text' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
 > 
-> Fix page allocator to give better chance of larger contiguous segments 
-> (again).
+> Never mark functions that may be called during run time or
+> initialisation time with a section that may be (or have been)
+> discarded.
 > 
-> Signed-off-by: Mark Lord <mlord@pobox.com
+> It was mentioned in the commit comments that an exit-section function
+> was being called from an init-section function.  This should _always_
+> result in the patch being rejected.  It's just a big no no.
+> 
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> 
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index 8a45d0f..bf5f780 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -164,7 +164,8 @@ freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
+>  	return -1;
+>  }
+>  
+> -static void __cpuexit cpufreq_stats_free_table(unsigned int cpu)
+> +/* functions called from init paths can not be marked for an exit section */
+> +static void /*__cpuexit*/ cpufreq_stats_free_table(unsigned int cpu)
+>  {
+>  	struct cpufreq_stats *stat = cpufreq_stats_table[cpu];
+>  	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+> 
 
-Regrettably this interferes with anti-fragmentation because the "next" page
-on the list on return from rmqueue_bulk is not guaranteed to be of the right
-mobility type. I fixed it as an additional patch but it adds additional cost
-that should not be necessary and it's visible in microbenchmark results on
-at least one machine.
+yu, thanks, I have a fix for this from Adrian queued for when Linus
+resurfaces.
 
-The following patch should fix the page ordering problem without incurring an
-additional cost or interfering with anti-fragmentation. However, I haven't
-anything in place yet to verify that the physical page ordering is correct
-but it makes sense. Can you verify it fixes the problem please?
-
-It'll still be some time before I have a full set of performance results
-but initially at least, this fix seems to avoid any impact.
-
-======
-Subject: Fix page allocation for larger I/O segments
-
-In some cases the IO subsystem is able to merge requests if the pages are
-adjacent in physical memory. This was achieved in the allocator by having
-expand() return pages in physically contiguous order in situations were
-a large buddy was split. However, list-based anti-fragmentation changed
-the order pages were returned in to avoid searching in buffered_rmqueue()
-for a page of the appropriate migrate type.
-
-This patch restores behaviour of rmqueue_bulk() preserving the physical order
-of pages returned by the allocator without incurring increased search costs for
-anti-fragmentation.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- page_alloc.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc5-clean/mm/page_alloc.c linux-2.6.24-rc5-giveback-physorder-listmove/mm/page_alloc.c
---- linux-2.6.24-rc5-clean/mm/page_alloc.c	2007-12-14 11:55:13.000000000 +0000
-+++ linux-2.6.24-rc5-giveback-physorder-listmove/mm/page_alloc.c	2007-12-14 15:33:12.000000000 +0000
-@@ -847,8 +847,19 @@ static int rmqueue_bulk(struct zone *zon
- 		struct page *page = __rmqueue(zone, order, migratetype);
- 		if (unlikely(page == NULL))
- 			break;
-+
-+		/*
-+		 * Split buddy pages returned by expand() are received here
-+		 * in physical page order. The page is added to the callers and
-+		 * list and the list head then moves forward. From the callers
-+		 * perspective, the linked list is ordered by page number in
-+		 * some conditions. This is useful for IO devices that can
-+		 * merge IO requests if the physical pages are ordered
-+		 * properly.
-+		 */
- 		list_add(&page->lru, list);
- 		set_page_private(page, migratetype);
-+		list = &page->lru;
- 	}
- 	spin_unlock(&zone->lock);
- 	return i;
