@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933630AbXLNNQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933402AbXLNNVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933630AbXLNNQG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 08:16:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932410AbXLNNPh
+	id S933402AbXLNNVW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 08:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbXLNNVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 08:15:37 -0500
-Received: from adsl-76-243-235-52.dsl.chcgil.sbcglobal.net ([76.243.235.52]:50289
-	"EHLO accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932207AbXLNNPf (ORCPT
+	Fri, 14 Dec 2007 08:21:15 -0500
+Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:25159 "EHLO
+	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751426AbXLNNVO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 08:15:35 -0500
-Subject: Re: [BUG] Kernel Bugs Weekly (maybe bi-weekly)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Natalie Protasevich <protasnb@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-ide@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-dvb@linuxtv.org, linux-acpi@vger.kernel.org
-In-Reply-To: <32209efe0712132057x247219e0m602f24d1e3a2c20b@mail.gmail.com>
-References: <32209efe0712132057x247219e0m602f24d1e3a2c20b@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 08:15:25 -0500
-Message-Id: <1197638126.3154.65.camel@localhost.localdomain>
+	Fri, 14 Dec 2007 08:21:14 -0500
+Message-Id: <47623BB8.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Fri, 14 Dec 2007 08:15:52 -0500
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: <ego@in.ibm.com>, "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>, <jirislaby@gmail.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc5-mm1
+References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
+ <20071213122802.GA30427@in.ibm.com>
+ <20071214014906.eb2644f4.akpm@linux-foundation.org>
+In-Reply-To: <20071214014906.eb2644f4.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-12-13 at 20:57 -0800, Natalie Protasevich wrote:
-> snd_hda_intel doesn't mute front speakers when headset is plugged in
-> http://bugzilla.kernel.org/show_bug.cgi?id=9338
-> Kernel: 2.6.23+
-> Vaio VGN-FZ19VN
+>>> On Fri, Dec 14, 2007 at  4:49 AM, in message
+<20071214014906.eb2644f4.akpm@linux-foundation.org>, Andrew Morton
+<akpm@linux-foundation.org> wrote: 
+> On Thu, 13 Dec 2007 17:58:02 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
+> 
+>> Hi Andrew, 
+>> On Thu, Dec 13, 2007 at 02:40:50AM -0800, Andrew Morton wrote:
+>> > 
+>> > 
+>> > 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.
+> 24-rc5-mm1/
+>> > 
+>> > - If something goes wrong with a PCI device's probing or initialisation, try
+>> >   reverting pci-disable-decoding-during-sizing-of-bars.patch.
+>> > 
+>> > - git-sched was dropped due to breaking suspend-to-RAM.
+>> 
+>> Is it the same suspend-to-RAM problem that Jiri Slaby reported 
+>> here --> http://lkml.org/lkml/2007/12/7/125
+>> 
+>> The problem has been identified and a fix patch was provided.
+>> 
+> 
+> Here we go...
+> 
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> Revert from git-sched:
+> 
+> commit 9e76ad89f4fa93a789326bc0f4548cd2fbca8d8e
+> Author: Gregory Haskins <ghaskins@novell.com>
+> Date:   Thu Dec 13 21:35:26 2007 +0100
+> 
+>     sched: update root-domain spans upon departure
+>     
+>     We shouldnt leave cpus enabled in the spans if that RQ has left the 
+> domain.
+>     
+>     Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> As it causes my t61p to fail to come back to life after suspend-to-RAM.
 
-I'm not sure this one's a bug ... but it would depend on the chip
-specifics.  The Intel HDA is designed to have separately controllable
-line out and external features.  I like this and consider it to be a
-nice feature.  However, it's not impossible that the Vaio is wired up
-differently from my fujitsu, which also has a slightly different rev of
-the controller:
 
-00:1b.0 Audio device: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
-Family) High Definition Audio Controller (rev 04)
+Ouch.  Sorry guys, my bad.
 
-However (modulo severe problems with pulseaudio) it works just fine for
-me (separate sliders for line out and speakers) with 2.6.23.8 on a
-Fujitsu 7120P LifeBook.
+I can't tell what is wrong by visual inspection so I will have to dig deeper.
 
-James
-
+Regards,
+-Greg
 
