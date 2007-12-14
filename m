@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935212AbXLNWn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935438AbXLNWns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935212AbXLNWn3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 17:43:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935193AbXLNWlz
+	id S935438AbXLNWns (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 17:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935224AbXLNWmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 17:41:55 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:46107 "EHLO mx2.suse.de"
+	Fri, 14 Dec 2007 17:42:00 -0500
+Received: from mx1.suse.de ([195.135.220.2]:56930 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935179AbXLNWly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 17:41:54 -0500
-Date: Fri, 14 Dec 2007 14:23:10 -0800
+	id S934890AbXLNWl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 17:41:59 -0500
+Date: Fri, 14 Dec 2007 14:24:58 -0800
 From: Greg KH <gregkh@suse.de>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] kobject_add error handling when set name failed
-Message-ID: <20071214222310.GC29375@suse.de>
-References: <20071214092405.GA3361@darkstar.te-china.tietoenator.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH] Add Documentation for FAIR_USER_SCHED sysfs files
+Message-ID: <20071214222458.GD29375@suse.de>
+References: <20071212023836.GB1486@linux.vnet.ibm.com> <20071212053556.GA25334@suse.de> <20071212054859.GC1486@linux.vnet.ibm.com> <20071212095843.GB24246@elte.hu> <20071212101645.GA30004@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071214092405.GA3361@darkstar.te-china.tietoenator.com>
+In-Reply-To: <20071212101645.GA30004@elte.hu>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 14, 2007 at 05:24:05PM +0800, Dave Young wrote:
-> In kobject_add, when kobject_set_name failed we should put the kobj and return.
+On Wed, Dec 12, 2007 at 11:16:45AM +0100, Ingo Molnar wrote:
 > 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> ---
-> lib/kobject.c |   11 ++++++++---
-> 1 file changed, 8 insertions(+), 3 deletions(-)
+> > 
+> > * Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> > 
+> > > > Hm, how about describing the units here?  Can you put "10" in each 
+> > > > file and everyone will get the same share?  100?  1?  1024 seems 
+> > > > like an odd "share" number.  Unless there is some other document you 
+> > > > wish to refer people to do help describe these values?
+> > > 
+> > > It is proportional. That is, if two users have same value for shares, 
+> > > they will get equal bandwidth on the CPU. If they are in the ratio 
+> > > 1:2, then they will share it in that ratio. I've updated the patch for 
+> > > this. Hope it is clearer.
+> > 
+> > thanks, applied.
 > 
-> diff -upr linux/lib/kobject.c linux.new/lib/kobject.c
-> --- linux/lib/kobject.c	2007-12-14 17:14:03.000000000 +0800
-> +++ linux.new/lib/kobject.c	2007-12-14 17:17:48.000000000 +0800
-> @@ -228,8 +228,13 @@ int kobject_add(struct kobject * kobj)
->  
->  	if (!(kobj = kobject_get(kobj)))
->  		return -ENOENT;
-> -	if (!kobj->k_name)
-> -		kobject_set_name(kobj, "NO_NAME");
-> +	if (!kobj->k_name) {
-> +		error = kobject_set_name(kobj, "NO_NAME"));
-> +		if (error) {
-> +			kobject_put(kobj);
-> +			return error;
-> +		}
-> +	}
+> unless Greg wants to push this via the sysfs git tree?
 
-Thanks, but I have a pending patch from Kay in my inbox that messes up
-this patch, as it drops most of this nonsense :)
-
->  	if (!*kobj->k_name) {
->  		pr_debug("kobject (%p) attempted to be registered with no "
->  			 "name!\n", kobj);
-> @@ -371,7 +376,7 @@ void kobject_init_ng(struct kobject *kob
->  		goto error;
->  	}
->  	if (!ktype) {
-> -		err_str = "must have a ktype to be initialized properly!\n";
-> +		err_str = "must have a ktype to be initialized properly!";
->  		goto error;
-
-Oops, good catch, I'll just go add this change to my tree.
+Sure, I can do that, what's one more patch in my tree?  :)
 
 thanks,
 
