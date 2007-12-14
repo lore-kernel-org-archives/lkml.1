@@ -1,230 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbXLNODy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbXLNOIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753131AbXLNODy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 09:03:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbXLNODq
+	id S1753295AbXLNOIS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 09:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXLNOIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 09:03:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51348 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbXLNODp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 09:03:45 -0500
-Date: Fri, 14 Dec 2007 15:03:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
-	on some AMD64x2 laptops, etc.
-Message-ID: <20071214140317.GA1007@elte.hu>
-References: <469578CD.3080609@reed.com> <1184216528.12353.203.camel@chaos> <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <20071214131502.GA14359@elte.hu> <47628842.5060908@keyaccess.nl>
+	Fri, 14 Dec 2007 09:08:10 -0500
+Received: from intcomgrp.com ([216.54.13.120]:33458 "EHLO
+	beta.support.intcomgrp.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751512AbXLNOIJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 09:08:09 -0500
+Message-ID: <47628E4C.2090801@intcomgrp.com>
+Date: Fri, 14 Dec 2007 09:08:12 -0500
+From: James Kosin <jkosin@intcomgrp.com>
+Organization: International Communications Group, Inc.
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47628842.5060908@keyaccess.nl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org
+Subject: Re: [RFT] Port 0x80 I/O speed
+References: <9A0cz-7xy-13@gated-at.bofh.it> <9A0cz-7xy-11@gated-at.bofh.it> <9A4pU-69z-15@gated-at.bofh.it>
+In-Reply-To: <9A4pU-69z-15@gated-at.bofh.it>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rene Herman wrote:
+> On 13-12-07 17:27, James Kosin wrote:
+> 
+>> model name      : Pentium III (Katmai)
+>> cpu MHz         : 499.156
+> 
+>> [root@beta jkosin]# ./a.out
+>> cycles: out 683, in 299
+> 
+> Thanks much, you made spot 32 ;-)
+> 
+> http://lkml.org/lkml/2007/12/12/309
+> 
+> By the way, if anyone in this/these thread(s) wrote something today (*)
+> they would like me to reply to -- my horseshit ISP is completely
+> crapping out on me and I haven't seen your message. Resends ofcourse
+> welcome.
+> 
+> (*) [now - 16 hours, now]
+> 
+> Rene.
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+Maybe,  I should have added the lspci to the list of information.
+kernel version is latest 2.4 kernel.
 
-* Rene Herman <rene.herman@gmail.com> wrote:
+[root@beta root]# lspci
+00:00.0 Host bridge: Intel Corp. 440BX/ZX/DX - 82443BX/ZX/DX Host bridge
+(rev 03)
+00:01.0 PCI bridge: Intel Corp. 440BX/ZX/DX - 82443BX/ZX/DX AGP bridge
+(rev 03)
+00:07.0 ISA bridge: Intel Corp. 82371AB/EB/MB PIIX4 ISA (rev 02)
+00:07.1 IDE interface: Intel Corp. 82371AB/EB/MB PIIX4 IDE (rev 01)
+00:07.2 USB Controller: Intel Corp. 82371AB/EB/MB PIIX4 USB (rev 01)
+00:07.3 Bridge: Intel Corp. 82371AB/EB/MB PIIX4 ACPI (rev 02)
+00:09.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8169
+(rev 10)
+00:0a.0 Ethernet controller: Lite-On Communications Inc LNE100TX (rev 20)
+00:0b.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro
+215GP (rev 5c)
 
-> On 14-12-07 14:15, Ingo Molnar wrote:
->
->> wow, cool fix! (I remember that there were other systems as well that are 
->> affected by port 0x80 muckery - i thought we had removed port 0x80 
->> accesses long ago.)
->>
->> how about the simpler fix below, as a first-level approach? We can 
->> then remove the _p in/out sequences after this.
->
-> Your version does the same thing that the version from Pavel/David 
-> does for 32-bit at least.
+-- 
+Scanned by ClamAV - http://www.clamav.net
 
-well, if you carefully look at the code it's not the "same" but a 
-similar but cleaner thing - it moves this quirk out of a common include 
-file. I take back the "simpler" characterisation - my patch indeed ended 
-up being almost the same as David's.
-
->> +/*
->> + * Some legacy devices need delays for IN/OUT sequences. Most are
->> + * probably not needed but it's the safest to just do this short delay:
->> + */
->> +void native_io_delay(void)
->> +{
->> +	udelay(1);
->> +}
->
-> Also note the thread(s) on LKML where 2 us was decided to be a nicely 
-> conservative value:
-
-yep, i have updated the delay to 2 usecs. The latest patch is below, as 
-queued up in x86.git. (not yet queued up for .24 - it's pending testing 
-and more feedback, etc.)
-
-	Ingo
-
------------------>
-Subject: x86: fix in_p/out_p crashes
-From: David P. Reed <dpreed@reed.com>
-
-Do not use port 0x80, it can cause crashes, see:
-
- http://bugzilla.kernel.org/show_bug.cgi?id=6307
- http://bugzilla.kernel.org/show_bug.cgi?id=9511
-
-Replace use of outb to "unused" diagnostic port 0x80 for time delay
-with udelay based time delay on x86_64 architecture machines.  Fix for
-bugs 9511 and 6307 in bugzilla, plus bugs reported in
-bugzilla.redhat.com.
-
-Derived from suggestion (that didn't compile) by Pavel Machek, and
-tested, also based on measurements of typical timings of out's
-collated by Rene Herman from many in the community.
-
-This patch fixes a number of bugs known to cause problems on HP
-Pavilion dv9000z and dv6000z laptops - in the form of solid freezes
-when hwclock is used to show or set the time.  Also, it potentially
-improves bus utilization on SMP machines, by using a waiting process
-that doesn't tie up the ISA/LPC bus for 1 or 2 microseconds.
-
-[ mingo@elte.hu: minor restructuring, 32-bit support. ]
-
-Signed-off-by: David P. Reed <dpreed@reed.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/boot/compressed/misc_32.c |    8 ++++----
- arch/x86/boot/compressed/misc_64.c |    8 ++++----
- arch/x86/kernel/quirks.c           |   10 ++++++++++
- include/asm-x86/io_32.h            |    5 +----
- include/asm-x86/io_64.h            |   14 +++++---------
- 5 files changed, 24 insertions(+), 21 deletions(-)
-
-Index: linux-x86.q/arch/x86/boot/compressed/misc_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/boot/compressed/misc_32.c
-+++ linux-x86.q/arch/x86/boot/compressed/misc_32.c
-@@ -276,10 +276,10 @@ static void putstr(const char *s)
- 	RM_SCREEN_INFO.orig_y = y;
- 
- 	pos = (x + cols * y) * 2;	/* Update cursor position */
--	outb_p(14, vidport);
--	outb_p(0xff & (pos >> 9), vidport+1);
--	outb_p(15, vidport);
--	outb_p(0xff & (pos >> 1), vidport+1);
-+	outb(14, vidport);
-+	outb(0xff & (pos >> 9), vidport+1);
-+	outb(15, vidport);
-+	outb(0xff & (pos >> 1), vidport+1);
- }
- 
- static void* memset(void* s, int c, unsigned n)
-Index: linux-x86.q/arch/x86/boot/compressed/misc_64.c
-===================================================================
---- linux-x86.q.orig/arch/x86/boot/compressed/misc_64.c
-+++ linux-x86.q/arch/x86/boot/compressed/misc_64.c
-@@ -269,10 +269,10 @@ static void putstr(const char *s)
- 	RM_SCREEN_INFO.orig_y = y;
- 
- 	pos = (x + cols * y) * 2;	/* Update cursor position */
--	outb_p(14, vidport);
--	outb_p(0xff & (pos >> 9), vidport+1);
--	outb_p(15, vidport);
--	outb_p(0xff & (pos >> 1), vidport+1);
-+	outb(14, vidport);
-+	outb(0xff & (pos >> 9), vidport+1);
-+	outb(15, vidport);
-+	outb(0xff & (pos >> 1), vidport+1);
- }
- 
- static void* memset(void* s, int c, unsigned n)
-Index: linux-x86.q/arch/x86/kernel/quirks.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/quirks.c
-+++ linux-x86.q/arch/x86/kernel/quirks.c
-@@ -3,9 +3,19 @@
-  */
- #include <linux/pci.h>
- #include <linux/irq.h>
-+#include <linux/delay.h>
- 
- #include <asm/hpet.h>
- 
-+/*
-+ * Some legacy devices need delays for IN/OUT sequences. Most are
-+ * probably not needed but it's the safest to just do this short delay:
-+ */
-+void native_io_delay(void)
-+{
-+	udelay(2);
-+}
-+
- #if defined(CONFIG_X86_IO_APIC) && defined(CONFIG_SMP) && defined(CONFIG_PCI)
- 
- static void __devinit quirk_intel_irqbalance(struct pci_dev *dev)
-Index: linux-x86.q/include/asm-x86/io_32.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/io_32.h
-+++ linux-x86.q/include/asm-x86/io_32.h
-@@ -250,10 +250,7 @@ static inline void flush_write_buffers(v
- 
- #endif /* __KERNEL__ */
- 
--static inline void native_io_delay(void)
--{
--	asm volatile("outb %%al,$0x80" : : : "memory");
--}
-+extern void native_io_delay(void);
- 
- #if defined(CONFIG_PARAVIRT)
- #include <asm/paravirt.h>
-Index: linux-x86.q/include/asm-x86/io_64.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/io_64.h
-+++ linux-x86.q/include/asm-x86/io_64.h
-@@ -35,13 +35,7 @@
-   *  - Arnaldo Carvalho de Melo <acme@conectiva.com.br>
-   */
- 
--#define __SLOW_DOWN_IO "\noutb %%al,$0x80"
--
--#ifdef REALLY_SLOW_IO
--#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO
--#else
--#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO
--#endif
-+extern void native_io_delay(void);
- 
- /*
-  * Talk about misusing macros..
-@@ -54,7 +48,8 @@ __asm__ __volatile__ ("out" #s " %" s1 "
- 
- #define __OUT(s,s1,x) \
- __OUT1(s,x) __OUT2(s,s1,"w") : : "a" (value), "Nd" (port)); } \
--__OUT1(s##_p,x) __OUT2(s,s1,"w") __FULL_SLOW_DOWN_IO : : "a" (value), "Nd" (port));} \
-+__OUT1(s##_p,x) __OUT2(s,s1,"w") : : "a" (value), "Nd" (port)); \
-+native_io_delay(); } \
- 
- #define __IN1(s) \
- static inline RETURN_TYPE in##s(unsigned short port) { RETURN_TYPE _v;
-@@ -64,7 +59,8 @@ __asm__ __volatile__ ("in" #s " %" s2 "1
- 
- #define __IN(s,s1,i...) \
- __IN1(s) __IN2(s,s1,"w") : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
--__IN1(s##_p) __IN2(s,s1,"w") __FULL_SLOW_DOWN_IO : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
-+__IN1(s##_p) __IN2(s,s1,"w") : "=a" (_v) : "Nd" (port) ,##i ); return _v; \
-+native_io_delay(); } \
- 
- #define __INS(s) \
- static inline void ins##s(unsigned short port, void * addr, unsigned long count) \
