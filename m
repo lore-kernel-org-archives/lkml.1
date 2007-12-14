@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbXLNWNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933109AbXLNWNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932765AbXLNWNH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 17:13:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757193AbXLNWMz
+	id S933109AbXLNWNh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 17:13:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbXLNWNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 17:12:55 -0500
-Received: from gate.crashing.org ([63.228.1.57]:40205 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754937AbXLNWMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 17:12:55 -0500
-Subject: Re: Possible issue with dangling PCI BARs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1197633131.29507.97.camel@perihelion>
-References: <1197514804.15741.60.camel@pasglop>
-	 <1197633131.29507.97.camel@perihelion>
+	Fri, 14 Dec 2007 17:13:24 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:53912 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758582AbXLNWNX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 17:13:23 -0500
+Subject: Re: Top kernel oopses/warnings this week
+From: Jon Masters <jonathan@jonmasters.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <4762CF8C.90808@linux.intel.com>
+References: <4762CF8C.90808@linux.intel.com>
 Content-Type: text/plain
-Date: Sat, 15 Dec 2007 09:11:54 +1100
-Message-Id: <1197670314.6696.20.camel@pasglop>
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Fri, 14 Dec 2007 17:12:46 -0500
+Message-Id: <1197670366.29507.136.camel@perihelion>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2007-12-14 at 06:52 -0500, Jon Masters wrote:
-> On Thu, 2007-12-13 at 14:00 +1100, Benjamin Herrenschmidt wrote:
-> > While reworking the powerpc PCI resource management, to make it more
-> > x86-like and use more of the generic code in setup-bus.c and
-> > setup-res.c, I noticed something a bit fishy in the way we deal with
-> > resources that we failed to assign.
+On Fri, 2007-12-14 at 10:46 -0800, Arjan van de Ven wrote:
+
+> The http://www.kerneloops.org website collects kernel oops and warning reports from various mailing lists and bugzillas; below is a top 10 
+> list of the oopses collected in the last 7 days. (Reports prior to 2.6.23 have been omitted in collecting the top 10)
 > 
-> On a tangent here, is there a way (other than pci=rom) to ensure greater
-> address space/resource space for PCI resource mappings?
+> This is the first such report that I'm posting; Please let me know if this is useful or not.
 
-limit lowmem ? 4g/4g ? 64 bits ? :-)
+FWIW I think this is incredibly useful, Arjan. Hoping we'll get the
+kerneloops tools into Fedora soon too.
 
-Ben
+Jon.
 
 
