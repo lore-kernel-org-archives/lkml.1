@@ -1,387 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766003AbXLNLYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765046AbXLNLmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766003AbXLNLYw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 06:24:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759269AbXLNLYn
+	id S1765046AbXLNLmx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 06:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXLNLmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 06:24:43 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:38885 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757635AbXLNLYl (ORCPT
+	Fri, 14 Dec 2007 06:42:44 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:43457 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbXLNLmn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 06:24:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=fGXBXJwLqfbuSsf79sCNDnykYV9luNVvXsEhWE1US1JjcqJDcBgSMBE5UFoazogrudCp/APv4iRDHJn6/0wXANJqo57ucw9LEAqk+jCcWmSOvm7cY929GSqhlg6u9n2OsmqoSBIhf1B/2mCKHlmrpEC4m0tx9QPdJDVnzQxw63A=
-Message-ID: <4762683D.8050007@gmail.com>
-Date: Fri, 14 Dec 2007 12:25:49 +0100
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Fri, 14 Dec 2007 06:42:43 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
+Date: Fri, 14 Dec 2007 12:39:51 +0100
+User-Agent: KMail/1.9.6
+Cc: Ray Lee <ray-lk@madrabbit.org>, bcm43xx-dev@lists.berlios.de,
+       Daniel Walker <dwalker@mvista.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux@bohmer.net, jonathan@jonmasters.org,
+       matthias.kaehlcke@gmail.com, kjwinchester@gmail.com, mbuesch@freenet.de,
+       John Linville <linville@tuxdriver.com>
+References: <20071213003028.676998182@mvista.com> <200712141149.46945.mb@bu3sch.de> <20071214111534.GD23964@elte.hu>
+In-Reply-To: <20071214111534.GD23964@elte.hu>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, tytso@thunk.org,
-       Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
-       Christoph Hellwig <hch@lst.de>,
-       Linux Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Tesing of / bugs in new timerfd API
-References: <47614369.3060906@gmail.com>  <Pine.LNX.4.64.0712131333030.10881@alien.or.mcafeemobile.com> <cfd18e0f0712131416y6159af46v6d0c91d75130cd69@mail.gmail.com> <Pine.LNX.4.64.0712131603010.10881@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0712131603010.10881@alien.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+Content-Disposition: inline
+Message-Id: <200712141239.51809.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Davide,
-
-Davide Libenzi wrote:
-> On Thu, 13 Dec 2007, Michael Kerrisk wrote:
+On Friday 14 December 2007 12:15:34 Ingo Molnar wrote:
+> > So you volunteer to maintain bcm43xx? Fine. Thanks a lot.
 > 
->>>> BUG 2:
->>>> The last sentence does not match the implementation.
->>>> (Nor is it consistent with the behavior of POSIX timers.
->>>> And I *think* things did work correctly in the original
->>>> timerfd() implementation, but I have not gone back to check.)
->>>>
->>>> Suppose that we set an absolute timer to expire 100 seconds
->>>> in the future.  Then according to this sentence of the man
->>>> page then each subsequent call to timerfd_gettime() should
->>>> retrun an itimerspec structure whose it_value steadily
->>>> decreases from 100 to 0 (when the timer expires).  (This
->>>> is the behavior in the analogous situation with POSIX timers
->>>> and with setitimer()/getitimer().)
->>>>
->>>> However, the implementation of timerfd_gettime() always
->>>> returns the "time when the timer would next expire", and
->>>> this value depends on whether TFD_TIMER_ABSTIME was specified
->>>> when setting the timer.
->>> This is been like that from the beginning of the new API. So no, the
->>> previous was behaving exactly the same WRT this feature.
->>> Is this something really needed?
->> Three reasons that I think of off the top of my head (and there might
->> well be more reasosn) why this should change:
->>
->> a) consistency with the other two timer APIs (POSIX timers
->> (timer_create(), etc.), and setitimer()/getitimer()).
+> it's sad that you are trying to force testers to upgrade to your new 
+> driver by threatening to unsupport the old driver.
 
-You made no comment on this, which is perhaps the most important of the
-reasons to make the change.
+I dropped maintainance for bcm43xx over a year ago.
+So I am not going to catch it up again. b43 works fine.
+I don't see a reason to support bcm43xx anymore.
+Currently bcm43xx is orphaned, as Larry couldn't support it
+anymore due to other issues.
 
->> b) Returning the amount of time until the next expiration  is more
->> useful to userland: I'd say the most common case is for userland to
->> want to know how long until the next expiration occurs, or to adjust
->> that time by adding/subtracting some value to the existing setting.
->> That is difficult to with the current implementation: the userland app
->> must use timer_gettime(), call clock_gettime(), and calculate the
->> difference between the two, in order to know how much time remains
->> until the next timer expiration.
+> The testers who did  
+> nothing but reported that the new driver did not work on their hardware.
+
+Which testers?
+Ray Lee didn't even install the firmware. So it can't work by definition.
+That is not my fault.
+
+> You can write new drivers but you must not break existing users. That's 
+> true for every single piece of the kernel. It is _your_ responsibility 
+> to get that rule right - and if it does not work out of box (no matter 
+> whom to blame, udev or the driver) you dont get to remove the driver 
+> from the upstream kernel.
+
+Ok. So we have to live with an orphaned driver. I am fine with that, too.
+
+> Yes, you can then "unsupport it" in spite and be a prick about it in 
+> general but that will only talk of your own personal qualities and will 
+> sharply reduce your credibility as a maintainer (and eventually hinder 
+> your ability to introduce new code) - users will still have the code 
+> available and will have a chance to fix the driver that happens to work. 
+> (and perhaps another, capable, but friendler maintainer arises.) And 
+> that old code will be a clot to drag around, hindering your 'new' 
+> wireless code all along.
+
+So new code is included in the Linux kernel based only on political
+considerations instead on technical?
+I'm not sure what's the matter. Show me _one_ person for whom
+bcm43xx works and b43/legacy does not. And I will immediately stop
+removal of that driver and fix b43.
+
+> I really dont know why it's so hard to understand: new is totally 
+> useless if it does not work for old setups 100% of the time. And people 
+> _WANT_ to use your new code, so it's not like you have to pull their 
+> hairs to get your stuff tested. And YOU wrote the old code in large 
+> part:
 > 
-> Bah, I don't want to argue with that because otherwise it starts going 
-> towards the "typical" use cases listing, that can be found the same exact 
-> reasons to have one or the other way. And we end up wasting lots of time.
-> We'd just have to move another thing that userspace could do, inside the 
-> kernel (subtract the current value returned by hrtimer_forward() in 
-> ->expires with "now").
-
-Okay -- I still think this reason matters, but let's leave it for the
-moment.  I think the other reasons are strong enough anyway...
-
->> c) Currently, the information returned differs depending on whether
->> TFD_TIMER_ABSTIME is specified -- this is not the case for the
->> analogous situation for POSIX timers.  For POSIX timers, the returned
->> setting is always the amount of time until the timer next expires.
->> This inconsistency is messy for applications -- the application may
->> not (be able to) know whether or not the timer it is examining was set
->> using TFD_TIMER_ABSTIME (the timerfd might have been created by a
->> library, for example).
+>  $ git-authors drivers/net/wireless/bcm43xx/ | tail -10
+>       2  Sam Ravnborg
+>       3  David Howells
+>       3  David Woodhouse
+>       3  Joe Perches
+>       4  Jeff Garzik
+>       5  Daniel Drake
+>       6  Stefano Brivio
+>       9  John W. Linville
+>      48  Larry Finger
+>      80  Michael Buesch
 > 
-> Hmm... the time returned is always the next absolute time when the next 
-> timer tick will go off. It does not depend on TFD_TIMER_ABSTIME. I return 
-> the ->expires field of the timer, and hrtimer_forward() sets it to the 
-> next absolute time.
+> so it's not like "someone else messed it up" and that you would be 
+> incapable of getting it all work nicely and make the migration of users 
+> smoother. And if udev is a hindrance to you, reduce your driver's 
+> dependence on udev breakages.
 
-You snipped my example that demonstrated the problem.  Both of the
-following runs create a timer that expires 10 seconds from "now", but
-observe the difference in the value returned by timerfd_gettime():
+I'm not sure what you are talking about.
+If udev renames the device to something stupid (like wlan0_rename)
+that is not my fault. That is the fault of a big Linux Distribution
+messing udev config up.
 
-$ ./timerfd_test 10         # does not use TFD_TIMER_ABSTIME
-Initial setting for settime:   value=10.000, interval=0.000
-./timerfd_test> g
-(elapsed time=  1)
-Current value:                 value=346.448, interval=0.000
+Let's summarise it:
+I don't know a single user for whom bcm43xx works but b43 does not.
+In most cases b43 does work a _lot_ better than bcm43xx.
+If you show me one person for whom bcm43xx works but b43 does not I
+will stop removal of the driver.
 
-$ ./timerfd_test -a 10      # uses TFD_TIMER_ABSTIME
-Initial setting for settime:   value=1197630855.254, interval=0.000
-./timerfd_test> g
-(elapsed time=  1)
-Current value:                 value=1197630855.254, interval=0.000
-
-Either there's an inconsistency here depending on the use of
-TFD_TIMER_ABSTIME, or there is a bug in my understanding or my test program
-(but so far I haven't spotted that bug ;-).).
-
-Cheers,
-
-Michael
-
-PS There was a little bug in my test program, do do with the treatment of
-nanosecond command-line arguments.  It didn't affect any of the tests, but
-for completeness, the revised version of the program is below.
-
-/* timerfd_test.c */
-
-/* Link with -lrt */
-
-#define _GNU_SOURCE
-#include <sys/syscall.h>
-#include <unistd.h>
-#include <time.h>
-#if defined(__i386__)
-#define __NR_timerfd_create 322
-#define __NR_timerfd_settime 325
-#define __NR_timerfd_gettime 326
-#endif
-
-static int
-timerfd_create(int clockid, int flags)
-{
-    return syscall(__NR_timerfd_create, clockid, flags);
-}
-
-static int
-timerfd_settime(int fd, int flags, struct itimerspec *new_value,
-        struct itimerspec *curr_value)
-{
-    return syscall(__NR_timerfd_settime, fd, flags,
-            new_value, curr_value);
-}
-
-static int
-timerfd_gettime(int fd, struct itimerspec *curr_value)
-{
-    return syscall(__NR_timerfd_gettime, fd, curr_value);
-}
-
-#define TFD_TIMER_ABSTIME (1 << 0)
-
-
-#define handle_error(msg) \
-        do { perror(msg); exit(EXIT_FAILURE); } while (0)
-
-// #include <sys/timerfd.h>
-#include <time.h>
-#include <sys/times.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>     /* Definition of uint64_t */
-
-static void
-usage(const char *pname, const char *msg)
-{
-    if (msg != NULL)
-        printf("%s", msg);
-    fprintf(stderr, "Usage: %s [options] value-sec [value-nsec "
-            "[intvl-sec [intvl-nsec]]]\n", pname);
-    fprintf(stderr, "Options are:\n");
-    fprintf(stderr, "\t-a    Use absolute timer\n");
-    fprintf(stderr, "\t-m    Use CLOCK_MONOTONIC "
-            "(instead of CLOCK_REALTIME)\n");
-
-    exit(EXIT_FAILURE);
-} /* usage  */
-
-static void
-display_help(void)
-{
-    printf("n val-sec val-nsec intvl-sec intvl-nsec\n"
-           "                  Reset timer value & interval\n");
-    printf("g                 Get timer value\n");
-    printf("r                 Read from file descriptor\n");
-    printf("t                 Print elapsed time\n");
-} /* display_help */
-
-
-#define MAX_LINE 1024
-
-static void
-print_itimerspec(struct itimerspec *its)
-{
-    printf("value=%ld.%03ld, interval=%ld.%03ld",
-            (long) its->it_value.tv_sec,
-            (long) its->it_value.tv_nsec / 1000000,
-            (long) its->it_interval.tv_sec,
-            (long) its->it_interval.tv_nsec / 1000000);
-} /* print_itimerspec */
-
-
-int
-main(int argc, char *argv[])
-{
-    struct itimerspec new_value, curr_value;
-    int fd, flags;
-    struct timespec now;
-    int s, opt, use_abs_timer, use_monotonic;
-    long arg1, arg2, arg3, arg4;
-    uint64_t exp;
-    time_t start;
-    char line[MAX_LINE];
-    int num_read, clockid;
-    char cmd;
-
-    use_abs_timer = 0;
-    use_monotonic = 0;
-
-    while ((opt = getopt(argc, argv, "am")) != -1) {
-        switch (opt) {
-        case 'a':
-            use_abs_timer = 1;
-            break;
-
-        case 'm':
-            use_monotonic = 1;
-            break;
-
-        default:
-            usage(argv[1], NULL);
-            break;
-        } /* switch */
-    } /* while */
-
-    clockid = (use_monotonic ? CLOCK_MONOTONIC : CLOCK_REALTIME);
-
-    if (optind + 1 > argc)
-        usage(argv[0], NULL);
-
-    if (clock_gettime(clockid, &now) == -1)
-        handle_error("clock_gettime");
-
-    flags = use_abs_timer ? TFD_TIMER_ABSTIME : 0;
-
-    /* Create a timer with initial expiration and interval
-       as specified in command line */
-
-    if (use_abs_timer) {
-        new_value.it_value.tv_sec = now.tv_sec + atoi(argv[optind]);
-        new_value.it_value.tv_nsec = (argc > optind + 1) ?
-                atol(argv[optind + 1]) + now.tv_nsec : now.tv_nsec;
-        if (new_value.it_value.tv_nsec > 1000000000) {
-            new_value.it_value.tv_sec +=
-                    new_value.it_value.tv_nsec / 1000000000;
-            new_value.it_value.tv_nsec %= 1000000000;
-        } /* if */
-    } else {
-        new_value.it_value.tv_sec = atoi(argv[optind]);
-        new_value.it_value.tv_nsec = (argc > optind + 1) ?
-                       atol(argv[optind + 1]) : 0;
-    }
-
-    new_value.it_interval.tv_sec = (argc > optind + 2) ?
-                        atol(argv[optind + 2]) : 0;
-    new_value.it_interval.tv_nsec = (argc > optind + 3) ?
-                        atol(argv[optind + 3]) : 0;
-
-    fd = timerfd_create(clockid, 0);
-    if (fd == -1)
-        handle_error("timerfd_create");
-
-    printf("Initial setting for settime:   ");
-    print_itimerspec(&new_value);
-    printf("\n");
-
-    s = timerfd_settime(fd, flags, &new_value, &curr_value);
-    if (s == -1)
-        handle_error("timerfd_settime");
-
-    start = time(NULL);
-
-    for ( ; ; ) {
-        printf("%s> ", argv[0]);
-        fflush(stdout);
-
-        if (fgets(line, MAX_LINE, stdin) == NULL)       /* EOF */
-            exit(EXIT_SUCCESS);
-        line[strlen(line) - 1] = '\0';      /* Remove trailing '\n' */
-
-        if (*line == '\0')
-            continue;                       /* Skip blank lines */
-
-        if (line[0] == '?')
-            display_help();
-
-        num_read = sscanf(line, " %c %ld %ld %ld %ld",
-                          &cmd, &arg1, &arg2, &arg3, &arg4);
-
-        switch (cmd) {
-        case 'n':
-            if (num_read != 5) {
-                printf("Wrong number of arguments\n");
-                continue;
-            }
-
-            if (use_abs_timer) {
-                printf("This is an absolute timer\n");
-                if (clock_gettime(clockid, &now) == -1)
-                    handle_error("clock_gettime");
-                printf("Now:                           ");
-                printf("value=%ld.%03ld", (long) now.tv_sec,
-                        (long) now.tv_nsec / 1000000);
-                printf("\n");
-
-                new_value.it_value.tv_sec = now.tv_sec + arg1;
-                new_value.it_value.tv_nsec = now.tv_nsec + arg2;
-
-            } else {
-                printf("This is a relative timer\n");
-                new_value.it_value.tv_sec = arg1;
-                new_value.it_value.tv_nsec = arg2;
-            }
-
-            new_value.it_interval.tv_sec = arg3;
-            new_value.it_interval.tv_nsec = arg4;
-
-            printf("New setting for settime:       ");
-            print_itimerspec(&new_value);
-            printf("\n");
-
-            s = timerfd_settime(fd, flags, &new_value, &curr_value);
-            if (s == -1) {
-                perror("timerfd_settime");
-                break;
-            }
-            printf("Previous setting from settime: ");
-            print_itimerspec(&curr_value);
-            printf("\n");
-
-            break;
-
-        case 't':
-            printf("%ld\n", (long) (time(NULL) - start));
-            break;
-
-        case 'g':
-            s = timerfd_gettime(fd, &curr_value);
-            if (s == -1)
-                handle_error("timerfd_gettime");
-            printf("(elapsed time=%3ld)\n", (long) (time(NULL) - start));
-            printf("Current value:                 ");
-            print_itimerspec(&curr_value);
-            printf("\n");
-            break;
-
-        case 'r':
-            s = read(fd, &exp, sizeof(uint64_t));
-            if (s != sizeof(uint64_t))
-                handle_error("read");
-            printf("Read: %lld\n", exp);
-            break;
-        } /* switch */
-    } /* for */
-
-    exit(EXIT_SUCCESS);
-}
-
+-- 
+Greetings Michael.
