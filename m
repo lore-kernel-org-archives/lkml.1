@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbXLNSN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbXLNSNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755412AbXLNSN1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 13:13:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbXLNSNT
+	id S1755737AbXLNSNz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 13:13:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbXLNSNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 13:13:19 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52998 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752838AbXLNSNS (ORCPT
+	Fri, 14 Dec 2007 13:13:43 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:48372 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754088AbXLNSNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 13:13:18 -0500
-Message-ID: <4762C78D.9080107@zytor.com>
-Date: Fri, 14 Dec 2007 10:12:29 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 14 Dec 2007 13:13:42 -0500
+Date: Fri, 14 Dec 2007 11:13:40 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Mark Lord <liml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
+       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
+       lkml@rtr.ca, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] fix page_alloc for larger I/O segments (improved)
+Message-ID: <20071214181339.GW26334@parisc-linux.org>
+References: <1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org> <4761B32A.3070201@rtr.ca> <4761BCB4.1060601@rtr.ca> <4761C8E4.2010900@rtr.ca> <4761CE88.9070406@rtr.ca> <20071213163726.3bb601fa.akpm@linux-foundation.org> <4761D160.7060603@rtr.ca> <4761D279.6050500@rtr.ca> <20071214174236.GA28613@csn.ul.ie>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm -v3] x86 boot : export boot_params via sysfs
-References: <1197620206.12999.12.camel@caritas-dev.intel.com> <20071214155228.GA13342@kroah.com>
-In-Reply-To: <20071214155228.GA13342@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071214174236.GA28613@csn.ul.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> 
-> But it ignored the fact that I said I didn't want this binary file in
-> sysfs :)
-> 
-> Please take Eric's suggestion and split it up into the different pieces.
-> Some of the fields can be binary files, as they come directly from the
-> firmware, but the others should be text.
-> 
+On Fri, Dec 14, 2007 at 05:42:37PM +0000, Mel Gorman wrote:
+> Regrettably this interferes with anti-fragmentation because the "next" page
+> on the list on return from rmqueue_bulk is not guaranteed to be of the right
+> mobility type. I fixed it as an additional patch but it adds additional cost
+> that should not be necessary and it's visible in microbenchmark results on
+> at least one machine.
 
-But PLEASE include the full structure as a ready-to-eat object.  PLEASE.
+Is this patch to be preferred to the one Andrew Morton posted to do
+list_for_each_entry_reverse?
 
-	-hpa
+I'll send it to our DB team to see if this improves our numbers at all.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
