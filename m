@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934216AbXLNQRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934031AbXLNQSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934216AbXLNQRu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 11:17:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765100AbXLNQRF
+	id S934031AbXLNQSN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 11:18:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934139AbXLNQRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 11:17:05 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:60317 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933994AbXLNQQ6 convert rfc822-to-8bit (ORCPT
+	Fri, 14 Dec 2007 11:17:41 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:41477 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762328AbXLNQRj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 11:16:58 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: RFC: remove __read_mostly
-Date: Fri, 14 Dec 2007 17:16:46 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-References: <20071213222044.GH21616@stusta.de> <p73bq8ugrez.fsf@bingen.suse.de> <20071213224111.GI21616@stusta.de>
-In-Reply-To: <20071213224111.GI21616@stusta.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Fri, 14 Dec 2007 11:17:39 -0500
+Date: Fri, 14 Dec 2007 11:16:47 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH] UML - Add asm/fixmap.h include
+Message-ID: <20071214161647.GA5802@c2.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712141716.47742.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+HtS7cJbWXSxISX5Cc/SXo4AThpd7nVoVADdv
- bWiK6ew8bxD2YR8RSbFLNiSRCUTUQSrJIMHOZYh5LRfLDAWd9V
- ZIJqgtQxd5cwlMDYdVuuw==
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 December 2007, Adrian Bunk wrote:
-> On Thu, Dec 13, 2007 at 11:29:08PM +0100, Andi Kleen wrote:
-> > Adrian Bunk <bunk@kernel.org> writes:
-> > >
-> > > -rwxrwxr-x 1 bunk bunk 46607243 2007-12-13 19:50 vmlinux.old
-> > > -rwxrwxr-x 1 bunk bunk 46598691 2007-12-13 21:55 vmlinux
-> > 
-> > File sizes are useless -- check size output.
-> 
->     text    data     bss      dec     hex filename
-> 29268488 3697961 5222400 38188849 246b731 vmlinux.old
-> 29268435 3685565 5228784 38192784 246c690 vmlinux
+[ This needs to go into 2.6.24, as it fixes a build breakage seen on x86_64 ]
 
-Just to make sure everyone interprets this correctly:
+um_uaccess.h refers to FIXADDR_USER_*, so it should include fixmap.h.
 
-The file size in the first example suggests a 8552 byte
-(0.02%) size improvement for removing __read_mostly.
+I also changed the non-UML includes to use <> instead of "".
 
-The size output shows a -3935 byte (0.01%) size penalty
-instead, much smaller because data that was moved out to
-the .data.read_mostly section from .bss now takes space
-in the binary but won't consume more RAM.
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+---
+ arch/um/include/um_uaccess.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Since 'size' does not take any sections except text, data and
-bss into account, its output is more often than not also
-misleading, but at least it shows that the footprint is likely
-to get larger without __read_mostly rather than smaller.
-
-	Arnd <><
+Index: linux-2.6.22/arch/um/include/um_uaccess.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/um_uaccess.h	2007-12-13 10:09:22.000000000 -0500
++++ linux-2.6.22/arch/um/include/um_uaccess.h	2007-12-13 15:11:42.000000000 -0500
+@@ -6,7 +6,8 @@
+ #ifndef __ARCH_UM_UACCESS_H
+ #define __ARCH_UM_UACCESS_H
+ 
+-#include "asm/elf.h"
++#include <asm/elf.h>
++#include <asm/fixmap.h>
+ #include "sysdep/archsetjmp.h"
+ 
+ #define __under_task_size(addr, size) \
