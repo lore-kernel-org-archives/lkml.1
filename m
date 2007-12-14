@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932217AbXLNLu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932653AbXLNLu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932217AbXLNLu2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 06:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXLNLuU
+	id S932653AbXLNLu7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 06:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXLNLun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 06:50:20 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:29796 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbXLNLuS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 06:50:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=D6hvh8ujwd47LKVqjcYMTG8773A2lGPufw+EyEkCxFSG6Ph/QoYuu6O0eMxcAXW7AzgOpwk4Irzp+agvaGncGoS8reyZwEH/U9yuc3Gzi8Lpz+dzxCQw+KdKyuWPfWkkNZpg5FGfSSf7DKaGOsW0XDjFkw9s9dirG8+WBUId+ZQ=
-Message-ID: <78c462ad0712140350v62ae169fm7a2ce077325ace5f@mail.gmail.com>
-Date: Fri, 14 Dec 2007 17:20:17 +0530
-From: "Amogh Hooshdar" <amoghhooshdar@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: 1.0.0.0 DNS replies for many domain names (network)
+	Fri, 14 Dec 2007 06:50:43 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:50834 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932179AbXLNLul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 06:50:41 -0500
+Date: Fri, 14 Dec 2007 11:50:39 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mark Lord <liml@rtr.ca>, James.Bottomley@HansenPartnership.com,
+       jens.axboe@oracle.com, lkml@rtr.ca, matthew@wil.cx,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+Message-ID: <20071214115038.GB11046@csn.ul.ie>
+References: <476190BE.9010405@rtr.ca> <20071213200958.GK10104@kernel.dk> <20071213140207.111f94e2.akpm@linux-foundation.org> <1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org> <4761B32A.3070201@rtr.ca> <4761BCB4.1060601@rtr.ca> <4761C8E4.2010900@rtr.ca> <4761CE88.9070406@rtr.ca> <20071213163726.3bb601fa.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
+In-Reply-To: <20071213163726.3bb601fa.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am having a strange problem with Debian Etch 4.0 (both 64-bit and
-32-bit) using 2.6.18 kernel. Most websites do not open with browser,
-Pidgin and most other GUI applicatoins. but I am able to ping them
-fine. I am also able to do nslookup properly. When I tried to
-investigate it with Wireshark net sniffer, I observed the following.
+On (13/12/07 16:37), Andrew Morton didst pronounce:
+> On Thu, 13 Dec 2007 19:30:00 -0500
+> Mark Lord <liml@rtr.ca> wrote:
+> 
+> > Here's the commit that causes the regression:
+> > 
+> > ...
+> >
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -760,7 +760,8 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
+> >  		struct page *page = __rmqueue(zone, order, migratetype);
+> >  		if (unlikely(page == NULL))
+> >  			break;
+> > -		list_add_tail(&page->lru, list);
+> > +		list_add(&page->lru, list);
+> 
+> well that looks fishy.
+> 
 
-PROBLEM WITH 2.6.18
-Say, I try to open www.google.com, browser sends DNS query for
-www.google.com to my DNS server which is correctly configured in
-resolv.conf. It replies with the correct IP address. www.google.com
-redirects the browser to www.google.co.in. browser sends a DNS query
-again for www.google.co.in and the DNS server replies with 1.0.0.0
-which obviously is the wrong address.
+The reasoning behind the change was the first page encountered on the list
+by the caller would have a matching migratetype. I failed to take into
+account the physical ordering of pages returned. I'm setting up to run some
+performance benchmarks of the candidate fix merged into the -mm tree to see
+if the search shows up or not. I'm testing against 2.6.25-rc5 but it'll
+take a few hours to complete.
 
-Similar thing happens for many other domains like ftp.us.debian.org,
-etc. It is quite random and happens 95% of the times. In other words I
-am virtually not able to access internet.
-
-OK WITH 2.6.20
-The above was for Debian. With a Ubuntu 7.04 which has 2.6.20 kernel
-everything is fine. no problems at all. With windows also no problem
-at all.
-
-Is this due to something in the 2.6.18 kernel which is related to the
-way it sends a DNS query. Any information on this subject would be
-highly appreciated since I am trying to understand why one distro
-causes the problem and not the other. is it related to the kernel or
-only to the distro?
-
-Key words: DNS, domain, networking, IP address
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
