@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbXLNPSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbXLNPYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933079AbXLNPSv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 10:18:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765560AbXLNPSR
+	id S1755768AbXLNPYU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 10:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbXLNPYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 10:18:17 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:59122 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765463AbXLNPSP (ORCPT
+	Fri, 14 Dec 2007 10:24:11 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34166 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752894AbXLNPYJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 10:18:15 -0500
-Date: Fri, 14 Dec 2007 17:18:14 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: alan@redhat.com, viro@zeniv.linux.org.uk, hch@infradead.org,
-       peterz@infradead.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: [RFC/PATCH 8/8] revoke: add to documentation V7
-Message-ID: <Pine.LNX.4.64.0712141718000.28689@sbz-30.cs.Helsinki.FI>
+	Fri, 14 Dec 2007 10:24:09 -0500
+Date: Fri, 14 Dec 2007 15:16:20 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: David Newall <david@davidnewall.com>,
+       Rene Herman <rene.herman@keyaccess.nl>, Paul Rolland <rol@as2917.net>,
+       "H. Peter Anvin" <hpa@zytor.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Pavel Machek <pavel@ucw.cz>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+ with MCP51 laptops
+Message-ID: <20071214151620.3469115a@the-village.bc.nu>
+In-Reply-To: <4761E169.4020407@reed.com>
+References: <475879CD.9080006@reed.com>
+	<p733auekcly.fsf@bingen.suse.de>
+	<20071207160439.71b7f46a@the-village.bc.nu>
+	<20071209125458.GB4381@ucw.cz>
+	<20071209165908.GA15910@one.firstfloor.org>
+	<20071209212513.GC24284@elf.ucw.cz>
+	<475CBDD7.5050602@keyaccess.nl>
+	<m3bq8y23de.fsf@maximus.localdomain>
+	<475DE37F.20706@davidnewall.com>
+	<475DE6F4.80702@zytor.com>
+	<475DEB23.1000304@davidnewall.com>
+	<20071211084059.3d03e11d@tux.DEF.witbe.net>
+	<475E5D4B.8020101@keyaccess.nl>
+	<475E7DC2.4060509@davidnewall.com>
+	<475E8D91.20201@keyaccess.nl>
+	<475E95A3.3070801@davidnewall.com>
+	<20071211142552.2ae6ea9a@the-village.bc.nu>
+	<47605E4B.6050904@davidnewall.com>
+	<20071212230030.00511c3f@the-village.bc.nu>
+	<47612FF9.8060402@reed.com>
+	<20071213132112.66d59aa2@the-village.bc.nu>
+	<4761E169.4020407@reed.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Thu, 13 Dec 2007 20:50:33 -0500
+"David P. Reed" <dpreed@reed.com> wrote:
 
-Add the ->revoke() file operation to VFS documentation.
+> Simulating 1 microsecond delays (assuming LPC meets that goal for 0x80) 
+> is "absolutely correct" for devices provided on PCI-X running on 3 GHz 
+> or greater machines?
 
-Cc: Alan Cox <alan@redhat.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
-
- Documentation/filesystems/vfs.txt |    5 +++++
- 1 file changed, 5 insertions(+)
-
-Index: 2.6/Documentation/filesystems/vfs.txt
-===================================================================
---- 2.6.orig/Documentation/filesystems/vfs.txt	2007-11-23 09:58:11.000000000 +0200
-+++ 2.6/Documentation/filesystems/vfs.txt	2007-12-14 16:41:05.000000000 +0200
-@@ -780,6 +780,7 @@ struct file_operations {
- 	int (*flock) (struct file *, int, struct file_lock *);
- 	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, size_t, unsigned int);
- 	ssize_t (*splice_read)(struct file *, struct pipe_inode_info *, size_t, unsigned int);
-+	int (*revoke)(struct file *);
- };
- 
- Again, all methods are called without any locks being held, unless
-@@ -853,6 +854,10 @@ otherwise noted.
-   splice_read: called by the VFS to splice data from file to a pipe. This
- 	       method is used by the splice(2) system call
- 
-+  revoke: called by revokeat(2) system call to revoke access to an open file.
-+	  This method must ensure that all currently blocked writes are flushed
-+	  and that all pending reads will fail.
-+
- Note that the file operations are implemented by the specific
- filesystem in which the inode resides. When opening a device node
- (character or block special) most filesystems will call special
+Yes - the LPC bus clock doesn't change for the CPU clock.
