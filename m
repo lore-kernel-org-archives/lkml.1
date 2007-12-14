@@ -1,201 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933128AbXLNTh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933273AbXLNTig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933128AbXLNTh7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759093AbXLNTZh
+	id S933273AbXLNTig (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:38:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758970AbXLNTZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:25:37 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38868 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753983AbXLNTXe (ORCPT
+	Fri, 14 Dec 2007 14:25:48 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:15480 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758765AbXLNTZn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 14:23:34 -0500
-Message-Id: <20071214154440.942912000@chello.nl>
-References: <20071214153907.770251000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Fri, 14 Dec 2007 16:39:20 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 13/29] net: packet split receive api
-Content-Disposition: inline; filename=net-ps_rx.patch
-X-Bad-Reply: References but no 'Re:' in Subject.
+	Fri, 14 Dec 2007 14:25:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=kxSsDvaceKUuZqeO7rk7ujynYITTZ+Jx0B080GvX6p9rsCMVj3tRTeedl+/YukAcvMGxSAtgYysDJUoN4gJPsa1TxFXRZEMlGHDKlCqrD6Co4uK177VQqfrVSNnrNijjX0HNOH2Gl5zRHqb7TiD9DRS1ToTANDJEsln8oule+Fg=
+Message-ID: <2c0942db0712141125g65422bc5r83c83a2ce81cc58a@mail.gmail.com>
+Date: Fri, 14 Dec 2007 11:25:39 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
+Cc: "Ingo Molnar" <mingo@elte.hu>, bcm43xx-dev@lists.berlios.de,
+       "Daniel Walker" <dwalker@mvista.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux@bohmer.net, jonathan@jonmasters.org,
+       matthias.kaehlcke@gmail.com, kjwinchester@gmail.com,
+       "John Linville" <linville@tuxdriver.com>,
+       "Larry Finger" <Larry.Finger@lwfinger.net>
+In-Reply-To: <200712142005.21375.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071213003028.676998182@mvista.com>
+	 <200712141922.04677.mb@bu3sch.de>
+	 <2c0942db0712141045nf7bf730l677936614f7db736@mail.gmail.com>
+	 <200712142005.21375.mb@bu3sch.de>
+X-Google-Sender-Auth: 70723ac7d756f37f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some packet-split receive hooks.
+On Dec 14, 2007 11:05 AM, Michael Buesch <mb@bu3sch.de> wrote:
+> On Friday 14 December 2007 19:45:02 Ray Lee wrote:
+> > > > One problem related to b43 source code, patch exists, has yet to be
+> > > > merged upstream.
+> > >
+> > > Yeah. A problem preventing a LED from blinking.
+> > > That's a real regression.... Come on. Stop that bullshit.
+> >
+> > I'm going to say this one last time. If rfkill and rfkill-input aren't
+> > manually loaded before sb and b43, not one damn thing comes out in
+> > dmesg. Nothing. Nada. Zilch. Zero. Bupkis. Zot. Null. The only way to
+> > find out that those modules had to be loaded by hand was to go read
+> > the bcm43xx-dev archives. Once those were loaded, messages came out in
+> > dmesg pointing me to the URL for updated firmware.
+>
+> I'm sorry. The patch that _you_ quoted fixes a blinking LED
+> and nothing else.
 
-For one this allows to do NUMA node affine page allocs. Later on these hooks
-will be extended to do emergency reserve allocations for fragments.
+Well, you're wrong. Sorry, but that's just the way it is. See below.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- drivers/net/e1000/e1000_main.c |    8 ++------
- drivers/net/sky2.c             |   16 ++++++----------
- include/linux/skbuff.h         |   23 +++++++++++++++++++++++
- net/core/skbuff.c              |   20 ++++++++++++++++++++
- 4 files changed, 51 insertions(+), 16 deletions(-)
+> It does _not_ fix loading of rfkill or b43 in any way.
+> It does, however, fix loading of rfkill-input. But the b43 module
+> operation does _not_ depend in any way on the rfkill-input module, except
+> the tiny LED that doesn't blink if it's not loaded.
+> I hope you understood now that the thread on bcm43xx-dev was NOT about
+> your requirement to load rfkill before b43.
 
-Index: linux-2.6/drivers/net/e1000/e1000_main.c
-===================================================================
---- linux-2.6.orig/drivers/net/e1000/e1000_main.c
-+++ linux-2.6/drivers/net/e1000/e1000_main.c
-@@ -4392,12 +4392,8 @@ e1000_clean_rx_irq_ps(struct e1000_adapt
- 			pci_unmap_page(pdev, ps_page_dma->ps_page_dma[j],
- 					PAGE_SIZE, PCI_DMA_FROMDEVICE);
- 			ps_page_dma->ps_page_dma[j] = 0;
--			skb_fill_page_desc(skb, j, ps_page->ps_page[j], 0,
--			                   length);
-+			skb_add_rx_frag(skb, j, ps_page->ps_page[j], 0, length);
- 			ps_page->ps_page[j] = NULL;
--			skb->len += length;
--			skb->data_len += length;
--			skb->truesize += length;
- 		}
- 
- 		/* strip the ethernet crc, problem is we're using pages now so
-@@ -4605,7 +4601,7 @@ e1000_alloc_rx_buffers_ps(struct e1000_a
- 			if (j < adapter->rx_ps_pages) {
- 				if (likely(!ps_page->ps_page[j])) {
- 					ps_page->ps_page[j] =
--						alloc_page(GFP_ATOMIC);
-+						netdev_alloc_page(netdev);
- 					if (unlikely(!ps_page->ps_page[j])) {
- 						adapter->alloc_rx_buff_failed++;
- 						goto no_buffers;
-Index: linux-2.6/include/linux/skbuff.h
-===================================================================
---- linux-2.6.orig/include/linux/skbuff.h
-+++ linux-2.6/include/linux/skbuff.h
-@@ -851,6 +851,9 @@ static inline void skb_fill_page_desc(st
- 	skb_shinfo(skb)->nr_frags = i + 1;
- }
- 
-+extern void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page,
-+			    int off, int size);
-+
- #define SKB_PAGE_ASSERT(skb) 	BUG_ON(skb_shinfo(skb)->nr_frags)
- #define SKB_FRAG_ASSERT(skb) 	BUG_ON(skb_shinfo(skb)->frag_list)
- #define SKB_LINEAR_ASSERT(skb)  BUG_ON(skb_is_nonlinear(skb))
-@@ -1344,6 +1347,26 @@ static inline struct sk_buff *netdev_all
- 	return __netdev_alloc_skb(dev, length, GFP_ATOMIC);
- }
- 
-+extern struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask);
-+
-+/**
-+ *	netdev_alloc_page - allocate a page for ps-rx on a specific device
-+ *	@dev: network device to receive on
-+ *
-+ * 	Allocate a new page node local to the specified device.
-+ *
-+ * 	%NULL is returned if there is no free memory.
-+ */
-+static inline struct page *netdev_alloc_page(struct net_device *dev)
-+{
-+	return __netdev_alloc_page(dev, GFP_ATOMIC);
-+}
-+
-+static inline void netdev_free_page(struct net_device *dev, struct page *page)
-+{
-+	__free_page(page);
-+}
-+
- /**
-  *	skb_clone_writable - is the header of a clone writable
-  *	@skb: buffer to check
-Index: linux-2.6/net/core/skbuff.c
-===================================================================
---- linux-2.6.orig/net/core/skbuff.c
-+++ linux-2.6/net/core/skbuff.c
-@@ -263,6 +263,24 @@ struct sk_buff *__netdev_alloc_skb(struc
- 	return skb;
- }
- 
-+struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask)
-+{
-+	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
-+	struct page *page;
-+
-+	page = alloc_pages_node(node, gfp_mask, 0);
-+	return page;
-+}
-+
-+void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page, int off,
-+		int size)
-+{
-+	skb_fill_page_desc(skb, i, page, off, size);
-+	skb->len += size;
-+	skb->data_len += size;
-+	skb->truesize += size;
-+}
-+
- static void skb_drop_list(struct sk_buff **listp)
- {
- 	struct sk_buff *list = *listp;
-@@ -2466,6 +2484,8 @@ EXPORT_SYMBOL(kfree_skb);
- EXPORT_SYMBOL(__pskb_pull_tail);
- EXPORT_SYMBOL(__alloc_skb);
- EXPORT_SYMBOL(__netdev_alloc_skb);
-+EXPORT_SYMBOL(__netdev_alloc_page);
-+EXPORT_SYMBOL(skb_add_rx_frag);
- EXPORT_SYMBOL(pskb_copy);
- EXPORT_SYMBOL(pskb_expand_head);
- EXPORT_SYMBOL(skb_checksum);
-Index: linux-2.6/drivers/net/sky2.c
-===================================================================
---- linux-2.6.orig/drivers/net/sky2.c
-+++ linux-2.6/drivers/net/sky2.c
-@@ -1198,7 +1198,7 @@ static struct sk_buff *sky2_rx_alloc(str
- 	}
- 
- 	for (i = 0; i < sky2->rx_nfrags; i++) {
--		struct page *page = alloc_page(GFP_ATOMIC);
-+		struct page *page = netdev_alloc_page(sky2->netdev);
- 
- 		if (!page)
- 			goto free_partial;
-@@ -2072,8 +2072,8 @@ static struct sk_buff *receive_copy(stru
- }
- 
- /* Adjust length of skb with fragments to match received data */
--static void skb_put_frags(struct sk_buff *skb, unsigned int hdr_space,
--			  unsigned int length)
-+static void skb_put_frags(struct sky2_port *sky2, struct sk_buff *skb,
-+			  unsigned int hdr_space, unsigned int length)
- {
- 	int i, num_frags;
- 	unsigned int size;
-@@ -2090,15 +2090,11 @@ static void skb_put_frags(struct sk_buff
- 
- 		if (length == 0) {
- 			/* don't need this page */
--			__free_page(frag->page);
-+			netdev_free_page(sky2->netdev, frag->page);
- 			--skb_shinfo(skb)->nr_frags;
- 		} else {
- 			size = min(length, (unsigned) PAGE_SIZE);
--
--			frag->size = size;
--			skb->data_len += size;
--			skb->truesize += size;
--			skb->len += size;
-+			skb_add_rx_frag(skb, i, frag->page, 0, size);
- 			length -= size;
- 		}
- 	}
-@@ -2125,7 +2121,7 @@ static struct sk_buff *receive_new(struc
- 	sky2_rx_map_skb(sky2->hw->pdev, re, hdr_space);
- 
- 	if (skb_shinfo(skb)->nr_frags)
--		skb_put_frags(skb, hdr_space, length);
-+		skb_put_frags(sky2, skb, hdr_space, length);
- 	else
- 		skb_put(skb, length);
- 	return skb;
+*AGAIN*, please read your message here, in particular item number
+seven on Larry's list:
 
---
+https://lists.berlios.de/pipermail/bcm43xx-dev/2007-December/006472.html
 
+For the last fscking time, if rfkill and rfkill-input are not loaded,
+not one line comes out in dmesg when b43 and ssb are loaded. In
+particular, your pretty little message about needing newer firmware
+also does not print. So, yeah, not loading rfkill{,-input} *does*
+cause issues with b43 working, as there's no damn way to find out
+what's broken!
+
+> > I have complete current userspace as of yesterday's Ubuntu Hardy Heron
+> > development archives.
+>
+> Ok. I will install a copy of Ubuntu Hardy Heron and check if I can
+> reproduce this.
+
+I'm not asking you to do that, this particular bug will be fixed by
+Larry's patch, whether you believe that or not.
+
+> However the fact that this does not happen on older Ubuntu platforms
+> and does not happen on Fedora leads to the conclusion that it
+> is a bug in Hardy Heron that I am not responsible for.
+
+The kernel does not exist in a vacuum. It's the kernel's job to make
+sure it works with properly written userspace. Broken userspace, sure,
+then we can talk about breaking it.
+
+> And you also do realise that Hardy Heron is the current development
+> version of Ubuntu? Development versions have bugs.
+
+Oy vay. I'm not an idiot. Yes, it's the current develoment version.
+But tracking the latest kernel.org kernel has in the past required the
+latest develoment version of the distribution, so I upgrade it as
+well.
+
+> > One last thing. I've been nice to you. Please be nice to me.
+>
+> If you simply stop blaming bugs on me that I am not responsible for
+> at all, that is a deal. What about filing a bug at the ubuntu bugzilla?
+
+I'm not blaming it on you. I'm merely reporting a fucking
+incompatibility. Read my messages again from the top, and stop taking
+this all so damn personally, will you?
