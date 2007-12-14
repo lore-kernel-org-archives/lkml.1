@@ -1,63 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934844AbXLNXYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbXLNXeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934844AbXLNXYQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 18:24:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbXLNXYB
+	id S1760033AbXLNXeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 18:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbXLNXeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 18:24:01 -0500
-Received: from thunk.org ([69.25.196.29]:43655 "EHLO thunker.thunk.org"
+	Fri, 14 Dec 2007 18:34:07 -0500
+Received: from mga02.intel.com ([134.134.136.20]:12159 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753501AbXLNXYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 18:24:00 -0500
-Date: Fri, 14 Dec 2007 18:23:23 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: John Reiser <jreiser@BitWagon.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       security@kernel.org
-Subject: Re: /dev/urandom uses uninit bytes, leaks user data
-Message-ID: <20071214232322.GE17344@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	John Reiser <jreiser@BitWagon.com>, Matt Mackall <mpm@selenic.com>,
-	linux-kernel@vger.kernel.org, security@kernel.org
-References: <4762DAB1.1020807@BitWagon.com> <20071214201305.GL19691@waste.org> <4762EB63.8070100@BitWagon.com>
-MIME-Version: 1.0
+	id S1750777AbXLNXeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 18:34:05 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,169,1196668800"; 
+   d="scan'208";a="241957844"
+Date: Fri, 14 Dec 2007 15:34:01 -0800
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: ebiederm@xmission.com
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, venkatesh.pallipadi@intel.com,
+       ak@muc.de, rdreier@cisco.com, torvalds@linux-foundation.org,
+       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com, akpm@linux-foundation.org,
+       arjan@infradead.org, jesse.barnes@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 02/12] PAT 64b: Basic PAT implementation
+Message-ID: <20071214233401.GE717@linux-os.sc.intel.com>
+References: <20071213235543.568682000@intel.com> <20071213235711.464325000@intel.com> <m1d4taq6le.fsf@ebiederm.dsl.xmission.com> <m1wsrhq4zl.fsf@ebiederm.dsl.xmission.com> <20071214211039.GB717@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4762EB63.8070100@BitWagon.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20071214211039.GB717@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 14, 2007 at 12:45:23PM -0800, John Reiser wrote:
-> > It's getting folded into the random number pool, where it will be
-> > impossible to recover it unless you already know what was in the
-> > pool.  And if you know what's in the pool, you've already broken into
-> > the kernel.
+On Fri, Dec 14, 2007 at 01:10:39PM -0800, Siddha, Suresh B wrote:
+> On Thu, Dec 13, 2007 at 09:23:26PM -0700, Eric W. Biederman wrote:
+> > ebiederm@xmission.com (Eric W. Biederman) writes:
+> > Ok.  My analysis here was wrong.  Currently pgprot_noncached and
+> > ioremap_nocache are out of sync.  With ioremap_nocache only specifying
+> > _PAGE_PCD and pgprot_noncached specifying _PAGE_PCD | _PAGE_PWT.
+> > 
+> > So I don't have a clue how someone could reprogram the mtrrs currently
+> > and expect things to work.
+> > 
+> > ...
+> > 
+> > If we bother to ask ioremap for memory that is not cached, the last
+> > thing in the world we want is the MTRRs upgrading that to write combining.
+> > So ioremap_nocache has been slightly buggy for ages.  ioremap_nocache
+> > and PAGE_KERNEL_NOCACHE should get _PAGE_PWT added to their
+> > definitions.
+> > 
+> > Could we please get a cleanup patch at the beginning of this patchset
+> > or that comes before it that fixes ioremap_nocache on x86?
+> > 
+> > That will make us a lot more git-bisect safe.
 > 
-> The combination of capturing data from other users, plus seeding
-> the pool with your own data, just might be powerful enough to help
-> steal secrets, sometime in the next five years, from data that is
-> recorded today.
+> Ok. I will send a separate patch  fixing ioremap_nocache on x86.
 
-Um, no.  Just seeding the pool with your own data won't help, since
-that still won't tell you the initial contents of the pool.  And if
-you know the initial contents of the pool, then you've broken root.
-And being able to steal from the pool also assumes that you've broken
-into the system; it is never, ever exported to userspace, even if
-you're root (unless you use something like /dev/kmem).  Furthermore,
-if you don't know the previous contents of the pool, you'll never be
-able to recover the information, either now or five years in the
-future, since information is XOR'ed into the pool.
+Appended the patch. x86 folks, please consider for x86 mm git tree. Thanks.
 
-> > But I'm sympathetic to making Valgrind happy.  ...
+---
+[patch] x86: Set strong uncacheable where UC is really desired
 
-How about wrapping it in a #ifdef CONFIG_UML, which is the only way
-you can use Valgrind?  The memset will slow down things unnecessarily,
-and mixing in the unknown previous contents of the stack (a) doesn't
-hurt, and (b) could make life more complicated for an attacker.
+Also use _PAGE_PWT for all the mappings which need uncache mapping. Instead of
+existing PAT2 which is UC- (and can be overwritten by MTRRs), we now use PAT3
+which is strong uncacheable.
 
-            	      	    	      - Ted
+This makes it consistent with pgprot_noncached()
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+diff --git a/arch/x86/mm/ioremap_32.c b/arch/x86/mm/ioremap_32.c
+index 0b27831..ef0f6a4 100644
+--- a/arch/x86/mm/ioremap_32.c
++++ b/arch/x86/mm/ioremap_32.c
+@@ -119,7 +119,7 @@ EXPORT_SYMBOL(__ioremap);
+ void __iomem *ioremap_nocache (unsigned long phys_addr, unsigned long size)
+ {
+ 	unsigned long last_addr;
+-	void __iomem *p = __ioremap(phys_addr, size, _PAGE_PCD);
++	void __iomem *p = __ioremap(phys_addr, size, _PAGE_PCD | _PAGE_PWT);
+ 	if (!p) 
+ 		return p; 
+ 
+diff --git a/arch/x86/mm/ioremap_64.c b/arch/x86/mm/ioremap_64.c
+index 6cac90a..8be3062 100644
+--- a/arch/x86/mm/ioremap_64.c
++++ b/arch/x86/mm/ioremap_64.c
+@@ -158,7 +158,7 @@ EXPORT_SYMBOL(__ioremap);
+ 
+ void __iomem *ioremap_nocache (unsigned long phys_addr, unsigned long size)
+ {
+-	return __ioremap(phys_addr, size, _PAGE_PCD);
++	return __ioremap(phys_addr, size, _PAGE_PCD | _PAGE_PWT);
+ }
+ EXPORT_SYMBOL(ioremap_nocache);
+ 
+diff --git a/include/asm-x86/pgtable_32.h b/include/asm-x86/pgtable_32.h
+index ed3e70d..b1215e1 100644
+--- a/include/asm-x86/pgtable_32.h
++++ b/include/asm-x86/pgtable_32.h
+@@ -156,7 +156,7 @@ void paging_init(void);
+ extern unsigned long long __PAGE_KERNEL, __PAGE_KERNEL_EXEC;
+ #define __PAGE_KERNEL_RO		(__PAGE_KERNEL & ~_PAGE_RW)
+ #define __PAGE_KERNEL_RX		(__PAGE_KERNEL_EXEC & ~_PAGE_RW)
+-#define __PAGE_KERNEL_NOCACHE		(__PAGE_KERNEL | _PAGE_PCD)
++#define __PAGE_KERNEL_NOCACHE		(__PAGE_KERNEL | _PAGE_PCD | _PAGE_PWT)
+ #define __PAGE_KERNEL_LARGE		(__PAGE_KERNEL | _PAGE_PSE)
+ #define __PAGE_KERNEL_LARGE_EXEC	(__PAGE_KERNEL_EXEC | _PAGE_PSE)
+ 
+diff --git a/include/asm-x86/pgtable_64.h b/include/asm-x86/pgtable_64.h
+index 9b0ff47..4e4dcc4 100644
+--- a/include/asm-x86/pgtable_64.h
++++ b/include/asm-x86/pgtable_64.h
+@@ -185,13 +185,13 @@ static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm, unsigned long
+ #define __PAGE_KERNEL_EXEC \
+ 	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
+ #define __PAGE_KERNEL_NOCACHE \
+-	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_PCD | _PAGE_ACCESSED | _PAGE_NX)
++	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_PCD | _PAGE_PWT | _PAGE_ACCESSED | _PAGE_NX)
+ #define __PAGE_KERNEL_RO \
+ 	(_PAGE_PRESENT | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_NX)
+ #define __PAGE_KERNEL_VSYSCALL \
+ 	(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED)
+ #define __PAGE_KERNEL_VSYSCALL_NOCACHE \
+-	(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED | _PAGE_PCD)
++	(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED | _PAGE_PCD | _PAGE_PWT)
+ #define __PAGE_KERNEL_LARGE \
+ 	(__PAGE_KERNEL | _PAGE_PSE)
+ #define __PAGE_KERNEL_LARGE_EXEC \
