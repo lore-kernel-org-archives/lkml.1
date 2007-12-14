@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765154AbXLNEBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765724AbXLNECx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765154AbXLNEBN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 23:01:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbXLNEBA
+	id S1765724AbXLNECx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 23:02:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbXLNECq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 23:01:00 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:41875 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbXLNEA6 (ORCPT
+	Thu, 13 Dec 2007 23:02:46 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48457 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755829AbXLNECp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 23:00:58 -0500
-Date: Thu, 13 Dec 2007 21:00:57 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mark Lord <liml@rtr.ca>, James.Bottomley@HansenPartnership.com,
-       jens.axboe@oracle.com, lkml@rtr.ca, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-mm@kvack.org, mel@csn.ul.ie
-Subject: Re: [PATCH] fix page_alloc for larger I/O segments
-Message-ID: <20071214040056.GS26334@parisc-linux.org>
-References: <20071213200958.GK10104@kernel.dk> <20071213140207.111f94e2.akpm@linux-foundation.org> <1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org> <4761B32A.3070201@rtr.ca> <4761BCB4.1060601@rtr.ca> <4761C8E4.2010900@rtr.ca> <4761CE88.9070406@rtr.ca> <4761D0E9.4010701@rtr.ca> <20071213170308.d4ce5889.akpm@linux-foundation.org>
+	Thu, 13 Dec 2007 23:02:45 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: venkatesh.pallipadi@intel.com
+Cc: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
+       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [RFC PATCH 08/12] PAT 64b: coherent mmap and sysfs bin ioctl
+References: <20071213235543.568682000@intel.com>
+	<20071213235712.813201000@intel.com>
+Date: Thu, 13 Dec 2007 20:59:44 -0700
+In-Reply-To: <20071213235712.813201000@intel.com> (venkatesh pallipadi's
+	message of "Thu, 13 Dec 2007 15:55:51 -0800")
+Message-ID: <m18x3yq633.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071213170308.d4ce5889.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 05:03:08PM -0800, Andrew Morton wrote:
-> +		/*
-> +		 * Find a page of the appropriate migrate type.  Doing a
-> +		 * reverse-order search here helps us to hand out pages in
-> +		 * ascending physical-address order.
-> +		 */
-> +		list_for_each_entry_reverse(page, &pcp->list, lru)
+venkatesh.pallipadi@intel.com writes:
 
-It's not obvious why ascending physical order is a good thing.  How
-about:
+> Forward port of coherent-mmap.patch and sysfs-bin-ioctl.patch to x86 tree.
+>
+> TBD: Do we need the ioctl interface to sysfs or get the type attribute
+> through a different sysfs file. And then actually specify the attribute
+> while doing pci_mmap_page_range ;-)
 
-+		/*
-+		 * Find a page of the appropriate migrate type.  Doing a
-+		 * reverse-order search here helps us to hand out pages in
-+		 * ascending physical-address order, which improves our
-+		 * chances of coalescing scatter-gather pages.
-+		 */
+This ioctl is not connected up.  So regardless of the wisdom of ioctls on
+sysfs adding the infrastructure and then not using it is broken.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> And when this interface is in place, X server has to use this interface for WC
+> mapping.
+
+Eric
