@@ -1,73 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934347AbXLNWjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763730AbXLNWj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934347AbXLNWjb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 17:39:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934082AbXLNWet
+	id S1763730AbXLNWj5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 17:39:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934278AbXLNWf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 17:34:49 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:4998 "EHLO perches.com"
+	Fri, 14 Dec 2007 17:35:27 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49453 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763186AbXLNWeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 17:34:21 -0500
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jeff Garzik <jgarzik@pobox.com>,
-       linux-usb@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 11/11] drivers/net/usb/catc.c: Use print_mac
-Date: Fri, 14 Dec 2007 14:34:12 -0800
-Message-Id: <1197671652-32492-11-git-send-email-joe@perches.com>
-X-Mailer: git-send-email 1.5.3.7.949.g2221a6
-In-Reply-To: <1197671652-32492-10-git-send-email-joe@perches.com>
-References: <1197671652-32492-1-git-send-email-joe@perches.com>
- <1197671652-32492-2-git-send-email-joe@perches.com>
- <1197671652-32492-3-git-send-email-joe@perches.com>
- <1197671652-32492-4-git-send-email-joe@perches.com>
- <1197671652-32492-5-git-send-email-joe@perches.com>
- <1197671652-32492-6-git-send-email-joe@perches.com>
- <1197671652-32492-7-git-send-email-joe@perches.com>
- <1197671652-32492-8-git-send-email-joe@perches.com>
- <1197671652-32492-9-git-send-email-joe@perches.com>
- <1197671652-32492-10-git-send-email-joe@perches.com>
-Message-Id: <b41dd7dec52cd03cc97893325bfef6a57639a61a.1197671367.git.joe@perches.com>
-In-Reply-To: <9fc484fc034428ab68ecb2711c8456df9e98d56d.1197671367.git.joe@perches.com>
-References: <9fc484fc034428ab68ecb2711c8456df9e98d56d.1197671367.git.joe@perches.com>
+	id S934269AbXLNWfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 17:35:25 -0500
+Message-ID: <47630521.4060505@redhat.com>
+Date: Fri, 14 Dec 2007 17:35:13 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+References: <20071214004442.5f9eba88@linux360.ro> <p737ijigr8c.fsf@bingen.suse.de> <20071214143941.2c7dcfb4@linux360.ro> <20071214101720.GA10981@one.firstfloor.org>
+In-Reply-To: <20071214101720.GA10981@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 12/14/2007 05:17 AM, Andi Kleen wrote:
+>> so do whatever is necessary to enable dynticks. 
+> 
+> dynticks' main purpose is to save power, but C1e saves more power.
+> Disabling C1e for dynticks would be a fairly useless default
+> trade off.
+> 
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- drivers/net/usb/catc.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/usb/catc.c b/drivers/net/usb/catc.c
-index 76752d8..e20db50 100644
---- a/drivers/net/usb/catc.c
-+++ b/drivers/net/usb/catc.c
-@@ -757,6 +757,7 @@ static int catc_probe(struct usb_interface *intf, const struct usb_device_id *id
- 	struct catc *catc;
- 	u8 broadcast[6];
- 	int i, pktsz;
-+	DECLARE_MAC_BUF(mac);
- 
- 	if (usb_set_interface(usbdev,
- 			intf->altsetting->desc.bInterfaceNumber, 1)) {
-@@ -891,11 +892,10 @@ static int catc_probe(struct usb_interface *intf, const struct usb_device_id *id
- 		f5u011_rxmode(catc, catc->rxmode);
- 	}
- 	dbg("Init done.");
--	printk(KERN_INFO "%s: %s USB Ethernet at usb-%s-%s, ",
-+	printk(KERN_INFO "%s: %s USB Ethernet at usb-%s-%s, %s\n",
- 	       netdev->name, (catc->is_f5u011) ? "Belkin F5U011" : "CATC EL1210A NetMate",
--	       usbdev->bus->bus_name, usbdev->devpath);
--	for (i = 0; i < 5; i++) printk("%2.2x:", netdev->dev_addr[i]);
--	printk("%2.2x.\n", netdev->dev_addr[i]);
-+	       usbdev->bus->bus_name, usbdev->devpath,
-+	       print_mac(mac, netdev->dev_addr));
- 	usb_set_intfdata(intf, catc);
- 
- 	SET_NETDEV_DEV(netdev, &intf->dev);
--- 
-1.5.3.7.949.g2221a6
-
+What about machines where the BIOS has disabled C1e on CPU 0 but
+left it enabled on CPU 1 ??
