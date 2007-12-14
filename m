@@ -1,142 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765868AbXLNVQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763625AbXLNVVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765868AbXLNVQr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 16:16:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbXLNVQh
+	id S1763625AbXLNVVu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 16:21:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbXLNVVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 16:16:37 -0500
-Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:52896 "EHLO
-	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbXLNVQg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 16:16:36 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [UNIONFS] 00/42 Unionfs and related patches review 
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <200712131529.lBDFT5Ch025553@agora.fsl.cs.sunysb.edu>
-References: Your message of "Mon, 10 Dec 2007 12:20:20 +0900." <E1J1ZBs-0006M0-VL@jroun> <200712131529.lBDFT5Ch025553@agora.fsl.cs.sunysb.edu>
-Date: Sat, 15 Dec 2007 06:15:59 +0900
-Message-Id: <E1J3Ht2-0000mH-0V@jroun>
+	Fri, 14 Dec 2007 16:21:42 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53939 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753476AbXLNVVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 16:21:41 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Linus Torvalds <torvalds@osdl.org>
+Subject: [GIT PATCH] ACPI patches for 2.6.24-rc5 (take 2)
+Date: Fri, 14 Dec 2007 16:20:21 -0500
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712141620.21559.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-Hello Professor Zadok,
+please pull from: 
 
-Erez Zadok:
-> I believe that small VFS changes to help stackable file systems are
-> perfectly reasonable, and a good thing; and I'm working on such patches.
-> Conversely, I am very mindful of the VFS's complexity, so I also believe
-> that massive VFS changes are a bad thing; I want to avoid bloating the VFS
-> or de-stabilizing it just for the sake of stacking or any single stackable
-> f/s.  I am also concerned about not changing existing "lower" file systems
-> whatsoever, because they are well tested and stable.
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
 
-I have no objection against your opinion about massive VFS changes or
-existing "lower" filesystems.
+This augments the pull request I made yesterday with a fix
+for the 2.6.24 SBS regression and some dmesg spam removal.
 
+This will update the files shown below.
 
-> from).  So in my opinion, the chances are very slim that a large amount of
-> data changes will happen on a lower inode all within one second and not be
-> detected by our mtime/cite cache-coherency algorithms.
+thanks!
 
-I agree that time-based checking is available in many cases.
-But there will exist some opeartions which are done in one
-second, and it may not be available when a user changes the clock/time
-of his system.
+-Len
 
+ps. individual patches are available on linux-acpi@vger.kernel.org
+and a consolidated plain patch is available here:
+ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.24/acpi-release-20070126-2.6.24-rc5.diff.gz
 
-> Also, time-based cache coherency is a [sic] time-honored technique in NFS.
-> Users have gotten used to the fact that if they change something on the
-> server (i.e., the "layer" below the client), that those changes many not be
-> immediately visible on the client (esp. with heavy caching on the client).
-> So if it's been good enough for NFS for over two decades, I don't see a
-> compelling reason to complicate unionfs for a slim chance of detecting
-> changes that occur within one second.
+ drivers/acpi/battery.c       |    2 +-
+ drivers/acpi/numa.c          |    4 ++--
+ drivers/acpi/pci_bind.c      |    3 ---
+ drivers/acpi/sbs.c           |   27 ++++++++++++---------------
+ drivers/acpi/sbshc.c         |   17 +++++++++++++----
+ drivers/acpi/sbshc.h         |    6 ++++++
+ drivers/acpi/video.c         |    4 ++--
+ drivers/misc/thinkpad_acpi.c |    4 ++--
+ 8 files changed, 38 insertions(+), 29 deletions(-)
 
-Since NFS is a remote filesystem, I don't think it is a good idea to
-compare the behaviour of if and a stackable filesystem, since all
-lower(branch) filesystems are able to be local filesystems.
+through these commits:
 
+Alexey Starikovskiy (3):
+      ACPI: SBS: Reset alarm bit
+      ACPI: SBS: Ignore alarms coming from unknown devices
+      ACPI: SBS: Return rate in mW if capacity in mWh
 
-> Right now my code to detect when a lower object has changed is very simple
-> and short: just one "if" statement to compare the corresponding inode
-> mtimes.  I'd like to keep things simple if at all possible.  Fundamentally,
-> all I need is ONE simple bit of information that will tell me that the upper
-> and lower inodes are no longer in sync.  Just one bit, not a whole complex
-> data structure with callbacks and bit-maps and such.
+Andrey Borzenkov (1):
+      ACPI: battery: fix ACPI battery technology reporting
 
-Agreed, so the inotify handler should set a flag or atomic_inc/dec
-the internal generation, or enqueue such job and handle it
-later (shortly). Of course, when the dentry/inode of the stackable
-filesystem corresspoding to the modfied file are not cached, the handler
-has nothing to do.
-Additionally, it is only directories to be set inotify for monitoring,
-instead of all files. The inotify handler for a directory receives all
-necessary (for a stackable fs) events for its children.
-(but there are a few limitations or exceptions)
+Gary Hade (1):
+      ACPI: acpiphp: Remove dmesg spam on device remove
 
+Henrique de Moraes Holschuh (1):
+      ACPI: thinkpad-acpi: fix lenovo keymap for brightness
 
-> What you propose violates the clean layer separation in a way that I'm not
-> too comfortable with (even if it works for you :-) I believe stackable file
-	:::
-> system, each struct file/dentry/inode has a corresponding lower object.  Our
-> FiST templates for Linux include an extra mode---called "fist lite"---which
-> saves on inodes and pages by having BOTH the upper and lower dentry point to
-> the lower inode.  This saves memory (shared pages) and reduces layering
-> overhead (but you can't intercept mmap ops, which some stackable f/s like to
-> do).  The cost of such trick is violating the clean layering separation: a
-> dentry of the upper file system now points to an inode (via dentry->d_inode)
-> of the lower file system!  To me, this is dangerous in the long run because
-> objects from one layer can be "leaked" to another layer, with potentially
-> disastrous results.
+Jan Beulich (1):
+      ACPI: fix modpost warnings
 
-Currently, I don't think sharing page is any kind of
-violation. Additionally the dentry of the upper file system does NOT
-point to the inode of the lower file system. Of course it can implement
-->mmap operation.
+William Lee Irwin III (1):
+      ACPI: video_device_list corruption
 
+with this log:
 
-> What you propose above with vm_operations requires a sequence of operations
-> in the vm->fault operation which looks like:
-> 
-> 	saved_file = vma->vm_file;
-> 	vma->vm_file = hidden_file;
-> 	call the lower ->fault op passing it the modified vma
-> 	vma->vm_file = saved_file;
+commit 6e3013932e97a0e034d55419c60ae4a8a229ceb8
+Merge: 5889ba0... 5a21e4f...
+Author: Len Brown <len.brown@intel.com>
+Date:   Fri Dec 14 15:14:52 2007 -0500
 
-Basically, yes.
-But there are several things to do such as locking.
+    Pull bugzilla-9362 into release branch
 
+commit 5a21e4fe587ebb793bf3a1c02755f8a845170328
+Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+Date:   Sat Dec 8 13:02:46 2007 +0300
 
-> Even if both of these techniques work (and they do, at least in limited
-> testing I've done), there is something very unpleasant about having to
-> temporarily override a field's value, then fix it again, after coming back
-> from calling the lower op.  Aside from the uncleanliness of this kind of
-> technique, it can seriously lead to races and other data corruptions when/if
-> the temporarily-fixed fields "leak" outside the current code.  (I have a
-> strong feeling that several kernel developers might vomit in disgust if I
-> dared to submit such hacky patches to unionfs... :-)
+    ACPI: SBS: Return rate in mW if capacity in mWh
+    
+    klaptopd assumes rate to be in same units as capacity.
+    
+    http://bugzilla.kernel.org/show_bug.cgi?id=9362
+    
+    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+    Signed-off-by: Len Brown <len.brown@intel.com>
 
-I guess probably you forgot some locking.
+commit c2d00f2d1bf8dd721f5557b0df23729addc1898d
+Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+Date:   Sat Dec 8 13:02:40 2007 +0300
 
+    ACPI: SBS: Ignore alarms coming from unknown devices
+    
+    http://bugzilla.kernel.org/show_bug.cgi?id=9362
+    
+    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+    Signed-off-by: Len Brown <len.brown@intel.com>
 
-> To me, any time such a hack has to be employed, it tells me that there's
-> something wrong with the API in question.  And so I'd much rather see the
-> API fixed The Right Way[tm], than promote such potentially unsafe practices.
+commit 09f1fb41ad45bc18abe07c62f7b56560571584d1
+Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+Date:   Sat Dec 8 13:02:33 2007 +0300
 
-If you changed some important members of internal structures without
-locking, it would be unsafe and violate something.
+    ACPI: SBS: Reset alarm bit
+    
+    Alarm bit should be cleared in order for other alarms to be sent.
+    http://bugzilla.kernel.org/show_bug.cgi?id=9362
+    
+    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+    Signed-off-by: Len Brown <len.brown@intel.com>
 
-Finally I think the approach of sharing pages, you may call it
-zero-copy conversely your approach, is safe. At least, this approach is
-working over a year while several people are using it.
-Of course, I never say it is bug-free. There may exist a problem which
-simply I don't know yet.
+commit 5889ba0a6a1174ac38d7045824a2d2ed8e93d756
+Merge: d020c36... 6ce7641...
+Author: Len Brown <len.brown@intel.com>
+Date:   Fri Dec 14 14:54:09 2007 -0500
 
+    Pull hotplug into release branch
 
-Sincerely,
-Junjiro Okajima
+commit d020c36685a35f66be89700e911c7d77a67bdc43
+Merge: 6790acb... ad40e68...
+Author: Len Brown <len.brown@intel.com>
+Date:   Thu Dec 13 22:16:14 2007 -0500
+
+    Pull battery-2.6.24 into release branch
+
+commit 6790acb14d264d874ff8cbae1a72e72883ec3678
+Merge: ffada89... 56a185b...
+Author: Len Brown <len.brown@intel.com>
+Date:   Thu Dec 13 22:12:38 2007 -0500
+
+    Pull thinkpad-2.6.24 into release branch
+
+commit 56a185b43be05e48da7428e6a1d3e2585b232b1d
+Author: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Date:   Thu Dec 13 12:14:09 2007 -0200
+
+    ACPI: thinkpad-acpi: fix lenovo keymap for brightness
+    
+    Starting in 2.6.23...
+    
+    Several reports from X60 users complained that the default Lenovo keymap
+    issuing EV_KEY KEY_BRIGHTNESS_UP/DOWN input events caused major issues when
+    the proper brightness support through ACPI video.c was loaded.
+    
+    Therefore, remove the generation of these events by default, which is the
+    right thing for T60, X60, R60, T61, X61 and R61 with their latest BIOSes.
+    
+    Distros that want to misuse these events into OSD reporting (which requires
+    an ugly hack from hell in HAL) are welcome to set up the key map they need
+    through HAL.  That way, we don't break everyone else's systems.
+    
+    Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit ffada8913e39e6fd35e95d7040ccac57b45812c9
+Author: Jan Beulich <jbeulich@novell.com>
+Date:   Thu Dec 13 08:32:26 2007 +0000
+
+    ACPI: fix modpost warnings
+    
+    for sn2_defconfig:
+    
+    WARNING: vmlinux.o(.text+0x4b8601): Section mismatch: reference to .init.data:node_to_pxm_map (between '__acpi_map_pxm_to_node' and 'acpi_get_pxm')
+    WARNING: vmlinux.o(.text+0x4b8741): Section mismatch: reference to .init.data:pxm_to_node_map (between 'acpi_map_pxm_to_node' and 'acpi_get_node')
+    
+    Signed-off-by: Jan Beulich <jbeulich@novell.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 98934def70b48dac74fac3738b78ab2d1a28edda
+Author: William Lee Irwin III <wli@holomorphy.com>
+Date:   Wed Dec 12 03:56:55 2007 -0800
+
+    ACPI: video_device_list corruption
+    
+    The ->cap fields of struct acpi_video_device and struct acpi_video_bus
+    are 1B each, not 4B. The oversized memset()'s corrupted the subsequent
+    list_head fields. This resulted in silent corruption without
+    CONFIG_DEBUG_LIST and BUG's with it. This patch uses sizeof() to pass
+    the proper bounds to the memset() calls and thereby correct the bugs.
+    
+    Signed-off-by: William Irwin <wli@holomorphy.com>
+    Acked-by: Mikael Pettersson <mikpe@it.uu.se>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit ad40e68bf5c54831cd6b2199fd24d616bac179f7
+Author: Andrey Borzenkov <arvidjaar@mail.ru>
+Date:   Sat Nov 10 20:02:49 2007 +0300
+
+    ACPI: battery: fix ACPI battery technology reporting
+    
+    At least some systems report technology information with trailing spaces:
+    
+    {pts/1}% cat -E /var/tmp/bat/2.6.23 | grep type
+    battery type:            Li-ION  $
+    
+    Use strncasecmp to compare model string to skip trailing part
+    
+    Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
+    Acked-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 6ce7641b879e4b9ead46e14275d9d3645b47fa63
+Author: Gary Hade <garyhade@us.ibm.com>
+Date:   Tue Nov 20 12:19:12 2007 -0800
+
+    ACPI: acpiphp: Remove dmesg spam on device remove
+    
+    In cases where acpi_pci_bind() does not
+    attach device data, acpi_pci_unbind()
+    complains via an ACPI exception about the missing data when
+    the device is removed.  For example, acpi_pci_bind() does not
+    attach data for non-existent device functions so when the device
+    is removed using the ACPI PCI hotplug driver 'acpiphp' an ACPI
+    exception is logged for every non-existent function.  This patch
+    avoids the confusing log messages by removing the unnecessary
+    ACPI exception.
+    
+    Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
