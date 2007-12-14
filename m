@@ -1,210 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934940AbXLNAGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935003AbXLNAGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934940AbXLNAGQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 19:06:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933630AbXLNAEU
+	id S935003AbXLNAGi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 19:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933768AbXLNAFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 19:04:20 -0500
-Received: from mga03.intel.com ([143.182.124.21]:58012 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932298AbXLNAEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 19:04:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,163,1196668800"; 
-   d="scan'208";a="340710598"
-Message-Id: <20071213235712.813201000@intel.com>
-References: <20071213235543.568682000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 13 Dec 2007 15:55:51 -0800
-From: venkatesh.pallipadi@intel.com
-To: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
-       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com
-Cc: linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [RFC PATCH 08/12] PAT 64b: coherent mmap and sysfs bin ioctl
-Content-Disposition: inline; filename=sysfs-bin-ioctl.patch
+	Thu, 13 Dec 2007 19:05:08 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:21805 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762574AbXLNAFF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 19:05:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=IzlU+jz/QHb2VrkXETfyQyv96R4m+g2DobiVVMLrN8xqLPMU+UpRh6akRNPwiOaBxWPuMcmJTN4dcl05/zjK8PmXcJeh6MNpp/j366xbpruC2tBZNW5vtY0EHYoTWIbd0FD36ssk/hdWL35skoG3De5f356H6AF+3FeHvx8w9aI=
+Message-ID: <2c0942db0712131604m41c34da9hf3122b0603f3af96@mail.gmail.com>
+Date: Thu, 13 Dec 2007 16:05:00 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Michael Buesch" <mb@bu3sch.de>, bcm43xx-dev@lists.berlios.de
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
+Cc: "Daniel Walker" <dwalker@mvista.com>, akpm@linux-foundation.org,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, linux@bohmer.net,
+       jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
+       kjwinchester@gmail.com, mbuesch@freenet.de,
+       "John Linville" <linville@tuxdriver.com>
+In-Reply-To: <200712131445.39770.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071213003028.676998182@mvista.com>
+	 <200712130148.22727.mb@bu3sch.de>
+	 <2c0942db0712121717x59af3922na33d274cf5a8c7db@mail.gmail.com>
+	 <200712131445.39770.mb@bu3sch.de>
+X-Google-Sender-Auth: 02e678ca14f5b5f6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forward port of coherent-mmap.patch and sysfs-bin-ioctl.patch to x86 tree.
+On Dec 13, 2007 5:45 AM, Michael Buesch <mb@bu3sch.de> wrote:
+> On Thursday 13 December 2007 02:17:16 Ray Lee wrote:
+> > Uhm, hijacking the thread a bit here, but which driver is supposed to
+> > be supporting my 4309? Neither b43 nor b43legacy found my wireless,
+> > and I'm not seeing its PCI ID anywhere either of those...
+> >
+> > 02:02.0 0280: 14e4:4324 (rev 03)
+>
+> The device is supported by b43.
+> The PCI ID is in the SSB PCI bridge code
+>
+> static const struct pci_device_id b43_pci_bridge_tbl[] = {
+...
+>         { PCI_DEVICE(PCI_VENDOR_ID_BROADCOM, 0x4324) },
 
-TBD: Do we need the ioctl interface to sysfs or get the type attribute
-through a different sysfs file. And then actually specify the attribute
-while doing pci_mmap_page_range ;-)
+Ah, thanks, so it is. Well, doing an `rmmod bcm43xx ; modprobe ssb
+b43` gives me nothing in dmesg other than lines related to the bcm43xx
+driver. iwconfig/ifconfig do not see the interface either.
 
-And when this interface is in place, X server has to use this interface for WC
-mapping.
+<goes and reads bcm43xx-dev archives>
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
+Okay, I had to modprobe rfkill-input and rfkill by hand, didn't
+realize that. Hopefully that'll be automatic soon. Regardless, upon
+doing so, and loading ssb and b43, it sees my card, but is still not
+fully functional. iwconfig sees:
 
-Index: linux-2.6.24-rc4/fs/sysfs/bin.c
-===================================================================
---- linux-2.6.24-rc4.orig/fs/sysfs/bin.c	2007-12-11 16:23:26.000000000 -0800
-+++ linux-2.6.24-rc4/fs/sysfs/bin.c	2007-12-11 16:32:01.000000000 -0800
-@@ -221,6 +221,19 @@
- 	return 0;
- }
- 
-+static int ioctl(struct inode *i, struct file *f, unsigned cmd,
-+		 unsigned long arg)
-+{
-+	struct sysfs_dirent *attr_sd = f->f_path.dentry->d_fsdata;
-+	struct bin_attribute *attr = attr_sd->s_bin_attr.bin_attr;
-+	struct kobject *kobj = attr_sd->s_parent->s_dir.kobj;
-+
-+	if (!attr->ioctl)
-+		return -EINVAL;
-+
-+	return attr->ioctl(kobj, attr, cmd, arg);
-+}
-+
- const struct file_operations bin_fops = {
- 	.read		= read,
- 	.write		= write,
-@@ -228,6 +241,7 @@
- 	.llseek		= generic_file_llseek,
- 	.open		= open,
- 	.release	= release,
-+	.ioctl		= ioctl,
- };
- 
- /**
-Index: linux-2.6.24-rc4/include/linux/sysfs.h
-===================================================================
---- linux-2.6.24-rc4.orig/include/linux/sysfs.h	2007-12-11 16:23:26.000000000 -0800
-+++ linux-2.6.24-rc4/include/linux/sysfs.h	2007-12-11 16:29:07.000000000 -0800
-@@ -69,6 +69,8 @@
- 			 char *, loff_t, size_t);
- 	int (*mmap)(struct kobject *, struct bin_attribute *attr,
- 		    struct vm_area_struct *vma);
-+	int (*ioctl)(struct kobject *, struct bin_attribute *attr,
-+			unsigned cmd, unsigned long arg);
- };
- 
- struct sysfs_ops {
-Index: linux-2.6.24-rc4/drivers/pci/pci-sysfs.c
-===================================================================
---- linux-2.6.24-rc4.orig/drivers/pci/pci-sysfs.c	2007-12-11 16:03:55.000000000 -0800
-+++ linux-2.6.24-rc4/drivers/pci/pci-sysfs.c	2007-12-11 16:29:07.000000000 -0800
-@@ -473,8 +473,56 @@
- 			kfree(res_attr);
- 		}
- 	}
-+
-+#ifdef HAVE_PCI_COHERENT_MMAP
-+	sysfs_remove_bin_file(&pdev->dev.kobj, pdev->coherent_attr);
-+	kfree(pdev->coherent_attr);
-+#endif
-+}
-+
-+#ifdef HAVE_PCI_COHERENT_MMAP
-+
-+struct coh_mmap_data {
-+	void *map;
-+	struct device *dev;
-+	dma_addr_t busadr;
-+};
-+
-+void pci_coherent_mmap_close(struct vm_area_struct *vma)
-+{
-+	struct coh_mmap_data *cm = vma->vm_private_data;
-+	dma_free_coherent(cm->dev, vma->vm_end - vma->vm_start, cm->map,
-+			  cm->busadr);
- }
- 
-+static struct vm_operations_struct pci_coherent_vmops = {
-+	.close = pci_coherent_mmap_close,
-+};
-+
-+static int
-+pci_mmap_coherent_mem(struct kobject *kobj, struct bin_attribute *attr,
-+		  struct vm_area_struct *vma)
-+{
-+	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct coh_mmap_data *cm = kmalloc(sizeof(struct coh_mmap_data),
-+					   GFP_KERNEL);
-+	if (!cm)
-+		return -ENOMEM;
-+	cm->map = dma_alloc_coherent(dev, vma->vm_end - vma->vm_start,
-+				     &cm->busadr, GFP_KERNEL);
-+	cm->dev = dev;
-+	if (!cm->map) {
-+		kfree(cm->map);
-+		return -ENOMEM;
-+	}
-+	vma->vm_private_data = cm;
-+	vma->vm_pgoff = cm->busadr >> PAGE_SHIFT;
-+	vma->vm_ops = &pci_coherent_vmops;
-+	return pci_mmap_page_range(pdev, vma, pci_mmap_coherent, 0);
-+}
-+#endif
-+
- /**
-  * pci_create_resource_files - create resource files in sysfs for @dev
-  * @dev: dev in question
-@@ -692,6 +740,22 @@
- 			kfree(pdev->rom_attr);
- 		}
- 	}
-+#ifdef HAVE_PCI_COHERENT_MMAP
-+	{
-+		struct bin_attribute *a = kzalloc(sizeof(struct bin_attribute),
-+						  GFP_KERNEL);
-+		if (!a)
-+			return;
-+		pdev->coherent_attr = a;
-+		a->attr.name = "coherent_mem";
-+		a->attr.mode = S_IRUSR | S_IWUSR;
-+		a->attr.owner = THIS_MODULE;
-+		a->size = *(pdev->dev.dma_mask);
-+		a->mmap = pci_mmap_coherent_mem;
-+		a->private = NULL;
-+		sysfs_create_bin_file(&pdev->dev.kobj, a);
-+	}
-+#endif
- }
- 
- static int __init pci_sysfs_init(void)
-Index: linux-2.6.24-rc4/include/asm-x86/pci.h
-===================================================================
---- linux-2.6.24-rc4.orig/include/asm-x86/pci.h	2007-12-11 16:03:55.000000000 -0800
-+++ linux-2.6.24-rc4/include/asm-x86/pci.h	2007-12-11 16:29:07.000000000 -0800
-@@ -61,6 +61,7 @@
- 
- 
- #define HAVE_PCI_MMAP
-+#define HAVE_PCI_COHERENT_MMAP
- extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
- 			       enum pci_mmap_state mmap_state, int write_combine);
- 
-Index: linux-2.6.24-rc4/include/linux/pci.h
-===================================================================
---- linux-2.6.24-rc4.orig/include/linux/pci.h	2007-12-11 16:03:55.000000000 -0800
-+++ linux-2.6.24-rc4/include/linux/pci.h	2007-12-11 16:29:07.000000000 -0800
-@@ -57,7 +57,8 @@
- /* File state for mmap()s on /proc/bus/pci/X/Y */
- enum pci_mmap_state {
- 	pci_mmap_io,
--	pci_mmap_mem
-+	pci_mmap_mem,
-+	pci_mmap_coherent
- };
- 
- /* This defines the direction arg to the DMA mapping routines. */
-@@ -201,6 +202,7 @@
- 	struct bin_attribute *rom_attr; /* attribute descriptor for sysfs ROM entry */
- 	int rom_attr_enabled;		/* has display of the rom attribute been enabled? */
- 	struct bin_attribute *res_attr[DEVICE_COUNT_RESOURCE]; /* sysfs file for resources */
-+	struct bin_attribute *coherent_attr;
- #ifdef CONFIG_PCI_MSI
- 	struct list_head msi_list;
- #endif
+lo        no wireless extensions.
+eth0      no wireless extensions.
+tun0      no wireless extensions.
+eth1      no wireless extensions.
+wlan0_rename  IEEE 802.11g  ESSID:""
+          Mode:Managed  Channel:0  Access Point: Not-Associated
+          Tx-Power=0 dBm
+          Retry min limit:7   RTS thr:off   Fragment thr=2346 B
+          Link Quality:0  Signal level:0  Noise level:0
+          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
+          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
 
--- 
+(eth0 is ethernet, eth1 doesn't exist -- usually it's the wireless.)
+
+`ifconfig` doesn't see eth1 or wlan0_rename.
+
+What else might I be doing wrong? Regardless, perhaps scheduling
+bcm43xx for removal in 2.6.26 is a bit premature.
