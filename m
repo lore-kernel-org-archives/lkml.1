@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbXLNQxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934050AbXLNQ4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758726AbXLNQxr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 11:53:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXLNQxk
+	id S934050AbXLNQ4M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 11:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXLNQz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 11:53:40 -0500
-Received: from mail.suse.de ([195.135.220.2]:34268 "EHLO mx1.suse.de"
+	Fri, 14 Dec 2007 11:55:58 -0500
+Received: from smtp.silicomp.fr ([194.51.78.40]:39240 "EHLO smtp.silicomp.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750773AbXLNQxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 11:53:39 -0500
-Date: Fri, 14 Dec 2007 08:26:42 -0800
-From: Greg KH <gregkh@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, vincent.fortier1@ec.gc.ca,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
-Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
-Message-ID: <20071214162642.GA13898@suse.de>
-References: <1197554397.19869.3.camel@lov.site> <1197558120.4936.34.camel@kayak.wul.qc.ec.gc.ca> <1197562981.19869.5.camel@lov.site> <20071213165059.GC4865@elte.hu> <1197565842.19869.11.camel@lov.site> <20071213202125.GA25130@elte.hu>
+	id S1750758AbXLNQz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 11:55:57 -0500
+X-Greylist: delayed 2051 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Dec 2007 11:55:56 EST
+Date: Fri, 14 Dec 2007 17:21:31 +0100 (CET)
+From: Jean-Marc Saffroy <jean-marc.saffroy@orange-ftgroup.com>
+X-X-Sender: saffroy@brutus.ri.silicomp.fr
+To: daniel.pirkl@email.cz, dushistov@mail.ru
+cc: linux-kernel@vger.kernel.org
+Subject: fsx failure on ufs2
+Message-ID: <Pine.LNX.4.61.0712141649230.10387@brutus.ri.silicomp.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071213202125.GA25130@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.8 (smtp.silicomp.fr [194.51.78.40]); Fri, 14 Dec 2007 17:20:05 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 09:21:26PM +0100, Ingo Molnar wrote:
-> 
-> * Kay Sievers <kay.sievers@vrfy.org> wrote:
-> 
-> > > > > This one also fails to apply properly at the exact same place 
-> > > > > has Ingo's previously posted patch.  Would need to backport his 
-> > > > > one.
-> > > > 
-> > > > It depends on a completely reworked sysfs logic, I don't think it 
-> > > > makes any sense to backport that.
-> > > 
-> > > well, if it fixes a live bug in a still supported stable kernel 
-> > > release...
-> > > 
-> > > Vincent, could you try to just get rid of all actual uses of 
-> > > se->attr.owner, within fs/sysfs/*.c? Something like the patch below. 
-> > > (totally untested - might be fatally broken as well)
-> > 
-> > How can you think that this is not needed? You can not remove it with 
-> > sysfs you are patching. Hope this explains it: 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0ab66088c855eca68513bdd7442a426c4b374ced
-> 
-> yeah - as i said it might be fatally broken (in fact it is). Do we 
-> understand why Vincent got the crashes with vanilla 2.6.22.14 ?
+Hello,
 
-No, and I can't seem to duplicate them here at all.
+For an embedded system, I'm currently evaluating the robustness of ufs2 
+write support on Linux, and my very first test, with fsx, shows serious 
+problems.
 
-Does anyone have a test case for this that I can work on trying to
-duplicate?
+My test bed is a single CPU PC with a single IDE disk, that boots FreeBSD 
+6.2 and Ubuntu 7.10. The kernel on Ubuntu is a vanilla 2.6.23.9 with UFS2 
+write support. fsx is from the freebsd cvs (with a small patch to build on 
+Linux, see after my sig):
+   http://www.freebsd.org/cgi/cvsweb.cgi/src/tools/regression/fsx/
 
-thanks,
+The test is as follows:
 
-greg k-h
+# mount -t ufs -o ufstype=ufs2 /dev/sda10 /mnt
+(Yes, /dev/sda but it's really IDE.)
+
+$ ./fsx -c100 -N 100000 /mnt/test_fsx
+
+fsx exits in error, after producing the following files:
+
+-rw-r--r-- 1 foo foo 196256 2007-12-14 16:56 test_fsx
+-rw-r--r-- 1 foo foo 196256 2007-12-14 16:56 test_fsx.fsxgood
+-rw-r--r-- 1 foo foo  63167 2007-12-14 16:56 test_fsx.fsxlog
+
+The file test_fsx.fsxgood contains what fsx expected to be in test_fsx; 
+the files differ only in the last 4K chunk (it seems there should be only 
+zeroes, but it's not so).
+
+There does not seem to be any problem with ext3.
+
+Can anyone else confirm this problem?
+
+
+Cheers,
+
+-- 
+Jean-Marc Saffroy - Silicomp / Orange Business Services
+mailto:jean-marc.saffroy@orange-ftgroup.com
+
+Trivial patch for fsx.
+
+diff -r 6888f21e18de -r 1aa7894fc4f8 fsx.c
+--- a/fsx.c	Thu Dec 13 17:51:02 2007 +0100
++++ b/fsx.c	Thu Dec 13 17:52:08 2007 +0100
+@@ -61,6 +61,8 @@
+  #include <unistd.h>
+  #include <stdarg.h>
+  #include <errno.h>
++#include <stdint.h>
++#include <time.h>
+
+  #define NUMPRINTCOLUMNS 32	/* # columns of data to print on each line */
+
