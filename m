@@ -1,96 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932611AbXLNRvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbXLNRwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932611AbXLNRvZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 12:51:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbXLNRvR
+	id S1756742AbXLNRwM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 12:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbXLNRv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 12:51:17 -0500
-Received: from smtp2e.orange.fr ([80.12.242.113]:10350 "EHLO smtp2e.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753017AbXLNRvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 12:51:17 -0500
-X-ME-UUID: 20071214175113122.1DEEF70000A2@mwinf2e27.orange.fr
-Message-ID: <4762C28A.4040002@cosmosbay.com>
-Date: Fri, 14 Dec 2007 18:51:06 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.13 (Windows/20070809)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux kernel <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: [PATCH] Use ilog2() in fs/namespace.c
-Content-Type: multipart/mixed;
- boundary="------------060003020508070904060005"
+	Fri, 14 Dec 2007 12:51:57 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35540 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753607AbXLNRv4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 12:51:56 -0500
+Date: Fri, 14 Dec 2007 09:50:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Tejun Heo <htejun@gmail.com>, Greg KH <gregkh@suse.de>, stable@kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, Gautham Shenoy <ego@in.ibm.com>
+Subject: Re: 2.6.22-stable causes oomkiller to be invoked
+Message-Id: <20071214095023.b5327703.akpm@linux-foundation.org>
+In-Reply-To: <20071214161637.GA2687@linux.vnet.ibm.com>
+References: <20071213123333.GA16905@linux.vnet.ibm.com>
+	<20071213132326.GC16905@linux.vnet.ibm.com>
+	<20071213151847.GB5676@linux.vnet.ibm.com>
+	<20071213162936.GA7635@suse.de>
+	<20071213164658.GA30865@linux.vnet.ibm.com>
+	<20071213175423.GA2977@linux.vnet.ibm.com>
+	<476295FF.1040202@gmail.com>
+	<20071214154711.GD23670@linux.vnet.ibm.com>
+	<4762A721.7080400@gmail.com>
+	<20071214161637.GA2687@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060003020508070904060005
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, 14 Dec 2007 21:46:37 +0530 Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 
-We can use ilog2() in fs/namespace.c to compute hash_bits and hash_mask at
-compile time, not runtime.
+> On Sat, Dec 15, 2007 at 12:54:09AM +0900, Tejun Heo wrote:
+> > Dhaval Giani wrote:
+> > > XXX sysfs_page_cnt=1
+> > 
+> > Hmm.. so, sysfs r/w buffer wasn't the culprit.  I'm curious what eats up
+> > all your low memory.  Please do the following.
+> > 
+> > 1. Right after boot, record /proc/meminfo and slabinfo.
+> > 
+> > 2. After or near OOM, record /proc/meminfo and slabinfo.  This can be
+> > tricky but if your machine reliably OOMs after 10mins, run it for 9mins
+> > and capturing the result should show enough.
+> > 
+> 
+> Attached. The results are after oom, but i think about a min or so after
+> that. I missed the oom point.
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Looking back at your original oom-killer output: something has consumed all
+your ZONE_NORMAL memory and we cannot tell what it is.
 
+Please run 2.6.24-rc5-mm1 again (with CONFIG_PAGE_OWNER=y) and take a peek
+at the changelog in
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/broken-out/page-owner-tracking-leak-detector.patch.
 
---------------060003020508070904060005
-Content-Type: text/plain;
- name="namespace.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="namespace.patch"
+Build up Documentation/page_owner.c then cause the leak to happen then
+execute page_owner.
 
-diff --git a/fs/namespace.c b/fs/namespace.c
-index 0608388..835f14a 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -25,6 +25,7 @@
- #include <linux/security.h>
- #include <linux/mount.h>
- #include <linux/ramfs.h>
-+#include <linux/log2.h>
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
- #include "pnode.h"
-@@ -36,7 +37,8 @@ __cacheline_aligned_in_smp DEFINE_SPINLOCK(vfsmount_lock);
- static int event;
- 
- static struct list_head *mount_hashtable __read_mostly;
--static int hash_mask __read_mostly, hash_bits __read_mostly;
-+#define hash_bits ilog2(PAGE_SIZE / sizeof(struct list_head))
-+#define hash_mask ((1UL << hash_bits) - 1)
- static struct kmem_cache *mnt_cache __read_mostly;
- static struct rw_semaphore namespace_sem;
- 
-@@ -1828,24 +1830,7 @@ void __init mnt_init(void)
- 	if (!mount_hashtable)
- 		panic("Failed to allocate mount hash table\n");
- 
--	/*
--	 * Find the power-of-two list-heads that can fit into the allocation..
--	 * We don't guarantee that "sizeof(struct list_head)" is necessarily
--	 * a power-of-two.
--	 */
--	nr_hash = PAGE_SIZE / sizeof(struct list_head);
--	hash_bits = 0;
--	do {
--		hash_bits++;
--	} while ((nr_hash >> hash_bits) != 0);
--	hash_bits--;
--
--	/*
--	 * Re-calculate the actual number of entries and the mask
--	 * from the number of bits we can fit.
--	 */
- 	nr_hash = 1UL << hash_bits;
--	hash_mask = nr_hash - 1;
- 
- 	printk("Mount-cache hash table entries: %d\n", nr_hash);
- 
-
---------------060003020508070904060005--
-
-
+Thanks.
