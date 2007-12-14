@@ -1,114 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935056AbXLNWmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935242AbXLNWmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935056AbXLNWmE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 17:42:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934437AbXLNWip
+	id S935242AbXLNWmk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 17:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935003AbXLNWjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 17:38:45 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:32351 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934770AbXLNWin (ORCPT
+	Fri, 14 Dec 2007 17:39:47 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:59259 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934993AbXLNWjp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 17:38:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=k+0N7gRf4xiDUyYFHMNzxK/fmP0pIVC37O0nGMC0d4kUIVIQd8PeieWpiKnfY1EUXE4dnhAn081vGeZZVKxQSe7jxwEBNpVY28snieyuVOYxT7rQl4em/fJYNZWMTEjrotEskJ/PiikydZZjpwyj2QnKT1W4t+fam27CtgscML4=
-Subject: [PATCH] x86: Add temporary ifdefs to kprobes_{32|64}.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 14:38:48 -0800
-Message-Id: <1197671928.898.69.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Dec 2007 17:39:45 -0500
+Date: Fri, 14 Dec 2007 23:39:47 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: akpm@linux-foundation.org, netdev@vger.kernel.org, randy.dunlap@oracle.com,
+       auke-jan.h.kok@intel.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 01/10] e1000e: make E1000E default to the same kconfig
+	setting as E1000
+Message-ID: <20071214223947.GA5403@stusta.de>
+References: <200712140002.lBE02pUb025505@imap1.linux-foundation.org> <4762E9FE.1070707@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4762E9FE.1070707@garzik.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keep reducing the diff size moving code around.  This will get
-cleaner in the final unified file.
+On Fri, Dec 14, 2007 at 03:39:26PM -0500, Jeff Garzik wrote:
+> akpm@linux-foundation.org wrote:
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>...
+> So I think the breakage that occurs is mitigated by two factors:
+> 1) kernel hackers that do their own configs are expected to be able to 
+> figure this stuff.
+> 2) kernel builders (read: distros, mainly) are expected to have put thought 
+> into the Kconfig selection and driver migration strategies.
+>...
+> I would prefer simply to communicate to kernel experts and builders about a 
+> Kconfig issue that could potentially their booting/networking...  because 
+> this patch is only needed if the kernel experts do not already know about a 
+> necessary config update.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/x86/kernel/kprobes_32.c |   15 +++++++++++++++
- arch/x86/kernel/kprobes_64.c |   17 ++++++++++++-----
- 2 files changed, 27 insertions(+), 5 deletions(-)
+You miss the vast majority of kconfig users:
 
-diff --git a/arch/x86/kernel/kprobes_32.c b/arch/x86/kernel/kprobes_32.c
-index cebc077..f4ba584 100644
---- a/arch/x86/kernel/kprobes_32.c
-+++ b/arch/x86/kernel/kprobes_32.c
-@@ -915,12 +915,27 @@ int __kprobes longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
- 	return 0;
- }
- 
-+#ifdef CONFIG_X86_64
-+static struct kprobe trampoline_p = {
-+	.addr = (kprobe_opcode_t *) &kretprobe_trampoline,
-+	.pre_handler = trampoline_probe_handler
-+};
-+#endif
-+
- int __kprobes arch_trampoline_kprobe(struct kprobe *p)
- {
-+#ifdef CONFIG_X86_64
-+	if (p->addr == (kprobe_opcode_t *)&kretprobe_trampoline)
-+		return 1;
-+#endif
- 	return 0;
- }
- 
- int __init arch_init_kprobes(void)
- {
-+#ifdef CONFIG_X86_32
- 	return 0;
-+#else
-+	return register_kprobe(&trampoline_p);
-+#endif
- }
-diff --git a/arch/x86/kernel/kprobes_64.c b/arch/x86/kernel/kprobes_64.c
-index 6f62a4a..13a92ef 100644
---- a/arch/x86/kernel/kprobes_64.c
-+++ b/arch/x86/kernel/kprobes_64.c
-@@ -869,20 +869,27 @@ int __kprobes longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
- 	return 0;
- }
- 
-+#ifdef CONFIG_X86_64
- static struct kprobe trampoline_p = {
- 	.addr = (kprobe_opcode_t *) &kretprobe_trampoline,
- 	.pre_handler = trampoline_probe_handler
- };
--
--int __init arch_init_kprobes(void)
--{
--	return register_kprobe(&trampoline_p);
--}
-+#endif
- 
- int __kprobes arch_trampoline_kprobe(struct kprobe *p)
- {
-+#ifdef CONFIG_X86_64
- 	if (p->addr == (kprobe_opcode_t *)&kretprobe_trampoline)
- 		return 1;
-+#endif
-+	return 0;
-+}
- 
-+int __init arch_init_kprobes(void)
-+{
-+#ifdef CONFIG_X86_32
- 	return 0;
-+#else
-+	return register_kprobe(&trampoline_p);
-+#endif
- }
+3) system administrators etc. who for different reasons compile their 
+own kernels but neither are nor want to be kernel developers
+
+There's a reason why e.g. LPI requires you to be able to compile your 
+own kernel even for getting a "Junior Level Linux Professional" 
+certificate.
+
+Or that one of the authors of "Linux Device drivers" has written a book 
+covering only how to build and run your own kernel.
+
+> 	Jeff
+
+cu
+Adrian
+
 -- 
-1.5.4.rc0.1083.gf568
 
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
