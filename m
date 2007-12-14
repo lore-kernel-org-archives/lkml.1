@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbXLNOIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbXLNOJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753295AbXLNOIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 09:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXLNOIK
+	id S1753840AbXLNOJF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 09:09:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbXLNOIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 09:08:10 -0500
-Received: from intcomgrp.com ([216.54.13.120]:33458 "EHLO
-	beta.support.intcomgrp.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751512AbXLNOIJ (ORCPT
+	Fri, 14 Dec 2007 09:08:52 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:57045 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752015AbXLNOIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 09:08:09 -0500
-Message-ID: <47628E4C.2090801@intcomgrp.com>
-Date: Fri, 14 Dec 2007 09:08:12 -0500
-From: James Kosin <jkosin@intcomgrp.com>
-Organization: International Communications Group, Inc.
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 14 Dec 2007 09:08:50 -0500
+Date: Fri, 14 Dec 2007 19:38:08 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org
+Subject: Re: 2.6.24-rc5-mm1
+Message-ID: <20071214140808.GA3033@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFT] Port 0x80 I/O speed
-References: <9A0cz-7xy-13@gated-at.bofh.it> <9A0cz-7xy-11@gated-at.bofh.it> <9A4pU-69z-15@gated-at.bofh.it>
-In-Reply-To: <9A4pU-69z-15@gated-at.bofh.it>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 13-12-07 17:27, James Kosin wrote:
-> 
->> model name      : Pentium III (Katmai)
->> cpu MHz         : 499.156
-> 
->> [root@beta jkosin]# ./a.out
->> cycles: out 683, in 299
-> 
-> Thanks much, you made spot 32 ;-)
-> 
-> http://lkml.org/lkml/2007/12/12/309
-> 
-> By the way, if anyone in this/these thread(s) wrote something today (*)
-> they would like me to reply to -- my horseshit ISP is completely
-> crapping out on me and I haven't seen your message. Resends ofcourse
-> welcome.
-> 
-> (*) [now - 16 hours, now]
-> 
-> Rene.
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-Maybe,  I should have added the lspci to the list of information.
-kernel version is latest 2.4 kernel.
+Hi Andrew,
 
-[root@beta root]# lspci
-00:00.0 Host bridge: Intel Corp. 440BX/ZX/DX - 82443BX/ZX/DX Host bridge
-(rev 03)
-00:01.0 PCI bridge: Intel Corp. 440BX/ZX/DX - 82443BX/ZX/DX AGP bridge
-(rev 03)
-00:07.0 ISA bridge: Intel Corp. 82371AB/EB/MB PIIX4 ISA (rev 02)
-00:07.1 IDE interface: Intel Corp. 82371AB/EB/MB PIIX4 IDE (rev 01)
-00:07.2 USB Controller: Intel Corp. 82371AB/EB/MB PIIX4 USB (rev 01)
-00:07.3 Bridge: Intel Corp. 82371AB/EB/MB PIIX4 ACPI (rev 02)
-00:09.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8169
-(rev 10)
-00:0a.0 Ethernet controller: Lite-On Communications Inc LNE100TX (rev 20)
-00:0b.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro
-215GP (rev 5c)
+I hit this just now. Not sure if I can reproduce it though.
+
+WARNING: at net/ipv4/tcp_input.c:2533 tcp_fastretrans_alert()
+Pid: 4624, comm: yield Not tainted 2.6.24-rc5-mm1 #5
+ [<c010582a>] show_trace_log_lvl+0x12/0x22
+ [<c0105847>] show_trace+0xd/0xf
+ [<c0105959>] dump_stack+0x57/0x5e
+ [<c03db95b>] tcp_fastretrans_alert+0xde/0x5bd
+ [<c03dcab2>] tcp_ack+0x236/0x2e4
+ [<c03dea01>] tcp_rcv_established+0x51e/0x5c0
+ [<c03e56f1>] tcp_v4_do_rcv+0x22/0xc4
+ [<c03e5c49>] tcp_v4_rcv+0x4b6/0x7f5
+ [<c03cd5ad>] ip_local_deliver_finish+0xb9/0x169
+ [<c03cd68a>] ip_local_deliver+0x2d/0x34
+ [<c03cd91d>] ip_rcv_finish+0x28c/0x2ab
+ [<c03cdb16>] ip_rcv+0x1da/0x204
+ [<c03b800a>] netif_receive_skb+0x23c/0x26f
+ [<c02db326>] tg3_rx+0x246/0x353
+ [<c02db4ac>] tg3_poll_work+0x79/0x86
+ [<c02db4e8>] tg3_poll+0x2f/0x16f
+ [<c03b822b>] net_rx_action+0xbb/0x1a8
+ [<c0129596>] __do_softirq+0x73/0xe6
+ [<c0129642>] do_softirq+0x39/0x51
+ [<c01296c0>] irq_exit+0x47/0x49
+ [<c01064f4>] do_IRQ+0x55/0x69
+ [<c0105492>] common_interrupt+0x2e/0x34
+ =======================
 
 -- 
-Scanned by ClamAV - http://www.clamav.net
-
+regards,
+Dhaval
