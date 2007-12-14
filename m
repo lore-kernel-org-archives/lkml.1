@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934027AbXLNQvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbXLNQxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934027AbXLNQvv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 11:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbXLNQvo
+	id S1758726AbXLNQxr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 11:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXLNQxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 11:51:44 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:51343 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754189AbXLNQvn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 11:51:43 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
-Date: Fri, 14 Dec 2007 17:49:33 +0100
-User-Agent: KMail/1.9.6
-Cc: "Ingo Molnar" <mingo@elte.hu>, bcm43xx-dev@lists.berlios.de,
-       "Daniel Walker" <dwalker@mvista.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux@bohmer.net, jonathan@jonmasters.org,
-       matthias.kaehlcke@gmail.com, kjwinchester@gmail.com,
-       "John Linville" <linville@tuxdriver.com>
-References: <20071213003028.676998182@mvista.com> <200712141409.00311.mb@bu3sch.de> <2c0942db0712140806p61ec06d5nf3289dab938fd93a@mail.gmail.com>
-In-Reply-To: <2c0942db0712140806p61ec06d5nf3289dab938fd93a@mail.gmail.com>
+	Fri, 14 Dec 2007 11:53:40 -0500
+Received: from mail.suse.de ([195.135.220.2]:34268 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750773AbXLNQxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 11:53:39 -0500
+Date: Fri, 14 Dec 2007 08:26:42 -0800
+From: Greg KH <gregkh@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, vincent.fortier1@ec.gc.ca,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
+Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
+Message-ID: <20071214162642.GA13898@suse.de>
+References: <1197554397.19869.3.camel@lov.site> <1197558120.4936.34.camel@kayak.wul.qc.ec.gc.ca> <1197562981.19869.5.camel@lov.site> <20071213165059.GC4865@elte.hu> <1197565842.19869.11.camel@lov.site> <20071213202125.GA25130@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712141749.33708.mb@bu3sch.de>
+In-Reply-To: <20071213202125.GA25130@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 14 December 2007 17:06:39 Ray Lee wrote:
-> Hi all. Perhaps I can inject some facts into this?
+On Thu, Dec 13, 2007 at 09:21:26PM +0100, Ingo Molnar wrote:
 > 
-> On Dec 14, 2007 5:08 AM, Michael Buesch <mb@bu3sch.de> wrote:
-> > > > This user did get the following messages in dmesg:
-> > > >
-> > > > b43err(dev->wl, "Firmware file \"%s\" not found "
-> > > >        "or load failed.\n", path);
-> > > > b43err(wl, "You must go to "
-> > > >        "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
-> > > >        "and download the correct firmware (version 4).\n");
-> > > >
-> > > > I'm not sure how I can improve that even more. There is a full URL
-> > > > describing how to get the device workin in _full_ detail.
+> * Kay Sievers <kay.sievers@vrfy.org> wrote:
 > 
-> Yes, but only if you load rfkill-input and rfkill by hand, prior.
-
-I'm not sure what you are doing there.
-Do you have module autoloading disabled?
-This all works perfectly well on all of my systems. And I never heared
-such a problem before.
-
-If you have a PCI device probing works as follows:
-The PCI table is in ssb. So as soon as your kernel detects the PCI device
-it will load ssb. ssb will register the PCI device. That will trigger
-an udev event for the contained 802.11 core to get probed. This will load
-b43.
-
-So, I'm not sure where's the issue with my code here.
-
-> That I'm one of the first people to hit that makes me think that your
-> testing base so far has been miniscule.
-
-The driver is shipped by Fedora since quite some time.
-
-> > > || Well, doing an `rmmod bcm43xx ; modprobe ssb b43` gives me nothing in
-> > > || dmesg other than lines related to the bcm43xx driver.
-> > > || iwconfig/ifconfig do not see the interface either.
+> > > > > This one also fails to apply properly at the exact same place 
+> > > > > has Ingo's previously posted patch.  Would need to backport his 
+> > > > > one.
+> > > > 
+> > > > It depends on a completely reworked sysfs logic, I don't think it 
+> > > > makes any sense to backport that.
+> > > 
+> > > well, if it fixes a live bug in a still supported stable kernel 
+> > > release...
+> > > 
+> > > Vincent, could you try to just get rid of all actual uses of 
+> > > se->attr.owner, within fs/sysfs/*.c? Something like the patch below. 
+> > > (totally untested - might be fatally broken as well)
+> > 
+> > How can you think that this is not needed? You can not remove it with 
+> > sysfs you are patching. Hope this explains it: 
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0ab66088c855eca68513bdd7442a426c4b374ced
 > 
-> See above. Without a modprobe of rfkill, rfkill-input that is the case.
+> yeah - as i said it might be fatally broken (in fact it is). Do we 
+> understand why Vincent got the crashes with vanilla 2.6.22.14 ?
 
-You can't do
-modprobe ssb b43
-This will be interpreted as modprobe of "ssb" with the module
-parameter "b43". At least by my modutils.
+No, and I can't seem to duplicate them here at all.
 
-If you do
-modprobe b43
-it will automatically load _all_ required modules.
-It works perfectly well on my systems.
-Try it. Simply type "modprobe b43". It will also work for you.
+Does anyone have a test case for this that I can work on trying to
+duplicate?
 
-> Heeeeellooooo? I tried that. It failed. What *I'm* talking about here
-> is that this everyone needs to be aware that this is *not* a drop in
-> replacement for bcm43xx, and if I'm having problems (not a kernel
-> hacker, but I make my living writing code), then sheesh, you're gonna
-> have a flood of people needing hand-holding on this.
+thanks,
 
-All problems so far were not related to the b43 sourcecode at all.
-And I think I can not be held responsible for unrelated code or bugs
-in the operating system scripts.
-
--- 
-Greetings Michael.
+greg k-h
