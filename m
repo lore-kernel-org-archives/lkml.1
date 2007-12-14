@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934704AbXLNWg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934179AbXLNWhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934704AbXLNWg6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 17:36:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764026AbXLNWeY
+	id S934179AbXLNWhj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 17:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932549AbXLNWe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 17:34:24 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:4989 "EHLO perches.com"
+	Fri, 14 Dec 2007 17:34:29 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:4990 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755713AbXLNWeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761006AbXLNWeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 14 Dec 2007 17:34:19 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
-Subject: [PATCH 07/11] drivers/net/smc911x.c: Use print_mac
-Date: Fri, 14 Dec 2007 14:34:08 -0800
-Message-Id: <1197671652-32492-7-git-send-email-joe@perches.com>
+Subject: [PATCH 08/11] drivers/net/sunvnet.c: Use print_mac
+Date: Fri, 14 Dec 2007 14:34:09 -0800
+Message-Id: <1197671652-32492-8-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.7.949.g2221a6
-In-Reply-To: <1197671652-32492-6-git-send-email-joe@perches.com>
+In-Reply-To: <1197671652-32492-7-git-send-email-joe@perches.com>
 References: <1197671652-32492-1-git-send-email-joe@perches.com>
  <1197671652-32492-2-git-send-email-joe@perches.com>
  <1197671652-32492-3-git-send-email-joe@perches.com>
  <1197671652-32492-4-git-send-email-joe@perches.com>
  <1197671652-32492-5-git-send-email-joe@perches.com>
  <1197671652-32492-6-git-send-email-joe@perches.com>
-Message-Id: <d1a31f8685a70676de100f9521e9f5b6f4255fe5.1197671367.git.joe@perches.com>
+ <1197671652-32492-7-git-send-email-joe@perches.com>
+Message-Id: <d70fb8ac3a19e2bc8ca4976aeacee3c31dd52073.1197671367.git.joe@perches.com>
 In-Reply-To: <9fc484fc034428ab68ecb2711c8456df9e98d56d.1197671367.git.joe@perches.com>
 References: <9fc484fc034428ab68ecb2711c8456df9e98d56d.1197671367.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,27 +34,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/smc911x.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ drivers/net/sunvnet.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/smc911x.c b/drivers/net/smc911x.c
-index 76cc1d3..f503b73 100644
---- a/drivers/net/smc911x.c
-+++ b/drivers/net/smc911x.c
-@@ -2086,10 +2086,9 @@ static int __init smc911x_probe(struct net_device *dev, unsigned long ioaddr)
- 					"set using ifconfig\n", dev->name);
- 		} else {
- 			/* Print the Ethernet address */
--			printk("%s: Ethernet addr: ", dev->name);
--			for (i = 0; i < 5; i++)
--				printk("%2.2x:", dev->dev_addr[i]);
--			printk("%2.2x\n", dev->dev_addr[5]);
-+			DECLARE_MAC_BUF(mac);
-+			printk("%s: Ethernet addr: %s\n",
-+			       dev->name, print_mac(mac, dev->dev_addr));
- 		}
+diff --git a/drivers/net/sunvnet.c b/drivers/net/sunvnet.c
+index ff1028a..4a0035f 100644
+--- a/drivers/net/sunvnet.c
++++ b/drivers/net/sunvnet.c
+@@ -1149,6 +1149,7 @@ static int __devinit vnet_port_probe(struct vio_dev *vdev,
+ 	struct vnet *vp;
+ 	const u64 *rmac;
+ 	int len, i, err, switch_port;
++	DECLARE_MAC_BUF(mac);
  
- 		if (lp->phy_type == 0) {
+ 	print_version();
+ 
+@@ -1213,12 +1214,9 @@ static int __devinit vnet_port_probe(struct vio_dev *vdev,
+ 
+ 	dev_set_drvdata(&vdev->dev, port);
+ 
+-	printk(KERN_INFO "%s: PORT ( remote-mac ", vp->dev->name);
+-	for (i = 0; i < 6; i++)
+-		printk("%2.2x%c", port->raddr[i], i == 5 ? ' ' : ':');
+-	if (switch_port)
+-		printk("switch-port ");
+-	printk(")\n");
++	printk(KERN_INFO "%s: PORT ( remote-mac %s%s )\n",
++	       vp->dev->name, print_mac(mac, port->raddr),
++	       switch_port ? " switch-port" : "");
+ 
+ 	vio_port_up(&port->vio);
+ 
 -- 
 1.5.3.7.949.g2221a6
 
