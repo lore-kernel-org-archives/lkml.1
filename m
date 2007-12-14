@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbXLNPRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760038AbXLNPRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758038AbXLNPRK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 10:17:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757305AbXLNPQk
+	id S1760038AbXLNPRc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 10:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757766AbXLNPQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 10:16:40 -0500
+	Fri, 14 Dec 2007 10:16:58 -0500
 Received: from courier.cs.helsinki.fi ([128.214.9.1]:59122 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757195AbXLNPQi (ORCPT
+	with ESMTP id S1757609AbXLNPQ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 10:16:38 -0500
-Date: Fri, 14 Dec 2007 17:16:36 +0200 (EET)
+	Fri, 14 Dec 2007 10:16:56 -0500
+Date: Fri, 14 Dec 2007 17:16:54 +0200 (EET)
 From: Pekka J Enberg <penberg@cs.helsinki.fi>
 To: alan@redhat.com, viro@zeniv.linux.org.uk, hch@infradead.org,
        peterz@infradead.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org
-Subject: [RFC/PATCH 3/8] revoke: file, inode, and address space operations
- V7
-Message-ID: <Pine.LNX.4.64.0712141716180.28689@sbz-30.cs.Helsinki.FI>
+Subject: [RFC/PATCH 4/8] revoke: core code V7
+Message-ID: <Pine.LNX.4.64.0712141716370.28689@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -27,8 +26,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Add file, inode, and addresspace operations for inodes that represent revoked
-files.
+The revokeat(2) system call ensures that after successful revocation you can
+only access an inode via a file descriptor that is obtained from a subsequent
+open(2) call.  The open(2) system call can be blocked by the caller with
+chmod(2) and chown(2) prior to calling revokeat(2) to gain exclusive access to
+an inode.
+
+After an successful revocation, operations on file descriptors fail with the
+EBADF or ENXIO error code for regular and device files, respectively.
+Attempting to read from or write to a revoked mapping causes SIGBUS.  The
+revokeat(2) system call guarantees that:
+
+  (1) open file descriptors are revoked,
+
+  (2) file descriptors created by fork(2) and dup(2) during
+      the operation are revoked,
+
+  (3) file descriptors obtained via a SCM_RIGHTS datagram during or
+      after the revoke operation are revoked,
+
+  (4) in-flight read(2) and write(2) operations are either completed
+      or aborted before revokeat(2) returns successfully,
+
+  (5) attempting to read from or write to a shared memory mapping
+      raises SIGBUS, and
+
+  (6) copy-on-write to a private memory mapping after successful
+      revokeat(2) call does not reveal any data written after the
+      system call has returned.
+
+TODO:
+
+  - I/O requests that are in-flight
+  - Breaking of private mapping COW races with fork
 
 Cc: Alan Cox <alan@redhat.com>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
@@ -36,427 +66,540 @@ Cc: Christoph Hellwig <hch@infradead.org>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- fs/revoked_inode.c |  416 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 416 insertions(+)
+ fs/revoke.c           |  450 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fs.h    |   10 +
+ include/linux/magic.h |    2 
+ include/linux/mm.h    |    1 
+ mm/mmap.c             |   11 +
+ 5 files changed, 473 insertions(+), 1 deletion(-)
 
-Index: 2.6/fs/revoked_inode.c
+Index: 2.6/fs/revoke.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ 2.6/fs/revoked_inode.c	2007-12-14 16:40:53.000000000 +0200
-@@ -0,0 +1,416 @@
++++ 2.6/fs/revoke.c	2007-12-14 16:40:55.000000000 +0200
+@@ -0,0 +1,450 @@
 +/*
-+ * fs/revoked_inode.c
++ * Invalidate all current open file descriptors of an inode.
 + *
-+ * Copyright (C) 2007  Pekka Enberg
-+ *
-+ * Provide stub functions for revoked inodes. Based on fs/bad_inode.c which is
-+ *
-+ * Copyright (C) 1997  Stephen Tweedie
++ * Copyright (C) 2006-2007  Pekka Enberg
 + *
 + * This file is released under the GPLv2.
 + */
 +
++#include <linux/preempt.h>
++#include <linux/bit_spinlock.h>
++#include <linux/buffer_head.h>
++#include <linux/dcache.h>
++#include <linux/file.h>
 +#include <linux/fs.h>
++#include <linux/magic.h>
 +#include <linux/module.h>
-+#include <linux/stat.h>
-+#include <linux/time.h>
-+#include <linux/smp_lock.h>
++#include <linux/mount.h>
 +#include <linux/namei.h>
-+#include <linux/poll.h>
 +
-+static loff_t revoked_file_llseek(struct file *file, loff_t offset, int origin)
++static void revoke_aliases(struct inode *inode)
 +{
-+	return -EBADF;
++	struct dentry *dentry;
++restart:
++	spin_lock(&dcache_lock);
++	list_for_each_entry(dentry, &inode->i_dentry, d_alias) {
++		spin_lock(&dentry->d_lock);
++		if (!d_unhashed(dentry)) {
++			dget_locked(dentry);
++			__d_drop(dentry);
++			spin_unlock(&dentry->d_lock);
++			spin_unlock(&dcache_lock);
++			dput(dentry);
++			goto restart;
++		}
++		spin_unlock(&dentry->d_lock);
++	}
++	spin_unlock(&dcache_lock);
 +}
 +
-+static ssize_t revoked_file_read(struct file *filp, char __user *buf,
-+				 size_t size, loff_t *ppos)
++static int revoke_files(struct inode *inode)
 +{
-+	return -EBADF;
++	struct super_block *sb;
++	struct file *file;
++	int err = 0;
++
++	sb = inode->i_sb;
++	if (!sb)
++		return -EINVAL;
++
++restart:
++	file_list_lock();
++	list_for_each_entry(file, &sb->s_files, f_u.fu_list) {
++		struct dentry *dentry = file->f_path.dentry;
++
++		if (dentry->d_inode != inode)
++			continue;
++
++		if (file->f_op != inode->i_fop)
++			continue;
++
++		get_file(file);
++
++		/*
++		 * inode->i_mutex cannot be acquired under files_lock
++		 */
++		file_list_unlock();
++
++		err = file->f_op->revoke(file);
++		make_revoked_file(inode, file);
++		fput(file);
++
++		if (err)
++			goto out;
++
++		if (signal_pending(current)) {
++			err = -EINTR;
++			goto out;
++		}
++		cond_resched();
++		goto restart;
++	}
++	file_list_unlock();
++out:
++	return err;
 +}
 +
-+static ssize_t revoked_special_file_read(struct file *filp, char __user *buf,
-+					 size_t size, loff_t *ppos)
++static inline bool vma_matches(struct vm_area_struct *vma, struct inode *inode)
 +{
++	struct file *file = vma->vm_file;
++
++	return file && file->f_path.dentry->d_inode == inode;
++}
++
++/*
++ *	LOCKING: read_lock(&tasklist_lock)
++ */
++static unsigned long nr_tasks_with_mm(void)
++{
++	struct task_struct *g, *p;
++	int ret = 0;
++
++	do_each_thread(g, p) {
++		if (!p->mm)
++			continue;
++		ret++;
++	}
++	while_each_thread(g, p);
++	return ret;
++}
++
++static int task_break_cow(struct task_struct *tsk, struct inode *inode)
++{
++	struct vm_area_struct *vma;
++	struct mm_struct *mm;
++	int ret = 0;
++
++	mm = get_task_mm(tsk);
++	if (!mm)
++		return 0;
++
++	down_write(&mm->mmap_sem);
++	for (vma = mm->mmap; vma != NULL; vma = vma->vm_next) {
++		int err;
++
++		if (vma->vm_flags & VM_SHARED)
++			continue;
++
++		if (!vma_matches(vma, inode))
++			continue;
++
++		err = get_user_pages(tsk, tsk->mm, vma->vm_start,
++				     vma_pages(vma), 1, 1, NULL, NULL);
++		if (err < 0) {
++			ret = err;
++			break;
++		}
++		if (err != vma_pages(vma)) {
++			ret = -ENOMEM;
++			break;
++		}
++		unlink_file_vma(vma);
++		fput(vma->vm_file);
++		vma->vm_file = NULL;
++	}
++	up_write(&mm->mmap_sem);
++	mmput(mm);
++	return ret;
++}
++
++static int revoke_break_cow(struct inode *inode)
++{
++	struct task_struct **tsk_array;
++	struct task_struct *g, *p;
++	unsigned long nr, i;
++	int err = 0;
++
++restart:
++	read_lock(&tasklist_lock);
++	nr = nr_tasks_with_mm();
++	read_unlock(&tasklist_lock);
++
++	tsk_array = kcalloc(nr, sizeof(struct task_struct *), GFP_KERNEL);
++	if (!tsk_array)
++		return -ENOMEM;
++
++	read_lock(&tasklist_lock);
++
++	if (nr != nr_tasks_with_mm()) {
++		read_unlock(&tasklist_lock);
++		kfree(tsk_array);
++		cond_resched();
++		goto restart;
++	}
++
++	i = 0;
++	do_each_thread(g, p) {
++		if (i >= nr) {
++			read_unlock(&tasklist_lock);
++			err = -EAGAIN;
++			goto out;
++		}
++
++		if (!p->mm)
++			continue;
++
++		get_task_struct(p);
++		tsk_array[i++] = p;
++	}
++	while_each_thread(g, p);
++	read_unlock(&tasklist_lock);
++
++	for (i = 0; i < nr; i++) {
++		struct task_struct *tsk = tsk_array[i];
++
++		err = task_break_cow(tsk, inode);
++		if (err)
++			break;
++	}
++
++	for (i = 0; i < nr; i++) {
++		struct task_struct *tsk = tsk_array[i];
++
++		put_task_struct(tsk);
++	}
++out:
++	kfree(tsk_array);
++	return err;
++}
++
++/*
++ *	 LOCKING: down_write(&mm->mmap_sem)
++ *	 	    -> spin_lock(&mapping->i_mmap_lock)
++ */
++static int revoke_vma(struct vm_area_struct *vma, struct zap_details *details)
++{
++	unsigned long restart_addr, start_addr, end_addr;
++	int need_break;
++
++	start_addr = vma->vm_start;
++	end_addr = vma->vm_end;
++
++again:
++	restart_addr = zap_page_range(vma, start_addr, end_addr - start_addr,
++				      details);
++
++	need_break = need_resched() || need_lockbreak(details->i_mmap_lock);
++	if (need_break)
++		goto out_need_break;
++
++	if (restart_addr < end_addr) {
++		start_addr = restart_addr;
++		goto again;
++	}
++	vma->vm_flags |= VM_REVOKED;
 +	return 0;
++
++out_need_break:
++	spin_unlock(details->i_mmap_lock);
++	cond_resched();
++	spin_lock(details->i_mmap_lock);
++	return -EINTR;
 +}
 +
-+static ssize_t revoked_file_write(struct file *filp, const char __user *buf,
-+				  size_t siz, loff_t *ppos)
++static inline bool vma_is_revocable(struct vm_area_struct *vma)
 +{
-+	return -EBADF;
++	return (vma->vm_flags & VM_SHARED) && !(vma->vm_flags & VM_REVOKED);
 +}
 +
-+static ssize_t revoked_file_aio_read(struct kiocb *iocb,
-+				     const struct iovec *iov,
-+				     unsigned long nr_segs, loff_t pos)
++/*
++ *	LOCKING: spin_lock(&mapping->i_mmap_lock)
++ */
++static int revoke_mm(struct mm_struct *mm, struct address_space *mapping)
 +{
-+	return -EBADF;
++	struct vm_area_struct *vma;
++	struct zap_details details;
++	int err = 0;
++
++	details.i_mmap_lock = &mapping->i_mmap_lock;
++
++	/*
++	 * If ->mmap_sem is under contention, we continue scanning other
++	 * mms and try again later.
++	 */
++	if (!down_write_trylock(&mm->mmap_sem)) {
++		err = -EAGAIN;
++		goto out;
++	}
++	for (vma = mm->mmap; vma != NULL; vma = vma->vm_next) {
++		if (!vma_is_revocable(vma))
++			continue;
++
++		if (!vma_matches(vma, mapping->host))
++			continue;
++
++		err = revoke_vma(vma, &details);
++		if (err)
++			break;
++
++		__unlink_file_vma(vma);
++		fput(vma->vm_file);
++		vma->vm_file = NULL;
++	}
++	up_write(&mm->mmap_sem);
++out:
++	return err;
 +}
 +
-+static ssize_t revoked_file_aio_write(struct kiocb *iocb,
-+				      const struct iovec *iov,
-+				      unsigned long nr_segs, loff_t pos)
++/*
++ *	LOCKING: spin_lock(&mapping->i_mmap_lock)
++ */
++static void revoke_mapping_tree(struct address_space *mapping)
 +{
-+	return -EBADF;
++	struct vm_area_struct *vma;
++	struct prio_tree_iter iter;
++	int try_again;
++
++restart:
++	try_again = 0;
++
++	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, 0, ULONG_MAX) {
++		int err;
++
++		if (!vma_is_revocable(vma))
++			continue;
++
++		if (!vma_matches(vma, mapping->host))
++			continue;
++
++		err = revoke_mm(vma->vm_mm, mapping);
++		if (err == -EAGAIN)
++			try_again = 1;
++
++		goto restart;
++	}
++	if (try_again) {
++		cond_resched();
++		goto restart;
++	}
 +}
 +
-+static int revoked_file_readdir(struct file *filp, void *dirent,
-+				filldir_t filldir)
++/*
++ *	LOCKING: spin_lock(&mapping->i_mmap_lock)
++ */
++static void revoke_mapping_list(struct address_space *mapping)
 +{
-+	return -EBADF;
++	struct vm_area_struct *vma;
++	int try_again;
++
++restart:
++	try_again = 0;
++
++	list_for_each_entry(vma, &mapping->i_mmap_nonlinear, shared.vm_set.list) {
++		int err;
++
++		if (!vma_is_revocable(vma))
++			continue;
++
++		if (!vma_matches(vma, mapping->host))
++			continue;
++
++		err = revoke_mm(vma->vm_mm, mapping);
++		if (err == -EAGAIN) {
++			try_again = 1;
++			continue;
++		}
++		if (err == -EINTR)
++			goto restart;
++	}
++	if (try_again) {
++		cond_resched();
++		goto restart;
++	}
 +}
 +
-+static unsigned int revoked_file_poll(struct file *filp, poll_table *wait)
++static void revoke_mapping(struct address_space *mapping)
 +{
-+	return POLLERR;
++	spin_lock(&mapping->i_mmap_lock);
++	if (unlikely(!prio_tree_empty(&mapping->i_mmap)))
++		revoke_mapping_tree(mapping);
++	if (unlikely(!list_empty(&mapping->i_mmap_nonlinear)))
++		revoke_mapping_list(mapping);
++	spin_unlock(&mapping->i_mmap_lock);
 +}
 +
-+static int revoked_file_ioctl(struct inode *inode, struct file *filp,
-+			      unsigned int cmd, unsigned long arg)
++static inline void revoke_unlock(struct inode *inode)
 +{
-+	return -EBADF;
++	mutex_lock(&inode->i_mutex);
++	inode->i_flags &= ~S_REVOKE_LOCK;
++	mutex_unlock(&inode->i_mutex);
 +}
 +
-+static long revoked_file_unlocked_ioctl(struct file *file, unsigned cmd,
-+					unsigned long arg)
++/*
++ * 	Returns true if revoke lock was acquired
++ */
++static inline bool revoke_trylock(struct inode *inode)
 +{
-+	return -EBADF;
++	bool ret = false;
++
++	mutex_lock(&inode->i_mutex);
++	if (!IS_REVOKE_LOCKED(inode)) {
++		inode->i_flags |= S_REVOKE_LOCK;
++		ret = true;
++	}
++	mutex_unlock(&inode->i_mutex);
++
++	return ret;
 +}
 +
-+static long revoked_file_compat_ioctl(struct file *file, unsigned int cmd,
-+				      unsigned long arg)
++static int do_revoke(struct inode *inode)
 +{
-+	return -EBADF;
-+}
++	struct address_space *mapping = inode->i_mapping;
++	int err = 0;
 +
-+static int revoked_file_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	return -EBADF;
-+}
++	if (current->fsuid != inode->i_uid && !capable(CAP_FOWNER))
++		return -EPERM;
 +
-+static int revoked_file_open(struct inode *inode, struct file *filp)
-+{
-+	return -EBADF;
-+}
++	if (!inode->i_sb->s_bdev || !inode->i_fop->revoke)
++		return -EOPNOTSUPP;
 +
-+static int revoked_file_flush(struct file *file, fl_owner_t id)
-+{
-+	return 0;
-+}
++	/*
++	 * Take the S_REVOKE_LOCK to avoid concurrent revoke operations on the
++	 * same inode.
++	 */
++	if (!revoke_trylock(inode))
++		return -EBUSY;
 +
-+static int revoked_file_release(struct inode *inode, struct file *filp)
-+{
-+	return -EBADF;
-+}
++	revoke_mapping(mapping);
 +
-+static int revoked_file_fsync(struct file *file, struct dentry *dentry,
-+			      int datasync)
-+{
-+	return -EBADF;
-+}
++	err = revoke_break_cow(inode);
++	if (err)
++		goto failed;
 +
-+static int revoked_file_aio_fsync(struct kiocb *iocb, int datasync)
-+{
-+	return -EBADF;
-+}
++	err = revoke_files(inode);
++	if (err)
++		goto failed;
 +
-+static int revoked_file_fasync(int fd, struct file *filp, int on)
-+{
-+	return -EBADF;
-+}
++	/*
++	 * Make pending reads fail.
++	 */
++	err = invalidate_inode_pages2(inode->i_mapping);
++	if (err)
++		goto failed;
 +
-+static int revoked_file_lock(struct file *file, int cmd, struct file_lock *fl)
-+{
-+	return -EBADF;
-+}
-+
-+static ssize_t revoked_file_sendpage(struct file *file, struct page *page,
-+				     int off, size_t len, loff_t *pos,
-+				     int more)
-+{
-+	return -EBADF;
-+}
-+
-+static unsigned long revoked_file_get_unmapped_area(struct file *file,
-+						    unsigned long addr,
-+						    unsigned long len,
-+						    unsigned long pgoff,
-+						    unsigned long flags)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_file_check_flags(int flags)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_file_dir_notify(struct file *file, unsigned long arg)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_file_flock(struct file *filp, int cmd, struct file_lock *fl)
-+{
-+	return -EBADF;
-+}
-+
-+static ssize_t revoked_file_splice_write(struct pipe_inode_info *pipe,
-+					 struct file *out, loff_t *ppos,
-+					 size_t len, unsigned int flags)
-+{
-+	return -EBADF;
-+}
-+
-+static ssize_t revoked_file_splice_read(struct file *in, loff_t *ppos,
-+					struct pipe_inode_info *pipe,
-+					size_t len, unsigned int flags)
-+{
-+	return -EBADF;
-+}
-+
-+static const struct file_operations revoked_file_ops = {
-+	.llseek = revoked_file_llseek,
-+	.read = revoked_file_read,
-+	.write = revoked_file_write,
-+	.aio_read = revoked_file_aio_read,
-+	.aio_write = revoked_file_aio_write,
-+	.readdir = revoked_file_readdir,
-+	.poll = revoked_file_poll,
-+	.ioctl = revoked_file_ioctl,
-+	.unlocked_ioctl = revoked_file_unlocked_ioctl,
-+	.compat_ioctl = revoked_file_compat_ioctl,
-+	.mmap = revoked_file_mmap,
-+	.open = revoked_file_open,
-+	.flush = revoked_file_flush,
-+	.release = revoked_file_release,
-+	.fsync = revoked_file_fsync,
-+	.aio_fsync = revoked_file_aio_fsync,
-+	.fasync = revoked_file_fasync,
-+	.lock = revoked_file_lock,
-+	.sendpage = revoked_file_sendpage,
-+	.get_unmapped_area = revoked_file_get_unmapped_area,
-+	.check_flags = revoked_file_check_flags,
-+	.dir_notify = revoked_file_dir_notify,
-+	.flock = revoked_file_flock,
-+	.splice_write = revoked_file_splice_write,
-+	.splice_read = revoked_file_splice_read,
-+};
-+
-+static const struct file_operations revoked_special_file_ops = {
-+	.llseek = revoked_file_llseek,
-+	.read = revoked_special_file_read,
-+	.write = revoked_file_write,
-+	.aio_read = revoked_file_aio_read,
-+	.aio_write = revoked_file_aio_write,
-+	.readdir = revoked_file_readdir,
-+	.poll = revoked_file_poll,
-+	.ioctl = revoked_file_ioctl,
-+	.unlocked_ioctl = revoked_file_unlocked_ioctl,
-+	.compat_ioctl = revoked_file_compat_ioctl,
-+	.mmap = revoked_file_mmap,
-+	.open = revoked_file_open,
-+	.flush = revoked_file_flush,
-+	.release = revoked_file_release,
-+	.fsync = revoked_file_fsync,
-+	.aio_fsync = revoked_file_aio_fsync,
-+	.fasync = revoked_file_fasync,
-+	.lock = revoked_file_lock,
-+	.sendpage = revoked_file_sendpage,
-+	.get_unmapped_area = revoked_file_get_unmapped_area,
-+	.check_flags = revoked_file_check_flags,
-+	.dir_notify = revoked_file_dir_notify,
-+	.flock = revoked_file_flock,
-+	.splice_write = revoked_file_splice_write,
-+	.splice_read = revoked_file_splice_read,
-+};
-+
-+static int revoked_inode_create(struct inode *dir, struct dentry *dentry,
-+				int mode, struct nameidata *nd)
-+{
-+	return -EBADF;
-+}
-+
-+static struct dentry *revoked_inode_lookup(struct inode *dir,
-+					   struct dentry *dentry,
-+					   struct nameidata *nd)
-+{
-+	return ERR_PTR(-EBADF);
-+}
-+
-+static int revoked_inode_link(struct dentry *old_dentry, struct inode *dir,
-+			      struct dentry *dentry)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_unlink(struct inode *dir, struct dentry *dentry)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_symlink(struct inode *dir, struct dentry *dentry,
-+				 const char *symname)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_mkdir(struct inode *dir, struct dentry *dentry,
-+			       int mode)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_rmdir(struct inode *dir, struct dentry *dentry)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_mknod(struct inode *dir, struct dentry *dentry,
-+			       int mode, dev_t rdev)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_rename(struct inode *old_dir,
-+				struct dentry *old_dentry,
-+				struct inode *new_dir,
-+				struct dentry *new_dentry)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_readlink(struct dentry *dentry, char __user *buffer,
-+				  int buflen)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_permission(struct inode *inode, int mask,
-+				    struct nameidata *nd)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_getattr(struct vfsmount *mnt, struct dentry *dentry,
-+				 struct kstat *stat)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_setattr(struct dentry *direntry, struct iattr *attrs)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_setxattr(struct dentry *dentry, const char *name,
-+				  const void *value, size_t size, int flags)
-+{
-+	return -EBADF;
-+}
-+
-+static ssize_t revoked_inode_getxattr(struct dentry *dentry, const char *name,
-+				      void *buffer, size_t size)
-+{
-+	return -EBADF;
-+}
-+
-+static ssize_t revoked_inode_listxattr(struct dentry *dentry, char *buffer,
-+				       size_t buffer_size)
-+{
-+	return -EBADF;
-+}
-+
-+static int revoked_inode_removexattr(struct dentry *dentry, const char *name)
-+{
-+	return -EBADF;
-+}
-+
-+static struct inode_operations revoked_inode_ops = {
-+	.create = revoked_inode_create,
-+	.lookup = revoked_inode_lookup,
-+	.link = revoked_inode_link,
-+	.unlink = revoked_inode_unlink,
-+	.symlink = revoked_inode_symlink,
-+	.mkdir = revoked_inode_mkdir,
-+	.rmdir = revoked_inode_rmdir,
-+	.mknod = revoked_inode_mknod,
-+	.rename = revoked_inode_rename,
-+	.readlink = revoked_inode_readlink,
-+	/* follow_link must be no-op, otherwise unmounting this inode
-+	   won't work */
-+	/* put_link returns void */
-+	/* truncate returns void */
-+	.permission = revoked_inode_permission,
-+	.getattr = revoked_inode_getattr,
-+	.setattr = revoked_inode_setattr,
-+	.setxattr = revoked_inode_setxattr,
-+	.getxattr = revoked_inode_getxattr,
-+	.listxattr = revoked_inode_listxattr,
-+	.removexattr = revoked_inode_removexattr,
-+	/* truncate_range returns void */
-+};
-+
-+static int revoked_readpage(struct file *file, struct page *page)
-+{
-+	return -EIO;
-+}
-+
-+static int revoked_writepage(struct page *page, struct writeback_control *wbc)
-+{
-+	return -EIO;
-+}
-+
-+static int revoked_prepare_write(struct file *file, struct page *page,
-+				 unsigned from, unsigned to)
-+{
-+	return -EIO;
-+}
-+
-+static int revoked_commit_write(struct file *file, struct page *page,
-+				unsigned from, unsigned to)
-+{
-+	return -EIO;
-+}
-+
-+static ssize_t revoked_direct_IO(int rw, struct kiocb *iocb,
-+				 const struct iovec *iov, loff_t offset,
-+				 unsigned long nr_segs)
-+{
-+	return -EIO;
-+}
-+
-+static const struct address_space_operations revoked_aops = {
-+	.readpage	= revoked_readpage,
-+	.writepage	= revoked_writepage,
-+	.prepare_write	= revoked_prepare_write,
-+	.commit_write	= revoked_commit_write,
-+	.direct_IO	= revoked_direct_IO,
-+};
-+
-+void make_revoked_file(struct inode *inode, struct file *file)
-+{
-+	if (special_file(inode->i_mode))
-+		file->f_op = &revoked_special_file_ops;
-+	else
-+		file->f_op = &revoked_file_ops;
-+
-+	file->f_pos = 0;
-+}
-+
-+void make_revoked_inode(struct inode *inode)
-+{
++	make_revoked_inode(inode);
 +	remove_inode_hash(inode);
-+
-+	inode->i_atime = inode->i_mtime = inode->i_ctime =
-+	    current_fs_time(inode->i_sb);
-+	inode->i_op = &revoked_inode_ops;
-+
-+	if (special_file(inode->i_mode))
-+		inode->i_fop = &revoked_special_file_ops;
-+	else
-+		inode->i_fop = &revoked_file_ops;
-+
-+	inode->i_mapping->a_ops = &revoked_aops;
++	revoke_aliases(inode);
++failed:
++	revoke_unlock(inode);
++	wake_up(&inode->i_revoke_wait);
++	return err;
 +}
++
++asmlinkage long sys_revokeat(int dfd, const char __user *filename)
++{
++	struct nameidata nd;
++	int err;
++
++	err = __user_walk_fd(dfd, filename, 0, &nd);
++	if (!err) {
++		err = do_revoke(nd.dentry->d_inode);
++		path_release(&nd);
++	}
++	return err;
++}
++
++int generic_file_revoke(struct file *file)
++{
++	return do_fsync(file, 1);
++}
++EXPORT_SYMBOL(generic_file_revoke);
+Index: 2.6/include/linux/fs.h
+===================================================================
+--- 2.6.orig/include/linux/fs.h	2007-12-14 16:40:50.000000000 +0200
++++ 2.6/include/linux/fs.h	2007-12-14 16:40:55.000000000 +0200
+@@ -1191,6 +1191,7 @@ struct file_operations {
+ 	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int);
+ 	ssize_t (*splice_read)(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
+ 	int (*setlease)(struct file *, long, struct file_lock **);
++	int (*revoke) (struct file *);
+ };
+ 
+ struct inode_operations {
+@@ -1824,6 +1825,15 @@ extern ssize_t generic_splice_sendpage(s
+ extern long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
+ 		size_t len, unsigned int flags);
+ 
++/* fs/revoke.c */
++#ifdef CONFIG_MMU
++extern void make_revoked_file(struct inode *, struct file *);
++extern void make_revoked_inode(struct inode *);
++extern int generic_file_revoke(struct file *);
++#else
++#define generic_file_revoke NULL
++#endif
++
+ extern void
+ file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping);
+ extern loff_t no_llseek(struct file *file, loff_t offset, int origin);
+Index: 2.6/include/linux/mm.h
+===================================================================
+--- 2.6.orig/include/linux/mm.h	2007-12-14 16:40:48.000000000 +0200
++++ 2.6/include/linux/mm.h	2007-12-14 16:40:55.000000000 +0200
+@@ -986,6 +986,7 @@ extern int split_vma(struct mm_struct *,
+ extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);
+ extern void __vma_link_rb(struct mm_struct *, struct vm_area_struct *,
+ 	struct rb_node **, struct rb_node *);
++extern void __unlink_file_vma(struct vm_area_struct *);
+ extern void unlink_file_vma(struct vm_area_struct *);
+ extern struct vm_area_struct *copy_vma(struct vm_area_struct **,
+ 	unsigned long addr, unsigned long len, pgoff_t pgoff);
+Index: 2.6/mm/mmap.c
+===================================================================
+--- 2.6.orig/mm/mmap.c	2007-12-14 16:40:49.000000000 +0200
++++ 2.6/mm/mmap.c	2007-12-14 16:40:55.000000000 +0200
+@@ -201,6 +201,17 @@ static void __remove_shared_vm_struct(st
+ }
+ 
+ /*
++ * Requires inode->i_mapping->i_mmap_lock
++ */
++void __unlink_file_vma(struct vm_area_struct *vma)
++{
++	struct file *file = vma->vm_file;
++	struct address_space *mapping = file->f_mapping;
++
++	__remove_shared_vm_struct(vma, file, mapping);
++}
++
++/*
+  * Unlink a file-based vm structure from its prio_tree, to hide
+  * vma from rmap and vmtruncate before freeing its page tables.
+  */
+Index: 2.6/include/linux/magic.h
+===================================================================
+--- 2.6.orig/include/linux/magic.h	2007-11-23 09:58:11.000000000 +0200
++++ 2.6/include/linux/magic.h	2007-12-14 16:40:55.000000000 +0200
+@@ -34,7 +34,7 @@ #define REISERFS_SUPER_MAGIC	0x52654973	
+ #define REISERFS_SUPER_MAGIC_STRING	"ReIsErFs"
+ #define REISER2FS_SUPER_MAGIC_STRING	"ReIsEr2Fs"
+ #define REISER2FS_JR_SUPER_MAGIC_STRING	"ReIsEr3Fs"
+-
++#define REVOKEFS_MAGIC		0x5245564B /* REVK */
+ #define SMB_SUPER_MAGIC		0x517B
+ #define USBDEVICE_SUPER_MAGIC	0x9fa2
+ #define CGROUP_SUPER_MAGIC	0x27e0eb
