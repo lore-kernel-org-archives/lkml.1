@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932477AbXLNCPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbXLNCUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932477AbXLNCPH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 21:15:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757746AbXLNCOy
+	id S932469AbXLNCUd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 21:20:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758384AbXLNCUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 21:14:54 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:46390 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757137AbXLNCOy (ORCPT
+	Thu, 13 Dec 2007 21:20:24 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:3272 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754860AbXLNCUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 21:14:54 -0500
-Date: Fri, 14 Dec 2007 07:44:33 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, vincent.fortier1@ec.gc.ca,
-       Greg KH <gregkh@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
-Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
-Message-ID: <20071214021433.GA7185@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <1197554397.19869.3.camel@lov.site> <1197558120.4936.34.camel@kayak.wul.qc.ec.gc.ca> <1197562981.19869.5.camel@lov.site> <20071213165059.GC4865@elte.hu> <1197565842.19869.11.camel@lov.site> <20071213202125.GA25130@elte.hu>
-MIME-Version: 1.0
+	Thu, 13 Dec 2007 21:20:23 -0500
+Date: Fri, 14 Dec 2007 10:20:13 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: davem@davemloft.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: aead_geniv_* [crypto/seqiv.ko] undefined! (MMOTM stamp-2007-12-13-15-37)
+Message-ID: <20071214022013.GB12426@gondor.apana.org.au>
+References: <200712140203.lBE23kF6021203@agora.fsl.cs.sunysb.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071213202125.GA25130@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200712140203.lBE23kF6021203@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 09:21:26PM +0100, Ingo Molnar wrote:
+On Thu, Dec 13, 2007 at 09:03:46PM -0500, Erez Zadok wrote:
+> I'm getting undefined symbols while building MMOTM kernel
+> stamp-2007-12-13-15-37:
 > 
-> * Kay Sievers <kay.sievers@vrfy.org> wrote:
-> 
-> > > > > This one also fails to apply properly at the exact same place 
-> > > > > has Ingo's previously posted patch.  Would need to backport his 
-> > > > > one.
-> > > > 
-> > > > It depends on a completely reworked sysfs logic, I don't think it 
-> > > > makes any sense to backport that.
-> > > 
-> > > well, if it fixes a live bug in a still supported stable kernel 
-> > > release...
-> > > 
-> > > Vincent, could you try to just get rid of all actual uses of 
-> > > se->attr.owner, within fs/sysfs/*.c? Something like the patch below. 
-> > > (totally untested - might be fatally broken as well)
-> > 
-> > How can you think that this is not needed? You can not remove it with 
-> > sysfs you are patching. Hope this explains it: 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0ab66088c855eca68513bdd7442a426c4b374ced
-> 
-> yeah - as i said it might be fatally broken (in fact it is). Do we 
-> understand why Vincent got the crashes with vanilla 2.6.22.14 ?
-> 
+>   MODPOST 32 modules
+> ERROR: "aead_geniv_exit" [crypto/seqiv.ko] undefined!
+> ERROR: "aead_geniv_alloc" [crypto/seqiv.ko] undefined!
+> ERROR: "aead_geniv_init" [crypto/seqiv.ko] undefined!
+> ERROR: "aead_geniv_free" [crypto/seqiv.ko] undefined!
+> make[1]: *** [__modpost] Error 1
 
-My guess is some variables have probably been left uninitialized. I am a
-bit too scared to look into sysfs parts of the code now.
+Sorry.  I've added the following patch to fix this.
 
+Thanks,
 -- 
-regards,
-Dhaval
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index 304ecc7..237dfa2 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -34,6 +34,7 @@ config CRYPTO_BLKCIPHER
+ 
+ config CRYPTO_SEQIV
+ 	tristate "Sequence Number IV Generator"
++	select CRYPTO_AEAD
+ 	select CRYPTO_BLKCIPHER
+ 	help
+ 	  This IV generator generates an IV based on a sequence number by
