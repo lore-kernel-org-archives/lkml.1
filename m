@@ -1,117 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763894AbXLNTaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762099AbXLNTa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763894AbXLNTaU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:30:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758565AbXLNTY1
+	id S1762099AbXLNTa4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:30:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758628AbXLNTYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:24:27 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38879 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753826AbXLNTXg (ORCPT
+	Fri, 14 Dec 2007 14:24:30 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47256 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754938AbXLNTXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 14 Dec 2007 14:23:36 -0500
-Message-Id: <20071214154442.394650000@chello.nl>
+Message-Id: <20071214154441.250857000@chello.nl>
 References: <20071214153907.770251000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 14 Dec 2007 16:39:31 +0100
+Date: Fri, 14 Dec 2007 16:39:22 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 24/29] mm: methods for teaching filesystems about PG_swapcache pages
-Content-Disposition: inline; filename=mm-page_file_methods.patch
+Subject: [PATCH 15/29] netvm: network reserve infrastructure
+Content-Disposition: inline; filename=netvm-reserve.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to teach filesystems to handle swap cache pages, two new page
-functions are introduced:
+Provide the basic infrastructure to reserve and charge/account network memory.
 
-  pgoff_t page_file_index(struct page *);
-  struct address_space *page_file_mapping(struct page *);
+We provide the following reserve tree:
 
-page_file_index - gives the offset of this page in the file in PAGE_CACHE_SIZE
-blocks. Like page->index is for mapped pages, this function also gives the
-correct index for PG_swapcache pages.
+1)  total network reserve
+2)    network TX reserve
+3)      protocol TX pages
+4)    network RX reserve
+5)      SKB data reserve
 
-page_file_mapping - gives the mapping backing the actual page; that is for
-swap cache pages it will give swap_file->f_mapping.
+[1] is used to make all the network reserves a single subtree, for easy
+manipulation.
 
-page_offset() is modified to use page_file_index(), so that it will give the
-expected result, even for PG_swapcache pages.
+[2] and [4] are merely for eastetic reasons.
+
+The TX pages reserve [3] is assumed bounded by it being the upper bound of
+memory that can be used for sending pages (not quite true, but good enough)
+
+The SKB reserve [5] is an aggregate reserve, which is used to charge SKB data
+against in the fallback path.
+
+The consumers for these reserves are sockets marked with:
+  SOCK_MEMALLOC
+
+Such sockets are to be used to service the VM (iow. to swap over). They
+must be handled kernel side, exposing such a socket to user-space is a BUG.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/mm.h      |   26 ++++++++++++++++++++++++++
- include/linux/pagemap.h |    2 +-
- 2 files changed, 27 insertions(+), 1 deletion(-)
+ include/net/sock.h |   35 +++++++++++++++-
+ net/Kconfig        |    3 +
+ net/core/sock.c    |  113 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 150 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/include/linux/mm.h
+Index: linux-2.6/include/net/sock.h
 ===================================================================
---- linux-2.6.orig/include/linux/mm.h
-+++ linux-2.6/include/linux/mm.h
-@@ -14,6 +14,7 @@
- #include <linux/mm_types.h>
+--- linux-2.6.orig/include/net/sock.h
++++ linux-2.6/include/net/sock.h
+@@ -51,6 +51,7 @@
+ #include <linux/skbuff.h>	/* struct sk_buff */
+ #include <linux/mm.h>
  #include <linux/security.h>
- #include <linux/swap.h>
-+#include <linux/fs.h>
++#include <linux/reserve.h>
  
- struct mempolicy;
- struct anon_vma;
-@@ -608,6 +609,16 @@ static inline struct swap_info_struct *p
- 	return get_swap_info_struct(swp_type(swap));
+ #include <linux/filter.h>
+ 
+@@ -403,6 +404,7 @@ enum sock_flags {
+ 	SOCK_RCVTSTAMPNS, /* %SO_TIMESTAMPNS setting */
+ 	SOCK_LOCALROUTE, /* route locally only, %SO_DONTROUTE setting */
+ 	SOCK_QUEUE_SHRUNK, /* write queue has been shrunk recently */
++	SOCK_MEMALLOC, /* the VM depends on us - make sure we're serviced */
+ };
+ 
+ static inline void sock_copy_flags(struct sock *nsk, struct sock *osk)
+@@ -425,9 +427,40 @@ static inline int sock_flag(struct sock 
+ 	return test_bit(flag, &sk->sk_flags);
  }
  
-+static inline
-+struct address_space *page_file_mapping(struct page *page)
++static inline int sk_has_memalloc(struct sock *sk)
 +{
-+#ifdef CONFIG_SWAP_FILE
-+	if (unlikely(PageSwapCache(page)))
-+		return page_swap_info(page)->swap_file->f_mapping;
-+#endif
-+	return page->mapping;
-+}
-+
- static inline int PageAnon(struct page *page)
- {
- 	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;
-@@ -625,6 +636,21 @@ static inline pgoff_t page_index(struct 
- }
- 
- /*
-+ * Return the file index of the page. Regular pagecache pages use ->index
-+ * whereas swapcache pages use swp_offset(->private)
-+ */
-+static inline pgoff_t page_file_index(struct page *page)
-+{
-+#ifdef CONFIG_SWAP_FILE
-+	if (unlikely(PageSwapCache(page))) {
-+		swp_entry_t swap = { .val = page_private(page) };
-+		return swp_offset(swap);
-+	}
-+#endif
-+	return page->index;
++	return sock_flag(sk, SOCK_MEMALLOC);
 +}
 +
 +/*
-  * The atomic page->_mapcount, like _count, starts from -1:
-  * so that transitions both from it and to it can be tracked,
-  * using atomic_inc_and_test and atomic_add_negative(-1).
-Index: linux-2.6/include/linux/pagemap.h
-===================================================================
---- linux-2.6.orig/include/linux/pagemap.h
-+++ linux-2.6/include/linux/pagemap.h
-@@ -145,7 +145,7 @@ extern void __remove_from_page_cache(str
-  */
- static inline loff_t page_offset(struct page *page)
++ * Guestimate the per request queue TX upper bound.
++ *
++ * Max packet size is 64k, and we need to reserve that much since the data
++ * might need to bounce it. Double it to be on the safe side.
++ */
++#define TX_RESERVE_PAGES DIV_ROUND_UP(2*65536, PAGE_SIZE)
++
++extern atomic_t memalloc_socks;
++
++extern struct mem_reserve net_rx_reserve;
++extern struct mem_reserve net_skb_reserve;
++
++static inline int sk_memalloc_socks(void)
++{
++	return atomic_read(&memalloc_socks);
++}
++
++extern int rx_emergency_get(int bytes);
++extern int rx_emergency_get_overcommit(int bytes);
++extern void rx_emergency_put(int bytes);
++
++extern int sk_adjust_memalloc(int socks, long tx_reserve_pages);
++extern int sk_set_memalloc(struct sock *sk);
++extern int sk_clear_memalloc(struct sock *sk);
++
+ static inline gfp_t sk_allocation(struct sock *sk, gfp_t gfp_mask)
  {
--	return ((loff_t)page->index) << PAGE_CACHE_SHIFT;
-+	return ((loff_t)page_file_index(page)) << PAGE_CACHE_SHIFT;
+-	return gfp_mask;
++	return gfp_mask | (sk->sk_allocation & __GFP_MEMALLOC);
  }
  
- static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
+ static inline void sk_acceptq_removed(struct sock *sk)
+Index: linux-2.6/net/core/sock.c
+===================================================================
+--- linux-2.6.orig/net/core/sock.c
++++ linux-2.6/net/core/sock.c
+@@ -112,6 +112,7 @@
+ #include <linux/tcp.h>
+ #include <linux/init.h>
+ #include <linux/highmem.h>
++#include <linux/reserve.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+@@ -213,6 +214,111 @@ __u32 sysctl_rmem_default __read_mostly 
+ /* Maximal space eaten by iovec or ancilliary data plus some space */
+ int sysctl_optmem_max __read_mostly = sizeof(unsigned long)*(2*UIO_MAXIOV+512);
+ 
++atomic_t memalloc_socks;
++
++static struct mem_reserve net_reserve;
++struct mem_reserve net_rx_reserve;
++struct mem_reserve net_skb_reserve;
++static struct mem_reserve net_tx_reserve;
++static struct mem_reserve net_tx_pages;
++
++EXPORT_SYMBOL_GPL(net_rx_reserve); /* modular ipv6 only */
++EXPORT_SYMBOL_GPL(net_skb_reserve); /* modular ipv6 only */
++
++/*
++ * is there room for another emergency packet?
++ */
++static int __rx_emergency_get(int bytes, bool overcommit)
++{
++	return mem_reserve_kmalloc_charge(&net_skb_reserve, bytes, overcommit);
++}
++
++int rx_emergency_get(int bytes)
++{
++	return __rx_emergency_get(bytes, false);
++}
++
++int rx_emergency_get_overcommit(int bytes)
++{
++	return __rx_emergency_get(bytes, true);
++}
++
++void rx_emergency_put(int bytes)
++{
++	mem_reserve_kmalloc_charge(&net_skb_reserve, -bytes, 0);
++}
++
++/**
++ *	sk_adjust_memalloc - adjust the global memalloc reserve for critical RX
++ *	@socks: number of new %SOCK_MEMALLOC sockets
++ *	@tx_resserve_pages: number of pages to (un)reserve for TX
++ *
++ *	This function adjusts the memalloc reserve based on system demand.
++ *	The RX reserve is a limit, and only added once, not for each socket.
++ *
++ *	NOTE:
++ *	   @tx_reserve_pages is an upper-bound of memory used for TX hence
++ *	   we need not account the pages like we do for RX pages.
++ */
++int sk_adjust_memalloc(int socks, long tx_reserve_pages)
++{
++	int nr_socks;
++	int err;
++
++	err = mem_reserve_pages_add(&net_tx_pages, tx_reserve_pages);
++	if (err)
++		return err;
++
++	nr_socks = atomic_read(&memalloc_socks);
++	if (!nr_socks && socks > 0)
++		err = mem_reserve_connect(&net_reserve, &mem_reserve_root);
++	nr_socks = atomic_add_return(socks, &memalloc_socks);
++	if (!nr_socks && socks)
++		err = mem_reserve_disconnect(&net_reserve);
++
++	if (err)
++		mem_reserve_pages_add(&net_tx_pages, -tx_reserve_pages);
++
++	return err;
++}
++
++/**
++ *	sk_set_memalloc - sets %SOCK_MEMALLOC
++ *	@sk: socket to set it on
++ *
++ *	Set %SOCK_MEMALLOC on a socket and increase the memalloc reserve
++ *	accordingly.
++ */
++int sk_set_memalloc(struct sock *sk)
++{
++	int set = sock_flag(sk, SOCK_MEMALLOC);
++#ifndef CONFIG_NETVM
++	BUG();
++#endif
++	if (!set) {
++		int err = sk_adjust_memalloc(1, 0);
++		if (err)
++			return err;
++
++		sock_set_flag(sk, SOCK_MEMALLOC);
++		sk->sk_allocation |= __GFP_MEMALLOC;
++	}
++	return !set;
++}
++EXPORT_SYMBOL_GPL(sk_set_memalloc);
++
++int sk_clear_memalloc(struct sock *sk)
++{
++	int set = sock_flag(sk, SOCK_MEMALLOC);
++	if (set) {
++		sk_adjust_memalloc(-1, 0);
++		sock_reset_flag(sk, SOCK_MEMALLOC);
++		sk->sk_allocation &= ~__GFP_MEMALLOC;
++	}
++	return set;
++}
++EXPORT_SYMBOL_GPL(sk_clear_memalloc);
++
+ static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
+ {
+ 	struct timeval tv;
+@@ -952,6 +1058,7 @@ void sk_free(struct sock *sk)
+ {
+ 	struct sk_filter *filter;
+ 
++	sk_clear_memalloc(sk);
+ 	if (sk->sk_destruct)
+ 		sk->sk_destruct(sk);
+ 
+@@ -1079,6 +1186,12 @@ void __init sk_init(void)
+ 		sysctl_wmem_max = 131071;
+ 		sysctl_rmem_max = 131071;
+ 	}
++
++	mem_reserve_init(&net_reserve, "total network reserve", NULL);
++	mem_reserve_init(&net_rx_reserve, "network RX reserve", &net_reserve);
++	mem_reserve_init(&net_skb_reserve, "SKB data reserve", &net_rx_reserve);
++	mem_reserve_init(&net_tx_reserve, "network TX reserve", &net_reserve);
++	mem_reserve_init(&net_tx_pages, "protocol TX pages", &net_tx_reserve);
+ }
+ 
+ /*
+Index: linux-2.6/net/Kconfig
+===================================================================
+--- linux-2.6.orig/net/Kconfig
++++ linux-2.6/net/Kconfig
+@@ -238,6 +238,9 @@ endmenu
+ source "net/rfkill/Kconfig"
+ source "net/9p/Kconfig"
+ 
++config NETVM
++	def_bool n
++
+ endif   # if NET
+ endmenu # Networking
+ 
 
 --
 
