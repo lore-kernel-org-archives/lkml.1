@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935242AbXLNWmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935212AbXLNWn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935242AbXLNWmk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 17:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935003AbXLNWjr
+	id S935212AbXLNWn3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 17:43:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935193AbXLNWlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 17:39:47 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59259 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934993AbXLNWjp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 17:39:45 -0500
-Date: Fri, 14 Dec 2007 23:39:47 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org, randy.dunlap@oracle.com,
-       auke-jan.h.kok@intel.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 01/10] e1000e: make E1000E default to the same kconfig
-	setting as E1000
-Message-ID: <20071214223947.GA5403@stusta.de>
-References: <200712140002.lBE02pUb025505@imap1.linux-foundation.org> <4762E9FE.1070707@garzik.org>
+	Fri, 14 Dec 2007 17:41:55 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:46107 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935179AbXLNWly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 17:41:54 -0500
+Date: Fri, 14 Dec 2007 14:23:10 -0800
+From: Greg KH <gregkh@suse.de>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] kobject_add error handling when set name failed
+Message-ID: <20071214222310.GC29375@suse.de>
+References: <20071214092405.GA3361@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4762E9FE.1070707@garzik.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20071214092405.GA3361@darkstar.te-china.tietoenator.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 14, 2007 at 03:39:26PM -0500, Jeff Garzik wrote:
-> akpm@linux-foundation.org wrote:
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->...
-> So I think the breakage that occurs is mitigated by two factors:
-> 1) kernel hackers that do their own configs are expected to be able to 
-> figure this stuff.
-> 2) kernel builders (read: distros, mainly) are expected to have put thought 
-> into the Kconfig selection and driver migration strategies.
->...
-> I would prefer simply to communicate to kernel experts and builders about a 
-> Kconfig issue that could potentially their booting/networking...  because 
-> this patch is only needed if the kernel experts do not already know about a 
-> necessary config update.
+On Fri, Dec 14, 2007 at 05:24:05PM +0800, Dave Young wrote:
+> In kobject_add, when kobject_set_name failed we should put the kobj and return.
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+> 
+> ---
+> lib/kobject.c |   11 ++++++++---
+> 1 file changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff -upr linux/lib/kobject.c linux.new/lib/kobject.c
+> --- linux/lib/kobject.c	2007-12-14 17:14:03.000000000 +0800
+> +++ linux.new/lib/kobject.c	2007-12-14 17:17:48.000000000 +0800
+> @@ -228,8 +228,13 @@ int kobject_add(struct kobject * kobj)
+>  
+>  	if (!(kobj = kobject_get(kobj)))
+>  		return -ENOENT;
+> -	if (!kobj->k_name)
+> -		kobject_set_name(kobj, "NO_NAME");
+> +	if (!kobj->k_name) {
+> +		error = kobject_set_name(kobj, "NO_NAME"));
+> +		if (error) {
+> +			kobject_put(kobj);
+> +			return error;
+> +		}
+> +	}
 
-You miss the vast majority of kconfig users:
+Thanks, but I have a pending patch from Kay in my inbox that messes up
+this patch, as it drops most of this nonsense :)
 
-3) system administrators etc. who for different reasons compile their 
-own kernels but neither are nor want to be kernel developers
+>  	if (!*kobj->k_name) {
+>  		pr_debug("kobject (%p) attempted to be registered with no "
+>  			 "name!\n", kobj);
+> @@ -371,7 +376,7 @@ void kobject_init_ng(struct kobject *kob
+>  		goto error;
+>  	}
+>  	if (!ktype) {
+> -		err_str = "must have a ktype to be initialized properly!\n";
+> +		err_str = "must have a ktype to be initialized properly!";
+>  		goto error;
 
-There's a reason why e.g. LPI requires you to be able to compile your 
-own kernel even for getting a "Junior Level Linux Professional" 
-certificate.
+Oops, good catch, I'll just go add this change to my tree.
 
-Or that one of the authors of "Linux Device drivers" has written a book 
-covering only how to build and run your own kernel.
+thanks,
 
-> 	Jeff
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+greg k-h
