@@ -1,106 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765686AbXLNTfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932896AbXLNTgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765686AbXLNTfr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:35:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbXLNTZW
+	id S932896AbXLNTgP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:36:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbXLNTZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:25:22 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47238 "EHLO
+	Fri, 14 Dec 2007 14:25:25 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47239 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754307AbXLNTXe (ORCPT
+	with ESMTP id S1754324AbXLNTXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 14 Dec 2007 14:23:34 -0500
-Message-Id: <20071214154440.817817000@chello.nl>
+Message-Id: <20071214154440.433894000@chello.nl>
 References: <20071214153907.770251000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 14 Dec 2007 16:39:19 +0100
+Date: Fri, 14 Dec 2007 16:39:16 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 12/29] net: wrap sk->sk_backlog_rcv()
-Content-Disposition: inline; filename=net-backlog.patch
+Subject: [PATCH 09/29] mm: __GFP_MEMALLOC
+Content-Disposition: inline; filename=mm-page_alloc-GFP_EMERGENCY.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wrap calling sk->sk_backlog_rcv() in a function. This will allow extending the
-generic sk_backlog_rcv behaviour.
+__GFP_MEMALLOC will allow the allocation to disregard the watermarks, 
+much like PF_MEMALLOC.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/net/sock.h   |    5 +++++
- net/core/sock.c      |    4 ++--
- net/ipv4/tcp.c       |    2 +-
- net/ipv4/tcp_timer.c |    2 +-
- 4 files changed, 9 insertions(+), 4 deletions(-)
+ include/linux/gfp.h |    3 ++-
+ mm/page_alloc.c     |    4 +++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/include/net/sock.h
+Index: linux-2.6/include/linux/gfp.h
 ===================================================================
---- linux-2.6.orig/include/net/sock.h
-+++ linux-2.6/include/net/sock.h
-@@ -485,6 +485,11 @@ static inline void sk_add_backlog(struct
- 	skb->next = NULL;
- }
+--- linux-2.6.orig/include/linux/gfp.h
++++ linux-2.6/include/linux/gfp.h
+@@ -43,6 +43,7 @@ struct vm_area_struct;
+ #define __GFP_REPEAT	((__force gfp_t)0x400u)	/* Retry the allocation.  Might fail */
+ #define __GFP_NOFAIL	((__force gfp_t)0x800u)	/* Retry for ever.  Cannot fail */
+ #define __GFP_NORETRY	((__force gfp_t)0x1000u)/* Do not retry.  Might fail */
++#define __GFP_MEMALLOC  ((__force gfp_t)0x2000u)/* Use emergency reserves */
+ #define __GFP_COMP	((__force gfp_t)0x4000u)/* Add compound page metadata */
+ #define __GFP_ZERO	((__force gfp_t)0x8000u)/* Return zeroed page on success */
+ #define __GFP_NOMEMALLOC ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
+@@ -88,7 +89,7 @@ struct vm_area_struct;
+ /* Control page allocator reclaim behavior */
+ #define GFP_RECLAIM_MASK (__GFP_WAIT|__GFP_HIGH|__GFP_IO|__GFP_FS|\
+ 			__GFP_NOWARN|__GFP_REPEAT|__GFP_NOFAIL|\
+-			__GFP_NORETRY|__GFP_NOMEMALLOC)
++			__GFP_NORETRY|__GFP_MEMALLOC|__GFP_NOMEMALLOC)
  
-+static inline int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
-+{
-+	return sk->sk_backlog_rcv(sk, skb);
-+}
-+
- #define sk_wait_event(__sk, __timeo, __condition)			\
- 	({	int __rc;						\
- 		release_sock(__sk);					\
-Index: linux-2.6/net/core/sock.c
+ /* Control allocation constraints */
+ #define GFP_CONSTRAINT_MASK (__GFP_HARDWALL|__GFP_THISNODE)
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/net/core/sock.c
-+++ linux-2.6/net/core/sock.c
-@@ -320,7 +320,7 @@ int sk_receive_skb(struct sock *sk, stru
- 		 */
- 		mutex_acquire(&sk->sk_lock.dep_map, 0, 1, _RET_IP_);
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -1560,7 +1560,9 @@ int gfp_to_alloc_flags(gfp_t gfp_mask)
+ 		alloc_flags |= ALLOC_HARDER;
  
--		rc = sk->sk_backlog_rcv(sk, skb);
-+		rc = sk_backlog_rcv(sk, skb);
- 
- 		mutex_release(&sk->sk_lock.dep_map, 1, _RET_IP_);
- 	} else
-@@ -1312,7 +1312,7 @@ static void __release_sock(struct sock *
- 			struct sk_buff *next = skb->next;
- 
- 			skb->next = NULL;
--			sk->sk_backlog_rcv(sk, skb);
-+			sk_backlog_rcv(sk, skb);
- 
- 			/*
- 			 * We are in process context here with softirqs
-Index: linux-2.6/net/ipv4/tcp.c
-===================================================================
---- linux-2.6.orig/net/ipv4/tcp.c
-+++ linux-2.6/net/ipv4/tcp.c
-@@ -1134,7 +1134,7 @@ static void tcp_prequeue_process(struct 
- 	 * necessary */
- 	local_bh_disable();
- 	while ((skb = __skb_dequeue(&tp->ucopy.prequeue)) != NULL)
--		sk->sk_backlog_rcv(sk, skb);
-+		sk_backlog_rcv(sk, skb);
- 	local_bh_enable();
- 
- 	/* Clear memory counter. */
-Index: linux-2.6/net/ipv4/tcp_timer.c
-===================================================================
---- linux-2.6.orig/net/ipv4/tcp_timer.c
-+++ linux-2.6/net/ipv4/tcp_timer.c
-@@ -196,7 +196,7 @@ static void tcp_delack_timer(unsigned lo
- 		NET_INC_STATS_BH(LINUX_MIB_TCPSCHEDULERFAILED);
- 
- 		while ((skb = __skb_dequeue(&tp->ucopy.prequeue)) != NULL)
--			sk->sk_backlog_rcv(sk, skb);
-+			sk_backlog_rcv(sk, skb);
- 
- 		tp->ucopy.memory = 0;
- 	}
+ 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+-		if (!in_irq() && (p->flags & PF_MEMALLOC))
++		if (gfp_mask & __GFP_MEMALLOC)
++			alloc_flags |= ALLOC_NO_WATERMARKS;
++		else if (!in_irq() && (p->flags & PF_MEMALLOC))
+ 			alloc_flags |= ALLOC_NO_WATERMARKS;
+ 		else if (!in_interrupt() &&
+ 				unlikely(test_thread_flag(TIF_MEMDIE)))
 
 --
 
