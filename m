@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935063AbXLNAH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935036AbXLNAJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935063AbXLNAH5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 19:07:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934809AbXLNAHT
+	id S935036AbXLNAJX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 19:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762550AbXLNAJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 19:07:19 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:36858 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934974AbXLNAHQ (ORCPT
+	Thu, 13 Dec 2007 19:09:09 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:41449 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758384AbXLNAJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 19:07:16 -0500
-Date: Thu, 13 Dec 2007 19:06:35 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Remy Bohmer <linux@bohmer.net>
-cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: 2.6.23.9-rt13
-In-Reply-To: <3efb10970712130243t2172907cm31c5d3af29383c8b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0712131903020.13748@gandalf.stny.rr.com>
-References: <1197524036.15001.15.camel@localhost.localdomain>
- <3efb10970712130243t2172907cm31c5d3af29383c8b@mail.gmail.com>
+	Thu, 13 Dec 2007 19:09:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=V8EE51EtTdlQFByqd8u20KsQK8/L9wj+f2ThScIfFNGQ0QD0vLngAShH+selLH+hhoedZmEs7XC2AN3pB74nu1nx3abG4DNSyUzAFg+5gp7YAltlqulW0LOlJLOj2TRrjkc7ncrVBfBuQMpmDceT9uAjoaIkSNHxgClb5bzPZL8=
+Message-ID: <2ed59cbb0712131609r38d736cay4facc07748122cdb@mail.gmail.com>
+Date: Thu, 13 Dec 2007 19:09:05 -0500
+From: "Zurk Tech" <zurktech@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Weird subtle kernel problem (maybe kernel, maybe driver, maybe ???)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+heres what i did on two different machines -
+both had vanilla 2.6.23 kernels from kernel.org, running debian etch,
+all updates.
+first patched with truecrypt driver. second machne loaded with LUKS
+and kernel crypto enabled.
+both machines create 2GB encrypted file and mounted under a directory
+after formatting with mkfs.vfat.
+copy files, do diffs etc and test em. both are fine reading/writing
+files to encrypted space, mount and unmount fine.
+i then load the jdk on both and simple java read write file program.
+works great.
+then i do a new File("test.txt").exists() - test.txt doesnt actually exist.
+truecrypt machine return false as expected. the linux kernel LUKS
+crypto machine returns true.
+also moved from 32 to 64 bits -- same result. tried with different
+jdks from 1.4 to 1.6 latest. same result.
 
-Hi Remy,
-
-This would have been better to send this as two separate
-patches. They are two different issues.
-
-On Thu, 13 Dec 2007, Remy Bohmer wrote:
-> If I compile -rt13 I get some compile warnings on ARM (AT91):
-> 1) This one did not exist in rt1:
-> In file included from kernel/sched.c:911:
-> kernel/sched_rt.c: In function 'dec_rt_tasks':
-> kernel/sched_rt.c:88: warning: unused variable 'highest_prio'
-
-This is from Gregory Haskins' patch. He forgot to compile check for
-warnings on UP again ;-)
-
-> 2)  This one is there already for a much longer time:
-> CC      kernel/rcupreempt.o
-> kernel/rcupreempt.c:1001: warning: 'per_cpu__rcu_dyntick_snapshot'
-> defined but not used
-
-This was a merge conflict being solved incorrectly.
-
->
-> Both warnings are fixed by the attached patch, but warning 2 needs some review.
-> This var is defined twice in this file, 1 in the NO_HZ ifdef, and 1
-> which seems to be not used.
-
-Yeah, I'll look into it since I wrote that usage ;-)
-
-Greg,
-
-Can you merge the first part into your patch and resend it to me.
-
-I'll look at the second one.
-
-Thanks,
-
--- Steve
+i dont get it. and i dont even know how to begin to test it. is this a
+kernel bug ? app bug ? driver bug ? jdk bug ? vfat bug ?
+anyone help diagnose it ?
+-Z-
