@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbXLNAHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935063AbXLNAH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932821AbXLNAHN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 19:07:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934926AbXLNAGA
+	id S935063AbXLNAH5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 19:07:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934809AbXLNAHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 19:06:00 -0500
-Received: from rtr.ca ([76.10.145.34]:1623 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934923AbXLNAF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 19:05:58 -0500
-Message-ID: <4761C8E4.2010900@rtr.ca>
-Date: Thu, 13 Dec 2007 19:05:56 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 13 Dec 2007 19:07:19 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:36858 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934974AbXLNAHQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 19:07:16 -0500
+Date: Thu, 13 Dec 2007 19:06:35 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Remy Bohmer <linux@bohmer.net>
+cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: 2.6.23.9-rt13
+In-Reply-To: <3efb10970712130243t2172907cm31c5d3af29383c8b@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0712131903020.13748@gandalf.stny.rr.com>
+References: <1197524036.15001.15.camel@localhost.localdomain>
+ <3efb10970712130243t2172907cm31c5d3af29383c8b@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       jens.axboe@oracle.com, lkml@rtr.ca, matthew@wil.cx,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-mm@kvack.org, mel@csn.ul.ie
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-References: <20071213185326.GQ26334@parisc-linux.org>	<4761821F.3050602@rtr.ca>	<20071213192633.GD10104@kernel.dk>	<4761883A.7050908@rtr.ca>	<476188C4.9030802@rtr.ca>	<20071213193937.GG10104@kernel.dk>	<47618B0B.8020203@rtr.ca>	<20071213195350.GH10104@kernel.dk>	<20071213200219.GI10104@kernel.dk>	<476190BE.9010405@rtr.ca>	<20071213200958.GK10104@kernel.dk>	<20071213140207.111f94e2.akpm@linux-foundation.org>	<1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org> <4761B32A.3070201@rtr.ca> <4761BCB4.1060601@rtr.ca>
-In-Reply-To: <4761BCB4.1060601@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Mark Lord wrote:
->> Andrew Morton wrote:
->>> On Thu, 13 Dec 2007 17:15:06 -0500
->>> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
->>>
->>>> On Thu, 2007-12-13 at 14:02 -0800, Andrew Morton wrote:
->>>>> On Thu, 13 Dec 2007 21:09:59 +0100
->>>>> Jens Axboe <jens.axboe@oracle.com> wrote:
->>>>>
->>>>>> OK, it's a vm issue,
->>>>> cc linux-mm and probable culprit.
->>>>>
->>>>>>  I have tens of thousand "backward" pages after a
->>>>>> boot - IOW, bvec->bv_page is the page before bvprv->bv_page, not
->>>>>> reverse. So it looks like that bug got reintroduced.
->>>>> Bill Irwin fixed this a couple of years back: changed the page 
->>>>> allocator so
->>>>> that it mostly hands out pages in ascending physical-address order.
->>>>>
->>>>> I guess we broke that, quite possibly in Mel's page allocator rework.
->>>>>
->>>>> It would help if you could provide us with a simple recipe for
->>>>> demonstrating this problem, please.
->>>> The simple way seems to be to malloc a large area, touch every page and
->>>> then look at the physical pages assigned ... they now mostly seem to be
->>>> descending in physical address.
->>>>
->>>
->>> OIC.  -mm's /proc/pid/pagemap can be used to get the pfn's...
->> ..
->>
->> I'm actually running the treadmill right now (have been for many 
->> hours, actually,
->> to bisect it to a specific commit.
->>
->> Thought I was almost done, and then noticed that git-bisect doesn't keep
->> the Makefile VERSION lines the same, so I was actually running the wrong
->> kernel after the first few times.. duh.
->>
->> Wrote a script to fix it now.
-> ..
-> 
-> Well, that was a waste of three hours.
-..
 
-Ahh.. it seems to be sensitive to one/both of these:
+Hi Remy,
 
-CONFIG_HIGHMEM64G=y with 4GB RAM:  not so bad, frequently does 20KB - 48KB segments.
-CONFIG_HIGHMEM4G=y  with 2GB RAM:  very severe, rarely does more than 8KB segments.
-CONFIG_HIGHMEM4G=y  with 3GB RAM:  very severe, rarely does more than 8KB segments.
+This would have been better to send this as two separate
+patches. They are two different issues.
 
-So if you want to reproduce this on a large memory machine, use "mem=2GB" for starters.
+On Thu, 13 Dec 2007, Remy Bohmer wrote:
+> If I compile -rt13 I get some compile warnings on ARM (AT91):
+> 1) This one did not exist in rt1:
+> In file included from kernel/sched.c:911:
+> kernel/sched_rt.c: In function 'dec_rt_tasks':
+> kernel/sched_rt.c:88: warning: unused variable 'highest_prio'
 
-Still testing..
+This is from Gregory Haskins' patch. He forgot to compile check for
+warnings on UP again ;-)
 
+> 2)  This one is there already for a much longer time:
+> CC      kernel/rcupreempt.o
+> kernel/rcupreempt.c:1001: warning: 'per_cpu__rcu_dyntick_snapshot'
+> defined but not used
 
+This was a merge conflict being solved incorrectly.
 
+>
+> Both warnings are fixed by the attached patch, but warning 2 needs some review.
+> This var is defined twice in this file, 1 in the NO_HZ ifdef, and 1
+> which seems to be not used.
+
+Yeah, I'll look into it since I wrote that usage ;-)
+
+Greg,
+
+Can you merge the first part into your patch and resend it to me.
+
+I'll look at the second one.
+
+Thanks,
+
+-- Steve
