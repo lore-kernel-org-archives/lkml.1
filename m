@@ -1,88 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763364AbXLNVmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbXLNVwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763364AbXLNVmI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 16:42:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbXLNVl5
+	id S1758164AbXLNVwc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 16:52:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbXLNVwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 16:41:57 -0500
-Received: from mga01.intel.com ([192.55.52.88]:26102 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753428AbXLNVl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 16:41:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,169,1196668800"; 
-   d="scan'208";a="439519725"
-Date: Fri, 14 Dec 2007 13:40:27 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Roland Dreier <rdreier@cisco.com>, venkatesh.pallipadi@intel.com,
-       ak@muc.de, torvalds@linux-foundation.org, gregkh@suse.de,
-       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
-       jesse.barnes@intel.com, linux-kernel@vger.kernel.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [RFC PATCH 06/12] PAT 64b: Add ioremap_wc support
-Message-ID: <20071214214026.GC717@linux-os.sc.intel.com>
-References: <20071213235543.568682000@intel.com> <20071213235712.339088000@intel.com> <ada8x3x7vw5.fsf@cisco.com> <m1sl25q4rc.fsf@ebiederm.dsl.xmission.com> <ada4pel7v6a.fsf@cisco.com> <m1odctq3tn.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
+	Fri, 14 Dec 2007 16:52:22 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39534 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753181AbXLNVwV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 16:52:21 -0500
+Date: Fri, 14 Dec 2007 13:48:23 -0800
+From: Greg KH <greg@kroah.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Alexey Dobriyan <adobriyan@sw.ru>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: Re: kobject ->k_name memory leak
+Message-ID: <20071214214823.GA10305@kroah.com>
+References: <20071203092607.GA22477@localhost.sw.ru> <20071203204716.GA9734@suse.de> <20071203210959.GA1725@martell.zuzino.mipt.ru> <20071203212551.GA11962@suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1odctq3tn.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20071203212551.GA11962@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 09:48:36PM -0700, Eric W. Biederman wrote:
-> Roland Dreier <rdreier@cisco.com> writes:
+On Mon, Dec 03, 2007 at 01:25:51PM -0800, Greg KH wrote:
+> On Tue, Dec 04, 2007 at 12:09:59AM +0300, Alexey Dobriyan wrote:
+> > On Mon, Dec 03, 2007 at 12:47:16PM -0800, Greg KH wrote:
+> > > On Mon, Dec 03, 2007 at 12:26:07PM +0300, Alexey Dobriyan wrote:
+> > > > Hi, Greg!
+> > > > 
+> > > > Commit ce2c9cb0259acd2aed184499ebe41ab00da13b25 aka
+> > > > "kobject: remove the static array for the name" introduced memory leak
+> > > > of a module name after modprobe/rmmod. Apparently for modules ->release
+> > > > callback is NULL.
+> > > > 
+> > > > kobject_cleanup: ->release = 00000000, name = 'foo_sysctl'
+> > > > Pid: 1927, comm: rmmod Not tainted 2.6.24-rc3-e1cca7e8d484390169777b423a7fe46c7021fec1 #5
+> > > >  [<c10d4a58>] kobject_cleanup+0xb8/0xc0
+> > > >  [<c10d4a60>] kobject_release+0x0/0x10
+> > > >  [<c10d587b>] kref_put+0x2b/0xa0
+> > > >  [<c11dbe85>] _spin_unlock+0x25/0x40
+> > > >  [<c1045b78>] free_module+0x78/0xd0
+> > > >  [<c104773f>] sys_delete_module+0x12f/0x1a0
+> > > 
+> > > Hm, _which_ kobject associated with a module, there are 3 of them I
+> > > think :)
+> > 
+> > Ouch!
+> > 
+> > > They should all have a release function, and if they do not, we think
+> > > it's a "static" kobject and it is not safe to free that name.
+> > > 
+> > > I've been working on cleaning this up a lot in the -mm tree with over 80
+> > > patches for the kset/kobject apis and interfaces.
+> > > 
+> > > But if we have a dynamic kobject, and we aren't freeing it properly,
+> > > please let me know which one it is and I'll work to fix it for 2.6.24.
+> > 
+> > The one which is passed to kobject_set_name() in mod_sysfs_init()..
 > 
-> >  > > Also I didn't see anything like pgprot_wc() in the patchset (although
-> >
-> >  > pgprot_writcombined.
-> >
-> > Oh I see it now (pgprot_writecombine() actually).
-> >
-> > However the same comment as before applies: there needs to be a
-> > fallback to pgprot_noncached() for all other architectures so that
-> > drivers can actually use it in a sane way.
-> 
-> Sounds reasonable.
+> That one should be set to the module_ktype, which is in kernel/params.c,
+> so the release function there should... oh crap, there is no release
+> function.  That's a bug.  After I get out of meetings tonight I'll write
+> up a patch for that, unless someone beats me to it :)
 
-We will fix it in next rev.
+Ok, this is a mess.  We can't really have a release function for this
+kobject, as the structure it is embedded it has it's own memory
+management issues.
 
-> It should be the conflict checking that is the actual bottleneck.
-> The rest is just gravy.
+To fix this properly is going to take some major kobject/module surgery,
+it's not a simple fix at all.  I'll tackle it for 2.6.25, as it fits in
+nicely with the other kobject rework that I've already done in the -mm
+tree.
 
-Yes. We are looking for comments for our proposal to track the
-reserved/non-reserved regions some what different.
-This is the critical issue which had been holding off PAT for years now...
+So, for now, can we just live with this tiny memory leak on module
+unload?
 
-<snip from the other mails>
-
-Change x86_64 identity map to only map non-reserved memory. This helps
-to handle UC/WC mapping of reserved region in a much simple manner
-(we don't have to do cpa any more, as such not keep track of the actual
-reference counts. We still track all the usages to keep the mappings
-consistent. We just avoid the headache of splitting mattr regions for
-managing ref counts for every individual usage of the reserved area).
-
-For now, we don't track RAM pages using memattr infrastructure. This is because,
-memattr infrastructure is not enough. i.e., while the page is getting
-tracked using memattr infrastructure, potentially the page can get
-freed(a bug that we need to catch, to avoid attribute aliasing).
-For example, a driver does ioremap_uc and an application mapped the
-same page using /dev/mem. When the driver does iounamp and free the page,
-/dev/mem mapping is still live and we run into aliasing issue.
-
-Can we use the existing page struct to keep track of the attribute
-and usage? /dev/mem mappings then can increment the page ref count and not
-allow to free the page while the /dev/mem mappings are active. And allow
-/dev/mem to map only those pages which are marked reserved (which the driver
-does before doing iomap).
-
-Or when a WB mapping through /dev/mem is active, don't allow any driver
-to map the page as UC.. Can we do this tracking for RAM pages through
-struct page. Or there any issues we should keep in mind..
+Or is the above trace something that users will see when unloading
+modules?
 
 thanks,
-suresh
+
+greg k-h
