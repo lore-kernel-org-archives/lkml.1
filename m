@@ -1,179 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934183AbXLNCNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932477AbXLNCPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934183AbXLNCNU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 21:13:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764820AbXLNCNK
+	id S932477AbXLNCPH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 21:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757746AbXLNCOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 21:13:10 -0500
-Received: from wr-out-0506.google.com ([64.233.184.234]:64649 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759381AbXLNCNH (ORCPT
+	Thu, 13 Dec 2007 21:14:54 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:46390 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757137AbXLNCOy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 21:13:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ucVQQM9sLDDTn0cZmNMzCHvyWMKsMjr8T8vux4wBlpKkp+oJmaqBljmtucidHoDB/UGAC5Y3gi3lTR7Cr/ZnKuZpBHX7d613pv5gPeyke21QKUBlRClLOHY+8/o+a9ZCf/MYTQ/DQpiXJLNLQ8lK5wuF2MvLWWASundZPEDkpOk=
-Message-ID: <a8e1da0712131813w1b651cf5x4048e2362659cc43@mail.gmail.com>
-Date: Fri, 14 Dec 2007 10:13:06 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Nick Kossifidis" <mickflemm@gmail.com>
-Subject: 2.6.24-rc5-mm1 ath5k build issue
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com, mcgrof@gmail.com, linux-wireless@vger.kernel.org,
-       ath5k-devel@lists.ath5k.org,
-       "John W. Linville" <linville@tuxdriver.com>
+	Thu, 13 Dec 2007 21:14:54 -0500
+Date: Fri, 14 Dec 2007 07:44:33 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, vincent.fortier1@ec.gc.ca,
+       Greg KH <gregkh@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@in.ibm.com
+Subject: Re: 2.6.22.14 oops msg with commvault galaxy ?
+Message-ID: <20071214021433.GA7185@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <1197554397.19869.3.camel@lov.site> <1197558120.4936.34.camel@kayak.wul.qc.ec.gc.ca> <1197562981.19869.5.camel@lov.site> <20071213165059.GC4865@elte.hu> <1197565842.19869.11.camel@lov.site> <20071213202125.GA25130@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071213202125.GA25130@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 10, 2007 1:55 AM, Nick Kossifidis <mickflemm@gmail.com> wrote:
-> 2007/12/7, Dave Young <hidave.darkstar@gmail.com>:
->
-> > Hi,
-> >
-> > 2.6.24-rc4-mm1 build failed at drivers/net/wireless/ath5k/base.c for some inline functions like this:
-> > drivers/net/wireless/ath5k/base.c:292: sorry, unimplemented: inlining failed in call to 'ath5k_extend_tsf': function body not available
-> >
-> > fix it with adjust the order of inline function body.
-> >
-> > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-> >
-> > ---
-> > drivers/net/wireless/ath5k/base.c |   67 ++++++++++++++++----------------------
-> > 1 file changed, 29 insertions(+), 38 deletions(-)
-> >
-> > diff -upr linux/drivers/net/wireless/ath5k/base.c linux.new/drivers/net/wireless/ath5k/base.c
-> > --- linux/drivers/net/wireless/ath5k/base.c     2007-12-07 10:01:42.000000000 +0800
-> > +++ linux.new/drivers/net/wireless/ath5k/base.c 2007-12-07 10:01:49.000000000 +0800
-> > @@ -250,8 +250,19 @@ static int         ath5k_rxbuf_setup(struct ath
-> >  static int     ath5k_txbuf_setup(struct ath5k_softc *sc,
-> >                                 struct ath5k_buf *bf,
-> >                                 struct ieee80211_tx_control *ctl);
-> > +
-> >  static inline void ath5k_txbuf_free(struct ath5k_softc *sc,
-> > -                               struct ath5k_buf *bf);
-> > +                               struct ath5k_buf *bf)
-> > +{
-> > +       BUG_ON(!bf);
-> > +       if (!bf->skb)
-> > +               return;
-> > +       pci_unmap_single(sc->pdev, bf->skbaddr, bf->skb->len,
-> > +                       PCI_DMA_TODEVICE);
-> > +       dev_kfree_skb(bf->skb);
-> > +       bf->skb = NULL;
-> > +}
-> > +
-> >  /* Queues setup */
-> >  static struct  ath5k_txq *ath5k_txq_setup(struct ath5k_softc *sc,
-> >                                 int qtype, int subtype);
-> > @@ -278,14 +289,29 @@ static int        ath5k_beacon_setup(struct at
-> >                                 struct ieee80211_tx_control *ctl);
-> >  static void    ath5k_beacon_send(struct ath5k_softc *sc);
-> >  static void    ath5k_beacon_config(struct ath5k_softc *sc);
-> > -static inline u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp);
-> > +
-> > +static inline u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp)
-> > +{
-> > +       u64 tsf = ath5k_hw_get_tsf64(ah);
-> > +
-> > +       if ((tsf & 0x7fff) < rstamp)
-> > +               tsf -= 0x8000;
-> > +
-> > +       return (tsf & ~0x7fff) | rstamp;
-> > +}
-> > +
-> >  /* Interrupt handling */
-> >  static int     ath5k_init(struct ath5k_softc *sc);
-> >  static int     ath5k_stop_locked(struct ath5k_softc *sc);
-> >  static int     ath5k_stop_hw(struct ath5k_softc *sc);
-> >  static irqreturn_t ath5k_intr(int irq, void *dev_id);
-> >  static void    ath5k_tasklet_reset(unsigned long data);
-> > -static inline void ath5k_update_txpow(struct ath5k_softc *sc);
-> > +
-> > +static inline void ath5k_update_txpow(struct ath5k_softc *sc)
-> > +{
-> > +       ath5k_hw_set_txpower_limit(sc->ah, 0);
-> > +}
-> > +
-> >  static void    ath5k_calibrate(unsigned long data);
-> >  /* LED functions */
-> >  static void    ath5k_led_off(unsigned long data);
-> > @@ -1341,21 +1367,6 @@ err_unmap:
-> >         return ret;
-> >  }
-> >
-> > -static inline void
-> > -ath5k_txbuf_free(struct ath5k_softc *sc, struct ath5k_buf *bf)
-> > -{
-> > -       BUG_ON(!bf);
-> > -       if (!bf->skb)
-> > -               return;
-> > -       pci_unmap_single(sc->pdev, bf->skbaddr, bf->skb->len,
-> > -                       PCI_DMA_TODEVICE);
-> > -       dev_kfree_skb(bf->skb);
-> > -       bf->skb = NULL;
-> > -}
-> > -
-> > -
-> > -
-> > -
-> >  /**************\
-> >  * Queues setup *
-> >  \**************/
-> > @@ -2046,20 +2057,6 @@ ath5k_beacon_config(struct ath5k_softc *
-> >  #undef TSF_TO_TU
-> >  }
-> >
-> > -static inline
-> > -u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp)
-> > -{
-> > -       u64 tsf = ath5k_hw_get_tsf64(ah);
-> > -
-> > -       if ((tsf & 0x7fff) < rstamp)
-> > -               tsf -= 0x8000;
-> > -
-> > -       return (tsf & ~0x7fff) | rstamp;
-> > -}
-> > -
-> > -
-> > -
-> > -
-> >  /********************\
-> >  * Interrupt handling *
-> >  \********************/
-> > @@ -2295,12 +2292,6 @@ ath5k_tasklet_reset(unsigned long data)
-> >         ath5k_reset(sc->hw);
-> >  }
-> >
-> > -static inline void
-> > -ath5k_update_txpow(struct ath5k_softc *sc)
-> > -{
-> > -       ath5k_hw_set_txpower_limit(sc->ah, 0);
-> > -}
-> > -
-> >  /*
-> >   * Periodically recalibrate the PHY to account
-> >   * for temperature/environment changes.
-> >
->
-> We'll change their order in the code, plz keep prototype declarations
-> clean. I'll submit a patch asap on this.
->
+On Thu, Dec 13, 2007 at 09:21:26PM +0100, Ingo Molnar wrote:
+> 
+> * Kay Sievers <kay.sievers@vrfy.org> wrote:
+> 
+> > > > > This one also fails to apply properly at the exact same place 
+> > > > > has Ingo's previously posted patch.  Would need to backport his 
+> > > > > one.
+> > > > 
+> > > > It depends on a completely reworked sysfs logic, I don't think it 
+> > > > makes any sense to backport that.
+> > > 
+> > > well, if it fixes a live bug in a still supported stable kernel 
+> > > release...
+> > > 
+> > > Vincent, could you try to just get rid of all actual uses of 
+> > > se->attr.owner, within fs/sysfs/*.c? Something like the patch below. 
+> > > (totally untested - might be fatally broken as well)
+> > 
+> > How can you think that this is not needed? You can not remove it with 
+> > sysfs you are patching. Hope this explains it: 
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0ab66088c855eca68513bdd7442a426c4b374ced
+> 
+> yeah - as i said it might be fatally broken (in fact it is). Do we 
+> understand why Vincent got the crashes with vanilla 2.6.22.14 ?
+> 
 
-Hi,
+My guess is some variables have probably been left uninitialized. I am a
+bit too scared to look into sysfs parts of the code now.
 
-2.6.24-rc5-mm1 still can't built.
-
-Regards
-dave
-
-> --
-> GPG ID: 0xD21DB2DB
-> As you read this post global entropy rises. Have Fun ;-)
-> Nick
->
+-- 
+regards,
+Dhaval
