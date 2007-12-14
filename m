@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933260AbXLNNCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbXLNNFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933260AbXLNNCU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 08:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765468AbXLNNCF
+	id S933365AbXLNNFB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 08:05:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765624AbXLNNEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 08:02:05 -0500
-Received: from smtp.cs.aau.dk ([130.225.194.6]:59917 "EHLO smtp.cs.aau.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764715AbXLNNCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 08:02:04 -0500
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
-	to mutex
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Ray Lee <ray-lk@madrabbit.org>,
-       bcm43xx-dev@lists.berlios.de, Daniel Walker <dwalker@mvista.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux@bohmer.net, jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
-       kjwinchester@gmail.com, John Linville <linville@tuxdriver.com>
-In-Reply-To: <200712141331.59410.mb@bu3sch.de>
-References: <20071213003028.676998182@mvista.com>
-	 <200712141239.51809.mb@bu3sch.de> <20071214121617.GE23964@elte.hu>
-	 <200712141331.59410.mb@bu3sch.de>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 14 Dec 2007 13:59:54 +0100
-Message-Id: <1197637194.7549.10.camel@odie.local>
+	Fri, 14 Dec 2007 08:04:53 -0500
+Received: from [194.117.236.238] ([194.117.236.238]:35785 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1765468AbXLNNEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 08:04:52 -0500
+Date: Fri, 14 Dec 2007 18:01:19 +0200
+From: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+Message-ID: <20071214180119.4c492f6c@linux360.ro>
+In-Reply-To: <20071214122048.GA12550@one.firstfloor.org>
+References: <20071214004442.5f9eba88@linux360.ro>
+	<p737ijigr8c.fsf@bingen.suse.de>
+	<20071214143941.2c7dcfb4@linux360.ro>
+	<20071214101720.GA10981@one.firstfloor.org>
+	<20071214154106.4f0b2d8c@linux360.ro>
+	<20071214122048.GA12550@one.firstfloor.org>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 14 Dec 2007 13:20:48 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
+ 
+> AMD doesn't support states deeper than C1 on multi core currently, so 
+> in general they don't matter much right now.
+ 
+Thanks for the info, I wasn't aware of this.
 
-fre, 14 12 2007 kl. 13:31 +0100, skrev Michael Buesch:
-> On Friday 14 December 2007 13:16:17 Ingo Molnar wrote:
-> > 
-> > * Michael Buesch <mb@bu3sch.de> wrote:
-> > 
-> > > > The testers who did nothing but reported that the new driver did not 
-> > > > work on their hardware.
-> > > 
-> > > Which testers?
-> > 
-> > right in this thread Ray Lee is reporting:
-> > 
-> > | | Digging a little farther into it, it looks like b43 is barfing 
-> > | | partway through init as the firmware file it's looking for has 
-> > | | changed names. Perhaps that's the issue. I'll take a longer look at
-        ^^^^^^^^^^^^^^
-Ray probably has version 3 of the firmware.
+> The better solution there is to use HPET instead. Newer systems
+> generally have HPET already enabled in the BIOS and for older systems
+> hpet=force gains more and more support. So try that.
 
-> > | | this all tomorrow.
-> > 
-> > you are really in denial of reality. Just re-read this thread. Upon 
-> > re-reading this thread, try to imagine that you are in place of Ray Lee 
-> > (might be hard), that you had a working bcm43xx driver and that now you 
-> > try to get b43 to work. You are not a kernel hacker who knows this 
-> > driver, just an advanced user who'd like to give you some more feedback 
-> > about your shiny new code.
-> 
-> This user did get the following messages in dmesg:
-> 
-> b43err(dev->wl, "Firmware file \"%s\" not found "
->        "or load failed.\n", path);
+Dynticks won't use the HPET, even if enabled. IIRC, HPET is enabled on
+my system (NVIDIA MCP51) even without "hpet=force". Here's dmesg's
+output on Linux 2.6.24-rc5: 
 
-So the question seems to be why b43 needs version 4, when b43legacy and
-bcm43x uses version 3?
+$ dmesg | grep -Ei "(lapic|hpet|disabling)"Command line: ro hpet=force
+ACPI: HPET 3FFA9730, 0038 (r1 A M I  OEMHPET0  2000727 MSFT       97)
+ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
+ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
+ACPI: HPET id: 0x10de8201 base: 0xfed00000
+Kernel command line: ro hpet=force
+hpet clockevent registered
+TSC calibrated against HPET
+Disabling APIC timer
+hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
+hpet0: 3 32-bit timers, 25000000 Hz
+Time: hpet clocksource has been installed.
+Clockevents: could not switch to one-shot mode: lapic is not functional.
+Clockevents: could not switch to one-shot mode: lapic is not functional.
+Unpacking initramfs...<6>Clockevents: could not switch to one-shot mode:<6>Clockevents: could not switch to one-shot mode: lapic is not functional.
+ lapic is not functional.
+hpet_resources: 0xfed00000 is busy
 
-
-Simon Holm Thøgersen
-
+LAPIC is seemingly disabled (C1E detection code does this), but
+clockevents still tries to use it, instead of relying on HPET. I'll
+look into this, but please give me a heads up if you know more about
+what's happening. Looks like fixing this is better than using LAPIC for
+dynticks (and disabling C1E) on such systems.
