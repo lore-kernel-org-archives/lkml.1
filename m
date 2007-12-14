@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934615AbXLNWgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934704AbXLNWg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934615AbXLNWgg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 17:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765247AbXLNWe1
+	id S934704AbXLNWg6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 17:36:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764026AbXLNWeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 17:34:27 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:4985 "EHLO perches.com"
+	Fri, 14 Dec 2007 17:34:24 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:4989 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757701AbXLNWeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 17:34:18 -0500
+	id S1755713AbXLNWeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 17:34:19 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
-Subject: [PATCH 05/11] drivers/net/niu.c: Use print_mac
-Date: Fri, 14 Dec 2007 14:34:06 -0800
-Message-Id: <1197671652-32492-5-git-send-email-joe@perches.com>
+Subject: [PATCH 07/11] drivers/net/smc911x.c: Use print_mac
+Date: Fri, 14 Dec 2007 14:34:08 -0800
+Message-Id: <1197671652-32492-7-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.7.949.g2221a6
-In-Reply-To: <1197671652-32492-4-git-send-email-joe@perches.com>
+In-Reply-To: <1197671652-32492-6-git-send-email-joe@perches.com>
 References: <1197671652-32492-1-git-send-email-joe@perches.com>
  <1197671652-32492-2-git-send-email-joe@perches.com>
  <1197671652-32492-3-git-send-email-joe@perches.com>
  <1197671652-32492-4-git-send-email-joe@perches.com>
-Message-Id: <5766808cd4c25c37bc7b27864be04ca777b59528.1197671367.git.joe@perches.com>
+ <1197671652-32492-5-git-send-email-joe@perches.com>
+ <1197671652-32492-6-git-send-email-joe@perches.com>
+Message-Id: <d1a31f8685a70676de100f9521e9f5b6f4255fe5.1197671367.git.joe@perches.com>
 In-Reply-To: <9fc484fc034428ab68ecb2711c8456df9e98d56d.1197671367.git.joe@perches.com>
 References: <9fc484fc034428ab68ecb2711c8456df9e98d56d.1197671367.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,29 +33,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/niu.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+ drivers/net/smc911x.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/niu.c b/drivers/net/niu.c
-index abfc61c..8a0f8f8 100644
---- a/drivers/net/niu.c
-+++ b/drivers/net/niu.c
-@@ -7392,12 +7392,10 @@ static void __devinit niu_assign_netdev_ops(struct net_device *dev)
- static void __devinit niu_device_announce(struct niu *np)
- {
- 	struct net_device *dev = np->dev;
--	int i;
-+	DECLARE_MAC_BUF(mac);
+diff --git a/drivers/net/smc911x.c b/drivers/net/smc911x.c
+index 76cc1d3..f503b73 100644
+--- a/drivers/net/smc911x.c
++++ b/drivers/net/smc911x.c
+@@ -2086,10 +2086,9 @@ static int __init smc911x_probe(struct net_device *dev, unsigned long ioaddr)
+ 					"set using ifconfig\n", dev->name);
+ 		} else {
+ 			/* Print the Ethernet address */
+-			printk("%s: Ethernet addr: ", dev->name);
+-			for (i = 0; i < 5; i++)
+-				printk("%2.2x:", dev->dev_addr[i]);
+-			printk("%2.2x\n", dev->dev_addr[5]);
++			DECLARE_MAC_BUF(mac);
++			printk("%s: Ethernet addr: %s\n",
++			       dev->name, print_mac(mac, dev->dev_addr));
+ 		}
  
--	pr_info("%s: NIU Ethernet ", dev->name);
--	for (i = 0; i < 6; i++)
--		printk("%2.2x%c", dev->dev_addr[i],
--		       i == 5 ? '\n' : ':');
-+	pr_info("%s: NIU Ethernet %s\n",
-+		dev->name, print_mac(mac, dev->dev_addr));
- 
- 	pr_info("%s: Port type[%s] mode[%s:%s] XCVR[%s] phy[%s]\n",
- 		dev->name,
+ 		if (lp->phy_type == 0) {
 -- 
 1.5.3.7.949.g2221a6
 
