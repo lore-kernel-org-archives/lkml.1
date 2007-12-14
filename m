@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbXLNSbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbXLNScu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbXLNSbc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 13:31:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbXLNSbZ
+	id S1755799AbXLNScu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 13:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbXLNScn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 13:31:25 -0500
-Received: from mga02.intel.com ([134.134.136.20]:5025 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753412AbXLNSbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 13:31:24 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,168,1196668800"; 
-   d="scan'208";a="241865031"
-Date: Fri, 14 Dec 2007 10:31:12 -0800
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Andi Kleen <ak@muc.de>
-Cc: venkatesh.pallipadi@intel.com, ebiederm@xmission.com, rdreier@cisco.com,
-       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
-       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [RFC PATCH 02/12] PAT 64b: Basic PAT implementation
-Message-ID: <20071214183112.GA2057@linux-os.sc.intel.com>
-References: <20071213235543.568682000@intel.com> <20071213235711.464325000@intel.com> <20071214004212.GA2735@muc.de>
+	Fri, 14 Dec 2007 13:32:43 -0500
+Received: from host.infinivid.com ([64.119.179.76]:47792 "EHLO
+	host.infinivid.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752703AbXLNScn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 13:32:43 -0500
+Subject: Re: PCI resource unavailable on mips
+From: Jon Dufresne <jon.dufresne@infinitevideocorporation.com>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+In-Reply-To: <20071214093945.GA25186@linux-mips.org>
+References: <1197557806.3370.7.camel@microwave.infinitevideocorporation.com>
+	 <20071214093945.GA25186@linux-mips.org>
+Content-Type: text/plain
+Date: Fri, 14 Dec 2007 13:32:40 -0500
+Message-Id: <1197657160.3420.11.camel@microwave.infinitevideocorporation.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071214004212.GA2735@muc.de>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 14, 2007 at 01:42:12AM +0100, Andi Kleen wrote:
-> > +void __cpuinit pat_init(void)
-> > +{
-> > +	/* Set PWT+PCD to Write-Combining. All other bits stay the same */
-> > +	if (cpu_has_pat) {
+
 > 
-> All the old CPUs (PPro etc.) with known PAT bugs need to clear this flag 
-> now in their CPU init functions. It is fine to be aggressive there
-> because these old systems have lived so long without PAT they can do 
-> so forever. So perhaps it's best to just white list it only for newer
-> CPUs on the Intel side at least.
-
-Yes. Enabling this only on relatively newer CPUs is safer. Will do that in next iteration of the patches.
- 
-> Another problem is that there are some popular modules (ATI, Nvidia for once)
-> who reprogram the PAT registers on their own, likely different. Need some way to detect
-> that case I guess, otherwise lots of users will see strange malfunctions.
-> Maybe recheck after module load?
-
-Yes. We can check that at load time. But they can still do bad things at runt ime, like say when 3D gets enabled etc??
-
- 
-> > +                   |||
-> > +		   000 WB         default
-> > +		   010 UC_MINUS   _PAGE_PCD
-> > +		   011 WC         _PAGE_WC
-> > +		   PAT bit unused */
-> > +		pat = PAT(0,WB) | PAT(1,WT) | PAT(2,UC_MINUS) | PAT(3,WC) |
-> > +		      PAT(4,WB) | PAT(5,WT) | PAT(6,UC_MINUS) | PAT(7,WC);
-> > +		rdmsrl(MSR_IA32_CR_PAT, boot_pat_state);
-> > +		wrmsrl(MSR_IA32_CR_PAT, pat);
-> > +		__flush_tlb_all();
-> > +		asm volatile("wbinvd");
+> Odd.  I knew the resource allocation stuff has it's issues for some
+> non-trivial configuration but that one is a new one.  Which makes me
+> wonder if your platform runs the PCI code in probe-only mode where it
+> will not actually assign resources but only inherit the whole PCI setup
+> except interrupt routing from the firmware.
 > 
-> Have you double checked this is the full procedure from the manual? iirc there
-> were some steps missing.
+> What MIPS platform do you use?  I'd like to take a look at its PCI setup
+> code.
+> 
 
+I am using the MDS 810 STB as provided by MDS
+(http://www.mds.com/products/product.asp?prod=MDS-810). The kernel and
+entire environment (except my driver) was set up by MDS. uname output is
+as follows.
 
-Checking the manual for this. You are right, we had missed some steps here.
-Actually, manual says on MP, PAT MSR on all CPUs must be consistent (even when they are not really using it in their page tables.
-So, this will change the init and shutdown parts significantly and there may be some challenges with CPU offline and KEXEC. We will redo this part in next iteration.
+ # uname -a
+Linux 10.41.13.87 2.6.19PNX8550 #1 Wed Nov 21 14:55:52 EST 2007 mips
+unknown
+
+If I can provide additional information for you I'd be happy to help.
 
 Thanks,
-Venki
+Jon
+
