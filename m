@@ -1,144 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764196AbXLNJtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbXLNJv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764196AbXLNJtt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 04:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757072AbXLNJtl
+	id S1753942AbXLNJv0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 04:51:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbXLNJvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 04:49:41 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55664 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751459AbXLNJtj (ORCPT
+	Fri, 14 Dec 2007 04:51:18 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59810 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757072AbXLNJvQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 04:49:39 -0500
-Subject: Re: [PATCH]Avoid the overflow when calculate the proportion of bdi
-	quota
-From: Peter Zijlstra <peterz@infradead.org>
-To: zhejiang <zhe.jiang@intel.com>
-Cc: linux-kernel@vger.kernel.org, yanmin_zhang@linux.intel.com
-In-Reply-To: <1197622070.6895.33.camel@twins>
-References: <1197516632.18076.5.camel@localhost.localdomain>
-	 <1197582871.3430.1.camel@lappy>
-	 <1197620803.22733.13.camel@localhost.localdomain>
-	 <1197622070.6895.33.camel@twins>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 10:49:36 +0100
-Message-Id: <1197625776.6895.36.camel@twins>
+	Fri, 14 Dec 2007 04:51:16 -0500
+Date: Fri, 14 Dec 2007 01:49:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ego@in.ibm.com
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       jirislaby@gmail.com, Gregory Haskins <ghaskins@novell.com>
+Subject: Re: 2.6.24-rc5-mm1
+Message-Id: <20071214014906.eb2644f4.akpm@linux-foundation.org>
+In-Reply-To: <20071213122802.GA30427@in.ibm.com>
+References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
+	<20071213122802.GA30427@in.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 13 Dec 2007 17:58:02 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
 
-On Fri, 2007-12-14 at 09:47 +0100, Peter Zijlstra wrote:
-
-> How about something like this:
+> Hi Andrew, 
+> On Thu, Dec 13, 2007 at 02:40:50AM -0800, Andrew Morton wrote:
+> > 
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/
+> > 
+> > - If something goes wrong with a PCI device's probing or initialisation, try
+> >   reverting pci-disable-decoding-during-sizing-of-bars.patch.
+> > 
+> > - git-sched was dropped due to breaking suspend-to-RAM.
 > 
-> diff --git a/lib/proportions.c b/lib/proportions.c
-> index 332d8c5..4afb330 100644
-> --- a/lib/proportions.c
-> +++ b/lib/proportions.c
-> @@ -190,6 +190,8 @@ prop_adjust_shift(int *pl_shift, unsigned long *pl_period, int new_shift)
->   * PERCPU
->   */
->  
-> +#define PROP_BATCH (8*(1+ilog2(nr_cpu_ids)))
-> +
->  int prop_local_init_percpu(struct prop_local_percpu *pl)
->  {
->  	spin_lock_init(&pl->lock);
-> @@ -203,6 +205,16 @@ void prop_local_destroy_percpu(struct prop_local_percpu *pl)
->  	percpu_counter_destroy(&pl->events);
->  }
->  
-> +static unsigned long prop_percpu_read(struct prop_local_percpu *pl)
-> +{
-> +	unsigned long val = percpu_counter_read(&pl->events);
-> +
-> +	if (val < (nr_cpu_ids * PROP_BATCH))
-> +		val = percpu_counter_sum(&pl->events);
-> +
-> +	return val;
-> +}
-> +
->  /*
->   * Catch up with missed period expirations.
->   *
-> @@ -241,7 +253,7 @@ void prop_norm_percpu(struct prop_global *pg, struct prop_local_percpu *pl)
->  	 * can never result in a negative number.
->  	 */
->  	while (pl->period != global_period) {
-> -		unsigned long val = percpu_counter_read(&pl->events);
-> +		unsigned long val = prop_percpu_read(pl);
->  		unsigned long half = (val + 1) >> 1;
->  
->  		/*
-> @@ -252,7 +264,7 @@ void prop_norm_percpu(struct prop_global *pg, struct prop_local_percpu *pl)
->  		if (!val)
->  			break;
->  
-> -		percpu_counter_add(&pl->events, -half);
-> +		__percpu_counter_add(&pl->events, -half, PROP_BATCH);
->  		pl->period += period;
->  	}
->  	pl->period = global_period;
-> @@ -267,7 +279,7 @@ void __prop_inc_percpu(struct prop_descriptor *pd, struct prop_local_percpu *pl)
->  	struct prop_global *pg = prop_get_global(pd);
->  
->  	prop_norm_percpu(pg, pl);
-> -	percpu_counter_add(&pl->events, 1);
-> +	__percpu_counter_add(&pl->events, 1, PROP_BATCH);
->  	percpu_counter_add(&pg->events, 1);
->  	prop_put_global(pd, pg);
->  }
+> Is it the same suspend-to-RAM problem that Jiri Slaby reported 
+> here --> http://lkml.org/lkml/2007/12/7/125
+> 
+> The problem has been identified and a fix patch was provided.
 > 
 
-Might as well stack something like this on top:
+Here we go...
 
-Index: linux-2.6/lib/proportions.c
-===================================================================
---- linux-2.6.orig/lib/proportions.c
-+++ linux-2.6/lib/proportions.c
-@@ -242,31 +242,19 @@ void prop_norm_percpu(struct prop_global
+From: Andrew Morton <akpm@linux-foundation.org>
+
+Revert from git-sched:
+
+commit 9e76ad89f4fa93a789326bc0f4548cd2fbca8d8e
+Author: Gregory Haskins <ghaskins@novell.com>
+Date:   Thu Dec 13 21:35:26 2007 +0100
+
+    sched: update root-domain spans upon departure
+    
+    We shouldnt leave cpus enabled in the spans if that RQ has left the domain.
+    
+    Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+As it causes my t61p to fail to come back to life after suspend-to-RAM.
+
+Cc: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Gregory Haskins <ghaskins@novell.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/sched.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+diff -puN kernel/sched.c~revert-sched-update-root-domain-spans-upon-departure kernel/sched.c
+--- a/kernel/sched.c~revert-sched-update-root-domain-spans-upon-departure
++++ a/kernel/sched.c
+@@ -5854,9 +5854,6 @@ static void rq_attach_root(struct rq *rq
+ 				class->leave_domain(rq);
+ 		}
  
- 	spin_lock_irqsave(&pl->lock, flags);
- 	prop_adjust_shift(&pl->shift, &pl->period, pg->shift);
-+
- 	/*
- 	 * For each missed period, we half the local counter.
- 	 * basically:
- 	 *   pl->events >> (global_period - pl->period);
--	 *
--	 * but since the distributed nature of percpu counters make division
--	 * rather hard, use a regular subtraction loop. This is safe, because
--	 * the events will only every be incremented, hence the subtraction
--	 * can never result in a negative number.
- 	 */
--	while (pl->period != global_period) {
--		unsigned long val = prop_local_read_percpu(pl);
--		unsigned long half = (val + 1) >> 1;
+-		cpu_clear(rq->cpu, old_rd->span);
+-		cpu_clear(rq->cpu, old_rd->online);
 -
--		/*
--		 * Half of zero won't be much less, break out.
--		 * This limits the loop to shift iterations, even
--		 * if we missed a million.
--		 */
--		if (!val)
--			break;
--
--		__percpu_counter_add(&pl->events, -half, PROP_BATCH);
--		pl->period += period;
--	}
-+	period = (global_period - pl->period) >> (pg->shift - 1);
-+	if (period < BITS_PER_LONG) {
-+		s64 val = (u64)prop_local_read_percpu(pl);
-+		__percpu_counter_add(&pl->events, -val + (val >> period), PROP_BATCH);
-+	} else
-+		percpu_counter_set(&pl->events, 0);
-+
- 	pl->period = global_period;
- 	spin_unlock_irqrestore(&pl->lock, flags);
- }
-
+ 		if (atomic_dec_and_test(&old_rd->refcount))
+ 			kfree(old_rd);
+ 	}
+_
 
