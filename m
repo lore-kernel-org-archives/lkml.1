@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763503AbXLNI43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763359AbXLNJBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763503AbXLNI43 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 03:56:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbXLNI4W
+	id S1763359AbXLNJBS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 04:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755717AbXLNJBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 03:56:22 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:23540 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751733AbXLNI4V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 03:56:21 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=hrv56etoPZKgbwpF7soIgo1CbIs5LMgtY6L8BW07VlbtzB1NOvj3yHgM/nnKu3VNce9ifFi654do7j4l6mM2YRcy4WPoUZwWBTEu4wgJXCGXJoTprrWxK6N5ESAuNs9vt7NXQsEeqzXYUlXEakuRtWOgo7hERm4CPE0z6ysWCoE=  ;
-X-YMail-OSG: j._oxyIVM1k2PuwUqKbeYwINCffm1NA.oN8UMI1JaieeJMrMCm14X4Nws4Seoosn1vJa5ILAYg--
-From: David Brownell <david-b@pacbell.net>
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [PATCH] ohci: avoid an unused variable warning
-Date: Fri, 14 Dec 2007 00:56:18 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <47610414.76E4.0078.0@novell.com>
-In-Reply-To: <47610414.76E4.0078.0@novell.com>
+	Fri, 14 Dec 2007 04:01:04 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48571 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756506AbXLNJBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 04:01:01 -0500
+Message-ID: <47624649.3040209@suse.de>
+Date: Fri, 14 Dec 2007 10:00:57 +0100
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712140056.18728.david-b@pacbell.net>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: 2.6.24-rc3-mm1
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>	 <47462F3C.3040700@googlemail.com>	 <20071122201250.f957e280.akpm@linux-foundation.org>	 <47466B5D.90607@googlemail.com>	 <20071126221509.8f437b61.akpm@linux-foundation.org> <1197390783.3812.19.camel@localhost.localdomain>
+In-Reply-To: <1197390783.3812.19.camel@localhost.localdomain>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 December 2007, Jan Beulich wrote:
+James Bottomley wrote:
+> On Mon, 2007-11-26 at 22:15 -0800, Andrew Morton wrote:
+>> OK, thanks.  I'll assume that James and Hannes have this in hand (or will
+>> have, by mid-week) and I won't do anything here.
 > 
-> With CONFIG_PM, but without CONFIG_PM_SLEEP, the intention of the
-> conditional in ohci_pci_start() doesn't work since device_may_wakeup()
-> references pdev only with the latter config option.
+> Just to confirm what I think I'm going to be doing:  rebasing the
+> scsi-misc tree to remove this commit:
+> 
+> commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0
+> Author: Hannes Reinecke <hare@suse.de>
+> Date:   Tue Nov 6 09:23:40 2007 +0100
+> 
+>     [SCSI] Do not requeue requests if REQ_FAILFAST is set
+> 
+> And its allied fix ups:
+> 
+> commit 983289045faa96fba8841d3c51b98bb8623d9504
+> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+> Date:   Sat Nov 24 19:47:25 2007 +0200
+> 
+>     [SCSI] fix up REQ_FASTFAIL not to fail when state is QUIESCE
+> 
+> commit 9dd15a13b332e9f5c8ee752b1ccd9b84cb5bdf17
+> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+> Date:   Sat Nov 24 19:55:53 2007 +0200
+> 
+>     [SCSI] fix domain validation to work again
+> 
+> James
+> 
+> 
+Or just apply my latest patch (cf Undo __scsi_kill_request).
+The main point is that we shouldn't retry requests
+with FAILFAST set when the queue is blocked. AFAICS
+only FC and iSCSI transports set the queue to blocked,
+and use this to indicate a loss of connection. So any
+retry with queue blocked is futile.
 
-Yuck.  That means that runtime power management won't work correctly.
+Cheers,
 
-The same wakeup mechanisms that apply during SUSPEND and HIBERNATION
-are also used for runtime PM(*) ... which is allowed by CONFIG_PM, and
-which accordingly should not depend on PM_SLEEP.
+Hannes
 
-I think the bug is that device_may_wakeup() now looks at CONFIG_PM_SLEEP
-instead of just CONFIG_PM.
-
-- Dave
-
-(*) Although ACPI has problems with the notion of runtime PM.  For
-    example, it ignores PCI PME# signaling until PM_SLEEP transitions.
+-- 
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
