@@ -1,139 +1,397 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765790AbXLNEIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762557AbXLNEIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765790AbXLNEIR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 23:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbXLNEID
+	id S1762557AbXLNEIw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 23:08:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761016AbXLNEIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 23:08:03 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:42700 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751185AbXLNEIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 23:08:01 -0500
-Date: Thu, 13 Dec 2007 20:07:59 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: tipc_init(), WARNING: at arch/x86/mm/highmem_32.c:52,
- [2.6.24-rc4-git5: Reported regressions from 2.6.23]
-In-Reply-To: <20071208195211.GA3727@elte.hu>
-Message-ID: <Pine.LNX.4.64.0712131954440.30721@schroedinger.engr.sgi.com>
-References: <200712080340.49546.rjw@sisk.pl> <20071208093039.GA28054@elte.hu>
- <20071208163749.GI19691@waste.org> <alpine.LFD.0.9999.0712080941170.12046@woody.linux-foundation.org>
- <alpine.LFD.0.9999.0712080948310.12046@woody.linux-foundation.org>
- <20071208100950.a3547868.akpm@linux-foundation.org>
- <alpine.LFD.0.9999.0712081034470.12046@woody.linux-foundation.org>
- <20071208195211.GA3727@elte.hu>
+	Thu, 13 Dec 2007 23:08:35 -0500
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:25770 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751057AbXLNEId (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 23:08:33 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=NYm++VgKOhgWamE6uSn/cmCc595JT1eTBY1gl7WfOIyY/U25YZca6veG6pbhBGTW6VYona/1ugxLPIZYW3kE7DQr3ohJR8jayjjdThwy4Rz0whs0yPTXYuor8pI57C8u3SPISNdWTq5Sf3y58PC637Obp48bpp0UVmuVLcBvRu4=  ;
+X-YMail-OSG: Uo.7_o8VM1lqN.x.3hc.rXx2vqR4W.EE0WN7K8mL4FOlGZXlVOMNa.HpH2cGR1NgzaKcqicMDA--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 10/28] FS-Cache: Recruit a couple of page flags for cache management [try #2]
+Date: Fri, 14 Dec 2007 15:08:23 +1100
+User-Agent: KMail/1.9.5
+Cc: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       sds@tycho.nsa.gov, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+References: <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193909.24617.26538.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20071205193909.24617.26538.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712141508.23756.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Dec 2007, Ingo Molnar wrote:
+On Thursday 06 December 2007 06:39, David Howells wrote:
+> Recruit a couple of page flags to aid in cache management.  The following
+> extra flags are defined:
+>
+>  (1) PG_fscache (PG_owner_priv_2)
+>
+>      The marked page is backed by a local cache and is pinning resources in
+> the cache driver.
+>
+>  (2) PG_fscache_write (PG_owner_priv_3)
+>
+>      The marked page is being written to the local cache.  The page may not
+> be modified whilst this is in progress.
+>
+> If PG_fscache is set, then things that checked for PG_private will now also
+> check for that.  This includes things like truncation and page
+> invalidation. The function page_has_private() had been added to detect
+> this.
 
-> 
-> > Good. Although we should perhaps look at that reported performance 
-> > problem with SLUB. It looks like SLUB will do a memclear() for the 
-> > area twice (first for the whole page, then for the thing it allocated) 
-> > for the slow case. Maybe that exacerbates the problem.
-> 
-> i dont think the SLUB problem could be explained purely via a double 
-> memset(). [which ought to be extremely fast anyway] We are talking about 
-> a 10 times slowdown on a 64-way box of a workload that is fairly 
-> common-sense. (tasks sending messages to each other via bog standard 
-> means)
-> 
-> while i dont want to jump to conclusions without looking at some 
-> profiles, i think the SLUB performance regression is indicative of the 
-> following fallacy: "SLAB can be done significantly simpler while keeping 
-> the same performance".
+I'd much prefer if you would handle this in the filesystem, and have it
+set PG_private whenever fscache needs to receive a callback, and DTRT
+depending on whether PG_fscache etc. is set or not.
 
-Well this is double crap. First of all SLUB does not do memclear twice. 
-There is no reason to assume that SLUB has the problem just because SLOB 
-hat that. A "fix" for that nonexistent problem went into Linus tree. WTH 
-is going on?
-
-SLUB was done because of a series of problem with the basic concepts of 
-SLAB that treaten it usability in the future.
- 
-> I couldnt point to any particular aspect of SLAB that i could 
-> characterise as "needless bloat".
-
-I agree, SLABs architecture is pretty tight and I was one of those who 
-helped it along to be that way.
-
-However, SLAB is just fundamentally wrong for todays machine. The key 
-problem today is cacheline fetch latency and that problem will increase 
-significantly in the future. Sure under some circumstances that exploit 
-the fact that SLAB sometimes gets its guesses on the cpu cache right SLAB 
-can still win but the more processors and nodes we get the more it will 
-become difficult to keep SLAB around and the more it will become 
-difficult to establish what cachelines are in the cpu cache.
-
-> I think we should we make SLAB the default for v2.6.24 ...
-
-If you guarantee that all the regression of SLAB vs. SLUB are addressed 
-then thats fine but AFAICT that is not possible.
-
-Here is a list of some of the benefits of SLUB just in case we forgot:
+Also, this wait_on_page_fscache_write / end_page_fscache_write stuff
+seems like it would belong in your fscache headers rather than generic
+mm code (ditto for your PG_fscache checks in the page allocator -- you
+should use their PG_owner_priv_? names for that).
 
 
-- SLUB is performance wise much faster than SLAB. This can be more than a
-  factor of 10 (case of concurrent allocations / frees on multiple
-  processors). See http://lkml.org/lkml/2007/10/27/245
-
-- Single threaded allocation speed is up to double that of SLAB
-
-- Remote freeing of objectcs in a NUMA systems is typically 30% faster.
-
-- Debugging on SLAB is difficult. Requires recompile of the kernel
-  and the resulting output is difficult to interpret. SLUB can apply
-  debugging options to a subset of the slabcaches in order to allow
-  the system to work with maximum speed. This is necessary to detect
-  difficult to reproduce race conditions.
-
-- SLAB can capture huge amounts of memory in its queues. The problem
-  gets worse the more processors and NUMA nodes are in the system. The 
-  amount of memory limits the number of per cpu objects one can configure.
-
-- SLAB requires a pass through all slab caches every 2 seconds to
-  expire objects. This is a problem both for realtime and MPI jobs
-  that cannot take such a processor outage.
-
-- SLAB does not have a sophisticated slabinfo tool to report the
-  state of slab objects on the system. Can provide details of
-  object use.
-
-- SLAB requires the update of two words for freeing
-  and allocation. SLUB can do that by updating a single
-  word which allows to avoid enabling and disabling interrupts if
-  the processor supports an atomic instruction for that purpose.
-  This is important for realtime kernels where special measures
-  may have to be implemented if one wants to disable interrupts.
-
-- SLAB requires memory to be set aside for queues (processors
-  times number of slabs times queue size). SLUB requires none of that.
-
-- SLUB merges slab caches with similar characteristics to
-  reduce the memory footprint even further.
-
-- SLAB performs object level NUMA management which creates
-  a complex allocator complexity. SLUB manages NUMA on the level of
-  slab pages reducing object management overhead.
-
-- SLUB allows remote node defragmentation to avoid the buildup
-  of large partial lists on a single node.
-
-- SLUB can actively reduce the fragmentation of slabs through
-  slab cache specific callbacks (not merged yet)
-
-- SLUB has resiliency features that allow it to isolate a problem
-  object and continue after diagnostics have been performed.
-
-- SLUB creates rarely used DMA caches on demand instead of creating
-  them all on bootup (SLAB).
-
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
+>
+>  fs/splice.c                |    2 +-
+>  include/linux/page-flags.h |   38 ++++++++++++++++++++++++++++++++++++--
+>  include/linux/pagemap.h    |   11 +++++++++++
+>  mm/filemap.c               |   16 ++++++++++++++++
+>  mm/migrate.c               |    2 +-
+>  mm/page_alloc.c            |    3 +++
+>  mm/readahead.c             |    9 +++++----
+>  mm/swap.c                  |    4 ++--
+>  mm/swap_state.c            |    4 ++--
+>  mm/truncate.c              |   10 +++++-----
+>  mm/vmscan.c                |    2 +-
+>  11 files changed, 83 insertions(+), 18 deletions(-)
+>
+> diff --git a/fs/splice.c b/fs/splice.c
+> index 6bdcb61..61edad7 100644
+> --- a/fs/splice.c
+> +++ b/fs/splice.c
+> @@ -58,7 +58,7 @@ static int page_cache_pipe_buf_steal(struct
+> pipe_inode_info *pipe, */
+>  		wait_on_page_writeback(page);
+>
+> -		if (PagePrivate(page))
+> +		if (page_has_private(page))
+>  			try_to_release_page(page, GFP_KERNEL);
+>
+>  		/*
+> diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+> index 209d3a4..fcc9e23 100644
+> --- a/include/linux/page-flags.h
+> +++ b/include/linux/page-flags.h
+> @@ -77,25 +77,30 @@
+>  #define PG_active		 6
+>  #define PG_slab			 7	/* slab debug (Suparna wants this) */
+>
+> -#define PG_owner_priv_1		 8	/* Owner use. If pagecache, fs may use*/
+> +#define PG_owner_priv_1		 8	/* Owner use. fs may use in pagecache */
+>  #define PG_arch_1		 9
+>  #define PG_reserved		10
+>  #define PG_private		11	/* If pagecache, has fs-private data */
+>
+>  #define PG_writeback		12	/* Page is under writeback */
+> +#define PG_owner_priv_2		13	/* Owner use. fs may use in pagecache */
+>  #define PG_compound		14	/* Part of a compound page */
+>  #define PG_swapcache		15	/* Swap page: swp_entry_t in private */
+>
+>  #define PG_mappedtodisk		16	/* Has blocks allocated on-disk */
+>  #define PG_reclaim		17	/* To be reclaimed asap */
+> +#define PG_owner_priv_3		18	/* Owner use. fs may use in pagecache */
+>  #define PG_buddy		19	/* Page is free, on buddy lists */
+>
+>  /* PG_readahead is only used for file reads; PG_reclaim is only for writes
+> */ #define PG_readahead		PG_reclaim /* Reminder to do async read-ahead */
+>
+> -/* PG_owner_priv_1 users should have descriptive aliases */
+> +/* PG_owner_priv_1/2/3 users should have descriptive aliases */
+>  #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
+>  #define PG_pinned		PG_owner_priv_1	/* Xen pinned pagetable */
+> +#define PG_fscache		PG_owner_priv_2	/* Backed by local cache */
+> +#define PG_fscache_write	PG_owner_priv_3	/* Writing to local cache */
+> +
+>
+>  #if (BITS_PER_LONG > 32)
+>  /*
+> @@ -199,6 +204,24 @@ static inline void SetPageUptodate(struct page *page)
+>  #define TestClearPageWriteback(page) test_and_clear_bit(PG_writeback,	\
+>  							&(page)->flags)
+>
+> +#define PageFsCache(page)	test_bit(PG_fscache, &(page)->flags)
+> +#define SetPageFsCache(page)	set_bit(PG_fscache, &(page)->flags)
+> +#define ClearPageFsCache(page)	clear_bit(PG_fscache, &(page)->flags)
+> +#define TestSetPageFsCache(page) test_and_set_bit(PG_fscache,
+> &(page)->flags) +#define TestClearPageFsCache(page)
+> test_and_clear_bit(PG_fscache, \ +						      &(page)->flags)
+> +
+> +#define PageFsCacheWrite(page)		test_bit(PG_fscache_write, \
+> +						 &(page)->flags)
+> +#define SetPageFsCacheWrite(page)	set_bit(PG_fscache_write, \
+> +						&(page)->flags)
+> +#define ClearPageFsCacheWrite(page)	clear_bit(PG_fscache_write, \
+> +						  &(page)->flags)
+> +#define TestSetPageFsCacheWrite(page)	test_and_set_bit(PG_fscache_write, \
+> +							 &(page)->flags)
+> +#define
+> TestClearPageFsCacheWrite(page)	test_and_clear_bit(PG_fscache_write, \
+> +							   &(page)->flags)
+> +
+>  #define PageBuddy(page)		test_bit(PG_buddy, &(page)->flags)
+>  #define __SetPageBuddy(page)	__set_bit(PG_buddy, &(page)->flags)
+>  #define __ClearPageBuddy(page)	__clear_bit(PG_buddy, &(page)->flags)
+> @@ -272,4 +295,15 @@ static inline void set_page_writeback(struct page
+> *page) test_set_page_writeback(page);
+>  }
+>
+> +/**
+> + * page_has_private - Determine if page has private stuff
+> + * @page: The page to be checked
+> + *
+> + * Determine if a page has private stuff, indicating that release routines
+> + * should be invoked upon it.
+> + */
+> +#define page_has_private(page)			\
+> +	((page)->flags & ((1 << PG_private) |	\
+> +			  (1 << PG_fscache)))
+> +
+>  #endif	/* PAGE_FLAGS_H */
+> diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+> index db8a410..6a1b317 100644
+> --- a/include/linux/pagemap.h
+> +++ b/include/linux/pagemap.h
+> @@ -212,6 +212,17 @@ static inline void wait_on_page_writeback(struct page
+> *page) extern void end_page_writeback(struct page *page);
+>
+>  /*
+> + * Wait for a page to finish being written to a local cache
+> + */
+> +static inline void wait_on_page_fscache_write(struct page *page)
+> +{
+> +	if (PageFsCacheWrite(page))
+> +		wait_on_page_bit(page, PG_fscache_write);
+> +}
+> +
+> +extern void end_page_fscache_write(struct page *page);
+> +
+> +/*
+>   * Fault a userspace page into pagetables.  Return non-zero on a fault.
+>   *
+>   * This assumes that two userspace pages are always sufficient.  That's
+> diff --git a/mm/filemap.c b/mm/filemap.c
+> index 188cf5f..8a8e5b8 100644
+> --- a/mm/filemap.c
+> +++ b/mm/filemap.c
+> @@ -560,6 +560,19 @@ void end_page_writeback(struct page *page)
+>  EXPORT_SYMBOL(end_page_writeback);
+>
+>  /**
+> + * end_page_fscache_write - End writing page to cache
+> + * @page: the page
+> + */
+> +void end_page_fscache_write(struct page *page)
+> +{
+> +	if (!TestClearPageFsCacheWrite(page))
+> +		BUG();
+> +	smp_mb__after_clear_bit();
+> +	wake_up_page(page, PG_fscache_write);
+> +}
+> +EXPORT_SYMBOL(end_page_fscache_write);
+> +
+> +/**
+>   * __lock_page - get a lock on the page, assuming we need to sleep to get
+> it * @page: the page to lock
+>   *
+> @@ -2528,6 +2541,9 @@ out:
+>   * (presumably at page->private).  If the release was successful, return
+> `1'. * Otherwise return zero.
+>   *
+> + * This may also be called if PG_fscache is set on a page, indicating that
+> the + * page is known to the local caching routines.
+> + *
+>   * The @gfp_mask argument specifies whether I/O may be performed to
+> release * this page (__GFP_IO), and whether the call may block
+> (__GFP_WAIT). *
+> diff --git a/mm/migrate.c b/mm/migrate.c
+> index 6a207e8..ebaf557 100644
+> --- a/mm/migrate.c
+> +++ b/mm/migrate.c
+> @@ -545,7 +545,7 @@ static int fallback_migrate_page(struct address_space
+> *mapping, * Buffers may be managed in a filesystem specific way.
+>  	 * We must have no buffers or drop them.
+>  	 */
+> -	if (PagePrivate(page) &&
+> +	if (page_has_private(page) &&
+>  	    !try_to_release_page(page, GFP_KERNEL))
+>  		return -EAGAIN;
+>
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index b5a58d4..ac4c341 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -230,6 +230,7 @@ static void bad_page(struct page *page)
+>  	dump_stack();
+>  	page->flags &= ~(1 << PG_lru	|
+>  			1 << PG_private |
+> +			1 << PG_fscache	|
+>  			1 << PG_locked	|
+>  			1 << PG_active	|
+>  			1 << PG_dirty	|
+> @@ -456,6 +457,7 @@ static inline int free_pages_check(struct page *page)
+>  		(page->flags & (
+>  			1 << PG_lru	|
+>  			1 << PG_private |
+> +			1 << PG_fscache	|
+>  			1 << PG_locked	|
+>  			1 << PG_active	|
+>  			1 << PG_slab	|
+> @@ -605,6 +607,7 @@ static int prep_new_page(struct page *page, int order,
+> gfp_t gfp_flags) (page->flags & (
+>  			1 << PG_lru	|
+>  			1 << PG_private	|
+> +			1 << PG_fscache	|
+>  			1 << PG_locked	|
+>  			1 << PG_active	|
+>  			1 << PG_dirty	|
+> diff --git a/mm/readahead.c b/mm/readahead.c
+> index 75aa6b6..272ffc7 100644
+> --- a/mm/readahead.c
+> +++ b/mm/readahead.c
+> @@ -46,14 +46,15 @@ EXPORT_SYMBOL_GPL(file_ra_state_init);
+>
+>  /*
+>   * see if a page needs releasing upon read_cache_pages() failure
+> - * - the caller of read_cache_pages() may have set PG_private before
+> calling, - *   such as the NFS fs marking pages that are cached locally on
+> disk, thus we - *   need to give the fs a chance to clean up in the event
+> of an error + * - the caller of read_cache_pages() may have set PG_private
+> or PG_fscache + *   before calling, such as the NFS fs marking pages that
+> are cached locally + *   on disk, thus we need to give the fs a chance to
+> clean up in the event of + *   an error
+>   */
+>  static void read_cache_pages_invalidate_page(struct address_space
+> *mapping, struct page *page)
+>  {
+> -	if (PagePrivate(page)) {
+> +	if (page_has_private(page)) {
+>  		if (TestSetPageLocked(page))
+>  			BUG();
+>  		page->mapping = mapping;
+> diff --git a/mm/swap.c b/mm/swap.c
+> index 9ac8832..22d6e03 100644
+> --- a/mm/swap.c
+> +++ b/mm/swap.c
+> @@ -455,8 +455,8 @@ void pagevec_strip(struct pagevec *pvec)
+>  	for (i = 0; i < pagevec_count(pvec); i++) {
+>  		struct page *page = pvec->pages[i];
+>
+> -		if (PagePrivate(page) && !TestSetPageLocked(page)) {
+> -			if (PagePrivate(page))
+> +		if (page_has_private(page) && !TestSetPageLocked(page)) {
+> +			if (page_has_private(page))
+>  				try_to_release_page(page, 0);
+>  			unlock_page(page);
+>  		}
+> diff --git a/mm/swap_state.c b/mm/swap_state.c
+> index b526356..33f1e5c 100644
+> --- a/mm/swap_state.c
+> +++ b/mm/swap_state.c
+> @@ -76,7 +76,7 @@ static int __add_to_swap_cache(struct page *page,
+> swp_entry_t entry,
+>
+>  	BUG_ON(!PageLocked(page));
+>  	BUG_ON(PageSwapCache(page));
+> -	BUG_ON(PagePrivate(page));
+> +	BUG_ON(page_has_private(page));
+>  	error = radix_tree_preload(gfp_mask);
+>  	if (!error) {
+>  		write_lock_irq(&swapper_space.tree_lock);
+> @@ -129,7 +129,7 @@ void __delete_from_swap_cache(struct page *page)
+>  	BUG_ON(!PageLocked(page));
+>  	BUG_ON(!PageSwapCache(page));
+>  	BUG_ON(PageWriteback(page));
+> -	BUG_ON(PagePrivate(page));
+> +	BUG_ON(page_has_private(page));
+>
+>  	radix_tree_delete(&swapper_space.page_tree, page_private(page));
+>  	set_page_private(page, 0);
+> diff --git a/mm/truncate.c b/mm/truncate.c
+> index cadc156..5b7d1c5 100644
+> --- a/mm/truncate.c
+> +++ b/mm/truncate.c
+> @@ -49,7 +49,7 @@ void do_invalidatepage(struct page *page, unsigned long
+> offset) static inline void truncate_partial_page(struct page *page,
+> unsigned partial) {
+>  	zero_user_page(page, partial, PAGE_CACHE_SIZE - partial, KM_USER0);
+> -	if (PagePrivate(page))
+> +	if (page_has_private(page))
+>  		do_invalidatepage(page, partial);
+>  }
+>
+> @@ -100,7 +100,7 @@ truncate_complete_page(struct address_space *mapping,
+> struct page *page)
+>
+>  	cancel_dirty_page(page, PAGE_CACHE_SIZE);
+>
+> -	if (PagePrivate(page))
+> +	if (page_has_private(page))
+>  		do_invalidatepage(page, 0);
+>
+>  	remove_from_page_cache(page);
+> @@ -125,7 +125,7 @@ invalidate_complete_page(struct address_space *mapping,
+> struct page *page) if (page->mapping != mapping)
+>  		return 0;
+>
+> -	if (PagePrivate(page) && !try_to_release_page(page, 0))
+> +	if (page_has_private(page) && !try_to_release_page(page, 0))
+>  		return 0;
+>
+>  	ret = remove_mapping(mapping, page);
+> @@ -347,14 +347,14 @@ invalidate_complete_page2(struct address_space
+> *mapping, struct page *page) if (page->mapping != mapping)
+>  		return 0;
+>
+> -	if (PagePrivate(page) && !try_to_release_page(page, GFP_KERNEL))
+> +	if (page_has_private(page) && !try_to_release_page(page, GFP_KERNEL))
+>  		return 0;
+>
+>  	write_lock_irq(&mapping->tree_lock);
+>  	if (PageDirty(page))
+>  		goto failed;
+>
+> -	BUG_ON(PagePrivate(page));
+> +	BUG_ON(page_has_private(page));
+>  	__remove_from_page_cache(page);
+>  	write_unlock_irq(&mapping->tree_lock);
+>  	ClearPageUptodate(page);
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index e5a9597..ff2fa2d 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -578,7 +578,7 @@ static unsigned long shrink_page_list(struct list_head
+> *page_list, * process address space (page_count == 1) it can be freed.
+>  		 * Otherwise, leave the page on the LRU so it is swappable.
+>  		 */
+> -		if (PagePrivate(page)) {
+> +		if (page_has_private(page)) {
+>  			if (!try_to_release_page(page, sc->gfp_mask))
+>  				goto activate_locked;
+>  			if (!mapping && page_count(page) == 1)
+>
+> --
