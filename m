@@ -1,101 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbXLNSIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbXLNSIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092AbXLNSIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 13:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbXLNSHz
+	id S1754544AbXLNSIa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 13:08:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbXLNSH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 13:07:55 -0500
-Received: from rtr.ca ([76.10.145.34]:4867 "EHLO mail.rtr.ca"
+	Fri, 14 Dec 2007 13:07:58 -0500
+Received: from yumi.tdiedrich.de ([85.10.210.183]:51345 "EHLO mx.tdiedrich.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752291AbXLNSHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 13:07:53 -0500
-Message-ID: <4762C677.5040708@rtr.ca>
-Date: Fri, 14 Dec 2007 13:07:51 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1752295AbXLNSHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 13:07:54 -0500
+X-Greylist: delayed 1985 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Dec 2007 13:07:53 EST
+Date: Fri, 14 Dec 2007 18:29:46 +0100
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: linux-net@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: dst cache overflow
+Message-ID: <20071214172945.GA10809@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	linux-net@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Eric Dumazet <dada1@cosmosbay.com>
+References: <20070814160646.GA16283@yamamaya.is-a-geek.org> <20070814192453.5a873723.dada1@cosmosbay.com> <20070814180015.GB3024@yamamaya.is-a-geek.org> <20070816184501.cbbd28a2.dada1@cosmosbay.com>
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
-       lkml@rtr.ca, matthew@wil.cx, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] fix page_alloc for larger I/O segments (improved)
-References: <20071213140207.111f94e2.akpm@linux-foundation.org> <1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org> <4761B32A.3070201@rtr.ca> <4761BCB4.1060601@rtr.ca> <4761C8E4.2010900@rtr.ca> <4761CE88.9070406@rtr.ca> <20071213163726.3bb601fa.akpm@linux-foundation.org> <4761D160.7060603@rtr.ca> <4761D279.6050500@rtr.ca> <20071214174236.GA28613@csn.ul.ie>
-In-Reply-To: <20071214174236.GA28613@csn.ul.ie>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070816184501.cbbd28a2.dada1@cosmosbay.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel Gorman wrote:
-> On (13/12/07 19:46), Mark Lord didst pronounce:
->> "Improved version", more similar to the 2.6.23 code:
->>
->> Fix page allocator to give better chance of larger contiguous segments 
->> (again).
->>
->> Signed-off-by: Mark Lord <mlord@pobox.com
+Eric Dumazet wrote:
+> On Tue, 14 Aug 2007 20:00:15 +0200
+> Tobias Diedrich <ranma+kernel@tdiedrich.de> wrote:
 > 
-> Regrettably this interferes with anti-fragmentation because the "next" page
-> on the list on return from rmqueue_bulk is not guaranteed to be of the right
-> mobility type. I fixed it as an additional patch but it adds additional cost
-> that should not be necessary and it's visible in microbenchmark results on
-> at least one machine.
+> > Eric Dumazet wrote:
+> > 
+> > > Tobias Diedrich <ranma+kernel@tdiedrich.de> wrote:
+> > > 
+> > > > Hello,
+> > > > 
+> > > > I suspect I'm seeing a slow dst cache leakage on one of my servers.
+> > > > The server in question (oni) regularly needs to be rebooted, because
+> > > > it loses network connectivity. However, netconsole and syslog shows that the
+> > > > machine is still running and the kernel complains about "dst cache
+> > > > overflow".
+> > > > 
+> > > > I have since installed a monitoring script, which stores the output of
+> > > > both "ip route ls cache | fgrep cache | wc -l" and the 'entries' value
+> > > > of /proc/net/stat/rt_cache (as suggested in 
+> > > > http://www.mail-archive.com/netdev@vger.kernel.org/msg02107.html)
+> > > > and produces a nice rrd graph:
+> > > > 
+> > > > http://uguu.de/~ranma/route-month-oni.png
+> > > > So entries is growing more or less constantly, while the number of
+> > > > active routes (not visible on the graph due to being too small) is
+> > > > relatively constant.
+> > > > 
+> > > > Comparing this to another host running the exact same kernel:
+> > > > http://uguu.de/~ranma/route-month-ari.png
+> > > > Here cached_routes and entries barely differ at all.
+> > > > 
+> > > > The funny thing is, both hosts are running the exact same kernel
+> > > > and use more or less the same iptables rules.
+> > > > 
+> > > > So I'm not sure what would cause the dst cache to leak only on host
+> > > > oni?
+> > > > 
+> > > 
+> > > Could you send the result of these commands on oni and ari ?
+> > > 
+> > > ip route ls
+> > > grep . /proc/sys/net/ipv4/route/*
+> > 
+> > Sure.
+> > 
+> > AFAICS the only visible difference is gc_thresh, which is probably
+> > double the size on oni since oni has double the amount of memory
+> > (512MB for oni vs. 256MB for ari).
 > 
-> The following patch should fix the page ordering problem without incurring an
-> additional cost or interfering with anti-fragmentation. However, I haven't
-> anything in place yet to verify that the physical page ordering is correct
-> but it makes sense. Can you verify it fixes the problem please?
-> 
-> It'll still be some time before I have a full set of performance results
-> but initially at least, this fix seems to avoid any impact.
-> 
-> ======
-> Subject: Fix page allocation for larger I/O segments
-> 
-> In some cases the IO subsystem is able to merge requests if the pages are
-> adjacent in physical memory. This was achieved in the allocator by having
-> expand() return pages in physically contiguous order in situations were
-> a large buddy was split. However, list-based anti-fragmentation changed
-> the order pages were returned in to avoid searching in buffered_rmqueue()
-> for a page of the appropriate migrate type.
-> 
-> This patch restores behaviour of rmqueue_bulk() preserving the physical order
-> of pages returned by the allocator without incurring increased search costs for
-> anti-fragmentation.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> --- 
->  page_alloc.c |   11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc5-clean/mm/page_alloc.c linux-2.6.24-rc5-giveback-physorder-listmove/mm/page_alloc.c
-> --- linux-2.6.24-rc5-clean/mm/page_alloc.c	2007-12-14 11:55:13.000000000 +0000
-> +++ linux-2.6.24-rc5-giveback-physorder-listmove/mm/page_alloc.c	2007-12-14 15:33:12.000000000 +0000
-> @@ -847,8 +847,19 @@ static int rmqueue_bulk(struct zone *zon
->  		struct page *page = __rmqueue(zone, order, migratetype);
->  		if (unlikely(page == NULL))
->  			break;
-> +
-> +		/*
-> +		 * Split buddy pages returned by expand() are received here
-> +		 * in physical page order. The page is added to the callers and
-> +		 * list and the list head then moves forward. From the callers
-> +		 * perspective, the linked list is ordered by page number in
-> +		 * some conditions. This is useful for IO devices that can
-> +		 * merge IO requests if the physical pages are ordered
-> +		 * properly.
-> +		 */
->  		list_add(&page->lru, list);
->  		set_page_private(page, migratetype);
-> +		list = &page->lru;
->  	}
->  	spin_unlock(&zone->lock);
->  	return i;
-..
+> You might try to boot oni adding this to kernel commandline : rhash_entries=2047
+> so that oni has the same route cache hashtable, and see if it changes anything.
 
-That (also) works for me here, regularly generating 64KB I/O segments with SLAB.
+That hasn't helped I'm afraid.
+However I think it actually does affect all three systems running
+this kernel after all, the problme only manifests itself faster on
+oni.
 
-Cheers
+Meanwhile I added a slab statistic rrd script. Nothing obvious to
+see on ari or yumi yet, but on oni (which after all is the most
+affected by this) I can see 'size_2048' and 'TCPv6' growing
+steadily along with the route cache size (Presumably 'ip_dst_cache',
+which is also growing larger at a more or less constant rate).
+
+http://www.tdiedrich.de/~ranma/oni_20071214_route-week.png
+http://www.tdiedrich.de/~ranma/oni_20071214_slab-week.png
+http://www.tdiedrich.de/~ranma/oni_20071214_route-year.png
+http://www.tdiedrich.de/~ranma/ari_20071214_route-year.png
+http://www.tdiedrich.de/~ranma/yumi_20071214_route-year.png
+
+You can see that the difference on ari and yumi was also growing
+until they were rebooted (in the beginning of december for ari,
+beginning of november for yumi).
+
+Currently all three are running 2.6.23.9 and the problem is still
+there.
+
+HTH,
+
+-- 
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
