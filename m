@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932766AbXLNDS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763228AbXLNDXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932766AbXLNDS7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 22:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbXLNDSt
+	id S1763228AbXLNDXU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 22:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbXLNDXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 22:18:49 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:38295 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750724AbXLNDSs convert rfc822-to-8bit (ORCPT
+	Thu, 13 Dec 2007 22:23:07 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:40917 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757501AbXLNDXF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 22:18:48 -0500
-From: Darren Hart <dvhltc@linux.vnet.ibm.com>
-Reply-To: Darren Hart <dvhltc@us.ibm.com>
-Organization: IBM Linux Technology Center
-To: "lkml, " <linux-kernel@vger.kernel.org>
-Subject: 2.6.24-rc2-rt1 build failure: mod_unreg_security
-Date: Thu, 13 Dec 2007 19:18:44 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-rt-users@vger.kernel.org
+	Thu, 13 Dec 2007 22:23:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QreJAc14aTIXQtyJM515iek38gOu2q6N6vKtvMjnFKejh3vVd37Bh5AWiVBnBYP64kvnKdHUYrVOV2bgNGtZAeaV710n3kgTJkKscwZyYdN8Y5IrWHHyE5gizzsoRGotxuwK8a7mKNlkrJQJrU/IvWMMMRQOjRiKCukU+sF/wMk=
+Message-ID: <a44ae5cd0712131923q2069e1c9h2c55117840b1840c@mail.gmail.com>
+Date: Thu, 13 Dec 2007 22:23:05 -0500
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: =?WINDOWS-1252?Q?Re:_2.6.24-rc5-mm1_--_drivers/v?= =?WINDOWS-1252?Q?ideo/logo/logo=5Flinux=5Fclut224.c:5?= =?WINDOWS-1252?Q?98:_error:_conflicting_type_qua?= =?WINDOWS-1252?Q?lifiers_for_=91logo=5Flinux=5Fclut224=92?=
+Cc: "Marcin Slusarz" <marcin.slusarz@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071213175736.674e3189.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712131918.44236.dvhltc@linux.vnet.ibm.com>
+References: <a44ae5cd0712131716n39d29ec4qa0dfd6ad64a50b0a@mail.gmail.com>
+	 <20071213175736.674e3189.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-security/realcaps.c still uses mod_unreg_security and 
-unregister_security to try and unregister the realtime capabilities 
-from LSM.  Those functions appear to have been removed from 
-security/security.c, so the build fails with:
+On Dec 13, 2007 8:57 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Thu, 13 Dec 2007 20:16:13 -0500 Miles Lane wrote:
+>
+> >   CC      drivers/video/logo/logo_linux_clut224.o
+> > drivers/video/logo/logo_linux_clut224.c:598: error: conflicting type
+> > qualifiers for 'logo_linux_clut224'
+> > include/linux/linux_logo.h:47: error: previous declaration of
+> > 'logo_linux_clut224' was here
+> > make[3]: *** [drivers/video/logo/logo_linux_clut224.o] Error 1
+>
+> Hi Miles,
+>
+> Did you try the patch that was posted today?
+>
+> http://lkml.org/lkml/2007/12/13/439 & click on "Get diff 1"
+> on the left side.
 
-security/realcap.c: In function ‘realtime_exit’:
-security/realcap.c:129: error: implicit declaration of 
-function ‘mod_unreg_security’
-security/realcap.c:133: error: implicit declaration of 
-function ‘unregister_security’
-‘mod_unreg_security’ only exists in the one place and in the lsm.tmpl
+No.  Thanks.  I searched on marc.info but didn't find this.
+I'll give it a try now.
 
-I compared the security.c of 2.6.23.9-rt12 and it still has the two 
-missing functions.  Was there a change in how features are unregistered 
-from LSM that was missed for the realcaps.c file perhaps?
-
-I commented out the unreg calls to try and build, it completed, but the 
-realcap.ko had several undefined symbols.
-
-Kernel: arch/x86/boot/bzImage is ready  (#1)
-ERROR: "cap_netlink_send" [security/realcap.ko] undefined!
-ERROR: "cap_task_reparent_to_init" [security/realcap.ko] undefined!
-ERROR: "cap_task_post_setuid" [security/realcap.ko] undefined!
-ERROR: "cap_bprm_secureexec" [security/realcap.ko] undefined!
-ERROR: "cap_bprm_set_security" [security/realcap.ko] undefined!
-ERROR: "cap_vm_enough_memory" [security/realcap.ko] undefined!
-ERROR: "cap_syslog" [security/realcap.ko] undefined!
-ERROR: "cap_capable" [security/realcap.ko] undefined!
-ERROR: "cap_capset_set" [security/realcap.ko] undefined!
-ERROR: "cap_capset_check" [security/realcap.ko] undefined!
-ERROR: "cap_capget" [security/realcap.ko] undefined!
-ERROR: "cap_ptrace" [security/realcap.ko] undefined!
-ERROR: "cap_bprm_apply_creds" [security/realcap.ko] undefined!
-ERROR: "mod_reg_security" [security/realcap.ko] undefined!
-ERROR: "register_security" [security/realcap.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
-
-Checking the config I see this is marked as obsolete, so maybe we don't 
-care all that much - but if it wasn't just removed, I suspect we still 
-want it to build?
-
-Thanks,
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+         Miles
