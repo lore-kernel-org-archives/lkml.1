@@ -1,51 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760912AbXLNIoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762689AbXLNIpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760912AbXLNIoa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 03:44:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbXLNIoV
+	id S1762689AbXLNIpv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 03:45:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbXLNIpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 03:44:21 -0500
-Received: from gw.goop.org ([64.81.55.164]:39378 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752331AbXLNIoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 03:44:20 -0500
-Message-ID: <47624253.7060507@goop.org>
-Date: Fri, 14 Dec 2007 00:44:03 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 14 Dec 2007 03:45:43 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:44498 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754527AbXLNIpm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 03:45:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=VYSV5wZv0f7bC+KKr6X6wJ3qlBvi24Hmfo2yq8125crGfaA+hmm0yEjnpyznTDcMDVBL/VASTBZKHZnCUihdhbjrdwhXLiTSnKjt0jqV0e20rQp+6yrpByCixmOnaVxqbv1BdPFqJxKHF5zlrssZ6ZYu7rwMNx6KrdTPoLK7Qg0=
+Message-ID: <476242FE.50805@gmail.com>
+Date: Fri, 14 Dec 2007 09:46:54 +0100
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: Ingo Molnar <mingo@elte.hu>, Glauber de Oliveira Costa <glommer@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/4] x86: clean up asm-x86/page*.h
-References: <47623AD6.6090403@goop.org> <47624D81.76E4.0078.0@novell.com>
-In-Reply-To: <47624D81.76E4.0078.0@novell.com>
-X-Enigmail-Version: 0.95.5
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-2.71 and man-pages-2.72 are released
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
->> --- a/arch/x86/mm/fault_64.c
->> +++ b/arch/x86/mm/fault_64.c
->> @@ -158,22 +158,22 @@ void dump_pagetable(unsigned long addres
->> 	pgd = __va((unsigned long)pgd & PHYSICAL_PAGE_MASK); 
->> 	pgd += pgd_index(address);
->> 	if (bad_address(pgd)) goto bad;
->> -	printk("PGD %lx ", pgd_val(*pgd));
->> +	printk("PGD %lx ", (unsigned long)pgd_val(*pgd));
->>     
->
-> Casts like this here and elsewhere look rather odd (in fact I think using
-> casts should really be limited to places where you either can't do it
-> differently or the code would become badly readable or much uglier
-> without them). I would therefore favor simply using the right formatting
-> specifier here.
+Gidday,
 
-I would agree, but pgd_val() is defined as returning a pgdval_t, which
-is typedefed to be unsigned long.  I'll have another look, but I don't
-think there's an appropriate format for this.
+Repeating some old news:
 
-    J
+* man-pages now has a website:
+
+      http://www.kernel.org/doc/man-pages
+
+  The site includes HTML versions of the current set of man-pages.
+
+* Since man-pages-2.69, each man page now includes a COLOPHON
+  section at the end of the page which indicates the version of
+  man-pages in which this page is released, and also contains a
+  pointer to the man-pages web site.
+
+* The list linux-man@vger.kernel.org has been created for
+  the purpose of discussing Linux man page bugs, patches,
+  and maintenance.  To subscribe, send a message to
+  majordomo@vger.kernel.org, with the body:
+
+        subscribe linux-man
+
+Back to the news as usual...
+
+I recently released man-pages-2.71 and man-pages-2.72.
+
+These releases are now available for download at:
+
+    http://www.kernel.org/pub/linux/docs/man-pages
+    or ftp://ftp.kernel.org/pub/linux/docs/man-pages
+
+    (Note the s/manpages/man-pages/ in these paths;
+    a symlink with the old path will exist for
+    a limited time.)
+
+Changes in these releases can be seen at
+http://www.kernel.org/doc/man-pages/changelog.html#release_2.71
+and
+http://www.kernel.org/doc/man-pages/changelog.html#release_2.72
+
+Many of the changes in these releases consist of formatting and consistency
+fixes.  A few of the changes that may be of interest to readers of this
+list are summarized below.
+
+Cheers,
+
+Michael
+(man-pages maintenance is supported by Google, as a Google engineer 20%
+project.)
+
+
+==================== Changes in man-pages-2.71 ====================
+
+Global changes
+--------------
+
+err.3
+fts.3
+getloadavg.3
+queue.3
+rcmd.3
+rexec.3
+stdin.3
+elf.5
+operator.7
+    mtk
+        Replaced the use of mdoc macros on these pages with man
+        macros.  The only pages in man-pages that still use
+        mdoc macros are mdoc.7 and mdoc.samples.7.
+
+Typographical or grammatical errors have been corrected in several places.
+
+
+Changes to individual pages
+---------------------------
+
+fcntl.2
+    mtk
+        Document the F_DUPFD_CLOEXEC operation, which is
+        new in kernel 2.6.24.
+
+
+==================== Changes in man-pages-2.72 ====================
+
+Global changes
+--------------
+
+abort.3
+    mtk, after a note by Alex Tuninga
+        A fairly significant rewrite to clarify operation of abort().
+
+
+-- 
+Michael Kerrisk
+Maintainer of the Linux man-pages project
+http://www.kernel.org/doc/man-pages/
+Want to report a man-pages bug?  Look here:
+http://www.kernel.org/doc/man-pages/reporting_bugs.html
+
+
