@@ -1,121 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764362AbXLNDwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765606AbXLNDwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764362AbXLNDwT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 22:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbXLNDwH
+	id S1765606AbXLNDwp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 22:52:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759152AbXLNDwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 22:52:07 -0500
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:34156 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751436AbXLNDwG (ORCPT
+	Thu, 13 Dec 2007 22:52:33 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36353 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756308AbXLNDwc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 22:52:06 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=RbiGoDN5mPbge0f1nJ+3Z/Mb2pj3zqGV+YMKGMCECKfdTR400+JwBUEoQY7tdaRakAogpvuk1o6RI88oMheACkA3RnHbeGuvzLhgb0wgJahbN9sieWnqAOMFo3Z/F/W4WrJn2S6GpmMtM6O6eDqRDmDzXBqX0zHdVVhng4Nqk4Q=  ;
-X-YMail-OSG: 7iG5yBQVM1lJ_fn7FgTgfi3wh4SMIQLBqdJlimnPc79Hisfm
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 09/28] FS-Cache: Release page->private after failed readahead [try #2]
-Date: Fri, 14 Dec 2007 14:51:56 +1100
-User-Agent: KMail/1.9.5
-Cc: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
-       sds@tycho.nsa.gov, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-References: <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193904.24617.94077.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20071205193904.24617.94077.stgit@warthog.procyon.org.uk>
+	Thu, 13 Dec 2007 22:52:32 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: venkatesh.pallipadi@intel.com
+Cc: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
+       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [RFC PATCH 02/12] PAT 64b: Basic PAT implementation
+References: <20071213235543.568682000@intel.com>
+	<20071213235711.464325000@intel.com>
+Date: Thu, 13 Dec 2007 20:48:45 -0700
+In-Reply-To: <20071213235711.464325000@intel.com> (venkatesh pallipadi's
+	message of "Thu, 13 Dec 2007 15:55:45 -0800")
+Message-ID: <m1d4taq6le.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712141451.56870.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 December 2007 06:39, David Howells wrote:
-> The attached patch causes read_cache_pages() to release page-private data
-> on a page for which add_to_page_cache() fails or the filler function fails.
-> This permits pages with caching references associated with them to be
-> cleaned up.
->
-> The invalidatepage() address space op is called (indirectly) to do the
-> honours.
+venkatesh.pallipadi@intel.com writes:
 
-This is pretty nasty. I would suggest either to have the function
-return the number of pages that were added to pagecache, or just
-open code it.
+> Originally based on a patch from Eric Biederman, but heavily changed.
+>
+> Forward port of pat-base.patch to x86 tree, with a bug fix.
+> Code was using 'PCD|PWT' i.e., PAT3 for WC mapping. So set the WC mapping at
+> correct PAT fields PA3/PA7.
 
->
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
->
->  mm/readahead.c |   39 +++++++++++++++++++++++++++++++++++++--
->  1 files changed, 37 insertions(+), 2 deletions(-)
->
-> diff --git a/mm/readahead.c b/mm/readahead.c
-> index c9c50ca..75aa6b6 100644
-> --- a/mm/readahead.c
-> +++ b/mm/readahead.c
-> @@ -44,6 +44,41 @@ EXPORT_SYMBOL_GPL(file_ra_state_init);
->
->  #define list_to_page(head) (list_entry((head)->prev, struct page, lru))
->
-> +/*
-> + * see if a page needs releasing upon read_cache_pages() failure
-> + * - the caller of read_cache_pages() may have set PG_private before
-> calling, + *   such as the NFS fs marking pages that are cached locally on
-> disk, thus we + *   need to give the fs a chance to clean up in the event
-> of an error + */
-> +static void read_cache_pages_invalidate_page(struct address_space
-> *mapping, +					     struct page *page)
+Well that wasn't from my original tested patch. Grr.
+
+> TBD: KEXEC and other CPU offline paths may need pat_shutdown()?
+
+> Index: linux-2.6/arch/x86/mm/Makefile_64
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/mm/Makefile_64 2007-12-11 03:30:34.000000000 -0800
+> +++ linux-2.6/arch/x86/mm/Makefile_64	2007-12-11 03:42:08.000000000 -0800
+> @@ -2,7 +2,7 @@
+>  # Makefile for the linux x86_64-specific parts of the memory manager.
+>  #
+>  
+> -obj-y := init_64.o fault_64.o ioremap_64.o extable_64.o pageattr_64.o mmap_64.o
+> +obj-y := init_64.o fault_64.o ioremap_64.o extable_64.o pageattr_64.o mmap_64.o
+> pat.o
+>  obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
+>  obj-$(CONFIG_NUMA) += numa_64.o
+>  obj-$(CONFIG_K8_NUMA) += k8topology_64.o
+> Index: linux-2.6/arch/x86/mm/pat.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6/arch/x86/mm/pat.c	2007-12-11 04:12:47.000000000 -0800
+> @@ -0,0 +1,57 @@
+> +/* Handle caching attributes in page tables (PAT) */
+> +#include <linux/mm.h>
+> +#include <linux/kernel.h>
+> +#include <linux/rbtree.h>
+> +#include <linux/gfp.h>
+> +#include <asm/msr.h>
+> +#include <asm/tlbflush.h>
+> +#include <asm/processor.h>
+> +
+> +static u64 boot_pat_state;
+> +
+> +enum {
+> +	PAT_UC = 0,   	/* uncached */
+> +	PAT_WC = 1,		/* Write combining */
+> +	PAT_WT = 4,		/* Write Through */
+> +	PAT_WP = 5,		/* Write Protected */
+> +	PAT_WB = 6,		/* Write Back (default) */
+> +	PAT_UC_MINUS = 7,	/* UC, but can be overriden by MTRR */
+> +};
+> +
+> +#define PAT(x,y) ((u64)PAT_ ## y << ((x)*8))
+> +
+> +void __cpuinit pat_init(void)
 > +{
-> +	if (PagePrivate(page)) {
-> +		if (TestSetPageLocked(page))
-> +			BUG();
-> +		page->mapping = mapping;
-> +		do_invalidatepage(page, 0);
-> +		page->mapping = NULL;
-> +		unlock_page(page);
+> +	/* Set PWT+PCD to Write-Combining. All other bits stay the same */
+> +	if (cpu_has_pat) {
+> +		u64 pat;
+> +		/* PTE encoding used in Linux:
+> +                   PAT
+> +                   |PCD
+> +                   ||PWT
+> +                   |||
+> +		   000 WB         default
+> +		   010 UC_MINUS   _PAGE_PCD
+> +		   011 WC         _PAGE_WC
+> +		   PAT bit unused */
+> +		pat = PAT(0,WB) | PAT(1,WT) | PAT(2,UC_MINUS) | PAT(3,WC) |
+> +		      PAT(4,WB) | PAT(5,WT) | PAT(6,UC_MINUS) | PAT(7,WC);
+
+I strongly object to this configuration.
+
+The caching modes of interest are:
+PAT_WB write-back or a close as the MTRRs will allow
+       used for WC today.
+PAT_UC completely uncachable not overridable by MTRRs 
+       and what we use today for pgprot_noncached
+PAT_WC what isn't available for current use.
+
+We should use:
+> +		pat = PAT(0,WB) | PAT(1,WT) | PAT(2,WC) | PAT(3,UC) |
+> +		      PAT(4,WB) | PAT(5,WT) | PAT(6,WC) | PAT(7,UC);
+
+Changing the UC- which currently allows write-combining if the MTRRs specify it,
+to WC.  This grandfathers in all of our current usage and changes the one
+PAT type that could today and in legacy mode specify WC to really specify WC.
+
+I don't know if we need to set the high half or not, that would depend
+on the state of the PAT errata.
+
+I do know we need to use the low 4 pat mappings to avoid most of the PAT
+errata issues.
+
+As for Andi's concern about modules playing games with the PAT mappings
+if we don't redefine how we use the page table entries our exposure to
+badly behaved modules more limited.
+
+> +		rdmsrl(MSR_IA32_CR_PAT, boot_pat_state);
+> +		wrmsrl(MSR_IA32_CR_PAT, pat);
+> +		__flush_tlb_all();
+> +		asm volatile("wbinvd");
 > +	}
-> +	page_cache_release(page);
 > +}
 > +
-> +/*
-> + * release a list of pages, invalidating them first if need be
-> + */
-> +static void read_cache_pages_invalidate_pages(struct address_space
-> *mapping, +					      struct list_head *pages)
-> +{
-> +	struct page *victim;
+> +#undef PAT
 > +
-> +	while (!list_empty(pages)) {
-> +		victim = list_to_page(pages);
-> +		list_del(&victim->lru);
-> +		read_cache_pages_invalidate_page(mapping, victim);
+> +void pat_shutdown(void)
+> +{
+> +	/* Restore CPU default pat state */
+> +	if (cpu_has_pat) {
+> +		wrmsrl(MSR_IA32_CR_PAT, boot_pat_state);
+> +		__flush_tlb_all();
+> +		asm volatile("wbinvd");
 > +	}
 > +}
 > +
->  /**
->   * read_cache_pages - populate an address space with some pages & start
-> reads against them * @mapping: the address_space
-> @@ -65,14 +100,14 @@ int read_cache_pages(struct address_space *mapping,
-> struct list_head *pages, list_del(&page->lru);
->  		if (add_to_page_cache_lru(page, mapping,
->  					page->index, GFP_KERNEL)) {
-> -			page_cache_release(page);
-> +			read_cache_pages_invalidate_page(mapping, page);
->  			continue;
->  		}
->  		page_cache_release(page);
->
->  		ret = filler(data, page);
->  		if (unlikely(ret)) {
-> -			put_pages_list(pages);
-> +			read_cache_pages_invalidate_pages(mapping, pages);
->  			break;
->  		}
->  		task_io_account_read(PAGE_CACHE_SIZE);
->
+
+
+Eric
