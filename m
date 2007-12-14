@@ -1,85 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934470AbXLNRC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934512AbXLNREG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934470AbXLNRC1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 12:02:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbXLNRCU
+	id S934512AbXLNREG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 12:04:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbXLNRDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 12:02:20 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:52655 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbXLNRCT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 12:02:19 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
-Date: Fri, 14 Dec 2007 17:59:58 +0100
-User-Agent: KMail/1.9.6
-Cc: stefano.brivio@polimi.it, "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Daniel Walker" <dwalker@mvista.com>,
-       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
-       mbuesch@freenet.de, linux@bohmer.net, kjwinchester@gmail.com,
-       jonathan@jonmasters.org, akpm@linux-foundation.org,
-       bcm43xx-dev@lists.berlios.de
-References: <20071213003028.676998182@mvista.com> <2c0942db0712140827x38e5d971sbdb3d5864fc32364@mail.gmail.com> <2c0942db0712140845p1dfd8b23va13525b75224f4c0@mail.gmail.com>
-In-Reply-To: <2c0942db0712140845p1dfd8b23va13525b75224f4c0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Dec 2007 12:03:54 -0500
+Received: from mga11.intel.com ([192.55.52.93]:41845 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752520AbXLNRDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 12:03:54 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,168,1196668800"; 
+   d="scan'208";a="438988170"
+Date: Fri, 14 Dec 2007 17:55:30 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com,
+       suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com
+Subject: [patch 3/5] x86, ptrace: change BTS GET ptrace interface
+Message-ID: <20071214175530.A20623@sedona.ch.intel.com>
+Mime-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200712141759.59273.mb@bu3sch.de>
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 14 December 2007 17:45:52 Ray Lee wrote:
-> On Dec 14, 2007 8:27 AM, Ray Lee <ray-lk@madrabbit.org> wrote:
-> > On Dec 14, 2007 6:40 AM,  <stefano.brivio@polimi.it> wrote:
-> > > Agreed. As a b43legacy maintainer, I'd be happy to know if Ingo
-> > > suggests other ways to smooth out the transition. I haven't read
-> > > proposals yet.
-> >
-> > This isn't rocket science guys. Put a file in somewhere in your tree
-> > called ReleaseAnnouncement or something, and ask Linus to adjust his
-> > kernel release process to include the contents of `cat $( find . -name
-> > ReleaseAnnouncement )` in the release message he sends out. Clear out
-> > the file after the release.
-> >
-> > Include things such as "bcm43xx is scheduled for removal. build both
-> > b43 and b43legacy as a replacement. Be sure to download the latest
-> > firmware from $URL and follow the instructions there to extract the
-> > correct latest firmware necessary for your chip. There are known
-> > incompatibilities with old udev versions, please ensure blah blah
-> > blah."
-> 
-> Or even better, keep the history, and show the diff of the old versus
-> new in the release announcement, with an appropriate sed 's/+/ /' or
-> somesuch.
-> 
-> <shrug> I'm sure you all will figure something out. Regardless, my
-> point is a higher level changelog that is human readable would be
-> helpful. (There are thousands of per-commit changelog entries to read,
-> it's beyond what I have the time to do when testing a new kernel).
-> Also, it seems distributing the release announcement work would be as
-> helpful as distributing the code development work.
+Change the ptrace interface to mimick an array from newst to oldest.
 
-In my opinion this all is the work of the distributions and not the
-work of the kernel developers. Distributions have to make sure that
-everything works after a kernel update. Yes I know that this is difficult
-with b43, as the firmware is closed source. But this can be worked
-around by explicitely prompting the user when the kernel is updated.
-This is all distribution stuff.
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
 
-What if you want to compile your own kernel? Well, then you are on
-your own anyway. You have to track kernel changes anyway.
-And I am pretty sure that it really is simple to track kernel changes.
-Get your favourite kernel news site. It will tell you the changes
-without this magic ReleaseAnnouncement file stuff.
-I mean. There are news sites (even not specific ones for the kernel)
-that reported the bcm43xx->b43 change weeks ago. There must be some
-place where they get this information from without magic files. ;)
+Index: linux-2.6-x86/arch/x86/kernel/ptrace.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/ptrace.c	2007-12-10 11:14:26.%N +0100
++++ linux-2.6-x86/arch/x86/kernel/ptrace.c	2007-12-10 11:34:20.%N +0100
+@@ -479,26 +479,33 @@
+ 	return ds_get_bts_size((void *)child->thread.ds_area_msr);
+ }
+ 
+-static int ptrace_bts_get_index(struct task_struct *child)
+-{
+-	if (!child->thread.ds_area_msr)
+-		return -ENXIO;
+-
+-	return ds_get_bts_index((void *)child->thread.ds_area_msr);
+-}
+-
+ static int ptrace_bts_read_record(struct task_struct *child,
+ 				  long index,
+ 				  struct bts_struct __user *out)
+ {
+ 	struct bts_struct ret;
+ 	int retval;
++	int bts_size;
++	int bts_index;
+ 
+ 	if (!child->thread.ds_area_msr)
+ 		return -ENXIO;
+ 
++	if (index < 0)
++		return -EINVAL;
++
++	bts_size = ds_get_bts_size((void *)child->thread.ds_area_msr);
++	if (bts_size <= index)
++		return -EINVAL;
++
++	/* translate the ptrace bts index into the ds bts index */
++	bts_index = ds_get_bts_index((void *)child->thread.ds_area_msr);
++	bts_index -= (index + 1);
++	if (bts_index < 0)
++		bts_index += bts_size;
++
+ 	retval = ds_read_bts((void *)child->thread.ds_area_msr,
+-			     index, &ret);
++			     bts_index, &ret);
+ 	if (retval)
+ 		return retval;
+ 
+@@ -813,10 +820,6 @@
+ 		ret = ptrace_bts_get_buffer_size(child);
+ 		break;
+ 
+-	case PTRACE_BTS_GET_INDEX:
+-		ret = ptrace_bts_get_index(child);
+-		break;
+-
+ 	case PTRACE_BTS_READ_RECORD:
+ 		ret = ptrace_bts_read_record
+ 			(child, data,
+@@ -1017,7 +1020,6 @@
+ 	case PTRACE_BTS_MAX_BUFFER_SIZE:
+ 	case PTRACE_BTS_ALLOCATE_BUFFER:
+ 	case PTRACE_BTS_GET_BUFFER_SIZE:
+-	case PTRACE_BTS_GET_INDEX:
+ 	case PTRACE_BTS_READ_RECORD:
+ 	case PTRACE_BTS_CONFIG:
+ 	case PTRACE_BTS_STATUS:
+Index: linux-2.6-x86/include/asm-x86/ptrace-abi.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/ptrace-abi.h	2007-12-10 11:14:26.%N +0100
++++ linux-2.6-x86/include/asm-x86/ptrace-abi.h	2007-12-10 11:16:27.%N +0100
+@@ -99,32 +99,27 @@
+    ENXIO........no buffer allocated */
+ #define PTRACE_BTS_GET_BUFFER_SIZE 42
+ 
+-/* Return the index of the next bts record to be written,
+-   if successful; -1, otherwise.
+-   EOPNOTSUPP...processor does not support bts tracing
+-   ENXIO........no buffer allocated
+-   After the first warp-around, this is the start of the circular bts buffer. */
+-#define PTRACE_BTS_GET_INDEX 43
+-
+-/* Read the DATA'th bts record into a ptrace_bts_record buffer provided in ADDR.
++/* Read the DATA'th bts record into a ptrace_bts_record buffer
++   provided in ADDR.
++   Records are ordered from newest to oldest.
+    Return 0, if successful; -1, otherwise
+    EOPNOTSUPP...processor does not support bts tracing
+    ENXIO........no buffer allocated
+    EINVAL.......invalid index */
+-#define PTRACE_BTS_READ_RECORD 44
++#define PTRACE_BTS_READ_RECORD 43
+ 
+ /* Configure last branch trace; the configuration is given as a bit-mask of
+    PTRACE_BTS_O_* options in DATA; parameter ADDR is ignored.
+    Return 0, if successful; -1, otherwise
+    EOPNOTSUPP...processor does not support bts tracing
+    ENXIO........no buffer allocated */
+-#define PTRACE_BTS_CONFIG 45
++#define PTRACE_BTS_CONFIG 44
+ 
+ /* Return the configuration as bit-mask of PTRACE_BTS_O_* options
+    if successful; -1, otherwise.
+    EOPNOTSUPP...processor does not support bts tracing
+    ENXIO........no buffer allocated */
+-#define PTRACE_BTS_STATUS 46
++#define PTRACE_BTS_STATUS 45
+ 
+ /* Trace configuration options */
+ /* Collect last branch trace */
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
--- 
-Greetings Michael.
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
