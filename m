@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765587AbXLNLLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765987AbXLNLPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765587AbXLNLLs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 06:11:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758351AbXLNLLj
+	id S1765987AbXLNLPf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 06:15:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759396AbXLNLP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 06:11:39 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:63506 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757831AbXLNLLi (ORCPT
+	Fri, 14 Dec 2007 06:15:26 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:42754 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753750AbXLNLPZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 06:11:38 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 63.115.24.214
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19Zt0f/Tx9XH1El+sQWYvXB
-Message-ID: <476264E5.3090809@reed.com>
-Date: Fri, 14 Dec 2007 06:11:33 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
+	Fri, 14 Dec 2007 06:15:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=a9U/AD+GeXBeqzz5eKo7awsdxtTQ3Pz2cDPf1JMlFzYZ+I87wD/Ujj9fnvtBt0Kr5/s5Iy6r0uv7yCYNx9PsYk/EwDnKC81Mf+oURAL7C+c3xLhoHQJcceqUIwqBHyB0xZX3p0UIz8cgw0TMQjhY+1DzyeOJY7y31maf2Rhlimk=
+Message-ID: <9a8cbed90712140315v27148168k304853ee8d6572ec@mail.gmail.com>
+Date: Fri, 14 Dec 2007 06:15:25 -0500
+From: "Arun Thomas" <arun.thomas@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: PROBLEM: E6850 has an 8+ minute delay during boot
+Cc: "Jiri Slaby" <jirislaby@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.0.99999.0712141140310.10584@localhost.localdomain>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
- on some AMD64x2 laptops, etc.
-References: <466F0941.9060201@reed.com> <1181682498.8176.224.camel@chaos>	<469578CD.3080609@reed.com> <1184216528.12353.203.camel@chaos>	<1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com>	<1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com>	<1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <p73prx9ft1v.fsf@bingen.suse.de>
-In-Reply-To: <p73prx9ft1v.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9a8cbed90712140110l156a34e3x38533b7710544cf8@mail.gmail.com>
+	 <20071214015315.09829a99.akpm@linux-foundation.org>
+	 <9a8cbed90712140201r6cb287d9w99cc1210c68e8e60@mail.gmail.com>
+	 <4762586F.8090603@gmail.com>
+	 <alpine.LFD.0.99999.0712141140310.10584@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Dec 14, 2007 5:43 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
 
+>
+> Arun, do you have an USB keyboard plugged in ? If not, can you connect
+> one and check, whether it changes things or not ?
 
-Andi Kleen wrote:
-> "
-> With the additional call this should be completely out of line now to save 
-> code size. Similar for the in variant.
->
->
->   
-Sure.  Want me to make a new patch with the _p croutines out-of-line?
+I had a USB keyboard and mouse connected when I encountered the
+problem. Do you want me to try with a PS/2 keyboard/mouse?
+
+Thanks,
+Arun
