@@ -1,57 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757677AbXLNTXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbXLNTYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757677AbXLNTXw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXLNTXd
+	id S1757359AbXLNTYi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:24:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbXLNTXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:23:33 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:58045 "EHLO
+	Fri, 14 Dec 2007 14:23:35 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58043 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751783AbXLNTXc (ORCPT
+	with ESMTP id S1753826AbXLNTXc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 14 Dec 2007 14:23:32 -0500
-Message-Id: <20071214154441.860894000@chello.nl>
-References: <20071214153907.770251000@chello.nl>
+Message-Id: <20071214153907.770251000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 14 Dec 2007 16:39:27 +0100
+Date: Fri, 14 Dec 2007 16:39:07 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 20/29] netfilter: NF_QUEUE vs emergency skbs
-Content-Disposition: inline; filename=emergency-nf_queue.patch
-X-Bad-Reply: References but no 'Re:' in Subject.
+Subject: [PATCH 00/29] Swap over NFS -v15
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avoid memory getting stuck waiting for userspace, drop all emergency packets.
-This of course requires the regular storage route to not include an NF_QUEUE
-target ;-)
+Hi,
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- net/netfilter/core.c |    3 +++
- 1 file changed, 3 insertions(+)
+Another posting of the full swap over NFS series. 
 
-Index: linux-2.6/net/netfilter/core.c
-===================================================================
---- linux-2.6.orig/net/netfilter/core.c
-+++ linux-2.6/net/netfilter/core.c
-@@ -176,9 +176,12 @@ next_hook:
- 		ret = 1;
- 		goto unlock;
- 	} else if (verdict == NF_DROP) {
-+drop:
- 		kfree_skb(skb);
- 		ret = -EPERM;
- 	} else if ((verdict & NF_VERDICT_MASK) == NF_QUEUE) {
-+		if (skb_emergency(*pskb))
-+			goto drop;
- 		if (!nf_queue(skb, elem, pf, hook, indev, outdev, okfn,
- 			      verdict >> NF_VERDICT_BITS))
- 			goto next_hook;
+Andrew/Linus, could we start thinking of sticking this in -mm?
 
---
+[ patches against 2.6.24-rc5-mm1, also to be found online at:
+  http://programming.kicks-ass.net/kernel-patches/vm_deadlock/v2.6.24-rc5-mm1/ ]
+
+The patch-set can be split in roughtly 5 parts, for each of which I shall give
+a description.
+
+
+  Part 1, patches 1-11
+
+The problem with swap over network is the generic swap problem: needing memory
+to free memory. Normally this is solved using mempools, as can be seen in the
+BIO layer.
+
+Swap over network has the problem that the network subsystem does not use fixed
+sized allocations, but heavily relies on kmalloc(). This makes mempools
+unusable.
+
+This first part provides a generic reserve framework.
+
+Care is taken to only affect the slow paths - when we're low on memory.
+
+Caveats: it currently doesn't do SLOB.
+
+ 1 - mm: gfp_to_alloc_flags()
+ 2 - mm: tag reseve pages
+ 3 - mm: sl[au]b: add knowledge of reserve pages
+ 4 - mm: kmem_estimate_pages()
+ 5 - mm: allow PF_MEMALLOC from softirq context
+ 6 - mm: serialize access to min_free_kbytes
+ 7 - mm: emergency pool
+ 8 - mm: system wide ALLOC_NO_WATERMARK
+ 9 - mm: __GFP_MEMALLOC
+10 - mm: memory reserve management
+11 - selinux: tag avc cache alloc as non-critical
+
+
+  Part 2, patches 12-14
+
+Provide some generic network infrastructure needed later on.
+
+12 - net: wrap sk->sk_backlog_rcv()
+13 - net: packet split receive api
+14 - net: sk_allocation() - concentrate socket related allocations
+
+
+  Part 3, patches 15-21
+
+Now that we have a generic memory reserve system, use it on the network stack.
+The thing that makes this interesting is that, contrary to BIO, both the
+transmit and receive path require memory allocations. 
+
+That is, in the BIO layer write back completion is usually just an ISR flipping
+a bit and waking stuff up. A network write back completion involved receiving
+packets, which when there is no memory, is rather hard. And even when there is
+memory there is no guarantee that the required packet comes in in the window
+that that memory buys us.
+
+The solution to this problem is found in the fact that network is to be assumed
+lossy. Even now, when there is no memory to receive packets the network card
+will have to discard packets. What we do is move this into the network stack.
+
+So we reserve a little pool to act as a receive buffer, this allows us to
+inspect packets before tossing them. This way, we can filter out those packets
+that ensure progress (writeback completion) and disregard the others (as would
+have happened anyway). [ NOTE: this is a stable mode of operation with limited
+memory usage, exactly the kind of thing we need ]
+
+Again, care is taken to keep much of the overhead of this to only affect the
+slow path. Only packets allocated from the reserves will suffer the extra
+atomic overhead needed for accounting.
+
+15 - netvm: network reserve infrastructure
+16 - netvm: INET reserves.
+17 - netvm: hook skb allocation to reserves
+18 - netvm: filter emergency skbs.
+19 - netvm: prevent a TCP specific deadlock
+20 - netfilter: NF_QUEUE vs emergency skbs
+21 - netvm: skb processing
+
+
+  Part 4, patches 22-24
+
+Generic vm infrastructure to handle swapping to a filesystem instead of a block
+device.
+
+This provides new a_ops to handle swapcache pages and could be used to obsolete
+the bmap usage for swapfiles.
+
+22 - mm: prepare swap entry methods for use in page methods
+23 - mm: add support for non block device backed swap files
+24 - mm: methods for teaching filesystems about PG_swapcache pages
+
+
+  Part 5, patches 25-29
+
+Finally, convert NFS to make use of the new network and vm infrastructure to
+provide swap over NFS.
+
+25 - nfs: remove mempools
+26 - nfs: teach the NFS client how to treat PG_swapcache pages
+27 - nfs: disable data cache revalidation for swapfiles
+28 - nfs: enable swap on NFS
+29 - nfs: fix various memory recursions possible with swap over NFS.
+
+
+Changes since -v14:
+ - SLAB support
+ - a_ops rework
+ - various bug fixes and cleanups
+
 
