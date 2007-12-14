@@ -1,67 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbXLNOaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbXLNOeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbXLNOaf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 09:30:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbXLNOa1
+	id S1754444AbXLNOeH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 09:34:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXLNOd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 09:30:27 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:4160 "EHLO ra.tuxdriver.com"
+	Fri, 14 Dec 2007 09:33:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55408 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752780AbXLNOa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 09:30:26 -0500
-Date: Fri, 14 Dec 2007 09:14:46 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Michael Buesch <mb@bu3sch.de>, Ray Lee <ray-lk@madrabbit.org>,
-       bcm43xx-dev@lists.berlios.de, Daniel Walker <dwalker@mvista.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux@bohmer.net, jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
-       kjwinchester@gmail.com, mbuesch@freenet.de
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
-	to mutex
-Message-ID: <20071214141446.GA3096@tuxdriver.com>
-References: <20071213003028.676998182@mvista.com> <200712131445.39770.mb@bu3sch.de> <2c0942db0712131604m41c34da9hf3122b0603f3af96@mail.gmail.com> <200712140143.16451.mb@bu3sch.de> <20071214105624.GC23964@elte.hu>
+	id S1752015AbXLNOdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 09:33:55 -0500
+Date: Fri, 14 Dec 2007 15:33:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: unlisted-recipients: no@elvis.elte.hu, To-header@elvis.elte.hu,
+       on@elvis.elte.hu, "input <"@elvis.elte.hu,
+       ";
+	Rene Herman" <rene.herman@keyaccess.nl>,
+       Paul Rolland <rol@as2917.net>, "H. Peter Anvin" <hpa@zytor.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Pavel Machek <pavel@ucw.cz>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
+	Cc:	;Rene Herman <rene.herman@keyaccess.nl>
+			^-extraneous tokens in mailbox, missing end of mailbox
+Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
+	Cc:	;Rene Herman <rene.herman@keyaccess.nl>
+			^-extraneous tokens in mailbox, missing end of mailbox
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+	with MCP51 laptops
+Message-ID: <20071214143328.GB10130@elte.hu>
+References: <475EACB8.7080608@keyaccess.nl> <20071211163706.2dc82275@tux.DEF.witbe.net> <475EB263.2050405@keyaccess.nl> <475EC1C0.2040000@reed.com> <20071211173231.2b87a81f@the-village.bc.nu> <475EE2CA.6020601@reed.com> <Pine.LNX.4.61.0712111513490.23653@chaos.analogic.com> <475F23BD.3040903@reed.com> <Pine.LNX.4.61.0712120802300.4443@chaos.analogic.com> <20071212161245.3f388229@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071214105624.GC23964@elte.hu>
+In-Reply-To: <20071212161245.3f388229@the-village.bc.nu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 14, 2007 at 11:56:24AM +0100, Ingo Molnar wrote:
+
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> There is another reason we can't just do a dumb changeover - two 
+> actually
 > 
-> * Michael Buesch <mb@bu3sch.de> wrote:
+> #1: Some drivers are using inb_p/outb_p in PCI cases which are going 
+> #to cause PCI posting changes. Most are probably just wrong in the 
+> #first place but they need hand checking
 
-> > Oh come on. b43 is more than a year old now. How long should we wait? 
-> > Two or three? Forever?
+hm, any intelligent way to force PCI posting? I guess not.
+
+here's a list of candidate drivers (match the out*_p() pattern and do 
+pci)
+
+./char/epca.c 
+./char/sonypi.c
+./scsi/megaraid.c
+./ide/pci/serverworks.c
+./ide/pci/cmd640.c
+./input/mouse/pc110pad.c
+./i2c/busses/i2c-amd756.c
+./i2c/busses/i2c-ali15x3.c
+./i2c/busses/i2c-ali1563.c
+./i2c/busses/i2c-ali1535.c
+./i2c/busses/i2c-viapro.c
+./i2c/busses/i2c-nforce2.c
+./i2c/busses/i2c-i801.c
+./i2c/busses/i2c-piix4.c
+./hwmon/vt8231.c
+./hwmon/via686a.c
+./hwmon/sis5595.c
+./telephony/ixj.c
+./net/irda/donauboe.c
+./watchdog/pcwd_pci.c
+./watchdog/wdt_pci.c
+
+> #2: We've got SMP cases that only 'work' because the odds of splitting
+> the outb and the following port 0x80 cycle, which locks the bus, are tiny.
 > 
-> possibly forever, if you dont get obvious regressions like "my wlan does 
-> not work" (reported in this very thread), resolved. Pushing the blame to 
-> udev (in a rather unfriendly way) wont give users a working system and 
-> wont get you many new testers for the new driver either.
+> That is we've got
+> 
+> 		CPU1			CPU2
+> 		main path		irq path
+> 		outb
+> 					outb
+> 
+> 		inb 0x80
+> 					inb 0x80
+> 
+> races in one or two spots.
 
-It is true that Michael can be a little unpleasant at times.
-The colloquialism that comes to mind is that he "does not suffer fools
-lightly".  Hopefully he will take your counseling to heart and learn
-to be a bit more moderate in his tone.  FWIW, he is still young. :-)
+which seems to suggest we are better off not doing the port 0x80 trick 
+at all.
 
-That said, it is also true that the b43[legacy] driver[s] do a more
-than adequate job of replacing the old bcm43xx driver provided that
-one (re-)installs the proper firmware.  And I know of no other driver
-that goes to more trouble to tell you how to get the proper firmware
-installed than this one.
-
-The bcm43xx driver will be added to the feature removal schedule
-in 2.6.25.  Proper judgment will be used in deciding the actual date
-of its removal.  In the meantime hopefully every distribution will
-have or obtain a working udev configuration.  If things don't work
-out as planned then we will re-evaluate.
-
-Let's stop this now please.
-
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+	Ingo
