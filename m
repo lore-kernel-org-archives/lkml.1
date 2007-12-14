@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757635AbXLNRdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762591AbXLNRlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757635AbXLNRdu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 12:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbXLNRdm
+	id S1762591AbXLNRlv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 12:41:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbXLNRln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 12:33:42 -0500
-Received: from mga11.intel.com ([192.55.52.93]:30549 "EHLO mga11.intel.com"
+	Fri, 14 Dec 2007 12:41:43 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46389 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753113AbXLNRdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 12:33:41 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,168,1196668800"; 
-   d="scan'208";a="238661091"
-From: Shannon Nelson <shannon.nelson@intel.com>
-Subject: [PATCH] I/OAT: fix null device in call to dev_err()
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: snakebyte@gmx.de, shannon.nelson@intel.com, maciej.sosnowski@intel.com
-Date: Fri, 14 Dec 2007 17:33:26 -0800
-Message-ID: <20071215013326.16456.5483.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12.1
+	id S1753942AbXLNRlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 12:41:42 -0500
+Message-ID: <4762C051.1070609@redhat.com>
+Date: Fri, 14 Dec 2007 11:41:37 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: ext4 development <linux-ext4@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] ext3: issue warning when bad inode found via ext3_lookup
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can't use the device in a dev_err() after a kzalloc failure or after the kfree, so
-simplify it to the pdev that was originally passed in.
+I have a hand-crafted bad filesystem image which has corruption:
 
-Cc: Eric Sesterhenn <snakebyte@gmx.de>
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+[root@inode ~]# ls mnt/dir
+file1  file2  file3  file4  file5
+[root@inode ~]# ls mnt/dir/file4 
+ls: cannot access mnt/dir/file4: No such file or directory
+[root@inode ~]# ls -l mnt/dir
+ls: cannot access mnt/dir/file4: No such file or directory
+total 8
+drwxr-xr-x 2 root root 1024 2007-09-04 13:36 file1
+drwxr-xr-x 2 root root 1024 2007-09-04 13:36 file2
+drwxr-xr-x 2 root root 1024 2007-09-04 13:36 file3
+d????????? ? ?    ?       ?                ? file4
+drwxr-xr-x 2 root root 1024 2007-09-04 13:36 file5
+
+e2fsck also knows it's corrupted:
+Pass 2: Checking directory structure
+Entry 'file4' in /dir (2049) has deleted/unused inode 13.  Clear? no
+
+Entry 'file4' in /dir (2049) has an incorrect filetype (was 2, should be 1).
+Fix? no
+
+Pass 3: Checking directory connectivity
+Unconnected directory inode 2053 (/dir/???)
+
+BUT there are no kernel messages logged anywhere because ext3_read_inode
+silently makes a bad_inode in this case, so that stale NFS filehandles
+aren't noisy.  However, when we encounter such a problem after a by-name
+lookup, I think a warning is appropriate, as it indicates filesystem
+corruption.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com
 ---
 
- drivers/dma/ioat_dma.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
-index c1c2dcc..19cd204 100644
---- a/drivers/dma/ioat_dma.c
-+++ b/drivers/dma/ioat_dma.c
-@@ -1351,7 +1351,7 @@ err_completion_pool:
- err_dma_pool:
- 	kfree(device);
- err_kzalloc:
--	dev_err(&device->pdev->dev,
-+	dev_err(&pdev->dev,
- 		"Intel(R) I/OAT DMA Engine initialization failed\n");
- 	return NULL;
- }
+Index: linux-2.6.24-rc3/fs/ext3/namei.c
+===================================================================
+--- linux-2.6.24-rc3.orig/fs/ext3/namei.c
++++ linux-2.6.24-rc3/fs/ext3/namei.c
+@@ -1049,6 +1049,9 @@ static struct dentry *ext3_lookup(struct
+ 			return ERR_PTR(-EACCES);
+ 
+ 		if (is_bad_inode(inode)) {
++			ext3_warning(inode->i_sb, __FUNCTION__,
++				     "bad inode %lu in dir #%lu",
++				      inode->i_ino, dir->i_ino);
+ 			iput(inode);
+ 			return ERR_PTR(-ENOENT);
 
