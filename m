@@ -1,84 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933402AbXLNNVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbXLNNYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933402AbXLNNVW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 08:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbXLNNVP
+	id S933565AbXLNNYo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 08:24:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932178AbXLNNYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 08:21:15 -0500
-Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:25159 "EHLO
-	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751426AbXLNNVO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 08:21:14 -0500
-Message-Id: <47623BB8.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Fri, 14 Dec 2007 08:15:52 -0500
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: <ego@in.ibm.com>, "Andrew Morton" <akpm@linux-foundation.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, <jirislaby@gmail.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc5-mm1
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
- <20071213122802.GA30427@in.ibm.com>
- <20071214014906.eb2644f4.akpm@linux-foundation.org>
-In-Reply-To: <20071214014906.eb2644f4.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Fri, 14 Dec 2007 08:24:36 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50298 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932162AbXLNNYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 08:24:35 -0500
+Date: Fri, 14 Dec 2007 14:24:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
+	on some AMD64x2 laptops, etc.
+Message-ID: <20071214132409.GA22390@elte.hu>
+References: <1181682498.8176.224.camel@chaos> <469578CD.3080609@reed.com> <1184216528.12353.203.camel@chaos> <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <20071214131502.GA14359@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071214131502.GA14359@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Fri, Dec 14, 2007 at  4:49 AM, in message
-<20071214014906.eb2644f4.akpm@linux-foundation.org>, Andrew Morton
-<akpm@linux-foundation.org> wrote: 
-> On Thu, 13 Dec 2007 17:58:02 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
-> 
->> Hi Andrew, 
->> On Thu, Dec 13, 2007 at 02:40:50AM -0800, Andrew Morton wrote:
->> > 
->> > 
->> > 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.
-> 24-rc5-mm1/
->> > 
->> > - If something goes wrong with a PCI device's probing or initialisation, try
->> >   reverting pci-disable-decoding-during-sizing-of-bars.patch.
->> > 
->> > - git-sched was dropped due to breaking suspend-to-RAM.
->> 
->> Is it the same suspend-to-RAM problem that Jiri Slaby reported 
->> here --> http://lkml.org/lkml/2007/12/7/125
->> 
->> The problem has been identified and a fix patch was provided.
->> 
-> 
-> Here we go...
-> 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> Revert from git-sched:
-> 
-> commit 9e76ad89f4fa93a789326bc0f4548cd2fbca8d8e
-> Author: Gregory Haskins <ghaskins@novell.com>
-> Date:   Thu Dec 13 21:35:26 2007 +0100
-> 
->     sched: update root-domain spans upon departure
->     
->     We shouldnt leave cpus enabled in the spans if that RQ has left the 
-> domain.
->     
->     Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> As it causes my t61p to fail to come back to life after suspend-to-RAM.
 
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Ouch.  Sorry guys, my bad.
+> wow, cool fix! (I remember that there were other systems as well that 
+> are affected by port 0x80 muckery - i thought we had removed port 0x80 
+> accesses long ago.)
+> 
+> how about the simpler fix below, as a first-level approach? We can 
+> then remove the _p in/out sequences after this.
+> 
+> this is also something for v2.6.24 merging.
 
-I can't tell what is wrong by visual inspection so I will have to dig deeper.
+updated patch attached. (from the MakeItBuild'n'Stuff dept)
 
-Regards,
--Greg
+	Ingo
 
+-------------->
+Subject: x86: fix in/out_p delays
+From: Ingo Molnar <mingo@elte.hu>
+
+Debugged by David P. Reed <dpreed@reed.com>.
+
+Do not use port 0x80, it can cause crashes, see:
+
+ http://bugzilla.kernel.org/show_bug.cgi?id=6307
+ http://bugzilla.kernel.org/show_bug.cgi?id=9511
+
+instead of just removing _p postfixes en masse, lets just first
+remove the 0x80 port usage, then remove any unnecessary _p io ops
+gradually. It's more debuggable this way.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/boot/compressed/misc_32.c |    8 ++++----
+ arch/x86/boot/compressed/misc_64.c |    8 ++++----
+ arch/x86/kernel/quirks.c           |   10 ++++++++++
+ include/asm-x86/io_32.h            |    5 +----
+ include/asm-x86/io_64.h            |    5 +----
+ 5 files changed, 20 insertions(+), 16 deletions(-)
+
+Index: linux-x86.q/arch/x86/boot/compressed/misc_32.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/boot/compressed/misc_32.c
++++ linux-x86.q/arch/x86/boot/compressed/misc_32.c
+@@ -276,10 +276,10 @@ static void putstr(const char *s)
+ 	RM_SCREEN_INFO.orig_y = y;
+ 
+ 	pos = (x + cols * y) * 2;	/* Update cursor position */
+-	outb_p(14, vidport);
+-	outb_p(0xff & (pos >> 9), vidport+1);
+-	outb_p(15, vidport);
+-	outb_p(0xff & (pos >> 1), vidport+1);
++	outb(14, vidport);
++	outb(0xff & (pos >> 9), vidport+1);
++	outb(15, vidport);
++	outb(0xff & (pos >> 1), vidport+1);
+ }
+ 
+ static void* memset(void* s, int c, unsigned n)
+Index: linux-x86.q/arch/x86/boot/compressed/misc_64.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/boot/compressed/misc_64.c
++++ linux-x86.q/arch/x86/boot/compressed/misc_64.c
+@@ -275,10 +275,10 @@ static void putstr(const char *s)
+ 	RM_SCREEN_INFO.orig_y = y;
+ 
+ 	pos = (x + cols * y) * 2;	/* Update cursor position */
+-	outb_p(14, vidport);
+-	outb_p(0xff & (pos >> 9), vidport+1);
+-	outb_p(15, vidport);
+-	outb_p(0xff & (pos >> 1), vidport+1);
++	outb(14, vidport);
++	outb(0xff & (pos >> 9), vidport+1);
++	outb(15, vidport);
++	outb(0xff & (pos >> 1), vidport+1);
+ }
+ 
+ static void* memset(void* s, int c, unsigned n)
+Index: linux-x86.q/arch/x86/kernel/quirks.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/kernel/quirks.c
++++ linux-x86.q/arch/x86/kernel/quirks.c
+@@ -3,9 +3,19 @@
+  */
+ #include <linux/pci.h>
+ #include <linux/irq.h>
++#include <linux/delay.h>
+ 
+ #include <asm/hpet.h>
+ 
++/*
++ * Some legacy devices need delays for IN/OUT sequences. Most are
++ * probably not needed but it's the safest to just do this short delay:
++ */
++void native_io_delay(void)
++{
++	udelay(1);
++}
++
+ #if defined(CONFIG_X86_IO_APIC) && defined(CONFIG_SMP) && defined(CONFIG_PCI)
+ 
+ static void __devinit quirk_intel_irqbalance(struct pci_dev *dev)
+Index: linux-x86.q/include/asm-x86/io_32.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/io_32.h
++++ linux-x86.q/include/asm-x86/io_32.h
+@@ -250,10 +250,7 @@ static inline void flush_write_buffers(v
+ 
+ #endif /* __KERNEL__ */
+ 
+-static inline void native_io_delay(void)
+-{
+-	asm volatile("outb %%al,$0x80" : : : "memory");
+-}
++extern void native_io_delay(void);
+ 
+ #if defined(CONFIG_PARAVIRT)
+ #include <asm/paravirt.h>
+Index: linux-x86.q/include/asm-x86/io_64.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/io_64.h
++++ linux-x86.q/include/asm-x86/io_64.h
+@@ -35,10 +35,7 @@
+   *  - Arnaldo Carvalho de Melo <acme@conectiva.com.br>
+   */
+ 
+-static inline void native_io_delay(void)
+-{
+-	asm volatile("outb %%al,$0x80" : : : "memory");
+-}
++extern void native_io_delay(void);
+ 
+ #if defined(CONFIG_PARAVIRT)
+ #include <asm/paravirt.h>
