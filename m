@@ -1,116 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932565AbXLNVMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765868AbXLNVQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932565AbXLNVMZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 16:12:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbXLNVMS
+	id S1765868AbXLNVQr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 16:16:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbXLNVQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 16:12:18 -0500
-Received: from host.infinivid.com ([64.119.179.76]:32891 "EHLO
-	host.infinivid.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753043AbXLNVMR (ORCPT
+	Fri, 14 Dec 2007 16:16:37 -0500
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:52896 "EHLO
+	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbXLNVQg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 16:12:17 -0500
-Subject: Re: PCI resource unavailable on mips
-From: Jon Dufresne <jon.dufresne@infinitevideocorporation.com>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-In-Reply-To: <20071214093945.GA25186@linux-mips.org>
-References: <1197557806.3370.7.camel@microwave.infinitevideocorporation.com>
-	 <20071214093945.GA25186@linux-mips.org>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 16:12:15 -0500
-Message-Id: <1197666735.3800.1.camel@microwave.infinitevideocorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Dec 2007 16:16:36 -0500
+From: hooanon05@yahoo.co.jp
+Subject: Re: [UNIONFS] 00/42 Unionfs and related patches review 
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <200712131529.lBDFT5Ch025553@agora.fsl.cs.sunysb.edu>
+References: Your message of "Mon, 10 Dec 2007 12:20:20 +0900." <E1J1ZBs-0006M0-VL@jroun> <200712131529.lBDFT5Ch025553@agora.fsl.cs.sunysb.edu>
+Date: Sat, 15 Dec 2007 06:15:59 +0900
+Message-Id: <E1J3Ht2-0000mH-0V@jroun>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> Odd.  I knew the resource allocation stuff has it's issues for some
-> non-trivial configuration but that one is a new one.  Which makes me
-> wonder if your platform runs the PCI code in probe-only mode where it
-> will not actually assign resources but only inherit the whole PCI setup
-> except interrupt routing from the firmware.
+Hello Professor Zadok,
+
+Erez Zadok:
+> I believe that small VFS changes to help stackable file systems are
+> perfectly reasonable, and a good thing; and I'm working on such patches.
+> Conversely, I am very mindful of the VFS's complexity, so I also believe
+> that massive VFS changes are a bad thing; I want to avoid bloating the VFS
+> or de-stabilizing it just for the sake of stacking or any single stackable
+> f/s.  I am also concerned about not changing existing "lower" file systems
+> whatsoever, because they are well tested and stable.
+
+I have no objection against your opinion about massive VFS changes or
+existing "lower" filesystems.
 
 
-Hmm, I found more strange behavior with the bars that may or may not be
-related. I wrote a function that does another sanity check. It does an
-ioremap on one of the working bars, then reads one address for
-correctness. This is just to confirm that iomem is working. This is what
-the function looks like:
+> from).  So in my opinion, the chances are very slim that a large amount of
+> data changes will happen on a lower inode all within one second and not be
+> detected by our mtime/cite cache-coherency algorithms.
 
-> void dump_mmio(struct pci_dev *dev)
-> {
-> 	unsigned long phys, size;
-> 	struct resource *mem_region;
-> 	void __iomem *mmio;
-> 	u32 dword;
+I agree that time-based checking is available in many cases.
+But there will exist some opeartions which are done in one
+second, and it may not be available when a user changes the clock/time
+of his system.
+
+
+> Also, time-based cache coherency is a [sic] time-honored technique in NFS.
+> Users have gotten used to the fact that if they change something on the
+> server (i.e., the "layer" below the client), that those changes many not be
+> immediately visible on the client (esp. with heavy caching on the client).
+> So if it's been good enough for NFS for over two decades, I don't see a
+> compelling reason to complicate unionfs for a slim chance of detecting
+> changes that occur within one second.
+
+Since NFS is a remote filesystem, I don't think it is a good idea to
+compare the behaviour of if and a stackable filesystem, since all
+lower(branch) filesystems are able to be local filesystems.
+
+
+> Right now my code to detect when a lower object has changed is very simple
+> and short: just one "if" statement to compare the corresponding inode
+> mtimes.  I'd like to keep things simple if at all possible.  Fundamentally,
+> all I need is ONE simple bit of information that will tell me that the upper
+> and lower inodes are no longer in sync.  Just one bit, not a whole complex
+> data structure with callbacks and bit-maps and such.
+
+Agreed, so the inotify handler should set a flag or atomic_inc/dec
+the internal generation, or enqueue such job and handle it
+later (shortly). Of course, when the dentry/inode of the stackable
+filesystem corresspoding to the modfied file are not cached, the handler
+has nothing to do.
+Additionally, it is only directories to be set inotify for monitoring,
+instead of all files. The inotify handler for a directory receives all
+necessary (for a stackable fs) events for its children.
+(but there are a few limitations or exceptions)
+
+
+> What you propose violates the clean layer separation in a way that I'm not
+> too comfortable with (even if it works for you :-) I believe stackable file
+	:::
+> system, each struct file/dentry/inode has a corresponding lower object.  Our
+> FiST templates for Linux include an extra mode---called "fist lite"---which
+> saves on inodes and pages by having BOTH the upper and lower dentry point to
+> the lower inode.  This saves memory (shared pages) and reduces layering
+> overhead (but you can't intercept mmap ops, which some stackable f/s like to
+> do).  The cost of such trick is violating the clean layering separation: a
+> dentry of the upper file system now points to an inode (via dentry->d_inode)
+> of the lower file system!  To me, this is dangerous in the long run because
+> objects from one layer can be "leaked" to another layer, with potentially
+> disastrous results.
+
+Currently, I don't think sharing page is any kind of
+violation. Additionally the dentry of the upper file system does NOT
+point to the inode of the lower file system. Of course it can implement
+->mmap operation.
+
+
+> What you propose above with vm_operations requires a sequence of operations
+> in the vm->fault operation which looks like:
 > 
-> 	phys = pci_resource_start(dev, 1);
-> 	size = pci_resource_len(dev, 1);
-> 
-> 	mem_region = request_mem_region(phys, size, MODULENAME);
-> 	BUG_ON(!mem_region);
-> 	mmio = ioremap_nocache(phys, size);
-> 	BUG_ON(!mmio);
-> 
-> 	printk("******************MMIO*************************************\n");
-> 	printk("mmio=0x%p phys=0x%08lx size=0x%08lx\n", mmio, phys, size);
-> 	dword = ioread32(mmio + PCI_MMIO_BASE + 0x40);
-> 	printk("dword=%x\n", dword);
-> 	printk("***********************************************************\n");
-> 
-> 	iounmap(mmio);
-> 	release_mem_region(phys, size);
-> }
+> 	saved_file = vma->vm_file;
+> 	vma->vm_file = hidden_file;
+> 	call the lower ->fault op passing it the modified vma
+> 	vma->vm_file = saved_file;
 
-on x86 this prints out what I would expect with the correct value which
-is:
+Basically, yes.
+But there are several things to do such as locking.
 
-> ******************MMIO*************************************
-> mmio=0xf8e80000 phys=0xefa00000 size=0x00200000
-> dword=54061131
-> ***********************************************************
 
-on mips however this crashes the kernel with a "Data bus error" the
-exact output is below:
+> Even if both of these techniques work (and they do, at least in limited
+> testing I've done), there is something very unpleasant about having to
+> temporarily override a field's value, then fix it again, after coming back
+> from calling the lower op.  Aside from the uncleanliness of this kind of
+> technique, it can seriously lead to races and other data corruptions when/if
+> the temporarily-fixed fields "leak" outside the current code.  (I have a
+> strong feeling that several kernel developers might vomit in disgust if I
+> dared to submit such hacky patches to unionfs... :-)
 
-> ******************MMIO*************************************
-> mmio=0xc0300000 phys=0x24000000 size=0x00200000
-> Data bus error, epc == c0279a00, ra == c02799f4
-> Oops[#1]:
-> Cpu 0
-> $ 0   : 00000000 10008400 c0340040 802e031c
-> $ 4   : 802e031c 802e0000 00000001 8019f924
-> $ 8   : 802e0000 0000020b 80320000 80320000
-> $12   : 80320000 00000001 83031be6 8031c960
-> $16   : 80086994 c0300000 24000000 00200000
-> $20   : 802e0000 802e1ae4 c025a000 8008cde4
-> $24   : 00000006 00000000                  
-> $28   : 83030000 83031d20 c0288aec c02799f4
-> Hi    : 00000051
-> Lo    : eb851f00
-> epc   : c0279a00     Tainted: P     
-> ra    : c02799f4 Status: 10008403    KERNEL EXL IE 
-> Cause : 1080001c
-> PrId  : 00061200
-> Modules linked in: tmman1700(P) mousedev usbhid usb_storage phStbFB(P) phStbFBRead(P) phStbVideoRenderer(P) phStbVe
-> Process insmod (pid: 785, threadinfo=83030000, task=8109f8e8)
-> Stack : c0288b28 c0300000 24000000 00200000 810b9c54 00000003 c0290000 810b9c00
->         c0288b28 c0279ae4 83031d48 00000002 00000000 00000000 810b9c00 c0288510
->         00000000 80373480 80177520 801774e4 810b9d1c c0288544 80177574 829f6066
->         810b9d1c 810b9c48 c0288544 801a3d40 810b9d1c 801a4538 81091c00 8011fc70
->         810b9d1c 810b9c48 c0288544 c0288544 801a475c 801a475c 801a2810 80168e08
->         ...
-> Call Trace:[<c0279ae4>][<80177520>][<801774e4>][<80177574>][<801a3d40>][<801a4538>][<8011fc70>][<801a475c>][<801a4]
-> 
-> Code: 3c020004  34420040  02221021 <8c450000> 3c04c028  0200f809  24845164  3c04c028  0200f809 
-> Segmentation fault
+I guess probably you forgot some locking.
 
-The data bus error occurs whenever I do a ioreadX on the ioremapped area. Any idea why this doesn't work on the mips?
 
-Thanks,
-Jon
+> To me, any time such a hack has to be employed, it tells me that there's
+> something wrong with the API in question.  And so I'd much rather see the
+> API fixed The Right Way[tm], than promote such potentially unsafe practices.
 
+If you changed some important members of internal structures without
+locking, it would be unsafe and violate something.
+
+Finally I think the approach of sharing pages, you may call it
+zero-copy conversely your approach, is safe. At least, this approach is
+working over a year while several people are using it.
+Of course, I never say it is bug-free. There may exist a problem which
+simply I don't know yet.
+
+
+Sincerely,
+Junjiro Okajima
