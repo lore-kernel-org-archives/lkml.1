@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934179AbXLNWhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934658AbXLNWiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934179AbXLNWhj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 17:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932549AbXLNWe3
+	id S934658AbXLNWiJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 17:38:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933092AbXLNWec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 17:34:29 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:4990 "EHLO perches.com"
+	Fri, 14 Dec 2007 17:34:32 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:4992 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761006AbXLNWeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 17:34:19 -0500
+	id S1762079AbXLNWeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 17:34:20 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
-Subject: [PATCH 08/11] drivers/net/sunvnet.c: Use print_mac
-Date: Fri, 14 Dec 2007 14:34:09 -0800
-Message-Id: <1197671652-32492-8-git-send-email-joe@perches.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, Michael Chan <mchan@broadcom.com>,
+       netdev@vger.kernel.org
+Subject: [PATCH 09/11] drivers/net/tg3.c: Use print_mac
+Date: Fri, 14 Dec 2007 14:34:10 -0800
+Message-Id: <1197671652-32492-9-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.7.949.g2221a6
-In-Reply-To: <1197671652-32492-7-git-send-email-joe@perches.com>
+In-Reply-To: <1197671652-32492-8-git-send-email-joe@perches.com>
 References: <1197671652-32492-1-git-send-email-joe@perches.com>
  <1197671652-32492-2-git-send-email-joe@perches.com>
  <1197671652-32492-3-git-send-email-joe@perches.com>
@@ -24,7 +25,8 @@ References: <1197671652-32492-1-git-send-email-joe@perches.com>
  <1197671652-32492-5-git-send-email-joe@perches.com>
  <1197671652-32492-6-git-send-email-joe@perches.com>
  <1197671652-32492-7-git-send-email-joe@perches.com>
-Message-Id: <d70fb8ac3a19e2bc8ca4976aeacee3c31dd52073.1197671367.git.joe@perches.com>
+ <1197671652-32492-8-git-send-email-joe@perches.com>
+Message-Id: <24eddd5027b6ac3b66224dcf50a4ba4eed5aba60.1197671367.git.joe@perches.com>
 In-Reply-To: <9fc484fc034428ab68ecb2711c8456df9e98d56d.1197671367.git.joe@perches.com>
 References: <9fc484fc034428ab68ecb2711c8456df9e98d56d.1197671367.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,37 +36,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/sunvnet.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
+ drivers/net/tg3.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/sunvnet.c b/drivers/net/sunvnet.c
-index ff1028a..4a0035f 100644
---- a/drivers/net/sunvnet.c
-+++ b/drivers/net/sunvnet.c
-@@ -1149,6 +1149,7 @@ static int __devinit vnet_port_probe(struct vio_dev *vdev,
- 	struct vnet *vp;
- 	const u64 *rmac;
- 	int len, i, err, switch_port;
+diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+index 4942f7d..eea7da9 100644
+--- a/drivers/net/tg3.c
++++ b/drivers/net/tg3.c
+@@ -12351,9 +12351,10 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 	unsigned long tg3reg_base, tg3reg_len;
+ 	struct net_device *dev;
+ 	struct tg3 *tp;
+-	int i, err, pm_cap;
++	int err, pm_cap;
+ 	char str[40];
+ 	u64 dma_mask, persist_dma_mask;
 +	DECLARE_MAC_BUF(mac);
  
- 	print_version();
+ 	if (tg3_version_printed++ == 0)
+ 		printk(KERN_INFO "%s", version);
+@@ -12632,7 +12633,8 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 		goto err_out_apeunmap;
+ 	}
  
-@@ -1213,12 +1214,9 @@ static int __devinit vnet_port_probe(struct vio_dev *vdev,
- 
- 	dev_set_drvdata(&vdev->dev, port);
- 
--	printk(KERN_INFO "%s: PORT ( remote-mac ", vp->dev->name);
+-	printk(KERN_INFO "%s: Tigon3 [partno(%s) rev %04x PHY(%s)] (%s) %s Ethernet ",
++	printk(KERN_INFO "%s: Tigon3 [partno(%s) rev %04x PHY(%s)] "
++	       "(%s) %s Ethernet %s\n",
+ 	       dev->name,
+ 	       tp->board_part_number,
+ 	       tp->pci_chip_rev_id,
+@@ -12640,11 +12642,8 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 	       tg3_bus_string(tp, str),
+ 	       ((tp->tg3_flags & TG3_FLAG_10_100_ONLY) ? "10/100Base-TX" :
+ 		((tp->tg3_flags2 & TG3_FLG2_ANY_SERDES) ? "1000Base-SX" :
+-		 "10/100/1000Base-T")));
+-
 -	for (i = 0; i < 6; i++)
--		printk("%2.2x%c", port->raddr[i], i == 5 ? ' ' : ':');
--	if (switch_port)
--		printk("switch-port ");
--	printk(")\n");
-+	printk(KERN_INFO "%s: PORT ( remote-mac %s%s )\n",
-+	       vp->dev->name, print_mac(mac, port->raddr),
-+	       switch_port ? " switch-port" : "");
+-		printk("%2.2x%c", dev->dev_addr[i],
+-		       i == 5 ? '\n' : ':');
++		 "10/100/1000Base-T")),
++	       print_mac(mac, dev->dev_addr));
  
- 	vio_port_up(&port->vio);
- 
+ 	printk(KERN_INFO "%s: RXcsums[%d] LinkChgREG[%d] "
+ 	       "MIirq[%d] ASF[%d] WireSpeed[%d] TSOcap[%d]\n",
 -- 
 1.5.3.7.949.g2221a6
 
