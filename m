@@ -1,90 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934157AbXLNXGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764926AbXLNXHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934157AbXLNXGp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 18:06:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933124AbXLNXG3
+	id S1764926AbXLNXHF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 18:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934033AbXLNXGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 18:06:29 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:4623 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756172AbXLNXG1 (ORCPT
+	Fri, 14 Dec 2007 18:06:44 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38584 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933998AbXLNXGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 18:06:27 -0500
-Message-ID: <47630C3B.602@chelsio.com>
-Date: Fri, 14 Dec 2007 15:05:31 -0800
-From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steve Wise <swise@opengridcomputing.com>, wenxiong@us.ibm.com
-Subject: Re: [PATCH 2/2] cxgb3 - Parity initialization for T3C adapters
-References: <20071205181527.22106.73134.stgit@speedy5> <4759A6EA.1050106@garzik.org> <4759CD92.2070604@chelsio.com> <4759D6AF.5050205@garzik.org> <4759E200.3050607@chelsio.com>
-In-Reply-To: <4759E200.3050607@chelsio.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 14 Dec 2007 18:06:41 -0500
+Date: Fri, 14 Dec 2007 15:05:33 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: htejun@gmail.com, gregkh@suse.de, stable@kernel.org,
+       linux-kernel@vger.kernel.org, maneesh@linux.vnet.ibm.com,
+       vatsa@linux.vnet.ibm.com, balbir@in.ibm.com, ego@in.ibm.com,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22-stable causes oomkiller to be invoked
+Message-Id: <20071214150533.aa30efd4.akpm@linux-foundation.org>
+In-Reply-To: <20071214182802.GC2576@linux.vnet.ibm.com>
+References: <20071213132326.GC16905@linux.vnet.ibm.com>
+	<20071213151847.GB5676@linux.vnet.ibm.com>
+	<20071213162936.GA7635@suse.de>
+	<20071213164658.GA30865@linux.vnet.ibm.com>
+	<20071213175423.GA2977@linux.vnet.ibm.com>
+	<476295FF.1040202@gmail.com>
+	<20071214154711.GD23670@linux.vnet.ibm.com>
+	<4762A721.7080400@gmail.com>
+	<20071214161637.GA2687@linux.vnet.ibm.com>
+	<20071214095023.b5327703.akpm@linux-foundation.org>
+	<20071214182802.GC2576@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Dec 2007 23:04:14.0468 (UTC) FILETIME=[A5595440:01C83EA5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Divy Le Ray wrote:
-> Jeff Garzik wrote:
->>
->> Divy Le Ray wrote:
->> > Jeff Garzik wrote:
->> >> Divy Le Ray wrote:
->> >>> From: Divy Le Ray <divy@chelsio.com>
->> >>>
->> >>> Add parity initialization for T3C adapters.
->> >>>
->> >>> Signed-off-by: Divy Le Ray <divy@chelsio.com>
->> >>> ---
->> >>>
->> >>>  drivers/net/cxgb3/adapter.h       |    1
->> >>>  drivers/net/cxgb3/cxgb3_main.c    |   82 ++++++++++++
->> >>>  drivers/net/cxgb3/cxgb3_offload.c |   15 ++
->> >>>  drivers/net/cxgb3/regs.h          |  248
->> >>> +++++++++++++++++++++++++++++++++++++
->> >>>  drivers/net/cxgb3/sge.c           |   24 +++-
->> >>>  drivers/net/cxgb3/t3_hw.c         |  131 +++++++++++++++++---
->> >>>  6 files changed, 472 insertions(+), 29 deletions(-)
->> >>
->> >> dropped patches 2-3, did not apply
->> >>
->> >>
->> >
->> > Hi Jeff,
->> >
->> > I noticed that you applied the first one of this 3 patches series 
->> to the
->> > #upstream-fixes branch.
->> > These patches are intended to the #upstream (2.6.25) branch, as 
->> they are
->> > built on top of the
->> > last 10 patches committed - 9 from me, and the white space clean up
->> > (thanks!).
->> > May be this is the reason why they did not apply.
->>
->> Ah... you need to tell me these things.  I looked for a kernel version
->> in your messages but did not see one.
->>
-> I had put it in the introduction mail, I should have added the kernel 
-> version in the patch titles.
-> I'll do from now on.
->
->>
->> Does the patch #1 need to be reverted for 2.6.24?
->>
-> No, it can be applied to 2.6.24.
-> The 2 next patches seem to apply cleanly on #upstream when patch #1 is 
-> popped out the patch stack.
->
-Hi Jeff,
+On Fri, 14 Dec 2007 23:58:02 +0530
+Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 
-Did you get a chance to apply these patches #upstream ?
+> On Fri, Dec 14, 2007 at 09:50:23AM -0800, Andrew Morton wrote:
+> > On Fri, 14 Dec 2007 21:46:37 +0530 Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Sat, Dec 15, 2007 at 12:54:09AM +0900, Tejun Heo wrote:
+> > > > Dhaval Giani wrote:
+> > > > > XXX sysfs_page_cnt=1
+> > > > 
+> > > > Hmm.. so, sysfs r/w buffer wasn't the culprit.  I'm curious what eats up
+> > > > all your low memory.  Please do the following.
+> > > > 
+> > > > 1. Right after boot, record /proc/meminfo and slabinfo.
+> > > > 
+> > > > 2. After or near OOM, record /proc/meminfo and slabinfo.  This can be
+> > > > tricky but if your machine reliably OOMs after 10mins, run it for 9mins
+> > > > and capturing the result should show enough.
+> > > > 
+> > > 
+> > > Attached. The results are after oom, but i think about a min or so after
+> > > that. I missed the oom point.
+> > 
+> > Looking back at your original oom-killer output: something has consumed all
+> > your ZONE_NORMAL memory and we cannot tell what it is.
+> > 
+> > Please run 2.6.24-rc5-mm1 again (with CONFIG_PAGE_OWNER=y) and take a peek
+> > at the changelog in
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/broken-out/page-owner-tracking-leak-detector.patch.
+> > 
+> > Build up Documentation/page_owner.c then cause the leak to happen then
+> > execute page_owner.
+> > 
+> Hi Andrew
+> 
+> This is a peek during the leak.
+> 
+> ...
+> 
+> [sorted_page_owner.txt  text/plain (100.2KB)]
+> 51957 times:
+> Page allocated via order 0, mask 0x80d0
+> [0xc015b9aa] __alloc_pages+706
+> [0xc015b9f0] __get_free_pages+60
+> [0xc011b7c9] pgd_alloc+60
+> [0xc0122b9e] mm_init+196
+> [0xc0122e06] dup_mm+101
+> [0xc0122eda] copy_mm+104
+> [0xc0123b8c] copy_process+1149
+> [0xc0124229] do_fork+141
+> 
+> 12335 times:
+> Page allocated via order 0, mask 0x84d0
+> [0xc015b9aa] __alloc_pages+706
+> [0xc011b6ca] pte_alloc_one+21
+> [0xc01632ac] __pte_alloc+21
+> [0xc01634bb] copy_pte_range+67
+> [0xc0163827] copy_page_range+284
+> [0xc0122a79] dup_mmap+427
+> [0xc0122e22] dup_mm+129
+> [0xc0122eda] copy_mm+104
 
-Cheers,
-Divy
+OK, so you're leaking pgd's on a fork-intensive load.  It's a 4G i386
+highmem system but I'm sure there are enough of those out there (still) for
+this bug to have been promptly reported if it was generally occurring.
 
+There's something special about either your setup or the test which you're
+running.
+
+Is it really the case that the bug only turns up when you run tests like
+
+	while echo; do cat /sys/kernel/kexec_crash_loaded; done
+and
+	while echo; do cat /sys/kernel/uevent_seqnum ; done;
+
+or will any fork-intensive workload also do it?  Say,
+
+	while echo ; do true ; done
+
+?
+
+Another interesting factoid here is that after the oomkilling you slabinfo has
+
+mm_struct             38     98    584    7    1 : tunables   32   16    8 : slabdata     14     14      0 : globalstat    2781    196    49   31 				   0    1    0    0    0 : cpustat 368800  11864 368920  11721
+
+so we aren't leaking mm_structs.  In fact we aren't leaking anything from
+slab.   But we are leaking pgds.
+
+iirc the most recent change we've made in the pgd_t area is the quicklist
+management which went into 2.6.22-rc1.  You say the bug was present in
+2.6.22.  Can you test 2.6.21?  
 
