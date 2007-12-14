@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935036AbXLNAJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934959AbXLNANZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935036AbXLNAJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 19:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762550AbXLNAJJ
+	id S934959AbXLNANZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 19:13:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765724AbXLNANI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 19:09:09 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:41449 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758384AbXLNAJH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 19:09:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=V8EE51EtTdlQFByqd8u20KsQK8/L9wj+f2ThScIfFNGQ0QD0vLngAShH+selLH+hhoedZmEs7XC2AN3pB74nu1nx3abG4DNSyUzAFg+5gp7YAltlqulW0LOlJLOj2TRrjkc7ncrVBfBuQMpmDceT9uAjoaIkSNHxgClb5bzPZL8=
-Message-ID: <2ed59cbb0712131609r38d736cay4facc07748122cdb@mail.gmail.com>
-Date: Thu, 13 Dec 2007 19:09:05 -0500
-From: "Zurk Tech" <zurktech@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Weird subtle kernel problem (maybe kernel, maybe driver, maybe ???)
+	Thu, 13 Dec 2007 19:13:08 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38013 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764237AbXLNANG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 19:13:06 -0500
+Date: Thu, 13 Dec 2007 19:12:58 -0500
+From: Dave Jones <davej@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Print taint info in more places.
+Message-ID: <20071214001258.GE31405@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20071213224927.GA18639@redhat.com> <p73y7byfb0h.fsf@bingen.suse.de> <20071213235242.GA12755@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20071213235242.GA12755@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-heres what i did on two different machines -
-both had vanilla 2.6.23 kernels from kernel.org, running debian etch,
-all updates.
-first patched with truecrypt driver. second machne loaded with LUKS
-and kernel crypto enabled.
-both machines create 2GB encrypted file and mounted under a directory
-after formatting with mkfs.vfat.
-copy files, do diffs etc and test em. both are fine reading/writing
-files to encrypted space, mount and unmount fine.
-i then load the jdk on both and simple java read write file program.
-works great.
-then i do a new File("test.txt").exists() - test.txt doesnt actually exist.
-truecrypt machine return false as expected. the linux kernel LUKS
-crypto machine returns true.
-also moved from 32 to 64 bits -- same result. tried with different
-jdks from 1.4 to 1.6 latest. same result.
+On Thu, Dec 13, 2007 at 06:52:42PM -0500, Dave Jones wrote:
 
-i dont get it. and i dont even know how to begin to test it. is this a
-kernel bug ? app bug ? driver bug ? jdk bug ? vfat bug ?
-anyone help diagnose it ?
--Z-
+ >  > Have you checked how this affects code size? It might be worth it 
+ >  > now to do a out of line helper.
+ > 
+ > 64 bit debug build of the fedora kernel (which should be worse 
+ >  case for WARN_ONs etc).
+ > 
+ >          text     data     bss     dec     hex filename
+ > before   3833875  834267  631136 5299278  50dc4e vmlinux
+ > after    3837054  834267  631136 5302457  50e8b9 vmlinux
+ > 
+ > Some of that growth is the addition of the missing KERN_ERR,
+ > but yeah, it grows a little bit.
+
+And the out-of-line variant of WARN_ON ends up at ..
+
+   text    data     bss     dec     hex filename
+3828632  834267  631136 5294035  50c7d3 vmlinux
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
