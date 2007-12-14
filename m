@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932653AbXLNLu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932611AbXLNLxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932653AbXLNLu7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 06:50:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXLNLun
+	id S932611AbXLNLxO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 06:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755713AbXLNLw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 06:50:43 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:50834 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932179AbXLNLul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 06:50:41 -0500
-Date: Fri, 14 Dec 2007 11:50:39 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mark Lord <liml@rtr.ca>, James.Bottomley@HansenPartnership.com,
-       jens.axboe@oracle.com, lkml@rtr.ca, matthew@wil.cx,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-Message-ID: <20071214115038.GB11046@csn.ul.ie>
-References: <476190BE.9010405@rtr.ca> <20071213200958.GK10104@kernel.dk> <20071213140207.111f94e2.akpm@linux-foundation.org> <1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org> <4761B32A.3070201@rtr.ca> <4761BCB4.1060601@rtr.ca> <4761C8E4.2010900@rtr.ca> <4761CE88.9070406@rtr.ca> <20071213163726.3bb601fa.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20071213163726.3bb601fa.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 14 Dec 2007 06:52:59 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:38770 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751459AbXLNLw6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 06:52:58 -0500
+Subject: Re: Possible issue with dangling PCI BARs
+From: Jon Masters <jonathan@jonmasters.org>
+To: benh@kernel.crashing.org
+Cc: linux-pci@atrey.karlin.mff.cuni.cz,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1197514804.15741.60.camel@pasglop>
+References: <1197514804.15741.60.camel@pasglop>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Fri, 14 Dec 2007 06:52:11 -0500
+Message-Id: <1197633131.29507.97.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (13/12/07 16:37), Andrew Morton didst pronounce:
-> On Thu, 13 Dec 2007 19:30:00 -0500
-> Mark Lord <liml@rtr.ca> wrote:
-> 
-> > Here's the commit that causes the regression:
-> > 
-> > ...
-> >
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -760,7 +760,8 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
-> >  		struct page *page = __rmqueue(zone, order, migratetype);
-> >  		if (unlikely(page == NULL))
-> >  			break;
-> > -		list_add_tail(&page->lru, list);
-> > +		list_add(&page->lru, list);
-> 
-> well that looks fishy.
-> 
 
-The reasoning behind the change was the first page encountered on the list
-by the caller would have a matching migratetype. I failed to take into
-account the physical ordering of pages returned. I'm setting up to run some
-performance benchmarks of the candidate fix merged into the -mm tree to see
-if the search shows up or not. I'm testing against 2.6.25-rc5 but it'll
-take a few hours to complete.
+On Thu, 2007-12-13 at 14:00 +1100, Benjamin Herrenschmidt wrote:
+> While reworking the powerpc PCI resource management, to make it more
+> x86-like and use more of the generic code in setup-bus.c and
+> setup-res.c, I noticed something a bit fishy in the way we deal with
+> resources that we failed to assign.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+On a tangent here, is there a way (other than pci=rom) to ensure greater
+address space/resource space for PCI resource mappings?
+
+Jon.
+
+
