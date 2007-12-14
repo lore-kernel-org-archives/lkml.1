@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765738AbXLNKwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765563AbXLNK44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765738AbXLNKwK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 05:52:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759994AbXLNKvy
+	id S1765563AbXLNK44 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 05:56:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761799AbXLNK4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 05:51:54 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:37967 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765626AbXLNKvx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 05:51:53 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
-Date: Fri, 14 Dec 2007 11:49:46 +0100
-User-Agent: KMail/1.9.6
-Cc: bcm43xx-dev@lists.berlios.de, "Daniel Walker" <dwalker@mvista.com>,
-       akpm@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       linux@bohmer.net, jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
-       kjwinchester@gmail.com, mbuesch@freenet.de,
-       "John Linville" <linville@tuxdriver.com>
-References: <20071213003028.676998182@mvista.com> <200712140143.16451.mb@bu3sch.de> <2c0942db0712131712t6f30ab88g48cc1af27a7a6ce9@mail.gmail.com>
-In-Reply-To: <2c0942db0712131712t6f30ab88g48cc1af27a7a6ce9@mail.gmail.com>
+	Fri, 14 Dec 2007 05:56:47 -0500
+Received: from mail.suse.de ([195.135.220.2]:47332 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760004AbXLNK4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 05:56:46 -0500
+To: miaox@cn.fujitsu.com
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] time: add an offline-cpu check in add_timer_on()
+From: Andi Kleen <andi@firstfloor.org>
+References: <47625B94.50105@cn.fujitsu.com>
+Date: Fri, 14 Dec 2007 11:56:44 +0100
+In-Reply-To: <47625B94.50105@cn.fujitsu.com> (Miao Xie's message of "Fri\, 14 Dec 2007 18\:31\:48 +0800")
+Message-ID: <p73lk7xfssz.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712141149.46945.mb@bu3sch.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 14 December 2007 02:12:25 Ray Lee wrote:
-> Digging a little farther into it, it looks like b43 is barfing partway
-> through init as the firmware file it's looking for has changed names.
-> Perhaps that's the issue. I'll take a longer look at this all
-> tomorrow.
+Miao Xie <miaox@cn.fujitsu.com> writes:
 
-http://www.linuxwireless.org/en/users/Drivers/b43#firmwareinstallation
+> Hi everyone,
+>   I think we need a check in the function add_timer_on() to avoid adding a
+> timer into the timer list of an offline cpu.
+>
+> This patch fixes this problem in add_timer_on().
 
-> Well, it only hit the main kernel October 10th. That means no final
-> point release of the kernel.org kernel has even had it included! So
-> testing-wise, you still haven't hit the hordes yet. Scheduling a
-> removal of bcm43xx (as painful as that code is [*]), seems either
-> premature or very optimistic. So, how about scheduling the removal
-> once you get a feel for the bug reports that'll come in once 2.6.24 is
-> released.
+No it doesn't -- it will just crash if a caller does that. If it's a real 
+problem then you either need to fix the callers or change add_timer_on()
+to transparently put it onto another CPU.
 
-So you volunteer to maintain bcm43xx? Fine. Thanks a lot.
+I don't think it's a real problem though because CPU offlining does
+a stop machine and that should take care of most such races.
 
->    [*] Yeah, even as a user the code is painful. It *still* locks my
-> keyboard if I happen to disable the wireless while it's scanning. The
-> sooner bcm43xx is dead, the better. But b43 is quite obviously not a
-> full replacement for everyone.
-
-I'm pretty sure it is.
-Please carefully read the instructions on
-http://www.linuxwireless.org/en/users/Drivers/b43
-especially for firmware installation.
-It will work very well.
-
--- 
-Greetings Michael.
+-Andi
