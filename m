@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762591AbXLNRlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933489AbXLNRmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762591AbXLNRlv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 12:41:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbXLNRln
+	id S933489AbXLNRmd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 12:42:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbXLNRmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 12:41:43 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46389 "EHLO mx1.redhat.com"
+	Fri, 14 Dec 2007 12:42:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46428 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753942AbXLNRlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 12:41:42 -0500
-Message-ID: <4762C051.1070609@redhat.com>
-Date: Fri, 14 Dec 2007 11:41:37 -0600
+	id S1754449AbXLNRmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 12:42:22 -0500
+Message-ID: <4762C055.3080709@redhat.com>
+Date: Fri, 14 Dec 2007 11:41:41 -0600
 From: Eric Sandeen <sandeen@redhat.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 CC: ext4 development <linux-ext4@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] ext3: issue warning when bad inode found via ext3_lookup
+       Mingming Cao <cmm@us.ibm.com>, Theodore Tso <tytso@mit.edu>
+Subject: [PATCH] ext4: issue warning when bad inode found via ext4_lookup
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -49,7 +49,7 @@ Fix? no
 Pass 3: Checking directory connectivity
 Unconnected directory inode 2053 (/dir/???)
 
-BUT there are no kernel messages logged anywhere because ext3_read_inode
+BUT there are no kernel messages logged anywhere because ext4_read_inode
 silently makes a bad_inode in this case, so that stale NFS filehandles
 aren't noisy.  However, when we encounter such a problem after a by-name
 lookup, I think a warning is appropriate, as it indicates filesystem
@@ -58,17 +58,18 @@ corruption.
 Signed-off-by: Eric Sandeen <sandeen@redhat.com
 ---
 
-Index: linux-2.6.24-rc3/fs/ext3/namei.c
+Index: linux-2.6.24-rc3/fs/ext4/namei.c
 ===================================================================
---- linux-2.6.24-rc3.orig/fs/ext3/namei.c
-+++ linux-2.6.24-rc3/fs/ext3/namei.c
-@@ -1049,6 +1049,9 @@ static struct dentry *ext3_lookup(struct
+--- linux-2.6.24-rc3.orig/fs/ext4/namei.c
++++ linux-2.6.24-rc3/fs/ext4/namei.c
+@@ -1050,6 +1050,9 @@ static struct dentry *ext4_lookup(struct
  			return ERR_PTR(-EACCES);
  
  		if (is_bad_inode(inode)) {
-+			ext3_warning(inode->i_sb, __FUNCTION__,
++			ext4_warning(inode->i_sb, __FUNCTION__,
 +				     "bad inode %lu in dir #%lu",
-+				      inode->i_ino, dir->i_ino);
++				     inode->i_ino, dir->i_ino);
  			iput(inode);
  			return ERR_PTR(-ENOENT);
+ 		}
 
