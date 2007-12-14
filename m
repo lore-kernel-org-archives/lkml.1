@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935286AbXLNAmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935124AbXLNAqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935286AbXLNAmZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 19:42:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762001AbXLNAmL
+	id S935124AbXLNAqL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 19:46:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764368AbXLNAp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 19:42:11 -0500
-Received: from rtr.ca ([76.10.145.34]:2250 "EHLO mail.rtr.ca"
+	Thu, 13 Dec 2007 19:45:57 -0500
+Received: from ns1.suse.de ([195.135.220.2]:36029 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755872AbXLNAmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 19:42:09 -0500
-Message-ID: <4761D160.7060603@rtr.ca>
-Date: Thu, 13 Dec 2007 19:42:08 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1762584AbXLNAp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 19:45:56 -0500
+Date: Thu, 13 Dec 2007 16:34:26 -0800
+From: Greg KH <gregkh@suse.de>
+To: Oliv?r Pint?r <oliver.pntr@gmail.com>
+Cc: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, David Chinner <dgc@sgi.com>,
+       Lachlan McIlroy <lachlan@sgi.com>
+Subject: Re: [patch 32/36] XFS: Make xfsbufd threads freezable
+Message-ID: <20071214003426.GB10642@suse.de>
+References: <20071213062511.265908583@mini.kroah.org> <20071213063529.GG25301@kroah.com> <F1D642E5A91BC94D9504EC83AE19E6B001520239@ecqcmtlmail3.quebec.int.ec.gc.ca> <6101e8c40712131107r23cda32p86d2a3e22a3adcb8@mail.gmail.com> <6101e8c40712131116n6446d564s1046e5f8914e7a0a@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com, lkml@rtr.ca,
-       matthew@wil.cx, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-mm@kvack.org, mel@csn.ul.ie
-Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
-References: <20071213185326.GQ26334@parisc-linux.org>	<4761821F.3050602@rtr.ca>	<20071213192633.GD10104@kernel.dk>	<4761883A.7050908@rtr.ca>	<476188C4.9030802@rtr.ca>	<20071213193937.GG10104@kernel.dk>	<47618B0B.8020203@rtr.ca>	<20071213195350.GH10104@kernel.dk>	<20071213200219.GI10104@kernel.dk>	<476190BE.9010405@rtr.ca>	<20071213200958.GK10104@kernel.dk>	<20071213140207.111f94e2.akpm@linux-foundation.org>	<1197584106.3154.55.camel@localhost.localdomain>	<20071213142935.47ff19d9.akpm@linux-foundation.org>	<4761B32A.3070201@rtr.ca>	<4761BCB4.1060601@rtr.ca>	<4761C8E4.2010900@rtr.ca>	<4761CE88.9070406@rtr.ca> <20071213163726.3bb601fa.akpm@linux-foundation.org>
-In-Reply-To: <20071213163726.3bb601fa.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6101e8c40712131116n6446d564s1046e5f8914e7a0a@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 13 Dec 2007 19:30:00 -0500
-> Mark Lord <liml@rtr.ca> wrote:
+On Thu, Dec 13, 2007 at 08:16:46PM +0100, Oliv?r Pint?r wrote:
+> http://lwn.net/Articles/235908/
 > 
->> Here's the commit that causes the regression:
->>
->> ...
->>
->> --- a/mm/page_alloc.c
->> +++ b/mm/page_alloc.c
->> @@ -760,7 +760,8 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
->>  		struct page *page = __rmqueue(zone, order, migratetype);
->>  		if (unlikely(page == NULL))
->>  			break;
->> -		list_add_tail(&page->lru, list);
->> +		list_add(&page->lru, list);
-> 
-> well that looks fishy.
-..
+> or then drop this patch... while to big change are im kernel
 
-Yeah.  I missed that, and instead just posted a patch
-to search the list in reverse order, which seems to work for me.
+It's now dropped.
 
-I'll try just reversing that line above here now.. gimme 5 minutes or so.
+Oliver, in the future, can you at least test the patches you wish to
+have applied to the -stable tree?  :)
 
-Cheers
+thanks,
+
+greg k-h
