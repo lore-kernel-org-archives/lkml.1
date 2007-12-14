@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755734AbXLNTTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757677AbXLNTXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755734AbXLNTTS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbXLNTTI
+	id S1757677AbXLNTXw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:23:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXLNTXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:19:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44787 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750758AbXLNTTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 14:19:06 -0500
-To: eranian@hpl.hp.com
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, paulus@samba.org,
-       akpm@linux-foundation.org, gregkh@suse.de, mucci@cs.utk.edu,
-       wcohen@redhat.com, robert.richter@amd.com, andi@firstfloor.org,
-       eranian@gmail.com, roland@redhat.com
-Subject: Re: [perfmon2] perfmon2 merge news
-References: <20071119.050843.48408777.davem@davemloft.net>
-	<18242.900.101842.261763@cargo.ozlabs.ibm.com>
-	<20071119224845.GA27766@frankl.hpl.hp.com>
-	<20071119.165313.163834190.davem@davemloft.net>
-	<20071213160004.GC6740@frankl.hpl.hp.com>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Fri, 14 Dec 2007 14:12:17 -0500
-In-Reply-To: <20071213160004.GC6740@frankl.hpl.hp.com> (Stephane Eranian's message of "Thu, 13 Dec 2007 08:00:04 -0800")
-Message-ID: <y0mzlwdum3y.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 14 Dec 2007 14:23:33 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58045 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751783AbXLNTXc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 14:23:32 -0500
+Message-Id: <20071214154441.860894000@chello.nl>
+References: <20071214153907.770251000@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Fri, 14 Dec 2007 16:39:27 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 20/29] netfilter: NF_QUEUE vs emergency skbs
+Content-Disposition: inline; filename=emergency-nf_queue.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Avoid memory getting stuck waiting for userspace, drop all emergency packets.
+This of course requires the regular storage route to not include an NF_QUEUE
+target ;-)
 
-Stephane Eranian <eranian@hpl.hp.com> writes:
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ net/netfilter/core.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-> [...]  AFAIK, there is no single call to stop T1 and wait until it
-> is completely off the CPU, unless we go through the (internal)
-> ptrace interface.
+Index: linux-2.6/net/netfilter/core.c
+===================================================================
+--- linux-2.6.orig/net/netfilter/core.c
++++ linux-2.6/net/netfilter/core.c
+@@ -176,9 +176,12 @@ next_hook:
+ 		ret = 1;
+ 		goto unlock;
+ 	} else if (verdict == NF_DROP) {
++drop:
+ 		kfree_skb(skb);
+ 		ret = -EPERM;
+ 	} else if ((verdict & NF_VERDICT_MASK) == NF_QUEUE) {
++		if (skb_emergency(*pskb))
++			goto drop;
+ 		if (!nf_queue(skb, elem, pf, hook, indev, outdev, okfn,
+ 			      verdict >> NF_VERDICT_BITS))
+ 			goto next_hook;
 
-The utrace code supports this style of thread manipulation better
-than ptrace.
+--
 
-- FChE
