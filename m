@@ -1,65 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762667AbXLNToL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764902AbXLNTpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762667AbXLNToL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:44:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbXLNTn5
+	id S1764902AbXLNTpT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:45:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbXLNTpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:43:57 -0500
-Received: from ruby.spiritone.com ([216.99.193.130]:39153 "EHLO
-	ruby.spiritone.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752775AbXLNTn5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 14:43:57 -0500
-X-Greylist: delayed 582 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Dec 2007 14:43:57 EST
-Message-ID: <4762DAB1.1020807@BitWagon.com>
-Date: Fri, 14 Dec 2007 11:34:09 -0800
-From: John Reiser <jreiser@BitWagon.com>
-Organization: -
-User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
-X-Accept-Language: en-us, en
+	Fri, 14 Dec 2007 14:45:05 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:55632 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752558AbXLNTpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 14:45:03 -0500
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] drivers/dma/ioat_dma.c: inlining failed
+Date: Fri, 14 Dec 2007 21:44:46 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: shannon.nelson@intel.com
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: linux-kernel@vger.kernel.org, security@kernel.org
-Subject: /dev/urandom uses uninit bytes, leaks user data
-X-Enigmail-Version: 0.92.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200712142144.47310.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-xfer_secondary_pool() in drivers/char/random.c tells add_entropy_words()
-to use uninitialized tmp[] whenever bytes is not a multiple of 4.
-Besides being unfriendly to automated dynamic checkers, this is a
-potential leak of user data into the output stream.  When called from
-extract_entropy_user, then uninit tmp[] can capture leftover data
-from a previous copy_from_user().
+Hi;
 
-Signed off by: jreiser@BitWagon.com
+After commit 7bb67c14fd3778504fb77da30ce11582336dfced, Linus's git tree gaves following compiliation error with gcc-3.4.6. Following patch solves this issue for me;
 
---- ./drivers/char/random.c.orig	2007-12-14 11:06:03.000000000 -0800
-+++ ./drivers/char/random.c	2007-12-14 11:06:57.000000000 -0800
-@@ -708,7 +708,19 @@
 
- 		bytes=extract_entropy(r->pull, tmp, bytes,
- 				      random_read_wakeup_thresh / 8, rsvd);
-- 		add_entropy_words(r, tmp, (bytes + 3) / 4);
-+		/*
-+		 * 2007-12-13 (valgrind/memcheck) Do not use undefined bytes.
-+		 * Avoid info leak when called from extract_entropy_user:
-+		 * uninit tmp[] can have data from previous copy_from_user().
-+		 * Instead: fill last word using first bytes.
-+		 */
-+		{
-+			__u8 *src = (__u8 *)&tmp[0];
-+			__u8 *dst = bytes + src;
-+			for (; 0!=(3 & bytes); ++bytes)
-+				*dst++ = *src++;
-+		}
-+		add_entropy_words(r, tmp, bytes>>2);
- 		credit_entropy_store(r, bytes*8);
+[...]
+  CC [M]  drivers/dma/ioat.o
+  CC [M]  drivers/dma/ioat_dma.o
+drivers/dma/ioat_dma.c: In function `ioat1_tx_submit':
+drivers/dma/ioat_dma.c:177: sorry, unimplemented: inlining failed in call to '__ioat1_dma_memcpy_issue_pending': function body not available
+drivers/dma/ioat_dma.c:268: sorry, unimplemented: called from here
+make[2]: *** [drivers/dma/ioat_dma.o] Hata 1
+make[1]: *** [drivers/dma] Hata 2
+make: *** [drivers] Hata 2
+
+Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
+
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index c1c2dcc..1d66b82 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -173,10 +173,25 @@ static void ioat_set_dest(dma_addr_t addr,
+ 	tx_to_ioat_desc(tx)->dst = addr;
+ }
+ 
++/**
++ * ioat_dma_memcpy_issue_pending - push potentially unrecognized appended
++ *                                 descriptors to hw
++ * @chan: DMA channel handle
++ */
+ static inline void __ioat1_dma_memcpy_issue_pending(
+-					       struct ioat_dma_chan *ioat_chan);
++						struct ioat_dma_chan *ioat_chan)
++{
++	ioat_chan->pending = 0;
++	writeb(IOAT_CHANCMD_APPEND, ioat_chan->reg_base + IOAT1_CHANCMD_OFFSET);
++}
++
+ static inline void __ioat2_dma_memcpy_issue_pending(
+-					       struct ioat_dma_chan *ioat_chan);
++						struct ioat_dma_chan *ioat_chan)
++{
++	ioat_chan->pending = 0;
++	writew(ioat_chan->dmacount,
++	       ioat_chan->reg_base + IOAT_CHAN_DMACOUNT_OFFSET);
++}
+ 
+ static dma_cookie_t ioat1_tx_submit(struct dma_async_tx_descriptor *tx)
+ {
+@@ -700,18 +715,6 @@ static struct dma_async_tx_descriptor *ioat2_dma_prep_memcpy(
+ }
+ 
+ 
+-/**
+- * ioat_dma_memcpy_issue_pending - push potentially unrecognized appended
+- *                                 descriptors to hw
+- * @chan: DMA channel handle
+- */
+-static inline void __ioat1_dma_memcpy_issue_pending(
+-						struct ioat_dma_chan *ioat_chan)
+-{
+-	ioat_chan->pending = 0;
+-	writeb(IOAT_CHANCMD_APPEND, ioat_chan->reg_base + IOAT1_CHANCMD_OFFSET);
+-}
+-
+ static void ioat1_dma_memcpy_issue_pending(struct dma_chan *chan)
+ {
+ 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
+@@ -723,14 +726,6 @@ static void ioat1_dma_memcpy_issue_pending(struct dma_chan *chan)
  	}
+ }
+ 
+-static inline void __ioat2_dma_memcpy_issue_pending(
+-						struct ioat_dma_chan *ioat_chan)
+-{
+-	ioat_chan->pending = 0;
+-	writew(ioat_chan->dmacount,
+-	       ioat_chan->reg_base + IOAT_CHAN_DMACOUNT_OFFSET);
+-}
+-
+ static void ioat2_dma_memcpy_issue_pending(struct dma_chan *chan)
+ {
+ 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
 
+Cheers
 -- 
-John Reiser, jreiser@BitWagon.com
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
