@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934031AbXLNQSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764976AbXLNQ2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934031AbXLNQSN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 11:18:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934139AbXLNQRl
+	id S1764976AbXLNQ2M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 11:28:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754418AbXLNQ15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 11:17:41 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:41477 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762328AbXLNQRj (ORCPT
+	Fri, 14 Dec 2007 11:27:57 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:35566 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754126AbXLNQ1z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 11:17:39 -0500
-Date: Fri, 14 Dec 2007 11:16:47 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH] UML - Add asm/fixmap.h include
-Message-ID: <20071214161647.GA5802@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 14 Dec 2007 11:27:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=pTXhMM83BgcKTZDuQqoS3BU8WHMh7Bh3eiCLSraiZaN6orZdg/BU6mMcS+J7o/asAmGzXjICW+OVnX4GKAiw70I/scFP1ylANr0uJ5/e+sfr/ACTVNlIwmjAhmijfqpyDIAJpkTdF7P96kyJ76fLuQhXlH2i4WazuCMj4oW6Gns=
+Message-ID: <2c0942db0712140827x38e5d971sbdb3d5864fc32364@mail.gmail.com>
+Date: Fri, 14 Dec 2007 08:27:53 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: stefano.brivio@polimi.it
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
+Cc: "John W. Linville" <linville@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Daniel Walker" <dwalker@mvista.com>, matthias.kaehlcke@gmail.com,
+       linux-kernel@vger.kernel.org, mbuesch@freenet.de, linux@bohmer.net,
+       "Michael Buesch" <mb@bu3sch.de>, kjwinchester@gmail.com,
+       jonathan@jonmasters.org, akpm@linux-foundation.org,
+       bcm43xx-dev@lists.berlios.de
+In-Reply-To: <20071214154022.v5w0eqwwiogws8cw@webmail.polimi.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+References: <20071213003028.676998182@mvista.com>
+	 <200712131445.39770.mb@bu3sch.de>
+	 <2c0942db0712131604m41c34da9hf3122b0603f3af96@mail.gmail.com>
+	 <200712140143.16451.mb@bu3sch.de> <20071214105624.GC23964@elte.hu>
+	 <20071214141446.GA3096@tuxdriver.com>
+	 <20071214154022.v5w0eqwwiogws8cw@webmail.polimi.it>
+X-Google-Sender-Auth: d235b7b02270ff7d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ This needs to go into 2.6.24, as it fixes a build breakage seen on x86_64 ]
+On Dec 14, 2007 6:40 AM,  <stefano.brivio@polimi.it> wrote:
+> Agreed. As a b43legacy maintainer, I'd be happy to know if Ingo
+> suggests other ways to smooth out the transition. I haven't read
+> proposals yet.
 
-um_uaccess.h refers to FIXADDR_USER_*, so it should include fixmap.h.
+This isn't rocket science guys. Put a file in somewhere in your tree
+called ReleaseAnnouncement or something, and ask Linus to adjust his
+kernel release process to include the contents of `cat $( find . -name
+ReleaseAnnouncement )` in the release message he sends out. Clear out
+the file after the release.
 
-I also changed the non-UML includes to use <> instead of "".
+Include things such as "bcm43xx is scheduled for removal. build both
+b43 and b43legacy as a replacement. Be sure to download the latest
+firmware from $URL and follow the instructions there to extract the
+correct latest firmware necessary for your chip. There are known
+incompatibilities with old udev versions, please ensure blah blah
+blah."
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
----
- arch/um/include/um_uaccess.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.22/arch/um/include/um_uaccess.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/um_uaccess.h	2007-12-13 10:09:22.000000000 -0500
-+++ linux-2.6.22/arch/um/include/um_uaccess.h	2007-12-13 15:11:42.000000000 -0500
-@@ -6,7 +6,8 @@
- #ifndef __ARCH_UM_UACCESS_H
- #define __ARCH_UM_UACCESS_H
- 
--#include "asm/elf.h"
-+#include <asm/elf.h>
-+#include <asm/fixmap.h>
- #include "sysdep/archsetjmp.h"
- 
- #define __under_task_size(addr, size) \
+Ray
