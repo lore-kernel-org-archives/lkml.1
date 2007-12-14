@@ -1,92 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762183AbXLNTh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933128AbXLNTh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762183AbXLNTh2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbXLNTZb
+	id S933128AbXLNTh7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:37:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759093AbXLNTZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:25:31 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47237 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754199AbXLNTXe (ORCPT
+	Fri, 14 Dec 2007 14:25:37 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:38868 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753983AbXLNTXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 14 Dec 2007 14:23:34 -0500
-Message-Id: <20071214154440.036070000@chello.nl>
+Message-Id: <20071214154440.942912000@chello.nl>
 References: <20071214153907.770251000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 14 Dec 2007 16:39:13 +0100
+Date: Fri, 14 Dec 2007 16:39:20 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 06/29] mm: serialize access to min_free_kbytes
-Content-Disposition: inline; filename=mm-setup_per_zone_pages_min.patch
+Subject: [PATCH 13/29] net: packet split receive api
+Content-Disposition: inline; filename=net-ps_rx.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a small race between the procfs caller and the memory hotplug caller
-of setup_per_zone_pages_min(). Not a big deal, but the next patch will add yet
-another caller. Time to close the gap.
+Add some packet-split receive hooks.
+
+For one this allows to do NUMA node affine page allocs. Later on these hooks
+will be extended to do emergency reserve allocations for fragments.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- mm/page_alloc.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+ drivers/net/e1000/e1000_main.c |    8 ++------
+ drivers/net/sky2.c             |   16 ++++++----------
+ include/linux/skbuff.h         |   23 +++++++++++++++++++++++
+ net/core/skbuff.c              |   20 ++++++++++++++++++++
+ 4 files changed, 51 insertions(+), 16 deletions(-)
 
-Index: linux-2.6/mm/page_alloc.c
+Index: linux-2.6/drivers/net/e1000/e1000_main.c
 ===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -116,6 +116,7 @@ static char * const zone_names[MAX_NR_ZO
- 	 "Movable",
- };
+--- linux-2.6.orig/drivers/net/e1000/e1000_main.c
++++ linux-2.6/drivers/net/e1000/e1000_main.c
+@@ -4392,12 +4392,8 @@ e1000_clean_rx_irq_ps(struct e1000_adapt
+ 			pci_unmap_page(pdev, ps_page_dma->ps_page_dma[j],
+ 					PAGE_SIZE, PCI_DMA_FROMDEVICE);
+ 			ps_page_dma->ps_page_dma[j] = 0;
+-			skb_fill_page_desc(skb, j, ps_page->ps_page[j], 0,
+-			                   length);
++			skb_add_rx_frag(skb, j, ps_page->ps_page[j], 0, length);
+ 			ps_page->ps_page[j] = NULL;
+-			skb->len += length;
+-			skb->data_len += length;
+-			skb->truesize += length;
+ 		}
  
-+static DEFINE_SPINLOCK(min_free_lock);
- int min_free_kbytes = 1024;
- 
- unsigned long __meminitdata nr_kernel_pages;
-@@ -4162,12 +4163,12 @@ static void setup_per_zone_lowmem_reserv
+ 		/* strip the ethernet crc, problem is we're using pages now so
+@@ -4605,7 +4601,7 @@ e1000_alloc_rx_buffers_ps(struct e1000_a
+ 			if (j < adapter->rx_ps_pages) {
+ 				if (likely(!ps_page->ps_page[j])) {
+ 					ps_page->ps_page[j] =
+-						alloc_page(GFP_ATOMIC);
++						netdev_alloc_page(netdev);
+ 					if (unlikely(!ps_page->ps_page[j])) {
+ 						adapter->alloc_rx_buff_failed++;
+ 						goto no_buffers;
+Index: linux-2.6/include/linux/skbuff.h
+===================================================================
+--- linux-2.6.orig/include/linux/skbuff.h
++++ linux-2.6/include/linux/skbuff.h
+@@ -851,6 +851,9 @@ static inline void skb_fill_page_desc(st
+ 	skb_shinfo(skb)->nr_frags = i + 1;
  }
  
- /**
-- * setup_per_zone_pages_min - called when min_free_kbytes changes.
-+ * __setup_per_zone_pages_min - called when min_free_kbytes changes.
-  *
-  * Ensures that the pages_{min,low,high} values for each zone are set correctly
-  * with respect to min_free_kbytes.
-  */
--void setup_per_zone_pages_min(void)
-+static void __setup_per_zone_pages_min(void)
- {
- 	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
- 	unsigned long lowmem_pages = 0;
-@@ -4222,6 +4223,15 @@ void setup_per_zone_pages_min(void)
- 	calculate_totalreserve_pages();
- }
- 
-+void setup_per_zone_pages_min(void)
-+{
-+	unsigned long flags;
++extern void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page,
++			    int off, int size);
 +
-+	spin_lock_irqsave(&min_free_lock, flags);
-+	__setup_per_zone_pages_min();
-+	spin_unlock_irqrestore(&min_free_lock, flags);
+ #define SKB_PAGE_ASSERT(skb) 	BUG_ON(skb_shinfo(skb)->nr_frags)
+ #define SKB_FRAG_ASSERT(skb) 	BUG_ON(skb_shinfo(skb)->frag_list)
+ #define SKB_LINEAR_ASSERT(skb)  BUG_ON(skb_is_nonlinear(skb))
+@@ -1344,6 +1347,26 @@ static inline struct sk_buff *netdev_all
+ 	return __netdev_alloc_skb(dev, length, GFP_ATOMIC);
+ }
+ 
++extern struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask);
++
++/**
++ *	netdev_alloc_page - allocate a page for ps-rx on a specific device
++ *	@dev: network device to receive on
++ *
++ * 	Allocate a new page node local to the specified device.
++ *
++ * 	%NULL is returned if there is no free memory.
++ */
++static inline struct page *netdev_alloc_page(struct net_device *dev)
++{
++	return __netdev_alloc_page(dev, GFP_ATOMIC);
 +}
 +
- /*
-  * Initialise min_free_kbytes.
-  *
-@@ -4257,7 +4267,7 @@ static int __init init_per_zone_pages_mi
- 		min_free_kbytes = 128;
- 	if (min_free_kbytes > 65536)
- 		min_free_kbytes = 65536;
--	setup_per_zone_pages_min();
-+	__setup_per_zone_pages_min();
- 	setup_per_zone_lowmem_reserve();
- 	return 0;
++static inline void netdev_free_page(struct net_device *dev, struct page *page)
++{
++	__free_page(page);
++}
++
+ /**
+  *	skb_clone_writable - is the header of a clone writable
+  *	@skb: buffer to check
+Index: linux-2.6/net/core/skbuff.c
+===================================================================
+--- linux-2.6.orig/net/core/skbuff.c
++++ linux-2.6/net/core/skbuff.c
+@@ -263,6 +263,24 @@ struct sk_buff *__netdev_alloc_skb(struc
+ 	return skb;
  }
+ 
++struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask)
++{
++	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
++	struct page *page;
++
++	page = alloc_pages_node(node, gfp_mask, 0);
++	return page;
++}
++
++void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page, int off,
++		int size)
++{
++	skb_fill_page_desc(skb, i, page, off, size);
++	skb->len += size;
++	skb->data_len += size;
++	skb->truesize += size;
++}
++
+ static void skb_drop_list(struct sk_buff **listp)
+ {
+ 	struct sk_buff *list = *listp;
+@@ -2466,6 +2484,8 @@ EXPORT_SYMBOL(kfree_skb);
+ EXPORT_SYMBOL(__pskb_pull_tail);
+ EXPORT_SYMBOL(__alloc_skb);
+ EXPORT_SYMBOL(__netdev_alloc_skb);
++EXPORT_SYMBOL(__netdev_alloc_page);
++EXPORT_SYMBOL(skb_add_rx_frag);
+ EXPORT_SYMBOL(pskb_copy);
+ EXPORT_SYMBOL(pskb_expand_head);
+ EXPORT_SYMBOL(skb_checksum);
+Index: linux-2.6/drivers/net/sky2.c
+===================================================================
+--- linux-2.6.orig/drivers/net/sky2.c
++++ linux-2.6/drivers/net/sky2.c
+@@ -1198,7 +1198,7 @@ static struct sk_buff *sky2_rx_alloc(str
+ 	}
+ 
+ 	for (i = 0; i < sky2->rx_nfrags; i++) {
+-		struct page *page = alloc_page(GFP_ATOMIC);
++		struct page *page = netdev_alloc_page(sky2->netdev);
+ 
+ 		if (!page)
+ 			goto free_partial;
+@@ -2072,8 +2072,8 @@ static struct sk_buff *receive_copy(stru
+ }
+ 
+ /* Adjust length of skb with fragments to match received data */
+-static void skb_put_frags(struct sk_buff *skb, unsigned int hdr_space,
+-			  unsigned int length)
++static void skb_put_frags(struct sky2_port *sky2, struct sk_buff *skb,
++			  unsigned int hdr_space, unsigned int length)
+ {
+ 	int i, num_frags;
+ 	unsigned int size;
+@@ -2090,15 +2090,11 @@ static void skb_put_frags(struct sk_buff
+ 
+ 		if (length == 0) {
+ 			/* don't need this page */
+-			__free_page(frag->page);
++			netdev_free_page(sky2->netdev, frag->page);
+ 			--skb_shinfo(skb)->nr_frags;
+ 		} else {
+ 			size = min(length, (unsigned) PAGE_SIZE);
+-
+-			frag->size = size;
+-			skb->data_len += size;
+-			skb->truesize += size;
+-			skb->len += size;
++			skb_add_rx_frag(skb, i, frag->page, 0, size);
+ 			length -= size;
+ 		}
+ 	}
+@@ -2125,7 +2121,7 @@ static struct sk_buff *receive_new(struc
+ 	sky2_rx_map_skb(sky2->hw->pdev, re, hdr_space);
+ 
+ 	if (skb_shinfo(skb)->nr_frags)
+-		skb_put_frags(skb, hdr_space, length);
++		skb_put_frags(sky2, skb, hdr_space, length);
+ 	else
+ 		skb_put(skb, length);
+ 	return skb;
 
 --
 
