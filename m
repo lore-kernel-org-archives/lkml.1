@@ -1,57 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765960AbXLNTdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbXLNTeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765960AbXLNTdp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:33:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758695AbXLNTYc
+	id S932358AbXLNTeH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:34:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759017AbXLNTZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:24:32 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47255 "EHLO
+	Fri, 14 Dec 2007 14:25:13 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47244 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754957AbXLNTXg (ORCPT
+	with ESMTP id S1754543AbXLNTXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 14:23:36 -0500
-Message-Id: <20071214154440.309227000@chello.nl>
+	Fri, 14 Dec 2007 14:23:34 -0500
+Message-Id: <20071214154439.743236000@chello.nl>
 References: <20071214153907.770251000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 14 Dec 2007 16:39:15 +0100
+Date: Fri, 14 Dec 2007 16:39:12 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 08/29] mm: system wide ALLOC_NO_WATERMARK
-Content-Disposition: inline; filename=global-ALLOC_NO_WATERMARKS.patch
+Subject: [PATCH 05/29] mm: allow PF_MEMALLOC from softirq context
+Content-Disposition: inline; filename=mm-PF_MEMALLOC-softirq.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change ALLOC_NO_WATERMARK page allocation such that the reserves are system
-wide - which they are per setup_per_zone_pages_min(), when we scrape the
-barrel, do it properly.
+Allow PF_MEMALLOC to be set in softirq context. When running softirqs from
+a borrowed context save current->flags, ksoftirqd will have its own 
+task_struct.
+
+This is needed to allow network softirq packet processing to make use of
+PF_MEMALLOC.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- mm/page_alloc.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ include/linux/sched.h |    4 ++++
+ kernel/softirq.c      |    3 +++
+ mm/page_alloc.c       |    7 ++++---
+ 3 files changed, 11 insertions(+), 3 deletions(-)
 
 Index: linux-2.6/mm/page_alloc.c
 ===================================================================
 --- linux-2.6.orig/mm/page_alloc.c
 +++ linux-2.6/mm/page_alloc.c
-@@ -1638,6 +1638,12 @@ restart:
- rebalance:
- 	if (alloc_flags & ALLOC_NO_WATERMARKS) {
- nofail_alloc:
-+		/*
-+		 * break out of mempolicy boundaries
-+		 */
-+		zonelist = NODE_DATA(numa_node_id())->node_zonelists +
-+			gfp_zone(gfp_mask);
+@@ -1557,9 +1557,10 @@ int gfp_to_alloc_flags(gfp_t gfp_mask)
+ 		alloc_flags |= ALLOC_HARDER;
+ 
+ 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+-		if (!in_interrupt() &&
+-		    ((p->flags & PF_MEMALLOC) ||
+-		     unlikely(test_thread_flag(TIF_MEMDIE))))
++		if (!in_irq() && (p->flags & PF_MEMALLOC))
++			alloc_flags |= ALLOC_NO_WATERMARKS;
++		else if (!in_interrupt() &&
++				unlikely(test_thread_flag(TIF_MEMDIE)))
+ 			alloc_flags |= ALLOC_NO_WATERMARKS;
+ 	}
+ 
+Index: linux-2.6/kernel/softirq.c
+===================================================================
+--- linux-2.6.orig/kernel/softirq.c
++++ linux-2.6/kernel/softirq.c
+@@ -211,6 +211,8 @@ asmlinkage void __do_softirq(void)
+ 	__u32 pending;
+ 	int max_restart = MAX_SOFTIRQ_RESTART;
+ 	int cpu;
++	unsigned long pflags = current->flags;
++	current->flags &= ~PF_MEMALLOC;
+ 
+ 	pending = local_softirq_pending();
+ 	account_system_vtime(current);
+@@ -249,6 +251,7 @@ restart:
+ 
+ 	account_system_vtime(current);
+ 	_local_bh_enable();
++	tsk_restore_flags(current, pflags, PF_MEMALLOC);
+ }
+ 
+ #ifndef __ARCH_HAS_DO_SOFTIRQ
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -1389,6 +1389,10 @@ static inline void put_task_struct(struc
+ #define tsk_used_math(p) ((p)->flags & PF_USED_MATH)
+ #define used_math() tsk_used_math(current)
+ 
++#define tsk_restore_flags(p, pflags, mask) \
++	do {	(p)->flags &= ~(mask); \
++		(p)->flags |= ((pflags) & (mask)); } while (0)
 +
- 		/* go through the zonelist yet again, ignoring mins */
- 		page = get_page_from_freelist(gfp_mask, order, zonelist,
- 				ALLOC_NO_WATERMARKS);
+ #ifdef CONFIG_SMP
+ extern int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask);
+ #else
 
 --
 
