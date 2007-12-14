@@ -1,99 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbXLNTeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763425AbXLNTej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932358AbXLNTeH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:34:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759017AbXLNTZN
+	id S1763425AbXLNTej (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 14:34:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759068AbXLNTZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:25:13 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47244 "EHLO
+	Fri, 14 Dec 2007 14:25:16 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47242 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754543AbXLNTXe (ORCPT
+	with ESMTP id S1754497AbXLNTXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 14 Dec 2007 14:23:34 -0500
-Message-Id: <20071214154439.743236000@chello.nl>
+Message-Id: <20071214154439.489413000@chello.nl>
 References: <20071214153907.770251000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 14 Dec 2007 16:39:12 +0100
+Date: Fri, 14 Dec 2007 16:39:11 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 05/29] mm: allow PF_MEMALLOC from softirq context
-Content-Disposition: inline; filename=mm-PF_MEMALLOC-softirq.patch
+Subject: [PATCH 04/29] mm: kmem_estimate_pages()
+Content-Disposition: inline; filename=mm-kmem_estimate_pages.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow PF_MEMALLOC to be set in softirq context. When running softirqs from
-a borrowed context save current->flags, ksoftirqd will have its own 
-task_struct.
+Provide a method to get the upper bound on the pages needed to allocate
+a given number of objects from a given kmem_cache.
 
-This is needed to allow network softirq packet processing to make use of
-PF_MEMALLOC.
+This lays the foundation for a generic reserve framework as presented in
+a later patch in this series. This framework needs to convert object demand
+(kmalloc() bytes, kmem_cache_alloc() objects) to pages.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/sched.h |    4 ++++
- kernel/softirq.c      |    3 +++
- mm/page_alloc.c       |    7 ++++---
- 3 files changed, 11 insertions(+), 3 deletions(-)
+ include/linux/slab.h |    3 +
+ mm/slab.c            |   74 ++++++++++++++++++++++++++++++++++++++++++++++
+ mm/slub.c            |   82 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 159 insertions(+)
 
-Index: linux-2.6/mm/page_alloc.c
+Index: linux-2.6/include/linux/slab.h
 ===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1557,9 +1557,10 @@ int gfp_to_alloc_flags(gfp_t gfp_mask)
- 		alloc_flags |= ALLOC_HARDER;
+--- linux-2.6.orig/include/linux/slab.h
++++ linux-2.6/include/linux/slab.h
+@@ -60,6 +60,7 @@ void kmem_cache_free(struct kmem_cache *
+ unsigned int kmem_cache_size(struct kmem_cache *);
+ const char *kmem_cache_name(struct kmem_cache *);
+ int kmem_ptr_validate(struct kmem_cache *cachep, const void *ptr);
++unsigned kmem_estimate_pages(struct kmem_cache *cachep, gfp_t flags, int objects);
  
- 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
--		if (!in_interrupt() &&
--		    ((p->flags & PF_MEMALLOC) ||
--		     unlikely(test_thread_flag(TIF_MEMDIE))))
-+		if (!in_irq() && (p->flags & PF_MEMALLOC))
-+			alloc_flags |= ALLOC_NO_WATERMARKS;
-+		else if (!in_interrupt() &&
-+				unlikely(test_thread_flag(TIF_MEMDIE)))
- 			alloc_flags |= ALLOC_NO_WATERMARKS;
- 	}
+ /*
+  * Please use this macro to create slab caches. Simply specify the
+@@ -94,6 +95,8 @@ int kmem_ptr_validate(struct kmem_cache 
+ void * __must_check krealloc(const void *, size_t, gfp_t);
+ void kfree(const void *);
+ size_t ksize(const void *);
++unsigned kestimate_single(size_t, gfp_t, int);
++unsigned kestimate(gfp_t, size_t);
  
-Index: linux-2.6/kernel/softirq.c
+ /*
+  * Allocator specific definitions. These are mainly used to establish optimized
+Index: linux-2.6/mm/slub.c
 ===================================================================
---- linux-2.6.orig/kernel/softirq.c
-+++ linux-2.6/kernel/softirq.c
-@@ -211,6 +211,8 @@ asmlinkage void __do_softirq(void)
- 	__u32 pending;
- 	int max_restart = MAX_SOFTIRQ_RESTART;
- 	int cpu;
-+	unsigned long pflags = current->flags;
-+	current->flags &= ~PF_MEMALLOC;
+--- linux-2.6.orig/mm/slub.c
++++ linux-2.6/mm/slub.c
+@@ -2446,6 +2446,37 @@ const char *kmem_cache_name(struct kmem_
+ EXPORT_SYMBOL(kmem_cache_name);
  
- 	pending = local_softirq_pending();
- 	account_system_vtime(current);
-@@ -249,6 +251,7 @@ restart:
- 
- 	account_system_vtime(current);
- 	_local_bh_enable();
-+	tsk_restore_flags(current, pflags, PF_MEMALLOC);
+ /*
++ * return the max number of pages required to allocated count
++ * objects from the given cache
++ */
++unsigned kmem_estimate_pages(struct kmem_cache *s, gfp_t flags, int objects)
++{
++	unsigned long slabs;
++
++	if (WARN_ON(!s) || WARN_ON(!s->objects))
++		return 0;
++
++	slabs = DIV_ROUND_UP(objects, s->objects);
++
++	/*
++	 * Account the possible additional overhead if the slab holds more that
++	 * one object.
++	 */
++	if (s->objects > 1) {
++		/*
++		 * Account the possible additional overhead if per cpu slabs
++		 * are currently empty and have to be allocated. This is very
++		 * unlikely but a possible scenario immediately after
++		 * kmem_cache_shrink.
++		 */
++		slabs += num_online_cpus();
++	}
++
++	return slabs << s->order;
++}
++EXPORT_SYMBOL_GPL(kmem_estimate_pages);
++
++/*
+  * Attempt to free all slabs on a node. Return the number of slabs we
+  * were unable to free.
+  */
+@@ -2800,6 +2831,57 @@ static unsigned long count_partial(struc
  }
  
- #ifndef __ARCH_HAS_DO_SOFTIRQ
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -1389,6 +1389,10 @@ static inline void put_task_struct(struc
- #define tsk_used_math(p) ((p)->flags & PF_USED_MATH)
- #define used_math() tsk_used_math(current)
- 
-+#define tsk_restore_flags(p, pflags, mask) \
-+	do {	(p)->flags &= ~(mask); \
-+		(p)->flags |= ((pflags) & (mask)); } while (0)
+ /*
++ * return the max number of pages required to allocate @count objects
++ * of @size bytes from kmalloc given @flags.
++ */
++unsigned kestimate_single(size_t size, gfp_t flags, int count)
++{
++	struct kmem_cache *s = get_slab(size, flags);
++	if (!s)
++		return 0;
 +
- #ifdef CONFIG_SMP
- extern int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask);
- #else
++	return kmem_estimate_pages(s, flags, count);
++
++}
++EXPORT_SYMBOL_GPL(kestimate_single);
++
++/*
++ * return the max number of pages required to allocate @bytes from kmalloc
++ * in an unspecified number of allocation of heterogeneous size.
++ */
++unsigned kestimate(gfp_t flags, size_t bytes)
++{
++	int i;
++	unsigned long pages;
++
++	/*
++	 * multiply by two, in order to account the worst case slack space
++	 * due to the power-of-two allocation sizes.
++	 */
++	pages = DIV_ROUND_UP(2 * bytes, PAGE_SIZE);
++
++	/*
++	 * add the kmem_cache overhead of each possible kmalloc cache
++	 */
++	for (i = 1; i < PAGE_SHIFT; i++) {
++		struct kmem_cache *s;
++
++#ifdef CONFIG_ZONE_DMA
++		if (unlikely(flags & SLUB_DMA))
++			s = dma_kmalloc_cache(i, flags);
++		else
++#endif
++			s = &kmalloc_caches[i];
++
++		if (s)
++			pages += kmem_estimate_pages(s, flags, 0);
++	}
++
++	return pages;
++}
++EXPORT_SYMBOL_GPL(kestimate);
++
++/*
+  * kmem_cache_shrink removes empty slabs from the partial lists and sorts
+  * the remaining slabs by the number of items in use. The slabs with the
+  * most items in use come first. New allocations will then fill those up
+Index: linux-2.6/mm/slab.c
+===================================================================
+--- linux-2.6.orig/mm/slab.c
++++ linux-2.6/mm/slab.c
+@@ -3844,6 +3844,80 @@ const char *kmem_cache_name(struct kmem_
+ EXPORT_SYMBOL_GPL(kmem_cache_name);
+ 
+ /*
++ * return the max number of pages required to allocated count
++ * objects from the given cache
++ */
++unsigned kmem_estimate_pages(struct kmem_cache *cachep, gfp_t flags, int objects)
++{
++	/*
++	 * (1) memory for objects,
++	 */
++	unsigned nr_slabs = DIV_ROUND_UP(objects, cachep->num);
++	unsigned nr_pages = nr_slabs << cachep->gfporder;
++
++	/*
++	 * (2) memory for each per-cpu queue (nr_cpu_ids),
++	 * (3) memory for each per-node alien queues (nr_cpu_ids), and
++	 * (4) some amount of memory for the slab management structures
++	 *
++	 * XXX: truely account these
++	 */
++	nr_pages += 1 + ilog2(nr_pages);
++
++	return nr_pages;
++}
++
++/*
++ * return the max number of pages required to allocate @count objects
++ * of @size bytes from kmalloc given @flags.
++ */
++unsigned kestimate_single(size_t size, gfp_t flags, int count)
++{
++	struct kmem_cache *s = kmem_find_general_cachep(size, flags);
++	if (!s)
++		return 0;
++
++	return kmem_estimate_pages(s, flags, count);
++}
++EXPORT_SYMBOL_GPL(kestimate_single);
++
++/*
++ * return the max number of pages required to allocate @bytes from kmalloc
++ * in an unspecified number of allocation of heterogeneous size.
++ */
++unsigned kestimate(gfp_t flags, size_t bytes)
++{
++	unsigned long pages;
++	struct cache_sizes *csizep = malloc_sizes;
++
++	/*
++	 * multiply by two, in order to account the worst case slack space
++	 * due to the power-of-two allocation sizes.
++	 */
++	pages = DIV_ROUND_UP(2 * bytes, PAGE_SIZE);
++
++	/*
++	 * add the kmem_cache overhead of each possible kmalloc cache
++	 */
++	for (csizep = malloc_sizes; csizep->cs_cachep; csizep++) {
++		struct kmem_cache *s;
++
++#ifdef CONFIG_ZONE_DMA
++		if (unlikely(flags & __GFP_DMA))
++			s = csizep->cs_dmacachep;
++		else
++#endif
++			s = csizep->cs_cachep;
++
++		if (s)
++			pages += kmem_estimate_pages(s, flags, 0);
++	}
++
++	return pages;
++}
++EXPORT_SYMBOL_GPL(kestimate);
++
++/*
+  * This initializes kmem_list3 or resizes various caches for all nodes.
+  */
+ static int alloc_kmemlist(struct kmem_cache *cachep)
 
 --
 
