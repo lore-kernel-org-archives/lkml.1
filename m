@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933863AbXLNT66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761903AbXLNUDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933863AbXLNT66 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 14:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757817AbXLNT6o
+	id S1761903AbXLNUDn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 15:03:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbXLNUDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 14:58:44 -0500
-Received: from [194.117.236.238] ([194.117.236.238]:56107 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S932207AbXLNT6n (ORCPT
+	Fri, 14 Dec 2007 15:03:34 -0500
+Received: from metis.extern.pengutronix.de ([83.236.181.26]:45157 "EHLO
+	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751410AbXLNUDd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 14:58:43 -0500
-Date: Fri, 14 Dec 2007 21:58:09 +0200
-From: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
-Message-ID: <20071214215809.3e900554@linux360.ro>
-In-Reply-To: <20071214181233.GB16351@one.firstfloor.org>
-References: <20071214004442.5f9eba88@linux360.ro>
-	<p737ijigr8c.fsf@bingen.suse.de>
-	<20071214143941.2c7dcfb4@linux360.ro>
-	<20071214101720.GA10981@one.firstfloor.org>
-	<20071214154106.4f0b2d8c@linux360.ro>
-	<20071214122048.GA12550@one.firstfloor.org>
-	<20071214180119.4c492f6c@linux360.ro>
-	<alpine.LFD.0.99999.0712141835510.3668@localhost.localdomain>
-	<20071214181233.GB16351@one.firstfloor.org>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Dec 2007 15:03:33 -0500
+Date: Fri, 14 Dec 2007 21:03:18 +0100
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: hskinnemoen@atmel.com, linux-kernel@vger.kernel.org
+Message-ID: <20071214200318.GM3851@pengutronix.de>
+References: <20071213195617.GF21616@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20071213195617.GF21616@stusta.de>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Hannoversche Str. 2, 31134 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 21:02:39 up 28 days, 22:54, 10 users,  load average: 0.17, 0.25, 0.19
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+Subject: Re: Working upstream toolchain for avr32?
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on metis.extern.pengutronix.de)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Dec 13, 2007 at 08:56:17PM +0100, Adrian Bunk wrote:
+> AFAIK the latest available AVR32 toolchains are some patched gcc 4.0 and 
+> some patched binutils 2.17, and avr32 is currently the only architecture 
+> in the kernel where upstream of both of them is not capable of building 
+> a kernel for the architecture.
 
-Thanks to both of you for shedding some light on this matter. I'll look
-into HPET-related efforts; it looks like a better solution than my
-patch.
+Is an upstream toolchain available which is able to build blackfin?
+
+rsc
+-- 
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+
