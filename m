@@ -1,97 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935275AbXLNBDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935615AbXLNBEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935275AbXLNBDo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 20:03:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbXLNBDd
+	id S935615AbXLNBEL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 20:04:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935447AbXLNBDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 20:03:33 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35481 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755841AbXLNBDa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 20:03:30 -0500
-Date: Thu, 13 Dec 2007 17:03:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Lord <liml@rtr.ca>
-Cc: James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com, lkml@rtr.ca,
-       matthew@wil.cx, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-mm@kvack.org, mel@csn.ul.ie
-Subject: Re: [PATCH] fix page_alloc for larger I/O segments
-Message-Id: <20071213170308.d4ce5889.akpm@linux-foundation.org>
-In-Reply-To: <4761D0E9.4010701@rtr.ca>
-References: <20071213185326.GQ26334@parisc-linux.org>
-	<4761821F.3050602@rtr.ca>
-	<20071213192633.GD10104@kernel.dk>
-	<4761883A.7050908@rtr.ca>
-	<476188C4.9030802@rtr.ca>
-	<20071213193937.GG10104@kernel.dk>
-	<47618B0B.8020203@rtr.ca>
-	<20071213195350.GH10104@kernel.dk>
-	<20071213200219.GI10104@kernel.dk>
-	<476190BE.9010405@rtr.ca>
-	<20071213200958.GK10104@kernel.dk>
-	<20071213140207.111f94e2.akpm@linux-foundation.org>
-	<1197584106.3154.55.camel@localhost.localdomain>
-	<20071213142935.47ff19d9.akpm@linux-foundation.org>
-	<4761B32A.3070201@rtr.ca>
-	<4761BCB4.1060601@rtr.ca>
-	<4761C8E4.2010900@rtr.ca>
-	<4761CE88.9070406@rtr.ca>
-	<4761D0E9.4010701@rtr.ca>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Dec 2007 20:03:48 -0500
+Received: from thunk.org ([69.25.196.29]:60950 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935358AbXLNBDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 20:03:46 -0500
+Date: Thu, 13 Dec 2007 20:03:03 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: sct@redhat.com, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm] ext4: remove unused code from ext4_find_entry()
+Message-ID: <20071214010303.GA17344@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Mariusz Kozlowski <m.kozlowski@tuxland.pl>, sct@redhat.com,
+	akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+	lkml <linux-kernel@vger.kernel.org>
+References: <200712122246.41284.m.kozlowski@tuxland.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712122246.41284.m.kozlowski@tuxland.pl>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Dec 2007 19:40:09 -0500
-Mark Lord <liml@rtr.ca> wrote:
-
-> And here is a patch that seems to fix it for me here:
+On Wed, Dec 12, 2007 at 10:46:40PM +0100, Mariusz Kozlowski wrote:
+> Hello,
 > 
-> * * * *
+> 	The unused code found in ext3_find_entry() is also present (and still unused)
+> in the ext4_find_entry() code. This patch removes it. Compile tested only.
 > 
-> Fix page allocator to give better change of larger contiguous segments (again).
-> 
-> Signed-off-by: Mark Lord <mlord@pobox.com
-> ---
-> 
-> 
-> --- old/mm/page_alloc.c.orig	2007-12-13 19:25:15.000000000 -0500
-> +++ linux-2.6/mm/page_alloc.c	2007-12-13 19:35:50.000000000 -0500
-> @@ -954,7 +954,7 @@
->  				goto failed;
->  		}
->  		/* Find a page of the appropriate migrate type */
-> -		list_for_each_entry(page, &pcp->list, lru) {
-> +		list_for_each_entry_reverse(page, &pcp->list, lru) {
->  			if (page_private(page) == migratetype) {
->  				list_del(&page->lru);
->  				pcp->count--;
+> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-- needs help to make it apply to mainline
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 
-- needs a comment, methinks...
+Thanks, this will be in the next ext4 patchset.
 
-
---- a/mm/page_alloc.c~fix-page-allocator-to-give-better-chance-of-larger-contiguous-segments-again
-+++ a/mm/page_alloc.c
-@@ -1060,8 +1060,12 @@ again:
- 				goto failed;
- 		}
- 
--		/* Find a page of the appropriate migrate type */
--		list_for_each_entry(page, &pcp->list, lru)
-+		/*
-+		 * Find a page of the appropriate migrate type.  Doing a
-+		 * reverse-order search here helps us to hand out pages in
-+		 * ascending physical-address order.
-+		 */
-+		list_for_each_entry_reverse(page, &pcp->list, lru)
- 			if (page_private(page) == migratetype)
- 				break;
- 
-_
-
+	     	     	    	 - Ted
