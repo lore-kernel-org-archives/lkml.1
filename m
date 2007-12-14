@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935170AbXLNAQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934719AbXLNAUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935170AbXLNAQj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 19:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932240AbXLNAQ3
+	id S934719AbXLNAUi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 19:20:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764362AbXLNAU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 19:16:29 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38895 "EHLO mx1.redhat.com"
+	Thu, 13 Dec 2007 19:20:28 -0500
+Received: from ns2.suse.de ([195.135.220.15]:57703 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765792AbXLNAQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 19:16:28 -0500
-Date: Thu, 13 Dec 2007 19:16:05 -0500
-From: Dave Jones <davej@redhat.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Print taint info in more places.
-Message-ID: <20071214001605.GC22304@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Adrian Bunk <bunk@kernel.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20071213224927.GA18639@redhat.com> <20071214000350.GK21616@stusta.de>
+	id S1760863AbXLNAU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 19:20:27 -0500
+Date: Thu, 13 Dec 2007 16:19:32 -0800
+From: Greg KH <gregkh@suse.de>
+To: venkatesh.pallipadi@intel.com
+Cc: ak@muc.de, ebiederm@xmission.com, rdreier@cisco.com,
+       torvalds@linux-foundation.org, airlied@skynet.ie, davej@redhat.com,
+       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [RFC PATCH 08/12] PAT 64b: coherent mmap and sysfs bin ioctl
+Message-ID: <20071214001932.GA10389@suse.de>
+References: <20071213235543.568682000@intel.com> <20071213235712.813201000@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071214000350.GK21616@stusta.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20071213235712.813201000@intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 14, 2007 at 01:03:50AM +0100, Adrian Bunk wrote:
+On Thu, Dec 13, 2007 at 03:55:51PM -0800, venkatesh.pallipadi@intel.com wrote:
+> Forward port of coherent-mmap.patch and sysfs-bin-ioctl.patch to x86 tree.
+> 
+> TBD: Do we need the ioctl interface to sysfs or get the type attribute
+> through a different sysfs file. And then actually specify the attribute
+> while doing pci_mmap_page_range ;-)
 
- > >  #ifndef HAVE_ARCH_BUG
- > >  #define BUG() do { \
- > > -	printk("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__); \
- > > +	printk(KERN_ERR "BUG: failure at %s:%d/%s()! (%s)\n",
- > > +		__FILE__, __LINE__, __FUNCTION__, print_tainted()); \
- > >  	panic("BUG!"); \
- > >  } while (0)
- > >  #endif
- > >...
- > 
- > Note that this only changes a handful of architectures and most likely 
- > not the ones you are interested in.
-
-Good catch.  I'm sure we had coverage on at least x86 before, so
-it seems over the many rediffs this patch has had, some chunks got lost.
-I'll resurrect that.
+Woah!  No, no ioctls on sysfs files, sorry.  Not going to happen, do
+this on a /dev file if you want to have ioctls...
 
 thanks,
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+greg k-h
