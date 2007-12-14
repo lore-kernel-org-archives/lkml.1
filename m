@@ -1,89 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932345AbXLNPxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbXLNPy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932345AbXLNPxn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 10:53:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbXLNPxf
+	id S1755499AbXLNPy2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 10:54:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbXLNPyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 10:53:35 -0500
-Received: from mx1.mandriva.com ([212.85.150.183]:54754 "EHLO mx1.mandriva.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753803AbXLNPxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 10:53:33 -0500
-X-Greylist: delayed 1521 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Dec 2007 10:53:33 EST
-Subject: Re: [PATCH] usb/hid: Blacklist the Gretag-Macbeth Huey display
-	colorimeter
-From: Frederic Crozat <fcrozat@mandriva.com>
-To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Cc: jkosina@suse.cz, linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, argyllcms@freelists.org,
-       Greg KH <greg@kroah.com>
-In-Reply-To: <1197626696.5281.5.camel@rousalka.dyndns.org>
-References: <1197585460.28927.2.camel@rousalka.dyndns.org>
-	 <20071214053853.GD7765@kroah.com>
-	 <1197626696.5281.5.camel@rousalka.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-15
-Organization: Mandriva
-Date: Fri, 14 Dec 2007 16:28:07 +0100
-Message-Id: <1197646087.31259.57.camel@trinidad.mandrakesoft.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 8bit
+	Fri, 14 Dec 2007 10:54:20 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:45142 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754846AbXLNPyT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 10:54:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=VNM6LpKfYJUglyb7h+DjeI8fxZNIQYOxZhoc2p1PvHMDRgUqrwWSm0x4Sy7obubtvOiGdRpmQjy9WvbJ31wNlyZn2wCCbn1NMsmXNuSg5DWA4NTqxlRvTZSmE3sGO3q5S48DNhZd4BmEmwDRS22KTiMOSpN9T6x4R/c6G3RE0Wg=
+Message-ID: <4762A721.7080400@gmail.com>
+Date: Sat, 15 Dec 2007 00:54:09 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+CC: Greg KH <gregkh@suse.de>, stable@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, maneesh@linux.vnet.ibm.com,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, Gautham Shenoy <ego@in.ibm.com>
+Subject: Re: 2.6.22-stable causes oomkiller to be invoked
+References: <20071213123333.GA16905@linux.vnet.ibm.com> <20071213132326.GC16905@linux.vnet.ibm.com> <20071213151847.GB5676@linux.vnet.ibm.com> <20071213162936.GA7635@suse.de> <20071213164658.GA30865@linux.vnet.ibm.com> <20071213175423.GA2977@linux.vnet.ibm.com> <476295FF.1040202@gmail.com> <20071214154711.GD23670@linux.vnet.ibm.com>
+In-Reply-To: <20071214154711.GD23670@linux.vnet.ibm.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dhaval Giani wrote:
+> XXX sysfs_page_cnt=1
 
-Le vendredi 14 décembre 2007 à 11:04 +0100, Nicolas Mailhot a écrit :
-> Le jeudi 13 décembre 2007 à 21:38 -0800, Greg KH a écrit : 
-> > On Thu, Dec 13, 2007 at 11:37:40PM +0100, Nicolas Mailhot wrote:
-> 
-> > > The Gretag-Macbeth Huey display colorimeter claims to be an HID device
-> > > but isn't. As a result the linux HID device will claim it, preventing
-> > > FLOSS software like Argyll CMS (http://www.argyllcms.com/) from talking
-> > > to it,
-> 
-> > > Frédéric Crozat from Mandriva has such a device and may provide more
-> > > info.
-> 
-> > Care to make up a patch as per the Documentation/SubmittingPatches file
-> > and send it to this list and the HID driver maintainer?  That way you
-> > get the proper credit for this change.
-> 
-> The things I do as a public service, I don't even have the damn Huey
-> myself:(
-> 
-> There seems to be some complains about libusb BTW
-> (http://www.freelists.org/archives/argyllcms/12-2007/msg00068.html)
-> 
-> 
-> Signed-off-by: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-> 
-> diff -uNr linux-2.6.24-rc5.orig/drivers/hid/usbhid/hid-quirks.c linux-2.6.24-rc5/drivers/hid/usbhid/hid-quirks.c
-> --- linux-2.6.24-rc5.orig/drivers/hid/usbhid/hid-quirks.c	2007-12-11 04:48:43.000000000 +0100
-> +++ linux-2.6.24-rc5/drivers/hid/usbhid/hid-quirks.c	2007-12-14 10:41:01.000000000 +0100
-> @@ -85,6 +85,9 @@
->  #define USB_VENDOR_ID_CHIC		0x05fe
->  #define USB_DEVICE_ID_CHIC_GAMEPAD	0x0014
->  
-> +#define USB_VENDOR_ID_GRETAGMACBETH	0x0971
-> +#define USB_DEVICE_ID_GRETAGMACBETH_HUEY	0x2005
-> +
->  #define USB_VENDOR_ID_CIDC		0x1677
->  
->  #define USB_VENDOR_ID_CMEDIA		0x0d8c
-> @@ -423,6 +426,7 @@
->  	{ USB_VENDOR_ID_GOTOP, USB_DEVICE_ID_SUPER_Q2, HID_QUIRK_IGNORE },
->  	{ USB_VENDOR_ID_GOTOP, USB_DEVICE_ID_GOGOPEN, HID_QUIRK_IGNORE },
->  	{ USB_VENDOR_ID_GOTOP, USB_DEVICE_ID_PENPOWER, HID_QUIRK_IGNORE },
-> +	{ USB_VENDOR_ID_GRETAGMACBETH, USB_DEVICE_ID_GRETAGMACBETH_HUEY, HID_QUIRK_IGNORE },
->  	{ USB_VENDOR_ID_GRIFFIN, USB_DEVICE_ID_POWERMATE, HID_QUIRK_IGNORE },
->  	{ USB_VENDOR_ID_GRIFFIN, USB_DEVICE_ID_SOUNDKNOB, HID_QUIRK_IGNORE },
+Hmm.. so, sysfs r/w buffer wasn't the culprit.  I'm curious what eats up
+all your low memory.  Please do the following.
 
-Fixes the issue for me :
+1. Right after boot, record /proc/meminfo and slabinfo.
 
-Tested-by: Frederic Crozat <fcrozat@mandriva.com>
+2. After or near OOM, record /proc/meminfo and slabinfo.  This can be
+tricky but if your machine reliably OOMs after 10mins, run it for 9mins
+and capturing the result should show enough.
+
+Thanks.
 
 -- 
-Frederic Crozat <fcrozat@mandriva.com>
-Mandriva
-
+tejun
