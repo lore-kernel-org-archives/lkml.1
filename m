@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbXLNCUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765775AbXLNCX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932469AbXLNCUd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Dec 2007 21:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758384AbXLNCUY
+	id S1765775AbXLNCX0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Dec 2007 21:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757992AbXLNCXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Dec 2007 21:20:24 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:3272 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754860AbXLNCUX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Dec 2007 21:20:23 -0500
-Date: Fri, 14 Dec 2007 10:20:13 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: davem@davemloft.net, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: aead_geniv_* [crypto/seqiv.ko] undefined! (MMOTM stamp-2007-12-13-15-37)
-Message-ID: <20071214022013.GB12426@gondor.apana.org.au>
-References: <200712140203.lBE23kF6021203@agora.fsl.cs.sunysb.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712140203.lBE23kF6021203@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.5.9i
+	Thu, 13 Dec 2007 21:23:13 -0500
+Received: from rtr.ca ([76.10.145.34]:3177 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755250AbXLNCXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Dec 2007 21:23:12 -0500
+Message-ID: <4761E90D.2090404@rtr.ca>
+Date: Thu, 13 Dec 2007 21:23:09 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       jens.axboe@oracle.com, lkml@rtr.ca, matthew@wil.cx,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-mm@kvack.org, mel@csn.ul.ie
+Subject: Re: [PATCH] fix page_alloc for larger I/O segments (improved)
+References: <20071213185326.GQ26334@parisc-linux.org>	<4761821F.3050602@rtr.ca>	<20071213192633.GD10104@kernel.dk>	<4761883A.7050908@rtr.ca>	<476188C4.9030802@rtr.ca>	<20071213193937.GG10104@kernel.dk>	<47618B0B.8020203@rtr.ca>	<20071213195350.GH10104@kernel.dk>	<20071213200219.GI10104@kernel.dk>	<476190BE.9010405@rtr.ca>	<20071213200958.GK10104@kernel.dk>	<20071213140207.111f94e2.akpm@linux-foundation.org>	<1197584106.3154.55.camel@localhost.localdomain>	<20071213142935.47ff19d9.akpm@linux-foundation.org>	<4761B32A.3070201@rtr.ca>	<4761BCB4.1060601@rtr.ca>	<4761C8E4.2010900@rtr.ca>	<4761CE88.9070406@rtr.ca>	<20071213163726.3bb601fa.akpm@linux-foundation.org>	<4761D160.7060603@rtr.ca>	<4761D279.6050500@rtr.ca>	<1197593849.3154.62.camel@localhost.localdomain> <20071213171103.17c3b924.akpm@linux-foundation.org>
+In-Reply-To: <20071213171103.17c3b924.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 13, 2007 at 09:03:46PM -0500, Erez Zadok wrote:
-> I'm getting undefined symbols while building MMOTM kernel
-> stamp-2007-12-13-15-37:
+Andrew Morton wrote:
+> On Thu, 13 Dec 2007 19:57:29 -0500
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > 
->   MODPOST 32 modules
-> ERROR: "aead_geniv_exit" [crypto/seqiv.ko] undefined!
-> ERROR: "aead_geniv_alloc" [crypto/seqiv.ko] undefined!
-> ERROR: "aead_geniv_init" [crypto/seqiv.ko] undefined!
-> ERROR: "aead_geniv_free" [crypto/seqiv.ko] undefined!
-> make[1]: *** [__modpost] Error 1
+>> On Thu, 2007-12-13 at 19:46 -0500, Mark Lord wrote:
+>>> "Improved version", more similar to the 2.6.23 code:
+>>>
+>>> Fix page allocator to give better chance of larger contiguous segments (again).
+>>>
+>>> Signed-off-by: Mark Lord <mlord@pobox.com
+>>> ---
+>>>
+>>> --- old/mm/page_alloc.c	2007-12-13 19:25:15.000000000 -0500
+>>> +++ linux-2.6/mm/page_alloc.c	2007-12-13 19:43:07.000000000 -0500
+>>> @@ -760,7 +760,7 @@
+>>>  		struct page *page = __rmqueue(zone, order, migratetype);
+>>>  		if (unlikely(page == NULL))
+>>>  			break;
+>>> -		list_add(&page->lru, list);
+>>> +		list_add_tail(&page->lru, list);
+>> Could we put a big comment above this explaining to the would be vm
+>> tweakers why this has to be a list_add_tail, so we don't end up back in
+>> this position after another two years?
+>>
+> 
+> Already done ;)
+..
 
-Sorry.  I've added the following patch to fix this.
+I thought of the comment as I rushed off for dinner.
+Thanks, Andrew!
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 304ecc7..237dfa2 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -34,6 +34,7 @@ config CRYPTO_BLKCIPHER
- 
- config CRYPTO_SEQIV
- 	tristate "Sequence Number IV Generator"
-+	select CRYPTO_AEAD
- 	select CRYPTO_BLKCIPHER
- 	help
- 	  This IV generator generates an IV based on a sequence number by
+> --- a/mm/page_alloc.c~fix-page_alloc-for-larger-i-o-segments-fix
+> +++ a/mm/page_alloc.c
+> @@ -847,6 +847,10 @@ static int rmqueue_bulk(struct zone *zon
+>  		struct page *page = __rmqueue(zone, order, migratetype);
+>  		if (unlikely(page == NULL))
+>  			break;
+> +		/*
+> +		 * Doing a list_add_tail() here helps us to hand out pages in
+> +		 * ascending physical-address order.
+> +		 */
+>  		list_add_tail(&page->lru, list);
+>  		set_page_private(page, migratetype);
+>  	}
+> _
+
