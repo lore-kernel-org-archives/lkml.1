@@ -1,93 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbXLNO1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbXLNOaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754183AbXLNO1L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 09:27:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbXLNO04
+	id S1754484AbXLNOaf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 09:30:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbXLNOa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 09:26:56 -0500
-Received: from adsl-76-243-235-52.dsl.chcgil.sbcglobal.net ([76.243.235.52]:36245
-	"EHLO accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752515AbXLNO0z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 09:26:55 -0500
-Subject: Re: 2.6.24-rc3-mm1
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Hannes Reinecke <hare@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <47624649.3040209@suse.de>
-References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
-	 <47462F3C.3040700@googlemail.com>
-	 <20071122201250.f957e280.akpm@linux-foundation.org>
-	 <47466B5D.90607@googlemail.com>
-	 <20071126221509.8f437b61.akpm@linux-foundation.org>
-	 <1197390783.3812.19.camel@localhost.localdomain> <47624649.3040209@suse.de>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 09:26:45 -0500
-Message-Id: <1197642405.3154.71.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Dec 2007 09:30:27 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:4160 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752780AbXLNOa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 09:30:26 -0500
+Date: Fri, 14 Dec 2007 09:14:46 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Michael Buesch <mb@bu3sch.de>, Ray Lee <ray-lk@madrabbit.org>,
+       bcm43xx-dev@lists.berlios.de, Daniel Walker <dwalker@mvista.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
+       kjwinchester@gmail.com, mbuesch@freenet.de
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
+	to mutex
+Message-ID: <20071214141446.GA3096@tuxdriver.com>
+References: <20071213003028.676998182@mvista.com> <200712131445.39770.mb@bu3sch.de> <2c0942db0712131604m41c34da9hf3122b0603f3af96@mail.gmail.com> <200712140143.16451.mb@bu3sch.de> <20071214105624.GC23964@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071214105624.GC23964@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Dec 14, 2007 at 11:56:24AM +0100, Ingo Molnar wrote:
+> 
+> * Michael Buesch <mb@bu3sch.de> wrote:
 
-On Fri, 2007-12-14 at 10:00 +0100, Hannes Reinecke wrote:
-> James Bottomley wrote:
-> > On Mon, 2007-11-26 at 22:15 -0800, Andrew Morton wrote:
-> >> OK, thanks.  I'll assume that James and Hannes have this in hand (or will
-> >> have, by mid-week) and I won't do anything here.
-> > 
-> > Just to confirm what I think I'm going to be doing:  rebasing the
-> > scsi-misc tree to remove this commit:
-> > 
-> > commit 8655a546c83fc43f0a73416bbd126d02de7ad6c0
-> > Author: Hannes Reinecke <hare@suse.de>
-> > Date:   Tue Nov 6 09:23:40 2007 +0100
-> > 
-> >     [SCSI] Do not requeue requests if REQ_FAILFAST is set
-> > 
-> > And its allied fix ups:
-> > 
-> > commit 983289045faa96fba8841d3c51b98bb8623d9504
-> > Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > Date:   Sat Nov 24 19:47:25 2007 +0200
-> > 
-> >     [SCSI] fix up REQ_FASTFAIL not to fail when state is QUIESCE
-> > 
-> > commit 9dd15a13b332e9f5c8ee752b1ccd9b84cb5bdf17
-> > Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > Date:   Sat Nov 24 19:55:53 2007 +0200
-> > 
-> >     [SCSI] fix domain validation to work again
-> > 
-> > James
-> > 
-> > 
-> Or just apply my latest patch (cf Undo __scsi_kill_request).
-> The main point is that we shouldn't retry requests
-> with FAILFAST set when the queue is blocked. AFAICS
-> only FC and iSCSI transports set the queue to blocked,
-> and use this to indicate a loss of connection. So any
-> retry with queue blocked is futile.
+> > Oh come on. b43 is more than a year old now. How long should we wait? 
+> > Two or three? Forever?
+> 
+> possibly forever, if you dont get obvious regressions like "my wlan does 
+> not work" (reported in this very thread), resolved. Pushing the blame to 
+> udev (in a rather unfriendly way) wont give users a working system and 
+> wont get you many new testers for the new driver either.
 
-I still don't think this is the right approach.
+It is true that Michael can be a little unpleasant at times.
+The colloquialism that comes to mind is that he "does not suffer fools
+lightly".  Hopefully he will take your counseling to heart and learn
+to be a bit more moderate in his tone.  FWIW, he is still young. :-)
 
-For link up/down events, those are direct pathing events and should be
-signalled along a kernel notifier, not by mucking with the SCSI state
-machine.  However, there's still devloss_tmo to consider ... even in
-multipath, I don't think you want to signal path failure until
-devloss_tmo has fired otherwise you'll get too many transient up/down
-events which damage performance if the array has an expensive failover
-model.
+That said, it is also true that the b43[legacy] driver[s] do a more
+than adequate job of replacing the old bcm43xx driver provided that
+one (re-)installs the proper firmware.  And I know of no other driver
+that goes to more trouble to tell you how to get the proper firmware
+installed than this one.
 
-The other problem is what to do with in-flight commands at the time the
-link went down.  With your current patch, they're still stuck until they
-time out ... surely there needs to be some type of recovery mechanism
-for these?
+The bcm43xx driver will be added to the feature removal schedule
+in 2.6.25.  Proper judgment will be used in deciding the actual date
+of its removal.  In the meantime hopefully every distribution will
+have or obtain a working udev configuration.  If things don't work
+out as planned then we will re-evaluate.
 
-James
+Let's stop this now please.
 
-
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
