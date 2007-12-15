@@ -1,78 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbXLOFxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbXLOF63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbXLOFxT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 00:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbXLOFxK
+	id S1756588AbXLOF63 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 00:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbXLOF6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 00:53:10 -0500
-Received: from waste.org ([66.93.16.53]:33955 "EHLO waste.org"
+	Sat, 15 Dec 2007 00:58:18 -0500
+Received: from waste.org ([66.93.16.53]:48826 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750899AbXLOFxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 00:53:09 -0500
-Date: Fri, 14 Dec 2007 23:52:18 -0600
+	id S1750800AbXLOF6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 00:58:17 -0500
+Date: Fri, 14 Dec 2007 23:55:50 -0600
 From: Matt Mackall <mpm@selenic.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Make WARN_ON/WARN_ON_ONCE no-ops when CONFIG_BUG is off
-Message-ID: <20071215055218.GM19691@waste.org>
-References: <20071214132755.GA18309@gondor.apana.org.au> <20071214180246.GT17536@waste.org> <20071215041659.GB25324@gondor.apana.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mel Gorman <mel@csn.ul.ie>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       jens.axboe@oracle.com, liml@rtr.ca, lkml@rtr.ca, matthew@wil.cx,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+Message-ID: <20071215055550.GN19691@waste.org>
+References: <47618B0B.8020203@rtr.ca> <20071213195350.GH10104@kernel.dk> <20071213200219.GI10104@kernel.dk> <476190BE.9010405@rtr.ca> <20071213200958.GK10104@kernel.dk> <20071213140207.111f94e2.akpm@linux-foundation.org> <1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org> <20071215010940.GB28613@csn.ul.ie> <20071214180206.e0325503.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071215041659.GB25324@gondor.apana.org.au>
+In-Reply-To: <20071214180206.e0325503.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 15, 2007 at 12:16:59PM +0800, Herbert Xu wrote:
-> On Fri, Dec 14, 2007 at 12:02:46PM -0600, Matt Mackall wrote:
-> >
-> > I added CONFIG_BUG, and I think the current behavior is correct. As
-> > you've noticed, we have to evaluate condition, it may have
-> > side-effects. And if code does:
+On Fri, Dec 14, 2007 at 06:02:06PM -0800, Andrew Morton wrote:
+> On Sat, 15 Dec 2007 01:09:41 +0000 Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > On (13/12/07 14:29), Andrew Morton didst pronounce:
+> > > > The simple way seems to be to malloc a large area, touch every page and
+> > > > then look at the physical pages assigned ... they now mostly seem to be
+> > > > descending in physical address.
+> > > > 
+> > > 
+> > > OIC.  -mm's /proc/pid/pagemap can be used to get the pfn's...
+> > > 
 > > 
-> > 	/* this indicates a driver bug, report and fail gracefully */
-> > 	if (WARN_ON(val == NULL))
-> > 		return -EFAULT;
+> > I tried using pagemap to verify the patch but it triggered BUG_ON
+> > checks. Perhaps I am using the interface wrong but I would still not
+> > expect it to break in this fashion. I tried 2.6.24-rc4-mm1, 2.6.24-rc5-mm1,
+> > 2.6.24-rc5 with just the maps4 patches applied and 2.6.23 with maps4 patches
+> > applied. Each time I get errors like this;
+> > 
+> > [   90.108315] BUG: sleeping function called from invalid context at include/asm/uaccess_32.h:457
+> > [   90.211227] in_atomic():1, irqs_disabled():0
+> > [   90.262251] no locks held by showcontiguous/2814.
+> > [   90.318475] Pid: 2814, comm: showcontiguous Not tainted 2.6.24-rc5 #1
+> > [   90.395344]  [<c010522a>] show_trace_log_lvl+0x1a/0x30
+> > [   90.456948]  [<c0105bb2>] show_trace+0x12/0x20
+> > [   90.510173]  [<c0105eee>] dump_stack+0x6e/0x80
+> > [   90.563409]  [<c01205b3>] __might_sleep+0xc3/0xe0
+> > [   90.619765]  [<c02264fd>] copy_to_user+0x3d/0x60
+> > [   90.675153]  [<c01b3e9c>] add_to_pagemap+0x5c/0x80
+> > [   90.732513]  [<c01b43e8>] pagemap_pte_range+0x68/0xb0
+> > [   90.793010]  [<c0175ed2>] walk_page_range+0x112/0x210
+> > [   90.853482]  [<c01b47c6>] pagemap_read+0x176/0x220
+> > [   90.910863]  [<c0182dc4>] vfs_read+0x94/0x150
+> > [   90.963058]  [<c01832fd>] sys_read+0x3d/0x70
+> > [   91.014219]  [<c0104262>] syscall_call+0x7/0xb
+> > 
+> > ...
+> >
+> > Just using cp to read the file is enough to cause problems but I included
+> > a very basic program below that produces the BUG_ON checks. Is this a known
+> > issue or am I using the interface incorrectly?
 > 
-> That's exactly the sort of use I had in mind :) I'm actually the
-> one who added the ability to use WARN_ON inside an if clause.
-> 
-> Just as the case of a BUG_ON, a WARN_ON should never occur in
-> practice, unless there is a bug which the code is not aware of.
+> I'd say you're using it correctly but you've found a hitherto unknown bug. 
+> On i386 highmem machines with CONFIG_HIGHPTE (at least) pte_offset_map()
+> takes kmap_atomic(), so pagemap_pte_range() can't do copy_to_user() as it
+> presently does.
 
-Agreed.
-
-> As such we want it to go away completely if CONFIG_BUG is off.
-
-No. The code as written above should reduce to:
-
-	if (val == NULL)
-		return -EFAULT;
-
-If I hadn't wanted to return -EFAULT in this case, I would have just written:
-
-	WARN_ON(val == NULL);
-
-I don't want code that was running safely (ie returning -EFAULT) to
-start crashing the system just because I've, say, disabled printk.
-That's creating an obnoxious heisenbug.
-
-> > ..we surely want it to continue returning -EFAULT, regardless of
-> > whether we log it, no? What use case did you have in mind?
-> 
-> If you're using it for a scenario which is known to actually
-> occur, then some other mechanism should be chosen in place of
-> WARN_ON.
-
-Then I kindly submit that you should instead withdraw the code that
-allows you to use WARN_ON in a condition in the first place.
-
-Note that Dave Jones is currently poking at making WARN_ON
-out-of-line, so you're liable to collide with him.
+Damn, I coulda sworn I fixed that.
 
 -- 
 Mathematics is the supreme nostalgia of our time.
