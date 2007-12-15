@@ -1,59 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933313AbXLORST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932438AbXLORtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933313AbXLORST (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 12:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758690AbXLORSJ
+	id S932438AbXLORtW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 12:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759978AbXLORtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 12:18:09 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:58926 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754748AbXLORSI (ORCPT
+	Sat, 15 Dec 2007 12:49:12 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:62610 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756754AbXLORtK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 12:18:08 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 216.15.117.105
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+7K5wVU6tSKJq6980YV2SX
-Message-ID: <47640C33.1050106@reed.com>
-Date: Sat, 15 Dec 2007 12:17:39 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
+	Sat, 15 Dec 2007 12:49:10 -0500
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
- on some AMD64x2 laptops, etc.
-References: <469578CD.3080609@reed.com>	<1184216528.12353.203.camel@chaos>	<1184218962.12353.209.camel@chaos>	<46964352.7040301@reed.com>	<1184253339.12353.223.camel@chaos>	<469697C6.50903@reed.com>	<1184274754.12353.254.camel@chaos>	<4761F193.7090400@reed.com>	<20071214131502.GA14359@elte.hu>	<4762C551.5070003@zytor.com>	<20071214210652.GB28793@elf.ucw.cz>	<4763001A.1070102@zytor.com> <20071214232955.545ab809@the-village.bc.nu> <4763442A.5020507@reed.com> <476369E2.8050301@zytor.com>
-In-Reply-To: <476369E2.8050301@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18276.5012.22786.410453@stoffel.org>
+Date: Sat, 15 Dec 2007 12:49:08 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: "John Stoffel" <john@stoffel.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: 2.6.24-rc5-mm1:  kernel BUG at include/linux/scatterlist.h:59!
+In-Reply-To: <18275.3156.745358.12056@stoffel.org>
+References: <18275.3156.745358.12056@stoffel.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+John> Just fired up 2.6.24-rc5-mm1 on a Dual CPU PIII 550mhz system
+John> with 2gb of RAM.  Got the following error.  Let me know if you
+John> need more details or want me to run tests or make changes.
+John> Looks like something in the SCSI st driver, which makes sense
+John> since I have a pair of DLT 7k drives hooked upto this system via
+John> a Symbios PCI card.  I've also got a P1000 jukebox on there as
+John> well.
 
-H. Peter Anvin wrote:
-> David P. Reed wrote:
->> Just a thought for a way to fix the "very early" timing needed to set 
->> up udelay to work in a way that works on all machines.  Perhaps we 
->> haven't exploited the BIOS enough:  The PC BIOS since the PC AT 
->> (286)  has always had a standard "countdown timer" way to delay for n 
->> microseconds, which as far as I know still works.   This can be used 
->> to measure the speed of a delay loop, without using ANY in/out 
->> instructions directly (the ones in the BIOS are presumably correctly 
->> delayed...).
->
-> If we enter from the 32-bit entrypoint, we already don't have access 
-> to the BIOS, though.
->
-My understanding is that the linux starts in real mode, and uses the 
-BIOS for such things as reading the very first image.   
-arch/x86/boot/main.c seems to use BIOS calls, and one can do what I 
-wrote in C or asm.  Good place to measure the appropriate delay timing, 
-and pass it on forward.  That's what I was suggesting, which is why I 
-copied the ASM routine from my old code listing as I did.
+John>   [  354.338667] kernel BUG at include/linux/scatterlist.h:59!
+John>   [  354.403311] invalid opcode: 0000 [#1] SMP 
+John>   [  354.452774] last sysfs file:
+John>   /sys/devices/pci0000:00/0000:00:0d.1/host3/target3:0:3/3:0:3:0/vendor
+John>   [  354.560099] Modules linked in:
+John>   [  354.596859] 
+John>   [  354.614753] Pid: 1795, comm: stinit Not tainted (2.6.24-rc5-mm1 #3)
+John>   [  354.689825] EIP: 0060:[<c0356bd0>] EFLAGS: 00010213 CPU: 0
+John>   [  354.755538] EIP is at st_do_scsi+0x2e0/0x340
+John>   [  354.806668] EAX: 00000000 EBX: 00000000 ECX: c16e1f80 EDX: f7f87050
+John>   [  354.881731] ESI: f7f877d0 EDI: 00001000 EBP: f7f87000 ESP: f7167db0
+John>   [  354.956788]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+John>   [  355.021452] Process stinit (pid: 1795, ti=f7167000 task=f74d7030
+John>   task.ti=f7167000)
+John>   [  355.110028] Stack: 00000003 f7f87050 00000000 00000000 00d59f80
+John>   00000000 f75cf9e0 c0359840 
+John>   [  355.211879]        000000d0 f7167e54 f7d2bc00 f75cf9e0 f7d2bc18
+John>   00000000 00000006 f7167e54 
+John>   [  355.313757]        f7d2bc00 f7167e64 f7f87000 c0358730 00000006
+John>   00000002 000dbba0 00000000 
+John>   [  355.415639] Call Trace:
+John>   [  355.447258]  [<c0359840>] st_sleep_done+0x0/0x70
+John>   [  355.502773]  [<c0358730>] check_tape+0x510/0x640
+John>   [  355.558284]  [<c0359c9b>] st_open+0x18b/0x220
+John>   [  355.610677]  [<c0171850>] exact_match+0x0/0x10
+John>   [  355.664113]  [<c0359b10>] st_open+0x0/0x220
+John>   [  355.714429]  [<c0171f2f>] chrdev_open+0x9f/0x190
+John>   [  355.769945]  [<c0171e90>] chrdev_open+0x0/0x190
+John>   [  355.824418]  [<c016d685>] __dentry_open+0xb5/0x2a0
+John>   [  355.882013]  [<c01762cb>] permission+0xdb/0x100
+John>   [  355.936486]  [<c016d937>] nameidata_to_filp+0x47/0x60
+John>   [  355.997200]  [<c017985d>] open_pathname+0x17d/0x740
+John>   [  356.055831]  [<c011fa10>] update_curr+0x80/0x110
+John>   [  356.111345]  [<c0123792>] scheduler_tick+0xe2/0x130
+John>   [  356.169979]  [<c0177765>] getname+0xa5/0xc0
+John>   [  356.220294]  [<c016d4bc>] do_sys_open+0x4c/0xe0
+John>   [  356.274770]  [<c016d58c>] sys_open+0x1c/0x20
+John>   [  356.326123]  [<c0103f6e>] syscall_call+0x7/0xb
+John>   [  356.379559]  =======================
+John>   [  356.422393] Code: 32 8b 54 24 28 89 44 24 2c 89 50 74 e9 ba fd ff ff 0f 0b eb fe 8d b6 00 00 00 00 0f 0b eb fe 0f 0b eb fe 0f 0b eb fe 8d 74 26 00 <0f> 0b eb fe 0f 0b eb fe 64 a1 00 50 6e c0 8b 40 04 8b 40 08 a8 
+John>   [  356.661693] EIP: [<c0356bd0>] st_do_scsi+0x2e0/0x340 SS:ESP
+John>   0068:f7167db0
 
+
+Just to add some additional information, when I use Bacula to load a
+new tape into a drive (using mtx really) I get yet another BUG on all
+my screens:
+
+jfsnew kernel: [60861.268812] ------------[ cut here ]------------
+ jfsnew kernel: [60861.388789] invalid opcode: 0000 [#2] SMP 
+ jfsnew kernel: [60861.438055] last sysfs file:
+/sys/devices/pci0000:00/0000:00:13.0/0000:03:0e.0/local_cpus
+ jfsnew kernel: [60862.019200] Process mt (pid: 8860, ti=c6967000
+task=c6908570 task.ti=c6967000)
+ jfsnew kernel: [60862.103613] Stack: 00000003 f745e050 00000000
+00000000 00d59f80 00000000 f135bd60 c0359840 
+ jfsnew kernel: [60862.204859]        000000d0 c6967e54 f7d2b600
+f135bd60 f7d2b618 00000000 00000006 c6967e54 
+ jfsnew kernel: [60862.305804]        f7d2b600 c6967e64 f745e000
+c0358730 00000006 00000002 000dbba0 00000000 
+ jfsnew kernel: [60862.406746] Call Trace:
+ jfsnew kernel: [60862.438156]  [<c0359840>] st_sleep_done+0x0/0x70
+ jfsnew kernel: [60862.493665]  [<c0358730>] check_tape+0x510/0x640
+ jfsnew kernel: [60862.549179]  [<c0359c9b>] st_open+0x18b/0x220
+ jfsnew kernel: [60862.601572]  [<c0359b10>] st_open+0x0/0x220
+ jfsnew kernel: [60862.651886]  [<c0171f2f>] chrdev_open+0x9f/0x190
+ jfsnew kernel: [60862.707402]  [<c0171e90>] chrdev_open+0x0/0x190
+ jfsnew kernel: [60862.761876]  [<c016d685>] __dentry_open+0xb5/0x2a0
+ jfsnew kernel: [60862.819469]  [<c01762cb>] permission+0xdb/0x100
+ jfsnew kernel: [60862.873946]  [<c016d937>]
+nameidata_to_filp+0x47/0x60
+ jfsnew kernel: [60862.934659]  [<c017985d>] open_pathname+0x17d/0x740
+ jfsnew kernel: [60862.993292]  [<c015d85f>]
+handle_mm_fault+0xff/0x580
+ jfsnew kernel: [60863.052966]  [<c0177765>] getname+0xa5/0xc0
+ jfsnew kernel: [60863.103277]  [<c016d4bc>] do_sys_open+0x4c/0xe0
+ jfsnew kernel: [60863.157752]  [<c016d58c>] sys_open+0x1c/0x20
+ jfsnew kernel: [60863.209110]  [<c0103f6e>] syscall_call+0x7/0xb
+ jfsnew kernel: [60863.262544]  [<c04e0000>]
+sunrpc_cache_update+0x140/0x180
+ jfsnew kernel: [60863.327413]  =======================
+ jfsnew kernel: [60863.370246] Code: 32 8b 54 24 28 89 44 24 2c 89 50
+74 e9 ba fd ff ff 0f 0b eb fe 8d b6 00 00 00 00 0f 0b eb fe 0f 0b eb
+fe 0f 0b eb fe 8d 74 26 00 <0f> 0b eb fe 0f 0b eb fe 64 a1 00 50 6e c0
+8b 40 04 8b 40 08 a8 
+ jfsnew kernel: [60863.602895] EIP: [<c0356bd0>]
+st_do_scsi+0x2e0/0x340 SS:ESP 0068:c6967db0
+
+I wonder if this has something to do with sysfs stuff that Greg and
+crew have been working on?  I'll try dropping back to 2.6.24-rc5 once
+I get my backup done.
+
+Hmm... now I can't even see any of my tape drives at all, even using
+mt from the command line.  Oh well, time to reboot into plain
+2.6.24-rc5 and see how it goes.
+
+John
