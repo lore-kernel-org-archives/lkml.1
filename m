@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbXLOJE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbXLOKLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757636AbXLOJE1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 04:04:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbXLOJEI
+	id S1757440AbXLOKLR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 05:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbXLOKK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 04:04:08 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:54123 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751799AbXLOJEE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 04:04:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=cMmeFntZ/0AZIwn4fQAlpQUNJ39X99Ei1TXJjlu0yMAF+N3+kanFiv8kbn/MQE+OQO5dy3jdaNSbqwRsoMoRdP0AkDPQLD7uMcRQgh2Nl3XO+cVMgrzCZGxhWbotDRHiSjAm9Rf497HBphEWmPBB/WJEDL0mcBvJZlGnO6d7t8A=
-Subject: Re: FInal kprobes rollup patches
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071215085015.GA9720@elte.hu>
-References: <1197708350.898.87.camel@brick>  <20071215085015.GA9720@elte.hu>
-Content-Type: text/plain
-Date: Sat, 15 Dec 2007 01:04:02 -0800
-Message-Id: <1197709442.898.97.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Sat, 15 Dec 2007 05:10:59 -0500
+Received: from phunq.net ([64.81.85.152]:56704 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752641AbXLOKK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 05:10:57 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 03/29] mm: slb: add knowledge of reserve pages
+Date: Sat, 15 Dec 2007 02:10:50 -0800
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+References: <20071214153907.770251000@chello.nl> <20071214154439.242195000@chello.nl> <200712141451.09500.phillips@phunq.net>
+In-Reply-To: <200712141451.09500.phillips@phunq.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712150210.51049.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-12-15 at 09:50 +0100, Ingo Molnar wrote:
-> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> 
-> > Further unification work.  There is a possible behavior change on 
-> > X86_32 here.
-> > 
-> > is_IF_modifier(p->opcode)
-> > 
-> > to
-> > 
-> > is_IF_modifier(p->ainsn.insn)
-> > 
-> > Which should be equivalent, but is not purely cosmetic as the rest of 
-> > the unification so far.
-> 
-> hm, could you split this into two, the pure-equivalence and the 
-> possibly-modifying patch? (that way any potential breakage becomes 
-> bisectable) Same end result, just two commits instead of one.
-> 
-Sure, I'll go back through and see if the series can be cleaned up a bit
-as well as expand the commit message a little bit.
+On Friday 14 December 2007 14:51, I wrote:
+> On Friday 14 December 2007 07:39, Peter Zijlstra wrote:
+> Note that false sharing of slab pages is still possible between two
+> unrelated writeout processes, both of which obey rules for their own
+> writeout path, but the pinned combination does not.  This still
+> leaves a hole through which a deadlock may slip.
 
-> also, did you manage to run/test kprobes (on 32-bit or 64-bit x86), and 
-> it worked fine?
-> 
+Actually, no it doesn't.  It in fact does not matter how many unrelated 
+writeout processes, block devices, whatevers share a slab cache.  
+Sufficient reserve pages must have been made available (in a perfect 
+work, by adding extra pages to the memalloc reserve on driver 
+initialization, in the real world just by having a big memalloc 
+reserve) to populate the slab up to the sum of the required objects for 
+all memalloc users sharing the cache.
 
-Sorry, I should have predicated the whole series with RFC.  Currently
-this is compile-tested only.  There is only the one patch that has
-any behavioral change.  I believe the series also pointed out an
-existing bug in the 32-bit version...which I've preserved but will
-note in the commit messages in the respun series.
+So I think this slab technique of yours is fundamentally sound, that is 
+to say, adding a new per-slab flag to keep unbounded numbers of slab 
+objects with unbounded lifetimes from mixing with the bounded number of 
+slab objects with bounded lifetimes.
 
-In case you're interested, from the patch which unifies the definition
-of MAX_INSTRUCTION_SIZE:
+Ponder.  OK, here is another issue.  Suppose a driver expands the 
+memalloc reserve by the X number of pages it needs on initialization, 
+and shrinks it by the same amount on removal, as is right and proper.  
+The problem is, less than the number of slab pages that got pulled into 
+slab on behalf of the removed driver may be freed (or made freeable) 
+back to the global reserve, due to page sharing with an unrelated user.   
+In theory, the global reserve could be completely depleted by this slab 
+fragmentation.
 
-memcpy(p->ainsn.insn, p->addr, (MAX_INSN_SIZE + 1) *
-sizeof(kprobe_opcode_t));
+OK, that is like the case that I mistakenly raised in the previous mail, 
+though far less likely to occur, because driver removals are relatively 
+rare and so would be a fragmentation case so severe as to cause global 
+reserve depletion.
 
-If you compare this memcpy from arch_prepare_kprobe in 32/64 bit I'm
-almost sure the X86_32 version should be
+Even so, if this possibility bothers anybody, it is fairly easy to plug 
+the hole: associate each slab with a given memalloc user instead of 
+just having one bit to classify users.  So unrelated memalloc users 
+would never share a slab, no false sharing, everybody happy.  The cost: 
+a new pointer field per slab and a few additional lines of code.
 
-... + sizeof(kprobe_opcode_t)
+Regards,
 
-not
-
-... * sizeof(kprobe_opcode_t)
-
-Cheers,
-
-Harvey
-
+Daniel
