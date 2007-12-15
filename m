@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbXLOKLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759635AbXLOKOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757440AbXLOKLR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 05:11:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbXLOKK7
+	id S1759635AbXLOKOU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 05:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbXLOKOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 05:10:59 -0500
-Received: from phunq.net ([64.81.85.152]:56704 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752641AbXLOKK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 05:10:57 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 03/29] mm: slb: add knowledge of reserve pages
-Date: Sat, 15 Dec 2007 02:10:50 -0800
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-References: <20071214153907.770251000@chello.nl> <20071214154439.242195000@chello.nl> <200712141451.09500.phillips@phunq.net>
-In-Reply-To: <200712141451.09500.phillips@phunq.net>
+	Sat, 15 Dec 2007 05:14:04 -0500
+Received: from yumi.tdiedrich.de ([85.10.210.183]:53657 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753220AbXLOKOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 05:14:01 -0500
+Date: Sat, 15 Dec 2007 11:08:58 +0100
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dada1@cosmosbay.com
+Subject: Re: dst cache overflow
+Message-ID: <20071215100857.GA29839@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	Herbert Xu <herbert@gondor.apana.org.au>, linux-net@vger.kernel.org,
+	linux-kernel@vger.kernel.org, dada1@cosmosbay.com
+References: <20071214172945.GA10809@yamamaya.is-a-geek.org> <E1J3QWn-0006sJ-00@gondolin.me.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200712150210.51049.phillips@phunq.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <E1J3QWn-0006sJ-00@gondolin.me.apana.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 14 December 2007 14:51, I wrote:
-> On Friday 14 December 2007 07:39, Peter Zijlstra wrote:
-> Note that false sharing of slab pages is still possible between two
-> unrelated writeout processes, both of which obey rules for their own
-> writeout path, but the pinned combination does not.  This still
-> leaves a hole through which a deadlock may slip.
+Herbert Xu wrote:
+> Tobias Diedrich <ranma+kernel@tdiedrich.de> wrote:
+> >
+> > Meanwhile I added a slab statistic rrd script. Nothing obvious to
+> > see on ari or yumi yet, but on oni (which after all is the most
+> > affected by this) I can see 'size_2048' and 'TCPv6' growing
+> > steadily along with the route cache size (Presumably 'ip_dst_cache',
+> > which is also growing larger at a more or less constant rate).
+> 
+> OK that almost certainly means that we have a leak of TCPv6
+> objects which would then cause a leak of dst objects.
+> 
+> So you need to track down why TCPv6 isn't getting cleaned up.
+> First check the obvious, do you have any process(es) that are
+> hoarding TCPv6 sockets?
 
-Actually, no it doesn't.  It in fact does not matter how many unrelated 
-writeout processes, block devices, whatevers share a slab cache.  
-Sufficient reserve pages must have been made available (in a perfect 
-work, by adding extra pages to the memalloc reserve on driver 
-initialization, in the real world just by having a big memalloc 
-reserve) to populate the slab up to the sum of the required objects for 
-all memalloc users sharing the cache.
+Hmm, how do I look for that, if netstat doesn't look suspicous?
 
-So I think this slab technique of yours is fundamentally sound, that is 
-to say, adding a new per-slab flag to keep unbounded numbers of slab 
-objects with unbounded lifetimes from mixing with the bounded number of 
-slab objects with bounded lifetimes.
+> If not do you see a growing list of dead sockets in netstat?
 
-Ponder.  OK, here is another issue.  Suppose a driver expands the 
-memalloc reserve by the X number of pages it needs on initialization, 
-and shrinks it by the same amount on removal, as is right and proper.  
-The problem is, less than the number of slab pages that got pulled into 
-slab on behalf of the removed driver may be freed (or made freeable) 
-back to the global reserve, due to page sharing with an unrelated user.   
-In theory, the global reserve could be completely depleted by this slab 
-fragmentation.
+No, I don't think so.
 
-OK, that is like the case that I mistakenly raised in the previous mail, 
-though far less likely to occur, because driver removals are relatively 
-rare and so would be a fragmentation case so severe as to cause global 
-reserve depletion.
+oni:~# netstat -an | wc -l
+139
+oni:~# netstat -tun
+Active Internet connections (w/o servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State      
+tcp        0      0 217.172.187.75:53668    xx.xxx.xx.x:6543        ESTABLISHED
+tcp        0      0 217.172.187.75:40180    yyy.yyy.yyy.yy:6871     TIME_WAIT  
+tcp        0      0 217.172.187.75:58480    xx.xxx.xx.x:6543        ESTABLISHED
+tcp        0      0 217.172.187.75:49213    xx.xxx.xx.x:6543        ESTABLISHED
+tcp        0      0 217.172.187.75:34828    xx.xxx.xx.x:6543        ESTABLISHED
+tcp        0      0 217.172.187.75:44859    xx.xxx.xx.x:6543        ESTABLISHED
+tcp        0      0 217.172.187.75:41863    xx.xxx.xx.x:6543        ESTABLISHED
+tcp        0      0 217.172.187.75:38063    xx.xxx.xx.x:6543        ESTABLISHED
+tcp6       0      0 ::ffff:217.172.187.7:80 ::ffff:zz.zzz.zz.z:3729 TIME_WAIT  
+tcp6       0      0 ::ffff:217.172.187.7:80 ::ffff:zz.zzz.zz.z:3726 TIME_WAIT  
+tcp6       0      0 ::ffff:217.172.187.7:80 ::ffff:aa.aa.aaa.:59396 ESTABLISHED
+tcp6       0    992 ::ffff:217.172.187.7:22 ::ffff:bb.bbb.bb.:57870 ESTABLISHED
 
-Even so, if this possibility bothers anybody, it is fairly easy to plug 
-the hole: associate each slab with a given memalloc user instead of 
-just having one bit to classify users.  So unrelated memalloc users 
-would never share a slab, no false sharing, everybody happy.  The cost: 
-a new pointer field per slab and a few additional lines of code.
+HTH,
 
-Regards,
-
-Daniel
+-- 
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
