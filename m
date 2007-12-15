@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758378AbXLOMli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761685AbXLOMmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758378AbXLOMli (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 07:41:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbXLOMlb
+	id S1761685AbXLOMmV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 07:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbXLOMmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 07:41:31 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:57409 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752249AbXLOMla (ORCPT
+	Sat, 15 Dec 2007 07:42:07 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46177 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754262AbXLOMmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 07:41:30 -0500
-Date: Sat, 15 Dec 2007 13:41:47 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
-Message-ID: <20071215124147.GA26909@one.firstfloor.org>
-References: <20071214004442.5f9eba88@linux360.ro> <p737ijigr8c.fsf@bingen.suse.de> <20071214143941.2c7dcfb4@linux360.ro> <20071214101720.GA10981@one.firstfloor.org> <47630521.4060505@redhat.com>
+	Sat, 15 Dec 2007 07:42:06 -0500
+Date: Sat, 15 Dec 2007 04:41:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Miles Lane" <miles.lane@gmail.com>
+Cc: "Marcin Slusarz" <marcin.slusarz@gmail.com>,
+       "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc5-mm1 -- drivers/video/logo/logo_linux_clut224.c:598:
+ error: conflicting type qualifiers for =?UTF-8?B?4oCYbG9nb19saW51eF9jbHV0?=
+ =?UTF-8?B?MjI04oCZ?=
+Message-Id: <20071215044123.9e7bc160.akpm@linux-foundation.org>
+In-Reply-To: <a44ae5cd0712131716n39d29ec4qa0dfd6ad64a50b0a@mail.gmail.com>
+References: <a44ae5cd0712131716n39d29ec4qa0dfd6ad64a50b0a@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47630521.4060505@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 14, 2007 at 05:35:13PM -0500, Chuck Ebbert wrote:
-> On 12/14/2007 05:17 AM, Andi Kleen wrote:
-> >> so do whatever is necessary to enable dynticks. 
-> > 
-> > dynticks' main purpose is to save power, but C1e saves more power.
-> > Disabling C1e for dynticks would be a fairly useless default
-> > trade off.
-> > 
+On Thu, 13 Dec 2007 20:16:13 -0500 "Miles Lane" <miles.lane@gmail.com> wrote:
+
+> Content analysis details:   (2.2 points, 2.0 required)
 > 
-> What about machines where the BIOS has disabled C1e on CPU 0 but
-> left it enabled on CPU 1 ??
+>  pts rule name              description
+> ---- ---------------------- --------------------------------------------------
+>  3.1 UNIQUE_WORDS           BODY: Message body has many words used only once
+>  0.3 UPPERCASE_50_75        message body is 50-75% uppercase
+> -1.3 AWL                    AWL: From: address is in the auto white-list
+> 
 
-It's a BIOS bug.  We handle this and threat it like C1e always enabled.
+hm, look who I found in my spam folder.
 
-The right fix would be to enable it on both CPUs, but 
-then that's not strictly needed for correct operation and I'm not
-sure it would be worth special fixup code in Linux. Probably not.
+> 
+> 
+> From: "Miles Lane" <miles.lane@gmail.com>
+> To: "Marcin Slusarz" <marcin.slusarz@gmail.com>, "Andrew Morton" <akpm@linux-foundation.org>, "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+> Subject: 2.6.24-rc5-mm1 -- drivers/video/logo/logo_linux_clut224.c:598: error: conflicting type qualifiers for ‘logo_linux_clut224’
+> Date: 	Thu, 13 Dec 2007 20:16:13 -0500
+> Sender: linux-kernel-owner@vger.kernel.org
+> 
+>   CC      drivers/video/logo/logo_linux_clut224.o
+> drivers/video/logo/logo_linux_clut224.c:598: error: conflicting type
+> qualifiers for 'logo_linux_clut224'
+> include/linux/linux_logo.h:47: error: previous declaration of
+> 'logo_linux_clut224' was here
+> make[3]: *** [drivers/video/logo/logo_linux_clut224.o] Error 1
 
--Andi
+Yeah, `make mrproper' is needed.  A `make clean' might work too - I haven't
+tried that.
