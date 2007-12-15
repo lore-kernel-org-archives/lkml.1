@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759470AbXLOGBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbXLOGFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759470AbXLOGBp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 01:01:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbXLOGBi
+	id S1757209AbXLOGFN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 01:05:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbXLOGFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 01:01:38 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58642 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751741AbXLOGBh (ORCPT
+	Sat, 15 Dec 2007 01:05:00 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:2508 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751256AbXLOGE7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 01:01:37 -0500
-Date: Fri, 14 Dec 2007 22:00:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: htejun@gmail.com, gregkh@suse.de, stable@kernel.org,
-       linux-kernel@vger.kernel.org, maneesh@linux.vnet.ibm.com,
-       vatsa@linux.vnet.ibm.com, balbir@in.ibm.com, ego@in.ibm.com,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22-stable causes oomkiller to be invoked
-Message-Id: <20071214220030.325f82b8.akpm@linux-foundation.org>
-In-Reply-To: <20071215035200.GA22082@linux.vnet.ibm.com>
-References: <20071213162936.GA7635@suse.de>
-	<20071213164658.GA30865@linux.vnet.ibm.com>
-	<20071213175423.GA2977@linux.vnet.ibm.com>
-	<476295FF.1040202@gmail.com>
-	<20071214154711.GD23670@linux.vnet.ibm.com>
-	<4762A721.7080400@gmail.com>
-	<20071214161637.GA2687@linux.vnet.ibm.com>
-	<20071214095023.b5327703.akpm@linux-foundation.org>
-	<20071214182802.GC2576@linux.vnet.ibm.com>
-	<20071214150533.aa30efd4.akpm@linux-foundation.org>
-	<20071215035200.GA22082@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 15 Dec 2007 01:04:59 -0500
+Date: Sat, 15 Dec 2007 14:04:49 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Make WARN_ON/WARN_ON_ONCE no-ops when CONFIG_BUG is off
+Message-ID: <20071215060449.GA26199@gondor.apana.org.au>
+References: <20071214132755.GA18309@gondor.apana.org.au> <20071214180246.GT17536@waste.org> <20071215041659.GB25324@gondor.apana.org.au> <20071215055218.GM19691@waste.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071215055218.GM19691@waste.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Dec 2007 09:22:00 +0530 Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-
-> > Is it really the case that the bug only turns up when you run tests like
-> > 
-> > 	while echo; do cat /sys/kernel/kexec_crash_loaded; done
-> > and
-> > 	while echo; do cat /sys/kernel/uevent_seqnum ; done;
-> > 
-> > or will any fork-intensive workload also do it?  Say,
-> > 
-> > 	while echo ; do true ; done
-> > 
+On Fri, Dec 14, 2007 at 11:52:18PM -0600, Matt Mackall wrote:
+>
+> No. The code as written above should reduce to:
 > 
-> This does not leak, but having a simple text file and reading it in a
-> loop causes it.
-
-hm.
-
-> > ?
-> > 
-> > Another interesting factoid here is that after the oomkilling you slabinfo has
-> > 
-> > mm_struct             38     98    584    7    1 : tunables   32   16    8 : slabdata     14     14      0 : globalstat    2781    196    49   31 				   0    1    0    0    0 : cpustat 368800  11864 368920  11721
-> > 
-> > so we aren't leaking mm_structs.  In fact we aren't leaking anything from
-> > slab.   But we are leaking pgds.
-> > 
-> > iirc the most recent change we've made in the pgd_t area is the quicklist
-> > management which went into 2.6.22-rc1.  You say the bug was present in
-> > 2.6.22.  Can you test 2.6.21?  
+> 	if (val == NULL)
+> 		return -EFAULT;
 > 
-> Nope, leak is not present in 2.6.21.7
+> If I hadn't wanted to return -EFAULT in this case, I would have just written:
+> 
+> 	WARN_ON(val == NULL);
 
-Could you try this debug patch please?
+Well the only reason I introduced
 
-It might need some fiddling to get useful output.  Basic idea is to see if
-we are failing to empty the quicklists.
+	if (WARN_ON)
 
---- a/include/linux/quicklist.h~a
-+++ a/include/linux/quicklist.h
-@@ -69,6 +69,8 @@ static inline void __quicklist_free(int 
- 	*(void **)p = q->page;
- 	q->page = p;
- 	q->nr_pages++;
-+	if (q->nr_pages && !(q->nr_pages % 1000))
-+		printk("eek: %d\n", q->nr_pages);
- 	put_cpu_var(quicklist);
- }
- 
-_
+is so that what would otherwise be a BUG_ON condition would have
+a chance to get written to disk when invoked from an IRQ handler.
 
+> I don't want code that was running safely (ie returning -EFAULT) to
+> start crashing the system just because I've, say, disabled printk.
+> That's creating an obnoxious heisenbug.
+
+I'm disappointed that it has been used in ways that it shouldn't
+have been.
+
+I suppose we'll have to either introduce a new primitive or just
+go back to using BUG_ON.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
