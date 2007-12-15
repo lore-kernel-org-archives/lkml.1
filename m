@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932626AbXLORBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbXLORHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932626AbXLORBA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 12:01:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbXLORAu
+	id S932378AbXLORHp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 12:07:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbXLORHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 12:00:50 -0500
-Received: from fk-out-0910.google.com ([209.85.128.190]:59510 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752641AbXLORAt (ORCPT
+	Sat, 15 Dec 2007 12:07:35 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:36673 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755947AbXLORHe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 12:00:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ZEhNTcLjbmb8Z86YcDZOVw/EkrnsEo2VvCQtHC0CYWTCd3Rz8recUlVEEru89HYXlXGrAHi0XzJ+OHDX9mKySHJaF3tpPrRdAt13gBn9meN9bbEmK2Sd4bZQbgOXFF9BKcZhRZGL03s3Xd7BdgiVfmWyaRkPWuJL7ras9Fs8BNQ=
-Message-ID: <4764099B.2070804@gmail.com>
-Date: Sat, 15 Dec 2007 18:06:35 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+	Sat, 15 Dec 2007 12:07:34 -0500
+Message-ID: <476408D7.50205@cosmosbay.com>
+Date: Sat, 15 Dec 2007 18:03:19 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Miles Lane <miles.lane@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: 2.6.24-rc5-mm1 -- inconsistent {in-softirq-W} -> {softirq-on-R}
-   usage.
-References: <a44ae5cd0712141413u4ddbfd06gca259cfc3bc0ab1a@mail.gmail.com>	<20071214153633.5d8f609a.akpm@linux-foundation.org>	<a44ae5cd0712141958o10d9a320h3b8173019ac6b0eb@mail.gmail.com> <20071215031341.66dc0d05.akpm@linux-foundation.org>
-In-Reply-To: <20071215031341.66dc0d05.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       Wang Chen <wangchen@cn.fujitsu.com>,
+       Gerrit Renker <gerrit@erg.abdn.ac.uk>, davem@davemloft.net,
+       andi@firstfloor.org, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] [UDP6]: Counter increment on BH mode
+References: <474F7EE8.2040009@cn.fujitsu.com> <474F8255.5060501@cn.fujitsu.com> <20071130111949.GB28277@gerrit.erg.abdn.ac.uk> <20071201015438.GC26895@gondor.apana.org.au> <4753AE07.1040906@cn.fujitsu.com> <20071203113935.GA25124@gondor.apana.org.au> <20071203114912.GA4425@ms2.inr.ac.ru> <20071203115435.GA4202@gondor.apana.org.au> <20071203131723.GA30312@gondor.apana.org.au> <20071215135851.GA29063@gondor.apana.org.au>
+In-Reply-To: <20071215135851.GA29063@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 15 Dec 2007 18:03:27 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote, On 12/15/2007 12:13 PM:
-
-> On Fri, 14 Dec 2007 22:58:24 -0500 "Miles Lane" <miles.lane@gmail.com> wrote:
+Herbert Xu a écrit :
+> Ob Tue, Dec 04, 2007 at 12:17:23AM +1100, Herbert Xu wrote:
+>> Never mind, we already have that in local_t and as Alexey correctly
+>> points out, USER is still going to be the expensive variant with the
+>> preempt_disable (well until BH gets threaded).  So how about this patch?
 > 
->> On Dec 14, 2007 6:36 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->>> On Fri, 14 Dec 2007 17:13:21 -0500
->>> "Miles Lane" <miles.lane@gmail.com> wrote:
-...
->>>> Pid: 6944, comm: cat Not tainted (2.6.24-rc5-mm1 #26)
+> I didn't hear any objections so here is the patch again.
+> 
+> [SNMP]: Fix SNMP counters with PREEMPT
+> 
+> The SNMP macros use raw_smp_processor_id() in process context
+> which is illegal because the process may be preempted and then
+> migrated to another CPU.
+> 
+> This patch makes it use get_cpu/put_cpu to disable preemption.
+> 
+> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> 
+> Cheers,
+  #define SNMP_INC_STATS_USER(mib, field) \
+-	(per_cpu_ptr(mib[1], raw_smp_processor_id())->mibs[field]++)
++	do { \
++		per_cpu_ptr(mib[1], get_cpu())->mibs[field]++; \
++		put_cpu(); \
++	} while (0)
+  #define SNMP_INC_STATS(mib, field) 	\
+  	(per_cpu_ptr(mib[!in_softirq()], raw_smp_processor_id())->mibs[field]++)
 
-...
 
->>>> note: cat[6944] exited with preempt_count 4
+How come you change SNMP_INC_STATS_USER() but not SNMP_INC_STATS() ?
 
-...
 
->> Dec 14 21:32:55 feargod kernel: cat/6180 is trying to release lock
-
-...
-
-> Can you suggest a way in which others can reproduce this?
-
-Buy a cat?
-
-Jarek P.
