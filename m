@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbXLOACm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbXLOAMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760927AbXLOACm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 19:02:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbXLOACc
+	id S1760022AbXLOAMc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 19:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbXLOAMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 19:02:32 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59435 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750758AbXLOACb (ORCPT
+	Fri, 14 Dec 2007 19:12:24 -0500
+Received: from [194.117.236.238] ([194.117.236.238]:59311 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752754AbXLOAMX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 19:02:31 -0500
-Date: Sat, 15 Dec 2007 01:02:34 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org, randy.dunlap@oracle.com,
-       auke-jan.h.kok@intel.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 01/10] e1000e: make E1000E default to the same kconfig
-	setting as E1000
-Message-ID: <20071215000234.GB5403@stusta.de>
-References: <200712140002.lBE02pUb025505@imap1.linux-foundation.org> <4762E9FE.1070707@garzik.org> <20071214223947.GA5403@stusta.de> <47630F23.5060403@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <47630F23.5060403@garzik.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 14 Dec 2007 19:12:23 -0500
+Date: Sat, 15 Dec 2007 02:10:32 +0200
+From: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+Message-ID: <20071215021032.252455be@linux360.ro>
+In-Reply-To: <47630521.4060505@redhat.com>
+References: <20071214004442.5f9eba88@linux360.ro>
+	<p737ijigr8c.fsf@bingen.suse.de>
+	<20071214143941.2c7dcfb4@linux360.ro>
+	<20071214101720.GA10981@one.firstfloor.org>
+	<47630521.4060505@redhat.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 14, 2007 at 06:17:55PM -0500, Jeff Garzik wrote:
-> Adrian Bunk wrote:
->> On Fri, Dec 14, 2007 at 03:39:26PM -0500, Jeff Garzik wrote:
->>> akpm@linux-foundation.org wrote:
->>>> From: Randy Dunlap <randy.dunlap@oracle.com>
->>> ...
->>> So I think the breakage that occurs is mitigated by two factors:
->>> 1) kernel hackers that do their own configs are expected to be able to 
->>> figure this stuff.
->>> 2) kernel builders (read: distros, mainly) are expected to have put 
->>> thought into the Kconfig selection and driver migration strategies.
->>> ...
->>> I would prefer simply to communicate to kernel experts and builders about 
->>> a Kconfig issue that could potentially their booting/networking...  
->>> because this patch is only needed if the kernel experts do not already 
->>> know about a necessary config update.
->>
->> You miss the vast majority of kconfig users:
->>
->> 3) system administrators etc. who for different reasons compile their own 
->> kernels but neither are nor want to be kernel developers
->>
->> There's a reason why e.g. LPI requires you to be able to compile your own 
->> kernel even for getting a "Junior Level Linux Professional" certificate.
->
-> Great!
->
->
->> Or that one of the authors of "Linux Device drivers" has written a book 
->> covering only how to build and run your own kernel.
->
-> Nonetheless, it will always be true that configuring your own kernel 
-> requires knowledge of the options you are setting.
+On Fri, 14 Dec 2007 17:35:13 -0500
+Chuck Ebbert <cebbert@redhat.com> wrote:
 
-We are not talking about Aunt Tillie, "system administrator" is the use 
-case that might cover this (quite diverse) group of users best.
+> On 12/14/2007 05:17 AM, Andi Kleen wrote:
+> >> so do whatever is necessary to enable dynticks. 
+> > 
+> > dynticks' main purpose is to save power, but C1e saves more power.
+> > Disabling C1e for dynticks would be a fairly useless default
+> > trade off.
+> > 
+> 
+> What about machines where the BIOS has disabled C1e on CPU 0 but
+> left it enabled on CPU 1 ??
 
-We can expect kconfig users to know what filesystems their data is on 
-and to have some knowledge of their hardware, but every other knowledge 
-we must give through kconfig.
+Do you mean Linux should enable C1E on CPU 0 if it's detected on CPU 1?
+C3 + dynticks make up a better power saver than simply C1E, as far as I
+know. Higher C-states should be enabled on such CPUs, as AMD docs say
+firmware should either enable C1E or C2 & C3 (it must provide one of
+these mutually exclusive options). I take having C1E on the second CPU
+but not the first as an attempt on BIOS's part to provide higher
+C-states instead of the former. How broken is it, really?
 
-> 	Jeff
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+But maybe someone with access to such hardware can tell us what
+happens: does he get C2/C3 power states under such circumstances?
