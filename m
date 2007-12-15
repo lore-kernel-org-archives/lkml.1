@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763791AbXLOP71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765633AbXLOQKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763791AbXLOP71 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 10:59:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbXLOP7T
+	id S1765633AbXLOQKA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 11:10:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbXLOQJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 10:59:19 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48978 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752965AbXLOP7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 10:59:18 -0500
-To: eranian@hpl.hp.com
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, paulus@samba.org,
-       akpm@linux-foundation.org, gregkh@suse.de, mucci@cs.utk.edu,
-       wcohen@redhat.com, robert.richter@amd.com, andi@firstfloor.org,
-       eranian@gmail.com, roland@redhat.com
-Subject: Re: [perfmon2] perfmon2 merge news
-References: <20071119.050843.48408777.davem@davemloft.net>
-	<18242.900.101842.261763@cargo.ozlabs.ibm.com>
-	<20071119224845.GA27766@frankl.hpl.hp.com>
-	<20071119.165313.163834190.davem@davemloft.net>
-	<20071213160004.GC6740@frankl.hpl.hp.com>
-	<y0mzlwdum3y.fsf@ton.toronto.redhat.com>
-	<20071214210709.GE9577@frankl.hpl.hp.com>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Sat, 15 Dec 2007 10:54:41 -0500
-In-Reply-To: <20071214210709.GE9577@frankl.hpl.hp.com> (Stephane Eranian's message of "Fri, 14 Dec 2007 13:07:09 -0800")
-Message-ID: <y0mbq8s0x8e.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sat, 15 Dec 2007 11:09:51 -0500
+Received: from cardassian.kabelfoon.nl ([62.45.45.18]:58451 "EHLO
+	cardassian.kabelfoon.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753653AbXLOQJu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 11:09:50 -0500
+Message-ID: <4763FC4C.8000809@caiway.nl>
+Date: Sat, 15 Dec 2007 17:09:48 +0100
+From: Jan Evert van Grootheest <j.e.van.grootheest@caiway.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [patch 00/60] 2.6.23-stable review
+References: <20071213065039.GA6867@kroah.com>
+In-Reply-To: <20071213065039.GA6867@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephane Eranian <eranian@hpl.hp.com> writes:
-
-> [...]
->> > [...]  AFAIK, there is no single call to stop T1 and wait until it
->> > is completely off the CPU, unless we go through the (internal)
->> > ptrace interface.
->> 
->> The utrace code supports this style of thread manipulation better
->> than ptrace.
+Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.23.10 release.
+> There are 60 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
 >
-> Afre you saying that utrace provides a utrace_thread_stop(tid) call
-> that returns only when the thread tid is off the CPU. And then there
-> is a utrace_thread_resume(tid) call. If that's the case then that is
-> what I need.
+>   
+Hi Greg,
 
-While I see no single call, it can be synthesized from a sequence of
-them: utrace_attach, utrace_set_flags (... UTRACE_ACTION_QUESCE ...),
-then waiting for a callback.  Roland, is there a more compact way?
+Do you think it might be possible to add the subjects of the patches
+next time in the announcement? This would give people an easy way
+(besides the diffstat) to check what is getting fixed.
 
-> How are we with regards to utrace integration?
+Thanks,
+Jan Evert
 
-Roland McGrath is working on breaking the patches down.
-
-- FChE
