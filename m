@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932615AbXLOV5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758316AbXLOWAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932615AbXLOV5Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 16:57:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbXLOV5F
+	id S1758316AbXLOWAb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 17:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXLOWAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 16:57:05 -0500
-Received: from kuber.nabble.com ([216.139.236.158]:37186 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752466AbXLOV5E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 16:57:04 -0500
-Message-ID: <14355561.post@talk.nabble.com>
-Date: Sat, 15 Dec 2007 13:57:01 -0800 (PST)
-From: a_kumar <cable_plug2000@yahoo.com>
-To: linux-kernel@vger.kernel.org
-Subject: problem with ending requests asynchronously in my block device
- driver
+	Sat, 15 Dec 2007 17:00:23 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:3545 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751867AbXLOWAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 17:00:22 -0500
+Date: Sat, 15 Dec 2007 16:43:00 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Michael Buesch <mb@bu3sch.de>, Daniel Walker <dwalker@mvista.com>,
+       akpm@linux-foundation.org, stefano.brivio@polimi.it,
+       Ray Lee <ray-lk@madrabbit.org>, matthias.kaehlcke@gmail.com,
+       linux-kernel@vger.kernel.org, mbuesch@freenet.de, linux@bohmer.net,
+       kjwinchester@gmail.com, jonathan@jonmasters.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       bcm43xx-dev@lists.berlios.de
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
+	to mutex
+Message-ID: <20071215214300.GC3096@tuxdriver.com>
+References: <20071213003028.676998182@mvista.com> <20071214175910.GA27078@elte.hu> <200712141938.10733.mb@bu3sch.de> <200712150225.52183.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Nabble-From: cable_plug2000@yahoo.com
+Content-Disposition: inline
+In-Reply-To: <200712150225.52183.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Dec 15, 2007 at 02:25:50AM +0100, Rafael J. Wysocki wrote:
+> On Friday, 14 of December 2007, Michael Buesch wrote:
 
-Hi,
+> > Either distributions have to install it automatically or people simply have
+> > to read one or two lines of documentation.  That's just what I wanted to say.
+> 
+> It's not that simple.  For example, regression testing will be a major PITA
+> if one needs to switch back and forth from the new driver to the old one in the
+> process.
 
-I've a block device driver which does the following,
+Not really true -- a single system can easily have firmware installed
+for b43, b43legacy, and bcm43xx at the same time and switch back and
+forth between them.
 
-Inside the request function I do something like this:
-request(fn) {
+Given a functioning udev configuration, the persistent naming even
+works so that your device stays as 'eth1' when switching to and
+fro bcm43xx.  I really think everyone is overstating the problem.
 
- while ((req = elv_next_request(q)) != NULL) {
-....................set up the request;
- spin_unlock_irq(q->queue_lock);
-call the transfer(set_up_req) function;
-spin_lock_irq(q->queue_lock);
-}
-       spin_unlock_irq (q->queue_lock);
-        /* allow callback to execute as it needs the lock!!! */
-        spin_lock_irq (q->queue_lock);
-
-
-}
-and the transfer function calls the scsi_execute_asyn(....) with the
-callback function doing the end request. So, the ending of the request is
-done like below:
-
-callback(fn) {
-
- spin_lock_irqsave(q->queue_lock, flags);
-        if (!end_that_request_first(set_up_req->req, cmpstatus,
-                        set_up_req->req->nr_sectors)) {
-                add_disk_randomness(...);
-                end_that_request_last(set_up_req->req,0);
-        }
-        spin_unlock_irqrestore(q->queue_lock, flags);
-}
-
-
-This code works fine with most of the kernel versions, but fails on some
-like , Linux 2.6.18-8.el5-xen
-
-Please help me to find out where I'm going wrong?
-
-when I say 'fails' it just hangs without any error ....I'm using dt(Data
-test) to write to the disk. The logs show that all the requests that have
-been sent for processing, have completed sucessfully. Its just that new
-requests never enter the request function. So, the dt writes almost half the
-data and then simply hangs.
-
-Thanks in advance for an early reply.
-Anil P. 
+John
 -- 
-View this message in context: http://www.nabble.com/problem-with-ending-requests-asynchronously-in-my-block-device-driver-tp14355561p14355561.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
-
+John W. Linville
+linville@tuxdriver.com
