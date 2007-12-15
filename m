@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760682AbXLOA2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763852AbXLOAaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760682AbXLOA2Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 19:28:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbXLOA2Q
+	id S1763852AbXLOAaf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 19:30:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbXLOAa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 19:28:16 -0500
-Received: from cantor.suse.de ([195.135.220.2]:42992 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753537AbXLOA2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 19:28:16 -0500
-Subject: patch add-documentation-for-fair_user_sched-sysfs-files.patch added to gregkh-2.6 tree
-To: dhaval@linux.vnet.ibm.com, akpm@linux-foundation.org, balbir@in.ibm.com,
-       gregkh@suse.de, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       vatsa@linux.vnet.ibm.com
-From: <gregkh@suse.de>
-Date: Fri, 14 Dec 2007 16:11:10 -0800
-In-Reply-To: <20071212054859.GC1486@linux.vnet.ibm.com>
-Message-ID: <1197677470@kroah.com>
+	Fri, 14 Dec 2007 19:30:28 -0500
+Received: from ruby.spiritone.com ([216.99.193.130]:47077 "EHLO
+	ruby.spiritone.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751563AbXLOAa1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 19:30:27 -0500
+Message-ID: <47632010.6030709@BitWagon.com>
+Date: Fri, 14 Dec 2007 16:30:08 -0800
+From: John Reiser <jreiser@BitWagon.com>
+Organization: -
+User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>
+CC: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       security@kernel.org
+Subject: Re: /dev/urandom uses uninit bytes, leaks user data
+References: <4762DAB1.1020807@BitWagon.com> <20071214201305.GL19691@waste.org> <4762EB63.8070100@BitWagon.com> <20071214232322.GE17344@thunk.org>
+In-Reply-To: <20071214232322.GE17344@thunk.org>
+X-Enigmail-Version: 0.92.0.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Theodore Tso wrote:
+> On Fri, Dec 14, 2007 at 12:45:23PM -0800, John Reiser wrote:
+> 
+>>>It's getting folded into the random number pool, where it will be
+>>>impossible to recover it unless you already know what was in the
+>>>pool.  And if you know what's in the pool, you've already broken into
+>>>the kernel.
+>>
+>>The combination of capturing data from other users, plus seeding
+>>the pool with your own data, just might be powerful enough to help
+>>steal secrets, sometime in the next five years, from data that is
+>>recorded today.
+> 
+> 
+> Um, no.  Just seeding the pool with your own data won't help, since
+> that still won't tell you the initial contents of the pool.  And if
+> you know the initial contents of the pool, then you've broken root.
+> And being able to steal from the pool also assumes that you've broken
+> into the system; it is never, ever exported to userspace, even if
+> you're root (unless you use something like /dev/kmem).  Furthermore,
+> if you don't know the previous contents of the pool, you'll never be
+> able to recover the information, either now or five years in the
+> future, since information is XOR'ed into the pool.
 
-This is a note to let you know that I've just added the patch titled
+There is a path that goes from user data into the pool.  This path
+is subject to manipulation by an attacker, for both reading and
+writing.  Are you going to guarantee that in five years nobody
+will discover a way to take advantage of it?  Five years ago
+there were no public attacks against MD5 except brute force;
+now MD5 is on the "weak" list.
 
-     Subject: Add Documentation for FAIR_USER_SCHED sysfs files
+>>>But I'm sympathetic to making Valgrind happy.  ...
+> 
+> 
+> How about wrapping it in a #ifdef CONFIG_UML, which is the only way
+> you can use Valgrind?  The memset will slow down things unnecessarily,
+> and mixing in the unknown previous contents of the stack (a) doesn't
+> hurt, and (b) could make life more complicated for an attacker.
 
-to my gregkh-2.6 tree.  Its filename is
+If speed matters that much, then please recoup 33 cycles on x86
+by using shifts instead of three divides, such as (gcc 4.1.2):
 
-     add-documentation-for-fair_user_sched-sysfs-files.patch
+                add_entropy_words(r, tmp, (bytes + 3) / 4);
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+0x8140689 <xfer_secondary_pool+206>:    lea    0x3(%esi),%eax
+0x814068c <xfer_secondary_pool+209>:    mov    $0x4,%dl
+0x814068e <xfer_secondary_pool+211>:    mov    %edx,%edi
+0x8140690 <xfer_secondary_pool+213>:    cltd
+0x8140691 <xfer_secondary_pool+214>:    idiv   %edi
 
-
->From dhaval@linux.vnet.ibm.com Tue Dec 11 21:51:17 2007
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Date: Wed, 12 Dec 2007 11:18:59 +0530
-Subject: Add Documentation for FAIR_USER_SCHED sysfs files
-To: Greg KH <gregkh@suse.de>
-Cc: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, Balbir Singh <balbir@in.ibm.com>
-Message-ID: <20071212054859.GC1486@linux.vnet.ibm.com>
-Content-Disposition: inline
-
-This patch adds documentation about /sys/kernel/uids/<uid>/cpu_share
-to Documentation/ABI.
-
-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- Documentation/ABI/testing/sysfs-kernel-uids |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-kernel-uids
-@@ -0,0 +1,14 @@
-+What:		/sys/kernel/uids/<uid>/cpu_shares
-+Date:		December 2007
-+Contact:	Dhaval Giani <dhaval@linux.vnet.ibm.com>
-+		Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-+Description:
-+		The /sys/kernel/uids/<uid>/cpu_shares tunable is used
-+		to set the cpu bandwidth a user is allowed. This is a
-+		propotional value. What that means is that if there
-+		are two users logged in, each with an equal number of
-+		shares, then they will get equal CPU bandwidth. Another
-+		example would be, if User A has shares = 1024 and user
-+		B has shares = 2048, User B will get twice the CPU
-+		bandwidth user A will. For more details refer
-+		Documentation/sched-design-CFS.txt
-
-
-Patches currently in gregkh-2.6 which might be from dhaval@linux.vnet.ibm.com are
-
-driver/struct-user_info-sysfs.patch
-driver/add-documentation-for-fair_user_sched-sysfs-files.patch
+-- 
+John Reiser, jreiser@BitWagon.com
