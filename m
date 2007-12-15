@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbXLORHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933109AbXLORNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932378AbXLORHp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 12:07:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbXLORHf
+	id S933109AbXLORNX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 12:13:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758690AbXLORNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 12:07:35 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:36673 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755947AbXLORHe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 12:07:34 -0500
-Message-ID: <476408D7.50205@cosmosbay.com>
-Date: Sat, 15 Dec 2007 18:03:19 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sat, 15 Dec 2007 12:13:16 -0500
+Received: from palrel12.hp.com ([156.153.255.237]:59782 "EHLO palrel12.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754589AbXLORNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 12:13:15 -0500
+Message-ID: <47640B1C.7080506@hp.com>
+Date: Sat, 15 Dec 2007 12:13:00 -0500
+From: Mark Seger <Mark.Seger@hp.com>
+User-Agent: Thunderbird 1.5.0.13 (Windows/20070809)
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       Wang Chen <wangchen@cn.fujitsu.com>,
-       Gerrit Renker <gerrit@erg.abdn.ac.uk>, davem@davemloft.net,
-       andi@firstfloor.org, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] [UDP6]: Counter increment on BH mode
-References: <474F7EE8.2040009@cn.fujitsu.com> <474F8255.5060501@cn.fujitsu.com> <20071130111949.GB28277@gerrit.erg.abdn.ac.uk> <20071201015438.GC26895@gondor.apana.org.au> <4753AE07.1040906@cn.fujitsu.com> <20071203113935.GA25124@gondor.apana.org.au> <20071203114912.GA4425@ms2.inr.ac.ru> <20071203115435.GA4202@gondor.apana.org.au> <20071203131723.GA30312@gondor.apana.org.au> <20071215135851.GA29063@gondor.apana.org.au>
-In-Reply-To: <20071215135851.GA29063@gondor.apana.org.au>
+To: util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Update on collectl
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 15 Dec 2007 18:03:27 +0100 (CET)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu a écrit :
-> Ob Tue, Dec 04, 2007 at 12:17:23AM +1100, Herbert Xu wrote:
->> Never mind, we already have that in local_t and as Alexey correctly
->> points out, USER is still going to be the expensive variant with the
->> preempt_disable (well until BH gets threaded).  So how about this patch?
-> 
-> I didn't hear any objections so here is the patch again.
-> 
-> [SNMP]: Fix SNMP counters with PREEMPT
-> 
-> The SNMP macros use raw_smp_processor_id() in process context
-> which is illegal because the process may be preempted and then
-> migrated to another CPU.
-> 
-> This patch makes it use get_cpu/put_cpu to disable preemption.
-> 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-> 
-> Cheers,
-  #define SNMP_INC_STATS_USER(mib, field) \
--	(per_cpu_ptr(mib[1], raw_smp_processor_id())->mibs[field]++)
-+	do { \
-+		per_cpu_ptr(mib[1], get_cpu())->mibs[field]++; \
-+		put_cpu(); \
-+	} while (0)
-  #define SNMP_INC_STATS(mib, field) 	\
-  	(per_cpu_ptr(mib[!in_softirq()], raw_smp_processor_id())->mibs[field]++)
+Last summer I announced that I had released a performance monitoring 
+tool called collectl and just wanted to let people know I've since 
+significantly improved the website at http://collectl.sourceforge.net/ 
+to include examples, a block diagram and even included a couple of pages 
+on some interesting kernel problems it helped identify, though they've 
+since been addressed.  Perhaps one of the more interesting ones is that 
+not too long ago, and I'm really not sure when it actually got fixed, it 
+was impossible to accurately measure network traffic at 1 second 
+intervals and worse, you'd periodically see double the actual rate 
+reported.   Try it out on an older kernel and see for yourself!  
+However, since collectl can monitor at subsecond intervals you could 
+monitor those older kernels at 0.9765 seconds and see accurate data.  
+Rather than me try to explain it, take a look at 
+http://collectl.sourceforge.net/NetworkStats.html to read more.
 
+I think a couple of other features I may not have said enough about is 
+monitoring Infiniband and Lustre performance, for which I don't believe 
+there are any good tools available.  You can get IB data from asking the 
+switch, but you can't easily get it from the local system.  There is 
+actually a wealth of information Lustre provides but no good tools to 
+mine it.  Now there is.  With collectl you can see a second-by-second 
+(or any other interval you prefer) snapshot of just what is happening to 
+these key resources and can even watch the load on cpu, memory and 
+network at the same time.  If you prefer, and most people do, just run 
+collectl as a service and it will maintain a set of compressed rolling 
+logs containing 10 second samples (all customizable) and do it all at 
+<0.1% of system overhead.
 
-How come you change SNMP_INC_STATS_USER() but not SNMP_INC_STATS() ?
+Enough rambling already.  Download it and see for yourselves...
+
+-mark
 
 
