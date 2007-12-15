@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761330AbXLOCTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbXLOCVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761330AbXLOCTY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 21:19:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbXLOCTR
+	id S932078AbXLOCVQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 21:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbXLOCVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 21:19:17 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:51770 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752099AbXLOCTR (ORCPT
+	Fri, 14 Dec 2007 21:21:03 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:41239 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752099AbXLOCVB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 21:19:17 -0500
-Subject: Re: Possible issue with dangling PCI BARs
-From: Jon Masters <jonathan@jonmasters.org>
-To: benh@kernel.crashing.org
-Cc: linux-pci@atrey.karlin.mff.cuni.cz,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1197670314.6696.20.camel@pasglop>
-References: <1197514804.15741.60.camel@pasglop>
-	 <1197633131.29507.97.camel@perihelion>  <1197670314.6696.20.camel@pasglop>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Fri, 14 Dec 2007 21:18:32 -0500
-Message-Id: <1197685112.29507.151.camel@perihelion>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+	Fri, 14 Dec 2007 21:21:01 -0500
+Message-ID: <476339D4.2090802@zytor.com>
+Date: Fri, 14 Dec 2007 18:20:04 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "David P. Reed" <dpreed@reed.com>
+CC: Avi Kivity <avi@qumranet.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@ucw.cz>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
+ on some AMD64x2 laptops, etc.
+References: <466F0941.9060201@reed.com> <1181682498.8176.224.camel@chaos>	 <469578CD.3080609@reed.com>  <1184216528.12353.203.camel@chaos>	 <1184218962.12353.209.camel@chaos>  <46964352.7040301@reed.com>	 <1184253339.12353.223.camel@chaos>  <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <4762AA68.9030507@qumranet.com> <4763385E.9040106@reed.com>
+In-Reply-To: <4763385E.9040106@reed.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2007-12-15 at 09:11 +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2007-12-14 at 06:52 -0500, Jon Masters wrote:
-> > On Thu, 2007-12-13 at 14:00 +1100, Benjamin Herrenschmidt wrote:
-> > > While reworking the powerpc PCI resource management, to make it more
-> > > x86-like and use more of the generic code in setup-bus.c and
-> > > setup-res.c, I noticed something a bit fishy in the way we deal with
-> > > resources that we failed to assign.
-> > 
-> > On a tangent here, is there a way (other than pci=rom) to ensure greater
-> > address space/resource space for PCI resource mappings?
+David P. Reed wrote:
 > 
-> limit lowmem ? 4g/4g ? 64 bits ? :-)
+> I believe (though no one seems to have confirming documentation from the 
+> chipset or motherboard vendor) that port 80 is actually functional for 
+> some unknown function on these machines.   (They do respond to "in" 
+> instructions faster than a bus cycle abort does - more evidence).
+> 
 
-Oh, I've seen resource allocation fail on x86_64, which is what bothers
-me, since this really shouldn't be happening.
+This is normal.  IN from port 0x80 is used by the DMA address map chip.
 
-Jon.
+As far as I understand, there are other laptops with the same chipset 
+which don't have this problem, so it's likely either a motherboard or 
+firmware issue.  My guess is that they probably let debugging code out 
+in the field (trap port 0x80 in SMM, and then try to output it on some 
+debugging bus.)
 
-
+	-hpa
