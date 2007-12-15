@@ -1,90 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbXLNXyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbXLOAAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592AbXLNXyh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 18:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbXLNXy1
+	id S1759274AbXLOAAv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 19:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbXLOAAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 18:54:27 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54866 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752151AbXLNXy0 (ORCPT
+	Fri, 14 Dec 2007 19:00:42 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:37862 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461AbXLOAAl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 18:54:26 -0500
-Message-ID: <476317A6.3060302@linux-foundation.org>
-Date: Fri, 14 Dec 2007 15:54:14 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Organization: Linux Foundation
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 14 Dec 2007 19:00:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=a7sFmH/wGhwOMl2DLRpn7vDFboUK7YSVvjRNl0KQ+oyzdHI8iMHBMyv6F/q06qnc9LyeE9DeVcC0QjiAAuUQDl4xzYLF2IIOny+ppoQU6pA/riag0th+Fi/8LpkcZhYgWc7NfVhySMxcTptyOKI4oYuWxHk8Kg2QyN0T0XlTrKw=
+Message-ID: <9a8cbed90712141600l1a867da0uc7027e502575a7a6@mail.gmail.com>
+Date: Fri, 14 Dec 2007 19:00:40 -0500
+From: "Arun Thomas" <arun.thomas@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: PROBLEM: E6850 has an 8+ minute delay during boot
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Jiri Slaby" <jirislaby@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <4762D322.2060101@zytor.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
-       randy.dunlap@oracle.com, auke-jan.h.kok@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/10] e1000e: make E1000E default to the same kconfig
- setting as E1000
-References: <200712140002.lBE02pUb025505@imap1.linux-foundation.org>	<4762E9FE.1070707@garzik.org> <20071214152215.55ef46e8.akpm@linux-foundation.org>
-In-Reply-To: <20071214152215.55ef46e8.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9a8cbed90712140110l156a34e3x38533b7710544cf8@mail.gmail.com>
+	 <20071214015315.09829a99.akpm@linux-foundation.org>
+	 <9a8cbed90712140201r6cb287d9w99cc1210c68e8e60@mail.gmail.com>
+	 <4762586F.8090603@gmail.com>
+	 <alpine.LFD.0.99999.0712141140310.10584@localhost.localdomain>
+	 <4762D322.2060101@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 14 Dec 2007 15:39:26 -0500
-> Jeff Garzik <jeff@garzik.org> wrote:
+On Dec 14, 2007 2:01 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Thomas Gleixner wrote:
+> >
+> > The problem is caused by an SMI during the calibration routine. We
+> > really need to come up with a solid solution which does not rely on
+> > the periodic timer coming in, when there is something else (HPET,
+> > pm_timer) available.
 >
->   
->> akpm@linux-foundation.org wrote:
->>     
->>> From: Randy Dunlap <randy.dunlap@oracle.com>
->>>
->>> Make E1000E default to the same kconfig setting as E1000.  So people's
->>> machiens don't stop working when they use oldconfig.
->>>
->>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->>> Cc: Jeff Garzik <jeff@garzik.org>
->>> Cc: Auke Kok <auke-jan.h.kok@intel.com>
->>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->>> ---
->>>
->>>  drivers/net/Kconfig |    1 +
->>>  1 file changed, 1 insertion(+)
->>>
->>> diff -puN drivers/net/Kconfig~e1000e-make-e1000e-default-to-the-same-kconfig-setting-as-e1000 drivers/net/Kconfig
->>> --- a/drivers/net/Kconfig~e1000e-make-e1000e-default-to-the-same-kconfig-setting-as-e1000
->>> +++ a/drivers/net/Kconfig
->>> @@ -1986,6 +1986,7 @@ config E1000_DISABLE_PACKET_SPLIT
->>>  config E1000E
->>>  	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
->>>  	depends on PCI
->>> +	default E1000
->>>       
->> I am not inclined to apply this one.  This practice, applied over time, 
->> will tend to accumulate weird 'default' and 'select' statements.
->>
->> So I think the breakage that occurs is mitigated by two factors:
->> 1) kernel hackers that do their own configs are expected to be able to 
->> figure this stuff.
->> 2) kernel builders (read: distros, mainly) are expected to have put 
->> thought into the Kconfig selection and driver migration strategies.
->>
->> PCI IDs move across drivers from time, and we don't want to apply these 
->> sorts changes:  Viewed in the long term, the suggested patch is merely a 
->> temporary change to allow kernel experts to more easily deal with the 
->> PCI ID migration across drivers.
->>
->> I would prefer simply to communicate to kernel experts and builders 
->> about a Kconfig issue that could potentially their booting/networking... 
->>   because this patch is only needed if the kernel experts do not already 
->> know about a necessary config update.
->>     
->
-> You can take it out again later on - most people's .configs will then have
-> E1000E set.   People who still do `cp ancientconfig .config ; make oldconfig'
-> remain screwed.
->   
+> How long is the SMI?
 
-Sounds like something build system should help with. Some more user 
-friendly syntax for dealing
-with issues of driver conversion.
+Is there some instrumentation code somewhere which would allow me to
+determine this? If not, can you give me some hints on where to add the
+instrumentation code?
+
+Thanks,
+Arun
