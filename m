@@ -1,110 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbXLOE6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbXLOFn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758071AbXLOE6Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 23:58:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbXLOE6O
+	id S1754204AbXLOFn2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 00:43:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbXLOFnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 23:58:14 -0500
-Received: from elasmtp-dupuy.atl.sa.earthlink.net ([209.86.89.62]:34536 "EHLO
-	elasmtp-dupuy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751047AbXLOE6N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 23:58:13 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=PX2g/SgvzPdsuFQzoGQiS/yB1tL5rwfum01WLs2L4F+y70lWad3O4LR+oFhrGS9M;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Fri, 14 Dec 2007 23:57:57 -0500
-From: Bill Fink <billfink@mindspring.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
-       randy.dunlap@oracle.com, auke-jan.h.kok@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/10] e1000e: make E1000E default to the same kconfig
- setting as E1000
-Message-Id: <20071214235757.06f5c47a.billfink@mindspring.com>
-In-Reply-To: <20071214152215.55ef46e8.akpm@linux-foundation.org>
-References: <200712140002.lBE02pUb025505@imap1.linux-foundation.org>
-	<4762E9FE.1070707@garzik.org>
-	<20071214152215.55ef46e8.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+	Sat, 15 Dec 2007 00:43:19 -0500
+Received: from mail.suse.de ([195.135.220.2]:37437 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751066AbXLOFnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 00:43:18 -0500
+Date: Sat, 15 Dec 2007 06:43:16 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Jens Axboe <axboe@kernel.dk>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [rfc][patch 1/3] block: non-atomic queue_flags prep
+Message-ID: <20071215054315.GA30335@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4db148c8d66cc0b15548acd9089ae201bb350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.55.21.22
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Dec 2007, Andrew Morton wrote:
+Hi,
 
-> On Fri, 14 Dec 2007 15:39:26 -0500
-> Jeff Garzik <jeff@garzik.org> wrote:
-> 
-> > akpm@linux-foundation.org wrote:
-> > > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > > 
-> > > Make E1000E default to the same kconfig setting as E1000.  So people's
-> > > machiens don't stop working when they use oldconfig.
-> > > 
-> > I am not inclined to apply this one.  This practice, applied over time, 
-> > will tend to accumulate weird 'default' and 'select' statements.
-> > 
-> > So I think the breakage that occurs is mitigated by two factors:
-> > 1) kernel hackers that do their own configs are expected to be able to 
-> > figure this stuff.
-> > 2) kernel builders (read: distros, mainly) are expected to have put 
-> > thought into the Kconfig selection and driver migration strategies.
-> > 
-> > PCI IDs move across drivers from time, and we don't want to apply these 
-> > sorts changes:  Viewed in the long term, the suggested patch is merely a 
-> > temporary change to allow kernel experts to more easily deal with the 
-> > PCI ID migration across drivers.
-> > 
-> > I would prefer simply to communicate to kernel experts and builders 
-> > about a Kconfig issue that could potentially their booting/networking... 
-> >   because this patch is only needed if the kernel experts do not already 
-> > know about a necessary config update.
-> 
-> You can take it out again later on - most people's .configs will then have
-> E1000E set.   People who still do `cp ancientconfig .config ; make oldconfig'
-> remain screwed.
+This is just an idea I had, which might make request processing a little
+bit cheaper depending on queue behaviour. For example if it is getting plugged
+unplugged frequently (as I think is the case for some database workloads),
+then we might save one or two atomic operations per request.
 
-I was thinking the same thing.  Leave it in for 2 or 3 major versions
-and then remove it (something analogous to the timeframe for a feature
-removal).
+Anyway, I'm not completely sure if I have ensured all queue_flags users are
+safe (I think md may need a bit of help). But overall it seems quite doable.
 
-And during the interim period, add something like the following
-to the Kconfig help text:
+Comments?
+---
+Prep queue_flags to be non-atomic and taking protection from queue_lock.
+Do this by ensuring the queue_lock is held everywhere that queue_flags
+are changed. Locking additions are confined to slowpaths.
 
-	Note some hardware that was previously supported by the
-	e1000 driver is now only handled by the e1000e driver.
-	If unsure and you previously used the e1000 driver,
-	say Y or M here.
-
-> I dunno.  I guess I'm not into causing people pain in an attempt to train
-> them to do what we want.  This is a popular driver and a *lot* of people
-> are going to:
-> 
-> - build new kernel
-> 
-> - install new kernel
-> 
-> - find it doesn't work, go through quite large amounts of hassle trying
->   to work out why it stopped working.  Eventually work out that e1000
->   stopped working.  Eventually work out that it stopped working because we
->   forcibly switched them to a new driver which they didn't know about.
-> 
-> - reconfigure kernel
-> 
-> - rebuild, reinstall
-
-Having been there, done that, it's definitely a pain.  It's especially
-painful when you're doing it remotely, and since the network no longer
-works, you can't get into the system anymore.
-
-> Multiply that by 100s of people (at least).  All because Jeff wouldn't
-> apply a one-liner?
-
-						-Bill
+Index: linux-2.6/block/elevator.c
+===================================================================
+--- linux-2.6.orig/block/elevator.c
++++ linux-2.6/block/elevator.c
+@@ -1066,7 +1066,10 @@ static int elevator_switch(struct reques
+ 	 * finally exit old elevator and turn off BYPASS.
+ 	 */
+ 	elevator_exit(old_elevator);
++	spin_lock_irq(q->queue_lock);
+ 	clear_bit(QUEUE_FLAG_ELVSWITCH, &q->queue_flags);
++	spin_unlock_irq(q->queue_lock);
++
+ 	return 1;
+ 
+ fail_register:
+@@ -1077,7 +1080,11 @@ fail_register:
+ 	elevator_exit(e);
+ 	q->elevator = old_elevator;
+ 	elv_register_queue(q);
++
++	spin_lock_irq(q->queue_lock);
+ 	clear_bit(QUEUE_FLAG_ELVSWITCH, &q->queue_flags);
++	spin_unlock_irq(q->queue_lock);
++
+ 	return 0;
+ }
+ 
+Index: linux-2.6/block/ll_rw_blk.c
+===================================================================
+--- linux-2.6.orig/block/ll_rw_blk.c
++++ linux-2.6/block/ll_rw_blk.c
+@@ -1732,14 +1732,11 @@ void blk_sync_queue(struct request_queue
+ EXPORT_SYMBOL(blk_sync_queue);
+ 
+ /**
+- * blk_run_queue - run a single device queue
++ * __blk_run_queue - run a single device queue. queue_lock must be held.
+  * @q:	The queue to run
+  */
+-void blk_run_queue(struct request_queue *q)
++void __blk_run_queue(struct request_queue *q)
+ {
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(q->queue_lock, flags);
+ 	blk_remove_plug(q);
+ 
+ 	/*
+@@ -1755,7 +1752,19 @@ void blk_run_queue(struct request_queue 
+ 			kblockd_schedule_work(&q->unplug_work);
+ 		}
+ 	}
++}
++EXPORT_SYMBOL(__blk_run_queue);
+ 
++/**
++ * blk_run_queue - run a single device queue
++ * @q:	The queue to run
++ */
++void blk_run_queue(struct request_queue *q)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(q->queue_lock, flags);
++	__blk_run_queue(q);
+ 	spin_unlock_irqrestore(q->queue_lock, flags);
+ }
+ EXPORT_SYMBOL(blk_run_queue);
+@@ -1804,7 +1813,9 @@ EXPORT_SYMBOL(blk_put_queue);
+ void blk_cleanup_queue(struct request_queue * q)
+ {
+ 	mutex_lock(&q->sysfs_lock);
++	spin_lock_irq(q->queue_lock);
+ 	set_bit(QUEUE_FLAG_DEAD, &q->queue_flags);
++	spin_unlock_irq(q->queue_lock);
+ 	mutex_unlock(&q->sysfs_lock);
+ 
+ 	if (q->elevator)
+Index: linux-2.6/drivers/scsi/scsi_lib.c
+===================================================================
+--- linux-2.6.orig/drivers/scsi/scsi_lib.c
++++ linux-2.6/drivers/scsi/scsi_lib.c
+@@ -532,6 +532,9 @@ static void scsi_run_queue(struct reques
+ 	       !shost->host_blocked && !shost->host_self_blocked &&
+ 		!((shost->can_queue > 0) &&
+ 		  (shost->host_busy >= shost->can_queue))) {
++
++		int flagset;
++
+ 		/*
+ 		 * As long as shost is accepting commands and we have
+ 		 * starved queues, call blk_run_queue. scsi_request_fn
+@@ -547,17 +550,17 @@ static void scsi_run_queue(struct reques
+ 		list_del_init(&sdev->starved_entry);
+ 		spin_unlock_irqrestore(shost->host_lock, flags);
+ 
+-
+-		if (test_bit(QUEUE_FLAG_REENTER, &q->queue_flags) &&
+-		    !test_and_set_bit(QUEUE_FLAG_REENTER,
+-				      &sdev->request_queue->queue_flags)) {
+-			blk_run_queue(sdev->request_queue);
++		spin_lock(sdev->request_queue->queue_lock);
++		flagset = test_bit(QUEUE_FLAG_REENTER, &q->queue_flags) &&
++				!test_and_set_bit(QUEUE_FLAG_REENTER,
++					&sdev->request_queue->queue_flags);
++		__blk_run_queue(sdev->request_queue);
++		if (flagset)
+ 			clear_bit(QUEUE_FLAG_REENTER,
+-				  &sdev->request_queue->queue_flags);
+-		} else
+-			blk_run_queue(sdev->request_queue);
++					&sdev->request_queue->queue_flags);
++		spin_unlock(sdev->request_queue->queue_lock);
+ 
+-		spin_lock_irqsave(shost->host_lock, flags);
++		spin_lock(shost->host_lock);
+ 		if (unlikely(!list_empty(&sdev->starved_entry)))
+ 			/*
+ 			 * sdev lost a race, and was put back on the
+Index: linux-2.6/drivers/block/loop.c
+===================================================================
+--- linux-2.6.orig/drivers/block/loop.c
++++ linux-2.6/drivers/block/loop.c
+@@ -541,9 +541,12 @@ out:
+  */
+ static void loop_unplug(struct request_queue *q)
+ {
++	unsigned long flags;
+ 	struct loop_device *lo = q->queuedata;
+ 
++	spin_lock_irqsave(q->queue_lock, flags);
+ 	clear_bit(QUEUE_FLAG_PLUGGED, &q->queue_flags);
++	spin_unlock_irqrestore(q->queue_lock, flags);
+ 	blk_run_address_space(lo->lo_backing_file->f_mapping);
+ }
+ 
+Index: linux-2.6/include/linux/blkdev.h
+===================================================================
+--- linux-2.6.orig/include/linux/blkdev.h
++++ linux-2.6/include/linux/blkdev.h
+@@ -685,6 +685,7 @@ extern void blk_start_queue(struct reque
+ extern void blk_stop_queue(struct request_queue *q);
+ extern void blk_sync_queue(struct request_queue *q);
+ extern void __blk_stop_queue(struct request_queue *q);
++extern void __blk_run_queue(struct request_queue *);
+ extern void blk_run_queue(struct request_queue *);
+ extern void blk_start_queueing(struct request_queue *);
+ extern int blk_rq_map_user(struct request_queue *, struct request *, void __user *, unsigned long);
