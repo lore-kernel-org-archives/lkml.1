@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbXLOCVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbXLOC2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932078AbXLOCVQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 21:21:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbXLOCVD
+	id S1756747AbXLOC2j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 21:28:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbXLOC2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 21:21:03 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41239 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752099AbXLOCVB (ORCPT
+	Fri, 14 Dec 2007 21:28:30 -0500
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:60947 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751724AbXLOC23 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 21:21:01 -0500
-Message-ID: <476339D4.2090802@zytor.com>
-Date: Fri, 14 Dec 2007 18:20:04 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 14 Dec 2007 21:28:29 -0500
+Message-ID: <47633BAE.6040604@lwfinger.net>
+Date: Fri, 14 Dec 2007 18:27:58 -0800
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: "David P. Reed" <dpreed@reed.com>
-CC: Avi Kivity <avi@qumranet.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@ucw.cz>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
- on some AMD64x2 laptops, etc.
-References: <466F0941.9060201@reed.com> <1181682498.8176.224.camel@chaos>	 <469578CD.3080609@reed.com>  <1184216528.12353.203.camel@chaos>	 <1184218962.12353.209.camel@chaos>  <46964352.7040301@reed.com>	 <1184253339.12353.223.camel@chaos>  <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <4762AA68.9030507@qumranet.com> <4763385E.9040106@reed.com>
-In-Reply-To: <4763385E.9040106@reed.com>
+To: mvtodevnull@gmail.com
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
+       Daniel Walker <dwalker@mvista.com>, Ray Lee <ray-lk@madrabbit.org>,
+       =?ISO-8859-1?Q?Simon_Holm_Th=F8gerse?= =?ISO-8859-1?Q?n?= 
+	<odie@cs.aau.dk>,
+       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, Ingo Molnar <mingo@elte.hu>, kjwinchester@gmail.com,
+       jonathan@jonmasters.org, akpm@linux-foundation.org,
+       bcm43xx-dev@lists.berlios.de
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
+ to mutex
+References: <20071213003028.676998182@mvista.com>	 <1197637194.7549.10.camel@odie.local>	 <200712141404.24275.mb@bu3sch.de> <200712150151.49025.rjw@sisk.pl>	 <476326A1.6090404@lwfinger.net> <520b60a90712141759h65f1e63ei65ba00887a930d06@mail.gmail.com>
+In-Reply-To: <520b60a90712141759h65f1e63ei65ba00887a930d06@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David P. Reed wrote:
+mvtodevnull@gmail.com wrote:
 > 
-> I believe (though no one seems to have confirming documentation from the 
-> chipset or motherboard vendor) that port 80 is actually functional for 
-> some unknown function on these machines.   (They do respond to "in" 
-> instructions faster than a bus cycle abort does - more evidence).
-> 
+> Could this be the reason my BCM94311MCG rev 1 receives such terrible
+> performance with b43 but works well with bcm43xx? The device is
+> 802.11b/g but my router is 802.11b. I filed a report on this issue
+> here: https://bugzilla.redhat.com/show_bug.cgi?id=413291
 
-This is normal.  IN from port 0x80 is used by the DMA address map chip.
+No. On my BCM4311/1, my transfer rate peaked at about 12 Mbs with bcm43xx, but increased to 20 Mbs 
+with b43. These tests were done with iperf with a server running running on a second computer 
+connected by wire to my router. These rates are for 802.11g. When my interface was locked at 11 Mbs, 
+the transfer rate was the expected 5.3-5.5 Mbs with both drivers.
 
-As far as I understand, there are other laptops with the same chipset 
-which don't have this problem, so it's likely either a motherboard or 
-firmware issue.  My guess is that they probably let debugging code out 
-in the field (trap port 0x80 in SMM, and then try to output it on some 
-debugging bus.)
+> I was told by Michael that I would have to fix it myself, and I am
+> trying, but the learning curve is a little steep. If this is relevant,
+> I might at least have some direction to go in.
 
-	-hpa
+I suspect that mac80211 is doing something that your router does not like. Do you have any chance to 
+capture the traffic between your computer and the router by using a second wireless computer running 
+kismet or wireshark? A look at the differences between b43 and bcm43xx should show the reason.
+
+Larry
+
+
+
