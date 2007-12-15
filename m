@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765600AbXLOHaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763705AbXLOHhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765600AbXLOHaO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 02:30:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbXLOHaA
+	id S1763705AbXLOHhN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 02:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbXLOHg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 02:30:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41180 "EHLO mx2.mail.elte.hu"
+	Sat, 15 Dec 2007 02:36:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33247 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751256AbXLOHaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 02:30:00 -0500
-Date: Sat, 15 Dec 2007 08:29:37 +0100
+	id S1751941AbXLOHg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 02:36:59 -0500
+Date: Sat, 15 Dec 2007 08:36:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Markus Metzger <markus.t.metzger@intel.com>
-Cc: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, markus.t.metzger@gmail.com,
-       suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Subject: Re: [patch 1/5] x86, ptrace: remove bad comment
-Message-ID: <20071215072937.GB12110@elte.hu>
-References: <20071214174858.A20475@sedona.ch.intel.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: Use helper in kprobes{32|64}.c
+Message-ID: <20071215073644.GC12110@elte.hu>
+References: <1197680107.898.81.camel@brick>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071214174858.A20475@sedona.ch.intel.com>
+In-Reply-To: <1197680107.898.81.camel@brick>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,14 +34,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus,
 
-i've applied the first 4 patches to x86.git.
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-another detail: shouldnt this be structured so that the APIs are 
-introduced in kernel/ptrace.c, and that the architecture offers the 
-mechanism. (which would thus be ptrace-independent) This would also open 
-these APIs up to kernel-internal use and to be used by other 
-architectures.
+> x86: Use helper in kprobes{32|64}.c
+
+thanks, i've applied your kprobes pre-unification patches to x86.git. 
+
+While we are at it, it might be nice to reduce the numbers of checkpatch 
+warnings:
+
+ $ scripts/checkpatch.pl --file arch/x86/kernel/kprobes*.c  | grep total
+ total: 10 errors, 9 warnings, 959 lines checked
+ total: 10 errors, 8 warnings, 923 lines checked
+
+to 0/0 ? :-) (but that can happen after the unification too)
 
 	Ingo
