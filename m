@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbXLOTpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbXLOT6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759356AbXLOTpO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 14:45:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbXLOTpB
+	id S1761357AbXLOT6P (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 14:58:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbXLOT6B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 14:45:01 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:38896 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754802AbXLOTpA (ORCPT
+	Sat, 15 Dec 2007 14:58:01 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:36423 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753365AbXLOT6A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 14:45:00 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47642E98.6090405@s5r6.in-berlin.de>
-Date: Sat, 15 Dec 2007 20:44:24 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.9) Gecko/20071122 SeaMonkey/1.1.6
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       protasnb@gmail.com
-Subject: Re: Top kernel oopses/warnings this week
-References: <4762CF8C.90808@linux.intel.com> <4763F771.10105@s5r6.in-berlin.de> <47641B0F.3040709@linux.intel.com>
-In-Reply-To: <47641B0F.3040709@linux.intel.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Sat, 15 Dec 2007 14:58:00 -0500
+Subject: Re: Regression: Wireshark sees no packets in 2.6.24-rc3
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Ray Lee <ray@madrabbit.org>
+Cc: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <2c0942db0712150016r149d285bs8f4e1c444e71afea@mail.gmail.com> (sfid-20071215_081641_992849_E96123B3)
+References: <2c0942db0712131746s7da91f2bkf45b3e1ddf16d1f3@mail.gmail.com>
+	 <200712150305.02589.rjw@sisk.pl> <47633ECC.3020804@googlemail.com>
+	 <2c0942db0712142309v15f79068m8c033180d41b9be@mail.gmail.com>
+	 <2c0942db0712150016r149d285bs8f4e1c444e71afea@mail.gmail.com>
+	 (sfid-20071215_081641_992849_E96123B3)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZbAMOyRSv68qhcinASOL"
+Date: Sat, 15 Dec 2007 20:57:52 +0100
+Message-Id: <1197748672.16079.59.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Stefan Richter wrote:
->> Report counts may be too high due to duplicate recognition of the very
->> same report.
-> 
-> this is true however it's .. a hard issue. It's really hard to
-> distinguish a duplicate report from two reports of the same bug.
 
-Would be nice though to try to find duplicates like the example I gave.
-(The actual report and a reply was listed.  The reply just had a full
-quote of the oops, with "> " prepended and perhaps lines wrapped.)
-Because if an oops is independently reported twice or more, this too
-says something about the issue.  E.g. flaky RAM and such is pretty much
-eliminated as a possible cause.
+--=-ZbAMOyRSv68qhcinASOL
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Anyway, someone who is actually interested in a particular oops and
-looks at the posts in your links quickly notices eventual duplicates.
-But it would be helpful to people who only have a quick glance at the
-bar graphs if you add a note of caution that the figures are not
-accurate and not representative, e.g. because of occasional duplicates.
 
-For the same reason, please don't write headings like "Oops statistics
-for kernel 2.6.23-release".  Unless you mean "statistics" in a narrower
-sense like they do statistics in medicine and economics. ;-)
-Simply write "Oops reports for kernel...".
+On Sat, 2007-12-15 at 00:16 -0800, Ray Lee wrote:
+> On Dec 14, 2007 11:09 PM, Ray Lee <ray@madrabbit.org> wrote:
+> > On Dec 14, 2007 6:41 PM, Gabriel C <nix.or.die@googlemail.com> wrote:
+> > Correct, absolutely no traffic. So if it works for you, then either
+> > it's something that got fixed between -rc3 and -rc5, or something odd
+> > when I did a make oldconfig, I suppose. (Or because I'm on an x86-64
+> > kernel?) Regardless, -rc5 is currently building, and I'll try it in
+> > the morning.
+>=20
+> -rc5 works great. Really don't know what's different between my -rc3
+> and -rc5 builds.
 
->> Reports against 2.6.X-rcY-mmZ are listed in the same category as reports
->> against 2.6.X-rcY.  To distinguish -mm reports from vanilla reports, one
->> has to look into the details of each bug entry.¹
-> 
-> finding what exact kernel version an oops is from is... surprisingly hard.
-> And to be honest, bugs against -mm are still very interesting, since
-> they'll be the next mainline after all
+I have an -rc3+wireless bits which also works great wrt.
+tcpdump/wireshark.
 
-Yes, they definitely are interesting.  And it's the same like with the
-above issue:  People who are genuinely interested in an oops find the
-necessary information at the details page.  Separating them from
-mainline oopses would be a service though for people who want to
-  - have a quick look at what's urgent and what's not so urgent,
-  - draw conclusions about the state of the release candidates.
-So this is not that important.
--- 
-Stefan Richter
--=====-=-=== ==-- -====
-http://arcgraph.de/sr/
+johannes
+
+--=-ZbAMOyRSv68qhcinASOL
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR2Qxv6Vg1VMiehFYAQJWbRAAvMVpeMgB5yCHRif90u4ZbYZVEz0OSD4M
+KL4gWqQi0M3hk+Ng4j7YyztZCm3u60Vt2H53cHds4RoVehBufCmOTYB9YKYuM1ti
+TqlbU/Be9Uo7HWdV2rapYSPyofJ/pBA+bZR6tApcAWCOBdJ1rUcmiiiTmVlBvKHr
+YbEu6tgVUNmDXmCY2u7gkrJvvpreQw0z7Xxq3iIjXVNZTOH2EUZo4/keYaAVNnfh
+4hrroJQ/cIjTgUbsZKkmmlTtnUxwVGacgIuAToBTZvzAFu4gc2TZSQKlc/Z7/mf5
+JLQhIFib/P+pr4sSc4jsFGqu+21i4eWBXDiAGtXaNwwbAVg6VvuFaJ+HNhe6Vtdj
+VQi5bCv2fHQdJHbf1GHHu3O9LKm6XE3CmFwXZ2GqgsvFMt74nfC3bAK2TdHAp59A
+1//UxYh7g91ESXmqnqEjd5rXibAecGrr2xsZ5f1qWjPcizqEYFU5oqgm9ha6knhc
+l4a52hvZfvu9AotKseS8xJCxGEDkk0Jh4yABLucJRmkHAiJHxEOx8GCrLX+gdSmL
+7d6Fptjz/TwduAqtF+4gwDq1064TYWbpA758TCCLl1OLELwKoFImg9BwDGWPkpBs
+wKSvSSlDZHe+9mGJiNyybwE4h4oDA+CDWQfLV7T7BvTuY0y79C5LZgNJmhBuUQXj
+5Zoq560o/Yc=
+=vGeI
+-----END PGP SIGNATURE-----
+
+--=-ZbAMOyRSv68qhcinASOL--
+
