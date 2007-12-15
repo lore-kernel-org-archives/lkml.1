@@ -1,81 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761663AbXLOSfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760925AbXLOSoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761663AbXLOSfx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 13:35:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbXLOSfo
+	id S1760925AbXLOSoQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 13:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbXLOSoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 13:35:44 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:4098 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755144AbXLOSfn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 13:35:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=jNkqT5/LEavXTNBrsou5zMt6zXMlNVNf9M7IE9RdwoZXFNfL/wrGVu8Ph/JVDl76uBe2hcVw5UqFacyg5MhW+8/My2hz9Q4kj/Z/XF3z54ve2eOJAb9DTb4aiAXAUZzSwWx+5D0FD8djNsm6V9ojyUlt1faAUL9vi8WSN0iWjM0=
-Message-ID: <47642003.7090900@gmail.com>
-Date: Sat, 15 Dec 2007 19:42:11 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+	Sat, 15 Dec 2007 13:44:03 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41282 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755144AbXLOSoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 13:44:01 -0500
+Date: Sat, 15 Dec 2007 19:43:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       Wang Chen <wangchen@cn.fujitsu.com>,
+       Gerrit Renker <gerrit@erg.abdn.ac.uk>, davem@davemloft.net,
+       andi@firstfloor.org, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 3/3] [UDP6]: Counter increment on BH mode
+Message-ID: <20071215184327.GA21434@elte.hu>
+References: <474F7EE8.2040009@cn.fujitsu.com> <474F8255.5060501@cn.fujitsu.com> <20071130111949.GB28277@gerrit.erg.abdn.ac.uk> <20071201015438.GC26895@gondor.apana.org.au> <4753AE07.1040906@cn.fujitsu.com> <20071203113935.GA25124@gondor.apana.org.au> <20071203114912.GA4425@ms2.inr.ac.ru> <20071203115435.GA4202@gondor.apana.org.au> <20071203131723.GA30312@gondor.apana.org.au> <20071215135851.GA29063@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Miles Lane <miles.lane@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: 2.6.24-rc5-mm1 -- inconsistent {in-softirq-W} -> {softirq-on-R}
-   usage.
-References: <a44ae5cd0712141413u4ddbfd06gca259cfc3bc0ab1a@mail.gmail.com>	<20071214153633.5d8f609a.akpm@linux-foundation.org>	<a44ae5cd0712141958o10d9a320h3b8173019ac6b0eb@mail.gmail.com> <20071215031341.66dc0d05.akpm@linux-foundation.org>
-In-Reply-To: <20071215031341.66dc0d05.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071215135851.GA29063@gondor.apana.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote, On 12/15/2007 12:13 PM:
 
-> On Fri, 14 Dec 2007 22:58:24 -0500 "Miles Lane" <miles.lane@gmail.com> wrote:
+* Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
+> Ob Tue, Dec 04, 2007 at 12:17:23AM +1100, Herbert Xu wrote:
+> > 
+> > Never mind, we already have that in local_t and as Alexey correctly
+> > points out, USER is still going to be the expensive variant with the
+> > preempt_disable (well until BH gets threaded).  So how about this patch?
+> 
+> I didn't hear any objections so here is the patch again.
+> 
+> [SNMP]: Fix SNMP counters with PREEMPT
+> 
+> The SNMP macros use raw_smp_processor_id() in process context which is 
+> illegal because the process may be preempted and then migrated to 
+> another CPU.
 
+nit: please use 'invalid' instead of 'illegal'.
 
-...
+> This patch makes it use get_cpu/put_cpu to disable preemption.
+> 
+> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
->> I applied the patch and then tried my test again.  This time my system
->> locked up.
->> Perhaps I should open a new thread for this, since the problem looks
->> pretty different.
->>
->> Dec 14 21:32:55 feargod kernel: process `cat' is using deprecated
->> sysctl (syscall) net.ipv6.neigh.default.retrans_time; Use
->> net.ipv6.neigh.default.retran
->> s_time_ms instead.
->> Dec 14 21:32:55 feargod kernel:
->> Dec 14 21:32:55 feargod kernel: =====================================
->> Dec 14 21:32:55 feargod kernel: [ BUG: bad unlock balance detected! ]
->> Dec 14 21:32:55 feargod kernel: -------------------------------------
->> Dec 14 21:32:55 feargod kernel: cat/6180 is trying to release lock
->> (kkkkkkk�����H3��) at:
->> Dec 14 21:32:55 feargod kernel: [packet_seq_stop+0xe/0x10]
->> packet_seq_stop+0xe/0x10
->> Dec 14 21:32:55 feargod kernel: but there are no more locks to release!
->> Dec 14 21:32:55 feargod kernel:
->> Dec 14 21:32:55 feargod kernel: other info that might help us debug this:
->> Dec 14 21:32:55 feargod kernel: 2 locks held by cat/6180:
->> Dec 14 21:32:55 feargod kernel:  #0:  (&p->lock){--..}, at:
->> [crypto_algapi:seq_read+0x25/0x191c1] seq_read+0x25/0x26f
->> Dec 14 21:32:55 feargod kernel:  #1:
->> (&net->packet.sklist_lock){-.--}, at: [packet_seq_start+0x14/0x4d]
->> packet_seq_start+0x14/0x4d
+> -	(per_cpu_ptr(mib[1], raw_smp_processor_id())->mibs[field]++)
+> +	do { \
+> +		per_cpu_ptr(mib[1], get_cpu())->mibs[field]++; \
+> +		put_cpu(); \
+> +	} while (0)
 
+> -	(per_cpu_ptr(mib[1], raw_smp_processor_id())->mibs[field] += addend)
+> +	do { \
+> +		per_cpu_ptr(mib[1], get_cpu())->mibs[field] += addend; \
+> +		put_cpu(); \
+> +	} while (0)
 
+we could perhaps introduce stat_smp_processor_id(), which signals that 
+the CPU id is used for statistical purposes and does not have to be 
+exact? In any case, your patch looks good too.
 
-Miles, I didn't check this yet, but since there were some considerable
-changes, including locking, you could try with reverting some of these
-last 3 patches to net/packet by Denis:
-
-http://git.kernel.org/?p=linux/kernel/git/davem/net-2.6.25.git;a=history;f=net/packet/af_packet.c;h=485af5691d64270a02322925a6ccfad9d02b7f78;hb=HEAD
-
-Regards,
-Jarek P.
-
+	Ingo
