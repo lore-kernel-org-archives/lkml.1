@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759661AbXLOSRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbXLOSXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759661AbXLOSRe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 13:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbXLOSR1
+	id S1760841AbXLOSXO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 13:23:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbXLOSXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 13:17:27 -0500
-Received: from mx2.suse.de ([195.135.220.15]:43384 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754880AbXLOSR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 13:17:27 -0500
-Date: Sat, 15 Dec 2007 10:08:20 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jan Evert van Grootheest <j.e.van.grootheest@caiway.nl>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [patch 00/60] 2.6.23-stable review
-Message-ID: <20071215180820.GB7587@suse.de>
-References: <20071213065039.GA6867@kroah.com> <4763FC4C.8000809@caiway.nl>
+	Sat, 15 Dec 2007 13:23:04 -0500
+Received: from mga06.intel.com ([134.134.136.21]:21336 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755404AbXLOSXD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 13:23:03 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,172,1196668800"; 
+   d="scan'208";a="242149497"
+Message-ID: <47641B0F.3040709@linux.intel.com>
+Date: Sat, 15 Dec 2007 10:21:03 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4763FC4C.8000809@caiway.nl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       protasnb@gmail.com
+Subject: Re: Top kernel oopses/warnings this week
+References: <4762CF8C.90808@linux.intel.com> <4763F771.10105@s5r6.in-berlin.de>
+In-Reply-To: <4763F771.10105@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 15, 2007 at 05:09:48PM +0100, Jan Evert van Grootheest wrote:
-> Greg KH wrote:
->> This is the start of the stable review cycle for the 2.6.23.10 release.
->> There are 60 patches in this series, all will be posted as a response to
->> this one.  If anyone has any issues with these being applied, please let
->> us know.  If anyone is a maintainer of the proper subsystem, and wants
->> to add a Signed-off-by: line to the patch, please respond with it.
->>
->>   
-> Hi Greg,
->
-> Do you think it might be possible to add the subjects of the patches
-> next time in the announcement? This would give people an easy way
-> (besides the diffstat) to check what is getting fixed.
+Stefan Richter wrote:
+> Arjan van de Ven wrote:
+>> The http://www.kerneloops.org website collects kernel oops and warning
+>> reports from various mailing lists and bugzillas;
+> 
+> A few comments:
+> 
+> Report counts may be too high due to duplicate recognition of the very
+> same report.¹
 
-The subject of the individual patches are in the email thread that is
-attached to this announcement, so it should be quite simple to get this
-information by just looking in your mail reader :)
+this is true however it's .. a hard issue. It's really hard to distinguish a duplicate report from
+two reports of the same bug.
 
-Also, it would be hard to do this, unless someone has a patch to quilt
-to provide this kind of information?
+> 
+> Reports against 2.6.X-rcY-mmZ are listed in the same category as reports
+> against 2.6.X-rcY.  To distinguish -mm reports from vanilla reports, one
+> has to look into the details of each bug entry.¹
 
-thanks,
+finding what exact kernel version an oops is from is... surprisingly hard.
+And to be honest, bugs against -mm are still very interesting, since they'll be
+the next mainline after all
 
-greg k-h
+> 
+> A general weakness is that it is ultimately impossible to know whether a
+> report was against an unpatched kernel, unless one drills down to the
+> individual mailinglist threads.
+
+for the same reason patched kernels are relevant. And if someone has a super weirdo kernel,
+well, as long as we get enough bug data it'll be way down in the noise.
+
+
+> Reports about tainted kernels have arguably less value.  It would be
+> good to hide such reports until a report of the same oops in an
+> untainted kernel was found.
+That's half of what is done right now; they're not hidden though, just very clearly marked.
