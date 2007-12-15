@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760925AbXLOSoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762988AbXLOStK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760925AbXLOSoQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 13:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbXLOSoD
+	id S1762988AbXLOStK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 13:49:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXLOSs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 13:44:03 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41282 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755144AbXLOSoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 13:44:01 -0500
-Date: Sat, 15 Dec 2007 19:43:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       Wang Chen <wangchen@cn.fujitsu.com>,
-       Gerrit Renker <gerrit@erg.abdn.ac.uk>, davem@davemloft.net,
-       andi@firstfloor.org, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 3/3] [UDP6]: Counter increment on BH mode
-Message-ID: <20071215184327.GA21434@elte.hu>
-References: <474F7EE8.2040009@cn.fujitsu.com> <474F8255.5060501@cn.fujitsu.com> <20071130111949.GB28277@gerrit.erg.abdn.ac.uk> <20071201015438.GC26895@gondor.apana.org.au> <4753AE07.1040906@cn.fujitsu.com> <20071203113935.GA25124@gondor.apana.org.au> <20071203114912.GA4425@ms2.inr.ac.ru> <20071203115435.GA4202@gondor.apana.org.au> <20071203131723.GA30312@gondor.apana.org.au> <20071215135851.GA29063@gondor.apana.org.au>
+	Sat, 15 Dec 2007 13:48:57 -0500
+Received: from hs-out-0708.google.com ([64.233.178.242]:4986 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755404AbXLOSs4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 13:48:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:reply-to:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
+        b=WPCsEaYVgDuvEIWD2Rs2HfO7cz2ZNM06wqZj8eGQiSZo6LzzNYtwmg361RjqaX29zlHI9kOGrlkvP6anWKE1e+FSTJkzWTUZYdbZG9ywWtaPfe6dwpKATPP0hwJXmgAkIDyzlnH9R+klmNB4enRna2uS0NMuvEdF/hUKFDZHE84=
+Date: Sat, 15 Dec 2007 13:48:47 -0500 (EST)
+From: Parag Warudkar <parag.warudkar@gmail.com>
+X-X-Sender: parag@mini.warudkars.net
+Reply-To: parag.warudkar@gmail.com
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Parag Warudkar <parag.warudkar@gmail.com>, Len Brown <lenb@kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: soft lockup - CPU#1 stuck for 15s! [swapper:0]
+In-Reply-To: <alpine.LFD.0.99999.0712150907180.6933@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0712151340060.3807@mini.warudkars.net>
+References: <924EFEDD5F540B4284297C4DC59F3DEE38C3C2@orsmsx423.amr.corp.intel.com>
+  <alpine.LFD.0.99999.0712101117300.11977@localhost.localdomain> 
+ <82e4877d0712102049g4830a573n86b7f72f31a42f11@mail.gmail.com> 
+ <200712141817.47581.lenb@kernel.org> <82e4877d0712141651j3965fd85ged2cefed5336e1ef@mail.gmail.com>
+ <alpine.LFD.0.99999.0712150907180.6933@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071215135851.GA29063@gondor.apana.org.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 15 Dec 2007, Thomas Gleixner wrote:
 
-* Herbert Xu <herbert@gondor.apana.org.au> wrote:
+>I have a patch staged for Linus, which fixes a thinko in the broadcast
+>code. It might be related to your problem. Can you give it a try ?
 
-> Ob Tue, Dec 04, 2007 at 12:17:23AM +1100, Herbert Xu wrote:
-> > 
-> > Never mind, we already have that in local_t and as Alexey correctly
-> > points out, USER is still going to be the expensive variant with the
-> > preempt_disable (well until BH gets threaded).  So how about this patch?
-> 
-> I didn't hear any objections so here is the patch again.
-> 
-> [SNMP]: Fix SNMP counters with PREEMPT
-> 
-> The SNMP macros use raw_smp_processor_id() in process context which is 
-> illegal because the process may be preempted and then migrated to 
-> another CPU.
+Yep - this looks promising. No soft lockups for last half an hour 
+with 4-5 Wakeups from idle. It is almost smooth - jerkiness gone down by 
+99%. There are still very infrequent and quick spells where the key typed 
+on the keyboard takes effect a little later - but nothing like earlier.
 
-nit: please use 'invalid' instead of 'illegal'.
+I will run it for a little longer just to be sure - but I don't think it 
+will be a problem.
 
-> This patch makes it use get_cpu/put_cpu to disable preemption.
-> 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Thanks Thomas.
 
-> -	(per_cpu_ptr(mib[1], raw_smp_processor_id())->mibs[field]++)
-> +	do { \
-> +		per_cpu_ptr(mib[1], get_cpu())->mibs[field]++; \
-> +		put_cpu(); \
-> +	} while (0)
-
-> -	(per_cpu_ptr(mib[1], raw_smp_processor_id())->mibs[field] += addend)
-> +	do { \
-> +		per_cpu_ptr(mib[1], get_cpu())->mibs[field] += addend; \
-> +		put_cpu(); \
-> +	} while (0)
-
-we could perhaps introduce stat_smp_processor_id(), which signals that 
-the CPU id is used for statistical purposes and does not have to be 
-exact? In any case, your patch looks good too.
-
-	Ingo
+Parag
