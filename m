@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761787AbXLOOaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763436AbXLOOhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761787AbXLOOaV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 09:30:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757021AbXLOOaJ
+	id S1763436AbXLOOhW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 09:37:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbXLOOhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 09:30:09 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:35971 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756988AbXLOOaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 09:30:07 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 15 Dec 2007 09:37:06 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36100 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757000AbXLOOhE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 09:37:04 -0500
+Date: Sat, 15 Dec 2007 14:29:29 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rene Herman <rene.herman@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80 on
+ some AMD64x2 laptops, etc.
+Message-ID: <20071215142929.5462b329@the-village.bc.nu>
+In-Reply-To: <20071215132725.GA23166@elte.hu>
+References: <1184218962.12353.209.camel@chaos>
+	<46964352.7040301@reed.com>
+	<1184253339.12353.223.camel@chaos>
+	<469697C6.50903@reed.com>
+	<1184274754.12353.254.camel@chaos>
+	<4761F193.7090400@reed.com>
+	<20071214131502.GA14359@elte.hu>
+	<4762C551.5070003@zytor.com>
+	<20071215074358.GD12110@elte.hu>
+	<4763891A.3010004@gmail.com>
+	<20071215132725.GA23166@elte.hu>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18275.58602.394537.911087@harpo.it.uu.se>
-Date: Sat, 15 Dec 2007 15:30:02 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: matthew@wil.cx
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.24-rc5] sym53c8xx_2 modpost section mismatch fix
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Building 2.6.24-rc5 with
+On Sat, 15 Dec 2007 14:27:25 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-# CONFIG_HOTPLUG is not set
-CONFIG_SCSI_SYM53C8XX_2=y
+> 
+> * Rene Herman <rene.herman@gmail.com> wrote:
+> 
+> > The issue is -- how do you safely replace the outb pre-loops_per_jiffy 
+> > calibration? I'm currently running with the attached hack (not 
+> > submitted, only for 32-bit and discussion) the idea of which might be 
+> > the best we can do?
+> 
+> how about doing a known-NOP chipset cycle? For example:
+> 
+>   inb(PIC_SLAVE_IMR)
 
-results in
+It needs tobe a different chip to the main one (or macrocell anyway) - so
+PIC for PIT and vice versa. However since we know 0x80 works for
+everything on the planet but this one specifies of laptop which seems to
+need a firmware update its a very high risk approach.
 
-WARNING: vmlinux.o(.text+0x14b36c): Section mismatch: reference to .exit.text:sym2_remove (between 'sym2_io_error_detected' and 'sym_set_cam_result_error')
-
-because sym2_io_error_detected() calls sym2_remove(), which is marked __devexit.
-
-Fixed by removing the __devexit from sym2_remove().
-
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-
---- linux-2.6.24-rc5/drivers/scsi/sym53c8xx_2/sym_glue.c.~1~	2007-12-15 15:37:04.000000000 +0100
-+++ linux-2.6.24-rc5/drivers/scsi/sym53c8xx_2/sym_glue.c	2007-12-15 16:22:08.000000000 +0100
-@@ -1744,7 +1744,7 @@ static int __devinit sym2_probe(struct p
- 	return -ENODEV;
- }
- 
--static void __devexit sym2_remove(struct pci_dev *pdev)
-+static void sym2_remove(struct pci_dev *pdev)
- {
- 	struct Scsi_Host *shost = pci_get_drvdata(pdev);
- 
-@@ -2056,7 +2056,7 @@ static struct pci_driver sym2_driver = {
- 	.name		= NAME53C8XX,
- 	.id_table	= sym2_id_table,
- 	.probe		= sym2_probe,
--	.remove		= __devexit_p(sym2_remove),
-+	.remove		= sym2_remove,
- 	.err_handler 	= &sym2_err_handler,
- };
- 
+Alan
