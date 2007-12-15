@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932708AbXLOOFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761787AbXLOOaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932708AbXLOOFp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 09:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbXLOOFi
+	id S1761787AbXLOOaV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 09:30:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757021AbXLOOaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 09:05:38 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:44015 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752249AbXLOOFh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 09:05:37 -0500
-Date: Sat, 15 Dec 2007 09:05:32 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, trem <tremyfr@yahoo.fr>
-Subject: Re: [PATCH][RT] 2.6.24-rc5-rt1 drivers/dma/ioat_dma.c compile fix
-In-Reply-To: <1197690973.12832.12.camel@sx.thebigcorporation.com>
-Message-ID: <Pine.LNX.4.58.0712150904400.10448@gandalf.stny.rr.com>
-References: <BAE9DCEF64577A439B3A37F36F9B691C0371E3E3@orsmsx418.amr.corp.intel.com>
-  <Pine.LNX.4.58.0711161214480.24276@gandalf.stny.rr.com>  <47435B31.2070304@yahoo.fr>
- <1197690973.12832.12.camel@sx.thebigcorporation.com>
+	Sat, 15 Dec 2007 09:30:09 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:35971 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756988AbXLOOaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 09:30:07 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18275.58602.394537.911087@harpo.it.uu.se>
+Date: Sat, 15 Dec 2007 15:30:02 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: matthew@wil.cx
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.24-rc5] sym53c8xx_2 modpost section mismatch fix
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Building 2.6.24-rc5 with
 
+# CONFIG_HOTPLUG is not set
+CONFIG_SCSI_SYM53C8XX_2=y
 
-On Fri, 14 Dec 2007, Sven-Thorsten Dietrich wrote:
+results in
 
-> Hi Steve,
->
-> looks like this patch didn't make it into 2.6.23-rc5-rt1.
->
-> I refreshed Trem's final version - please review and include in the next
-> RT release.
->
+WARNING: vmlinux.o(.text+0x14b36c): Section mismatch: reference to .exit.text:sym2_remove (between 'sym2_io_error_detected' and 'sym_set_cam_result_error')
 
-Sven,
+because sym2_io_error_detected() calls sym2_remove(), which is marked __devexit.
 
-Thanks,  I'll take a look at it and if I don't find any issues I'll add it
-to -rt2 (or rc6-rt1 which ever comes first).
+Fixed by removing the __devexit from sym2_remove().
 
--- Steve
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
 
+--- linux-2.6.24-rc5/drivers/scsi/sym53c8xx_2/sym_glue.c.~1~	2007-12-15 15:37:04.000000000 +0100
++++ linux-2.6.24-rc5/drivers/scsi/sym53c8xx_2/sym_glue.c	2007-12-15 16:22:08.000000000 +0100
+@@ -1744,7 +1744,7 @@ static int __devinit sym2_probe(struct p
+ 	return -ENODEV;
+ }
+ 
+-static void __devexit sym2_remove(struct pci_dev *pdev)
++static void sym2_remove(struct pci_dev *pdev)
+ {
+ 	struct Scsi_Host *shost = pci_get_drvdata(pdev);
+ 
+@@ -2056,7 +2056,7 @@ static struct pci_driver sym2_driver = {
+ 	.name		= NAME53C8XX,
+ 	.id_table	= sym2_id_table,
+ 	.probe		= sym2_probe,
+-	.remove		= __devexit_p(sym2_remove),
++	.remove		= sym2_remove,
+ 	.err_handler 	= &sym2_err_handler,
+ };
+ 
