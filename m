@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761668AbXLOQtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764349AbXLOQ6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761668AbXLOQtQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 11:49:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329AbXLOQtA
+	id S1764349AbXLOQ6l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 11:58:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbXLOQ6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 11:49:00 -0500
-Received: from rtr.ca ([76.10.145.34]:4305 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754144AbXLOQs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 11:48:59 -0500
-Message-ID: <47640579.3000706@rtr.ca>
-Date: Sat, 15 Dec 2007 11:48:57 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sat, 15 Dec 2007 11:58:30 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:22710 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756754AbXLOQ62 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 11:58:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=PyKKZxXrMQXA170GVyAkrjWtSj0R+dSfN4vn0X1EL++En69b5TMVd0RsvuSFhOTyAVl20AdwgrPTqQZZ6VkLliS7kEdTjEbPY1LlJukejvPRnb0lV93ZsOyVQo+cKky8HlUF/WMx1QAtfcVZUVAeae0VU0Dicvjnzx6M8Yp2t/Y=
+Message-ID: <3ae72650712150858v14681823td2b0410eb67b1d04@mail.gmail.com>
+Date: Sat, 15 Dec 2007 17:58:26 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: NeilBrown <neilb@suse.de>
+Subject: Re: [PATCH 007 of 7] md: Get name for block device in sysfs
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
+       "Greg KH" <greg@kroah.com>
+In-Reply-To: <1071214062647.1928@suse.de>
 MIME-Version: 1.0
-To: "David P. Reed" <dpreed@reed.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Rene Herman <rene.herman@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, Rene Herman <rene.herman@keyaccess.nl>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
- on some AMD64x2 laptops, etc.
-References: <1184218962.12353.209.camel@chaos>	<46964352.7040301@reed.com>	<1184253339.12353.223.camel@chaos>	<469697C6.50903@reed.com>	<1184274754.12353.254.camel@chaos>	<4761F193.7090400@reed.com>	<20071214131502.GA14359@elte.hu>	<4762C551.5070003@zytor.com>	<20071215074358.GD12110@elte.hu>	<4763891A.3010004@gmail.com>	<20071215132725.GA23166@elte.hu> <20071215142929.5462b329@the-village.bc.nu> <4763FE7A.4000105@reed.com>
-In-Reply-To: <4763FE7A.4000105@reed.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071214171950.1308.patches@notabene> <1071214062647.1928@suse.de>
+X-Google-Sender-Auth: 426791aa6e4d1e5c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This change seems rather unlikely for 2.6.24 at this point (high risk),
-but could be good for 2.6.25.
+On Dec 14, 2007 7:26 AM, NeilBrown <neilb@suse.de> wrote:
+>
+> Given an fd on a block device, returns a string like
+>
+>         /block/sda/sda1
+>
+> which can be used to find related information in /sys.
+>
+> Ideally we should have an ioctl that works on char devices as well,
+> but that seems far from trivial, so it seems reasonable to have
+> this until the later can be implemented.
+>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> Signed-off-by: Neil Brown <neilb@suse.de>
+>
+> ### Diffstat output
+>  ./block/ioctl.c      |   13 +++++++++++++
+>  ./include/linux/fs.h |    2 ++
+>  2 files changed, 15 insertions(+)
+>
+> diff .prev/block/ioctl.c ./block/ioctl.c
+> --- .prev/block/ioctl.c 2007-12-14 17:18:50.000000000 +1100
+> +++ ./block/ioctl.c     2007-12-14 16:15:41.000000000 +1100
+> @@ -227,8 +227,21 @@ int blkdev_ioctl(struct inode *inode, st
+>         struct block_device *bdev = inode->i_bdev;
+>         struct gendisk *disk = bdev->bd_disk;
+>         int ret, n;
+> +       char b[BDEVNAME_SIZE*2  + 10];
+>
+>         switch(cmd) {
+> +       case BLKGETNAME:
+> +               strcpy(b, "/block/");
 
-One thing it should probably have for the early going,
-is a simple way to turn it on/off at boot time,
-so that we don't have people "stuck" unable to run
-the test kernels should something weird happen.
+As pointed out to when you came up with the idea, we can't do this. A devpath
+is a path to the device and will not necessarily start with "/block" for block
+devices. It may start with "/devices" and can be much longer than
+BDEVNAME_SIZE*2  + 10.
 
-Alan / David / Ingo,
+Please do not apply!
 
-What do you think of the idea of a *temporary* boot flag for this,
-something like port80=on/off (pick a suitable name) ?
-
-Cheers
+Kay
