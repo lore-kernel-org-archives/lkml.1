@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765608AbXLOHo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764569AbXLOHyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765608AbXLOHo2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 02:44:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbXLOHoV
+	id S1764569AbXLOHyP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 02:54:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755191AbXLOHyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 02:44:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48357 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751941AbXLOHoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 02:44:20 -0500
-Date: Sat, 15 Dec 2007 08:43:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
-	on some AMD64x2 laptops, etc.
-Message-ID: <20071215074358.GD12110@elte.hu>
-References: <469578CD.3080609@reed.com> <1184216528.12353.203.camel@chaos> <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <20071214131502.GA14359@elte.hu> <4762C551.5070003@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4762C551.5070003@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 15 Dec 2007 02:54:05 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:46136 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755072AbXLOHyE (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 02:54:04 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: /dev/urandom uses uninit bytes, leaks user data
+In-Reply-To: Your message of "Fri, 14 Dec 2007 23:20:30 PST."
+             <977119.41267.qm@web52005.mail.re2.yahoo.com>
+From: Valdis.Kletnieks@vt.edu
+References: <977119.41267.qm@web52005.mail.re2.yahoo.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1197705241_8442P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sat, 15 Dec 2007 02:54:01 -0500
+Message-ID: <28540.1197705241@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1197705241_8442P
+Content-Type: text/plain; charset=us-ascii
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+On Fri, 14 Dec 2007 23:20:30 PST, Matti Linnanvuori said:
+> From: Matti Linnanvuori <mattilinnnvuori@yahoo.com>
+> 
+> /dev/urandom use no uninit bytes, leak no user data
+> 
+> Signed-off-by: Matti Linnanvuori <mattilinnnvuori@yahoo.com>
+> 
+> ---
+> 
+> --- a/drivers/char/random.c	2007-12-15 09:09:37.895414000 +0200
+> +++ b/drivers/char/random.c	2007-12-15 09:12:02.607831500 +0200
+> @@ -689,7 +689,7 @@ static ssize_t extract_entropy(struct en
+>   */
+>  static void xfer_secondary_pool(struct entropy_store *r, size_t nbytes)
+>  {
+> -	__u32 tmp[OUTPUT_POOL_WORDS];
+> +	static __u32 tmp[OUTPUT_POOL_WORDS];
 
-> I believe this will suffer from the issue that was raised: this will 
-> use udelay() long before loop calibration (and no, we can't just "be 
-> conservative" since there is no "conservative" value we can use.)
->
-> Worse, I suspect that at least the PIT, which may need to be used for 
-> udelay calibration, is one of the devices that may be affected.  I 
-> have seen the Verilog for a contemporary chipset, and it can only 
-> access the PIT once per microsecond -- this actually has to do with 
-> the definition of the PIT; some of the PIT operations are ill-defined 
-> if allowed at a higher frequency than the PIT clock.
+This looks like a race waiting to happen - what lock is held so we don't have
+'tmp' smashed by 2 instances on different CPUs (not a problem when each
+instance lives on a hopefully separate stack)?
 
-i think the native_io_delay() in quirks.c signals the obvious solution: 
-a DMI (or otherwise) driven quirk that activates a port 0x80 based delay 
-on such boards. Combined with an iodelay=port80 boot option as well 
-perhaps, just in case someone hits a system that is not blacklisted yet. 
-This way such crazy broken hardware can be mapped correctly - like we 
-map such quirks in every other case. Perhaps even do this workaround on 
-the PIT driver level. Instead of perpetuating the superstition of port 
-80 forever.
+--==_Exmh_1197705241_8442P
+Content-Type: application/pgp-signature
 
-	Ingo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHY4gZcC3lWbTT17ARAixZAJ0SB4Ql7S1NVUTmQEPxB+XSCpviVgCcCw6i
+OLqmJSMDuhqxos+gY4TohyA=
+=USA9
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1197705241_8442P--
