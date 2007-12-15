@@ -1,60 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbXLOC2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbXLOCgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756747AbXLOC2j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 21:28:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbXLOC2a
+	id S1756133AbXLOCgh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 21:36:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbXLOCg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 21:28:30 -0500
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:60947 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751724AbXLOC23 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 21:28:29 -0500
-Message-ID: <47633BAE.6040604@lwfinger.net>
-Date: Fri, 14 Dec 2007 18:27:58 -0800
-From: Larry Finger <larry.finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 14 Dec 2007 21:36:28 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42956 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751087AbXLOCg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 21:36:27 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: Linux 2.6.23.10
+Date: Sat, 15 Dec 2007 03:55:40 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+References: <20071214194952.GA15765@kroah.com> <47633028.20503@redhat.com> <200712150315.22568.rjw@sisk.pl>
+In-Reply-To: <200712150315.22568.rjw@sisk.pl>
 MIME-Version: 1.0
-To: mvtodevnull@gmail.com
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
-       Daniel Walker <dwalker@mvista.com>, Ray Lee <ray-lk@madrabbit.org>,
-       =?ISO-8859-1?Q?Simon_Holm_Th=F8gerse?= =?ISO-8859-1?Q?n?= 
-	<odie@cs.aau.dk>,
-       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
-       linux@bohmer.net, Ingo Molnar <mingo@elte.hu>, kjwinchester@gmail.com,
-       jonathan@jonmasters.org, akpm@linux-foundation.org,
-       bcm43xx-dev@lists.berlios.de
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
- to mutex
-References: <20071213003028.676998182@mvista.com>	 <1197637194.7549.10.camel@odie.local>	 <200712141404.24275.mb@bu3sch.de> <200712150151.49025.rjw@sisk.pl>	 <476326A1.6090404@lwfinger.net> <520b60a90712141759h65f1e63ei65ba00887a930d06@mail.gmail.com>
-In-Reply-To: <520b60a90712141759h65f1e63ei65ba00887a930d06@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712150355.41763.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mvtodevnull@gmail.com wrote:
+On Saturday, 15 of December 2007, Rafael J. Wysocki wrote:
+> On Saturday, 15 of December 2007, Chuck Ebbert wrote:
+> > On 12/14/2007 08:52 PM, Rafael J. Wysocki wrote:
+> > > On Saturday, 15 of December 2007, Chuck Ebbert wrote:
+> > >> On 12/14/2007 02:49 PM, Greg Kroah-Hartman wrote:
+> > >>>       Freezer: Fix APM emulation breakage
+> > >> drivers/char/apm-emulation.c: In function 'apm_ioctl':
+> > >> drivers/char/apm-emulation.c:370: error: implicit declaration of function 'wait_event_freezable'
+> > >> make[2]: *** [drivers/char/apm-emulation.o] Error 1
+> > >> make[1]: *** [drivers/char] Error 2
+> > > 
+> > > This is my fault, sorry.
+> > > 
+> > > I though the 2.6.24-rc fix would be suitable for 2.6.23.x, but that's not the
+> > > case.
+> > > 
+> > > Greg, please revert the "Freezer: Fix APM emulation breakage" patch, I'll
+> > > prepare a separate fix suitable for -stable.
+> > > 
+> > 
+> > It works if you add the changes to freezer.h made in commit
+> > e42837bcd35b75bb59ae5d3e62f87be1aeeb05c3
 > 
-> Could this be the reason my BCM94311MCG rev 1 receives such terrible
-> performance with b43 but works well with bcm43xx? The device is
-> 802.11b/g but my router is 802.11b. I filed a report on this issue
-> here: https://bugzilla.redhat.com/show_bug.cgi?id=413291
+> Yes, exactly, but a new patch is needed anyway.
+> 
+> Hmm, perhaps it's better to add a new patch on top of "Freezer: Fix APM
+> emulation breakage"?  Would that be preferred?
 
-No. On my BCM4311/1, my transfer rate peaked at about 12 Mbs with bcm43xx, but increased to 20 Mbs 
-with b43. These tests were done with iperf with a server running running on a second computer 
-connected by wire to my router. These rates are for 802.11g. When my interface was locked at 11 Mbs, 
-the transfer rate was the expected 5.3-5.5 Mbs with both drivers.
+For convenience, below is the patch that should fix the breakage when applied
+on top of the "Freezer: Fix APM emulation breakage" patch.
 
-> I was told by Michael that I would have to fix it myself, and I am
-> trying, but the learning curve is a little steep. If this is relevant,
-> I might at least have some direction to go in.
-
-I suspect that mac80211 is doing something that your router does not like. Do you have any chance to 
-capture the traffic between your computer and the router by using a second wireless computer running 
-kismet or wireshark? A look at the differences between b43 and bcm43xx should show the reason.
-
-Larry
+Thanks,
+Rafael
 
 
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
+This patch is needed to fix the compilation breakage in the
+APM emulation driver in 2.6.23.10 caused by the
+"Freezer: Fix APM emulation breakage" patch.
+
+The changes introduced by this patch are already in the
+mainline (commit e42837bcd35b75bb59ae5d3e62f87be1aeeb05c3).
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/linux/freezer.h |   38 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+
+Index: linux-2.6.23.y/include/linux/freezer.h
+===================================================================
+--- linux-2.6.23.y.orig/include/linux/freezer.h
++++ linux-2.6.23.y/include/linux/freezer.h
+@@ -4,6 +4,7 @@
+ #define FREEZER_H_INCLUDED
+ 
+ #include <linux/sched.h>
++#include <linux/wait.h>
+ 
+ #ifdef CONFIG_PM_SLEEP
+ /*
+@@ -126,6 +127,36 @@ static inline void set_freezable(void)
+ 	current->flags &= ~PF_NOFREEZE;
+ }
+ 
++/*
++ * Freezer-friendly wrappers around wait_event_interruptible() and
++ * wait_event_interruptible_timeout(), originally defined in <linux/wait.h>
++ */
++
++#define wait_event_freezable(wq, condition)				\
++({									\
++	int __retval;							\
++	do {								\
++		__retval = wait_event_interruptible(wq, 		\
++				(condition) || freezing(current));	\
++		if (__retval && !freezing(current))			\
++			break;						\
++		else if (!(condition))					\
++			__retval = -ERESTARTSYS;			\
++	} while (try_to_freeze());					\
++	__retval;							\
++})
++
++
++#define wait_event_freezable_timeout(wq, condition, timeout)		\
++({									\
++	long __retval = timeout;					\
++	do {								\
++		__retval = wait_event_interruptible_timeout(wq,		\
++				(condition) || freezing(current),	\
++				__retval); 				\
++	} while (try_to_freeze());					\
++	__retval;							\
++})
+ #else /* !CONFIG_PM_SLEEP */
+ static inline int frozen(struct task_struct *p) { return 0; }
+ static inline int freezing(struct task_struct *p) { return 0; }
+@@ -143,6 +174,13 @@ static inline void freezer_do_not_count(
+ static inline void freezer_count(void) {}
+ static inline int freezer_should_skip(struct task_struct *p) { return 0; }
+ static inline void set_freezable(void) {}
++
++#define wait_event_freezable(wq, condition)				\
++		wait_event_interruptible(wq, condition)
++
++#define wait_event_freezable_timeout(wq, condition, timeout)		\
++		wait_event_interruptible_timeout(wq, condition, timeout)
++
+ #endif /* !CONFIG_PM_SLEEP */
+ 
+ #endif	/* FREEZER_H_INCLUDED */
