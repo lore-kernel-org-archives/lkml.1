@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbXLOW7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761718AbXLOW7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbXLOW7k (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 17:59:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXLOW7c
+	id S1761718AbXLOW7x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 17:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758912AbXLOW7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 17:59:32 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45762 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751867AbXLOW7b convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 17:59:31 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
-Date: Sun, 16 Dec 2007 00:18:43 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: bcm43xx-dev@lists.berlios.de,
-       Simon Holm =?utf-8?q?Th=C3=B8gersen?= <odie@cs.aau.dk>,
-       Daniel Walker <dwalker@mvista.com>, akpm@linux-foundation.org,
-       Ray Lee <ray-lk@madrabbit.org>, matthias.kaehlcke@gmail.com,
-       linux-kernel@vger.kernel.org, linux@bohmer.net, kjwinchester@gmail.com,
-       jonathan@jonmasters.org, Ingo Molnar <mingo@elte.hu>
-References: <20071213003028.676998182@mvista.com> <200712150151.49025.rjw@sisk.pl> <200712151157.44278.mb@bu3sch.de>
-In-Reply-To: <200712151157.44278.mb@bu3sch.de>
+	Sat, 15 Dec 2007 17:59:38 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37782 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757361AbXLOW7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 17:59:37 -0500
+Date: Sat, 15 Dec 2007 23:59:43 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rene Herman <rene.herman@gmail.com>, "David P. Reed" <dpreed@reed.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
+	on some AMD64x2 laptops, etc.
+Message-ID: <20071215225943.GE2434@elf.ucw.cz>
+References: <469578CD.3080609@reed.com> <1184216528.12353.203.camel@chaos> <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <476250D5.8000409@gmail.com> <20071214142355.GA10130@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712160018.45613.rjw@sisk.pl>
+In-Reply-To: <20071214142355.GA10130@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 15 of December 2007, Michael Buesch wrote:
-> On Saturday 15 December 2007 01:51:47 Rafael J. Wysocki wrote:
-> > On Friday, 14 of December 2007, Michael Buesch wrote:
-> > > On Friday 14 December 2007 13:59:54 Simon Holm Thøgersen wrote:
-> > > > > This user did get the following messages in dmesg:
-> > > > > 
-> > > > > b43err(dev->wl, "Firmware file \"%s\" not found "
-> > > > >        "or load failed.\n", path);
-> > > > 
-> > > > So the question seems to be why b43 needs version 4, when b43legacy and
-> > > > bcm43x uses version 3?
-> > > 
-> > > That's really a question, right?
-> > > 
-> > > Well. linux-2.4 doesn't work with the linux-2.6 modutils.
-> > > Windows Vista doesn't work with Windows 98 device drivers.
-> > > That leads to this assumption:
-> > > b43 doesn't work with version 3 firmware but needs version 4.
-> > > 
-> > > Newer drivers supporting newer hardware need newer firmware.
-> > 
-> > Actually, can you explain why, from the technical point of view, the version 4
-> > firware is better than version 3, please?
+On Fri 2007-12-14 15:23:55, Ingo Molnar wrote:
 > 
-> version 4 is the new firmware released by broadcom. They obviously won't
-> support and write any version 3 firmware anymore. So we are forced to
-> switch to version 4 firmware to support the newest hardware (like N-PHY
-> in the future). It's really as simple as that.
+> * Rene Herman <rene.herman@gmail.com> wrote:
+> 
+> > --- a/init/main.c
+> > +++ b/init/main.c
+> > @@ -229,10 +229,9 @@ static int __init obsolete_checksetup(char *line)
+> >  }
+> >
+> >  /*
+> > - * This should be approx 2 Bo*oMips to start (note initial shift), and will
+> > - * still work even if initially too large, it will just take slightly longer
+> > + * Initial value roughly corresponds to a 1 GHz CPU
+> >   */
+> > -unsigned long loops_per_jiffy = (1<<12);
+> > +unsigned long loops_per_jiffy = 1000000000 / HZ;
+> >
+> >  EXPORT_SYMBOL(loops_per_jiffy);
+> 
+> this is a factor of ~2400 increase - this will take an eternity to boot 
+> on any older CPU.
 
-I see, thanks.
-
-> The difference between v3 and v4 is basically the driver API. It changed
-> a lot and it is nontrivial to support both v3 and v4 in one driver.
-> So we decided to stay with v3 for legacy devices and take v4 for any newer
-> devices.
-
-This is reasonable, yes.
-
-> We have to live with that crap until someone comes up with an opensource
-> firmware. :) 
-
-Well, the only problem with that is I suspect there are some "newer" cards that
-work better with v3 firmware, although they are supposed to support both.
-
-Greetings,
-Rafael
+I don't think we are using outb_p before loops_per_jiffy are
+initialized -- I believe I'd see oopsen if we did. Factor 2400
+increase is bad, but if it only converts 10x 1usec delay into 10x
+24msec delay, it is not _that_ bad.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
