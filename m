@@ -1,77 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759635AbXLOKOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbXLOKZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759635AbXLOKOU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 05:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbXLOKOE
+	id S1760054AbXLOKZU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 05:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbXLOKZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 05:14:04 -0500
-Received: from yumi.tdiedrich.de ([85.10.210.183]:53657 "EHLO mx.tdiedrich.de"
+	Sat, 15 Dec 2007 05:25:08 -0500
+Received: from main.gmane.org ([80.91.229.2]:52599 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753220AbXLOKOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 05:14:01 -0500
-Date: Sat, 15 Dec 2007 11:08:58 +0100
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dada1@cosmosbay.com
-Subject: Re: dst cache overflow
-Message-ID: <20071215100857.GA29839@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	Herbert Xu <herbert@gondor.apana.org.au>, linux-net@vger.kernel.org,
-	linux-kernel@vger.kernel.org, dada1@cosmosbay.com
-References: <20071214172945.GA10809@yamamaya.is-a-geek.org> <E1J3QWn-0006sJ-00@gondolin.me.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <E1J3QWn-0006sJ-00@gondolin.me.apana.org.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1755199AbXLOKZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 05:25:07 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: "Holger Hoffstaette" <holger@wizards.de>
+Subject: Re: Reproducible data corruption with sendfile+vsftp - splice regression?
+Date: Sat, 15 Dec 2007 11:24:20 +0100
+Organization: The Fists of the White Lotus
+Message-ID: <pan.2007.12.15.10.24.20.327500@wizards.de>
+References: <pan.2007.11.29.23.42.52.661624@wizards.de> <474FC4D9.3020506@cosmosbay.com> <pan.2007.11.30.09.20.24.737500@wizards.de> <475055EE.9060105@hp.com> <pan.2007.12.02.16.00.03.568000@wizards.de> <pan.2007.12.02.20.49.42.675000@wizards.de> <20071205225429.GA10186@electric-eye.fr.zoreil.com> <pan.2007.12.06.09.28.08.913625@wizards.de> <20071206184426.GA32599@electric-eye.fr.zoreil.com> <pan.2007.12.13.02.19.40.200510@wizards.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: port-87-234-135-174.dynamic.qsc.de
+User-Agent: Pan/0.13.91 (Before we let euphoria convince us we are free)
+Cc: netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> Tobias Diedrich <ranma+kernel@tdiedrich.de> wrote:
-> >
-> > Meanwhile I added a slab statistic rrd script. Nothing obvious to
-> > see on ari or yumi yet, but on oni (which after all is the most
-> > affected by this) I can see 'size_2048' and 'TCPv6' growing
-> > steadily along with the route cache size (Presumably 'ip_dst_cache',
-> > which is also growing larger at a more or less constant rate).
-> 
-> OK that almost certainly means that we have a leak of TCPv6
-> objects which would then cause a leak of dst objects.
-> 
-> So you need to track down why TCPv6 isn't getting cleaned up.
-> First check the obvious, do you have any process(es) that are
-> hoarding TCPv6 sockets?
+On Thu, 13 Dec 2007 03:19:43 +0100, Holger Hoffstaette wrote:
 
-Hmm, how do I look for that, if netstat doesn't look suspicous?
+> I have now gone back to enable TSO since vsftp with sendfile really seems
+> to be the only app that causes this. I have simply set it to
+> use_sendfile=NO and no corruption occurs at all; the machine is stable and
+> fast.
 
-> If not do you see a growing list of dead sockets in netstat?
+In the good tradition of proving myself wrong I can reliably create
+corrupted files by wget-ting from apache (with sendfile enabled) as
+well, so no more TSO after all. No TSO, no corruption.
+The same also happens on a different machine with a r8169 (same model).
+Tickless kernel makes no difference either. Shot in the dark, but hey..
 
-No, I don't think so.
+Holger
 
-oni:~# netstat -an | wc -l
-139
-oni:~# netstat -tun
-Active Internet connections (w/o servers)
-Proto Recv-Q Send-Q Local Address           Foreign Address         State      
-tcp        0      0 217.172.187.75:53668    xx.xxx.xx.x:6543        ESTABLISHED
-tcp        0      0 217.172.187.75:40180    yyy.yyy.yyy.yy:6871     TIME_WAIT  
-tcp        0      0 217.172.187.75:58480    xx.xxx.xx.x:6543        ESTABLISHED
-tcp        0      0 217.172.187.75:49213    xx.xxx.xx.x:6543        ESTABLISHED
-tcp        0      0 217.172.187.75:34828    xx.xxx.xx.x:6543        ESTABLISHED
-tcp        0      0 217.172.187.75:44859    xx.xxx.xx.x:6543        ESTABLISHED
-tcp        0      0 217.172.187.75:41863    xx.xxx.xx.x:6543        ESTABLISHED
-tcp        0      0 217.172.187.75:38063    xx.xxx.xx.x:6543        ESTABLISHED
-tcp6       0      0 ::ffff:217.172.187.7:80 ::ffff:zz.zzz.zz.z:3729 TIME_WAIT  
-tcp6       0      0 ::ffff:217.172.187.7:80 ::ffff:zz.zzz.zz.z:3726 TIME_WAIT  
-tcp6       0      0 ::ffff:217.172.187.7:80 ::ffff:aa.aa.aaa.:59396 ESTABLISHED
-tcp6       0    992 ::ffff:217.172.187.7:22 ::ffff:bb.bbb.bb.:57870 ESTABLISHED
 
-HTH,
-
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
