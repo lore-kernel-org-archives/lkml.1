@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758696AbXLOSNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759661AbXLOSRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758696AbXLOSNT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 13:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbXLOSNK
+	id S1759661AbXLOSRe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 13:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbXLOSR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 13:13:10 -0500
-Received: from waste.org ([66.93.16.53]:47247 "EHLO waste.org"
+	Sat, 15 Dec 2007 13:17:27 -0500
+Received: from mx2.suse.de ([195.135.220.15]:43384 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754079AbXLOSNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 13:13:08 -0500
-Date: Sat, 15 Dec 2007 12:12:54 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Make WARN_ON/WARN_ON_ONCE no-ops when CONFIG_BUG is off
-Message-ID: <20071215181254.GU17536@waste.org>
-References: <20071214132755.GA18309@gondor.apana.org.au> <1197700290.6696.52.camel@pasglop> <20071215063442.GA26491@gondor.apana.org.au>
+	id S1754880AbXLOSR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 13:17:27 -0500
+Date: Sat, 15 Dec 2007 10:08:20 -0800
+From: Greg KH <gregkh@suse.de>
+To: Jan Evert van Grootheest <j.e.van.grootheest@caiway.nl>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [patch 00/60] 2.6.23-stable review
+Message-ID: <20071215180820.GB7587@suse.de>
+References: <20071213065039.GA6867@kroah.com> <4763FC4C.8000809@caiway.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071215063442.GA26491@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4763FC4C.8000809@caiway.nl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 15, 2007 at 02:34:42PM +0800, Herbert Xu wrote:
-> On Sat, Dec 15, 2007 at 05:31:30PM +1100, Benjamin Herrenschmidt wrote:
-> >
-> > That's something I've actually never quite liked... the fact that we
-> > evaluate the expression anyway. I'm pretty happy with -not- evaluating
-> > the expression when CONFIG_BUG is on most of the time since whatever is
-> > in there is purely here for the sake of the BUG/WARN test.
-> 
-> Whether we evaluate the expression is a completely different debate.
-> I personally agree with you that expressions that have side-effects
-> are a stupid idea for either WARN_ON or BUG_ON.
+On Sat, Dec 15, 2007 at 05:09:48PM +0100, Jan Evert van Grootheest wrote:
+> Greg KH wrote:
+>> This is the start of the stable review cycle for the 2.6.23.10 release.
+>> There are 60 patches in this series, all will be posted as a response to
+>> this one.  If anyone has any issues with these being applied, please let
+>> us know.  If anyone is a maintainer of the proper subsystem, and wants
+>> to add a Signed-off-by: line to the patch, please respond with it.
+>>
+>>   
+> Hi Greg,
+>
+> Do you think it might be possible to add the subjects of the patches
+> next time in the announcement? This would give people an easy way
+> (besides the diffstat) to check what is getting fixed.
 
-As do I. But we can't really do anything about it short of auditing
-them all.
+The subject of the individual patches are in the email thread that is
+attached to this announcement, so it should be quite simple to get this
+information by just looking in your mail reader :)
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Also, it would be hard to do this, unless someone has a patch to quilt
+to provide this kind of information?
+
+thanks,
+
+greg k-h
