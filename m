@@ -1,87 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbXLOBuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757840AbXLOB4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758296AbXLOBuI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 20:50:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbXLOBt4
+	id S1757840AbXLOB4c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 20:56:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbXLOB4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 20:49:56 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:59972 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753279AbXLOBtz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 20:49:55 -0500
-Date: Fri, 14 Dec 2007 19:49:44 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Strange ATA problems
-In-reply-to: <4762A625.4050101@gmail.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Christoph Anton Mitterer <calestyo@scientia.net>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Message-id: <476332B8.9090802@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <1197591699.3453.38.camel@fermat.scientia.net>
- <47629E40.5020007@gmail.com> <1197647095.3454.3.camel@fermat.scientia.net>
- <4762A625.4050101@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 14 Dec 2007 20:56:23 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42864 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751799AbXLOB4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 20:56:22 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: Linux 2.6.23.10
+Date: Sat, 15 Dec 2007 03:15:21 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+References: <20071214194952.GA15765@kroah.com> <200712150252.57427.rjw@sisk.pl> <47633028.20503@redhat.com>
+In-Reply-To: <47633028.20503@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712150315.22568.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
->> Dec 14 01:06:33 fermat kernel: ata1: EH in ADMA mode, notifier 0x0
->> notifier_error 0x0 gen_ctl 0x1501000 status 0x400 next cpb count 0x0
->> next
->>  cpb idx 0x0
->> Dec 14 01:06:33 fermat kernel: ata1: CPB 0: ctl_flags 0x1f, resp_flags
->> 0x2
->> Dec 14 01:06:33 fermat kernel: ata1: CPB 1: ctl_flags 0x1f, resp_flags
->> 0x2
->> Dec 14 01:06:33 fermat kernel: ata1: CPB 2: ctl_flags 0x1f, resp_flags
->> 0x2
->> Dec 14 01:06:33 fermat kernel: ata1: CPB 3: ctl_flags 0x1f, resp_flags
->> 0x2
->> Dec 14 01:06:33 fermat kernel: ata1: CPB 4: ctl_flags 0x1f, resp_flags
->> 0x2
->> Dec 14 01:06:33 fermat kernel: ata1: CPB 5: ctl_flags 0x1f, resp_flags
->> 0x2
->> Dec 14 01:06:33 fermat kernel: ata1: CPB 6: ctl_flags 0x1f, resp_flags
->> 0x2
->> Dec 14 01:06:33 fermat kernel: ata1: CPB 7: ctl_flags 0x1f, resp_flags
->> 0x2
->> Dec 14 01:06:33 fermat kernel: ata1: CPB 8: ctl_flags 0x1f, resp_flags
->> 0x2
->> Dec 14 01:06:33 fermat kernel: ata1: CPB 9: ctl_flags 0x1f, resp_flags
->> 0x2
->> Dec 14 01:06:33 fermat kernel: ata1: CPB 10: ctl_flags 0x1f, resp_flags
->> 0x2
-
-CPB flags stuck at 0x2 indicates that the controller issued the command 
-to the drive and is waiting for completion. Usually seems to indicate 
-some kind of SATA communication problem.
-
->>> If your USB cdrom is bus powered and you yanked it, it could have caused
->>> fluctuation in power which in turn can cause disruption on serial ATA
->>> bus leading to transmission error and timeouts.  There are other
->>> possibilities but this kind of thing does happen often with SATA.  Those
->>> highspeed low-voltage serial links are very susceptible to interferences.
->> Well,.. it actually "worked" again when I unplugged it, but the errors
->> from the cdrom above are probably unrelated..
->>
->>
->>> As long as EH recovered it properly, there's nothing to worry about.
->> What does that mean?
+On Saturday, 15 of December 2007, Chuck Ebbert wrote:
+> On 12/14/2007 08:52 PM, Rafael J. Wysocki wrote:
+> > On Saturday, 15 of December 2007, Chuck Ebbert wrote:
+> >> On 12/14/2007 02:49 PM, Greg Kroah-Hartman wrote:
+> >>>       Freezer: Fix APM emulation breakage
+> >> drivers/char/apm-emulation.c: In function 'apm_ioctl':
+> >> drivers/char/apm-emulation.c:370: error: implicit declaration of function 'wait_event_freezable'
+> >> make[2]: *** [drivers/char/apm-emulation.o] Error 1
+> >> make[1]: *** [drivers/char] Error 2
+> > 
+> > This is my fault, sorry.
+> > 
+> > I though the 2.6.24-rc fix would be suitable for 2.6.23.x, but that's not the
+> > case.
+> > 
+> > Greg, please revert the "Freezer: Fix APM emulation breakage" patch, I'll
+> > prepare a separate fix suitable for -stable.
+> > 
 > 
-> That means unless the problem continues to occur repeatedly, you don't
-> have to worry about it.
-> 
+> It works if you add the changes to freezer.h made in commit
+> e42837bcd35b75bb59ae5d3e62f87be1aeeb05c3
 
-Yes, if it didn't recur, was likely just a transient glitch.
+Yes, exactly, but a new patch is needed anyway.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Hmm, perhaps it's better to add a new patch on top of "Freezer: Fix APM
+emulation breakage"?  Would that be preferred?
 
+Rafael
