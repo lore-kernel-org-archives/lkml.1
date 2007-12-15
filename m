@@ -1,78 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763691AbXLOMnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759718AbXLONCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763691AbXLOMnF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 07:43:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbXLOMmx
+	id S1759718AbXLONCl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 08:02:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbXLONCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 07:42:53 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:35503 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754851AbXLOMmw (ORCPT
+	Sat, 15 Dec 2007 08:02:32 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:52367 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753653AbXLONCb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 07:42:52 -0500
-Date: Sat, 15 Dec 2007 13:42:51 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] dynamic pipe resizing
-In-Reply-To: <20070824085221.GA23758@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0712151336230.22877@fbirervta.pbzchgretzou.qr>
-References: <20070824085221.GA23758@kernel.dk>
+	Sat, 15 Dec 2007 08:02:31 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 15 Dec 2007 14:01:56 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [patch 06/18] ieee1394: nopage
+To: npiggin@suse.de
+cc: akpm@linux-foundation.org, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071205071627.360419000@nick.local0.net>
+Message-ID: <tkrat.f2581cb1f798084e@s5r6.in-berlin.de>
+References: <20071205071547.701344000@nick.local0.net>
+ <20071205071627.360419000@nick.local0.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On  5 Dec, npiggin@suse.de wrote:
+> Convert ieee1394 from nopage to fault.
+> Remove redundant vma range checks (correct resource range check is retained).
 
-On Aug 24 2007 10:52, Jens Axboe wrote:
->Subject: [PATCH][RFC] dynamic pipe resizing
->
->Hi,
->
->Dabbling around with splice a bit, I added some code to change the size
->of a pipe. Currently it's hardcoded as 16 pages, with this patch you can
->shrink (if you wanted) or grow (the likely scenario) if you want to
->increase the size of your in-kernel buffer for splice operations.
->
->Like with my original splice patches from 2005, I used fcntl()
->F_GETPIPE_SZ and F_SETPIPE_SZ to change the size of the pipe. I'm not
->particularly fond of that interface, so suggestions on how to improve it
->would be appreciated. Even if fcntl() should be the preferred approach,
->I think it would be better to pass in a byte based value instead of a
->number of pages.
->
-Could this patch still make it in?
-Yes, I think its set() and get() parts should use bytes and convert 
-to/from pages.
-
-> /*
->+ * Allocate a new array of pipe buffers and copy the info over. Returns the
->+ * pipe size if successful, or return -ERROR on error.
->+ */
->+static long pipe_set_size(struct pipe_inode_info *pipe, unsigned long arg)
->+{
->+	struct pipe_buffer *bufs;
->+
->+	/*
->+	 * Must be a power-of-2 current
->+	 */
->+	if (arg & (arg - 1))
->+		return -EINVAL;
->+
-
-Perhaps just round up, and mention the rounding in the manpage, so that 
-noone gets a shock when the pipe is not exactly as small as requested.
-
->+	/*
->+	 * We can shrink the pipe, if arg >= pipe->nrbufs. Since we don't
->+	 * expect a lot of shrink+grow operations, just free and allocate
->+	 * again like we would do for growing. If the pipe currently
->+	 * contains more buffers than arg, then return busy.
->+	 */
->+	if (arg < pipe->nrbufs)
->+		return -EBUSY;
-
-How big can a pipe become? k*alloc has a certain limit, so should 
-perhaps vmalloc be used for when kalloc fails?
+I finally did a brief runtime test.  Works for me with coriander,
+dvgrab, and kino on x86-64.  Committed to linux1394-2.6.git.
+-- 
+Stefan Richter
+-=====-=-=== ==-- -====
+http://arcgraph.de/sr/
 
