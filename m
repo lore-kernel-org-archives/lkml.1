@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbXLOR6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760925AbXLOR6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757671AbXLOR6i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 12:58:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbXLOR6a
+	id S1760925AbXLOR6w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 12:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbXLOR6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 12:58:30 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55466 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751604AbXLOR63 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 12:58:29 -0500
-Date: Sat, 15 Dec 2007 17:51:17 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "David P. Reed" <dpreed@reed.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Rene Herman <rene.herman@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80 on
- some AMD64x2 laptops, etc.
-Message-ID: <20071215175117.17e5d5ee@the-village.bc.nu>
-In-Reply-To: <4763FE7A.4000105@reed.com>
-References: <1184218962.12353.209.camel@chaos>
-	<46964352.7040301@reed.com>
-	<1184253339.12353.223.camel@chaos>
-	<469697C6.50903@reed.com>
-	<1184274754.12353.254.camel@chaos>
-	<4761F193.7090400@reed.com>
-	<20071214131502.GA14359@elte.hu>
-	<4762C551.5070003@zytor.com>
-	<20071215074358.GD12110@elte.hu>
-	<4763891A.3010004@gmail.com>
-	<20071215132725.GA23166@elte.hu>
-	<20071215142929.5462b329@the-village.bc.nu>
-	<4763FE7A.4000105@reed.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Dec 2007 12:58:32 -0500
+Received: from waste.org ([66.93.16.53]:47676 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754079AbXLOR6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 12:58:31 -0500
+Date: Sat, 15 Dec 2007 11:54:43 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Make WARN_ON/WARN_ON_ONCE no-ops when CONFIG_BUG is off
+Message-ID: <20071215175443.GU19691@waste.org>
+References: <20071214132755.GA18309@gondor.apana.org.au> <20071214180246.GT17536@waste.org> <20071215041659.GB25324@gondor.apana.org.au> <20071215055218.GM19691@waste.org> <20071215060449.GA26199@gondor.apana.org.au> <20071215065211.GA26579@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071215065211.GA26579@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> a minor concern, but I did also point out that using an unused port 
-> causes the bus to be tied up for a microsecond or two, which matters on 
-> a fast SMP machine.
+On Sat, Dec 15, 2007 at 02:52:11PM +0800, Herbert Xu wrote:
+> On Sat, Dec 15, 2007 at 02:04:49PM +0800, Herbert Xu wrote:
+> >
+> > I suppose we'll have to either introduce a new primitive or just
+> > go back to using BUG_ON.
+> 
+> Let's do the conservative thing and add a new primitive.
+> 
+> [PATCH] Added BARF_ON/BARF_ON_ONCE
+> 
+> The description of CONFIG_BUG clearly states that both BUG and
+> WARN_ON may be skipped.  However, our actual implementation still
+> checks the condition on WARN_ON if it's used as part of an if
+> statement or such.
+> 
+> I tried to compile it away but Matt Mackall pointed out that
+> people may already be using it in ways that were not intended.
+> In particular, it may have been used for conditions that are
+> thought to be possible.
+> 
+> So this patch adds a new pair of macros BARF_ON and BARF_ON_ONCE
+> that are clearly marked as such to prevent abuse.  The intended
+> usage model is identical to WARN_ON except that they should only
+> be used for conditions that are thought to be impossible.  In
+> other words, only use them to replace BUG_ON's that may be called
+> by an IRQ handler or within locks.
 
-And I did point out I'd found locking cases that may be relying upon this
+Egads, this just makes the whole bad BUG_ON vs WARN_ON situation
+worse. This adds yet another non-distinction, because the difference
+between BUG_ON and WARN_ON has absolutely nothing to do with the
+(perceived or actual) probability of the condition.
 
-> I also note that curent machines like the problem machine have ACPI, and 
-> maybe those would be the ones that vendors might start to define port 80 
-> to mean something. As I noted, it /seems/ to be only when ACPI is turned 
+We've got plenty of evidence that BUG_ON and WARN_ON conditions -do-
+happen. So choosing between BUG_ON and WARN_ON is choosing whether a
+box should be forcibly killed or not and nothing more.
 
-Port 0x80 means debug. You appear to have a laptop with some kind of
-buggy firmware that wants a BIOS update. Everyone use 0x80 for debug -
-its in the chipset hardware quite often.
+You've clearly got a use-case in mind where WARN_ON + !CONFIG_BUG
+isn't doing what you want, please share it with us.
 
-> My belief is that my machine has some device that is responding to port 
-> 80 by doing something.  And that something requires some other program 
-> to "service" port 80 in some way.  But it sure would be nice to know.   
-> I can't personally sand off the top of the chipset to put probes into it 
-> - so my normal approach of putting a logic analyzer on the bus doesn't work.
-
-Almost certainly a SMI trap.
-
-> PS: If I have time, I may try to build Rene's port 80 test for Windows 
-> and run it under WinXP on this machine 
-
-That would be very interesting.
-
-Alan
+-- 
+Mathematics is the supreme nostalgia of our time.
