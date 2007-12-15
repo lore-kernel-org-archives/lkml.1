@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbXLOSXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761663AbXLOSfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760841AbXLOSXO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 13:23:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbXLOSXE
+	id S1761663AbXLOSfx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 13:35:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbXLOSfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 13:23:04 -0500
-Received: from mga06.intel.com ([134.134.136.21]:21336 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755404AbXLOSXD (ORCPT
+	Sat, 15 Dec 2007 13:35:44 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:4098 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755144AbXLOSfn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 13:23:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,172,1196668800"; 
-   d="scan'208";a="242149497"
-Message-ID: <47641B0F.3040709@linux.intel.com>
-Date: Sat, 15 Dec 2007 10:21:03 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
+	Sat, 15 Dec 2007 13:35:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=jNkqT5/LEavXTNBrsou5zMt6zXMlNVNf9M7IE9RdwoZXFNfL/wrGVu8Ph/JVDl76uBe2hcVw5UqFacyg5MhW+8/My2hz9Q4kj/Z/XF3z54ve2eOJAb9DTb4aiAXAUZzSwWx+5D0FD8djNsm6V9ojyUlt1faAUL9vi8WSN0iWjM0=
+Message-ID: <47642003.7090900@gmail.com>
+Date: Sat, 15 Dec 2007 19:42:11 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       protasnb@gmail.com
-Subject: Re: Top kernel oopses/warnings this week
-References: <4762CF8C.90808@linux.intel.com> <4763F771.10105@s5r6.in-berlin.de>
-In-Reply-To: <4763F771.10105@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Miles Lane <miles.lane@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: 2.6.24-rc5-mm1 -- inconsistent {in-softirq-W} -> {softirq-on-R}
+   usage.
+References: <a44ae5cd0712141413u4ddbfd06gca259cfc3bc0ab1a@mail.gmail.com>	<20071214153633.5d8f609a.akpm@linux-foundation.org>	<a44ae5cd0712141958o10d9a320h3b8173019ac6b0eb@mail.gmail.com> <20071215031341.66dc0d05.akpm@linux-foundation.org>
+In-Reply-To: <20071215031341.66dc0d05.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Arjan van de Ven wrote:
->> The http://www.kerneloops.org website collects kernel oops and warning
->> reports from various mailing lists and bugzillas;
-> 
-> A few comments:
-> 
-> Report counts may be too high due to duplicate recognition of the very
-> same report.¹
+Andrew Morton wrote, On 12/15/2007 12:13 PM:
 
-this is true however it's .. a hard issue. It's really hard to distinguish a duplicate report from
-two reports of the same bug.
-
-> 
-> Reports against 2.6.X-rcY-mmZ are listed in the same category as reports
-> against 2.6.X-rcY.  To distinguish -mm reports from vanilla reports, one
-> has to look into the details of each bug entry.¹
-
-finding what exact kernel version an oops is from is... surprisingly hard.
-And to be honest, bugs against -mm are still very interesting, since they'll be
-the next mainline after all
-
-> 
-> A general weakness is that it is ultimately impossible to know whether a
-> report was against an unpatched kernel, unless one drills down to the
-> individual mailinglist threads.
-
-for the same reason patched kernels are relevant. And if someone has a super weirdo kernel,
-well, as long as we get enough bug data it'll be way down in the noise.
+> On Fri, 14 Dec 2007 22:58:24 -0500 "Miles Lane" <miles.lane@gmail.com> wrote:
 
 
-> Reports about tainted kernels have arguably less value.  It would be
-> good to hide such reports until a report of the same oops in an
-> untainted kernel was found.
-That's half of what is done right now; they're not hidden though, just very clearly marked.
+
+...
+
+>> I applied the patch and then tried my test again.  This time my system
+>> locked up.
+>> Perhaps I should open a new thread for this, since the problem looks
+>> pretty different.
+>>
+>> Dec 14 21:32:55 feargod kernel: process `cat' is using deprecated
+>> sysctl (syscall) net.ipv6.neigh.default.retrans_time; Use
+>> net.ipv6.neigh.default.retran
+>> s_time_ms instead.
+>> Dec 14 21:32:55 feargod kernel:
+>> Dec 14 21:32:55 feargod kernel: =====================================
+>> Dec 14 21:32:55 feargod kernel: [ BUG: bad unlock balance detected! ]
+>> Dec 14 21:32:55 feargod kernel: -------------------------------------
+>> Dec 14 21:32:55 feargod kernel: cat/6180 is trying to release lock
+>> (kkkkkkkï¿½ï¿½ï¿½ï¿½ï¿½H3ï¿½ï¿½) at:
+>> Dec 14 21:32:55 feargod kernel: [packet_seq_stop+0xe/0x10]
+>> packet_seq_stop+0xe/0x10
+>> Dec 14 21:32:55 feargod kernel: but there are no more locks to release!
+>> Dec 14 21:32:55 feargod kernel:
+>> Dec 14 21:32:55 feargod kernel: other info that might help us debug this:
+>> Dec 14 21:32:55 feargod kernel: 2 locks held by cat/6180:
+>> Dec 14 21:32:55 feargod kernel:  #0:  (&p->lock){--..}, at:
+>> [crypto_algapi:seq_read+0x25/0x191c1] seq_read+0x25/0x26f
+>> Dec 14 21:32:55 feargod kernel:  #1:
+>> (&net->packet.sklist_lock){-.--}, at: [packet_seq_start+0x14/0x4d]
+>> packet_seq_start+0x14/0x4d
+
+
+
+Miles, I didn't check this yet, but since there were some considerable
+changes, including locking, you could try with reverting some of these
+last 3 patches to net/packet by Denis:
+
+http://git.kernel.org/?p=linux/kernel/git/davem/net-2.6.25.git;a=history;f=net/packet/af_packet.c;h=485af5691d64270a02322925a6ccfad9d02b7f78;hb=HEAD
+
+Regards,
+Jarek P.
+
