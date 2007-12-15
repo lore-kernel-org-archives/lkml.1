@@ -1,108 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbXLOBHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbXLOBJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbXLOBHD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 20:07:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbXLOBGy
+	id S1758582AbXLOBJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 20:09:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbXLOBJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 20:06:54 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42697 "EHLO ogre.sisk.pl"
+	Fri, 14 Dec 2007 20:09:46 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:48192 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751765AbXLOBGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 20:06:53 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
-Date: Sat, 15 Dec 2007 02:25:50 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: bcm43xx-dev@lists.berlios.de, Ingo Molnar <mingo@elte.hu>,
-       Daniel Walker <dwalker@mvista.com>, akpm@linux-foundation.org,
-       stefano.brivio@polimi.it, Ray Lee <ray-lk@madrabbit.org>,
-       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
-       linux@bohmer.net, jonathan@jonmasters.org, kjwinchester@gmail.com,
-       Linus Torvalds <torvalds@linux-foundation.org>, mbuesch@freenet.de
-References: <20071213003028.676998182@mvista.com> <20071214175910.GA27078@elte.hu> <200712141938.10733.mb@bu3sch.de>
-In-Reply-To: <200712141938.10733.mb@bu3sch.de>
+	id S1753568AbXLOBJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 20:09:45 -0500
+Date: Sat, 15 Dec 2007 01:09:41 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       jens.axboe@oracle.com, liml@rtr.ca, lkml@rtr.ca, matthew@wil.cx,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+Message-ID: <20071215010940.GB28613@csn.ul.ie>
+References: <476188C4.9030802@rtr.ca> <20071213193937.GG10104@kernel.dk> <47618B0B.8020203@rtr.ca> <20071213195350.GH10104@kernel.dk> <20071213200219.GI10104@kernel.dk> <476190BE.9010405@rtr.ca> <20071213200958.GK10104@kernel.dk> <20071213140207.111f94e2.akpm@linux-foundation.org> <1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200712150225.52183.rjw@sisk.pl>
+In-Reply-To: <20071213142935.47ff19d9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 14 of December 2007, Michael Buesch wrote:
-> On Friday 14 December 2007 18:59:10 Ingo Molnar wrote:
+On (13/12/07 14:29), Andrew Morton didst pronounce:
+> > The simple way seems to be to malloc a large area, touch every page and
+> > then look at the physical pages assigned ... they now mostly seem to be
+> > descending in physical address.
 > > 
-> > * Michael Buesch <mb@bu3sch.de> wrote:
-> > 
-> > > In my opinion this all is the work of the distributions and not the 
-> > > work of the kernel developers. Distributions have to make sure that 
-> > > everything works after a kernel update. [...]
-> > 
-> > actually, not. The the task of kernel developers is to KEEP OLD 
-> > DISTRIBUTIONS WORKING WITH NEW DRIVERS. Or the "old" driver stays around 
-> > until eternity, because the new one is just BROKEN.
 > 
-> What exactly prevents an old distribution from using new b43
-> given that they fix their broken udev scripts first?
+> OIC.  -mm's /proc/pid/pagemap can be used to get the pfn's...
 > 
-> (I cannot fix their broken scripts from within the kernel.)
 
-Well, we talked about that some time ago, didn't we?
+I tried using pagemap to verify the patch but it triggered BUG_ON
+checks. Perhaps I am using the interface wrong but I would still not
+expect it to break in this fashion. I tried 2.6.24-rc4-mm1, 2.6.24-rc5-mm1,
+2.6.24-rc5 with just the maps4 patches applied and 2.6.23 with maps4 patches
+applied. Each time I get errors like this;
 
-The rule is this: if one uses kernel 2.6.x from kernel.org _successfully_
-with certain distribution (whatever it is), then one is supposed to be able to
-take the kernel 2.6.(x+1), install it on that distribution and use it without
-any major configuration changes.  If this rule is not followed, people will
-stop testing kernel.org kernels and we'll all suffer from that.
+[   90.108315] BUG: sleeping function called from invalid context at include/asm/uaccess_32.h:457
+[   90.211227] in_atomic():1, irqs_disabled():0
+[   90.262251] no locks held by showcontiguous/2814.
+[   90.318475] Pid: 2814, comm: showcontiguous Not tainted 2.6.24-rc5 #1
+[   90.395344]  [<c010522a>] show_trace_log_lvl+0x1a/0x30
+[   90.456948]  [<c0105bb2>] show_trace+0x12/0x20
+[   90.510173]  [<c0105eee>] dump_stack+0x6e/0x80
+[   90.563409]  [<c01205b3>] __might_sleep+0xc3/0xe0
+[   90.619765]  [<c02264fd>] copy_to_user+0x3d/0x60
+[   90.675153]  [<c01b3e9c>] add_to_pagemap+0x5c/0x80
+[   90.732513]  [<c01b43e8>] pagemap_pte_range+0x68/0xb0
+[   90.793010]  [<c0175ed2>] walk_page_range+0x112/0x210
+[   90.853482]  [<c01b47c6>] pagemap_read+0x176/0x220
+[   90.910863]  [<c0182dc4>] vfs_read+0x94/0x150
+[   90.963058]  [<c01832fd>] sys_read+0x3d/0x70
+[   91.014219]  [<c0104262>] syscall_call+0x7/0xb
+[   91.067433]  =======================
+[   91.110137] BUG: scheduling while atomic: showcontiguous/2814/0x00000001
+[   91.190169] no locks held by showcontiguous/2814.
+[   91.246293] Pid: 2814, comm: showcontiguous Not tainted 2.6.24-rc5 #1
+[   91.323145]  [<c010522a>] show_trace_log_lvl+0x1a/0x30
+[   91.384633]  [<c0105bb2>] show_trace+0x12/0x20
+[   91.437878]  [<c0105eee>] dump_stack+0x6e/0x80
+[   91.491116]  [<c0123816>] __schedule_bug+0x66/0x70
+[   91.548467]  [<c033ba96>] schedule+0x556/0x7b0
+[   91.601698]  [<c01042e6>] work_resched+0x5/0x21
+[   91.655977]  =======================
+[   91.704927] showcontiguous[2814]: segfault at b7eaa900 eip b7eaa900 esp bfa02e8c error 4
+[   91.801633] BUG: scheduling while atomic: showcontiguous/2814/0x00000001
+[   91.881634] no locks held by showcontiguous/2814.
+[   91.937779] Pid: 2814, comm: showcontiguous Not tainted 2.6.24-rc5 #1
+[   92.014606]  [<c010522a>] show_trace_log_lvl+0x1a/0x30
+[   92.076123]  [<c0105bb2>] show_trace+0x12/0x20
+[   92.129354]  [<c0105eee>] dump_stack+0x6e/0x80
+[   92.182567]  [<c0123816>] __schedule_bug+0x66/0x70
+[   92.239959]  [<c033ba96>] schedule+0x556/0x7b0
+[   92.293187]  [<c01042e6>] work_resched+0x5/0x21
+[   92.347452]  =======================
+[   92.392697] note: showcontiguous[2814] exited with preempt_count 1
+[   92.468611] BUG: scheduling while atomic: showcontiguous/2814/0x10000001
+[   92.548588] no locks held by showcontiguous/2814.
+[   92.604732] Pid: 2814, comm: showcontiguous Not tainted 2.6.24-rc5 #1
+[   92.681665]  [<c010522a>] show_trace_log_lvl+0x1a/0x30
+[   92.743180]  [<c0105bb2>] show_trace+0x12/0x20
+[   92.796409]  [<c0105eee>] dump_stack+0x6e/0x80
+[   92.849621]  [<c0123816>] __schedule_bug+0x66/0x70
+[   92.907014]  [<c033ba96>] schedule+0x556/0x7b0
+[   92.960349]  [<c0123847>] __cond_resched+0x27/0x40
+[   93.017804]  [<c033be3a>] cond_resched+0x2a/0x40
+[   93.073122]  [<c016e22c>] unmap_vmas+0x4ec/0x540
+[   93.128418]  [<c017132f>] exit_mmap+0x6f/0xf0
+[   93.180611]  [<c01254d1>] mmput+0x31/0xb0
+[   93.228665]  [<c01295fd>] exit_mm+0x8d/0xf0
+[   93.278788]  [<c012ac8f>] do_exit+0x15f/0x7e0
+[   93.330965]  [<c012b339>] do_group_exit+0x29/0x70
+[   93.387321]  [<c0133e07>] get_signal_to_deliver+0x2b7/0x490
+[   93.454013]  [<c010373d>] do_notify_resume+0x7d/0x760
+[   93.514476]  [<c0104315>] work_notifysig+0x13/0x1a
+[   93.571869]  =======================
 
-Now, in my not so humble opinion, switching from bcm43xx to b43 _is_ a major
-configuration change (I did it, so please don't try to discuss with my
-experience) and forcing users to do that breaks the rule above.
+Just using cp to read the file is enough to cause problems but I included
+a very basic program below that produces the BUG_ON checks. Is this a known
+issue or am I using the interface incorrectly?
 
-> > Take a look at CONFIG_COMPAT_VDSO for example - one single version of 
-> > glibc was released in a distro that depended on a kernel vDSO bug. So 
-> > we'll keep that aspect of the vDSO perhaps forever. Simple as that. 
-> > Stuff must just work. Whatever it takes. Best is if you add in new stuff 
-> > without the user noticing _ANYTHING_ but that the kernel version bumped. 
-> > If the maintainers of the other 7 million lines of kernel code can get 
-> > this right then the wireless code should be able to do it too. Ok?
-> > 
-> > all this "distributors will have to sort out the mess" talk is nonsense, 
-> > and i really hope you do not truly believe in that crap. If your 
-> > attitude is prevalent in the wireless development community then it's in 
-> > worse shape than i thought :-(
-> 
-> Sorry if I didn't chose my wording correctly. But I was only talking
-> about the development of drivers. It is correct that userspace ABI has
-> to be preserved, but that is not an issue at all to drivers.
-> I was talking about things like installing the right firmware for
-> the new driver. It is the job of the distributors to install the new
-> firmware when they introduce a new driver.
+#include <stdio.h>
+#include <sys/mman.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <linux/types.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
-Yes, as far as new distributions are concerned.  However, we _want_ kernel.org
-kernels to work with the old ones too.  Yes, WE DO.
+#define MAPSIZE (4*1048576)
+#define PM_ENTRY_BYTES sizeof(__u64)
 
-> It is the job of the distributors to test their userland scripts and
-> configuration stuff with that driver and fix their stuff. It is _not_ my job
-> to fix random distribution udev scripts or explaining over and over again to
-> people how the firmware is installed.
+int main(int argc, char **argv)
+{
+	int pagemap_fd;
+	unsigned long *anonmapping;
+	__u64 pagemap_entry = 0ULL;
 
-Given specific software environment (it may be a home-made system compiled
-from sources or whatever), if installing a new kernel forces me to reconfigure
-it in any significant way to obtain the functionality that I previously had,
-the problem is with the kernel.  No less, no more.
+	unsigned long vpfn, ppfn;
+	size_t mmap_offset;
+	int pagesize = getpagesize();
 
-> Either distributions have to install it automatically or people simply have
-> to read one or two lines of documentation.  That's just what I wanted to say.
+	/* Open the pagemap interface */
+	pagemap_fd = open("/proc/self/pagemap", O_RDONLY);
+	if (pagemap_fd == -1) {
+		perror("fopen");
+		exit(EXIT_FAILURE);
+	}
 
-It's not that simple.  For example, regression testing will be a major PITA
-if one needs to switch back and forth from the new driver to the old one in the
-process.
+	/* Create an anonymous mapping */
+	anonmapping = mmap(NULL, MAPSIZE,
+			PROT_READ|PROT_WRITE,
+			MAP_PRIVATE|MAP_ANONYMOUS|MAP_POPULATE,
+			-1, 0);
+	if (anonmapping == MAP_FAILED) {
+		perror("mmap");
+		exit(1);
+	}
 
-> Of course it is _my_ job to preserve ABI. I did never want to question that.
+	/* Work out the VPN the mapping is at and seek to it in pagemap */
+	vpfn = ((unsigned long)anonmapping) / pagesize;
+	mmap_offset = lseek(pagemap_fd, vpfn * PM_ENTRY_BYTES, SEEK_SET);
+	if (mmap_offset == -1) {
+		perror("fseek");
+		exit(EXIT_FAILURE);
+	}
 
-Greetings,
-Rafael
+	/* Read the PFN of each page in the mapping */
+	for (mmap_offset = 0; mmap_offset < MAPSIZE; mmap_offset += pagesize) {
+		vpfn = ((unsigned long)anonmapping + mmap_offset) / pagesize;
+
+		if (read(pagemap_fd, &pagemap_entry, PM_ENTRY_BYTES) == 0) {
+			perror("fread");
+			exit(EXIT_FAILURE);
+		}
+
+		ppfn = (unsigned long)pagemap_entry;
+		printf("vpfn = %8lu ppfn = %8lu\n", vpfn, ppfn);
+	}
+
+	close(pagemap_fd);
+	munmap(anonmapping, MAPSIZE);
+	exit(EXIT_SUCCESS);
+}
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
