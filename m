@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762174AbXLOXJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762424AbXLOXPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762174AbXLOXJh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 18:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbXLOXJ3
+	id S1762424AbXLOXPy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 18:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbXLOXPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 18:09:29 -0500
-Received: from bizon.gios.gov.pl ([212.244.124.8]:60348 "EHLO
-	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753195AbXLOXJ2 (ORCPT
+	Sat, 15 Dec 2007 18:15:43 -0500
+Received: from vms173001pub.verizon.net ([206.46.173.1]:55926 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756232AbXLOXPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 18:09:28 -0500
-Date: Sun, 16 Dec 2007 00:08:52 +0100 (CET)
-From: Krzysztof Oledzki <olel@ans.pl>
-X-X-Sender: olel@bizon.gios.gov.pl
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Osterried <osterried@jesse.de>, protasnb@gmail.com,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bug 9182] Critical memory leak (dirty pages)
-In-Reply-To: <20071215221935.306A5108068@picon.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0712152358240.14491@bizon.gios.gov.pl>
-References: <20071215221935.306A5108068@picon.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-1628307171-1197760132=:14491"
+	Sat, 15 Dec 2007 18:15:43 -0500
+Date: Sat, 15 Dec 2007 18:15:41 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: New question on that sata controller
+In-reply-to: <200712152217.28865.alistair@devzero.co.uk>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200712151815.41375.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <fa.JX5deKXb3TDJ1pV6ig+xHviNfRI@ifi.uio.no>
+ <200712151624.09115.gene.heskett@gmail.com>
+ <200712152217.28865.alistair@devzero.co.uk>
+User-Agent: KMail/1.9.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----187430788-1628307171-1197760132=:14491
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-
-
-
-On Sat, 15 Dec 2007, bugme-daemon@bugzilla.kernel.org wrote:
-
-> http://bugzilla.kernel.org/show_bug.cgi?id=3D9182
+On Saturday 15 December 2007, Alistair John Strachan wrote:
+>On Saturday 15 December 2007 21:24:09 Gene Heskett wrote:
+>> On Saturday 15 December 2007, Robert Hancock wrote:
+>> >Gene Heskett wrote:
+>> >> Greetings;
+>> >>
+>> >> When I asked about a sata controller earlier this week, I gave a link
+>> >> to it. Unforch (maybe) when it actually arrived, the cards box showed a
+>> >> silicon image chip, and the card had a via.  So much for getting what I
+>> >> ordered...
+>> >>
+>> >> The required module then was sata_via, not sata_uli, and it seems to be
+>> >> working ok.  However, this one claims its a raid controller according
+>> >> to an lspci -v:
+>> >>
+>> >> 01:0a.0 RAID bus controller: VIA Technologies, Inc. VT6421 IDE RAID
+>> >> Controller (rev 50)
+>> >>         Subsystem: VIA Technologies, Inc. VT6421 IDE RAID Controller
+>> >>         Flags: bus master, medium devsel, latency 32, IRQ 19
+>> >>         I/O ports at 9400 [size=16]
+>> >>         I/O ports at 9800 [size=16]
+>> >>         I/O ports at 9c00 [size=16]
+>> >>         I/O ports at a000 [size=16]
+>> >>         I/O ports at a400 [size=32]
+>> >>         I/O ports at a800 [size=256]
+>> >>         [virtual] Expansion ROM at e9000000 [disabled] [size=64K]
+>> >>         Capabilities: [e0] Power Management version 2
+>> >>
+>> >> I just noted that the Expansion ROM is disabled, but I didn't see any
+>> >> jumpers to enable it on the card prior to installing it.  Does anyone
+>> >> know how this is supposed to work?  I would like to make it directly
+>> >> bootable but I believe this has to be 'enabled' for that.
+>> >
+>> >It's usually normal for it to be disabled after boot, I believe. Are you
+>> >getting anything showing up on boot indicating its BIOS is active?
+>>
+>> No, not a thing.  Also invisible in the mainboards bios config AFAICT.
 >
->
-> ------- Comment #33 from protasnb@gmail.com  2007-12-15 14:19 -------
-> Krzysztof, I'd hate point you to a hard path (at least time consuming), b=
-ut
-> you've done a lot of digging by now anyway. How about git bisecting betwe=
-en
-> 2.6.20-rc2 and rc1? Here is great info on bisecting:
-> http://www.kernel.org/doc/local/git-quick.html
+>Normally this option is called "Enable Option ROM" or enable "INT 13/19h
+>hook". See if you have such an option. It's surprising this isn't enabled by
+>default.
 
-As I'm smarter than git-bistect I can tell that 2.6.20-rc1-git8 is as bad=
-=20
-as 2.6.20-rc2 but 2.6.20-rc1-git8 with one patch reverted seems to be OK.=
-=20
-So it took me only 2 reboots. ;)
+I don't recall seeing such an option, but I'll look again when I next reboot.
 
-The guilty patch is the one I proposed just an hour ago:
-  http://git.kernel.org/?p=3Dlinux%2Fkernel%2Fgit%2Fstable%2Flinux-2.6.20.y=
-=2Egit;a=3Dcommitdiff_plain;h=3Dfba2591bf4e418b6c3f9f8794c9dd8fe40ae7bd9
+>However, the BIOS still might not support directly booting off the
+> controller, I'm afraid.
 
-So:
-  - 2.6.20-rc1: OK
-  - 2.6.20-rc1-git8 with fba2591bf4e418b6c3f9f8794c9dd8fe40ae7bd9 reverted:=
- OK
-  - 2.6.20-rc1-git8: very BAD
-  - 2.6.20-rc2: very BAD
-  - 2.6.20-rc4: very BAD
-  - >=3D 2.6.20: BAD (but not *very* BAD!)
+I think I'm going to have to maintain my ide boot partition & play tricks with 
+the kernel arguments line to make the switch to that drive after the kernel 
+and initrd are loaded from it, which should make it properly visible oncve 
+that kernel is running.
 
-Best regards,
-
- =09=09=09=09Krzysztof Ol=EAdzki
----187430788-1628307171-1197760132=:14491--
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+His ideas of first-aid stopped short of squirting soda water.
+		-- P.G. Wodehouse
