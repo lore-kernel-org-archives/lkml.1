@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbXLOWsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758772AbXLOWyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758283AbXLOWsb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 17:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbXLOWsX
+	id S1758772AbXLOWyU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 17:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXLOWyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 17:48:23 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48326 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753195AbXLOWsX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 17:48:23 -0500
-Message-ID: <47645963.9060202@zytor.com>
-Date: Sat, 15 Dec 2007 14:46:59 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sat, 15 Dec 2007 17:54:11 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35312 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751766AbXLOWyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 17:54:10 -0500
+Date: Sat, 15 Dec 2007 23:54:19 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andi Kleen <ak@suse.de>, Avi Kivity <avi@qumranet.com>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       glommer@gmail.com, tglx@linutronix.de, mingo@elte.hu,
+       ehabkost@redhat.com, jeremy@goop.org, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 4/8] unify paravirt parts of system.h
+Message-ID: <20071215225419.GB2434@elf.ucw.cz>
+References: <11967843881946-git-send-email-gcosta@redhat.com> <11967843943958-git-send-email-gcosta@redhat.com> <11967843983411-git-send-email-gcosta@redhat.com> <11967844032081-git-send-email-gcosta@redhat.com> <11967844071346-git-send-email-gcosta@redhat.com> <4755A809.4050305@qumranet.com> <20071204193432.GI11764@bingen.suse.de> <20071205163017.GA4756@ucw.cz> <20071215132638.GA28231@basil.nowhere.org>
 MIME-Version: 1.0
-To: Allen Martin <AMartin@nvidia.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Rene Herman <rene.herman@gmail.com>,
-       "David P. Reed" <dpreed@reed.com>, Pavel Machek <pavel@ucw.cz>,
-       Andi Kleen <andi@firstfloor.org>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       David Newall <david@davidnewall.com>, Paul Rolland <rol@as2917.net>,
-       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: More info on port 80 symptoms on MCP51 machine.
-References: <475DE6F4.80702@zytor.com>	<475DEB23.1000304@davidnewall.com>	<20071211084059.3d03e11d@tux.DEF.witbe.net>	<475E5D4B.8020101@keyaccess.nl>	<475E7DC2.4060509@davidnewall.com>	<475E8D91.20201@keyaccess.nl>	<475E95A3.3070801@davidnewall.com>	<Pine.LNX.4.61.0712111024060.22976@chaos.analogic.com>	<20071211163017.GD16750@one.firstfloor.org>	<475EBFBA.6090301@keyaccess.nl>	<20071211191649.GB3437@elf.ucw.cz>	<475EEC75.80609@keyaccess.nl>	<47603F66.3070108@reed.com>	<476043DA.5000602@keyaccess.nl>	<47604B71.7090902@keyaccess.nl> <20071212210143.48721a41@the-village.bc.nu> <47604EA4.50504@zytor.com> <F72FA20C31DD4F4C997B91C5B3690A090263BC96@hqemmail07.nvidia.com>
-In-Reply-To: <F72FA20C31DD4F4C997B91C5B3690A090263BC96@hqemmail07.nvidia.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071215132638.GA28231@basil.nowhere.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allen Martin wrote:
+On Sat 2007-12-15 14:26:38, Andi Kleen wrote:
+> > It probably is safe to remove... but we currently support '2.8.95
+> > kernel loads/resumes 2.6.24 image'... which would break if 2.8 uses
+> > cr8.
 > 
-> Nothing inside the chipset should be decoding port 80 writes.  It's 
-> possible this board has a port 80 decoder wired onto the board that's 
-> misbehaving.  I've seen other laptop boards with port 80 decoders
-> wired onto the board, even if the 7 segment display is only populated
-> on debug builds.  
-> 
-> We use PCI port 80 decoders internally for debugging quite often, so 
-> if there were some chipset issue related to port 80 it would have 
-> showed up a long time ago, and this is the first I've heard of
-> hangs related to port 80 writes.
-> 
+> No it won't. 2.8 would just restore some random useless value.
 
-Presumably you have programmable decoders to trigger SMI?  If not, then 
-they're probably doing the equivalent in a SuperIO chip or similar.
+Restoring random value seems wrong. Putting random values into cpu
+registers can break stuff, right?
 
-	-hpa
+Even if 2.6.24 image being restored did not set %cr8 itself, it may
+depend on %cr8 to have "sane" value.
+
+> If 2.8 wants to use CR8 it would have to re-initialize it
+
+We are talking "2.8 restores 2.6 image" here.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
