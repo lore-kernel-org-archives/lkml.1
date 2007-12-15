@@ -1,153 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932303AbXLOBEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbXLOBHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932303AbXLOBEP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 20:04:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbXLOBEA
+	id S1756218AbXLOBHD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 20:07:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbXLOBGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 20:04:00 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:45424 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753256AbXLOBD7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 20:03:59 -0500
-Subject: [PATCH] arch/x86/kernel/cpu/mcheck/p4.c, kernel 2.6.24-rc5
-From: Min Zhang <mzhang@mvista.com>
-Reply-To: mzhang@mvista.com
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Monta Vista
-Date: Fri, 14 Dec 2007 17:03:56 -0800
-Message-Id: <1197680636.24198.59.camel@dhcp140.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Fri, 14 Dec 2007 20:06:54 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42697 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751765AbXLOBGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 20:06:53 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michael Buesch <mb@bu3sch.de>
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
+Date: Sat, 15 Dec 2007 02:25:50 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: bcm43xx-dev@lists.berlios.de, Ingo Molnar <mingo@elte.hu>,
+       Daniel Walker <dwalker@mvista.com>, akpm@linux-foundation.org,
+       stefano.brivio@polimi.it, Ray Lee <ray-lk@madrabbit.org>,
+       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, jonathan@jonmasters.org, kjwinchester@gmail.com,
+       Linus Torvalds <torvalds@linux-foundation.org>, mbuesch@freenet.de
+References: <20071213003028.676998182@mvista.com> <20071214175910.GA27078@elte.hu> <200712141938.10733.mb@bu3sch.de>
+In-Reply-To: <200712141938.10733.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712150225.52183.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Consolidate printk and insert CPU id to cleanup SMP interleaved output.
-In SMP, the machine check exception dispatches all logical processors
-within a physical package to the machine-check exception handler, so the
-printk within each handler outputs concurrently and makes the output
-unreadable. Refer to Intel system programming guide Part 1 Section 7.8.5
-http://developer.intel.com/design/processor/manuals/253668.pdf
+On Friday, 14 of December 2007, Michael Buesch wrote:
+> On Friday 14 December 2007 18:59:10 Ingo Molnar wrote:
+> > 
+> > * Michael Buesch <mb@bu3sch.de> wrote:
+> > 
+> > > In my opinion this all is the work of the distributions and not the 
+> > > work of the kernel developers. Distributions have to make sure that 
+> > > everything works after a kernel update. [...]
+> > 
+> > actually, not. The the task of kernel developers is to KEEP OLD 
+> > DISTRIBUTIONS WORKING WITH NEW DRIVERS. Or the "old" driver stays around 
+> > until eternity, because the new one is just BROKEN.
+> 
+> What exactly prevents an old distribution from using new b43
+> given that they fix their broken udev scripts first?
+> 
+> (I cannot fix their broken scripts from within the kernel.)
 
-Signed-off-by: Min Zhang <mzhang@mvista.com>
+Well, we talked about that some time ago, didn't we?
 
-Index: linux-2.6.24-rc5/arch/x86/kernel/cpu/mcheck/p4.c
-===================================================================
---- linux-2.6.24-rc5.orig/arch/x86/kernel/cpu/mcheck/p4.c
-+++ linux-2.6.24-rc5/arch/x86/kernel/cpu/mcheck/p4.c
-@@ -158,32 +158,35 @@ static fastcall void intel_machine_check
- 	if (mce_num_extended_msrs > 0) {
- 		struct intel_mce_extended_msrs dbg;
- 		intel_get_extended_msrs(&dbg);
--		printk (KERN_DEBUG "CPU %d: EIP: %08x EFLAGS: %08x\n",
--			smp_processor_id(), dbg.eip, dbg.eflags);
--		printk (KERN_DEBUG "\teax: %08x ebx: %08x ecx: %08x edx: %08x\n",
--			dbg.eax, dbg.ebx, dbg.ecx, dbg.edx);
--		printk (KERN_DEBUG "\tesi: %08x edi: %08x ebp: %08x esp: %08x\n",
-+		printk (KERN_DEBUG "CPU %d: EIP: %08x EFLAGS: %08x\n"
-+			"\teax: %08x ebx: %08x ecx: %08x edx: %08x\n"
-+			"\tesi: %08x edi: %08x ebp: %08x esp: %08x\n",
-+			smp_processor_id(), dbg.eip, dbg.eflags,
-+			dbg.eax, dbg.ebx, dbg.ecx, dbg.edx,
- 			dbg.esi, dbg.edi, dbg.ebp, dbg.esp);
- 	}
- 
- 	for (i=0; i<nr_mce_banks; i++) {
- 		rdmsr (MSR_IA32_MC0_STATUS+i*4,low, high);
- 		if (high & (1<<31)) {
-+			char misc[20];
-+			char addr[24];
-+			misc[0] = addr[0] = '\0';
- 			if (high & (1<<29))
- 				recover |= 1;
- 			if (high & (1<<25))
- 				recover |= 2;
--			printk (KERN_EMERG "Bank %d: %08x%08x", i, high, low);
- 			high &= ~(1<<31);
- 			if (high & (1<<27)) {
- 				rdmsr (MSR_IA32_MC0_MISC+i*4, alow, ahigh);
--				printk ("[%08x%08x]", ahigh, alow);
-+				snprintf (misc, 20, "[%08x%08x]", ahigh, alow);
- 			}
- 			if (high & (1<<26)) {
- 				rdmsr (MSR_IA32_MC0_ADDR+i*4, alow, ahigh);
--				printk (" at %08x%08x", ahigh, alow);
-+				snprintf (addr, 24, " at %08x%08x", ahigh, alow);
- 			}
--			printk ("\n");
-+			printk (KERN_EMERG "CPU %d: Bank %d: %08x%08x%s%s\n",
-+				smp_processor_id(), i, high, low, misc, addr);
- 		}
- 	}
- 
-Index: linux-2.6.24-rc5/arch/x86/kernel/cpu/mcheck/p6.c
-===================================================================
---- linux-2.6.24-rc5.orig/arch/x86/kernel/cpu/mcheck/p6.c
-+++ linux-2.6.24-rc5/arch/x86/kernel/cpu/mcheck/p6.c
-@@ -33,21 +33,24 @@ static fastcall void intel_machine_check
- 	for (i=0; i<nr_mce_banks; i++) {
- 		rdmsr (MSR_IA32_MC0_STATUS+i*4,low, high);
- 		if (high & (1<<31)) {
-+			char misc[20];
-+			char addr[24];
-+			misc[0] = addr[0] = '\0';
- 			if (high & (1<<29))
- 				recover |= 1;
- 			if (high & (1<<25))
- 				recover |= 2;
--			printk (KERN_EMERG "Bank %d: %08x%08x", i, high, low);
- 			high &= ~(1<<31);
- 			if (high & (1<<27)) {
- 				rdmsr (MSR_IA32_MC0_MISC+i*4, alow, ahigh);
--				printk ("[%08x%08x]", ahigh, alow);
-+				snprintf (misc, 20, "[%08x%08x]", ahigh, alow);
- 			}
- 			if (high & (1<<26)) {
- 				rdmsr (MSR_IA32_MC0_ADDR+i*4, alow, ahigh);
--				printk (" at %08x%08x", ahigh, alow);
-+				snprintf (addr, 24, " at %08x%08x", ahigh, alow);
- 			}
--			printk ("\n");
-+			printk (KERN_EMERG "CPU %d: Bank %d: %08x%08x%s%s\n",
-+				smp_processor_id(), i, high, low, misc, addr);
- 		}
- 	}
- 
-Index: linux-2.6.24-rc5/arch/x86/kernel/cpu/mcheck/k7.c
-===================================================================
---- linux-2.6.24-rc5.orig/arch/x86/kernel/cpu/mcheck/k7.c
-+++ linux-2.6.24-rc5/arch/x86/kernel/cpu/mcheck/k7.c
-@@ -33,21 +33,24 @@ static fastcall void k7_machine_check(st
- 	for (i=1; i<nr_mce_banks; i++) {
- 		rdmsr (MSR_IA32_MC0_STATUS+i*4,low, high);
- 		if (high&(1<<31)) {
-+			char misc[20];
-+			char addr[24];
-+			misc[0] = addr[0] = '\0';
- 			if (high & (1<<29))
- 				recover |= 1;
- 			if (high & (1<<25))
- 				recover |= 2;
--			printk (KERN_EMERG "Bank %d: %08x%08x", i, high, low);
- 			high &= ~(1<<31);
- 			if (high & (1<<27)) {
- 				rdmsr (MSR_IA32_MC0_MISC+i*4, alow, ahigh);
--				printk ("[%08x%08x]", ahigh, alow);
-+				snprintf (misc, 20, "[%08x%08x]", ahigh, alow);
- 			}
- 			if (high & (1<<26)) {
- 				rdmsr (MSR_IA32_MC0_ADDR+i*4, alow, ahigh);
--				printk (" at %08x%08x", ahigh, alow);
-+				snprintf (addr, 24, " at %08x%08x", ahigh, alow);
- 			}
--			printk ("\n");
-+			printk (KERN_EMERG "CPU %d: Bank %d: %08x%08x%s%s\n",
-+				smp_processor_id(), i, high, low, misc, addr);
- 			/* Clear it */
- 			wrmsr (MSR_IA32_MC0_STATUS+i*4, 0UL, 0UL);
- 			/* Serialize */
+The rule is this: if one uses kernel 2.6.x from kernel.org _successfully_
+with certain distribution (whatever it is), then one is supposed to be able to
+take the kernel 2.6.(x+1), install it on that distribution and use it without
+any major configuration changes.  If this rule is not followed, people will
+stop testing kernel.org kernels and we'll all suffer from that.
 
+Now, in my not so humble opinion, switching from bcm43xx to b43 _is_ a major
+configuration change (I did it, so please don't try to discuss with my
+experience) and forcing users to do that breaks the rule above.
 
+> > Take a look at CONFIG_COMPAT_VDSO for example - one single version of 
+> > glibc was released in a distro that depended on a kernel vDSO bug. So 
+> > we'll keep that aspect of the vDSO perhaps forever. Simple as that. 
+> > Stuff must just work. Whatever it takes. Best is if you add in new stuff 
+> > without the user noticing _ANYTHING_ but that the kernel version bumped. 
+> > If the maintainers of the other 7 million lines of kernel code can get 
+> > this right then the wireless code should be able to do it too. Ok?
+> > 
+> > all this "distributors will have to sort out the mess" talk is nonsense, 
+> > and i really hope you do not truly believe in that crap. If your 
+> > attitude is prevalent in the wireless development community then it's in 
+> > worse shape than i thought :-(
+> 
+> Sorry if I didn't chose my wording correctly. But I was only talking
+> about the development of drivers. It is correct that userspace ABI has
+> to be preserved, but that is not an issue at all to drivers.
+> I was talking about things like installing the right firmware for
+> the new driver. It is the job of the distributors to install the new
+> firmware when they introduce a new driver.
+
+Yes, as far as new distributions are concerned.  However, we _want_ kernel.org
+kernels to work with the old ones too.  Yes, WE DO.
+
+> It is the job of the distributors to test their userland scripts and
+> configuration stuff with that driver and fix their stuff. It is _not_ my job
+> to fix random distribution udev scripts or explaining over and over again to
+> people how the firmware is installed.
+
+Given specific software environment (it may be a home-made system compiled
+from sources or whatever), if installing a new kernel forces me to reconfigure
+it in any significant way to obtain the functionality that I previously had,
+the problem is with the kernel.  No less, no more.
+
+> Either distributions have to install it automatically or people simply have
+> to read one or two lines of documentation.  That's just what I wanted to say.
+
+It's not that simple.  For example, regression testing will be a major PITA
+if one needs to switch back and forth from the new driver to the old one in the
+process.
+
+> Of course it is _my_ job to preserve ABI. I did never want to question that.
+
+Greetings,
+Rafael
