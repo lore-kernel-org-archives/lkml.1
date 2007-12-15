@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932905AbXLOAcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXLOAjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932905AbXLOAcg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 19:32:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbXLOAc2
+	id S932178AbXLOAjk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 19:39:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbXLOAjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 19:32:28 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42576 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754810AbXLOAc1 convert rfc822-to-8bit (ORCPT
+	Fri, 14 Dec 2007 19:39:33 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35778 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461AbXLOAjc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 19:32:27 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
-Date: Sat, 15 Dec 2007 01:51:47 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: bcm43xx-dev@lists.berlios.de,
-       Simon Holm =?utf-8?q?Th=C3=B8gersen?= <odie@cs.aau.dk>,
-       Daniel Walker <dwalker@mvista.com>, akpm@linux-foundation.org,
-       Ray Lee <ray-lk@madrabbit.org>, matthias.kaehlcke@gmail.com,
-       linux-kernel@vger.kernel.org, linux@bohmer.net, kjwinchester@gmail.com,
-       jonathan@jonmasters.org, Ingo Molnar <mingo@elte.hu>
-References: <20071213003028.676998182@mvista.com> <1197637194.7549.10.camel@odie.local> <200712141404.24275.mb@bu3sch.de>
-In-Reply-To: <200712141404.24275.mb@bu3sch.de>
+	Fri, 14 Dec 2007 19:39:32 -0500
+Message-ID: <47632222.4030008@zytor.com>
+Date: Fri, 14 Dec 2007 16:38:58 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200712150151.49025.rjw@sisk.pl>
+To: Arun Thomas <arun.thomas@gmail.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: PROBLEM: E6850 has an 8+ minute delay during boot
+References: <9a8cbed90712140110l156a34e3x38533b7710544cf8@mail.gmail.com>	 <20071214015315.09829a99.akpm@linux-foundation.org>	 <9a8cbed90712140201r6cb287d9w99cc1210c68e8e60@mail.gmail.com>	 <4762586F.8090603@gmail.com>	 <alpine.LFD.0.99999.0712141140310.10584@localhost.localdomain>	 <4762D322.2060101@zytor.com> <9a8cbed90712141600l1a867da0uc7027e502575a7a6@mail.gmail.com>
+In-Reply-To: <9a8cbed90712141600l1a867da0uc7027e502575a7a6@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 14 of December 2007, Michael Buesch wrote:
-> On Friday 14 December 2007 13:59:54 Simon Holm Thøgersen wrote:
-> > > This user did get the following messages in dmesg:
-> > > 
-> > > b43err(dev->wl, "Firmware file \"%s\" not found "
-> > >        "or load failed.\n", path);
-> > 
-> > So the question seems to be why b43 needs version 4, when b43legacy and
-> > bcm43x uses version 3?
+Arun Thomas wrote:
+> On Dec 14, 2007 2:01 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+>> Thomas Gleixner wrote:
+>>> The problem is caused by an SMI during the calibration routine. We
+>>> really need to come up with a solid solution which does not rely on
+>>> the periodic timer coming in, when there is something else (HPET,
+>>> pm_timer) available.
+>> How long is the SMI?
 > 
-> That's really a question, right?
-> 
-> Well. linux-2.4 doesn't work with the linux-2.6 modutils.
-> Windows Vista doesn't work with Windows 98 device drivers.
-> That leads to this assumption:
-> b43 doesn't work with version 3 firmware but needs version 4.
-> 
-> Newer drivers supporting newer hardware need newer firmware.
+> Is there some instrumentation code somewhere which would allow me to
+> determine this? If not, can you give me some hints on where to add the
+> instrumentation code?
 
-Actually, can you explain why, from the technical point of view, the version 4
-firware is better than version 3, please?
+Well, the most obvious way to do it would be to run the calibration loop 
+a large number of times, and observe the statistical variation.  In 
+particular, one should see a bi- or multimodal pattern where the 
+difference between the peaks amount to the "lost time".
 
-Rafael
+When we have a clue about the loss of time then we can figure out how to 
+detect it.
+
+	-hpa
