@@ -1,100 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764747AbXLOEH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763926AbXLOEJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764747AbXLOEH3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 23:07:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754918AbXLOEGz
+	id S1763926AbXLOEJW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 23:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbXLOEJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 23:06:55 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58931 "EHLO
+	Fri, 14 Dec 2007 23:09:15 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58963 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754191AbXLOEGy (ORCPT
+	with ESMTP id S1753060AbXLOEJO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 23:06:54 -0500
-Date: Fri, 14 Dec 2007 20:06:02 -0800
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.23.11
-Message-ID: <20071215040602.GB26274@kroah.com>
-References: <20071215040535.GA26274@kroah.com>
+	Fri, 14 Dec 2007 23:09:14 -0500
+Date: Fri, 14 Dec 2007 20:12:00 -0800
+From: Greg KH <greg@kroah.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] Linux 2.6.23.10
+Message-ID: <20071215041200.GA3987@kroah.com>
+References: <20071214194952.GA15765@kroah.com> <47633028.20503@redhat.com> <200712150315.22568.rjw@sisk.pl> <200712150355.41763.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071215040535.GA26274@kroah.com>
+In-Reply-To: <200712150355.41763.rjw@sisk.pl>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index 3f2c4e3..ada10d5 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 23
--EXTRAVERSION = .10
-+EXTRAVERSION = .11
- NAME = Arr Matey! A Hairy Bilge Rat!
- 
- # *DOCUMENTATION*
-diff --git a/drivers/char/apm-emulation.c b/drivers/char/apm-emulation.c
-index 72183bd..ec116df 100644
---- a/drivers/char/apm-emulation.c
-+++ b/drivers/char/apm-emulation.c
-@@ -295,6 +295,7 @@ static int
- apm_ioctl(struct inode * inode, struct file *filp, u_int cmd, u_long arg)
- {
- 	struct apm_user *as = filp->private_data;
-+	unsigned long flags;
- 	int err = -EINVAL;
- 
- 	if (!as->suser || !as->writer)
-@@ -330,16 +331,10 @@ apm_ioctl(struct inode * inode, struct file *filp, u_int cmd, u_long arg)
- 			 * Wait for the suspend/resume to complete.  If there
- 			 * are pending acknowledges, we wait here for them.
- 			 */
--			freezer_do_not_count();
-+			flags = current->flags;
- 
- 			wait_event(apm_suspend_waitqueue,
- 				   as->suspend_state == SUSPEND_DONE);
--
--			/*
--			 * Since we are waiting until the suspend is done, the
--			 * try_to_freeze() in freezer_count() will not trigger
--			 */
--			freezer_count();
- 		} else {
- 			as->suspend_state = SUSPEND_WAIT;
- 			mutex_unlock(&state_lock);
-@@ -367,10 +362,14 @@ apm_ioctl(struct inode * inode, struct file *filp, u_int cmd, u_long arg)
- 			 * Wait for the suspend/resume to complete.  If there
- 			 * are pending acknowledges, we wait here for them.
- 			 */
--			wait_event_freezable(apm_suspend_waitqueue,
-+			flags = current->flags;
-+
-+			wait_event_interruptible(apm_suspend_waitqueue,
- 					 as->suspend_state == SUSPEND_DONE);
- 		}
- 
-+		current->flags = flags;
-+
- 		mutex_lock(&state_lock);
- 		err = as->suspend_result;
- 		as->suspend_state = SUSPEND_NONE;
-diff --git a/net/bridge/br_fdb.c b/net/bridge/br_fdb.c
-index eb57502..bc40377 100644
---- a/net/bridge/br_fdb.c
-+++ b/net/bridge/br_fdb.c
-@@ -44,7 +44,7 @@ int __init br_fdb_init(void)
- 	return 0;
- }
- 
--void __exit br_fdb_fini(void)
-+void br_fdb_fini(void)
- {
- 	kmem_cache_destroy(br_fdb_cache);
- }
+On Sat, Dec 15, 2007 at 03:55:40AM +0100, Rafael J. Wysocki wrote:
+> On Saturday, 15 of December 2007, Rafael J. Wysocki wrote:
+> > On Saturday, 15 of December 2007, Chuck Ebbert wrote:
+> > > On 12/14/2007 08:52 PM, Rafael J. Wysocki wrote:
+> > > > On Saturday, 15 of December 2007, Chuck Ebbert wrote:
+> > > >> On 12/14/2007 02:49 PM, Greg Kroah-Hartman wrote:
+> > > >>>       Freezer: Fix APM emulation breakage
+> > > >> drivers/char/apm-emulation.c: In function 'apm_ioctl':
+> > > >> drivers/char/apm-emulation.c:370: error: implicit declaration of function 'wait_event_freezable'
+> > > >> make[2]: *** [drivers/char/apm-emulation.o] Error 1
+> > > >> make[1]: *** [drivers/char] Error 2
+> > > > 
+> > > > This is my fault, sorry.
+> > > > 
+> > > > I though the 2.6.24-rc fix would be suitable for 2.6.23.x, but that's not the
+> > > > case.
+> > > > 
+> > > > Greg, please revert the "Freezer: Fix APM emulation breakage" patch, I'll
+> > > > prepare a separate fix suitable for -stable.
+> > > > 
+> > > 
+> > > It works if you add the changes to freezer.h made in commit
+> > > e42837bcd35b75bb59ae5d3e62f87be1aeeb05c3
+> > 
+> > Yes, exactly, but a new patch is needed anyway.
+> > 
+> > Hmm, perhaps it's better to add a new patch on top of "Freezer: Fix APM
+> > emulation breakage"?  Would that be preferred?
+> 
+> For convenience, below is the patch that should fix the breakage when applied
+> on top of the "Freezer: Fix APM emulation breakage" patch.
+
+Can you send me a whole new patch that works properly for the next
+2.6.23-stable release?
+
+thanks,
+
+greg k-h
