@@ -1,145 +1,387 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbXLOD4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761873AbXLOD45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758898AbXLOD4c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 22:56:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbXLOD4Z
+	id S1761873AbXLOD45 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 22:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbXLOD4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 22:56:25 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:13777 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752755AbXLOD4Y (ORCPT
+	Fri, 14 Dec 2007 22:56:48 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:23577 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753993AbXLOD4r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 22:56:24 -0500
-Subject: [PATCH][RT] 2.6.24-rc5-rt1 drivers/dma/ioat_dma.c compile fix
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: Steven Rostedt <rostedt@goodmis.org>, shannon.nelson@intel.com
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       trem <tremyfr@yahoo.fr>
-In-Reply-To: <47435B31.2070304@yahoo.fr>
-References: <BAE9DCEF64577A439B3A37F36F9B691C0371E3E3@orsmsx418.amr.corp.intel.com>
-	 <Pine.LNX.4.58.0711161214480.24276@gandalf.stny.rr.com>
-	 <47435B31.2070304@yahoo.fr>
-Content-Type: text/plain
-Organization: The Big Corporation
-Date: Fri, 14 Dec 2007 19:56:13 -0800
-Message-Id: <1197690973.12832.12.camel@sx.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Fri, 14 Dec 2007 22:56:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=g0PCRMMmTGwqHuvOjOVivoku1FqMvIl0IeaOWmjtZoWbvM+mQGY2BWws4NoU+G0/o1pK9QE2pp/B/vGXzPmAC2b5FzvAoXEoAUT7MoiLXykLBG2z3SewElsWdrhmSDCGG4B9HOsHRjtZPykOj7c4eJ+kLbx3UketqoAdDe1htNc=
+Message-ID: <f17812d70712141956g736f1a2ct88237701bf3eec5d@mail.gmail.com>
+Date: Sat, 15 Dec 2007 11:56:44 +0800
+From: "eric miao" <eric.y.miao@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH 2.6.24-rc4-mm 1/2] gpiolib: basic support for 16-bit PCA9539 GPIO expander[
+Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       i2c@lm-sensors.org
+In-Reply-To: <200712112029.49692.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f17812d70712100139q31c95d6er12105ebbe94b3909@mail.gmail.com>
+	 <200712112029.49692.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve, 
+OK,
 
-looks like this patch didn't make it into 2.6.23-rc5-rt1.
+Here's the updated version, which
+1. modify the author info but still preserve Ben's credit in the source head
+2. Alphabetic order in Kconfig/Makefile
+3. typo fix and corrected Philips to NXP/TI
+4. use dev_err instead of printk
+5. move module_{init,exit} next to the routines
+6. preserve initial output/direction register settings
 
-I refreshed Trem's final version - please review and include in the next
-RT release.
+Also I'd like to fire another patch to obsolete drivers/i2c/chips/pca9539.c
+as everyone agreed.
 
-Thanks 
+>From 5ebe07bbbb236b99587296cbf603a965d284ceaf Mon Sep 17 00:00:00 2001
+From: eric miao <eric.miao@marvell.com>
+Date: Mon, 10 Dec 2007 17:19:12 +0800
+Subject: [PATCH] gpiolib: basic support for 16-bit PCA9539 GPIO expander
 
-Sven 
+1. use 16-bit register access to simplify the logic, cache OUTPUT
+   and DIRECTION registers for fast access
 
+2. platform code is required to setup
+   a) the numbering of GPIO for PCA9539 (base and number)
+   c) pass "pca9539_platform_data" within "i2c_board_info"
 
+Derived from drivers/i2c/chips/pca9539.c (which has no current known
+users).
 
-On Tue, 2007-11-20 at 23:09 +0100, trem wrote:
-> Steven Rostedt wrote:
-> > On Fri, 16 Nov 2007, Nelson, Shannon wrote:
-> >> first->async_tx.phys;
-> >>> -       __list_splice(&new_chain, ioat_chan->used_desc.prev);
-> >>> +       list_splice_tail(&new_chain, ioat_chan->used_desc.prev);
-> >>>
-> >> NAK.
-> >>
-> >> These functions do insertions differently.  The 'prev' is pointing
-> to
-> >> the last valid descriptor in the queue and you really want to get
-> the
-> >> new_chain stuck on after this.  Your list_splice_tail() will insert
-> the
-> >> new_chain just before it which will muck up the order of the DMA
-> >> requests.
-> >>
-> >> You might have more success with
-> >> 	list_splice_tail(&new_chain, ioat_chan->used_desc);
-> >> where used_desc points to the whole list, rather than using
-> the .prev
-> >> pointer to a specific node.
-> >>
-> >> Please copy me on future ioatdma related comments.
-> >>
-> > 
-
-> Hi
-> 
-> I've tried this change, but it still don't compile. So I propose this patch.
-> 
-> regards,
-> trem
-
-
-From: trem <tremyfr@yahoo.fr>
-Subject:  Re: [PATCH][RT] 2.6.24-rc2-rt1 drivers/dma/ioat_dma.c compile fix
-
-Steven Rostedt wrote:
-> On Fri, 16 Nov 2007, Nelson, Shannon wrote:
->> first->async_tx.phys;
->>> -       __list_splice(&new_chain, ioat_chan->used_desc.prev);
->>> +       list_splice_tail(&new_chain, ioat_chan->used_desc.prev);
->>>
->> NAK.
->>
->> These functions do insertions differently.  The 'prev' is pointing to
->> the last valid descriptor in the queue and you really want to get the
->> new_chain stuck on after this.  Your list_splice_tail() will insert the
->> new_chain just before it which will muck up the order of the DMA
->> requests.
->>
->> You might have more success with
->> 	list_splice_tail(&new_chain, ioat_chan->used_desc);
->> where used_desc points to the whole list, rather than using the .prev
->> pointer to a specific node.
->>
->> Please copy me on future ioatdma related comments.
->>
-> 
-> And people wonder why we post RT related patches to LKML. This is exactly
-> why!
-> 
-> Thanks for the response Shannon!
-> 
-> -- Steve
-> 
-
-Hi
-
-I've tried this change, but it still don't compile. So I propose this patch.
-
-regards,
-trem
-
-Acked-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
-
-------------------------
-
+Signed-off-by: eric miao <eric.miao@marvell.com>
 ---
- drivers/dma/ioat_dma.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpio/Kconfig        |   10 ++
+ drivers/gpio/Makefile       |    1 +
+ drivers/gpio/pca9539.c      |  247 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/i2c/pca9539.h |   18 +++
+ 4 files changed, 276 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/gpio/pca9539.c
+ create mode 100644 include/linux/i2c/pca9539.h
 
-Index: linux-2.6.23/drivers/dma/ioat_dma.c
-===================================================================
---- linux-2.6.23.orig/drivers/dma/ioat_dma.c
-+++ linux-2.6.23/drivers/dma/ioat_dma.c
-@@ -260,7 +260,7 @@ static dma_cookie_t ioat1_tx_submit(stru
- 	/* write address into NextDescriptor field of last desc in chain */
- 	to_ioat_desc(ioat_chan->used_desc.prev)->hw->next =
- 							first->async_tx.phys;
--	__list_splice(&new_chain, ioat_chan->used_desc.prev);
-+	list_splice(&new_chain, &ioat_chan->used_desc);
- 
- 	ioat_chan->dmacount += desc_count;
- 	ioat_chan->pending += desc_count;
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index dd9e697..4b54f60 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -9,6 +9,16 @@ menu "GPIO Expanders"
 
+ comment "I2C GPIO expanders:"
 
++config GPIO_PCA9539
++	tristate "PCA9539 16-bit I/O port"
++	depends on I2C
++	help
++	  Say yes here to support the PCA9539 16-bit I/O port. These
++	  parts are made by NXP and TI.
++
++	  This driver can also be built as a module.  If so, the module
++	  will be called pca9539.
++
+ config GPIO_PCF857X
+ 	tristate "PCF857x, PCA857x, and PCA967x I2C GPIO expanders"
+ 	depends on I2C
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index 575bb57..d14fc1e 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -1,4 +1,5 @@
+ # gpio support: dedicated expander chips, etc
 
+ obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
++obj-$(CONFIG_GPIO_PCA9539)	+= pca9539.o
+ obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+diff --git a/drivers/gpio/pca9539.c b/drivers/gpio/pca9539.c
+new file mode 100644
+index 0000000..955d891
+--- /dev/null
++++ b/drivers/gpio/pca9539.c
+@@ -0,0 +1,247 @@
++/*
++ *  pca9539.c - 16-bit I/O port with interrupt and reset
++ *
++ *  Copyright (C) 2005 Ben Gardner <bgardner@wabtec.com>
++ *  Copyright (C) 2007 Marvell International Ltd.
++ *
++ *  Derived from drivers/i2c/chips/pca9539.c (which has no current known
++ *  users).
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/i2c.h>
++#include <linux/i2c/pca9539.h>
++
++#include <asm/gpio.h>
++
++#define NR_PCA9539_GPIOS	16
++
++#define PCA9539_INPUT		0
++#define PCA9539_OUTPUT		2
++#define PCA9539_INVERT		4
++#define PCA9539_DIRECTION	6
++
++struct pca9539_chip {
++	unsigned gpio_start;
++	uint16_t reg_output;
++	uint16_t reg_direction;
++
++	struct i2c_client *client;
++	struct gpio_chip gpio_chip;
++};
++
++static int pca9539_write_reg(struct pca9539_chip *chip, int reg, uint16_t val)
++{
++	return i2c_smbus_write_word_data(chip->client, reg, val);
++}
++
++static int pca9539_read_reg(struct pca9539_chip *chip, int reg, uint16_t *val)
++{
++	int ret;
++
++	ret = i2c_smbus_read_word_data(chip->client, reg);
++	if (ret < 0) {
++		dev_err(&chip->client->dev, "failed reading register\n");
++		return ret;
++	}
++
++	*val = (uint16_t)ret;
++	return 0;
++}
++
++static int pca9539_gpio_direction_input(struct gpio_chip *gc, unsigned off)
++{
++	struct pca9539_chip *chip;
++	uint16_t reg_val;
++	int ret;
++
++	chip = container_of(gc, struct pca9539_chip, gpio_chip);
++
++	reg_val = chip->reg_direction | (1u << off);
++	ret = pca9539_write_reg(chip, PCA9539_DIRECTION, reg_val);
++	if (ret)
++		return ret;
++
++	chip->reg_direction = reg_val;
++	return 0;
++}
++
++static int pca9539_gpio_direction_output(struct gpio_chip *gc,
++		unsigned off, int val)
++{
++	struct pca9539_chip *chip;
++	uint16_t reg_val;
++	int ret;
++
++	chip = container_of(gc, struct pca9539_chip, gpio_chip);
++
++	/* set output level */
++	if (val)
++		reg_val = chip->reg_output | (1u << off);
++	else
++		reg_val = chip->reg_output & ~(1u << off);
++
++	ret = pca9539_write_reg(chip, PCA9539_OUTPUT, reg_val);
++	if (ret)
++		return ret;
++
++	chip->reg_output = reg_val;
++
++	/* then direction */
++	reg_val = chip->reg_direction & ~(1u << off);
++	ret = pca9539_write_reg(chip, PCA9539_DIRECTION, reg_val);
++	if (ret)
++		return ret;
++
++	chip->reg_direction = reg_val;
++	return 0;
++}
++
++static int pca9539_gpio_get_value(struct gpio_chip *gc, unsigned off)
++{
++	struct pca9539_chip *chip;
++	uint16_t reg_val;
++	int ret;
++
++	chip = container_of(gc, struct pca9539_chip, gpio_chip);
++
++	ret = pca9539_read_reg(chip, PCA9539_INPUT, &reg_val);
++	if (ret < 0)
++		return ret;
++
++	return (reg_val & (1u << off)) ? 1 : 0;
++}
++
++static void pca9539_gpio_set_value(struct gpio_chip *gc, unsigned off, int val)
++{
++	struct pca9539_chip *chip;
++	uint16_t reg_val;
++	int ret;
++
++	chip = container_of(gc, struct pca9539_chip, gpio_chip);
++
++	if (val)
++		reg_val = chip->reg_output | (1u << off);
++	else
++		reg_val = chip->reg_output & ~(1u << off);
++
++	ret = pca9539_write_reg(chip, PCA9539_OUTPUT, reg_val);
++	if (ret)
++		return;
++
++	chip->reg_output = reg_val;
++}
++
++static int pca9539_init_gpio(struct pca9539_chip *chip)
++{
++	struct gpio_chip *gc;
++
++	gc = &chip->gpio_chip;
++
++	gc->direction_input  = pca9539_gpio_direction_input;
++	gc->direction_output = pca9539_gpio_direction_output;
++	gc->get = pca9539_gpio_get_value;
++	gc->set = pca9539_gpio_set_value;
++
++	gc->base = chip->gpio_start;
++	gc->ngpio = NR_PCA9539_GPIOS;
++	gc->label = "pca9539";
++
++	return gpiochip_add(gc);
++}
++
++static int __devinit pca9539_probe(struct i2c_client *client)
++{
++	struct pca9539_platform_data *pdata;
++	struct pca9539_chip *chip;
++	int ret;
++
++	pdata = client->dev.platform_data;
++	if (pdata == NULL)
++		return -ENODEV;
++
++	chip = kzalloc(sizeof(struct pca9539_chip), GFP_KERNEL);
++	if (chip == NULL)
++		return -ENOMEM;
++
++	chip->client = client;
++
++	chip->gpio_start = pdata->gpio_base;
++
++	/* initialize cached registers from their original values */
++	pca9539_read_reg(chip, PCA9539_OUTPUT, &chip->reg_output);
++	pca9539_read_reg(chip, PCA9539_DIRECTION, &chip->reg_direction);
++
++	/* set platform specific polarity inversion */
++	pca9539_write_reg(chip, PCA9539_INVERT, pdata->invert);
++
++	ret = pca9539_init_gpio(chip);
++	if (ret)
++		goto out_failed;
++
++	if (pdata->setup) {
++		ret = pdata->setup(client, chip->gpio_chip.base,
++				chip->gpio_chip.ngpio, pdata->context);
++		if (ret < 0)
++			dev_dbg(&client->dev, "setup failed, %d\n", ret);
++	}
++
++	i2c_set_clientdata(client, chip);
++	return 0;
++
++out_failed:
++	kfree(chip);
++	return ret;
++}
++
++static int pca9539_remove(struct i2c_client *client)
++{
++	struct pca9539_platform_data *pdata = client->dev.platform_data;
++	struct pca9539_chip *chip = i2c_get_clientdata(client);
++	int ret = 0;
++
++	if (pdata->teardown) {
++		ret = pdata->teardown(client, chip->gpio_chip.base,
++				chip->gpio_chip.ngpio, pdata->context);
++		if (ret < 0)
++			dev_dbg(&client->dev, "teardown failed, %d\n", ret);
++	}
++
++	ret = gpiochip_remove(&chip->gpio_chip);
++	if (ret) {
++		dev_err(&client->dev, "failed remove gpio_chip\n");
++		return ret;
++	}
++
++	kfree(chip);
++	return 0;
++}
++
++static struct i2c_driver pca9539_driver = {
++	.driver = {
++		.name	= "pca9539",
++	},
++	.probe		= pca9539_probe,
++	.remove		= pca9539_remove,
++};
++
++static int __init pca9539_init(void)
++{
++	return i2c_add_driver(&pca9539_driver);
++}
++module_init(pca9539_init);
++
++static void __exit pca9539_exit(void)
++{
++	i2c_del_driver(&pca9539_driver);
++}
++module_exit(pca9539_exit);
++
++MODULE_AUTHOR("eric miao <eric.miao@marvell.com>");
++MODULE_DESCRIPTION("GPIO expander driver for PCA9539");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/i2c/pca9539.h b/include/linux/i2c/pca9539.h
+new file mode 100644
+index 0000000..611d84a
+--- /dev/null
++++ b/include/linux/i2c/pca9539.h
+@@ -0,0 +1,18 @@
++/* platform data for the PCA9539 16-bit I/O expander driver */
++
++struct pca9539_platform_data {
++	/* number of the first GPIO */
++	unsigned	gpio_base;
++
++	/* initial polarity inversion setting */
++	uint16_t	invert;
++
++	void		*context;	/* param to setup/teardown */
++
++	int		(*setup)(struct i2c_client *client,
++				unsigned gpio, unsigned ngpio,
++				void *context);
++	int		(*teardown)(struct i2c_client *client,
++				unsigned gpio, unsigned ngpio,
++				void *context);
++};
+-- 
+1.5.2.5.GIT
+
+-- 
+Cheers
+- eric
