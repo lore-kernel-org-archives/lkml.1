@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761685AbXLOMmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763691AbXLOMnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761685AbXLOMmV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 07:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbXLOMmH
+	id S1763691AbXLOMnF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 07:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbXLOMmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 07:42:07 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46177 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754262AbXLOMmG (ORCPT
+	Sat, 15 Dec 2007 07:42:53 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:35503 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754851AbXLOMmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 07:42:06 -0500
-Date: Sat, 15 Dec 2007 04:41:23 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: "Marcin Slusarz" <marcin.slusarz@gmail.com>,
-       "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc5-mm1 -- drivers/video/logo/logo_linux_clut224.c:598:
- error: conflicting type qualifiers for =?UTF-8?B?4oCYbG9nb19saW51eF9jbHV0?=
- =?UTF-8?B?MjI04oCZ?=
-Message-Id: <20071215044123.9e7bc160.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0712131716n39d29ec4qa0dfd6ad64a50b0a@mail.gmail.com>
-References: <a44ae5cd0712131716n39d29ec4qa0dfd6ad64a50b0a@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sat, 15 Dec 2007 07:42:52 -0500
+Date: Sat, 15 Dec 2007 13:42:51 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] dynamic pipe resizing
+In-Reply-To: <20070824085221.GA23758@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0712151336230.22877@fbirervta.pbzchgretzou.qr>
+References: <20070824085221.GA23758@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Dec 2007 20:16:13 -0500 "Miles Lane" <miles.lane@gmail.com> wrote:
 
-> Content analysis details:   (2.2 points, 2.0 required)
-> 
->  pts rule name              description
-> ---- ---------------------- --------------------------------------------------
->  3.1 UNIQUE_WORDS           BODY: Message body has many words used only once
->  0.3 UPPERCASE_50_75        message body is 50-75% uppercase
-> -1.3 AWL                    AWL: From: address is in the auto white-list
-> 
+On Aug 24 2007 10:52, Jens Axboe wrote:
+>Subject: [PATCH][RFC] dynamic pipe resizing
+>
+>Hi,
+>
+>Dabbling around with splice a bit, I added some code to change the size
+>of a pipe. Currently it's hardcoded as 16 pages, with this patch you can
+>shrink (if you wanted) or grow (the likely scenario) if you want to
+>increase the size of your in-kernel buffer for splice operations.
+>
+>Like with my original splice patches from 2005, I used fcntl()
+>F_GETPIPE_SZ and F_SETPIPE_SZ to change the size of the pipe. I'm not
+>particularly fond of that interface, so suggestions on how to improve it
+>would be appreciated. Even if fcntl() should be the preferred approach,
+>I think it would be better to pass in a byte based value instead of a
+>number of pages.
+>
+Could this patch still make it in?
+Yes, I think its set() and get() parts should use bytes and convert 
+to/from pages.
 
-hm, look who I found in my spam folder.
+> /*
+>+ * Allocate a new array of pipe buffers and copy the info over. Returns the
+>+ * pipe size if successful, or return -ERROR on error.
+>+ */
+>+static long pipe_set_size(struct pipe_inode_info *pipe, unsigned long arg)
+>+{
+>+	struct pipe_buffer *bufs;
+>+
+>+	/*
+>+	 * Must be a power-of-2 current
+>+	 */
+>+	if (arg & (arg - 1))
+>+		return -EINVAL;
+>+
 
-> 
-> 
-> From: "Miles Lane" <miles.lane@gmail.com>
-> To: "Marcin Slusarz" <marcin.slusarz@gmail.com>, "Andrew Morton" <akpm@linux-foundation.org>, "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-> Subject: 2.6.24-rc5-mm1 -- drivers/video/logo/logo_linux_clut224.c:598: error: conflicting type qualifiers for ‘logo_linux_clut224’
-> Date: 	Thu, 13 Dec 2007 20:16:13 -0500
-> Sender: linux-kernel-owner@vger.kernel.org
-> 
->   CC      drivers/video/logo/logo_linux_clut224.o
-> drivers/video/logo/logo_linux_clut224.c:598: error: conflicting type
-> qualifiers for 'logo_linux_clut224'
-> include/linux/linux_logo.h:47: error: previous declaration of
-> 'logo_linux_clut224' was here
-> make[3]: *** [drivers/video/logo/logo_linux_clut224.o] Error 1
+Perhaps just round up, and mention the rounding in the manpage, so that 
+noone gets a shock when the pipe is not exactly as small as requested.
 
-Yeah, `make mrproper' is needed.  A `make clean' might work too - I haven't
-tried that.
+>+	/*
+>+	 * We can shrink the pipe, if arg >= pipe->nrbufs. Since we don't
+>+	 * expect a lot of shrink+grow operations, just free and allocate
+>+	 * again like we would do for growing. If the pipe currently
+>+	 * contains more buffers than arg, then return busy.
+>+	 */
+>+	if (arg < pipe->nrbufs)
+>+		return -EBUSY;
+
+How big can a pipe become? k*alloc has a certain limit, so should 
+perhaps vmalloc be used for when kalloc fails?
+
