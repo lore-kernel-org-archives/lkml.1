@@ -1,79 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbXLOT6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763655AbXLOUAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761357AbXLOT6P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 14:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbXLOT6B
+	id S1763655AbXLOUAj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 15:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbXLOUAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 14:58:01 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:36423 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753365AbXLOT6A (ORCPT
+	Sat, 15 Dec 2007 15:00:32 -0500
+Received: from softmonsters.com ([213.239.220.73]:49497 "EHLO
+	mail.softmonsters.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754329AbXLOUAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 14:58:00 -0500
-Subject: Re: Regression: Wireshark sees no packets in 2.6.24-rc3
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Ray Lee <ray@madrabbit.org>
-Cc: Gabriel C <nix.or.die@googlemail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <2c0942db0712150016r149d285bs8f4e1c444e71afea@mail.gmail.com> (sfid-20071215_081641_992849_E96123B3)
-References: <2c0942db0712131746s7da91f2bkf45b3e1ddf16d1f3@mail.gmail.com>
-	 <200712150305.02589.rjw@sisk.pl> <47633ECC.3020804@googlemail.com>
-	 <2c0942db0712142309v15f79068m8c033180d41b9be@mail.gmail.com>
-	 <2c0942db0712150016r149d285bs8f4e1c444e71afea@mail.gmail.com>
-	 (sfid-20071215_081641_992849_E96123B3)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZbAMOyRSv68qhcinASOL"
-Date: Sat, 15 Dec 2007 20:57:52 +0100
-Message-Id: <1197748672.16079.59.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sat, 15 Dec 2007 15:00:31 -0500
+X-Greylist: delayed 1207 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Dec 2007 15:00:31 EST
+Message-ID: <47642D9A.4080600@softmonsters.com>
+Date: Sat, 15 Dec 2007 20:40:10 +0100
+From: Zsolt Barat <zsolt@softmonsters.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071117)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: ATA bus error with external hd on esata
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+hi list,
+i just bought a "MyBook" called external HD with a fixed enclosure, from
+WD. Connected to the SATA port i constantly get "ATA bus error" messages
+in the kernel log. Is this a known issue?
 
---=-ZbAMOyRSv68qhcinASOL
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+/var/log/messages:
+Dec 15 18:37:53 proto1 ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0
+action 0x2
+Dec 15 18:37:53 proto1 ata2.00: irq_stat 0x40000001
+Dec 15 18:37:53 proto1 ata2.00: cmd 35/00:e0:a7:d2:01/00:01:33:00:00/e0
+tag 0 cdb 0x0 data 245760 out
+Dec 15 18:37:53 proto1 res 51/84:00:86:d4:01/00:00:33:00:00/e0 Emask
+0x10 (ATA bus error)
+Dec 15 18:37:54 proto1 ata2: soft resetting port
+Dec 15 18:37:54 proto1 ata2: SATA link up 1.5 Gbps (SStatus 113 SControl
+310)
+Dec 15 18:37:54 proto1 ata2.00: configured for UDMA/33
+Dec 15 18:37:54 proto1 ata2: EH complete
+Dec 15 18:37:54 proto1 sd 1:0:0:0: [sdb] 976773168 512-byte hardware
+sectors (500108 MB)
+Dec 15 18:37:54 proto1 sd 1:0:0:0: [sdb] Write Protect is off
+Dec 15 18:37:54 proto1 sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+Dec 15 18:37:54 proto1 sd 1:0:0:0: [sdb] Write cache: enabled, read
+cache: enabled, doesn't support DPO or FUA
+Dec 15 18:38:15 proto1 ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0
+action 0x2
+Dec 15 18:38:15 proto1 ata2.00: irq_stat 0x40000001
+Dec 15 18:38:15 proto1 ata2.00: cmd 35/00:80:bf:09:14/00:01:33:00:00/e0
+tag 0 cdb 0x0 data 196608 out
+Dec 15 18:38:15 proto1 res 51/84:00:3e:0b:14/00:00:33:00:00/e0 Emask
+0x10 (ATA bus error)
+Dec 15 18:38:15 proto1 ata2: soft resetting port
+Dec 15 18:38:15 proto1 ata2: SATA link up 1.5 Gbps (SStatus 113 SControl
+310)
+Dec 15 18:38:15 proto1 ata2.00: configured for UDMA/33
+Dec 15 18:38:15 proto1 ata2: EH complete
+Dec 15 18:38:15 proto1 sd 1:0:0:0: [sdb] 976773168 512-byte hardware
+sectors (500108 MB)
+Dec 15 18:38:15 proto1 sd 1:0:0:0: [sdb] Write Protect is off
+Dec 15 18:38:15 proto1 sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+Dec 15 18:38:15 proto1 sd 1:0:0:0: [sdb] Write cache: enabled, read
+cache: enabled, doesn't support DPO or FUA
 
+lspci:
+00:00.0 Host bridge: ATI Technologies Inc Unknown device 7910
+00:01.0 PCI bridge: ATI Technologies Inc Unknown device 7912
+00:07.0 PCI bridge: ATI Technologies Inc Unknown device 7917
+00:12.0 SATA controller: ATI Technologies Inc SB600 Non-Raid-5 SATA
+00:13.0 USB Controller: ATI Technologies Inc SB600 USB (OHCI0)
+00:13.1 USB Controller: ATI Technologies Inc SB600 USB (OHCI1)
+00:13.2 USB Controller: ATI Technologies Inc SB600 USB (OHCI2)
+00:13.3 USB Controller: ATI Technologies Inc SB600 USB (OHCI3)
+00:13.4 USB Controller: ATI Technologies Inc SB600 USB (OHCI4)
+00:13.5 USB Controller: ATI Technologies Inc SB600 USB Controller (EHCI)
+00:14.0 SMBus: ATI Technologies Inc SB600 SMBus (rev 13)
+00:14.1 IDE interface: ATI Technologies Inc SB600 IDE
+00:14.2 Audio device: ATI Technologies Inc SB600 Azalia
+00:14.3 ISA bridge: ATI Technologies Inc SB600 PCI to LPC Bridge
+00:14.4 PCI bridge: ATI Technologies Inc SB600 PCI to PCI Bridge
+00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+HyperTransport Technology Configuration
+00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+Address Map
+00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+DRAM Controller
+00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+Miscellaneous Control
+01:05.0 VGA compatible controller: ATI Technologies Inc Radeon X1200 Series
+01:05.2 Audio device: ATI Technologies Inc Radeon X1200 Series Audio
+Controller
+02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
+03:00.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394 Host
+Controller (rev c0)
 
-On Sat, 2007-12-15 at 00:16 -0800, Ray Lee wrote:
-> On Dec 14, 2007 11:09 PM, Ray Lee <ray@madrabbit.org> wrote:
-> > On Dec 14, 2007 6:41 PM, Gabriel C <nix.or.die@googlemail.com> wrote:
-> > Correct, absolutely no traffic. So if it works for you, then either
-> > it's something that got fixed between -rc3 and -rc5, or something odd
-> > when I did a make oldconfig, I suppose. (Or because I'm on an x86-64
-> > kernel?) Regardless, -rc5 is currently building, and I'll try it in
-> > the morning.
->=20
-> -rc5 works great. Really don't know what's different between my -rc3
-> and -rc5 builds.
+thanks and best regards
 
-I have an -rc3+wireless bits which also works great wrt.
-tcpdump/wireshark.
-
-johannes
-
---=-ZbAMOyRSv68qhcinASOL
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR2Qxv6Vg1VMiehFYAQJWbRAAvMVpeMgB5yCHRif90u4ZbYZVEz0OSD4M
-KL4gWqQi0M3hk+Ng4j7YyztZCm3u60Vt2H53cHds4RoVehBufCmOTYB9YKYuM1ti
-TqlbU/Be9Uo7HWdV2rapYSPyofJ/pBA+bZR6tApcAWCOBdJ1rUcmiiiTmVlBvKHr
-YbEu6tgVUNmDXmCY2u7gkrJvvpreQw0z7Xxq3iIjXVNZTOH2EUZo4/keYaAVNnfh
-4hrroJQ/cIjTgUbsZKkmmlTtnUxwVGacgIuAToBTZvzAFu4gc2TZSQKlc/Z7/mf5
-JLQhIFib/P+pr4sSc4jsFGqu+21i4eWBXDiAGtXaNwwbAVg6VvuFaJ+HNhe6Vtdj
-VQi5bCv2fHQdJHbf1GHHu3O9LKm6XE3CmFwXZ2GqgsvFMt74nfC3bAK2TdHAp59A
-1//UxYh7g91ESXmqnqEjd5rXibAecGrr2xsZ5f1qWjPcizqEYFU5oqgm9ha6knhc
-l4a52hvZfvu9AotKseS8xJCxGEDkk0Jh4yABLucJRmkHAiJHxEOx8GCrLX+gdSmL
-7d6Fptjz/TwduAqtF+4gwDq1064TYWbpA758TCCLl1OLELwKoFImg9BwDGWPkpBs
-wKSvSSlDZHe+9mGJiNyybwE4h4oDA+CDWQfLV7T7BvTuY0y79C5LZgNJmhBuUQXj
-5Zoq560o/Yc=
-=vGeI
------END PGP SIGNATURE-----
-
---=-ZbAMOyRSv68qhcinASOL--
+zsolt
 
