@@ -1,58 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765561AbXLON1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765372AbXLONeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765561AbXLON1z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 08:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbXLON1r
+	id S1765372AbXLONeq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 08:34:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbXLONeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 08:27:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57808 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752807AbXLON1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 08:27:46 -0500
-Date: Sat, 15 Dec 2007 14:27:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "David P. Reed" <dpreed@reed.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, Rene Herman <rene.herman@keyaccess.nl>,
-       Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
-	on some AMD64x2 laptops, etc.
-Message-ID: <20071215132725.GA23166@elte.hu>
-References: <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <20071214131502.GA14359@elte.hu> <4762C551.5070003@zytor.com> <20071215074358.GD12110@elte.hu> <4763891A.3010004@gmail.com>
+	Sat, 15 Dec 2007 08:34:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:14925 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751395AbXLONeg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 08:34:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=cE9OWK3H9sPobUs7uvHaFxWjW4mzxbAOVdLZfGiVVtSL477SJnT75dq3RFFX2+7FeDqDvK7EpYqH94ZaSyXrjwhmZmotqULkXS4s6vVWaSHfhAdoaMjJAAsxyZ0gk6+RzDfIJAw8E9PkRh8HNgbT3wToUeumE8KRxBr+MnvAbfc=
+Date: Sat, 15 Dec 2007 16:34:28 +0300
+To: Greg KH <greg@kroah.com>
+Cc: Greg KH <gregkh@suse.de>, Alexey Dobriyan <adobriyan@sw.ru>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: Re: kobject ->k_name memory leak
+Message-ID: <20071215133428.GA1732@martell.zuzino.mipt.ru>
+References: <20071203092607.GA22477@localhost.sw.ru> <20071203204716.GA9734@suse.de> <20071203210959.GA1725@martell.zuzino.mipt.ru> <20071203212551.GA11962@suse.de> <20071214214823.GA10305@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4763891A.3010004@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071214214823.GA10305@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Dec 14, 2007 at 01:48:23PM -0800, Greg KH wrote:
+> On Mon, Dec 03, 2007 at 01:25:51PM -0800, Greg KH wrote:
+> > On Tue, Dec 04, 2007 at 12:09:59AM +0300, Alexey Dobriyan wrote:
+> > > On Mon, Dec 03, 2007 at 12:47:16PM -0800, Greg KH wrote:
+> > > > On Mon, Dec 03, 2007 at 12:26:07PM +0300, Alexey Dobriyan wrote:
+> > > > > Hi, Greg!
+> > > > > 
+> > > > > Commit ce2c9cb0259acd2aed184499ebe41ab00da13b25 aka
+> > > > > "kobject: remove the static array for the name" introduced memory leak
+> > > > > of a module name after modprobe/rmmod. Apparently for modules ->release
+> > > > > callback is NULL.
+> > > > > 
+> > > > > kobject_cleanup: ->release = 00000000, name = 'foo_sysctl'
+> > > > > Pid: 1927, comm: rmmod Not tainted 2.6.24-rc3-e1cca7e8d484390169777b423a7fe46c7021fec1 #5
+> > > > >  [<c10d4a58>] kobject_cleanup+0xb8/0xc0
+> > > > >  [<c10d4a60>] kobject_release+0x0/0x10
+> > > > >  [<c10d587b>] kref_put+0x2b/0xa0
+> > > > >  [<c11dbe85>] _spin_unlock+0x25/0x40
+> > > > >  [<c1045b78>] free_module+0x78/0xd0
+> > > > >  [<c104773f>] sys_delete_module+0x12f/0x1a0
+> > > > 
+> > > > Hm, _which_ kobject associated with a module, there are 3 of them I
+> > > > think :)
+> > > 
+> > > Ouch!
+> > > 
+> > > > They should all have a release function, and if they do not, we think
+> > > > it's a "static" kobject and it is not safe to free that name.
+> > > > 
+> > > > I've been working on cleaning this up a lot in the -mm tree with over 80
+> > > > patches for the kset/kobject apis and interfaces.
+> > > > 
+> > > > But if we have a dynamic kobject, and we aren't freeing it properly,
+> > > > please let me know which one it is and I'll work to fix it for 2.6.24.
+> > > 
+> > > The one which is passed to kobject_set_name() in mod_sysfs_init()..
+> > 
+> > That one should be set to the module_ktype, which is in kernel/params.c,
+> > so the release function there should... oh crap, there is no release
+> > function.  That's a bug.  After I get out of meetings tonight I'll write
+> > up a patch for that, unless someone beats me to it :)
+> 
+> Ok, this is a mess.  We can't really have a release function for this
+> kobject, as the structure it is embedded it has it's own memory
+> management issues.
+> 
+> To fix this properly is going to take some major kobject/module surgery,
+> it's not a simple fix at all.  I'll tackle it for 2.6.25, as it fits in
+> nicely with the other kobject rework that I've already done in the -mm
+> tree.
+> 
+> So, for now, can we just live with this tiny memory leak on module
+> unload?
 
-* Rene Herman <rene.herman@gmail.com> wrote:
+For the record, this leak screws any testing one can do wrt module
+unload races. You can't really leave box overnight running
+modprobe/rmmod in a loop, because OOM killer will finally kick in.
+Hey, this is exactly how it was noticed at all.
 
-> The issue is -- how do you safely replace the outb pre-loops_per_jiffy 
-> calibration? I'm currently running with the attached hack (not 
-> submitted, only for 32-bit and discussion) the idea of which might be 
-> the best we can do?
+> Or is the above trace something that users will see when unloading
+> modules?
 
-how about doing a known-NOP chipset cycle? For example:
-
-  inb(PIC_SLAVE_IMR)
-
-? I.e. instead of trying to find an unused port, lets try to find a 
-known-used platform register that has no side-effects if read. Use it 
-unconditionally during early bootup and change it to an udelay after 
-calibration. (or use it after early bootup too if a boot parameter has 
-been specified) Or something like this.
-
-	Ingo
+No, it's added debugging.
