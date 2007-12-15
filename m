@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761695AbXLOXkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbXLOXws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761695AbXLOXkj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 18:40:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbXLOXk3
+	id S1760908AbXLOXws (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 18:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbXLOXwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 18:40:29 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:41384 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752539AbXLOXk2 (ORCPT
+	Sat, 15 Dec 2007 18:52:38 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36837 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751867AbXLOXwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 18:40:28 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=PEgIiVBAgZqAuhZeZwTXrz3VuOWv3QuHjAyVeLvaIQN2awgCQ8nTSr68xRme4f4otWXreA8c05cBJejgDg5YI+oQswxPRecjf12Go1YBT0jPdV8Gg11KOaREILqTeDnIBuLNuSS7cnlp4sI1xCHCPK7UTXIMviPjgZXkWvVzOEU=  ;
-X-YMail-OSG: wHhNBzUVM1nVyufDR2ZVVBGWWzWzwnCCBlpHffcPY76Zsja_jPIi9JOrdYzp7mDYIV9os1FIsg--
-Date: Sat, 15 Dec 2007 15:40:24 -0800
-From: David Brownell <david-b@pacbell.net>
-To: linux-kernel@vger.kernel.org, i2c@lm-sensors.org, eric.y.miao@gmail.com
-Subject: Re: [PATCH 2.6.24-rc5-mm 1/3] gpiolib: basic support for 16-bit 
- PCA9539 GPIO expander
-Cc: khali@linux-fr.org, bgardner@wabtec.com
-References: <f17812d70712142014s3e2bf56es9c9e2b24ed164c3e@mail.gmail.com>
-In-Reply-To: <f17812d70712142014s3e2bf56es9c9e2b24ed164c3e@mail.gmail.com>
+	Sat, 15 Dec 2007 18:52:38 -0500
+Message-ID: <4764687D.6080609@zytor.com>
+Date: Sat, 15 Dec 2007 15:51:25 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Rene Herman <rene.herman@gmail.com>
+CC: Paul Rolland <rol@as2917.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
+       "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       Rene Herman <rene.herman@keyaccess.nl>, rol@witbe.net
+Subject: Re: [PATCH] x86: fix problems due to use of "outb" to port 80 on
+ some AMD64x2 laptops, etc.
+References: <469578CD.3080609@reed.com>	<1184216528.12353.203.camel@chaos>	<1184218962.12353.209.camel@chaos>	<46964352.7040301@reed.com>	<1184253339.12353.223.camel@chaos>	<469697C6.50903@reed.com>	<1184274754.12353.254.camel@chaos>	<4761F193.7090400@reed.com>	<20071214131502.GA14359@elte.hu>	<4762C551.5070003@zytor.com>	<20071214210652.GB28793@elf.ucw.cz>	<4763001A.1070102@zytor.com>	<20071214232955.545ab809@the-village.bc.nu> <20071215080831.404cdb32@tux.DEF.witbe.net> <47638C8C.2090604@gmail.com> <476438B4.2020600@zytor.com> <476462BE.3030701@gmail.com>
+In-Reply-To: <476462BE.3030701@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071215234024.2B4DA10C75D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	/* initialize cached registers from their original values */
-> +	pca9539_read_reg(chip, PCA9539_OUTPUT, &chip->reg_output);
-> +	pca9539_read_reg(chip, PCA9539_DIRECTION, &chip->reg_direction);
-> +
-> +	/* set platform specific polarity inversion */
-> +	pca9539_write_reg(chip, PCA9539_INVERT, pdata->invert);
-> +
-> +	ret = pca9539_init_gpio(chip);
-> +	if (ret)
-> +		goto out_failed;
+Rene Herman wrote:
+> 
+> I hope this is considered half-way correct/sane (note by the way that 
+> it's not a good idea to switch a "native_io_delay_port" value since 
+> plugging in a variable port would clobber register dx for every outb_p, 
+> which would then have to be reloaded for the next outb again). Comments 
+> appreciated.
+> 
 
-I'm glad to see this patch no longer trashes previous chip state,
-but there's still an issue in that area.  Surely the code should
+That actually wouldn't be that big of a deal.  Switching values in and 
+out of registers is dirt cheap (and MUCH cheaper than an indirect 
+function call) -- of course, if there is a reason to do it for 
+paravirtualization then that's fine; we're talking about something that 
+makes even the slowest CPU operation look speedy anyhow.
 
-	ret = pca9539_read_reg(...)
-	if (ret)
-		goto out_failed;
+If in*_p and out*_p are out-of-lined then %dx would be dead anyway, and 
+so there is even less reason to deal with it.
 
-and likewise for the write?  If the chip isn't present (and thus
-an I/O error is reported), its probe() should fail.
+In theory we could use an alternatives section and patch the 
+instruction, too; seems like way overkill, though.
 
-- Dave
+Note, however, that your code doesn't deal with io_delay()'s in the boot 
+code (arch/x86/boot) at all, nor (obviously) io_delay()'s in boot 
+loaders.  In the boot code, access to DMI data is NOT available (we 
+can't even use the INT 15h mover if we want to continue to support Loadlin.)
 
+In the boot code, io_delay() is used to slow down accesses to the KBC, 
+interrupt controller, INT13h logic, and the NMI gate, and to provide a 
+fixed delay during A20 stabilization.
+
+	-hpa
