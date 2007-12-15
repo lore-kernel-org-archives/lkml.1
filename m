@@ -1,91 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764725AbXLON7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbXLOODV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764725AbXLON7x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 08:59:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbXLON7m
+	id S932252AbXLOODV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 09:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbXLOODP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 08:59:42 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:3042 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752570AbXLON7l (ORCPT
+	Sat, 15 Dec 2007 09:03:15 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:15739 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752249AbXLOODO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 08:59:41 -0500
-Date: Sat, 15 Dec 2007 21:58:52 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: Wang Chen <wangchen@cn.fujitsu.com>, Gerrit Renker <gerrit@erg.abdn.ac.uk>,
-       davem@davemloft.net, andi@firstfloor.org, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] [UDP6]: Counter increment on BH mode
-Message-ID: <20071215135851.GA29063@gondor.apana.org.au>
-References: <474F7EE8.2040009@cn.fujitsu.com> <474F8255.5060501@cn.fujitsu.com> <20071130111949.GB28277@gerrit.erg.abdn.ac.uk> <20071201015438.GC26895@gondor.apana.org.au> <4753AE07.1040906@cn.fujitsu.com> <20071203113935.GA25124@gondor.apana.org.au> <20071203114912.GA4425@ms2.inr.ac.ru> <20071203115435.GA4202@gondor.apana.org.au> <20071203131723.GA30312@gondor.apana.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071203131723.GA30312@gondor.apana.org.au>
-User-Agent: Mutt/1.5.9i
+	Sat, 15 Dec 2007 09:03:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=oKXW4XCPsvtMF8yjH6m/ZrT0eISuZsic1qL8++YZE6uuyn2mGTfe7wq+EbHOfIdsYt05zCNCTxG7dXihHZZnyEUO4TORwtO/wPZUQ6WToNS0Jv1fTcuNj2vYh0GpCrgBkc7TnxaAeGpHPMGR3joqZCuVjy6QhYBywn1FILJ+lBs=
+Message-ID: <4763DE3F.405@gmail.com>
+Date: Sat, 15 Dec 2007 15:01:35 +0100
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: "H. Peter Anvin" <hpa@zytor.com>, "David P. Reed" <dpreed@reed.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, Rene Herman <rene.herman@keyaccess.nl>,
+       Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
+ on some AMD64x2 laptops, etc.
+References: <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <20071214131502.GA14359@elte.hu> <4762C551.5070003@zytor.com> <20071215074358.GD12110@elte.hu> <4763891A.3010004@gmail.com> <20071215132725.GA23166@elte.hu>
+In-Reply-To: <20071215132725.GA23166@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ob Tue, Dec 04, 2007 at 12:17:23AM +1100, Herbert Xu wrote:
+On 15-12-07 14:27, Ingo Molnar wrote:
+
+> * Rene Herman <rene.herman@gmail.com> wrote:
 > 
-> Never mind, we already have that in local_t and as Alexey correctly
-> points out, USER is still going to be the expensive variant with the
-> preempt_disable (well until BH gets threaded).  So how about this patch?
+>> The issue is -- how do you safely replace the outb pre-loops_per_jiffy 
+>> calibration? I'm currently running with the attached hack (not 
+>> submitted, only for 32-bit and discussion) the idea of which might be 
+>> the best we can do?
+> 
+> how about doing a known-NOP chipset cycle? For example:
+> 
+>   inb(PIC_SLAVE_IMR)
 
-I didn't hear any objections so here is the patch again.
+An inb is annoying in that it clobbers register al (well, with an inline 
+native_io_delay it is at least) and more importantly -- the timing of this 
+is going to vary wildly. We really want a register that is effectively 
+guaranteed to be unused so that it dies on ISA/LPC or we might get _much_ 
+faster PCI only decodes. Even reading port 0x80 itself varies wildly:
 
-[SNMP]: Fix SNMP counters with PREEMPT
+http://lkml.org/lkml/2007/12/12/309
 
-The SNMP macros use raw_smp_processor_id() in process context
-which is illegal because the process may be preempted and then
-migrated to another CPU.
+> ? I.e. instead of trying to find an unused port, lets try to find a 
+> known-used platform register that has no side-effects if read. Use it 
+> unconditionally during early bootup and change it to an udelay after 
+> calibration. (or use it after early bootup too if a boot parameter has 
+> been specified) Or something like this.
 
-This patch makes it use get_cpu/put_cpu to disable preemption.
+It's really going to have to be a known _un_used register and (the write 
+direction of) port 0x80 is used exactly for that reason. Port 0xed is a 
+known "alternate diagnostic port" used by Phoenix BIOSes at least but Peter 
+Anvin reported trouble with that one -- probably for the outb direction but 
+assuming that means something was in fact responding, we'd have the same 
+timing problem.
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+I believe we have two "good" options:
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/include/net/snmp.h b/include/net/snmp.h
-index ea206bf..9444b54 100644
---- a/include/net/snmp.h
-+++ b/include/net/snmp.h
-@@ -23,6 +23,7 @@
- 
- #include <linux/cache.h>
- #include <linux/snmp.h>
-+#include <linux/smp.h>
- 
- /*
-  * Mibs are stored in array of unsigned long.
-@@ -137,7 +138,10 @@ struct linux_mib {
- #define SNMP_INC_STATS_OFFSET_BH(mib, field, offset)	\
- 	(per_cpu_ptr(mib[0], raw_smp_processor_id())->mibs[field + (offset)]++)
- #define SNMP_INC_STATS_USER(mib, field) \
--	(per_cpu_ptr(mib[1], raw_smp_processor_id())->mibs[field]++)
-+	do { \
-+		per_cpu_ptr(mib[1], get_cpu())->mibs[field]++; \
-+		put_cpu(); \
-+	} while (0)
- #define SNMP_INC_STATS(mib, field) 	\
- 	(per_cpu_ptr(mib[!in_softirq()], raw_smp_processor_id())->mibs[field]++)
- #define SNMP_DEC_STATS(mib, field) 	\
-@@ -145,6 +149,9 @@ struct linux_mib {
- #define SNMP_ADD_STATS_BH(mib, field, addend) 	\
- 	(per_cpu_ptr(mib[0], raw_smp_processor_id())->mibs[field] += addend)
- #define SNMP_ADD_STATS_USER(mib, field, addend) 	\
--	(per_cpu_ptr(mib[1], raw_smp_processor_id())->mibs[field] += addend)
-+	do { \
-+		per_cpu_ptr(mib[1], get_cpu())->mibs[field] += addend; \
-+		put_cpu(); \
-+	} while (0)
- 
- #endif
+1) port 0xed was tested by the current reporter and found to be safe (and 
+provide slow enough timing). If DMI  based quirk hacks are available soon 
+enough we can switch 0x80 to 0xed based on it. Are they?
+
+2) the thing I posted in the message replied to where immediately after 
+tsc_init() (which is before the PIT init) we switch to udelay() if we have a 
+TSC which is ofcourse anything modern.
+
+Rene.
