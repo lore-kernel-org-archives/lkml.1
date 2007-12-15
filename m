@@ -1,144 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbXLOCgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757768AbXLOClh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbXLOCgh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 21:36:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbXLOCg2
+	id S1757768AbXLOClh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 21:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbXLOCl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 21:36:28 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42956 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751087AbXLOCg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 21:36:27 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: Linux 2.6.23.10
-Date: Sat, 15 Dec 2007 03:55:40 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-References: <20071214194952.GA15765@kroah.com> <47633028.20503@redhat.com> <200712150315.22568.rjw@sisk.pl>
-In-Reply-To: <200712150315.22568.rjw@sisk.pl>
+	Fri, 14 Dec 2007 21:41:27 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:17821 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbXLOClZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 21:41:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=V8uDE7/troguWdllF4k5puwTNGL9XnSGtS9y+0GsbQ8YA84oYzFZzGOr1eRCvYOMeHoB9HkJMLiAaFUk8XSCzi3GGJH5RJ/wu2n3tF642BTwQ5s+cFhZKTsL2uCLaii8lbvwx393MB1xUzNS3EF37MzPg8jkt734UJmdDmup1fs=
+Message-ID: <47633ECC.3020804@googlemail.com>
+Date: Sat, 15 Dec 2007 03:41:16 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071204)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Ray Lee <ray@madrabbit.org>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Regression: Wireshark sees no packets in 2.6.24-rc3
+References: <2c0942db0712131746s7da91f2bkf45b3e1ddf16d1f3@mail.gmail.com> <200712150305.02589.rjw@sisk.pl>
+In-Reply-To: <200712150305.02589.rjw@sisk.pl>
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712150355.41763.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 15 of December 2007, Rafael J. Wysocki wrote:
-> On Saturday, 15 of December 2007, Chuck Ebbert wrote:
-> > On 12/14/2007 08:52 PM, Rafael J. Wysocki wrote:
-> > > On Saturday, 15 of December 2007, Chuck Ebbert wrote:
-> > >> On 12/14/2007 02:49 PM, Greg Kroah-Hartman wrote:
-> > >>>       Freezer: Fix APM emulation breakage
-> > >> drivers/char/apm-emulation.c: In function 'apm_ioctl':
-> > >> drivers/char/apm-emulation.c:370: error: implicit declaration of function 'wait_event_freezable'
-> > >> make[2]: *** [drivers/char/apm-emulation.o] Error 1
-> > >> make[1]: *** [drivers/char] Error 2
-> > > 
-> > > This is my fault, sorry.
-> > > 
-> > > I though the 2.6.24-rc fix would be suitable for 2.6.23.x, but that's not the
-> > > case.
-> > > 
-> > > Greg, please revert the "Freezer: Fix APM emulation breakage" patch, I'll
-> > > prepare a separate fix suitable for -stable.
-> > > 
-> > 
-> > It works if you add the changes to freezer.h made in commit
-> > e42837bcd35b75bb59ae5d3e62f87be1aeeb05c3
+Rafael J. Wysocki wrote:
+> On Friday, 14 of December 2007, Ray Lee wrote:
+>> tshark -i eth0, eth1, lo are all empty. Works under 2.6.23.0 just
+>> fine. A quick scan of the log between 2.6.24-rc3 and current tip
+>> (-rc5) doesn't show any obvious fixes, but then again, what do I know.
+>> I'll check current tip on the weekend when I'll have the luxury to
+>> have my main system down long enough for a test. Right now I'm kinda
+>> up against a deadline, but didn't want to leave it unreported. Should
+>> be easy for someone else to confirm or deny whether current tip has
+>> the problem.
 > 
-> Yes, exactly, but a new patch is needed anyway.
-> 
-> Hmm, perhaps it's better to add a new patch on top of "Freezer: Fix APM
-> emulation breakage"?  Would that be preferred?
+> FYI, I have created a bugzilla entry for this issue at:
+> http://bugzilla.kernel.org/show_bug.cgi?id=9568
 
-For convenience, below is the patch that should fix the breakage when applied
-on top of the "Freezer: Fix APM emulation breakage" patch.
+Hmm what do you mean by empty ? it does not capturing anything on that interface ?
 
-Thanks,
-Rafael
+I do run -rc5-git with wireshark-0.99.6 and tshark -i eth0 or lo works here.
+
+snip
+
+...
+
+-- sudo tshark -i eth0
+
+Capturing on eth0
+1197685732.785920  192.168.0.1 -> 239.255.255.250 SSDP NOTIFY * HTTP/1.1
+1197685732.790126  192.168.0.1 -> 239.255.255.250 SSDP NOTIFY * HTTP/1.1
+1197685732.793613  192.168.0.1 -> 239.255.255.250 SSDP NOTIFY * HTTP/1.1
+1197685732.797656  192.168.0.1 -> 239.255.255.250 SSDP NOTIFY * HTTP/1.1
+...
+
+1197685738.680962  77.37.20.73 -> 192.168.0.2  TCP 44544 > 44625 [PSH, ACK] Seq=0 Ack=20 Win=88 Len=27 TSV=914082460 TSER=145333592
+1197685738.681007  192.168.0.2 -> 77.37.20.73  TCP 44625 > 44544 [ACK] Seq=20 Ack=27 Win=1002 Len=0 TSV=145333645 TSER=914082460
+1197685745.994576  192.168.0.2 -> 81.169.185.129 NTP NTP client
+1197685746.058523 81.169.185.129 -> 192.168.0.2  NTP NTP server
+1197685749.058576  192.168.0.2 -> 85.214.68.60 NTP NTP client
+1197685749.121771 85.214.68.60 -> 192.168.0.2  NTP NTP server
+1197685751.391157  77.37.20.73 -> 192.168.0.2  TCP 44544 > 44625 [PSH, ACK] Seq=27 Ack=20 Win=88 Len=55 TSV=914085637 TSER=145333645
+1197685751.391201  192.168.0.2 -> 77.37.20.73  TCP 44625 > 44544 [ACK] Seq=20 Ack=82 Win=1002 Len=0 TSV=145346355 TSER=914085637
+
+....
+
+-- sudo tshark -i lo
+
+Capturing on lo
+1197686288.330222  192.168.0.2 -> 192.168.0.2  TCP 53122 > http [SYN] Seq=0 Len=0 MSS=16396 TSV=145883294 TSER=0 WS=6
+1197686288.330225  192.168.0.2 -> 192.168.0.2  TCP http > 53122 [SYN, ACK] Seq=0 Ack=1 Win=32768 Len=0 MSS=16396 TSV=145883294 TSER=145883294 WS=6
+1197686288.330251  192.168.0.2 -> 192.168.0.2  TCP 53122 > http [ACK] Seq=1 Ack=1 Win=32832 Len=0 TSV=145883294 TSER=145883294
+1197686288.330327  192.168.0.2 -> 192.168.0.2  HTTP GET /.KDE/kdegames-3.97.1_747147.tar.bz2 HTTP/1.0
+1197686288.330357  192.168.0.2 -> 192.168.0.2  TCP http > 53122 [ACK] Seq=1 Ack=132 Win=33856 Len=0 TSV=145883294 TSER=145883294
+1197686288.474624  192.168.0.2 -> 192.168.0.2  HTTP HTTP/1.1 200 OK (application/x-bzip2)
+1197686288.474684  192.168.0.2 -> 192.168.0.2  TCP 53122 > http [ACK] Seq=132 Ack=16385 Win=49344 Len=0 TSV=145883439 TSER=145883439
+
+....
+
+snip
 
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Regards,
 
-This patch is needed to fix the compilation breakage in the
-APM emulation driver in 2.6.23.10 caused by the
-"Freezer: Fix APM emulation breakage" patch.
-
-The changes introduced by this patch are already in the
-mainline (commit e42837bcd35b75bb59ae5d3e62f87be1aeeb05c3).
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- include/linux/freezer.h |   38 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
-
-Index: linux-2.6.23.y/include/linux/freezer.h
-===================================================================
---- linux-2.6.23.y.orig/include/linux/freezer.h
-+++ linux-2.6.23.y/include/linux/freezer.h
-@@ -4,6 +4,7 @@
- #define FREEZER_H_INCLUDED
- 
- #include <linux/sched.h>
-+#include <linux/wait.h>
- 
- #ifdef CONFIG_PM_SLEEP
- /*
-@@ -126,6 +127,36 @@ static inline void set_freezable(void)
- 	current->flags &= ~PF_NOFREEZE;
- }
- 
-+/*
-+ * Freezer-friendly wrappers around wait_event_interruptible() and
-+ * wait_event_interruptible_timeout(), originally defined in <linux/wait.h>
-+ */
-+
-+#define wait_event_freezable(wq, condition)				\
-+({									\
-+	int __retval;							\
-+	do {								\
-+		__retval = wait_event_interruptible(wq, 		\
-+				(condition) || freezing(current));	\
-+		if (__retval && !freezing(current))			\
-+			break;						\
-+		else if (!(condition))					\
-+			__retval = -ERESTARTSYS;			\
-+	} while (try_to_freeze());					\
-+	__retval;							\
-+})
-+
-+
-+#define wait_event_freezable_timeout(wq, condition, timeout)		\
-+({									\
-+	long __retval = timeout;					\
-+	do {								\
-+		__retval = wait_event_interruptible_timeout(wq,		\
-+				(condition) || freezing(current),	\
-+				__retval); 				\
-+	} while (try_to_freeze());					\
-+	__retval;							\
-+})
- #else /* !CONFIG_PM_SLEEP */
- static inline int frozen(struct task_struct *p) { return 0; }
- static inline int freezing(struct task_struct *p) { return 0; }
-@@ -143,6 +174,13 @@ static inline void freezer_do_not_count(
- static inline void freezer_count(void) {}
- static inline int freezer_should_skip(struct task_struct *p) { return 0; }
- static inline void set_freezable(void) {}
-+
-+#define wait_event_freezable(wq, condition)				\
-+		wait_event_interruptible(wq, condition)
-+
-+#define wait_event_freezable_timeout(wq, condition, timeout)		\
-+		wait_event_interruptible_timeout(wq, condition, timeout)
-+
- #endif /* !CONFIG_PM_SLEEP */
- 
- #endif	/* FREEZER_H_INCLUDED */
+Gabriel
