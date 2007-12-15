@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbXLOGX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbXLOG35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757002AbXLOGX3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 01:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbXLOGXV
+	id S1758373AbXLOG35 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 01:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbXLOG3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 01:23:21 -0500
-Received: from gate.crashing.org ([63.228.1.57]:43791 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752070AbXLOGXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 01:23:21 -0500
-Subject: Re: [PATCH] Make WARN_ON/WARN_ON_ONCE no-ops when CONFIG_BUG is off
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Matt Mackall <mpm@selenic.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071214180246.GT17536@waste.org>
-References: <20071214132755.GA18309@gondor.apana.org.au>
-	 <20071214180246.GT17536@waste.org>
-Content-Type: text/plain
-Date: Sat, 15 Dec 2007 17:22:50 +1100
-Message-Id: <1197699770.6696.50.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Dec 2007 01:29:45 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:2673 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753192AbXLOG3o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 01:29:44 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: ranma+kernel@tdiedrich.de (Tobias Diedrich)
+Subject: Re: dst cache overflow
+Cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dada1@cosmosbay.com
+Organization: Core
+In-Reply-To: <20071214172945.GA10809@yamamaya.is-a-geek.org>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.net
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1J3QWn-0006sJ-00@gondolin.me.apana.org.au>
+Date: Sat, 15 Dec 2007 14:29:37 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tobias Diedrich <ranma+kernel@tdiedrich.de> wrote:
+>
+> Meanwhile I added a slab statistic rrd script. Nothing obvious to
+> see on ari or yumi yet, but on oni (which after all is the most
+> affected by this) I can see 'size_2048' and 'TCPv6' growing
+> steadily along with the route cache size (Presumably 'ip_dst_cache',
+> which is also growing larger at a more or less constant rate).
 
-On Fri, 2007-12-14 at 12:02 -0600, Matt Mackall wrote:
-> 
-> I added CONFIG_BUG, and I think the current behavior is correct. As
-> you've noticed, we have to evaluate condition, it may have
-> side-effects. And if code does:
-> 
->         /* this indicates a driver bug, report and fail gracefully */
->         if (WARN_ON(val == NULL))
->                 return -EFAULT;
-> 
-> ..we surely want it to continue returning -EFAULT, regardless of
-> whether we log it, no? What use case did you have in mind?
+OK that almost certainly means that we have a leak of TCPv6
+objects which would then cause a leak of dst objects.
 
-I find such code totally distateful.
+So you need to track down why TCPv6 isn't getting cleaned up.
+First check the obvious, do you have any process(es) that are
+hoarding TCPv6 sockets?
 
-Ben.
+If not do you see a growing list of dead sockets in netstat?
 
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
