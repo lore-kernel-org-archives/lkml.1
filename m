@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXLOHTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765136AbXLOHTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762650AbXLOHTI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 02:19:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbXLOHSx
+	id S1765136AbXLOHTk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 02:19:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbXLOHTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 02:18:53 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:3154 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753006AbXLOHSw (ORCPT
+	Sat, 15 Dec 2007 02:19:31 -0500
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:53493 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754109AbXLOHTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 02:18:52 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: akpm@linux-foundation.org (Andrew Morton)
-Subject: Re: 2.6.24-rc5-mm1 -- inconsistent {in-softirq-W} -> {softirq-on-R} usage.
-Cc: miles.lane@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       mingo@elte.hu, a.p.zijlstra@chello.nl
-Organization: Core
-In-Reply-To: <20071214153633.5d8f609a.akpm@linux-foundation.org>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1J3RIJ-0006zH-00@gondolin.me.apana.org.au>
-Date: Sat, 15 Dec 2007 15:18:43 +0800
+	Sat, 15 Dec 2007 02:19:30 -0500
+Message-ID: <47637FDA.2030303@lwfinger.net>
+Date: Fri, 14 Dec 2007 23:18:50 -0800
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: mvtodevnull@gmail.com
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
+       Daniel Walker <dwalker@mvista.com>, Ray Lee <ray-lk@madrabbit.org>,
+       =?ISO-8859-1?Q?Simon_Holm_Th=F8gerse?= =?ISO-8859-1?Q?n?= 
+	<odie@cs.aau.dk>,
+       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, Ingo Molnar <mingo@elte.hu>, kjwinchester@gmail.com,
+       jonathan@jonmasters.org, akpm@linux-foundation.org,
+       bcm43xx-dev@lists.berlios.de
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
+ to mutex
+References: <20071213003028.676998182@mvista.com>	 <1197637194.7549.10.camel@odie.local>	 <200712141404.24275.mb@bu3sch.de> <200712150151.49025.rjw@sisk.pl>	 <476326A1.6090404@lwfinger.net>	 <520b60a90712141759h65f1e63ei65ba00887a930d06@mail.gmail.com>	 <47633BAE.6040604@lwfinger.net>	 <520b60a90712142037j14d54de5nf5657ab2927fb3f5@mail.gmail.com> <520b60a90712142039t539faeddo68e73816fe1b3237@mail.gmail.com>
+In-Reply-To: <520b60a90712142039t539faeddo68e73816fe1b3237@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> I'd say you hit a networking locking bug and then when trying to report
-> that bug, lockdep crashed.
+mvtodevnull@gmail.com wrote:
+> On Dec 14, 2007 11:37 PM,  <mvtodevnull@gmail.com> wrote:
+>> I'll attach these logs since I can't read much into them.
 > 
-> The networking bug looks to be around sock_i_ino()'s taking of
-> sk_callback_lock with softirq's enabled.  Perhaps this will fix it.
+> I should do what I say...
 > 
-> diff -puN net/core/sock.c~a net/core/sock.c
-> --- a/net/core/sock.c~a
-> +++ a/net/core/sock.c
-> @@ -1115,9 +1115,9 @@ int sock_i_uid(struct sock *sk)
-> {
->        int uid;
-> 
-> -       read_lock(&sk->sk_callback_lock);
-> +       read_lock_bh(&sk->sk_callback_lock);
->        uid = sk->sk_socket ? SOCK_INODE(sk->sk_socket)->i_uid : 0;
-> -       read_unlock(&sk->sk_callback_lock);
-> +       read_unlock_bh(&sk->sk_callback_lock);
 
-The callback lock is never taken for writing in BH context so
-this shouldn't be needed.
+It will take a while to finish looking over those logs, but are you using ipv6? If not, please 
+blacklist the ipv6 module to prevent it from loading - add the line 'blacklist ipv6' to file 
+/etc/modprobe.d/blacklist. In some cases, ipv6 can cause timeouts even though you do not have any 
+ipv6 routers.
 
-Let's fix the lockdep checker first and then decide what's broken
-in networking, OK?
+Larry
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
