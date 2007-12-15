@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765034AbXLOANg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760682AbXLOA2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765034AbXLOANg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Dec 2007 19:13:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbXLOAN2
+	id S1760682AbXLOA2Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Dec 2007 19:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbXLOA2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Dec 2007 19:13:28 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:48854 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753813AbXLOAN2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Dec 2007 19:13:28 -0500
-Date: Sat, 15 Dec 2007 01:13:31 +0100
-From: Adrian Bunk <bunk@kernel.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Willy Tarreau <wtarreau@hera.kernel.org>, stable@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tmpfs: restore missing clear_highpage
-Message-ID: <20071215001331.GC5403@stusta.de>
-References: <Pine.LNX.4.64.0711281844370.25292@blonde.wat.veritas.com> <475F24A7.3020106@redhat.com> <Pine.LNX.4.64.0712120434410.9566@blonde.wat.veritas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712120434410.9566@blonde.wat.veritas.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 14 Dec 2007 19:28:16 -0500
+Received: from cantor.suse.de ([195.135.220.2]:42992 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753537AbXLOA2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Dec 2007 19:28:16 -0500
+Subject: patch add-documentation-for-fair_user_sched-sysfs-files.patch added to gregkh-2.6 tree
+To: dhaval@linux.vnet.ibm.com, akpm@linux-foundation.org, balbir@in.ibm.com,
+       gregkh@suse.de, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       vatsa@linux.vnet.ibm.com
+From: <gregkh@suse.de>
+Date: Fri, 14 Dec 2007 16:11:10 -0800
+In-Reply-To: <20071212054859.GC1486@linux.vnet.ibm.com>
+Message-ID: <1197677470@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 05:01:51AM +0000, Hugh Dickins wrote:
-> On Tue, 11 Dec 2007, Chuck Ebbert wrote:
-> > On 11/28/2007 01:55 PM, Hugh Dickins wrote:
-> > > tmpfs was misconverted to __GFP_ZERO in 2.6.11.  There's an unusual case in
-> > > which shmem_getpage receives the page from its caller instead of allocating.
-> > > We must cover this case by clear_highpage before SetPageUptodate, as before.
-> > > 
-> > > Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> > > ---
-> > 
-> > What are the symptoms of the bug this fixes?
-> 
-> I've not seen it in practice, just noticed it while working on that
-> area in the code.  What's the polite way of describing these things
-> in public?  It's a vulnerability which might allow an attacker to
-> access data from inside the kernel which should have been zeroed -
-> in very limited circumstances I'd prefer not to have to devise and
-> announce.
-> 
-> It would also be wrong data, so could for example crash any program
-> rightly relying on uninitialized static data to be zeroed - in the
-> unlikely event that its data was coming via this route (in most setups
-> it never can do, perhaps I'd conclude that's true of all setups).  It
-> has escaped notice for nearly three years, so it's not a commonplace.
-> 
-> Further discussion offline if you like!
 
-Can we get or is there already a CVE number?
+This is a note to let you know that I've just added the patch titled
 
-> Hugh
+     Subject: Add Documentation for FAIR_USER_SCHED sysfs files
 
-cu
-Adrian
+to my gregkh-2.6 tree.  Its filename is
 
--- 
+     add-documentation-for-fair_user_sched-sysfs-files.patch
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
+
+>From dhaval@linux.vnet.ibm.com Tue Dec 11 21:51:17 2007
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Date: Wed, 12 Dec 2007 11:18:59 +0530
+Subject: Add Documentation for FAIR_USER_SCHED sysfs files
+To: Greg KH <gregkh@suse.de>
+Cc: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, Balbir Singh <balbir@in.ibm.com>
+Message-ID: <20071212054859.GC1486@linux.vnet.ibm.com>
+Content-Disposition: inline
+
+This patch adds documentation about /sys/kernel/uids/<uid>/cpu_share
+to Documentation/ABI.
+
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ Documentation/ABI/testing/sysfs-kernel-uids |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-kernel-uids
+@@ -0,0 +1,14 @@
++What:		/sys/kernel/uids/<uid>/cpu_shares
++Date:		December 2007
++Contact:	Dhaval Giani <dhaval@linux.vnet.ibm.com>
++		Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
++Description:
++		The /sys/kernel/uids/<uid>/cpu_shares tunable is used
++		to set the cpu bandwidth a user is allowed. This is a
++		propotional value. What that means is that if there
++		are two users logged in, each with an equal number of
++		shares, then they will get equal CPU bandwidth. Another
++		example would be, if User A has shares = 1024 and user
++		B has shares = 2048, User B will get twice the CPU
++		bandwidth user A will. For more details refer
++		Documentation/sched-design-CFS.txt
+
+
+Patches currently in gregkh-2.6 which might be from dhaval@linux.vnet.ibm.com are
+
+driver/struct-user_info-sysfs.patch
+driver/add-documentation-for-fair_user_sched-sysfs-files.patch
