@@ -1,81 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760212AbXLPVTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760388AbXLPVWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760212AbXLPVTm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 16:19:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757829AbXLPVTf
+	id S1760388AbXLPVWa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 16:22:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbXLPVWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 16:19:35 -0500
-Received: from postfix2-g20.free.fr ([212.27.60.43]:49325 "EHLO
-	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754969AbXLPVTf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 16:19:35 -0500
-Message-ID: <476595EC.5050103@ccr.jussieu.fr>
-Date: Sun, 16 Dec 2007 22:17:32 +0100
-From: Bernard Pidoux <pidoux@ccr.jussieu.fr>
-Organization: Universite Pierre & Marie Curie - Paris 6
-User-Agent: Thunderbird 2.0.0.4 (X11/20070620)
+	Sun, 16 Dec 2007 16:22:23 -0500
+Received: from saeurebad.de ([85.214.36.134]:33849 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757897AbXLPVWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 16:22:22 -0500
+From: Johannes Weiner <hannes-kernel@saeurebad.de>
+To: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Cc: Dave Jones <davej@codemonkey.org.uk>
+Subject: [PATCH] cpufreq: Default governor initialisation before use
+Date: Sun, 16 Dec 2007 22:20:48 +0100
+Message-ID: <x78x3u2v67.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-To: Linux Netdev List <netdev@vger.kernel.org>
-CC: linux-kernel@vger.kernel.org
-Subject: [BUG]  lack of  /proc/net/ax25  with  2.6.24-rc5
-References: <476303C8.2060507@ccr.jussieu.fr> <20071215101810.GA3143@ami.dom.local>
-In-Reply-To: <20071215101810.GA3143@ami.dom.local>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With 2.6.24-rc5 there is no /proc/net/ax25
+Ensure that the selected default cpufreq governor is initialised before
+used by the cpufreq driver on boot by using fs_initcall() instead of
+module_init().
 
-Here is an extract from dmesg after boot :
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+---
+On boot, speedstep_init() calls into cpufreq_gov_dbs().  The driver has
+not yet been initialised by cpufreq_gov_dbs_init() and kondemand_wq is
+still NULL when it is dereferenced.
 
-=======================
-sysctl table check failed: /net/ax25/ax0/ax25_default_mode .3.9.1.2 
-Unknown sysctl binary path
-Pid: 2936, comm: kissattach Not tainted 2.6.24-rc5 #1
-  [<c012ca6a>] set_fail+0x3b/0x43
-  [<c012ce7a>] sysctl_check_table+0x408/0x456
-  [<c012ce8e>] sysctl_check_table+0x41c/0x456
-  [<c012ce8e>] sysctl_check_table+0x41c/0x456
-  [<c02ac64a>] _spin_unlock+0x14/0x1c
-  [<c012ce8e>] sysctl_check_table+0x41c/0x456
-  [<c011e681>] sysctl_set_parent+0x19/0x2a
-  [<c011f55c>] register_sysctl_table+0x45/0x85
-  [<d8be9d26>] ax25_register_sysctl+0x112/0x11c [ax25]
-  [<d8be6c76>] ax25_device_event+0x2e/0x90 [ax25]
-  [<c012c560>] notifier_call_chain+0x2a/0x47
-  [<c012c59f>] raw_notifier_call_chain+0x17/0x1a
-  [<c0259290>] dev_open+0x6f/0x75
-  [<c0257ee7>] dev_change_flags+0x9c/0x148
-  [<c0256ab3>] __dev_get_by_name+0x68/0x73
-  [<c0292307>] devinet_ioctl+0x22e/0x53b
-  [<c0259074>] dev_ioctl+0x472/0x5ba
-  [<c024d4ba>] sock_ioctl+0x1aa/0x1cf
-  [<c024d310>] sock_ioctl+0x0/0x1cf
-  [<c016bc19>] do_ioctl+0x19/0x4c
-  [<c016be40>] vfs_ioctl+0x1f4/0x20b
-  [<c0103d01>] sysenter_past_esp+0x9a/0xa9
-  [<c016be9c>] sys_ioctl+0x45/0x5d
-  [<c0103cc6>] sysenter_past_esp+0x5f/0xa9
-  =======================
-sysctl table check failed: /net/ax25/ax0/backoff_type .3.9.1.3 Unknown 
-sysctl binary path
-(...) truncated
-  =======================
-sysctl table check failed: /net/ax25/ax0/connect_mode .3.9.1.4 Unknown 
-sysctl binary path
-(...)
-  =======================
-sysctl table check failed: /net/ax25/ax0/standard_window_size .3.9.1.5 
-Unknown sysctl binary path
-  =======================
-(...)
+Changing the drivers module_init() to fs_initcall() fixed it.  The same
+is already done in the performance and userspace governor drivers.
 
-and so on ...
+The patch migrates all governors to use fs_initcall() when being the
+default governor.
 
+ drivers/cpufreq/cpufreq_conservative.c |    4 ++++
+ drivers/cpufreq/cpufreq_ondemand.c     |    5 ++++-
+ drivers/cpufreq/cpufreq_performance.c  |    4 ++++
+ drivers/cpufreq/cpufreq_userspace.c    |    4 ++++
+ 4 files changed, 16 insertions(+), 1 deletions(-)
 
-
-Bernard Pidoux
-f6bvp@amsat.org
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 1bba997..5d3a04b 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -603,5 +603,9 @@ MODULE_DESCRIPTION ("'cpufreq_conservative' - A dynamic cpufreq governor for "
+ 		"optimised for use in a battery environment");
+ MODULE_LICENSE ("GPL");
+ 
++#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
++fs_initcall(cpufreq_gov_dbs_init);
++#else
+ module_init(cpufreq_gov_dbs_init);
++#endif
+ module_exit(cpufreq_gov_dbs_exit);
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 369f445..d2af20d 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -610,6 +610,9 @@ MODULE_DESCRIPTION("'cpufreq_ondemand' - A dynamic cpufreq governor for "
+                    "Low Latency Frequency Transition capable processors");
+ MODULE_LICENSE("GPL");
+ 
++#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
++fs_initcall(cpufreq_gov_dbs_init);
++#else
+ module_init(cpufreq_gov_dbs_init);
++#endif
+ module_exit(cpufreq_gov_dbs_exit);
+-
+diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufreq_performance.c
+index e8e1451..df5fca3 100644
+--- a/drivers/cpufreq/cpufreq_performance.c
++++ b/drivers/cpufreq/cpufreq_performance.c
+@@ -60,5 +60,9 @@ MODULE_AUTHOR("Dominik Brodowski <linux@brodo.de>");
+ MODULE_DESCRIPTION("CPUfreq policy governor 'performance'");
+ MODULE_LICENSE("GPL");
+ 
++#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+ fs_initcall(cpufreq_gov_performance_init);
++#else
++module_init(cpufreq_gov_performance_init);
++#endif
+ module_exit(cpufreq_gov_performance_exit);
+diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
+index 51bedab..f8cdde4 100644
+--- a/drivers/cpufreq/cpufreq_userspace.c
++++ b/drivers/cpufreq/cpufreq_userspace.c
+@@ -231,5 +231,9 @@ MODULE_AUTHOR ("Dominik Brodowski <linux@brodo.de>, Russell King <rmk@arm.linux.
+ MODULE_DESCRIPTION ("CPUfreq policy governor 'userspace'");
+ MODULE_LICENSE ("GPL");
+ 
++#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE
+ fs_initcall(cpufreq_gov_userspace_init);
++#else
++module_init(cpufreq_gov_userspace_init);
++#endif
+ module_exit(cpufreq_gov_userspace_exit);
