@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762768AbXLPAg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763903AbXLPAjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762768AbXLPAg0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 19:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbXLPAgT
+	id S1763903AbXLPAjr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 19:39:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756344AbXLPAjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 19:36:19 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:34712 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752504AbXLPAgS convert rfc822-to-8bit (ORCPT
+	Sat, 15 Dec 2007 19:39:39 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:32955 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753836AbXLPAji (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 19:36:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=nf4TbQHXSEBvjfdraBQS8Px/9kIod1oamzCphI5D0cCboMSF0vWgZD4OS6xQt3o64GL0zIDAubqlYm+4n5z5x9fWBmDWqopWuhA8xcasA+7Wol7k3vkwpJ4Q8ok+XeiVYkgfhvDL1BtUKhF+Oli0mG7W0Lw1Dwv9jRMsfraNims=
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] alsa: fix SNDRV_PCM_IOCTL_TTSTAMP value.
-Date: Sun, 16 Dec 2007 01:36:30 +0100
-User-Agent: KMail/1.9.7
-Cc: perex@perex.cz
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200712160136.30622.mboton@gmail.com>
-From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
+	Sat, 15 Dec 2007 19:39:38 -0500
+X-Greylist: delayed 602 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Dec 2007 19:39:37 EST
+X-Trace: 639608455-mk-filter-1.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
+X-SBRS: None
+X-RemoteIP: 81.1.89.91
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAN7/Y0dRAVlb/2dsb2JhbACBV6ZQ
+Subject: Re: [PATCH 0/3] Add GD-Rom support to the SEGA Dreamcast
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Adrian McMenamin <lkmladrian@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       linux-sh@vger.kernel.org, axboe@kernel.dk, linux-ide@vger.kernel.org
+In-Reply-To: <8b67d60712151620s331281f4s7e150aacacff4400@mail.gmail.com>
+References: <8b67d60712151620s331281f4s7e150aacacff4400@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 16 Dec 2007 00:29:03 +0000
+Message-Id: <1197764943.6440.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"[ALSA] Use posix clock monotonic for PCM and timer timestamps" introduces
-a bug that makes audio device unusable in some computers.
 
-Signed-off-by: Miguel Botón <mboton@gmail.com>
+On Sun, 2007-12-16 at 00:20 +0000, Adrian McMenamin wrote:
+> (Apologies if you've already had this. I sent it to lkml etc an hour
+> ago but it just disappeated into the ether - trying it in smaller
+> packets this time.)
+> 
 
-diff --git a/include/sound/asound.h b/include/sound/asound.h
-index 475eb71..d35aa44 100644
---- a/include/sound/asound.h
-+++ b/include/sound/asound.h
-@@ -443,7 +443,7 @@ enum {
- enum {
- 	SNDRV_PCM_IOCTL_PVERSION = _IOR('A', 0x00, int),
- 	SNDRV_PCM_IOCTL_INFO = _IOR('A', 0x01, struct snd_pcm_info),
--	SNDRV_PCM_IOCTL_TTSTAMP = _IOW('A', 0x03, int),
-+	SNDRV_PCM_IOCTL_TTSTAMP = _IOW('A', 0x02, int),
- 	SNDRV_PCM_IOCTL_HW_REFINE = _IOWR('A', 0x10, struct snd_pcm_hw_params),
- 	SNDRV_PCM_IOCTL_HW_PARAMS = _IOWR('A', 0x11, struct snd_pcm_hw_params),
- 	SNDRV_PCM_IOCTL_HW_FREE = _IO('A', 0x12),
+vger/lkml's spam filtering is trapping the main part of the patch as
+spam. Possibly because it has a lot of register names as capitals?
 
--- 
-	Miguel Botón
+I'll have to find some other way of putting it on the list.
+
