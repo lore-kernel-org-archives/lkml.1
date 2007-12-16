@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbXLPTd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbXLPTm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757016AbXLPTd0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 14:33:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbXLPTdS
+	id S1757257AbXLPTm1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 14:42:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXLPTmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 14:33:18 -0500
-Received: from mail.gatrixx.com ([217.111.11.44]:41607 "EHLO mail.gatrixx.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751088AbXLPTdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 14:33:17 -0500
-Message-ID: <47657D79.7090100@j-o-a.de>
-Date: Sun, 16 Dec 2007 20:33:13 +0100
-From: Oliver Joa <oliver@j-o-a.de>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: How to Switch DMA off for only one Harddisk at Kernelboot
-References: <4765690C.6010605@j-o-a.de> <47657BA8.3020004@googlemail.com>
-In-Reply-To: <47657BA8.3020004@googlemail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 16 Dec 2007 14:42:17 -0500
+Received: from smtp-100-sunday.nerim.net ([62.4.16.100]:54600 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751615AbXLPTmR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 14:42:17 -0500
+Date: Sun, 16 Dec 2007 20:42:14 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "eric miao" <eric.y.miao@gmail.com>
+Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org,
+       "David Brownell" <david-b@pacbell.net>,
+       "Ben Gardner" <bgardner@wabtec.com>
+Subject: Re: [PATCH 2.6.24-rc5-mm 3/3] gpiolib: obsolete
+ drivers/i2c/chips/pca9539.c
+Message-ID: <20071216204214.01fd7a16@hyperion.delvare>
+In-Reply-To: <f17812d70712142016q73abffc2w99174c40f847152c@mail.gmail.com>
+References: <f17812d70712142016q73abffc2w99174c40f847152c@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Eric,
 
-Gabriel C wrote:
-> Oliver Joa wrote:
->> Hi,
+On Sat, 15 Dec 2007 12:16:50 +0800, eric miao wrote:
+> From 0bca662f68e7ffe84f333d7d26df25d846713db2 Mon Sep 17 00:00:00 2001
+> From: eric miao <eric.miao@marvell.com>
+> Date: Sat, 15 Dec 2007 12:07:26 +0800
+> Subject: [PATCH] gpiolib: obsolete drivers/i2c/chips/pca9539.c
 > 
-> Hi Oliver ,
+> for the following reasons:
 > 
->> how can I tell the kernel not to probe DMA for a specific harddisk (e.g. 
->> hda). My first Drive (hda) is a Compact-Flash Card which can not do DMA. 
->> The kernel tries at boot to switch to DMA but fails. If I use ide=nodma, 
->> the kernel boots about 2 minutes faster, but then I can not switch on 
->> DMA for the second Drive (hdc) which is a normal Harddisk. Do I have to 
->> live with this 2 minutes waiting time or is there another solution? I 
->> did not find any kernel-parameter for this purpose.
->>
->> Sorry if I ask here, but I can not find any solution, and I asked 
->> already in other groups.
->>
->> Thank you very much
+> 1. there is currently no known users of this driver
 > 
-> Should work with hda=nodma or ideX=nodma ( where X is your HDD nr , in your case is 0 )
+> 2. the functionality of this driver is well supported with the recent
+>    proposed drivers/gpio/pca9539.c, using GPIO_LIB
+> 
 
-I tried this already, it does not work.
+This is fine with me, however...
 
-> Also have a look at Documentation/ide.txt.
+> Signed-off-by: eric miao <eric.miao@marvell.com>
+> Acked-by: Ben Gardner <bgardner@wabtec.com>
+> ---
+>  drivers/i2c/chips/Kconfig   |   10 --
+>  drivers/i2c/chips/Makefile  |    1 -
+>  drivers/i2c/chips/pca9539.c |  196 -------------------------------------------
 
-I read this already. Searching for "nodma" in this document gives only 
-one line:
+... please also delete Documentation/i2c/chips/pca9539.
 
-  "ide=nodma"            : disable DMA globally for the IDE subsystem.
+>  3 files changed, 0 insertions(+), 207 deletions(-)
+>  delete mode 100644 drivers/i2c/chips/pca9539.c
 
-If the documentation is correct hda=nodma and ideX=nodma should not 
-work. I use kernel 2.6.23.1 at the moment.
-
-Thanks
-
-Olli
+-- 
+Jean Delvare
