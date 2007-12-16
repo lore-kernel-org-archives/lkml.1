@@ -1,86 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbXLPTpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758643AbXLPTpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757788AbXLPTpL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 14:45:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbXLPTpA
+	id S1758643AbXLPTpz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 14:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbXLPTpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 14:45:00 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:46260 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754701AbXLPTo7 (ORCPT
+	Sun, 16 Dec 2007 14:45:47 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:32517 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754949AbXLPTpp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 14:44:59 -0500
+	Sun, 16 Dec 2007 14:45:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=SNH68tZR0SlZNesogwra5lk75CJPbDpcQRQCCfAJCi5QMDTT/bKESUlDQDtsc/RewBMyygKXn88iz7ISBvx3IwvTg7keKAK159shTMDBFJpsa7vsWs9d7nBJpc0IcxL6x68brlOftYstNrKKt8Tazscx7Uw27Nwsby0/uArPu6k=
-Subject: Re: [PATCH 3/4] x86: Unify local_{32|64}.h
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <47656C00.6000501@zytor.com>
-References: <1197806640.3749.42.camel@brick>  <47656C00.6000501@zytor.com>
-Content-Type: text/plain
-Date: Sun, 16 Dec 2007 11:45:01 -0800
-Message-Id: <1197834301.3749.69.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=FmdxThChJYPH7IaPAjPfTc5tlmnxakhuiiyN7+g7zrfyRMSP0ly/+Z5pwUY6ZRY3BUeX1MWtOUo1NZbaXBJL4UTZFIG3HSvyJW6UmDsNvtyI72t55I3irp/xfxivNspCvjUfVOIY56/qcV8TY92xT9yVtxAAGo6Homt5ocTSc14=
+Message-ID: <47658063.5010707@googlemail.com>
+Date: Sun, 16 Dec 2007 20:45:39 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071204)
+MIME-Version: 1.0
+To: Oliver Joa <oliver@j-o-a.de>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: How to Switch DMA off for only one Harddisk at Kernelboot
+References: <4765690C.6010605@j-o-a.de> <47657BA8.3020004@googlemail.com> <47657D79.7090100@j-o-a.de>
+In-Reply-To: <47657D79.7090100@j-o-a.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-12-16 at 10:18 -0800, H. Peter Anvin wrote:
-> Harvey Harrison wrote:
-> > Introduce macros to deal with X86_32 using longs and X86_64
-> > using quads.  Small comment fixes to make files match.
-> >  
-> >  #define local_read(l)	atomic_long_read(&(l)->a)
-> >  #define local_set(l,i)	atomic_long_set(&(l)->a, (i))
-> > +/*
-> > + * X86_32 uses longs
-> > + * X86_64 uses quads
-> > + */
-> > +#ifdef CONFIG_X86_32
-> > +# define ASM_INC incl
-> > +# define ASM_DEC decl
-> > +# define ASM_ADD addl
-> > +# define ASM_SUB subl
-> > +# define ASM_XADD xaddl
-> > +#else
-> > +# define ASM_INC incq
-> > +# define ASM_DEC decq
-> > +# define ASM_ADD addq
-> > +# define ASM_SUB subq
-> > +# define ASM_XADD xaddq
-> > +#endif
-> >  
+Oliver Joa wrote:
+> Hi,
 > 
-> Please put these in <asm/asm.h> using the _ASM_* namespace and include 
-> the quotation marks.
+> Gabriel C wrote:
+>> Oliver Joa wrote:
+>>> Hi,
+>> Hi Oliver ,
+>>
+>>> how can I tell the kernel not to probe DMA for a specific harddisk (e.g. 
+>>> hda). My first Drive (hda) is a Compact-Flash Card which can not do DMA. 
+>>> The kernel tries at boot to switch to DMA but fails. If I use ide=nodma, 
+>>> the kernel boots about 2 minutes faster, but then I can not switch on 
+>>> DMA for the second Drive (hdc) which is a normal Harddisk. Do I have to 
+>>> live with this 2 minutes waiting time or is there another solution? I 
+>>> did not find any kernel-parameter for this purpose.
+>>>
+>>> Sorry if I ask here, but I can not find any solution, and I asked 
+>>> already in other groups.
+>>>
+>>> Thank you very much
+>> Should work with hda=nodma or ideX=nodma ( where X is your HDD nr , in your case is 0 )
+> 
+> I tried this already, it does not work.
+> 
+>> Also have a look at Documentation/ide.txt.
+> 
+> I read this already. Searching for "nodma" in this document gives only 
+> one line:
+> 
+>   "ide=nodma"            : disable DMA globally for the IDE subsystem.
+> 
+> If the documentation is correct hda=nodma and ideX=nodma should not 
+> work. I use kernel 2.6.23.1 at the moment.
 
-Will revise.
+grep nodma Documentation/ide.txt
+ "hdx=nodma"            : disallow DMA
+
+ide=foo_option is for the whole ide sub-system where ideX|hdX=foo_option is just for that HDD.
+
+Anyway I've CC'ed linux-ide.
 
 > 
-> >  #ifdef CONFIG_X86_32
-> >  # include "local_32.h"
-> > diff --git a/include/asm-x86/local_32.h b/include/asm-x86/local_32.h
-> > index f3bc4d9..ff6d1d2 100644
-> > --- a/include/asm-x86/local_32.h
-> > +++ b/include/asm-x86/local_32.h
-> > @@ -4,21 +4,21 @@
-> >  static inline void local_inc(local_t *l)
-> >  {
-> >  	__asm__ __volatile__(
-> > -		"incl %0"
-> > +		"ASM_INC %0"
-> >  		:"+m" (l->a.counter));
+> Thanks
 > 
-> You're substituting a macro *inside* a string here.
+> Olli
 > 
 
-*ahem*, oops.  Will fix.
 
-Harvey
-
+Gabriel
