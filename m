@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761101AbXLPVbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760936AbXLPVf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761101AbXLPVbZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 16:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758909AbXLPVbQ
+	id S1760936AbXLPVf1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 16:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759105AbXLPVfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 16:31:16 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49185 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758868AbXLPVbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 16:31:15 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] 2.6.24-rc5: Fix build with make O= if the top level Makefile is not present
-Date: Sun, 16 Dec 2007 22:50:17 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Sun, 16 Dec 2007 16:35:13 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48849
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754701AbXLPVfL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 16:35:11 -0500
+Date: Sun, 16 Dec 2007 13:35:02 -0800 (PST)
+Message-Id: <20071216.133502.196415640.davem@davemloft.net>
+To: shemminger@linux-foundation.org
+Cc: joonwpark81@gmail.com, jesse.brandeburg@intel.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
+       auke-jan.h.kok@intel.com
+Subject: Re: [PATCH] [NET]: Fix Ooops of napi net_rx_action.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071211154222.0aec68fc@freepuppy.rosehill>
+References: <36D9DB17C6DE9E40B059440DB8D95F5203F82FC3@orsmsx418.amr.corp.intel.com>
+	<b25c3fa70712111527p561b3e2i24ee0fdf3d61a98c@mail.gmail.com>
+	<20071211154222.0aec68fc@freepuppy.rosehill>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712162250.18291.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Date: Tue, 11 Dec 2007 15:42:22 -0800
 
-IMHO, something like the patch below is needed to fix builds with "make O=",
-since after commit 18c32dac75b187d1a4e858f3cfdf03e844129f5e
-"kbuild: fix building with O=.. options" the top-level Makefile is no longer
-created automatically if it's not present at all.
+> Perhaps we should change the warning to identify the guilty device.
 
-Thanks,
-Rafael
+Applied.
 
+Stephen, you often don't supply a proper signoff line
+for one-off changes like this and I find it very irritating.
+It doesn't cost you anything to hit one or two keys in your
+outgoing email editor to include the signoff line.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+So please do so, or I'll silently drop patches without them
+in the future.
 
-Make the build system create the top-level Makefile for builds with "make O="
-if it is not present already.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- scripts/mkmakefile |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/scripts/mkmakefile
-===================================================================
---- linux-2.6.orig/scripts/mkmakefile
-+++ linux-2.6/scripts/mkmakefile
-@@ -13,7 +13,7 @@
- test ! -r $2/Makefile -o -O $2/Makefile || exit 0
- # Only overwrite automatically generated Makefiles
- # (so we do not overwrite kernel Makefile)
--if ! grep -q Automatically $2/Makefile
-+if (test -f $2/Makefile) && !(grep -q Automatically $2/Makefile)
- then
- 	exit 0
- fi
+Thanks.
