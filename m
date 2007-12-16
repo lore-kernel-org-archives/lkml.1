@@ -1,100 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbXLPTLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbXLPTRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756566AbXLPTLo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 14:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbXLPTLh
+	id S1756784AbXLPTRf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 14:17:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXLPTR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 14:11:37 -0500
-Received: from fmmailgate05.web.de ([217.72.192.243]:47216 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbXLPTLg convert rfc822-to-8bit (ORCPT
+	Sun, 16 Dec 2007 14:17:26 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:40292 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750830AbXLPTR0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 14:11:36 -0500
-Date: Sun, 16 Dec 2007 20:11:33 +0100
-Message-Id: <49448787@web.de>
+	Sun, 16 Dec 2007 14:17:26 -0500
+Date: Sun, 16 Dec 2007 20:17:30 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RANDOM] Move two variables to read_mostly section to save
+	memory
+Message-ID: <20071216191730.GA15890@stusta.de>
+References: <47650FBD.2060209@cosmosbay.com> <20071216130028.GB14233@stusta.de> <476539D5.7050305@cosmosbay.com> <20071216165348.GC14233@stusta.de> <476563A1.4090508@cosmosbay.com> <20071216181455.GD14233@stusta.de> <47657096.50302@cosmosbay.com>
 MIME-Version: 1.0
-From: devzero@web.de
-To: Parag Warudkar <parag.warudkar@gmail.com>
-Cc: Matt.Domsch@dell.com, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [RFC] be more verbose when probing EDD
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX18Qxbgq5ZafHotdZFv73koVrouxkTeJeDR2/kf4iFyc5I6nq
- xU1y3lk24TD/sZZcK0SrNTl9BSmGWWIQQchscLcZ+27TrcJNXs=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <47657096.50302@cosmosbay.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It does not look like this issue is common - googling for "Linux EDD Boot 
-> hang" does not bring up relevant and recent results - in fact this post of 
-> yours comes on top.
-
-i don`t wonder here - how should one know that it`s an edd problem if all he sees is a blank screen with a blinking cursor in the upper left ?
-so i assume, "Linux EDD Boot hang" isn`t the best term for searching here.
-
-i think, there is no universal search phrase - i found some references with different words (linux install, blank screen, blinking cursor....)
-
-some of them
-http://forums.suselinuxsupport.de/lofiversion/index.php/t61581.html
-http://suseforums.net/index.php?showtopic=1302  
-http://forums.suselinuxsupport.de/lofiversion/index.php/t3157.html
-http://www.linuxforums.org/forum/installation/73984-cant-boot-past-loading-kernel-fedora-4-a.html
-http://ubuntuforums.org/archive/index.php/t-146180.html
-http://ubuntuforums.org/showthread.php?t=450630
-http://www.linuxquestions.org/questions/linux-software-2/grub-freezes-before-uncompressing-kernel-464619/
-
-not sure if really all of them are the edd problem i have, but i`m quite sure for some of those.
-can provide more links if somebody likes.
-
-> Adding 3 printks for each such obscure problem would make it even more 
-i wouldn`t call that problem obscure.
-i have seen this problem more than 5 times since that code is in linux. so it`s at least enough to discuss about even if no other person thinks it`s necessary :)  just the fact that it`s not been discussed often (here or elsewhere) doesn`t mean, that it exist or that users come across that. it`s more that type of "mhh, let`s try linux instead of windows. oh, doesn`t boot. ok, let`s stay with windows then...". you don`t expect people like those posting the right question to the right forum, do you?
-
-
-> If there are known chipsets / BIOSes that have this problem - applying 
-> quirks - something like this quirk for pmtmr [1]- (if they work this 
-> early) or even special casing them with forced edd=off may be the right and more useful thing to do.
-mhh. i`m unsure. ok, i`m no kernel-hacker but there are so many variants of bios/hardware out there so blacklisting certain bios versions may be never more than half of a solution.
-
-roland
-
-
-> -----Ursprüngliche Nachricht-----
-> Von: "Parag Warudkar" <parag.warudkar@gmail.com>
-> Gesendet: 16.12.07 18:34:48
-> An: devzero@web.de
-> CC: linux-kernel@vger.kernel.org, Matt.Domsch@dell.com, hpa@zytor.com
-> Betreff: Re: [PATCH] [RFC] be more verbose when probing EDD
-
+On Sun, Dec 16, 2007 at 07:38:14PM +0100, Eric Dumazet wrote:
+>
+> I am using gcc-4.2.1
+>
+> CONFIG_CC_OPTIMIZE_FOR_SIZE=y makes no difference for me.
+>
+> $ make defconfig
+> $ egrep "OPTIMIZE_FOR_SIZE|CONFIG_SMP" .config
+> CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+> CONFIG_SMP=y
+> $ make vmlinux
+> $ nm -v vmlinux|grep -4 random_read_wakeup_thresh
+> c057a02c d excluded_id_list
+> c057a100 d zero_bdi
+> c057a180 D random_table
+> c057a300 d input_pool
+> c057a400 d random_read_wakeup_thresh
+> c057a404 d random_write_wakeup_thresh
+>    <SAME HOLE HERE>
+> c057a480 d blocking_pool
+> c057a580 d nonblocking_pool
+> c057a680 d rekey_work
+>
+> After my patch, I still gain 120 bytes.
+>
+> Please realize that most people now build their kernels with CONFIG_SMP=y, 
+> or use a distro one (with CONFIG_SMP=y as well)
 > 
-> On Sun, 16 Dec 2007, devzero@web.de wrote:
-> 
-> >
-> > - it seems there are buggy Bios implementations out there which have problems with EDD
-> > - your favourite distro may have set CONFIG_EDD=y|m , so EDD probe is on by default quite often nowadays.
-> > - setting "edd=off" when you get that hang on boot is _not_ obvious.
-> 
-> It does not look like this issue is common - googling for "Linux EDD Boot 
-> hang" does not bring up relevant and recent results - in fact this post of 
-> yours comes on top. Further more there does not seem to be problems with 
-> newer BIOSes so we would be irritating lot many users needlessly.
-> 
-> Adding 3 printks for each such obscure problem would make it even more 
-> complex to parse and make sense of the boot log - I, for example, already 
-> dislike the mostly-useless-to-end-user stuff it spews on a normal boot.
-> 
-> If there are known chipsets / BIOSes that have this problem - applying 
-> quirks - something like this quirk for pmtmr [1]- (if they work this 
-> early) or even special casing them with forced edd=off may be the right and more useful thing to do.
-> 
-> [1] http://www.webservertalk.com/archive242-2006-3-1447442.html
-> 
-> Parag
-> 
+> Your CONFIG_SYSCTL point is valid and should be addressed by a separate patch set.
 
+How many patches do you want to send only for saving 120 bytes in some 
+configurations (and even not the ones people who really care about the 
+kernel size usually use)?
 
-_______________________________________________________________________
-Jetzt neu! Schützen Sie Ihren PC mit McAfee und WEB.DE. 3 Monate
-kostenlos testen. http://www.pc-sicherheit.web.de/startseite/?mc=022220
+And most C files in the kernel would allow you to save more than
+120 bytes if you don't mind how tihe source code looks like and e.g. 
+don't mind turning it into an #ifdef mess.
+
+If you care about the kernel size, you could e.g. help in fighting 
+removals of unused EXPORT_SYMBOL's through Andrew instead - these are 
+space saving patches that neither make the C code look worse nor can 
+have negative impact on the generated code.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
