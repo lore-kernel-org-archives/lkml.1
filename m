@@ -1,69 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934070AbXLPNn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934083AbXLPNs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934070AbXLPNn6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 08:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbXLPNnu
+	id S934083AbXLPNs2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 08:48:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765905AbXLPNsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 08:43:50 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:65492 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbXLPNnt (ORCPT
+	Sun, 16 Dec 2007 08:48:20 -0500
+Received: from bizon.gios.gov.pl ([212.244.124.8]:51133 "EHLO
+	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932100AbXLPNsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 08:43:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ED2w+VudqLtSvgaXOyE0sGDUd5laOmP9DyZ9iXYZSkJnOnNyP8dKaoI0yjmAdsOka4BvDaTBO3Ch6XtM2owNHjcfMPHfd/Ln7MjfJyDjrghLpMfhKBL5oy9xEQyagMcmHghN6cELDZyf+qDQfUnImcxloN3Q6pj1T+cSwq8hVQw=
-Message-ID: <82e4877d0712160543t2c7a03b1qb5c77ea6af59b5dd@mail.gmail.com>
-Date: Sun, 16 Dec 2007 08:43:46 -0500
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: soft lockup - CPU#1 stuck for 15s! [swapper:0]
-Cc: "Len Brown" <lenb@kernel.org>, "Arjan van de Ven" <arjan@infradead.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0712160015020.7320@mini.warudkars.net>
+	Sun, 16 Dec 2007 08:48:19 -0500
+Date: Sun, 16 Dec 2007 14:46:36 +0100 (CET)
+From: Krzysztof Oledzki <olel@ans.pl>
+X-X-Sender: olel@bizon.gios.gov.pl
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Osterried <osterried@jesse.de>, protasnb@gmail.com,
+       bugme-daemon@bugzilla.kernel.org, Thomas Osterried <osterried@jesse.de>
+Subject: Re: [Bug 9182] Critical memory leak (dirty pages)
+In-Reply-To: <20071216015112.d0ab08a1.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0712161440030.25065@bizon.gios.gov.pl>
+References: <20071215221935.306A5108068@picon.linux-foundation.org>
+ <Pine.LNX.4.64.0712152358240.14491@bizon.gios.gov.pl>
+ <20071215203539.d6f71e96.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0712161016290.25065@bizon.gios.gov.pl>
+ <20071216015112.d0ab08a1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <924EFEDD5F540B4284297C4DC59F3DEE38C3C2@orsmsx423.amr.corp.intel.com>
-	 <alpine.LFD.0.99999.0712101117300.11977@localhost.localdomain>
-	 <82e4877d0712102049g4830a573n86b7f72f31a42f11@mail.gmail.com>
-	 <200712141817.47581.lenb@kernel.org>
-	 <82e4877d0712141651j3965fd85ged2cefed5336e1ef@mail.gmail.com>
-	 <alpine.LFD.0.99999.0712150907180.6933@localhost.localdomain>
-	 <Pine.LNX.4.64.0712151340060.3807@mini.warudkars.net>
-	 <Pine.LNX.4.64.0712160015020.7320@mini.warudkars.net>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-1450121612-1197812796=:25065"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 16, 2007 12:15 AM, Parag Warudkar <parag.warudkar@gmail.com> wrote:
-> On Sat, 15 Dec 2007, Parag Warudkar wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---187430788-1450121612-1197812796=:25065
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+
+
+
+On Sun, 16 Dec 2007, Andrew Morton wrote:
+
+> On Sun, 16 Dec 2007 10:33:20 +0100 (CET) Krzysztof Oledzki <olel@ans.pl> =
+wrote:
 >
-> >> I will run it for a little longer just to be sure - but I don't think it
-> >> will be a problem.
+>>
+>>
+>> On Sat, 15 Dec 2007, Andrew Morton wrote:
+>>
+>>> On Sun, 16 Dec 2007 00:08:52 +0100 (CET) Krzysztof Oledzki <olel@ans.pl=
+> wrote:
+>>>
+>>>>
+>>>>
+>>>> On Sat, 15 Dec 2007, bugme-daemon@bugzilla.kernel.org wrote:
+>>>>
+>>>>> http://bugzilla.kernel.org/show_bug.cgi?id=3D9182
+>>>>>
+>>>>>
+>>>>> ------- Comment #33 from protasnb@gmail.com  2007-12-15 14:19 -------
+>>>>> Krzysztof, I'd hate point you to a hard path (at least time consuming=
+), but
+>>>>> you've done a lot of digging by now anyway. How about git bisecting b=
+etween
+>>>>> 2.6.20-rc2 and rc1? Here is great info on bisecting:
+>>>>> http://www.kernel.org/doc/local/git-quick.html
+>>>>
+>>>> As I'm smarter than git-bistect I can tell that 2.6.20-rc1-git8 is as =
+bad
+>>>> as 2.6.20-rc2 but 2.6.20-rc1-git8 with one patch reverted seems to be =
+OK.
+>>>> So it took me only 2 reboots. ;)
+>>>>
+>>>> The guilty patch is the one I proposed just an hour ago:
+>>>>   http://git.kernel.org/?p=3Dlinux%2Fkernel%2Fgit%2Fstable%2Flinux-2.6=
+=2E20.y.git;a=3Dcommitdiff_plain;h=3Dfba2591bf4e418b6c3f9f8794c9dd8fe40ae7b=
+d9
+>>>>
+>>>> So:
+>>>>   - 2.6.20-rc1: OK
+>>>>   - 2.6.20-rc1-git8 with fba2591bf4e418b6c3f9f8794c9dd8fe40ae7bd9 reve=
+rted: OK
+>>>>   - 2.6.20-rc1-git8: very BAD
+>>>>   - 2.6.20-rc2: very BAD
+>>>>   - 2.6.20-rc4: very BAD
+>>>>   - >=3D 2.6.20: BAD (but not *very* BAD!)
+>>>>
+>>>
+>>> well..  We have code which has been used by *everyone* for a year and i=
+t's
+>>> misbehaving for you alone.
+>>
+>> No, not for me alone. Probably only I and Thomas Osterried have systems
+>> where it is so easy to reproduce. Please note that the problem exists on
+>> my all systems, but only on one it is critical. It is enough to run
+>> "sync; sleep 1; sunc; sleep 1; sync; grep Drirty /proc/meminfo" to be su=
+re.
+>> With =3D>2.6.20-rc1-git8 it *never* falls to 0 an *all* my hosts but onl=
+y
+>> on one it goes to ~200MB in about 2 weeks and then everything dies:
+>> http://bugzilla.kernel.org/attachment.cgi?id=3D13824
+>> http://bugzilla.kernel.org/attachment.cgi?id=3D13825
+>> http://bugzilla.kernel.org/attachment.cgi?id=3D13826
+>> http://bugzilla.kernel.org/attachment.cgi?id=3D13827
+>>
+>>>  I wonder what you're doing that is different/special.
+>> Me to. :|
+>>
+>>> Which filesystem, which mount options
+>>
+>>   - ext3 on RAID1 (MD): / - rootflags=3Ddata=3Djournal
 >
-> No problems for last 10 hours - I consider this fixed.
+> It wouldn't surprise me if this is specific to data=3Djournal: that
+> journalling mode is pretty complex wrt dairty-data handling and isn't wel=
+l
+> tested.
 >
+> Does switching that to data=3Dwriteback change things?
 
-Arghh - spoke 8 hours too soon. I left it running overnight and
-morning I see a bunch of softlockups - so NO NOT FIXED.
+I'll confirm this tomorrow but it seems that even switching to=20
+data=3Dordered (AFAIK default o ext3) is indeed enough to cure this problem=
+=2E
 
-Parag
+Two questions remain then: why system dies when dirty reaches ~200MB=20
+and what is wrong with ext3+data=3Djournal with >=3D2.6.20-rc2?
 
-BUG: soft lockup - CPU#1 stuck for 13s! [swapper:0]
+Best regards,
 
-Pid: 0, comm: swapper Not tainted (2.6.24-rc5 #21)
-EIP: 0060:[<c0533ca6>] EFLAGS: 00000206 CPU: 1
-EIP is at acpi_idle_enter_simple+0x166/0x1d0
-EAX: f7829f88 EBX: 00000dab ECX: 00000266 EDX: 00000000
-ESI: 00000000 EDI: 00c056e5 EBP: 00c0493a ESP: f7829f88
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-CR0: 8005003b CR2: 080f6c78 CR3: 00718000 CR4: 000006d0
-DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-DR6: ffff0ff0 DR7: 00000400
+ =09=09=09=09Krzysztof Ol=EAdzki
+---187430788-1450121612-1197812796=:25065--
