@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764355AbXLPDls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763575AbXLPEOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764355AbXLPDls (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 22:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbXLPDlh
+	id S1763575AbXLPEOO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 23:14:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759576AbXLPEOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 22:41:37 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:2607 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756002AbXLPDlg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 22:41:36 -0500
-Date: Sun, 16 Dec 2007 11:41:20 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: akpm@linux-foundation.org, jgarzik@pobox.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, davem@davemloft.net, den@openvz.org,
-       xemul@openvz.org
-Subject: [PACKET]: Fix /proc/net/packet crash due to bogus private pointer
-Message-ID: <20071216034119.GA1491@gondor.apana.org.au>
-References: <200712160118.58611.m.kozlowski@tuxland.pl> <E1J3jqN-0000Jq-00@gondolin.me.apana.org.au>
-Mime-Version: 1.0
+	Sat, 15 Dec 2007 23:14:01 -0500
+Received: from pip9.gyao.ne.jp ([61.122.117.247]:54953 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757843AbXLPEOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Dec 2007 23:14:00 -0500
+Date: Sun, 16 Dec 2007 13:13:48 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian McMenamin <lkmladrian@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, axboe@kernel.dk,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 0/3] Add GD-Rom support to the SEGA Dreamcast
+Message-ID: <20071216041348.GB11113@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian McMenamin <lkmladrian@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+	axboe@kernel.dk, linux-ide@vger.kernel.org
+References: <8b67d60712151620s331281f4s7e150aacacff4400@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1J3jqN-0000Jq-00@gondolin.me.apana.org.au>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <8b67d60712151620s331281f4s7e150aacacff4400@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 16, 2007 at 11:07:07AM +0800, Herbert Xu wrote:
->
-> I suspect namespace borkage.  But just because you pin-pointed
-> my patch I'll try to track it down :)
-
-Surprise surprise.  The namespace seq patch missed two spots in
-AF_PACKET.
-
-[PACKET]: Fix /proc/net/packet crash due to bogus private pointer
-
-The seq_open_net patch changed the meaning of seq->private.
-Unfortunately it missed two spots in AF_PACKET, which still
-used the old way of dereferencing seq->private, thus causing
-weird and wonderful crashes when reading /proc/net/packet.
-
-This patch fixes them.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index 485af56..43e49f4 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -1878,7 +1878,7 @@ static void *packet_seq_start(struct seq_file *seq, loff_t *pos)
- 
- static void *packet_seq_next(struct seq_file *seq, void *v, loff_t *pos)
- {
--	struct net *net = seq->private;
-+	struct net *net = seq_file_net(seq);
- 	++*pos;
- 	return  (v == SEQ_START_TOKEN)
- 		? sk_head(&net->packet.sklist)
-@@ -1887,7 +1887,7 @@ static void *packet_seq_next(struct seq_file *seq, void *v, loff_t *pos)
- 
- static void packet_seq_stop(struct seq_file *seq, void *v)
- {
--	struct net *net = seq->private;
-+	struct net *net = seq_file_net(seq);
- 	read_unlock(&net->packet.sklist_lock);
- }
- 
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+On Sun, Dec 16, 2007 at 12:20:54AM +0000, Adrian McMenamin wrote:
+> This device is electrically compatible with ATA-3 IDE CD drives but
+> implements a proprietary packet interface. There have been previous
+> Dreamcast CD drivers around but this is new code and uses DMA as
+> opposed to PIO for reads.
+> 
+> It also supports reading the proprietary GD Rom format disks.
+> 
+> The driver will live as drivers/sh/gdrom/gdrom.c
+> 
+No, the driver will live in drivers/cdrom if that's the API that you
+depend on. The only things in drivers/sh are SH-specific bus support
+code, it is not a dumping ground for unrelated drivers.
