@@ -1,103 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbXLPCbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764851AbXLPChK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932227AbXLPCbY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 21:31:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbXLPCbM
+	id S1764851AbXLPChK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 21:37:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbXLPCgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 21:31:12 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:2185 "EHLO
+	Sat, 15 Dec 2007 21:36:55 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:2260 "EHLO
 	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757704AbXLPCbK (ORCPT
+	with ESMTP id S1754647AbXLPCgy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 21:31:10 -0500
-Date: Sun, 16 Dec 2007 10:30:25 +0800
+	Sat, 15 Dec 2007 21:36:54 -0500
+Date: Sun, 16 Dec 2007 10:36:21 +0800
 From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Eric Dumazet <dada1@cosmosbay.com>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
        Wang Chen <wangchen@cn.fujitsu.com>,
        Gerrit Renker <gerrit@erg.abdn.ac.uk>, davem@davemloft.net,
        andi@firstfloor.org, netdev@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [SNMP]: Fix SNMP counters with PREEMPT
-Message-ID: <20071216023025.GA959@gondor.apana.org.au>
-References: <474F8255.5060501@cn.fujitsu.com> <20071130111949.GB28277@gerrit.erg.abdn.ac.uk> <20071201015438.GC26895@gondor.apana.org.au> <4753AE07.1040906@cn.fujitsu.com> <20071203113935.GA25124@gondor.apana.org.au> <20071203114912.GA4425@ms2.inr.ac.ru> <20071203115435.GA4202@gondor.apana.org.au> <20071203131723.GA30312@gondor.apana.org.au> <20071215135851.GA29063@gondor.apana.org.au> <476408D7.50205@cosmosbay.com>
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 3/3] [UDP6]: Counter increment on BH mode
+Message-ID: <20071216023621.GB959@gondor.apana.org.au>
+References: <474F8255.5060501@cn.fujitsu.com> <20071130111949.GB28277@gerrit.erg.abdn.ac.uk> <20071201015438.GC26895@gondor.apana.org.au> <4753AE07.1040906@cn.fujitsu.com> <20071203113935.GA25124@gondor.apana.org.au> <20071203114912.GA4425@ms2.inr.ac.ru> <20071203115435.GA4202@gondor.apana.org.au> <20071203131723.GA30312@gondor.apana.org.au> <20071215135851.GA29063@gondor.apana.org.au> <20071215184327.GA21434@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <476408D7.50205@cosmosbay.com>
+In-Reply-To: <20071215184327.GA21434@elte.hu>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 15, 2007 at 06:03:19PM +0100, Eric Dumazet wrote:
+On Sat, Dec 15, 2007 at 07:43:28PM +0100, Ingo Molnar wrote:
 >
-> How come you change SNMP_INC_STATS_USER() but not SNMP_INC_STATS() ?
+> we could perhaps introduce stat_smp_processor_id(), which signals that 
+> the CPU id is used for statistical purposes and does not have to be 
+> exact? In any case, your patch looks good too.
 
-Heh, my brain must have blocked me from seeing it because it's
-too hard :)
+Unfortunately that doesn't work because we can then have two
+CPUs trying to update the same counter which may corrupt it.
 
-Let's fix it the stupid way first and I'll do a local_t conversion
-later.
+However, an optimisation is indeed possible with some work.
+If we can get the address of the per-cpu counter against
+some sort of a per-cpu base pointer, e.g., %gs on x86, then
+we can do
 
-[SNMP]: Fix SNMP counters with PREEMPT
+	incq	%gs:(%rax)
 
-The SNMP macros use raw_smp_processor_id() in process context
-which is illegal because the process may be preempted and then
-migrated to another CPU.
+where %rax would be the offset with %gs as the base.  This would
+obviate the need for the CPU ID and therefore avoid disabling
+preemption.
 
-This patch makes it use get_cpu/put_cpu to disable preemption.
+Hmm, wasn't Christoph working on something like that?
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-Thanks,
+Cheers,
 -- 
 Visit Openswan at http://www.openswan.org/
 Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
 Home Page: http://gondor.apana.org.au/~herbert/
 PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/include/net/snmp.h b/include/net/snmp.h
-index 9c5793d..fbb6666 100644
---- a/include/net/snmp.h
-+++ b/include/net/snmp.h
-@@ -23,6 +23,7 @@
- 
- #include <linux/cache.h>
- #include <linux/snmp.h>
-+#include <linux/smp.h>
- 
- /*
-  * Mibs are stored in array of unsigned long.
-@@ -135,14 +136,26 @@ struct linux_mib {
- #define SNMP_INC_STATS_BH(mib, field) 	\
- 	(per_cpu_ptr(mib[0], raw_smp_processor_id())->mibs[field]++)
- #define SNMP_INC_STATS_USER(mib, field) \
--	(per_cpu_ptr(mib[1], raw_smp_processor_id())->mibs[field]++)
-+	do { \
-+		per_cpu_ptr(mib[1], get_cpu())->mibs[field]++; \
-+		put_cpu(); \
-+	} while (0)
- #define SNMP_INC_STATS(mib, field) 	\
--	(per_cpu_ptr(mib[!in_softirq()], raw_smp_processor_id())->mibs[field]++)
-+	do { \
-+		per_cpu_ptr(mib[!in_softirq()], get_cpu())->mibs[field]++; \
-+		put_cpu(); \
-+	} while (0)
- #define SNMP_DEC_STATS(mib, field) 	\
--	(per_cpu_ptr(mib[!in_softirq()], raw_smp_processor_id())->mibs[field]--)
-+	do { \
-+		per_cpu_ptr(mib[!in_softirq()], get_cpu())->mibs[field]--; \
-+		put_cpu(); \
-+	} while (0)
- #define SNMP_ADD_STATS_BH(mib, field, addend) 	\
- 	(per_cpu_ptr(mib[0], raw_smp_processor_id())->mibs[field] += addend)
- #define SNMP_ADD_STATS_USER(mib, field, addend) 	\
--	(per_cpu_ptr(mib[1], raw_smp_processor_id())->mibs[field] += addend)
-+	do { \
-+		per_cpu_ptr(mib[1], get_cpu())->mibs[field] += addend; \
-+		put_cpu(); \
-+	} while (0)
- 
- #endif
