@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935189AbXLPSRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935225AbXLPSTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935189AbXLPSRX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 13:17:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932916AbXLPSRP
+	id S935225AbXLPSTS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 13:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763646AbXLPSTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 13:17:15 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54350 "EHLO
+	Sun, 16 Dec 2007 13:19:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54363 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763646AbXLPSRO (ORCPT
+	with ESMTP id S1753488AbXLPSTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 13:17:14 -0500
-Message-ID: <47656B9E.3040405@zytor.com>
-Date: Sun, 16 Dec 2007 10:17:02 -0800
+	Sun, 16 Dec 2007 13:19:08 -0500
+Message-ID: <47656C00.6000501@zytor.com>
+Date: Sun, 16 Dec 2007 10:18:40 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: devzero@web.de
-CC: linux-kernel@vger.kernel.org, Matt.Domsch@dell.com
-Subject: Re: [PATCH] [RFC] be more verbose when probing EDD
-References: <49015158@web.de>
-In-Reply-To: <49015158@web.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/4] x86: Unify local_{32|64}.h
+References: <1197806640.3749.42.camel@brick>
+In-Reply-To: <1197806640.3749.42.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-devzero@web.de wrote:
->         /* Query EDD information */
->  #if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
-> -       query_edd();
-> +        printf("Probing EDD (query Bios for boot-device information)\n");
-> +        printf("If boot hangs here, you may have a buggy Bios. Try edd=skipmbr or edd=off");
-> +        query_edd();
-> +        printf("\rOK                                                                       \n");
->  #endif
+Harvey Harrison wrote:
+> Introduce macros to deal with X86_32 using longs and X86_64
+> using quads.  Small comment fixes to make files match.
+>  
+>  #define local_read(l)	atomic_long_read(&(l)->a)
+>  #define local_set(l,i)	atomic_long_set(&(l)->a, (i))
+> +/*
+> + * X86_32 uses longs
+> + * X86_64 uses quads
+> + */
+> +#ifdef CONFIG_X86_32
+> +# define ASM_INC incl
+> +# define ASM_DEC decl
+> +# define ASM_ADD addl
+> +# define ASM_SUB subl
+> +# define ASM_XADD xaddl
+> +#else
+> +# define ASM_INC incq
+> +# define ASM_DEC decq
+> +# define ASM_ADD addq
+> +# define ASM_SUB subq
+> +# define ASM_XADD xaddq
+> +#endif
+>  
 
-This is awfully verbose.
+Please put these in <asm/asm.h> using the _ASM_* namespace and include 
+the quotation marks.
 
-I'd prefer something like:
+>  #ifdef CONFIG_X86_32
+>  # include "local_32.h"
+> diff --git a/include/asm-x86/local_32.h b/include/asm-x86/local_32.h
+> index f3bc4d9..ff6d1d2 100644
+> --- a/include/asm-x86/local_32.h
+> +++ b/include/asm-x86/local_32.h
+> @@ -4,21 +4,21 @@
+>  static inline void local_inc(local_t *l)
+>  {
+>  	__asm__ __volatile__(
+> -		"incl %0"
+> +		"ASM_INC %0"
+>  		:"+m" (l->a.counter));
 
-printf("Probing EDD BIOS... ");
-query_edd();
-printf("ok\n");
-
-[or even "failed"...]
-
-Also, you really should look for the "quiet" command-line option and 
-squelch the message.
+You're substituting a macro *inside* a string here.
 
 	-hpa
