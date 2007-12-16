@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934390AbXLPQXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934554AbXLPQ3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934390AbXLPQXP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 11:23:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbXLPQW7
+	id S934554AbXLPQ3Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 11:29:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762209AbXLPQ3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 11:22:59 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:51977 "EHLO mail.screens.ru"
+	Sun, 16 Dec 2007 11:29:02 -0500
+Received: from lec.cs.unibo.it ([130.136.1.103]:33347 "EHLO lec.cs.unibo.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763646AbXLPQW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 11:22:58 -0500
-Date: Sun, 16 Dec 2007 19:24:02 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Petr Tesarik <ptesarik@suse.cz>, Tony Luck <tony.luck@intel.com>,
-       Matthew Wilcox <willy@debian.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] arch_ptrace_stop
-Message-ID: <20071216162402.GA230@tv-sign.ru>
-References: <20071213172926.GA423@tv-sign.ru> <20071213224229.ED11226F8D9@magilla.localdomain>
-Mime-Version: 1.0
+	id S1754860AbXLPQ3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 11:29:00 -0500
+Date: Sun, 16 Dec 2007 17:28:59 +0100
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] misc driver: eliminate 256 minor limit & deprecated call register_chrdev
+Message-ID: <20071216162859.GA26191@cs.unibo.it>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071213224229.ED11226F8D9@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: renzo@cs.unibo.it (Renzo Davoli)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland, I am sorry for delay,
+I already posted this patch on September 9th but nobody cared.
 
-On 12/13, Roland McGrath wrote:
->
-> > Currently ptrace_stop() schedules in TASK_TRACED state even if we have a
-> > pending SIGKILL. With this patch this is still possible, but unless
-> > arch_ptrace_stop_needed() is true and thus we will check sigkill_pending().
->
-> Currently the siglock is always held throughout.  The case this change
-> addresses is when no SIGKILL was already pending before we took the lock.
-> Currently, a new SIGKILL cannot come in until we've released the lock,
-> which is after we've set TASK_TRACED.  The signal's sender will hold the
-> lock while checking each thread's state, waking up any in TASK_TRACED.
->
-> When arch_ptrace_stop_needed() is true, we release the siglock for an
-> unknown period (might block, etc).  If a SIGKILL is sent there, it becomes
-> pending while we are in TASK_RUNNING or a normal blocked state.  Next we
-> finish arch_ptrace_stop() and reacquire the siglock.
+Is anybody interested in knowing that there is an old limit for
+misc device minors to 256, that we are terminating the minor numbers,
+and that there is a deprecated call in this code?
 
-Yes, yes, I see.
+drivers/char/misc.c: the deprecated call is 
+register_chrdev and it limits the number of minors to 256.
 
-> Now entering
-> TASK_TRACED would leave us unkillable because SIGKILL is already pending
-> and nothing else (except PTRACE_CONT et al) will try to wake us up.
+I propose this patch that eliminate both problems. With this patch 
+misc allocates the entire major 10.
 
-But this doesn't differ from the case when SIGKILL was already pending when
-we enter ptrace_stop, and arch_ptrace_stop_needed() == false, that was my
-point.
+This patch was designed for a previous version of the kernel code
+(2.6.22?), I have tested it today and applies to 2.6.24-rc5 with -12
+lines offset.
 
-Yes, arch_ptrace_stop() can take a long time, might block, etc. But what
-about TIF_SYSCALL_TRACE ? The task can recieve SIGKILL while executing the
-syscall which can also block and so on, but do_syscall_trace(entryexit == 1)
-doesn't check the pending signal.
+	renzo
 
-I should clarify my question. What I can't understand is the subtle dependency
-on the result of arch_ptrace_stop_needed(). This means that it is hard to
-predict the behaviour.
+Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
 
-IOW, can't we
-
-	- ignore the pending SIGKILL (current behaviour)
-		-- OR --
-	- always check it unconditionally, before setting TASK_TRACED
-
-? This looks a bit more consistent to me.
-
-Please also note "before setting TASK_TRACED" above. With this patch we set
-TASK_TRACED under ->siglock, and then change the ->state to TASK_RUNNING if
-killed == 1. Minor, but this doesn't look correct, we can fool the tracer
-which does ptrace_check_attach().
-
-Oleg.
-
+--- a/drivers/char/misc.c	2007-08-05 16:56:59.000000000 +0200
++++ b/drivers/char/misc.c	2007-09-06 11:07:51.000000000 +0200
+@@ -56,6 +56,8 @@
+ static LIST_HEAD(misc_list);
+ static DEFINE_MUTEX(misc_mtx);
+ 
++static struct cdev misc_cdev;
++
+ /*
+  * Assigned numbers, used for dynamic minors
+  */
+@@ -273,6 +275,31 @@
+ EXPORT_SYMBOL(misc_register);
+ EXPORT_SYMBOL(misc_deregister);
+ 
++static int misc_register_chrdev(void)
++{
++	dev_t from=MKDEV(MISC_MAJOR,0);
++	int rv;
++	int err = -ENOMEM;
++	char *s;
++
++	if ((rv=register_chrdev_region(from,MINORMASK,"misc")) != 0)
++		return rv;
++
++	cdev_init(&misc_cdev, &misc_fops);
++	misc_cdev.owner=misc_fops.owner;
++	kobject_set_name(&misc_cdev.kobj, "%s", "misc");
++	for (s = strchr(kobject_name(&misc_cdev.kobj),'/'); s; s = strchr(s, '/'))
++		    *s = '!';
++	err = cdev_add(&misc_cdev, from, MINORMASK);
++	if (err)
++		goto out;
++	return 0;
++out:
++	kobject_put(&misc_cdev.kobj);
++	unregister_chrdev_region(from,MINORMASK);
++  return err;
++}
++
+ static int __init misc_init(void)
+ {
+ #ifdef CONFIG_PROC_FS
+@@ -286,7 +313,7 @@
+ 	if (IS_ERR(misc_class))
+ 		return PTR_ERR(misc_class);
+ 
+-	if (register_chrdev(MISC_MAJOR,"misc",&misc_fops)) {
++	if (misc_register_chrdev()) {
+ 		printk("unable to get major %d for misc devices\n",
+ 		       MISC_MAJOR);
+ 		class_destroy(misc_class);
