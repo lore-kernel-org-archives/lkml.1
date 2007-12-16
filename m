@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934929AbXLPRGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935012AbXLPRHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934929AbXLPRGl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 12:06:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbXLPRGd
+	id S935012AbXLPRHm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 12:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933926AbXLPRHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 12:06:33 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:42594 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751436AbXLPRGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 12:06:33 -0500
-Date: Sun, 16 Dec 2007 09:09:42 -0800
-From: Greg KH <gregkh@suse.de>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.23.10
-Message-ID: <20071216170942.GA13434@suse.de>
-References: <20071214194952.GA15765@kroah.com> <200712161636.55127.borntraeger@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712161636.55127.borntraeger@de.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 16 Dec 2007 12:07:32 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:34553 "EHLO
+	mk-filter-2-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752483AbXLPRHa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 12:07:30 -0500
+X-Trace: 648709807-mk-filter-2.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
+X-SBRS: None
+X-RemoteIP: 81.1.89.91
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAD7qZEdRAVlb/2dsb2JhbACBV6Yk
+Subject: Re: [PATCH 0/3] Add GD-Rom support to the SEGA Dreamcast
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Adrian McMenamin <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, axboe@kernel.dk, linux-ide@vger.kernel.org
+In-Reply-To: <20071216041348.GB11113@linux-sh.org>
+References: <8b67d60712151620s331281f4s7e150aacacff4400@mail.gmail.com>
+	 <20071216041348.GB11113@linux-sh.org>
+Content-Type: text/plain
+Date: Sun, 16 Dec 2007 17:06:46 +0000
+Message-Id: <1197824806.6254.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 16, 2007 at 04:36:55PM +0100, Christian Borntraeger wrote:
-> Am Freitag, 14. Dezember 2007 schrieb Greg Kroah-Hartman:
-> > Christian Borntraeger (1):
-> >       Future of Linux 2.6.22.y series
-> 
-> This should be: rd: fix data corruption on memory pressure.
-> Same for 2.6.22
 
-Yes, sorry, I messed up and had two "Subject" lines in your patch, and
-quilt picked up the second one, which I used for the review, and git
-picked up the first one, which I used to apply them to the tree.
+On Sun, 2007-12-16 at 13:13 +0900, Paul Mundt wrote:
+> On Sun, Dec 16, 2007 at 12:20:54AM +0000, Adrian McMenamin wrote:
+> > This device is electrically compatible with ATA-3 IDE CD drives but
+> > implements a proprietary packet interface. There have been previous
+> > Dreamcast CD drivers around but this is new code and uses DMA as
+> > opposed to PIO for reads.
+> > 
+> > It also supports reading the proprietary GD Rom format disks.
+> > 
+> > The driver will live as drivers/sh/gdrom/gdrom.c
+> > 
+> No, the driver will live in drivers/cdrom if that's the API that you
+> depend on. The only things in drivers/sh are SH-specific bus support
+> code, it is not a dumping ground for unrelated drivers.
 
-thanks,
 
-greg k-h
+Well, the other cd drives exist in mainline outside that directory eg
+drivers/block/paride/pcd.c  drivers/ide/ide-cd.c drivers/scsi/sr.c 
+
+As far as I can see if this joins mainline it will be the only
+proprietary CD device - there were six others which were
+in /drivers/cdrom but they were purged recently.
+
+I'm not bothered where it goes, though.
+
