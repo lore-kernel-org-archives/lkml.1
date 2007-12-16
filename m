@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933845AbXLPPXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934322AbXLPPcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933845AbXLPPXc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 10:23:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXLPPXY
+	id S934322AbXLPPcY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 10:32:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXLPPcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 10:23:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35865 "EHLO mx3.mail.elte.hu"
+	Sun, 16 Dec 2007 10:32:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41542 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751093AbXLPPXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 10:23:23 -0500
-Date: Sun, 16 Dec 2007 16:22:50 +0100
+	id S1751093AbXLPPcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 10:32:14 -0500
+Date: Sun, 16 Dec 2007 16:31:58 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Paul Rolland <rol@as2917.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
-Message-ID: <20071216152250.GA21245@elte.hu>
-References: <4762C551.5070003@zytor.com> <20071214210652.GB28793@elf.ucw.cz> <4763001A.1070102@zytor.com> <20071214232955.545ab809@the-village.bc.nu> <20071215080831.404cdb32@tux.DEF.witbe.net> <47638C8C.2090604@gmail.com> <476438B4.2020600@zytor.com> <476462BE.3030701@gmail.com> <4764687D.6080609@zytor.com> <476524DB.7020806@gmail.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 4/4] x86: Final unification of local_{32|64}.h
+Message-ID: <20071216153158.GA891@elte.hu>
+References: <1197806669.3749.44.camel@brick>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <476524DB.7020806@gmail.com>
+In-Reply-To: <1197806669.3749.44.camel@brick>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,18 +35,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rene Herman <rene.herman@gmail.com> wrote:
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> Any ACKs, NAKs or further comments from others in this thread also 
-> welcome.
+> No differences except for the defintion of local_add_return on X86_64. 
+> The X86_32 version is just fine as it is protected with ifdef 
+> CONFIG_M386 so use it directly.
 
-looks good to me. Could you please also provide three more controls that 
-i suggested earlier:
+thanks, i've applied your 4 patches to x86.git.
 
- - a boot option enabling/disabling the udelay based code
- - a .config method of enabling/disabling the udelay based code
- - a sysctl to toggle it
+btw., now that we have a single unified file, it might make sense to fix 
+these checkpatch complaints:
 
-if we want to clean this all up we'll need as many controls as possible.
+  total: 10 errors, 1 warnings, 257 lines checked
+
+in case you are interested ;-)
 
 	Ingo
