@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934322AbXLPPcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934422AbXLPPe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934322AbXLPPcY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 10:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXLPPcP
+	id S934422AbXLPPe5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 10:34:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759264AbXLPPet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 10:32:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41542 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751093AbXLPPcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 10:32:14 -0500
-Date: Sun, 16 Dec 2007 16:31:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 4/4] x86: Final unification of local_{32|64}.h
-Message-ID: <20071216153158.GA891@elte.hu>
-References: <1197806669.3749.44.camel@brick>
+	Sun, 16 Dec 2007 10:34:49 -0500
+Received: from fmmailgate09.web.de ([217.72.192.184]:48086 "EHLO
+	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbXLPPes (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 10:34:48 -0500
+Date: Sun, 16 Dec 2007 16:34:47 +0100
+Message-Id: <49015158@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1197806669.3749.44.camel@brick>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Cc: Matt.Domsch@dell.com, hpa@zytor.com
+Subject: [PATCH] [RFC] be more verbose when probing EDD
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX180/FyRcegFkfKOdzkr2sukpLA/qZrtST10xZDLIP5ZVZBNI
+ mne05vBqaGutaM3uNderkL7V+Ley3W0uDglOqA5LX1vjtZTjlw=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello!
 
-* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+i`m sysadmin for quite some time and while being that, i have come across the one or another system, which refused to boot a linux kernel. typical symptom i have seen is a blinking cursor in the upper left just after kernel/initrd were loaded.
 
-> No differences except for the defintion of local_add_return on X86_64. 
-> The X86_32 version is just fine as it is protected with ifdef 
-> CONFIG_M386 so use it directly.
+i never spent much time on that and either choose another system for linux or choose "failsafe" option, if the installer of my favourite distro gave that option.
 
-thanks, i've applied your 4 patches to x86.git.
+since a colleague of mine was hit by that problem some weeks ago and i also came across that again recently, i started to investigate deeper and found, that EDD Bios probe is the problem here.
 
-btw., now that we have a single unified file, it might make sense to fix 
-these checkpatch complaints:
+i found more than a handful of references on the net where people report similar problems. many discussion threads contained that typical smattering babble and seldom somebody gave that essential hint "try edd=off" for which i`m sure it would have helped many times.
 
-  total: 10 errors, 1 warnings, 257 lines checked
+that`s why i started to spend some thoughts on this how to make this easier/better for the user.
 
-in case you are interested ;-)
+so
 
-	Ingo
+- it seems there are buggy Bios implementations out there which have problems with EDD
+- your favourite distro may have set CONFIG_EDD=y|m , so EDD probe is on by default quite often nowadays.
+- setting "edd=off" when you get that hang on boot is _not_ obvious.
+- adressing this issue may be a little bit late, since i have mostly seen that problem on older machines, but not on recently bought
+- i have at least two different systems with different types of chipsets to demonstrate this
+
+on one of those, i added some printf`s to edd.c and this routine seems to be problematic and never returns 
+
+        /* Extended Get Device Parameters */
+
+        ei->params.length = sizeof(ei->params);
+        ax = 0x4800;
+        dx = devno;
+        asm("pushfl; int $0x13; popfl"
+            : "+a" (ax), "+d" (dx), "=m" (ei->params)
+            : "S" (&ei->params)
+            : "ebx", "ecx", "edi");
+
+i had a short conversation with matt domsch and hpa, who both think that additional printf`s would be an easy solution and not too bad to be added.
+
+here is a quick and dirty initial patch from me:
+
+--- linux-2.6.23/arch/x86/boot/main.c.orig      2007-12-09 11:40:24.315346712 +0100
++++ linux-2.6.23/arch/x86/boot/main.c   2007-12-09 16:11:43.644512504 +0100
+@@ -152,7 +152,10 @@
+ 
+        /* Query EDD information */
+ #if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
+-       query_edd();
++        printf("Probing EDD (query Bios for boot-device information)\n");
++        printf("If boot hangs here, you may have a buggy Bios. Try edd=skipmbr or edd=off");
++        query_edd();
++        printf("\rOK                                                                       \n");
+ #endif
+        /* Do the last things and invoke protected mode */
+        go_to_protected_mode();
+
+
+ok, fore sure it`s better to do that stuff in query_edd() itself, but before making a better version, i`d like to discuss if such patch would get accepted at all and if it`s a valid approach to let the kernel print some line which get`s overwritten ("\rOK + lot`s of whitespaces") milliseconds later on successful function return.
+
+regards
+roland
+
+______________________________________________________________________________
+Jetzt neu! Im riesigen WEB.DE Club SmartDrive Dateien freigeben und mit 
+Freunden teilen! http://www.freemail.web.de/club/smartdrive_ttc.htm/?mc=021134
+
