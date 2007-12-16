@@ -1,74 +1,290 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759674AbXLPUbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbXLPUsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759674AbXLPUbc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 15:31:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbXLPUbX
+	id S1758816AbXLPUsT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 15:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbXLPUsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 15:31:23 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:14671 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753090AbXLPUbW (ORCPT
+	Sun, 16 Dec 2007 15:48:10 -0500
+Received: from fk-out-0910.google.com ([209.85.128.187]:29576 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753944AbXLPUsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 15:31:22 -0500
+	Sun, 16 Dec 2007 15:48:08 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=vEJ6DGyfLxXj3GeBAH9wDCUCE8VTGDt9HGqs0/nYWAQIs/aidsp6YggcW3VtEmqBgaI8R0nZs483Tf5XusEAgEphIQCGI5bJtmpA4Sgdn8Gvt3JzStWFVbT/exfgdP38SsHxD+4ZJWBBuOPg9jQD2nQZ+O2YjgGW1uYdwxJ6Cnc=
-Message-ID: <47658B15.5090600@googlemail.com>
-Date: Sun, 16 Dec 2007 21:31:17 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071204)
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:message-id;
+        b=x8jnFdggPEdxZkqa8VRtmFJ37s5fzT09BegWcIu1S6YBSmcV8DJMniEkKnoYaBm7WExXSg3BQ+Vxy0R4j0B3YYD/bDLnVBggyOVZ1kIeJRvv3VJr4sNn5+XjEsoq7dviwZUKBr9ORx8lIz0TRXt8eNp7DO8C/iNesJSyok0mTCg=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Patrick McHardy <kaber@trash.net>, Harald Welte <laforge@gnumonks.org>
+Subject: [PATCH] net/ipv4/netfilter/ip_tables.c: remove some inlines
+Date: Sun, 16 Dec 2007 12:47:53 -0800
+User-Agent: KMail/1.9.1
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Oliver Joa <oliver@j-o-a.de>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: How to Switch DMA off for only one Harddisk at Kernelboot
-References: <4765690C.6010605@j-o-a.de> <47657BA8.3020004@googlemail.com> <47657D79.7090100@j-o-a.de> <47658063.5010707@googlemail.com> <47658235.7050409@j-o-a.de>
-In-Reply-To: <47658235.7050409@j-o-a.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_57YZH+QYgtSjRtH"
+Message-Id: <200712161247.53986.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Joa wrote:
-> Hi,
-> 
-> Gabriel C wrote:
-> 
-> [...]
-> 
->>>> Also have a look at Documentation/ide.txt.
->>> I read this already. Searching for "nodma" in this document gives only 
->>> one line:
->>>
->>>   "ide=nodma"            : disable DMA globally for the IDE subsystem.
->>>
->>> If the documentation is correct hda=nodma and ideX=nodma should not 
->>> work. I use kernel 2.6.23.1 at the moment.
->> grep nodma Documentation/ide.txt
->>  "hdx=nodma"            : disallow DMA
->>
->> ide=foo_option is for the whole ide sub-system where ideX|hdX=foo_option is just for that HDD.
-> 
-> 
-> /usr/src/linux-2.6.23.1$ grep nodma Documentation/ide.txt
->   "ide=nodma"            : disable DMA globally for the IDE subsystem.
-> 
-> /usr/src/linux-2.6.21.5$ grep nodma Documentation/ide.txt
->   "ide=nodma"            : disable DMA globally for the IDE subsystem.
-> 
-> /usr/src/linux-2.6.12# grep nodma Documentation/ide.txt
->   "ide=nodma"            : disable DMA globally for the IDE subsystem.
-> 
-> Sorry, but I can not find this option, and it does not work. Which 
-> kernel do you use?
+--Boundary-00=_57YZH+QYgtSjRtH
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-This is my devel box , running 2.6.24-rc5-git
+Hi Patrick, Harald,
 
-> 
-> Thanks
-> 
-> Olli
-> 
+I was working on unrelated problem and noticed that ip_tables.c
+seem to abuse inline. I prepared a patch which removes inlines
+except those which are used by packet matching code
+(and thus are really performance-critical).
+I added comments explaining that remaining inlines are
+performance critical.
 
-Gabriel
+Result as reported by size:
+
+   text    data     bss     dec     hex filename
+-  6451     380      88    6919    1b07 ip_tables.o
++  6339     348      72    6759    1a67 ip_tables.o
+
+Please take this patch into netfilter queue.
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+--
+vda
+
+--Boundary-00=_57YZH+QYgtSjRtH
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="linux-2.6.ipt.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="linux-2.6.ipt.diff"
+
+diff -urpN linux-2.6.org/net/ipv4/netfilter/ip_tables.c linux-2.6.ipt/net/ipv4/netfilter/ip_tables.c
+--- linux-2.6.org/net/ipv4/netfilter/ip_tables.c	2007-12-14 10:46:37.000000000 -0800
++++ linux-2.6.ipt/net/ipv4/netfilter/ip_tables.c	2007-12-16 12:37:46.000000000 -0800
+@@ -74,6 +74,7 @@ do {								\
+    Hence the start of any table is given by get_table() below.  */
+ 
+ /* Returns whether matches rule or not. */
++/* Performance critical - called for every packet */
+ static inline int
+ ip_packet_match(const struct iphdr *ip,
+ 		const char *indev,
+@@ -152,7 +153,7 @@ ip_packet_match(const struct iphdr *ip,
+ 	return 1;
+ }
+ 
+-static inline bool
++static bool
+ ip_checkentry(const struct ipt_ip *ip)
+ {
+ 	if (ip->flags & ~IPT_F_MASK) {
+@@ -182,6 +183,7 @@ ipt_error(struct sk_buff *skb,
+ 	return NF_DROP;
+ }
+ 
++/* Performance critical - called for every packet */
+ static inline
+ bool do_match(struct ipt_entry_match *m,
+ 	      const struct sk_buff *skb,
+@@ -198,6 +200,7 @@ bool do_match(struct ipt_entry_match *m,
+ 		return false;
+ }
+ 
++/* Performance critical */
+ static inline struct ipt_entry *
+ get_entry(void *base, unsigned int offset)
+ {
+@@ -205,6 +208,7 @@ get_entry(void *base, unsigned int offse
+ }
+ 
+ /* All zeroes == unconditional rule. */
++/* Mildly perf critical (only if packet tracing is on) */
+ static inline int
+ unconditional(const struct ipt_ip *ip)
+ {
+@@ -219,7 +223,7 @@ unconditional(const struct ipt_ip *ip)
+ 
+ #if defined(CONFIG_NETFILTER_XT_TARGET_TRACE) || \
+     defined(CONFIG_NETFILTER_XT_TARGET_TRACE_MODULE)
+-static const char *hooknames[] = {
++static const char *const hooknames[] = {
+ 	[NF_IP_PRE_ROUTING]		= "PREROUTING",
+ 	[NF_IP_LOCAL_IN]		= "INPUT",
+ 	[NF_IP_FORWARD]			= "FORWARD",
+@@ -233,7 +237,7 @@ enum nf_ip_trace_comments {
+ 	NF_IP_TRACE_COMMENT_POLICY,
+ };
+ 
+-static const char *comments[] = {
++static const char *const comments[] = {
+ 	[NF_IP_TRACE_COMMENT_RULE]	= "rule",
+ 	[NF_IP_TRACE_COMMENT_RETURN]	= "return",
+ 	[NF_IP_TRACE_COMMENT_POLICY]	= "policy",
+@@ -249,6 +253,7 @@ static struct nf_loginfo trace_loginfo =
+ 	},
+ };
+ 
++/* Mildly perf critical (only if packet tracing is on) */
+ static inline int
+ get_chainname_rulenum(struct ipt_entry *s, struct ipt_entry *e,
+ 		      char *hookname, char **chainname,
+@@ -567,7 +572,7 @@ mark_source_chains(struct xt_table_info 
+ 	return 1;
+ }
+ 
+-static inline int
++static int
+ cleanup_match(struct ipt_entry_match *m, unsigned int *i)
+ {
+ 	if (i && (*i)-- == 0)
+@@ -579,7 +584,7 @@ cleanup_match(struct ipt_entry_match *m,
+ 	return 0;
+ }
+ 
+-static inline int
++static int
+ check_entry(struct ipt_entry *e, const char *name)
+ {
+ 	struct ipt_entry_target *t;
+@@ -599,7 +604,7 @@ check_entry(struct ipt_entry *e, const c
+ 	return 0;
+ }
+ 
+-static inline int check_match(struct ipt_entry_match *m, const char *name,
++static int check_match(struct ipt_entry_match *m, const char *name,
+ 				const struct ipt_ip *ip, unsigned int hookmask,
+ 				unsigned int *i)
+ {
+@@ -622,7 +627,7 @@ static inline int check_match(struct ipt
+ 	return ret;
+ }
+ 
+-static inline int
++static int
+ find_check_match(struct ipt_entry_match *m,
+ 	    const char *name,
+ 	    const struct ipt_ip *ip,
+@@ -651,7 +656,7 @@ err:
+ 	return ret;
+ }
+ 
+-static inline int check_target(struct ipt_entry *e, const char *name)
++static int check_target(struct ipt_entry *e, const char *name)
+ {
+ 	struct ipt_entry_target *t;
+ 	struct xt_target *target;
+@@ -672,7 +677,7 @@ static inline int check_target(struct ip
+ 	return ret;
+ }
+ 
+-static inline int
++static int
+ find_check_entry(struct ipt_entry *e, const char *name, unsigned int size,
+ 	    unsigned int *i)
+ {
+@@ -716,7 +721,7 @@ find_check_entry(struct ipt_entry *e, co
+ 	return ret;
+ }
+ 
+-static inline int
++static int
+ check_entry_size_and_hooks(struct ipt_entry *e,
+ 			   struct xt_table_info *newinfo,
+ 			   unsigned char *base,
+@@ -759,7 +764,7 @@ check_entry_size_and_hooks(struct ipt_en
+ 	return 0;
+ }
+ 
+-static inline int
++static int
+ cleanup_entry(struct ipt_entry *e, unsigned int *i)
+ {
+ 	struct ipt_entry_target *t;
+@@ -1293,7 +1298,7 @@ __do_replace(const char *name, unsigned 
+ 	get_counters(oldinfo, counters);
+ 	/* Decrease module usage counts and free resource */
+ 	loc_cpu_old_entry = oldinfo->entries[raw_smp_processor_id()];
+-	IPT_ENTRY_ITERATE(loc_cpu_old_entry, oldinfo->size, cleanup_entry,NULL);
++	IPT_ENTRY_ITERATE(loc_cpu_old_entry, oldinfo->size, cleanup_entry, NULL);
+ 	xt_free_table_info(oldinfo);
+ 	if (copy_to_user(counters_ptr, counters,
+ 			 sizeof(struct xt_counters) * num_counters) != 0)
+@@ -1361,7 +1366,7 @@ do_replace(void __user *user, unsigned i
+ 	return 0;
+ 
+  free_newinfo_untrans:
+-	IPT_ENTRY_ITERATE(loc_cpu_entry, newinfo->size, cleanup_entry,NULL);
++	IPT_ENTRY_ITERATE(loc_cpu_entry, newinfo->size, cleanup_entry, NULL);
+  free_newinfo:
+ 	xt_free_table_info(newinfo);
+ 	return ret;
+@@ -1369,7 +1374,7 @@ do_replace(void __user *user, unsigned i
+ 
+ /* We're lazy, and add to the first CPU; overflow works its fey magic
+  * and everything is OK. */
+-static inline int
++static int
+ add_counter_to_entry(struct ipt_entry *e,
+ 		     const struct xt_counters addme[],
+ 		     unsigned int *i)
+@@ -1527,7 +1532,7 @@ out:
+ 	return ret;
+ }
+ 
+-static inline int
++static int
+ compat_find_calc_match(struct ipt_entry_match *m,
+ 	    const char *name,
+ 	    const struct ipt_ip *ip,
+@@ -1551,7 +1556,7 @@ compat_find_calc_match(struct ipt_entry_
+ 	return 0;
+ }
+ 
+-static inline int
++static int
+ compat_release_match(struct ipt_entry_match *m, unsigned int *i)
+ {
+ 	if (i && (*i)-- == 0)
+@@ -1561,7 +1566,7 @@ compat_release_match(struct ipt_entry_ma
+ 	return 0;
+ }
+ 
+-static inline int
++static int
+ compat_release_entry(struct ipt_entry *e, unsigned int *i)
+ {
+ 	struct ipt_entry_target *t;
+@@ -1576,7 +1581,7 @@ compat_release_entry(struct ipt_entry *e
+ 	return 0;
+ }
+ 
+-static inline int
++static int
+ check_compat_entry_size_and_hooks(struct ipt_entry *e,
+ 			   struct xt_table_info *newinfo,
+ 			   unsigned int *size,
+@@ -1702,7 +1707,7 @@ static int compat_copy_entry_from_user(s
+ 	return ret;
+ }
+ 
+-static inline int compat_check_entry(struct ipt_entry *e, const char *name,
++static int compat_check_entry(struct ipt_entry *e, const char *name,
+ 						unsigned int *i)
+ {
+ 	int j, ret;
+@@ -1895,7 +1900,7 @@ compat_do_replace(void __user *user, uns
+ 	return 0;
+ 
+  free_newinfo_untrans:
+-	IPT_ENTRY_ITERATE(loc_cpu_entry, newinfo->size, cleanup_entry,NULL);
++	IPT_ENTRY_ITERATE(loc_cpu_entry, newinfo->size, cleanup_entry, NULL);
+  free_newinfo:
+ 	xt_free_table_info(newinfo);
+ 	return ret;
+
+--Boundary-00=_57YZH+QYgtSjRtH--
