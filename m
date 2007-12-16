@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763762AbXLPXNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763964AbXLPXW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763762AbXLPXNA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 18:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757716AbXLPXMv
+	id S1763964AbXLPXW7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 18:22:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbXLPXWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 18:12:51 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:50701 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758061AbXLPXMv (ORCPT
+	Sun, 16 Dec 2007 18:22:48 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56634
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756217AbXLPXWr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 18:12:51 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 216.15.117.105
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18Vz4441fgFU79Da3pMkTeD
-Message-ID: <4765B0CF.2040000@reed.com>
-Date: Sun, 16 Dec 2007 18:12:15 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Rene Herman <rene.herman@gmail.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Paul Rolland <rol@as2917.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
-References: <469578CD.3080609@reed.com>	<1184216528.12353.203.camel@chaos>	<1184218962.12353.209.camel@chaos>	<46964352.7040301@reed.com>	<1184253339.12353.223.camel@chaos>	<469697C6.50903@reed.com>	<1184274754.12353.254.camel@chaos>	<4761F193.7090400@reed.com>	<20071214131502.GA14359@elte.hu>	<4762C551.5070003@zytor.com>	<20071214210652.GB28793@elf.ucw.cz>	<4763001A.1070102@zytor.com>	<20071214232955.545ab809@the-village.bc.nu> <20071215080831.404cdb32@tux.DEF.witbe.net> <47638C8C.2090604@gmail.com> <476438B4.2020600@zytor.com> <476462BE.3030701@gmail.com> <4764687D.6080609@zytor.com> <476524DB.7020806@gmail.com>
-In-Reply-To: <476524DB.7020806@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Sun, 16 Dec 2007 18:22:47 -0500
+Date: Sun, 16 Dec 2007 15:22:35 -0800 (PST)
+Message-Id: <20071216.152235.213233734.davem@davemloft.net>
+To: davidsen@tmr.com
+Cc: herbert@gondor.apana.org.au, simon@fire.lp0.eu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: sockets affected by IPsec always block (2.6.23)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4765AAFC.3040406@tmr.com>
+References: <20071205001230.GA11391@gondor.apana.org.au>
+	<20071204.223023.262159049.davem@davemloft.net>
+	<4765AAFC.3040406@tmr.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Bill Davidsen <davidsen@tmr.com>
+Date: Sun, 16 Dec 2007 17:47:24 -0500
 
+> David Miller wrote:
+> > From: Herbert Xu <herbert@gondor.apana.org.au>
+> > Date: Wed, 5 Dec 2007 11:12:32 +1100
+> > 
+> >> [INET]: Export non-blocking flags to proto connect call
+> >>
+> >> Previously we made connect(2) block on IPsec SA resolution.  This is
+> >> good in general but not desirable for non-blocking sockets.
+> >>
+> >> To fix this properly we'd need to implement the larval IPsec dst stuff
+> >> that we talked about.  For now let's just revert to the old behaviour
+> >> on non-blocking sockets.
+> >>
+> >> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> > 
+> > We made an explicit decision not to do things this way.
+> > 
+> > Non-blocking has a meaning dependant upon the xfrm_larval_drop sysctl
+> > setting, and this is across the board.  If xfrm_larval_drop is zero,
+> > non-blocking semantics do not extend to IPSEC route resolution,
+> > otherwise it does.
+> > 
+> > If he sets this sysctl to "1" as I detailed in my reply, he'll
+> > get the behavior he wants.
+> > 
+> I think you for the hint, but I would hardly call this sentence 
+> "detailed" in terms of being a cookbook solution to the problem.
 
-Rene Herman wrote:
-> David: I've plugged in your DMI values in this. Could you perhaps test 
-> this to confirm that it works for you?
->
-Will test it by tomorrow morning.
+I guess "echo '1' >/proc/sys/net/core/xfrm_larval_drop" is not
+explicit enough?  What more would you like me to say?
