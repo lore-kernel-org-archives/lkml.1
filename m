@@ -1,135 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934083AbXLPNs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934234AbXLPN5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934083AbXLPNs2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 08:48:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765905AbXLPNsU
+	id S934234AbXLPN5f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 08:57:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759629AbXLPN50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 08:48:20 -0500
-Received: from bizon.gios.gov.pl ([212.244.124.8]:51133 "EHLO
-	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932100AbXLPNsT (ORCPT
+	Sun, 16 Dec 2007 08:57:26 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:55241 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932143AbXLPN5Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 08:48:19 -0500
-Date: Sun, 16 Dec 2007 14:46:36 +0100 (CET)
-From: Krzysztof Oledzki <olel@ans.pl>
-X-X-Sender: olel@bizon.gios.gov.pl
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Osterried <osterried@jesse.de>, protasnb@gmail.com,
-       bugme-daemon@bugzilla.kernel.org, Thomas Osterried <osterried@jesse.de>
-Subject: Re: [Bug 9182] Critical memory leak (dirty pages)
-In-Reply-To: <20071216015112.d0ab08a1.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0712161440030.25065@bizon.gios.gov.pl>
-References: <20071215221935.306A5108068@picon.linux-foundation.org>
- <Pine.LNX.4.64.0712152358240.14491@bizon.gios.gov.pl>
- <20071215203539.d6f71e96.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0712161016290.25065@bizon.gios.gov.pl>
- <20071216015112.d0ab08a1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-1450121612-1197812796=:25065"
+	Sun, 16 Dec 2007 08:57:25 -0500
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
+	to mutex
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: bcm43xx-dev@lists.berlios.de, Daniel Walker <dwalker@mvista.com>,
+       akpm@linux-foundation.org, Ray Lee <ray-lk@madrabbit.org>,
+       Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>,
+       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
+       jonathan@jonmasters.org, Ingo Molnar <mingo@elte.hu>,
+       kjwinchester@gmail.com, linux@bohmer.net
+In-Reply-To: <200712160027.19950.mb@bu3sch.de> (sfid-20071215_232959_683038_2539BF80)
+References: <20071213003028.676998182@mvista.com>
+	 <200712151157.44278.mb@bu3sch.de> <200712160018.45613.rjw@sisk.pl>
+	 <200712160027.19950.mb@bu3sch.de> (sfid-20071215_232959_683038_2539BF80)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-tGPaogN7FT5N6xMN0QII"
+Date: Sun, 16 Dec 2007 14:56:59 +0100
+Message-Id: <1197813419.16079.66.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----187430788-1450121612-1197812796=:25065
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+--=-tGPaogN7FT5N6xMN0QII
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
 
+On Sun, 2007-12-16 at 00:27 +0100, Michael Buesch wrote:
+> On Sunday 16 December 2007 00:18:43 Rafael J. Wysocki wrote:
+> > Well, the only problem with that is I suspect there are some "newer" ca=
+rds that
+> > work better with v3 firmware, although they are supposed to support bot=
+h.
 
-On Sun, 16 Dec 2007, Andrew Morton wrote:
+Impossible. The firmware is only the MAC.
 
-> On Sun, 16 Dec 2007 10:33:20 +0100 (CET) Krzysztof Oledzki <olel@ans.pl> =
-wrote:
->
->>
->>
->> On Sat, 15 Dec 2007, Andrew Morton wrote:
->>
->>> On Sun, 16 Dec 2007 00:08:52 +0100 (CET) Krzysztof Oledzki <olel@ans.pl=
-> wrote:
->>>
->>>>
->>>>
->>>> On Sat, 15 Dec 2007, bugme-daemon@bugzilla.kernel.org wrote:
->>>>
->>>>> http://bugzilla.kernel.org/show_bug.cgi?id=3D9182
->>>>>
->>>>>
->>>>> ------- Comment #33 from protasnb@gmail.com  2007-12-15 14:19 -------
->>>>> Krzysztof, I'd hate point you to a hard path (at least time consuming=
-), but
->>>>> you've done a lot of digging by now anyway. How about git bisecting b=
-etween
->>>>> 2.6.20-rc2 and rc1? Here is great info on bisecting:
->>>>> http://www.kernel.org/doc/local/git-quick.html
->>>>
->>>> As I'm smarter than git-bistect I can tell that 2.6.20-rc1-git8 is as =
-bad
->>>> as 2.6.20-rc2 but 2.6.20-rc1-git8 with one patch reverted seems to be =
-OK.
->>>> So it took me only 2 reboots. ;)
->>>>
->>>> The guilty patch is the one I proposed just an hour ago:
->>>>   http://git.kernel.org/?p=3Dlinux%2Fkernel%2Fgit%2Fstable%2Flinux-2.6=
-=2E20.y.git;a=3Dcommitdiff_plain;h=3Dfba2591bf4e418b6c3f9f8794c9dd8fe40ae7b=
-d9
->>>>
->>>> So:
->>>>   - 2.6.20-rc1: OK
->>>>   - 2.6.20-rc1-git8 with fba2591bf4e418b6c3f9f8794c9dd8fe40ae7bd9 reve=
-rted: OK
->>>>   - 2.6.20-rc1-git8: very BAD
->>>>   - 2.6.20-rc2: very BAD
->>>>   - 2.6.20-rc4: very BAD
->>>>   - >=3D 2.6.20: BAD (but not *very* BAD!)
->>>>
->>>
->>> well..  We have code which has been used by *everyone* for a year and i=
-t's
->>> misbehaving for you alone.
->>
->> No, not for me alone. Probably only I and Thomas Osterried have systems
->> where it is so easy to reproduce. Please note that the problem exists on
->> my all systems, but only on one it is critical. It is enough to run
->> "sync; sleep 1; sunc; sleep 1; sync; grep Drirty /proc/meminfo" to be su=
-re.
->> With =3D>2.6.20-rc1-git8 it *never* falls to 0 an *all* my hosts but onl=
-y
->> on one it goes to ~200MB in about 2 weeks and then everything dies:
->> http://bugzilla.kernel.org/attachment.cgi?id=3D13824
->> http://bugzilla.kernel.org/attachment.cgi?id=3D13825
->> http://bugzilla.kernel.org/attachment.cgi?id=3D13826
->> http://bugzilla.kernel.org/attachment.cgi?id=3D13827
->>
->>>  I wonder what you're doing that is different/special.
->> Me to. :|
->>
->>> Which filesystem, which mount options
->>
->>   - ext3 on RAID1 (MD): / - rootflags=3Ddata=3Djournal
->
-> It wouldn't surprise me if this is specific to data=3Djournal: that
-> journalling mode is pretty complex wrt dairty-data handling and isn't wel=
-l
-> tested.
->
-> Does switching that to data=3Dwriteback change things?
+johannes
 
-I'll confirm this tomorrow but it seems that even switching to=20
-data=3Dordered (AFAIK default o ext3) is indeed enough to cure this problem=
-=2E
+--=-tGPaogN7FT5N6xMN0QII
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Two questions remain then: why system dies when dirty reaches ~200MB=20
-and what is wrong with ext3+data=3Djournal with >=3D2.6.20-rc2?
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Best regards,
+iQIVAwUAR2UuqqVg1VMiehFYAQL87A//aMiwuzTpOTKWOtxuigPoQqgW8/0Q8/eF
+S+rT3J3CmjWTwSQNTVO5iVuVDhLtWbBS6z3rDRPCKqcl8tCcRgkBdU2q3GA/AeTB
+SU0KjGaM5UTw7UpnO/aLgzftjFEveLj8D1DIPE5HDJW3L/TFOHwi0g8p4hJyGZfT
+5QZ/2/FubcvYyrSmpZuCHZQ8HqKyzW3xvvuLPiOSRdq+YutrkZXQv/fFCib+mDf1
+6lUT3dOp6vZvSnM9OLzlbKUwFUevEtzU46gdnAbqgwarnX9VZUhpcVD2vsb0i3Cg
+0Hg80i4bqQdOfrfgHXVAXu1xaUMkHh3bviF8W0ns0vN9Mh+REoRAi9u03IjeEZba
+iUuNwGjNwXhJT/bXRmS5xrdcQLdRjg4dbOw+HSrrtLBxo+HDIfKBzY6HJHGSr8An
+wQu659l4EEebUBVc3vU+X0Ni2qEPpKdDRU0HvoZA35bGI2PDa6LKqWN9ktr3LP1w
+64AQfv3rxlhfhOgg3BJlSsra8wHwHn+RTWu8bUSOhz8inVQitPTl90TZmSarb1ua
+acjQzSZTHD+Rq9kwmBoEZMMZD9lBg4qtQlVr4tQvJmzjbU/RSdgTET3qDw98raAS
+bopypeDCPAmnz8qhJKHxPmkdnYvJ7Mu9jndsO0fh/we217kR4CxbKpq6c1qTKq/V
+eUNKFHTtGv0=
+=sWAP
+-----END PGP SIGNATURE-----
 
- =09=09=09=09Krzysztof Ol=EAdzki
----187430788-1450121612-1197812796=:25065--
+--=-tGPaogN7FT5N6xMN0QII--
+
