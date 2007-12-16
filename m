@@ -1,104 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763779AbXLPWZC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764693AbXLPW0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763779AbXLPWZC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 17:25:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757897AbXLPWYw
+	id S1764693AbXLPW0Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 17:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760238AbXLPW0C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 17:24:52 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34005 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756535AbXLPWYu (ORCPT
+	Sun, 16 Dec 2007 17:26:02 -0500
+Received: from mailout03.sul.t-online.de ([194.25.134.81]:34849 "EHLO
+	mailout03.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758784AbXLPW0A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 17:24:50 -0500
-Date: Sun, 16 Dec 2007 14:23:44 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: "Herbert Xu" <herbert@gondor.apana.org.au>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PACKET]: Fix /proc/net/packet crash due to bogus private
- pointer
-Message-Id: <20071216142344.802ceaf4.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0712161210h4908f39coe3b5cdb346b8d632@mail.gmail.com>
-References: <20071215203637.179878aa.akpm@linux-foundation.org>
-	<a44ae5cd0712152237y2f6a17fcu6a718757c7c021a3@mail.gmail.com>
-	<20071215235604.1a3f970a.akpm@linux-foundation.org>
-	<20071216081936.GA3042@gondor.apana.org.au>
-	<a44ae5cd0712161210h4908f39coe3b5cdb346b8d632@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 16 Dec 2007 17:26:00 -0500
+Message-ID: <4765A5ED.60605@t-online.de>
+Date: Sun, 16 Dec 2007 23:25:49 +0100
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: howto get a melodic system beep?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-ID: Z4RdfrZlwh0J6fXyG62To77tzmos37YzR+fRoDoKZUFzjXocEfzKc3LjFaJi5gdZFd
+X-TOI-MSGID: 79f88c4b-4877-4e23-87c1-a93a88c2fbc9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Dec 2007 15:10:14 -0500 "Miles Lane" <miles.lane@gmail.com> wrote:
+Hi folks,
 
-> On Dec 16, 2007 3:19 AM, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> > On Sat, Dec 15, 2007 at 11:56:04PM -0800, Andrew Morton wrote:
-> > > On Sun, 16 Dec 2007 01:37:01 -0500 "Miles Lane" <miles.lane@gmail.com> wrote:
-> > >
-> > > > > On Sun, Dec 16, 2007 at 11:07:07AM +0800, Herbert Xu wrote:
-> >
-> > So I posted this patch after 19:00 PST on 15 Dec.
-> >
-> > > > Dec 15 13:44:39 syntropy kernel:  #0:  (&p->lock){--..}, at:
-> > > > [crypto_algapi:seq_read+0x25/0x191c1] seq_read+0x25/0x26f
-> > >
-> > > So your kernel is still feeding garbage into lockdep.
-> > >
-> > > Are you really really sure that kernel had Herbert's patch applied?
-> >
-> > The above log message is stamped as 13:44 PST.  I gotta say
-> > this doesn't look good :)
-> 
-> Yes, I did have the patch applied, but I had reenabled LOCKDEP_DEBUG.
-> I just tried with the LOCKDEP_DEBUG stuff turned off, and with this
-> configuration, the problem is resolved.  It seems that the patch
-> you made does fix the problem with /proc/net/packet. This new issue
-> seems to be a different problem.
-> 
-> So, I tried building another kernel with LOCKDEP enabled (.config attached):
-> With this kernel, I got:
-> 
-> Dec 16 11:21:39 syntropy kernel: [  278.723108] process `tail' is
-> using deprecated sysctl (syscall) net.ipv6.neigh.default.retrans_time;
-> Use net.ipv6.neigh.default.retrans_time_ms instead.
-> Dec 16 11:21:40 syntropy kernel: [  279.226103] in_atomic():1, irqs_disabled():0
-> Dec 16 11:21:40 syntropy kernel: [  279.226106] no locks held by tail/6208.
-> Dec 16 11:21:40 syntropy kernel: [  279.226109] Pid: 6208, comm: tail
-> Not tainted 2.6.24-rc5-mm1 #5
-> Dec 16 11:21:40 syntropy kernel: [  279.226112]
-> [show_trace_log_lvl+0x12/0x25] show_trace_log_lvl+0x12/0x25
-> Dec 16 11:21:40 syntropy kernel: [  279.226121]  [show_trace+0xd/0x10]
-> show_trace+0xd/0x10
-> Dec 16 11:21:40 syntropy kernel: [  279.226126]
-> [sbp2:dump_stack+0x57/0x17c1] dump_stack+0x57/0x5f
-> Dec 16 11:21:40 syntropy kernel: [  279.226130]
-> [firewire_core:__might_sleep+0xd7/0x29a] __might_sleep+0xd7/0xde
-> Dec 16 11:21:40 syntropy kernel: [  279.226136]
-> [parport:copy_to_user+0x32/0xd13f] copy_to_user+0x32/0x47
-> Dec 16 11:21:40 syntropy kernel: [  279.226141]
-> [add_to_pagemap+0x29/0x56] add_to_pagemap+0x29/0x56
-> Dec 16 11:21:40 syntropy kernel: [  279.226147]
-> [pagemap_pte_range+0x74/0xb1] pagemap_pte_range+0x74/0xb1
-> Dec 16 11:21:40 syntropy kernel: [  279.226151]
-> [walk_page_range+0x115/0x1dc] walk_page_range+0x115/0x1dc
-> Dec 16 11:21:40 syntropy kernel: [  279.226157]
-> [pagemap_read+0x154/0x1e8] pagemap_read+0x154/0x1e8
-> Dec 16 11:21:40 syntropy kernel: [  279.226161]  [vfs_read+0xa2/0x11e]
-> vfs_read+0xa2/0x11e
-> Dec 16 11:21:40 syntropy kernel: [  279.226166]  [sys_read+0x3b/0x60]
-> sys_read+0x3b/0x60
-> Dec 16 11:21:40 syntropy kernel: [  279.226170]
-> [sysenter_past_esp+0x6b/0xc1] sysenter_past_esp+0x6b/0xc1
+Is there a way to replace the system beep by something more
+melodic?
 
-(Can you find a way to fix that wordwrapping please?)
+I remember some 10 years ago there was a patch for the kernel
+to call an external "beep daemon" playing an audio file instead
+(no kidding). But it never worked very well. Sometimes there
+was a huge delay, and some programs were not very nice to the
+system beep.
 
-Yes, this is a different bug - the pagemap stuff is doing userspace access
-under kmap_atomic() - we discovered this a couple of days ago and Matt has
-been informed.
+My X-mas wish would be to get an improvement here.
 
-It's relatively harmless and if that's the only problem you're observing
-then I think we're OK here.
+
+Regards
+
+Harri
 
