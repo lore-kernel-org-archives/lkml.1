@@ -1,85 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763339AbXLPDYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764355AbXLPDls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763339AbXLPDYT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Dec 2007 22:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbXLPDYG
+	id S1764355AbXLPDls (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Dec 2007 22:41:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbXLPDlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Dec 2007 22:24:06 -0500
-Received: from cg-p07-fb.rzone.de ([81.169.146.215]:19498 "EHLO
-	cg-p07-fb.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756002AbXLPDYF (ORCPT
+	Sat, 15 Dec 2007 22:41:37 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:2607 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756002AbXLPDlg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Dec 2007 22:24:05 -0500
-X-RZG-CLASS-ID: mo07
-X-RZG-AUTH: lEAzdeI4dSN9VuBdaqrKvzFA3p9QfMrmrF4hYoiThG+OHraeCXS1
-From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
-Date: Sun, 16 Dec 2007 04:20:52 +0100
-User-Agent: KMail/1.9.7
-Cc: "John W. Linville" <linville@tuxdriver.com>, Michael Buesch <mb@bu3sch.de>,
-       Daniel Walker <dwalker@mvista.com>, akpm@linux-foundation.org,
-       stefano.brivio@polimi.it, Ray Lee <ray-lk@madrabbit.org>,
-       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
-       mbuesch@freenet.de, linux@bohmer.net, kjwinchester@gmail.com,
-       jonathan@jonmasters.org, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       bcm43xx-dev@lists.berlios.de
-References: <20071213003028.676998182@mvista.com> <20071215214300.GC3096@tuxdriver.com> <200712160026.20730.rjw@sisk.pl>
-In-Reply-To: <200712160026.20730.rjw@sisk.pl>
-MIME-Version: 1.0
+	Sat, 15 Dec 2007 22:41:36 -0500
+Date: Sun, 16 Dec 2007 11:41:20 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: akpm@linux-foundation.org, jgarzik@pobox.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, davem@davemloft.net, den@openvz.org,
+       xemul@openvz.org
+Subject: [PACKET]: Fix /proc/net/packet crash due to bogus private pointer
+Message-ID: <20071216034119.GA1491@gondor.apana.org.au>
+References: <200712160118.58611.m.kozlowski@tuxland.pl> <E1J3jqN-0000Jq-00@gondolin.me.apana.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712160420.58500.s.L-H@gmx.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <E1J3jqN-0000Jq-00@gondolin.me.apana.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sonntag, 16. Dezember 2007, Rafael J. Wysocki wrote:
-> On Saturday, 15 of December 2007, John W. Linville wrote:
-> > On Sat, Dec 15, 2007 at 02:25:50AM +0100, Rafael J. Wysocki wrote:
-> > > On Friday, 14 of December 2007, Michael Buesch wrote:
-> > 
-> > > > Either distributions have to install it automatically or people simply have
-> > > > to read one or two lines of documentation.  That's just what I wanted to say.
-> > > 
-> > > It's not that simple.  For example, regression testing will be a major PITA
-> > > if one needs to switch back and forth from the new driver to the old one in the
-> > > process.
-> > 
-> > Not really true -- a single system can easily have firmware installed
-> > for b43, b43legacy, and bcm43xx at the same time and switch back and
-> > forth between them.
-> > 
-> > Given a functioning udev configuration, the persistent naming even
-> > works so that your device stays as 'eth1' when switching to and
-> > fro bcm43xx.
-> 
-> Well, this last bit doesn't work on my openSUSE 10.3.  Honest, guv. ;-)
+On Sun, Dec 16, 2007 at 11:07:07AM +0800, Herbert Xu wrote:
+>
+> I suspect namespace borkage.  But just because you pin-pointed
+> my patch I'll try to track it down :)
 
-The persistent interface naming rules of udev, at least up to 0.114-2 
-(current debian unstable), seem to be easily confused if the driver names 
-change for the same MAC address. This issue seems not to be b43 specific, 
-it happens with zd1211rw --> zd1211rw_mac80211 (this one won't show up in 
-mainline kernels), prism54 --> p54pci/ p54usb, out-of-tree RaLink legacy/ 
-serialmonkey (which ignore interface renames through udev completely) --> 
-rt2x00 just as well and I assume that it might also affect sk98lin --> 
-skge/ sky and the upcomming e1000 --> e1000e transitions and similar 
-situations.
+Surprise surprise.  The namespace seq patch missed two spots in
+AF_PACKET.
 
-> > I really think everyone is overstating the problem.
-> 
-> You might be right.
+[PACKET]: Fix /proc/net/packet crash due to bogus private pointer
 
-It is of course confusing to the user and might affect remote updates, but 
-it's also easily fixed by removing the generated MAC address mappings and 
-letting udev generate new ones (+ post processing, if needed) during the 
-next boot.
+The seq_open_net patch changed the meaning of seq->private.
+Unfortunately it missed two spots in AF_PACKET, which still
+used the old way of dereferencing seq->private, thus causing
+weird and wonderful crashes when reading /proc/net/packet.
 
-> Greetings,
-> Rafael
+This patch fixes them.
 
-Regards
-	Stefan Lippers-Hollmann
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
+index 485af56..43e49f4 100644
+--- a/net/packet/af_packet.c
++++ b/net/packet/af_packet.c
+@@ -1878,7 +1878,7 @@ static void *packet_seq_start(struct seq_file *seq, loff_t *pos)
+ 
+ static void *packet_seq_next(struct seq_file *seq, void *v, loff_t *pos)
+ {
+-	struct net *net = seq->private;
++	struct net *net = seq_file_net(seq);
+ 	++*pos;
+ 	return  (v == SEQ_START_TOKEN)
+ 		? sk_head(&net->packet.sklist)
+@@ -1887,7 +1887,7 @@ static void *packet_seq_next(struct seq_file *seq, void *v, loff_t *pos)
+ 
+ static void packet_seq_stop(struct seq_file *seq, void *v)
+ {
+-	struct net *net = seq->private;
++	struct net *net = seq_file_net(seq);
+ 	read_unlock(&net->packet.sklist_lock);
+ }
+ 
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
