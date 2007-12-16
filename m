@@ -1,83 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934942AbXLPR5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935121AbXLPSFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934942AbXLPR5l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 12:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765793AbXLPR5d
+	id S935121AbXLPSFy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 13:05:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934515AbXLPSFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 12:57:33 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:37469 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763646AbXLPR5d (ORCPT
+	Sun, 16 Dec 2007 13:05:43 -0500
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:32253 "EHLO
+	mk-filter-3-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1765954AbXLPSFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 12:57:33 -0500
-Message-ID: <476566E7.3090606@cosmosbay.com>
-Date: Sun, 16 Dec 2007 18:56:55 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux kernel <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>
-Subject: Re: [RANDOM] Move two variables to read_mostly section to save memory
-References: <47650FBD.2060209@cosmosbay.com> <20071216173416.GW19691@waste.org>
-In-Reply-To: <20071216173416.GW19691@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 16 Dec 2007 18:57:03 +0100 (CET)
+	Sun, 16 Dec 2007 13:05:41 -0500
+X-Trace: 659758951-mk-filter-3.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
+X-SBRS: None
+X-RemoteIP: 81.1.89.91
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HANb3ZEdRAVlb/2dsb2JhbACBV5AAlkU
+Subject: Re: [PATCH 2/3] Add GD-Rom support to the SEGA Dreamcast
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Adrian McMenamin <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-sh@vger.kernel.org, axboe@kernel.dk
+In-Reply-To: <20071216095019.GA12184@linux-sh.org>
+References: <8b67d60712151621j2101c411p19d75125c6d1c2f9@mail.gmail.com>
+	 <20071216095019.GA12184@linux-sh.org>
+Content-Type: text/plain
+Date: Sun, 16 Dec 2007 18:05:13 +0000
+Message-Id: <1197828313.6254.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall a écrit :
-> On Sun, Dec 16, 2007 at 12:45:01PM +0100, Eric Dumazet wrote:
->> While examining vmlinux namelist on i686, I noticed :
->>
->> c0581300 D random_table
->> c0581480 d input_pool
->> c0581580 d random_read_wakeup_thresh
->> c0581584 d random_write_wakeup_thresh
->> c0581600 d blocking_pool
->>
->> That means that the two integers random_read_wakeup_thresh and 
->> random_write_wakeup_thresh use a full cache entry (128 bytes).
+
+On Sun, 2007-12-16 at 18:50 +0900, Paul Mundt wrote:
+
+> > +static int gdrom_readdisk_dma(int block, int block_cnt, char *buffer)
+> > +{
+> > +	int err;
+> > +	struct packet_command *read_command;
+> > +	/* release the spin lock but check later
+> > + 	 * we're not in the middle of some dma */
+> > +	spin_unlock(&gdrom_lock);
 > 
-> But why did that happen?
-> 
-> Probably because of this:
-> 
->         spinlock_t lock ____cacheline_aligned_in_smp;
-> 
-> in struct entropy_store.
-> 
-> And that comes from here:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/tglx/history.git;a=commitdiff;h=47b54fbff358a1d5ee4738cec8a53a08bead72e4;hp=ce334bb8f0f084112dcfe96214cacfa0afba7e10
-> 
-> So we could save more memory by just dropping that alignment.
-> 
-> The trick is to improve the scalability without it. Currently, for
-> every 10 bytes read, we hash the whole output pool and do three
-> feedback cycles, each grabbing the lock briefly and releasing it. We
-> also need to grab the lock every 128 bytes to do some accounting. So
-> we do 40 locks every 128 output bytes! Also, the output pool itself
-> gets bounced back and forth like mad too.
-> 
-> I'm actually in the middle of redoing some patches that will reduce
-> this to one lock per 10 bytes, or 14 locks per 128 bytes. 
-> 
-> But we can't do much better than that without some fairly serious
-> restructuring. Like switching to SHA-512, which would take us to one
-> lock for every 32 output bytes, or 5 locks per 128 bytes with accounting.
-> 
-> We could also switch to per-cpu output pools for /dev/urandom, which
-> would add 128 bytes of data per CPU, but would eliminate the lock
-> contention and the pool cacheline bouncing. Is it worth the added
-> complexity? Probably not.
+> The locking strategy here is a bit interesting, has spinlock debugging
+> tossed any profanities to your console?
 > 
 
-Yes, this reminds me the prefetch_range(r->pool, wordmask); is wrong (should 
-be prefetch_range(r->pool, wordmask*4) , so I am not sure how it could help 
-David to get better performance.... :(
+No, no errors reported.
+
+I think I've been careful - I release the lock because we're doing
+things like allocating memory and then sleeping on the queue.
+
+But I also need to check various registers so that (a) we don't try to
+do a second DMA until the hardware is ready and (b) we properly
+serialize access to the device by two different threads of execution.
+
+Seems to work.
+
+Though I have an issue with the AICA driver: as it just locks out all
+other DMA when doing its own DMA, it is causing the GD Rom driver to
+miss some reads (as the interrupts are locked between the DMA being
+requested and the interrupt returning afaics). It's not terminal by any
+means, but it can be annoying!
+
+/ # /mpg123 -g 25 /mnt/01-Come\ together.mp3 
+High Performance MPEG 1.0/2.0/2.5 Audio Player for Layer 1, 2 and 3.
+Version 0.59r-gpl (2005/04/08). Copyright 1995-2005 by The Mpg123
+Project.
+Uses code from various people, see 'AUTHORS' for full list.
+This software comes with ABSOLUTELY NO WARRANTY. For details, see 
+the enclosed file COPYING for license information (GPL).
+
+Directory: /mnt/
+Playing MPEG stream from 01-Come together.mp3 ...
+Junk at the beginning 49443303
+MPEG 1.0 layer III, 192 kbit/s, 44100 Hz joint-stereo
+[  168.794478] irq 11, desc: 8c2723dc, depth: 1, count: 0, unhandled: 0
+[  168.800318] ->handle_irq():  8c048580, handle_bad_irq+0x0/0x2c0
+[  168.806404] ->chip(): 8c2768c4, no_irq_chip+0x0/0x40
+[  168.811522] ->action(): 00000000
+[  168.814846]   IRQ_DISABLED set
+[  168.817992] unexpected IRQ trap at vector 0b
+[  173.548850] irq 11, desc: 8c2723dc, depth: 1, count: 0, unhandled: 0
+[  173.554691] ->handle_irq():  8c048580, handle_bad_irq+0x0/0x2c0
+[  173.560777] ->chip(): 8c2768c4, no_irq_chip+0x0/0x40
+[  173.565895] ->action(): 00000000
+[  173.569219]   IRQ_DISABLED set
 
 
