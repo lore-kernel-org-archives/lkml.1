@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933495AbXLPLjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933237AbXLPLpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933495AbXLPLjJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 06:39:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765532AbXLPLi4
+	id S933237AbXLPLpo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 06:45:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761081AbXLPLpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 06:38:56 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4996 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760524AbXLPLiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 06:38:55 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc5-mm1: problems with cat /proc/kpageflags
-Date: Sun, 16 Dec 2007 12:40:53 +0100
-User-Agent: KMail/1.9.7
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org, davem@davemloft.net
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org> <200712161114.39437.m.kozlowski@tuxland.pl> <200712161141.50012.m.kozlowski@tuxland.pl>
-In-Reply-To: <200712161141.50012.m.kozlowski@tuxland.pl>
+	Sun, 16 Dec 2007 06:45:34 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:36888 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757031AbXLPLpd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 06:45:33 -0500
+Message-ID: <47650FBD.2060209@cosmosbay.com>
+Date: Sun, 16 Dec 2007 12:45:01 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712161240.54594.m.kozlowski@tuxland.pl>
+To: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>
+CC: Linux kernel <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>
+Subject: [RANDOM] Move two variables to read_mostly section to save memory
+Content-Type: multipart/mixed;
+ boundary="------------050805010102040204070906"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 16 Dec 2007 12:45:09 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->         cat /proc/kpageflags on sparc64 causes the box to lock.
-> I can not write on any terminal - but I can issue sysrqs and switch
-> between consoles.
-> 
-> cat process hangs in read(3, ...
+This is a multi-part message in MIME format.
+--------------050805010102040204070906
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-cat /proc/kpagecount produces similar symptoms. box is locked - sysrq-w sshd trace:
+While examining vmlinux namelist on i686, I noticed :
 
-__down
-__down_interruptible
-kobject_get
-lock_kernel
-chrdev_open
-__dentry_open
-nameidata_to_filp
-open_pathname
-do_sys_open
-sparc32_open
-linux_sparc_syscall32
+c0581300 D random_table
+c0581480 d input_pool
+c0581580 d random_read_wakeup_thresh
+c0581584 d random_write_wakeup_thresh
+c0581600 d blocking_pool
 
-then again:
+That means that the two integers random_read_wakeup_thresh and 
+random_write_wakeup_thresh use a full cache entry (128 bytes).
 
-BUG: soft lockup - CPU#0 stuck for 11s! [sshd:3242]
-...
-TPC: spitfire_xcall_helper+0xa0/0x100
-...
-RPC: spitfire_xcall_helper+0xac/0x100
-...
-I7: flush_dcache_page_all+0x1a4/0x1e0
+Moving them to read_mostly section can shrinks vmlinux by 120 bytes.
 
-or:
+# size vmlinux*
+    text    data     bss     dec     hex filename
+4835553  450210  610304 5896067  59f783 vmlinux.after_patch
+4835553  450330  610304 5896187  59f7fb vmlinux.before_patch
 
-BUG: soft lockup - CPU#0 stuck for 11s! [sshd:3242]
-...
-TPC: tick_get_tick+0xc/0x20
-...
-RPC: __handle_softirq_continue+0x20/0x24
-...
-I7: __delay+0x2c/0x60
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
-Box is unusable. Easy to reproduce - every time.
+--------------050805010102040204070906
+Content-Type: text/plain;
+ name="random_read_mostly.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="random_read_mostly.patch"
 
-Regards,
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+index 5fee056..af48e86 100644
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -256,14 +256,14 @@
+  * The minimum number of bits of entropy before we wake up a read on
+  * /dev/random.  Should be enough to do a significant reseed.
+  */
+-static int random_read_wakeup_thresh = 64;
++static int random_read_wakeup_thresh __read_mostly = 64;
+ 
+ /*
+  * If the entropy count falls under this number of bits, then we
+  * should wake up processes which are selecting or polling on write
+  * access to /dev/random.
+  */
+-static int random_write_wakeup_thresh = 128;
++static int random_write_wakeup_thresh __read_mostly = 128;
+ 
+ /*
+  * When the input pool goes over trickle_thresh, start dropping most
 
-	Mariusz
+--------------050805010102040204070906--
