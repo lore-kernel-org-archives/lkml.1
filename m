@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759976AbXLPVIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759713AbXLPVLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759976AbXLPVIL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 16:08:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbXLPVH7
+	id S1759713AbXLPVLt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 16:11:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757502AbXLPVLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 16:07:59 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47977 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755972AbXLPVH6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 16:07:58 -0500
-Date: Sun, 16 Dec 2007 21:01:22 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: devzero@web.de
-Cc: Parag Warudkar <parag.warudkar@gmail.com>, Matt_Domsch@dell.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [RFC] be more verbose when probing EDD
-Message-ID: <20071216210122.23aa9cb6@the-village.bc.nu>
-In-Reply-To: <49547705@web.de>
-References: <49547705@web.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 16 Dec 2007 16:11:42 -0500
+Received: from mx2-2.mail.ru ([194.67.23.122]:26266 "EHLO mx2.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756987AbXLPVLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 16:11:41 -0500
+Date: Mon, 17 Dec 2007 00:10:00 +0300
+From: Evgeniy Dushistov <dushistov@mail.ru>
+To: Jean-Marc Saffroy <jean-marc.saffroy@orange-ftgroup.com>
+Cc: daniel.pirkl@email.cz, linux-kernel@vger.kernel.org
+Subject: Re: fsx failure on ufs2
+Message-ID: <20071216211000.GA10964@rain>
+Mail-Followup-To: Jean-Marc Saffroy <jean-marc.saffroy@orange-ftgroup.com>,
+	daniel.pirkl@email.cz, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.61.0712141649230.10387@brutus.ri.silicomp.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0712141649230.10387@brutus.ri.silicomp.fr>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > But that is not the point. Problem is not widely known, likely happens
-> > with very old BIOSes and people who use those systems should be
-> > knowing more than simply booting back to Win98.
-> 
-> i don`t see any relation to what a user knows and what kind of system of what age he is using.
+On Fri, Dec 14, 2007 at 05:21:31PM +0100, Jean-Marc Saffroy wrote:
+> For an embedded system, I'm currently evaluating the robustness of ufs2 
+> write support on Linux, and my very first test, with fsx, shows serious 
+> problems.
+>
+> My test bed is a single CPU PC with a single IDE disk, that boots FreeBSD 
+> 6.2 and Ubuntu 7.10. The kernel on Ubuntu is a vanilla 2.6.23.9 with UFS2 
+> write support. fsx is from the freebsd cvs (with a small patch to build on 
+> Linux, see after my sig):
+>   http://www.freebsd.org/cgi/cvsweb.cgi/src/tools/regression/fsx/
+>
 
-Its much much uglier than that alas. All the cases I've traced down have
-been buggy bioses on add in cards not the system BIOS - the edd hang
-actually moved with the controller card.
+I used fsx-linux.c from ext3-tools project, but ran it with
+different options.
 
-So it is useful to know.
+>
+> Can anyone else confirm this problem?
+>
+Using your options I am able to reproduce this bug.
+Looks like problem in ufs_alloc_lastblock, last page in file
+contains zeros, but because of ufs_readpage, it can be contains 
+garbage. I will look at next week how it can be fixed.
+
+-- 
+/Evgeniy
+
