@@ -1,129 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933837AbXLPMDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934002AbXLPMDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933837AbXLPMDS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 07:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933702AbXLPMDB
+	id S934002AbXLPMDq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 07:03:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765013AbXLPMDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 07:03:01 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:60753 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762476AbXLPMC6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 07:02:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=BS+1Talw778uX2WvN0aOJvYzdU4mOTRXM35cZG/uT2O5ZHDplGbt1tzEB+kl4sk7a15pRBYtsuTwx7Z/nq8M31cdjKU3D2vzYKDD/EazaWzjH+0uzr5zvW9BVxDbEIJvba6j/TIOJeRM9fEynInqwZnNKVWUhiejBlBD5RB10t8=
-Subject: [PATCH 2/4] x86: fix asm memory constraints in local_64.h
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Sun, 16 Dec 2007 04:03:01 -0800
-Message-Id: <1197806581.3749.40.camel@brick>
+	Sun, 16 Dec 2007 07:03:31 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:61032 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932849AbXLPMDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 07:03:30 -0500
+To: david@davidnewall.com
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <47650A4C.4000708@davidnewall.com>
+	<200712162026.BFJ01924.tOFJSFOQMVHOLF@I-love.SAKURA.ne.jp>
+	<47650C88.6040105@davidnewall.com>
+	<200712162036.JAJ09389.OQOVtOHMFLFSFJ@I-love.SAKURA.ne.jp>
+	<476512F1.5010701@davidnewall.com>
+In-Reply-To: <476512F1.5010701@davidnewall.com>
+Message-Id: <200712162103.IEC69233.FFOFOOtJMQHSLV@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Sun, 16 Dec 2007 21:03:27 +0900
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the shorter +m form rather than =m and m.
+Hello.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- include/asm-x86/local_64.h |   30 ++++++++++++++----------------
- 1 files changed, 14 insertions(+), 16 deletions(-)
+David Newall wrote:
+> > You won't be able to login to the system because /sbin/mingetty
+> > fails to "chown/chmod" /dev/tty* if /dev is mounted for read-only mode.
+> 
+> Good point.  So, if only root can modify files in /dev, what's the 
+> problem you're fixing?  (I'm sure you tried to explain this in your 
+> original post, but your reasons weren't clear to me.)
 
-diff --git a/include/asm-x86/local_64.h b/include/asm-x86/local_64.h
-index da61076..7808f53 100644
---- a/include/asm-x86/local_64.h
-+++ b/include/asm-x86/local_64.h
-@@ -5,32 +5,30 @@ static inline void local_inc(local_t *l)
- {
- 	__asm__ __volatile__(
- 		"incq %0"
--		:"=m" (l->a.counter)
--		:"m" (l->a.counter));
-+		:"+m" (l->a.counter));
- }
- 
- static inline void local_dec(local_t *l)
- {
- 	__asm__ __volatile__(
- 		"decq %0"
--		:"=m" (l->a.counter)
--		:"m" (l->a.counter));
-+		:"+m" (l->a.counter));
- }
- 
- static inline void local_add(long i, local_t *l)
- {
- 	__asm__ __volatile__(
- 		"addq %1,%0"
--		:"=m" (l->a.counter)
--		:"ir" (i), "m" (l->a.counter));
-+		:"+m" (l->a.counter)
-+		:"ir" (i));
- }
- 
- static inline void local_sub(long i, local_t *l)
- {
- 	__asm__ __volatile__(
- 		"subq %1,%0"
--		:"=m" (l->a.counter)
--		:"ir" (i), "m" (l->a.counter));
-+		:"+m" (l->a.counter)
-+		:"ir" (i));
- }
- 
- /**
-@@ -48,8 +46,8 @@ static inline int local_sub_and_test(long i, local_t *l)
- 
- 	__asm__ __volatile__(
- 		"subq %2,%0; sete %1"
--		:"=m" (l->a.counter), "=qm" (c)
--		:"ir" (i), "m" (l->a.counter) : "memory");
-+		:"+m" (l->a.counter), "=qm" (c)
-+		:"ir" (i) : "memory");
- 	return c;
- }
- 
-@@ -67,8 +65,8 @@ static inline int local_dec_and_test(local_t *l)
- 
- 	__asm__ __volatile__(
- 		"decq %0; sete %1"
--		:"=m" (l->a.counter), "=qm" (c)
--		:"m" (l->a.counter) : "memory");
-+		:"+m" (l->a.counter), "=qm" (c)
-+		: : "memory");
- 	return c != 0;
- }
- 
-@@ -86,8 +84,8 @@ static inline int local_inc_and_test(local_t *l)
- 
- 	__asm__ __volatile__(
- 		"incq %0; sete %1"
--		:"=m" (l->a.counter), "=qm" (c)
--		:"m" (l->a.counter) : "memory");
-+		:"+m" (l->a.counter), "=qm" (c)
-+		: : "memory");
- 	return c != 0;
- }
- 
-@@ -106,8 +104,8 @@ static inline int local_add_negative(long i, local_t *l)
- 
- 	__asm__ __volatile__(
- 		"addq %2,%0; sets %1"
--		:"=m" (l->a.counter), "=qm" (c)
--		:"ir" (i), "m" (l->a.counter) : "memory");
-+		:"+m" (l->a.counter), "=qm" (c)
-+		:"ir" (i) : "memory");
- 	return c;
- }
- 
--- 
-1.5.4.rc0.1083.gf568
+In 2003, I was trying to make / partition read-only to avoid tampering system files.
+Use of policy based mandatory access control (such as SELinux) is
+one of ways to avoid tampering, but management of policy was a daunting task.
+So, I tried to store / partition in a read-only medium so that
+the system is free from tampering system files.
 
+When I attended at Security Stadium 2003 as a defense side,
+I was using devfs for /dev directory. The files in /dev directory
+were deleted by attckers and the administrator was unable to login.
+So I developed this filesystem so that attackers who got root privilege
+can't tamper files in /dev directory.
+Not many systems mount / partition for read-only mode,
+thus there may be few needs for read-only / partition.
 
+But use of this filesystem is still valid when this filesystem is used with
+policy based mandatory access control (such as SELinux, TOMOYO Linux)
+because this filesystem guarantees where policy based mandatory access control
+can't guarantee (i.e. filename and its attribute).
