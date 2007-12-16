@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934883AbXLPRUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934888AbXLPRcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934883AbXLPRUJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 12:20:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbXLPRT5
+	id S934888AbXLPRcB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 12:32:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXLPRbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 12:19:57 -0500
-Received: from mail.gmx.net ([213.165.64.20]:56639 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751740AbXLPRT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 12:19:56 -0500
-X-Authenticated: #429267
-X-Provags-ID: V01U2FsdGVkX180Sa874V40lQbzpFm73NQsTN36+FmFuTiIOrWKYs
-	dzTtnbgBCzP05K
-Subject: Re: [PATCH] debugfs: Revamp debugfs_create_{u,x,s}{8,16,32,64} to
-	support signed integers
-From: Mattias Nissler <mattias.nissler@gmx.de>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071216170550.GA12697@kroah.com>
-References: <1197823079.7530.11.camel@localhost>
-	 <20071216170550.GA12697@kroah.com>
-Content-Type: text/plain
-Date: Sun, 16 Dec 2007 18:19:53 +0100
-Message-Id: <1197825593.7530.25.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Sun, 16 Dec 2007 12:31:49 -0500
+Received: from neon.samage.net ([85.17.153.66]:36688 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750819AbXLPRbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 12:31:48 -0500
+X-Greylist: delayed 2371 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Dec 2007 12:31:47 EST
+Message-ID: <46595.81.207.0.53.1197823928.squirrel@secure.samage.net>
+In-Reply-To: <200712162103.IEC69233.FFOFOOtJMQHSLV@I-love.SAKURA.ne.jp>
+References: <47650A4C.4000708@davidnewall.com>
+    <200712162026.BFJ01924.tOFJSFOQMVHOLF@I-love.SAKURA.ne.jp>
+    <47650C88.6040105@davidnewall.com>
+    <200712162036.JAJ09389.OQOVtOHMFLFSFJ@I-love.SAKURA.ne.jp>
+    <476512F1.5010701@davidnewall.com>
+    <200712162103.IEC69233.FFOFOOtJMQHSLV@I-love.SAKURA.ne.jp>
+Date: Sun, 16 Dec 2007 17:52:08 +0100 (CET)
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Tetsuo Handa" <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: david@davidnewall.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.8
+MIME-Version: 1.0
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: 9090f8a1960d7f777b94d17b6f36e747
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Sun, 2007-12-16 at 09:05 -0800, Greg KH wrote:
-> On Sun, Dec 16, 2007 at 05:37:59PM +0100, Mattias Nissler wrote:
-> > This makes debugfs use its own file_operations for the value accessor files
-> > created by debugfs_create_XXX. Having that, we can also have proper versions
-> > for signed integers.
-> 
-> Why not tweak the "SIMPLE_ATTRIBUTE" code to support this instead?  That
-> way debugfs and all other filesystems could also use these attributes?
+On Sun, December 16, 2007 13:03, Tetsuo Handa wrote:
+> Hello.
+>
+> David Newall wrote:
+>> > You won't be able to login to the system because /sbin/mingetty
+>> > fails to "chown/chmod" /dev/tty* if /dev is mounted for read-only mode.
+>>
+>> Good point.  So, if only root can modify files in /dev, what's the
+>> problem you're fixing?  (I'm sure you tried to explain this in your
+>> original post, but your reasons weren't clear to me.)
+>
+> In 2003, I was trying to make / partition read-only to avoid tampering system
+> files.
+> Use of policy based mandatory access control (such as SELinux) is
+> one of ways to avoid tampering, but management of policy was a daunting task.
+> So, I tried to store / partition in a read-only medium so that
+> the system is free from tampering system files.
+>
+> When I attended at Security Stadium 2003 as a defense side,
+> I was using devfs for /dev directory. The files in /dev directory
+> were deleted by attckers and the administrator was unable to login.
+> So I developed this filesystem so that attackers who got root privilege
+> can't tamper files in /dev directory.
 
-I expected that question ;-) Actually, I had a version that did this.
-But it ended up being ugly, cause SIMPLE_ATTRIBUTEs expect to access the
-values via get/set functions using u64. Here is what I did and why I
-didn't like it:
+What prevents them from mounting tmpfs on top of /dev, bypassing your fs?
 
-* I made the set/get function interface more generic (as it is in the
-debugfs patch), i.e. getting passed the buf, so they have to
-decode/encode whatever they like into the buf instead of working with
-u64
-* This means either all code using SIMPLE_ATTRIBUTES must be changed, or
-I need to add another wrapper macro that produces suitable get/set
-functions from the u64 versions it gets passed.
-* Changing all SIMPLE_ATTRIBUTE users is not what I want, cause moving
-the csnprintf()/strtoull() calls out of the SIMPLE_ATTRIBUTE code means
-it becomes less simple to use it, right?
-* The wrapper is actually possible, but it suffers from cases where
-somebody passes NULL for a get or set function (which is actually
-expected, compare the code in libfs.c) It is possible to hack around
-this, but it's ugly.
+Also, if they have root there are plenty of ways to prevent an administrator
+from logging in, e.g. using iptables or changing the password.
 
-Then I thought, well, SIMPLE_ATTRIBUTEs are made to work with a set/get
-function pair. But debugfs expects a pointer to an actual variable
-anyway, so just bypass the SIMPLE_ATTRIBUTE code and make debugfs use
-it's own file_operations (most of them shamelessly stolen from the
-SIMPLE_ATTRIBUTE code, I admit).
+Greetings,
 
-Mattias
+Indan
+
 
