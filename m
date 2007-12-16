@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934341AbXLPMPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933954AbXLPMWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934341AbXLPMPM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 07:15:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765507AbXLPMO5
+	id S933954AbXLPMWK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 07:22:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932178AbXLPMVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 07:14:57 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63037 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753960AbXLPMO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 07:14:56 -0500
-To: david@davidnewall.com
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200712162026.BFJ01924.tOFJSFOQMVHOLF@I-love.SAKURA.ne.jp>
-	<47650C88.6040105@davidnewall.com>
-	<200712162036.JAJ09389.OQOVtOHMFLFSFJ@I-love.SAKURA.ne.jp>
-	<476512F1.5010701@davidnewall.com>
-	<200712162103.IEC69233.FFOFOOtJMQHSLV@I-love.SAKURA.ne.jp>
-In-Reply-To: <200712162103.IEC69233.FFOFOOtJMQHSLV@I-love.SAKURA.ne.jp>
-Message-Id: <200712162114.BJE04102.tOMFHOOFSJVQFL@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Sun, 16 Dec 2007 21:14:54 +0900
+	Sun, 16 Dec 2007 07:21:53 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:1878 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765507AbXLPMVw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 07:21:52 -0500
+Date: Sun, 16 Dec 2007 20:21:47 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jeff@jeffunit.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: oops with 2.6.23.1, marvel, software raid, reiserfs and samba
+Message-ID: <20071216122147.GA4355@gondor.apana.org.au>
+References: <20071216030516.1562a5d0.akpm@linux-foundation.org> <E1J3s76-000166-00@gondolin.me.apana.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1J3s76-000166-00@gondolin.me.apana.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Dec 16, 2007 at 07:56:56PM +0800, Herbert Xu wrote:
+>
+> What's spooky is that I just did a google and we've had reports
+> since 1998 all crashing on exactly the same line in tcp_recvmsg.
 
-> But use of this filesystem is still valid when this filesystem is used with
-> policy based mandatory access control (such as SELinux, TOMOYO Linux)
-> because this filesystem guarantees where policy based mandatory access control
-> can't guarantee (i.e. filename and its attribute).
-> 
-Policy based mandatory access control guarantees that
-"Only Bob can create block device file named sda1 in /dev directory".
-But it can't guarantee that /dev/sda1 will have block-8-1 attribute.
-If Bob is malicious and creates /dev/sda1 with block-8-2 attribute,
-other applications that depends on the attributes of /dev/sda1 goes wrong.
-So, this filesystem guarantees that /dev/sda1 has block-8-1 attribute.
+However, there's been no reports at all since 2000 apart from this
+one so the earlier ones are probably not related.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
