@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764309AbXLPWnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765254AbXLPWpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764309AbXLPWnl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 17:43:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760628AbXLPWnb
+	id S1765254AbXLPWpQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 17:45:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760628AbXLPWpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 17:43:31 -0500
-Received: from ns2.suse.de ([195.135.220.15]:35744 "EHLO mx2.suse.de"
+	Sun, 16 Dec 2007 17:45:04 -0500
+Received: from mail.tmr.com ([64.65.253.246]:53397 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760271AbXLPWna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 17:43:30 -0500
-From: Neil Brown <neilb@suse.de>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Date: Mon, 17 Dec 2007 09:43:25 +1100
+	id S1752055AbXLPWpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 17:45:01 -0500
+Message-ID: <4765AED1.6090700@tmr.com>
+Date: Sun, 16 Dec 2007 18:03:45 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+CC: matti.aarnio@zmailer.org, linux-kernel@vger.kernel.org
+Subject: Re: Does vger.kernel.org automatically drop spams?
+References: <200712052225.IHJ09818.MQLtJOFOSFHVOF@I-love.SAKURA.ne.jp>	<20071205133545.GV6372@mea-ext.zmailer.org> <200712052245.AIH87554.JSOFFLFtVOOQMH@I-love.SAKURA.ne.jp>
+In-Reply-To: <200712052245.AIH87554.JSOFFLFtVOOQMH@I-love.SAKURA.ne.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18277.43533.991986.323212@notabene.brown>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
-       "Greg KH" <greg@kroah.com>
-Subject: Re: [PATCH 007 of 7] md: Get name for block device in sysfs
-In-Reply-To: message from Kay Sievers on Saturday December 15
-References: <20071214171950.1308.patches@notabene>
-	<1071214062647.1928@suse.de>
-	<3ae72650712150858v14681823td2b0410eb67b1d04@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday December 15, kay.sievers@vrfy.org wrote:
-> On Dec 14, 2007 7:26 AM, NeilBrown <neilb@suse.de> wrote:
-> >
-> > Given an fd on a block device, returns a string like
-> >
-> >         /block/sda/sda1
-> >
-> > which can be used to find related information in /sys.
-....
+Tetsuo Handa wrote:
+> Hello.
 > 
-> As pointed out to when you came up with the idea, we can't do this. A devpath
-> is a path to the device and will not necessarily start with "/block" for block
-> devices. It may start with "/devices" and can be much longer than
-> BDEVNAME_SIZE*2  + 10.
+> Matti Aarnio wrote:
+>>> Does vger.kernel.org have spam filter and automatically drop spams?
+>> Yes.  Yes.  And even worse: SILENTLY drop it.  The reason was:
+>>
+>>      global taboo header: m!OJFS!
+>>
+>> I don't recall why that was declared taboo, but it apparently bites
+>> on References: headers..  Entirely unintentional, I assure you.
+> 
+> I see. Thank you.
+> 
+> Well, may be my address was registered as a spammer.
+> 
+> What should I do to post my message?
+> 
+> Should I use different From: address?
+> Should I stop sending to multiple lists?
+> 
+Since this was in the References header, stop replying to messages with 
+OFJS in the Message-Id would do it, if I read Matti's reply correctly.
+
+Were other replies also blocked, Matti? Does the filter hit References: 
+but not In-Reply-To: and so apply to responses to the post found in a 
+newsgroup but not on the mailing list?
+
+>> We (the postmasters) can approve your messages for posting, but it
+>> will take a few hours that I get off work, and have time to do it.
+>> (I need to do some additional setups, all those lists are not
+>> in my existing majordomo password database..)
+> 
+> Should I wait for your approval?
+> 
 
 
-When you say "will not necessarily" can I take that to mean that it
-currently does, but it might (will) change??
-In that case can we have the patch as it stands and when the path to
-block devices in /sys changes, the ioctl can be changed at the same
-time to match?
-
-Or are you saying that as the kernel is today, some block devices
-appear under /devices/..., in which case could you please give an
-example?
-
-Thanks,
-NeilBrown
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
