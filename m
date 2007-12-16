@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760919AbXLPIT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761546AbXLPInm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760919AbXLPIT5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 03:19:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbXLPITr
+	id S1761546AbXLPInm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 03:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbXLPInc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 03:19:47 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:3917 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754696AbXLPITq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 03:19:46 -0500
-Date: Sun, 16 Dec 2007 16:19:36 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miles Lane <miles.lane@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PACKET]: Fix /proc/net/packet crash due to bogus private pointer
-Message-ID: <20071216081936.GA3042@gondor.apana.org.au>
-References: <20071215203637.179878aa.akpm@linux-foundation.org> <a44ae5cd0712152237y2f6a17fcu6a718757c7c021a3@mail.gmail.com> <20071215235604.1a3f970a.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 16 Dec 2007 03:43:32 -0500
+Received: from yumi.tdiedrich.de ([85.10.210.183]:57184 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754559AbXLPInb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 03:43:31 -0500
+Date: Sun, 16 Dec 2007 09:38:28 +0100
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dada1@cosmosbay.com
+Subject: Re: dst cache overflow
+Message-ID: <20071216083828.GA512@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	Herbert Xu <herbert@gondor.apana.org.au>, linux-net@vger.kernel.org,
+	linux-kernel@vger.kernel.org, dada1@cosmosbay.com
+References: <20071214172945.GA10809@yamamaya.is-a-geek.org> <E1J3QWn-0006sJ-00@gondolin.me.apana.org.au> <20071215100857.GA29839@yamamaya.is-a-geek.org> <20071216073533.GA2706@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071215235604.1a3f970a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071216073533.GA2706@gondor.apana.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 15, 2007 at 11:56:04PM -0800, Andrew Morton wrote:
-> On Sun, 16 Dec 2007 01:37:01 -0500 "Miles Lane" <miles.lane@gmail.com> wrote:
+Herbert Xu wrote:
+> On Sat, Dec 15, 2007 at 11:08:58AM +0100, Tobias Diedrich wrote:
+> >
+> > Hmm, how do I look for that, if netstat doesn't look suspicous?
 > 
-> > > On Sun, Dec 16, 2007 at 11:07:07AM +0800, Herbert Xu wrote:
+> Thanks.  What does /proc/net/sockstat show?
 
-So I posted this patch after 19:00 PST on 15 Dec.
+ranma@oni:~$ cat /proc/net/sockstat
+sockets: used 143
+TCP: inuse 16 orphan 0 tw 4 alloc 21 mem 1
+UDP: inuse 8
+UDPLITE: inuse 0
+RAW: inuse 0
+FRAG: inuse 0 memory 0
 
-> > Dec 15 13:44:39 syntropy kernel:  #0:  (&p->lock){--..}, at:
-> > [crypto_algapi:seq_read+0x25/0x191c1] seq_read+0x25/0x26f
-> 
-> So your kernel is still feeding garbage into lockdep.
-> 
-> Are you really really sure that kernel had Herbert's patch applied?
+HTH,
 
-The above log message is stamped as 13:44 PST.  I gotta say
-this doesn't look good :)
-
-Cheers,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
