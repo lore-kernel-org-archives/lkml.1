@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764693AbXLPW0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764849AbXLPWac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764693AbXLPW0Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 17:26:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760238AbXLPW0C
+	id S1764849AbXLPWac (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 17:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760904AbXLPWaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 17:26:02 -0500
-Received: from mailout03.sul.t-online.de ([194.25.134.81]:34849 "EHLO
-	mailout03.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758784AbXLPW0A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 17:26:00 -0500
-Message-ID: <4765A5ED.60605@t-online.de>
-Date: Sun, 16 Dec 2007 23:25:49 +0100
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 16 Dec 2007 17:30:22 -0500
+Received: from mail.tmr.com ([64.65.253.246]:53381 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760599AbXLPWaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 17:30:21 -0500
+Message-ID: <4765AAFC.3040406@tmr.com>
+Date: Sun, 16 Dec 2007 17:47:24 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: howto get a melodic system beep?
+To: David Miller <davem@davemloft.net>
+CC: herbert@gondor.apana.org.au, simon@fire.lp0.eu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: sockets affected by IPsec always block (2.6.23)
+References: <4755A21F.2020407@simon.arlott.org.uk>	<20071205001230.GA11391@gondor.apana.org.au> <20071204.223023.262159049.davem@davemloft.net>
+In-Reply-To: <20071204.223023.262159049.davem@davemloft.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-ID: Z4RdfrZlwh0J6fXyG62To77tzmos37YzR+fRoDoKZUFzjXocEfzKc3LjFaJi5gdZFd
-X-TOI-MSGID: 79f88c4b-4877-4e23-87c1-a93a88c2fbc9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+David Miller wrote:
+> From: Herbert Xu <herbert@gondor.apana.org.au>
+> Date: Wed, 5 Dec 2007 11:12:32 +1100
+> 
+>> [INET]: Export non-blocking flags to proto connect call
+>>
+>> Previously we made connect(2) block on IPsec SA resolution.  This is
+>> good in general but not desirable for non-blocking sockets.
+>>
+>> To fix this properly we'd need to implement the larval IPsec dst stuff
+>> that we talked about.  For now let's just revert to the old behaviour
+>> on non-blocking sockets.
+>>
+>> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> 
+> We made an explicit decision not to do things this way.
+> 
+> Non-blocking has a meaning dependant upon the xfrm_larval_drop sysctl
+> setting, and this is across the board.  If xfrm_larval_drop is zero,
+> non-blocking semantics do not extend to IPSEC route resolution,
+> otherwise it does.
+> 
+> If he sets this sysctl to "1" as I detailed in my reply, he'll
+> get the behavior he wants.
+> 
+I think you for the hint, but I would hardly call this sentence 
+"detailed" in terms of being a cookbook solution to the problem.
 
-Is there a way to replace the system beep by something more
-melodic?
-
-I remember some 10 years ago there was a patch for the kernel
-to call an external "beep daemon" playing an audio file instead
-(no kidding). But it never worked very well. Sometimes there
-was a huge delay, and some programs were not very nice to the
-system beep.
-
-My X-mas wish would be to get an improvement here.
-
-
-Regards
-
-Harri
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
