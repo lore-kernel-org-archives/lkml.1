@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933237AbXLPLpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933347AbXLPL5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933237AbXLPLpo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 06:45:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761081AbXLPLpe
+	id S933347AbXLPL5R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 06:57:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763556AbXLPL5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 06:45:34 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:36888 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757031AbXLPLpd (ORCPT
+	Sun, 16 Dec 2007 06:57:06 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:1645 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757031AbXLPL5F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 06:45:33 -0500
-Message-ID: <47650FBD.2060209@cosmosbay.com>
-Date: Sun, 16 Dec 2007 12:45:01 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>
-CC: Linux kernel <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>
-Subject: [RANDOM] Move two variables to read_mostly section to save memory
-Content-Type: multipart/mixed;
- boundary="------------050805010102040204070906"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 16 Dec 2007 12:45:09 +0100 (CET)
+	Sun, 16 Dec 2007 06:57:05 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: akpm@linux-foundation.org (Andrew Morton)
+Subject: Re: oops with 2.6.23.1, marvel, software raid, reiserfs and samba
+Cc: jeff@jeffunit.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       davem@davemloft.net
+Organization: Core
+In-Reply-To: <20071216030516.1562a5d0.akpm@linux-foundation.org>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1J3s76-000166-00@gondolin.me.apana.org.au>
+Date: Sun, 16 Dec 2007 19:56:56 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050805010102040204070906
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+>> Dec  7 17:20:53 sata_fileserver kernel: Code: 6c 39 df 74 59 8d b6 00 
+>> 00 00 00 85 db 74 4f 8b 55 cc 8d 43 20 8b 0a 3b 48 18 0f 88 f4 05 00 
+>> 00 89 ce 2b 70 18 8b 83 90 00 00 00 <0f> b6 50 0d 89 d0 83 e0 02 3c 
+>> 01 8b 43 50 83 d6 ff 39 c6 0f 82
 
-While examining vmlinux namelist on i686, I noticed :
+This means that skb->network_header == NULL so this line crashes:
 
-c0581300 D random_table
-c0581480 d input_pool
-c0581580 d random_read_wakeup_thresh
-c0581584 d random_write_wakeup_thresh
-c0581600 d blocking_pool
+	if (tcp_hdr(skb)->syn)
+		offset--;
 
-That means that the two integers random_read_wakeup_thresh and 
-random_write_wakeup_thresh use a full cache entry (128 bytes).
+> That's a networking crash.  Do the oops traces which you're getting all look
+> like this one?
 
-Moving them to read_mostly section can shrinks vmlinux by 120 bytes.
+What's spooky is that I just did a google and we've had reports
+since 1998 all crashing on exactly the same line in tcp_recvmsg.
 
-# size vmlinux*
-    text    data     bss     dec     hex filename
-4835553  450210  610304 5896067  59f783 vmlinux.after_patch
-4835553  450330  610304 5896187  59f7fb vmlinux.before_patch
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-
---------------050805010102040204070906
-Content-Type: text/plain;
- name="random_read_mostly.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="random_read_mostly.patch"
-
-diff --git a/drivers/char/random.c b/drivers/char/random.c
-index 5fee056..af48e86 100644
---- a/drivers/char/random.c
-+++ b/drivers/char/random.c
-@@ -256,14 +256,14 @@
-  * The minimum number of bits of entropy before we wake up a read on
-  * /dev/random.  Should be enough to do a significant reseed.
-  */
--static int random_read_wakeup_thresh = 64;
-+static int random_read_wakeup_thresh __read_mostly = 64;
- 
- /*
-  * If the entropy count falls under this number of bits, then we
-  * should wake up processes which are selecting or polling on write
-  * access to /dev/random.
-  */
--static int random_write_wakeup_thresh = 128;
-+static int random_write_wakeup_thresh __read_mostly = 128;
- 
- /*
-  * When the input pool goes over trickle_thresh, start dropping most
-
---------------050805010102040204070906--
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
