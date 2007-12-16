@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932674AbXLPXsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbXLPXsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932674AbXLPXsR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 18:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760225AbXLPXsH
+	id S933106AbXLPXsl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 18:48:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932799AbXLPXs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 18:48:07 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38410 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759179AbXLPXsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 18:48:05 -0500
-Date: Sun, 16 Dec 2007 23:48:01 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.35.5
-Message-ID: <20071216234801.GA23794@hera.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Sun, 16 Dec 2007 18:48:29 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:55345 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760225AbXLPXs2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 18:48:28 -0500
+Message-ID: <4765B930.8010208@zytor.com>
+Date: Sun, 16 Dec 2007 15:48:00 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 4/4] x86: Final unification of local_{32|64}.h
+References: <1197806669.3749.44.camel@brick> <20071216153158.GA891@elte.hu>	 <4765AB32.9040608@zytor.com> <1197848331.3749.86.camel@brick>
+In-Reply-To: <1197848331.3749.86.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Harvey Harrison wrote:
+> 
+> Do you have a stylistic preference between these two options:
+> 
+> Option 1) Rely on CPP string constant concatenation
+> 
+> // possibly include trailing space here to avoid remembering
+> // leading space on the register names
+> # define _ASM_INC "incl" 
+> 
+> static inline void local_inc(local_t *l)
+> {
+> 	__asm__ __volatile__(
+> 		_ASM_INC " %0"
+> 		:"+m" (l->a.counter));
+> }
+> 
 
-I've just released Linux 2.4.35.5.
+This is what I have used up to this point, except including the space in 
+the macro:
 
-It simply gets up to date with 2.4.36-rc1. One important thing to
-keep in mind is that I explicitly disabled the possibility to build
-with GCC 4.2 because several users (me included) encountered silent
-mis-compilations.
+#define _ASM_INC " incl "
 
-So if you think that you have built your last version with 4.2, just
-check if you can build this one. If you can, then you use a correct,
-older GCC version. Otherwise, you'll have to install an old one for
-the moment. Anyway, this update contains enough fixes for minor to
-medium vulnerabilities to justify an upgrade.
+	_ASM_INC "%0"
 
-Depending on the activity in the security area during the following
-weeks, this version might be the last 2.4.35.X. So if you have not
-yet tried 2.4.36-rc, it is time to do so.
-
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/patch-2.4.35.5.bz2
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.35.5
-
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
-
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/stable/linux-v2.4.35.y.git
-
-Regards,
-Willy
-
----
-
-Summary of changes from v2.4.35.4 to v2.4.35.5
-============================================
-
-Jonas Danielsson (1):
-      net/ipv4/arp.c: Fix arp reply when sender ip 0
-
-Krzysztof Strasburger (1):
-      fix arch/i386/config.in to be able to boot on 386
-
-Pete Zaitcev (1):
-      usb: Move linux-usb-devel
-
-Willy Tarreau (7):
-      GCC >= 4.2 miscompiles the kernel
-      fix build of ia32entry.S on x86_64
-      vfs: coredumping fix
-      isdn: avoid copying overly-long strings
-      isdn: fix isdn_ioctl memory overrun vulnerability
-      prevent SIGCONT from waking up a PTRACED process (CVE-2007-4774)
-      Change VERSION to 2.4.35.5
-
+	-hpa
