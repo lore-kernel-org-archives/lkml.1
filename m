@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935078AbXLPRex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935127AbXLPRg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935078AbXLPRex (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 12:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934282AbXLPReq
+	id S935127AbXLPRg3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 12:36:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934417AbXLPRgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 12:34:46 -0500
-Received: from hs-out-0708.google.com ([64.233.178.241]:12753 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751037AbXLPRep (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 12:34:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type:from;
-        b=MlYmUDcuGFbAVDMC0OZfZDnvMaCP9cB6B53tHXqcXE88hXfa/s+8Japs0Re3VT6LSYnt+N9ZOwR3YyrJPjYKlcK/o+s9jjIhSW0nby4geXWQGc7lCVck4EPO9G//FtSUS2doENdJrbS6KramimDjekIxV9ctgurbi6LhQZUuXqE=
-Date: Sun, 16 Dec 2007 12:34:33 -0500 (EST)
-To: devzero@web.de
-cc: linux-kernel@vger.kernel.org, Matt.Domsch@dell.com, hpa@zytor.com
-Subject: Re: [PATCH] [RFC] be more verbose when probing EDD
-In-Reply-To: <49015158@web.de>
-Message-ID: <Pine.LNX.4.64.0712161127180.4465@mini.warudkars.net>
-References: <49015158@web.de>
+	Sun, 16 Dec 2007 12:36:20 -0500
+Received: from waste.org ([66.93.16.53]:46414 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751527AbXLPRgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 12:36:19 -0500
+Date: Sun, 16 Dec 2007 11:34:17 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>
+Subject: Re: [RANDOM] Move two variables to read_mostly section to save memory
+Message-ID: <20071216173416.GW19691@waste.org>
+References: <47650FBD.2060209@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-From: Parag Warudkar <parag.warudkar@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47650FBD.2060209@cosmosbay.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Dec 2007, devzero@web.de wrote:
+On Sun, Dec 16, 2007 at 12:45:01PM +0100, Eric Dumazet wrote:
+> While examining vmlinux namelist on i686, I noticed :
+> 
+> c0581300 D random_table
+> c0581480 d input_pool
+> c0581580 d random_read_wakeup_thresh
+> c0581584 d random_write_wakeup_thresh
+> c0581600 d blocking_pool
+> 
+> That means that the two integers random_read_wakeup_thresh and 
+> random_write_wakeup_thresh use a full cache entry (128 bytes).
 
->
-> - it seems there are buggy Bios implementations out there which have problems with EDD
-> - your favourite distro may have set CONFIG_EDD=y|m , so EDD probe is on by default quite often nowadays.
-> - setting "edd=off" when you get that hang on boot is _not_ obvious.
+But why did that happen?
 
-It does not look like this issue is common - googling for "Linux EDD Boot 
-hang" does not bring up relevant and recent results - in fact this post of 
-yours comes on top. Further more there does not seem to be problems with 
-newer BIOSes so we would be irritating lot many users needlessly.
+Probably because of this:
 
-Adding 3 printks for each such obscure problem would make it even more 
-complex to parse and make sense of the boot log - I, for example, already 
-dislike the mostly-useless-to-end-user stuff it spews on a normal boot.
+        spinlock_t lock ____cacheline_aligned_in_smp;
 
-If there are known chipsets / BIOSes that have this problem - applying 
-quirks - something like this quirk for pmtmr [1]- (if they work this 
-early) or even special casing them with forced edd=off may be the right and more useful thing to do.
+in struct entropy_store.
 
-[1] http://www.webservertalk.com/archive242-2006-3-1447442.html
+And that comes from here:
 
-Parag
+http://git.kernel.org/?p=linux/kernel/git/tglx/history.git;a=commitdiff;h=47b54fbff358a1d5ee4738cec8a53a08bead72e4;hp=ce334bb8f0f084112dcfe96214cacfa0afba7e10
+
+So we could save more memory by just dropping that alignment.
+
+The trick is to improve the scalability without it. Currently, for
+every 10 bytes read, we hash the whole output pool and do three
+feedback cycles, each grabbing the lock briefly and releasing it. We
+also need to grab the lock every 128 bytes to do some accounting. So
+we do 40 locks every 128 output bytes! Also, the output pool itself
+gets bounced back and forth like mad too.
+
+I'm actually in the middle of redoing some patches that will reduce
+this to one lock per 10 bytes, or 14 locks per 128 bytes. 
+
+But we can't do much better than that without some fairly serious
+restructuring. Like switching to SHA-512, which would take us to one
+lock for every 32 output bytes, or 5 locks per 128 bytes with accounting.
+
+We could also switch to per-cpu output pools for /dev/urandom, which
+would add 128 bytes of data per CPU, but would eliminate the lock
+contention and the pool cacheline bouncing. Is it worth the added
+complexity? Probably not.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
