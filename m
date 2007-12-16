@@ -1,56 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933470AbXLPMvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933644AbXLPNAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933470AbXLPMvx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 07:51:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbXLPMvo
+	id S933644AbXLPNAf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 08:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763639AbXLPNAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 07:51:44 -0500
-Received: from pip10.gyao.ne.jp ([61.122.117.248]:12007 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751336AbXLPMvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 07:51:43 -0500
-Date: Sun, 16 Dec 2007 21:51:30 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Cc: Dmitry <dmitry.torokhov@gmail.com>,
-       linux-input-list <linux-input@atrey.karlin.mff.cuni.cz>,
-       linux-main <linux-kernel@vger.kernel.org>
-Subject: Re: [HP6XX/FIX/PATCH] - Fix bad default keymap in HP Jornada 6xx keyboard driver
-Message-ID: <20071216125130.GB12769@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-	Dmitry <dmitry.torokhov@gmail.com>,
-	linux-input-list <linux-input@atrey.karlin.mff.cuni.cz>,
-	linux-main <linux-kernel@vger.kernel.org>
-References: <20071212192207.196f18cc.Kristoffer.ericson@gmail.com> <20071212184558.GA16129@linux-sh.org> <20071212195452.d854ea6f.Kristoffer.ericson@gmail.com>
+	Sun, 16 Dec 2007 08:00:25 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58213 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759629AbXLPNAY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 08:00:24 -0500
+Date: Sun, 16 Dec 2007 14:00:28 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RANDOM] Move two variables to read_mostly section to save
+	memory
+Message-ID: <20071216130028.GB14233@stusta.de>
+References: <47650FBD.2060209@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071212195452.d854ea6f.Kristoffer.ericson@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <47650FBD.2060209@cosmosbay.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 12, 2007 at 07:54:52PM +0100, Kristoffer Ericson wrote:
-> On Thu, 13 Dec 2007 03:45:58 +0900
-> Paul Mundt <lethal@linux-sh.org> wrote:
-> > On Wed, Dec 12, 2007 at 07:22:07PM +0100, Kristoffer Ericson wrote:
-> > > * This patch fixes the HP Jornada 6xx keyboard default keymap which
-> > > had some bad keymap values. This resulted in wrong key being
-> > > returned when pressed (example : key y returned 'r').
-> > > 
-> > You do realize that the default keymap was written for the Japanese units
-> > and the Japanese keyboards, right? From the looks of it, you are just
-> > trying to swap one functional set for another. I can assure you that this
-> > keymap worked fine on the Japanese units, so calling it a bug is a bit
-> > misleading.
-> 
-> Mostly true yes. However a few errors entered simply due to me copying
-> the keymap poorly in the initial keymap. So it does infact have 'bug'
-> keys that wouldn't work properly on neither japanese / european / US
-> jornadas. And whatever functional set, this patch fixes those bugs.
-> 
-Ah, ok, so it's a problem with the new driver, rather than something
-that's always been broken. No objections then, thanks for clearing that
-up.
+On Sun, Dec 16, 2007 at 12:45:01PM +0100, Eric Dumazet wrote:
+> While examining vmlinux namelist on i686, I noticed :
+>
+> c0581300 D random_table
+> c0581480 d input_pool
+> c0581580 d random_read_wakeup_thresh
+> c0581584 d random_write_wakeup_thresh
+> c0581600 d blocking_pool
+>
+> That means that the two integers random_read_wakeup_thresh and 
+> random_write_wakeup_thresh use a full cache entry (128 bytes).
+>
+> Moving them to read_mostly section can shrinks vmlinux by 120 bytes.
+>
+> # size vmlinux*
+>    text    data     bss     dec     hex filename
+> 4835553  450210  610304 5896067  59f783 vmlinux.after_patch
+> 4835553  450330  610304 5896187  59f7fb vmlinux.before_patch
+>
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+
+> diff --git a/drivers/char/random.c b/drivers/char/random.c
+> index 5fee056..af48e86 100644
+> --- a/drivers/char/random.c
+> +++ b/drivers/char/random.c
+> @@ -256,14 +256,14 @@
+>   * The minimum number of bits of entropy before we wake up a read on
+>   * /dev/random.  Should be enough to do a significant reseed.
+>   */
+> -static int random_read_wakeup_thresh = 64;
+> +static int random_read_wakeup_thresh __read_mostly = 64;
+>  
+>  /*
+>   * If the entropy count falls under this number of bits, then we
+>   * should wake up processes which are selecting or polling on write
+>   * access to /dev/random.
+>   */
+> -static int random_write_wakeup_thresh = 128;
+> +static int random_write_wakeup_thresh __read_mostly = 128;
+
+Please never ever do such ugly and unmaintainable micro-optimizations in 
+the code unless you can show a measurable performance improvement of the 
+kernel.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
