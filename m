@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765786AbXLPKvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932669AbXLPKwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765786AbXLPKvV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 05:51:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760524AbXLPKvL
+	id S932669AbXLPKwd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 05:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761753AbXLPKwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 05:51:11 -0500
-Received: from ananke.telenet-ops.be ([195.130.137.78]:42164 "EHLO
-	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758243AbXLPKvI (ORCPT
+	Sun, 16 Dec 2007 05:52:24 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:5181 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755761AbXLPKwX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 05:51:08 -0500
-Date: Sun, 16 Dec 2007 11:51:00 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-arch@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: [PATCH] initrd: Fix virtual/physical mix-up in overwrite test
-Message-ID: <Pine.LNX.4.64.0712161148340.5869@anakin>
+	Sun, 16 Dec 2007 05:52:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=A0HxCGHfJoIW53Tuf/Nzy78mn+FKQhB7NIYuG77VN5aZMzI6oOxCWeYbtoJ+aw4l4BhiBCnUC5wKTHvLS1IOL52j/a125XfDBm4B3C3X57pRpBcVYmZ4CLKVHJwCCeGKSZWZKySrj5YKLen76SByv8obVRnKv3z8e9H6w+UflbA=
+Message-ID: <bc64b4640712160252o6d91a95bm82f735ec876e5dbf@mail.gmail.com>
+Date: Sun, 16 Dec 2007 13:52:22 +0300
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] Tosa keyboard support
+Cc: linux-input@atrey.karlin.mff.cuni.cz,
+       "Marcin Juszkiewicz" <openembedded@hrw.one.pl>,
+       dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <20071216102911.GA2307@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071211152318.GA8344@doriath.ww600.siemens.net>
+	 <20071211153851.GA14156@doriath.ww600.siemens.net>
+	 <20071216102911.GA2307@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On recent kernels, I get the following error when using an initrd:
+Hi,
 
-| initrd overwritten (0x00b78000 < 0x07668000) - disabling it.
+2007/12/16, Russell King - ARM Linux <linux@arm.linux.org.uk>:
+> On Tue, Dec 11, 2007 at 06:38:51PM +0300, Dmitry Baryshkov wrote:
+> > Sorry, posted wrong version of patch. Here is correct version:
+> >
+> > Support keyboard on tosa (Sharp Zaurus SL-6000x).
+> > Largely based on patches by Dirk Opfer.
+>
+> Looks fine to me, but Dmitry Torokhov needs to look at it; he maintains
+> the input subsystem.  Note that the current input subsystem mailing list
+> is not the one you have in the CC line - please always check MAINTAINERS
+> for the correct addresses.
+>
 
-My Amiga 4000 has 12 MiB of RAM at physical address 0x07400000 (virtual
-0x00000000).
-The initrd is located at the end of RAM: 0x00b78000 - 0x00c00000 (virtual).
-The overwrite test compares the (virtual) initrd location to the (physical)
-first available memory location, which fails.
+Ok, thanks,
+resent to linux-input.
 
-This patch converts initrd_start to a page frame number, so it can be safely
-compared with min_low_pfn.
 
-Before the introduction of discontiguous memory support on m68k
-(12d810c1b8c2b913d48e629e2b5c01d105029839), min_low_pfn was just left
-untouched by the m68k-specific code (zero, I guess), and everything worked
-fine.
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-On several platforms, initrd_below_start_ok is set to 1:
-
-| arch/mips/kernel/setup.c:       initrd_below_start_ok = 1;
-| arch/parisc/mm/init.c:                  initrd_below_start_ok = 1;
-| arch/powerpc/kernel/prom.c:                     initrd_below_start_ok = 1;
-| arch/ppc/platforms/hdpu.c:                      initrd_below_start_ok = 1;
-| arch/xtensa/kernel/setup.c:             initrd_below_start_ok = 1;
-
-Some of these may be workarounds for this bug. Please check.
-
- init/main.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- a/init/main.c
-+++ b/init/main.c
-@@ -598,9 +598,9 @@ asmlinkage void __init start_kernel(void
- 
- #ifdef CONFIG_BLK_DEV_INITRD
- 	if (initrd_start && !initrd_below_start_ok &&
--			initrd_start < min_low_pfn << PAGE_SHIFT) {
-+			virt_to_pfn(initrd_start) < min_low_pfn) {
- 		printk(KERN_CRIT "initrd overwritten (0x%08lx < 0x%08lx) - "
--		    "disabling it.\n",initrd_start,min_low_pfn << PAGE_SHIFT);
-+		    "disabling it.\n", virt_to_pfn(initrd_start), min_low_pfn);
- 		initrd_start = 0;
- 	}
- #endif
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+With best wishes
+Dmitry
