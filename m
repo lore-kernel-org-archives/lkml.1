@@ -1,290 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbXLPUsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbXLPVDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758816AbXLPUsT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 15:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbXLPUsK
+	id S1757013AbXLPVDY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 16:03:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756697AbXLPVDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 15:48:10 -0500
-Received: from fk-out-0910.google.com ([209.85.128.187]:29576 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753944AbXLPUsI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 15:48:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:message-id;
-        b=x8jnFdggPEdxZkqa8VRtmFJ37s5fzT09BegWcIu1S6YBSmcV8DJMniEkKnoYaBm7WExXSg3BQ+Vxy0R4j0B3YYD/bDLnVBggyOVZ1kIeJRvv3VJr4sNn5+XjEsoq7dviwZUKBr9ORx8lIz0TRXt8eNp7DO8C/iNesJSyok0mTCg=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Patrick McHardy <kaber@trash.net>, Harald Welte <laforge@gnumonks.org>
-Subject: [PATCH] net/ipv4/netfilter/ip_tables.c: remove some inlines
-Date: Sun, 16 Dec 2007 12:47:53 -0800
-User-Agent: KMail/1.9.1
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+	Sun, 16 Dec 2007 16:03:14 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:60647 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755154AbXLPVDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 16:03:13 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: "Adrian McMenamin" <lkmladrian@gmail.com>
+Subject: Re: [PATCH 2/3] Add GD-Rom support to the SEGA Dreamcast
+Date: Sun, 16 Dec 2007 16:01:34 -0500
+User-Agent: KMail/1.9.7
+Cc: "Paul Mundt" <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-sh@vger.kernel.org, axboe@kernel.dk
+References: <8b67d60712151621j2101c411p19d75125c6d1c2f9@mail.gmail.com>
+In-Reply-To: <8b67d60712151621j2101c411p19d75125c6d1c2f9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_57YZH+QYgtSjRtH"
-Message-Id: <200712161247.53986.vda.linux@googlemail.com>
+Content-Type: multipart/signed;
+  boundary="nextPart1459177.AS858I7ALR";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200712161601.41785.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_57YZH+QYgtSjRtH
+--nextPart1459177.AS858I7ALR
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-Hi Patrick, Harald,
+On Saturday 15 December 2007, Adrian McMenamin wrote:
+> diff -ruN ./linux-2.6-orig/drivers/sh/gdrom/gdrom.c
+> ./linux-2.6/drivers/sh/gdrom/gdrom.c
 
-I was working on unrelated problem and noticed that ip_tables.c
-seem to abuse inline. I prepared a patch which removes inlines
-except those which are used by packet matching code
-(and thus are really performance-critical).
-I added comments explaining that remaining inlines are
-performance critical.
+i think your e-mail client word wrapped a little ...
 
-Result as reported by size:
+> +	if (gd.toc)
+> +		kfree(gd.toc);
 
-   text    data     bss     dec     hex filename
--  6451     380      88    6919    1b07 ip_tables.o
-+  6339     348      72    6759    1a67 ip_tables.o
+i dont know how the kernel functions, but in userspace, free(NULL) is=20
+acceptable ...
 
-Please take this patch into netfilter queue.
+> +		memcpy(gd.toc, tocB, sizeof (struct gdromtoc));
+> +	else
+> +		memcpy(gd.toc, tocA, sizeof (struct gdromtoc));
 
-Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
---
-vda
+since gd.toc and toc[BA] are of the same type, cant you just:
+*gd.toc =3D *tocA
 
---Boundary-00=_57YZH+QYgtSjRtH
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="linux-2.6.ipt.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="linux-2.6.ipt.diff"
+also, since tocB/tocA only exist in this function (you kzalloc() at the top=
+=20
+and kfree() at the bottom), and you dont do something like "gd.toc =3D tocA=
+",=20
+why use the memory allocator at all ?  i dont think they are too large for=
+=20
+the stack (~400bytes a piece) ... maybe they are ...
 
-diff -urpN linux-2.6.org/net/ipv4/netfilter/ip_tables.c linux-2.6.ipt/net/ipv4/netfilter/ip_tables.c
---- linux-2.6.org/net/ipv4/netfilter/ip_tables.c	2007-12-14 10:46:37.000000000 -0800
-+++ linux-2.6.ipt/net/ipv4/netfilter/ip_tables.c	2007-12-16 12:37:46.000000000 -0800
-@@ -74,6 +74,7 @@ do {								\
-    Hence the start of any table is given by get_table() below.  */
- 
- /* Returns whether matches rule or not. */
-+/* Performance critical - called for every packet */
- static inline int
- ip_packet_match(const struct iphdr *ip,
- 		const char *indev,
-@@ -152,7 +153,7 @@ ip_packet_match(const struct iphdr *ip,
- 	return 1;
- }
- 
--static inline bool
-+static bool
- ip_checkentry(const struct ipt_ip *ip)
- {
- 	if (ip->flags & ~IPT_F_MASK) {
-@@ -182,6 +183,7 @@ ipt_error(struct sk_buff *skb,
- 	return NF_DROP;
- }
- 
-+/* Performance critical - called for every packet */
- static inline
- bool do_match(struct ipt_entry_match *m,
- 	      const struct sk_buff *skb,
-@@ -198,6 +200,7 @@ bool do_match(struct ipt_entry_match *m,
- 		return false;
- }
- 
-+/* Performance critical */
- static inline struct ipt_entry *
- get_entry(void *base, unsigned int offset)
- {
-@@ -205,6 +208,7 @@ get_entry(void *base, unsigned int offse
- }
- 
- /* All zeroes == unconditional rule. */
-+/* Mildly perf critical (only if packet tracing is on) */
- static inline int
- unconditional(const struct ipt_ip *ip)
- {
-@@ -219,7 +223,7 @@ unconditional(const struct ipt_ip *ip)
- 
- #if defined(CONFIG_NETFILTER_XT_TARGET_TRACE) || \
-     defined(CONFIG_NETFILTER_XT_TARGET_TRACE_MODULE)
--static const char *hooknames[] = {
-+static const char *const hooknames[] = {
- 	[NF_IP_PRE_ROUTING]		= "PREROUTING",
- 	[NF_IP_LOCAL_IN]		= "INPUT",
- 	[NF_IP_FORWARD]			= "FORWARD",
-@@ -233,7 +237,7 @@ enum nf_ip_trace_comments {
- 	NF_IP_TRACE_COMMENT_POLICY,
- };
- 
--static const char *comments[] = {
-+static const char *const comments[] = {
- 	[NF_IP_TRACE_COMMENT_RULE]	= "rule",
- 	[NF_IP_TRACE_COMMENT_RETURN]	= "return",
- 	[NF_IP_TRACE_COMMENT_POLICY]	= "policy",
-@@ -249,6 +253,7 @@ static struct nf_loginfo trace_loginfo =
- 	},
- };
- 
-+/* Mildly perf critical (only if packet tracing is on) */
- static inline int
- get_chainname_rulenum(struct ipt_entry *s, struct ipt_entry *e,
- 		      char *hookname, char **chainname,
-@@ -567,7 +572,7 @@ mark_source_chains(struct xt_table_info 
- 	return 1;
- }
- 
--static inline int
-+static int
- cleanup_match(struct ipt_entry_match *m, unsigned int *i)
- {
- 	if (i && (*i)-- == 0)
-@@ -579,7 +584,7 @@ cleanup_match(struct ipt_entry_match *m,
- 	return 0;
- }
- 
--static inline int
-+static int
- check_entry(struct ipt_entry *e, const char *name)
- {
- 	struct ipt_entry_target *t;
-@@ -599,7 +604,7 @@ check_entry(struct ipt_entry *e, const c
- 	return 0;
- }
- 
--static inline int check_match(struct ipt_entry_match *m, const char *name,
-+static int check_match(struct ipt_entry_match *m, const char *name,
- 				const struct ipt_ip *ip, unsigned int hookmask,
- 				unsigned int *i)
- {
-@@ -622,7 +627,7 @@ static inline int check_match(struct ipt
- 	return ret;
- }
- 
--static inline int
-+static int
- find_check_match(struct ipt_entry_match *m,
- 	    const char *name,
- 	    const struct ipt_ip *ip,
-@@ -651,7 +656,7 @@ err:
- 	return ret;
- }
- 
--static inline int check_target(struct ipt_entry *e, const char *name)
-+static int check_target(struct ipt_entry *e, const char *name)
- {
- 	struct ipt_entry_target *t;
- 	struct xt_target *target;
-@@ -672,7 +677,7 @@ static inline int check_target(struct ip
- 	return ret;
- }
- 
--static inline int
-+static int
- find_check_entry(struct ipt_entry *e, const char *name, unsigned int size,
- 	    unsigned int *i)
- {
-@@ -716,7 +721,7 @@ find_check_entry(struct ipt_entry *e, co
- 	return ret;
- }
- 
--static inline int
-+static int
- check_entry_size_and_hooks(struct ipt_entry *e,
- 			   struct xt_table_info *newinfo,
- 			   unsigned char *base,
-@@ -759,7 +764,7 @@ check_entry_size_and_hooks(struct ipt_en
- 	return 0;
- }
- 
--static inline int
-+static int
- cleanup_entry(struct ipt_entry *e, unsigned int *i)
- {
- 	struct ipt_entry_target *t;
-@@ -1293,7 +1298,7 @@ __do_replace(const char *name, unsigned 
- 	get_counters(oldinfo, counters);
- 	/* Decrease module usage counts and free resource */
- 	loc_cpu_old_entry = oldinfo->entries[raw_smp_processor_id()];
--	IPT_ENTRY_ITERATE(loc_cpu_old_entry, oldinfo->size, cleanup_entry,NULL);
-+	IPT_ENTRY_ITERATE(loc_cpu_old_entry, oldinfo->size, cleanup_entry, NULL);
- 	xt_free_table_info(oldinfo);
- 	if (copy_to_user(counters_ptr, counters,
- 			 sizeof(struct xt_counters) * num_counters) != 0)
-@@ -1361,7 +1366,7 @@ do_replace(void __user *user, unsigned i
- 	return 0;
- 
-  free_newinfo_untrans:
--	IPT_ENTRY_ITERATE(loc_cpu_entry, newinfo->size, cleanup_entry,NULL);
-+	IPT_ENTRY_ITERATE(loc_cpu_entry, newinfo->size, cleanup_entry, NULL);
-  free_newinfo:
- 	xt_free_table_info(newinfo);
- 	return ret;
-@@ -1369,7 +1374,7 @@ do_replace(void __user *user, unsigned i
- 
- /* We're lazy, and add to the first CPU; overflow works its fey magic
-  * and everything is OK. */
--static inline int
-+static int
- add_counter_to_entry(struct ipt_entry *e,
- 		     const struct xt_counters addme[],
- 		     unsigned int *i)
-@@ -1527,7 +1532,7 @@ out:
- 	return ret;
- }
- 
--static inline int
-+static int
- compat_find_calc_match(struct ipt_entry_match *m,
- 	    const char *name,
- 	    const struct ipt_ip *ip,
-@@ -1551,7 +1556,7 @@ compat_find_calc_match(struct ipt_entry_
- 	return 0;
- }
- 
--static inline int
-+static int
- compat_release_match(struct ipt_entry_match *m, unsigned int *i)
- {
- 	if (i && (*i)-- == 0)
-@@ -1561,7 +1566,7 @@ compat_release_match(struct ipt_entry_ma
- 	return 0;
- }
- 
--static inline int
-+static int
- compat_release_entry(struct ipt_entry *e, unsigned int *i)
- {
- 	struct ipt_entry_target *t;
-@@ -1576,7 +1581,7 @@ compat_release_entry(struct ipt_entry *e
- 	return 0;
- }
- 
--static inline int
-+static int
- check_compat_entry_size_and_hooks(struct ipt_entry *e,
- 			   struct xt_table_info *newinfo,
- 			   unsigned int *size,
-@@ -1702,7 +1707,7 @@ static int compat_copy_entry_from_user(s
- 	return ret;
- }
- 
--static inline int compat_check_entry(struct ipt_entry *e, const char *name,
-+static int compat_check_entry(struct ipt_entry *e, const char *name,
- 						unsigned int *i)
- {
- 	int j, ret;
-@@ -1895,7 +1900,7 @@ compat_do_replace(void __user *user, uns
- 	return 0;
- 
-  free_newinfo_untrans:
--	IPT_ENTRY_ITERATE(loc_cpu_entry, newinfo->size, cleanup_entry,NULL);
-+	IPT_ENTRY_ITERATE(loc_cpu_entry, newinfo->size, cleanup_entry, NULL);
-  free_newinfo:
- 	xt_free_table_info(newinfo);
- 	return ret;
+> +static int gdrom_open(struct cdrom_device_info *cd_info, int purpose)
+> +{
+> +	int err;
+> +	/* spin up the disk */
+> +	err =3D gdrom_preparedisk_cmd();
+> +	if (err)
+> +		return -EIO;
+> +
+> +	return 0;
+> +}
 
---Boundary-00=_57YZH+QYgtSjRtH--
+is it normal to normalize all errors like this ?  it'd be a much simpler=20
+function like:
+{ return gdrom_preparedisk_cmd(); }
+
+> +static irqreturn_t gdrom_command_interrupt(int irq, void *dev_id)
+> +{
+> +	if (dev_id !=3D &gd)
+> +		return IRQ_NONE;
+> +	gd.status =3D ctrl_inb(GDROM_STATUSCOMMAND_REG);
+> +	if (gd.pending !=3D 1)
+> +		return IRQ_HANDLED;
+> ....
+> +static irqreturn_t gdrom_dma_interrupt(int irq, void *dev_id)
+> +{
+> +	if (dev_id !=3D &gd)
+> +		return IRQ_NONE;
+> +	gd.status =3D ctrl_inb(GDROM_STATUSCOMMAND_REG);
+> +	if (gd.transfer !=3D 1)
+> +		return IRQ_HANDLED;
+
+if you dont have a pending interrupt, shouldnt it return IRQ_NONE here ?  P=
+aul=20
+already mentioned the weird dev_id check.
+
+> +static int gdrom_readdisk_dma(int block, int block_cnt, char *buffer)
+> +{
+> +	int err;
+> +	struct packet_command *read_command;
+> +	/* release the spin lock but check later
+> + 	 * we're not in the middle of some dma */
+> +	spin_unlock(&gdrom_lock);
+> +	ctrl_outl(0x8843407F, GDROM_DMA_ACCESS_CTRL_REG); /* memory setting */
+
+it'd be nice if these magic #'s had more explanation behind them, but you m=
+ay=20
+simply not have that information :/
+
+> +static void gdrom_request(struct request_queue *rq)
+> +{
+> +	struct request *req;
+> +	unsigned long pages;
+> +	pages =3D rq->backing_dev_info.ra_pages;
+> +	while ((req =3D elv_next_request(rq)) !=3D NULL) {
+> +		if (! blk_fs_request(req)) {
+> +			printk(KERN_DEBUG "GDROM: Non-fs request ignored\n");
+> +			end_request(req, 0);
+> +		}
+> +		if (rq_data_dir(req)) {
+> +			printk(KERN_NOTICE "GDROM: Read only device - write request
+> ignored\n"); +			end_request(req, 0);
+> +		}
+> +		if (req->nr_sectors) {
+> +			gdrom_request_handler_dma(req);
+> +		}
+> +	}
+> +}
+
+no need for all the {} in the last two if()'s
+
+> +/* Print string identifying GD ROM device */
+> +static void gdrom_outputversion(void)
+> +{
+> +	struct gdrom_id *id;
+> +	char *model_name, *manuf_name, *firmw_ver;
+> +	/* query device ID */
+> +	id =3D kzalloc(sizeof(struct gdrom_id), GFP_KERNEL);
+
+i dont know how other people feel, but i think the style:
+sizeof(*id)
+is cleaner and leads to less bitrot ... also, you dont have an "if (!id)"=20
+check there ... Paul pointed out plenty of other stuff for this func ;)
+
+also, wrt to sizes ("16" and "17"), arent there some defines you can key of=
+f=20
+of or something ?
+
+> +MODULE_DESCRIPTION("GD-ROM Driver");
+
+SEGA Dreamcast GD-ROM Driver ?
+=2Dmike
+
+--nextPart1459177.AS858I7ALR
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iQIVAwUAR2WSNUFjO5/oN/WBAQLFzxAAg/1Wf6YX+tYtanqjCMUvsx+fYLkOFT35
+xqeYbDvd6SQUSI2S2bhTDVSpDQK9TZIw34odME96ehF15dg0Us7XBI58PkqTOG7F
+0hc9yV+X8VR6LDGW44UIHiNGZaUCIQFVCkgsSIc8QZ4Py67nMR0YC4xhTMzb8rVK
+DgY5w1dpttyLKtKH74eMfnlfu/YLolA35q/ZbGsaOFDpfKR4B9zxr9KZMgXzblFx
+dLQ89NplG6fV3VJwuH4ghQqwP0K7ghBcRqTX3gAZezbb1dGwvc3oGlI4ID3pTm1y
+fPV2z9p03VRE4pP6CDGudbTMaE5+qRwpp/NVqb78ja+G6SGA8eHgAJbOleaHtgP0
+EJBlvYzWYME1mDR4flxyVaMY9whTuww3Hgu23+P7vuBVS6i1BPitGPkX7GSSpQNN
+9abN/+uEnMXqY1mm+6pP+o1S6VzNq1YbF3hrXaTfkS8gqYTdp51Uq0Z1Mz98YV7B
+596ZNpjdK0EMbbVIhSz8rMG4CKxjxGrecvNo6F/Cv4sHUa6OOwyIFnTYl4CcqDJ2
+tXtgIn/UqQyiVnHVCKcp568nHHzz6cwLrx12aVmw2XqWEpQNM2QfNXrT9njwG4S1
+4S+uJkvmY8U12SR5v6LXNryxQdTViSuefhnDzmFkCfGR1Q0lbwshOz/iDJ/Aamyq
+EvoH62cIzGA=
+=bzUW
+-----END PGP SIGNATURE-----
+
+--nextPart1459177.AS858I7ALR--
