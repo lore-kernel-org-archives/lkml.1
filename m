@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764874AbXLPWAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764258AbXLPWEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764874AbXLPWAg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 17:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763883AbXLPV7t
+	id S1764258AbXLPWEu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 17:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760300AbXLPWEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 16:59:49 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34377
+	Sun, 16 Dec 2007 17:04:41 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42721
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1763551AbXLPV7q (ORCPT
+	by vger.kernel.org with ESMTP id S1759823AbXLPWEk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 16:59:46 -0500
-Date: Sun, 16 Dec 2007 13:59:39 -0800 (PST)
-Message-Id: <20071216.135939.00534238.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: miles.lane@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       mingo@elte.hu, a.p.zijlstra@chello.nl
-Subject: Re: 2.6.24-rc5-mm1 -- inconsistent {in-softirq-W} ->
- {softirq-on-R} usage.
+	Sun, 16 Dec 2007 17:04:40 -0500
+Date: Sun, 16 Dec 2007 14:04:25 -0800 (PST)
+Message-Id: <20071216.140425.19234188.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: m.kozlowski@tuxland.pl, akpm@linux-foundation.org, jgarzik@pobox.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, den@openvz.org,
+       xemul@openvz.org
+Subject: Re: [PACKET]: Fix /proc/net/packet crash due to bogus private
+ pointer
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071214153633.5d8f609a.akpm@linux-foundation.org>
-References: <a44ae5cd0712141413u4ddbfd06gca259cfc3bc0ab1a@mail.gmail.com>
-	<20071214153633.5d8f609a.akpm@linux-foundation.org>
+In-Reply-To: <20071216034119.GA1491@gondor.apana.org.au>
+References: <200712160118.58611.m.kozlowski@tuxland.pl>
+	<E1J3jqN-0000Jq-00@gondolin.me.apana.org.au>
+	<20071216034119.GA1491@gondor.apana.org.au>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,24 +31,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 14 Dec 2007 15:36:33 -0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Sun, 16 Dec 2007 11:41:20 +0800
 
-> The networking bug looks to be around sock_i_ino()'s taking of
-> sk_callback_lock with softirq's enabled.  Perhaps this will fix it.
+> [PACKET]: Fix /proc/net/packet crash due to bogus private pointer
+> 
+> The seq_open_net patch changed the meaning of seq->private.
+> Unfortunately it missed two spots in AF_PACKET, which still
+> used the old way of dereferencing seq->private, thus causing
+> weird and wonderful crashes when reading /proc/net/packet.
+> 
+> This patch fixes them.
+> 
+> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-One should be suspicious of any case where write_lock is performed
-on sk->sk_callback_lock in softint context.  And that's the only
-way this can trigger, so this patch is wrong.
-
-Generally, sock_orphan() and sock_graft() are the only primary
-places where sk->sk_callback_lock is acquired as a writer.  And
-these should be invoked only from process context.
-
-Perhaps there is some exception to this in some specialized layer such
-as SUNRPC, which are the only other spots I see potentially doing
-sk->sk_callback_lock write acquires in softint context, which as
-stated should not be done.
-
-OCFS2 and ISCSI seem to be following the rules in it's write lock
-calls on this lock.
+Applied to net-2.6.25, thanks Herbert.
