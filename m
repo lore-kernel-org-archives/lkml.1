@@ -1,103 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760388AbXLPVWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760500AbXLPV0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760388AbXLPVWa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 16:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbXLPVWX
+	id S1760500AbXLPV0m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 16:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbXLPV0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 16:22:23 -0500
-Received: from saeurebad.de ([85.214.36.134]:33849 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757897AbXLPVWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 16:22:22 -0500
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Cc: Dave Jones <davej@codemonkey.org.uk>
-Subject: [PATCH] cpufreq: Default governor initialisation before use
-Date: Sun, 16 Dec 2007 22:20:48 +0100
-Message-ID: <x78x3u2v67.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
+	Sun, 16 Dec 2007 16:26:34 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45490 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758213AbXLPV0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 16:26:33 -0500
+Date: Sun, 16 Dec 2007 22:26:33 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       unlisted-recipients:
+	no@elvis.elte.hu, To-header@elvis.elte.hu,
+       on@elvis.elte.hu, "input <"@elvis.elte.hu,
+       "; Rene Herman" <rene.herman@keyaccess.nl>,
+       Paul Rolland <rol@as2917.net>, "H. Peter Anvin" <hpa@zytor.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
+	Cc:	;Rene Herman <rene.herman@keyaccess.nl>
+			^-extraneous tokens in mailbox, missing end of mailbox
+Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
+	Cc:	;Rene Herman <rene.herman@keyaccess.nl>
+			^-extraneous tokens in mailbox, missing end of mailbox
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+	with MCP51 laptops
+Message-ID: <20071216212628.GF14265@elf.ucw.cz>
+References: <20071211163706.2dc82275@tux.DEF.witbe.net> <475EB263.2050405@keyaccess.nl> <475EC1C0.2040000@reed.com> <20071211173231.2b87a81f@the-village.bc.nu> <475EE2CA.6020601@reed.com> <Pine.LNX.4.61.0712111513490.23653@chaos.analogic.com> <475F23BD.3040903@reed.com> <Pine.LNX.4.61.0712120802300.4443@chaos.analogic.com> <20071212161245.3f388229@the-village.bc.nu> <20071214143328.GB10130@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071214143328.GB10130@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ensure that the selected default cpufreq governor is initialised before
-used by the cpufreq driver on boot by using fs_initcall() instead of
-module_init().
+On Fri 2007-12-14 15:33:28, Ingo Molnar wrote:
+> 
+> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> > There is another reason we can't just do a dumb changeover - two 
+> > actually
+> > 
+> > #1: Some drivers are using inb_p/outb_p in PCI cases which are going 
+> > #to cause PCI posting changes. Most are probably just wrong in the 
+> > #first place but they need hand checking
+> 
+> hm, any intelligent way to force PCI posting? I guess not.
+> 
+> here's a list of candidate drivers (match the out*_p() pattern and do 
+> pci)
+> 
+> ./char/epca.c 
+> ./char/sonypi.c
+> ./scsi/megaraid.c
+> ./ide/pci/serverworks.c
+> ./ide/pci/cmd640.c
+> ./input/mouse/pc110pad.c
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
-On boot, speedstep_init() calls into cpufreq_gov_dbs().  The driver has
-not yet been initialised by cpufreq_gov_dbs_init() and kondemand_wq is
-still NULL when it is dereferenced.
+/*
+ * We try to avoid enabling the hardware if it's not
+ * there, but we don't know how to test. But we do know
+ * that the PC110 is not a PCI system. So if we find any
+ * PCI devices in the machine, we don't have a PC110.
+ */
 
-Changing the drivers module_init() to fs_initcall() fixed it.  The same
-is already done in the performance and userspace governor drivers.
+...so pc110 _may_ be okay.
+								Pavel
 
-The patch migrates all governors to use fs_initcall() when being the
-default governor.
-
- drivers/cpufreq/cpufreq_conservative.c |    4 ++++
- drivers/cpufreq/cpufreq_ondemand.c     |    5 ++++-
- drivers/cpufreq/cpufreq_performance.c  |    4 ++++
- drivers/cpufreq/cpufreq_userspace.c    |    4 ++++
- 4 files changed, 16 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 1bba997..5d3a04b 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -603,5 +603,9 @@ MODULE_DESCRIPTION ("'cpufreq_conservative' - A dynamic cpufreq governor for "
- 		"optimised for use in a battery environment");
- MODULE_LICENSE ("GPL");
- 
-+#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
-+fs_initcall(cpufreq_gov_dbs_init);
-+#else
- module_init(cpufreq_gov_dbs_init);
-+#endif
- module_exit(cpufreq_gov_dbs_exit);
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 369f445..d2af20d 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -610,6 +610,9 @@ MODULE_DESCRIPTION("'cpufreq_ondemand' - A dynamic cpufreq governor for "
-                    "Low Latency Frequency Transition capable processors");
- MODULE_LICENSE("GPL");
- 
-+#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-+fs_initcall(cpufreq_gov_dbs_init);
-+#else
- module_init(cpufreq_gov_dbs_init);
-+#endif
- module_exit(cpufreq_gov_dbs_exit);
--
-diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufreq_performance.c
-index e8e1451..df5fca3 100644
---- a/drivers/cpufreq/cpufreq_performance.c
-+++ b/drivers/cpufreq/cpufreq_performance.c
-@@ -60,5 +60,9 @@ MODULE_AUTHOR("Dominik Brodowski <linux@brodo.de>");
- MODULE_DESCRIPTION("CPUfreq policy governor 'performance'");
- MODULE_LICENSE("GPL");
- 
-+#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
- fs_initcall(cpufreq_gov_performance_init);
-+#else
-+module_init(cpufreq_gov_performance_init);
-+#endif
- module_exit(cpufreq_gov_performance_exit);
-diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
-index 51bedab..f8cdde4 100644
---- a/drivers/cpufreq/cpufreq_userspace.c
-+++ b/drivers/cpufreq/cpufreq_userspace.c
-@@ -231,5 +231,9 @@ MODULE_AUTHOR ("Dominik Brodowski <linux@brodo.de>, Russell King <rmk@arm.linux.
- MODULE_DESCRIPTION ("CPUfreq policy governor 'userspace'");
- MODULE_LICENSE ("GPL");
- 
-+#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE
- fs_initcall(cpufreq_gov_userspace_init);
-+#else
-+module_init(cpufreq_gov_userspace_init);
-+#endif
- module_exit(cpufreq_gov_userspace_exit);
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
