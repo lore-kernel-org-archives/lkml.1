@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762036AbXLPVwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762808AbXLPVxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762036AbXLPVwQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 16:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758784AbXLPVwC
+	id S1762808AbXLPVxn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 16:53:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760238AbXLPVxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 16:52:02 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56153 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757013AbXLPVwA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 16:52:00 -0500
-Date: Sun, 16 Dec 2007 13:51:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Krzysztof Oledzki <olel@ans.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Osterried <osterried@jesse.de>, protasnb@gmail.com,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bug 9182] Critical memory leak (dirty pages)
-Message-Id: <20071216135112.0b58ab74.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0712161440030.25065@bizon.gios.gov.pl>
-References: <20071215221935.306A5108068@picon.linux-foundation.org>
-	<Pine.LNX.4.64.0712152358240.14491@bizon.gios.gov.pl>
-	<20071215203539.d6f71e96.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0712161016290.25065@bizon.gios.gov.pl>
-	<20071216015112.d0ab08a1.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0712161440030.25065@bizon.gios.gov.pl>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 16 Dec 2007 16:53:34 -0500
+Received: from mail.gmx.net ([213.165.64.20]:39296 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758784AbXLPVxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 16:53:32 -0500
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX1+kTQZ0+IWkkSr6QEn3efHmOB5qkVZcarCYoURoCm
+	o2KAtbgGrQJsov
+From: Helge Deller <deller@gmx.de>
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: [e2fsprogs PATCH] Userspace solution to time-based UUID without duplicates
+Date: Sun, 16 Dec 2007 22:53:19 +0100
+User-Agent: KMail/1.9.7
+Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Theodore Tso <tytso@mit.edu>
+References: <200711182038.22055.deller@gmx.de> <20071120230012.GF26022@thunk.org> <20071210053604.GF17037@thunk.org>
+In-Reply-To: <20071210053604.GF17037@thunk.org>
+X-Face: &[jmHH-Dw>Aj):"[/t-VasJu+(5eP`/LEckV7V"JV,!nBy[6(/?#8M>x`5xzg/7:FkM.l@=?utf-8?q?=0A=0913?=<&9'nfV3"OkD~P)@j{P2=(uB7J(){:CcrM2jZeA+IBq?FUTp3c8Y{t+k<95mZf~[v"=?utf-8?q?=27=3A=0A=09t?="f6wKtHUPFB&/]Z5^?9~IQs=16R;Pg"NS9JD=DK!ft&4b@=?utf-8?q?S=7E=26q/MfI3=3BqWqlg7Q1=3D=3DjS4=0A=099V5OJkm=24WQ=5Bdc=5E=5FY?=
+ =?utf-8?q?=27=5DDvibvMjizUZ=5D+=27Jd4UnM?=><yrT}Rw(
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712162253.20928.deller@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Dec 2007 14:46:36 +0100 (CET) Krzysztof Oledzki <olel@ans.pl> wrote:
-
-> >>> Which filesystem, which mount options
-> >>
-> >>   - ext3 on RAID1 (MD): / - rootflags=data=journal
-> >
-> > It wouldn't surprise me if this is specific to data=journal: that
-> > journalling mode is pretty complex wrt dairty-data handling and isn't well
-> > tested.
-> >
-> > Does switching that to data=writeback change things?
+On Monday 10 December 2007, Theodore Tso wrote:
+> On Tue, Nov 20, 2007 at 06:00:12PM -0500, Theodore Tso wrote:
+> > Basically, the only way to solve this problem 100% in userspace would
+> > be with a userspace daemon running as a privileged user, and some kind
+> > of Unix domain socket.
+> > 
+> > Patches to implement this in the e2fsprogs UUID library would be
+> > greatfully accepted.
 > 
-> I'll confirm this tomorrow but it seems that even switching to 
-> data=ordered (AFAIK default o ext3) is indeed enough to cure this problem.
+> This patch creates a userspace uuidd which correctly generates
+> time-based (version 1) UUID's, with the clock sequence number stored
+> in the filesystem so we correctly detect time going backwards across
+> processes and even across reboots.
+> 
+> I believe this patch is a better solution than Helge's kernel patch
+> solution or the kludgy patch to e2fsprogs in the the SLES RPM which
+> tries to solve this problem in another way, but which has been
+> problematic in the past.
+> 
+> Helge, could you try this out and see if it meets your needs?
+> 
+> (Ted's patch to e2fsprogs removed here)
 
-yes, sorry, I meant ordered.
+FYI, we are currently discussing and testing this proposed patch to e2fsprogs off-list in Red Hat's bugzilla:
+https://bugzilla.redhat.com/show_bug.cgi?id=233471
 
-> Two questions remain then: why system dies when dirty reaches ~200MB 
-
-I think you have ~2G of RAM and you're running with 
-/proc/sys/vm/dirty_ratio=10, yes?
-
-If so, when that machine hits 10% * 2G of dirty memory then everyone who
-wants to dirty pages gets blocked.
-
-> and what is wrong with ext3+data=journal with >=2.6.20-rc2?
-
-Ah.  It has a bug in it ;)
-
-As I said, data=journal has exceptional handling of pagecache data and is
-not well tested.  Someone (and I'm not sure who) will need to get in there
-and fix it.
+Helge
