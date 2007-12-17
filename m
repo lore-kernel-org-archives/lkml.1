@@ -1,81 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762463AbXLQWpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937118AbXLQWqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762463AbXLQWpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 17:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936843AbXLQWoe
+	id S937118AbXLQWqB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 17:46:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763279AbXLQWpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 17:44:34 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:49082 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934024AbXLQWod (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 17:44:33 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.24-rc5-mm1 - wonky disk cache and CDROM behavior...
-In-Reply-To: Your message of "Thu, 13 Dec 2007 02:40:50 PST."
-             <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1197931451_2751P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 17 Dec 2007 17:44:11 -0500
-Message-ID: <30457.1197931451@turing-police.cc.vt.edu>
+	Mon, 17 Dec 2007 17:45:43 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36715 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762995AbXLQWpj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 17:45:39 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Bernard Pidoux <pidoux@ccr.jussieu.fr>
+Cc: Linux Netdev List <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] sysctl:  Fix ax25 checks
+References: <476303C8.2060507@ccr.jussieu.fr>
+	<20071215101810.GA3143@ami.dom.local>
+	<476595EC.5050103@ccr.jussieu.fr>
+Date: Mon, 17 Dec 2007 15:44:08 -0700
+In-Reply-To: <476595EC.5050103@ccr.jussieu.fr> (Bernard Pidoux's message of
+	"Sun, 16 Dec 2007 22:17:32 +0100")
+Message-ID: <m163yxdjrb.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1197931451_2751P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <30445.1197931442.1@turing-police.cc.vt.edu>
+Bernard Pidoux <pidoux@ccr.jussieu.fr> writes:
 
-On Thu, 13 Dec 2007 02:40:50 PST, Andrew Morton said:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/
+> With 2.6.24-rc5 there is no /proc/net/ax25
 
-OK, so I'm trying to 'dd' a CD and the drive on the laptop is having issues
-reading the disk.
+/proc/sys/net/ax25?
 
-I try it once, and get an I/O error about 117M in - dd reports 1.7M/sec.
+> Here is an extract from dmesg after boot :
 
-I try it again, and it reports it died at the same exact place, but in about
-2 seconds flat, and reports 91M/sec transfer.  OK, that's *weird*, I didn't
-think that blocks read from /dev/cdrom would get cached, but OK.  So I try
-the obviously stupid thing:
+Groan.  I thought I had found the last of the bugs with
+my sysctl sanity checks.  I guess you actually have to
+use ax25 for this bug to show up.
 
-# echo 1 >| /proc/sys/vm/drop_caches
+Thank you for catching this. 
 
-Alas, that hangs gloriously - 'echo t > /proc/sysrq-trigger' tells me:
+> =======================
+> sysctl table check failed: /net/ax25/ax0/ax25_default_mode .3.9.1.2 Unknown
+> sysctl binary path
+> Pid: 2936, comm: kissattach Not tainted 2.6.24-rc5 #1
+>  [<c012ca6a>] set_fail+0x3b/0x43
+>  [<c012ce7a>] sysctl_check_table+0x408/0x456
+>  [<c012ce8e>] sysctl_check_table+0x41c/0x456
+>  [<c012ce8e>] sysctl_check_table+0x41c/0x456
+>  [<c02ac64a>] _spin_unlock+0x14/0x1c
+>  [<c012ce8e>] sysctl_check_table+0x41c/0x456
+>  [<c011e681>] sysctl_set_parent+0x19/0x2a
+>  [<c011f55c>] register_sysctl_table+0x45/0x85
+>  [<d8be9d26>] ax25_register_sysctl+0x112/0x11c [ax25]
+>  [<d8be6c76>] ax25_device_event+0x2e/0x90 [ax25]
+>  [<c012c560>] notifier_call_chain+0x2a/0x47
+>  [<c012c59f>] raw_notifier_call_chain+0x17/0x1a
+>  [<c0259290>] dev_open+0x6f/0x75
+>  [<c0257ee7>] dev_change_flags+0x9c/0x148
+>  [<c0256ab3>] __dev_get_by_name+0x68/0x73
+>  [<c0292307>] devinet_ioctl+0x22e/0x53b
+>  [<c0259074>] dev_ioctl+0x472/0x5ba
+>  [<c024d4ba>] sock_ioctl+0x1aa/0x1cf
+>  [<c024d310>] sock_ioctl+0x0/0x1cf
+>  [<c016bc19>] do_ioctl+0x19/0x4c
+>  [<c016be40>] vfs_ioctl+0x1f4/0x20b
+>  [<c0103d01>] sysenter_past_esp+0x9a/0xa9
+>  [<c016be9c>] sys_ioctl+0x45/0x5d
+>  [<c0103cc6>] sysenter_past_esp+0x5f/0xa9
+>  =======================
+> sysctl table check failed: /net/ax25/ax0/backoff_type .3.9.1.3 Unknown sysctl
+> binary path
+> (...) truncated
+>  =======================
+> sysctl table check failed: /net/ax25/ax0/connect_mode .3.9.1.4 Unknown sysctl
+> binary path
+> (...)
+>  =======================
+> sysctl table check failed: /net/ax25/ax0/standard_window_size .3.9.1.5 Unknown
+> sysctl binary path
+>  =======================
+> (...)
+>
+> and so on ...
+>
 
-Dec 17 17:30:02 turing-police kernel: [20235.823201] bash          D 0000000000000001  5288 15123  15085
-Dec 17 17:30:02 turing-police kernel: [20235.823206]  ffff81007ba7de28 0000000000000086 0000000000000000 0000000000000000
-Dec 17 17:30:02 turing-police kernel: [20235.823210]  ffff81007bbd9000 ffff81007d70e000 ffff81007bbd9248 00000001019e3e48
-Dec 17 17:30:02 turing-police kernel: [20235.823214]  ffffe20000f36028 ffffe200012b9978 ffffe20000eece48 ffffe20001164188
-Dec 17 17:30:02 turing-police kernel: [20235.823218] Call Trace:
-Dec 17 17:30:02 turing-police kernel: [20235.823224]  [<ffffffff80523e20>] __down_read+0x87/0xa1
-Dec 17 17:30:02 turing-police kernel: [20235.823229]  [<ffffffff8024bc13>] down_read+0x9/0xe
-Dec 17 17:30:02 turing-police kernel: [20235.823232]  [<ffffffff802abafe>] drop_pagecache+0x3a/0x8c
-Dec 17 17:30:02 turing-police kernel: [20235.823235]  [<ffffffff802abb72>] drop_caches_sysctl_handler+0x22/0x38
-Dec 17 17:30:02 turing-police kernel: [20235.823239]  [<ffffffff802d2b70>] proc_sys_write+0x7e/0xa6
-Dec 17 17:30:02 turing-police kernel: [20235.823244]  [<ffffffff8028e18c>] vfs_write+0xc7/0x170
-Dec 17 17:30:02 turing-police kernel: [20235.823248]  [<ffffffff8028e772>] sys_write+0x47/0x70
-Dec 17 17:30:02 turing-police kernel: [20235.823251]  [<ffffffff8020c34c>] tracesys+0xdc/0xe1
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ kernel/sysctl_check.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-Yowza.  And no, I don't dare to try to reproduce it until Thursday at the
-earliest, I need a mostly-stable machine the next 2 days. ;)
+diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
+index bed939f..a68425a 100644
+--- a/kernel/sysctl_check.c
++++ b/kernel/sysctl_check.c
+@@ -428,7 +428,7 @@ static struct trans_ctl_table trans_net_netrom_table[] = {
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ax25_table[] = {
++static struct trans_ctl_table trans_net_ax25_param_table[] = {
+ 	{ NET_AX25_IP_DEFAULT_MODE,	"ip_default_mode" },
+ 	{ NET_AX25_DEFAULT_MODE,	"ax25_default_mode" },
+ 	{ NET_AX25_BACKOFF_TYPE,	"backoff_type" },
+@@ -446,6 +446,11 @@ static struct trans_ctl_table trans_net_ax25_table[] = {
+ 	{}
+ };
+ 
++static struct trans_ctl_table trans_net_ax25_table[] = {
++	{ 0, NULL, trans_net_ax25_param_table },
++	{}
++};
++
+ static struct trans_ctl_table trans_net_bridge_table[] = {
+ 	{ NET_BRIDGE_NF_CALL_ARPTABLES,		"bridge-nf-call-arptables" },
+ 	{ NET_BRIDGE_NF_CALL_IPTABLES,		"bridge-nf-call-iptables" },
+-- 
+1.5.3.rc6.17.g1911
 
---==_Exmh_1197931451_2751P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHZvu7cC3lWbTT17ARAnqSAKDFsDq1qLSXqFrwf9vrgc3YkdTqGACguifb
-HMHMnm5I+DO6qQz9tvWExuU=
-=yYVA
------END PGP SIGNATURE-----
-
---==_Exmh_1197931451_2751P--
