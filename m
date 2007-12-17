@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936994AbXLQUI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936786AbXLQUIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936994AbXLQUI3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762301AbXLQTmM
+	id S936786AbXLQUIw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:08:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934507AbXLQTmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:42:12 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:58255 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934282AbXLQTmK (ORCPT
+	Mon, 17 Dec 2007 14:42:19 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56225 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934461AbXLQTmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:42:10 -0500
-Date: Mon, 17 Dec 2007 13:36:58 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, paulus@au1.ibm.com, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, anton@au1.ibm.com
-Subject: Re: [PATCH] arch/powerpc/: Spelling fixes
-Message-ID: <20071217133658.3973000c@zod.rchland.ibm.com>
-In-Reply-To: <1197919875-5288-13-git-send-email-joe@perches.com>
-References: <1197919875-5288-13-git-send-email-joe@perches.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Dec 2007 14:42:16 -0500
+Date: Mon, 17 Dec 2007 11:42:15 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: Ingo Molnar <mingo@elte.hu>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       Wang Chen <wangchen@cn.fujitsu.com>,
+       Gerrit Renker <gerrit@erg.abdn.ac.uk>, davem@davemloft.net,
+       andi@firstfloor.org, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] [UDP6]: Counter increment on BH mode
+In-Reply-To: <20071216023621.GB959@gondor.apana.org.au>
+Message-ID: <Pine.LNX.4.64.0712171141530.12871@schroedinger.engr.sgi.com>
+References: <474F8255.5060501@cn.fujitsu.com> <20071130111949.GB28277@gerrit.erg.abdn.ac.uk>
+ <20071201015438.GC26895@gondor.apana.org.au> <4753AE07.1040906@cn.fujitsu.com>
+ <20071203113935.GA25124@gondor.apana.org.au> <20071203114912.GA4425@ms2.inr.ac.ru>
+ <20071203115435.GA4202@gondor.apana.org.au> <20071203131723.GA30312@gondor.apana.org.au>
+ <20071215135851.GA29063@gondor.apana.org.au> <20071215184327.GA21434@elte.hu>
+ <20071216023621.GB959@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007 11:30:12 -0800
-Joe Perches <joe@perches.com> wrote:
+On Sun, 16 Dec 2007, Herbert Xu wrote:
 
+> If we can get the address of the per-cpu counter against
+> some sort of a per-cpu base pointer, e.g., %gs on x86, then
+> we can do
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/powerpc/boot/4xx.c                 |    2 +-
->  arch/powerpc/kernel/legacy_serial.c     |    2 +-
->  arch/powerpc/sysdev/bestcomm/bestcomm.h |    2 +-
->  arch/powerpc/sysdev/mmio_nvram.c        |    2 +-
->  4 files changed, 4 insertions(+), 4 deletions(-)
+> 	incq	%gs:(%rax)
 > 
-> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-> index ebf9e21..3d0e4f9 100644
-> --- a/arch/powerpc/boot/4xx.c
-> +++ b/arch/powerpc/boot/4xx.c
-> @@ -122,7 +122,7 @@ void ibm4xx_denali_fixup_memsize(void)
->  	else
->  		dpath = 4; /* 32 bits */
+> where %rax would be the offset with %gs as the base.  This would
+> obviate the need for the CPU ID and therefore avoid disabling
+> preemption.
 > 
-> -	/* get adress pins (rows) */
-> +	/* get address pins (rows) */
->  	val = mfdcr_sdram0(DDR0_42);
-> 
->  	row = DDR_GET_VAL(val, DDR_APIN, DDR_APIN_SHIFT);
+> Hmm, wasn't Christoph working on something like that?
 
-Ack on this part.
+Yes that is what the cpu alloc patchset implements.
 
-josh
