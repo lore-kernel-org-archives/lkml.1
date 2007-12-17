@@ -1,163 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765562AbXLQTvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934969AbXLQTvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765562AbXLQTvK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 14:51:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763364AbXLQThc
+	id S934969AbXLQTvk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 14:51:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932602AbXLQTjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:37:32 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:3161 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761329AbXLQTh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:37:29 -0500
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Vincent Sanders <support@simtec.co.uk>, linux-mtd@lists.infradead.org
-Subject: [PATCH] drivers/mtd/: Spelling fixes
-Date: Mon, 17 Dec 2007 11:36:55 -0800
-Message-Id: <1197920247-5377-1-git-send-email-joe@perches.com>
-X-Mailer: git-send-email 1.5.3.7.949.g2221a6
-Message-Id: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918891.git.joe@perches.com>
+	Mon, 17 Dec 2007 14:39:05 -0500
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:56438 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760429AbXLQTjD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:39:03 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 18.85.9.136
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1/Cz1gDK0N5ZJCqwyTTdxyn
+Message-ID: <4766D035.7090104@reed.com>
+Date: Mon, 17 Dec 2007 14:38:29 -0500
+From: "David P. Reed" <dpreed@reed.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rene Herman <rene.herman@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Paul Rolland <rol@as2917.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+References: <476462BE.3030701@gmail.com> <4764687D.6080609@zytor.com> <476524DB.7020806@gmail.com> <20071216152250.GA21245@elte.hu> <4765D43E.1010800@gmail.com> <20071217105744.GA14315@elte.hu> <4766684D.40202@gmail.com> <20071217130933.GB27992@elte.hu> <47667812.8050708@gmail.com> <47667A85.3080100@reed.com> <20071217143900.GA16604@elte.hu>
+In-Reply-To: <20071217143900.GA16604@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo -
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- drivers/mtd/nand/autcpu12.c    |    6 +++---
- drivers/mtd/nand/bf5xx_nand.c  |    2 +-
- drivers/mtd/nand/cs553x_nand.c |    2 +-
- drivers/mtd/nand/edb7312.c     |    2 +-
- drivers/mtd/nand/nand_base.c   |    2 +-
- drivers/mtd/nand/nandsim.c     |    2 +-
- drivers/mtd/nand/s3c2410.c     |    2 +-
- drivers/mtd/nand/sharpsl.c     |    2 +-
- 8 files changed, 10 insertions(+), 10 deletions(-)
+I finished testing the rolled up patch that you provided.  It seems to 
+work just fine.  Thank you for putting this all together and persevering 
+in this long and complex discussion. 
 
-diff --git a/drivers/mtd/nand/autcpu12.c b/drivers/mtd/nand/autcpu12.c
-index e3744eb..dd38011 100644
---- a/drivers/mtd/nand/autcpu12.c
-+++ b/drivers/mtd/nand/autcpu12.c
-@@ -20,7 +20,7 @@
-  *
-  *	02-12-2002 TG	Cleanup of module params
-  *
-- *	02-20-2002 TG	adjusted for different rd/wr adress support
-+ *	02-20-2002 TG	adjusted for different rd/wr address support
-  *			added support for read device ready/busy line
-  *			added page_cache
-  *
-@@ -144,7 +144,7 @@ static int __init autcpu12_init(void)
- 		goto out;
- 	}
- 
--	/* map physical adress */
-+	/* map physical address */
- 	autcpu12_fio_base = ioremap(AUTCPU12_PHYS_SMC, SZ_1K);
- 	if (!autcpu12_fio_base) {
- 		printk("Ioremap autcpu12 SmartMedia Card failed\n");
-@@ -227,7 +227,7 @@ static void __exit autcpu12_cleanup(void)
- 	/* Release resources, unregister device */
- 	nand_release(autcpu12_mtd);
- 
--	/* unmap physical adress */
-+	/* unmap physical address */
- 	iounmap(autcpu12_fio_base);
- 
- 	/* Free the MTD device structure */
-diff --git a/drivers/mtd/nand/bf5xx_nand.c b/drivers/mtd/nand/bf5xx_nand.c
-index 1657ecd..a52f3a7 100644
---- a/drivers/mtd/nand/bf5xx_nand.c
-+++ b/drivers/mtd/nand/bf5xx_nand.c
-@@ -4,7 +4,7 @@
-  *	http://blackfin.uclinux.org/
-  *	Bryan Wu <bryan.wu@analog.com>
-  *
-- * Blackfin BF5xx on-chip NAND flash controler driver
-+ * Blackfin BF5xx on-chip NAND flash controller driver
-  *
-  * Derived from drivers/mtd/nand/s3c2410.c
-  * Copyright (c) 2007 Ben Dooks <ben@simtec.co.uk>
-diff --git a/drivers/mtd/nand/cs553x_nand.c b/drivers/mtd/nand/cs553x_nand.c
-index 89deff0..19e1594 100644
---- a/drivers/mtd/nand/cs553x_nand.c
-+++ b/drivers/mtd/nand/cs553x_nand.c
-@@ -337,7 +337,7 @@ static void __exit cs553x_cleanup(void)
- 		nand_release(cs553x_mtd[i]);
- 		cs553x_mtd[i] = NULL;
- 
--		/* unmap physical adress */
-+		/* unmap physical address */
- 		iounmap(mmio_base);
- 
- 		/* Free the MTD device structure */
-diff --git a/drivers/mtd/nand/edb7312.c b/drivers/mtd/nand/edb7312.c
-index 0146cdc..ba67bbe 100644
---- a/drivers/mtd/nand/edb7312.c
-+++ b/drivers/mtd/nand/edb7312.c
-@@ -125,7 +125,7 @@ static int __init ep7312_init(void)
- 		return -ENOMEM;
- 	}
- 
--	/* map physical adress */
-+	/* map physical address */
- 	ep7312_fio_base = ioremap(ep7312_fio_pbase, SZ_1K);
- 	if (!ep7312_fio_base) {
- 		printk("ioremap EDB7312 NAND flash failed\n");
-diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
-index e29c1da..ddd4fc0 100644
---- a/drivers/mtd/nand/nand_base.c
-+++ b/drivers/mtd/nand/nand_base.c
-@@ -89,7 +89,7 @@ static int nand_do_write_oob(struct mtd_info *mtd, loff_t to,
- 			     struct mtd_oob_ops *ops);
- 
- /*
-- * For devices which display every fart in the system on a seperate LED. Is
-+ * For devices which display every fart in the system on a separate LED. Is
-  * compiled away when LED support is disabled.
-  */
- DEFINE_LED_TRIGGER(nand_led_trigger);
-diff --git a/drivers/mtd/nand/nandsim.c b/drivers/mtd/nand/nandsim.c
-index 10490b4..bb885d1 100644
---- a/drivers/mtd/nand/nandsim.c
-+++ b/drivers/mtd/nand/nandsim.c
-@@ -210,7 +210,7 @@ MODULE_PARM_DESC(overridesize,   "Specifies the NAND Flash size overriding the I
- #define STATE_CMD_RESET        0x0000000C /* reset */
- #define STATE_CMD_MASK         0x0000000F /* command states mask */
- 
--/* After an addres is input, the simulator goes to one of these states */
-+/* After an address is input, the simulator goes to one of these states */
- #define STATE_ADDR_PAGE        0x00000010 /* full (row, column) address is accepted */
- #define STATE_ADDR_SEC         0x00000020 /* sector address was accepted */
- #define STATE_ADDR_ZERO        0x00000030 /* one byte zero address was accepted */
-diff --git a/drivers/mtd/nand/s3c2410.c b/drivers/mtd/nand/s3c2410.c
-index 66f76e9..2bd0737 100644
---- a/drivers/mtd/nand/s3c2410.c
-+++ b/drivers/mtd/nand/s3c2410.c
-@@ -8,7 +8,7 @@
-  *
-  * Changelog:
-  *	21-Sep-2004  BJD  Initial version
-- *	23-Sep-2004  BJD  Mulitple device support
-+ *	23-Sep-2004  BJD  Multiple device support
-  *	28-Sep-2004  BJD  Fixed ECC placement for Hardware mode
-  *	12-Oct-2004  BJD  Fixed errors in use of platform data
-  *	18-Feb-2005  BJD  Fix sparse errors
-diff --git a/drivers/mtd/nand/sharpsl.c b/drivers/mtd/nand/sharpsl.c
-index 51c7288..033f880 100644
---- a/drivers/mtd/nand/sharpsl.c
-+++ b/drivers/mtd/nand/sharpsl.c
-@@ -165,7 +165,7 @@ static int __init sharpsl_nand_init(void)
- 		return -ENOMEM;
- 	}
- 
--	/* map physical adress */
-+	/* map physical address */
- 	sharpsl_io_base = ioremap(sharpsl_phys_base, 0x1000);
- 	if (!sharpsl_io_base) {
- 		printk("ioremap to access Sharp SL NAND chip failed\n");
--- 
-1.5.3.7.949.g2221a6
+Here are the results, on the offending laptop, using 2.6.24-rc5 plus 
+that one patch.
+
+First: booted with normal boot parameters (no io_delay=):
+
+    According to dmesg, 0xed is used.
+
+    hwclock ran fine, hundreds of times.
+    my shell script loop doing "cat /dev/nvram > /dev/null" ran fine, 
+several times.
+    Running Rene's "port 80" speed test ran fine once, then froze the 
+system hard.  (expected)
+
+Second: booted with io_delay=0x80, several tests, rebooting after freezes:
+
+    hwclock froze system hard.  (this is the problem that drove me to 
+find this bug).
+    my shell script loop froze system hard.
+
+Third: booted with io_delay=none:
+
+    hwclock ran fine, also hundreds of times.
+    my shell script loop ran fine several times.
+    Running rene's port80 test ran fine twice, froze system hard on 
+third try.
+
+Fourth: booted with io_delay=udelay:
+
+    hwclock ran fine, also hundreds of times.
+    my shell script loop ran fine several times.
+    Running Rene's port80 test ran fine, froze system hard on second try.
+
+Analysis:
+
+    patch works fine, and default to 0xed seems super conservative.
+    I will probably use the boot parameter io_delay=none, because I 
+don't seem to have any I/O
+    devices that require any delays - and this way I can find any that do.
+
+Still wondering:
+
+    what the heck is going on with port 80 on my laptop motherboard.  
+Clearly it "does something".
+    I will in my spare time continue investigating, though having a 
+reliable system is GREAT.
+
+
+
+
+   
 
