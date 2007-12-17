@@ -1,45 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935974AbXLQQVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936005AbXLQQW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935974AbXLQQVr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 11:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933625AbXLQQVf
+	id S936005AbXLQQW5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 11:22:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbXLQQWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 11:21:35 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45463 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932503AbXLQQVd (ORCPT
+	Mon, 17 Dec 2007 11:22:48 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:60156 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757557AbXLQQWr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 11:21:33 -0500
-Date: Mon, 17 Dec 2007 16:13:53 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Boaz Harrosh <bharrosh@panasas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Filippos Papadopoulos <psybases@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: INITIO scsi driver fails to work properly
-Message-ID: <20071217161353.0928b112@the-village.bc.nu>
-In-Reply-To: <1197903781.3204.4.camel@localhost.localdomain>
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
-	<20071217031841.f483e5ac.akpm@linux-foundation.org>
-	<20071217130523.7e9c88bb@the-village.bc.nu>
-	<47668A75.7040707@panasas.com>
-	<20071217143641.760d4162@the-village.bc.nu>
-	<1197903781.3204.4.camel@localhost.localdomain>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Dec 2007 11:22:47 -0500
+Date: Mon, 17 Dec 2007 17:22:46 +0100
+From: Jan Kara <jack@suse.cz>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 4/6] udf: fix 3 signedness & 1 unitialized variable warnings
+Message-ID: <20071217162245.GH6979@atrey.karlin.mff.cuni.cz>
+References: <20071216021451.GE26986@joi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071216021451.GE26986@joi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Well, the change log isn't very committal for "rush me immediately into
-> main line" plus, as far as I could dig out, there was no confirmation
-> that it actually worked.  This way, I can now say please try the current
+> sparse generated:
+> fs/udf/inode.c:324:41: warning: incorrect type in argument 4 (different signedness)
+> fs/udf/inode.c:324:41:    expected long *<noident>
+> fs/udf/inode.c:324:41:    got unsigned long *<noident>
+> 
+> inode_getblk always set 4th argument to uint32_t value
+> 3rd parameter of map_bh is sector_t (which is unsigned long or u64)
+> so convert phys value to sector_t
+> 
+> fs/udf/inode.c:1818:47: warning: incorrect type in argument 3 (different signedness)
+> fs/udf/inode.c:1818:47:    expected int *<noident>
+> fs/udf/inode.c:1818:47:    got unsigned int *<noident>
+> fs/udf/inode.c:1826:46: warning: incorrect type in argument 3 (different signedness)
+> fs/udf/inode.c:1826:46:    expected int *<noident>
+> fs/udf/inode.c:1826:46:    got unsigned int *<noident>
+> 
+> udf_get_filelongad and udf_get_shortad are called always for uint32_t
+> values (struct extent_position->offset), so it's safe to convert offset
+> parameter to uint32_t
+> 
+> gcc warned:
+> fs/udf/inode.c: In function 'udf_get_block':
+> fs/udf/inode.c:299: warning: 'phys' may be used uninitialized in this function
+> initialize it to 0 (if someday someone will break inode_getblk we will catch it immediately)
+> 
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> CC: Ben Fennema <bfennema@falcon.csc.calpoly.edu>
+  Acked-by: Jan Kara <jack@suse.cz>
 
-Without that change it always tries to use zero as the memory/io address
-of the device.
+										Honza
+> ---
+>  fs/udf/directory.c |    8 ++++----
+>  fs/udf/inode.c     |    6 +++---
+>  fs/udf/udfdecl.h   |    4 ++--
+>  3 files changed, 9 insertions(+), 9 deletions(-)
+> 
+> diff --git a/fs/udf/directory.c b/fs/udf/directory.c
+> index ff8c08f..984e5dc 100644
+> --- a/fs/udf/directory.c
+> +++ b/fs/udf/directory.c
+> @@ -271,7 +271,7 @@ static extent_ad *udf_get_fileextent(void *buffer, int bufsize, int *offset)
+>  }
+>  #endif
+> 
+> -short_ad *udf_get_fileshortad(uint8_t *ptr, int maxoffset, int *offset,
+> +short_ad *udf_get_fileshortad(uint8_t *ptr, int maxoffset, uint32_t *offset,
+>  			      int inc)
+>  {
+>  	short_ad *sa;
+> @@ -281,7 +281,7 @@ short_ad *udf_get_fileshortad(uint8_t *ptr, int maxoffset, int *offset,
+>  		return NULL;
+>  	}
+> 
+> -	if ((*offset < 0) || ((*offset + sizeof(short_ad)) > maxoffset))
+> +	if ((*offset + sizeof(short_ad)) > maxoffset)
+>  		return NULL;
+>  	else if ((sa = (short_ad *)ptr)->extLength == 0)
+>  		return NULL;
+> @@ -291,7 +291,7 @@ short_ad *udf_get_fileshortad(uint8_t *ptr, int maxoffset, int *offset,
+>  	return sa;
+>  }
+> 
+> -long_ad *udf_get_filelongad(uint8_t *ptr, int maxoffset, int *offset, int inc)
+> +long_ad *udf_get_filelongad(uint8_t *ptr, int maxoffset, uint32_t *offset, int inc)
+>  {
+>  	long_ad *la;
+> 
+> @@ -300,7 +300,7 @@ long_ad *udf_get_filelongad(uint8_t *ptr, int maxoffset, int *offset, int inc)
+>  		return NULL;
+>  	}
+> 
+> -	if ((*offset < 0) || ((*offset + sizeof(long_ad)) > maxoffset))
+> +	if ((*offset + sizeof(long_ad)) > maxoffset)
+>  		return NULL;
+>  	else if ((la = (long_ad *)ptr)->extLength == 0)
+>  		return NULL;
+> diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+> index 6ff8151..1178ae0 100644
+> --- a/fs/udf/inode.c
+> +++ b/fs/udf/inode.c
+> @@ -51,7 +51,7 @@ static int udf_update_inode(struct inode *, int);
+>  static void udf_fill_inode(struct inode *, struct buffer_head *);
+>  static int udf_alloc_i_data(struct inode *inode, size_t size);
+>  static struct buffer_head *inode_getblk(struct inode *, sector_t, int *,
+> -					long *, int *);
+> +					sector_t *, int *);
+>  static int8_t udf_insert_aext(struct inode *, struct extent_position,
+>  			      kernel_lb_addr, uint32_t);
+>  static void udf_split_extents(struct inode *, int *, int, int,
+> @@ -296,7 +296,7 @@ static int udf_get_block(struct inode *inode, sector_t block,
+>  {
+>  	int err, new;
+>  	struct buffer_head *bh;
+> -	unsigned long phys;
+> +	sector_t phys = 0;
+> 
+>  	if (!create) {
+>  		phys = udf_block_map(inode, block);
+> @@ -469,7 +469,7 @@ out:
+>  }
+> 
+>  static struct buffer_head *inode_getblk(struct inode *inode, sector_t block,
+> -					int *err, long *phys, int *new)
+> +					int *err, sector_t *phys, int *new)
+>  {
+>  	static sector_t last_block;
+>  	struct buffer_head *result = NULL;
+> diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
+> index c8016cc..b17ca67 100644
+> --- a/fs/udf/udfdecl.h
+> +++ b/fs/udf/udfdecl.h
+> @@ -185,8 +185,8 @@ extern struct fileIdentDesc *udf_fileident_read(struct inode *, loff_t *,
+>  						sector_t *);
+>  extern struct fileIdentDesc *udf_get_fileident(void *buffer, int bufsize,
+>  					       int *offset);
+> -extern long_ad *udf_get_filelongad(uint8_t *, int, int *, int);
+> -extern short_ad *udf_get_fileshortad(uint8_t *, int, int *, int);
+> +extern long_ad *udf_get_filelongad(uint8_t *, int, uint32_t *, int);
+> +extern short_ad *udf_get_fileshortad(uint8_t *, int, uint32_t *, int);
+> 
+>  /* crc.c */
+>  extern uint16_t udf_crc(uint8_t *, uint32_t, uint16_t);
+> --
+> 1.5.3.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
