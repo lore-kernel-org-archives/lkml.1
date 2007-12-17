@@ -1,571 +1,290 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932609AbXLQPzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932776AbXLQQAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932609AbXLQPzb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbXLQPzW
+	id S932776AbXLQQAy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 11:00:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbXLQQAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:55:22 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:44719 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753578AbXLQPzS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:55:18 -0500
-FCC: imap://tklein@imap.linux.ibm.com/Sent
-X-Identity-Key: id6
-Message-Id: <200712171652.43909.osstklei@de.ibm.com>
-Date: Mon, 17 Dec 2007 16:52:43 +0100
-From: Thomas Klein <osstklei@de.ibm.com>
-X-Mozilla-Draft-Info: internal/draft; vcard=0; receipt=0; uuencode=0
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 17 Dec 2007 11:00:45 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54649 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754781AbXLQQAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 11:00:44 -0500
+Date: Mon, 17 Dec 2007 17:00:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Jan Beulich <jbeulich@novell.com>, tglx@linutronix.de,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [PATCH] x86-64: make pda's cpunumber and nodenumber unsigned
+Message-ID: <20071217160016.GA30958@elte.hu>
+References: <47610530.76E4.0078.0@novell.com> <20071217132619.GB1870@elte.hu> <476689AF.76E4.0078.0@novell.com> <20071217145317.GD16604@elte.hu> <20071217153445.GB7882@cvg.cvg>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Michael Ellermann <michael@ellerman.id.au>,
-       Michael Neuling <mikey@neuling.org>
-Subject: [RFC] ehea: kdump support - rework
-X-Length: 1287
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="T4sUOijqQbZv57TR"
 Content-Disposition: inline
+In-Reply-To: <20071217153445.GB7882@cvg.cvg>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds kdump support using the new PPC crash shutdown hook to the
-ehea driver.
-The reworked implementation follows the feedback I got. The crash handler
-now just iterates over two simple arrays instead of handling linked lists.
 
-Further feedback will be appreciated.
-
-ehea kdump support RFC #1:
-  http://lkml.org/lkml/2007/12/12/241
+--T4sUOijqQbZv57TR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
 
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
+> Hi, I've tried to make a one ;) It's over last (today synced) linus 
+> tree.
+
+thanks, applied :-)
+
+Some small details: i had to hand-apply your patch to the x86.git#mm 
+tree (see the instructions below how to fetch that tree). It's best (for 
+us maintainers) if you send such cleanup patches against that tree, to 
+reduce patch collision risk. I have attached the final merged patch 
+further below.
+
+just in case you are on the lookout for other cleanup targets, i've 
+attached the "code-quality" script that gives us the mechanic code 
+quality metric of any file or tree. For example, it nicely shows the 
+cleanup effects of your patch on the pda.h file:
+
+                                      errors   lines of code   errors/KLOC
+include/asm-x86/pda.h  [before]           23             133         172.9
+include/asm-x86/pda.h  [after]             1             133           7.5
+
+if you want to pick cleanup targets from the x86 tree, do something like 
+this:
+
+  code-quality `find arch/x86 include/asm-x86/ -name '*.c'` | tee quality.txt
+
+  sort -n -k 4 quality.txt
+
+Warning: some files are very hard to clean up. Ask on lkml if unsure.
+
+The current code quality of arch/x86/ (as of x86.git#mm) is:
+
+  $ code-quality arch/x86/
+                                        errors   lines of code   errors/KLOC
+  arch/x86/                               4277          117235          36.4
+
+And the long term goal is to achieve the output of:
+
+  code-quality kernel/sched*.[ch]
+
+/me runs and hides ;-)
+
+	Ingo
+
+----->
+ git-clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6.git
+ cd linux-2.6.git
+ git-branch x86
+ git-checkout x86
+ git-pull git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git mm
+
+(do subsequent pulls via "git-pull --force", as we frequently rebase the
+git tree. NOTE: this might override your own local changes, so do this
+only if you dont mind about losing thse changes in that tree.)
+
+
+--------------->
+Subject: x86: clean up include/asm-x86/pda.h
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+
+clean up include/asm-x86/pda.h, as suggested by checkpatch.pl.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
-diff -Nurp -X dontdiff linux-2.6.24-rc5/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-2.6.24-rc5/drivers/net/ehea/ehea.h	2007-12-11 04:48:43.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea.h	2007-12-17 16:18:49.000000000 +0100
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
+ include/asm-x86/pda.h |   70 +++++++++++++++++++++++++-------------------------
+ 1 file changed, 35 insertions(+), 35 deletions(-)
+
+Index: linux-x86.q/include/asm-x86/pda.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/pda.h
++++ linux-x86.q/include/asm-x86/pda.h
+@@ -7,15 +7,15 @@
+ #include <linux/cache.h>
+ #include <asm/page.h>
  
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0083"
-+#define DRV_VERSION	"EHEA_0085"
+-/* Per processor datastructure. %gs points to it while the kernel runs */ 
++/* Per processor datastructure. %gs points to it while the kernel runs */
+ struct x8664_pda {
+ 	struct task_struct *pcurrent;	/* 0  Current process */
+ 	unsigned long data_offset;	/* 8 Per cpu data offset from linker
+ 					   address */
+-	unsigned long kernelstack;  /* 16 top of kernel stack for current */
+-	unsigned long oldrsp; 	    /* 24 user rsp for system call */
+-        int irqcount;		    /* 32 Irq nesting counter. Starts with -1 */
+-	unsigned int cpunumber;	    /* 36 Logical CPU number */
++	unsigned long kernelstack;	/* 16 top of kernel stack for current */
++	unsigned long oldrsp;		/* 24 user rsp for system call */
++	int irqcount;			/* 32 Irq nesting counter. Starts -1 */
++	unsigned int cpunumber;		/* 36 Logical CPU number */
+ #ifdef CONFIG_CC_STACKPROTECTOR
+ 	unsigned long stack_canary;	/* 40 stack canary value */
+ 					/* gcc-ABI: this canary MUST be at
+@@ -44,10 +44,10 @@ extern void pda_init(int);
  
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-@@ -386,6 +386,13 @@ struct ehea_port_res {
+ #define cpu_pda(i) (_cpu_pda[i])
  
+-/* 
++/*
+  * There is no fast way to get the base address of the PDA, all the accesses
+  * have to mention %fs/%gs.  So it needs to be done this Torvaldian way.
+- */ 
++ */
+ extern void __bad_pda_field(void) __attribute__((noreturn));
  
- #define EHEA_MAX_PORTS 16
-+
-+#define EHEA_NUM_PORTRES_FW_HANDLES    6  /* QP handle, SendCQ handle,
-+					     RecvCQ handle, EQ handle,
-+					     SendMR handle, RecvMR handle */
-+#define EHEA_NUM_PORT_FW_HANDLES       1  /* EQ handle */
-+#define EHEA_NUM_ADAPTER_FW_HANDLES    2  /* MR handle, NEQ handle */
-+
- struct ehea_adapter {
- 	u64 handle;
- 	struct of_device *ofdev;
-@@ -405,6 +412,31 @@ struct ehea_mc_list {
- 	u64 macaddr;
- };
+ /*
+@@ -58,70 +58,70 @@ extern struct x8664_pda _proxy_pda;
  
-+/* kdump support */
-+struct ehea_fw_handle_entry {
-+	u64 adh;               /* Adapter Handle */
-+	u64 fwh;               /* Firmware Handle */
-+};
-+
-+struct ehea_fw_handle_array {
-+	struct ehea_fw_handle_entry *arr;
-+	int num_entries;
-+	struct semaphore lock;
-+};
-+
-+struct ehea_bcmc_reg_entry {
-+	u64 adh;               /* Adapter Handle */
-+	u32 port_id;           /* Logical Port Id */
-+	u8 reg_type;           /* Registration Type */
-+	u64 macaddr;
-+};
-+
-+struct ehea_bcmc_reg_array {
-+	struct ehea_bcmc_reg_entry *arr;
-+	int num_entries;
-+	struct semaphore lock;
-+};
-+
- #define EHEA_PORT_UP 1
- #define EHEA_PORT_DOWN 0
- #define EHEA_PHY_LINK_UP 1
-diff -Nurp -X dontdiff linux-2.6.24-rc5/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.24-rc5/drivers/net/ehea/ehea_main.c	2007-12-11 04:48:43.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-12-17 16:18:49.000000000 +0100
-@@ -35,6 +35,7 @@
- #include <linux/if_ether.h>
- #include <linux/notifier.h>
- #include <linux/reboot.h>
-+#include <asm/kexec.h>
+ #define pda_offset(field) offsetof(struct x8664_pda, field)
  
- #include <net/ip.h>
+-#define pda_to_op(op,field,val) do {		\
++#define pda_to_op(op, field, val) do {		\
+ 	typedef typeof(_proxy_pda.field) T__;	\
+ 	if (0) { T__ tmp__; tmp__ = (val); }	/* type checking */ \
+ 	switch (sizeof(_proxy_pda.field)) {	\
+ 	case 2:					\
+-		asm(op "w %1,%%gs:%c2" : 	\
++		asm(op "w %1,%%gs:%c2" :	\
+ 		    "+m" (_proxy_pda.field) :	\
+ 		    "ri" ((T__)val),		\
+-		    "i"(pda_offset(field))); 	\
+- 		break;				\
++		    "i"(pda_offset(field)));	\
++		break;				\
+ 	case 4:					\
+-		asm(op "l %1,%%gs:%c2" : 	\
++		asm(op "l %1,%%gs:%c2" :	\
+ 		    "+m" (_proxy_pda.field) :	\
+ 		    "ri" ((T__)val),		\
+-		    "i" (pda_offset(field))); 	\
++		    "i" (pda_offset(field)));	\
+ 		break;				\
+ 	case 8:					\
+-		asm(op "q %1,%%gs:%c2": 	\
++		asm(op "q %1,%%gs:%c2":		\
+ 		    "+m" (_proxy_pda.field) :	\
+ 		    "ri" ((T__)val),		\
+-		    "i"(pda_offset(field))); 	\
++		    "i"(pda_offset(field)));	\
+ 		break;				\
+-       default: 				\
++	default:				\
+ 		__bad_pda_field();		\
+-       }					\
+-       } while (0)
++	}					\
++	} while (0)
  
-@@ -98,8 +99,10 @@ static int port_name_cnt = 0;
- static LIST_HEAD(adapter_list);
- u64 ehea_driver_flags = 0;
- struct work_struct ehea_rereg_mr_task;
--
- struct semaphore dlpar_mem_lock;
-+struct ehea_fw_handle_array ehea_fw_handles;
-+struct ehea_bcmc_reg_array ehea_bcmc_regs;
-+
+ #define pda_from_op(op,field) ({		\
+ 	typeof(_proxy_pda.field) ret__;		\
+ 	switch (sizeof(_proxy_pda.field)) {	\
+-       	case 2:					\
+-		asm(op "w %%gs:%c1,%0" : 	\
++	case 2:					\
++		asm(op "w %%gs:%c1,%0" :	\
+ 		    "=r" (ret__) :		\
+-		    "i" (pda_offset(field)), 	\
+-		    "m" (_proxy_pda.field)); 	\
++		    "i" (pda_offset(field)),	\
++		    "m" (_proxy_pda.field));	\
+ 		 break;				\
+ 	case 4:					\
+ 		asm(op "l %%gs:%c1,%0":		\
+ 		    "=r" (ret__):		\
+-		    "i" (pda_offset(field)), 	\
+-		    "m" (_proxy_pda.field)); 	\
++		    "i" (pda_offset(field)),	\
++		    "m" (_proxy_pda.field));	\
+ 		 break;				\
+-       case 8:					\
++	case 8:					\
+ 		asm(op "q %%gs:%c1,%0":		\
+ 		    "=r" (ret__) :		\
+-		    "i" (pda_offset(field)), 	\
+-		    "m" (_proxy_pda.field)); 	\
++		    "i" (pda_offset(field)),	\
++		    "m" (_proxy_pda.field));	\
+ 		 break;				\
+-       default: 				\
++	default:				\
+ 		__bad_pda_field();		\
+        }					\
+        ret__; })
  
- static int __devinit ehea_probe_adapter(struct of_device *dev,
- 					const struct of_device_id *id);
-@@ -131,6 +134,160 @@ void ehea_dump(void *adr, int len, char 
- 	}
- }
+-#define read_pda(field) pda_from_op("mov",field)
+-#define write_pda(field,val) pda_to_op("mov",field,val)
+-#define add_pda(field,val) pda_to_op("add",field,val)
+-#define sub_pda(field,val) pda_to_op("sub",field,val)
+-#define or_pda(field,val) pda_to_op("or",field,val)
++#define read_pda(field)		pda_from_op("mov", field)
++#define write_pda(field, val)	pda_to_op("mov", field, val)
++#define add_pda(field, val)	pda_to_op("add", field, val)
++#define sub_pda(field, val)	pda_to_op("sub", field, val)
++#define or_pda(field, val)	pda_to_op("or", field, val)
  
-+static void ehea_update_firmware_handles(void)
-+{
-+	struct ehea_fw_handle_entry *arr = NULL;
-+	struct ehea_adapter *adapter;
-+	int num_adapters = 0;
-+	int num_ports = 0;
-+	int num_portres = 0;
-+	int i = 0;
-+	int num_fw_handles, k, l;
-+
-+	/* Determine number of handles */
-+	list_for_each_entry(adapter, &adapter_list, list) {
-+		num_adapters++;
-+
-+		for (k = 0; k < EHEA_MAX_PORTS; k++) {
-+			struct ehea_port *port = adapter->port[k];
-+
-+			if (!port || (port->state != EHEA_PORT_UP))
-+				continue;
-+
-+			num_ports++;
-+			num_portres += port->num_def_qps + port->num_add_tx_qps;
-+		}
-+	}
-+
-+	num_fw_handles = num_adapters * EHEA_NUM_ADAPTER_FW_HANDLES +
-+			 num_ports * EHEA_NUM_PORT_FW_HANDLES +
-+			 num_portres * EHEA_NUM_PORTRES_FW_HANDLES;
-+
-+	if (num_fw_handles) {
-+		arr = kzalloc(num_fw_handles * sizeof(*arr), GFP_KERNEL);
-+		if (!arr)
-+			return;  /* Keep the existing array */
-+	} else
-+		goto out_update;
-+
-+	list_for_each_entry(adapter, &adapter_list, list) {
-+		for (k = 0; k < EHEA_MAX_PORTS; k++) {
-+			struct ehea_port *port = adapter->port[k];
-+
-+			if (!port || (port->state != EHEA_PORT_UP))
-+				continue;
-+
-+			for (l = 0;
-+			     l < port->num_def_qps + port->num_add_tx_qps;
-+			     l++) {
-+				struct ehea_port_res *pr = &port->port_res[l];
-+
-+				arr[i].adh = adapter->handle;
-+				arr[i++].fwh = pr->qp->fw_handle;
-+				arr[i].adh = adapter->handle;
-+				arr[i++].fwh = pr->send_cq->fw_handle;
-+				arr[i].adh = adapter->handle;
-+				arr[i++].fwh = pr->recv_cq->fw_handle;
-+				arr[i].adh = adapter->handle;
-+				arr[i++].fwh = pr->eq->fw_handle;
-+				arr[i].adh = adapter->handle;
-+				arr[i++].fwh = pr->send_mr.handle;
-+				arr[i].adh = adapter->handle;
-+				arr[i++].fwh = pr->recv_mr.handle;
-+			}
-+			arr[i].adh = adapter->handle;
-+			arr[i++].fwh = port->qp_eq->fw_handle;
-+		}
-+
-+		arr[i].adh = adapter->handle;
-+		arr[i++].fwh = adapter->neq->fw_handle;
-+
-+		if (adapter->mr.handle) {
-+			arr[i].adh = adapter->handle;
-+			arr[i++].fwh = adapter->mr.handle;
-+		}
-+	}
-+
-+out_update:
-+	kfree(ehea_fw_handles.arr);
-+	ehea_fw_handles.arr = arr;
-+	ehea_fw_handles.num_entries = i;
-+}
-+
-+static void ehea_update_bcmc_registrations(void)
-+{
-+	struct ehea_bcmc_reg_entry *arr = NULL;
-+	struct ehea_adapter *adapter;
-+	struct ehea_mc_list *mc_entry;
-+	int num_registrations = 0;
-+	int i = 0;
-+	int k;
-+
-+	/* Determine number of registrations */
-+	list_for_each_entry(adapter, &adapter_list, list)
-+		for (k = 0; k < EHEA_MAX_PORTS; k++) {
-+			struct ehea_port *port = adapter->port[k];
-+
-+			if (!port || (port->state != EHEA_PORT_UP))
-+				continue;
-+
-+			num_registrations += 2;	/* Broadcast registrations */
-+
-+			list_for_each_entry(mc_entry, &port->mc_list->list,list)
-+				num_registrations += 2;
-+		}
-+
-+	if (num_registrations) {
-+		arr = kzalloc(num_registrations * sizeof(*arr), GFP_KERNEL);
-+		if (!arr)
-+			return;  /* Keep the existing array */
-+	} else
-+		goto out_update;
-+
-+	list_for_each_entry(adapter, &adapter_list, list) {
-+		for (k = 0; k < EHEA_MAX_PORTS; k++) {
-+			struct ehea_port *port = adapter->port[k];
-+
-+			if (!port || (port->state != EHEA_PORT_UP))
-+				continue;
-+
-+			arr[i].adh = adapter->handle;
-+			arr[i].port_id = port->logical_port_id;
-+			arr[i].reg_type = EHEA_BCMC_BROADCAST |
-+					  EHEA_BCMC_UNTAGGED;
-+			arr[i++].macaddr = port->mac_addr;
-+
-+			arr[i].adh = adapter->handle;
-+			arr[i].port_id = port->logical_port_id;
-+			arr[i].reg_type = EHEA_BCMC_BROADCAST |
-+					  EHEA_BCMC_VLANID_ALL;
-+			arr[i++].macaddr = port->mac_addr;
-+
-+			list_for_each_entry(mc_entry,
-+					    &port->mc_list->list, list) {
-+				arr[i].adh = adapter->handle;
-+				arr[i].port_id = port->logical_port_id;
-+				arr[i].reg_type = EHEA_BCMC_SCOPE_ALL |
-+						  EHEA_BCMC_MULTICAST |
-+						  EHEA_BCMC_UNTAGGED;
-+				arr[i++].macaddr = mc_entry->macaddr;
-+
-+				arr[i].adh = adapter->handle;
-+				arr[i].port_id = port->logical_port_id;
-+				arr[i].reg_type = EHEA_BCMC_SCOPE_ALL |
-+						  EHEA_BCMC_MULTICAST |
-+						  EHEA_BCMC_VLANID_ALL;
-+				arr[i++].macaddr = mc_entry->macaddr;
-+			}
-+		}
-+	}
-+
-+out_update:
-+	kfree(ehea_bcmc_regs.arr);
-+	ehea_bcmc_regs.arr = arr;
-+	ehea_bcmc_regs.num_entries = i;
-+}
-+
- static struct net_device_stats *ehea_get_stats(struct net_device *dev)
- {
- 	struct ehea_port *port = netdev_priv(dev);
-@@ -1595,19 +1752,25 @@ static int ehea_set_mac_addr(struct net_
- 
- 	memcpy(dev->dev_addr, mac_addr->sa_data, dev->addr_len);
- 
-+	down(&ehea_bcmc_regs.lock);
-+
- 	/* Deregister old MAC in pHYP */
- 	ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
- 	if (ret)
--		goto out_free;
-+		goto out_upregs;
- 
- 	port->mac_addr = cb0->port_mac_addr << 16;
- 
- 	/* Register new MAC in pHYP */
- 	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
- 	if (ret)
--		goto out_free;
-+		goto out_upregs;
- 
- 	ret = 0;
-+
-+out_upregs:
-+	ehea_update_bcmc_registrations();
-+	up(&ehea_bcmc_regs.lock);
- out_free:
- 	kfree(cb0);
- out:
-@@ -1769,9 +1932,11 @@ static void ehea_set_multicast_list(stru
- 	}
- 	ehea_promiscuous(dev, 0);
- 
-+	down(&ehea_bcmc_regs.lock);
-+
- 	if (dev->flags & IFF_ALLMULTI) {
- 		ehea_allmulti(dev, 1);
--		return;
-+		goto out;
- 	}
- 	ehea_allmulti(dev, 0);
- 
-@@ -1798,6 +1963,8 @@ static void ehea_set_multicast_list(stru
- 		}
- 	}
- out:
-+	ehea_update_bcmc_registrations();
-+	up(&ehea_bcmc_regs.lock);
- 	return;
- }
- 
-@@ -2280,6 +2447,8 @@ static int ehea_up(struct net_device *de
- 	if (port->state == EHEA_PORT_UP)
- 		return 0;
- 
-+	down(&ehea_fw_handles.lock);
-+
- 	ret = ehea_port_res_setup(port, port->num_def_qps,
- 				  port->num_add_tx_qps);
- 	if (ret) {
-@@ -2316,8 +2485,17 @@ static int ehea_up(struct net_device *de
- 		}
- 	}
- 
--	ret = 0;
-+	down(&ehea_bcmc_regs.lock);
-+
-+	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
-+	if (ret) {
-+		ret = -EIO;
-+		goto out_free_irqs;
-+	}
-+
- 	port->state = EHEA_PORT_UP;
-+
-+	ret = 0;
- 	goto out;
- 
- out_free_irqs:
-@@ -2329,6 +2507,12 @@ out:
- 	if (ret)
- 		ehea_info("Failed starting %s. ret=%i", dev->name, ret);
- 
-+	ehea_update_bcmc_registrations();
-+	up(&ehea_bcmc_regs.lock);
-+
-+	ehea_update_firmware_handles();
-+	up(&ehea_fw_handles.lock);
-+
- 	return ret;
- }
- 
-@@ -2377,16 +2561,27 @@ static int ehea_down(struct net_device *
- 	if (port->state == EHEA_PORT_DOWN)
- 		return 0;
- 
-+	down(&ehea_bcmc_regs.lock);
- 	ehea_drop_multicast_list(dev);
-+	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
-+
- 	ehea_free_interrupts(dev);
- 
-+	down(&ehea_fw_handles.lock);
-+
- 	port->state = EHEA_PORT_DOWN;
- 
-+	ehea_update_bcmc_registrations();
-+	up(&ehea_bcmc_regs.lock);
-+
- 	ret = ehea_clean_all_portres(port);
- 	if (ret)
- 		ehea_info("Failed freeing resources for %s. ret=%i",
- 			  dev->name, ret);
- 
-+	ehea_update_firmware_handles();
-+	up(&ehea_fw_handles.lock);
-+
- 	return ret;
- }
- 
-@@ -2952,19 +3147,12 @@ struct ehea_port *ehea_setup_single_port
- 	dev->watchdog_timeo = EHEA_WATCH_DOG_TIMEOUT;
- 
- 	INIT_WORK(&port->reset_task, ehea_reset_port);
--
--	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
--	if (ret) {
--		ret = -EIO;
--		goto out_unreg_port;
--	}
--
- 	ehea_set_ethtool_ops(dev);
- 
- 	ret = register_netdev(dev);
- 	if (ret) {
- 		ehea_error("register_netdev failed. ret=%d", ret);
--		goto out_dereg_bc;
-+		goto out_unreg_port;
- 	}
- 
- 	port->lro_max_aggr = lro_max_aggr;
-@@ -2981,9 +3169,6 @@ struct ehea_port *ehea_setup_single_port
- 
- 	return port;
- 
--out_dereg_bc:
--	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
--
- out_unreg_port:
- 	ehea_unregister_port(port);
- 
-@@ -3003,7 +3188,6 @@ static void ehea_shutdown_single_port(st
- {
- 	unregister_netdev(port->netdev);
- 	ehea_unregister_port(port);
--	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
- 	kfree(port->mc_list);
- 	free_netdev(port->netdev);
- 	port->adapter->active_ports--;
-@@ -3046,7 +3230,6 @@ static int ehea_setup_ports(struct ehea_
- 
- 		i++;
- 	};
--
- 	return 0;
- }
- 
-@@ -3191,6 +3374,7 @@ static int __devinit ehea_probe_adapter(
- 		ehea_error("Invalid ibmebus device probed");
- 		return -EINVAL;
- 	}
-+	down(&ehea_fw_handles.lock);
- 
- 	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
- 	if (!adapter) {
-@@ -3271,7 +3455,10 @@ out_kill_eq:
- 
- out_free_ad:
- 	kfree(adapter);
-+
- out:
-+	ehea_update_firmware_handles();
-+	up(&ehea_fw_handles.lock);
- 	return ret;
- }
- 
-@@ -3290,18 +3477,41 @@ static int __devexit ehea_remove(struct 
- 
- 	flush_scheduled_work();
- 
-+	down(&ehea_fw_handles.lock);
-+
- 	ibmebus_free_irq(adapter->neq->attr.ist1, adapter);
- 	tasklet_kill(&adapter->neq_tasklet);
- 
- 	ehea_destroy_eq(adapter->neq);
- 	ehea_remove_adapter_mr(adapter);
- 	list_del(&adapter->list);
--
- 	kfree(adapter);
- 
-+	ehea_update_firmware_handles();
-+	up(&ehea_fw_handles.lock);
-+
- 	return 0;
- }
- 
-+void ehea_crash_handler(void)
-+{
-+	int i;
-+
-+	if (ehea_fw_handles.arr)
-+		for (i = 0; i < ehea_fw_handles.num_entries; i++)
-+			ehea_h_free_resource(ehea_fw_handles.arr[i].adh,
-+					     ehea_fw_handles.arr[i].fwh,
-+					     FORCE_FREE);
-+
-+	if (ehea_bcmc_regs.arr)
-+		for (i = 0; i < ehea_bcmc_regs.num_entries; i++)
-+			ehea_h_reg_dereg_bcmc(ehea_bcmc_regs.arr[i].adh,
-+					      ehea_bcmc_regs.arr[i].port_id,
-+					      ehea_bcmc_regs.arr[i].reg_type,
-+					      ehea_bcmc_regs.arr[i].macaddr,
-+					      0, H_DEREG_BCMC);
-+}
-+
- static int ehea_reboot_notifier(struct notifier_block *nb,
- 				unsigned long action, void *unused)
- {
-@@ -3362,7 +3572,12 @@ int __init ehea_module_init(void)
- 
- 
- 	INIT_WORK(&ehea_rereg_mr_task, ehea_rereg_mrs);
-+	memset(&ehea_fw_handles, 0, sizeof(ehea_fw_handles));
-+	memset(&ehea_bcmc_regs, 0, sizeof(ehea_bcmc_regs));
-+
- 	sema_init(&dlpar_mem_lock, 1);
-+	sema_init(&ehea_fw_handles.lock, 1);
-+	sema_init(&ehea_bcmc_regs.lock, 1);
- 
- 	ret = check_module_parm();
- 	if (ret)
-@@ -3373,6 +3588,9 @@ int __init ehea_module_init(void)
- 		goto out;
- 
- 	register_reboot_notifier(&ehea_reboot_nb);
-+	ret = crash_shutdown_register(&ehea_crash_handler);
-+	if (ret)
-+		ehea_info("failed registering crash handler");
- 
- 	ret = ibmebus_register_driver(&ehea_driver);
- 	if (ret) {
-@@ -3386,6 +3604,7 @@ int __init ehea_module_init(void)
- 		ehea_error("failed to register capabilities attribute, ret=%d",
- 			   ret);
- 		unregister_reboot_notifier(&ehea_reboot_nb);
-+		crash_shutdown_unregister(&ehea_crash_handler);
- 		ibmebus_unregister_driver(&ehea_driver);
- 		goto out;
- 	}
-@@ -3396,10 +3615,17 @@ out:
- 
- static void __exit ehea_module_exit(void)
- {
-+	int ret;
-+
- 	flush_scheduled_work();
- 	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
- 	ibmebus_unregister_driver(&ehea_driver);
- 	unregister_reboot_notifier(&ehea_reboot_nb);
-+	ret = crash_shutdown_unregister(&ehea_crash_handler);
-+	if (ret)
-+		ehea_info("failed unregistering crash handler");
-+	kfree(ehea_fw_handles.arr);
-+	kfree(ehea_bcmc_regs.arr);
- 	ehea_destroy_busmap();
- }
+ /* This is not atomic against other CPUs -- CPU preemption needs to be off */
+-#define test_and_clear_bit_pda(bit,field) ({		\
++#define test_and_clear_bit_pda(bit, field) ({		\
+ 	int old__;						\
+ 	asm volatile("btr %2,%%gs:%c3\n\tsbbl %0,%0"		\
+-	    : "=r" (old__), "+m" (_proxy_pda.field) 		\
++	    : "=r" (old__), "+m" (_proxy_pda.field)		\
+ 	    : "dIr" (bit), "i" (pda_offset(field)) : "memory");	\
+ 	old__;							\
+ })
+
+--T4sUOijqQbZv57TR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=code-quality
+
+
+SRC=$@
+
+[ "$SRC" = "" ] && { SRC=`q files`; }
+
+FILE=/tmp/1.c
+
+echo "                                      errors   lines of code   errors/KLOC"
+
+for DIR in $SRC; do
+
+  printf "%-35s " $DIR
+  find $DIR -name '*.[ch]' | xargs cat > $FILE
+  RES=`scripts/checkpatch.pl --file $FILE | grep ^total`
+
+  # echo $RES
+
+  if [ "$RES" != "" ]; then
+    ERR=`echo $RES | cut -d' ' -f2`
+    WARN=`echo $RES | cut -d' ' -f4`
+    LINES=`echo $RES | cut -d' ' -f6`
+  else
+    ERR=0
+    WARN=0
+    LINES=`cat $FILE | wc -l`
+  fi
+
+  rm -f $FILE
+
+  ERR_KLOC=`( echo "scale=1"; echo "$ERR*1000/$LINES" ) | bc`
+  printf "%8s      %10s    %10s\n" $ERR $LINES $ERR_KLOC
+
+done
+
+
+--T4sUOijqQbZv57TR--
