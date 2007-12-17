@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbXLQRFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbXLQRJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbXLQRFA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 12:05:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbXLQREw
+	id S1756421AbXLQRJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 12:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbXLQRJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 12:04:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48102 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752936AbXLQREw (ORCPT
+	Mon, 17 Dec 2007 12:09:20 -0500
+Received: from hs-out-0708.google.com ([64.233.178.247]:39195 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751328AbXLQRJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 12:04:52 -0500
-Date: Mon, 17 Dec 2007 09:03:37 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Reduce overhead of CONFIG_TIMER_STATS
-Message-ID: <20071217090337.0b1af816@laptopd505.fenrus.org>
-In-Reply-To: <20071216212944.GA5128@ghostprotocols.net>
-References: <20071216212944.GA5128@ghostprotocols.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Dec 2007 12:09:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nhFKHxBnxyd1Wa15H0B6OnFZLXUJwBpNociW5Sea5yA1jcytyxsQrAZdOn+soqn4U/I/cwF8FPrKx23E1b9nOVuEMiBj075LQeNYktkjG+N0RyTgihx4sMUMrpo0sY40P2RRToHvbJzklt32RtJk4q2028qliyd8Wazve67HTM8=
+Message-ID: <87f94c370712170909y691dc2e3rf7f23c64eff8da22@mail.gmail.com>
+Date: Mon, 17 Dec 2007 12:09:17 -0500
+From: "Greg Freemyer" <greg.freemyer@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: ATA bus error with external hd on esata
+Cc: "Zsolt Barat" <zsolt@softmonsters.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+In-Reply-To: <20071217025321.2f7507db.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <47642D9A.4080600@softmonsters.com>
+	 <476434C7.6040307@softmonsters.com>
+	 <20071217025321.2f7507db.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Dec 2007 19:29:44 -0200
-Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+On Dec 17, 2007 5:53 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Sat, 15 Dec 2007 21:10:47 +0100 Zsolt Barat <zsolt@softmonsters.com> wrote:
+>
+> > Zsolt Barat schrieb:
+> > > hi list,
+>
+> Let's cc the IDE development list.
+>
+> > > i just bought a "MyBook" called external HD with a fixed enclosure, from
+> > > WD. Connected to the SATA port i constantly get "ATA bus error" messages
+> > > in the kernel log. Is this a known issue?
+> > >
 
-> Hi,
-> 	While looking at the pahole output for struct timer_list on
-> recent kernels I noticed that there is a 4 bytes padding on struct
-> timer_list that gets propagated to many structs on 64 bits
-> architectures:
-> 
-> [acme@doppio linux-2.6]$ pahole -C timer_list /tmp/tcp.o.before
-> struct timer_list {
->         struct list_head      entry;          /*     0    16 */
->         long unsigned int     expires;        /*    16     8 */
->         void                  (*function)(long unsigned int); /*
-> 24     8 */ long unsigned int     data;           /*    32     8 */
->         struct tvec_t_base_s *base;           /*    40     8 */
->         void *                start_site;     /*    48     8 */
->         char                  start_comm[16]; /*    56    16 */
->         /* --- cacheline 1 boundary (64 bytes) was 8 bytes ago --- */
->         int                   start_pid;      /*    72     4 */
-> 
->         /* size: 80, cachelines: 2 */
->         /* padding: 4 */
->         /* last cacheline: 16 bytes */
-> };
-> [acme@doppio linux-2.6]$
-> 
-> 	So the attached patch reduces the 4 bytes hole overhead of
-> CONFIG_TIMER_STATS on 64bit architectures by shrinking the field for
-> the process name by 4 bytes.
-> 
-> 	Statistically this doesn't affects that many process names as
-> most are less than 12 bytes. As CONFIG_TIMER_STATS is enabled at least
-> on fedora kernels I think that we can, with this patch, still reap the
-> benefits of powertopping.
+As an FYI: I've had a lot of problems with the big prepackaged drives
+in the last 6 months even from Windows, so I would not be too quick to
+blame Linux.
 
-I'm still worried that this means that PowerTOP will end up displaying shortened names..
-it's already sometimes tricky to know who's guilty at 16... at 12 I fear it just gets worse.
-Isn't there some other reorder that you can do to still get rid of the hole?
+ie.
+I bought several 500GB / 1000GB Buffalo Drives last month with plans
+to use them from Windows via USB.
 
+I attempted to do a lot of heavy file copying to/from them.  I was
+getting a bunch of "Delayed Write Failures",
 
+I finally gave up.
+
+The 500GB drives had a single hard drive internally, so I opened the
+case, removed the drive and connected them via standalone external
+carriers I had around.  In that mode the drives worked fine (from
+Windows).  I've used both standalone eSata external carriers and
+standalone USB external carriers with these same physical drives with
+no issues.
+
+My conclusion is that the electronics in the prepackaged external
+units is just not up to the job if your doing heavy i/o.
+
+Greg
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Greg Freemyer
+Litigation Triage Solutions Specialist
+http://www.linkedin.com/in/gregfreemyer
+First 99 Days Litigation White Paper -
+http://www.norcrossgroup.com/forms/whitepapers/99%20Days%20whitepaper.pdf
+
+The Norcross Group
+The Intersection of Evidence & Technology
+http://www.norcrossgroup.com
