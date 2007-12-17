@@ -1,67 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760575AbXLQP2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761534AbXLQPai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760575AbXLQP2N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbXLQP17
+	id S1761534AbXLQPai (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 10:30:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbXLQPaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:27:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37062 "EHLO mx3.mail.elte.hu"
+	Mon, 17 Dec 2007 10:30:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49527 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752991AbXLQP16 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:27:58 -0500
-Date: Mon, 17 Dec 2007 16:27:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
-       "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
-	on some AMD64x2 laptops, etc.
-Message-ID: <20071217152716.GA27223@elte.hu>
-References: <fa.F/CPALGk5eBe3QDRN7pjalMH5m4@ifi.uio.no> <fa.56LRmmk2ZdofP2s+juNK5l0iREQ@ifi.uio.no> <fa.FRcgZwrZusfLF5d88S6yPr2bvYo@ifi.uio.no> <fa.eZe9IlwlTeEF/5eA+8kKfNUncS4@ifi.uio.no> <fa.EBJleK5JYl+P/h3+2m6zPq3PzDc@ifi.uio.no> <fa.jU9nntHcOIpTOJuwui+u+/gya4Y@ifi.uio.no> <4765C97B.3000305@shaw.ca>
+	id S1754962AbXLQPa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 10:30:29 -0500
+Message-ID: <476695D9.8090904@redhat.com>
+Date: Mon, 17 Dec 2007 10:29:29 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4765C97B.3000305@shaw.ca>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Harvey Harrison <harvey.harrison@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp>,
+       Rusty Lynch <rusty.lynch@intel.com>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       Keshavamurthy Anil S <anil.s.keshavamurthy@intel.com>
+Subject: Re: Final kprobes rollup patches
+References: <1197708350.898.87.camel@brick> <20071215085015.GA9720@elte.hu> <1197709442.898.97.camel@brick> <20071215131204.GE9720@elte.hu> <4766841B.1040500@redhat.com> <20071217143050.GA13290@elte.hu>
+In-Reply-To: <20071217143050.GA13290@elte.hu>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ingo,
 
-* Robert Hancock <hancockr@shaw.ca> wrote:
+Ingo Molnar wrote:
+> Masami,
+> 
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> 
+>> Hi Harvey and Ingo,
+>>
+>> I'm working on another version of patches for unification.
+>> Currently cleaning up the patches.
+>> http://sources.redhat.com/ml/systemtap/2007-q4/msg00457.html
+>> I'll cleanup and repost it today.
+> 
+> cool! Please Cc: lkml and Harvey as well so that there's less overlap in 
+> unification work - Harvey spent quite some time unifying and cleaning up 
+> the kprobes code during the past week.
 
->> unfortunately this hack's side-effects are mis-used by an unknown 
->> number of drivers to mask PCI posting bugs. We want to figure out 
->> those bugs (safely and carefully) and we want to remove this hack 
->> from modern machines that dont need it. Doing anything else would be 
->> superstition.
->
-> Are there any such examples known of such drivers? It doesn't seem to 
-> make much sense.. PCI IO writes are not posted on any known system 
-> (the spec allows them to be posted in the host bus bridge, but if they 
-> were they could only be flushed by a read, not a write) and PCI MMIO 
-> writes are only guaranteed to flush by doing a read from that device, 
-> not by other random port accesses. I suppose using the _p versions of 
-> port accesses might happen to mask such problems on certain machines..
+Should I rewrite it based on current git tree?
+My patch includes 3 part of patches.
+- 2 Bugfix patches (which is not merged yet.)
+- 2 booster patches (ditto)
+- 2 unification patches (most of this patches are already done by Harvey's patch)
 
-yeah, that's the fear - that timing sensitivities or outright races are 
-hidden via _p() uses. It's a bit like the BKL - nobody really knows why 
-it's still needed in some places but there's "fear" that "stuff might 
-break" so removal is very slow. So we should get rid of all _p() uses, 
-by either removing them (concluding that the _p() was not needed), or by 
-adding in an udelay(2) (documenting that the device indeed relies on the 
-delay from the host side) or by adding whatever posting/flushing is 
-needed. That will gradually reduce the amount of code that uses _p() 
-methods, and will improve the quality of the kernel.
+> 
+> So i think we could/should use Harvey's latest series as a base, those 
+> are pretty finegrained already. Note that they break 64-bit kprobes 
+> though, with such a config:
+> 
+>  CONFIG_KPROBES=y
+>  CONFIG_NET_TCPPROBE=y
+> 
+> so it crashes with an int3 in the TCP code. It's probably some trivial 
+> typo somewhere, as 32-bit works fine.
+> 
+> the coordinates for x86.git#mm can be found below - that tree already 
+> includes Harvey's latest kprobes series. I'll try to bisect the 64-bit 
+> breakage now.
+> 
+> 	Ingo
+> 
+> ------------------>
+>  git-clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6.git
+>  cd linux-2.6.git
+>  git-branch x86
+>  git-checkout x86
+>  git-pull git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git mm
+> 
+> (do subsequent pulls via "git-pull --force", as we frequently rebase the
+> git tree. NOTE: this might override your own local changes, so do this
+> only if you dont mind about losing thse changes in that tree.)
+> 
 
-	Ingo
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+
