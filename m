@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933252AbXLQAHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933416AbXLQAI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933252AbXLQAHj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 19:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761994AbXLQAH0
+	id S933416AbXLQAI0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 19:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759499AbXLQAIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 19:07:26 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41644 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761976AbXLQAHZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 19:07:25 -0500
-Message-ID: <4765BD91.9080909@zytor.com>
-Date: Sun, 16 Dec 2007 16:06:41 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 16 Dec 2007 19:08:15 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49699 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758988AbXLQAIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 19:08:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 4/8] unify paravirt parts of system.h
+Date: Mon, 17 Dec 2007 01:27:29 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Andi Kleen <ak@suse.de>,
+       Avi Kivity <avi@qumranet.com>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       glommer@gmail.com, tglx@linutronix.de, ehabkost@redhat.com,
+       jeremy@goop.org, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com
+References: <11967843881946-git-send-email-gcosta@redhat.com> <20071205163017.GA4756@ucw.cz> <20071215131723.GF9720@elte.hu>
+In-Reply-To: <20071215131723.GF9720@elte.hu>
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 4/4] x86: Final unification of local_{32|64}.h
-References: <1197806669.3749.44.camel@brick> <20071216153158.GA891@elte.hu>	 <4765AB32.9040608@zytor.com> <1197848331.3749.86.camel@brick>	 <4765B930.8010208@zytor.com> <1197849591.3749.88.camel@brick>
-In-Reply-To: <1197849591.3749.88.camel@brick>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712170127.31615.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
->>
->> #define _ASM_INC " incl "
->>
->> 	_ASM_INC "%0"
+On Saturday, 15 of December 2007, Ingo Molnar wrote:
 > 
-> Not sure if you were just tossing a space on the end of my example,
-> but do you also put a leading space on the " incl " in addition to
-> the trailing space?
+> * Pavel Machek <pavel@ucw.cz> wrote:
 > 
+> > > Linux never uses that register. The only user is suspend 
+> > > save/restore, but that' bogus because it wasn't ever initialized by 
+> > > Linux in the first place. It could be probably all safely removed.
+> > 
+> > It probably is safe to remove... but we currently support '2.8.95 
+> > kernel loads/resumes 2.6.24 image'... which would break if 2.8 uses 
+> > cr8.
+> > 
+> > So please keep it if it is not a big problem.
+> 
+> hm, so __save_processor_state() is in essence an ABI? Could you please 
+> also send a patch that documents this prominently, in the structure 
+> itself?
 
-That is what I have, again, just to make mistakes harder.
+Hmm, I'm not sure if it really is an ABI part.  It doesn't communicate anything
+outside of the kernel in which it is defined.
 
-	-hpa
+The problem is, though, that if kernel A is used for resuming kernel B, and
+kernel B doesn't save/restore everything it will need after the resume, then
+things will break if kernel A modifies that.  So, yes, we'll need to document
+that explicitly.
+
+Greetings,
+Rafael
