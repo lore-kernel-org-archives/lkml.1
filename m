@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936218AbXLQTyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935706AbXLQTz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936218AbXLQTyz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 14:54:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764093AbXLQTlL
+	id S935706AbXLQTz2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 14:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933017AbXLQTlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:41:11 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:3182 "EHLO perches.com"
+	Mon, 17 Dec 2007 14:41:12 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:3185 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933833AbXLQTk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:40:58 -0500
+	id S933862AbXLQTlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:41:03 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Swen Schillig <swen@vnet.ibm.com>, linux-s390@vger.kernel.org,
-       linux390@de.ibm.com
-Subject: [PATCH] drivers/s390/: Spelling fixes
-Date: Mon, 17 Dec 2007 11:40:13 -0800
-Message-Id: <1197920439-5455-7-git-send-email-joe@perches.com>
+       David Brownell <dbrownell@users.sourceforge.net>,
+       spi-devel-general@lists.sourceforge.net
+Subject: [PATCH] drivers/spi/: Spelling fixes
+Date: Mon, 17 Dec 2007 11:40:16 -0800
+Message-Id: <1197920439-5455-10-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.7.949.g2221a6
-Message-Id: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918892.git.joe@perches.com>
+Message-Id: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918893.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,106 +26,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/s390/block/dasd_3990_erp.c |    2 +-
- drivers/s390/block/dasd_eckd.c     |    2 +-
- drivers/s390/char/sclp_rw.c        |    2 +-
- drivers/s390/char/tape_3590.c      |    2 +-
- drivers/s390/cio/airq.c            |    2 +-
- drivers/s390/scsi/zfcp_erp.c       |    2 +-
- drivers/s390/scsi/zfcp_qdio.c      |    2 +-
- 7 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/spi/spi_imx.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/s390/block/dasd_3990_erp.c b/drivers/s390/block/dasd_3990_erp.c
-index 5b7385e..c02f960 100644
---- a/drivers/s390/block/dasd_3990_erp.c
-+++ b/drivers/s390/block/dasd_3990_erp.c
-@@ -2620,7 +2620,7 @@ dasd_3990_erp_handle_match_erp(struct dasd_ccw_req *erp_head,
-  * DASD_3990_ERP_ACTION
-  *
-  * DESCRIPTION
-- *   controll routine for 3990 erp actions.
-+ *   control routine for 3990 erp actions.
-  *   Has to be called with the queue lock (namely the s390_irq_lock) acquired.
-  *
-  * PARAMETER
-diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c
-index 44adf84..6038d91 100644
---- a/drivers/s390/block/dasd_eckd.c
-+++ b/drivers/s390/block/dasd_eckd.c
-@@ -1542,7 +1542,7 @@ dasd_eckd_performance(struct dasd_device *device, void __user *argp)
- 	prssdp = (struct dasd_psf_prssd_data *) cqr->data;
- 	memset(prssdp, 0, sizeof (struct dasd_psf_prssd_data));
- 	prssdp->order = PSF_ORDER_PRSSD;
--	prssdp->suborder = 0x01;	/* Perfomance Statistics */
-+	prssdp->suborder = 0x01;	/* Performance Statistics */
- 	prssdp->varies[1] = 0x01;	/* Perf Statistics for the Subsystem */
+diff --git a/drivers/spi/spi_imx.c b/drivers/spi/spi_imx.c
+index 2cd8573..639963e 100644
+--- a/drivers/spi/spi_imx.c
++++ b/drivers/spi/spi_imx.c
+@@ -157,7 +157,7 @@
+ #define SPI_FIFO_BYTE_WIDTH		(2)
+ #define SPI_FIFO_OVERFLOW_MARGIN	(2)
  
- 	ccw = cqr->cpaddr;
-diff --git a/drivers/s390/char/sclp_rw.c b/drivers/s390/char/sclp_rw.c
-index d6b06ab..ad7195d 100644
---- a/drivers/s390/char/sclp_rw.c
-+++ b/drivers/s390/char/sclp_rw.c
-@@ -76,7 +76,7 @@ sclp_make_buffer(void *page, unsigned short columns, unsigned short htab)
- }
+-/* DMA burst lenght for half full/empty request trigger */
++/* DMA burst length for half full/empty request trigger */
+ #define SPI_DMA_BLR			(SPI_FIFO_DEPTH * SPI_FIFO_BYTE_WIDTH / 2)
  
- /*
-- * Return a pointer to the orignal page that has been used to create
-+ * Return a pointer to the original page that has been used to create
-  * the buffer.
-  */
- void *
-diff --git a/drivers/s390/char/tape_3590.c b/drivers/s390/char/tape_3590.c
-index da25f8e..8246ef3 100644
---- a/drivers/s390/char/tape_3590.c
-+++ b/drivers/s390/char/tape_3590.c
-@@ -1495,7 +1495,7 @@ tape_3590_unit_check(struct tape_device *device, struct tape_request *request,
- 			   device->cdev->dev.bus_id);
- 		return tape_3590_erp_basic(device, request, irb, -EPERM);
- 	case 0x8013:
--		PRINT_WARN("(%s): Another host has priviliged access to the "
-+		PRINT_WARN("(%s): Another host has privileged access to the "
- 			   "tape device\n", device->cdev->dev.bus_id);
- 		PRINT_WARN("(%s): To solve the problem unload the current "
- 			   "cartridge!\n", device->cdev->dev.bus_id);
-diff --git a/drivers/s390/cio/airq.c b/drivers/s390/cio/airq.c
-index 5287631..5eada73 100644
---- a/drivers/s390/cio/airq.c
-+++ b/drivers/s390/cio/airq.c
-@@ -23,7 +23,7 @@ static adapter_int_handler_t adapter_handler;
-  * register for adapter interrupts
-  *
-  * With HiperSockets the zSeries architecture provides for
-- *  means of adapter interrups, pseudo I/O interrupts that are
-+ *  means of adapter interrupts, pseudo I/O interrupts that are
-  *  not tied to an I/O subchannel, but to an adapter. However,
-  *  it doesn't disclose the info how to enable/disable them, but
-  *  to recognize them only. Perhaps we should consider them
-diff --git a/drivers/s390/scsi/zfcp_erp.c b/drivers/s390/scsi/zfcp_erp.c
-index 07fa824..8925b3a 100644
---- a/drivers/s390/scsi/zfcp_erp.c
-+++ b/drivers/s390/scsi/zfcp_erp.c
-@@ -1285,7 +1285,7 @@ zfcp_erp_strategy_do_action(struct zfcp_erp_action *erp_action)
- 	 * note: no lock in subsequent strategy routines
- 	 * (this allows these routine to call schedule, e.g.
- 	 * kmalloc with such flags or qdio_initialize & friends)
--	 * Note: in case of timeout, the seperate strategies will fail
-+	 * Note: in case of timeout, the separate strategies will fail
- 	 * anyhow. No need for a special action. Even worse, a nameserver
- 	 * failure would not wake up waiting ports without the call.
- 	 */
-diff --git a/drivers/s390/scsi/zfcp_qdio.c b/drivers/s390/scsi/zfcp_qdio.c
-index 51d92b1..22fdc17 100644
---- a/drivers/s390/scsi/zfcp_qdio.c
-+++ b/drivers/s390/scsi/zfcp_qdio.c
-@@ -529,7 +529,7 @@ zfcp_qdio_sbals_wipe(struct zfcp_fsf_req *fsf_req)
- 
- 
- /**
-- * zfcp_qdio_sbale_fill - set address and lenght in current SBALE
-+ * zfcp_qdio_sbale_fill - set address and length in current SBALE
-  *	on request_queue
-  */
- static void
+ /* Dummy char output to achieve reads.
 -- 
 1.5.3.7.949.g2221a6
 
