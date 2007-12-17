@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758707AbXLQNcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760905AbXLQNdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758707AbXLQNcV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 08:32:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbXLQNcL
+	id S1760905AbXLQNdQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 08:33:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbXLQNdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 08:32:11 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:61544 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752447AbXLQNcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 08:32:09 -0500
-To: indan@nul.nu
-Cc: david@davidnewall.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <476512F1.5010701@davidnewall.com>
-	<200712162103.IEC69233.FFOFOOtJMQHSLV@I-love.SAKURA.ne.jp>
-	<46595.81.207.0.53.1197823928.squirrel@secure.samage.net>
-	<200712170040.lBH0e6sf099887@www262.sakura.ne.jp>
-	<54137.81.207.0.53.1197891890.squirrel@secure.samage.net>
-In-Reply-To: <54137.81.207.0.53.1197891890.squirrel@secure.samage.net>
-Message-Id: <200712172232.CFI17125.tFHOFFQLSOOVJM@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Mon, 17 Dec 2007 22:32:06 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 17 Dec 2007 08:33:01 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:26099 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752567AbXLQNdA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 08:33:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=eCeOJYZWznJMq3Bfcb2qyqGEy5mdYhsAg1l7M6xRIgoJQ+H7jnhwOg5vo2fiK7JECEmnHaFK5Kj6x63npK1Fj2XrcH/IviHsa1oDJABla4F73vaOVvvE2UyWLPntilvMkKv0OtXQ29PEf09Ce8cx7cLuBxh//eKZa2ZdiIGfI6E=
+Message-ID: <47667A23.8000604@gmail.com>
+Date: Mon, 17 Dec 2007 14:31:15 +0100
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Paul Rolland <rol@as2917.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+References: <476438B4.2020600@zytor.com> <476462BE.3030701@gmail.com> <4764687D.6080609@zytor.com> <476524DB.7020806@gmail.com> <20071216152250.GA21245@elte.hu> <4765D43E.1010800@gmail.com> <20071217105744.GA14315@elte.hu> <4766684D.40202@gmail.com> <20071217130933.GB27992@elte.hu> <47667812.8050708@gmail.com> <20071217133120.GA11321@elf.ucw.cz>
+In-Reply-To: <20071217133120.GA11321@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-( This is a reply to http://lkml.org/lkml/2007/12/17/27 .)
+On 17-12-07 14:31, Pavel Machek wrote:
 
-Hello.
+> On Mon 2007-12-17 14:22:26, Rene Herman wrote:
+>> On 17-12-07 14:09, Ingo Molnar wrote:
+>>
+>>>>> -#ifndef CONFIG_UDELAY_IO_DELAY
+>>>>> -static int __init dmi_alternate_io_delay_port(const struct 
+>>>>> dmi_system_id *id)
+>>>>> +static int __init dmi_io_delay_0xed_port(const struct dmi_system_id 
+>>>>> *id)
+>>>>>  {
+>>>>> -	printk(KERN_NOTICE "%s: using alternate I/O delay port\n", id->ident);
+>>>>> -	io_delay = alternate_io_delay;
+>>>>> +	printk(KERN_NOTICE "%s: using 0xed I/O delay port\n", id->ident);
+>>>>> +	io_delay_type = CONFIG_IO_DELAY_TYPE_0XED;
+>>>>> +
+>>>>>  	return 0;
+>>>>>  }
+>>>> This isn't correct. DMI shouldn't override the CONFIG choice or someone 
+>>>> with matching DMI will have a defective CONFIG option. That's why I put 
+>>>> all of it inside #ifndef.
+>>> no, the DMI quirk is just that: a quirk that makes boxes work. The DMI 
+>>> quirk takes precedence over just about any .config default, except an 
+>>> explicit boot-commandline override.
+>> No, most definitely not. Having the user select udelay or none through the 
+>> kernel config and then the kernel deciding "ah, you know what, I'll know 
+>> better and use port access anyway" is _utterly_ broken behaviour. Software 
+>> needs to listen to its master.
+> 
+> That's what command line is for. Ingo is right here.
 
-David Wagner wrote:
-> But the point is that it's not enough just to prevent attackers
-> from mounting other filesystems over this filesystem.  I can think
-> of all sorts of ways that an admin-level attacker might be able to
-> prevent other administrators from logging in.  If your defense strategy
-> involves trying to enumerate all of those possible ways and then shut
-> them down one by one, you're relying upon a defense strategy known as
-> "blacklisting".  Blacklisting has a terrible track record in the
-> security field, because it's too easy to overlook one pathway.
-Of course, I assume whitelisting.
-SELinux and TOMOYO Linux and many other MAC implementations uses
-whitelisting approach, and this filesystem is whiltelisting approach.
+No. The kernel shouldn't provide defective config options.
 
-This filesystem handles what MAC implementations don't handle.
-In other words, it is a remaining hole.
-
-I'm proposing:
-
- Don't you think it is dangerous to assume files in /dev directory
- have appropriate filename and attributes binding?
- MAC can restrict processes who can create files in /dev directory,
- but MAC doesn't enforce filename and attributes binding.
- So, how about enforcing filename and attributes binding in filesystem layer?
-
-Regards.
-
-To David Wagner:
-  Could you please Cc: me so that I can reply to your message?
-  I can't reply to your message since I'm reading this ml in daily digest mode.
+Rene.
