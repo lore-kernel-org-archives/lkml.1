@@ -1,51 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935895AbXLQVGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbXLQVMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935895AbXLQVGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 16:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760251AbXLQVGI
+	id S1762326AbXLQVMb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 16:12:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757756AbXLQVMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 16:06:08 -0500
-Received: from fk-out-0910.google.com ([209.85.128.187]:43087 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755327AbXLQVGH (ORCPT
+	Mon, 17 Dec 2007 16:12:16 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:32527 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757037AbXLQVMP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 16:06:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=w0//Sj96flACvaRrN1Z/uAVTA9VvKhfviO4TpuXouaA2ZpRmjlSl2tUstqpDbFgy07yMbrxENrP2mgl/KuTMQH+tifn9p1SOnVydWf3vmtif+8L2UX9HqPH7YEi7b9rFYB8GwkLrq2FZXQCJLJdysftil8eQzV8j4KvzctPtlu4=
-Message-ID: <4766E453.1030202@keyaccess.nl>
-Date: Mon, 17 Dec 2007 22:04:19 +0100
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 17 Dec 2007 16:12:15 -0500
+Message-ID: <4766E60A.9080100@hp.com>
+Date: Mon, 17 Dec 2007 16:11:38 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@elte.hu>, "David P. Reed" <dpreed@reed.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
- on some AMD64x2 laptops, etc.
-References: <469578CD.3080609@reed.com>	<1184216528.12353.203.camel@chaos>	<1184218962.12353.209.camel@chaos>	<46964352.7040301@reed.com>	<1184253339.12353.223.camel@chaos>	<469697C6.50903@reed.com>	<1184274754.12353.254.camel@chaos>	<4761F193.7090400@reed.com>	<20071214131502.GA14359@elte.hu>	<4762C551.5070003@zytor.com>	<20071214210652.GB28793@elf.ucw.cz>	<4763001A.1070102@zytor.com> <20071214232955.545ab809@the-village.bc.nu>
-In-Reply-To: <20071214232955.545ab809@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Sridhar Samudrala <sri@us.ibm.com>,
+       lksctp-developers@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: [PATCH] net/sctp/: Spelling fixes
+References: <1197920439-5455-31-git-send-email-joe@perches.com>
+In-Reply-To: <1197920439-5455-31-git-send-email-joe@perches.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Rene Herman <rene.herman@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15-12-07 00:29, Alan Cox wrote:
+Joe Perches wrote:
+> Signed-off-by: Joe Perches <joe@perches.com>
 
->>> ?? Just initialize bogomips to 6GHz equivalent... and we are fine
->>> until 6GHz cpus come out.
->> How long will that take to boot on a 386?
+Thanks...  I am surprised this is all you found :)
+
+ACK.
+
+-vlad
+
+> ---
+>  net/sctp/sm_make_chunk.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> Well the dumb approach to fix that would seem to be to initialise it to
-> 
-> 	cpu->family   3 -> 50MHz 4 -> 300Mhz 5-> etc...
+> diff --git a/net/sctp/sm_make_chunk.c b/net/sctp/sm_make_chunk.c
+> index f487629..ed7c9e3 100644
+> --- a/net/sctp/sm_make_chunk.c
+> +++ b/net/sctp/sm_make_chunk.c
+> @@ -286,7 +286,7 @@ struct sctp_chunk *sctp_make_init(const struct sctp_association *asoc,
+>  
+>  	sctp_addto_chunk(retval, sizeof(ecap_param), &ecap_param);
+>  
+> -	/* Add the supported extensions paramter.  Be nice and add this
+> +	/* Add the supported extensions parameter.  Be nice and add this
+>  	 * fist before addiding the parameters for the extensions themselves
+>  	 */
+>  	if (num_ext) {
+> @@ -2859,7 +2859,7 @@ struct sctp_chunk *sctp_process_asconf(struct sctp_association *asoc,
+>  	chunk_len -= length;
+>  
+>  	/* Skip the address parameter and store a pointer to the first
+> -	 * asconf paramter.
+> +	 * asconf parameter.
+>  	 */
+>  	length = ntohs(addr_param->v4.param_hdr.length);
+>  	asconf_param = (sctp_addip_param_t *)((void *)addr_param + length);
+> @@ -2868,7 +2868,7 @@ struct sctp_chunk *sctp_process_asconf(struct sctp_association *asoc,
+>  	/* create an ASCONF_ACK chunk.
+>  	 * Based on the definitions of parameters, we know that the size of
+>  	 * ASCONF_ACK parameters are less than or equal to the twice of ASCONF
+> -	 * paramters.
+> +	 * parameters.
+>  	 */
+>  	asconf_ack = sctp_make_asconf_ack(asoc, serial, chunk_len * 2);
+>  	if (!asconf_ack)
+> @@ -3062,7 +3062,7 @@ int sctp_process_asconf_ack(struct sctp_association *asoc,
+>  	asconf_len -= length;
+>  
+>  	/* Skip the address parameter in the last asconf sent and store a
+> -	 * pointer to the first asconf paramter.
+> +	 * pointer to the first asconf parameter.
+>  	 */
+>  	length = ntohs(addr_param->v4.param_hdr.length);
+>  	asconf_param = (sctp_addip_param_t *)((void *)addr_param + length);
 
-By the way, you have a 300 MHz 486? I believe 3 -> 40, 4 -> 133, 5 -> 233 
-would be good? And I'm not really sure about the etc. P6 has a large range 
-again...
-
-Rene.
