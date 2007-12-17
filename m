@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935014AbXLQJ6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934874AbXLQKPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935014AbXLQJ6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 04:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764394AbXLQJ57
+	id S934874AbXLQKPZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 05:15:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762619AbXLQKPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 04:57:59 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:52904 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764192AbXLQJ55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 04:57:57 -0500
-Date: Mon, 17 Dec 2007 09:55:04 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: parag.warudkar@gmail.com
-Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: init_timer_deferrable conversion
-Message-Id: <20071217095504.b02241ee.dada1@cosmosbay.com>
-In-Reply-To: <Pine.LNX.4.64.0712162149220.4622@mini.warudkars.net>
-References: <Pine.LNX.4.64.0712162149220.4622@mini.warudkars.net>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Dec 2007 05:15:13 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:13906 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762011AbXLQKPL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 05:15:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NsNLcmq+8YVODEbXiClVOapRITD6utJeS7R62UCy/LsC8MIV3qHjBmbYeI8X4Ysc0lxdLoayfZltlHp2+leLjx2FVrP02xjHuHAW0OrahHBBvVclMLEDEo5PPBYT3i0DOuCshBVnoVwwx1rIQyhX9enxTi/uL81D3GQquyXCmAU=
+Message-ID: <520b60a90712170215g7f3c8a2by7fdd74a1cdd1566f@mail.gmail.com>
+Date: Mon, 17 Dec 2007 05:15:08 -0500
+From: mvtodevnull@gmail.com
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
+Cc: "Larry Finger" <larry.finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Daniel Walker" <dwalker@mvista.com>,
+       "Ray Lee" <ray-lk@madrabbit.org>,
+       "=?ISO-8859-1?Q?Simon_Holm_Th=F8gersen?=" <odie@cs.aau.dk>,
+       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, "Ingo Molnar" <mingo@elte.hu>, kjwinchester@gmail.com,
+       jonathan@jonmasters.org, akpm@linux-foundation.org,
+       bcm43xx-dev@lists.berlios.de
+In-Reply-To: <200712171049.06291.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071213003028.676998182@mvista.com>
+	 <47661CA1.3080808@lwfinger.net>
+	 <520b60a90712162317r5c2f2569gbd75c09742ff5493@mail.gmail.com>
+	 <200712171049.06291.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Dec 2007 22:00:23 -0500 (EST)
-Parag Warudkar <parag.warudkar@gmail.com> wrote:
+On Dec 17, 2007 4:49 AM, Michael Buesch <mb@bu3sch.de> wrote:
+>
+> Are you working with wireless-2.6's #everything branch?
 
-> In my quest to get the wake-ups from idle per second down to bare minimum, 
-> I noticed 3 places in the kernel that could benefit from 
-> using init_timer_deferrable() instead of init_timer() -
-> 
-> a) drivers/net/sky2.c - watchdog_timer. This was showing up high on 
-> Powertop's list of things that cause routine wakeups from idle. After 
-> converting to init_timer_deferrable() the wakeups went down and this one 
-> no longer shows up in powertop's list. 25% reduction.
-> 
-> b) kernel/time/clocksource.c - watchdog_timer - same story as sky2.c
-> 
-> c) net/core/neighbour.c - gc_timer - Most benefit from deferrable timer.
-
-neigh_periodic_timer() is actually doing almost nothing per round, since it
-looks only one slot of hash table. We could probably convert it to a
-workqueue and scan whole table at once.
-
-> 
-> I am running a kernel with above changes and haven't noticed any immediate 
-> problems and the wakeups-from-idle have gone down from 5-7 to mere 1-2 per 
-> second.
-> 
-> Is there any reason not to make the above timers deferrable - corner 
-> cases, other side effects? If not then I will submit a patch.
-> 
-> Thanks
-> 
-> Parag
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+I've been working with vanilla wireless-2.6, but I've also tried the
+everything branch as well as other trees. Just for good measure, I
+just rebuilt the everything branch and it shows the same behavior.
