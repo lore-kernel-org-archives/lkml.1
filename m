@@ -1,31 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXLPX77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932610AbXLQAHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932247AbXLPX77 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 18:59:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759499AbXLPX7v
+	id S932610AbXLQAHE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 19:07:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761614AbXLQAGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 18:59:51 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:46477 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757195AbXLPX7u (ORCPT
+	Sun, 16 Dec 2007 19:06:52 -0500
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:62872 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757806AbXLQAGu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 18:59:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=MaCSmPtaSz2vU2WOur1OqgPHT2bQYqDzfQE3nWGY/1ZhCJ8GqAYR+7rfN6eeF5HnFUttENYaX3bixc2WaXgY53r1F9l/lOpDwaeYFkiLUkCuRR6WcM6etfDjaQGy750R8WpH+dWXJ6kUWx+LE/3le0gGNGeLuFr8UV6T4EYs6FU=
-Subject: Re: [PATCH 4/4] x86: Final unification of local_{32|64}.h
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <4765B930.8010208@zytor.com>
-References: <1197806669.3749.44.camel@brick> <20071216153158.GA891@elte.hu>
-	 <4765AB32.9040608@zytor.com> <1197848331.3749.86.camel@brick>
-	 <4765B930.8010208@zytor.com>
+	Sun, 16 Dec 2007 19:06:50 -0500
+X-Trace: 642633195-mk-filter-4.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
+X-SBRS: None
+X-RemoteIP: 81.1.89.91
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAL5LZUdRAVlb/2dsb2JhbACBV6Y1
+Subject: Re: [PATCH 2/3] Add GD-Rom support to the SEGA Dreamcast
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Adrian McMenamin <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-sh@vger.kernel.org, axboe@kernel.dk
+In-Reply-To: <20071216215929.GA14278@linux-sh.org>
+References: <8b67d60712151621j2101c411p19d75125c6d1c2f9@mail.gmail.com>
+	 <20071216095019.GA12184@linux-sh.org>
+	 <1197826371.6254.14.camel@localhost.localdomain>
+	 <20071216215929.GA14278@linux-sh.org>
 Content-Type: text/plain
-Date: Sun, 16 Dec 2007 15:59:51 -0800
-Message-Id: <1197849591.3749.88.camel@brick>
+Date: Mon, 17 Dec 2007 00:06:23 +0000
+Message-Id: <1197849983.1626.12.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -33,35 +37,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-12-16 at 15:48 -0800, H. Peter Anvin wrote:
-> Harvey Harrison wrote:
-> > 
-> > Do you have a stylistic preference between these two options:
-> > 
-> > Option 1) Rely on CPP string constant concatenation
-> > 
-> > // possibly include trailing space here to avoid remembering
-> > // leading space on the register names
-> > # define _ASM_INC "incl" 
-> > 
-> > static inline void local_inc(local_t *l)
-> > {
-> > 	__asm__ __volatile__(
-> > 		_ASM_INC " %0"
-> > 		:"+m" (l->a.counter));
-> > }
-> > 
-> 
-> This is what I have used up to this point, except including the space in 
-> the macro:
-> 
-> #define _ASM_INC " incl "
-> 
-> 	_ASM_INC "%0"
 
-Not sure if you were just tossing a space on the end of my example,
-but do you also put a leading space on the " incl " in addition to
-the trailing space?
+On Mon, 2007-12-17 at 06:59 +0900, Paul Mundt wrote:
 
-Harvey
+> 
+> While I realize that this is all undocumented and based entirely on
+> reverse engineering, you should at least verify that that's precisely
+> what is going on, and that this is not just a precaution for flushing
+> posted writes. You can test that by removing the loop and doing a dummy
+> read after your write (to the same register, rather than the entire ROM
+> space). If it's a posting issue, then you will have to do your own
+> read/write_reg routines that handle the flush.
+
+
+I've looked at this some more and, from the various things on the web,
+it seems SEGA introduced some sort of crude checksum security feature
+which ctrl_outl(0x1fffff, GDROM_RESET_REG) appears to start. Unless it
+is used then the GD Rom remains disabled.
+
+After that, the hardware executes a checksum of the ROM to ensure that
+you are actually booting from a Dreamcast.
+
+Well, that is my interpretation of
+http://www.ludd.ltu.se/~jlo/dc/bootROM.c and similar. Certainly any
+other sort of read seems to keep the gdrom disabled.
+
 
