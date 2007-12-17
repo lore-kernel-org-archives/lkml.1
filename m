@@ -1,230 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932277AbXLQTAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760441AbXLQTDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932277AbXLQTAk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 14:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758617AbXLQTAT
+	id S1760441AbXLQTDa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 14:03:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbXLQTDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:00:19 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:38119 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757219AbXLQTAQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:00:16 -0500
-Date: Mon, 17 Dec 2007 10:58:55 -0800
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+	Mon, 17 Dec 2007 14:03:22 -0500
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3011 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755671AbXLQTDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:03:21 -0500
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.24-rc5-mm1: problems with cat /proc/kpageflags
+Date: Mon, 17 Dec 2007 20:05:37 +0100
+User-Agent: KMail/1.9.7
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: [git patches] ocfs2 fixes
-Message-ID: <20071217185855.GA11448@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+       sparclinux@vger.kernel.org, davem@davemloft.net
+References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org> <200712162010.11028.m.kozlowski@tuxland.pl> <20071217021149.GC19691@waste.org>
+In-Reply-To: <20071217021149.GC19691@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200712172005.38483.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from 'upstream-linus' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+Hello,
 
-to receive the following updates:
+> > cat /proc/kpagecount on the other hand - with the change in line 710
+> > - locks the box. Sysrq works, changing consoles works, but there is
+> > no "BUG: soft lockup ..." message. After a while the box becomes
+> > totaly unresponsive - even caps lock doesn't work, no responses to
+> > ping.
+> 
+> Well I'm baffled. There's basically two things in that function that
+> do anything interesting: pfn_to_page and put_user. access_ok is
+> "return 1" on Sparc64. atomic_read is a simple read.
+>
+> My usual approach at this point would be to litter it with printks and
+> see where its hanging.
 
- fs/ocfs2/alloc.c   |   68 ++++++++++++++++++++++++++++++++++-----------------
- fs/ocfs2/journal.c |   13 +++++++++-
- 2 files changed, 57 insertions(+), 24 deletions(-)
+Ok. Maybe this will help. Don't know how to compare that to the results from yesterday
+(test with ppage = NULL) - maybe I f.... something up. This time I added a bunch
+of printks and got these results:
 
-Mark Fasheh (4):
-      ocfs2: fix exit-while-locked bug in ocfs2_queue_orphans()
-      ocfs2: Don't panic when truncating an empty extent
-      ocfs2: Allow for debugging of transaction extends
-      ocfs2: Re-journal buffers after transaction extend
+This is from 'cat /proc/kpageflags' (after this the box is locked):
 
-diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
-index ce62c15..23c8cda 100644
---- a/fs/ocfs2/alloc.c
-+++ b/fs/ocfs2/alloc.c
-@@ -2389,6 +2389,18 @@ static int __ocfs2_rotate_tree_left(struct inode *inode,
- 			goto out;
- 		}
- 
-+		/*
-+		 * Caller might still want to make changes to the
-+		 * tree root, so re-add it to the journal here.
-+		 */
-+		ret = ocfs2_journal_access(handle, inode,
-+					   path_root_bh(left_path),
-+					   OCFS2_JOURNAL_ACCESS_WRITE);
-+		if (ret) {
-+			mlog_errno(ret);
-+			goto out;
-+		}
-+
- 		ret = ocfs2_rotate_subtree_left(inode, handle, left_path,
- 						right_path, subtree_root,
- 						dealloc, &deleted);
-@@ -3289,16 +3301,6 @@ static int ocfs2_insert_path(struct inode *inode,
- 	int ret, subtree_index;
- 	struct buffer_head *leaf_bh = path_leaf_bh(right_path);
- 
--	/*
--	 * Pass both paths to the journal. The majority of inserts
--	 * will be touching all components anyway.
--	 */
--	ret = ocfs2_journal_access_path(inode, handle, right_path);
--	if (ret < 0) {
--		mlog_errno(ret);
--		goto out;
--	}
--
- 	if (left_path) {
- 		int credits = handle->h_buffer_credits;
- 
-@@ -3323,6 +3325,16 @@ static int ocfs2_insert_path(struct inode *inode,
- 		}
- 	}
- 
-+	/*
-+	 * Pass both paths to the journal. The majority of inserts
-+	 * will be touching all components anyway.
-+	 */
-+	ret = ocfs2_journal_access_path(inode, handle, right_path);
-+	if (ret < 0) {
-+		mlog_errno(ret);
-+		goto out;
-+	}
-+
- 	if (insert->ins_split != SPLIT_NONE) {
- 		/*
- 		 * We could call ocfs2_insert_at_leaf() for some types
-@@ -3331,6 +3343,17 @@ static int ocfs2_insert_path(struct inode *inode,
- 		 */
- 		ocfs2_split_record(inode, left_path, right_path,
- 				   insert_rec, insert->ins_split);
-+
-+		/*
-+		 * Split might have modified either leaf and we don't
-+		 * have a guarantee that the later edge insert will
-+		 * dirty this for us.
-+		 */
-+		if (left_path)
-+			ret = ocfs2_journal_dirty(handle,
-+						  path_leaf_bh(left_path));
-+			if (ret)
-+				mlog_errno(ret);
- 	} else
- 		ocfs2_insert_at_leaf(insert_rec, path_leaf_el(right_path),
- 				     insert, inode);
-@@ -3430,6 +3453,17 @@ static int ocfs2_do_insert_extent(struct inode *inode,
- 			mlog_errno(ret);
- 			goto out;
- 		}
-+
-+		/*
-+		 * ocfs2_rotate_tree_right() might have extended the
-+		 * transaction without re-journaling our tree root.
-+		 */
-+		ret = ocfs2_journal_access(handle, inode, di_bh,
-+					   OCFS2_JOURNAL_ACCESS_WRITE);
-+		if (ret) {
-+			mlog_errno(ret);
-+			goto out;
-+		}
- 	} else if (type->ins_appending == APPEND_TAIL
- 		   && type->ins_contig != CONTIG_LEFT) {
- 		ret = ocfs2_append_rec_to_path(inode, handle, insert_rec,
-@@ -3941,7 +3975,7 @@ static int __ocfs2_mark_extent_written(struct inode *inode,
- {
- 	int ret = 0;
- 	struct ocfs2_extent_list *el = path_leaf_el(path);
--	struct buffer_head *eb_bh, *last_eb_bh = NULL;
-+	struct buffer_head *last_eb_bh = NULL;
- 	struct ocfs2_extent_rec *rec = &el->l_recs[split_index];
- 	struct ocfs2_merge_ctxt ctxt;
- 	struct ocfs2_extent_list *rightmost_el;
-@@ -3960,14 +3994,6 @@ static int __ocfs2_mark_extent_written(struct inode *inode,
- 		goto out;
- 	}
- 
--	eb_bh = path_leaf_bh(path);
--	ret = ocfs2_journal_access(handle, inode, eb_bh,
--				   OCFS2_JOURNAL_ACCESS_WRITE);
--	if (ret) {
--		mlog_errno(ret);
--		goto out;
--	}
--
- 	ctxt.c_contig_type = ocfs2_figure_merge_contig_type(inode, el,
- 							    split_index,
- 							    split_rec);
-@@ -4029,8 +4055,6 @@ static int __ocfs2_mark_extent_written(struct inode *inode,
- 			mlog_errno(ret);
- 	}
- 
--	ocfs2_journal_dirty(handle, eb_bh);
--
- out:
- 	brelse(last_eb_bh);
- 	return ret;
-@@ -6093,8 +6117,6 @@ start:
- 	mlog(0, "clusters_to_del = %u in this pass, tail blk=%llu\n",
- 	     clusters_to_del, (unsigned long long)path_leaf_bh(path)->b_blocknr);
- 
--	BUG_ON(clusters_to_del == 0);
--
- 	mutex_lock(&tl_inode->i_mutex);
- 	tl_sem = 1;
- 	/* ocfs2_truncate_log_needs_flush guarantees us at least one
-diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
-index f9d01e2..8d81f6c 100644
---- a/fs/ocfs2/journal.c
-+++ b/fs/ocfs2/journal.c
-@@ -174,6 +174,12 @@ int ocfs2_commit_trans(struct ocfs2_super *osb,
-  * transaction. extend_trans will either extend the current handle by
-  * nblocks, or commit it and start a new one with nblocks credits.
-  *
-+ * This might call journal_restart() which will commit dirty buffers
-+ * and then restart the transaction. Before calling
-+ * ocfs2_extend_trans(), any changed blocks should have been
-+ * dirtied. After calling it, all blocks which need to be changed must
-+ * go through another set of journal_access/journal_dirty calls.
-+ *
-  * WARNING: This will not release any semaphores or disk locks taken
-  * during the transaction, so make sure they were taken *before*
-  * start_trans or we'll have ordering deadlocks.
-@@ -193,11 +199,15 @@ int ocfs2_extend_trans(handle_t *handle, int nblocks)
- 
- 	mlog(0, "Trying to extend transaction by %d blocks\n", nblocks);
- 
-+#ifdef OCFS2_DEBUG_FS
-+	status = 1;
-+#else
- 	status = journal_extend(handle, nblocks);
- 	if (status < 0) {
- 		mlog_errno(status);
- 		goto bail;
- 	}
-+#endif
- 
- 	if (status > 0) {
- 		mlog(0, "journal_extend failed, trying journal_restart\n");
-@@ -1277,11 +1287,12 @@ static int ocfs2_queue_orphans(struct ocfs2_super *osb,
- 				   ocfs2_orphan_filldir);
- 	if (status) {
- 		mlog_errno(status);
--		goto out;
-+		goto out_cluster;
- 	}
- 
- 	*head = priv.head;
- 
-+out_cluster:
- 	ocfs2_meta_unlock(orphan_dir_inode, 0);
- out:
- 	mutex_unlock(&orphan_dir_inode->i_mutex);
+    01
+    pfn:0, src:0, KPMSIZE:8
+    23458
+    ppage:0000000200000000, pfn:1
+
+and the relevant code:
+
+static ssize_t kpageflags_read(struct file *file, char __user *buf,
+			     size_t count, loff_t *ppos)
+{
+
+	u64 __user *out = (u64 __user *)buf;
+	struct page *ppage;
+	unsigned long src = *ppos;
+	unsigned long pfn;
+	ssize_t ret = 0;
+	u64 kflags, uflags;
+
+printk("0");
+
+	if (!access_ok(VERIFY_WRITE, buf, count))
+		return -EFAULT;
+
+printk("1");
+	pfn = src / KPMSIZE;
+printk("\npfn:%u, src:%u, KPMSIZE:%d\n", pfn, src, KPMSIZE);
+	count = min_t(unsigned long, count, (max_pfn * KPMSIZE) - src);
+
+printk("2");
+	if (src & KPMMASK || count & KPMMASK)
+		return -EIO;
+
+printk("3");
+	while (count > 0) {
+printk("4");
+	ppage = pfn_to_page(pfn++);
+printk("5");
+		if (!ppage) {
+printk("6");
+			kflags = 0;
+printk("7");
+		} else {
+printk("8");
+printk("\nppage:%p, pfn:%u\n", ppage, pfn);
+			kflags = ppage->flags; // <---------------- something bad happens
+printk("9");
+		}
+
+printk("a");
+
+
+
+This is from 'cat /proc/kpagecount' (after this the box is locked)
+
+    01
+    pfn:0, src:0, KPMSIZE:8
+    23567a
+    ppage:0000000200000000, pfn:1
+
+and this is the relevant code:
+
+static ssize_t kpagecount_read(struct file *file, char __user *buf,
+			     size_t count, loff_t *ppos)
+{
+
+	u64 __user *out = (u64 __user *)buf;
+	struct page *ppage;
+	unsigned long src = *ppos;
+	unsigned long pfn;
+	ssize_t ret = 0;
+	u64 pcount;
+printk("0");
+	if (!access_ok(VERIFY_WRITE, buf, count))
+		return -EFAULT;
+
+printk("1");
+	pfn = src / KPMSIZE;
+printk("\npfn:%u, src:%u, KPMSIZE:%d\n", pfn, src, KPMSIZE);
+
+printk("2");
+	count = min_t(size_t, count, (max_pfn * KPMSIZE) - src);
+printk("3");
+	if (src & KPMMASK || count & KPMMASK) {
+
+printk("4");
+		return -EIO;
+	}
+printk("5");
+	while (count > 0) {
+printk("6");
+		ppage = pfn_to_page(pfn++);
+printk("7");
+		if (!ppage) {
+printk("8");
+			pcount = 0;
+		} else {
+printk("a");
+printk("\nppage:%p, pfn:%u\n", ppage, pfn);
+			pcount = atomic_read(&ppage->_count); // <---------------- something bad happens
+printk("b");
+		}
+
+
+Regards,
+
+	Mariusz
