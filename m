@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932406AbXLQTEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbXLQTJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932406AbXLQTEW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 14:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbXLQTEM
+	id S1760009AbXLQTJM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 14:09:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbXLQTI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:04:12 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56441 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757287AbXLQTEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:04:10 -0500
-Date: Mon, 17 Dec 2007 17:03:39 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Reduce overhead of CONFIG_TIMER_STATS
-Message-ID: <20071217190339.GE25780@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-References: <20071216212944.GA5128@ghostprotocols.net> <20071217090337.0b1af816@laptopd505.fenrus.org>
-MIME-Version: 1.0
+	Mon, 17 Dec 2007 14:08:58 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45974 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754062AbXLQTI5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:08:57 -0500
+Date: Mon, 17 Dec 2007 19:08:10 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, security@kernel.org, tytso@mit.edu,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       John Reiser <jreiser@BitWagon.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-sparse@vger.kernel.org, mpm@selenic.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Security] Signed divides vs shifts (Re: /dev/urandom uses uninit bytes, leaks user data)
+Message-ID: <20071217190810.GE8181@ftp.linux.org.uk>
+References: <E1J3RD5-0006yU-00@gondolin.me.apana.org.au> <alpine.LFD.0.9999.0712170856050.21557@woody.linux-foundation.org> <20071217185557.0b501e23.dada1@cosmosbay.com> <alpine.LFD.0.9999.0712171009570.21557@woody.linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071217090337.0b1af816@laptopd505.fenrus.org>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <alpine.LFD.0.9999.0712171009570.21557@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Dec 17, 2007 at 09:03:37AM -0800, Arjan van de Ven escreveu:
-> On Sun, 16 Dec 2007 19:29:44 -0200
-> Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+On Mon, Dec 17, 2007 at 10:28:38AM -0800, Linus Torvalds wrote:
+> [ So Al, when you said that
 > 
-> > Hi,
-> > 	While looking at the pahole output for struct timer_list on
-> > recent kernels I noticed that there is a 4 bytes padding on struct
-> > timer_list that gets propagated to many structs on 64 bits
-> > architectures:
-> > 
-> > [acme@doppio linux-2.6]$ pahole -C timer_list /tmp/tcp.o.before
-> > struct timer_list {
-> >         struct list_head      entry;          /*     0    16 */
-> >         long unsigned int     expires;        /*    16     8 */
-> >         void                  (*function)(long unsigned int); /*
-> > 24     8 */ long unsigned int     data;           /*    32     8 */
-> >         struct tvec_t_base_s *base;           /*    40     8 */
-> >         void *                start_site;     /*    48     8 */
-> >         char                  start_comm[16]; /*    56    16 */
-> >         /* --- cacheline 1 boundary (64 bytes) was 8 bytes ago --- */
-> >         int                   start_pid;      /*    72     4 */
-> > 
-> >         /* size: 80, cachelines: 2 */
-> >         /* padding: 4 */
-> >         /* last cacheline: 16 bytes */
-> > };
-> > [acme@doppio linux-2.6]$
-> > 
-> > 	So the attached patch reduces the 4 bytes hole overhead of
-> > CONFIG_TIMER_STATS on 64bit architectures by shrinking the field for
-> > the process name by 4 bytes.
-> > 
-> > 	Statistically this doesn't affects that many process names as
-> > most are less than 12 bytes. As CONFIG_TIMER_STATS is enabled at least
-> > on fedora kernels I think that we can, with this patch, still reap the
-> > benefits of powertopping.
+> 	(a-b)
 > 
-> I'm still worried that this means that PowerTOP will end up displaying shortened names..
-> it's already sometimes tricky to know who's guilty at 16... at 12 I fear it just gets worse.
-> Isn't there some other reorder that you can do to still get rid of the hole?
+>   is equivalent to
+> 
+> 	((char *)a-(char *)b)/4
+> 
+>   for a "int *" a and b, you're right in the sense that the *result* is 
+>   the same, but the code generation likely isn't. The "a-b" thing can (and 
 
-Nope. As shown above there is no other hole that we can conbine with the
-4 bytes padding on struct timer_list.
+Sure.  And yes, I very much do prefer code that uses C as it ought to be
+used and doesn't play games with casts from hell, etc.  For a lot of reasons,
+both correctness- and efficiency-related.
 
-<brainfarting>
-What we could do, perhaps, would be to struct start_comm to be a pointer
-and store the strings in a list, refcounted, so instead of 16 or 12
-bytes we would use 8, but would incur in some CPU overhead definetely
-bigger than a simple memcpy, but that would reduce even further the
-memory footprint.
+We _do_ have such turds.  In spades.  And such places are potential timebombs,
+since well-intentioned idiotic patch ("I've read in lecture notes that sizeof
+is better than explicit constant, so replacement surely can only improve the
+things and the best part is, I don't need to understand what I'm doing")
+turns an ugly FPOS into equally ugly FPOS that silently doesn't work ;-/
 
-But the hole would still be there, as it would be sizeof(void *) +
-sizeof(start_pid) :-)
-</>
-
-- Arnaldo
+[sorry about the rant, I'm about 3/4 through the drivers/net colonoscopy,
+with >300Kb of patches and a pile of assorted bugs so far - and then there's
+drivers/scsi to deal with.  Endianness stuff, mostly...]
