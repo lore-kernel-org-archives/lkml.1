@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933461AbXLQAK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933968AbXLQALY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933461AbXLQAK6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 19:10:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbXLQAKs
+	id S933968AbXLQALY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 19:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764117AbXLQAKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 19:10:48 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48551 "EHLO
+	Sun, 16 Dec 2007 19:10:50 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48552 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754357AbXLQAKr (ORCPT
+	with ESMTP id S1760102AbXLQAKs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 19:10:47 -0500
-Date: Mon, 17 Dec 2007 00:02:31 +0000
+	Sun, 16 Dec 2007 19:10:48 -0500
+Date: Mon, 17 Dec 2007 00:03:01 +0000
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Pavel Machek <pavel@ucw.cz>
 Cc: Ingo Molnar <mingo@elte.hu>, unlisted-recipients: no@elvis.elte.hu,
@@ -28,7 +28,7 @@ Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
 			^-extraneous tokens in mailbox, missing end of mailbox
 Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
  with MCP51 laptops
-Message-ID: <20071217000231.6277dda8@the-village.bc.nu>
+Message-ID: <20071217000301.1c280daa@the-village.bc.nu>
 In-Reply-To: <20071216212628.GF14265@elf.ucw.cz>
 References: <20071211163706.2dc82275@tux.DEF.witbe.net>
 	<475EB263.2050405@keyaccess.nl>
@@ -52,13 +52,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> /*
->  * We try to avoid enabling the hardware if it's not
->  * there, but we don't know how to test. But we do know
->  * that the PC110 is not a PCI system. So if we find any
->  * PCI devices in the machine, we don't have a PC110.
->  */
+On Sun, 16 Dec 2007 22:26:33 +0100
+Pavel Machek <pavel@ucw.cz> wrote:
 
-The pc110 pad device is ISA. Its an ISA bus 486 box
+> On Fri 2007-12-14 15:33:28, Ingo Molnar wrote:
+> > 
+> > * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > 
+> > > There is another reason we can't just do a dumb changeover - two 
+> > > actually
+> > > 
+> > > #1: Some drivers are using inb_p/outb_p in PCI cases which are going 
+> > > #to cause PCI posting changes. Most are probably just wrong in the 
+> > > #first place but they need hand checking
+> > 
+> > hm, any intelligent way to force PCI posting? I guess not.
+> > 
+> > here's a list of candidate drivers (match the out*_p() pattern and do 
+> > pci)
+> > 
+> > ./char/epca.c 
+> > ./char/sonypi.c
+> > ./scsi/megaraid.c
+> > ./ide/pci/serverworks.c
+> > ./ide/pci/cmd640.c
+> > ./input/mouse/pc110pad.c
 
-Alan
+You are missing some watchdogs at least ?
