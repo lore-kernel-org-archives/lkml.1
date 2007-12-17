@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935123AbXLQKUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935340AbXLQKVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935123AbXLQKUl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 05:20:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763568AbXLQKUd
+	id S935340AbXLQKVg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 05:21:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932649AbXLQKVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 05:20:33 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:35972 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762619AbXLQKUc (ORCPT
+	Mon, 17 Dec 2007 05:21:25 -0500
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:41896
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932612AbXLQKVY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 05:20:32 -0500
-From: Srinivasa Ds <srinivasa@in.ibm.com>
-Organization: IBM
-To: Johannes Weiner <hannes-kernel@saeurebad.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ananth@in.ibm.com, Masami Hiramatsu <mhiramat@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, rusty@rustcorp.com.au
-Subject: [RFC] [patch 2/2] Refuse kprobe insertion on __init section code
-Date: Mon, 17 Dec 2007 15:50:15 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-References: <200712141225.30099.srinivasa@in.ibm.com> <x7wsrh78b8.fsf@saeurebad.de> <200712171545.36306.srinivasa@in.ibm.com>
-In-Reply-To: <200712171545.36306.srinivasa@in.ibm.com>
+	Mon, 17 Dec 2007 05:21:24 -0500
+Date: Mon, 17 Dec 2007 03:31:48 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Renzo Davoli <renzo@cs.unibo.it>
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, garden@cs.unibo.it
+Subject: Re: [PATCH 0/1] IPN: Inter Process Networking
+In-Reply-To: <20071217092401.GC4356@cs.unibo.it>
+Message-ID: <Pine.LNX.4.64.0712170327410.4467@asgard>
+References: <20071217092401.GC4356@cs.unibo.it>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712171550.15999.srinivasa@in.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes use of persistent_kernel_text_address() to avoid
-probing __init functions.
+On Mon, 17 Dec 2007, Renzo Davoli wrote:
 
-Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Inter Process Networking (PATCH):
+>
+> 1. WHAT IS IPN?
+> ---------------
+>
+> IPN is a new address family designed for one-to-many, many-to-many and
+> peer-to-peer communication among processes.
+> Berkeley sockets have been designed for client-server or point-to-point
+> communication; AF_UNIX does not support multicast/broadcast. AF_IPN
+> does, in a simple, efficient but extensible way.
+> IPN is an Inter Process Communication paradigm where all the processes
+> appear as they were connected by a networking bus.
+>
+> On IPN, processes can interoperate using real networking protocols
+> (e.g. ethernet) but also using application defined protocols (maybe
+> just sending ascii strings, video or audio frames, etc).
+> IPN provides networking (in the broaden definition you can imagine) to
+> the processes. Processes can be ethernet nodes, run their own TCP-IP stacks
+> if they like (e.g. virtual machines), mount ATAonEthernet disks, etc.etc.
+>
+> IPN networks can be interconnected with real networks or IPN networks
+> running on different computers can interoperate (can be connected by
+> virtual cables).
+>
+> IPN is part of the Virtual Square Project (vde, lwipv6, view-os,
+> umview/kmview, see wiki.virtualsquare.org).
 
+other then the fact that this is bi-directional, how is this better then 
+using pipes and splice?
 
+wouldn't it be better to just add the ability for multiple writers to send 
+to the same pipe, and then have all of them splice into the output of that 
+pipe? this would give the same data-agnostic communication that you are 
+looking for, and with the minor detail that software would have to filter 
+out messages that they send, would appear to meet all the goals you are 
+looking at, useing existing kernel features that are designed to be very 
+high performance.
 
-
----
- kernel/kprobes.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.24-rc5-mm1/kernel/kprobes.c
-===================================================================
---- linux-2.6.24-rc5-mm1.orig/kernel/kprobes.c
-+++ linux-2.6.24-rc5-mm1/kernel/kprobes.c
-@@ -520,7 +520,7 @@ static int __kprobes __register_kprobe(s
- 		return -EINVAL;
- 	p->addr = (kprobe_opcode_t *)(((char *)p->addr)+ p->offset);
- 
--	if (!kernel_text_address((unsigned long) p->addr) ||
-+	if (!persistent_kernel_text_address((unsigned long) p->addr) ||
- 	    in_kprobes_functions((unsigned long) p->addr))
- 		return -EINVAL;
- 
-@@ -662,7 +662,7 @@ int __kprobes register_jprobe(struct jpr
- {
- 	unsigned long addr = arch_deref_entry_point(jp->entry);
- 
--	if (!kernel_text_address(addr))
-+	if (!persistent_kernel_text_address(addr))
- 		return -EINVAL;
- 
- 	/* Todo: Verify probepoint is a function entry point */
+David Lang
