@@ -1,55 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbXLQRB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbXLQRCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbXLQRB5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 12:01:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbXLQRBh
+	id S1756218AbXLQRCp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 12:02:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXLQRCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 12:01:37 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:20805 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752839AbXLQRBe (ORCPT
+	Mon, 17 Dec 2007 12:02:37 -0500
+Received: from outbound-mail-47.bluehost.com ([69.89.18.16]:54147 "HELO
+	outbound-mail-47.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752583AbXLQRCg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 12:01:34 -0500
-Message-ID: <4766AB2A.7000206@panasas.com>
-Date: Mon, 17 Dec 2007 19:00:26 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Mon, 17 Dec 2007 12:02:36 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Dec 2007 12:02:35 EST
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: broken suspend, sometimes (drm related) [Was: 2.6.24-rc5-mm1]
+Date: Mon, 17 Dec 2007 08:55:43 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       airlied@linux.ie, dri-devel@lists.sourceforge.net
+References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org> <47646A6C.7070007@gmail.com>
+In-Reply-To: <47646A6C.7070007@gmail.com>
 MIME-Version: 1.0
-To: Olivier Galibert <galibert@pobox.com>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Filippos Papadopoulos <psybases@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: INITIO scsi driver fails to work properly
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com> <20071217031841.f483e5ac.akpm@linux-foundation.org> <20071217130523.7e9c88bb@the-village.bc.nu> <47668A75.7040707@panasas.com> <20071217143641.760d4162@the-village.bc.nu> <1197903781.3204.4.camel@localhost.localdomain> <47669F1B.4090400@panasas.com> <20071217162040.GB5056@dspnet.fr.eu.org>
-In-Reply-To: <20071217162040.GB5056@dspnet.fr.eu.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Dec 2007 17:00:28.0764 (UTC) FILETIME=[537471C0:01C840CE]
+Content-Disposition: inline
+Message-Id: <200712170855.43556.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 67.161.14.59 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17 2007 at 18:20 +0200, Olivier Galibert <galibert@pobox.com> wrote:
-> On Mon, Dec 17, 2007 at 06:08:59PM +0200, Boaz Harrosh wrote:
->> Below fixes a deadly typo. Might as well be included in 2.6.24
-> 
-> You're sure ?  scsi_for_each_sg includes a (sg)++ already...
-> 
-> 
->>  		scsi_for_each_sg(cmnd, sglist, cblk->sglen, i) {
->>  			sg->data = cpu_to_le32((u32)sg_dma_address(sglist));
->>  			total_len += sg->len = cpu_to_le32((u32)sg_dma_len(sglist));
->> +			++sg;
->>  		}
-> 
->   OG.
-> --
-Don't mix up between the here sg that points to a driver specific struct sg_entry
-and the here sglist which points to struct scatterlist, and is named sg inside
-the scsi_for_each_sg() macro. Please inspect the full code, the patch does not
-show the complete information. I admit it's confusing.
+> next suspend/resume try:
+> BLE drm_addmap_core a: map ffff81007c2d9b00, handle 0000000000000000
+> BLE drm_addmap_core c: map ffff81007c2d9b00, handle ffffc20010092000
+> BLE drm_rmmap_locked b: map ffff81007c2d9b00, handle ffffc20010092000
+> BLE drm_addmap_core a: map ffff81007c2d9b00, handle ffffc20010092000
+> BLE drm_addmap_core c: map ffff81007c2d9b00, handle ffffc20010092000
+> BLE drm_rmmap_locked b: map ffff81007c2d9b00, handle ffffc20010092000
+> BLE drm_addmap_core a: map ffff81007c2d9b00, handle ffffc20010092000
+> BLE drm_addmap_core c: map ffff81007c2d9b00, handle ffffc20010092000
+> BLE drm_addmap_core a: map ffff81007c2d90c0, handle 8000000000000000
+> BLE drm_addmap_ioctl a: map ffff81007c2d96c0, handle 0000000000000000
+> BLE drm_addmap_core a: map ffff81007c2d90c0, handle 0000000000000000
+> BLE drm_addmap_ioctl a: map ffff81007c2d96c0, handle 0000000000000000
+> BLE drm_addmap_core a: map ffff81007c2d9800, handle 0000000000000000
+> BLE drm_addmap_core b: map ffff81007c2d9800, handle ffffc20010380000
+> BLE drm_addmap_ioctl a: map ffff81007c2d96c0, handle 0000000000000000
+> BLE drm_addmap_core a: map ffff81007c2d9e80, handle ffff81007c2d9d40
+> BLE drm_addmap_ioctl a: map ffff81007c2d96c0, handle 0000000000000000
+> BLE drm_core_ioremap: map ffff81007d0ab050, handle ffffc20010240000
+> set status page addr 0x00033000
+> BLE drm_core_ioremap: map ffff81007d0ab098, handle ffffc20010096000
+> BLE drm_addmap_core a: map ffff81007bd7d440, handle 6632785c63766632
+> BLE drm_addmap_ioctl a: map ffff81007bd7d080, handle 0000000000000000
+> BLE drm_addmap_core a: map ffff81007bd7d700, handle 6632785c63766632
+> BLE drm_addmap_ioctl a: map ffff81007bd7d080, handle 0000000000000000
+> BLE drm_addmap_core a: map ffff81007c16f840, handle ffff81007c16f680
+> BLE drm_addmap_ioctl a: map ffff81007bd7d080, handle 0000000000000000
+> BLE drm_addmap_core a: map ffff81007c16f2c0, handle ffff81007cc33e10
+> BLE drm_addmap_ioctl a: map ffff81007c16f640, handle 0000000000000000
+> BLE drm_core_ioremapfree a: map ffff81007d0ab050, handle ffffc20010240000
+> BLE drm_core_ioremapfree b: map ffff81007d0ab050, handle ffffc20010240000
+> BLE drm_core_ioremapfree a: map ffff81007d0ab098, handle ffffc20010096000
+> BLE drm_core_ioremapfree b: map ffff81007d0ab098, handle ffffc20010096000
+> BLE drm_rmmap_locked a: map ffff81007c2d9800, handle ffffc20010380000
+> BLE drm_rmmap_locked b: map ffff81007c2d9b00, handle ffffc20010092000
+> PM: Syncing filesystems ... done.
+> PM: Preparing system for mem sleep
+> Freezing user space processes ... (elapsed 0.00 seconds) done.
+> Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+> PM: Entering mem sleep
+> sd 2:0:0:0: [sdc] Synchronizing SCSI cache
+> sd 2:0:0:0: [sdc] Stopping disk
+> sd 1:0:0:0: [sdb] Synchronizing SCSI cache
+> sd 1:0:0:0: [sdb] Stopping disk
+> sd 0:0:0:0: [sda] Synchronizing SCSI cache
+> sd 0:0:0:0: [sda] Stopping disk
+> drm_sysfs_suspend
+> BAD BAD BAD ffff81007c2d9800 0000000000000000
+> suspend_device(): drm_sysfs_suspend+0x0/0x40() returns -5
+> Could not suspend device card0: error -5
+> sd 0:0:0:0: [sda] Starting disk
+>
+> I;m out of ideas, please give me a clue.
 
-Boaz
+This sounds a lot like a problem we had recently.  The driver wasn't 
+preserving its mappings across X startup/shutdown (drm open/close) and so 
+you'd see crashes like this.  It should be fixed already in DRM git.
 
+Jesse
