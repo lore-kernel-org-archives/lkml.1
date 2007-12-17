@@ -1,129 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbXLQRas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbXLQRgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758519AbXLQRas (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 12:30:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbXLQRak
+	id S1756861AbXLQRgn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 12:36:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbXLQRgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 12:30:40 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35935 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753676AbXLQRaj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 12:30:39 -0500
-Date: Mon, 17 Dec 2007 09:28:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: John Reiser <jreiser@BitWagon.com>,
-       Andrew Morton <akpm@linux-foundation.org>, security@kernel.org,
-       tytso@mit.edu, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mpm@selenic.com, linux-sparse@vger.kernel.org
-Subject: Signed divides vs shifts (Re: [Security] /dev/urandom uses uninit
- bytes, leaks user data)
-In-Reply-To: <E1J3RD5-0006yU-00@gondolin.me.apana.org.au>
-Message-ID: <alpine.LFD.0.9999.0712170856050.21557@woody.linux-foundation.org>
-References: <E1J3RD5-0006yU-00@gondolin.me.apana.org.au>
+	Mon, 17 Dec 2007 12:36:36 -0500
+Received: from THUNK.ORG ([69.25.196.29]:44677 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753340AbXLQRgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 12:36:35 -0500
+Date: Mon, 17 Dec 2007 12:36:23 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: John Reiser <jreiser@BitWagon.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       security@kernel.org
+Subject: Re: /dev/urandom uses uninit bytes, leaks user data
+Message-ID: <20071217173623.GC7070@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	John Reiser <jreiser@BitWagon.com>, Matt Mackall <mpm@selenic.com>,
+	linux-kernel@vger.kernel.org, security@kernel.org
+References: <4762DAB1.1020807@BitWagon.com> <20071214201305.GL19691@waste.org> <4762EB63.8070100@BitWagon.com> <20071214232322.GE17344@thunk.org> <47632010.6030709@BitWagon.com> <20071215043208.GF17344@thunk.org> <4766A40D.4080804@BitWagon.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4766A40D.4080804@BitWagon.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 15 Dec 2007, Herbert Xu wrote:
+On Mon, Dec 17, 2007 at 08:30:05AM -0800, John Reiser wrote:
+> >>[You have yet to show that...]
+> >>There is a path that goes from user data into the pool.
 > 
-> There ought to be a warning about this sort of thing.
+> Note particularly that the path includes data from other users.
+> Under the current implementation, anyone who accesses /dev/urandom
+> is subject to having some bytes from their address space being captured
+> and mixed into the pool.
 
-We could add it to sparse. The appended (untested) patch seems to say 
-there's a lot of those signed divides-by-power-of-twos.
+Again, you haven't *proven* this yet.
 
-However, the problem with such warnings is that it encourages people to do 
-the simple fix that may be *wrong*. For example, you fixed it with patches 
-like
+> A direct attack (determining the specific values or partial values
+> of some captured bytes) is not the only way to steal secrets.
+> An indirect attack, such as traffic analysis, also may be effective.
+> 
+> Here is one idea.  Use output from /dev/urandom to generate a random
+> permutation group.  Analyze the group: determine all its subgroups, etc.
+> If the structure of those groups has different properties depending
+> on the captured bytes, even after SHA1 and folding and twisting,
+> then that may be enough to help steal secrets.
 
-> -		int rsvd = r->limit ? 0 : random_read_wakeup_thresh/4;
-> +		int rsvd = r->limit ? 0 : random_read_wakeup_thresh / 4u;
+Generate a random permutation group *how*?  This sounds suspiciously
+like "reverse the polarity of the neutron flow" technobabble to me.
+What are you going to compare the groups against?  What subgroup?  How
+big of a group do you think it is going to be?  So you really think
+the output of SHA is going to produce a group with subgroups?
 
-which is really quite dangerous for several reasons:
+> Indirect attacks may be subject to "exponent doubling."  The state
+> modulo 2**(2n) may correspond to a system of 2**n congruences
+> in 2**n variables.  So a property modulo 2**n might be hoisted to a
+> related property modulo 2**(2n).  This might make 2**1024 seem to be
+> not so big.
 
- - it depends intimately on the type of the thing being divided (try it: 
-   it will do nothing at all if the thing you divide is larger than 
-   "unsigned int", since then the "4u" will be turned into a _signed_ 
-   larger type by the C type expansion).
+> A completely formal
+> Goedel-numbering proof often has a formal checker that is logarithmic
+> in the length of the proof.  If such a logarithmic property applies
+> every once in a while to /dev/urandom, then that might be enough.
 
-   So in general, the above doesn't even do what it's supposed to do on a 
-   64-bit architecture if the thing to be divided is 64-bit!
+References, please and exactly how this would apply to the situation
+at hand?  This sounds like math babble to me, and I have taken enough
+abstract algebra and other math class that this sounds suspiciously to
+me like the sort of stuff that Star Trek actors make up when the
+script says "insert technobabble here".  Of course, I'm not a math
+major, so I'm willing to accept the possibility that you know what
+you're talking about --- but I do know enough that I should be able to
+evaluate any proofs and math papers you want to throw at me.
 
- - it changes behaviour. If that thing really is signed and can be 
-   negative, that "trivial" patch just changed the divide to be 
-   fundamentally something totally different.
+						- Ted
 
-so I think this patch is horribly wrong.
-
-The *correct* way to fix signed divisions is by doing one of two things:
-
- - really make the data we divide be unsigned. With all the thinking that 
-   involves!
-
-   This is the good change, but it does involve making sure that there are 
-   no tests against zero and that the value really cannot go negative. 
-   Usually the unsigned types are (a) faster and (b) more robust, but if 
-   somebody is depending on signs, unsigned types are obviously not 
-   appropriate.
-
- - change a divide-by-power-of-2 into a signed shift instead.
-
-   Yes, this also changes the end result for negative values, but it 
-   changes it in a sane and generally good way (ie it will still be a 
-   "valid" divide, it will just be a divide that rounds differently, and 
-   is more likely than turning it into an unsigned divide to generally 
-   result in working code).
-
-Hmm?
-
-			Linus
----
- simplify.c |   30 ++++++++++++++++++++++++++++++
- 1 files changed, 30 insertions(+), 0 deletions(-)
-
-diff --git a/simplify.c b/simplify.c
-index 94e14d2..91f1120 100644
---- a/simplify.c
-+++ b/simplify.c
-@@ -286,6 +286,36 @@ static int simplify_constant_rightside(struct instruction *insn)
- 		if (!value)
- 			return replace_with_pseudo(insn, insn->src2);
- 		return 0;
-+
-+	case OP_DIVU: case OP_DIVS:
-+		if (!value)
-+			break;
-+		if (value == 1)
-+			return replace_with_pseudo(insn, insn->src1);
-+		/* Power-of-two? */
-+		if (!(value & (value-1))) {
-+			int log2 = -1;
-+			do {
-+				log2++;
-+				value >>= 1;
-+			} while (value);
-+
-+			/* Turn unsigned divides into shifts */
-+			if (insn->opcode == OP_DIVU) {
-+				insn->src2->value = log2;
-+				insn->opcode = OP_LSR;
-+				return 1;
-+			}
-+
-+			/*
-+			 * This is incorrect, but we care more about
-+			 * the warning than the code generation
-+			 */
-+			warning(insn->pos, "expensive signed divide");
-+			insn->src2->value = log2;
-+			insn->opcode = OP_ASR;
-+			return 1;
-+		}
- 	}
- 	return 0;
- }
