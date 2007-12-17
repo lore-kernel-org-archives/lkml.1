@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbXLQNMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbXLQNOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758050AbXLQNMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 08:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbXLQNMW
+	id S1758403AbXLQNOg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 08:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbXLQNO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 08:12:22 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45549 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754279AbXLQNMV (ORCPT
+	Mon, 17 Dec 2007 08:14:28 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:38666 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751775AbXLQNO1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 08:12:21 -0500
-Date: Mon, 17 Dec 2007 13:05:23 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Filippos Papadopoulos" <psybases@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: INITIO scsi driver fails to work properly
-Message-ID: <20071217130523.7e9c88bb@the-village.bc.nu>
-In-Reply-To: <20071217031841.f483e5ac.akpm@linux-foundation.org>
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
-	<20071217031841.f483e5ac.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Dec 2007 08:14:27 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4766760A.50902@s5r6.in-berlin.de>
+Date: Mon, 17 Dec 2007 14:13:46 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.9) Gecko/20071122 SeaMonkey/1.1.6
+MIME-Version: 1.0
+To: Jon Masters <jcm@redhat.com>
+CC: Dave Jones <davej@redhat.com>, Arjan van de Ven <arjan@linux.intel.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       protasnb@gmail.com
+Subject: Re: Top kernel oopses/warnings this week
+References: <4762CF8C.90808@linux.intel.com>	 <4763F771.10105@s5r6.in-berlin.de>  <20071217025129.GA12815@redhat.com> <1197894814.18713.36.camel@perihelion>
+In-Reply-To: <1197894814.18713.36.camel@perihelion>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> initio doesn't seem to have a maintainer...
+Jon Masters wrote:
+> On Sun, 2007-12-16 at 21:51 -0500, Dave Jones wrote:
+>> On Sat, Dec 15, 2007 at 04:49:05PM +0100, Stefan Richter wrote:
+>>  
+>>  > Reports about tainted kernels have arguably less value.  It would be
+>>  > good to hide such reports until a report of the same oops in an
+>>  > untainted kernel was found.
+>>  
+>> I disagree with this.  It's useful to have a "we've seen this before,
+>> and every time, it was tainted with xyz module" datapoint, especially
+>> if no untainted copies of that oops turn up.
 > 
-> Are you able to identify any earlier kernel which worked OK?
+> +1
 > 
-> Maybe it's a new device?  If you can get the `lspci -vvxx' output
-> for that device we can take a look.
+> In fact, that's even more useful in many cases, if it helps demonstrate
+> that the oops is associated with a particular buggy binary driver. I can
+> see a lot of potentially interesting statistics coming from that too.
 
-If I remember rightly the fixes for this went into the scsi tree a couple
-of months ago. The patch is in the -mm tree as well. No idea why its
-gotten stuck as an obvious one liner.
+-1  :-)
 
-Alan
+I don't care at all what this xyz module does or does not do by and in
+itself.
+
+(Of course since at least two people care and since this makes life
+easier for Arjan, just keep listing reports about tainted kernels like
+you do now.  It just so happens that different people are interested in
+different things.)
+-- 
+Stefan Richter
+-=====-=-=== ==-- =---=
+http://arcgraph.de/sr/
