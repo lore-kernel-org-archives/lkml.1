@@ -1,90 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935999AbXLQWLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934580AbXLQWTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935999AbXLQWLx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 17:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbXLQWLo
+	id S934580AbXLQWTe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 17:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbXLQWT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 17:11:44 -0500
-Received: from mga03.intel.com ([143.182.124.21]:58431 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755515AbXLQWLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 17:11:42 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,178,1196668800"; 
-   d="scan'208";a="343569171"
-Message-ID: <4766F0CD.30908@intel.com>
-Date: Mon, 17 Dec 2007 13:57:33 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+	Mon, 17 Dec 2007 17:19:26 -0500
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:53377 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754563AbXLQWTZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 17:19:25 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 18.85.9.136
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX18dUJg5e10S9rBHphlw8sqo
+Message-ID: <4766F5D0.7050204@reed.com>
+Date: Mon, 17 Dec 2007 17:18:56 -0500
+From: "David P. Reed" <dpreed@reed.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.5) Gecko/20070727 Fedora/2.0.0.5-2.fc7 Thunderbird/2.0.0.5 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH] PCI: fix for quirk_e100_interrupt()
-References: <20071218003927.A3045@jurassic.park.msu.ru>
-In-Reply-To: <20071218003927.A3045@jurassic.park.msu.ru>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Rene Herman <rene.herman@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+References: <20071217105744.GA14315@elte.hu> <4766684D.40202@gmail.com> <20071217130933.GB27992@elte.hu> <47667812.8050708@gmail.com> <47667A85.3080100@reed.com> <20071217143900.GA16604@elte.hu> <20071217161243.05c32df4@the-village.bc.nu> <4766E086.9090500@gmail.com> <20071217214139.GC22828@elte.hu> <4766EE79.90003@keyaccess.nl> <20071217215658.GA4782@elte.hu> <4766F1AE.4060601@keyaccess.nl>
+In-Reply-To: <4766F1AE.4060601@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Dec 2007 21:58:09.0687 (UTC) FILETIME=[E9650270:01C840F7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ivan Kokshaysky wrote:
-> Check that the e100 is in the D0 power state. If it's not, it won't
-> respond to MMIO accesses and we end up with master-abort machine
-> checks on some platforms.
-> 
-> Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Besides the two reports of freezes on bugzilla.kernel.org (9511, 6307), 
+the following two bug reports on bugzilla.redhat.com are almost 
+certainly due to the same cause (imo, of course): 245834, 227234.
 
-what kind of platform actually is doing this? It almost seems like something is
-wrong with that platform's BIOS and I wonder if this workaround should not be more
-general (IOW is it not just e100 that is affected but other components as well?)
+Ubuntu launchpad bug 158849 also seems to report the same problem, for 
+an HP dv6258se 64-bit machine.
 
-Auke
+Also this one: 
+http://www.mail-archive.com/linux-acpi@vger.kernel.org/msg10321.html
 
+If you want to collect dmidecode data from these folks, perhaps we might 
+get a wider sense of what categories of machines are affected.  They all 
+seem to be recemt HP and Compaq AMD64 laptops, probably all Quanta 
+motherboards.
 
-> ---
->  drivers/pci/quirks.c |   14 +++++++++++++-
->  1 files changed, 13 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> index 26cc4dc..c8b2b9d 100644
-> --- a/drivers/pci/quirks.c
-> +++ b/drivers/pci/quirks.c
-> @@ -1406,9 +1406,10 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NETMOS, PCI_ANY_ID, quirk_netmos);
->  
->  static void __devinit quirk_e100_interrupt(struct pci_dev *dev)
->  {
-> -	u16 command;
-> +	u16 command, pmcsr;
->  	u8 __iomem *csr;
->  	u8 cmd_hi;
-> +	int pm;
->  
->  	switch (dev->device) {
->  	/* PCI IDs taken from drivers/net/e100.c */
-> @@ -1442,6 +1443,17 @@ static void __devinit quirk_e100_interrupt(struct pci_dev *dev)
->  	if (!(command & PCI_COMMAND_MEMORY) || !pci_resource_start(dev, 0))
->  		return;
->  
-> +	/*
-> +	 * Check that the device is in the D0 power state. If it's not,
-> +	 * there is no point to look any further.
-> +	 */
-> +	pm = pci_find_capability(dev, PCI_CAP_ID_PM);
-> +	if (pm) {
-> +		pci_read_config_word(dev, pm + PCI_PM_CTRL, &pmcsr);
-> +		if ((pmcsr & PCI_PM_CTRL_STATE_MASK) != PCI_D0)
-> +			return;
-> +	}
-> +
->  	/* Convert from PCI bus to resource space.  */
->  	csr = ioremap(pci_resource_start(dev, 0), 8);
->  	if (!csr) {
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
