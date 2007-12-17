@@ -1,100 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXLQUNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933309AbXLQUNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932403AbXLQUNO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:13:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765591AbXLQTuQ
+	id S933309AbXLQUNl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:13:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935021AbXLQTvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:50:16 -0500
-Received: from kuber.nabble.com ([216.139.236.158]:57838 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765415AbXLQTuO (ORCPT
+	Mon, 17 Dec 2007 14:51:42 -0500
+Received: from nz-out-0506.google.com ([64.233.162.233]:51795 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934963AbXLQTvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:50:14 -0500
-Message-ID: <14374016.post@talk.nabble.com>
-Date: Mon, 17 Dec 2007 11:50:13 -0800 (PST)
-From: cable_plug <pratapagiri.ak@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: problem with ending requests asynchronously in my block device
- driver
+	Mon, 17 Dec 2007 14:51:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=A+/o818vIgEZG/Hwp7yivtsTBDrh1IHPA276ilWtXNkbSnnR7bzFPUsN2hyoMl770EEBDo57pGiYW4cMYvlsm1ESLcKJyABWWHd1gCd7E6bMwd04ra0ZF9joKH8G2r/nwqPBNnoxFLzIXi5YZ2gmyi6pt9e8JHbElC3qMuFzWZk=
+Message-ID: <84144f020712171151j5e2a2934qc8bf2fbc9020a545@mail.gmail.com>
+Date: Mon, 17 Dec 2007 21:51:33 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "John Reiser" <jreiser@bitwagon.com>
+Subject: Re: slab quirks in DEBUG, ctor, and initialization
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <47669A16.3010604@BitWagon.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Nabble-From: pratapagiri.ak@gmail.com
+Content-Disposition: inline
+References: <47669A16.3010604@BitWagon.com>
+X-Google-Sender-Auth: e6e56aef41637c40
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi John,
 
-Hi, 
+On Dec 17, 2007 5:47 PM, John Reiser <jreiser@bitwagon.com> wrote:
+> In mm/slab.c, the DEBUG variant of cache_alloc_debugcheck_after
+> might call  cachep->ctor(objp, cachep, 0);  but the non-DEBUG
+> variant does absolutely nothing.  idr_pre_get is a routine
+> which notices the difference.
 
-I've a block device driver which does the following, 
+How does ipr_pre_get notice this?
 
-Inside the request function I do something like this: 
-request(fn) { 
+On Dec 17, 2007 5:47 PM, John Reiser <jreiser@bitwagon.com> wrote:
+> Even when cache_alloc_debugcheck_after does invoke the ctor,
+> then it is conditional upon  cachep->flags & SLAB_POISON.  This
+> assumes that the only two states are poisoned and all-zero
+> (from .bss static, or via a cleared new page frame.)
+> So if SLAB_POISON is not specified, then a ctor which
+> does anything other than memset(,0,) is out of luck.
+> Instead: if a ctor is specified then it should be called
+> for each successful allocation.
 
- while ((req = elv_next_request(q)) != NULL) { 
-....................set up the request; 
- spin_unlock_irq(q->queue_lock); 
-call the transfer(set_up_req) function; 
-spin_lock_irq(q->queue_lock); 
-} 
-       spin_unlock_irq (q->queue_lock); 
-        /* allow callback to execute as it needs the lock!!! */ 
-        spin_lock_irq (q->queue_lock); 
+Sorry, I don't understand at all what's the problem is here. For the
+common (non-poison) case, we initialize all objects *once* whenever a
+cache is grown (see cache_grow calling cache_init_objs) which is the
+whole point of having constructors. When poisoning is enabled, we
+obviously cannot do this which is why we call the constructor for
+every allocation.
 
-
-} 
-and the transfer function calls the scsi_execute_asyn(....) with the
-callback function doing the end request. So, the ending of the request is
-done like below: 
-
-callback(fn) { 
-
- spin_lock_irqsave(q->queue_lock, flags); 
-        if (!end_that_request_first(set_up_req->req, cmpstatus, 
-                        set_up_req->req->nr_sectors)) { 
-                add_disk_randomness(...); 
-                end_that_request_last(set_up_req->req,0); 
-        } 
-        spin_unlock_irqrestore(q->queue_lock, flags); 
-} 
-
-
-This code works fine with most of the kernel versions, but fails on some
-like , Linux 2.6.18-8.el5-xen 
-
-Please help me to find out where I'm going wrong? 
-
-when I say 'fails' it just hangs without any error ....I'm using dt(Data
-test) to write to the disk. The logs show that all the requests that have
-been sent for processing, have completed sucessfully. Its just that new
-requests never enter the request function. So, the dt writes almost half the
-data and then simply hangs. 
-
-  
-  The actual code does nothing but, call the scsi_execute_async , which 
- later on calls the callback function which is used to end the request. 
- So, both the callback function and the request function need to share 
- the queue lock. So the code samples I sent cover all the aspects of my 
- program. What I'm looking for here is how can I end the requests 
- asynchronously much later after the request processing is done. Please note 
- here that the asynchronous end requests is done by the callback function 
- of the scsi_execute_async, which needs to share the queue lock with 
- the request function. 
-    
-  when I say 'fails' it just hangs without any error ....I'm using 
- dt(Data 
-test) to write to the disk. The logs show that all the requests that 
- have 
-been sent for processing, have completed successfully. Its just that new 
-requests never enter the request function. So, the dt writes almost 
- half the 
-data and then simply hangs. 
-
-
-Thanks in advance for an early reply. 
-Anil P.
--- 
-View this message in context: http://www.nabble.com/problem-with-ending-requests-asynchronously-in-my-block-device-driver-tp14374016p14374016.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
-
+                                Pekka
