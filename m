@@ -1,32 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbXLQObz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbXLQOer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759250AbXLQObz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 09:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXLQObs
+	id S1759519AbXLQOer (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 09:34:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbXLQOel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 09:31:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52578 "EHLO mx3.mail.elte.hu"
+	Mon, 17 Dec 2007 09:34:41 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57533 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752480AbXLQObr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 09:31:47 -0500
-Date: Mon, 17 Dec 2007 15:30:50 +0100
+	id S1752567AbXLQOek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 09:34:40 -0500
+Date: Mon, 17 Dec 2007 15:34:14 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp>,
-       Rusty Lynch <rusty.lynch@intel.com>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       Keshavamurthy Anil S <anil.s.keshavamurthy@intel.com>
-Subject: Re: Final kprobes rollup patches
-Message-ID: <20071217143050.GA13290@elte.hu>
-References: <1197708350.898.87.camel@brick> <20071215085015.GA9720@elte.hu> <1197709442.898.97.camel@brick> <20071215131204.GE9720@elte.hu> <4766841B.1040500@redhat.com>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@redhat.com, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com
+Subject: Re: [PATCH] x86: fix ref-counting bug in change_page_attr()
+Message-ID: <20071217143414.GB13290@elte.hu>
+References: <47610AB5.76E4.0078.0@novell.com> <20071217132802.GD1870@elte.hu> <47668A82.76E4.0078.0@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4766841B.1040500@redhat.com>
+In-Reply-To: <47668A82.76E4.0078.0@novell.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,45 +36,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Masami,
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
-
-> Hi Harvey and Ingo,
+> > hm, does this patch fix any real bug seen live? (if yes then do you 
+> > have links to it, etc?) It would be a v2.6.24 fix in theory but it 
+> > looks too dangerous for that. So i've queued it up for v2.6.25, for 
+> > the time being.
 > 
-> I'm working on another version of patches for unification.
-> Currently cleaning up the patches.
-> http://sources.redhat.com/ml/systemtap/2007-q4/msg00457.html
-> I'll cleanup and repost it today.
+> I had run into the issue with experimental code of mine quite a while 
+> back (i.e. I don't even recall what exactly I was doing back then). 
+> After that I just continued to keep the fix (which I had submitted 
+> before, but which collided with something in Andi's tree back then 
+> iirc).
 
-cool! Please Cc: lkml and Harvey as well so that there's less overlap in 
-unification work - Harvey spent quite some time unifying and cleaning up 
-the kprobes code during the past week.
-
-So i think we could/should use Harvey's latest series as a base, those 
-are pretty finegrained already. Note that they break 64-bit kprobes 
-though, with such a config:
-
- CONFIG_KPROBES=y
- CONFIG_NET_TCPPROBE=y
-
-so it crashes with an int3 in the TCP code. It's probably some trivial 
-typo somewhere, as 32-bit works fine.
-
-the coordinates for x86.git#mm can be found below - that tree already 
-includes Harvey's latest kprobes series. I'll try to bisect the 64-bit 
-breakage now.
+i'd be inclined to have it in the for-2.6.25 queue then - even plain 
+bugfixes in the pageattr code have broken boxes in the past, so this 
+isnt something we want to touch so late in the cycle. (We can still 
+reprioritize it if a serious regression pops up that this addresses.)
 
 	Ingo
-
------------------->
- git-clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6.git
- cd linux-2.6.git
- git-branch x86
- git-checkout x86
- git-pull git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git mm
-
-(do subsequent pulls via "git-pull --force", as we frequently rebase the
-git tree. NOTE: this might override your own local changes, so do this
-only if you dont mind about losing thse changes in that tree.)
-
