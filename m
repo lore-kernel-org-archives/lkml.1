@@ -1,156 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXLQVhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764717AbXLQViQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964934AbXLQVhx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 16:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbXLQVhl
+	id S1764717AbXLQViQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 16:38:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934782AbXLQVhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 16:37:41 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52884 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754290AbXLQVhi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 16:37:38 -0500
-Date: Mon, 17 Dec 2007 13:36:31 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, protasnb@gmail.com,
-       tytso@thunk.org
-Subject: Re: Top kernel oopses/warnings this week
-Message-ID: <20071217133631.5bbc5842@laptopd505.fenrus.org>
-In-Reply-To: <20071217172331.GA23070@elte.hu>
-References: <4762CF8C.90808@linux.intel.com>
-	<20071217172331.GA23070@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Dec 2007 16:37:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55070 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933804AbXLQVhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 16:37:43 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bernard Pidoux <pidoux@ccr.jussieu.fr>
+Subject: Re: [BUG]  lack of  /proc/net/ax25  with  2.6.24-rc5
+Date: Mon, 17 Dec 2007 22:56:26 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Netdev List <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+References: <476303C8.2060507@ccr.jussieu.fr> <20071215101810.GA3143@ami.dom.local> <476595EC.5050103@ccr.jussieu.fr>
+In-Reply-To: <476595EC.5050103@ccr.jussieu.fr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712172256.26699.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007 18:23:31 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On Sunday, 16 of December 2007, Bernard Pidoux wrote:
+> With 2.6.24-rc5 there is no /proc/net/ax25
 
+FYI, I've created a Bugzilla entry for this issue at:
+http://bugzilla.kernel.org/show_bug.cgi?id=9589
+
+Please add your address to the CC list in there.
+
+Thanks,
+Rafael
+
+
+> Here is an extract from dmesg after boot :
 > 
-> * Arjan van de Ven <arjan@linux.intel.com> wrote:
+> =======================
+> sysctl table check failed: /net/ax25/ax0/ax25_default_mode .3.9.1.2 
+> Unknown sysctl binary path
+> Pid: 2936, comm: kissattach Not tainted 2.6.24-rc5 #1
+>   [<c012ca6a>] set_fail+0x3b/0x43
+>   [<c012ce7a>] sysctl_check_table+0x408/0x456
+>   [<c012ce8e>] sysctl_check_table+0x41c/0x456
+>   [<c012ce8e>] sysctl_check_table+0x41c/0x456
+>   [<c02ac64a>] _spin_unlock+0x14/0x1c
+>   [<c012ce8e>] sysctl_check_table+0x41c/0x456
+>   [<c011e681>] sysctl_set_parent+0x19/0x2a
+>   [<c011f55c>] register_sysctl_table+0x45/0x85
+>   [<d8be9d26>] ax25_register_sysctl+0x112/0x11c [ax25]
+>   [<d8be6c76>] ax25_device_event+0x2e/0x90 [ax25]
+>   [<c012c560>] notifier_call_chain+0x2a/0x47
+>   [<c012c59f>] raw_notifier_call_chain+0x17/0x1a
+>   [<c0259290>] dev_open+0x6f/0x75
+>   [<c0257ee7>] dev_change_flags+0x9c/0x148
+>   [<c0256ab3>] __dev_get_by_name+0x68/0x73
+>   [<c0292307>] devinet_ioctl+0x22e/0x53b
+>   [<c0259074>] dev_ioctl+0x472/0x5ba
+>   [<c024d4ba>] sock_ioctl+0x1aa/0x1cf
+>   [<c024d310>] sock_ioctl+0x0/0x1cf
+>   [<c016bc19>] do_ioctl+0x19/0x4c
+>   [<c016be40>] vfs_ioctl+0x1f4/0x20b
+>   [<c0103d01>] sysenter_past_esp+0x9a/0xa9
+>   [<c016be9c>] sys_ioctl+0x45/0x5d
+>   [<c0103cc6>] sysenter_past_esp+0x5f/0xa9
+>   =======================
+> sysctl table check failed: /net/ax25/ax0/backoff_type .3.9.1.3 Unknown 
+> sysctl binary path
+> (...) truncated
+>   =======================
+> sysctl table check failed: /net/ax25/ax0/connect_mode .3.9.1.4 Unknown 
+> sysctl binary path
+> (...)
+>   =======================
+> sysctl table check failed: /net/ax25/ax0/standard_window_size .3.9.1.5 
+> Unknown sysctl binary path
+>   =======================
+> (...)
 > 
-> > The http://www.kerneloops.org website collects kernel oops and
-> > warning reports from various mailing lists and bugzillas; below is
-> > a top 10 list of the oopses collected in the last 7 days. (Reports
-> > prior to 2.6.23 have been omitted in collecting the top 10)
+> and so on ...
 > 
-> cool stuff! I cannot over-emphasise how useful this will be.
 > 
-> Let us know if you need any additional WARN_ON()s or other dmesg 
-> annotations to make parsing easier / more intelligent. At least as
-> far as arch/x86 and the scheduler is related it's going to be applied
-> to the fast-track queue ;-)
->
+> 
+> Bernard Pidoux
+> f6bvp@amsat.org
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-the following patch would help a lot; it ads a very nice parsable end-marker
-to oopses, as well as printing the boot UUID as part of the oops, which 
-makes it easier to de-dupe oopses. The UUID is just a random number and not
-privacy-tracable to any system.
 
---
 
-Subject: [patch] terminate the oops printing with a defined string/uuid
-From: Arjan van de Ven <arjan@linux.intel.com>
-
-Right now, it's hard for automated tools to determine when an oops has
-ended; there's no clear marker for this. In addition, there's no good
-way to find out if an oops is unique. Sometimes it's the same oops
-just reported multiple times, while other times it's a different
-instance of the crash with the same signature. Printing the boot UUID
-as part of the end string resolves this ambiguity.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-CC: Ted Ts'o <tytso@thunk.org>
-
----
- drivers/char/random.c  |   35 ++++++++++++++++++++++++++++++++++-
- include/linux/random.h |    1 +
- kernel/panic.c         |    2 ++
- 3 files changed, 37 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.24-rc5/drivers/char/random.c
-===================================================================
---- linux-2.6.24-rc5.orig/drivers/char/random.c
-+++ linux-2.6.24-rc5/drivers/char/random.c
-@@ -1176,8 +1176,41 @@ static int max_read_thresh = INPUT_POOL_
- static int max_write_thresh = INPUT_POOL_WORDS * 32;
- static char sysctl_bootid[16];
- 
-+/**
-+ *	get_boot_uuid	- return a string pointer to a system wide boot UUID
-+ *
-+ *	Returns a pointer to the boot UUID. This UUID is unique per system
-+ *	boot but persistent for one boot session.
-+ *
-+ *	The memory returned via the return pointer is static allocated and
-+ *	owned by the random.c driver; this should not be kfree()'d.
-+ *
-+ *	Locking: none
-+ */
-+ */
-+char *get_boot_uuid(void)
-+{
-+	static char target[80];
-+	unsigned char *uuid;
-+
-+	if (sysctl_bootid[8] == 0)
-+		generate_random_uuid(sysctl_bootid);
-+	/* sysctl_bootid is signed, to print we need unsigned .. */
-+	uuid = sysctl_bootid;
-+
-+	if (target[0] == 0) {
-+		sprintf(target, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-"
-+			"%02x%02x%02x%02x%02x%02x",
-+		uuid[0],  uuid[1],  uuid[2],  uuid[3],  uuid[4],
-+		uuid[5],  uuid[6],  uuid[7],  uuid[8],  uuid[9],
-+		uuid[10], uuid[11], uuid[12], uuid[13], uuid[14],
-+		uuid[15]);
-+	}
-+	return target;
-+}
-+
- /*
-- * These functions is used to return both the bootid UUID, and random
-+ * These functions are used to return both the bootid UUID, and random
-  * UUID.  The difference is in whether table->data is NULL; if it is,
-  * then a new UUID is generated and returned to the user.
-  *
-Index: linux-2.6.24-rc5/include/linux/random.h
-===================================================================
---- linux-2.6.24-rc5.orig/include/linux/random.h
-+++ linux-2.6.24-rc5/include/linux/random.h
-@@ -71,6 +71,7 @@ unsigned long randomize_range(unsigned l
- 
- u32 random32(void);
- void srandom32(u32 seed);
-+char *get_boot_uuid(void);
- 
- #endif /* __KERNEL___ */
- 
-Index: linux-2.6.24-rc5/kernel/panic.c
-===================================================================
---- linux-2.6.24-rc5.orig/kernel/panic.c
-+++ linux-2.6.24-rc5/kernel/panic.c
-@@ -19,6 +19,7 @@
- #include <linux/nmi.h>
- #include <linux/kexec.h>
- #include <linux/debug_locks.h>
-+#include <linux/random.h>
- 
- int panic_on_oops;
- int tainted;
-@@ -272,6 +273,7 @@ void oops_enter(void)
- void oops_exit(void)
- {
- 	do_oops_enter_exit();
-+	printk("---[ end of trace %s ]---\n", get_boot_uuid());
- }
- 
- #ifdef CONFIG_CC_STACKPROTECTOR
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
