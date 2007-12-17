@@ -1,119 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934554AbXLQQMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935047AbXLQQOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934554AbXLQQMu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 11:12:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758713AbXLQQMl
+	id S935047AbXLQQOJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 11:14:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933159AbXLQQNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 11:12:41 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53202 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757438AbXLQQMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 11:12:40 -0500
-Message-ID: <47669E8D.3020305@redhat.com>
-Date: Mon, 17 Dec 2007 11:06:37 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
-       Roland McGrath <roland@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, prasanna@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       Ingo Molnar <mingo@elte.hu>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-CC: systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [-mm][PATCH 1/6] jprobe bugfix and cleanup
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Dec 2007 11:13:55 -0500
+Received: from smtp103.sbc.mail.mud.yahoo.com ([68.142.198.202]:28112 "HELO
+	smtp103.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933139AbXLQQNy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 11:13:54 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Dec 2007 11:13:53 EST
+X-YMail-OSG: z3HYGJkVM1l6jKqUqLhKaar1u6ft.UGiMODAuatNRs5C2ILXUUSEgOYQw6HDsHgYmufGcy0RmQ--
+Date: Mon, 17 Dec 2007 09:58:22 -0600
+From: Michael Halcrow <mike@halcrow.us>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Halcrow <mhalcrow@us.ibm.com>
+Subject: Re: [PATCH] ecryptfs: fix fsx data corruption problems
+Message-ID: <20071217155821.GJ13486@halcrow.us>
+Reply-To: Michael Halcrow <mike@halcrow.us>
+References: <476609F1.6040408@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <476609F1.6040408@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a bug of jprobe and cleans up.
-jprobe for x86-64 can cause kernel page fault when the jprobe_return()
-is called from incorrect function. Anyway, that path finally invokes
-BUG() macro, so this is not so serious.
+On Sun, Dec 16, 2007 at 11:32:33PM -0600, Eric Sandeen wrote:
+> ecryptfs in 2.6.24-rc3 wasn't surviving fsx for me at all,
+> dying after 4 ops.  Generally, encountering problems with stale
+> data and improperly zeroed pages.  An extending truncate + write
+> for example would expose stale data.
+> 
+> With the changes below I got to a million ops and beyond with all
+> mmap ops disabled - mmap still needs work.  (A version of this
+> patch on a RHEL5 kernel ran for over 110 million fsx ops)
+> 
+> I added a few comments as well, to the best of my understanding
+> as I read through the code.
+> 
+> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
 
-- Use jprobe_saved_regs instead getting it from stack.
-  (Especially on x86-64, it may get incorrect data, because
-   pt_regs can not be get by using container_of(rsp))
-- Change the type of stack pointer to unsigned long *.
+Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+I recommend this for the next -rc release.
 
----
- arch/x86/kernel/kprobes_32.c |    4 +---
- arch/x86/kernel/kprobes_64.c |    4 +---
- include/asm-x86/kprobes_32.h |    2 +-
- include/asm-x86/kprobes_64.h |    2 +-
- 4 files changed, 4 insertions(+), 8 deletions(-)
-
-Index: 2.6.24-rc4-mm1/arch/x86/kernel/kprobes_32.c
-===================================================================
---- 2.6.24-rc4-mm1.orig/arch/x86/kernel/kprobes_32.c
-+++ 2.6.24-rc4-mm1/arch/x86/kernel/kprobes_32.c
-@@ -742,9 +742,7 @@ int __kprobes longjmp_break_handler(stru
-
- 	if ((addr > (u8 *) jprobe_return) && (addr < (u8 *) jprobe_return_end)) {
- 		if (&regs->sp != kcb->jprobe_saved_esp) {
--			struct pt_regs *saved_regs =
--			    container_of(kcb->jprobe_saved_esp,
--					    struct pt_regs, sp);
-+			struct pt_regs *saved_regs = &kcb->jprobe_saved_regs;
- 			printk("current sp %p does not match saved sp %p\n",
- 			       &regs->sp, kcb->jprobe_saved_esp);
- 			printk("Saved registers for jprobe %p\n", jp);
-Index: 2.6.24-rc4-mm1/arch/x86/kernel/kprobes_64.c
-===================================================================
---- 2.6.24-rc4-mm1.orig/arch/x86/kernel/kprobes_64.c
-+++ 2.6.24-rc4-mm1/arch/x86/kernel/kprobes_64.c
-@@ -732,9 +732,7 @@ int __kprobes longjmp_break_handler(stru
-
- 	if ((addr > (u8 *) jprobe_return) && (addr < (u8 *) jprobe_return_end)) {
- 		if ((long *)regs->sp != kcb->jprobe_saved_rsp) {
--			struct pt_regs *saved_regs =
--			    container_of(kcb->jprobe_saved_rsp,
--					    struct pt_regs, sp);
-+			struct pt_regs *saved_regs = &kcb->jprobe_saved_regs;
- 			printk("current sp %p does not match saved sp %p\n",
- 			       (long *)regs->sp, kcb->jprobe_saved_rsp);
- 			printk("Saved registers for jprobe %p\n", jp);
-Index: 2.6.24-rc4-mm1/include/asm-x86/kprobes_32.h
-===================================================================
---- 2.6.24-rc4-mm1.orig/include/asm-x86/kprobes_32.h
-+++ 2.6.24-rc4-mm1/include/asm-x86/kprobes_32.h
-@@ -73,7 +73,7 @@ struct kprobe_ctlblk {
- 	unsigned long kprobe_status;
- 	unsigned long kprobe_old_eflags;
- 	unsigned long kprobe_saved_eflags;
--	long *jprobe_saved_esp;
-+	unsigned long *jprobe_saved_esp;
- 	struct pt_regs jprobe_saved_regs;
- 	kprobe_opcode_t jprobes_stack[MAX_STACK_SIZE];
- 	struct prev_kprobe prev_kprobe;
-Index: 2.6.24-rc4-mm1/include/asm-x86/kprobes_64.h
-===================================================================
---- 2.6.24-rc4-mm1.orig/include/asm-x86/kprobes_64.h
-+++ 2.6.24-rc4-mm1/include/asm-x86/kprobes_64.h
-@@ -66,7 +66,7 @@ struct kprobe_ctlblk {
- 	unsigned long kprobe_status;
- 	unsigned long kprobe_old_rflags;
- 	unsigned long kprobe_saved_rflags;
--	long *jprobe_saved_rsp;
-+	unsigned long *jprobe_saved_rsp;
- 	struct pt_regs jprobe_saved_regs;
- 	kprobe_opcode_t jprobes_stack[MAX_STACK_SIZE];
- 	struct prev_kprobe prev_kprobe;
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
-
-
+> ---
+> 
+> 
+> Index: linux-2.6.24-rc3/fs/ecryptfs/mmap.c
+> ===================================================================
+> --- linux-2.6.24-rc3.orig/fs/ecryptfs/mmap.c
+> +++ linux-2.6.24-rc3/fs/ecryptfs/mmap.c
+> @@ -263,14 +263,13 @@ out:
+>  	return 0;
+>  }
+>  
+> +/* This function must zero any hole we create */
+>  static int ecryptfs_prepare_write(struct file *file, struct page *page,
+>  				  unsigned from, unsigned to)
+>  {
+>  	int rc = 0;
+> +	loff_t prev_page_end_size;
+>  
+> -	if (from == 0 && to == PAGE_CACHE_SIZE)
+> -		goto out;	/* If we are writing a full page, it will be
+> -				   up to date. */
+>  	if (!PageUptodate(page)) {
+>  		rc = ecryptfs_read_lower_page_segment(page, page->index, 0,
+>  						      PAGE_CACHE_SIZE,
+> @@ -283,22 +282,32 @@ static int ecryptfs_prepare_write(struct
+>  		} else
+>  			SetPageUptodate(page);
+>  	}
+> -	if (page->index != 0) {
+> -		loff_t end_of_prev_pg_pos =
+> -			(((loff_t)page->index << PAGE_CACHE_SHIFT) - 1);
+>  
+> -		if (end_of_prev_pg_pos > i_size_read(page->mapping->host)) {
+> +	prev_page_end_size = ((loff_t)page->index << PAGE_CACHE_SHIFT);
+> +
+> +	/*
+> +	 * If creating a page or more of holes, zero them out via truncate.
+> +	 * Note, this will increase i_size.
+> +	 */
+> +	if (page->index != 0) {
+> +		if (prev_page_end_size > i_size_read(page->mapping->host)) {
+>  			rc = ecryptfs_truncate(file->f_path.dentry,
+> -					       end_of_prev_pg_pos);
+> +					       prev_page_end_size);
+>  			if (rc) {
+>  				printk(KERN_ERR "Error on attempt to "
+>  				       "truncate to (higher) offset [%lld];"
+> -				       " rc = [%d]\n", end_of_prev_pg_pos, rc);
+> +				       " rc = [%d]\n", prev_page_end_size, rc);
+>  				goto out;
+>  			}
+>  		}
+> -		if (end_of_prev_pg_pos + 1 > i_size_read(page->mapping->host))
+> -			zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
+> +	}
+> +	/*
+> +	 * Writing to a new page, and creating a small hole from start of page?
+> +	 * Zero it out.
+> +	 */
+> +	if ((i_size_read(page->mapping->host) == prev_page_end_size) &&
+> +	    (from != 0)) {
+> +		zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
+>  	}
+>  out:
+>  	return rc;
+> Index: linux-2.6.24-rc3/fs/ecryptfs/read_write.c
+> ===================================================================
+> --- linux-2.6.24-rc3.orig/fs/ecryptfs/read_write.c
+> +++ linux-2.6.24-rc3/fs/ecryptfs/read_write.c
+> @@ -124,6 +124,10 @@ int ecryptfs_write(struct file *ecryptfs
+>  	loff_t pos;
+>  	int rc = 0;
+>  
+> +	/*
+> +	 * if we are writing beyond current size, then start pos
+> +	 * at the current size - we'll fill in zeros from there.
+> +	 */
+>  	if (offset > ecryptfs_file_size)
+>  		pos = ecryptfs_file_size;
+>  	else
+> @@ -137,6 +141,7 @@ int ecryptfs_write(struct file *ecryptfs
+>  		if (num_bytes > total_remaining_bytes)
+>  			num_bytes = total_remaining_bytes;
+>  		if (pos < offset) {
+> +			/* remaining zeros to write, up to destination offset */
+>  			size_t total_remaining_zeros = (offset - pos);
+>  
+>  			if (num_bytes > total_remaining_zeros)
+> @@ -167,17 +172,27 @@ int ecryptfs_write(struct file *ecryptfs
+>  			}
+>  		}
+>  		ecryptfs_page_virt = kmap_atomic(ecryptfs_page, KM_USER0);
+> +
+> +		/*
+> +		 * pos: where we're now writing, offset: where the request was
+> +		 * If current pos is before request, we are filling zeros
+> +		 * If we are at or beyond request, we are writing the *data*
+> +		 * If we're in a fresh page beyond eof, zero it in either case
+> +		 */
+> +		if (pos < offset || !start_offset_in_page) {
+> +			/* We are extending past the previous end of the file.
+> +			 * Fill in zero values to the end of the page */
+> +			memset(((char *)ecryptfs_page_virt
+> +				+ start_offset_in_page), 0,
+> +				PAGE_CACHE_SIZE - start_offset_in_page);
+> +		}
+> +
+> +		/* pos >= offset, we are now writing the data request */
+>  		if (pos >= offset) {
+>  			memcpy(((char *)ecryptfs_page_virt
+>  				+ start_offset_in_page),
+>  			       (data + data_offset), num_bytes);
+>  			data_offset += num_bytes;
+> -		} else {
+> -			/* We are extending past the previous end of the file.
+> -			 * Fill in zero values up to the start of where we
+> -			 * will be writing data. */
+> -			memset(((char *)ecryptfs_page_virt
+> -				+ start_offset_in_page), 0, num_bytes);
+>  		}
+>  		kunmap_atomic(ecryptfs_page_virt, KM_USER0);
+>  		flush_dcache_page(ecryptfs_page);
+> 
