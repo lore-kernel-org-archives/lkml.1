@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934826AbXLQTtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935269AbXLQTt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934826AbXLQTtd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 14:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759633AbXLQTcM
+	id S935269AbXLQTt6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 14:49:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761590AbXLQTcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:32:12 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:3047 "EHLO perches.com"
+	Mon, 17 Dec 2007 14:32:13 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:3056 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761443AbXLQTcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:32:05 -0500
+	id S1761485AbXLQTcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:32:06 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "LinuxTV.org Project" <v4l-dvb-maintainer@linuxtv.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       video4linux-list@redhat.com
-Subject: [PATCH] include/media/: Spelling fixes
-Date: Mon, 17 Dec 2007 11:30:41 -0800
-Message-Id: <1197919875-5288-42-git-send-email-joe@perches.com>
+       MPT Fusion Linux Team <DL-MPTFusionLinux@lsi.com>,
+       linux-scsi@vger.kernel.org, support@lsi.com
+Subject: [PATCH] drivers/message/: Spelling fixes
+Date: Mon, 17 Dec 2007 11:30:42 -0800
+Message-Id: <1197919875-5288-43-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.7.949.g2221a6
 Message-Id: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918891.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,22 +26,77 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/media/rds.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/message/fusion/mptctl.c   |    8 ++++----
+ drivers/message/fusion/mptscsih.c |    2 +-
+ drivers/message/i2o/iop.c         |    2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/include/media/rds.h b/include/media/rds.h
-index 951c1ae..a894266 100644
---- a/include/media/rds.h
-+++ b/include/media/rds.h
-@@ -4,7 +4,7 @@
-     saa6588.c and every driver (e.g. bttv-driver.c) that wants
-     to use the saa6588 module.
+diff --git a/drivers/message/fusion/mptctl.c b/drivers/message/fusion/mptctl.c
+index 6029509..e630b50 100644
+--- a/drivers/message/fusion/mptctl.c
++++ b/drivers/message/fusion/mptctl.c
+@@ -1708,7 +1708,7 @@ mptctl_replace_fw (unsigned long arg)
+  *
+  * Outputs:	None.
+  * Return:	0 if successful
+- *		-EBUSY  if previous command timout and IOC reset is not complete.
++ *		-EBUSY  if previous command timeout and IOC reset is not complete.
+  *		-EFAULT if data unavailable
+  *		-ENODEV if no such device/adapter
+  *		-ETIME	if timer expires
+@@ -1748,7 +1748,7 @@ mptctl_mpt_command (unsigned long arg)
+  *
+  * Outputs:	None.
+  * Return:	0 if successful
+- *		-EBUSY  if previous command timout and IOC reset is not complete.
++ *		-EBUSY  if previous command timeout and IOC reset is not complete.
+  *		-EFAULT if data unavailable
+  *		-ENODEV if no such device/adapter
+  *		-ETIME	if timer expires
+@@ -2316,7 +2316,7 @@ done_free_mem:
+  * Outputs:	None.
+  * Return:	0 if successful
+  *		-EFAULT if data unavailable
+- *		-EBUSY  if previous command timout and IOC reset is not complete.
++ *		-EBUSY  if previous command timeout and IOC reset is not complete.
+  *		-ENODEV if no such device/adapter
+  *		-ETIME	if timer expires
+  *		-ENOMEM if memory allocation error
+@@ -2553,7 +2553,7 @@ mptctl_hp_hostinfo(unsigned long arg, unsigned int data_size)
+  * Outputs:	None.
+  * Return:	0 if successful
+  *		-EFAULT if data unavailable
+- *		-EBUSY  if previous command timout and IOC reset is not complete.
++ *		-EBUSY  if previous command timeout and IOC reset is not complete.
+  *		-ENODEV if no such device/adapter
+  *		-ETIME	if timer expires
+  *		-ENOMEM if memory allocation error
+diff --git a/drivers/message/fusion/mptscsih.c b/drivers/message/fusion/mptscsih.c
+index 626bb3c..7d3d2de 100644
+--- a/drivers/message/fusion/mptscsih.c
++++ b/drivers/message/fusion/mptscsih.c
+@@ -1736,7 +1736,7 @@ mptscsih_IssueTaskMgmt(MPT_SCSI_HOST *hd, u8 type, u8 channel, u8 id, int lun, i
+  fail_out:
  
--    Instead of having a seperate rds.h, I'd prefer to include
-+    Instead of having a separate rds.h, I'd prefer to include
-     this stuff in one of the already existing files like tuner.h
- 
-     (c) 2005 by Hans J. Koch
+ 	/*
+-	 * Free task managment mf, and corresponding tm flags
++	 * Free task management mf, and corresponding tm flags
+ 	 */
+ 	mpt_free_msg_frame(ioc, mf);
+ 	hd->tmPending = 0;
+diff --git a/drivers/message/i2o/iop.c b/drivers/message/i2o/iop.c
+index 7814a06..da715e1 100644
+--- a/drivers/message/i2o/iop.c
++++ b/drivers/message/i2o/iop.c
+@@ -916,7 +916,7 @@ static int i2o_parse_hrt(struct i2o_controller *c)
+  *	status block. The status block could then be accessed through
+  *	c->status_block.
+  *
+- *	Returns 0 on sucess or negative error code on failure.
++ *	Returns 0 on success or negative error code on failure.
+  */
+ int i2o_status_get(struct i2o_controller *c)
+ {
 -- 
 1.5.3.7.949.g2221a6
 
