@@ -1,70 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764478AbXLQFw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932216AbXLQF6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764478AbXLQFw7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 00:52:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbXLQFwu
+	id S932216AbXLQF6r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 00:58:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbXLQF6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 00:52:50 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:46442 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbXLQFwt (ORCPT
+	Mon, 17 Dec 2007 00:58:39 -0500
+Received: from de01egw01.freescale.net ([192.88.165.102]:62615 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753436AbXLQF6h convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 00:52:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FPpdxTYQsadww5VWbWzBtDQXZCQTs834WbzRVSBMniq4z6OPa9OWPUwQOQR99xwxL0h3yZbZ031rae2C6APBsRBqX2SvaucsyxdYFZWCyD/KX3YHteY8dRaLSUqE7349sEmehWZmmFtlRPC/7TQm3Rxbfxy607HSBNd36704C78=
-Message-ID: <78c462ad0712162152w7a889002v35b8392b97fb2c99@mail.gmail.com>
-Date: Mon, 17 Dec 2007 11:22:48 +0530
-From: "Amogh Hooshdar" <amoghhooshdar@gmail.com>
-To: svaidy@linux.vnet.ibm.com, "Amogh Hooshdar" <amoghhooshdar@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 1.0.0.0 DNS replies for many domain names (network)
-In-Reply-To: <20071217045126.GB17715@dirshya.in.ibm.com>
+	Mon, 17 Dec 2007 00:58:37 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <78c462ad0712140350v62ae169fm7a2ce077325ace5f@mail.gmail.com>
-	 <20071217045126.GB17715@dirshya.in.ibm.com>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2/3] arch/ : Platform changes for UCC TDM driver for MPC8323ERDB.Also includes related QE changes.
+Date: Mon, 17 Dec 2007 11:24:40 +0530
+Message-ID: <FBA61160C48B8D438F3323FEFB4EF2C2610FFB@zin33exm24.fsl.freescale.net>
+In-Reply-To: <20071211111855.dc5276a2.sfr@canb.auug.org.au>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/3] arch/ : Platform changes for UCC TDM driver for MPC8323ERDB.Also includes related QE changes.
+Thread-Index: Acg7i5QrUIIyxP3ISKCMTlnxMVfhmAE5Xpug
+References: <Pine.LNX.4.64.0712101734490.29623@linux121> <20071211111855.dc5276a2.sfr@canb.auug.org.au>
+From: "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Cc: <rubini@vision.unipv.it>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>, "Gala Kumar" <kumar.gala@freescale.com>,
+       <linuxppc-dev@ozlabs.org>,
+       "Barkowski Michael" <Michael.Barkowski@freescale.com>,
+       "Cutler Richard" <Rich.Cutler@freescale.com>,
+       "Kalra Ashish" <ashish.kalra@freescale.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I fixed this by installing bind9 which has named server. After
-installing bind9, I used the default configuration, which understands
-DNS AAAA type queries and uses the root name servers and other servers
-for resolution.
+Thanks Stephen for your comments.
+I have gone through them.
+Shall incorporate them and repost the patch.
 
-On Dec 17, 2007 10:21 AM, Vaidyanathan Srinivasan
-<svaidy@linux.vnet.ibm.com> wrote:
-> * Amogh Hooshdar <amoghhooshdar@gmail.com> [2007-12-14 17:20:17]:
+Sorry for late reply as I was on leave for the last week. 
+
+
+With Regards
+Poonam 
+ 
+ 
+
+-----Original Message-----
+From: Stephen Rothwell [mailto:sfr@canb.auug.org.au] 
+Sent: Tuesday, December 11, 2007 5:49 AM
+To: Aggrwal Poonam
+Cc: rubini@vision.unipv.it; linux-kernel@vger.kernel.org;
+netdev@vger.kernel.org; Gala Kumar; linuxppc-dev@ozlabs.org; Barkowski
+Michael; Cutler Richard; Kalra Ashish
+Subject: Re: [PATCH 2/3] arch/ : Platform changes for UCC TDM driver for
+MPC8323ERDB.Also includes related QE changes.
+
+On Mon, 10 Dec 2007 17:39:22 +0530 (IST) Poonam_Aggrwal-b10812
+<b10812@freescale.com> wrote:
 >
-> > I am having a strange problem with Debian Etch 4.0 (both 64-bit and
-> > 32-bit) using 2.6.18 kernel. Most websites do not open with browser,
-> > Pidgin and most other GUI applicatoins. but I am able to ping them
-> > fine. I am also able to do nslookup properly. When I tried to
-> > investigate it with Wireshark net sniffer, I observed the following.
-> >
-> > PROBLEM WITH 2.6.18
-> > Say, I try to open www.google.com, browser sends DNS query for
-> > www.google.com to my DNS server which is correctly configured in
-> > resolv.conf. It replies with the correct IP address. www.google.com
-> > redirects the browser to www.google.co.in. browser sends a DNS query
-> > again for www.google.co.in and the DNS server replies with 1.0.0.0
-> > which obviously is the wrong address.
->
-> I had this problem on Debian 4.0 and it was due to bug in the DSL
-> router.  I had DNS server set to 192.168.1.1 that is my DSL router
-> that holds the real DNS IP and forwards the DNS lookup request.
->
-> Once in a while the DNS proxy server will give out 1.0.0.0.  The
-> solution I used was to find the real DNS server and fill it in
-> resolv.conf  This avoids the DNS proxy on the router and then problem
-> went away.
->
-> https://bugs.launchpad.net/ubuntu/+bug/81057
->
-> --Vaidy
->
->
+> +++ b/arch/powerpc/sysdev/qe_lib/qe.c
+> @@ -149,22 +149,116 @@ EXPORT_SYMBOL(qe_issue_cmd);
+>   */
+>  static unsigned int brg_clk = 0;
+>  
+> -unsigned int get_brg_clk(void)
+> +u32 get_brg_clk(enum qe_clock brgclk, enum qe_clock *brg_source)
+>  {
+> -	struct device_node *qe;
+> -	if (brg_clk)
+> -		return brg_clk;
+> +	struct device_node *qe, *brg, *clocks;
+> +	enum qe_clock brg_src;
+> +	u32 brg_input_freq = 0;
+> +	u32 brg_num;
+> +	const unsigned int *prop;
+>  
+> -	qe = of_find_node_by_type(NULL, "qe");
+> -	if (qe) {
+> +	*brg_source = 0;
+> +
+> +	brg_num = brgclk - QE_BRG1;
+> +	brg = of_find_compatible_node(NULL, NULL, "fsl,cpm-brg");
+> +	if (brg) {
+>  		unsigned int size;
+> -		const u32 *prop = of_get_property(qe, "brg-frequency",
+&size);
+> -		brg_clk = *prop;
+> -		of_node_put(qe);
+> -	};
+> +		prop = of_get_property(brg,
+> +					"fsl,brg-sources", &size);
+> +
+> +		brg_src = *(prop + brg_num);
+
+You should probably sanity check that prop is not NULL and points to
+something large enough.
+
+You don't use brg after here, so the "of_node_put(brg)" could go here to
+save putting it in multiple places later.  Also, currently there are
+paths through the following code that do not do the of_node_put(brg).
+
+> +		if (brg_src == 0) {
+> +			*brg_source = 0;
+> +			if (brg_clk > 0) {
+> +				of_node_put(brg);
+> +				return brg_clk;
+> +			}
+> +			qe = of_find_node_by_type(NULL, "qe");
+> +			if (qe) {
+> +				unsigned int size;
+> +				prop = of_get_property
+> +						(qe, "brg-frequency",
+&size);
+> +				of_node_put(qe);
+> +				of_node_put(brg);
+> +				return *prop;
+
+NULL check here (yes, I know that the old code didn't check).
+
+> +			}
+> +		} else {
+> +			*brg_source = brg_src + QE_CLK1 - 1;
+> +			clocks = of_find_compatible_node(NULL, NULL,
+> +
+"fsl,cpm-clocks");
+> +			prop = of_get_property(clocks,
+> +						"#clock-cells", &size);
+> +			/*
+> +			 * clock-cells = 1 only supported right now.
+> +			 */
+> +			if (*prop != 1)
+
+Again check for NULL (and possibly size).
+
+> +				return 0;
+> +			prop = of_get_property(clocks,
+> +						"clock-frequency",
+&size);
+> +
+> +			brg_input_freq = *(prop+(brg_src - 1));
+
+And again.
+
+> +			of_node_put(clocks);
+> +			of_node_put(brg);
+> +			return brg_input_freq;
+> +		}
+> +	}
+>  	return brg_clk;
+>  }
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
