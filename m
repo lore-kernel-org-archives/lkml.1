@@ -1,101 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935854AbXLQLWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935932AbXLQLYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935854AbXLQLWF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 06:22:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764192AbXLQLVy
+	id S935932AbXLQLYq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 06:24:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935341AbXLQLYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 06:21:54 -0500
-Received: from mx33.mail.ru ([194.67.23.194]:6536 "EHLO mx33.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932170AbXLQLVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 06:21:53 -0500
-Date: Mon, 17 Dec 2007 14:24:16 +0300
-From: Anton Vorontsov <cbou@mail.ru>
-To: Andres Salomon <dilinger@queued.net>
-Cc: cbouatmailru@gmail.com, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/5] power: RFC: introduce a new power API
-Message-ID: <20071217112416.GA25948@localhost.localdomain>
-Reply-To: cbou@mail.ru
-References: <20071216212443.4a1fff3d@ephemeral> <1197858984.3798.201.camel@shinybook.infradead.org> <20071217055123.GA2274@zarina> <20071217024139.2f81e36d@ephemeral>
+	Mon, 17 Dec 2007 06:24:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44462 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764192AbXLQLYg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 06:24:36 -0500
+Date: Mon, 17 Dec 2007 03:22:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: David Sterba <dsterba@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org
+Subject: Re: [PATCH V2] ipwireless_cs driver for 4G PC Card
+Message-Id: <20071217032222.af86c830.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0712171155130.12449@jikos.suse.cz>
+References: <20071130125555.GA10977@ds.suse.cz>
+	<20071212150851.GB10118@ds.suse.cz>
+	<Pine.LNX.4.64.0712171155130.12449@jikos.suse.cz>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20071217024139.2f81e36d@ephemeral>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17, 2007 at 02:41:39AM -0500, Andres Salomon wrote:
-[...]
-> > > On Sun, 2007-12-16 at 21:24 -0500, Andres Salomon wrote:
-> > > > This API has the power_supply drivers device their own device_attribute
-> > > > list; I find this to be a lot more flexible and cleaner.  
+On Mon, 17 Dec 2007 11:57:46 +0100 (CET) Jiri Kosina <jkosina@suse.cz> wrote:
+
+> [ CC list trimmed ] 
+
+often a bad idea...
+
+> On Wed, 12 Dec 2007, David Sterba wrote:
+> 
+> > Changelog:
+> > * files moved to ipwireless/, ipwireless_cs_ stripped from filenames
+> > * _cs stripped from driver name
+> > * kmalloc checks
+> > * sync irq during shutdown
+> > * removed /proc code, converted to module params
 > > 
-> > I don't see how this is more flexible and cleaner. See below.
+> > When merged, please drop ipwireless_cs.git tree from -mm and
+> > include the patch instead.
 > > 
-> > > > For example,
-> > > > rather than having a function with a huge switch statement (as olpc_battery
-> > > > currently has), we have separate callback functions.
+> > Regards,
+> > David Sterba
 > > 
-> > Is this an improvement? Look into ds2760_battery.c. I scared to
-> > imagine what it will look like after conversion.
+> > Rewieved-by: Jiri Slaby <jslaby@suse.cz>
+> > Signed-off-by: Ben Martel <benm@symmetric.co.nz>
+> > Signed-off-by: Stephen Blackheath <stephen@symmetric.co.nz>
+> > Signed-off-by: David Sterba <dsterba@suse.cz>
+> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> > ---
+> >  MAINTAINERS                                     |    8 
+> >  drivers/char/pcmcia/Kconfig                     |    9 
+> >  drivers/char/pcmcia/Makefile                    |    2 
+> >  drivers/char/pcmcia/ipwireless/Makefile         |   10 
+> >  drivers/char/pcmcia/ipwireless/hardware.c       | 1784 ++++++++++++++++++++++++
+> >  drivers/char/pcmcia/ipwireless/hardware.h       |   63 
+> >  drivers/char/pcmcia/ipwireless/main.c           |  496 ++++++
+> >  drivers/char/pcmcia/ipwireless/main.h           |   70 
+> >  drivers/char/pcmcia/ipwireless/network.c        |  513 ++++++
+> >  drivers/char/pcmcia/ipwireless/network.h        |   54 
+> >  drivers/char/pcmcia/ipwireless/setup_protocol.h |  108 +
+> >  drivers/char/pcmcia/ipwireless/tty.c            |  687 +++++++++
+> >  drivers/char/pcmcia/ipwireless/tty.h            |   48 
+> >  13 files changed, 3852 insertions(+)
 > 
-> Why?  It would not look bad after conversion.  Basically:
+> Andrew, what is your position on merging this into your 2.6.25 queue 
+> please? David has fixed all the issues that came up during review, so it 
+> seems to be that it's time for the driver to be merged during the upcoming 
+> merge window.
 > 
-> static ssize_t ds2760_battery_get_status(struct device *dev,
->                 struct device_attribute *attr, char *buf)
-> {
-> 	struct ds2760_device_info *di = to_ds2760_device_info(psy);
-> 	return power_supply_status_str(di->charge_status, buf);
-> }
-> static ssize_t ds2760_battery_get_voltage_now(struct device *dev,
->                 struct device_attribute *attr, char *buf)
-> {
-> 	struct ds2760_device_info *di = to_ds2760_device_info(psy);
-> 	ds2760_battery_read_status(di);
-> 	return sprintf(buf, "%d\n", di->voltage_uV);
-> }
+> If you take it, I am perfectly fine with you dropping the 
+> ipwireless_cs git tree from -mm lineup.
 > 
-> ....an so on.
-> 
-> If I wanted to get really clever, I could do:
-> 
-> #define DS2760_CALLBACK(name, fmt, var)                       \
-> static ssize_t ds2760_battery_get_##name(struct device *dev,  \
-> 		struct device_attribute *attr, char *buf)     \
-> {                                                             \
-> 	struct ds2760_device_info *di = to_ds2760_device_info(psy); \
->         ds2760_battery_read_status(di);                       \
-> 	return sprintf(buf, fmt, var);                        \
-> }
-> 
-> DS2760_CALLBACK(voltage_now, "%d\n", di->voltage_uV)
-> DS2760_CALLBACK(current_now, "%d\n", di->current_uA)
-> 
-> etc.. but, I'm not trying to compress lines of code, I'm trying
-> to ensure things are readable.
 
-Hehe, look: http://lkml.org/lkml/2007/4/11/397
+I'd have thought that you'd merge it into git-ipwireless_cs.patch and that
+you would then take care of merging it into mainline at an appropriate
+time?
 
-These macros are indeed what I've tried to avoid, dozen open-coded
-similar functions not a good option either. I also tried to avoid
-"function per property" stuff...
-
-[lots of sense snipped]
-
-I see your point now. Basically, now I'm encourage to think just one
-more time: is there third (better) option in addition to current and
-this? I still hope there is some not obvious, but elegant solution.
-If there isn't, I'm ready to surrender and will help with everything
-I can.
-
-
-Thanks!
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
