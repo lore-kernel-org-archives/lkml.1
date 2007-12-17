@@ -1,61 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763768AbXLQPu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764807AbXLQPwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763768AbXLQPu2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757047AbXLQPuS
+	id S1764807AbXLQPwz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 10:52:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbXLQPwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:50:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59445 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754998AbXLQPuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:50:17 -0500
-Date: Mon, 17 Dec 2007 10:47:13 -0500
-From: Neil Horman <nhorman@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Neil Horman <nhorman@tuxdriver.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ben Woodard <woodard@redhat.com>, Neil Horman <nhorman@redhat.com>,
-       kexec@lists.infradead.org, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
-       Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
-Message-ID: <20071217154713.GB18036@hmsendeavour.rdu.redhat.com>
-References: <86802c440712111151t29acd38kf9fac8e41743f3e4@mail.gmail.com> <20071211205955.GF10999@hmsreliant.think-freely.org> <20071212142132.GC4889@bingen.suse.de> <20071212155515.GA29735@hmsendeavour.rdu.redhat.com> <20071212160722.GD4889@bingen.suse.de> <m1prxbu2ah.fsf@ebiederm.dsl.xmission.com> <20071212202215.GB29735@hmsendeavour.rdu.redhat.com> <m1lk7ztx9p.fsf@ebiederm.dsl.xmission.com> <20071213143922.GA4674@hmsreliant.think-freely.org> <20071217151642.GA25081@elte.hu>
+	Mon, 17 Dec 2007 10:52:47 -0500
+Received: from kuber.nabble.com ([216.139.236.158]:59217 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753578AbXLQPwq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 10:52:46 -0500
+Message-ID: <14372561.post@talk.nabble.com>
+Date: Mon, 17 Dec 2007 07:52:45 -0800 (PST)
+From: a_kumar <cable_plug2000@yahoo.com>
+To: linux-kernel@vger.kernel.org
+Subject: problem with ending requests asynchronously in my block device
+ driver
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071217151642.GA25081@elte.hu>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 7bit
+X-Nabble-From: cable_plug2000@yahoo.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17, 2007 at 04:16:42PM +0100, Ingo Molnar wrote:
-> 
-> * Neil Horman <nhorman@tuxdriver.com> wrote:
-> 
-> > Ok, new patch attached, taking into account Andi's request for a 
-> > cleaner method to implement single application quirks.  I've spoken 
-> > with Ben, who is continuing to retest, and reports that clean 
-> > methodical testing results in success with this patch.
-> 
-> thanks, i've added your patch to x86.git#mm - queued up for v2.6.25 
-> merging. But v2.6.24 merging would be too risky i think: it's not a 
-> regression fix and for a regular fix it's a bit late in the cycle for a 
-> bugfix that changes so many aspects of the early quirk code.
-> 
-> 	Ingo
 
-Copy that, thanks Ingo!
-Neil
+Hi,
 
+I've a block device driver which does the following,
+
+Inside the request function I do something like this:
+request(fn) {
+
+ while ((req = elv_next_request(q)) != NULL) {
+....................set up the request;
+ spin_unlock_irq(q->queue_lock);
+call the transfer(set_up_req) function;
+spin_lock_irq(q->queue_lock);
+}
+       spin_unlock_irq (q->queue_lock);
+        /* allow callback to execute as it needs the lock!!! */
+        spin_lock_irq (q->queue_lock);
+
+
+}
+and the transfer function calls the scsi_execute_asyn(....) with the
+callback function doing the end request. So, the ending of the request is
+done like below:
+
+callback(fn) {
+
+ spin_lock_irqsave(q->queue_lock, flags);
+        if (!end_that_request_first(set_up_req->req, cmpstatus,
+                        set_up_req->req->nr_sectors)) {
+                add_disk_randomness(...);
+                end_that_request_last(set_up_req->req,0);
+        }
+        spin_unlock_irqrestore(q->queue_lock, flags);
+}
+
+
+This code works fine with most of the kernel versions, but fails on some
+like , Linux 2.6.18-8.el5-xen
+
+Please help me to find out where I'm going wrong?
+
+when I say 'fails' it just hangs without any error ....I'm using dt(Data
+test) to write to the disk. The logs show that all the requests that have
+been sent for processing, have completed sucessfully. Its just that new
+requests never enter the request function. So, the dt writes almost half the
+data and then simply hangs.
+
+ 
+  The actual code does nothing but, call the scsi_execute_async , which
+ later on calls the callback function which is used to end the request.
+ So, both the callback function and the request function need to share
+ the queue lock. So the code samples I sent cover all the aspects of my
+ program. What I'm looking for here is how can I end the requests
+ asynchronously much later after the request processing is done. Please note
+ here that the asynchronous end requests is done by the callback function
+ of the scsi_execute_async, which needs to share the queue lock with
+ the request function.
+   
+  when I say 'fails' it just hangs without any error ....I'm using
+ dt(Data
+test) to write to the disk. The logs show that all the requests that
+ have
+been sent for processing, have completed successfully. Its just that new
+requests never enter the request function. So, the dt writes almost
+ half the
+data and then simply hangs.
+
+
+Thanks in advance for an early reply.
+Anil P.
 -- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@redhat.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+View this message in context: http://www.nabble.com/problem-with-ending-requests-asynchronously-in-my-block-device-driver-tp14372561p14372561.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
+
