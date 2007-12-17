@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935880AbXLQQU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936152AbXLQQVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935880AbXLQQU4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 11:20:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935537AbXLQQUg
+	id S936152AbXLQQVW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 11:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935929AbXLQQUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 11:20:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56820 "EHLO mx1.redhat.com"
+	Mon, 17 Dec 2007 11:20:44 -0500
+Received: from dspnet.fr.eu.org ([213.186.44.138]:2820 "EHLO dspnet.fr.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935031AbXLQQUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 11:20:35 -0500
-Message-ID: <4766A199.70504@redhat.com>
-Date: Mon, 17 Dec 2007 11:19:37 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp>,
-       Rusty Lynch <rusty.lynch@intel.com>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       Keshavamurthy Anil S <anil.s.keshavamurthy@intel.com>
-Subject: Re: Final kprobes rollup patches
-References: <1197708350.898.87.camel@brick> <20071215085015.GA9720@elte.hu> <1197709442.898.97.camel@brick> <20071215131204.GE9720@elte.hu> <4766841B.1040500@redhat.com> <20071217143050.GA13290@elte.hu> <476695D9.8090904@redhat.com> <20071217160659.GC30958@elte.hu>
-In-Reply-To: <20071217160659.GC30958@elte.hu>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S935011AbXLQQUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 11:20:43 -0500
+Date: Mon, 17 Dec 2007 17:20:40 +0100
+From: Olivier Galibert <galibert@pobox.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Filippos Papadopoulos <psybases@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: INITIO scsi driver fails to work properly
+Message-ID: <20071217162040.GB5056@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Boaz Harrosh <bharrosh@panasas.com>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Filippos Papadopoulos <psybases@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com> <20071217031841.f483e5ac.akpm@linux-foundation.org> <20071217130523.7e9c88bb@the-village.bc.nu> <47668A75.7040707@panasas.com> <20071217143641.760d4162@the-village.bc.nu> <1197903781.3204.4.camel@localhost.localdomain> <47669F1B.4090400@panasas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47669F1B.4090400@panasas.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Mon, Dec 17, 2007 at 06:08:59PM +0200, Boaz Harrosh wrote:
+> Below fixes a deadly typo. Might as well be included in 2.6.24
 
-Ingo Molnar wrote:
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
->>> cool! Please Cc: lkml and Harvey as well so that there's less 
->>> overlap in unification work - Harvey spent quite some time unifying 
->>> and cleaning up the kprobes code during the past week.
->> Should I rewrite it based on current git tree?
->> My patch includes 3 part of patches.
->> - 2 Bugfix patches (which is not merged yet.)
->> - 2 booster patches (ditto)
->> - 2 unification patches (most of this patches are already done by Harvey's patch)
-> 
-> would it be easier/more robust to first did the unification patches and 
-> then get the bugfixes and new features in? That would give us your 
-> bugfixes and new features on both 32-bit and 64-bit at the same time.
+You're sure ?  scsi_for_each_sg includes a (sg)++ already...
 
-As far as I can see, my patches have less #ifdefs than Harvey's.
-However, that patch's granularity may be not so good currently.
 
-> feel free to do whichever approach you prefer - but it would be nice to 
-> preserve the unification and cleanup work done by Harvey.
+>  		scsi_for_each_sg(cmnd, sglist, cblk->sglen, i) {
+>  			sg->data = cpu_to_le32((u32)sg_dma_address(sglist));
+>  			total_len += sg->len = cpu_to_le32((u32)sg_dma_len(sglist));
+> +			++sg;
+>  		}
 
-OK, rewriting will take a while, so I sent a series of patches which I have just now.
-
-> btw., is any of your bugfixes 2.6.24 material?
-
-Yes, I'd like to fix first two bugs in 2.6.24.
-
-Thank you very much,
-
-> 
-> 	Ingo
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
-
+  OG.
