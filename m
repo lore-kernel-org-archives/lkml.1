@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764416AbXLQPRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbXLQPTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764416AbXLQPRM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:17:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763675AbXLQPQ5
+	id S1758248AbXLQPTT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 10:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757506AbXLQPTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:16:57 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58138 "EHLO mx1.redhat.com"
+	Mon, 17 Dec 2007 10:19:12 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59534 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754087AbXLQPQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:16:56 -0500
-Message-ID: <476692C0.7020802@redhat.com>
-Date: Mon, 17 Dec 2007 10:16:16 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1757485AbXLQPTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 10:19:11 -0500
+Date: Mon, 17 Dec 2007 16:16:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ben Woodard <woodard@redhat.com>, Neil Horman <nhorman@redhat.com>,
+       kexec@lists.infradead.org, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
+       Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
+	boot cpu
+Message-ID: <20071217151642.GA25081@elte.hu>
+References: <20071211192434.GD10999@hmsreliant.think-freely.org> <86802c440712111151t29acd38kf9fac8e41743f3e4@mail.gmail.com> <20071211205955.GF10999@hmsreliant.think-freely.org> <20071212142132.GC4889@bingen.suse.de> <20071212155515.GA29735@hmsendeavour.rdu.redhat.com> <20071212160722.GD4889@bingen.suse.de> <m1prxbu2ah.fsf@ebiederm.dsl.xmission.com> <20071212202215.GB29735@hmsendeavour.rdu.redhat.com> <m1lk7ztx9p.fsf@ebiederm.dsl.xmission.com> <20071213143922.GA4674@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: Unify cosmetic kprobes{32|64}.c
-References: <1197674207.898.72.camel@brick>
-In-Reply-To: <1197674207.898.72.camel@brick>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071213143922.GA4674@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Harvey,
 
-Harvey Harrison wrote:
-> diff --git a/arch/x86/kernel/kprobes_32.c b/arch/x86/kernel/kprobes_32.c
-> index f4ba584..2a8acd6 100644
-> --- a/arch/x86/kernel/kprobes_32.c
-> +++ b/arch/x86/kernel/kprobes_32.c
-> @@ -234,7 +234,7 @@ static int __kprobes is_IF_modifier(kprobe_opcode_t opcode)
->  
->  int __kprobes arch_prepare_kprobe(struct kprobe *p)
->  {
-> -	/* insn: must be on special executable page on i386. */
-> +	/* insn: must be on special executable page on x86_32|64. */
->  	p->ainsn.insn = get_insn_slot();
->  	if (!p->ainsn.insn)
->  		return -ENOMEM;
-> @@ -373,13 +373,21 @@ static void __kprobes set_current_kprobe(struct kprobe *p, struct pt_regs *regs,
->  static __always_inline void clear_btf(void)
->  {
->  	if (test_thread_flag(TIF_DEBUGCTLMSR))
-> +#ifdef CONFIG_X86_32
->  		wrmsr(MSR_IA32_DEBUGCTLMSR, 0, 0);
-> +#else
-> +		wrmsrl(MSR_IA32_DEBUGCTLMSR, 0);
-> +#endif
->  }
->  
->  static __always_inline void restore_btf(void)
->  {
->  	if (test_thread_flag(TIF_DEBUGCTLMSR))
-> +#ifdef CONFIG_X86_32
->  		wrmsr(MSR_IA32_DEBUGCTLMSR, current->thread.debugctlmsr, 0);
-> +#else
-> +		wrmsrl(MSR_IA32_DEBUGCTLMSR, current->thread.debugctlmsr);
-> +#endif
->  }
+* Neil Horman <nhorman@tuxdriver.com> wrote:
 
-I think you can use wrmsr() on X86_64 too.
-So, we can merge it to wrmsr().
+> Ok, new patch attached, taking into account Andi's request for a 
+> cleaner method to implement single application quirks.  I've spoken 
+> with Ben, who is continuing to retest, and reports that clean 
+> methodical testing results in success with this patch.
 
+thanks, i've added your patch to x86.git#mm - queued up for v2.6.25 
+merging. But v2.6.24 merging would be too risky i think: it's not a 
+regression fix and for a regular fix it's a bit late in the cycle for a 
+bugfix that changes so many aspects of the early quirk code.
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
-
+	Ingo
