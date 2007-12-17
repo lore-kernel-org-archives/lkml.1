@@ -1,83 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932503AbXLQQtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbXLQQuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932503AbXLQQtq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 11:49:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759393AbXLQQtH
+	id S1753733AbXLQQuk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 11:50:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbXLQQuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 11:49:07 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58646 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755556AbXLQQtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 11:49:04 -0500
-Date: Mon, 17 Dec 2007 17:48:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "David P. Reed" <dpreed@reed.com>, Rene Herman <rene.herman@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Paul Rolland <rol@as2917.net>,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       rol@witbe.net
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
-Message-ID: <20071217164832.GA13353@elte.hu>
-References: <476524DB.7020806@gmail.com> <20071216152250.GA21245@elte.hu> <4765D43E.1010800@gmail.com> <20071217105744.GA14315@elte.hu> <4766684D.40202@gmail.com> <20071217130933.GB27992@elte.hu> <47667812.8050708@gmail.com> <47667A85.3080100@reed.com> <20071217143900.GA16604@elte.hu> <20071217161243.05c32df4@the-village.bc.nu>
+	Mon, 17 Dec 2007 11:50:21 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58342 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755644AbXLQQuT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 11:50:19 -0500
+Date: Mon, 17 Dec 2007 17:50:17 +0100
+From: Jan Kara <jack@suse.cz>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>
+Subject: Re: [PATCH 6/6] udf: fix sparse warnings (shadowing & mismatch between declaration and definition)
+Message-ID: <20071217165017.GJ6979@atrey.karlin.mff.cuni.cz>
+References: <20071216021741.GG26986@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071217161243.05c32df4@the-village.bc.nu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20071216021741.GG26986@joi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> I don't think we should be offering udelay based delays at this point. 
-> There are a lot of drivers to fix first. This is just one trivial 
-> example
+> fix warnings:
+> fs/udf/super.c:1320:24: warning: symbol 'bh' shadows an earlier one
+> fs/udf/super.c:1240:21: originally declared here
+> fs/udf/super.c:1583:4: warning: symbol 'i' shadows an earlier one
+> fs/udf/super.c:1418:6: originally declared here
+> fs/udf/super.c:1585:4: warning: symbol 'i' shadows an earlier one
+> fs/udf/super.c:1418:6: originally declared here
+> fs/udf/super.c:1658:4: warning: symbol 'i' shadows an earlier one
+> fs/udf/super.c:1648:6: originally declared here
+> fs/udf/super.c:1660:4: warning: symbol 'i' shadows an earlier one
+> fs/udf/super.c:1648:6: originally declared here
+> fs/udf/super.c:450:6: warning: symbol 'udf_write_super' was not declared. Should it be static?
 > 
-> ...
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> CC: Ben Fennema <bfennema@falcon.csc.calpoly.edu>
+  Thanks for the patch.  The 'bh' change is fine. The problems with 'i'
+should be solved differently I think. Those functions UDF_SB_FREE,
+UDF_SB_ALLOC_PARTMAPS should be functions and not macros. Please convert
+those to either inline functions if they are small or to regular
+functions if they are larger.  It won't be completely trivial because of
+the hackery e.g. in UDF_SB_ALLOC_BITMAP. It gets an argument meaning on
+which struct member something should be performed. But for example in
+the UDF_SB_ALLOC_BITMAP case you can simply make the function return the
+pointer to allocated and initialized space and the caller would assign
+it to a proper element of the superblock. This would help the overall
+code quality of UDF (which is sadly quite poor). Thanks.
+
+								Honza
+> ---
+>  fs/udf/super.c |   15 +++++++--------
+>  1 files changed, 7 insertions(+), 8 deletions(-)
 > 
-> --- drivers/watchdog/wdt.c~	2007-12-17 15:58:49.000000000 +0000
-> +++ drivers/watchdog/wdt.c	2007-12-17 15:58:49.000000000 +0000
-> @@ -70,6 +70,8 @@
->  static int io=0x240;
->  static int irq=11;
->  
-> +static DEFINE_SPINLOCK(wdt_lock);
-> +
->  module_param(io, int, 0);
->  MODULE_PARM_DESC(io, "WDT io port (default=0x240)");
->  module_param(irq, int, 0);
-> @@ -109,6 +111,8 @@
->  
->  static int wdt_start(void)
+> diff --git a/fs/udf/super.c b/fs/udf/super.c
+> index 4360c7a..9f82b5a 100644
+> --- a/fs/udf/super.c
+> +++ b/fs/udf/super.c
+> @@ -447,7 +447,7 @@ static int udf_parse_options(char *options, struct udf_options *uopt)
+>  	return 1;
+>  }
+> 
+> -void udf_write_super(struct super_block *sb)
+> +static void udf_write_super(struct super_block *sb)
 >  {
-> +	unsigned long flags;
-> +	spin_lock_irqsave(&wdt_lock, flags);
->  	inb_p(WDT_DC);			/* Disable watchdog */
->  	wdt_ctr_mode(0,3);		/* Program CTR0 for Mode 3:
-
-a really stupid question, in what way does:
-
-  inb_p(WDT_DC);
-
-work better than:
-
-  inb(WDT_DC);
-  delay(2);
-
-?
-
-(i'm not suggesting you are wrong, this detail just fails to click at 
-the moment.)
-
-	Ingo
+>  	lock_kernel();
+> 
+> @@ -1317,7 +1317,6 @@ static int udf_load_partition(struct super_block *sb, kernel_lb_addr *fileset)
+>  				UDF_SB_TYPEVIRT(sb, i).s_num_entries =
+>  					(UDF_SB_VAT(sb)->i_size - 36) >> 2;
+>  			} else if (UDF_SB_PARTTYPE(sb, i) == UDF_VIRTUAL_MAP20) {
+> -				struct buffer_head *bh = NULL;
+>  				uint32_t pos;
+> 
+>  				pos = udf_block_map(UDF_SB_VAT(sb), 0);
+> @@ -1415,7 +1414,7 @@ static void udf_close_lvid(struct super_block *sb)
+>   */
+>  static int udf_fill_super(struct super_block *sb, void *options, int silent)
+>  {
+> -	int i;
+> +	int idx;
+>  	struct inode *inode = NULL;
+>  	struct udf_options uopt;
+>  	kernel_lb_addr rootdir, fileset;
+> @@ -1584,8 +1583,8 @@ error_out:
+>  		if (UDF_SB_PARTFLAGS(sb, UDF_SB_PARTITION(sb)) & UDF_PART_FLAG_FREED_BITMAP)
+>  			UDF_SB_FREE_BITMAP(sb,UDF_SB_PARTITION(sb), s_fspace);
+>  		if (UDF_SB_PARTTYPE(sb, UDF_SB_PARTITION(sb)) == UDF_SPARABLE_MAP15) {
+> -			for (i = 0; i < 4; i++)
+> -				brelse(UDF_SB_TYPESPAR(sb, UDF_SB_PARTITION(sb)).s_spar_map[i]);
+> +			for (idx = 0; idx < 4; idx++)
+> +				brelse(UDF_SB_TYPESPAR(sb, UDF_SB_PARTITION(sb)).s_spar_map[idx]);
+>  		}
+>  	}
+>  #ifdef CONFIG_UDF_NLS
+> @@ -1645,7 +1644,7 @@ void udf_warning(struct super_block *sb, const char *function,
+>   */
+>  static void udf_put_super(struct super_block *sb)
+>  {
+> -	int i;
+> +	int idx;
+> 
+>  	if (UDF_SB_VAT(sb))
+>  		iput(UDF_SB_VAT(sb));
+> @@ -1659,8 +1658,8 @@ static void udf_put_super(struct super_block *sb)
+>  		if (UDF_SB_PARTFLAGS(sb, UDF_SB_PARTITION(sb)) & UDF_PART_FLAG_FREED_BITMAP)
+>  			UDF_SB_FREE_BITMAP(sb,UDF_SB_PARTITION(sb), s_fspace);
+>  		if (UDF_SB_PARTTYPE(sb, UDF_SB_PARTITION(sb)) == UDF_SPARABLE_MAP15) {
+> -			for (i = 0; i < 4; i++)
+> -				brelse(UDF_SB_TYPESPAR(sb, UDF_SB_PARTITION(sb)).s_spar_map[i]);
+> +			for (idx = 0; idx < 4; idx++)
+> +				brelse(UDF_SB_TYPESPAR(sb, UDF_SB_PARTITION(sb)).s_spar_map[idx]);
+>  		}
+>  	}
+>  #ifdef CONFIG_UDF_NLS
+> --
+> 1.5.3.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
