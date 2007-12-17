@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937391AbXLQUQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762245AbXLQURZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937391AbXLQUQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936281AbXLQUCX
+	id S1762245AbXLQURZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:17:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936705AbXLQUEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 15:02:23 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:3402 "EHLO perches.com"
+	Mon, 17 Dec 2007 15:04:04 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60205 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936630AbXLQUCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 15:02:21 -0500
-Subject: Re: [PATCH] include/asm-mips/: Spelling fixes
-From: Joe Perches <joe@perches.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org
-In-Reply-To: <4766D3BE.7070509@ru.mvista.com>
-References: <1197919875-5288-10-git-send-email-joe@perches.com>
-	 <4766D3BE.7070509@ru.mvista.com>
-Content-Type: text/plain
-Date: Mon, 17 Dec 2007 12:02:09 -0800
-Message-Id: <1197921729.27386.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+	id S935263AbXLQUEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 15:04:00 -0500
+Message-ID: <4766D502.9020100@redhat.com>
+Date: Mon, 17 Dec 2007 14:58:58 -0500
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Joe Perches <joe@perches.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, jcliburn@gmail.com
+Subject: Re: [PATCH] drivers/net/: Spelling fixes
+References: <1197920439-5455-2-git-send-email-joe@perches.com>
+In-Reply-To: <1197920439-5455-2-git-send-email-joe@perches.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-12-17 at 22:53 +0300, Sergei Shtylyov wrote:
-> > - * PCI interrupts will come in on either the INTA or INTD interrups lines,
-> > + * PCI interrupts will come in on either the INTA or INTD interrupts lines,
->     "interrupt" here.
+Joe Perches wrote:
+>  drivers/net/atl1/atl1_hw.c                     |    2 +-
+>  drivers/net/atl1/atl1_main.c                   |    2 +-
 
-Quite right.
-I did them by script and inspected, but didn't notice that one.
-cheers, Joe
+The atl1 code will be heavily reworked in the 2.6.25 merge window, so this may 
+cause headaches.  Please remove these chunks before merging.
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
-diff --git a/include/asm-mips/mach-wrppmc/mach-gt64120.h b/include/asm-mips/mach-wrppmc/mach-gt64120.h
-index 00d8bf6..465234a 100644
---- a/include/asm-mips/mach-wrppmc/mach-gt64120.h
-+++ b/include/asm-mips/mach-wrppmc/mach-gt64120.h
-@@ -45,7 +45,7 @@
- #define GT_PCI_IO_SIZE	0x02000000UL
- 
- /*
-- * PCI interrupts will come in on either the INTA or INTD interrups lines,
-+ * PCI interrupts will come in on either the INTA or INTD interrupt lines,
-  * which are mapped to the #2 and #5 interrupt pins of the MIPS.  On our
-  * boards, they all either come in on IntD or they all come in on IntA, they
-  * aren't mixed. There can be numerous PCI interrupts, so we keep a list of the
+The spelling corrections themselves are fine, and I will ensure that the revised 
+driver includes them, if the comments in question are still present at all once 
+we're done with all the changes and cleanups.
 
-
+	-- Chris
