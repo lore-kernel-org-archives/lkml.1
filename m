@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759279AbXLQSNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbXLQSNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759279AbXLQSNA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 13:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbXLQSMw
+	id S1760061AbXLQSNX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 13:13:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbXLQSNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 13:12:52 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:47125 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753733AbXLQSMv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 13:12:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ODvFsBbIukiwnV/zICGFuS0NxNs63rX0HuKJS5C203nyYKkG0NNfzxZ2SPLQL10X+fY3Qd+quFnY4RNabkChQlY6MdPQGVPhQuAPcHZZrncDEZaLgWoHHbtlVPUniVXy6dUe547xmNtbVy/hq1M5UVElAhgqOsiaXX+d26udLc4=
-Message-ID: <2c0942db0712171012o613b2596x81f4a867e2b5c01@mail.gmail.com>
-Date: Mon, 17 Dec 2007 10:12:47 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: Signed divides vs shifts (Re: [Security] /dev/urandom uses uninit bytes, leaks user data)
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       "John Reiser" <jreiser@bitwagon.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, security@kernel.org,
-       tytso@mit.edu,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       mpm@selenic.com, linux-sparse@vger.kernel.org
-In-Reply-To: <20071217191017.117c61ff.dada1@cosmosbay.com>
+	Mon, 17 Dec 2007 13:13:14 -0500
+Received: from styx.suse.cz ([82.119.242.94]:45110 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753733AbXLQSNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 13:13:12 -0500
+Date: Mon, 17 Dec 2007 19:13:11 +0100
+From: Jan Kara <jack@suse.cz>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Convert some variables to pgoff_t
+Message-ID: <20071217181311.GE25521@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <E1J3RD5-0006yU-00@gondolin.me.apana.org.au>
-	 <alpine.LFD.0.9999.0712170856050.21557@woody.linux-foundation.org>
-	 <20071217185557.0b501e23.dada1@cosmosbay.com>
-	 <2c0942db0712171005w65bbb512p71a4f9b1fc65c6a7@mail.gmail.com>
-	 <20071217191017.117c61ff.dada1@cosmosbay.com>
-X-Google-Sender-Auth: cf993f1b7bac71cb
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 17, 2007 10:10 AM, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> On Mon, 17 Dec 2007 10:05:35 -0800
-> "Ray Lee" <ray-lk@madrabbit.org> wrote:
->
-> > On Dec 17, 2007 9:55 AM, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> > > -               mid = (last - first) / 2 + first;
-> > > +       while (low <= high) {
-> > > +               mid = (low + high) / 2;
-> >
-> > I think you just introduced a bug. Think about what happens if
-> > low=high=MAX_LONG/2 + 1.
-> >
->
-> Fortunatly this is not possible :)
->
-> Hint : sizeof(struct exception_table_entry) is >= 8
->
-> so high is garanteed to be <= MAX_LONG/8
+  Hi,
 
-Ah, my bad. One of these days I'll learn to not post before coffee.
+  while doing some other work I spotted that a few variables should be
+pgoff_t while they are declared as unsigned long. Attached patch should fix
+that.
+
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
+---
+
+Convert variables containing page indexes to pgoff_t.
+
+Signed-off-by: Jan Kara <jack@suse.cz>
+
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 188cf5f..ae2f868 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1294,7 +1294,7 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 	struct file_ra_state *ra = &file->f_ra;
+ 	struct inode *inode = mapping->host;
+ 	struct page *page;
+-	unsigned long size;
++	pgoff_t size;
+ 	int did_readaround = 0;
+ 	int ret = 0;
+ 
+diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
+index 32132f3..590a178 100644
+--- a/mm/filemap_xip.c
++++ b/mm/filemap_xip.c
+@@ -55,7 +55,8 @@ do_xip_mapping_read(struct address_space *mapping,
+ 		    read_actor_t actor)
+ {
+ 	struct inode *inode = mapping->host;
+-	unsigned long index, end_index, offset;
++	pgoff_t index, end_index;
++	unsigned long offset;
+ 	loff_t isize;
+ 
+ 	BUG_ON(!mapping->a_ops->get_xip_page);
