@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964853AbXLQMZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbXLQMeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964853AbXLQMZP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 07:25:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935283AbXLQMY7
+	id S1757420AbXLQMeo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 07:34:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbXLQMeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 07:24:59 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:6991 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S935644AbXLQMY6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 07:24:58 -0500
-Message-ID: <47666A8E.7090600@panasas.com>
-Date: Mon, 17 Dec 2007 14:24:46 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Filippos Papadopoulos <psybases@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: INITIO scsi driver fails to work properly
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>	 <20071217031841.f483e5ac.akpm@linux-foundation.org> <9f00bd9d0712170341u7fef1fc9pc9986dda1a0475cb@mail.gmail.com> <47666904.8060605@panasas.com>
-In-Reply-To: <47666904.8060605@panasas.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 17 Dec 2007 07:34:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59570 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751381AbXLQMef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 07:34:35 -0500
+Subject: Re: Top kernel oopses/warnings this week
+From: Jon Masters <jcm@redhat.com>
+To: Dave Jones <davej@redhat.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation>, protasnb@gmail.com
+In-Reply-To: <20071217025129.GA12815@redhat.com>
+References: <4762CF8C.90808@linux.intel.com>
+	 <4763F771.10105@s5r6.in-berlin.de>  <20071217025129.GA12815@redhat.com>
+Content-Type: text/plain
+Organization: Red Hat, Inc.
+Date: Mon, 17 Dec 2007 07:33:34 -0500
+Message-Id: <1197894814.18713.36.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Dec 2007 12:24:49.0069 (UTC) FILETIME=[D10745D0:01C840A7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17 2007 at 14:18 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
-> On Mon, Dec 17 2007 at 13:41 +0200, "Filippos Papadopoulos" <psybases@gmail.com> wrote:
->> On Dec 17, 2007 1:18 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->>> On Mon, 17 Dec 2007 11:39:47 +0200 "Filippos Papadopoulos" <psybases@gmail.com> wrote:
->>>
->>>> Hi,
->>>> I have got an INITIO 9100 UW SCSI Controller with an IBM
->>>> IC35L036UWD210-0 scsi hard disk on a 32 bit x86 system.
->>>> Currently i have SUSE 10.1 (Kernel 2.6.16).
->>>>
->>>> I tried to install OpenSUSE 10.3 (kernel 2.6.22.5) and the latest
->>>> OpenSUSE 11.0 Alpha 0  (kernel 2.6.24-rc4) but although the initio
->>>> driver
->>>> gets loaded during the installation process, yast reports that no hard
->>>> disk is found. I believe that this isnt a bug in suse's yast but a
->>>> problem
->>>> in the initio scsi driver because i also tried to install Fedora 8
->>>> (kernel 2.6.23) with the same problem.
->>>> I have seen the relevant thread "Conflict when loading initio driver"
->>>> and i suppose that the initio driver isnt fixed yet.
->>>> I can help testing the new patches in the initio driver if someone is
->>>> interested.
->>> initio doesn't seem to have a maintainer...
->>>
->>> Are you able to identify any earlier kernel which worked OK?
->>>
->> I have this PC configuration since 2002. The initio driver worked
->> perfectly with 2.4 kernel series.
->> With the release of 2.6 kernel series the driver had been marked as
->> BROKEN and fixed at 2.6.9
->> (see at http://www.gossamer-threads.com/lists/linux/kernel/482582?search_string=SCSI%20updates%20for%202.6.9;#482582
->>   Christoph Hellwig  ->don't mark the initio 9100 driver broken)
->>
->>
->>> Maybe it's a new device?  If you can get the `lspci -vvxx' output
->>> for that device we can take a look.
->>>
->> No its not a new device.
->> -
-> 
-> I have found one problem. Please try patch [2] below and report.
-> If it still fails try to enable debugging by setting with patch [1]
-> these values at top of drivers/scsi/initio.c. And send dmsgs.
-> 
-> Boaz
-> 
-I forgot to ask. 2.6.22 should work. If still fails could you try
-this 2.6.22.xx kernel?
 
-Boaz
+On Sun, 2007-12-16 at 21:51 -0500, Dave Jones wrote:
+> On Sat, Dec 15, 2007 at 04:49:05PM +0100, Stefan Richter wrote:
+>  
+>  > Reports about tainted kernels have arguably less value.  It would be
+>  > good to hide such reports until a report of the same oops in an
+>  > untainted kernel was found.
+>  
+> I disagree with this.  It's useful to have a "we've seen this before,
+> and every time, it was tainted with xyz module" datapoint, especially
+> if no untainted copies of that oops turn up.
+
++1
+
+In fact, that's even more useful in many cases, if it helps demonstrate
+that the oops is associated with a particular buggy binary driver. I can
+see a lot of potentially interesting statistics coming from that too.
+
+Jon.
+
 
