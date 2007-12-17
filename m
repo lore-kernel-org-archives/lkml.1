@@ -1,101 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbXLQSN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759947AbXLQSQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756849AbXLQSN4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 13:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756218AbXLQSNq
+	id S1759947AbXLQSQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 13:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbXLQSQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 13:13:46 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:53404 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753733AbXLQSNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 13:13:45 -0500
-Date: Mon, 17 Dec 2007 19:13:02 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: "Remy Bohmer" <linux@bohmer.net>
-Cc: "Andrew Victor" <linux@maxim.org.za>, RT <linux-rt-users@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: Atmel Serial Console interrupt handler splitup
-Message-ID: <20071217191302.7385f8cc@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20071217131701.6b2cdf2c@dhcp-252-066.norway.atmel.com>
-References: <3efb10970712070724i6fa66666t2b8422329759ce24@mail.gmail.com>
-	<Pine.LNX.4.58.0712121606241.23712@gandalf.stny.rr.com>
-	<3efb10970712121429l7b41d57md4f826f6aaf4b71@mail.gmail.com>
-	<3efb10970712130840r7a2c5f72jca641d1cac545464@mail.gmail.com>
-	<cd73a99e0712130933s6f601ef7sed90f48c08d9adaa@mail.gmail.com>
-	<3efb10970712131232j5f747420g4aa8b5bd956e3dd3@mail.gmail.com>
-	<3efb10970712131235t47a9ceb5y7d9a7d5023d07bf6@mail.gmail.com>
-	<3efb10970712140346l1845d563k900d72d8788ac6f5@mail.gmail.com>
-	<20071217131701.6b2cdf2c@dhcp-252-066.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Dec 2007 13:16:18 -0500
+Received: from spirit.analogic.com ([204.178.40.4]:2891 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755671AbXLQSQR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 13:16:17 -0500
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C840D8.BD1D8080"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 17 Dec 2007 18:15:01.0053 (UTC) FILETIME=[BD2596D0:01C840D8]
+Content-class: urn:content-classes:message
+Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80 on some AMD64x2 laptops, etc.
+Date: Mon, 17 Dec 2007 13:14:51 -0500
+Message-ID: <Pine.LNX.4.61.0712171307150.4584@chaos.analogic.com>
+in-reply-to: <4763385E.9040106@reed.com>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] x86_64: fix problems due to use of "outb" to port 80 on some AMD64x2 laptops, etc.
+thread-index: AchA2L0vR89leYCWTiG+eEZPCkrhzQ==
+References: <466F0941.9060201@reed.com> <1181682498.8176.224.camel@chaos>  <469578CD.3080609@reed.com>  <1184216528.12353.203.camel@chaos>  <1184218962.12353.209.camel@chaos>  <46964352.7040301@reed.com>  <1184253339.12353.223.camel@chaos>  <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <4762AA68.9030507@qumranet.com> <4763385E.9040106@reed.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: "Avi Kivity" <avi@qumranet.com>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Rene Herman" <rene.herman@keyaccess.nl>, "Pavel Machek" <pavel@ucw.cz>,
+       "kvm-devel" <kvm-devel@lists.sourceforge.net>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007 13:17:01 +0100
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+This is a multi-part message in MIME format.
 
-> > 3) NEW: optional:  add-atmel-serial-dma.patch, this merged the DMA
-> > code (from Chip Coldwell) in your 2.6.23 patch back on top of this
-> > series. Because the AT32 bug is not been fixed for a very long time, I
-> > do not expect it to be fixed soon, so I think a reordering is better
-> > to make preempt-RT work on AT91.  
-> 
-> I'll give it a shot, but first I have some comments on your other
-> patches.
+------_=_NextPart_001_01C840D8.BD1D8080
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-I found a bug. The RX DMA buffer isn't invalidated before it's handed
-over to the hardware. With the below patch, it seems to behave a lot
-better on AVR32, but it still does funny things now and then (it seems
-to dump a good chunk of stale TX data before rebooting), and magic sysrq
-doesn't work.
 
-I think I've spotted other potential races in the DMA code as well, but
-they look a bit more difficult to hunt down. I'll give it another try
-tomorrow.
+On Fri, 14 Dec 2007, David P. Reed wrote:
 
-Haavard
+> Avi Kivity wrote:
+>> kvm will forward a virtual machine's writes to port 0x80 to the real
+>> port.  The reason is that the write is much faster than exiting and
+>> emulating it; the difference is measurable when compiling kernels.
+>>
+>> Now if the cause is simply writing to port 0x80, then we must stop
+>> doing that.  But if the reason is the back-to-back writes, when we can
+>> keep it, since the other writes will be trapped by kvm and emulated.
+>> Do you which is the case?
+>>
+> As for kvm, I don't have enough info to know anything about that.  Is
+> there a test you'd like me to try?
+>
+> I think you are also asking if the crash on these laptops is caused only
+> by back-to-back writes.  Actually, it doesn't seem to matter if they are
+> back to back.  I can cause the crash if the writes to 80 are very much
+> spread out in time - it seems only to matter how many of them get
+> executed - almost as if there is a buffer overflow.  (And of course if
+> you do back to back writes to other ports that are apparently fully
+> unused, such as 0xED on my machine, no crash occurs).
+>
+> I believe (though no one seems to have confirming documentation from the
+> chipset or motherboard vendor) that port 80 is actually functional for
+> some unknown function on these machines.   (They do respond to "in"
+> instructions faster than a bus cycle abort does - more evidence).
+>
+> I searched the DSDT to see if there is any evidence of an ACPI use for
+> this port, but found nothing.
+>
+>
 
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH] atmel_serial: Sync DMA RX buffer after copying from it
+Attached is a patch that changes the outs to ins on port 0x80.
+I did NOT let gcc decide what to do about modified registers.
+Instead, the code saves/restores EAX itself so that all of the
+times (whatever they are) are the same.
 
-Calling dma_sync_single_for_cpu() before reading the buffer isn't
-enough. We need to call dma_sync_single_for_device() after we're done
-reading as well.
+The code works and is running here. I also patched a very early
+version (2.4.26) running on  a 400 MHz i486 with an real ISA
+bus (Adaptec AHA1453). It works too.
 
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
----
- drivers/serial/atmel_serial.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+David, will you please try it on your machine. Maybe reading
+from the port is less harmful than writing.
 
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index 0610ad9..e23a3ba 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -391,6 +391,8 @@ static void atmel_pdc_endrx(struct uart_port *port)
- 		tty_insert_flip_string(tty, pdc->buf + pdc->ofs, count);
- 		tty_flip_buffer_push(tty);
- 
-+		dma_sync_single_for_device(port->dev, pdc->dma_addr,
-+				pdc->dma_size, DMA_FROM_DEVICE);
- 		port->icount.rx += count;
- 	}
- 
-@@ -425,6 +427,8 @@ static void atmel_pdc_timeout(struct uart_port *port)
- 		tty_insert_flip_string(tty, pdc->buf + pdc->ofs, count);
- 		tty_flip_buffer_push(tty);
- 
-+		dma_sync_single_for_device(port->dev, pdc->dma_addr,
-+				pdc->dma_size, DMA_FROM_DEVICE);
- 		pdc->ofs = ofs;
- 		port->icount.rx += count;
- 	}
--- 
-1.5.3.4
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.27 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be=
+ privileged.  Any review, retransmission, dissemination, or other use of=
+ this information by persons or entities other than the intended recipient=
+ is prohibited.  If you are not the intended recipient, please notify=
+ Analogic Corporation immediately - by replying to this message or by=
+ sending an email to DeliveryErrors@analogic.com - and destroy all copies=
+ of this information, including any attachments, without reading or=
+ disclosing them.
+
+Thank you.
+------_=_NextPart_001_01C840D8.BD1D8080
+Content-Type: TEXT/PLAIN;
+	name="io.h.patch"
+Content-Transfer-Encoding: base64
+Content-Description: io.h.patch
+Content-Disposition: attachment;
+	filename="io.h.patch"
+
+LS0tIGxpbnV4LTIuNi4yMi4xL2luY2x1ZGUvYXNtLWkzODYvaW8uaC5vcmlnCTIwMDctMDctMTAg
+MTQ6NTY6MzAuMDAwMDAwMDAwIC0wNDAwDQorKysgbGludXgtMi42LjIyLjEvaW5jbHVkZS9hc20t
+aTM4Ni9pby5oCTIwMDctMTItMTcgMTI6MDY6MTAuMDAwMDAwMDAwIC0wNTAwDQpAQCAtMjUyLDcg
+KzI1MiwxMCBAQA0KIA0KIHN0YXRpYyBpbmxpbmUgdm9pZCBuYXRpdmVfaW9fZGVsYXkodm9pZCkN
+CiB7DQotCWFzbSB2b2xhdGlsZSgib3V0YiAlJWFsLCQweDgwIiA6IDogOiAibWVtb3J5Iik7DQor
+CWFzbSB2b2xhdGlsZSgJInB1c2hsICUlZWF4XG5cdCINCisJCQkiaW5iICQweDgwLCAlJWFsXG5c
+dCINCisJCQkicG9wbCAlJWVheFxuXHQiDQorCQkJIDogOiA6ICJtZW1vcnkiKTsNCiB9DQogDQog
+I2lmIGRlZmluZWQoQ09ORklHX1BBUkFWSVJUKQ0K
+
+------_=_NextPart_001_01C840D8.BD1D8080--
 
