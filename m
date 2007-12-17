@@ -1,100 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbXLQPdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764780AbXLQPfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758247AbXLQPdq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:33:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbXLQPdh
+	id S1764780AbXLQPfK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 10:35:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbXLQPe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:33:37 -0500
-Received: from zcars04f.nortel.com ([47.129.242.57]:45972 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754883AbXLQPdg (ORCPT
+	Mon, 17 Dec 2007 10:34:58 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:59487 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756234AbXLQPe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:33:36 -0500
-Message-ID: <476696A5.1010101@nortel.com>
-Date: Mon, 17 Dec 2007 09:32:53 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 17 Dec 2007 10:34:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=bgftBFwKl+7i8CTjSsTG5WScnb2ZAWxeVNPe43fmFuvj1CpJw78rYHXxNWQRZn92DBNQJJswVCq1hX7/K/FhP6UOPpef0mYJJbc2k0jlqC1EZ1r2B6RCVaUZNqr03v1NiE87POy5r5ykzTsVgUAJyErKW/8KRafwap4Pz0dx2jE=
+Date: Mon, 17 Dec 2007 18:34:45 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jan Beulich <jbeulich@novell.com>, tglx@linutronix.de,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [PATCH] x86-64: make pda's cpunumber and nodenumber unsigned
+Message-ID: <20071217153445.GB7882@cvg.cvg>
+References: <47610530.76E4.0078.0@novell.com> <20071217132619.GB1870@elte.hu> <476689AF.76E4.0078.0@novell.com> <20071217145317.GD16604@elte.hu>
 MIME-Version: 1.0
-To: yoshfuji@linux-ipv6.org
-CC: dada1@cosmosbay.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: "ip neigh show" not showing arp cache entries?
-References: <4760279E.1080203@nortel.com>	<47602DD0.8070402@cosmosbay.com> <47605934.2060604@nortel.com> <20071213.070641.20411400.yoshfuji@linux-ipv6.org>
-In-Reply-To: <20071213.070641.20411400.yoshfuji@linux-ipv6.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 17 Dec 2007 15:32:56.0723 (UTC) FILETIME=[18FE9630:01C840C2]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071217145317.GD16604@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YOSHIFUJI Hideaki / 吉藤英明 wrote:
-> In article <47605934.2060604@nortel.com> (at Wed, 12 Dec 2007
-> 15:57:08 -0600), "Chris Friesen" <cfriesen@nortel.com> says:
+[Ingo Molnar - Mon, Dec 17, 2007 at 03:53:17PM +0100]
+| 
+| * Jan Beulich <jbeulich@novell.com> wrote:
+| 
+| > > good catch! Applied your patch to x86.git - queued it up for 
+| > > v2.6.25. I bet there are tons of other instances where we use signed 
+| > > instead of unsigned and get worse code generation.
+| > 
+| > Yes, definitely. This patch was kind of a testing one whether this is 
+| > a welcome change. As it appears to be, I'll probably produce more as I 
+| > run into respective cases.
+| 
+| they are definitely welcome! Especially when fields are also used in 
+| integer multiplications or divisions then the cost of signedness can be 
+| quite significant. We regularly do such int -> uint sweeps in the 
+| scheduler code and it's a great code size reductor.
+| 
+| Btw., a sidenote: if you are touching files that you care about, and if 
+| you've got a few spare cycles, you might also want to take a look at 
+| checkpatch.pl output:
+| 
+|  $ scripts/checkpatch.pl --file include/asm-x86/pda.h
+|  ...
+|  total: 23 errors, 1 warnings, 133 lines checked
+| 
+| as it might have a few low hanging fruits ripe for cleanup ;-)
+| 
+| 	Ingo
+| 
 
->>> You may try other versions of this command
->>> 
->>> http://devresources.linux-foundation.org/dev/iproute2/download/
->> 
->> They appear to be numbered by kernel version, and the above version
->> is the most recent one for 2.6.14.  Will more recent ones (for
->> newer kernels) work with my kernel?
+Hi, I've tried to make a one ;) It's over last (today synced) linus tree.
 
-> It should work; if it doesn't, please make a report.  Thanks.
+		Cyrill
+---
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: [PATCH] x86: cleanup pda.h to fulfil checkpatch
 
-I downloaded iproute2-2.6.23 and built it for my kernel.
+---
 
-I'm compiling for a different kernel than is actually running on the 
-build system, so I had to add a line defining KERNEL_INCLUDE to the 
-Makefile, and I had to add "-I${KERNEL_INCLUDE}" to the CFLAGS 
-definition.  Someone might want to do something about that...
+Checkpatch still does complain about
+	if (0) { T__ tmp__; tmp__ = (val)
+I'm not sure if we need this line at all.
 
-Anyways, the arp entry issue is still there.  The "arp" command gives a 
-bunch of entries:
+ include/asm-x86/pda.h |   36 ++++++++++++++++++------------------
+ 1 files changed, 18 insertions(+), 18 deletions(-)
 
-root@typhoon-base-unit0:/root> arp -n
-Address          HWtype  HWaddress           Flags Mask            Iface
-192.168.24.81    ether   00:01:AF:14:E9:8A   C                     bond2
-172.24.132.2             (incomplete)                              bond0
-172.24.136.0     ether   00:C0:8B:07:B3:7E   C                     bond0
-172.24.137.0             (incomplete)                              bond0
-172.24.0.9       ether   00:07:E9:41:4B:B4   C                     bond0
-10.41.18.101     ether   00:0E:0C:5E:95:BD   C                     eth6
-172.24.0.11      ether   00:03:CC:51:06:5E   C                     bond0
-172.24.132.1     ether   00:01:AF:14:E9:88   C                     bond0
-172.24.0.15      ether   00:0E:0C:85:FD:D2   C                     bond0
-172.24.0.3       ether   00:01:AF:14:C8:CC   C                     bond0
-172.24.0.5       ether   00:01:AF:15:E0:6A   C                     bond0
-
-The original "ip" command and the new one ("/tmp/ip") both give the same 
-results--some of the entries are missing.
-
-root@typhoon-base-unit0:/root> ip neigh show all
-172.24.137.0 dev bond0  FAILED
-172.24.0.9 dev bond0 lladdr 00:07:e9:41:4b:b4 REACHABLE
-10.41.18.101 dev eth6 lladdr 00:0e:0c:5e:95:bd REACHABLE
-172.24.0.11 dev bond0 lladdr 00:03:cc:51:06:5e STALE
-172.24.132.1 dev bond0 lladdr 00:01:af:14:e9:88 REACHABLE
-172.24.0.15 dev bond0 lladdr 00:0e:0c:85:fd:d2 STALE
-172.24.0.3 dev bond0 lladdr 00:01:af:14:c8:cc REACHABLE
-172.24.0.5 dev bond0 lladdr 00:01:af:15:e0:6a STALE
-
-root@typhoon-base-unit0:/root> /tmp/ip neigh show all
-172.24.137.0 dev bond0  FAILED
-172.24.0.9 dev bond0 lladdr 00:07:e9:41:4b:b4 REACHABLE
-10.41.18.101 dev eth6 lladdr 00:0e:0c:5e:95:bd REACHABLE
-172.24.0.11 dev bond0 lladdr 00:03:cc:51:06:5e STALE
-172.24.132.1 dev bond0 lladdr 00:01:af:14:e9:88 REACHABLE
-172.24.0.15 dev bond0 lladdr 00:0e:0c:85:fd:d2 STALE
-172.24.0.3 dev bond0 lladdr 00:01:af:14:c8:cc REACHABLE
-172.24.0.5 dev bond0 lladdr 00:01:af:15:e0:6a STALE
-
-
-However, if I specifically try to print out one of the missing entries, 
-it shows up:
-
-root@typhoon-base-unit0:/root> /tmp/ip neigh show 192.168.24.81
-192.168.24.81 dev bond2 lladdr 00:01:af:14:e9:8a REACHABLE
-
-
-Chris
+diff --git a/include/asm-x86/pda.h b/include/asm-x86/pda.h
+index 35962bb..00410ec 100644
+--- a/include/asm-x86/pda.h
++++ b/include/asm-x86/pda.h
+@@ -7,14 +7,14 @@
+ #include <linux/cache.h>
+ #include <asm/page.h>
+ 
+-/* Per processor datastructure. %gs points to it while the kernel runs */ 
++/* Per processor datastructure. %gs points to it while the kernel runs */
+ struct x8664_pda {
+ 	struct task_struct *pcurrent;	/* 0  Current process */
+ 	unsigned long data_offset;	/* 8 Per cpu data offset from linker
+ 					   address */
+ 	unsigned long kernelstack;  /* 16 top of kernel stack for current */
+ 	unsigned long oldrsp; 	    /* 24 user rsp for system call */
+-        int irqcount;		    /* 32 Irq nesting counter. Starts with -1 */
++	int irqcount;		    /* 32 Irq nesting counter. Starts with -1 */
+ 	int cpunumber;		    /* 36 Logical CPU number */
+ #ifdef CONFIG_CC_STACKPROTECTOR
+ 	unsigned long stack_canary;	/* 40 stack canary value */
+@@ -43,10 +43,10 @@ extern struct x8664_pda boot_cpu_pda[];
+ 
+ #define cpu_pda(i) (_cpu_pda[i])
+ 
+-/* 
++/*
+  * There is no fast way to get the base address of the PDA, all the accesses
+  * have to mention %fs/%gs.  So it needs to be done this Torvaldian way.
+- */ 
++ */
+ extern void __bad_pda_field(void) __attribute__((noreturn));
+ 
+ /*
+@@ -57,7 +57,7 @@ extern struct x8664_pda _proxy_pda;
+ 
+ #define pda_offset(field) offsetof(struct x8664_pda, field)
+ 
+-#define pda_to_op(op,field,val) do {		\
++#define pda_to_op(op, field, val) do {		\
+ 	typedef typeof(_proxy_pda.field) T__;	\
+ 	if (0) { T__ tmp__; tmp__ = (val); }	/* type checking */ \
+ 	switch (sizeof(_proxy_pda.field)) {	\
+@@ -66,7 +66,7 @@ extern struct x8664_pda _proxy_pda;
+ 		    "+m" (_proxy_pda.field) :	\
+ 		    "ri" ((T__)val),		\
+ 		    "i"(pda_offset(field))); 	\
+- 		break;				\
++		break;				\
+ 	case 4:					\
+ 		asm(op "l %1,%%gs:%c2" : 	\
+ 		    "+m" (_proxy_pda.field) :	\
+@@ -79,15 +79,15 @@ extern struct x8664_pda _proxy_pda;
+ 		    "ri" ((T__)val),		\
+ 		    "i"(pda_offset(field))); 	\
+ 		break;				\
+-       default: 				\
++	default: 				\
+ 		__bad_pda_field();		\
+-       }					\
+-       } while (0)
++	}					\
++	} while (0)
+ 
+ #define pda_from_op(op,field) ({		\
+ 	typeof(_proxy_pda.field) ret__;		\
+ 	switch (sizeof(_proxy_pda.field)) {	\
+-       	case 2:					\
++	case 2:					\
+ 		asm(op "w %%gs:%c1,%0" : 	\
+ 		    "=r" (ret__) :		\
+ 		    "i" (pda_offset(field)), 	\
+@@ -99,25 +99,25 @@ extern struct x8664_pda _proxy_pda;
+ 		    "i" (pda_offset(field)), 	\
+ 		    "m" (_proxy_pda.field)); 	\
+ 		 break;				\
+-       case 8:					\
++	case 8:					\
+ 		asm(op "q %%gs:%c1,%0":		\
+ 		    "=r" (ret__) :		\
+ 		    "i" (pda_offset(field)), 	\
+ 		    "m" (_proxy_pda.field)); 	\
+ 		 break;				\
+-       default: 				\
++	default: 				\
+ 		__bad_pda_field();		\
+        }					\
+        ret__; })
+ 
+-#define read_pda(field) pda_from_op("mov",field)
+-#define write_pda(field,val) pda_to_op("mov",field,val)
+-#define add_pda(field,val) pda_to_op("add",field,val)
+-#define sub_pda(field,val) pda_to_op("sub",field,val)
+-#define or_pda(field,val) pda_to_op("or",field,val)
++#define read_pda(field)		pda_from_op("mov", field)
++#define write_pda(field, val)	pda_to_op("mov", field, val)
++#define add_pda(field, val)	pda_to_op("add", field, val)
++#define sub_pda(field, val)	pda_to_op("sub", field, val)
++#define or_pda(field, val)	pda_to_op("or", field, val)
+ 
+ /* This is not atomic against other CPUs -- CPU preemption needs to be off */
+-#define test_and_clear_bit_pda(bit,field) ({		\
++#define test_and_clear_bit_pda(bit, field) ({		\
+ 	int old__;						\
+ 	asm volatile("btr %2,%%gs:%c3\n\tsbbl %0,%0"		\
+ 	    : "=r" (old__), "+m" (_proxy_pda.field) 		\
