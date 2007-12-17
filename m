@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932314AbXLQPrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbXLQPri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932314AbXLQPrV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757579AbXLQPrN
+	id S1758671AbXLQPri (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 10:47:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932430AbXLQPr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:47:13 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:48023 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756030AbXLQPrM (ORCPT
+	Mon, 17 Dec 2007 10:47:26 -0500
+Received: from ruby.spiritone.com ([216.99.193.130]:56046 "EHLO
+	ruby.spiritone.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932407AbXLQPrZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:47:12 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 17 Dec 2007 07:47:05 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, tytso@thunk.org,
-       Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
-       Christoph Hellwig <hch@lst.de>,
-       Linux Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Tesing of / bugs in new timerfd API
-In-Reply-To: <cfd18e0f0712170527k6e2f20ddq8d3abc367aa20661@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0712170745220.10244@alien.or.mcafeemobile.com>
-References: <47614369.3060906@gmail.com>  <Pine.LNX.4.64.0712131333030.10881@alien.or.mcafeemobile.com>
-  <cfd18e0f0712131416y6159af46v6d0c91d75130cd69@mail.gmail.com> 
- <Pine.LNX.4.64.0712131603010.10881@alien.or.mcafeemobile.com> 
- <4762683D.8050007@gmail.com>  <Pine.LNX.4.64.0712161210120.14339@alien.or.mcafeemobile.com>
- <cfd18e0f0712170527k6e2f20ddq8d3abc367aa20661@mail.gmail.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 17 Dec 2007 10:47:25 -0500
+Message-ID: <47669A16.3010604@BitWagon.com>
+Date: Mon, 17 Dec 2007 07:47:34 -0800
+From: John Reiser <jreiser@BitWagon.com>
+Organization: -
+User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: slab quirks in DEBUG, ctor, and initialization
+X-Enigmail-Version: 0.92.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007, Michael Kerrisk wrote:
+In mm/slab.c, the DEBUG variant of cache_alloc_debugcheck_after
+might call  cachep->ctor(objp, cachep, 0);  but the non-DEBUG
+variant does absolutely nothing.  idr_pre_get is a routine
+which notices the difference.
 
-> > Can you try the two patches below? I tried them on my 32 bit box (one of
-> > the rare beasts still lingering around here) and it seems to be working
-> > fine (those go on top of the previous ones).
-> 
-> Against 2.6.24-rc5, I applied first your earlier patches ("v3") and
-> then the newest patch.  My tests confirm that:
-> 
-> > This fixed the 32 bit tick-count truncation, and makes the time returned
-> > to be the remaining time till the next expiration.
-> 
-> Are you going to resubmit a new patch set that includes these latest changes?
+Even when cache_alloc_debugcheck_after does invoke the ctor,
+then it is conditional upon  cachep->flags & SLAB_POISON .  This
+assumes that the only two states are poisoned and all-zero
+(from .bss static, or via a cleared new page frame.)
+So if SLAB_POISON is not specified, then a ctor which
+does anything other than memset(,0,) is out of luck.
+Instead: if a ctor is specified then it should be called
+for each successful allocation.
 
-Yes, I'll send them out to Andrew today.
+Invoking the ctor from within cache_alloc_debugcheck_after makes it
+awkward for a dynamic checker of allocations and  initializations.
+Valgrind would be happier if allocation and initialization were
+invoked at the same subroutine nesting level, such as in __cache_alloc:
 
+        cache_alloc_debugcheck_before(cachep, flags);
+        local_irq_save(save_flags);
+        objp = __do_cache_alloc(cachep, flags);
+	/* checker marks the space as allocated */
+        local_irq_restore(save_flags);
+        objp = cache_alloc_debugcheck_after(cachep, flags, objp, caller);
+	if (objp && cachep->ctor)
+		cachep->ctor(objp, cachep, 0);
+	/* checker notes initializations during ctor [above] */
 
-- Davide
-
-
+-- 
+John Reiser, jreiser@BitWagon.com
