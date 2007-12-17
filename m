@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933658AbXLQTkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763966AbXLQTkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933658AbXLQTkF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 14:40:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761153AbXLQTbp
+	id S1763966AbXLQTkt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 14:40:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757978AbXLQTbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:31:45 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:2970 "EHLO perches.com"
+	Mon, 17 Dec 2007 14:31:51 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:2986 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760892AbXLQTbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:31:38 -0500
+	id S1761074AbXLQTbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:31:43 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] arch/sh64/: Spelling fixes
-Date: Mon, 17 Dec 2007 11:30:20 -0800
-Message-Id: <1197919875-5288-21-git-send-email-joe@perches.com>
+Subject: [PATCH] include/acpi/: Spelling fixes
+Date: Mon, 17 Dec 2007 11:30:26 -0800
+Message-Id: <1197919875-5288-27-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.7.949.g2221a6
 Message-Id: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918890.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,22 +24,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- arch/sh64/kernel/pci_sh5.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ include/acpi/acpixf.h    |    2 +-
+ include/acpi/processor.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/sh64/kernel/pci_sh5.c b/arch/sh64/kernel/pci_sh5.c
-index b4d9534..dd69d69 100644
---- a/arch/sh64/kernel/pci_sh5.c
-+++ b/arch/sh64/kernel/pci_sh5.c
-@@ -96,7 +96,7 @@ int __init sh5pci_init(unsigned memStart, unsigned memSize)
- 		panic("Unable to remap PCIIO\n");
- 	}
+diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
+index 9512f04..18a6377 100644
+--- a/include/acpi/acpixf.h
++++ b/include/acpi/acpixf.h
+@@ -85,7 +85,7 @@ acpi_install_initialization_handler(acpi_init_handler handler, u32 function);
+ #endif
  
--	pr_debug("Register base addres is 0x%08lx\n", pcicr_virt);
-+	pr_debug("Register base address is 0x%08lx\n", pcicr_virt);
+ /*
+- * ACPI Memory managment
++ * ACPI Memory management
+  */
+ void *acpi_allocate(u32 size);
  
- 	/* Clear snoop registers */
-         SH5PCI_WRITE(CSCR0, 0);
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index 76411b1..6e253b5 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -182,7 +182,7 @@ struct acpi_processor_throttling {
+ /* Limit Interface */
+ 
+ struct acpi_processor_lx {
+-	int px;			/* performace state */
++	int px;			/* performance state */
+ 	int tx;			/* throttle level */
+ };
+ 
 -- 
 1.5.3.7.949.g2221a6
 
