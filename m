@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935417AbXLQKxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935561AbXLQKxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935417AbXLQKxF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 05:53:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763452AbXLQKwx
+	id S935561AbXLQKxm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 05:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933721AbXLQKxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 05:52:53 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37540 "EHLO
+	Mon, 17 Dec 2007 05:53:30 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36730 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752363AbXLQKww (ORCPT
+	by vger.kernel.org with ESMTP id S933650AbXLQKx2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 05:52:52 -0500
-Date: Mon, 17 Dec 2007 02:52:38 -0800
+	Mon, 17 Dec 2007 05:53:28 -0500
+Date: Mon, 17 Dec 2007 02:53:21 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: jurriaan <thunder7@xs4all.nl>
-Cc: linux-kernel@vger.kernel.org, Jiri Kosina <jikos@jikos.cz>
-Subject: Re: 2.6.24-rc5-mm1 compile failure: usbhid_lookup_quirk
-Message-Id: <20071217025238.252f3e89.akpm@linux-foundation.org>
-In-Reply-To: <20071215185040.GA32609@amd64.of.nowhere>
-References: <20071215185040.GA32609@amd64.of.nowhere>
+To: Zsolt Barat <zsolt@softmonsters.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: ATA bus error with external hd on esata
+Message-Id: <20071217025321.2f7507db.akpm@linux-foundation.org>
+In-Reply-To: <476434C7.6040307@softmonsters.com>
+References: <47642D9A.4080600@softmonsters.com>
+	<476434C7.6040307@softmonsters.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,18 +27,91 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Dec 2007 19:50:40 +0100 jurriaan <thunder7@xs4all.nl> wrote:
+On Sat, 15 Dec 2007 21:10:47 +0100 Zsolt Barat <zsolt@softmonsters.com> wrote:
 
->   MODPOST 196 modules
->   ERROR: "usbhid_lookup_quirk" [drivers/hid/usbhid/usbmouse.ko]
->   undefined!
->   ERROR: "usbhid_lookup_quirk" [drivers/hid/usbhid/usbkbd.ko] undefined!
->   make[1]: *** [__modpost] Error 1
->   make: *** [modules] Error 2
-> 
-> The problem was fixed by defining CONFIG_USB_HID=m - but I think that
-> should happen automatically if it is necessary.
-> 
-> .config was created by running make oldconfig against 2.6.23-rc8-mm2:
+> Zsolt Barat schrieb:
+> > hi list,
 
-Thanks.  That's coming out of git-hid.patch.
+Let's cc the IDE development list.
+
+> > i just bought a "MyBook" called external HD with a fixed enclosure, from
+> > WD. Connected to the SATA port i constantly get "ATA bus error" messages
+> > in the kernel log. Is this a known issue?
+> >
+> > /var/log/messages:
+> > Dec 15 18:37:53 proto1 ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0
+> > action 0x2
+> > Dec 15 18:37:53 proto1 ata2.00: irq_stat 0x40000001
+> > Dec 15 18:37:53 proto1 ata2.00: cmd 35/00:e0:a7:d2:01/00:01:33:00:00/e0
+> > tag 0 cdb 0x0 data 245760 out
+> > Dec 15 18:37:53 proto1 res 51/84:00:86:d4:01/00:00:33:00:00/e0 Emask
+> > 0x10 (ATA bus error)
+> > Dec 15 18:37:54 proto1 ata2: soft resetting port
+> > Dec 15 18:37:54 proto1 ata2: SATA link up 1.5 Gbps (SStatus 113 SControl
+> > 310)
+> > Dec 15 18:37:54 proto1 ata2.00: configured for UDMA/33
+> > Dec 15 18:37:54 proto1 ata2: EH complete
+> > Dec 15 18:37:54 proto1 sd 1:0:0:0: [sdb] 976773168 512-byte hardware
+> > sectors (500108 MB)
+> > Dec 15 18:37:54 proto1 sd 1:0:0:0: [sdb] Write Protect is off
+> > Dec 15 18:37:54 proto1 sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+> > Dec 15 18:37:54 proto1 sd 1:0:0:0: [sdb] Write cache: enabled, read
+> > cache: enabled, doesn't support DPO or FUA
+> > Dec 15 18:38:15 proto1 ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0
+> > action 0x2
+> > Dec 15 18:38:15 proto1 ata2.00: irq_stat 0x40000001
+> > Dec 15 18:38:15 proto1 ata2.00: cmd 35/00:80:bf:09:14/00:01:33:00:00/e0
+> > tag 0 cdb 0x0 data 196608 out
+> > Dec 15 18:38:15 proto1 res 51/84:00:3e:0b:14/00:00:33:00:00/e0 Emask
+> > 0x10 (ATA bus error)
+> > Dec 15 18:38:15 proto1 ata2: soft resetting port
+> > Dec 15 18:38:15 proto1 ata2: SATA link up 1.5 Gbps (SStatus 113 SControl
+> > 310)
+> > Dec 15 18:38:15 proto1 ata2.00: configured for UDMA/33
+> > Dec 15 18:38:15 proto1 ata2: EH complete
+> > Dec 15 18:38:15 proto1 sd 1:0:0:0: [sdb] 976773168 512-byte hardware
+> > sectors (500108 MB)
+> > Dec 15 18:38:15 proto1 sd 1:0:0:0: [sdb] Write Protect is off
+> > Dec 15 18:38:15 proto1 sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+> > Dec 15 18:38:15 proto1 sd 1:0:0:0: [sdb] Write cache: enabled, read
+> > cache: enabled, doesn't support DPO or FUA
+> >
+> > lspci:
+> > 00:00.0 Host bridge: ATI Technologies Inc Unknown device 7910
+> > 00:01.0 PCI bridge: ATI Technologies Inc Unknown device 7912
+> > 00:07.0 PCI bridge: ATI Technologies Inc Unknown device 7917
+> > 00:12.0 SATA controller: ATI Technologies Inc SB600 Non-Raid-5 SATA
+> > 00:13.0 USB Controller: ATI Technologies Inc SB600 USB (OHCI0)
+> > 00:13.1 USB Controller: ATI Technologies Inc SB600 USB (OHCI1)
+> > 00:13.2 USB Controller: ATI Technologies Inc SB600 USB (OHCI2)
+> > 00:13.3 USB Controller: ATI Technologies Inc SB600 USB (OHCI3)
+> > 00:13.4 USB Controller: ATI Technologies Inc SB600 USB (OHCI4)
+> > 00:13.5 USB Controller: ATI Technologies Inc SB600 USB Controller (EHCI)
+> > 00:14.0 SMBus: ATI Technologies Inc SB600 SMBus (rev 13)
+> > 00:14.1 IDE interface: ATI Technologies Inc SB600 IDE
+> > 00:14.2 Audio device: ATI Technologies Inc SB600 Azalia
+> > 00:14.3 ISA bridge: ATI Technologies Inc SB600 PCI to LPC Bridge
+> > 00:14.4 PCI bridge: ATI Technologies Inc SB600 PCI to PCI Bridge
+> > 00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+> > HyperTransport Technology Configuration
+> > 00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+> > Address Map
+> > 00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+> > DRAM Controller
+> > 00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+> > Miscellaneous Control
+> > 01:05.0 VGA compatible controller: ATI Technologies Inc Radeon X1200 Series
+> > 01:05.2 Audio device: ATI Technologies Inc Radeon X1200 Series Audio
+> > Controller
+> > 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+> > RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
+> > 03:00.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394 Host
+> > Controller (rev c0)
+> >
+> > thanks and best regards
+> >
+> > zsolt
+> >   
+> sorry, kernel version is: 2.6.23-gentoo-r1
+> 
+
