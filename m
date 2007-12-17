@@ -1,20 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936709AbXLQUCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936646AbXLQUCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936709AbXLQUCb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934023AbXLQTld
+	id S936646AbXLQUCz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933981AbXLQTlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:41:33 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:3209 "EHLO perches.com"
+	Mon, 17 Dec 2007 14:41:31 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:3200 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932382AbXLQTlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:41:21 -0500
+	id S1764114AbXLQTlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:41:18 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg Ungerer <gerg@uclinux.org>
-Subject: [PATCH] include/asm-m68knommu/: Spelling fixes
-Date: Mon, 17 Dec 2007 11:40:23 -0800
-Message-Id: <1197920439-5455-17-git-send-email-joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Hans Reiser <reiserfs-dev@namesys.com>,
+       Kurt Hackel <kurt.hackel@oracle.com>,
+       Mark Fasheh <mark.fasheh@oracle.com>,
+       "Sergey S. Kostyliov" <rathamahata@php4.ru>,
+       Steven Whitehouse <swhiteho@redhat.com>, cluster-devel@redhat.com,
+       ocfs2-devel@oss.oracle.com, reiserfs-devel@vger.kernel.org
+Subject: [PATCH] fs/: Spelling fixes
+Date: Mon, 17 Dec 2007 11:40:21 -0800
+Message-Id: <1197920439-5455-15-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.7.949.g2221a6
 Message-Id: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918893.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,164 +31,166 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- include/asm-m68knommu/bitops.h      |    2 +-
- include/asm-m68knommu/commproc.h    |    2 +-
- include/asm-m68knommu/delay.h       |    2 +-
- include/asm-m68knommu/m5249sim.h    |    4 ++--
- include/asm-m68knommu/m5307sim.h    |   12 ++++++------
- include/asm-m68knommu/m5407sim.h    |   12 ++++++------
- include/asm-m68knommu/m68360_regs.h |    2 +-
- include/asm-m68knommu/mcfuart.h     |    2 +-
- 8 files changed, 19 insertions(+), 19 deletions(-)
+ fs/befs/btree.c            |    2 +-
+ fs/befs/datastream.c       |    2 +-
+ fs/freevxfs/vxfs_dir.h     |    2 +-
+ fs/freevxfs/vxfs_immed.c   |    2 +-
+ fs/gfs2/recovery.c         |    2 +-
+ fs/ocfs2/alloc.c           |    2 +-
+ fs/ocfs2/dir.c             |    2 +-
+ fs/ocfs2/ocfs1_fs_compat.h |    2 +-
+ fs/ocfs2/suballoc.c        |    2 +-
+ fs/reiserfs/bitmap.c       |    6 +++---
+ 10 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/include/asm-m68knommu/bitops.h b/include/asm-m68knommu/bitops.h
-index f8dfb7b..89b928f 100644
---- a/include/asm-m68knommu/bitops.h
-+++ b/include/asm-m68knommu/bitops.h
-@@ -262,7 +262,7 @@ static __inline__ unsigned long ext2_find_next_zero_bit(void *addr, unsigned lon
- 		 * tmp = __swab32(*(p++));
- 		 * tmp |= ~0UL >> (32-offset);
- 		 *
--		 * but this would decrease preformance, so we change the
-+		 * but this would decrease performance, so we change the
- 		 * shift:
- 		 */
- 		tmp = *(p++);
-diff --git a/include/asm-m68knommu/commproc.h b/include/asm-m68knommu/commproc.h
-index 0161ebb..36e870b 100644
---- a/include/asm-m68knommu/commproc.h
-+++ b/include/asm-m68knommu/commproc.h
-@@ -715,7 +715,7 @@ extern void cpm_install_handler(int vec, void (*handler)(void *), void *dev_id);
- #define	CICR_SCC_SCC3		((uint)0x00200000)	/* SCC3 @ SCCc */
- #define	CICR_SCB_SCC2		((uint)0x00040000)	/* SCC2 @ SCCb */
- #define	CICR_SCA_SCC1		((uint)0x00000000)	/* SCC1 @ SCCa */
--#define CICR_IRL_MASK		((uint)0x0000e000)	/* Core interrrupt */
-+#define CICR_IRL_MASK		((uint)0x0000e000)	/* Core interrupt */
- #define CICR_HP_MASK		((uint)0x00001f00)	/* Hi-pri int. */
- #define CICR_IEN		((uint)0x00000080)	/* Int. enable */
- #define CICR_SPS		((uint)0x00000001)	/* SCC Spread */
-diff --git a/include/asm-m68knommu/delay.h b/include/asm-m68knommu/delay.h
-index 04a20fd..55cbd62 100644
---- a/include/asm-m68knommu/delay.h
-+++ b/include/asm-m68knommu/delay.h
-@@ -68,7 +68,7 @@ static inline void _udelay(unsigned long usecs)
+diff --git a/fs/befs/btree.c b/fs/befs/btree.c
+index af5bb93..4202db7 100644
+--- a/fs/befs/btree.c
++++ b/fs/befs/btree.c
+@@ -232,7 +232,7 @@ befs_bt_read_node(struct super_block *sb, befs_data_stream * ds,
+  * @key: Key string to lookup in btree
+  * @value: Value stored with @key
+  *
+- * On sucess, returns BEFS_OK and sets *@value to the value stored
++ * On success, returns BEFS_OK and sets *@value to the value stored
+  * with @key (usually the disk block number of an inode).
+  *
+  * On failure, returns BEFS_ERR or BEFS_BT_NOT_FOUND.
+diff --git a/fs/befs/datastream.c b/fs/befs/datastream.c
+index aacb4da..11088f4 100644
+--- a/fs/befs/datastream.c
++++ b/fs/befs/datastream.c
+@@ -236,7 +236,7 @@ befs_count_blocks(struct super_block * sb, befs_data_stream * ds)
+ 	as in the indirect region code).
+ 	
+ 	When/if blockno is found, if blockno is inside of a block 
+-	run as stored on disk, we offset the start and lenght members 
++	run as stored on disk, we offset the start and length members 
+ 	of the block run, so that blockno is the start and len is
+ 	still valid (the run ends in the same place).
+ 	
+diff --git a/fs/freevxfs/vxfs_dir.h b/fs/freevxfs/vxfs_dir.h
+index 3c96d6e..aaf1fb0 100644
+--- a/fs/freevxfs/vxfs_dir.h
++++ b/fs/freevxfs/vxfs_dir.h
+@@ -41,7 +41,7 @@
+  * VxFS directory block header.
+  *
+  * This entry is the head of every filesystem block in a directory.
+- * It is used for free space managment and additionally includes
++ * It is used for free space management and additionally includes
+  * a hash for speeding up directory search (lookup).
+  *
+  * The hash may be empty and in fact we do not use it all in the
+diff --git a/fs/freevxfs/vxfs_immed.c b/fs/freevxfs/vxfs_immed.c
+index 24b5a77..8a5959a 100644
+--- a/fs/freevxfs/vxfs_immed.c
++++ b/fs/freevxfs/vxfs_immed.c
+@@ -54,7 +54,7 @@ const struct inode_operations vxfs_immed_symlink_iops = {
+ };
+ 
  /*
-  *	Moved the udelay() function into library code, no longer inlined.
-  *	I had to change the algorithm because we are overflowing now on
-- *	the faster ColdFire parts. The code is a little biger, so it makes
-+ *	the faster ColdFire parts. The code is a little bigger, so it makes
-  *	sense to library it.
+- * Adress space operations for immed files and directories.
++ * Address space operations for immed files and directories.
   */
- extern void udelay(unsigned long usecs);
-diff --git a/include/asm-m68knommu/m5249sim.h b/include/asm-m68knommu/m5249sim.h
-index 399814f..366eb86 100644
---- a/include/asm-m68knommu/m5249sim.h
-+++ b/include/asm-m68knommu/m5249sim.h
-@@ -43,10 +43,10 @@
- #define MCFSIM_CSAR1		0x8c		/* CS 1 Address reg (r/w) */
- #define MCFSIM_CSMR1		0x90		/* CS 1 Mask reg (r/w) */
- #define MCFSIM_CSCR1		0x96		/* CS 1 Control reg (r/w) */
--#define MCFSIM_CSAR2		0x98		/* CS 2 Adress reg (r/w) */
-+#define MCFSIM_CSAR2		0x98		/* CS 2 Address reg (r/w) */
- #define MCFSIM_CSMR2		0x9c		/* CS 2 Mask reg (r/w) */
- #define MCFSIM_CSCR2		0xa2		/* CS 2 Control reg (r/w) */
--#define MCFSIM_CSAR3		0xa4		/* CS 3 Adress reg (r/w) */
-+#define MCFSIM_CSAR3		0xa4		/* CS 3 Address reg (r/w) */
- #define MCFSIM_CSMR3		0xa8		/* CS 3 Mask reg (r/w) */
- #define MCFSIM_CSCR3		0xae		/* CS 3 Control reg (r/w) */
+ const struct address_space_operations vxfs_immed_aops = {
+ 	.readpage =		vxfs_immed_readpage,
+diff --git a/fs/gfs2/recovery.c b/fs/gfs2/recovery.c
+index beb6c7a..b1cdfa7 100644
+--- a/fs/gfs2/recovery.c
++++ b/fs/gfs2/recovery.c
+@@ -450,7 +450,7 @@ int gfs2_recover_journal(struct gfs2_jdesc *jd)
+ 		fs_info(sdp, "jid=%u: Trying to acquire journal lock...\n",
+ 			jd->jd_jid);
  
-diff --git a/include/asm-m68knommu/m5307sim.h b/include/asm-m68knommu/m5307sim.h
-index d3ce550..5886728 100644
---- a/include/asm-m68knommu/m5307sim.h
-+++ b/include/asm-m68knommu/m5307sim.h
-@@ -64,22 +64,22 @@
- #define MCFSIM_CSMR7		0xda		/* CS 7 Mask reg (r/w) */
- #define MCFSIM_CSCR7		0xde		/* CS 7 Control reg (r/w) */
- #else
--#define MCFSIM_CSAR2		0x98		/* CS 2 Adress reg (r/w) */
-+#define MCFSIM_CSAR2		0x98		/* CS 2 Address reg (r/w) */
- #define MCFSIM_CSMR2		0x9c		/* CS 2 Mask reg (r/w) */
- #define MCFSIM_CSCR2		0xa2		/* CS 2 Control reg (r/w) */
--#define MCFSIM_CSAR3		0xa4		/* CS 3 Adress reg (r/w) */
-+#define MCFSIM_CSAR3		0xa4		/* CS 3 Address reg (r/w) */
- #define MCFSIM_CSMR3		0xa8		/* CS 3 Mask reg (r/w) */
- #define MCFSIM_CSCR3		0xae		/* CS 3 Control reg (r/w) */
--#define MCFSIM_CSAR4		0xb0		/* CS 4 Adress reg (r/w) */
-+#define MCFSIM_CSAR4		0xb0		/* CS 4 Address reg (r/w) */
- #define MCFSIM_CSMR4		0xb4		/* CS 4 Mask reg (r/w) */
- #define MCFSIM_CSCR4		0xba		/* CS 4 Control reg (r/w) */
--#define MCFSIM_CSAR5		0xbc		/* CS 5 Adress reg (r/w) */
-+#define MCFSIM_CSAR5		0xbc		/* CS 5 Address reg (r/w) */
- #define MCFSIM_CSMR5		0xc0		/* CS 5 Mask reg (r/w) */
- #define MCFSIM_CSCR5		0xc6		/* CS 5 Control reg (r/w) */
--#define MCFSIM_CSAR6		0xc8		/* CS 6 Adress reg (r/w) */
-+#define MCFSIM_CSAR6		0xc8		/* CS 6 Address reg (r/w) */
- #define MCFSIM_CSMR6		0xcc		/* CS 6 Mask reg (r/w) */
- #define MCFSIM_CSCR6		0xd2		/* CS 6 Control reg (r/w) */
--#define MCFSIM_CSAR7		0xd4		/* CS 7 Adress reg (r/w) */
-+#define MCFSIM_CSAR7		0xd4		/* CS 7 Address reg (r/w) */
- #define MCFSIM_CSMR7		0xd8		/* CS 7 Mask reg (r/w) */
- #define MCFSIM_CSCR7		0xde		/* CS 7 Control reg (r/w) */
- #endif /* CONFIG_OLDMASK */
-diff --git a/include/asm-m68knommu/m5407sim.h b/include/asm-m68knommu/m5407sim.h
-index 75dcdac..cc22c4a 100644
---- a/include/asm-m68knommu/m5407sim.h
-+++ b/include/asm-m68knommu/m5407sim.h
-@@ -48,22 +48,22 @@
- #define MCFSIM_CSMR1		0x90		/* CS 1 Mask reg (r/w) */
- #define MCFSIM_CSCR1		0x96		/* CS 1 Control reg (r/w) */
+-		/* Aquire the journal lock so we can do recovery */
++		/* Acquire the journal lock so we can do recovery */
  
--#define MCFSIM_CSAR2		0x98		/* CS 2 Adress reg (r/w) */
-+#define MCFSIM_CSAR2		0x98		/* CS 2 Address reg (r/w) */
- #define MCFSIM_CSMR2		0x9c		/* CS 2 Mask reg (r/w) */
- #define MCFSIM_CSCR2		0xa2		/* CS 2 Control reg (r/w) */
--#define MCFSIM_CSAR3		0xa4		/* CS 3 Adress reg (r/w) */
-+#define MCFSIM_CSAR3		0xa4		/* CS 3 Address reg (r/w) */
- #define MCFSIM_CSMR3		0xa8		/* CS 3 Mask reg (r/w) */
- #define MCFSIM_CSCR3		0xae		/* CS 3 Control reg (r/w) */
--#define MCFSIM_CSAR4		0xb0		/* CS 4 Adress reg (r/w) */
-+#define MCFSIM_CSAR4		0xb0		/* CS 4 Address reg (r/w) */
- #define MCFSIM_CSMR4		0xb4		/* CS 4 Mask reg (r/w) */
- #define MCFSIM_CSCR4		0xba		/* CS 4 Control reg (r/w) */
--#define MCFSIM_CSAR5		0xbc		/* CS 5 Adress reg (r/w) */
-+#define MCFSIM_CSAR5		0xbc		/* CS 5 Address reg (r/w) */
- #define MCFSIM_CSMR5		0xc0		/* CS 5 Mask reg (r/w) */
- #define MCFSIM_CSCR5		0xc6		/* CS 5 Control reg (r/w) */
--#define MCFSIM_CSAR6		0xc8		/* CS 6 Adress reg (r/w) */
-+#define MCFSIM_CSAR6		0xc8		/* CS 6 Address reg (r/w) */
- #define MCFSIM_CSMR6		0xcc		/* CS 6 Mask reg (r/w) */
- #define MCFSIM_CSCR6		0xd2		/* CS 6 Control reg (r/w) */
--#define MCFSIM_CSAR7		0xd4		/* CS 7 Adress reg (r/w) */
-+#define MCFSIM_CSAR7		0xd4		/* CS 7 Address reg (r/w) */
- #define MCFSIM_CSMR7		0xd8		/* CS 7 Mask reg (r/w) */
- #define MCFSIM_CSCR7		0xde		/* CS 7 Control reg (r/w) */
+ 		error = gfs2_glock_nq_num(sdp, jd->jd_jid, &gfs2_journal_glops,
+ 					  LM_ST_EXCLUSIVE,
+diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
+index ce62c15..602bf0b 100644
+--- a/fs/ocfs2/alloc.c
++++ b/fs/ocfs2/alloc.c
+@@ -3326,7 +3326,7 @@ static int ocfs2_insert_path(struct inode *inode,
+ 	if (insert->ins_split != SPLIT_NONE) {
+ 		/*
+ 		 * We could call ocfs2_insert_at_leaf() for some types
+-		 * of splits, but it's easier to just let one seperate
++		 * of splits, but it's easier to just let one separate
+ 		 * function sort it all out.
+ 		 */
+ 		ocfs2_split_record(inode, left_path, right_path,
+diff --git a/fs/ocfs2/dir.c b/fs/ocfs2/dir.c
+index 63b28fd..63fd06e 100644
+--- a/fs/ocfs2/dir.c
++++ b/fs/ocfs2/dir.c
+@@ -1215,7 +1215,7 @@ static int ocfs2_expand_inline_dir(struct inode *dir, struct buffer_head *di_bh,
+ 	down_write(&oi->ip_alloc_sem);
  
-diff --git a/include/asm-m68knommu/m68360_regs.h b/include/asm-m68knommu/m68360_regs.h
-index a3f8cc8..d57217c 100644
---- a/include/asm-m68knommu/m68360_regs.h
-+++ b/include/asm-m68knommu/m68360_regs.h
-@@ -138,7 +138,7 @@
- #define CICR_SCC_SCC3           ((uint)0x00200000)      /* SCC3 @ SCCc */
- #define CICR_SCD_SCC4           ((uint)0x00c00000)      /* SCC4 @ SCCd */
+ 	/*
+-	 * Prepare for worst case allocation scenario of two seperate
++	 * Prepare for worst case allocation scenario of two separate
+ 	 * extents.
+ 	 */
+ 	if (alloc == 2)
+diff --git a/fs/ocfs2/ocfs1_fs_compat.h b/fs/ocfs2/ocfs1_fs_compat.h
+index 0b499bc..dfb313b 100644
+--- a/fs/ocfs2/ocfs1_fs_compat.h
++++ b/fs/ocfs2/ocfs1_fs_compat.h
+@@ -77,7 +77,7 @@ struct ocfs1_disk_lock
+ {
+ /*00*/	__u32 curr_master;
+ 	__u8 file_lock;
+-	__u8 compat_pad[3];  /* Not in orignal definition.  Used to
++	__u8 compat_pad[3];  /* Not in original definition.  Used to
+ 				make the already existing alignment
+ 				explicit */
+ 	__u64 last_write_time;
+diff --git a/fs/ocfs2/suballoc.c b/fs/ocfs2/suballoc.c
+index 8f09f52..201f594 100644
+--- a/fs/ocfs2/suballoc.c
++++ b/fs/ocfs2/suballoc.c
+@@ -648,7 +648,7 @@ bail:
+  * sync-data inodes."
+  *
+  * Note: OCFS2 already does this differently for metadata vs data
+- * allocations, as those bitmaps are seperate and undo access is never
++ * allocations, as those bitmaps are separate and undo access is never
+  * called on a metadata group descriptor.
+  */
+ static int ocfs2_test_bg_bit_allocatable(struct buffer_head *bg_bh,
+diff --git a/fs/reiserfs/bitmap.c b/fs/reiserfs/bitmap.c
+index 16b331d..f491ceb 100644
+--- a/fs/reiserfs/bitmap.c
++++ b/fs/reiserfs/bitmap.c
+@@ -272,7 +272,7 @@ static inline int block_group_used(struct super_block *s, u32 id)
  
--#define CICR_IRL_MASK           ((uint)0x0000e000)      /* Core interrrupt */
-+#define CICR_IRL_MASK           ((uint)0x0000e000)      /* Core interrupt */
- #define CICR_HP_MASK            ((uint)0x00001f00)      /* Hi-pri int. */
- #define CICR_VBA_MASK           ((uint)0x000000e0)      /* Vector Base Address */
- #define CICR_SPS                ((uint)0x00000001)      /* SCC Spread */
-diff --git a/include/asm-m68knommu/mcfuart.h b/include/asm-m68knommu/mcfuart.h
-index 873d080..873876d 100644
---- a/include/asm-m68knommu/mcfuart.h
-+++ b/include/asm-m68knommu/mcfuart.h
-@@ -72,7 +72,7 @@ struct mcf_platform_uart {
- #define	MCFUART_UTB		0x0c		/* Transmit Buffer (w) */
- #define	MCFUART_UIPCR		0x10		/* Input Port Change (r) */
- #define	MCFUART_UACR		0x10		/* Auxiliary Control (w) */
--#define	MCFUART_UISR		0x14		/* Interrup Status (r) */
-+#define	MCFUART_UISR		0x14		/* Interrupt Status (r) */
- #define	MCFUART_UIMR		0x14		/* Interrupt Mask (w) */
- #define	MCFUART_UBG1		0x18		/* Baud Rate MSB (r/w) */
- #define	MCFUART_UBG2		0x1c		/* Baud Rate LSB (r/w) */
+ 	/* If we don't have cached information on this bitmap block, we're
+ 	 * going to have to load it later anyway. Loading it here allows us
+-	 * to make a better decision. This favors long-term performace gain
++	 * to make a better decision. This favors long-term performance gain
+ 	 * with a better on-disk layout vs. a short term gain of skipping the
+ 	 * read and potentially having a bad placement. */
+ 	if (info->free_count == UINT_MAX) {
+@@ -663,7 +663,7 @@ static inline void new_hashed_relocation(reiserfs_blocknr_hint_t * hint)
+ 
+ /*
+  * Relocation based on dirid, hashing them into a given bitmap block
+- * files. Formatted nodes are unaffected, a seperate policy covers them
++ * files. Formatted nodes are unaffected, a separate policy covers them
+  */
+ static void dirid_groups(reiserfs_blocknr_hint_t * hint)
+ {
+@@ -688,7 +688,7 @@ static void dirid_groups(reiserfs_blocknr_hint_t * hint)
+ 
+ /*
+  * Relocation based on oid, hashing them into a given bitmap block
+- * files. Formatted nodes are unaffected, a seperate policy covers them
++ * files. Formatted nodes are unaffected, a separate policy covers them
+  */
+ static void oid_groups(reiserfs_blocknr_hint_t * hint)
+ {
 -- 
 1.5.3.7.949.g2221a6
 
