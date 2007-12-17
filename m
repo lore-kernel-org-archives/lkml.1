@@ -1,163 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936005AbXLQQW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762703AbXLQQ1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936005AbXLQQW5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 11:22:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbXLQQWs
+	id S1762703AbXLQQ1Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 11:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbXLQQ1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 11:22:48 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:60156 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757557AbXLQQWr (ORCPT
+	Mon, 17 Dec 2007 11:27:14 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:19236 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753030AbXLQQ1M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 11:22:47 -0500
-Date: Mon, 17 Dec 2007 17:22:46 +0100
-From: Jan Kara <jack@suse.cz>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 4/6] udf: fix 3 signedness & 1 unitialized variable warnings
-Message-ID: <20071217162245.GH6979@atrey.karlin.mff.cuni.cz>
-References: <20071216021451.GE26986@joi>
+	Mon, 17 Dec 2007 11:27:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Opt3e07oEDJrDhuvHKvTFhpaZB6/Qg/eL8gkEXCZMlTRz+Lq5QLCdDP1PEuPFbuI7lTfB5bDJCim+y/eb3rfMxOMCbRJcCc6nvTRt0gorDRba7586nLiYMvzdaqRMgnxy/GwQDVWa5wmpaHrLLL9023Mse4UHvxuKVTM0WGJE74=
+Message-ID: <3ae72650712170827o21ea5e25v83490b2e73df2aa@mail.gmail.com>
+Date: Mon, 17 Dec 2007 17:27:11 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
+Subject: Re: [1/4] DST: Distributed storage documentation.
+Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <11979038192980@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071216021451.GE26986@joi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <11979038181687@2ka.mipt.ru> <11979038192980@2ka.mipt.ru>
+X-Google-Sender-Auth: 0b213334c0e3a6e0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> sparse generated:
-> fs/udf/inode.c:324:41: warning: incorrect type in argument 4 (different signedness)
-> fs/udf/inode.c:324:41:    expected long *<noident>
-> fs/udf/inode.c:324:41:    got unsigned long *<noident>
-> 
-> inode_getblk always set 4th argument to uint32_t value
-> 3rd parameter of map_bh is sector_t (which is unsigned long or u64)
-> so convert phys value to sector_t
-> 
-> fs/udf/inode.c:1818:47: warning: incorrect type in argument 3 (different signedness)
-> fs/udf/inode.c:1818:47:    expected int *<noident>
-> fs/udf/inode.c:1818:47:    got unsigned int *<noident>
-> fs/udf/inode.c:1826:46: warning: incorrect type in argument 3 (different signedness)
-> fs/udf/inode.c:1826:46:    expected int *<noident>
-> fs/udf/inode.c:1826:46:    got unsigned int *<noident>
-> 
-> udf_get_filelongad and udf_get_shortad are called always for uint32_t
-> values (struct extent_position->offset), so it's safe to convert offset
-> parameter to uint32_t
-> 
-> gcc warned:
-> fs/udf/inode.c: In function 'udf_get_block':
-> fs/udf/inode.c:299: warning: 'phys' may be used uninitialized in this function
-> initialize it to 0 (if someday someone will break inode_getblk we will catch it immediately)
-> 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> CC: Ben Fennema <bfennema@falcon.csc.calpoly.edu>
-  Acked-by: Jan Kara <jack@suse.cz>
+On Dec 17, 2007 4:03 PM, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-										Honza
-> ---
->  fs/udf/directory.c |    8 ++++----
->  fs/udf/inode.c     |    6 +++---
->  fs/udf/udfdecl.h   |    4 ++--
->  3 files changed, 9 insertions(+), 9 deletions(-)
-> 
-> diff --git a/fs/udf/directory.c b/fs/udf/directory.c
-> index ff8c08f..984e5dc 100644
-> --- a/fs/udf/directory.c
-> +++ b/fs/udf/directory.c
-> @@ -271,7 +271,7 @@ static extent_ad *udf_get_fileextent(void *buffer, int bufsize, int *offset)
->  }
->  #endif
-> 
-> -short_ad *udf_get_fileshortad(uint8_t *ptr, int maxoffset, int *offset,
-> +short_ad *udf_get_fileshortad(uint8_t *ptr, int maxoffset, uint32_t *offset,
->  			      int inc)
->  {
->  	short_ad *sa;
-> @@ -281,7 +281,7 @@ short_ad *udf_get_fileshortad(uint8_t *ptr, int maxoffset, int *offset,
->  		return NULL;
->  	}
-> 
-> -	if ((*offset < 0) || ((*offset + sizeof(short_ad)) > maxoffset))
-> +	if ((*offset + sizeof(short_ad)) > maxoffset)
->  		return NULL;
->  	else if ((sa = (short_ad *)ptr)->extLength == 0)
->  		return NULL;
-> @@ -291,7 +291,7 @@ short_ad *udf_get_fileshortad(uint8_t *ptr, int maxoffset, int *offset,
->  	return sa;
->  }
-> 
-> -long_ad *udf_get_filelongad(uint8_t *ptr, int maxoffset, int *offset, int inc)
-> +long_ad *udf_get_filelongad(uint8_t *ptr, int maxoffset, uint32_t *offset, int inc)
->  {
->  	long_ad *la;
-> 
-> @@ -300,7 +300,7 @@ long_ad *udf_get_filelongad(uint8_t *ptr, int maxoffset, int *offset, int inc)
->  		return NULL;
->  	}
-> 
-> -	if ((*offset < 0) || ((*offset + sizeof(long_ad)) > maxoffset))
-> +	if ((*offset + sizeof(long_ad)) > maxoffset)
->  		return NULL;
->  	else if ((la = (long_ad *)ptr)->extLength == 0)
->  		return NULL;
-> diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-> index 6ff8151..1178ae0 100644
-> --- a/fs/udf/inode.c
-> +++ b/fs/udf/inode.c
-> @@ -51,7 +51,7 @@ static int udf_update_inode(struct inode *, int);
->  static void udf_fill_inode(struct inode *, struct buffer_head *);
->  static int udf_alloc_i_data(struct inode *inode, size_t size);
->  static struct buffer_head *inode_getblk(struct inode *, sector_t, int *,
-> -					long *, int *);
-> +					sector_t *, int *);
->  static int8_t udf_insert_aext(struct inode *, struct extent_position,
->  			      kernel_lb_addr, uint32_t);
->  static void udf_split_extents(struct inode *, int *, int, int,
-> @@ -296,7 +296,7 @@ static int udf_get_block(struct inode *inode, sector_t block,
->  {
->  	int err, new;
->  	struct buffer_head *bh;
-> -	unsigned long phys;
-> +	sector_t phys = 0;
-> 
->  	if (!create) {
->  		phys = udf_block_map(inode, block);
-> @@ -469,7 +469,7 @@ out:
->  }
-> 
->  static struct buffer_head *inode_getblk(struct inode *inode, sector_t block,
-> -					int *err, long *phys, int *new)
-> +					int *err, sector_t *phys, int *new)
->  {
->  	static sector_t last_block;
->  	struct buffer_head *result = NULL;
-> diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
-> index c8016cc..b17ca67 100644
-> --- a/fs/udf/udfdecl.h
-> +++ b/fs/udf/udfdecl.h
-> @@ -185,8 +185,8 @@ extern struct fileIdentDesc *udf_fileident_read(struct inode *, loff_t *,
->  						sector_t *);
->  extern struct fileIdentDesc *udf_get_fileident(void *buffer, int bufsize,
->  					       int *offset);
-> -extern long_ad *udf_get_filelongad(uint8_t *, int, int *, int);
-> -extern short_ad *udf_get_fileshortad(uint8_t *, int, int *, int);
-> +extern long_ad *udf_get_filelongad(uint8_t *, int, uint32_t *, int);
-> +extern short_ad *udf_get_fileshortad(uint8_t *, int, uint32_t *, int);
-> 
->  /* crc.c */
->  extern uint16_t udf_crc(uint8_t *, uint32_t, uint16_t);
-> --
-> 1.5.3.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+> +++ b/Documentation/dst/sysfs.txt
+> @@ -0,0 +1,33 @@
+> +This file describes sysfs files created for each storage.
+> +
+> +1. Per-storage files.
+> +Each storage has its own dir /sysfs/devices/$storage_name,
+
+> +2. Per-node files.
+> +Node's files are located in /sysfs/devices/$storage_name/n-$start-$cookie
+
+As already pointed out last time, you can't reference /sys/devices/ directly,
+please use the path from the bus/class directory which points there.
+
+Thanks,
+Kay
