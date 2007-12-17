@@ -1,90 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762479AbXLQF33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763345AbXLQFc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762479AbXLQF33 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 00:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbXLQF3V
+	id S1763345AbXLQFc4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 00:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbXLQFcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 00:29:21 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:22944 "EHLO hobbit.corpit.ru"
+	Mon, 17 Dec 2007 00:32:48 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56880 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751084AbXLQF3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 00:29:21 -0500
-Message-ID: <47660927.9070002@msgid.tls.msk.ru>
-Date: Mon, 17 Dec 2007 08:29:11 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.14pre (X11/20071018)
+	id S1751228AbXLQFcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 00:32:47 -0500
+Message-ID: <476609F1.6040408@redhat.com>
+Date: Sun, 16 Dec 2007 23:32:33 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: /sys/block [was: [PATCH 007 of 7] md: Get name for block device in
- sysfs]
-References: <20071214171950.1308.patches@notabene>	 <1071214062647.1928@suse.de>	 <3ae72650712150858v14681823td2b0410eb67b1d04@mail.gmail.com>	 <18277.43533.991986.323212@notabene.brown> <1197857414.2585.16.camel@lov.site>
-In-Reply-To: <1197857414.2585.16.camel@lov.site>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
+To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Michael Halcrow <mhalcrow@us.ibm.com>, mike@halcrow.us
+Subject: [PATCH] ecryptfs: fix fsx data corruption problems
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On Mon, 2007-12-17 at 09:43 +1100, Neil Brown wrote:
->> On Saturday December 15, kay.sievers@vrfy.org wrote:
->>> On Dec 14, 2007 7:26 AM, NeilBrown <neilb@suse.de> wrote:
->>>> Given an fd on a block device, returns a string like
->>>>
->>>>         /block/sda/sda1
->>>>
->>>> which can be used to find related information in /sys.
->> ....
->>> As pointed out to when you came up with the idea, we can't do this. A devpath
->>> is a path to the device and will not necessarily start with "/block" for block
->>> devices. It may start with "/devices" and can be much longer than
->>> BDEVNAME_SIZE*2  + 10.
->> When you say "will not necessarily" can I take that to mean that it
->> currently does, but it might (will) change??
-> 
-> It's in -mm. The devpath for all block devices, like for all other
-> devices, will start with /devices/* if !SYSFS_DEPRECATED.
+ecryptfs in 2.6.24-rc3 wasn't surviving fsx for me at all,
+dying after 4 ops.  Generally, encountering problems with stale
+data and improperly zeroed pages.  An extending truncate + write
+for example would expose stale data.
 
-This is the second time I come across this (planned?) change, and for
-the second time I can't understand it.
+With the changes below I got to a million ops and beyond with all
+mmap ops disabled - mmap still needs work.  (A version of this
+patch on a RHEL5 kernel ran for over 110 million fsx ops)
 
-How to distinguish char devices from block devices in sysfs?
-Is the only way to read a symlink `subsystem' in the device
-directory?
+I added a few comments as well, to the best of my understanding
+as I read through the code.
 
-For now, I've a shell code (used heavily in numerous places),
-which looks like this:
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
 
-  function makedev() {
-    ...
-    case $DEVPATH in
-      /block/*) TYPE=b ;;
-      *) TYPE=c ;;
-    esac
-    ...
-    mknod /dev/$DEV $TYPE $MAJOR $MINOR
-  }
+---
 
-The only external process invocation in there is mknod, all
-the rest is done using pure shell constructs.  Is it really
-necessary to spawn another process just to read a symlink
-now?  It will be almost 2 times slower....
 
-(Sure thing this may be rewritten in C, but using shell it's
-MUCH easier to customize if necessary.)
+Index: linux-2.6.24-rc3/fs/ecryptfs/mmap.c
+===================================================================
+--- linux-2.6.24-rc3.orig/fs/ecryptfs/mmap.c
++++ linux-2.6.24-rc3/fs/ecryptfs/mmap.c
+@@ -263,14 +263,13 @@ out:
+ 	return 0;
+ }
+ 
++/* This function must zero any hole we create */
+ static int ecryptfs_prepare_write(struct file *file, struct page *page,
+ 				  unsigned from, unsigned to)
+ {
+ 	int rc = 0;
++	loff_t prev_page_end_size;
+ 
+-	if (from == 0 && to == PAGE_CACHE_SIZE)
+-		goto out;	/* If we are writing a full page, it will be
+-				   up to date. */
+ 	if (!PageUptodate(page)) {
+ 		rc = ecryptfs_read_lower_page_segment(page, page->index, 0,
+ 						      PAGE_CACHE_SIZE,
+@@ -283,22 +282,32 @@ static int ecryptfs_prepare_write(struct
+ 		} else
+ 			SetPageUptodate(page);
+ 	}
+-	if (page->index != 0) {
+-		loff_t end_of_prev_pg_pos =
+-			(((loff_t)page->index << PAGE_CACHE_SHIFT) - 1);
+ 
+-		if (end_of_prev_pg_pos > i_size_read(page->mapping->host)) {
++	prev_page_end_size = ((loff_t)page->index << PAGE_CACHE_SHIFT);
++
++	/*
++	 * If creating a page or more of holes, zero them out via truncate.
++	 * Note, this will increase i_size.
++	 */
++	if (page->index != 0) {
++		if (prev_page_end_size > i_size_read(page->mapping->host)) {
+ 			rc = ecryptfs_truncate(file->f_path.dentry,
+-					       end_of_prev_pg_pos);
++					       prev_page_end_size);
+ 			if (rc) {
+ 				printk(KERN_ERR "Error on attempt to "
+ 				       "truncate to (higher) offset [%lld];"
+-				       " rc = [%d]\n", end_of_prev_pg_pos, rc);
++				       " rc = [%d]\n", prev_page_end_size, rc);
+ 				goto out;
+ 			}
+ 		}
+-		if (end_of_prev_pg_pos + 1 > i_size_read(page->mapping->host))
+-			zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
++	}
++	/*
++	 * Writing to a new page, and creating a small hole from start of page?
++	 * Zero it out.
++	 */
++	if ((i_size_read(page->mapping->host) == prev_page_end_size) &&
++	    (from != 0)) {
++		zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
+ 	}
+ out:
+ 	return rc;
+Index: linux-2.6.24-rc3/fs/ecryptfs/read_write.c
+===================================================================
+--- linux-2.6.24-rc3.orig/fs/ecryptfs/read_write.c
++++ linux-2.6.24-rc3/fs/ecryptfs/read_write.c
+@@ -124,6 +124,10 @@ int ecryptfs_write(struct file *ecryptfs
+ 	loff_t pos;
+ 	int rc = 0;
+ 
++	/*
++	 * if we are writing beyond current size, then start pos
++	 * at the current size - we'll fill in zeros from there.
++	 */
+ 	if (offset > ecryptfs_file_size)
+ 		pos = ecryptfs_file_size;
+ 	else
+@@ -137,6 +141,7 @@ int ecryptfs_write(struct file *ecryptfs
+ 		if (num_bytes > total_remaining_bytes)
+ 			num_bytes = total_remaining_bytes;
+ 		if (pos < offset) {
++			/* remaining zeros to write, up to destination offset */
+ 			size_t total_remaining_zeros = (offset - pos);
+ 
+ 			if (num_bytes > total_remaining_zeros)
+@@ -167,17 +172,27 @@ int ecryptfs_write(struct file *ecryptfs
+ 			}
+ 		}
+ 		ecryptfs_page_virt = kmap_atomic(ecryptfs_page, KM_USER0);
++
++		/*
++		 * pos: where we're now writing, offset: where the request was
++		 * If current pos is before request, we are filling zeros
++		 * If we are at or beyond request, we are writing the *data*
++		 * If we're in a fresh page beyond eof, zero it in either case
++		 */
++		if (pos < offset || !start_offset_in_page) {
++			/* We are extending past the previous end of the file.
++			 * Fill in zero values to the end of the page */
++			memset(((char *)ecryptfs_page_virt
++				+ start_offset_in_page), 0,
++				PAGE_CACHE_SIZE - start_offset_in_page);
++		}
++
++		/* pos >= offset, we are now writing the data request */
+ 		if (pos >= offset) {
+ 			memcpy(((char *)ecryptfs_page_virt
+ 				+ start_offset_in_page),
+ 			       (data + data_offset), num_bytes);
+ 			data_offset += num_bytes;
+-		} else {
+-			/* We are extending past the previous end of the file.
+-			 * Fill in zero values up to the start of where we
+-			 * will be writing data. */
+-			memset(((char *)ecryptfs_page_virt
+-				+ start_offset_in_page), 0, num_bytes);
+ 		}
+ 		kunmap_atomic(ecryptfs_page_virt, KM_USER0);
+ 		flush_dcache_page(ecryptfs_page);
 
-Also, /sys/block/ directory is very easy to use currently, --
-unlike other /sys/ stuff which is way too deep and often
-placed in unknown/unexpected places (and /sys/class/ and
-/sys/bus/ directories are changing all the time).
-
-What's the benefit of moving things from /sys/block/ to
-/sys/devices/ ?
-
-Thanks.
-
-/mjt
