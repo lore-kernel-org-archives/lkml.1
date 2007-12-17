@@ -1,82 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbXLQULa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937155AbXLQULw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757076AbXLQULa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:11:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764827AbXLQTsJ
+	id S937155AbXLQULw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:11:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765719AbXLQTs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:48:09 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34760 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764037AbXLQTsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:48:04 -0500
-Date: Mon, 17 Dec 2007 13:48:02 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-Message-ID: <20071217194802.GA14156@sergelap.austin.ibm.com>
-References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp>
+	Mon, 17 Dec 2007 14:48:29 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:56209 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765692AbXLQTs1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:48:27 -0500
+Message-ID: <4766D261.1020005@nortel.com>
+Date: Mon, 17 Dec 2007 13:47:45 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Patrick McHardy <kaber@trash.net>
+CC: yoshfuji@linux-ipv6.org, dada1@cosmosbay.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: "ip neigh show" not showing arp cache entries?
+References: <4760279E.1080203@nortel.com>	<47602DD0.8070402@cosmosbay.com> <47605934.2060604@nortel.com> <20071213.070641.20411400.yoshfuji@linux-ipv6.org> <476696A5.1010101@nortel.com> <4766B99D.8060408@trash.net>
+In-Reply-To: <4766B99D.8060408@trash.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Dec 2007 19:47:48.0907 (UTC) FILETIME=[B3D8AFB0:01C840E5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
-> A brief description about SYAORAN:
-> 
->  SYAORAN stands for "Simple Yet All-important Object Realizing Abiding
->  Nexus". SYAORAN is a filesystem for /dev with Mandatory Access Control.
-> 
->  /dev needs to be writable, but this means that files on /dev might be
->  tampered with. SYAORAN can restrict combinations of (pathname, attribute)
->  that the system can create. The attribute is one of directory, regular
->  file, FIFO, UNIX domain socket, symbolic link, character or block device
->  file with major/minor device numbers.
-> 
->  SYAORAN can ensure /dev/null is a character device file with major=1 minor=3.
-> 
->  Policy specifications for this filesystem is at
->  http://tomoyo.sourceforge.jp/en/1.5.x/policy-syaoran.html
-> 
-> Why not use FUSE?
-> 
->  Because /dev has to be available through the lifetime of the kernel.
->  It is not acceptable if /dev stops working due to SIGKILL or OOM-killer.
-> 
-> Why not use SELinux?
-> 
->  Because SELinux doesn't guarantee filename and its attribute.
->  The purpose of this filesystem is to ensure filename and its attribute
->  (e.g. /dev/null is guaranteed to be a character device file
->  with major=1 and minor=3).
+Patrick McHardy wrote:
 
-We need something similar for system containers (like vservers).  We
-will likely want root in a container to be confined to a certain set
-of devices.
+>  From a kernel perspective there are only complete dumps, the
+> filtering is done by iproute. So the fact that it shows them
+> when querying specifically implies there is a bug in the
+> iproute neighbour filter. Does it work if you omit "all"
+> from the ip neigh show command?
 
-For starters we expect to use the capability bounding sets (see
-http://lkml.org/lkml/2007/11/26/206).  So a container will have a static
-/dev predefined, and CAP_MKNOD will be removed from its capability
-bounding set so that root in a container cannot create any more new
-devices.
+Omitting "all" gives identical results.  It is still missing entries 
+when compared with the output of "arp".
 
-For future more sophisticated device controls, two similar approaches
-have been suggested (one by me, see
-https://lists.linux-foundation.org/pipermail/containers/2007-September/007423.html
-and
-https://lists.linux-foundation.org/pipermail/containers/2007-November/008589.html
-).  Both actually control the devices a process can create period,
-rather than trying to control at the filesystem.  And yes, these both
-lack the feature in your solution that for instance 'c 1 3' must be
-called null, which appears to be the kind of guarantee apparmor likes to
-provide.
-
-To use your approach, i guess we would have to use selinux (or tomoyo)
-to enforce that devices may only be created under /dev?
-
--serge
+Chris
