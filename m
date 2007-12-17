@@ -1,193 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934794AbXLQEQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762927AbXLQE00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934794AbXLQEQd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 23:16:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756838AbXLQEQX
+	id S1762927AbXLQE00 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 23:26:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308AbXLQE0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 23:16:23 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:50674 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752629AbXLQEQW (ORCPT
+	Sun, 16 Dec 2007 23:26:15 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53353
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752681AbXLQE0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 23:16:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=MltqebIraMRRh1fk+OmNBaEiD7XrfQJpA/1iNYP8Cb5oXLfGGNVGOe1nvPfofOSV+eDevtLHFZ7TJN65L8IEE3wVL4vv1DVply3Q37XFclMnph7lkgYAy9iZ8O1kP40hXf3jhUnQhbTl16F6Moi0RBwQJgxDBqszEVF3FD6o5X4=
-Subject: [PATCH] [NET]: Remove FASTCALL/fastcall macros
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 16 Dec 2007 20:16:25 -0800
-Message-Id: <1197864985.3749.117.camel@brick>
+	Sun, 16 Dec 2007 23:26:14 -0500
+Date: Sun, 16 Dec 2007 20:26:11 -0800 (PST)
+Message-Id: <20071216.202611.226170474.davem@davemloft.net>
+To: mpm@selenic.com
+Cc: m.kozlowski@tuxland.pl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: 2.6.24-rc5-mm1: problems with cat /proc/kpageflags
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071217021149.GC19691@waste.org>
+References: <200712161948.42656.m.kozlowski@tuxland.pl>
+	<200712162010.11028.m.kozlowski@tuxland.pl>
+	<20071217021149.GC19691@waste.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-X86_32 was the last user of the FASTCALL/fastcall macros, now that it
-uses regparm(3) by default, these macros expand to nothing.
+From: Matt Mackall <mpm@selenic.com>
+Date: Sun, 16 Dec 2007 20:11:49 -0600
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Dave, this is a wrap-up of my patch in your net-2.6.25.git with
-the build breakage fix from Andrew Morton included.  This also
-chops the fastcall macro which is also now empty.
+> But as the function doesn't actually show up in your stack trace,
+> something else is probably wrong. So I'd also try commenting out
+> pieces of that function until it started working.
 
-Original: 172f5efbe9150a82e8d5b0562bbe128492ac820e
-Buildfix: 451ff1232b1ff3d32635ea4844ef0d1376460c21
+Some piece of state is being indirectly corrupted and this
+is showing up later in some unrelated operation.
 
- drivers/net/ns83820.c          |   12 ++++--------
- include/net/bluetooth/rfcomm.h |    4 ++--
- include/net/sock.h             |    4 ++--
- net/bluetooth/rfcomm/core.c    |    4 ++--
- net/core/dev.c                 |    2 +-
- net/core/sock.c                |    4 ++--
- 6 files changed, 13 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/net/ns83820.c b/drivers/net/ns83820.c
-index ea71f6d..b42c05f 100644
---- a/drivers/net/ns83820.c
-+++ b/drivers/net/ns83820.c
-@@ -611,8 +611,7 @@ static inline int rx_refill(struct net_device *ndev, gfp_t gfp)
- 	return i ? 0 : -ENOMEM;
- }
- 
--static void FASTCALL(rx_refill_atomic(struct net_device *ndev));
--static void fastcall rx_refill_atomic(struct net_device *ndev)
-+static void rx_refill_atomic(struct net_device *ndev)
- {
- 	rx_refill(ndev, GFP_ATOMIC);
- }
-@@ -633,8 +632,7 @@ static inline void clear_rx_desc(struct ns83820 *dev, unsigned i)
- 	build_rx_desc(dev, dev->rx_info.descs + (DESC_SIZE * i), 0, 0, CMDSTS_OWN, 0);
- }
- 
--static void FASTCALL(phy_intr(struct net_device *ndev));
--static void fastcall phy_intr(struct net_device *ndev)
-+static void phy_intr(struct net_device *ndev)
- {
- 	struct ns83820 *dev = PRIV(ndev);
- 	static const char *speeds[] = { "10", "100", "1000", "1000(?)", "1000F" };
-@@ -832,8 +830,7 @@ static void ns83820_cleanup_rx(struct ns83820 *dev)
- 	}
- }
- 
--static void FASTCALL(ns83820_rx_kick(struct net_device *ndev));
--static void fastcall ns83820_rx_kick(struct net_device *ndev)
-+static void ns83820_rx_kick(struct net_device *ndev)
- {
- 	struct ns83820 *dev = PRIV(ndev);
- 	/*if (nr_rx_empty(dev) >= NR_RX_DESC/4)*/ {
-@@ -854,8 +851,7 @@ static void fastcall ns83820_rx_kick(struct net_device *ndev)
- /* rx_irq
-  *
-  */
--static void FASTCALL(rx_irq(struct net_device *ndev));
--static void fastcall rx_irq(struct net_device *ndev)
-+static void rx_irq(struct net_device *ndev)
- {
- 	struct ns83820 *dev = PRIV(ndev);
- 	struct rx_info *info = &dev->rx_info;
-diff --git a/include/net/bluetooth/rfcomm.h b/include/net/bluetooth/rfcomm.h
-index 25aa575..98ec7a3 100644
---- a/include/net/bluetooth/rfcomm.h
-+++ b/include/net/bluetooth/rfcomm.h
-@@ -252,8 +252,8 @@ static inline void rfcomm_dlc_put(struct rfcomm_dlc *d)
- 		rfcomm_dlc_free(d);
- }
- 
--extern void FASTCALL(__rfcomm_dlc_throttle(struct rfcomm_dlc *d));
--extern void FASTCALL(__rfcomm_dlc_unthrottle(struct rfcomm_dlc *d));
-+extern void __rfcomm_dlc_throttle(struct rfcomm_dlc *d);
-+extern void __rfcomm_dlc_unthrottle(struct rfcomm_dlc *d);
- 
- static inline void rfcomm_dlc_throttle(struct rfcomm_dlc *d)
- {
-diff --git a/include/net/sock.h b/include/net/sock.h
-index f415992..803d8f2 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -774,14 +774,14 @@ do {									\
- 	lockdep_init_map(&(sk)->sk_lock.dep_map, (name), (key), 0);	\
- } while (0)
- 
--extern void FASTCALL(lock_sock_nested(struct sock *sk, int subclass));
-+extern void lock_sock_nested(struct sock *sk, int subclass);
- 
- static inline void lock_sock(struct sock *sk)
- {
- 	lock_sock_nested(sk, 0);
- }
- 
--extern void FASTCALL(release_sock(struct sock *sk));
-+extern void release_sock(struct sock *sk);
- 
- /* BH context may only use the following locking interface. */
- #define bh_lock_sock(__sk)	spin_lock(&((__sk)->sk_lock.slock))
-diff --git a/net/bluetooth/rfcomm/core.c b/net/bluetooth/rfcomm/core.c
-index d3e4e18..0c2c937 100644
---- a/net/bluetooth/rfcomm/core.c
-+++ b/net/bluetooth/rfcomm/core.c
-@@ -465,7 +465,7 @@ int rfcomm_dlc_send(struct rfcomm_dlc *d, struct sk_buff *skb)
- 	return len;
- }
- 
--void fastcall __rfcomm_dlc_throttle(struct rfcomm_dlc *d)
-+void __rfcomm_dlc_throttle(struct rfcomm_dlc *d)
- {
- 	BT_DBG("dlc %p state %ld", d, d->state);
- 
-@@ -476,7 +476,7 @@ void fastcall __rfcomm_dlc_throttle(struct rfcomm_dlc *d)
- 	rfcomm_schedule(RFCOMM_SCHED_TX);
- }
- 
--void fastcall __rfcomm_dlc_unthrottle(struct rfcomm_dlc *d)
-+void __rfcomm_dlc_unthrottle(struct rfcomm_dlc *d)
- {
- 	BT_DBG("dlc %p state %ld", d, d->state);
- 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 06615df..d48c9cf 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2143,7 +2143,7 @@ static int process_backlog(struct napi_struct *napi, int quota)
-  *
-  * The entry's receive function will be scheduled to run
-  */
--void fastcall __napi_schedule(struct napi_struct *n)
-+void __napi_schedule(struct napi_struct *n)
- {
- 	unsigned long flags;
- 
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 1182140..2b30cc1 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -1616,7 +1616,7 @@ void sock_init_data(struct socket *sock, struct sock *sk)
- 	atomic_set(&sk->sk_drops, 0);
- }
- 
--void fastcall lock_sock_nested(struct sock *sk, int subclass)
-+void lock_sock_nested(struct sock *sk, int subclass)
- {
- 	might_sleep();
- 	spin_lock_bh(&sk->sk_lock.slock);
-@@ -1633,7 +1633,7 @@ void fastcall lock_sock_nested(struct sock *sk, int subclass)
- 
- EXPORT_SYMBOL(lock_sock_nested);
- 
--void fastcall release_sock(struct sock *sk)
-+void release_sock(struct sock *sk)
- {
- 	/*
- 	 * The sk_lock has mutex_unlock() semantics:
--- 
-1.5.4.rc0.1083.gf568
-
-
-
+Can someone send me this kpageflags patch under seperate
+cover?  I'll try figure out why it farts on sparc64.
