@@ -1,70 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762859AbXLQPcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbXLQPdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762859AbXLQPcj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:32:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbXLQPcb
+	id S1758247AbXLQPdq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 10:33:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbXLQPdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:32:31 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:40838 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754512AbXLQPcb (ORCPT
+	Mon, 17 Dec 2007 10:33:37 -0500
+Received: from zcars04f.nortel.com ([47.129.242.57]:45972 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754883AbXLQPdg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:32:31 -0500
-Date: Mon, 17 Dec 2007 16:32:29 +0100
-From: Jan Kara <jack@suse.cz>
-To: Denis <denismpa@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Fwd: NFS , Kjournald - status D (uninterruptible sleep) - maquina lenta.
-Message-ID: <20071217153228.GC6979@atrey.karlin.mff.cuni.cz>
-References: <e9aeeef80712141011i139e6ec2pe04250bd56f338d8@mail.gmail.com> <e9aeeef80712141211v7cec29fdt7e2ec76bf877053f@mail.gmail.com> <e9aeeef80712141333n557325e3v11231b8bbe1b0963@mail.gmail.com>
+	Mon, 17 Dec 2007 10:33:36 -0500
+Message-ID: <476696A5.1010101@nortel.com>
+Date: Mon, 17 Dec 2007 09:32:53 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e9aeeef80712141333n557325e3v11231b8bbe1b0963@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: yoshfuji@linux-ipv6.org
+CC: dada1@cosmosbay.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: "ip neigh show" not showing arp cache entries?
+References: <4760279E.1080203@nortel.com>	<47602DD0.8070402@cosmosbay.com> <47605934.2060604@nortel.com> <20071213.070641.20411400.yoshfuji@linux-ipv6.org>
+In-Reply-To: <20071213.070641.20411400.yoshfuji@linux-ipv6.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 17 Dec 2007 15:32:56.0723 (UTC) FILETIME=[18FE9630:01C840C2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Dears, I've got a double dual xeon wich sometimes is getting too slow.
-> 
-> 
-> While i was observing one of these slowly times, I realized the time
-> wait of processors come close to 100% and nfsd and kjournald process
-> become to D status (uniterruptible sleep) .Does someone know why this
-> can be happening or how can I troubleshoot it?
-> 
-> Below is a 'draw' of my top at one of these moments.
-> 
-> [root@cromo src]# top
-> top - 10:59:02 up 6 days, 19:30, 17 users,  load average: 14.77, 13.46, 13.00
-> Tasks: 189 total,   1 running, 188 sleeping,   0 stopped,   0 zombie
-> Cpu0  :  0.0% us,  0.4% sy,  0.0% ni,  0.2% id, 98.5% wa,  0.0% hi,  0.9% si
-> Cpu1  :  0.0% us,  0.4% sy,  0.0% ni,  0.0% id, 99.6% wa,  0.0% hi,  0.0% si
-> Cpu2  :  0.0% us,  0.2% sy,  0.0% ni,  7.8% id, 92.0% wa,  0.0% hi,  0.0% si
-> Cpu3  :  0.2% us,  0.8% sy,  0.0% ni,  0.0% id, 98.7% wa,  0.2% hi,  0.0% si
-  All processors are in iowait - i.e. waiting for IO.
+YOSHIFUJI Hideaki / 吉藤英明 wrote:
+> In article <47605934.2060604@nortel.com> (at Wed, 12 Dec 2007
+> 15:57:08 -0600), "Chris Friesen" <cfriesen@nortel.com> says:
 
-> Mem:   4025540k total,  4018264k used,     7276k free,     7908k buffers
-> Swap:  4096564k total,     3288k used,  4093276k free,  3553252k cached
-> 
->  3941 root      15   0     0    0    0 D    2  0.0  80:29.30 nfsd
->  3938 root      15   0     0    0    0 D    1  0.0  81:02.02 nfsd
->  2459 root      15   0     0    0    0 D    1  0.0  30:57.04 kjournald
->  3937 root      15   0     0    0    0 D    1  0.0  82:07.99 nfsd
->    96 root      15   0     0    0    0 S    0  0.0  34:12.48 kswapd0
->  3940 root      15   0     0    0    0 D    0  0.0  80:22.55 nfsd
->  3942 root      15   0     0    0    0 D    0  0.0  80:23.66 nfsd
->  3939 root      15   0     0    0    0 D    0  0.0  82:22.55 nfsd
-  It seems like heavy disk/network activity. You can try running
-vmstat 1
-  It will print every second the situation of your memory / IO
-subsystem. You should especially see the ---io--- column ('bi' means
-blocks in, 'bo' blocks outputted). I guess they'd contain some
-non-trivial values...
-  BTW: I guess the processes wake up eventually, don't they?
+>>> You may try other versions of this command
+>>> 
+>>> http://devresources.linux-foundation.org/dev/iproute2/download/
+>> 
+>> They appear to be numbered by kernel version, and the above version
+>> is the most recent one for 2.6.14.  Will more recent ones (for
+>> newer kernels) work with my kernel?
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+> It should work; if it doesn't, please make a report.  Thanks.
+
+I downloaded iproute2-2.6.23 and built it for my kernel.
+
+I'm compiling for a different kernel than is actually running on the 
+build system, so I had to add a line defining KERNEL_INCLUDE to the 
+Makefile, and I had to add "-I${KERNEL_INCLUDE}" to the CFLAGS 
+definition.  Someone might want to do something about that...
+
+Anyways, the arp entry issue is still there.  The "arp" command gives a 
+bunch of entries:
+
+root@typhoon-base-unit0:/root> arp -n
+Address          HWtype  HWaddress           Flags Mask            Iface
+192.168.24.81    ether   00:01:AF:14:E9:8A   C                     bond2
+172.24.132.2             (incomplete)                              bond0
+172.24.136.0     ether   00:C0:8B:07:B3:7E   C                     bond0
+172.24.137.0             (incomplete)                              bond0
+172.24.0.9       ether   00:07:E9:41:4B:B4   C                     bond0
+10.41.18.101     ether   00:0E:0C:5E:95:BD   C                     eth6
+172.24.0.11      ether   00:03:CC:51:06:5E   C                     bond0
+172.24.132.1     ether   00:01:AF:14:E9:88   C                     bond0
+172.24.0.15      ether   00:0E:0C:85:FD:D2   C                     bond0
+172.24.0.3       ether   00:01:AF:14:C8:CC   C                     bond0
+172.24.0.5       ether   00:01:AF:15:E0:6A   C                     bond0
+
+The original "ip" command and the new one ("/tmp/ip") both give the same 
+results--some of the entries are missing.
+
+root@typhoon-base-unit0:/root> ip neigh show all
+172.24.137.0 dev bond0  FAILED
+172.24.0.9 dev bond0 lladdr 00:07:e9:41:4b:b4 REACHABLE
+10.41.18.101 dev eth6 lladdr 00:0e:0c:5e:95:bd REACHABLE
+172.24.0.11 dev bond0 lladdr 00:03:cc:51:06:5e STALE
+172.24.132.1 dev bond0 lladdr 00:01:af:14:e9:88 REACHABLE
+172.24.0.15 dev bond0 lladdr 00:0e:0c:85:fd:d2 STALE
+172.24.0.3 dev bond0 lladdr 00:01:af:14:c8:cc REACHABLE
+172.24.0.5 dev bond0 lladdr 00:01:af:15:e0:6a STALE
+
+root@typhoon-base-unit0:/root> /tmp/ip neigh show all
+172.24.137.0 dev bond0  FAILED
+172.24.0.9 dev bond0 lladdr 00:07:e9:41:4b:b4 REACHABLE
+10.41.18.101 dev eth6 lladdr 00:0e:0c:5e:95:bd REACHABLE
+172.24.0.11 dev bond0 lladdr 00:03:cc:51:06:5e STALE
+172.24.132.1 dev bond0 lladdr 00:01:af:14:e9:88 REACHABLE
+172.24.0.15 dev bond0 lladdr 00:0e:0c:85:fd:d2 STALE
+172.24.0.3 dev bond0 lladdr 00:01:af:14:c8:cc REACHABLE
+172.24.0.5 dev bond0 lladdr 00:01:af:15:e0:6a STALE
+
+
+However, if I specifically try to print out one of the missing entries, 
+it shows up:
+
+root@typhoon-base-unit0:/root> /tmp/ip neigh show 192.168.24.81
+192.168.24.81 dev bond2 lladdr 00:01:af:14:e9:8a REACHABLE
+
+
+Chris
