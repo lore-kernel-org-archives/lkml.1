@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935850AbXLQUnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936766AbXLQUn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935850AbXLQUnm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:43:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760716AbXLQUnc
+	id S936766AbXLQUn7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:43:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935336AbXLQUnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 15:43:32 -0500
-Received: from gate.crashing.org ([63.228.1.57]:54842 "EHLO gate.crashing.org"
+	Mon, 17 Dec 2007 15:43:41 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:39899 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760558AbXLQUnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 15:43:32 -0500
-Date: Mon, 17 Dec 2007 23:42:58 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Marcelo Tosatti <marcelo@kvack.org>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] arch/ppc/: Spelling fixes
-Message-ID: <20071217234258.4ffacfac@kernel.crashing.org>
-In-Reply-To: <1197919875-5288-15-git-send-email-joe@perches.com>
-References: <1197919875-5288-15-git-send-email-joe@perches.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S935095AbXLQUnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 15:43:39 -0500
+Date: Mon, 17 Dec 2007 21:43:28 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: swapping in 2.6.24-rc5-git3
+Message-ID: <20071217204328.GE14091@ics.muni.cz>
+References: <20071217131726.GA14091@ics.muni.cz> <20071217171532.GK6979@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071217171532.GK6979@atrey.karlin.mff.cuni.cz>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 17 Dec 2007 21:43:36 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007 11:30:14 -0800
-Joe Perches wrote:
+On Mon, Dec 17, 2007 at 06:15:32PM +0100, Jan Kara wrote:
+>   Yes, that's quite unpleasant. How much memory do you have? If you have
+> some time, you can try playing with the code in mm/vmscan.c to find out
+> what's happening in your case (putting some debugging output in
+> shrink_active_list() etc...
 
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/ppc/syslib/ppc8xx_pic.c |    2 +-
->  arch/ppc/syslib/ppc_sys.c    |    2 +-
-I'm not really sure we should still care about typos in
-arch/ppc..
+I think it is a regression in recent rc versions as I use 2.6.24-xx kernels on
+my new laptop from the very beginnig I have the laptopt and I did not notice
+such behaviour before.
 
-
+I have 1 GB RAM and I was coping a 2GB file from the network to the laptop.
+After the operation, 600MB of the swap area has been consumed. At the
+beginning of the copy, the swap area was empty.
 
 -- 
-Sincerely, Vitaly
+Luká¹ Hejtmánek
