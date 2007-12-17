@@ -1,82 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbXLQRJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbXLQRPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756421AbXLQRJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 12:09:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbXLQRJU
+	id S1756820AbXLQRPA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 12:15:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbXLQROu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 12:09:20 -0500
-Received: from hs-out-0708.google.com ([64.233.178.247]:39195 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751328AbXLQRJS (ORCPT
+	Mon, 17 Dec 2007 12:14:50 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:2504 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432AbXLQROt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 12:09:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nhFKHxBnxyd1Wa15H0B6OnFZLXUJwBpNociW5Sea5yA1jcytyxsQrAZdOn+soqn4U/I/cwF8FPrKx23E1b9nOVuEMiBj075LQeNYktkjG+N0RyTgihx4sMUMrpo0sY40P2RRToHvbJzklt32RtJk4q2028qliyd8Wazve67HTM8=
-Message-ID: <87f94c370712170909y691dc2e3rf7f23c64eff8da22@mail.gmail.com>
-Date: Mon, 17 Dec 2007 12:09:17 -0500
-From: "Greg Freemyer" <greg.freemyer@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: ATA bus error with external hd on esata
-Cc: "Zsolt Barat" <zsolt@softmonsters.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-In-Reply-To: <20071217025321.2f7507db.akpm@linux-foundation.org>
+	Mon, 17 Dec 2007 12:14:49 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: [lm-sensors] 2.6.24-rc4 hwmon it87 probe fails
+Date: Mon, 17 Dec 2007 10:14:43 -0700
+User-Agent: KMail/1.9.6
+Cc: Mike Houston <mikeserv@bmts.com>, Adrian Bunk <bunk@stusta.de>,
+       Elvis Pranskevichus <el@prans.net>, Jean Delvare <khali@linux-fr.org>,
+       mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org, Adam Belay <ambx1@neo.rr.com>,
+       Zhao Yakui <yakui.zhao@intel.com>, Thomas Renninger <trenn@suse.de>,
+       lenb@kernel.org, linux-acpi@vger.kernel.org
+References: <20071204215154.7f26285e.mikeserv@bmts.com> <20071209230211.1c2077cf.mikeserv@bmts.com> <1197856779.7782.2.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <1197856779.7782.2.camel@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <47642D9A.4080600@softmonsters.com>
-	 <476434C7.6040307@softmonsters.com>
-	 <20071217025321.2f7507db.akpm@linux-foundation.org>
+Message-Id: <200712171014.44360.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 17, 2007 5:53 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Sat, 15 Dec 2007 21:10:47 +0100 Zsolt Barat <zsolt@softmonsters.com> wrote:
->
-> > Zsolt Barat schrieb:
-> > > hi list,
->
-> Let's cc the IDE development list.
->
-> > > i just bought a "MyBook" called external HD with a fixed enclosure, from
-> > > WD. Connected to the SATA port i constantly get "ATA bus error" messages
-> > > in the kernel log. Is this a known issue?
-> > >
+On Sunday 16 December 2007 06:59:39 pm Shaohua Li wrote:
+> On Sun, 2007-12-09 at 23:02 -0500, Mike Houston wrote:
+> > On Mon, 10 Dec 2007 10:31:27 +0800
+> > Shaohua Li <shaohua.li@intel.com> wrote:
+> > > This should exist in previous kernel (before we remove acpi
+> > > motherboard driver) too. Basically it's a broken BIOS. Could below
+> > > patch work around it?
+> > > 
+> > > Thanks,
+> > > Shaohua
+> > > 
+> > > Index: linux/drivers/pnp/system.c
+> > > ===================================================================
+> > > --- linux.orig/drivers/pnp/system.c	2007-12-10
+> > > 10:17:46.000000000 +0800 +++ linux/drivers/pnp/system.c
+> > 
+> > Thanks Shaohua, I tested this as well and it appears to have worked
+> > around the issue for me.
+> > 
+> > Now, in dmesg, I get:
+> > 
+> > system 00:01: ioport range 0x290-0x29f has been reserved
+> > (...)
+> > system 00:01: ioport range 0x290-0x294 could not be reserved
+> > 
+> > In /proc/ioports I see:
+> > 
+> > 0290-029f : pnp 00:01
+> >   0290-0297 : it87
+> >     0290-0297 : it87
+> Unfortunately this can't solve all such issues.
+> 
+> Adam & Bjorn,
+> Could we just reserve IO ports >= 0x1000 in pnp system driver? The
+> purpose of the driver is to avoid resource conflict with PCI device, and
+> PCI device can't user io port < 0x1000.
 
-As an FYI: I've had a lot of problems with the big prepackaged drives
-in the last 6 months even from Windows, so I would not be too quick to
-blame Linux.
+The purpose of the PNP system driver is to avoid conflicts with
+*all* devices.  And if the PNP core were a little smarter, we
+wouldn't need the system driver at all.  We don't have one for
+PCI -- the PCI core manages resources for all PCI devices, even
+ones that have no driver.
 
-ie.
-I bought several 500GB / 1000GB Buffalo Drives last month with plans
-to use them from Windows via USB.
+Why is 0x1000 a magic number?  drivers/acpi/motherboard.c used to
+ignore IO port ranges that ended below PCIBIOS_MIN_IO (== 0x1000 for
+most architectures).  I don't think Linux will assign IO ports below
+PCIBIOS_MIN_IO to a PCI device, but the BIOS could, and I've seen
+CardBus devices below PCIBIOS_MIN_IO.
 
-I attempted to do a lot of heavy file copying to/from them.  I was
-getting a bunch of "Delayed Write Failures",
+I think having drivers/pnp/system.c ignore resources below
+PCIBIOS_MIN_IO would be a hack that happens to cover up problems
+like this without understanding the real cause.
 
-I finally gave up.
-
-The 500GB drives had a single hard drive internally, so I opened the
-case, removed the drive and connected them via standalone external
-carriers I had around.  In that mode the drives worked fine (from
-Windows).  I've used both standalone eSata external carriers and
-standalone USB external carriers with these same physical drives with
-no issues.
-
-My conclusion is that the electronics in the prepackaged external
-units is just not up to the job if your doing heavy i/o.
-
-Greg
--- 
-Greg Freemyer
-Litigation Triage Solutions Specialist
-http://www.linkedin.com/in/gregfreemyer
-First 99 Days Litigation White Paper -
-http://www.norcrossgroup.com/forms/whitepapers/99%20Days%20whitepaper.pdf
-
-The Norcross Group
-The Intersection of Evidence & Technology
-http://www.norcrossgroup.com
+Bjorn
