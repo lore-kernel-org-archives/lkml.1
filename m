@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932100AbXLQPmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759600AbXLQPqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932100AbXLQPmW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbXLQPmN
+	id S1759600AbXLQPqy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 10:46:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbXLQPqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:42:13 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:28692 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755103AbXLQPmM (ORCPT
+	Mon, 17 Dec 2007 10:46:47 -0500
+Received: from vision.mvista.com ([63.81.120.155]:58469 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755145AbXLQPqq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:42:12 -0500
-Subject: Please pull git390 'for-linus' branch
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 17 Dec 2007 16:42:09 +0100
-Message-Id: <1197906130.7955.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Mon, 17 Dec 2007 10:46:46 -0500
+Message-ID: <476699FA.5050606@ru.mvista.com>
+Date: Mon, 17 Dec 2007 18:47:06 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Jon Dufresne <jon.dufresne@infinitevideocorporation.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org
+Subject: Re: PCI resource unavailable on mips
+References: <1197557806.3370.7.camel@microwave.infinitevideocorporation.com>	 <20071214093945.GA25186@linux-mips.org>	 <1197666735.3800.1.camel@microwave.infinitevideocorporation.com>	 <20071216224617.GA18613@linux-mips.org> <1197904591.3351.5.camel@microwave.infinitevideocorporation.com>
+In-Reply-To: <1197904591.3351.5.camel@microwave.infinitevideocorporation.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from 'for-linus' branch of
+Hello.
 
-	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
+Jon Dufresne wrote:
 
-to receive the following updates:
+> I did a bit more work and investigation on this and it turns out I could
+> not read the mmio in kernel space because I had not done a
+> pci_enable_device_bars() on the device. I had never done this on x86 so
+> I didn't realize it was necessary.
 
- include/asm-s390/pgtable.h |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+>>The virtual address 0xc0300000 looks sensible and the physical address
+>>0x24000000 is consistent with what you found in the BAR registers.  So that
+>>all looks reasonable but that only means not obviously wrong.  So next I
+>>wonder what the value of PCI_MMIO_BASE is ...
 
-Martin Schwidefsky (1):
-      [S390] pud_present/pmd_present bug.
+> The PCI_MMIO_BASE is a defined as:
 
-diff --git a/include/asm-s390/pgtable.h b/include/asm-s390/pgtable.h
-index f2cc25b..1f530f8 100644
---- a/include/asm-s390/pgtable.h
-+++ b/include/asm-s390/pgtable.h
-@@ -453,12 +453,12 @@ static inline int pgd_bad(pgd_t pgd)	 { return 0; }
- 
- static inline int pud_present(pud_t pud)
- {
--	return pud_val(pud) & _REGION_ENTRY_ORIGIN;
-+	return (pud_val(pud) & _REGION_ENTRY_ORIGIN) != 0UL;
- }
- 
- static inline int pud_none(pud_t pud)
- {
--	return pud_val(pud) & _REGION_ENTRY_INV;
-+	return (pud_val(pud) & _REGION_ENTRY_INV) != 0UL;
- }
- 
- static inline int pud_bad(pud_t pud)
-@@ -471,12 +471,12 @@ static inline int pud_bad(pud_t pud)
- 
- static inline int pmd_present(pmd_t pmd)
- {
--	return pmd_val(pmd) & _SEGMENT_ENTRY_ORIGIN;
-+	return (pmd_val(pmd) & _SEGMENT_ENTRY_ORIGIN) != 0UL;
- }
- 
- static inline int pmd_none(pmd_t pmd)
- {
--	return pmd_val(pmd) & _SEGMENT_ENTRY_INV;
-+	return (pmd_val(pmd) & _SEGMENT_ENTRY_INV) != 0UL;
- }
- 
- static inline int pmd_bad(pmd_t pmd)
+>>#define PCI_MMIO_BASE            (0x00040000)
 
+> This is define in the technical documentation as the offset to access
+> pci config space from the mmio.
 
+    From what mmio? If it's for accessing a config. space why then you're 
+using it as an offset from BAR?
+
+> I am using this because I know what the
+> values should be so it provides a nice sanity check.
+
+> Any idea what I might be doing wrong? How can I access this from user
+> space?
+
+    Your example doesn't make sense to me so far.
+
+> Thanks,
+> Jon
+
+WBR, Sergei
