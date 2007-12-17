@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933703AbXLQQG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933811AbXLQQHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933703AbXLQQG5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 11:06:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbXLQQGr
+	id S933811AbXLQQHx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 11:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932139AbXLQQHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 11:06:47 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53348 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760283AbXLQQGq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 11:06:46 -0500
-Date: Mon, 17 Dec 2007 15:59:10 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: taow@alcor.concordia.ca
-Cc: "Steven Winikoff" <smw@alcor.concordia.ca>, linux-kernel@vger.kernel.org,
-       "Sheila Ettinger" <sheilae@alcor.concordia.ca>,
-       "Tan Bui" <tan@alcor.concordia.ca>,
-       "Tao Wang" <taow@alcor.concordia.ca>,
-       "Gillian Roper" <groper@alcor.concordia.ca>,
-       "Sylvain Robitaille" <syl@alcor.concordia.ca>
-Subject: Re: 2.6.23.8: OOM killer kills wrong jobs
-Message-ID: <20071217155910.278020c4@the-village.bc.nu>
-In-Reply-To: <1241.65.94.28.163.1197906245.squirrel@webmail.concordia.ca>
-References: <9xMQB-5XC-25@gated-at.bofh.it>
-	<9xHQH-6oR-5@gated-at.bofh.it>
-	<304323.1197868809@alcor.concordia.ca>
-	<20071217133053.508dbab0@the-village.bc.nu>
-	<1241.65.94.28.163.1197906245.squirrel@webmail.concordia.ca>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Dec 2007 11:07:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58077 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932123AbXLQQHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 11:07:41 -0500
+Message-ID: <47669E87.1010506@redhat.com>
+Date: Mon, 17 Dec 2007 11:06:31 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Roland McGrath <roland@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, prasanna@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+CC: systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [-mm][PATCH 0/6] (yet another) kprobes x86 code unification and boosters
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007 10:44:05 -0500 (EST)
-taow@alcor.concordia.ca wrote:
+Hello all,
 
-> > You will *probably* get stable 16GB with the vendor tuned enterprise
-> > kernels (RHEL, CentOS etc),
-> 
-> That's sounds "a little" relief. Thesis 1,2,3 has 16GB memory. Aries has 12G.
+I developed a series of patches which unifies kprobes code on x86
+and introduces boosters on x86-64. These patches can be applied to 2.6.24-rc4-mm1.
 
-If you can run a 64bit kernel, it will save you an inordinate amount of
-pain on a box with > 4GB of RAM. The fact > 4GB is possible on such a box
-in 32bit doesn't make it a good idea.
+The purpose of this patchset is unifying kprobes_[32|64].[c|h] to kprobes.[c|h]
+for simplifying code maintenance.
 
-Alan
+I know these patches are conflicting with Harvey's patch.
+We need to solve that.
+
+kprobe-booster and kretprobe-booster were explained in:
+http://marc.info/?l=linux-kernel&m=113862526017068&w=2
+
+Currently, these patches do unification as following order.
+1. Clean up and fix bugs in kprobes[1/6, 2/6].
+2. Introduce kprobe-booster and kretprobe-booster for x86-64[3/6, 4/6].
+   (x86-32 kprobes already has same functionalities)
+3. Prepare unification[5/6].
+4. Unify kprobes code[6/6].
+
+If you have any comment, please let me know.
+
+
+Best Regards,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+
+
