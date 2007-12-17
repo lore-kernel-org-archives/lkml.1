@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbXLQPri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763943AbXLQPsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758671AbXLQPri (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932430AbXLQPr0
+	id S1763943AbXLQPsP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 10:48:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757706AbXLQPr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:47:26 -0500
-Received: from ruby.spiritone.com ([216.99.193.130]:56046 "EHLO
-	ruby.spiritone.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932407AbXLQPrZ (ORCPT
+	Mon, 17 Dec 2007 10:47:56 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56227 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757751AbXLQPrz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:47:25 -0500
-Message-ID: <47669A16.3010604@BitWagon.com>
-Date: Mon, 17 Dec 2007 07:47:34 -0800
-From: John Reiser <jreiser@BitWagon.com>
-Organization: -
-User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
-X-Accept-Language: en-us, en
+	Mon, 17 Dec 2007 10:47:55 -0500
+Date: Mon, 17 Dec 2007 15:47:20 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: almost daily Kernel oops with 2.6.23.9 - and now 2.6.23.11 as
+ well
+In-Reply-To: <200712171559.26834.volker.armin.hemmann@tu-clausthal.de>
+Message-ID: <Pine.LNX.4.64.0712171540040.6503@blonde.wat.veritas.com>
+References: <200712160106.00464.volker.armin.hemmann@tu-clausthal.de>
+ <200712171559.26834.volker.armin.hemmann@tu-clausthal.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: slab quirks in DEBUG, ctor, and initialization
-X-Enigmail-Version: 0.92.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In mm/slab.c, the DEBUG variant of cache_alloc_debugcheck_after
-might call  cachep->ctor(objp, cachep, 0);  but the non-DEBUG
-variant does absolutely nothing.  idr_pre_get is a routine
-which notices the difference.
+On Mon, 17 Dec 2007, Hemmann, Volker Armin wrote:
+> 
+> I got another crash, now with 2.6.23.11 on logout from KDE (two differences, 
+> new kernel, 4gb ram instead of 2gb):
+> 
+> [ 1771.063731] Unable to handle kernel paging request at 0000040000000000 RIP:
+> also I got some strange message yesterday before increasing ramsize:
+> [19546.639528] swap_free: Bad swap offset entry 04000000
+> [27999.370777] swap_free: Bad swap offset entry 04000000
+> [27999.434282] swap_free: Bad swap offset entry 04000000
+> [27999.466035] swap_free: Bad swap offset entry 04000000
+> [27999.521132] swap_free: Bad swap offset entry 04000000
+> [27999.561621] VM: killing process ld-linux-x86-64
+> [27999.561719] swap_free: Bad swap offset entry 04000000
 
-Even when cache_alloc_debugcheck_after does invoke the ctor,
-then it is conditional upon  cachep->flags & SLAB_POISON .  This
-assumes that the only two states are poisoned and all-zero
-(from .bss static, or via a cleared new page frame.)
-So if SLAB_POISON is not specified, then a ctor which
-does anything other than memset(,0,) is out of luck.
-Instead: if a ctor is specified then it should be called
-for each successful allocation.
+You're seeing a single bit set where it shouldn't be: please give
+memtest86+ a good try; if it's not actually your memory that's bad,
+then I'd guess it's something like overheating (please correct me,
+ye who know better).
 
-Invoking the ctor from within cache_alloc_debugcheck_after makes it
-awkward for a dynamic checker of allocations and  initializations.
-Valgrind would be happier if allocation and initialization were
-invoked at the same subroutine nesting level, such as in __cache_alloc:
-
-        cache_alloc_debugcheck_before(cachep, flags);
-        local_irq_save(save_flags);
-        objp = __do_cache_alloc(cachep, flags);
-	/* checker marks the space as allocated */
-        local_irq_restore(save_flags);
-        objp = cache_alloc_debugcheck_after(cachep, flags, objp, caller);
-	if (objp && cachep->ctor)
-		cachep->ctor(objp, cachep, 0);
-	/* checker notes initializations during ctor [above] */
-
--- 
-John Reiser, jreiser@BitWagon.com
+Hugh
