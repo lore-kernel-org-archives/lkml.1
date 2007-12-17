@@ -1,56 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765122AbXLQVw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936649AbXLQVx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765122AbXLQVw7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 16:52:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763363AbXLQVwg
+	id S936649AbXLQVx1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 16:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763033AbXLQVxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 16:52:36 -0500
-Received: from fk-out-0910.google.com ([209.85.128.184]:23002 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761569AbXLQVwe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 16:52:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=iG2qWsmeBlSnBNxUgFI/RpmU44KsQIQm2iAYyS/g2IbPraiNWtLby9zymobBELOIVTm6fpRFbF4YnL6bcZ1R3i0mcHcV2wawym2jeU8VRsp2oxL96W0E/fam7KfZ6DFsvuU05Ab51mphbRHYMUxIkFnLVTckdY7Ho9TlAaEgMmY=
-Message-ID: <4766EF28.5070807@keyaccess.nl>
-Date: Mon, 17 Dec 2007 22:50:32 +0100
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 17 Dec 2007 16:53:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43699 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761518AbXLQVxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 16:53:11 -0500
+Message-ID: <4766EFA8.9070907@redhat.com>
+Date: Mon, 17 Dec 2007 16:52:40 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Rene Herman <rene.herman@gmail.com>, Ingo Molnar <mingo@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       "David P. Reed" <dpreed@reed.com>, Paul Rolland <rol@as2917.net>,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, rol@witbe.net
-Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
-References: <476462BE.3030701@gmail.com>	<4764687D.6080609@zytor.com>	<476524DB.7020806@gmail.com>	<20071216152250.GA21245@elte.hu>	<4765D43E.1010800@gmail.com>	<20071217105744.GA14315@elte.hu>	<4766684D.40202@gmail.com>	<20071217130933.GB27992@elte.hu>	<47667812.8050708@gmail.com>	<47667A85.3080100@reed.com>	<20071217143900.GA16604@elte.hu> <20071217161243.05c32df4@the-village.bc.nu> <4766E086.9090500@gmail.com> <4766E2B5.8080001@zytor.com> <4766EB45.6010402@keyaccess.nl> <4766ECE2.1060604@zytor.com>
-In-Reply-To: <4766ECE2.1060604@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Maneesh Soni <maneesh@linux.vnet.ibm.com>, srinivasa@in.ibm.com,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp>,
+       Rusty Lynch <rusty.lynch@intel.com>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       Keshavamurthy Anil S <anil.s.keshavamurthy@intel.com>
+Subject: Re: FInal kprobes rollup patches
+References: <1197708350.898.87.camel@brick> <20071215085015.GA9720@elte.hu>	 <1197709442.898.97.camel@brick> <20071215131204.GE9720@elte.hu>	 <20071217142235.GA21379@linux.vnet.ibm.com>	 <1197919234.23402.5.camel@brick>  <4766E9FC.7050101@redhat.com> <1197927385.23402.41.camel@brick>
+In-Reply-To: <1197927385.23402.41.camel@brick>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-From: Rene Herman <rene.herman@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17-12-07 22:40, H. Peter Anvin wrote:
+Hi Harvey,
 
-> Rene Herman wrote:
+Harvey Harrison wrote:
+> On Mon, 2007-12-17 at 16:28 -0500, Masami Hiramatsu wrote:
+>> Hi Harvey,
+>> If you mention about a relative jump which is inserted by
+>> resume_execution(), I think you might misunderstand that relative jump.
 >>
->> Well, yes, I guess that does make sense. It's back again. Named the 
->> choices "standard" and "alternate" again as I feel "0x80" and "0xed" 
->> suggest they're free values a bit too much but if anyone feels 
->> strongly about it, so be it.
+>> The size of that relative jump, which will be embedded by kprobe-booster, is
+>> 5-bytes(not 1 byte). So it needs 5 bytes space.
+>> And we decided not to expand MAX_INSN_SIZE when we developed the booster.
+>> The reasons are:
+>>  - it is supplemental feature(just accelerating kprobes), if we have no space,
+>>    we can disable it.
+>>  - 5 bytes are big enough compared with 15(=MAX_INSN_SIZE)
+>>  - the lengths of most of instructions are less than 10 bytes.
+>>
+>> Additionally, MAX_INSN_SIZE is used in kernel/kprobes.c to allocate an
+>> instruction buffer which will be assigned to p->ainsn.insn. Since the
+>> instruction buffer size is MAX_INSN_SIZE, you can not copy instructions
+>> more than MAX_INSN_SIZE.
+>>
+>> BTW, in my patch, I unified MAX_INSN_SIZE to bigger one(16).
+>> I think it is enough for us.
 >>
 > 
-> They ARE -- or really, should be, free values (0xeb and 0xf0 are other 
-> reasonable values, for example.)
+> I went with 15 in mine, I thought it made the code a little more
+> readable, but I will defer if you think 16 is better.  If you want me
+> to send the whole series to you, let me know.
 
-I was afraid someone would say that. Making a random port available is fine 
-for testing purposes but a failry dangerous thing to do generally. For a 
-minimal version at -rc4 time, I believe sticking with 0x80 and 0xed ie best.
+Before porting, could you tell me what differences are important
+to you? We can discuss about it.
 
-Lots of time during .25 to go wild...
+> I just sent out a series of 4 patches equivalent to your patches 1-4/6
+> but based on my already unified kprobes.c/h, You may want to check your
+> handling of restored registers in trampoline_probe_handler which I found
+> when rebasing yours on top of my cleanups.  Not sure if this is
+> important, but it was a difference I found.
+> 
+> X86_32:
+> regs->cs = __KERNEL_CS | get_kernel_rpl();
+> 
+> yours:
+> regs->cs = __KERNEL_CS;
 
-Rene.
+Because of kretprobe's compatibility, on x86-32 cs should be set rpl().
+But get_kernel_rpl() does not exist on x86-64.
+
+Thanks,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+
