@@ -1,104 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764717AbXLQViQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765562AbXLQVjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764717AbXLQViQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 16:38:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934782AbXLQVhp
+	id S1765562AbXLQVjQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 16:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759464AbXLQVjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 16:37:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55070 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933804AbXLQVhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 16:37:43 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Bernard Pidoux <pidoux@ccr.jussieu.fr>
-Subject: Re: [BUG]  lack of  /proc/net/ax25  with  2.6.24-rc5
-Date: Mon, 17 Dec 2007 22:56:26 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Netdev List <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <476303C8.2060507@ccr.jussieu.fr> <20071215101810.GA3143@ami.dom.local> <476595EC.5050103@ccr.jussieu.fr>
-In-Reply-To: <476595EC.5050103@ccr.jussieu.fr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Dec 2007 16:39:00 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:34379 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760159AbXLQVi7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 16:38:59 -0500
+Date: Tue, 18 Dec 2007 00:39:27 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [PATCH] PCI: fix for quirk_e100_interrupt()
+Message-ID: <20071218003927.A3045@jurassic.park.msu.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712172256.26699.rjw@sisk.pl>
+User-Agent: Mutt/1.2.5i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 16 of December 2007, Bernard Pidoux wrote:
-> With 2.6.24-rc5 there is no /proc/net/ax25
+Check that the e100 is in the D0 power state. If it's not, it won't
+respond to MMIO accesses and we end up with master-abort machine
+checks on some platforms.
 
-FYI, I've created a Bugzilla entry for this issue at:
-http://bugzilla.kernel.org/show_bug.cgi?id=9589
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+---
+ drivers/pci/quirks.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
 
-Please add your address to the CC list in there.
-
-Thanks,
-Rafael
-
-
-> Here is an extract from dmesg after boot :
-> 
-> =======================
-> sysctl table check failed: /net/ax25/ax0/ax25_default_mode .3.9.1.2 
-> Unknown sysctl binary path
-> Pid: 2936, comm: kissattach Not tainted 2.6.24-rc5 #1
->   [<c012ca6a>] set_fail+0x3b/0x43
->   [<c012ce7a>] sysctl_check_table+0x408/0x456
->   [<c012ce8e>] sysctl_check_table+0x41c/0x456
->   [<c012ce8e>] sysctl_check_table+0x41c/0x456
->   [<c02ac64a>] _spin_unlock+0x14/0x1c
->   [<c012ce8e>] sysctl_check_table+0x41c/0x456
->   [<c011e681>] sysctl_set_parent+0x19/0x2a
->   [<c011f55c>] register_sysctl_table+0x45/0x85
->   [<d8be9d26>] ax25_register_sysctl+0x112/0x11c [ax25]
->   [<d8be6c76>] ax25_device_event+0x2e/0x90 [ax25]
->   [<c012c560>] notifier_call_chain+0x2a/0x47
->   [<c012c59f>] raw_notifier_call_chain+0x17/0x1a
->   [<c0259290>] dev_open+0x6f/0x75
->   [<c0257ee7>] dev_change_flags+0x9c/0x148
->   [<c0256ab3>] __dev_get_by_name+0x68/0x73
->   [<c0292307>] devinet_ioctl+0x22e/0x53b
->   [<c0259074>] dev_ioctl+0x472/0x5ba
->   [<c024d4ba>] sock_ioctl+0x1aa/0x1cf
->   [<c024d310>] sock_ioctl+0x0/0x1cf
->   [<c016bc19>] do_ioctl+0x19/0x4c
->   [<c016be40>] vfs_ioctl+0x1f4/0x20b
->   [<c0103d01>] sysenter_past_esp+0x9a/0xa9
->   [<c016be9c>] sys_ioctl+0x45/0x5d
->   [<c0103cc6>] sysenter_past_esp+0x5f/0xa9
->   =======================
-> sysctl table check failed: /net/ax25/ax0/backoff_type .3.9.1.3 Unknown 
-> sysctl binary path
-> (...) truncated
->   =======================
-> sysctl table check failed: /net/ax25/ax0/connect_mode .3.9.1.4 Unknown 
-> sysctl binary path
-> (...)
->   =======================
-> sysctl table check failed: /net/ax25/ax0/standard_window_size .3.9.1.5 
-> Unknown sysctl binary path
->   =======================
-> (...)
-> 
-> and so on ...
-> 
-> 
-> 
-> Bernard Pidoux
-> f6bvp@amsat.org
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 26cc4dc..c8b2b9d 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1406,9 +1406,10 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_NETMOS, PCI_ANY_ID, quirk_netmos);
+ 
+ static void __devinit quirk_e100_interrupt(struct pci_dev *dev)
+ {
+-	u16 command;
++	u16 command, pmcsr;
+ 	u8 __iomem *csr;
+ 	u8 cmd_hi;
++	int pm;
+ 
+ 	switch (dev->device) {
+ 	/* PCI IDs taken from drivers/net/e100.c */
+@@ -1442,6 +1443,17 @@ static void __devinit quirk_e100_interrupt(struct pci_dev *dev)
+ 	if (!(command & PCI_COMMAND_MEMORY) || !pci_resource_start(dev, 0))
+ 		return;
+ 
++	/*
++	 * Check that the device is in the D0 power state. If it's not,
++	 * there is no point to look any further.
++	 */
++	pm = pci_find_capability(dev, PCI_CAP_ID_PM);
++	if (pm) {
++		pci_read_config_word(dev, pm + PCI_PM_CTRL, &pmcsr);
++		if ((pmcsr & PCI_PM_CTRL_STATE_MASK) != PCI_D0)
++			return;
++	}
++
+ 	/* Convert from PCI bus to resource space.  */
+ 	csr = ioremap(pci_resource_start(dev, 0), 8);
+ 	if (!csr) {
