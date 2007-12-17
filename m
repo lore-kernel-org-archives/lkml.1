@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937468AbXLQXVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937507AbXLQXW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937468AbXLQXVw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 18:21:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937241AbXLQXUs
+	id S937507AbXLQXW0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 18:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937155AbXLQXVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 18:20:48 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:52501 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937226AbXLQXUp (ORCPT
+	Mon, 17 Dec 2007 18:21:23 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:41199 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936666AbXLQXVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 18:20:45 -0500
-Date: Tue, 18 Dec 2007 00:20:44 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Paul Mundt <lethal@linux-sh.org>
-cc: Adrian McMenamin <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-sh@vger.kernel.org, axboe@kernel.dk
-Subject: Re: [PATCH 2/3] Add GD-Rom support to the SEGA Dreamcast
-In-Reply-To: <20071216095019.GA12184@linux-sh.org>
-Message-ID: <Pine.LNX.4.64.0712180019590.32270@fbirervta.pbzchgretzou.qr>
-References: <8b67d60712151621j2101c411p19d75125c6d1c2f9@mail.gmail.com>
- <20071216095019.GA12184@linux-sh.org>
+	Mon, 17 Dec 2007 18:21:21 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: mvtodevnull@gmail.com
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
+Date: Tue, 18 Dec 2007 00:18:56 +0100
+User-Agent: KMail/1.9.6
+Cc: "Larry Finger" <larry.finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Daniel Walker" <dwalker@mvista.com>,
+       "Ray Lee" <ray-lk@madrabbit.org>,
+       "Simon Holm =?iso-8859-1?q?Th=F8gersen?=" <odie@cs.aau.dk>,
+       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, "Ingo Molnar" <mingo@elte.hu>, kjwinchester@gmail.com,
+       jonathan@jonmasters.org, akpm@linux-foundation.org,
+       bcm43xx-dev@lists.berlios.de
+References: <20071213003028.676998182@mvista.com> <200712172345.20710.mb@bu3sch.de> <520b60a90712171512vcab7fb6of7732466ccb85996@mail.gmail.com>
+In-Reply-To: <520b60a90712171512vcab7fb6of7732466ccb85996@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712180018.57272.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 18 December 2007 00:12:30 mvtodevnull@gmail.com wrote:
+> On Dec 17, 2007 5:45 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> >
+> > Ehm, excuse me.
+> > What are you doing exactly? In this thread you told me you have
+> > a device which requires b43:
+> >
+> 
+> Well, I'm not sure what you mean by "requires" b43, but I did say that
+> the device uses the b43 driver.
 
-On Dec 16 2007 18:50, Paul Mundt wrote:
->On Sun, Dec 16, 2007 at 12:21:21AM +0000, Adrian McMenamin wrote:
->> +/* GD Rom registers */
->> +#define GDROM_BASE_REG 0xA05F7000
->> +#define GDROM_ALTSTATUS_REG GDROM_BASE_REG + 0x18
->> +#define GDROM_DATA_REG GDROM_BASE_REG + 0x80
->> +#define GDROM_ERROR_REG GDROM_BASE_REG + 0x84
->> +#define GDROM_INTSEC_REG GDROM_BASE_REG + 0x88
->> +#define GDROM_SECNUM_REG GDROM_BASE_REG + 0x8C
->> +#define GDROM_BCL_REG  GDROM_BASE_REG + 0x90
->> +#define GDROM_BCH_REG GDROM_BASE_REG + 0x94
->> +#define GDROM_DSEL_REG GDROM_BASE_REG + 0x98
->> +#define GDROM_STATUSCOMMAND_REG GDROM_BASE_REG + 0x9C
->> +#define GDROM_RESET_REG GDROM_BASE_REG + 0x4E4
->> +
->> +#define GDROM_DATA_REG_P0 0x005F7080
->> +
->> +#define GDROM_DMA_STARTADDR_REG GDROM_BASE_REG + 0x404
->> +#define GDROM_DMA_LENGTH_REG GDROM_BASE_REG + 0x408
->> +#define GDROM_DMA_DIRECTION_REG GDROM_BASE_REG + 0x40C
->> +#define GDROM_DMA_ENABLE_REG GDROM_BASE_REG + 0x414
->> +#define GDROM_DMA_STATUS_REG GDROM_BASE_REG + 0x418
->> +#define GDROM_DMA_WAIT_REG GDROM_BASE_REG + 0x4A0
->> +#define GDROM_DMA_ACCESS_CTRL_REG GDROM_BASE_REG + 0x4B8
->> +
->These should all be encapsulated by brackets.
+Requires means requires.
 
-Or making it an enum {
-	GDROM_DMA_ACCESS_CTL_REG = GDROM_BASE_REG + 0x4B8,
-}; without brackets.
+> Sorry, I should have been more specific. I figured since the device
+> could use bcm43xx, it could also use b43legacy, so I copied the
+> entries in b43_ssb_tbl[] to b43legacy_ssb_tbl[] and rebuilt the
+> b43legacy driver. I removed the b43 and ssb modules, and inserted the
+> b43legacy module. Afterwards, I noticed b43 had still been autoloaded,
+> so I removed it (I checked dmesg and only b43legacy had initialized
+> anyway) , and proceeded to use the b43legacy driver with the version 3
+> firmware. And like I said, it works exactly like the b43 driver with
+> the version 4 firmware.
 
+I'm not sure what you are trying to show with this hack.
+It's been said several times in this thread that the firmware has
+nothing to do with the device radio.
+So it won't affect the transmit rate or something like that.
+
+Note that the difference between b43 and b43legacy is NOT that the
+driver is "legacy". It is called legacy because it does _only_ support
+legacy _devices_. So if you hack it to drive a new card it will only
+work by luck (luck as in there might be some code left over which
+is able to initialize the device somehow.). My point being, we removed
+code for new devices from b43legacy and are probably going to remove
+even more stuff in the future. So there is simply no point in testing
+any new device with b43legacy.
+
+-- 
+Greetings Michael.
