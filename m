@@ -1,199 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937467AbXLQURw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937444AbXLQUS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937467AbXLQURw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:17:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936780AbXLQUFN
+	id S937444AbXLQUS1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764638AbXLQUJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 15:05:13 -0500
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:41896
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757195AbXLQUFJ (ORCPT
+	Mon, 17 Dec 2007 15:09:43 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:41684 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760043AbXLQUJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 15:05:09 -0500
-Date: Mon, 17 Dec 2007 13:15:37 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Ludovico Gardenghi <garden@cs.unibo.it>
-cc: Renzo Davoli <renzo@cs.unibo.it>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/1] IPN: Inter Process Networking
-In-Reply-To: <20071217115048.GA12906@ripieno.somiere.org>
-Message-ID: <Pine.LNX.4.64.0712171121290.13025@asgard.lang.hm>
-References: <20071217092401.GC4356@cs.unibo.it> <Pine.LNX.4.64.0712170327410.4467@asgard>
- <20071217104706.GA10966@ripieno.somiere.org> <Pine.LNX.4.64.0712170359260.4467@asgard>
- <20071217115048.GA12906@ripieno.somiere.org>
+	Mon, 17 Dec 2007 15:09:40 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18278.55130.471797.398922@stoffel.org>
+Date: Mon, 17 Dec 2007 15:08:58 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, john@stoffel.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: 2.6.24-rc5: tape drive not responding
+In-Reply-To: <20071217031510.c3d500fd.akpm@linux-foundation.org>
+References: <18277.52079.718004.969358@stoffel.org>
+	<20071217112551H.fujita.tomonori@lab.ntt.co.jp>
+	<20071217031510.c3d500fd.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007, Ludovico Gardenghi wrote:
+>>>>> "Andrew" == Andrew Morton <akpm@linux-foundation.org> writes:
 
-> On Mon, Dec 17, 2007 at 04:10:19AM -0800, david@lang.hm wrote:
->
->> if you are talking network connections between virtual systems, then the
->> exiting tap interfaces would seem to do everything you are looking for. you
->> can add them to bridges, route between them, filter traffic between them
->> (at whatever layer you want with netfilter), use multicast, etc as you
->> would any real interface.
->>
->> if, however, you are talking about non-network communications (your example
->> of sending raw video frames across the interface), and want multiple
->> processes to receive them, this sounds like exactly the thing that splice
->> was designed to do, distribute data to multiple recipiants simultaniously
->> and efficiantly.
->
-> I'll try to explain.
->
-> Our first interest was to be able to interconnect virtual, real, and partial
-> virtual machines. We developed VDE for this, it's a user-level L2
-> switch. Specific as it may be, it's quite popular as a simple but
-> flexible tool. It can interconnect UML, Qemu, UMView, slirp, everything that
-> can be connected to a tap interface, etc.
->
-> So, you say, it's a networking issue and we could live with tun/tap.
-> There's a major point here: at present, dealing with tun/tap, bridges,
-> routing is quite difficult if you are a *regular* user with *no*
-> capabilites at all. You have tun/tap persistency and association to a
-> specific user (or group, recently), at most. That's good - we don't want
-> regular users to mess with global networking rules and settings.
->
-> Think of a bunch of etherogeneous virtual machines, partial virtual
-> machines (i.e. VMs where only a subset of system calls may be
-> virtualized or not depending on the parameters - that's the case of
-> View-OS) that must be interconnected and that may or may not have a
-> connection to a real network interface (maybe via a tunnel towards a
-> different machine). There's no need for administrator intervention here.
-> Why should an user have to ask root to create lots of tap interfaces for
-> him, bind them in a bridge and set up filtering/routing rules? What
-> would the list of interfaces become when different users asked for the
-> same thing at the same time?
->
-> You could define a specific interconnecting bus, but we've already have
-> it: ethernet. VDE comes in help as it allows regular users to build
-> distributed ethernet networks.
->
-> VDE works fine, but at present often results in a bottleneck because of
-> the high number of user-processes involved and user-kernel-user switches
-> needed in order to transfer a single ethernet frame. Moving the core
-> inside the kernel would limit this problem and result in faster
-> communication with still no need for root intervention or global
-> namespace messing. (we're thinking if something can be done working with
-> containers or similar structures, both for networking and partial
-> virtualization, but that's another topic).
+Andrew> On Mon, 17 Dec 2007 11:25:51 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+>> On Sun, 16 Dec 2007 20:05:51 -0500
+>> "John Stoffel" <john@stoffel.org> wrote:
+>> > 
+>> > [  273.382057] sd 12:0:0:3: Attached scsi generic sg13 type 0
+>> > [  276.244872] ------------[ cut here ]------------
+>> > [  276.300215] kernel BUG at include/linux/scatterlist.h:59!
+>> > [  276.364873] invalid opcode: 0000 [#1] SMP 
+>> > [  276.414346] Modules linked in:
+>> > [  276.451148] 
+>> > [  276.469036] Pid: 1824, comm: stinit Not tainted (2.6.24-rc5 #2)
+>> > [  276.539940] EIP: 0060:[<c0343c30>] EFLAGS: 00010213 CPU: 0
+>> > [  276.605651] EIP is at st_do_scsi+0x2e0/0x340
+>> > [  276.656788] EAX: 00000000 EBX: 00000000 ECX: c16ef780 EDX: f7c4f050
+>> > [  276.731847] ESI: f7c4f7d0 EDI: 00001000 EBP: f7c4f000 ESP: f712bdf8
+>> > [  276.806904]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+>> > [  276.871568] Process stinit (pid: 1824, ti=f712b000 task=f750a030 task.ti=f712b000)
+>> > [  276.960139] Stack: 00000003 f7c4f050 00000000 00000000 00d59f80 00000000 f776fe20 c03468a0 
+>> > [  277.062012]        000000d0 f712be9c f7d2a000 f776fe20 f7d2a018 00000000 00000006 f712be9c 
+>> > [  277.163890]        f7d2a000 f712beac f7c4f000 c0345790 00000006 00000002 000dbba0 00000000 
+>> > [  277.265771] Call Trace:
+>> > [  277.297383]  [<c03468a0>] st_sleep_done+0x0/0x70
+>> > [  277.352894]  [<c0345790>] check_tape+0x510/0x640
+>> > [  277.408414]  [<c0346cfb>] st_open+0x18b/0x220
+>> > [  277.460803]  [<c01707e0>] exact_match+0x0/0x10
+>> > [  277.514237]  [<c0346b70>] st_open+0x0/0x220
+>> > [  277.564553]  [<c0170ebf>] chrdev_open+0x9f/0x190
+>> > [  277.620069]  [<c0170e20>] chrdev_open+0x0/0x190
+>> > [  277.674543]  [<c016c86f>] __dentry_open+0xaf/0x1b0
+>> > [  277.732136]  [<c016ca25>] nameidata_to_filp+0x35/0x40
+>> > [  277.792847]  [<c016ca7b>] do_filp_open+0x4b/0x60
+>> > [  277.848364]  [<c016c732>] get_unused_fd_flags+0x52/0xd0
+>> > [  277.911153]  [<c016cadc>] do_sys_open+0x4c/0xe0
+>> > [  277.965629]  [<c016cbac>] sys_open+0x1c/0x20
+>> 
+>> I think that you need the following patch for the scatterlist problem:
+>> 
+>> http://marc.info/?l=linux-scsi&m=119770154127770&w=2
 
-so it sounds like the real issue you are trying to deal with is that only 
-root is allowed to make changes to the networking configuration, and you 
-want to allow non-root users to make changes.
+Andrew> err, you sent that patch to John a day earlier too.
 
-in doing this you started by duplicating the kernel networking 
-functionality into userspace (your userspace L2 switch) and are running 
-into performance problems so trying to push this into the kernel to reduce 
-context switches.
+Andrew> John, can you please apply, test and report?
 
-besides your approach I see two other options on their way into the 
-kernel.
+Happily, this seems to fix the problem with the above crash on
+2.6.24-rc5-mm1, I've also left the fix in 2.6.24-rc5 and I'll be
+testing that in my next reboot.  It's looking good!
 
-1. no changes, run your switch in a VM and your users (with their group 
-permissions) connect their VM interfaces to the interfaces of the VM 
-running the switch/filtering. this allows them 'root' inside the VM where 
-they can make all these changes.
+So, this regression is fixed in 2.6.24-rc5-mm1.
 
-this may have the same performance problems as your current userspace 
-switch.
+Next, it would be nice to rate limit the "Parity error detected..."
+messages from the Symbios driver, I'll see if I can hack something up
+in the next day or so.
 
-2. networking virtualization. there is work being done to be able to have 
-what would be essentially multiple networking stacks on a machine to allow 
-a VM/container to control some things without having to go through the 
-tun/tap interface. This would allow a user to change the filtering rules 
-without the changes being global.
-
-however, note that if the VM's are more then just a test-bed and actually 
-need to talk to the outside world, at some point they will need to connect 
-to the real interfaces, and making that connection should still require 
-superuser privilages on the master kernel.
-
-besides, useing the standard networking stack has the advantage that if 
-you end up needing to spread your VM's across multiple machines the 
-support is already there, where adding a new IPC mechanism will require 
-figuring out how to extend that mechanism across machines.
-
-It also doesn't require the applications to be coded specificly for your 
-mechanism. they just use standard networking API's and the virtual 
-connections happen for them.
-
-> So we started thinking how to use existing kernel structures, and we
-> concluded that:
->
-> - no existing kernel structures appeared to be optimal for this work;
-> - if we've had to design a new structure, it would have been more
->   useful if we tried to be as more general as we could.
->
-> At present we're still focused on networking and other applications are
-> just examples, but we thought that adding a general extensible multipoint
-> IPC family is quite better than adding the most specific solution to our
-> current problem.
->
-> Maybe people with experience in other fields may tell us if there are
-> other problems that can be resolved, or optimized, or simply made
-> simpler, with IPN. Maybe our proposal is not the best as for interface
-> and semantics. But we feel that it may fill an "empty space" in the
-> available IPC mechanisms with a quite simple but powerful approach.
-
-I'm not the person to approve or disapprove adding this to the kernel, but 
-when something similar was proposed a week or so ago, the reaction from 
-many kernel developers was basicly the same as I articulated. While the 
-explination this time is far more complete, I don't think it presents a 
-compelling case for why this needs to be added instead of useing existing 
-mechanisms.
-
-the fact that the answers for "why not use splice" have been "it doesn't 
-work for networking" and "why not use tun/tap" with "we may want to use it 
-for non-networking things in the future" seems like you are playing both 
-ends against the middle.
-
-in this message you have articulated a new issue (the fact that tun/tap 
-will do everything you want, you just want to be able to do this without 
-needing to have superuser privilages). This is a valid issue, but there 
-are other options on the way that may address this.
-
->> for a new family to be valuble, you need to show what it does that isn't
->> available in existing families.
->
-> Is it "more acceptable" to add a new address family or to add features
-> to existing ones? (my question is purely informative, I don't want to
-> sound sarcastic or whatever) For instance, someone proposed "let's just
-> add access control to the netlink family". It seems a though work.
-
-useually it seems to be to add features to an existing family, especially 
-if the features that need to be added are virtualization ones.
-
-> You proposed splice, other have proposed multicast or netlink.
-
-and the different answers have been to different problems.
-
-if you need IP type routing and filtering then multicast over tun/tap is 
-probably a far better answer.
-
-if you are needing unstructured communication betwen processes then 
-netlink or splice are the right answers (which one is right for your 
-application depends on what you are trying to do)
-
-> If I have
-> understood correctly, splice helps in copying data to different
-> destinations in a very fast way. But it needs a userspace program that
-> receives data, iterates on fds and splices the data "out", calling a
-> syscall for each destination.  syscall calling may have become very fast
-> but we still notice slowdowns due to the reasons I've explained before.
-
-but receiving data into a program from any source (pipe, kernel-space 
-networking, userspace networking) all require system calls to transfer the 
-data. so saying that receiving data from a pipe involes overhead on all 
-receiving processes in a non-issue.
-
-> --- (the following is not related to IPN but i wanted to answer this too)
-<snipped discription of ptrace/utrace>
-thanks for the explination.
-
-David Lang
+Thanks,
+John
