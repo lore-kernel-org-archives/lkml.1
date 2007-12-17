@@ -1,164 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935717AbXLQXr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936877AbXLQXso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935717AbXLQXr7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 18:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933457AbXLQXrl
+	id S936877AbXLQXso (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 18:48:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933457AbXLQXsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 18:47:41 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51680 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933172AbXLQXrj (ORCPT
+	Mon, 17 Dec 2007 18:48:30 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:43608 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933345AbXLQXs3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 18:47:39 -0500
-Date: Mon, 17 Dec 2007 15:47:27 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: "Tony Luck" <tony.luck@intel.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>, protasnb@gmail.com,
-       tytso@thunk.org
-Subject: Re: Top kernel oopses/warnings this week
-Message-ID: <20071217154727.404e4bc4@laptopd505.fenrus.org>
-In-Reply-To: <12c511ca0712171526h242a7de8vadec78cd48747bd@mail.gmail.com>
-References: <4762CF8C.90808@linux.intel.com>
-	<20071217172331.GA23070@elte.hu>
-	<20071217133631.5bbc5842@laptopd505.fenrus.org>
-	<12c511ca0712171458n1bc05b40nab6b4b7c92433c8d@mail.gmail.com>
-	<476703A4.7000401@linux.intel.com>
-	<12c511ca0712171526h242a7de8vadec78cd48747bd@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Dec 2007 18:48:29 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18279.2719.394892.692343@stoffel.org>
+Date: Mon, 17 Dec 2007 18:47:43 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, John Stoffel <john@stoffel.org>,
+       fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Boaz Harrosh <bharrosh@panasas.com>
+Subject: Re: 2.6.24-rc5: tape drive not responding
+In-Reply-To: <1197928348.3204.14.camel@localhost.localdomain>
+References: <18277.52079.718004.969358@stoffel.org>
+	<20071217112551H.fujita.tomonori@lab.ntt.co.jp>
+	<20071217031510.c3d500fd.akpm@linux-foundation.org>
+	<18278.55130.471797.398922@stoffel.org>
+	<18278.58314.892734.490418@stoffel.org>
+	<20071217134344.3f024461.akpm@linux-foundation.org>
+	<1197928348.3204.14.camel@localhost.localdomain>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007 15:26:46 -0800
-"Tony Luck" <tony.luck@intel.com> wrote:
+>>>>> "James" == James Bottomley <James.Bottomley@SteelEye.com> writes:
 
-> On Dec 17, 2007 3:17 PM, Arjan van de Ven <arjan@linux.intel.com>
-> wrote:
-> >
-> > Tony Luck wrote:
-> > >> +       static char target[80];
-> > >  ...
-> > >> +               sprintf(target,
-> > >> "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-"
-> > >> +                       "%02x%02x%02x%02x%02x%02x",
-> > >
-> > > [80] is overkill ... [37] bytes should be enough (unless I went
-> > > cross-eyed counting the "%02x" :-)
-> > >
-> >
-> > %02x doesn't guarantee that it's at most 2, but at LEAST 2...
-> 
-> How will you fit a number that requires >2 hex digits into an
-> "unsigned char"?
+James> On Mon, 2007-12-17 at 13:43 -0800, Andrew Morton wrote:
+>> On Mon, 17 Dec 2007 16:02:02 -0500
+>> "John Stoffel" <john@stoffel.org> wrote:
+>> 
+>> > 
+>> > Just to confirm, the propsed patch to st.c fixes the issue with
+>> > 2.6.24-rc5 as well at 2.6.24-rc5-mm1 with access to my DLT tape
+>> > drives.
+>> 
+>> err, what patch to st.c?
 
-eh eh because at first it was a signed char but I fixed that bug later
+James> That's this one:
 
-updated patch attached; using 38 to have a hard 0 at the end in case sprintf does
-something weird and 2 cpus race over oopsing (I don't want to add locking to the oops codepath
-if I can avoid it; the worst case with 38 is a truncated UUID string)
+James> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=acdd0b1c371b2fbb4b6110a51ba69cb0af9e6f45
 
+>> So it seems that 2.6.24 (and presumably 2.6.23?) need
 
-Subject: [patch] terminate the oops printing with a defined string/uuid
-From: Arjan van de Ven <arjan@linux.intel.com>
+James> Not 2.6.23 .. the scatterlist changes causing the st problems
+James> are local to 2.6.24.
 
-Right now, it's hard for automated tools to determine when an oops has
-ended; there's no clear marker for this. In addition, there's no good
-way to find out if an oops is unique. Sometimes it's the same oops
-just reported multiple times, while other times it's a different
-instance of the crash with the same signature. Printing the boot UUID
-as part of the end string resolves this ambiguity.
+Correct, I ran 2.6.23 for 47+ days of uptime without any problems.  I
+jumped to 2.6.24-rc5-mm1 to do my best to help out with finding
+problems.  Happy to have found one.  :]
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+>> 1: Alan's "initio: fix conflict when loading driver" (currently stocuk
+>> in git-scsi-misc)
 
----
- drivers/char/random.c  |   35 ++++++++++++++++++++++++++++++++++-
- include/linux/random.h |    1 +
- kernel/panic.c         |    2 ++
- 3 files changed, 37 insertions(+), 1 deletion(-)
+James> Yes, I'm moving this into scsi-rc-fixes
 
-Index: linux-2.6.24-rc5/drivers/char/random.c
-===================================================================
---- linux-2.6.24-rc5.orig/drivers/char/random.c
-+++ linux-2.6.24-rc5/drivers/char/random.c
-@@ -1176,8 +1176,41 @@ static int max_read_thresh = INPUT_POOL_
- static int max_write_thresh = INPUT_POOL_WORDS * 32;
- static char sysctl_bootid[16];
+I have nothing to do with this issue.
+
+>> 2: Boaz's "initio: initio_build_scb() fix" (my name for it)
+
+James> And applying this ... although I'd still appreciate confirmation from
+James> someone that the initio driver works after this.
+
+Sorry, I don't have of this hardware at all.
+
+>> 3: The mystery st.c fix.
+>> 
+>> yes?
+
+James> James
+
+Here's the simple one liner patch for the st.c problem:
+
+--- orig/drivers/scsi/st.c     2007-12-16 20:08:45.000000000
+-0500
++++ patched/drivers/scsi/st.c   2007-12-17 13:55:30.000000000 -0500
+@@ -3611,6 +3611,7 @@
  
-+/**
-+ *	get_boot_uuid	- return a string pointer to a system wide boot UUID
-+ *
-+ *	Returns a pointer to the boot UUID. This UUID is unique per system
-+ *	boot but persistent for one boot session.
-+ *
-+ *	The memory returned via the return pointer is static allocated and
-+ *	owned by the random.c driver; this should not be kfree()'d.
-+ *
-+ *	Locking: none
-+ */
-+ */
-+char *get_boot_uuid(void)
-+{
-+	static char target[38];
-+	unsigned char *uuid;
-+
-+	if (sysctl_bootid[8] == 0)
-+		generate_random_uuid(sysctl_bootid);
-+	/* sysctl_bootid is signed, to print we need unsigned .. */
-+	uuid = sysctl_bootid;
-+
-+	if (target[0] == 0) {
-+		sprintf(target, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-"
-+			"%02x%02x%02x%02x%02x%02x",
-+		uuid[0],  uuid[1],  uuid[2],  uuid[3],  uuid[4],
-+		uuid[5],  uuid[6],  uuid[7],  uuid[8],  uuid[9],
-+		uuid[10], uuid[11], uuid[12], uuid[13], uuid[14],
-+		uuid[15]);
-+	}
-+	return target;
-+}
-+
- /*
-- * These functions is used to return both the bootid UUID, and random
-+ * These functions are used to return both the bootid UUID, and random
-  * UUID.  The difference is in whether table->data is NULL; if it is,
-  * then a new UUID is generated and returned to the user.
-  *
-Index: linux-2.6.24-rc5/include/linux/random.h
-===================================================================
---- linux-2.6.24-rc5.orig/include/linux/random.h
-+++ linux-2.6.24-rc5/include/linux/random.h
-@@ -71,6 +71,7 @@ unsigned long randomize_range(unsigned l
+        tb->dma = need_dma;
+        tb->buffer_size = got;
++	sg_init_table(tb->sg, max_sg);
  
- u32 random32(void);
- void srandom32(u32 seed);
-+char *get_boot_uuid(void);
- 
- #endif /* __KERNEL___ */
- 
-Index: linux-2.6.24-rc5/kernel/panic.c
-===================================================================
---- linux-2.6.24-rc5.orig/kernel/panic.c
-+++ linux-2.6.24-rc5/kernel/panic.c
-@@ -19,6 +19,7 @@
- #include <linux/nmi.h>
- #include <linux/kexec.h>
- #include <linux/debug_locks.h>
-+#include <linux/random.h>
- 
- int panic_on_oops;
- int tainted;
-@@ -272,6 +273,7 @@ void oops_enter(void)
- void oops_exit(void)
- {
- 	do_oops_enter_exit();
-+	printk("---[ end of trace %s ]---\n", get_boot_uuid());
+        return tb;
  }
- 
- #ifdef CONFIG_CC_STACKPROTECTOR
+
+
+Hopefully it's not whitespace damaged.
+
+John
