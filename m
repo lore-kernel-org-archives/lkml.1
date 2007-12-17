@@ -1,61 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937130AbXLQUMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXLQUNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937130AbXLQUMq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:12:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933703AbXLQTtx
+	id S932403AbXLQUNO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:13:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765591AbXLQTuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:49:53 -0500
-Received: from mailhub.hp.com ([192.151.27.10]:45629 "EHLO mailhub.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935069AbXLQTtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:49:52 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett Packard
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] net/netlabel/: Spelling fixes
-Date: Mon, 17 Dec 2007 14:49:23 -0500
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       netdev@vger.kernel.org
-References: <1197920439-5455-29-git-send-email-joe@perches.com>
-In-Reply-To: <1197920439-5455-29-git-send-email-joe@perches.com>
+	Mon, 17 Dec 2007 14:50:16 -0500
+Received: from kuber.nabble.com ([216.139.236.158]:57838 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765415AbXLQTuO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:50:14 -0500
+Message-ID: <14374016.post@talk.nabble.com>
+Date: Mon, 17 Dec 2007 11:50:13 -0800 (PST)
+From: cable_plug <pratapagiri.ak@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: problem with ending requests asynchronously in my block device
+ driver
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712171449.24007.paul.moore@hp.com>
+X-Nabble-From: pratapagiri.ak@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 17 December 2007 2:40:35 pm Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
 
-Thanks Joe.
+Hi, 
 
-Acked-by: Paul Moore <paul.moore@hp.com>
+I've a block device driver which does the following, 
 
-> ---
->  net/netlabel/netlabel_mgmt.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/net/netlabel/netlabel_mgmt.c b/net/netlabel/netlabel_mgmt.c
-> index 5648337..9c41464 100644
-> --- a/net/netlabel/netlabel_mgmt.c
-> +++ b/net/netlabel/netlabel_mgmt.c
-> @@ -71,7 +71,7 @@ static const struct nla_policy
-> netlbl_mgmt_genl_policy[NLBL_MGMT_A_MAX + 1] = { };
->
->  /*
-> - * NetLabel Misc Managment Functions
-> + * NetLabel Misc Management Functions
->   */
->
->  /**
+Inside the request function I do something like this: 
+request(fn) { 
+
+ while ((req = elv_next_request(q)) != NULL) { 
+....................set up the request; 
+ spin_unlock_irq(q->queue_lock); 
+call the transfer(set_up_req) function; 
+spin_lock_irq(q->queue_lock); 
+} 
+       spin_unlock_irq (q->queue_lock); 
+        /* allow callback to execute as it needs the lock!!! */ 
+        spin_lock_irq (q->queue_lock); 
 
 
+} 
+and the transfer function calls the scsi_execute_asyn(....) with the
+callback function doing the end request. So, the ending of the request is
+done like below: 
 
+callback(fn) { 
+
+ spin_lock_irqsave(q->queue_lock, flags); 
+        if (!end_that_request_first(set_up_req->req, cmpstatus, 
+                        set_up_req->req->nr_sectors)) { 
+                add_disk_randomness(...); 
+                end_that_request_last(set_up_req->req,0); 
+        } 
+        spin_unlock_irqrestore(q->queue_lock, flags); 
+} 
+
+
+This code works fine with most of the kernel versions, but fails on some
+like , Linux 2.6.18-8.el5-xen 
+
+Please help me to find out where I'm going wrong? 
+
+when I say 'fails' it just hangs without any error ....I'm using dt(Data
+test) to write to the disk. The logs show that all the requests that have
+been sent for processing, have completed sucessfully. Its just that new
+requests never enter the request function. So, the dt writes almost half the
+data and then simply hangs. 
+
+  
+  The actual code does nothing but, call the scsi_execute_async , which 
+ later on calls the callback function which is used to end the request. 
+ So, both the callback function and the request function need to share 
+ the queue lock. So the code samples I sent cover all the aspects of my 
+ program. What I'm looking for here is how can I end the requests 
+ asynchronously much later after the request processing is done. Please note 
+ here that the asynchronous end requests is done by the callback function 
+ of the scsi_execute_async, which needs to share the queue lock with 
+ the request function. 
+    
+  when I say 'fails' it just hangs without any error ....I'm using 
+ dt(Data 
+test) to write to the disk. The logs show that all the requests that 
+ have 
+been sent for processing, have completed successfully. Its just that new 
+requests never enter the request function. So, the dt writes almost 
+ half the 
+data and then simply hangs. 
+
+
+Thanks in advance for an early reply. 
+Anil P.
 -- 
-paul moore
-linux security @ hp
+View this message in context: http://www.nabble.com/problem-with-ending-requests-asynchronously-in-my-block-device-driver-tp14374016p14374016.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
+
