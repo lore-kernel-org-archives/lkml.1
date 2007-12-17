@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763527AbXLQXCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937272AbXLQXC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763527AbXLQXCA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 18:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761841AbXLQXB3
+	id S937272AbXLQXC2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 18:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762357AbXLQXBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 18:01:29 -0500
-Received: from ozlabs.org ([203.10.76.45]:55650 "EHLO ozlabs.org"
+	Mon, 17 Dec 2007 18:01:30 -0500
+Received: from ozlabs.org ([203.10.76.45]:55681 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756059AbXLQXB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 18:01:27 -0500
+	id S1761387AbXLQXB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 18:01:28 -0500
 To: linux-pci@atrey.karlin.mff.cuni.cz
 CC: Alan Cox <alan@redhat.com>, Greg Kroah-Hartman <greg@kroah.com>,
        <jgarzik@pobox.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
@@ -17,148 +17,67 @@ CC: Alan Cox <alan@redhat.com>, Greg Kroah-Hartman <greg@kroah.com>,
        <james.smart@emulex.com>, <linux-driver@qlogic.com>,
        <linux-kernel@vger.kernel.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 18 Dec 2007 10:01:14 +1100
-Subject: [RFC/PATCH 2/4] pci: Remove users of pci_enable_device_bars()
+Date: Tue, 18 Dec 2007 10:01:15 +1100
+Subject: [RFC/PATCH 4/4] [POWERPC] pci: Disable IO/Mem on a device when resources can't be allocated
 In-Reply-To: <1197932473.576079.142524077033.qpush@grosgo>
-Message-Id: <20071217230126.26291DDE34@ozlabs.org>
+Message-Id: <20071217230127.46B3BDDE38@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts users of pci_enable_device_bars() to the new
-pci_enable_device_{io,mem} interface.
+This patch changes the PowerPC PCI code to disable IO and/or Memory
+decoding on a PCI device when a resource of that type failed to be
+allocated. This is done to avoid having unallocated dangling BARs enabled
+that might try to decode on top of other devices.
 
-The new API fits nicely, except maybe for the QLA case where a bit of
-code re-organization might be a good idea but I prefer sticking to the
-simple patch as I don't have hardware to test on.
-
-I'll also need some feedback on the cs5520 change.
+If a proper resource is assigned later on, then pci_enable_device{,_io,_mem}
+will take care of re-enabling decoding.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- drivers/ata/pata_cs5520.c       |    2 +-
- drivers/i2c/busses/scx200_acb.c |    2 +-
- drivers/ide/pci/cs5520.c        |   10 ++++++++--
- drivers/ide/setup-pci.c         |    6 ++++--
- drivers/scsi/lpfc/lpfc_init.c   |    3 +--
- drivers/scsi/qla2xxx/qla_os.c   |   12 +++++++++---
- 6 files changed, 24 insertions(+), 11 deletions(-)
+NOTE: This patch doesn't apply on current upstream, but rather on top
+of a serie that merges 32 and 64 bits PowerPC PCI resource handling, and
+which will be in 2.6.25. I post it here mostly to show what I think should
+be done. A similar patch will have to be done for other architectures.
 
---- linux-work.orig/drivers/ata/pata_cs5520.c	2007-12-18 09:37:55.000000000 +1100
-+++ linux-work/drivers/ata/pata_cs5520.c	2007-12-18 09:39:03.000000000 +1100
-@@ -229,7 +229,7 @@ static int __devinit cs5520_init_one(str
- 		return -ENOMEM;
- 
- 	/* Perform set up for DMA */
--	if (pci_enable_device_bars(pdev, 1<<2)) {
-+	if (pci_enable_device_io(pdev)) {
- 		printk(KERN_ERR DRV_NAME ": unable to configure BAR2.\n");
- 		return -ENODEV;
+ arch/powerpc/kernel/pci-common.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+--- linux-work.orig/arch/powerpc/kernel/pci-common.c	2007-12-18 09:37:52.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci-common.c	2007-12-18 09:39:27.000000000 +1100
+@@ -1016,7 +1016,7 @@ static void __init pcibios_allocate_bus_
  	}
-Index: linux-work/drivers/i2c/busses/scx200_acb.c
-===================================================================
---- linux-work.orig/drivers/i2c/busses/scx200_acb.c	2007-12-18 09:37:55.000000000 +1100
-+++ linux-work/drivers/i2c/busses/scx200_acb.c	2007-12-18 09:39:03.000000000 +1100
-@@ -492,7 +492,7 @@ static __init int scx200_create_pci(cons
- 	iface->pdev = pdev;
- 	iface->bar = bar;
+ }
  
--	rc = pci_enable_device_bars(iface->pdev, 1 << iface->bar);
-+	rc = pci_enable_device_io(iface->pdev);
- 	if (rc)
- 		goto errout_free;
+-static inline void __devinit alloc_resource(struct pci_dev *dev, int idx)
++static inline int __devinit alloc_resource(struct pci_dev *dev, int idx)
+ {
+ 	struct resource *pr, *r = &dev->resource[idx];
  
-Index: linux-work/drivers/ide/pci/cs5520.c
-===================================================================
---- linux-work.orig/drivers/ide/pci/cs5520.c	2007-12-18 09:37:55.000000000 +1100
-+++ linux-work/drivers/ide/pci/cs5520.c	2007-12-18 09:39:03.000000000 +1100
-@@ -160,8 +160,14 @@ static int __devinit cs5520_init_one(str
- 	ide_setup_pci_noise(dev, d);
- 
- 	/* We must not grab the entire device, it has 'ISA' space in its
--	   BARS too and we will freak out other bits of the kernel */
--	if (pci_enable_device_bars(dev, 1<<2)) {
-+	 * BARS too and we will freak out other bits of the kernel
-+	 *
-+	 * pci_enable_device_bars() is going away. I replaced it with
-+	 * IO only enable for now but I'll need confirmation this is
-+	 * allright for that device. If not, it will need some kind of
-+	 * quirk. --BenH.
-+	 */
-+	if (pci_enable_device_io(dev)) {
- 		printk(KERN_WARNING "%s: Unable to enable 55x0.\n", d->name);
- 		return -ENODEV;
+@@ -1040,7 +1040,10 @@ static inline void __devinit alloc_resou
+ 		r->flags |= IORESOURCE_UNSET;
+ 		r->end -= r->start;
+ 		r->start = 0;
++
++		return -EBUSY;
  	}
-Index: linux-work/drivers/ide/setup-pci.c
-===================================================================
---- linux-work.orig/drivers/ide/setup-pci.c	2007-12-18 09:37:55.000000000 +1100
-+++ linux-work/drivers/ide/setup-pci.c	2007-12-18 09:40:07.000000000 +1100
-@@ -236,7 +236,9 @@ EXPORT_SYMBOL_GPL(ide_setup_pci_noise);
-  *	@d: IDE port info
-  *
-  *	Enable the IDE PCI device. We attempt to enable the device in full
-- *	but if that fails then we only need BAR4 so we will enable that.
-+ *	but if that fails then we only need IO space. The PCI code should
-+ *	have setup the proper resources for us already for controllers in
-+ *	legacy mode.
-  *	
-  *	Returns zero on success or an error code
-  */
-@@ -246,7 +248,7 @@ static int ide_pci_enable(struct pci_dev
- 	int ret;
++	return 0;
+ }
  
- 	if (pci_enable_device(dev)) {
--		ret = pci_enable_device_bars(dev, 1 << 4);
-+		ret = pci_enable_device_io(dev);
- 		if (ret < 0) {
- 			printk(KERN_WARNING "%s: (ide_setup_pci_device:) "
- 				"Could not enable device.\n", d->name);
-Index: linux-work/drivers/scsi/lpfc/lpfc_init.c
-===================================================================
---- linux-work.orig/drivers/scsi/lpfc/lpfc_init.c	2007-12-18 09:37:55.000000000 +1100
-+++ linux-work/drivers/scsi/lpfc/lpfc_init.c	2007-12-18 09:39:03.000000000 +1100
-@@ -2100,10 +2100,9 @@ static pci_ers_result_t lpfc_io_slot_res
- 	struct Scsi_Host *shost = pci_get_drvdata(pdev);
- 	struct lpfc_hba *phba = ((struct lpfc_vport *)shost->hostdata)->phba;
- 	struct lpfc_sli *psli = &phba->sli;
--	int bars = pci_select_bars(pdev, IORESOURCE_MEM);
- 
- 	dev_printk(KERN_INFO, &pdev->dev, "recovering from a slot reset.\n");
--	if (pci_enable_device_bars(pdev, bars)) {
-+	if (pci_enable_device_mem(pdev)) {
- 		printk(KERN_ERR "lpfc: Cannot re-enable "
- 			"PCI device after reset.\n");
- 		return PCI_ERS_RESULT_DISCONNECT;
-Index: linux-work/drivers/scsi/qla2xxx/qla_os.c
-===================================================================
---- linux-work.orig/drivers/scsi/qla2xxx/qla_os.c	2007-12-18 09:37:55.000000000 +1100
-+++ linux-work/drivers/scsi/qla2xxx/qla_os.c	2007-12-18 09:39:03.000000000 +1100
-@@ -1583,7 +1583,7 @@ qla2x00_probe_one(struct pci_dev *pdev, 
- 	char pci_info[30];
- 	char fw_str[30];
- 	struct scsi_host_template *sht;
--	int bars;
-+	int bars, mem_only = 0;
- 
- 	bars = pci_select_bars(pdev, IORESOURCE_MEM | IORESOURCE_IO);
- 	sht = &qla2x00_driver_template;
-@@ -1594,10 +1594,16 @@ qla2x00_probe_one(struct pci_dev *pdev, 
- 	    pdev->device == PCI_DEVICE_ID_QLOGIC_ISP2532) {
- 		bars = pci_select_bars(pdev, IORESOURCE_MEM);
- 		sht = &qla24xx_driver_template;
-+		mem_only = 1;
- 	}
- 
--	if (pci_enable_device_bars(pdev, bars))
--		goto probe_out;
-+	if (mem_only) {
-+		if (pci_enable_device_mem(pdev))
-+			goto probe_out;
-+	} else {
-+		if (pci_enable_device(pdev))
-+			goto probe_out;
-+	}
- 
- 	if (pci_find_aer_capability(pdev))
- 		if (pci_enable_pcie_error_reporting(pdev))
+ static void __init pcibios_allocate_resources(int pass)
+@@ -1062,8 +1065,12 @@ static void __init pcibios_allocate_reso
+ 				disabled = !(command & PCI_COMMAND_IO);
+ 			else
+ 				disabled = !(command & PCI_COMMAND_MEMORY);
+-			if (pass == disabled)
+-				alloc_resource(dev, idx);
++			if (pass == disabled && alloc_resource(dev, idx)) {
++				command &= ~(r->flags & (IORESOURCE_IO |
++							 IORESOURCE_MEM));
++				pci_write_config_word(dev,
++						      PCI_COMMAND, command);
++			}
+ 		}
+ 		if (pass)
+ 			continue;
