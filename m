@@ -1,69 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935376AbXLQKkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935454AbXLQKpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935376AbXLQKkn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 05:40:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765008AbXLQKkf
+	id S935454AbXLQKpG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 05:45:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765008AbXLQKo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 05:40:35 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:4309 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764394AbXLQKke (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 05:40:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=L+4e4bbq3ktDNFL2y1v81OI6nvYM8y3Ae5Q0eV/on5bGTVNfYm/fHk5NYt+TRyWuZbga5rB+FUcpfxix6DJ8+paMpBCFMyPfYrrqcAblBl7XqI52wUkq0X1uwILeg3bn0/JfNp20KyqoJpIh046JMIXNoaCBTJh3P1XZ7AxjamE=
-Message-ID: <6278d2220712170240h1d7b799djf50b6cb4ea47c38@mail.gmail.com>
-Date: Mon, 17 Dec 2007 10:40:33 +0000
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: PAT 64b: Basic PAT implementation
+	Mon, 17 Dec 2007 05:44:56 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:51143 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764010AbXLQKo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 05:44:56 -0500
+Date: Mon, 17 Dec 2007 10:44:53 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] move free page back to MIGRATE_MOVABLE?
+Message-ID: <20071217104452.GA3778@csn.ul.ie>
+References: <1197523199.3410.1.camel@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
+In-Reply-To: <1197523199.3410.1.camel@sli10-desk.sh.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14 Dec, 00:50, Andi Kleen <a...@muc.de> wrote:
-> > +void __cpuinit pat_init(void)
-> > +{
-> > +  /* Set PWT+PCD to Write-Combining. All other bits stay the same */
-> > +  if (cpu_has_pat) {
->
-> All the old CPUs (PPro etc.) with known PAT bugs need to clear this flag
-> now in their CPU init functions. It is fine to be aggressive there
-> because these old systems have lived so long without PAT they can do
-> so forever. So perhaps it's best to just white list it only for newer
-> CPUs on the Intel side at least.
+On (13/12/07 13:19), Shaohua Li didst pronounce:
+> pages are MIGRATE_MOVABLE initially, and fallback to other types. If the
+> pages are freed, I wonder why not move them back to MIGRATE_MOVABLE.
 
-> Another problem is that there are some popular modules (ATI, Nvidia for once)
-> who reprogram the PAT registers on their own, likely different. Need some way to detect
-> that case I guess, otherwise lots of users will see strange malfunctions.
-> Maybe recheck after module load?
+Because there is no need, if a MIGRATE_MOVABLE allocation needs more pages,
+they will be acquired during fallback which always steals the largest
+block. Lets say that a MIGRATE_UNMOVABLE block is freed and it is larger
+than pageblock_order. The next MIGRATE_MOVABLE allocation will find it during
+fallback if necessary.
 
-This may not be as big problem as thought, since sane and at least one
-vendor driver (Quadrics QsNetII) searches the PAT slots for a WC entry
-- where this has already been setup by the kernel, it'll use the right
-one.
+> This, for example, can help memory remove.
+> 
 
-> > +                   |||
-> > +             000 WB         default
-> > +             010 UC_MINUS   _PAGE_PCD
-> > +             011 WC         _PAGE_WC
-> > +             PAT bit unused */
-> > +          pat = PAT(0,WB) | PAT(1,WT) | PAT(2,UC_MINUS) | PAT(3,WC) |
-> > +                PAT(4,WB) | PAT(5,WT) | PAT(6,UC_MINUS) | PAT(7,WC);
-> > +          rdmsrl(MSR_IA32_CR_PAT, boot_pat_state);
-> > +          wrmsrl(MSR_IA32_CR_PAT, pat);
-> > +          __flush_tlb_all();
-> > +          asm volatile("wbinvd");
->
-> Have you double checked this is the full procedure from the manual? iirc there
-> were some steps missing.
->
-> -Andi
+I don't see how. When hot-removing, MIGRATE_MOVABLE blocks are considered
+possible to remove but they are also considered movable if the pages are free.
+
+> Thanks,
+> Shaohua 
+> 
+> Index: linux/mm/page_alloc.c
+> ===================================================================
+> --- linux.orig/mm/page_alloc.c	2007-12-13 11:44:36.000000000 +0800
+> +++ linux/mm/page_alloc.c	2007-12-13 12:04:59.000000000 +0800
+> @@ -386,6 +386,9 @@ static inline int page_is_buddy(struct p
+>  	return 0;
+>  }
+>  
+> +int move_freepages(struct zone *zone,
+> +			struct page *start_page, struct page *end_page,
+> +			int migratetype);
+>  /*
+>   * Freeing function for a buddy system allocator.
+>   *
+> @@ -446,6 +449,17 @@ static inline void __free_one_page(struc
+>  	list_add(&page->lru,
+>  		&zone->free_area[order].free_list[migratetype]);
+>  	zone->free_area[order].nr_free++;
+> +
+> +	if (order >= pageblock_order && migratetype != MIGRATE_MOVABLE) {
+> +		struct page *tmp = page;
+> +
+> +		move_freepages(zone, page, page + (1 << order) - 1, MIGRATE_MOVABLE);
+> +
+
+This is unnecessary and affects a commonly used path. If a MOVABLE allocation
+needs more pages later, it will find the large free block during fallback.
+
+> +		while (tmp < page + (1 << order)) {
+> +			set_pageblock_migratetype(tmp, MIGRATE_MOVABLE);
+> +			tmp += pageblock_nr_pages;
+> +		}
+> +	}
+>  }
+>  
+>  static inline int free_pages_check(struct page *page)
+> 
+
 -- 
-Daniel J Blueman
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
