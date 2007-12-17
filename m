@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbXLQOer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759985AbXLQOgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759519AbXLQOer (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 09:34:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbXLQOel
+	id S1759985AbXLQOgd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 09:36:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbXLQOgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 09:34:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57533 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752567AbXLQOek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 09:34:40 -0500
-Date: Mon, 17 Dec 2007 15:34:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@redhat.com, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com
-Subject: Re: [PATCH] x86: fix ref-counting bug in change_page_attr()
-Message-ID: <20071217143414.GB13290@elte.hu>
-References: <47610AB5.76E4.0078.0@novell.com> <20071217132802.GD1870@elte.hu> <47668A82.76E4.0078.0@novell.com>
+	Mon, 17 Dec 2007 09:36:24 -0500
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:19697 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751381AbXLQOgX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 09:36:23 -0500
+X-Trace: 642848110/mk-filter-4.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.91
+X-SBRS: None
+X-RemoteIP: 81.1.89.91
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAKcXZkdRAVlb/2dsb2JhbACBV6gg
+Message-ID: <48462.85.118.17.158.1197902160.squirrel@newgolddream.dyndns.info>
+In-Reply-To: <20071217140621.GA17168@kernel.dk>
+References: <8b67d60712151621j2101c411p19d75125c6d1c2f9@mail.gmail.com>
+    <20071217140621.GA17168@kernel.dk>
+Date: Mon, 17 Dec 2007 14:36:00 -0000 (UTC)
+Subject: Re: [PATCH 2/3] Add GD-Rom support to the SEGA Dreamcast
+From: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Cc: "Adrian McMenamin" <lkmladrian@gmail.com>,
+       "Paul Mundt" <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-sh@vger.kernel.org
+User-Agent: SquirrelMail/1.4.10a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47668A82.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, December 17, 2007 2:06 pm, Jens Axboe wrote:
+> On Sun, Dec 16 2007, Adrian McMenamin wrote:
+>
+> Few notes:
 
-* Jan Beulich <jbeulich@novell.com> wrote:
 
-> > hm, does this patch fix any real bug seen live? (if yes then do you 
-> > have links to it, etc?) It would be a v2.6.24 fix in theory but it 
-> > looks too dangerous for that. So i've queued it up for v2.6.25, for 
-> > the time being.
-> 
-> I had run into the issue with experimental code of mine quite a while 
-> back (i.e. I don't even recall what exactly I was doing back then). 
-> After that I just continued to keep the fix (which I had submitted 
-> before, but which collided with something in Andi's tree back then 
-> iirc).
+Thanks for these, very helpful.
 
-i'd be inclined to have it in the for-2.6.25 queue then - even plain 
-bugfixes in the pageattr code have broken boxes in the past, so this 
-isnt something we want to touch so late in the cycle. (We can still 
-reprioritize it if a serious regression pops up that this addresses.)
+>
+> - Compare rq_data_dir() with WRITE, don't just assume that any non-zero
+>   will be a write.
+>
+> - You need to offload this request handling to a workqueue of some sort,
+>   your current request handling is very broken for two reasons: One is
+>   that interrupts are still disabled when you drop your queue lock, so
+>   you cannot use sleeping functions like GFP_KERNEL allocations or
+>   wait_event(). The other is that it's illegal to sleep from your
+>   request_fn context in the first place, since you could be stalling
+>   others.
 
-	Ingo
+
+
+Ah. OK. Funnily enough an earlier version did offload to a workqueue but i
+thought that was too convoluted. I didn't realise interrupts were disabled
+inside the request_fn context.
+
+>
+> - You also seem to be busy waiting for other transactions to finish. Any
+>   idea how long those might take? Perhaps put an upper bound on this
+>   waiting, and/or do blocking waits?
+>
+Well, when the register bit clears they are over, seems to be about 200 -
+400 microseconds or there abouts (ie that length of time between the
+interrupt signalling that the transfer is over and the bit clearing to
+allow a new transfer) - so I could time that out at say HZ/2 and be very
+safe.
+
+
+> - I'm assuming this hardware can't do sg transfers?
+>
+
+Afraid not.
+
