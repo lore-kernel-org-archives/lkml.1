@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935942AbXLQLJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935790AbXLQLRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935942AbXLQLJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 06:09:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934343AbXLQLJs
+	id S935790AbXLQLRt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 06:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933295AbXLQLRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 06:09:48 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33918 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932863AbXLQLJq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 06:09:46 -0500
-Date: Mon, 17 Dec 2007 03:07:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: RFC: remove __read_mostly
-Message-Id: <20071217030743.da80e6a8.akpm@linux-foundation.org>
-In-Reply-To: <20071217115336.d06427d3.dada1@cosmosbay.com>
-References: <20071213222044.GH21616@stusta.de>
-	<20071213235432.GA26669@fattire.cabal.ca>
-	<p73tzmmf72u.fsf@bingen.suse.de>
-	<20071217023339.ce3da56c.akpm@linux-foundation.org>
-	<20071217115336.d06427d3.dada1@cosmosbay.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Dec 2007 06:17:41 -0500
+Received: from mail.gatrixx.com ([217.111.11.44]:48628 "EHLO mail.gatrixx.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761598AbXLQLRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 06:17:41 -0500
+Message-ID: <47665ACE.7020907@j-o-a.de>
+Date: Mon, 17 Dec 2007 12:17:34 +0100
+From: Oliver Joa <oliver@j-o-a.de>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How to Switch DMA off for only one Harddisk at Kernelboot
+References: <4765690C.6010605@j-o-a.de> <20071216201643.396fa8d7@the-village.bc.nu>
+In-Reply-To: <20071216201643.396fa8d7@the-village.bc.nu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007 11:53:36 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
+Hi,
 
-> n Mon, 17 Dec 2007 02:33:39 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Fri, 14 Dec 2007 01:33:45 +0100 Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > Kyle McMartin <kyle@mcmartin.ca> writes:
-> > > 
-> > > > I'd bet, in the __read_mostly case at least, that there's no
-> > > > improvement in almost all cases.
-> > > 
-> > > I bet you're wrong. Cache line behaviour is critical, much more
-> > > than pipeline behaviour (which unlikely affects). That is because
-> > > if you eat a cache miss it gets really expensive, which e.g.
-> > > a mispredicted jump is relatively cheap in comparison. We're talking
-> > > one or more orders of magnitude.
-> > 
-> > So...  once we've moved all read-mostly variables into __read_mostly, what
-> > is left behind in bss?
-> > 
-> > All the write-often variables.  All optimally packed together to nicely
-> > maximise cacheline sharing.
-> 
-> This is why it's important to group related variables together, so that they share
-> same cacheline.
+Alan Cox wrote:
 
-Not feasible.  The linker is (I believe) free to place them anywhere it
-likes unless we go and aggregate them in a struct.
+[...]
 
-Take (just for one example) inode_lock.  How do we prevent that from
-sharing a cacheline with (to pick another example) rtnl_mutex?
+> For the current kernel and libata you can use libata.dma=3, and it will
+> select DMA for disk (1) + CD (2) but not CF cards. With the older IDE it
+> should be sufficient to use hda=nodma
 
-The insidious thing about this is that is is highly dependent upon
-compiler/linker version and upon kernel config.  So performance differences
-will appears and disappear with us having very little understanding why.
+Thanks a lot, but it does not work:
 
+If I use libata.dma=3 I get the following:
+[    0.000000] Unknown boot option `libata.dma=3': ignoring
 
-I guess we could hunt down the write-very-often variables and put them in
-private cachelines.  But there will be a *lot* of them when one considers
-all possible workloads and all possible drivers.
+And if I use hda=nodma:
+[    0.000000] ide_setup: hda=nodma -- BAD OPTION
 
+I use kernel 2.6.21.5.
 
-Now, if we had named it __read_often rather than __read_mostly then we might
-end up with a better result: all those read-mostly, read-rarely variables (and
-there are a lot of those) could be very usefully deployed by packing them
-in between the write-often variables.
+Any Idea?
 
-It's crying out for a performance-guided solution.
+Thanks
+
+Olli
