@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937444AbXLQUS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937407AbXLQUS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937444AbXLQUS1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:18:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764638AbXLQUJn
+	id S937407AbXLQUS4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:18:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935578AbXLQURQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 15:09:43 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:41684 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760043AbXLQUJk (ORCPT
+	Mon, 17 Dec 2007 15:17:16 -0500
+Received: from nz-out-0506.google.com ([64.233.162.227]:4736 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937410AbXLQURP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 15:09:40 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 17 Dec 2007 15:17:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=NcTf85fNlUyZE9K6iplhnH5d6x76KLNS2Ya1RWWfeiHMXQS+vsKpjAewThU7098gRQy7Fpndk+QYPaPL17UpF4BjnoVeLQgSPmsPvznY60si4MrlJq+32tThJChBdYQMhuZYSKCmT2UTAnNUZikN3/Nx9vLBS0lC4omY5f40v4Y=
+Subject: Re: Final kprobes rollup patches
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp>,
+       Rusty Lynch <rusty.lynch@intel.com>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       Keshavamurthy Anil S <anil.s.keshavamurthy@intel.com>
+In-Reply-To: <20071217160659.GC30958@elte.hu>
+References: <1197708350.898.87.camel@brick> <20071215085015.GA9720@elte.hu>
+	 <1197709442.898.97.camel@brick> <20071215131204.GE9720@elte.hu>
+	 <4766841B.1040500@redhat.com> <20071217143050.GA13290@elte.hu>
+	 <476695D9.8090904@redhat.com>  <20071217160659.GC30958@elte.hu>
+Content-Type: text/plain
+Date: Mon, 17 Dec 2007 12:17:19 -0800
+Message-Id: <1197922639.23402.13.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Message-ID: <18278.55130.471797.398922@stoffel.org>
-Date: Mon, 17 Dec 2007 15:08:58 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, john@stoffel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc5: tape drive not responding
-In-Reply-To: <20071217031510.c3d500fd.akpm@linux-foundation.org>
-References: <18277.52079.718004.969358@stoffel.org>
-	<20071217112551H.fujita.tomonori@lab.ntt.co.jp>
-	<20071217031510.c3d500fd.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Andrew" == Andrew Morton <akpm@linux-foundation.org> writes:
+On Mon, 2007-12-17 at 17:06 +0100, Ingo Molnar wrote:
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> 
+> > > cool! Please Cc: lkml and Harvey as well so that there's less 
+> > > overlap in unification work - Harvey spent quite some time unifying 
+> > > and cleaning up the kprobes code during the past week.
+> > 
+> > Should I rewrite it based on current git tree?
+> > My patch includes 3 part of patches.
+> > - 2 Bugfix patches (which is not merged yet.)
+> > - 2 booster patches (ditto)
+> > - 2 unification patches (most of this patches are already done by Harvey's patch)
+> 
+> would it be easier/more robust to first did the unification patches and 
+> then get the bugfixes and new features in? That would give us your 
+> bugfixes and new features on both 32-bit and 64-bit at the same time.
+> 
+> feel free to do whichever approach you prefer - but it would be nice to 
+> preserve the unification and cleanup work done by Harvey.
+> 
+> btw., is any of your bugfixes 2.6.24 material?
+> 
 
-Andrew> On Mon, 17 Dec 2007 11:25:51 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
->> On Sun, 16 Dec 2007 20:05:51 -0500
->> "John Stoffel" <john@stoffel.org> wrote:
->> > 
->> > [  273.382057] sd 12:0:0:3: Attached scsi generic sg13 type 0
->> > [  276.244872] ------------[ cut here ]------------
->> > [  276.300215] kernel BUG at include/linux/scatterlist.h:59!
->> > [  276.364873] invalid opcode: 0000 [#1] SMP 
->> > [  276.414346] Modules linked in:
->> > [  276.451148] 
->> > [  276.469036] Pid: 1824, comm: stinit Not tainted (2.6.24-rc5 #2)
->> > [  276.539940] EIP: 0060:[<c0343c30>] EFLAGS: 00010213 CPU: 0
->> > [  276.605651] EIP is at st_do_scsi+0x2e0/0x340
->> > [  276.656788] EAX: 00000000 EBX: 00000000 ECX: c16ef780 EDX: f7c4f050
->> > [  276.731847] ESI: f7c4f7d0 EDI: 00001000 EBP: f7c4f000 ESP: f712bdf8
->> > [  276.806904]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
->> > [  276.871568] Process stinit (pid: 1824, ti=f712b000 task=f750a030 task.ti=f712b000)
->> > [  276.960139] Stack: 00000003 f7c4f050 00000000 00000000 00d59f80 00000000 f776fe20 c03468a0 
->> > [  277.062012]        000000d0 f712be9c f7d2a000 f776fe20 f7d2a018 00000000 00000006 f712be9c 
->> > [  277.163890]        f7d2a000 f712beac f7c4f000 c0345790 00000006 00000002 000dbba0 00000000 
->> > [  277.265771] Call Trace:
->> > [  277.297383]  [<c03468a0>] st_sleep_done+0x0/0x70
->> > [  277.352894]  [<c0345790>] check_tape+0x510/0x640
->> > [  277.408414]  [<c0346cfb>] st_open+0x18b/0x220
->> > [  277.460803]  [<c01707e0>] exact_match+0x0/0x10
->> > [  277.514237]  [<c0346b70>] st_open+0x0/0x220
->> > [  277.564553]  [<c0170ebf>] chrdev_open+0x9f/0x190
->> > [  277.620069]  [<c0170e20>] chrdev_open+0x0/0x190
->> > [  277.674543]  [<c016c86f>] __dentry_open+0xaf/0x1b0
->> > [  277.732136]  [<c016ca25>] nameidata_to_filp+0x35/0x40
->> > [  277.792847]  [<c016ca7b>] do_filp_open+0x4b/0x60
->> > [  277.848364]  [<c016c732>] get_unused_fd_flags+0x52/0xd0
->> > [  277.911153]  [<c016cadc>] do_sys_open+0x4c/0xe0
->> > [  277.965629]  [<c016cbac>] sys_open+0x1c/0x20
->> 
->> I think that you need the following patch for the scatterlist problem:
->> 
->> http://marc.info/?l=linux-scsi&m=119770154127770&w=2
+Well, I'll admit to being a little disappointed if my work doesn't make
+it in, but there are bugfixes here.  I think my cleanup breakout is
+better in the more-finegrained changes sense.  If you decide to keep
+mine I'll rebase Masami's patches 1-4 on top of that and send it by
+him for resubmittal.  But I'll leave it to Ingo to decide how
+to procede.
 
-Andrew> err, you sent that patch to John a day earlier too.
+Harvey
 
-Andrew> John, can you please apply, test and report?
-
-Happily, this seems to fix the problem with the above crash on
-2.6.24-rc5-mm1, I've also left the fix in 2.6.24-rc5 and I'll be
-testing that in my next reboot.  It's looking good!
-
-So, this regression is fixed in 2.6.24-rc5-mm1.
-
-Next, it would be nice to rate limit the "Parity error detected..."
-messages from the Symbios driver, I'll see if I can hack something up
-in the next day or so.
-
-Thanks,
-John
