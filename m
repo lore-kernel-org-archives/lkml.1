@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbXLQMeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbXLQMk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757420AbXLQMeo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 07:34:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbXLQMeg
+	id S1758678AbXLQMk3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 07:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbXLQMkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 07:34:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59570 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751381AbXLQMef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 07:34:35 -0500
-Subject: Re: Top kernel oopses/warnings this week
-From: Jon Masters <jcm@redhat.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation>, protasnb@gmail.com
-In-Reply-To: <20071217025129.GA12815@redhat.com>
-References: <4762CF8C.90808@linux.intel.com>
-	 <4763F771.10105@s5r6.in-berlin.de>  <20071217025129.GA12815@redhat.com>
-Content-Type: text/plain
-Organization: Red Hat, Inc.
-Date: Mon, 17 Dec 2007 07:33:34 -0500
-Message-Id: <1197894814.18713.36.camel@perihelion>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Dec 2007 07:40:19 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:40274 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754166AbXLQMkR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 07:40:17 -0500
+Date: Mon, 17 Dec 2007 13:40:23 +0100
+From: Adrian Bunk <bunk@kernel.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: RFC: remove __read_mostly
+Message-ID: <20071217124023.GB30389@stusta.de>
+References: <20071213222044.GH21616@stusta.de> <20071213235432.GA26669@fattire.cabal.ca> <p73tzmmf72u.fsf@bingen.suse.de> <20071217023339.ce3da56c.akpm@linux-foundation.org> <20071217121556.GA31999@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071217121556.GA31999@one.firstfloor.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 17, 2007 at 01:15:56PM +0100, Andi Kleen wrote:
+> > So...  once we've moved all read-mostly variables into __read_mostly, what
+> > is left behind in bss?
+> 
+> I had already covered that in the next paragraph which you conveniently
+> snipped :)
+> 
+> Anyways I suspect the right solution for that would be more classes
+> of variables for even better grouping.
+>...
 
-On Sun, 2007-12-16 at 21:51 -0500, Dave Jones wrote:
-> On Sat, Dec 15, 2007 at 04:49:05PM +0100, Stefan Richter wrote:
->  
->  > Reports about tainted kernels have arguably less value.  It would be
->  > good to hide such reports until a report of the same oops in an
->  > untainted kernel was found.
->  
-> I disagree with this.  It's useful to have a "we've seen this before,
-> and every time, it was tainted with xyz module" datapoint, especially
-> if no untainted copies of that oops turn up.
+Is there any way to tell gcc that it's still allowed to omit the 
+variable when it's able to prove it's read-only?
 
-+1
+My basic fear with all the __read_mostly, immediate values,... stuff is 
+that it might interfere with gcc optimizations.
 
-In fact, that's even more useful in many cases, if it helps demonstrate
-that the oops is associated with a particular buggy binary driver. I can
-see a lot of potentially interesting statistics coming from that too.
+> -Andi
 
-Jon.
+cu
+Adrian
 
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
