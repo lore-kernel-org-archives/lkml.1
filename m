@@ -1,157 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760441AbXLQTDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932406AbXLQTEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760441AbXLQTDa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 14:03:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbXLQTDW
+	id S932406AbXLQTEW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 14:04:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbXLQTEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:03:22 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3011 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755671AbXLQTDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:03:21 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: 2.6.24-rc5-mm1: problems with cat /proc/kpageflags
-Date: Mon, 17 Dec 2007 20:05:37 +0100
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org, davem@davemloft.net
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org> <200712162010.11028.m.kozlowski@tuxland.pl> <20071217021149.GC19691@waste.org>
-In-Reply-To: <20071217021149.GC19691@waste.org>
+	Mon, 17 Dec 2007 14:04:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56441 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757287AbXLQTEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:04:10 -0500
+Date: Mon, 17 Dec 2007 17:03:39 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Reduce overhead of CONFIG_TIMER_STATS
+Message-ID: <20071217190339.GE25780@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+References: <20071216212944.GA5128@ghostprotocols.net> <20071217090337.0b1af816@laptopd505.fenrus.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200712172005.38483.m.kozlowski@tuxland.pl>
+In-Reply-To: <20071217090337.0b1af816@laptopd505.fenrus.org>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-> > cat /proc/kpagecount on the other hand - with the change in line 710
-> > - locks the box. Sysrq works, changing consoles works, but there is
-> > no "BUG: soft lockup ..." message. After a while the box becomes
-> > totaly unresponsive - even caps lock doesn't work, no responses to
-> > ping.
+Em Mon, Dec 17, 2007 at 09:03:37AM -0800, Arjan van de Ven escreveu:
+> On Sun, 16 Dec 2007 19:29:44 -0200
+> Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
 > 
-> Well I'm baffled. There's basically two things in that function that
-> do anything interesting: pfn_to_page and put_user. access_ok is
-> "return 1" on Sparc64. atomic_read is a simple read.
->
-> My usual approach at this point would be to litter it with printks and
-> see where its hanging.
+> > Hi,
+> > 	While looking at the pahole output for struct timer_list on
+> > recent kernels I noticed that there is a 4 bytes padding on struct
+> > timer_list that gets propagated to many structs on 64 bits
+> > architectures:
+> > 
+> > [acme@doppio linux-2.6]$ pahole -C timer_list /tmp/tcp.o.before
+> > struct timer_list {
+> >         struct list_head      entry;          /*     0    16 */
+> >         long unsigned int     expires;        /*    16     8 */
+> >         void                  (*function)(long unsigned int); /*
+> > 24     8 */ long unsigned int     data;           /*    32     8 */
+> >         struct tvec_t_base_s *base;           /*    40     8 */
+> >         void *                start_site;     /*    48     8 */
+> >         char                  start_comm[16]; /*    56    16 */
+> >         /* --- cacheline 1 boundary (64 bytes) was 8 bytes ago --- */
+> >         int                   start_pid;      /*    72     4 */
+> > 
+> >         /* size: 80, cachelines: 2 */
+> >         /* padding: 4 */
+> >         /* last cacheline: 16 bytes */
+> > };
+> > [acme@doppio linux-2.6]$
+> > 
+> > 	So the attached patch reduces the 4 bytes hole overhead of
+> > CONFIG_TIMER_STATS on 64bit architectures by shrinking the field for
+> > the process name by 4 bytes.
+> > 
+> > 	Statistically this doesn't affects that many process names as
+> > most are less than 12 bytes. As CONFIG_TIMER_STATS is enabled at least
+> > on fedora kernels I think that we can, with this patch, still reap the
+> > benefits of powertopping.
+> 
+> I'm still worried that this means that PowerTOP will end up displaying shortened names..
+> it's already sometimes tricky to know who's guilty at 16... at 12 I fear it just gets worse.
+> Isn't there some other reorder that you can do to still get rid of the hole?
 
-Ok. Maybe this will help. Don't know how to compare that to the results from yesterday
-(test with ppage = NULL) - maybe I f.... something up. This time I added a bunch
-of printks and got these results:
+Nope. As shown above there is no other hole that we can conbine with the
+4 bytes padding on struct timer_list.
 
-This is from 'cat /proc/kpageflags' (after this the box is locked):
+<brainfarting>
+What we could do, perhaps, would be to struct start_comm to be a pointer
+and store the strings in a list, refcounted, so instead of 16 or 12
+bytes we would use 8, but would incur in some CPU overhead definetely
+bigger than a simple memcpy, but that would reduce even further the
+memory footprint.
 
-    01
-    pfn:0, src:0, KPMSIZE:8
-    23458
-    ppage:0000000200000000, pfn:1
+But the hole would still be there, as it would be sizeof(void *) +
+sizeof(start_pid) :-)
+</>
 
-and the relevant code:
-
-static ssize_t kpageflags_read(struct file *file, char __user *buf,
-			     size_t count, loff_t *ppos)
-{
-
-	u64 __user *out = (u64 __user *)buf;
-	struct page *ppage;
-	unsigned long src = *ppos;
-	unsigned long pfn;
-	ssize_t ret = 0;
-	u64 kflags, uflags;
-
-printk("0");
-
-	if (!access_ok(VERIFY_WRITE, buf, count))
-		return -EFAULT;
-
-printk("1");
-	pfn = src / KPMSIZE;
-printk("\npfn:%u, src:%u, KPMSIZE:%d\n", pfn, src, KPMSIZE);
-	count = min_t(unsigned long, count, (max_pfn * KPMSIZE) - src);
-
-printk("2");
-	if (src & KPMMASK || count & KPMMASK)
-		return -EIO;
-
-printk("3");
-	while (count > 0) {
-printk("4");
-	ppage = pfn_to_page(pfn++);
-printk("5");
-		if (!ppage) {
-printk("6");
-			kflags = 0;
-printk("7");
-		} else {
-printk("8");
-printk("\nppage:%p, pfn:%u\n", ppage, pfn);
-			kflags = ppage->flags; // <---------------- something bad happens
-printk("9");
-		}
-
-printk("a");
-
-
-
-This is from 'cat /proc/kpagecount' (after this the box is locked)
-
-    01
-    pfn:0, src:0, KPMSIZE:8
-    23567a
-    ppage:0000000200000000, pfn:1
-
-and this is the relevant code:
-
-static ssize_t kpagecount_read(struct file *file, char __user *buf,
-			     size_t count, loff_t *ppos)
-{
-
-	u64 __user *out = (u64 __user *)buf;
-	struct page *ppage;
-	unsigned long src = *ppos;
-	unsigned long pfn;
-	ssize_t ret = 0;
-	u64 pcount;
-printk("0");
-	if (!access_ok(VERIFY_WRITE, buf, count))
-		return -EFAULT;
-
-printk("1");
-	pfn = src / KPMSIZE;
-printk("\npfn:%u, src:%u, KPMSIZE:%d\n", pfn, src, KPMSIZE);
-
-printk("2");
-	count = min_t(size_t, count, (max_pfn * KPMSIZE) - src);
-printk("3");
-	if (src & KPMMASK || count & KPMMASK) {
-
-printk("4");
-		return -EIO;
-	}
-printk("5");
-	while (count > 0) {
-printk("6");
-		ppage = pfn_to_page(pfn++);
-printk("7");
-		if (!ppage) {
-printk("8");
-			pcount = 0;
-		} else {
-printk("a");
-printk("\nppage:%p, pfn:%u\n", ppage, pfn);
-			pcount = atomic_read(&ppage->_count); // <---------------- something bad happens
-printk("b");
-		}
-
-
-Regards,
-
-	Mariusz
+- Arnaldo
