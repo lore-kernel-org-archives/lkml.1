@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936320AbXLQMUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964853AbXLQMZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936320AbXLQMUj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 07:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936179AbXLQMTV
+	id S964853AbXLQMZP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 07:25:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935283AbXLQMY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 07:19:21 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48204 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935996AbXLQMTT (ORCPT
+	Mon, 17 Dec 2007 07:24:59 -0500
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:6991 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935644AbXLQMY6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 07:19:19 -0500
-Date: Mon, 17 Dec 2007 13:19:48 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <andi@firstfloor.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: RFC: remove __read_mostly
-Message-ID: <20071217121948.GB31999@one.firstfloor.org>
-References: <20071213222044.GH21616@stusta.de> <20071213235432.GA26669@fattire.cabal.ca> <p73tzmmf72u.fsf@bingen.suse.de> <20071217023339.ce3da56c.akpm@linux-foundation.org> <20071217115336.d06427d3.dada1@cosmosbay.com> <20071217030743.da80e6a8.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071217030743.da80e6a8.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 17 Dec 2007 07:24:58 -0500
+Message-ID: <47666A8E.7090600@panasas.com>
+Date: Mon, 17 Dec 2007 14:24:46 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Filippos Papadopoulos <psybases@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: INITIO scsi driver fails to work properly
+References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>	 <20071217031841.f483e5ac.akpm@linux-foundation.org> <9f00bd9d0712170341u7fef1fc9pc9986dda1a0475cb@mail.gmail.com> <47666904.8060605@panasas.com>
+In-Reply-To: <47666904.8060605@panasas.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Dec 2007 12:24:49.0069 (UTC) FILETIME=[D10745D0:01C840A7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17, 2007 at 03:07:43AM -0800, Andrew Morton wrote:
-> On Mon, 17 Dec 2007 11:53:36 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Mon, Dec 17 2007 at 14:18 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
+> On Mon, Dec 17 2007 at 13:41 +0200, "Filippos Papadopoulos" <psybases@gmail.com> wrote:
+>> On Dec 17, 2007 1:18 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>>> On Mon, 17 Dec 2007 11:39:47 +0200 "Filippos Papadopoulos" <psybases@gmail.com> wrote:
+>>>
+>>>> Hi,
+>>>> I have got an INITIO 9100 UW SCSI Controller with an IBM
+>>>> IC35L036UWD210-0 scsi hard disk on a 32 bit x86 system.
+>>>> Currently i have SUSE 10.1 (Kernel 2.6.16).
+>>>>
+>>>> I tried to install OpenSUSE 10.3 (kernel 2.6.22.5) and the latest
+>>>> OpenSUSE 11.0 Alpha 0  (kernel 2.6.24-rc4) but although the initio
+>>>> driver
+>>>> gets loaded during the installation process, yast reports that no hard
+>>>> disk is found. I believe that this isnt a bug in suse's yast but a
+>>>> problem
+>>>> in the initio scsi driver because i also tried to install Fedora 8
+>>>> (kernel 2.6.23) with the same problem.
+>>>> I have seen the relevant thread "Conflict when loading initio driver"
+>>>> and i suppose that the initio driver isnt fixed yet.
+>>>> I can help testing the new patches in the initio driver if someone is
+>>>> interested.
+>>> initio doesn't seem to have a maintainer...
+>>>
+>>> Are you able to identify any earlier kernel which worked OK?
+>>>
+>> I have this PC configuration since 2002. The initio driver worked
+>> perfectly with 2.4 kernel series.
+>> With the release of 2.6 kernel series the driver had been marked as
+>> BROKEN and fixed at 2.6.9
+>> (see at http://www.gossamer-threads.com/lists/linux/kernel/482582?search_string=SCSI%20updates%20for%202.6.9;#482582
+>>   Christoph Hellwig  ->don't mark the initio 9100 driver broken)
+>>
+>>
+>>> Maybe it's a new device?  If you can get the `lspci -vvxx' output
+>>> for that device we can take a look.
+>>>
+>> No its not a new device.
+>> -
 > 
-> > n Mon, 17 Dec 2007 02:33:39 -0800
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Fri, 14 Dec 2007 01:33:45 +0100 Andi Kleen <andi@firstfloor.org> wrote:
-> > > 
-> > > > Kyle McMartin <kyle@mcmartin.ca> writes:
-> > > > 
-> > > > > I'd bet, in the __read_mostly case at least, that there's no
-> > > > > improvement in almost all cases.
-> > > > 
-> > > > I bet you're wrong. Cache line behaviour is critical, much more
-> > > > than pipeline behaviour (which unlikely affects). That is because
-> > > > if you eat a cache miss it gets really expensive, which e.g.
-> > > > a mispredicted jump is relatively cheap in comparison. We're talking
-> > > > one or more orders of magnitude.
-> > > 
-> > > So...  once we've moved all read-mostly variables into __read_mostly, what
-> > > is left behind in bss?
-> > > 
-> > > All the write-often variables.  All optimally packed together to nicely
-> > > maximise cacheline sharing.
-> > 
-> > This is why it's important to group related variables together, so that they share
-> > same cacheline.
+> I have found one problem. Please try patch [2] below and report.
+> If it still fails try to enable debugging by setting with patch [1]
+> these values at top of drivers/scsi/initio.c. And send dmsgs.
 > 
-> Not feasible.  The linker is (I believe) free to place them anywhere it
-> likes unless we go and aggregate them in a struct.
-
-It won't normally though (they are put linear for each object file)
-and if you really want to make sure you can always use a special section.
-
-> The insidious thing about this is that is is highly dependent upon
-> compiler/linker version and upon kernel config.  So performance differences
-
-I'm not aware of the order of global variables changing that much.
-Especially the linker seems to keep it rather stable.
-
-> end up with a better result: all those read-mostly, read-rarely variables (and
-> there are a lot of those) could be very usefully deployed by packing them
-> in between the write-often variables.
+> Boaz
 > 
-> It's crying out for a performance-guided solution.
+I forgot to ask. 2.6.22 should work. If still fails could you try
+this 2.6.22.xx kernel?
 
-My problem with profile feedback is that it will make it impossible
-to ever recreate kernel binaries after the fact. So decoding of random
-oopses would become much harder.
-
--Andi
-
+Boaz
 
