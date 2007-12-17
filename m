@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936786AbXLQUIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936904AbXLQUJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936786AbXLQUIw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:08:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934507AbXLQTmT
+	id S936904AbXLQUJb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:09:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932651AbXLQTmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:42:19 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56225 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934461AbXLQTmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:42:16 -0500
-Date: Mon, 17 Dec 2007 11:42:15 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: Ingo Molnar <mingo@elte.hu>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       Wang Chen <wangchen@cn.fujitsu.com>,
-       Gerrit Renker <gerrit@erg.abdn.ac.uk>, davem@davemloft.net,
-       andi@firstfloor.org, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] [UDP6]: Counter increment on BH mode
-In-Reply-To: <20071216023621.GB959@gondor.apana.org.au>
-Message-ID: <Pine.LNX.4.64.0712171141530.12871@schroedinger.engr.sgi.com>
-References: <474F8255.5060501@cn.fujitsu.com> <20071130111949.GB28277@gerrit.erg.abdn.ac.uk>
- <20071201015438.GC26895@gondor.apana.org.au> <4753AE07.1040906@cn.fujitsu.com>
- <20071203113935.GA25124@gondor.apana.org.au> <20071203114912.GA4425@ms2.inr.ac.ru>
- <20071203115435.GA4202@gondor.apana.org.au> <20071203131723.GA30312@gondor.apana.org.au>
- <20071215135851.GA29063@gondor.apana.org.au> <20071215184327.GA21434@elte.hu>
- <20071216023621.GB959@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 17 Dec 2007 14:42:21 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:3228 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933975AbXLQTlb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:41:31 -0500
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Pekka Savola (ipv6)" <pekkas@netcore.fi>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+       James Morris <jmorris@namei.org>, Patrick McHardy <kaber@trash.net>,
+       coreteam@netfilter.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org
+Subject: [PATCH] net/ipv4/: Spelling fixes
+Date: Mon, 17 Dec 2007 11:40:31 -0800
+Message-Id: <1197920439-5455-25-git-send-email-joe@perches.com>
+X-Mailer: git-send-email 1.5.3.7.949.g2221a6
+Message-Id: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918894.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Dec 2007, Herbert Xu wrote:
 
-> If we can get the address of the per-cpu counter against
-> some sort of a per-cpu base pointer, e.g., %gs on x86, then
-> we can do
-> 
-> 	incq	%gs:(%rax)
-> 
-> where %rax would be the offset with %gs as the base.  This would
-> obviate the need for the CPU ID and therefore avoid disabling
-> preemption.
-> 
-> Hmm, wasn't Christoph working on something like that?
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ net/ipv4/netfilter/nf_nat_sip.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Yes that is what the cpu alloc patchset implements.
+diff --git a/net/ipv4/netfilter/nf_nat_sip.c b/net/ipv4/netfilter/nf_nat_sip.c
+index 3ca9897..8996ccb 100644
+--- a/net/ipv4/netfilter/nf_nat_sip.c
++++ b/net/ipv4/netfilter/nf_nat_sip.c
+@@ -165,7 +165,7 @@ static int mangle_content_len(struct sk_buff *skb,
+ 
+ 	dataoff = ip_hdrlen(skb) + sizeof(struct udphdr);
+ 
+-	/* Get actual SDP lenght */
++	/* Get actual SDP length */
+ 	if (ct_sip_get_info(ct, dptr, skb->len - dataoff, &matchoff,
+ 			    &matchlen, POS_SDP_HEADER) > 0) {
+ 
+-- 
+1.5.3.7.949.g2221a6
 
