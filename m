@@ -1,86 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937533AbXLQUVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937597AbXLQUVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937533AbXLQUVW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936501AbXLQUUo
+	id S937597AbXLQUVo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:21:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761859AbXLQUVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 15:20:44 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:36719 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936129AbXLQUUn (ORCPT
+	Mon, 17 Dec 2007 15:21:06 -0500
+Received: from kuber.nabble.com ([216.139.236.158]:37420 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937513AbXLQUVE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 15:20:43 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 17 Dec 2007 12:20:41 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Michael Kerrisk <mtk-manpages@gmx.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2/2] timerfd - make the returned time to be the remaining
- time till the next expiration
-Message-ID: <Pine.LNX.4.64.0712171216160.10687@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 17 Dec 2007 15:21:04 -0500
+Message-ID: <14374028.post@talk.nabble.com>
+Date: Mon, 17 Dec 2007 12:21:03 -0800 (PST)
+From: cable_plug <pratapagiri.ak@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: problem with ending requests asynchronously in my block device
+ driver
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Nabble-From: pratapagiri.ak@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the returned time to be the remaining time till the next expiration.
-If the timer is already expired, and there's no next expiration, zero will
-be returned.
-Andrew, this goes on top of the ones you already have in -mm.
+
+Hi, 
+
+I've a block device driver which does the following, 
+
+Inside the request function I do something like this: 
+request(fn) { 
+
+ while ((req = elv_next_request(q)) != NULL) { 
+....................set up the request; 
+ spin_unlock_irq(q->queue_lock); 
+call the transfer(set_up_req) function; 
+spin_lock_irq(q->queue_lock); 
+} 
+       spin_unlock_irq (q->queue_lock); 
+        /* allow callback to execute as it needs the lock!!! */ 
+        spin_lock_irq (q->queue_lock); 
 
 
+} 
+and the transfer function calls the scsi_execute_asyn(....) with the
+callback function doing the end request. So, the ending of the request is
+done like below: 
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+callback(fn) { 
+
+ spin_lock_irqsave(q->queue_lock, flags); 
+        if (!end_that_request_first(set_up_req->req, cmpstatus, 
+                        set_up_req->req->nr_sectors)) { 
+                add_disk_randomness(...); 
+                end_that_request_last(set_up_req->req,0); 
+        } 
+        spin_unlock_irqrestore(q->queue_lock, flags); 
+} 
 
 
-- Davide
+This code works fine with most of the kernel versions, but fails on some
+like , Linux 2.6.18-8.el5-xen 
+
+Please help me to find out where I'm going wrong? 
+
+when I say 'fails' it just hangs without any error ....I'm using dt(Data
+test) to write to the disk. The logs show that all the requests that have
+been sent for processing, have completed sucessfully. Its just that new
+requests never enter the request function. So, the dt writes almost half the
+data and then simply hangs. 
+
+  
+  The actual code does nothing but, call the scsi_execute_async , which 
+ later on calls the callback function which is used to end the request. 
+ So, both the callback function and the request function need to share 
+ the queue lock. So the code samples I sent cover all the aspects of my 
+ program. What I'm looking for here is how can I end the requests 
+ asynchronously much later after the request processing is done. Please note 
+ here that the asynchronous end requests is done by the callback function 
+ of the scsi_execute_async, which needs to share the queue lock with 
+ the request function. 
+    
+  when I say 'fails' it just hangs without any error ....I'm using 
+ dt(Data 
+test) to write to the disk. The logs show that all the requests that 
+ have 
+been sent for processing, have completed successfully. Its just that new 
+requests never enter the request function. So, the dt writes almost 
+ half the 
+data and then simply hangs. 
 
 
----
- fs/timerfd.c |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+Thanks in advance for an early reply. 
+Anil P.
+-- 
+View this message in context: http://www.nabble.com/problem-with-ending-requests-asynchronously-in-my-block-device-driver-tp14374028p14374028.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
 
-Index: linux-2.6.mod/fs/timerfd.c
-===================================================================
---- linux-2.6.mod.orig/fs/timerfd.c	2007-12-14 16:04:36.000000000 -0800
-+++ linux-2.6.mod/fs/timerfd.c	2007-12-14 16:05:32.000000000 -0800
-@@ -49,6 +49,15 @@
- 	return HRTIMER_NORESTART;
- }
- 
-+static ktime_t timerfd_get_remaining(struct timerfd_ctx *ctx) {
-+	ktime_t now, remaining;
-+
-+	now = ctx->tmr.base->get_time();
-+	remaining = ktime_sub(ctx->tmr.expires, now);
-+
-+	return remaining.tv64 < 0 ? ktime_set(0, 0): remaining;
-+}
-+
- static void timerfd_setup(struct timerfd_ctx *ctx, int flags,
- 			  const struct itimerspec *ktmr)
- {
-@@ -240,7 +249,7 @@
- 	if (ctx->expired && ctx->tintv.tv64)
- 		hrtimer_forward_now(&ctx->tmr, ctx->tintv);
- 
--	kotmr.it_value = ktime_to_timespec(ctx->tmr.expires);
-+	kotmr.it_value = ktime_to_timespec(timerfd_get_remaining(ctx));
- 	kotmr.it_interval = ktime_to_timespec(ctx->tintv);
- 
- 	/*
-@@ -274,7 +283,7 @@
- 			hrtimer_forward_now(&ctx->tmr, ctx->tintv) - 1;
- 		hrtimer_restart(&ctx->tmr);
- 	}
--	kotmr.it_value = ktime_to_timespec(ctx->tmr.expires);
-+	kotmr.it_value = ktime_to_timespec(timerfd_get_remaining(ctx));
- 	kotmr.it_interval = ktime_to_timespec(ctx->tintv);
- 	spin_unlock_irq(&ctx->wqh.lock);
- 	fput(file);
