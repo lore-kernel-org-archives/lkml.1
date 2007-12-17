@@ -1,93 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936271AbXLQXUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937311AbXLQXUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936271AbXLQXUe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 18:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762629AbXLQXUW
+	id S937311AbXLQXUz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 18:20:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763520AbXLQXUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 18:20:22 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59862 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753161AbXLQXUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 18:20:18 -0500
-Message-ID: <476702C4.8070205@redhat.com>
-Date: Mon, 17 Dec 2007 18:14:12 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 17 Dec 2007 18:20:23 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48130 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753445AbXLQXUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 18:20:20 -0500
+Date: Tue, 18 Dec 2007 00:20:11 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, "David P. Reed" <dpreed@reed.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
+	on some AMD64x2 laptops, etc.
+Message-ID: <20071217232011.GB12647@elf.ucw.cz>
+References: <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <20071214131502.GA14359@elte.hu> <4762C551.5070003@zytor.com> <20071214210652.GB28793@elf.ucw.cz> <4763001A.1070102@zytor.com> <20071214232955.545ab809@the-village.bc.nu> <4766E453.1030202@keyaccess.nl>
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Maneesh Soni <maneesh@linux.vnet.ibm.com>, srinivasa@in.ibm.com,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp>,
-       Rusty Lynch <rusty.lynch@intel.com>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       Keshavamurthy Anil S <anil.s.keshavamurthy@intel.com>
-Subject: Re: FInal kprobes rollup patches
-References: <1197708350.898.87.camel@brick> <20071215085015.GA9720@elte.hu>	 <1197709442.898.97.camel@brick> <20071215131204.GE9720@elte.hu>	 <20071217142235.GA21379@linux.vnet.ibm.com>	 <1197919234.23402.5.camel@brick>  <4766E9FC.7050101@redhat.com>	 <1197927385.23402.41.camel@brick>  <4766EFA8.9070907@redhat.com> <1197928823.23402.108.camel@brick>
-In-Reply-To: <1197928823.23402.108.camel@brick>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4766E453.1030202@keyaccess.nl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Harvey,
-
-Harvey Harrison wrote:
-> On Mon, 2007-12-17 at 16:52 -0500, Masami Hiramatsu wrote:
->> Hi Harvey,
->> Before porting, could you tell me what differences are important
->> to you? We can discuss about it.
->>
->>> I just sent out a series of 4 patches equivalent to your patches 1-4/6
->>> but based on my already unified kprobes.c/h, You may want to check your
->>> handling of restored registers in trampoline_probe_handler which I found
->>> when rebasing yours on top of my cleanups.  Not sure if this is
->>> important, but it was a difference I found.
->>>
->>> X86_32:
->>> regs->cs = __KERNEL_CS | get_kernel_rpl();
->>>
->>> yours:
->>> regs->cs = __KERNEL_CS;
->> Because of kretprobe's compatibility, on x86-32 cs should be set rpl().
->> But get_kernel_rpl() does not exist on x86-64.
->>
-> 
-> I've already ported it and sent it to you.  It's not really important to
-> me I just think my fine-grained patches may be of some use to see where
-> the differences between X86_32/64 ended up being.  Your patches end up
-> being just about entirely removal of ifdefs when rebased onto my
-> patches, so it's at least a good secondary check of your patches even
-> if mine don't go in.  Your patches end up being much smaller against
-> my version too.
-
-OK, I'll review that.
-
+On Mon 2007-12-17 22:04:19, Rene Herman wrote:
+> On 15-12-07 00:29, Alan Cox wrote:
 >
-> I like my version slightly better because the remaining ifdefs (wrmsr,
-> etc) and others could be done in a few more small patches that are more
-> easily reviewable than your large final unification patch.
+>>>> ?? Just initialize bogomips to 6GHz equivalent... and we are fine
+>>>> until 6GHz cpus come out.
+>>> How long will that take to boot on a 386?
+>> Well the dumb approach to fix that would seem to be to initialise it to
+>> 	cpu->family   3 -> 50MHz 4 -> 300Mhz 5-> etc...
+>
+> By the way, you have a 300 MHz 486? I believe 3 -> 40, 4 -> 133, 5 -> 233 
+> would be good? And I'm not really sure about the etc. P6 has a large range 
+> again...
 
-I agreed that your patches are including some goodness.
-So let us merge it into one.
-
-
-> 
-> But, you know the code better than I....
-> 
-> Harvey
-> 
-
+Some nexgen 5x86 boxes were pretty fast, still could not do 486... so
+family 3 iirc.
+									Pavel
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
