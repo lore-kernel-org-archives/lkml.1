@@ -1,84 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965008AbXLQVgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXLQVhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965008AbXLQVgb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 16:36:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757084AbXLQVgW
+	id S964934AbXLQVhx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 16:37:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbXLQVhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 16:36:22 -0500
-Received: from nz-out-0506.google.com ([64.233.162.225]:58778 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754290AbXLQVgT (ORCPT
+	Mon, 17 Dec 2007 16:37:41 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:52884 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754290AbXLQVhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 16:36:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=mI+Cgl7PQXbjbpHp9gOxfoPusV1gFNy/FkCajzyfRT6EuDcW/FooGFe+rBzR6psNcXnPb+s+6Nh3Nk23PLc4hY13XQQMXmSim4L/hTmLIGWoYle7klm3NoqhQG4zk+TQVp7n7Hx2XMK3W4xQJe/ngcekpEih42w8e/Bn9O84mf0=
-Subject: Re: FInal kprobes rollup patches
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Maneesh Soni <maneesh@linux.vnet.ibm.com>, srinivasa@in.ibm.com,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp>,
-       Rusty Lynch <rusty.lynch@intel.com>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       Keshavamurthy Anil S <anil.s.keshavamurthy@intel.com>
-In-Reply-To: <4766E9FC.7050101@redhat.com>
-References: <1197708350.898.87.camel@brick> <20071215085015.GA9720@elte.hu>
-	 <1197709442.898.97.camel@brick> <20071215131204.GE9720@elte.hu>
-	 <20071217142235.GA21379@linux.vnet.ibm.com>
-	 <1197919234.23402.5.camel@brick>  <4766E9FC.7050101@redhat.com>
-Content-Type: text/plain
-Date: Mon, 17 Dec 2007 13:36:25 -0800
-Message-Id: <1197927385.23402.41.camel@brick>
+	Mon, 17 Dec 2007 16:37:38 -0500
+Date: Mon, 17 Dec 2007 13:36:31 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, protasnb@gmail.com,
+       tytso@thunk.org
+Subject: Re: Top kernel oopses/warnings this week
+Message-ID: <20071217133631.5bbc5842@laptopd505.fenrus.org>
+In-Reply-To: <20071217172331.GA23070@elte.hu>
+References: <4762CF8C.90808@linux.intel.com>
+	<20071217172331.GA23070@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-12-17 at 16:28 -0500, Masami Hiramatsu wrote:
-> Hi Harvey,
-> If you mention about a relative jump which is inserted by
-> resume_execution(), I think you might misunderstand that relative jump.
+On Mon, 17 Dec 2007 18:23:31 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> The size of that relative jump, which will be embedded by kprobe-booster, is
-> 5-bytes(not 1 byte). So it needs 5 bytes space.
-> And we decided not to expand MAX_INSN_SIZE when we developed the booster.
-> The reasons are:
->  - it is supplemental feature(just accelerating kprobes), if we have no space,
->    we can disable it.
->  - 5 bytes are big enough compared with 15(=MAX_INSN_SIZE)
->  - the lengths of most of instructions are less than 10 bytes.
+> * Arjan van de Ven <arjan@linux.intel.com> wrote:
 > 
-> Additionally, MAX_INSN_SIZE is used in kernel/kprobes.c to allocate an
-> instruction buffer which will be assigned to p->ainsn.insn. Since the
-> instruction buffer size is MAX_INSN_SIZE, you can not copy instructions
-> more than MAX_INSN_SIZE.
+> > The http://www.kerneloops.org website collects kernel oops and
+> > warning reports from various mailing lists and bugzillas; below is
+> > a top 10 list of the oopses collected in the last 7 days. (Reports
+> > prior to 2.6.23 have been omitted in collecting the top 10)
 > 
-> BTW, in my patch, I unified MAX_INSN_SIZE to bigger one(16).
-> I think it is enough for us.
+> cool stuff! I cannot over-emphasise how useful this will be.
 > 
+> Let us know if you need any additional WARN_ON()s or other dmesg 
+> annotations to make parsing easier / more intelligent. At least as
+> far as arch/x86 and the scheduler is related it's going to be applied
+> to the fast-track queue ;-)
+>
 
-I went with 15 in mine, I thought it made the code a little more
-readable, but I will defer if you think 16 is better.  If you want me
-to send the whole series to you, let me know.
+the following patch would help a lot; it ads a very nice parsable end-marker
+to oopses, as well as printing the boot UUID as part of the oops, which 
+makes it easier to de-dupe oopses. The UUID is just a random number and not
+privacy-tracable to any system.
 
-I just sent out a series of 4 patches equivalent to your patches 1-4/6
-but based on my already unified kprobes.c/h, You may want to check your
-handling of restored registers in trampoline_probe_handler which I found
-when rebasing yours on top of my cleanups.  Not sure if this is
-important, but it was a difference I found.
+--
 
-X86_32:
-regs->cs = __KERNEL_CS | get_kernel_rpl();
+Subject: [patch] terminate the oops printing with a defined string/uuid
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-yours:
-regs->cs = __KERNEL_CS;
+Right now, it's hard for automated tools to determine when an oops has
+ended; there's no clear marker for this. In addition, there's no good
+way to find out if an oops is unique. Sometimes it's the same oops
+just reported multiple times, while other times it's a different
+instance of the crash with the same signature. Printing the boot UUID
+as part of the end string resolves this ambiguity.
 
-Harvey
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+CC: Ted Ts'o <tytso@thunk.org>
 
+---
+ drivers/char/random.c  |   35 ++++++++++++++++++++++++++++++++++-
+ include/linux/random.h |    1 +
+ kernel/panic.c         |    2 ++
+ 3 files changed, 37 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.24-rc5/drivers/char/random.c
+===================================================================
+--- linux-2.6.24-rc5.orig/drivers/char/random.c
++++ linux-2.6.24-rc5/drivers/char/random.c
+@@ -1176,8 +1176,41 @@ static int max_read_thresh = INPUT_POOL_
+ static int max_write_thresh = INPUT_POOL_WORDS * 32;
+ static char sysctl_bootid[16];
+ 
++/**
++ *	get_boot_uuid	- return a string pointer to a system wide boot UUID
++ *
++ *	Returns a pointer to the boot UUID. This UUID is unique per system
++ *	boot but persistent for one boot session.
++ *
++ *	The memory returned via the return pointer is static allocated and
++ *	owned by the random.c driver; this should not be kfree()'d.
++ *
++ *	Locking: none
++ */
++ */
++char *get_boot_uuid(void)
++{
++	static char target[80];
++	unsigned char *uuid;
++
++	if (sysctl_bootid[8] == 0)
++		generate_random_uuid(sysctl_bootid);
++	/* sysctl_bootid is signed, to print we need unsigned .. */
++	uuid = sysctl_bootid;
++
++	if (target[0] == 0) {
++		sprintf(target, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-"
++			"%02x%02x%02x%02x%02x%02x",
++		uuid[0],  uuid[1],  uuid[2],  uuid[3],  uuid[4],
++		uuid[5],  uuid[6],  uuid[7],  uuid[8],  uuid[9],
++		uuid[10], uuid[11], uuid[12], uuid[13], uuid[14],
++		uuid[15]);
++	}
++	return target;
++}
++
+ /*
+- * These functions is used to return both the bootid UUID, and random
++ * These functions are used to return both the bootid UUID, and random
+  * UUID.  The difference is in whether table->data is NULL; if it is,
+  * then a new UUID is generated and returned to the user.
+  *
+Index: linux-2.6.24-rc5/include/linux/random.h
+===================================================================
+--- linux-2.6.24-rc5.orig/include/linux/random.h
++++ linux-2.6.24-rc5/include/linux/random.h
+@@ -71,6 +71,7 @@ unsigned long randomize_range(unsigned l
+ 
+ u32 random32(void);
+ void srandom32(u32 seed);
++char *get_boot_uuid(void);
+ 
+ #endif /* __KERNEL___ */
+ 
+Index: linux-2.6.24-rc5/kernel/panic.c
+===================================================================
+--- linux-2.6.24-rc5.orig/kernel/panic.c
++++ linux-2.6.24-rc5/kernel/panic.c
+@@ -19,6 +19,7 @@
+ #include <linux/nmi.h>
+ #include <linux/kexec.h>
+ #include <linux/debug_locks.h>
++#include <linux/random.h>
+ 
+ int panic_on_oops;
+ int tainted;
+@@ -272,6 +273,7 @@ void oops_enter(void)
+ void oops_exit(void)
+ {
+ 	do_oops_enter_exit();
++	printk("---[ end of trace %s ]---\n", get_boot_uuid());
+ }
+ 
+ #ifdef CONFIG_CC_STACKPROTECTOR
