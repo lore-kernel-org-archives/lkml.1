@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935348AbXLQTun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765562AbXLQTvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935348AbXLQTun (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 14:50:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761595AbXLQTcP
+	id S1765562AbXLQTvK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 14:51:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763364AbXLQThc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 14:32:15 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:3062 "EHLO perches.com"
+	Mon, 17 Dec 2007 14:37:32 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:3161 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759034AbXLQTcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 14:32:08 -0500
+	id S1761329AbXLQTh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 14:37:29 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        David Woodhouse <dwmw2@infradead.org>,
        Vincent Sanders <support@simtec.co.uk>, linux-mtd@lists.infradead.org
 Subject: [PATCH] drivers/mtd/: Spelling fixes
-Date: Mon, 17 Dec 2007 11:30:43 -0800
-Message-Id: <1197919875-5288-44-git-send-email-joe@perches.com>
+Date: Mon, 17 Dec 2007 11:36:55 -0800
+Message-Id: <1197920247-5377-1-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.5.3.7.949.g2221a6
 Message-Id: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918891.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
