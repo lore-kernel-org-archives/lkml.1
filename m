@@ -1,97 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761534AbXLQPai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762859AbXLQPcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761534AbXLQPai (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:30:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbXLQPaa
+	id S1762859AbXLQPcj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 10:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbXLQPcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:30:30 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49527 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754962AbXLQPa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:30:29 -0500
-Message-ID: <476695D9.8090904@redhat.com>
-Date: Mon, 17 Dec 2007 10:29:29 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 17 Dec 2007 10:32:31 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:40838 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754512AbXLQPcb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 10:32:31 -0500
+Date: Mon, 17 Dec 2007 16:32:29 +0100
+From: Jan Kara <jack@suse.cz>
+To: Denis <denismpa@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Fwd: NFS , Kjournald - status D (uninterruptible sleep) - maquina lenta.
+Message-ID: <20071217153228.GC6979@atrey.karlin.mff.cuni.cz>
+References: <e9aeeef80712141011i139e6ec2pe04250bd56f338d8@mail.gmail.com> <e9aeeef80712141211v7cec29fdt7e2ec76bf877053f@mail.gmail.com> <e9aeeef80712141333n557325e3v11231b8bbe1b0963@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp>,
-       Rusty Lynch <rusty.lynch@intel.com>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       Keshavamurthy Anil S <anil.s.keshavamurthy@intel.com>
-Subject: Re: Final kprobes rollup patches
-References: <1197708350.898.87.camel@brick> <20071215085015.GA9720@elte.hu> <1197709442.898.97.camel@brick> <20071215131204.GE9720@elte.hu> <4766841B.1040500@redhat.com> <20071217143050.GA13290@elte.hu>
-In-Reply-To: <20071217143050.GA13290@elte.hu>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e9aeeef80712141333n557325e3v11231b8bbe1b0963@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+> Dears, I've got a double dual xeon wich sometimes is getting too slow.
+> 
+> 
+> While i was observing one of these slowly times, I realized the time
+> wait of processors come close to 100% and nfsd and kjournald process
+> become to D status (uniterruptible sleep) .Does someone know why this
+> can be happening or how can I troubleshoot it?
+> 
+> Below is a 'draw' of my top at one of these moments.
+> 
+> [root@cromo src]# top
+> top - 10:59:02 up 6 days, 19:30, 17 users,  load average: 14.77, 13.46, 13.00
+> Tasks: 189 total,   1 running, 188 sleeping,   0 stopped,   0 zombie
+> Cpu0  :  0.0% us,  0.4% sy,  0.0% ni,  0.2% id, 98.5% wa,  0.0% hi,  0.9% si
+> Cpu1  :  0.0% us,  0.4% sy,  0.0% ni,  0.0% id, 99.6% wa,  0.0% hi,  0.0% si
+> Cpu2  :  0.0% us,  0.2% sy,  0.0% ni,  7.8% id, 92.0% wa,  0.0% hi,  0.0% si
+> Cpu3  :  0.2% us,  0.8% sy,  0.0% ni,  0.0% id, 98.7% wa,  0.2% hi,  0.0% si
+  All processors are in iowait - i.e. waiting for IO.
 
-Ingo Molnar wrote:
-> Masami,
+> Mem:   4025540k total,  4018264k used,     7276k free,     7908k buffers
+> Swap:  4096564k total,     3288k used,  4093276k free,  3553252k cached
 > 
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
->> Hi Harvey and Ingo,
->>
->> I'm working on another version of patches for unification.
->> Currently cleaning up the patches.
->> http://sources.redhat.com/ml/systemtap/2007-q4/msg00457.html
->> I'll cleanup and repost it today.
-> 
-> cool! Please Cc: lkml and Harvey as well so that there's less overlap in 
-> unification work - Harvey spent quite some time unifying and cleaning up 
-> the kprobes code during the past week.
+>  3941 root      15   0     0    0    0 D    2  0.0  80:29.30 nfsd
+>  3938 root      15   0     0    0    0 D    1  0.0  81:02.02 nfsd
+>  2459 root      15   0     0    0    0 D    1  0.0  30:57.04 kjournald
+>  3937 root      15   0     0    0    0 D    1  0.0  82:07.99 nfsd
+>    96 root      15   0     0    0    0 S    0  0.0  34:12.48 kswapd0
+>  3940 root      15   0     0    0    0 D    0  0.0  80:22.55 nfsd
+>  3942 root      15   0     0    0    0 D    0  0.0  80:23.66 nfsd
+>  3939 root      15   0     0    0    0 D    0  0.0  82:22.55 nfsd
+  It seems like heavy disk/network activity. You can try running
+vmstat 1
+  It will print every second the situation of your memory / IO
+subsystem. You should especially see the ---io--- column ('bi' means
+blocks in, 'bo' blocks outputted). I guess they'd contain some
+non-trivial values...
+  BTW: I guess the processes wake up eventually, don't they?
 
-Should I rewrite it based on current git tree?
-My patch includes 3 part of patches.
-- 2 Bugfix patches (which is not merged yet.)
-- 2 booster patches (ditto)
-- 2 unification patches (most of this patches are already done by Harvey's patch)
-
-> 
-> So i think we could/should use Harvey's latest series as a base, those 
-> are pretty finegrained already. Note that they break 64-bit kprobes 
-> though, with such a config:
-> 
->  CONFIG_KPROBES=y
->  CONFIG_NET_TCPPROBE=y
-> 
-> so it crashes with an int3 in the TCP code. It's probably some trivial 
-> typo somewhere, as 32-bit works fine.
-> 
-> the coordinates for x86.git#mm can be found below - that tree already 
-> includes Harvey's latest kprobes series. I'll try to bisect the 64-bit 
-> breakage now.
-> 
-> 	Ingo
-> 
-> ------------------>
->  git-clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6.git
->  cd linux-2.6.git
->  git-branch x86
->  git-checkout x86
->  git-pull git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git mm
-> 
-> (do subsequent pulls via "git-pull --force", as we frequently rebase the
-> git tree. NOTE: this might override your own local changes, so do this
-> only if you dont mind about losing thse changes in that tree.)
-> 
-
+								Honza
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
-
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
