@@ -1,173 +1,382 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762820AbXLQGBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbXLQGQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762820AbXLQGBY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 01:01:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbXLQGBO
+	id S932275AbXLQGQx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 01:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbXLQGQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 01:01:14 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:65069 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754503AbXLQGBN (ORCPT
+	Mon, 17 Dec 2007 01:16:43 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:47606 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbXLQGQm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 01:01:13 -0500
+	Mon, 17 Dec 2007 01:16:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=sNJTDZr6fEGoKX5X6r4t2OUKUm2FUJU7YbFIJ49ijw7FPdGqrXC9hZXqiQTvUTnezkwjQ6u/Ofbz/anMot+5wPTBBwZtJmxBArW1edJrAwxkoEfohjjE9slYCWf/u50qqaJ+eL/BDDXz1ffmvndB5HwEFo+KRBLLGhhBwxFxakY=
-Date: Mon, 17 Dec 2007 08:51:23 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Andres Salomon <dilinger@queued.net>, linux-kernel@vger.kernel.org,
-       cbou@mail.ru, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/5] power: RFC: introduce a new power API
-Message-ID: <20071217055123.GA2274@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <20071216212443.4a1fff3d@ephemeral> <1197858984.3798.201.camel@shinybook.infradead.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=xx2VnP+5oJ8nQ29HlfG2NEEHtiSwLQ9QgrULWBsbhcZzsAgrN2e6nIxdyz3UrJ0NeRQdClc+oxSW03JGlpzS+Lzpv0BNIbe5HdCSTo1oA7R4VC160XX87BQUHP3z771fWnxKug5VJr2lNUfZA/q4dRZUOyY2AXJRNip6sSo5H28=
+Message-ID: <f17812d70712162216t2f6125b8ve37b9eb8d44aa872@mail.gmail.com>
+Date: Mon, 17 Dec 2007 14:16:40 +0800
+From: "eric miao" <eric.y.miao@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH 2.6.24-rc5-mm 1/3] gpiolib: basic support for 16-bit PCA9539 GPIO expander
+Cc: linux-kernel@vger.kernel.org, i2c@lm-sensors.org, khali@linux-fr.org,
+       bgardner@wabtec.com
+In-Reply-To: <20071215234024.2B4DA10C75D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1197858984.3798.201.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <f17812d70712142014s3e2bf56es9c9e2b24ed164c3e@mail.gmail.com>
+	 <20071215234024.2B4DA10C75D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Andres, David,
+[ Yup, it's an issue, patch updated as below:]
 
-Firstly, Andres, thank you for the efforts.
+>From 8de0246423cbbd0c6bb03a20baf61d360930c350 Mon Sep 17 00:00:00 2001
+From: eric miao <eric.miao@marvell.com>
+Date: Mon, 10 Dec 2007 17:19:12 +0800
+Subject: [PATCH] gpiolib: basic support for 16-bit PCA9539 GPIO expander
 
-I quite foreseen what exactly you had in mind when we were
-discussing the idea. With patches it's indeed easier to show
-flaws of this approach.
+1. use 16-bit register access to simplify the logic, cache OUTPUT
+   and DIRECTION registers for fast access
 
+2. platform code is required to setup
+   a) the numbering of GPIO for PCA9539 (base and number)
+   c) pass "pca9539_platform_data" within "i2c_board_info"
 
-On Sun, Dec 16, 2007 at 09:36:24PM -0500, David Woodhouse wrote:
-> On Sun, 2007-12-16 at 21:24 -0500, Andres Salomon wrote:
-> > This API has the power_supply drivers device their own device_attribute
-> > list; I find this to be a lot more flexible and cleaner.  
+Derived from drivers/i2c/chips/pca9539.c (which has no current known
+users).
 
-I don't see how this is more flexible and cleaner. See below.
+Signed-off-by: eric miao <eric.miao@marvell.com>
+---
+ drivers/gpio/Kconfig        |   10 ++
+ drivers/gpio/Makefile       |    1 +
+ drivers/gpio/pca9539.c      |  254 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/i2c/pca9539.h |   18 +++
+ 4 files changed, 283 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/gpio/pca9539.c
+ create mode 100644 include/linux/i2c/pca9539.h
 
-> > For example,
-> > rather than having a function with a huge switch statement (as olpc_battery
-> > currently has), we have separate callback functions.
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index dd9e697..4b54f60 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -9,6 +9,16 @@ menu "GPIO Expanders"
 
-Is this an improvement? Look into ds2760_battery.c. I scared to
-imagine what it will look like after conversion.
+ comment "I2C GPIO expanders:"
 
-As for olpc's "huge switch statement", it could be split into
-functions _without_ drastic changes to PSY class. As the bonus,
-you will get _inlining_ of these functions by gcc, because
-there will be just single user of these functions. With
-"exported-via-pointers" functions you can't do that.
++config GPIO_PCA9539
++	tristate "PCA9539 16-bit I/O port"
++	depends on I2C
++	help
++	  Say yes here to support the PCA9539 16-bit I/O port. These
++	  parts are made by NXP and TI.
++
++	  This driver can also be built as a module.  If so, the module
++	  will be called pca9539.
++
+ config GPIO_PCF857X
+ 	tristate "PCF857x, PCA857x, and PCA967x I2C GPIO expanders"
+ 	depends on I2C
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index 575bb57..d14fc1e 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -1,4 +1,5 @@
+ # gpio support: dedicated expander chips, etc
 
-You have tons of similar functions with similar functionality, that
-only differs by the data source. That scheme was in the early PSY
-class I posted here this summer. And I turned it down, fortunately.
-
-
-On a bet, I can convert "huge switch statement" to nicely look switch
-statement. It will as nice as ds2760's.
-
-The problem isn't in the PSY class.
-
-> > We're not limited
-> > to drivers only being able to pass 'int' and 'char*'s in sysfs,
-
-You're not limited to "int" and "char *". Anything more than that
-is unnecessary, so far.
-
-> > we're
-> > not forced to keep a global string around in memory (as is again the
-> > case for olpc_battery's serial number code),
-
-If battery chip can report strings, then you anyway must keep it in
-the memory. The question is when to allocate memory and when to free
-it. Side question is for how long to keep it.
-
-Given that that string is small enough (dozen bytes), it's doesn't
-matter for how long we'll allocate it. So, in most cases it's easy
-to answer: allocate at probe, free at remove, so keep it for whole
-battery lifetime. (In contrast, adding tons of functions will waste
-_much more_ space than these dozen bytes!)
-
-
-IIRC this is the main difficulty you're facing with current properties
-approach. You've converted whole class to the something different..
-but you didn't show a single user of that change. Sorry, olpc still
-using hard-coded manufacturer string:
-
-+static ssize_t olpc_bat_manufacturer(struct device *dev,
-+               struct device_attribute *attr, char *buf)
+ obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
++obj-$(CONFIG_GPIO_PCA9539)	+= pca9539.o
+ obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+diff --git a/drivers/gpio/pca9539.c b/drivers/gpio/pca9539.c
+new file mode 100644
+index 0000000..050a378
+--- /dev/null
++++ b/drivers/gpio/pca9539.c
+@@ -0,0 +1,254 @@
++/*
++ *  pca9539.c - 16-bit I/O port with interrupt and reset
++ *
++ *  Copyright (C) 2005 Ben Gardner <bgardner@wabtec.com>
++ *  Copyright (C) 2007 Marvell International Ltd.
++ *
++ *  Derived from drivers/i2c/chips/pca9539.c (which has no current known
++ *  users).
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/i2c.h>
++#include <linux/i2c/pca9539.h>
++
++#include <asm/gpio.h>
++
++#define NR_PCA9539_GPIOS	16
++
++#define PCA9539_INPUT		0
++#define PCA9539_OUTPUT		2
++#define PCA9539_INVERT		4
++#define PCA9539_DIRECTION	6
++
++struct pca9539_chip {
++	unsigned gpio_start;
++	uint16_t reg_output;
++	uint16_t reg_direction;
++
++	struct i2c_client *client;
++	struct gpio_chip gpio_chip;
++};
++
++static int pca9539_write_reg(struct pca9539_chip *chip, int reg, uint16_t val)
 +{
-+       int ret;
-+       uint8_t ec_byte;
-+
-+       ret = olpc_bat_get_status(&ec_byte);
-+       if (ret)
-+               return ret;
-+
-+       ec_byte = BAT_ADDR_MFR_TYPE;
-+       ret = olpc_ec_cmd(EC_BAT_EEPROM, &ec_byte, 1, &ec_byte, 1);
-+       if (ret)
-+               return ret;
-
-+       switch (ec_byte >> 4) {
-+       case 1:
-+               strcpy(buf, "Gold Peak");
-                break;
-+       case 2:
-+               strcpy(buf, "BYD");
-                break;
-+       default:
-+               strcpy(buf, "Unknown");
-                break;
-+       }
-+
-+       return ret;
++	return i2c_smbus_write_word_data(chip->client, reg, val);
 +}
-
-In other words: all these strings can and should be static. Why
-spend cpu cycles on strcpy'ing things that can be not strcpy'ed?
-
-I don't see S/N function. I'm sure it could be implemented easily
-using today's properties approach.
-
-> > we don't have ordering
-> > restrictions w/ the return value being interpreted based upon where it's
-> > located in the array... etc.  
-
-What exact "restrictions" you're talking about? There are no
-restrictions per se.
-
-> > The other API seems to encourage driver
-> > authors to get their custom sysfs knobs into the list of sysfs knobs, and
-> > this one doesn't.
-
-Yes, API is encouraging to add knobs, but not just any knobs. Only
-ones that make sense as a property of a PSY (opposite to some kind
-property of PSY driver itself). The count of such properties is
-limited, physically.
-
-I'm recalling question about raw data. No, PSY class isn't for raw
-data you're getting from the firmware. Implement driver-specific
-binary attribute, that will contain device-specific raw data.
-Ideally, you should not export raw data at all (though, good idea
-is to export them into the debugfs).
-
-> > If there is interest in this API, I'll convert the rest of the power_supply
-> > drivers over to it and resubmit patches.
-> 
-> Looks sane enough to me.
-
-Heh..
-
-> If Anton has no objections, I'll merge it.
-
-Sorry, lots of objections.
-
++
++static int pca9539_read_reg(struct pca9539_chip *chip, int reg, uint16_t *val)
++{
++	int ret;
++
++	ret = i2c_smbus_read_word_data(chip->client, reg);
++	if (ret < 0) {
++		dev_err(&chip->client->dev, "failed reading register\n");
++		return ret;
++	}
++
++	*val = (uint16_t)ret;
++	return 0;
++}
++
++static int pca9539_gpio_direction_input(struct gpio_chip *gc, unsigned off)
++{
++	struct pca9539_chip *chip;
++	uint16_t reg_val;
++	int ret;
++
++	chip = container_of(gc, struct pca9539_chip, gpio_chip);
++
++	reg_val = chip->reg_direction | (1u << off);
++	ret = pca9539_write_reg(chip, PCA9539_DIRECTION, reg_val);
++	if (ret)
++		return -EIO;
++
++	chip->reg_direction = reg_val;
++	return 0;
++}
++
++static int pca9539_gpio_direction_output(struct gpio_chip *gc,
++		unsigned off, int val)
++{
++	struct pca9539_chip *chip;
++	uint16_t reg_val;
++	int ret;
++
++	chip = container_of(gc, struct pca9539_chip, gpio_chip);
++
++	/* set output level */
++	if (val)
++		reg_val = chip->reg_output | (1u << off);
++	else
++		reg_val = chip->reg_output & ~(1u << off);
++
++	ret = pca9539_write_reg(chip, PCA9539_OUTPUT, reg_val);
++	if (ret)
++		return -EIO;
++
++	chip->reg_output = reg_val;
++
++	/* then direction */
++	reg_val = chip->reg_direction & ~(1u << off);
++	ret = pca9539_write_reg(chip, PCA9539_DIRECTION, reg_val);
++	if (ret)
++		return -EIO;
++
++	chip->reg_direction = reg_val;
++	return 0;
++}
++
++static int pca9539_gpio_get_value(struct gpio_chip *gc, unsigned off)
++{
++	struct pca9539_chip *chip;
++	uint16_t reg_val;
++	int ret;
++
++	chip = container_of(gc, struct pca9539_chip, gpio_chip);
++
++	ret = pca9539_read_reg(chip, PCA9539_INPUT, &reg_val);
++	if (ret < 0)
++		return -EIO;
++
++	return (reg_val & (1u << off)) ? 1 : 0;
++}
++
++static void pca9539_gpio_set_value(struct gpio_chip *gc, unsigned off, int val)
++{
++	struct pca9539_chip *chip;
++	uint16_t reg_val;
++	int ret;
++
++	chip = container_of(gc, struct pca9539_chip, gpio_chip);
++
++	if (val)
++		reg_val = chip->reg_output | (1u << off);
++	else
++		reg_val = chip->reg_output & ~(1u << off);
++
++	ret = pca9539_write_reg(chip, PCA9539_OUTPUT, reg_val);
++	if (ret)
++		return;
++
++	chip->reg_output = reg_val;
++}
++
++static int pca9539_init_gpio(struct pca9539_chip *chip)
++{
++	struct gpio_chip *gc;
++
++	gc = &chip->gpio_chip;
++
++	gc->direction_input  = pca9539_gpio_direction_input;
++	gc->direction_output = pca9539_gpio_direction_output;
++	gc->get = pca9539_gpio_get_value;
++	gc->set = pca9539_gpio_set_value;
++
++	gc->base = chip->gpio_start;
++	gc->ngpio = NR_PCA9539_GPIOS;
++	gc->label = "pca9539";
++
++	return gpiochip_add(gc);
++}
++
++static int __devinit pca9539_probe(struct i2c_client *client)
++{
++	struct pca9539_platform_data *pdata;
++	struct pca9539_chip *chip;
++	int ret;
++
++	pdata = client->dev.platform_data;
++	if (pdata == NULL)
++		return -ENODEV;
++
++	chip = kzalloc(sizeof(struct pca9539_chip), GFP_KERNEL);
++	if (chip == NULL)
++		return -ENOMEM;
++
++	chip->client = client;
++
++	chip->gpio_start = pdata->gpio_base;
++
++	/* initialize cached registers from their original values */
++	ret = pca9539_read_reg(chip, PCA9539_OUTPUT, &chip->reg_output);
++	if (ret)
++		return -EIO;
++
++	ret = pca9539_read_reg(chip, PCA9539_DIRECTION, &chip->reg_direction);
++	if (ret)
++		return -EIO;
++
++	/* set platform specific polarity inversion */
++	ret = pca9539_write_reg(chip, PCA9539_INVERT, pdata->invert);
++	if (ret)
++		return -EIO;
++
++	ret = pca9539_init_gpio(chip);
++	if (ret)
++		goto out_failed;
++
++	if (pdata->setup) {
++		ret = pdata->setup(client, chip->gpio_chip.base,
++				chip->gpio_chip.ngpio, pdata->context);
++		if (ret < 0)
++			dev_dbg(&client->dev, "setup failed, %d\n", ret);
++	}
++
++	i2c_set_clientdata(client, chip);
++	return 0;
++
++out_failed:
++	kfree(chip);
++	return ret;
++}
++
++static int pca9539_remove(struct i2c_client *client)
++{
++	struct pca9539_platform_data *pdata = client->dev.platform_data;
++	struct pca9539_chip *chip = i2c_get_clientdata(client);
++	int ret = 0;
++
++	if (pdata->teardown) {
++		ret = pdata->teardown(client, chip->gpio_chip.base,
++				chip->gpio_chip.ngpio, pdata->context);
++		if (ret < 0)
++			dev_dbg(&client->dev, "teardown failed, %d\n", ret);
++	}
++
++	ret = gpiochip_remove(&chip->gpio_chip);
++	if (ret) {
++		dev_err(&client->dev, "failed remove gpio_chip\n");
++		return ret;
++	}
++
++	kfree(chip);
++	return 0;
++}
++
++static struct i2c_driver pca9539_driver = {
++	.driver = {
++		.name	= "pca9539",
++	},
++	.probe		= pca9539_probe,
++	.remove		= pca9539_remove,
++};
++
++static int __init pca9539_init(void)
++{
++	return i2c_add_driver(&pca9539_driver);
++}
++module_init(pca9539_init);
++
++static void __exit pca9539_exit(void)
++{
++	i2c_del_driver(&pca9539_driver);
++}
++module_exit(pca9539_exit);
++
++MODULE_AUTHOR("eric miao <eric.miao@marvell.com>");
++MODULE_DESCRIPTION("GPIO expander driver for PCA9539");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/i2c/pca9539.h b/include/linux/i2c/pca9539.h
+new file mode 100644
+index 0000000..611d84a
+--- /dev/null
++++ b/include/linux/i2c/pca9539.h
+@@ -0,0 +1,18 @@
++/* platform data for the PCA9539 16-bit I/O expander driver */
++
++struct pca9539_platform_data {
++	/* number of the first GPIO */
++	unsigned	gpio_base;
++
++	/* initial polarity inversion setting */
++	uint16_t	invert;
++
++	void		*context;	/* param to setup/teardown */
++
++	int		(*setup)(struct i2c_client *client,
++				unsigned gpio, unsigned ngpio,
++				void *context);
++	int		(*teardown)(struct i2c_client *client,
++				unsigned gpio, unsigned ngpio,
++				void *context);
++};
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+1.5.2.5.GIT
+
+---
+Cheers
+- eric
