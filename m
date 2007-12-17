@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764369AbXLQWz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934297AbXLQW46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764369AbXLQWz5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 17:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbXLQWzq
+	id S934297AbXLQW46 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 17:56:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759855AbXLQW4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 17:55:46 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37624 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755051AbXLQWzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 17:55:45 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200712141521.24227.nickpiggin@yahoo.com.au>
-References: <200712141521.24227.nickpiggin@yahoo.com.au> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205194020.24617.28880.stgit@warthog.procyon.org.uk>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
-       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov, casey@schaufler-ca.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 24/28] AFS: Add a function to excise a rejected write from the pagecache [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 17 Dec 2007 22:54:31 +0000
-Message-ID: <731.1197932071@redhat.com>
+	Mon, 17 Dec 2007 17:56:47 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46517 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759777AbXLQW4r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 17:56:47 -0500
+Date: Mon, 17 Dec 2007 14:56:44 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc5-mm1 - wonky disk cache and CDROM behavior...
+Message-Id: <20071217145644.2d6374e4.akpm@linux-foundation.org>
+In-Reply-To: <30457.1197931451@turing-police.cc.vt.edu>
+References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
+	<30457.1197931451@turing-police.cc.vt.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Mon, 17 Dec 2007 17:44:11 -0500
+Valdis.Kletnieks@vt.edu wrote:
 
-> This reintroduces the fault vs truncate race window, which must be fixed.
+> On Thu, 13 Dec 2007 02:40:50 PST, Andrew Morton said:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/
+> 
+> OK, so I'm trying to 'dd' a CD and the drive on the laptop is having issues
+> reading the disk.
+> 
+> I try it once, and get an I/O error about 117M in - dd reports 1.7M/sec.
+> 
+> I try it again, and it reports it died at the same exact place, but in about
+> 2 seconds flat, and reports 91M/sec transfer.  OK, that's *weird*, I didn't
+> think that blocks read from /dev/cdrom would get cached, but OK.
 
-Hmmm...  perhaps.  I remember that cropped up in NFS, but I'm doing things a
-bit differently to NFS.  Remind me again how that worked please.
+It'll remain cached if something is holding the device open.
 
-> Also, it is adding a fair bit of complexity in an area where we should
-> instead be reducing it. I think your filesystem should not be doing
-> writeback caching of dirty data in the cases where it is so problematic
-> (or at least, disallow mmap and read on the dirty data until it has been
-> written back or failed).
+>  So I try
+> the obviously stupid thing:
+> 
+> # echo 1 >| /proc/sys/vm/drop_caches
+> 
+> Alas, that hangs gloriously - 'echo t > /proc/sysrq-trigger' tells me:
+> 
+> Dec 17 17:30:02 turing-police kernel: [20235.823201] bash          D 0000000000000001  5288 15123  15085
+> Dec 17 17:30:02 turing-police kernel: [20235.823206]  ffff81007ba7de28 0000000000000086 0000000000000000 0000000000000000
+> Dec 17 17:30:02 turing-police kernel: [20235.823210]  ffff81007bbd9000 ffff81007d70e000 ffff81007bbd9248 00000001019e3e48
+> Dec 17 17:30:02 turing-police kernel: [20235.823214]  ffffe20000f36028 ffffe200012b9978 ffffe20000eece48 ffffe20001164188
+> Dec 17 17:30:02 turing-police kernel: [20235.823218] Call Trace:
+> Dec 17 17:30:02 turing-police kernel: [20235.823224]  [<ffffffff80523e20>] __down_read+0x87/0xa1
+> Dec 17 17:30:02 turing-police kernel: [20235.823229]  [<ffffffff8024bc13>] down_read+0x9/0xe
+> Dec 17 17:30:02 turing-police kernel: [20235.823232]  [<ffffffff802abafe>] drop_pagecache+0x3a/0x8c
+> Dec 17 17:30:02 turing-police kernel: [20235.823235]  [<ffffffff802abb72>] drop_caches_sysctl_handler+0x22/0x38
+> Dec 17 17:30:02 turing-police kernel: [20235.823239]  [<ffffffff802d2b70>] proc_sys_write+0x7e/0xa6
+> Dec 17 17:30:02 turing-police kernel: [20235.823244]  [<ffffffff8028e18c>] vfs_write+0xc7/0x170
+> Dec 17 17:30:02 turing-police kernel: [20235.823248]  [<ffffffff8028e772>] sys_write+0x47/0x70
+> Dec 17 17:30:02 turing-police kernel: [20235.823251]  [<ffffffff8020c34c>] tracesys+0xdc/0xe1
+> 
 
-Eh?  It's a stateless network filesystem.  There's a gap between writing to a
-file (perhaps though an mmap) and the pagecache pages being written back in
-which someone may change the security on a file and block the writeback.
-There's nothing I can do to prevent it, so I have to instead deal with the
-consequences should they arise.  See the description of patch 25 for examples.
-
-So you say I shouldn't do any writeback caching at all?
-
-> But otherwise I guess if you really want to discard the dirty data after
-> a failed writeback attempt, what's wrong with just invalidate_inode_pages2?
-
-Erm...  Because it deadlocks?
-
-David
+Something's holding s_umount for writing I guess.  Possibly busted error
+handling somewhere totally different.
