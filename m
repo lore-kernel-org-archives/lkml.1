@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935880AbXLQVzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934099AbXLQV5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935880AbXLQVzc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 16:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760215AbXLQVzW
+	id S934099AbXLQV5J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 16:57:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757907AbXLQV4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 16:55:22 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:58413 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755399AbXLQVzU (ORCPT
+	Mon, 17 Dec 2007 16:56:54 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:43084 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755454AbXLQV4x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 16:55:20 -0500
-Date: Mon, 17 Dec 2007 23:55:17 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: John Reiser <jreiser@BitWagon.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: slab quirks in DEBUG, ctor, and initialization
-In-Reply-To: <4766E7D7.6050003@BitWagon.com>
-Message-ID: <Pine.LNX.4.64.0712172343370.22511@sbz-30.cs.Helsinki.FI>
-References: <47669A16.3010604@BitWagon.com> <84144f020712171151j5e2a2934qc8bf2fbc9020a545@mail.gmail.com>
- <4766E7D7.6050003@BitWagon.com>
-Mime-Version: 1.0
+	Mon, 17 Dec 2007 16:56:53 -0500
+Date: Mon, 17 Dec 2007 13:56:50 -0800
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Adaptec OEM Raid Solutions <aacraid@adaptec.com>,
+       Andrew Vasquez <linux-driver@qlogic.com>,
+       Brian King <brking@us.ibm.com>, Dave Jeffery <ipslinux@adaptec.com>,
+       Hannes Reinecke <hare@suse.de>,
+       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+       James Smart <james.smart@emulex.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Neela Syam Kolli <megaraidlinux@lsi.com>, linux-scsi@vger.kernel.org,
+       open-iscsi@googlegroups.com
+Subject: Re: [PATCH] drivers/scsi/: Spelling fixes
+Message-ID: <20071217215650.GQ8520@plap3.qlogic.org>
+References: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918893.git.joe@perches.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918893.git.joe@perches.com>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 17 Dec 2007 21:55:22.0450 (UTC) FILETIME=[85B6AB20:01C840F7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John,
+On Mon, 17 Dec 2007, Joe Perches wrote:
 
-On Mon, 17 Dec 2007, John Reiser wrote:
-> idr_pre_get calls kmem_cache_alloc, which constructs 'struct idr_layer'
-> via the cachep->ctor() call from cache_alloc_debugcheck_after to
-> idr_cache_ctor, and not via cache_init_objs.  So if DEBUG is off,
-> then idr_cache_ctor does not get its chance to call memset,
-> which could leave the struct idr_layer potentially undefined.
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/scsi/NCR53C9x.h               |    2 +-
+>  drivers/scsi/aic7xxx/aic79xx_inline.h |    2 +-
+>  drivers/scsi/aic7xxx/aic79xx_osm.c    |    2 +-
+>  drivers/scsi/aic7xxx/aic79xx_pci.c    |    4 ++--
+>  drivers/scsi/aic7xxx/aic7xxx_inline.h |    2 +-
+>  drivers/scsi/aic7xxx/aic7xxx_osm.c    |    2 +-
+>  drivers/scsi/ipr.c                    |    2 +-
+>  drivers/scsi/ips.c                    |    2 +-
+>  drivers/scsi/iscsi_tcp.c              |    4 ++--
+>  drivers/scsi/lpfc/lpfc.h              |    2 +-
+>  drivers/scsi/lpfc/lpfc_mbox.c         |    2 +-
+>  drivers/scsi/megaraid/megaraid_mbox.c |   10 +++++-----
+>  drivers/scsi/psi240i.c                |    2 +-
+>  drivers/scsi/qla2xxx/qla_gs.c         |    2 +-
 
-No, init_cache_objs() will call the constructor, if the cache has one when 
-DEBUG is not set so the struct idr_layer can never be undefined. However, 
-struct idr_layer can contain non-zero elements if someone does a 
-kmem_cache_free() on an object that hasn't been zeroed. If that matters 
-here, idr_pre_get should call kmem_cache_zalloc() and drop the 
-constructor.
+qla2xxx bits:
 
-				Pekka
+Acked-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
