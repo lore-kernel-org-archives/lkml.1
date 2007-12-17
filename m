@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937576AbXLQXWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936617AbXLQXZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937576AbXLQXWp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 18:22:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763016AbXLQXVf
+	id S936617AbXLQXZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 18:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757500AbXLQXZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 18:21:35 -0500
-Received: from mga06.intel.com ([134.134.136.21]:7674 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S937370AbXLQXVd (ORCPT
+	Mon, 17 Dec 2007 18:25:13 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52421 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756755AbXLQXZL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 18:21:33 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,178,1196668800"; 
-   d="scan'208";a="242938550"
-Message-ID: <476703A4.7000401@linux.intel.com>
-Date: Mon, 17 Dec 2007 15:17:56 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
+	Mon, 17 Dec 2007 18:25:11 -0500
+Date: Tue, 18 Dec 2007 00:25:10 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Parag Warudkar <parag.warudkar@gmail.com>, devzero@web.de,
+       Matt.Domsch@dell.com, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [RFC] be more verbose when probing EDD
+In-Reply-To: <20071216201849.24f7aa5f@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0712180023310.32270@fbirervta.pbzchgretzou.qr>
+References: <49448787@web.de> <82e4877d0712161159r2572dbbfi15159c66e4b7e33b@mail.gmail.com>
+ <20071216201849.24f7aa5f@the-village.bc.nu>
 MIME-Version: 1.0
-To: Tony Luck <tony.luck@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, protasnb@gmail.com,
-       tytso@thunk.org
-Subject: Re: Top kernel oopses/warnings this week
-References: <4762CF8C.90808@linux.intel.com> <20071217172331.GA23070@elte.hu>	 <20071217133631.5bbc5842@laptopd505.fenrus.org> <12c511ca0712171458n1bc05b40nab6b4b7c92433c8d@mail.gmail.com>
-In-Reply-To: <12c511ca0712171458n1bc05b40nab6b4b7c92433c8d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tony Luck wrote:
->> +       static char target[80];
->  ...
->> +               sprintf(target, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-"
->> +                       "%02x%02x%02x%02x%02x%02x",
-> 
-> [80] is overkill ... [37] bytes should be enough (unless I went
-> cross-eyed counting the "%02x" :-)
-> 
 
-%02x doesn't guarantee that it's at most 2, but at LEAST 2...
+On Dec 16 2007 20:18, Alan Cox wrote:
+>
+>> Why tax other people with a warning/hang etc. in printk when the
+>> problem is very unlikely on their systems?
+>
+>I think there is sense in it if you do it subtly differently.
+>
+>	printk(".. if this hangs do ... \r");
+>	edd_stuff();
+>	printk("                          \r");
+>	
+>
+>So that we display it, do the EDD call, then write over it with whatever
+>is next that matters.
+
+Does printk support escape sequences? The last time I tried
+printk("\e[1;35m omg ponies \e[0m"); that did not went too successful.
+
+>That way you'd only see it when it hung - and that might be worth a patch
+>and test from someone.
