@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933968AbXLQALY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXLQAXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933968AbXLQALY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 19:11:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764117AbXLQAKu
+	id S932247AbXLQAXX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 19:23:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759998AbXLQAXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 19:10:50 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48552 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760102AbXLQAKs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 19:10:48 -0500
-Date: Mon, 17 Dec 2007 00:03:01 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, unlisted-recipients: no@elvis.elte.hu,
-       To-header@elvis.elte.hu, on@elvis.elte.hu, "input <"@elvis.elte.hu,
-       "; Rene Herman" <rene.herman@keyaccess.nl>,
-       Paul Rolland <rol@as2917.net>, "H. Peter Anvin" <hpa@zytor.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
-Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
-	Cc:	;Rene Herman <rene.herman@keyaccess.nl>
-			^-extraneous tokens in mailbox, missing end of mailbox
-Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
-	Cc:	;Rene Herman <rene.herman@keyaccess.nl>
-			^-extraneous tokens in mailbox, missing end of mailbox
-Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
- with MCP51 laptops
-Message-ID: <20071217000301.1c280daa@the-village.bc.nu>
-In-Reply-To: <20071216212628.GF14265@elf.ucw.cz>
-References: <20071211163706.2dc82275@tux.DEF.witbe.net>
-	<475EB263.2050405@keyaccess.nl>
-	<475EC1C0.2040000@reed.com>
-	<20071211173231.2b87a81f@the-village.bc.nu>
-	<475EE2CA.6020601@reed.com>
-	<Pine.LNX.4.61.0712111513490.23653@chaos.analogic.com>
-	<475F23BD.3040903@reed.com>
-	<Pine.LNX.4.61.0712120802300.4443@chaos.analogic.com>
-	<20071212161245.3f388229@the-village.bc.nu>
-	<20071214143328.GB10130@elte.hu>
-	<20071216212628.GF14265@elf.ucw.cz>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 16 Dec 2007 19:23:10 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53548 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759815AbXLQAXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 19:23:08 -0500
+Date: Mon, 17 Dec 2007 01:23:06 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Avi Kivity <avi@qumranet.com>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       glommer@gmail.com, tglx@linutronix.de, ehabkost@redhat.com,
+       jeremy@goop.org, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com
+Subject: Re: [PATCH 4/8] unify paravirt parts of system.h
+Message-ID: <20071217002306.GD5692@elf.ucw.cz>
+References: <11967843881946-git-send-email-gcosta@redhat.com> <20071205163017.GA4756@ucw.cz> <20071215131723.GF9720@elte.hu> <200712170127.31615.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712170127.31615.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Dec 2007 22:26:33 +0100
-Pavel Machek <pavel@ucw.cz> wrote:
-
-> On Fri 2007-12-14 15:33:28, Ingo Molnar wrote:
+On Mon 2007-12-17 01:27:29, Rafael J. Wysocki wrote:
+> On Saturday, 15 of December 2007, Ingo Molnar wrote:
 > > 
-> > * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > * Pavel Machek <pavel@ucw.cz> wrote:
 > > 
-> > > There is another reason we can't just do a dumb changeover - two 
-> > > actually
+> > > > Linux never uses that register. The only user is suspend 
+> > > > save/restore, but that' bogus because it wasn't ever initialized by 
+> > > > Linux in the first place. It could be probably all safely removed.
 > > > 
-> > > #1: Some drivers are using inb_p/outb_p in PCI cases which are going 
-> > > #to cause PCI posting changes. Most are probably just wrong in the 
-> > > #first place but they need hand checking
+> > > It probably is safe to remove... but we currently support '2.8.95 
+> > > kernel loads/resumes 2.6.24 image'... which would break if 2.8 uses 
+> > > cr8.
+> > > 
+> > > So please keep it if it is not a big problem.
 > > 
-> > hm, any intelligent way to force PCI posting? I guess not.
-> > 
-> > here's a list of candidate drivers (match the out*_p() pattern and do 
-> > pci)
-> > 
-> > ./char/epca.c 
-> > ./char/sonypi.c
-> > ./scsi/megaraid.c
-> > ./ide/pci/serverworks.c
-> > ./ide/pci/cmd640.c
-> > ./input/mouse/pc110pad.c
+> > hm, so __save_processor_state() is in essence an ABI? Could you please 
+> > also send a patch that documents this prominently, in the structure 
+> > itself?
+> 
+> Hmm, I'm not sure if it really is an ABI part.  It doesn't communicate anything
+> outside of the kernel in which it is defined.
 
-You are missing some watchdogs at least ?
+Well, it is not "application binary interface", but it is
+"kernel-to-kernel binary interface"...
+
+> The problem is, though, that if kernel A is used for resuming kernel B, and
+> kernel B doesn't save/restore everything it will need after the resume, then
+> things will break if kernel A modifies that.  So, yes, we'll need to document
+> that explicitly.
+
+Agreed.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
