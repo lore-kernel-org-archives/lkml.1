@@ -1,107 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935536AbXLQQSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935629AbXLQQTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935536AbXLQQSb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 11:18:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759252AbXLQQSV
+	id S935629AbXLQQTx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 11:19:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760070AbXLQQTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 11:18:21 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:59208 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752122AbXLQQSU (ORCPT
+	Mon, 17 Dec 2007 11:19:44 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:59994 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759875AbXLQQTn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 11:18:20 -0500
-From: Ritesh Raj Sarraf <rrs@researchut.com>
-Reply-To: Ritesh Raj Sarraf <rrs@researchut.com>
-Organization: RESEARCHUT
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Suspend-devel] Fwd: Kernel Oops with 2.6.23
-Date: Mon, 17 Dec 2007 21:45:54 +0530
-User-Agent: KMail/1.9.7
-References: <200711300103.38658.rrs@researchut.com> <200712030601.33212.rrs@researchut.com> <20071203215105.GC8704@elf.ucw.cz>
-In-Reply-To: <20071203215105.GC8704@elf.ucw.cz>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+	Mon, 17 Dec 2007 11:19:43 -0500
+Date: Mon, 17 Dec 2007 17:19:42 +0100
+From: Jan Kara <jack@suse.cz>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 3/6] udf: fix coding style of dir.c
+Message-ID: <20071217161942.GG6979@atrey.karlin.mff.cuni.cz>
+References: <20071216021246.GD26986@joi>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1753431.BtX3VVH6oV";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200712172146.01667.rrs@researchut.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071216021246.GD26986@joi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1753431.BtX3VVH6oV
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+  Please add a changelog even to changes like these.  From a quick look
+it seems like whitespace / coding style cleanups and they look fine so
+you can add:
+  Acked-by: Jan Kara <jack@suse.cz>
 
-On Tuesday 04 December 2007, Pavel Machek wrote:
-> On Mon 2007-12-03 06:01:26, Ritesh Raj Sarraf wrote:
-> > On Sunday 02 December 2007, Pavel Machek wrote:
-> > > killall -9 pulseaudio. If pulseaudio is not dead within 60 seconds,
-> > > you hit a kernel bug. If it needs suspend to be reproduced, you
-> > > probably have a suspend bug.
-> >
-> > Hi Pavel,
-> >
-> > Something similar to this are multiple cases where the kernel is not ab=
-le
-> > to kill a process at all.
-> >
-> > A good example is an application pumping IO to a multipathed device. Wh=
-en
-> > all the paths to the multipathed devices go down, and you'd like to kill
-> > the process, there is no way left to do it. In fact, a reboot also
-> > doesn't work in such cases. Reboot gets hung in midway trying to kill t=
-he
-> > process. The user is left to do a hard reset of the machine.
-> >
-> > In situations like these, the processes go into D state.
-> >
-> > Here's what the manpage of ps says:
-> >
-> > PROCESS STATE CODES
-> >        Here are the different values that the s, stat and state output
-> > specifiers (header "STAT" or "S")
-> >        will display to describe the state of a process.
-> >        D    Uninterruptible sleep (usually IO)
-> >
-> > Does it mean that processes in D state are excluded by the kernel from
-> > being killed ? Or is it still a kernel bug ?
->
-> Still a kernel bug. Processes should not stay in D state for long.
-> 									Pavel
-
-Hi Pavel,
-
-Sometime back we discussed about 'D' state processes which are not killed b=
-y=20
-the kernel by any signal.
-
-Here's a bugzilla detailing the symptom.
-https://bugzilla.redhat.com/show_bug.cgi?id=3D419581
-[I/O Processes don't get killed when all the paths to the LUN are down]
-
-It is still being assumed as working as designed.
-
-Ritesh
-=2D-=20
-Ritesh Raj Sarraf
-RESEARCHUT - http://www.researchut.com
-"Necessity is the mother of invention."
-
---nextPart1753431.BtX3VVH6oV
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHZqDB4Rhi6gTxMLwRAhZHAJ94MLh1evilmGeP18mOcdK6ymCVBwCffh01
-YGo75Y4dslu5qO7+1srRSTQ=
-=oiwC
------END PGP SIGNATURE-----
-
---nextPart1753431.BtX3VVH6oV--
+									Honza
+> ---
+>  fs/udf/dir.c |   46 +++++++++++++++++++++++++++-------------------
+>  1 files changed, 27 insertions(+), 19 deletions(-)
+> 
+> diff --git a/fs/udf/dir.c b/fs/udf/dir.c
+> index c26e281..c5e38d6 100644
+> --- a/fs/udf/dir.c
+> +++ b/fs/udf/dir.c
+> @@ -65,24 +65,26 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
+>  	if (nf_pos == 0)
+>  		nf_pos = (udf_ext0_offset(dir) >> 2);
+> 
+> -	fibh.soffset = fibh.eoffset = (nf_pos & ((dir->i_sb->s_blocksize - 1) >> 2)) << 2;
+> +	fibh.soffset = fibh.eoffset =
+> +		(nf_pos & ((dir->i_sb->s_blocksize - 1) >> 2)) << 2;
+>  	bits = dir->i_sb->s_blocksize_bits;
+> 
+> -	if (UDF_I_ALLOCTYPE(dir) == ICBTAG_FLAG_AD_IN_ICB) {
+> +	if (UDF_I_ALLOCTYPE(dir) == ICBTAG_FLAG_AD_IN_ICB)
+>  		fibh.sbh = fibh.ebh = NULL;
+> -	} else if (inode_bmap(dir, nf_pos >> (bits - 2),
+> -			      &epos, &eloc, &elen, &offset) == (EXT_RECORDED_ALLOCATED >> 30)) {
+> +	else if (inode_bmap(dir, nf_pos >> (bits - 2),
+> +			    &epos, &eloc, &elen, &offset) ==
+> +			(EXT_RECORDED_ALLOCATED >> 30)) {
+>  		block = udf_get_lb_pblock(dir->i_sb, eloc, offset);
+>  		if ((++offset << bits) < elen) {
+>  			if (UDF_I_ALLOCTYPE(dir) == ICBTAG_FLAG_AD_SHORT)
+>  				epos.offset -= sizeof(short_ad);
+>  			else if (UDF_I_ALLOCTYPE(dir) == ICBTAG_FLAG_AD_LONG)
+>  				epos.offset -= sizeof(long_ad);
+> -		} else {
+> +		} else
+>  			offset = 0;
+> -		}
+> 
+> -		if (!(fibh.sbh = fibh.ebh = udf_tread(dir->i_sb, block))) {
+> +		fibh.sbh = fibh.ebh = udf_tread(dir->i_sb, block);
+> +		if (!fibh.sbh) {
+>  			brelse(epos.bh);
+>  			return -EIO;
+>  		}
+> @@ -92,9 +94,11 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
+>  			if (i + offset > (elen >> bits))
+>  				i = (elen >> bits) - offset;
+>  			for (num = 0; i > 0; i--) {
+> -				block = udf_get_lb_pblock(dir->i_sb, eloc, offset + i);
+> +				block = udf_get_lb_pblock(dir->i_sb, eloc,
+> +							  offset + i);
+>  				tmp = udf_tgetblk(dir->i_sb, block);
+> -				if (tmp && !buffer_uptodate(tmp) && !buffer_locked(tmp))
+> +				if (tmp && !buffer_uptodate(tmp) &&
+> +					!buffer_locked(tmp))
+>  					bha[num++] = tmp;
+>  				else
+>  					brelse(tmp);
+> @@ -126,16 +130,18 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
+>  		liu = le16_to_cpu(cfi.lengthOfImpUse);
+>  		lfi = cfi.lengthFileIdent;
+> 
+> -		if (fibh.sbh == fibh.ebh) {
+> +		if (fibh.sbh == fibh.ebh)
+>  			nameptr = fi->fileIdent + liu;
+> -		} else {
+> +		else {
+>  			int poffset;	/* Unpaded ending offset */
+> 
+> -			poffset = fibh.soffset + sizeof(struct fileIdentDesc) + liu + lfi;
+> +			poffset = fibh.soffset + sizeof(struct fileIdentDesc) +
+> +					liu + lfi;
+> 
+> -			if (poffset >= lfi) {
+> -				nameptr = (char *)(fibh.ebh->b_data + poffset - lfi);
+> -			} else {
+> +			if (poffset >= lfi)
+> +				nameptr = (char *)(fibh.ebh->b_data +
+> +						   poffset - lfi);
+> +			else {
+>  				nameptr = fname;
+>  				memcpy(nameptr, fi->fileIdent + liu,
+>  				       lfi - poffset);
+> @@ -168,12 +174,13 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
+>  		}
+> 
+>  		if (flen) {
+> -			if (filldir(dirent, fname, flen, filp->f_pos, iblock, dt_type) < 0) {
+> +			if (filldir(dirent, fname, flen, filp->f_pos, iblock,
+> +				    dt_type) < 0) {
+>  				if (fibh.sbh != fibh.ebh)
+>  					brelse(fibh.ebh);
+>  				brelse(fibh.sbh);
+>  				brelse(epos.bh);
+> -	 			return 0;
+> +				return 0;
+>  			}
+>  		}
+>  	} /* end while */
+> @@ -222,7 +229,8 @@ static int udf_readdir(struct file *filp, void *dirent, filldir_t filldir)
+>  	lock_kernel();
+> 
+>  	if (filp->f_pos == 0) {
+> -		if (filldir(dirent, ".", 1, filp->f_pos, dir->i_ino, DT_DIR) < 0) {
+> +		if (filldir(dirent, ".", 1, filp->f_pos, dir->i_ino,
+> +			    DT_DIR) < 0) {
+>  			unlock_kernel();
+>  			return 0;
+>  		}
+> @@ -231,7 +239,7 @@ static int udf_readdir(struct file *filp, void *dirent, filldir_t filldir)
+> 
+>  	result = do_udf_readdir(dir, filp, filldir, dirent);
+>  	unlock_kernel();
+> - 	return result;
+> +	return result;
+>  }
+> 
+>  /* readdir and lookup functions */
+> --
+> 1.5.3.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
