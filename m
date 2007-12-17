@@ -1,80 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935249AbXLRBll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936088AbXLRBmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935249AbXLRBll (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 20:41:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbXLRBhs
+	id S936088AbXLRBmG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 20:42:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761829AbXLRBhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 20:37:48 -0500
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:59474 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758046AbXLRBhq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 20:37:46 -0500
-Message-ID: <476724E3.6060901@cs.columbia.edu>
-Date: Mon, 17 Dec 2007 20:39:47 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       linux-fsdevel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-References: <20071216080441.435456586@I-love.SAKURA.ne.jp>	<20071216080628.061470932@I-love.SAKURA.ne.jp>	<200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp>	<200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp>	<20071217194802.GA14156@sergelap.austin.ibm.com>	<200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com>
-In-Reply-To: <20071218003955.GA27048@sergelap.austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+	Mon, 17 Dec 2007 20:37:52 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38918 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759081AbXLRBhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 20:37:51 -0500
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
+       rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
+       Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: [PATCH 16/21] [PATCH] unify mm_segment_t definition
+Date: Mon, 17 Dec 2007 20:52:39 -0200
+Message-Id: <11979320451308-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <11979320401316-git-send-email-gcosta@redhat.com>
+References: <11979319641796-git-send-email-gcosta@redhat.com> <1197931971748-git-send-email-gcosta@redhat.com> <11979319763641-git-send-email-gcosta@redhat.com> <11979319811234-git-send-email-gcosta@redhat.com> <11979319853319-git-send-email-gcosta@redhat.com> <11979319903443-git-send-email-gcosta@redhat.com> <11979319953427-git-send-email-gcosta@redhat.com> <11979320011968-git-send-email-gcosta@redhat.com> <1197932006634-git-send-email-gcosta@redhat.com> <11979320114180-git-send-email-gcosta@redhat.com> <11979320163651-git-send-email-gcosta@redhat.com> <11979320211287-git-send-email-gcosta@redhat.com> <11979320252102-git-send-email-gcosta@redhat.com> <11979320302030-git-send-email-gcosta@redhat.com> <11979320354186-git-send-email-gcosta@redhat.com> <11979320401316-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch moves the mm_segment_t structure definition to processor.h
+This makes mmsegment.h file useless, and it is deleted.
 
-I hate to bring this again, but what if the admin in the container
-mounts an external file system (eg. nfs, usb, loop mount from a file,
-or via fuse), and that file system already has a device that we would
-like to ban inside that container ?
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+---
+ include/asm-x86/mmsegment.h      |    8 --------
+ include/asm-x86/processor.h      |    5 +++++
+ include/asm-x86/processor_32.h   |    5 -----
+ include/asm-x86/processor_64.h   |    1 -
+ include/asm-x86/thread_info_64.h |    2 +-
+ 5 files changed, 6 insertions(+), 15 deletions(-)
 
-Since anyway we will have to keep a white- (or black-) list of devices
-that are permitted in a container, and that list may change even change
-per container -- why not enforce the access control at the VFS layer ?
-It's safer in the long run.
-
-Oren.
-
-Serge E. Hallyn wrote:
-> Quoting Tetsuo Handa (penguin-kernel@i-love.sakura.ne.jp):
->> Hello.
->>
->> Serge E. Hallyn wrote:
->>> CAP_MKNOD will be removed from its capability
->> I think it is not enough because the root can rename/unlink device files
->> (mv /dev/sda1 /dev/tmp; mv /dev/sda2 /dev/sda1; mv /dev/tmp /dev/sda2).
-> 
-> Sure but that doesn't bother us :)
-> 
-> The admin in the container has his own /dev directory and can do what he
-> likes with the devices he's allowed to have.  He just shouldn't have
-> access to others.  If he wants to rename /dev/sda1 to /dev/sda5 that's
-> his choice.
-> 
->>> To use your approach, i guess we would have to use selinux (or tomoyo)
->>> to enforce that devices may only be created under /dev?
->> Everyone can use this filesystem alone.
-> 
-> Sure but it is worthless alone.
-> 
-> No?
-> 
-> What will keep the container admin from doing 'mknod /root/hda1 b 3 1'?
-> 
->> But use with MAC (or whatever access control mechanisms that prevent
->> attackers from unmounting/overlaying this filesystem) is recomennded.
-> 
-> -serge
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+Index: linux-2.6-x86/include/asm-x86/mmsegment.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/mmsegment.h
++++ /dev/null
+@@ -1,8 +0,0 @@
+-#ifndef _ASM_MMSEGMENT_H
+-#define _ASM_MMSEGMENT_H 1
+-
+-typedef struct {
+-	unsigned long seg;
+-} mm_segment_t;
+-
+-#endif
+Index: linux-2.6-x86/include/asm-x86/processor.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/processor.h
++++ linux-2.6-x86/include/asm-x86/processor.h
+@@ -420,6 +420,11 @@ struct extended_sigtable {
+ 	struct extended_signature sigs[0];
+ };
+ 
++typedef struct {
++	unsigned long seg;
++} mm_segment_t;
++
++
+ /*
+  * create a kernel thread without removing it from tasklists
+  */
+Index: linux-2.6-x86/include/asm-x86/processor_32.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/processor_32.h
++++ linux-2.6-x86/include/asm-x86/processor_32.h
+@@ -103,11 +103,6 @@ union i387_union {
+ 	struct i387_soft_struct soft;
+ };
+ 
+-typedef struct {
+-	unsigned long seg;
+-} mm_segment_t;
+-
+-
+ #define INIT_THREAD  {							\
+ 	.sp0 = sizeof(init_stack) + (long)&init_stack,			\
+ 	.vm86_info = NULL,						\
+Index: linux-2.6-x86/include/asm-x86/processor_64.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/processor_64.h
++++ linux-2.6-x86/include/asm-x86/processor_64.h
+@@ -14,7 +14,6 @@
+ #include <asm/msr.h>
+ #include <asm/current.h>
+ #include <asm/system.h>
+-#include <asm/mmsegment.h>
+ #include <linux/personality.h>
+ #include <asm/desc_defs.h>
+ 
+Index: linux-2.6-x86/include/asm-x86/thread_info_64.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/thread_info_64.h
++++ linux-2.6-x86/include/asm-x86/thread_info_64.h
+@@ -21,7 +21,7 @@
+ #ifndef __ASSEMBLY__
+ struct task_struct;
+ struct exec_domain;
+-#include <asm/mmsegment.h>
++#include <asm/processor.h>
+ 
+ struct thread_info {
+ 	struct task_struct	*task;		/* main task structure */
