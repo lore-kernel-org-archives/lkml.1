@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935340AbXLQKVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934812AbXLQK2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935340AbXLQKVg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 05:21:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932649AbXLQKVZ
+	id S934812AbXLQK2X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 05:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXLQK2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 05:21:25 -0500
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:41896
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932612AbXLQKVY (ORCPT
+	Mon, 17 Dec 2007 05:28:13 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56817 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751864AbXLQK2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 05:21:24 -0500
-Date: Mon, 17 Dec 2007 03:31:48 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: Renzo Davoli <renzo@cs.unibo.it>
-cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, garden@cs.unibo.it
-Subject: Re: [PATCH 0/1] IPN: Inter Process Networking
-In-Reply-To: <20071217092401.GC4356@cs.unibo.it>
-Message-ID: <Pine.LNX.4.64.0712170327410.4467@asgard>
-References: <20071217092401.GC4356@cs.unibo.it>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 17 Dec 2007 05:28:12 -0500
+Date: Mon, 17 Dec 2007 02:27:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Tino Keitel <tino.keitel@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: Could not set non-blocking flag with 2.6.24-rc5
+Message-Id: <20071217022748.89bc49f4.akpm@linux-foundation.org>
+In-Reply-To: <200712140145.39791.rjw@sisk.pl>
+References: <20071213201601.GA5831@dose.home.local>
+	<200712140145.39791.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007, Renzo Davoli wrote:
+On Fri, 14 Dec 2007 01:45:39 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> Inter Process Networking (PATCH):
->
-> 1. WHAT IS IPN?
-> ---------------
->
-> IPN is a new address family designed for one-to-many, many-to-many and
-> peer-to-peer communication among processes.
-> Berkeley sockets have been designed for client-server or point-to-point
-> communication; AF_UNIX does not support multicast/broadcast. AF_IPN
-> does, in a simple, efficient but extensible way.
-> IPN is an Inter Process Communication paradigm where all the processes
-> appear as they were connected by a networking bus.
->
-> On IPN, processes can interoperate using real networking protocols
-> (e.g. ethernet) but also using application defined protocols (maybe
-> just sending ascii strings, video or audio frames, etc).
-> IPN provides networking (in the broaden definition you can imagine) to
-> the processes. Processes can be ethernet nodes, run their own TCP-IP stacks
-> if they like (e.g. virtual machines), mount ATAonEthernet disks, etc.etc.
->
-> IPN networks can be interconnected with real networks or IPN networks
-> running on different computers can interoperate (can be connected by
-> virtual cables).
->
-> IPN is part of the Virtual Square Project (vde, lwipv6, view-os,
-> umview/kmview, see wiki.virtualsquare.org).
+> On Thursday, 13 of December 2007, Tino Keitel wrote:
+> > Hi folks,
+> > 
+> > I often build Debian packages inside a chroot. Today I discovered a
+> > failure during an "aptitude update", which is a command to download new
+> > package lists for the package management. In strace, the lines around
+> > the failure look like this:
+> > 
+> > 99% [Working])         = 14 14
+> > [pid  5986] select(6, [3 4 5], [], NULL, {0, 500000}) = 0 (Timeout)
+> > [pid  5986] gettimeofday({1197576353, 670510}, NULL) = 0
+> > [pid  5986] rt_sigprocmask(SIG_BLOCK, [WINCH], [], 8) = 0
+> > [pid  5986] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+> > 99% [Working])         = 14 14
+> > [pid  5986] select(6, [3 4 5], [], NULL, {0, 500000}) = 0 (Timeout)
+> > [pid  5986] gettimeofday({1197576354, 173902}, NULL) = 0
+> > [pid  5986] rt_sigprocmask(SIG_BLOCK, [WINCH], [], 8) = 0
+> > [pid  5986] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+> > 99% [Working])         = 14 14
+> > [pid  5986] select(6, [3 4 5], [], NULL, {0, 500000} <unfinished ...>
+> > [pid  5988] <... select resumed> )      = 1 (in [3], left {105, 0})
+> > [pid  5988] read(3, "", 56559)          = 0
+> > [pid  5988] fcntl64(-1, F_GETFL)        = -1 EBADF (Bad file
+> > descriptor)
+> > [pid  5988] fcntl64(-1, F_SETFL,
+> > O_ACCMODE|O_CREAT|O_EXCL|O_NOCTTY|O_TRUNC|O_APPEND|O_SYNC|O_ASYNC|O_DIRECT|O_LARGEFILE|O_DIRECTORY|O_NOFOLLOW|O_NOATIME|0xfff8003c)
+> > = -1 EBADF (Bad file descriptor)
+> > [pid  5988] write(2, ""..., 41FATAL -> Could not set non-blocking flag
+> > )         = 41
+> > [pid  5988] write(2, ""..., 19Bad file descriptor)         = 19
+> > [pid  5988] write(2, ""..., 1
+> > )          = 1
+> > [pid  5988] exit_group(100)             = ?
+> > Process 5988 detached
+> > 
+> > This happened with a kernel after 2.6.24-rc5
+> > (4af75653031c6d454b4ace47c1536f0d2e727e3e). I rebooted into 2.6.23.8
+> > and it worked. Now I rebooted into 2.6.24-rc5 again and was able to
+> > reproduce the failure, so it looks like a kernel issue to me.
+> 
+> Yes, it does.
+> 
+> I'm not sure who to forward it to, though.  Andrew, can you help, please?
 
-other then the fact that this is bi-directional, how is this better then 
-using pipes and splice?
+hm, I missed this email, sorry.
 
-wouldn't it be better to just add the ability for multiple writers to send 
-to the same pipe, and then have all of them splice into the output of that 
-pipe? this would give the same data-agnostic communication that you are 
-looking for, and with the minor detail that software would have to filter 
-out messages that they send, would appear to meet all the goals you are 
-looking at, useing existing kernel features that are designed to be very 
-high performance.
+That application is passing an fd of -1 into the kernel's fcntl64().  Could
+be an application bug, could be a kernel change which triggered an
+application bug, could be a kernel bug.
 
-David Lang
+Can we see more of the strace output please?  Let's see if we can find
+where the application got that -1 from.
+
