@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935434AbXLQChL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935551AbXLQCjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935434AbXLQChL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 21:37:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935416AbXLQCgJ
+	id S935551AbXLQCjx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 21:39:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765835AbXLQCjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 21:36:09 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:39643 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934549AbXLQCgH (ORCPT
+	Sun, 16 Dec 2007 21:39:42 -0500
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:33555 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765201AbXLQCjl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 21:36:07 -0500
-Date: Mon, 17 Dec 2007 03:36:05 +0100 (MET)
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-To: kernel-janitors@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Richard Knutsson <ricknu-0@student.ltu.se>
-Message-Id: <20071217023605.24944.67698.sendpatchset@thinktank.campus.ltu.se>
-In-Reply-To: <20071217023555.24944.62155.sendpatchset@thinktank.campus.ltu.se>
-References: <20071217023555.24944.62155.sendpatchset@thinktank.campus.ltu.se>
-Subject: [PATCH 3/3] ipc: Convert handmade 'min' to min().
+	Sun, 16 Dec 2007 21:39:41 -0500
+Message-Id: <6.0.0.20.2.20071217111426.03956ca8@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Mon, 17 Dec 2007 11:38:45 +0900
+To: Zach Brown <zach.brown@oracle.com>, Badari Pulavarty <pbadari@us.ibm.com>
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: Re: [PATCH] dio: falling through to buffered I/O when
+  invalidationof a page fails
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>
+In-Reply-To: <4762D651.50801@oracle.com>
+References: <6.0.0.20.2.20071210164242.03915ca8@172.19.0.2>
+ <475F32B0.20107@oracle.com>
+ <1197658796.12368.1.camel@dyn9047017100.beaverton.ibm.com>
+ <4762D651.50801@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert handmade 'min' to min().
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-Dependent on 'msg->m_ts' being changed from int to size_t.
+At 04:15 07/12/15, Zach Brown wrote:
+ >
+ >> If anyone has a testcase - I can take a look at the problem again.
+ >
+ >I can try and throw something together..
+ >
+ >- z
+
+I did a test by using fsstress.
+
+I modified the dio write() of fsstress to check return value, and input
+following command;
+
+# fsstress -d /root/testdir/ -l 0 -n 1000 -p 1000 -z -f creat=1 -f write=1 
+-f dwrite=1
+
+I got EIO from dio write.
 
 
-diff --git a/ipc/msg.c b/ipc/msg.c
-index fdf3db5..74d0709 100644
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -920,7 +920,7 @@ out_unlock:
- 	if (IS_ERR(msg))
- 		return PTR_ERR(msg);
- 
--	msgsz = (msgsz > msg->m_ts) ? msg->m_ts : msgsz;
-+	msgsz = min(msgsz, msg->m_ts);
- 	*pmtype = msg->m_type;
- 	if (store_msg(mtext, msg, msgsz))
- 		msgsz = -EFAULT;
+I encountered some PostgreSQL mailing list archive that mentioned about 
+this issue.
+http://groups.google.com/group/pgsql.hackers/browse_thread/thread/c7515ccd5ac1269c/dc2ddeac3fe0d8c1?lnk=raot&fwc=1
+
+dio can be used in PostgreSQL to write transaction log(WAL). It is said 
+that when dio is used,
+EIO is returned under some workload.
+  
+
