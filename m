@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbXLQPDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763158AbXLQPDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762264AbXLQPDV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbXLQPDK
+	id S1763158AbXLQPDd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 10:03:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762172AbXLQPDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:03:10 -0500
-Received: from adsl-76-243-235-52.dsl.chcgil.sbcglobal.net ([76.243.235.52]:54249
-	"EHLO accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753907AbXLQPDJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:03:09 -0500
-Subject: Re: INITIO scsi driver fails to work properly
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Boaz Harrosh <bharrosh@panasas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Filippos Papadopoulos <psybases@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20071217143641.760d4162@the-village.bc.nu>
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
-	 <20071217031841.f483e5ac.akpm@linux-foundation.org>
-	 <20071217130523.7e9c88bb@the-village.bc.nu> <47668A75.7040707@panasas.com>
-	 <20071217143641.760d4162@the-village.bc.nu>
-Content-Type: text/plain
-Date: Mon, 17 Dec 2007 09:03:01 -0600
-Message-Id: <1197903781.3204.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Dec 2007 10:03:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53994 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761331AbXLQPDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 10:03:20 -0500
+Date: Mon, 17 Dec 2007 16:03:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 5/4] x86: local.h fix checkpatch warnings
+Message-ID: <20071217150304.GA20280@elte.hu>
+References: <1197856636.3749.109.camel@brick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1197856636.3749.109.camel@brick>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mon, 2007-12-17 at 14:36 +0000, Alan Cox wrote:
-> On Mon, 17 Dec 2007 16:40:53 +0200
-> Boaz Harrosh <bharrosh@panasas.com> wrote:
-> 
-> > On Mon, Dec 17 2007 at 15:05 +0200, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > >> initio doesn't seem to have a maintainer...
-> > >>
-> > >> Are you able to identify any earlier kernel which worked OK?
-> > >>
-> > >> Maybe it's a new device?  If you can get the `lspci -vvxx' output
-> > >> for that device we can take a look.
-> > > 
-> > > If I remember rightly the fixes for this went into the scsi tree a couple
-> > > of months ago. The patch is in the -mm tree as well. No idea why its
-> > > gotten stuck as an obvious one liner.
-> > > 
-> > > Alan
-> > > -
-> > You mean this one:
-> > http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff;h=ba2c270154cc90c9a8bfc45b7bed4cca78c75aaf
-> > 
-> > It's only queued for 2.6.25 via scsi-misc.
-> > 
-> > I have found another bug. (See other mail in thread). I Will wait for testing
-> > and submit a proper patch.
-> 
-> That one yes - which really should have gone straight into the main tree
-> as the initio driver has been broken all the time it sits queued for
-> future patches. It can't make the problem any worse - the driver does not
-> work.
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-Well, the change log isn't very committal for "rush me immediately into
-main line" plus, as far as I could dig out, there was no confirmation
-that it actually worked.  This way, I can now say please try the current
--mm kernel to the bug reporter and we get to see if this fixes the
-problem.
+> Mostly space after comma, one space after if.
 
-James
+thanks Harvey, i've applied all your local.h unification patches to 
+x86.git. They successfully passed a couple of build and boot tests as 
+well.
 
-
+	Ingo
