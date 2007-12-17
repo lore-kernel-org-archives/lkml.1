@@ -1,68 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbXLQSNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbXLQSN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760061AbXLQSNX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 13:13:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbXLQSNO
+	id S1756849AbXLQSN4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 13:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756218AbXLQSNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 13:13:14 -0500
-Received: from styx.suse.cz ([82.119.242.94]:45110 "EHLO duck.suse.cz"
+	Mon, 17 Dec 2007 13:13:46 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:53404 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753733AbXLQSNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 13:13:12 -0500
-Date: Mon, 17 Dec 2007 19:13:11 +0100
-From: Jan Kara <jack@suse.cz>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Convert some variables to pgoff_t
-Message-ID: <20071217181311.GE25521@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1753733AbXLQSNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 13:13:45 -0500
+Date: Mon, 17 Dec 2007 19:13:02 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: "Remy Bohmer" <linux@bohmer.net>
+Cc: "Andrew Victor" <linux@maxim.org.za>, RT <linux-rt-users@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: Atmel Serial Console interrupt handler splitup
+Message-ID: <20071217191302.7385f8cc@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20071217131701.6b2cdf2c@dhcp-252-066.norway.atmel.com>
+References: <3efb10970712070724i6fa66666t2b8422329759ce24@mail.gmail.com>
+	<Pine.LNX.4.58.0712121606241.23712@gandalf.stny.rr.com>
+	<3efb10970712121429l7b41d57md4f826f6aaf4b71@mail.gmail.com>
+	<3efb10970712130840r7a2c5f72jca641d1cac545464@mail.gmail.com>
+	<cd73a99e0712130933s6f601ef7sed90f48c08d9adaa@mail.gmail.com>
+	<3efb10970712131232j5f747420g4aa8b5bd956e3dd3@mail.gmail.com>
+	<3efb10970712131235t47a9ceb5y7d9a7d5023d07bf6@mail.gmail.com>
+	<3efb10970712140346l1845d563k900d72d8788ac6f5@mail.gmail.com>
+	<20071217131701.6b2cdf2c@dhcp-252-066.norway.atmel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+On Mon, 17 Dec 2007 13:17:01 +0100
+Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 
-  while doing some other work I spotted that a few variables should be
-pgoff_t while they are declared as unsigned long. Attached patch should fix
-that.
+> > 3) NEW: optional:  add-atmel-serial-dma.patch, this merged the DMA
+> > code (from Chip Coldwell) in your 2.6.23 patch back on top of this
+> > series. Because the AT32 bug is not been fixed for a very long time, I
+> > do not expect it to be fixed soon, so I think a reordering is better
+> > to make preempt-RT work on AT91.  
+> 
+> I'll give it a shot, but first I have some comments on your other
+> patches.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+I found a bug. The RX DMA buffer isn't invalidated before it's handed
+over to the hardware. With the below patch, it seems to behave a lot
+better on AVR32, but it still does funny things now and then (it seems
+to dump a good chunk of stale TX data before rebooting), and magic sysrq
+doesn't work.
+
+I think I've spotted other potential races in the DMA code as well, but
+they look a bit more difficult to hunt down. I'll give it another try
+tomorrow.
+
+Haavard
+
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] atmel_serial: Sync DMA RX buffer after copying from it
+
+Calling dma_sync_single_for_cpu() before reading the buffer isn't
+enough. We need to call dma_sync_single_for_device() after we're done
+reading as well.
+
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 ---
+ drivers/serial/atmel_serial.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-Convert variables containing page indexes to pgoff_t.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 188cf5f..ae2f868 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1294,7 +1294,7 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- 	struct file_ra_state *ra = &file->f_ra;
- 	struct inode *inode = mapping->host;
- 	struct page *page;
--	unsigned long size;
-+	pgoff_t size;
- 	int did_readaround = 0;
- 	int ret = 0;
+diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+index 0610ad9..e23a3ba 100644
+--- a/drivers/serial/atmel_serial.c
++++ b/drivers/serial/atmel_serial.c
+@@ -391,6 +391,8 @@ static void atmel_pdc_endrx(struct uart_port *port)
+ 		tty_insert_flip_string(tty, pdc->buf + pdc->ofs, count);
+ 		tty_flip_buffer_push(tty);
  
-diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
-index 32132f3..590a178 100644
---- a/mm/filemap_xip.c
-+++ b/mm/filemap_xip.c
-@@ -55,7 +55,8 @@ do_xip_mapping_read(struct address_space *mapping,
- 		    read_actor_t actor)
- {
- 	struct inode *inode = mapping->host;
--	unsigned long index, end_index, offset;
-+	pgoff_t index, end_index;
-+	unsigned long offset;
- 	loff_t isize;
++		dma_sync_single_for_device(port->dev, pdc->dma_addr,
++				pdc->dma_size, DMA_FROM_DEVICE);
+ 		port->icount.rx += count;
+ 	}
  
- 	BUG_ON(!mapping->a_ops->get_xip_page);
+@@ -425,6 +427,8 @@ static void atmel_pdc_timeout(struct uart_port *port)
+ 		tty_insert_flip_string(tty, pdc->buf + pdc->ofs, count);
+ 		tty_flip_buffer_push(tty);
+ 
++		dma_sync_single_for_device(port->dev, pdc->dma_addr,
++				pdc->dma_size, DMA_FROM_DEVICE);
+ 		pdc->ofs = ofs;
+ 		port->icount.rx += count;
+ 	}
+-- 
+1.5.3.4
+
