@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964937AbXLQUoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936612AbXLQUow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964937AbXLQUoe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:44:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936776AbXLQUoJ
+	id S936612AbXLQUow (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:44:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934969AbXLQUoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 15:44:09 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:64313 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933037AbXLQUoF (ORCPT
+	Mon, 17 Dec 2007 15:44:32 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50089 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S936594AbXLQUoa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 15:44:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=nf1DQriMzOBUS0Yai5ILh2EGcUpze02kRlhJCYNpA2MMY3GVeAEJl19LyLI6UYRTuiqo1BhuRXA5CgAJ2X4HpPbpJRlC2080XxFxtXtdrlWbFKJfw7S3zoIt2CZ/l8sDlPeynpwwkKCo3fUx3hzCGO1h3Fkw+Yxc76UYLR2vJ78=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] drivers/ide/: Spelling fixes
-Date: Mon, 17 Dec 2007 21:53:35 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ide@vger.kernel.org
-References: <1197919875-5288-36-git-send-email-joe@perches.com>
-In-Reply-To: <1197919875-5288-36-git-send-email-joe@perches.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200712172153.35257.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 17 Dec 2007 15:44:30 -0500
+Date: Mon, 17 Dec 2007 12:44:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: dsterba@suse.cz, linux-kernel@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org
+Subject: Re: [PATCH V2] ipwireless_cs driver for 4G PC Card
+Message-Id: <20071217124408.284886a6.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0712171355380.12449@jikos.suse.cz>
+References: <20071130125555.GA10977@ds.suse.cz>
+	<20071212150851.GB10118@ds.suse.cz>
+	<Pine.LNX.4.64.0712171155130.12449@jikos.suse.cz>
+	<20071217032222.af86c830.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0712171355380.12449@jikos.suse.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 17 December 2007, Joe Perches wrote:
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+On Mon, 17 Dec 2007 13:58:09 +0100 (CET)
+Jiri Kosina <jkosina@suse.cz> wrote:
 
-applied
+> On Mon, 17 Dec 2007, Andrew Morton wrote:
+> 
+> > > Andrew, what is your position on merging this into your 2.6.25 queue 
+> > > please? David has fixed all the issues that came up during review, so 
+> > > it seems to be that it's time for the driver to be merged during the 
+> > > upcoming merge window. If you take it, I am perfectly fine with you 
+> > > dropping the ipwireless_cs git tree from -mm lineup.
+> > I'd have thought that you'd merge it into git-ipwireless_cs.patch and that
+> > you would then take care of merging it into mainline at an appropriate
+> > time?
+> 
+> I'd normally send this through PCMCIA maintainer's tree, but as long as 
+> there is no such thing, I thought that merging through you is the best 
+> thing to do. I don't want to bother Linus with pull request for a single 
+> new driver.
+> 
+
+Linus will cope ;)
+
+Assuming that you've reviewed the driver and have some understanding of
+what it does and how it does it, you're way ahead of me.  Please go ahead
+and merge it when you think that is appropriate.  
