@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760616AbXLQOlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761442AbXLQOli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760616AbXLQOlZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 09:41:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXLQOlP
+	id S1761442AbXLQOli (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 09:41:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760154AbXLQOlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 09:41:15 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:14218 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752447AbXLQOlO (ORCPT
+	Mon, 17 Dec 2007 09:41:25 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:49675 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758406AbXLQOlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 09:41:14 -0500
-Message-ID: <47668A75.7040707@panasas.com>
-Date: Mon, 17 Dec 2007 16:40:53 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Mon, 17 Dec 2007 09:41:23 -0500
+Date: Mon, 17 Dec 2007 19:42:13 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Masami Hiramatsu <hiramatu@sdl.hitachi.co.jp>,
+       Rusty Lynch <rusty.lynch@intel.com>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       maneesh@linux.vnet.ibm.com, srinivasa@in.ibm.com,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Keshavamurthy Anil S <anil.s.keshavamurthy@intel.com>
+Subject: Re: FInal kprobes rollup patches
+Message-ID: <20071217141213.GA20093@linux.vnet.ibm.com>
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <1197708350.898.87.camel@brick> <20071215085015.GA9720@elte.hu> <1197709442.898.97.camel@brick> <20071215131204.GE9720@elte.hu>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Filippos Papadopoulos <psybases@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: INITIO scsi driver fails to work properly
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>	<20071217031841.f483e5ac.akpm@linux-foundation.org> <20071217130523.7e9c88bb@the-village.bc.nu>
-In-Reply-To: <20071217130523.7e9c88bb@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Dec 2007 14:40:58.0081 (UTC) FILETIME=[D6239510:01C840BA]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20071215131204.GE9720@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17 2007 at 15:05 +0200, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> initio doesn't seem to have a maintainer...
->>
->> Are you able to identify any earlier kernel which worked OK?
->>
->> Maybe it's a new device?  If you can get the `lspci -vvxx' output
->> for that device we can take a look.
+Hi Ingo, Harvey
+
+In file include/asm-x86/kprobes_32.h
+typedef u8 kprobe_opcode_t;
+hence sizeof(kprobe_opcode_t) turns out to be 1.
+
+Hence 
+
+memcpy(p->ainsn.insn, p->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t)); 
+is correct.
+
+--
+Regards
+Srikar
+
+
 > 
-> If I remember rightly the fixes for this went into the scsi tree a couple
-> of months ago. The patch is in the -mm tree as well. No idea why its
-> gotten stuck as an obvious one liner.
+> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
 > 
-> Alan
-> -
-You mean this one:
-http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff;h=ba2c270154cc90c9a8bfc45b7bed4cca78c75aaf
-
-It's only queued for 2.6.25 via scsi-misc.
-
-I have found another bug. (See other mail in thread). I Will wait for testing
-and submit a proper patch.
-
-Boaz
+> > If you compare this memcpy from arch_prepare_kprobe in 32/64 bit I'm 
+> > almost sure the X86_32 version should be
+> > 
+> > ... + sizeof(kprobe_opcode_t)
+> > 
+> > not
+> > 
+> > ... * sizeof(kprobe_opcode_t)
+> 
+> good point. I've Cc:-ed the top authors of kprobes.c. Could anyone 
+> confirm (or deny) that Harvey found a real kprobes bug here?
+> 
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
