@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935683AbXLQKyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935607AbXLQK55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935683AbXLQKyd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 05:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934966AbXLQKyR
+	id S935607AbXLQK55 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 05:57:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765542AbXLQK5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 05:54:17 -0500
-Received: from host253-196-149-62.serverdedicati.aruba.it ([62.149.196.253]:35456
-	"EHLO styx.acheronte.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934784AbXLQKyP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 05:54:15 -0500
-X-Greylist: delayed 424 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Dec 2007 05:54:14 EST
-Date: Mon, 17 Dec 2007 11:47:06 +0100
-From: Ludovico Gardenghi <garden@cs.unibo.it>
-To: david@lang.hm
-Cc: Renzo Davoli <renzo@cs.unibo.it>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/1] IPN: Inter Process Networking
-Message-ID: <20071217104706.GA10966@ripieno.somiere.org>
-References: <20071217092401.GC4356@cs.unibo.it> <Pine.LNX.4.64.0712170327410.4467@asgard>
+	Mon, 17 Dec 2007 05:57:48 -0500
+Received: from styx.suse.cz ([82.119.242.94]:46022 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757839AbXLQK5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 05:57:47 -0500
+Date: Mon, 17 Dec 2007 11:57:46 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: David Sterba <dsterba@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+Subject: Re: [PATCH V2] ipwireless_cs driver for 4G PC Card
+In-Reply-To: <20071212150851.GB10118@ds.suse.cz>
+Message-ID: <Pine.LNX.4.64.0712171155130.12449@jikos.suse.cz>
+References: <20071130125555.GA10977@ds.suse.cz> <20071212150851.GB10118@ds.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712170327410.4467@asgard>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17, 2007 at 03:31:48AM -0800, david@lang.hm wrote:
+[ CC list trimmed ] 
 
-> wouldn't it be better to just add the ability for multiple writers to send 
-> to the same pipe, and then have all of them splice into the output of that 
-> pipe? this would give the same data-agnostic communication that you are 
-> looking for, and with the minor detail that software would have to filter 
-> out messages that they send, would appear to meet all the goals you are 
-> looking at, useing existing kernel features that are designed to be very 
-> high performance.
+On Wed, 12 Dec 2007, David Sterba wrote:
 
-Being able to define both filtering policies (think of a virtual
-ethernet layer 2 switch, for instance. We have situations where dozens
-or hundreds of virtual cables are connected to the same switch, it would
-be much, much slower if you had to awake all the user processes for each
-single non-broadcast ethernet frame, and send them useless data) and
-delivery guarantees (lossless vs best-effort delivery) are not minor
-details in our opinion.
+> Changelog:
+> * files moved to ipwireless/, ipwireless_cs_ stripped from filenames
+> * _cs stripped from driver name
+> * kmalloc checks
+> * sync irq during shutdown
+> * removed /proc code, converted to module params
+> 
+> When merged, please drop ipwireless_cs.git tree from -mm and
+> include the patch instead.
+> 
+> Regards,
+> David Sterba
+> 
+> Rewieved-by: Jiri Slaby <jslaby@suse.cz>
+> Signed-off-by: Ben Martel <benm@symmetric.co.nz>
+> Signed-off-by: Stephen Blackheath <stephen@symmetric.co.nz>
+> Signed-off-by: David Sterba <dsterba@suse.cz>
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> ---
+>  MAINTAINERS                                     |    8 
+>  drivers/char/pcmcia/Kconfig                     |    9 
+>  drivers/char/pcmcia/Makefile                    |    2 
+>  drivers/char/pcmcia/ipwireless/Makefile         |   10 
+>  drivers/char/pcmcia/ipwireless/hardware.c       | 1784 ++++++++++++++++++++++++
+>  drivers/char/pcmcia/ipwireless/hardware.h       |   63 
+>  drivers/char/pcmcia/ipwireless/main.c           |  496 ++++++
+>  drivers/char/pcmcia/ipwireless/main.h           |   70 
+>  drivers/char/pcmcia/ipwireless/network.c        |  513 ++++++
+>  drivers/char/pcmcia/ipwireless/network.h        |   54 
+>  drivers/char/pcmcia/ipwireless/setup_protocol.h |  108 +
+>  drivers/char/pcmcia/ipwireless/tty.c            |  687 +++++++++
+>  drivers/char/pcmcia/ipwireless/tty.h            |   48 
+>  13 files changed, 3852 insertions(+)
 
-We might have added a level2 virtual ethernet switch at kernel
-level, but it seemed to specific. With a minor effort we have split the
-"dumb" bus (IPN) and the ability to process specific structured data
-with specific policies (sub-modules as kvde_switch).
+Andrew, what is your position on merging this into your 2.6.25 queue 
+please? David has fixed all the issues that came up during review, so it 
+seems to be that it's time for the driver to be merged during the upcoming 
+merge window.
 
-We surely may adapt existing features (AF_UNIX, or pipes) but they offer
-a quite established interface and semantics and we think it should be
-better to add a new family. This would prevent from breaking what
-already exists and leaving more freedom in defining the new family
-according to needs.
+If you take it, I am perfectly fine with you dropping the 
+ipwireless_cs git tree from -mm lineup.
 
-As for ptrace vs utrace: ptrace has been designed for debugging; trying
-to bend it to be fit for virtualization is likely to end up in an
-intricated interface and implementation. utrace has been designed in a
-much more general way. You can implement ptrace over utrace, but you can
-use utrace also for virtualization in a cleaner, simpler and more
-efficient way. Why not?
+Thanks,
 
-Ludovico
 -- 
-<garden@acheronte.it>        #acheronte (irc.freenode.net) ICQ: 64483080
-GPG ID: 07F89BB8          Jabber: gardengl@gmail.com Yahoo: gardenghelle
--- This is signature nr. 3556
+Jiri Kosina
+SUSE Labs
