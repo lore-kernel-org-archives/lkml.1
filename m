@@ -1,31 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbXLQPTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760575AbXLQP2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758248AbXLQPTT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 10:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757506AbXLQPTM
+	id S1760575AbXLQP2N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 10:28:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbXLQP17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 10:19:12 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59534 "EHLO mx3.mail.elte.hu"
+	Mon, 17 Dec 2007 10:27:59 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37062 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757485AbXLQPTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 10:19:11 -0500
-Date: Mon, 17 Dec 2007 16:16:42 +0100
+	id S1752991AbXLQP16 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 10:27:58 -0500
+Date: Mon, 17 Dec 2007 16:27:16 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ben Woodard <woodard@redhat.com>, Neil Horman <nhorman@redhat.com>,
-       kexec@lists.infradead.org, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
-       Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
-Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on
-	boot cpu
-Message-ID: <20071217151642.GA25081@elte.hu>
-References: <20071211192434.GD10999@hmsreliant.think-freely.org> <86802c440712111151t29acd38kf9fac8e41743f3e4@mail.gmail.com> <20071211205955.GF10999@hmsreliant.think-freely.org> <20071212142132.GC4889@bingen.suse.de> <20071212155515.GA29735@hmsendeavour.rdu.redhat.com> <20071212160722.GD4889@bingen.suse.de> <m1prxbu2ah.fsf@ebiederm.dsl.xmission.com> <20071212202215.GB29735@hmsendeavour.rdu.redhat.com> <m1lk7ztx9p.fsf@ebiederm.dsl.xmission.com> <20071213143922.GA4674@hmsreliant.think-freely.org>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
+       "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
+	on some AMD64x2 laptops, etc.
+Message-ID: <20071217152716.GA27223@elte.hu>
+References: <fa.F/CPALGk5eBe3QDRN7pjalMH5m4@ifi.uio.no> <fa.56LRmmk2ZdofP2s+juNK5l0iREQ@ifi.uio.no> <fa.FRcgZwrZusfLF5d88S6yPr2bvYo@ifi.uio.no> <fa.eZe9IlwlTeEF/5eA+8kKfNUncS4@ifi.uio.no> <fa.EBJleK5JYl+P/h3+2m6zPq3PzDc@ifi.uio.no> <fa.jU9nntHcOIpTOJuwui+u+/gya4Y@ifi.uio.no> <4765C97B.3000305@shaw.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071213143922.GA4674@hmsreliant.think-freely.org>
+In-Reply-To: <4765C97B.3000305@shaw.ca>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,16 +38,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Neil Horman <nhorman@tuxdriver.com> wrote:
+* Robert Hancock <hancockr@shaw.ca> wrote:
 
-> Ok, new patch attached, taking into account Andi's request for a 
-> cleaner method to implement single application quirks.  I've spoken 
-> with Ben, who is continuing to retest, and reports that clean 
-> methodical testing results in success with this patch.
+>> unfortunately this hack's side-effects are mis-used by an unknown 
+>> number of drivers to mask PCI posting bugs. We want to figure out 
+>> those bugs (safely and carefully) and we want to remove this hack 
+>> from modern machines that dont need it. Doing anything else would be 
+>> superstition.
+>
+> Are there any such examples known of such drivers? It doesn't seem to 
+> make much sense.. PCI IO writes are not posted on any known system 
+> (the spec allows them to be posted in the host bus bridge, but if they 
+> were they could only be flushed by a read, not a write) and PCI MMIO 
+> writes are only guaranteed to flush by doing a read from that device, 
+> not by other random port accesses. I suppose using the _p versions of 
+> port accesses might happen to mask such problems on certain machines..
 
-thanks, i've added your patch to x86.git#mm - queued up for v2.6.25 
-merging. But v2.6.24 merging would be too risky i think: it's not a 
-regression fix and for a regular fix it's a bit late in the cycle for a 
-bugfix that changes so many aspects of the early quirk code.
+yeah, that's the fear - that timing sensitivities or outright races are 
+hidden via _p() uses. It's a bit like the BKL - nobody really knows why 
+it's still needed in some places but there's "fear" that "stuff might 
+break" so removal is very slow. So we should get rid of all _p() uses, 
+by either removing them (concluding that the _p() was not needed), or by 
+adding in an udelay(2) (documenting that the device indeed relies on the 
+delay from the host side) or by adding whatever posting/flushing is 
+needed. That will gradually reduce the amount of code that uses _p() 
+methods, and will improve the quality of the kernel.
 
 	Ingo
