@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759560AbXLQNuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbXLQNw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759560AbXLQNuW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 08:50:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbXLQNuK
+	id S1758449AbXLQNw6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 08:52:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbXLQNwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 08:50:10 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45229 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751381AbXLQNuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 08:50:08 -0500
-Date: Mon, 17 Dec 2007 14:49:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Bernhard Kaindl <bk@suse.de>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Andi Kleen <ak@suse.de>,
-       Bernhard Kaindl <bkaindl@ffii.org>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net, Thomas Renninger <trenn@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] Early boot debugging via FireWire (ohci1394_dma=early)
-Message-ID: <20071217134929.GJ1870@elte.hu>
-References: <200702101242.48467.ak@suse.de> <45CDCDCD.5000609@s5r6.in-berlin.de> <alpine.DEB.0.9999.0712040426100.3769@vic.ffii.org> <4755D186.20204@s5r6.in-berlin.de> <4755D612.1090103@s5r6.in-berlin.de> <4755D757.7060002@s5r6.in-berlin.de> <alpine.LNX.0.9999-openSUSE-1.0712061732280.21849@jbgna.fhfr.qr> <alpine.LNX.0.9999-openSUSE-1.0712061936370.21849@jbgna.fhfr.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 17 Dec 2007 08:52:50 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:49383
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752447AbXLQNwu convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 08:52:50 -0500
+Message-Id: <47668D71.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Mon, 17 Dec 2007 13:53:37 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <olaf@aepfle.de>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>, <mingo@redhat.com>,
+       <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86-64: also define AT_VECTOR_SIZE_ARCH
+References: <475D6C91.76E4.0078.0@novell.com>
+ <20071217134235.GI1870@elte.hu>
+In-Reply-To: <20071217134235.GI1870@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.0.9999-openSUSE-1.0712061936370.21849@jbgna.fhfr.qr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> Ingo Molnar <mingo@elte.hu> 17.12.07 14:42 >>>
+>
+>* Jan Beulich <jbeulich@novell.com> wrote:
+>
+>> The patch introducing this left out x86-64, despite it also having 
+>> extra entries.
+>
+>thanks, applied. Is there any 2.6.24 urgency for this?
 
-* Bernhard Kaindl <bk@suse.de> wrote:
+While I haven't seen x86-64 to break due to this (it appears that 32-bit
+apps would be more susceptible), I know that we had major problems
+with the respective piece missing from the 32-bit Xen kernels in openSuSE
+10.3, so I would strongly suggest putting this into .24.
 
-> Subject of this patch:
-> 
-> This patch adds a new configuration option, which adds support for a 
-> new early_param which gets checked in 
-> arch/x86/kernel/setup_{32,64}.c:setup_arch() to decide wether 
-> OHCI-1394 FireWire controllers should be initialized and enabled for 
-> physical DMA access to allow remote debugging of early problems like 
-> issues ACPI or other subsystems which are executed very early.
-> 
-> If the config option is not enabled, no code is changed, and if the 
-> boot paramenter is not given, no new code is executed, and independent 
-> of that, all new code is freed after boot, so the config option can be 
-> even enabled in standard, non-debug kernels.
-> 
-> With specialized tools, it is then possible to get debugging 
-> information from machines which have no serial ports (notebooks) such 
-> as the printk buffer contents, or any data which can be referenced 
-> from global pointers, if it is stored below the 4GB limit and even 
-> memory dumps of of the physical RAM region below the 4GB limit can be 
-> taken without any cooperation from the CPU of the host, so the machine 
-> can be crashed early, it does not matter.
+Jan
 
-cool stuff! I've tentatively added your patch to x86.git (pending more 
-review feedback from others), but it already looks quite nice to me.
-
-	Ingo
