@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764943AbXLQWul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764369AbXLQWz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764943AbXLQWul (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 17:50:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756911AbXLQWuc
+	id S1764369AbXLQWz5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 17:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbXLQWzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 17:50:32 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:43441 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756261AbXLQWub (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 17:50:31 -0500
-Date: Mon, 17 Dec 2007 23:50:30 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: "David P. Reed" <dpreed@reed.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80 on
- some AMD64x2 laptops, etc.
-In-Reply-To: <20071215174658.5d784075@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0712172349280.32270@fbirervta.pbzchgretzou.qr>
-References: <469578CD.3080609@reed.com> <1184216528.12353.203.camel@chaos>
- <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com>
- <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com>
- <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com>
- <20071214131502.GA14359@elte.hu> <4762C551.5070003@zytor.com>
- <20071214210652.GB28793@elf.ucw.cz> <4763001A.1070102@zytor.com>
- <20071214232955.545ab809@the-village.bc.nu> <4763442A.5020507@reed.com>
- <476369E2.8050301@zytor.com> <47640C33.1050106@reed.com>
- <20071215174658.5d784075@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 17 Dec 2007 17:55:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37624 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755051AbXLQWzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 17:55:45 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200712141521.24227.nickpiggin@yahoo.com.au>
+References: <200712141521.24227.nickpiggin@yahoo.com.au> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205194020.24617.28880.stgit@warthog.procyon.org.uk>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
+       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov, casey@schaufler-ca.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 24/28] AFS: Add a function to excise a rejected write from the pagecache [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Mon, 17 Dec 2007 22:54:31 +0000
+Message-ID: <731.1197932071@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-On Dec 15 2007 17:46, Alan Cox wrote:
->
->> My understanding is that the linux starts in real mode, and uses the 
->> BIOS for such things as reading the very first image.   
->
->Not always. We may enter from 32bit in some cases, and we may also not
->have a PC BIOS in the first place.
+> This reintroduces the fault vs truncate race window, which must be fixed.
 
-Computers without a PC BIOS (I'm trying to think of something, e.g.
-the typical SUN sparc64 box) should have other means of accessing a
-clocksource, no?
+Hmmm...  perhaps.  I remember that cropped up in NFS, but I'm doing things a
+bit differently to NFS.  Remind me again how that worked please.
+
+> Also, it is adding a fair bit of complexity in an area where we should
+> instead be reducing it. I think your filesystem should not be doing
+> writeback caching of dirty data in the cases where it is so problematic
+> (or at least, disallow mmap and read on the dirty data until it has been
+> written back or failed).
+
+Eh?  It's a stateless network filesystem.  There's a gap between writing to a
+file (perhaps though an mmap) and the pagecache pages being written back in
+which someone may change the security on a file and block the writeback.
+There's nothing I can do to prevent it, so I have to instead deal with the
+consequences should they arise.  See the description of patch 25 for examples.
+
+So you say I shouldn't do any writeback caching at all?
+
+> But otherwise I guess if you really want to discard the dirty data after
+> a failed writeback attempt, what's wrong with just invalidate_inode_pages2?
+
+Erm...  Because it deadlocks?
+
+David
