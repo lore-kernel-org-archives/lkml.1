@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933884AbXLQAja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934110AbXLQAkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933884AbXLQAja (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 19:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbXLQAjW
+	id S934110AbXLQAkg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 19:40:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbXLQAk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 19:39:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49834 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757515AbXLQAjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 19:39:22 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 4/8] unify paravirt parts of system.h
-Date: Mon, 17 Dec 2007 01:58:31 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Avi Kivity <avi@qumranet.com>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       glommer@gmail.com, tglx@linutronix.de, ehabkost@redhat.com,
-       jeremy@goop.org, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com
-References: <11967843881946-git-send-email-gcosta@redhat.com> <200712170127.31615.rjw@sisk.pl> <20071217002306.GD5692@elf.ucw.cz>
-In-Reply-To: <20071217002306.GD5692@elf.ucw.cz>
+	Sun, 16 Dec 2007 19:40:27 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:51050 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755656AbXLQAk0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 19:40:26 -0500
+Message-Id: <200712170040.lBH0e6sf099887@www262.sakura.ne.jp>
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: "\"\\\"Indan Zupancic\\\"\"" <indan@nul.nu>
+Cc: david@davidnewall.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712170158.33914.rjw@sisk.pl>
+Date: Mon, 17 Dec 2007 09:40:06 +0900
+References: <47650A4C.4000708@davidnewall.com> <200712162026.BFJ01924.tOFJSFOQMVHOLF@I-love.SAKURA.ne.jp> <47650C88.6040105@davidnewall.com> <200712162036.JAJ09389.OQOVtOHMFLFSFJ@I-love.SAKURA.ne.jp> <476512F1.5010701@davidnewall.com> <200712162103.IEC69233.FFOFOOtJMQHSLV@I-love.SAKURA.ne.jp> <46595.81.207.0.53.1197823928.squirrel@secure.samage.net>
+In-Reply-To: <46595.81.207.0.53.1197823928.squirrel@secure.samage.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 17 of December 2007, Pavel Machek wrote:
-> On Mon 2007-12-17 01:27:29, Rafael J. Wysocki wrote:
-> > On Saturday, 15 of December 2007, Ingo Molnar wrote:
-> > > 
-> > > * Pavel Machek <pavel@ucw.cz> wrote:
-> > > 
-> > > > > Linux never uses that register. The only user is suspend 
-> > > > > save/restore, but that' bogus because it wasn't ever initialized by 
-> > > > > Linux in the first place. It could be probably all safely removed.
-> > > > 
-> > > > It probably is safe to remove... but we currently support '2.8.95 
-> > > > kernel loads/resumes 2.6.24 image'... which would break if 2.8 uses 
-> > > > cr8.
-> > > > 
-> > > > So please keep it if it is not a big problem.
-> > > 
-> > > hm, so __save_processor_state() is in essence an ABI? Could you please 
-> > > also send a patch that documents this prominently, in the structure 
-> > > itself?
-> > 
-> > Hmm, I'm not sure if it really is an ABI part.  It doesn't communicate anything
-> > outside of the kernel in which it is defined.
-> 
-> Well, it is not "application binary interface", but it is
-> "kernel-to-kernel binary interface"...
+Hello.
 
-Hm, rather a kernel-to-itself interface. ;-)
+Indan Zupancic wrote:
+> What prevents them from mounting tmpfs on top of /dev, bypassing your fs?
+Mandatory access control (MAC) prevents them from mounting tmpfs on top of /dev .
+MAC mediates namespace manipulation requests such as mount()/umount().
 
-Rafael
+> Also, if they have root there are plenty of ways to prevent an administrator
+> from logging in, e.g. using iptables or changing the password.
+MAC mediates execution of /sbin/iptables or /usr/bin/passwd .
+
+So, use of this filesystem alone is meaningless because
+attackers with root privileges can do what you are saying.
+But use of this filesystem with MAC is still valid because
+MAC can prevent attackers with root privileges from doing what you are saying.
+
+Regards.
