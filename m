@@ -1,100 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937597AbXLQUVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761441AbXLQUaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937597AbXLQUVo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 15:21:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761859AbXLQUVG
+	id S1761441AbXLQUaK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 15:30:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756854AbXLQU35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 15:21:06 -0500
-Received: from kuber.nabble.com ([216.139.236.158]:37420 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937513AbXLQUVE (ORCPT
+	Mon, 17 Dec 2007 15:29:57 -0500
+Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:4960 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753763AbXLQU34 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 15:21:04 -0500
-Message-ID: <14374028.post@talk.nabble.com>
-Date: Mon, 17 Dec 2007 12:21:03 -0800 (PST)
-From: cable_plug <pratapagiri.ak@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: problem with ending requests asynchronously in my block device
- driver
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 17 Dec 2007 15:29:56 -0500
+Date: Mon, 17 Dec 2007 21:29:53 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: eric.y.miao@gmail.com, linux-kernel@vger.kernel.org, i2c@lm-sensors.org,
+       bgardner@wabtec.com
+Subject: Re: [PATCH 2.6.24-rc5-mm 3/3] gpiolib: obsolete  
+ drivers/i2c/chips/pca9539.c
+Message-ID: <20071217212953.260f7826@hyperion.delvare>
+In-Reply-To: <20071217180953.1BB8E16AF21@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <f17812d70712142016q73abffc2w99174c40f847152c@mail.gmail.com>
+	<20071216204214.01fd7a16@hyperion.delvare>
+	<f17812d70712162233h759432a9i15b8e12d1a5fb828@mail.gmail.com>
+	<20071217180953.1BB8E16AF21@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Nabble-From: pratapagiri.ak@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi David,
 
-Hi, 
+On Mon, 17 Dec 2007 10:09:53 -0800, David Brownell wrote:
+> > Date: Mon, 17 Dec 2007 14:33:27 +0800
+> > From: "eric miao" <eric.y.miao@gmail.com>
+> >
+> > for the following reasons:
+> >
+> > 1. there is currently no known users of this driver
+> >
+> > 2. the functionality of this driver is well supported with the recent
+> >    proposed drivers/gpio/pca9539.c, using GPIO_LIB
+> >
+> > Signed-off-by: eric miao <eric.miao@marvell.com>
+> > Acked-by: Ben Gardner <bgardner@wabtec.com>
+> > ---
+> >  Documentation/i2c/chips/pca9539 |   47 --------
+> >  drivers/i2c/chips/Kconfig       |   10 --
+> >  drivers/i2c/chips/Makefile      |    1 -
+> >  drivers/i2c/chips/pca9539.c     |  196 ----------------------------------
+> 
+> Jean, do you sign off on this?  In any case I think this should
+> be going through your I2C patches.
+> 
+> I'd be a trifle uneasy just deleting this, because it's possible
+> there are *unknown* users ... and also because nobody's yet done
+> a userspace interface to the gpiolib infrastructure.  (It seems
+> to be the usual case of nobody wanting such a thing quite enough
+> to write the code.)
+> 
+> I'd be more comfortable marking it as obsolete and flagging it
+> for removal a release or two after Eric's new version merges ...
+> though maybe that's just paranoia.
 
-I've a block device driver which does the following, 
+I'm fine with this and I agree that it would be safer, however please
+note that both drivers are mutually exclusive because they have the
+same name, meaning that deprecating the old driver is not enough, you
+also need Kconfig magic to make sure that both drivers aren't built at
+the same time. Or alternatively the old driver could be renamed... I
+don't really care myself, I'll take whatever patch you or Eric submit.
 
-Inside the request function I do something like this: 
-request(fn) { 
-
- while ((req = elv_next_request(q)) != NULL) { 
-....................set up the request; 
- spin_unlock_irq(q->queue_lock); 
-call the transfer(set_up_req) function; 
-spin_lock_irq(q->queue_lock); 
-} 
-       spin_unlock_irq (q->queue_lock); 
-        /* allow callback to execute as it needs the lock!!! */ 
-        spin_lock_irq (q->queue_lock); 
-
-
-} 
-and the transfer function calls the scsi_execute_asyn(....) with the
-callback function doing the end request. So, the ending of the request is
-done like below: 
-
-callback(fn) { 
-
- spin_lock_irqsave(q->queue_lock, flags); 
-        if (!end_that_request_first(set_up_req->req, cmpstatus, 
-                        set_up_req->req->nr_sectors)) { 
-                add_disk_randomness(...); 
-                end_that_request_last(set_up_req->req,0); 
-        } 
-        spin_unlock_irqrestore(q->queue_lock, flags); 
-} 
-
-
-This code works fine with most of the kernel versions, but fails on some
-like , Linux 2.6.18-8.el5-xen 
-
-Please help me to find out where I'm going wrong? 
-
-when I say 'fails' it just hangs without any error ....I'm using dt(Data
-test) to write to the disk. The logs show that all the requests that have
-been sent for processing, have completed sucessfully. Its just that new
-requests never enter the request function. So, the dt writes almost half the
-data and then simply hangs. 
-
-  
-  The actual code does nothing but, call the scsi_execute_async , which 
- later on calls the callback function which is used to end the request. 
- So, both the callback function and the request function need to share 
- the queue lock. So the code samples I sent cover all the aspects of my 
- program. What I'm looking for here is how can I end the requests 
- asynchronously much later after the request processing is done. Please note 
- here that the asynchronous end requests is done by the callback function 
- of the scsi_execute_async, which needs to share the queue lock with 
- the request function. 
-    
-  when I say 'fails' it just hangs without any error ....I'm using 
- dt(Data 
-test) to write to the disk. The logs show that all the requests that 
- have 
-been sent for processing, have completed successfully. Its just that new 
-requests never enter the request function. So, the dt writes almost 
- half the 
-data and then simply hangs. 
-
-
-Thanks in advance for an early reply. 
-Anil P.
 -- 
-View this message in context: http://www.nabble.com/problem-with-ending-requests-asynchronously-in-my-block-device-driver-tp14374028p14374028.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
-
+Jean Delvare
