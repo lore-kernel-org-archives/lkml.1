@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934297AbXLQW46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936223AbXLQW5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934297AbXLQW46 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 17:56:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759855AbXLQW4r
+	id S936223AbXLQW5f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 17:57:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757531AbXLQW5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 17:56:47 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46517 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759777AbXLQW4r (ORCPT
+	Mon, 17 Dec 2007 17:57:25 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:59643 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757175AbXLQW5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 17:56:47 -0500
-Date: Mon, 17 Dec 2007 14:56:44 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc5-mm1 - wonky disk cache and CDROM behavior...
-Message-Id: <20071217145644.2d6374e4.akpm@linux-foundation.org>
-In-Reply-To: <30457.1197931451@turing-police.cc.vt.edu>
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
-	<30457.1197931451@turing-police.cc.vt.edu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Dec 2007 17:57:24 -0500
+Message-ID: <4766FDC9.4040806@zytor.com>
+Date: Mon, 17 Dec 2007 14:52:57 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
+       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
+ on some AMD64x2 laptops, etc.
+References: <469578CD.3080609@reed.com> <1184216528.12353.203.camel@chaos> <1184218962.12353.209.camel@chaos> <46964352.7040301@reed.com> <1184253339.12353.223.camel@chaos> <469697C6.50903@reed.com> <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <20071214131502.GA14359@elte.hu> <4762C551.5070003@zytor.com> <20071214210652.GB28793@elf.ucw.cz> <4763001A.1070102@zytor.com> <20071214232955.545ab809@the-village.bc.nu> <4763442A.5020507@reed.com> <476369E2.8050301@zytor.com> <47640C33.1050106@reed.com> <20071215174658.5d784075@the-village.bc.nu> <Pine.LNX.4.64.0712172349280.32270@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0712172349280.32270@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007 17:44:11 -0500
-Valdis.Kletnieks@vt.edu wrote:
+Jan Engelhardt wrote:
+> On Dec 15 2007 17:46, Alan Cox wrote:
+>>> My understanding is that the linux starts in real mode, and uses the 
+>>> BIOS for such things as reading the very first image.   
+>> Not always. We may enter from 32bit in some cases, and we may also not
+>> have a PC BIOS in the first place.
+> 
+> Computers without a PC BIOS (I'm trying to think of something, e.g.
+> the typical SUN sparc64 box) should have other means of accessing a
+> clocksource, no?
 
-> On Thu, 13 Dec 2007 02:40:50 PST, Andrew Morton said:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/
-> 
-> OK, so I'm trying to 'dd' a CD and the drive on the laptop is having issues
-> reading the disk.
-> 
-> I try it once, and get an I/O error about 117M in - dd reports 1.7M/sec.
-> 
-> I try it again, and it reports it died at the same exact place, but in about
-> 2 seconds flat, and reports 91M/sec transfer.  OK, that's *weird*, I didn't
-> think that blocks read from /dev/cdrom would get cached, but OK.
+We were talking about x86 here, though.
 
-It'll remain cached if something is holding the device open.
+Even on x86 we sometimes run from the 32-bit entrypoint.
 
->  So I try
-> the obviously stupid thing:
-> 
-> # echo 1 >| /proc/sys/vm/drop_caches
-> 
-> Alas, that hangs gloriously - 'echo t > /proc/sysrq-trigger' tells me:
-> 
-> Dec 17 17:30:02 turing-police kernel: [20235.823201] bash          D 0000000000000001  5288 15123  15085
-> Dec 17 17:30:02 turing-police kernel: [20235.823206]  ffff81007ba7de28 0000000000000086 0000000000000000 0000000000000000
-> Dec 17 17:30:02 turing-police kernel: [20235.823210]  ffff81007bbd9000 ffff81007d70e000 ffff81007bbd9248 00000001019e3e48
-> Dec 17 17:30:02 turing-police kernel: [20235.823214]  ffffe20000f36028 ffffe200012b9978 ffffe20000eece48 ffffe20001164188
-> Dec 17 17:30:02 turing-police kernel: [20235.823218] Call Trace:
-> Dec 17 17:30:02 turing-police kernel: [20235.823224]  [<ffffffff80523e20>] __down_read+0x87/0xa1
-> Dec 17 17:30:02 turing-police kernel: [20235.823229]  [<ffffffff8024bc13>] down_read+0x9/0xe
-> Dec 17 17:30:02 turing-police kernel: [20235.823232]  [<ffffffff802abafe>] drop_pagecache+0x3a/0x8c
-> Dec 17 17:30:02 turing-police kernel: [20235.823235]  [<ffffffff802abb72>] drop_caches_sysctl_handler+0x22/0x38
-> Dec 17 17:30:02 turing-police kernel: [20235.823239]  [<ffffffff802d2b70>] proc_sys_write+0x7e/0xa6
-> Dec 17 17:30:02 turing-police kernel: [20235.823244]  [<ffffffff8028e18c>] vfs_write+0xc7/0x170
-> Dec 17 17:30:02 turing-police kernel: [20235.823248]  [<ffffffff8028e772>] sys_write+0x47/0x70
-> Dec 17 17:30:02 turing-police kernel: [20235.823251]  [<ffffffff8020c34c>] tracesys+0xdc/0xe1
-> 
-
-Something's holding s_umount for writing I guess.  Possibly busted error
-handling somewhere totally different.
+	-hpa
