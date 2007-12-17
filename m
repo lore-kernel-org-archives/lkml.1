@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXLQAXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933028AbXLQA2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932247AbXLQAXX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 19:23:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759998AbXLQAXK
+	id S933028AbXLQA2i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 19:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762134AbXLQA23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 19:23:10 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53548 "EHLO amd.ucw.cz"
+	Sun, 16 Dec 2007 19:28:29 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45857 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759815AbXLQAXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 19:23:08 -0500
-Date: Mon, 17 Dec 2007 01:23:06 +0100
+	id S1753515AbXLQA23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 19:28:29 -0500
+Date: Mon, 17 Dec 2007 01:28:27 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Avi Kivity <avi@qumranet.com>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       glommer@gmail.com, tglx@linutronix.de, ehabkost@redhat.com,
-       jeremy@goop.org, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com
-Subject: Re: [PATCH 4/8] unify paravirt parts of system.h
-Message-ID: <20071217002306.GD5692@elf.ucw.cz>
-References: <11967843881946-git-send-email-gcosta@redhat.com> <20071205163017.GA4756@ucw.cz> <20071215131723.GF9720@elte.hu> <200712170127.31615.rjw@sisk.pl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, unlisted-recipients: no@elvis.elte.hu,
+       To-header@elvis.elte.hu, on@elvis.elte.hu, "input <"@elvis.elte.hu,
+       "; Rene Herman" <rene.herman@keyaccess.nl>,
+       Paul Rolland <rol@as2917.net>, "H. Peter Anvin" <hpa@zytor.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, rol@witbe.net
+Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
+	Cc:	;Rene Herman <rene.herman@keyaccess.nl>
+			^-extraneous tokens in mailbox, missing end of mailbox
+Illegal-Object: Syntax error in Cc: addresses found on vger.kernel.org:
+	Cc:	;Rene Herman <rene.herman@keyaccess.nl>
+			^-extraneous tokens in mailbox, missing end of mailbox
+Subject: Re: RFC: outb 0x80 in inb_p, outb_p harmful on some modern AMD64
+	with MCP51 laptops
+Message-ID: <20071217002827.GG5692@elf.ucw.cz>
+References: <475EC1C0.2040000@reed.com> <20071211173231.2b87a81f@the-village.bc.nu> <475EE2CA.6020601@reed.com> <Pine.LNX.4.61.0712111513490.23653@chaos.analogic.com> <475F23BD.3040903@reed.com> <Pine.LNX.4.61.0712120802300.4443@chaos.analogic.com> <20071212161245.3f388229@the-village.bc.nu> <20071214143328.GB10130@elte.hu> <20071216212628.GF14265@elf.ucw.cz> <20071217000301.1c280daa@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200712170127.31615.rjw@sisk.pl>
+In-Reply-To: <20071217000301.1c280daa@the-village.bc.nu>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2007-12-17 01:27:29, Rafael J. Wysocki wrote:
-> On Saturday, 15 of December 2007, Ingo Molnar wrote:
-> > 
-> > * Pavel Machek <pavel@ucw.cz> wrote:
-> > 
-> > > > Linux never uses that register. The only user is suspend 
-> > > > save/restore, but that' bogus because it wasn't ever initialized by 
-> > > > Linux in the first place. It could be probably all safely removed.
-> > > 
-> > > It probably is safe to remove... but we currently support '2.8.95 
-> > > kernel loads/resumes 2.6.24 image'... which would break if 2.8 uses 
-> > > cr8.
-> > > 
-> > > So please keep it if it is not a big problem.
-> > 
-> > hm, so __save_processor_state() is in essence an ABI? Could you please 
-> > also send a patch that documents this prominently, in the structure 
-> > itself?
+On Mon 2007-12-17 00:03:01, Alan Cox wrote:
+> On Sun, 16 Dec 2007 22:26:33 +0100
+> Pavel Machek <pavel@ucw.cz> wrote:
 > 
-> Hmm, I'm not sure if it really is an ABI part.  It doesn't communicate anything
-> outside of the kernel in which it is defined.
+> > On Fri 2007-12-14 15:33:28, Ingo Molnar wrote:
+> > > 
+> > > * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > > 
+> > > > There is another reason we can't just do a dumb changeover - two 
+> > > > actually
+> > > > 
+> > > > #1: Some drivers are using inb_p/outb_p in PCI cases which are going 
+> > > > #to cause PCI posting changes. Most are probably just wrong in the 
+> > > > #first place but they need hand checking
+> > > 
+> > > hm, any intelligent way to force PCI posting? I guess not.
+> > > 
+> > > here's a list of candidate drivers (match the out*_p() pattern and do 
+> > > pci)
+> > > 
+> > > ./char/epca.c 
+> > > ./char/sonypi.c
+> > > ./scsi/megaraid.c
+> > > ./ide/pci/serverworks.c
+> > > ./ide/pci/cmd640.c
+> > > ./input/mouse/pc110pad.c
+> 
+> You are missing some watchdogs at least ?
 
-Well, it is not "application binary interface", but it is
-"kernel-to-kernel binary interface"...
-
-> The problem is, though, that if kernel A is used for resuming kernel B, and
-> kernel B doesn't save/restore everything it will need after the resume, then
-> things will break if kernel A modifies that.  So, yes, we'll need to document
-> that explicitly.
-
-Agreed.
-									Pavel
+I snipped them, I only wanted to comment that pc110pad.c looks like
+legitimate use of outb_p().
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
