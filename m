@@ -1,40 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbXLQGQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbXLQG1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932275AbXLQGQx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 01:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbXLQGQn
+	id S932153AbXLQG1q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 01:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbXLQG1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 01:16:43 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:47606 "EHLO
+	Mon, 17 Dec 2007 01:27:37 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:13751 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbXLQGQm (ORCPT
+	with ESMTP id S1755090AbXLQG1g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 01:16:42 -0500
+	Mon, 17 Dec 2007 01:27:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xx2VnP+5oJ8nQ29HlfG2NEEHtiSwLQ9QgrULWBsbhcZzsAgrN2e6nIxdyz3UrJ0NeRQdClc+oxSW03JGlpzS+Lzpv0BNIbe5HdCSTo1oA7R4VC160XX87BQUHP3z771fWnxKug5VJr2lNUfZA/q4dRZUOyY2AXJRNip6sSo5H28=
-Message-ID: <f17812d70712162216t2f6125b8ve37b9eb8d44aa872@mail.gmail.com>
-Date: Mon, 17 Dec 2007 14:16:40 +0800
+        b=rrTnvSmKUulctu3n7rFq8ySP9penxR742yXLH7olcaE7j6WYQn0hkOqqiOFBwDbHR88bGmR+1PG73Ais15ohH0V7bpjKkz1N7a8UfmHoZ78gfd4YaSenVHw0x65OLNSoN/fRH043noKmonHl9JIUXURvQGEwjr7sms6rZqN8CWk=
+Message-ID: <f17812d70712162227g5aaadf68u68d311bff02db7b1@mail.gmail.com>
+Date: Mon, 17 Dec 2007 14:27:35 +0800
 From: "eric miao" <eric.y.miao@gmail.com>
 To: "David Brownell" <david-b@pacbell.net>
 Subject: Re: [PATCH 2.6.24-rc5-mm 1/3] gpiolib: basic support for 16-bit PCA9539 GPIO expander
 Cc: linux-kernel@vger.kernel.org, i2c@lm-sensors.org, khali@linux-fr.org,
        bgardner@wabtec.com
-In-Reply-To: <20071215234024.2B4DA10C75D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+In-Reply-To: <f17812d70712162216t2f6125b8ve37b9eb8d44aa872@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <f17812d70712142014s3e2bf56es9c9e2b24ed164c3e@mail.gmail.com>
 	 <20071215234024.2B4DA10C75D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	 <f17812d70712162216t2f6125b8ve37b9eb8d44aa872@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Yup, it's an issue, patch updated as below:]
+[ forget about the previous patch, sorry for my carelessness not to
+free the chip structure, below is the correct one ]
 
->From 8de0246423cbbd0c6bb03a20baf61d360930c350 Mon Sep 17 00:00:00 2001
+>From c4be69e8dad28dc75e80b393f9c60f740cca7047 Mon Sep 17 00:00:00 2001
 From: eric miao <eric.miao@marvell.com>
 Date: Mon, 10 Dec 2007 17:19:12 +0800
 Subject: [PATCH] gpiolib: basic support for 16-bit PCA9539 GPIO expander
@@ -53,9 +55,9 @@ Signed-off-by: eric miao <eric.miao@marvell.com>
 ---
  drivers/gpio/Kconfig        |   10 ++
  drivers/gpio/Makefile       |    1 +
- drivers/gpio/pca9539.c      |  254 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/gpio/pca9539.c      |  260 +++++++++++++++++++++++++++++++++++++++++++
  include/linux/i2c/pca9539.h |   18 +++
- 4 files changed, 283 insertions(+), 0 deletions(-)
+ 4 files changed, 289 insertions(+), 0 deletions(-)
  create mode 100644 drivers/gpio/pca9539.c
  create mode 100644 include/linux/i2c/pca9539.h
 
@@ -92,10 +94,10 @@ index 575bb57..d14fc1e 100644
  obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
 diff --git a/drivers/gpio/pca9539.c b/drivers/gpio/pca9539.c
 new file mode 100644
-index 0000000..050a378
+index 0000000..fc8bee4
 --- /dev/null
 +++ b/drivers/gpio/pca9539.c
-@@ -0,0 +1,254 @@
+@@ -0,0 +1,260 @@
 +/*
 + *  pca9539.c - 16-bit I/O port with interrupt and reset
 + *
@@ -273,17 +275,23 @@ index 0000000..050a378
 +
 +	/* initialize cached registers from their original values */
 +	ret = pca9539_read_reg(chip, PCA9539_OUTPUT, &chip->reg_output);
-+	if (ret)
-+		return -EIO;
++	if (ret) {
++		ret = -EIO;
++		goto out_failed;
++	}
 +
 +	ret = pca9539_read_reg(chip, PCA9539_DIRECTION, &chip->reg_direction);
-+	if (ret)
-+		return -EIO;
++	if (ret) {
++		ret = -EIO;
++		goto out_failed;
++	}
 +
 +	/* set platform specific polarity inversion */
 +	ret = pca9539_write_reg(chip, PCA9539_INVERT, pdata->invert);
-+	if (ret)
-+		return -EIO;
++	if (ret) {
++		ret = -EIO;
++		goto out_failed;
++	}
 +
 +	ret = pca9539_init_gpio(chip);
 +	if (ret)
