@@ -1,200 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760928AbXLQS6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932277AbXLQTAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760928AbXLQS6k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 13:58:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932144AbXLQS56
+	id S932277AbXLQTAk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 14:00:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758617AbXLQTAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 13:57:58 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:40883 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760525AbXLQS5z (ORCPT
+	Mon, 17 Dec 2007 14:00:19 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:38119 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757219AbXLQTAQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 13:57:55 -0500
+	Mon, 17 Dec 2007 14:00:16 -0500
+Date: Mon, 17 Dec 2007 10:58:55 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: [git patches] ocfs2 fixes
+Message-ID: <20071217185855.GA11448@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18278.50849.879162.723545@stoffel.org>
-Date: Mon, 17 Dec 2007 13:57:37 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, john@stoffel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: 2.6.24-rc5: tape drive not responding
-In-Reply-To: <20071217031510.c3d500fd.akpm@linux-foundation.org>
-References: <18277.52079.718004.969358@stoffel.org>
-	<20071217112551H.fujita.tomonori@lab.ntt.co.jp>
-	<20071217031510.c3d500fd.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Andrew" == Andrew Morton <akpm@linux-foundation.org> writes:
+Please pull from 'upstream-linus' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
 
-Andrew> On Mon, 17 Dec 2007 11:25:51 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
->> On Sun, 16 Dec 2007 20:05:51 -0500
->> "John Stoffel" <john@stoffel.org> wrote:
->> 
->> > [  215.007701] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  215.008145] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  215.008678] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  215.009122] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  215.009598] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  215.010042] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  215.010516] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  215.010959] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  215.011403] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  215.011850] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > .
->> > .
->> > .
->> > [  232.954629] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  233.035902] scsi 3:0:3:0: DEVICE RESET operation started
->> > [  233.099514] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > .
->> > .
->> > .
->> > 
->> > These repeat for about 15 seconds or so.  They're really annoying and
->> > I'd love to see some sort of rate limiting put in here.  The messages
->> > and end with:
->> > .
->> > .
->> > .
->> > [  238.084175] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  238.165887] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  238.247157] scsi 3:0:3:0: DEVICE RESET operation timed-out.
->> > [  238.313892] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  238.395192] scsi 3:0:3:0: BUS RESET operation started
->> > [  238.455690] sym1: SCSI parity error detected: SCR1=1 DBC=11000028 SBCL=ae
->> > [  238.539216] sym1: SCSI BUS reset detected.
->> > [  238.592552] sym1: SCSI BUS has been reset.
->> > [  238.641576] scsi 3:0:3:0: BUS RESET operation complete.
->> > [  248.700373]  target3:0:3: wide asynchronous
->> > [  248.752026]  target3:0:3: Wide Transfers Fail
->> > [  248.805220]  target3:0:3: FAST-10 SCSI 10.0 MB/s ST (100 ns, offset 15)
->> > [  248.886729]  target3:0:3: Domain Validation skipping write tests
->> > [  248.958666]  target3:0:3: Ending Domain Validation
->> > [  252.264086] scsi 3:0:0:0: Attached scsi generic sg2 type 8
->> > [  252.331257] st 3:0:2:0: Attached scsi tape st0
->> > [  252.384549] st 3:0:2:0: st0: try direct i/o: yes (alignment 512 B)
->> > [  252.458875] st 3:0:2:0: Attached scsi generic sg3 type 1
->> > [  252.523963] st 3:0:3:0: Attached scsi tape st1
->> > [  252.577184] st 3:0:3:0: st1: try direct i/o: yes (alignment 512 B)
->> > [  252.651484] st 3:0:3:0: Attached scsi generic sg4 type 1
->> > 
->> > 
->> > I've also got an ATL P1000 SCSI tape library hooked up to this same
->> > controller and port, and I can manipulate it properly using the 'mtx'
->> > program pointed to the /dev/changer alias, which points to the correct
->> > /dev/sg# device.
->> > 
->> > Here's my /proc/scsi/scsi output, as you can see, I've got a bunch of
->> > devices on this system:
->> > 
->> > # cat /proc/scsi/scsi 
->> > Attached devices:
->> > Host: scsi0 Channel: 00 Id: 00 Lun: 00
->> >   Vendor: COMPAQ   Model: HC01841729       Rev: 3208
->> >   Type:   Direct-Access                    ANSI  SCSI revision: 02
->> > Host: scsi0 Channel: 00 Id: 01 Lun: 00
->> >   Vendor: COMPAQ   Model: BD018222CA       Rev: B016
->> >   Type:   Direct-Access                    ANSI  SCSI revision: 02
->> > Host: scsi3 Channel: 00 Id: 00 Lun: 00
->> >   Vendor: ATL      Model: P1000    6220051 Rev: 1.20
->> >   Type:   Medium Changer                   ANSI  SCSI revision: 02
->> > Host: scsi3 Channel: 00 Id: 02 Lun: 00
->> >   Vendor: QUANTUM  Model: DLT7000          Rev: 2565
->> >   Type:   Sequential-Access                ANSI  SCSI revision: 02
->> > Host: scsi3 Channel: 00 Id: 03 Lun: 00
->> >   Vendor: QUANTUM  Model: DLT7000          Rev: 2565
->> >   Type:   Sequential-Access                ANSI  SCSI revision: 02
->> > Host: scsi4 Channel: 00 Id: 00 Lun: 00
->> >   Vendor: SAMSUNG  Model: CDRW/DVD SM-352B Rev: T806
->> >   Type:   CD-ROM                           ANSI  SCSI revision: 05
->> > Host: scsi6 Channel: 00 Id: 00 Lun: 00
->> >   Vendor: ATA      Model: ST3320620AS      Rev: 3.AA
->> >   Type:   Direct-Access                    ANSI  SCSI revision: 05
->> > Host: scsi7 Channel: 00 Id: 00 Lun: 00
->> >   Vendor: ATA      Model: WDC WD3200AAKS-0 Rev: 12.0
->> >   Type:   Direct-Access                    ANSI  SCSI revision: 05
->> > Host: scsi10 Channel: 00 Id: 00 Lun: 00
->> >   Vendor: ATA      Model: WDC WD1200JB-00C Rev: 17.0
->> >   Type:   Direct-Access                    ANSI  SCSI revision: 05
->> > Host: scsi11 Channel: 00 Id: 00 Lun: 00
->> >   Vendor: ATA      Model: WDC WD1200JB-00E Rev: 15.0
->> >   Type:   Direct-Access                    ANSI  SCSI revision: 05
->> > Host: scsi12 Channel: 00 Id: 00 Lun: 00
->> >   Vendor: Generic  Model: STORAGE DEVICE   Rev: 0001
->> >   Type:   Direct-Access                    ANSI  SCSI revision: 00
->> > Host: scsi12 Channel: 00 Id: 00 Lun: 01
->> >   Vendor: Generic  Model: STORAGE DEVICE   Rev: 0001
->> >   Type:   Direct-Access                    ANSI  SCSI revision: 00
->> > Host: scsi12 Channel: 00 Id: 00 Lun: 02
->> >   Vendor: Generic  Model: STORAGE DEVICE   Rev: 0001
->> >   Type:   Direct-Access                    ANSI  SCSI revision: 00
->> > Host: scsi12 Channel: 00 Id: 00 Lun: 03
->> >   Vendor: Generic  Model: STORAGE DEVICE   Rev: 0001
->> >   Type:   Direct-Access                    ANSI  SCSI revision: 00
->> > 
->> > 
->> > When I try to access my tape devices, I get the following:
->> > 
->> >     # mt -f /dev/st0 status
->> >     /dev/st0: Device or resource busy
->> > 
->> > But lsof doesn't show any other processes accessing this device, and
->> > I've stopped my backup software since it keeps hanging on tape device
->> > access.
->> > 
->> > Here's the output of dmesg where I get the OOPS:
->> > 
->> > [  273.382057] sd 12:0:0:3: Attached scsi generic sg13 type 0
->> > [  276.244872] ------------[ cut here ]------------
->> > [  276.300215] kernel BUG at include/linux/scatterlist.h:59!
->> > [  276.364873] invalid opcode: 0000 [#1] SMP 
->> > [  276.414346] Modules linked in:
->> > [  276.451148] 
->> > [  276.469036] Pid: 1824, comm: stinit Not tainted (2.6.24-rc5 #2)
->> > [  276.539940] EIP: 0060:[<c0343c30>] EFLAGS: 00010213 CPU: 0
->> > [  276.605651] EIP is at st_do_scsi+0x2e0/0x340
->> > [  276.656788] EAX: 00000000 EBX: 00000000 ECX: c16ef780 EDX: f7c4f050
->> > [  276.731847] ESI: f7c4f7d0 EDI: 00001000 EBP: f7c4f000 ESP: f712bdf8
->> > [  276.806904]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
->> > [  276.871568] Process stinit (pid: 1824, ti=f712b000 task=f750a030 task.ti=f712b000)
->> > [  276.960139] Stack: 00000003 f7c4f050 00000000 00000000 00d59f80 00000000 f776fe20 c03468a0 
->> > [  277.062012]        000000d0 f712be9c f7d2a000 f776fe20 f7d2a018 00000000 00000006 f712be9c 
->> > [  277.163890]        f7d2a000 f712beac f7c4f000 c0345790 00000006 00000002 000dbba0 00000000 
->> > [  277.265771] Call Trace:
->> > [  277.297383]  [<c03468a0>] st_sleep_done+0x0/0x70
->> > [  277.352894]  [<c0345790>] check_tape+0x510/0x640
->> > [  277.408414]  [<c0346cfb>] st_open+0x18b/0x220
->> > [  277.460803]  [<c01707e0>] exact_match+0x0/0x10
->> > [  277.514237]  [<c0346b70>] st_open+0x0/0x220
->> > [  277.564553]  [<c0170ebf>] chrdev_open+0x9f/0x190
->> > [  277.620069]  [<c0170e20>] chrdev_open+0x0/0x190
->> > [  277.674543]  [<c016c86f>] __dentry_open+0xaf/0x1b0
->> > [  277.732136]  [<c016ca25>] nameidata_to_filp+0x35/0x40
->> > [  277.792847]  [<c016ca7b>] do_filp_open+0x4b/0x60
->> > [  277.848364]  [<c016c732>] get_unused_fd_flags+0x52/0xd0
->> > [  277.911153]  [<c016cadc>] do_sys_open+0x4c/0xe0
->> > [  277.965629]  [<c016cbac>] sys_open+0x1c/0x20
->> 
->> I think that you need the following patch for the scatterlist problem:
->> 
->> http://marc.info/?l=linux-scsi&m=119770154127770&w=2
+to receive the following updates:
 
-Andrew> err, you sent that patch to John a day earlier too.
+ fs/ocfs2/alloc.c   |   68 ++++++++++++++++++++++++++++++++++-----------------
+ fs/ocfs2/journal.c |   13 +++++++++-
+ 2 files changed, 57 insertions(+), 24 deletions(-)
 
-Andrew> John, can you please apply, test and report?
+Mark Fasheh (4):
+      ocfs2: fix exit-while-locked bug in ocfs2_queue_orphans()
+      ocfs2: Don't panic when truncating an empty extent
+      ocfs2: Allow for debugging of transaction extends
+      ocfs2: Re-journal buffers after transaction extend
 
-I didn't see the reply for some reason.  I'm applying the patch now to
-2.6.24-rc5-mm1 and I'll reboot and test.  My git bisection has been a
-failure too, since I found a situation where I thought what was a bad
-kernel now works.  
-
-Sigh... might be an issue with Bacula interactions, since I've now
-turned it off on startup for testing.
-
-More in a bit.
-John
+diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
+index ce62c15..23c8cda 100644
+--- a/fs/ocfs2/alloc.c
++++ b/fs/ocfs2/alloc.c
+@@ -2389,6 +2389,18 @@ static int __ocfs2_rotate_tree_left(struct inode *inode,
+ 			goto out;
+ 		}
+ 
++		/*
++		 * Caller might still want to make changes to the
++		 * tree root, so re-add it to the journal here.
++		 */
++		ret = ocfs2_journal_access(handle, inode,
++					   path_root_bh(left_path),
++					   OCFS2_JOURNAL_ACCESS_WRITE);
++		if (ret) {
++			mlog_errno(ret);
++			goto out;
++		}
++
+ 		ret = ocfs2_rotate_subtree_left(inode, handle, left_path,
+ 						right_path, subtree_root,
+ 						dealloc, &deleted);
+@@ -3289,16 +3301,6 @@ static int ocfs2_insert_path(struct inode *inode,
+ 	int ret, subtree_index;
+ 	struct buffer_head *leaf_bh = path_leaf_bh(right_path);
+ 
+-	/*
+-	 * Pass both paths to the journal. The majority of inserts
+-	 * will be touching all components anyway.
+-	 */
+-	ret = ocfs2_journal_access_path(inode, handle, right_path);
+-	if (ret < 0) {
+-		mlog_errno(ret);
+-		goto out;
+-	}
+-
+ 	if (left_path) {
+ 		int credits = handle->h_buffer_credits;
+ 
+@@ -3323,6 +3325,16 @@ static int ocfs2_insert_path(struct inode *inode,
+ 		}
+ 	}
+ 
++	/*
++	 * Pass both paths to the journal. The majority of inserts
++	 * will be touching all components anyway.
++	 */
++	ret = ocfs2_journal_access_path(inode, handle, right_path);
++	if (ret < 0) {
++		mlog_errno(ret);
++		goto out;
++	}
++
+ 	if (insert->ins_split != SPLIT_NONE) {
+ 		/*
+ 		 * We could call ocfs2_insert_at_leaf() for some types
+@@ -3331,6 +3343,17 @@ static int ocfs2_insert_path(struct inode *inode,
+ 		 */
+ 		ocfs2_split_record(inode, left_path, right_path,
+ 				   insert_rec, insert->ins_split);
++
++		/*
++		 * Split might have modified either leaf and we don't
++		 * have a guarantee that the later edge insert will
++		 * dirty this for us.
++		 */
++		if (left_path)
++			ret = ocfs2_journal_dirty(handle,
++						  path_leaf_bh(left_path));
++			if (ret)
++				mlog_errno(ret);
+ 	} else
+ 		ocfs2_insert_at_leaf(insert_rec, path_leaf_el(right_path),
+ 				     insert, inode);
+@@ -3430,6 +3453,17 @@ static int ocfs2_do_insert_extent(struct inode *inode,
+ 			mlog_errno(ret);
+ 			goto out;
+ 		}
++
++		/*
++		 * ocfs2_rotate_tree_right() might have extended the
++		 * transaction without re-journaling our tree root.
++		 */
++		ret = ocfs2_journal_access(handle, inode, di_bh,
++					   OCFS2_JOURNAL_ACCESS_WRITE);
++		if (ret) {
++			mlog_errno(ret);
++			goto out;
++		}
+ 	} else if (type->ins_appending == APPEND_TAIL
+ 		   && type->ins_contig != CONTIG_LEFT) {
+ 		ret = ocfs2_append_rec_to_path(inode, handle, insert_rec,
+@@ -3941,7 +3975,7 @@ static int __ocfs2_mark_extent_written(struct inode *inode,
+ {
+ 	int ret = 0;
+ 	struct ocfs2_extent_list *el = path_leaf_el(path);
+-	struct buffer_head *eb_bh, *last_eb_bh = NULL;
++	struct buffer_head *last_eb_bh = NULL;
+ 	struct ocfs2_extent_rec *rec = &el->l_recs[split_index];
+ 	struct ocfs2_merge_ctxt ctxt;
+ 	struct ocfs2_extent_list *rightmost_el;
+@@ -3960,14 +3994,6 @@ static int __ocfs2_mark_extent_written(struct inode *inode,
+ 		goto out;
+ 	}
+ 
+-	eb_bh = path_leaf_bh(path);
+-	ret = ocfs2_journal_access(handle, inode, eb_bh,
+-				   OCFS2_JOURNAL_ACCESS_WRITE);
+-	if (ret) {
+-		mlog_errno(ret);
+-		goto out;
+-	}
+-
+ 	ctxt.c_contig_type = ocfs2_figure_merge_contig_type(inode, el,
+ 							    split_index,
+ 							    split_rec);
+@@ -4029,8 +4055,6 @@ static int __ocfs2_mark_extent_written(struct inode *inode,
+ 			mlog_errno(ret);
+ 	}
+ 
+-	ocfs2_journal_dirty(handle, eb_bh);
+-
+ out:
+ 	brelse(last_eb_bh);
+ 	return ret;
+@@ -6093,8 +6117,6 @@ start:
+ 	mlog(0, "clusters_to_del = %u in this pass, tail blk=%llu\n",
+ 	     clusters_to_del, (unsigned long long)path_leaf_bh(path)->b_blocknr);
+ 
+-	BUG_ON(clusters_to_del == 0);
+-
+ 	mutex_lock(&tl_inode->i_mutex);
+ 	tl_sem = 1;
+ 	/* ocfs2_truncate_log_needs_flush guarantees us at least one
+diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
+index f9d01e2..8d81f6c 100644
+--- a/fs/ocfs2/journal.c
++++ b/fs/ocfs2/journal.c
+@@ -174,6 +174,12 @@ int ocfs2_commit_trans(struct ocfs2_super *osb,
+  * transaction. extend_trans will either extend the current handle by
+  * nblocks, or commit it and start a new one with nblocks credits.
+  *
++ * This might call journal_restart() which will commit dirty buffers
++ * and then restart the transaction. Before calling
++ * ocfs2_extend_trans(), any changed blocks should have been
++ * dirtied. After calling it, all blocks which need to be changed must
++ * go through another set of journal_access/journal_dirty calls.
++ *
+  * WARNING: This will not release any semaphores or disk locks taken
+  * during the transaction, so make sure they were taken *before*
+  * start_trans or we'll have ordering deadlocks.
+@@ -193,11 +199,15 @@ int ocfs2_extend_trans(handle_t *handle, int nblocks)
+ 
+ 	mlog(0, "Trying to extend transaction by %d blocks\n", nblocks);
+ 
++#ifdef OCFS2_DEBUG_FS
++	status = 1;
++#else
+ 	status = journal_extend(handle, nblocks);
+ 	if (status < 0) {
+ 		mlog_errno(status);
+ 		goto bail;
+ 	}
++#endif
+ 
+ 	if (status > 0) {
+ 		mlog(0, "journal_extend failed, trying journal_restart\n");
+@@ -1277,11 +1287,12 @@ static int ocfs2_queue_orphans(struct ocfs2_super *osb,
+ 				   ocfs2_orphan_filldir);
+ 	if (status) {
+ 		mlog_errno(status);
+-		goto out;
++		goto out_cluster;
+ 	}
+ 
+ 	*head = priv.head;
+ 
++out_cluster:
+ 	ocfs2_meta_unlock(orphan_dir_inode, 0);
+ out:
+ 	mutex_unlock(&orphan_dir_inode->i_mutex);
