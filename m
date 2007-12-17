@@ -1,129 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934484AbXLQCFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764518AbXLQCFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934484AbXLQCFe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Dec 2007 21:05:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762324AbXLQCFY
+	id S1764518AbXLQCFz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Dec 2007 21:05:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765530AbXLQCF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Dec 2007 21:05:24 -0500
-Received: from mga11.intel.com ([192.55.52.93]:61368 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759105AbXLQCFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Dec 2007 21:05:23 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,174,1196668800"; 
-   d="scan'208";a="443830554"
-Subject: Re: [PATCH] lib: proportion: fix underflow in prop_norm_percpu()
-From: Jiang zhe <zhe.jiang@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, yanmin_zhang@linux.intel.com,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1197648086.21927.13.camel@twins>
-References: <1197516632.18076.5.camel@localhost.localdomain>
-	 <1197582871.3430.1.camel@lappy>
-	 <1197620803.22733.13.camel@localhost.localdomain>
-	 <1197648086.21927.13.camel@twins>
-Content-Type: text/plain
-Date: Mon, 17 Dec 2007 09:55:05 +0800
-Message-Id: <1197856505.3181.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	Sun, 16 Dec 2007 21:05:29 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:51197 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765289AbXLQCF2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Dec 2007 21:05:28 -0500
+Message-ID: <4765D922.3050703@zytor.com>
+Date: Sun, 16 Dec 2007 18:04:18 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Rene Herman <rene.herman@gmail.com>
+CC: "David P. Reed" <dpreed@reed.com>, Paul Rolland <rol@as2917.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol@witbe.net
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override.
+References: <469578CD.3080609@reed.com>	<1184216528.12353.203.camel@chaos>	<1184218962.12353.209.camel@chaos>	<46964352.7040301@reed.com>	<1184253339.12353.223.camel@chaos>	<469697C6.50903@reed.com>	<1184274754.12353.254.camel@chaos>	<4761F193.7090400@reed.com>	<20071214131502.GA14359@elte.hu>	<4762C551.5070003@zytor.com>	<20071214210652.GB28793@elf.ucw.cz>	<4763001A.1070102@zytor.com>	<20071214232955.545ab809@the-village.bc.nu> <20071215080831.404cdb32@tux.DEF.witbe.net> <47638C8C.2090604@gmail.com> <476438B4.2020600@zytor.com> <476462BE.3030701@gmail.com> <4764687D.6080609@zytor.com> <476524DB.7020806@gmail.com> <4765B0CF.2040000@reed.com> <4765D745.7040306@gmail.com>
+In-Reply-To: <4765D745.7040306@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-12-14 at 17:01 +0100, Peter Zijlstra wrote:
-> Subject: lib: proportion: fix underflow in prop_norm_percpu()
+Rene Herman wrote:
+> On 17-12-07 00:12, David P. Reed wrote:
 > 
-> Zhe Jiang noticed that its possible to underflow pl->events in
-> prop_norm_percpu() when the value returned by percpu_counter_read() is less
-> than the error on that read and the period delay > 1. In that case half might
-> not trigger the batch increment and the value will be identical on the next
-> iteration, causing the same half to be subtracted again and again.
+>> Rene Herman wrote:
+>>> David: I've plugged in your DMI values in this. Could you perhaps 
+>>> test this to confirm that it works for you?
+>>>
+>> Will test it by tomorrow morning.
 > 
-> Fix this by rewriting the division as a single subtraction instead of a
-> subtraction loop and using percpu_counter_sum() when the value returned
-> by percpu_counter_read() is smaller than the error.
-> 
-> The latter is still needed if we want pl->events to shrink properly in the
-> error region.
-> 
-> Jiang, can I get a Reviewed-by from you? - if you agree that is :-)
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: zhejiang <zhe.jiang@intel.com>
-> ---
->  lib/proportions.c |   36 +++++++++++++++---------------------
->  1 file changed, 15 insertions(+), 21 deletions(-)
-> 
-> Index: linux-2.6/lib/proportions.c
-> ===================================================================
-> --- linux-2.6.orig/lib/proportions.c
-> +++ linux-2.6/lib/proportions.c
-> @@ -190,6 +190,8 @@ prop_adjust_shift(int *pl_shift, unsigne
->   * PERCPU
->   */
->  
-> +#define PROP_BATCH (8*(1+ilog2(nr_cpu_ids)))
-> +
->  int prop_local_init_percpu(struct prop_local_percpu *pl)
->  {
->  	spin_lock_init(&pl->lock);
-> @@ -230,31 +232,23 @@ void prop_norm_percpu(struct prop_global
->  
->  	spin_lock_irqsave(&pl->lock, flags);
->  	prop_adjust_shift(&pl->shift, &pl->period, pg->shift);
-> +
->  	/*
->  	 * For each missed period, we half the local counter.
->  	 * basically:
->  	 *   pl->events >> (global_period - pl->period);
-> -	 *
-> -	 * but since the distributed nature of percpu counters make division
-> -	 * rather hard, use a regular subtraction loop. This is safe, because
-> -	 * the events will only every be incremented, hence the subtraction
-> -	 * can never result in a negative number.
->  	 */
-> -	while (pl->period != global_period) {
-> -		unsigned long val = percpu_counter_read(&pl->events);
-> -		unsigned long half = (val + 1) >> 1;
-> -
-> -		/*
-> -		 * Half of zero won't be much less, break out.
-> -		 * This limits the loop to shift iterations, even
-> -		 * if we missed a million.
-> -		 */
-> -		if (!val)
-> -			break;
-> -
-> -		percpu_counter_add(&pl->events, -half);
-> -		pl->period += period;
-> -	}
-> +	period = (global_period - pl->period) >> (pg->shift - 1);
-> +	if (period < BITS_PER_LONG) {
-> +		s64 val = percpu_counter_read(&pl->events);
-> +
-> +		if (val < (nr_cpu_ids * PROP_BATCH))
-> +			val = percpu_counter_sum(&pl->events);
-> +
-> +		__percpu_counter_add(&pl->events, -val + (val >> period), PROP_BATCH);
-> +	} else
-> +		percpu_counter_set(&pl->events, 0);
-> +
->  	pl->period = global_period;
->  	spin_unlock_irqrestore(&pl->lock, flags);
->  }
-> @@ -267,7 +261,7 @@ void __prop_inc_percpu(struct prop_descr
->  	struct prop_global *pg = prop_get_global(pd);
->  
->  	prop_norm_percpu(pg, pl);
-> -	percpu_counter_add(&pl->events, 1);
-> +	__percpu_counter_add(&pl->events, 1, PROP_BATCH);
->  	percpu_counter_add(&pg->events, 1);
->  	prop_put_global(pd, pg);
->  }
+> Might as well test the new version then. Ingo Molnar requested a few 
+> changes and this fixes a couple of problems as well.
 > 
 
-It's okay! Thanks!
+As far as I can tell, the code still uses udelay() before calibration if 
+io_delay=udelay?
 
+Just so we're clear on that...
 
+	-hpa
