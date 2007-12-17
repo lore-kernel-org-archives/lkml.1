@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbXLQNZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759322AbXLQN0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbXLQNZa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 08:25:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbXLQNZX
+	id S1759322AbXLQN0r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 08:26:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbXLQN0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 08:25:23 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53323 "EHLO mx3.mail.elte.hu"
+	Mon, 17 Dec 2007 08:26:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34154 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753992AbXLQNZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 08:25:22 -0500
-Date: Mon, 17 Dec 2007 14:24:57 +0100
+	id S1754784AbXLQN0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 08:26:39 -0500
+Date: Mon, 17 Dec 2007 14:26:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Jan Beulich <jbeulich@novell.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] i386: hard_{en,dis}able_TSC can be static
-Message-ID: <20071217132456.GA1870@elte.hu>
-References: <47610086.76E4.0078.0@novell.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86-64: make pda's cpunumber and nodenumber unsigned
+Message-ID: <20071217132619.GB1870@elte.hu>
+References: <47610530.76E4.0078.0@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47610086.76E4.0078.0@novell.com>
+In-Reply-To: <47610530.76E4.0078.0@novell.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,6 +35,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-thanks, applied your patch to x86.git - queued it up for v2.6.25.
+* Jan Beulich <jbeulich@novell.com> wrote:
+
+> This generally allows better code to be generated, since the zero- 
+> extension during 32-bit operations comes for free (needed when the 
+> result is used as array index or similar), whereas sign extension must 
+> be done explicitly and frequently requires a one byte larger 
+> instruction due to the necessary rex64 prefix.
+
+good catch! Applied your patch to x86.git - queued it up for v2.6.25. I 
+bet there are tons of other instances where we use signed instead of 
+unsigned and get worse code generation.
 
 	Ingo
