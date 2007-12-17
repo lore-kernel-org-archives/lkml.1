@@ -1,89 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935454AbXLQKpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935417AbXLQKxF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935454AbXLQKpG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 05:45:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765008AbXLQKo4
+	id S935417AbXLQKxF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 05:53:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763452AbXLQKwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 05:44:56 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:51143 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764010AbXLQKo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 05:44:56 -0500
-Date: Mon, 17 Dec 2007 10:44:53 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] move free page back to MIGRATE_MOVABLE?
-Message-ID: <20071217104452.GA3778@csn.ul.ie>
-References: <1197523199.3410.1.camel@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1197523199.3410.1.camel@sli10-desk.sh.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 17 Dec 2007 05:52:53 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37540 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752363AbXLQKww (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 05:52:52 -0500
+Date: Mon, 17 Dec 2007 02:52:38 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: jurriaan <thunder7@xs4all.nl>
+Cc: linux-kernel@vger.kernel.org, Jiri Kosina <jikos@jikos.cz>
+Subject: Re: 2.6.24-rc5-mm1 compile failure: usbhid_lookup_quirk
+Message-Id: <20071217025238.252f3e89.akpm@linux-foundation.org>
+In-Reply-To: <20071215185040.GA32609@amd64.of.nowhere>
+References: <20071215185040.GA32609@amd64.of.nowhere>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (13/12/07 13:19), Shaohua Li didst pronounce:
-> pages are MIGRATE_MOVABLE initially, and fallback to other types. If the
-> pages are freed, I wonder why not move them back to MIGRATE_MOVABLE.
+On Sat, 15 Dec 2007 19:50:40 +0100 jurriaan <thunder7@xs4all.nl> wrote:
 
-Because there is no need, if a MIGRATE_MOVABLE allocation needs more pages,
-they will be acquired during fallback which always steals the largest
-block. Lets say that a MIGRATE_UNMOVABLE block is freed and it is larger
-than pageblock_order. The next MIGRATE_MOVABLE allocation will find it during
-fallback if necessary.
-
-> This, for example, can help memory remove.
+>   MODPOST 196 modules
+>   ERROR: "usbhid_lookup_quirk" [drivers/hid/usbhid/usbmouse.ko]
+>   undefined!
+>   ERROR: "usbhid_lookup_quirk" [drivers/hid/usbhid/usbkbd.ko] undefined!
+>   make[1]: *** [__modpost] Error 1
+>   make: *** [modules] Error 2
 > 
-
-I don't see how. When hot-removing, MIGRATE_MOVABLE blocks are considered
-possible to remove but they are also considered movable if the pages are free.
-
-> Thanks,
-> Shaohua 
+> The problem was fixed by defining CONFIG_USB_HID=m - but I think that
+> should happen automatically if it is necessary.
 > 
-> Index: linux/mm/page_alloc.c
-> ===================================================================
-> --- linux.orig/mm/page_alloc.c	2007-12-13 11:44:36.000000000 +0800
-> +++ linux/mm/page_alloc.c	2007-12-13 12:04:59.000000000 +0800
-> @@ -386,6 +386,9 @@ static inline int page_is_buddy(struct p
->  	return 0;
->  }
->  
-> +int move_freepages(struct zone *zone,
-> +			struct page *start_page, struct page *end_page,
-> +			int migratetype);
->  /*
->   * Freeing function for a buddy system allocator.
->   *
-> @@ -446,6 +449,17 @@ static inline void __free_one_page(struc
->  	list_add(&page->lru,
->  		&zone->free_area[order].free_list[migratetype]);
->  	zone->free_area[order].nr_free++;
-> +
-> +	if (order >= pageblock_order && migratetype != MIGRATE_MOVABLE) {
-> +		struct page *tmp = page;
-> +
-> +		move_freepages(zone, page, page + (1 << order) - 1, MIGRATE_MOVABLE);
-> +
+> .config was created by running make oldconfig against 2.6.23-rc8-mm2:
 
-This is unnecessary and affects a commonly used path. If a MOVABLE allocation
-needs more pages later, it will find the large free block during fallback.
-
-> +		while (tmp < page + (1 << order)) {
-> +			set_pageblock_migratetype(tmp, MIGRATE_MOVABLE);
-> +			tmp += pageblock_nr_pages;
-> +		}
-> +	}
->  }
->  
->  static inline int free_pages_check(struct page *page)
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thanks.  That's coming out of git-hid.patch.
