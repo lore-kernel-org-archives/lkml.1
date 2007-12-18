@@ -1,96 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757157AbXLRByx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761324AbXLRB4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757157AbXLRByx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 20:54:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbXLRByo
+	id S1761324AbXLRB4P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 20:56:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbXLRBz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 20:54:44 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:33802 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbXLRByn (ORCPT
+	Mon, 17 Dec 2007 20:55:58 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:33710 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbXLRBz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 20:54:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gunBwzrwACQZg+3j/t8NlG1VIZO5fv7B/RHKc2TOn/oz+Rr6RPpQKXI4CYrmzwNkNXhFL8KYjOcrggDhUSDA1mrewTqTdYRIorByCQoJaAW/2lTpb9cYBNOvrYvDwi2iT/zifCNxpTkEFSrMKpLnt0YL2sspH63Z2CHYhafEiwk=
-Message-ID: <f17812d70712171754q3b71a39dl7d17f5d9e5b8014c@mail.gmail.com>
-Date: Tue, 18 Dec 2007 09:54:42 +0800
-From: "eric miao" <eric.y.miao@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH 2.6.24-rc5-mm 3/3] gpiolib: obsolete drivers/i2c/chips/pca9539.c
-Cc: "David Brownell" <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       i2c@lm-sensors.org, bgardner@wabtec.com
-In-Reply-To: <20071217212953.260f7826@hyperion.delvare>
+	Mon, 17 Dec 2007 20:55:57 -0500
+Date: Mon, 17 Dec 2007 19:55:57 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+Message-ID: <20071218015557.GA28652@sergelap.austin.ibm.com>
+References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <f17812d70712142016q73abffc2w99174c40f847152c@mail.gmail.com>
-	 <20071216204214.01fd7a16@hyperion.delvare>
-	 <f17812d70712162233h759432a9i15b8e12d1a5fb828@mail.gmail.com>
-	 <20071217180953.1BB8E16AF21@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	 <20071217212953.260f7826@hyperion.delvare>
+In-Reply-To: <20071218003955.GA27048@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, I guess it would be a smooth path if we rename the
-drivers/i2c/chips/pca9539.c
-since that's old style I2C driver, which means the driver name is not
-so useful external
-so the impact is actually minimum.
+Quoting Serge E. Hallyn (serue@us.ibm.com):
+> Quoting Tetsuo Handa (penguin-kernel@i-love.sakura.ne.jp):
+> > Hello.
+> > 
+> > Serge E. Hallyn wrote:
+> > > CAP_MKNOD will be removed from its capability
+> > I think it is not enough because the root can rename/unlink device files
+> > (mv /dev/sda1 /dev/tmp; mv /dev/sda2 /dev/sda1; mv /dev/tmp /dev/sda2).
+> 
+> Sure but that doesn't bother us :)
+> 
+> The admin in the container has his own /dev directory and can do what he
+> likes with the devices he's allowed to have.  He just shouldn't have
+> access to others.  If he wants to rename /dev/sda1 to /dev/sda5 that's
+> his choice.
+> 
+> > > To use your approach, i guess we would have to use selinux (or tomoyo)
+> > > to enforce that devices may only be created under /dev?
+> > Everyone can use this filesystem alone.
+> 
+> Sure but it is worthless alone.
+> 
+> No?
 
+Oh, no, I'm sorry - I was thinking in terms of my requirements again.
+But your requirements are to ensure that an application accessing a
+device at a well-known location get what it expect.
 
-On Dec 18, 2007 4:29 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> Hi David,
->
->
-> On Mon, 17 Dec 2007 10:09:53 -0800, David Brownell wrote:
-> > > Date: Mon, 17 Dec 2007 14:33:27 +0800
-> > > From: "eric miao" <eric.y.miao@gmail.com>
-> > >
-> > > for the following reasons:
-> > >
-> > > 1. there is currently no known users of this driver
-> > >
-> > > 2. the functionality of this driver is well supported with the recent
-> > >    proposed drivers/gpio/pca9539.c, using GPIO_LIB
-> > >
-> > > Signed-off-by: eric miao <eric.miao@marvell.com>
-> > > Acked-by: Ben Gardner <bgardner@wabtec.com>
-> > > ---
-> > >  Documentation/i2c/chips/pca9539 |   47 --------
-> > >  drivers/i2c/chips/Kconfig       |   10 --
-> > >  drivers/i2c/chips/Makefile      |    1 -
-> > >  drivers/i2c/chips/pca9539.c     |  196 ----------------------------------
-> >
-> > Jean, do you sign off on this?  In any case I think this should
-> > be going through your I2C patches.
-> >
-> > I'd be a trifle uneasy just deleting this, because it's possible
-> > there are *unknown* users ... and also because nobody's yet done
-> > a userspace interface to the gpiolib infrastructure.  (It seems
-> > to be the usual case of nobody wanting such a thing quite enough
-> > to write the code.)
-> >
-> > I'd be more comfortable marking it as obsolete and flagging it
-> > for removal a release or two after Eric's new version merges ...
-> > though maybe that's just paranoia.
->
-> I'm fine with this and I agree that it would be safer, however please
-> note that both drivers are mutually exclusive because they have the
-> same name, meaning that deprecating the old driver is not enough, you
-> also need Kconfig magic to make sure that both drivers aren't built at
-> the same time. Or alternatively the old driver could be renamed... I
-> don't really care myself, I'll take whatever patch you or Eric submit.
->
-> --
-> Jean Delvare
->
+So then the main quesiton is still the one I think Al had asked - what
+keeps a rogue CAP_SYS_MOUNT process from doing
+mount --bind /dev/hda1 /dev/null ?
 
+thanks,
+-serge
 
-
--- 
-Cheers
-- eric
+> What will keep the container admin from doing 'mknod /root/hda1 b 3 1'?
+> 
+> > But use with MAC (or whatever access control mechanisms that prevent
+> > attackers from unmounting/overlaying this filesystem) is recomennded.
+> 
+> -serge
