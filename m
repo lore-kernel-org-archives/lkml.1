@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762384AbXLRFRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761128AbXLRFSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762384AbXLRFRR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 00:17:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbXLRFRD
+	id S1761128AbXLRFSx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 00:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbXLRFSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 00:17:03 -0500
-Received: from mga11.intel.com ([192.55.52.93]:1800 "EHLO mga11.intel.com"
+	Tue, 18 Dec 2007 00:18:44 -0500
+Received: from mga11.intel.com ([192.55.52.93]:32256 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751273AbXLRFRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 00:17:01 -0500
+	id S1751544AbXLRFSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 00:18:43 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.24,178,1196668800"; 
-   d="scan'208";a="244019838"
-Date: Tue, 18 Dec 2007 13:09:57 +0800
+   d="scan'208";a="446258337"
+Date: Tue, 18 Dec 2007 13:11:39 +0800
 From: Zhenyu Wang <zhenyu.z.wang@intel.com>
 To: Dave Airlie <airlied@linux.ie>
 Cc: LKML <linux-kernel@vger.kernel.org>, Keith Packard <keithp@keithp.com>,
        Eric Anholt <eric@anholt.net>, "Gross, Mark" <mark.gross@intel.com>
-Subject: [RFC][PATCH 1/4][intel_iommu] explicit export current graphics dmar status
-Message-ID: <20071218050957.GB12564@zhen-devel.sh.intel.com>
+Subject: [RFC][PATCH 2/4][AGP] Add generic support for graphics dma remapping
+Message-ID: <20071218051139.GC12564@zhen-devel.sh.intel.com>
 Mail-Followup-To: Dave Airlie <airlied@linux.ie>,
 	LKML <linux-kernel@vger.kernel.org>,
 	Keith Packard <keithp@keithp.com>, Eric Anholt <eric@anholt.net>,
@@ -36,90 +36,151 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-[PATCH] [intel_iommu] explicit export current graphics dmar status
+[PATCH] [AGP] Add generic support for graphics dma remapping
 
-To make it possbile to tell other modules about curent
-graphics dmar engine status, that could decide if graphics
-driver should remap physical address to dma address.
-
-Also this one trys to make dmar_disabled really present
-current status of DMAR, which would be used for completely
-express graphics dmar engine is active or not.
+New driver hooks for support graphics memory dma remapping
+are introduced in this patch. It makes generic code can
+tell if current device needs dma remapping, then call driver
+provided interfaces for mapping and unmapping. Change has
+also been made to handle scratch_page in remapping case.
 
 Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
 ---
- drivers/pci/intel-iommu.c |   18 ++++++++++++++++--
- include/linux/dmar.h      |    6 ++++++
- 2 files changed, 22 insertions(+), 2 deletions(-)
+ drivers/char/agp/agp.h      |   14 ++++++++++++++
+ drivers/char/agp/backend.c  |   21 ++++++++++++++++++++-
+ drivers/char/agp/generic.c  |   14 ++++++++++++++
+ include/linux/agp_backend.h |    7 +++++++
+ 4 files changed, 55 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index e079a52..81a0abc 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -53,7 +53,7 @@
- static void domain_remove_dev_info(struct dmar_domain *domain);
- 
- static int dmar_disabled;
--static int __initdata dmar_map_gfx = 1;
-+static int dmar_map_gfx = 1;
- static int dmar_forcedac;
- 
- #define DUMMY_DEVICE_DOMAIN_INFO ((struct device_domain_info *)(-1))
-@@ -86,6 +86,16 @@ static int __init intel_iommu_setup(char *str)
- }
- __setup("intel_iommu=", intel_iommu_setup);
- 
-+int intel_iommu_gfx_remapping(void)
-+{
-+#ifndef CONFIG_DMAR_GFX_WA
-+	if (!dmar_disabled && iommu_detected && dmar_map_gfx)
-+		return 1;
-+#endif
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(intel_iommu_gfx_remapping);
+diff --git a/drivers/char/agp/agp.h b/drivers/char/agp/agp.h
+index b83824c..7806da1 100644
+--- a/drivers/char/agp/agp.h
++++ b/drivers/char/agp/agp.h
+@@ -118,6 +118,18 @@ struct agp_bridge_driver {
+ 	void *(*agp_alloc_page)(struct agp_bridge_data *);
+ 	void (*agp_destroy_page)(void *, int flags);
+         int (*agp_type_to_mask_type) (struct agp_bridge_data *, int);
 +
- static struct kmem_cache *iommu_domain_cache;
- static struct kmem_cache *iommu_devinfo_cache;
- static struct kmem_cache *iommu_iova_cache;
-@@ -2189,8 +2199,12 @@ static void __init iommu_exit_mempool(void)
++	/* Tell current graphics dma remapping engine status, there might
++	 * be driver or platform specific way to detect. */
++	int (*agp_require_remapping)(void);
++
++	/* This can support single page remapping via void *virt for like
++	 * scratch_page, or normal bunch of mem page range via struct
++	 * agp_memory *mem.
++	 */
++	int (*agp_map_page)(struct agp_memory *mem, void *virt, dma_addr_t *ret, int is_single);
++
++	void (*agp_unmap_page)(struct agp_memory *mem, dma_addr_t ret, int is_single);
+ };
  
- void __init detect_intel_iommu(void)
- {
--	if (swiotlb || no_iommu || iommu_detected || dmar_disabled)
-+	if (dmar_disabled)
-+		return;
-+	if (swiotlb || no_iommu || iommu_detected) {
-+		dmar_disabled = 1;
- 		return;
-+	}
- 	if (early_dmar_detect()) {
- 		iommu_detected = 1;
+ struct agp_bridge_data {
+@@ -132,6 +144,8 @@ struct agp_bridge_data {
+ 	u32 *gatt_table_real;
+ 	unsigned long scratch_page;
+ 	unsigned long scratch_page_real;
++	dma_addr_t scratch_page_dma;
++	u8 scratch_page_is_mapped;
+ 	unsigned long gart_bus_addr;
+ 	unsigned long gatt_bus_addr;
+ 	u32 mode;
+diff --git a/drivers/char/agp/backend.c b/drivers/char/agp/backend.c
+index 832ded2..cc6d648 100644
+--- a/drivers/char/agp/backend.c
++++ b/drivers/char/agp/backend.c
+@@ -151,7 +151,20 @@ static int agp_backend_initialize(struct agp_bridge_data *bridge)
+ 
+ 		bridge->scratch_page_real = virt_to_gart(addr);
+ 		bridge->scratch_page =
+-		    bridge->driver->mask_memory(bridge, bridge->scratch_page_real, 0);
++			bridge->driver->mask_memory(bridge, bridge->scratch_page_real, 0);
++
++		if (bridge->driver->agp_require_remapping &&
++				bridge->driver->agp_require_remapping()) {
++			if (bridge->driver->agp_map_page(NULL, addr, &bridge->scratch_page_dma, 1)) {
++				printk(KERN_ERR PFX "unable to map scratch page\n");
++				rc = -ENOMEM;
++				goto err_out;
++			}
++			bridge->scratch_page_is_mapped = TRUE;
++			bridge->scratch_page =
++				bridge->driver->mask_memory(bridge,
++						bridge->scratch_page_dma, 0);
++		}
  	}
-diff --git a/include/linux/dmar.h b/include/linux/dmar.h
-index ffb6439..8ae435e 100644
---- a/include/linux/dmar.h
-+++ b/include/linux/dmar.h
-@@ -47,6 +47,8 @@ extern int intel_iommu_init(void);
- extern int dmar_table_init(void);
- extern int early_dmar_detect(void);
  
-+extern int intel_iommu_gfx_remapping(void);
+ 	size_value = bridge->driver->fetch_size();
+@@ -189,6 +202,9 @@ static int agp_backend_initialize(struct agp_bridge_data *bridge)
+ 
+ err_out:
+ 	if (bridge->driver->needs_scratch_page) {
++		if (bridge->scratch_page_is_mapped)
++			bridge->driver->agp_unmap_page(NULL, bridge->scratch_page_dma, 1);
 +
- extern struct list_head dmar_drhd_units;
- extern struct list_head dmar_rmrr_units;
+ 		bridge->driver->agp_destroy_page(gart_to_virt(bridge->scratch_page_real),
+ 						 AGP_PAGE_DESTROY_UNMAP);
+ 		flush_agp_mappings();
+@@ -217,6 +233,9 @@ static void agp_backend_cleanup(struct agp_bridge_data *bridge)
  
-@@ -81,6 +83,10 @@ static inline int intel_iommu_init(void)
- {
- 	return -ENODEV;
+ 	if (bridge->driver->agp_destroy_page &&
+ 	    bridge->driver->needs_scratch_page) {
++		if (bridge->scratch_page_is_mapped)
++			bridge->driver->agp_unmap_page(NULL, bridge->scratch_page_dma, 1);
++
+ 		bridge->driver->agp_destroy_page(gart_to_virt(bridge->scratch_page_real),
+ 						 AGP_PAGE_DESTROY_UNMAP);
+ 		flush_agp_mappings();
+diff --git a/drivers/char/agp/generic.c b/drivers/char/agp/generic.c
+index 64b2f6d..8966c94 100644
+--- a/drivers/char/agp/generic.c
++++ b/drivers/char/agp/generic.c
+@@ -415,6 +415,14 @@ int agp_bind_memory(struct agp_memory *curr, off_t pg_start)
+ 		curr->bridge->driver->cache_flush();
+ 		curr->is_flushed = TRUE;
+ 	}
++
++	if (curr->bridge->driver->agp_require_remapping &&
++			curr->bridge->driver->agp_require_remapping()) {
++		ret_val = curr->bridge->driver->agp_map_page(curr, NULL, NULL, 0);
++		if (ret_val)
++			return ret_val;
++	}
++
+ 	ret_val = curr->bridge->driver->insert_memory(curr, pg_start, curr->type);
+ 
+ 	if (ret_val != 0)
+@@ -454,6 +462,12 @@ int agp_unbind_memory(struct agp_memory *curr)
+ 
+ 	curr->is_bound = FALSE;
+ 	curr->pg_start = 0;
++
++	if (curr->is_mapped) {
++		if (curr->bridge->driver->agp_unmap_page)
++			curr->bridge->driver->agp_unmap_page(curr, 0, 0);
++		curr->is_mapped = FALSE;
++	}
+ 	return 0;
  }
-+static inline int intel_iommu_gfx_remapping(void)
-+{
-+	return 0;
-+}
+ EXPORT_SYMBOL(agp_unbind_memory);
+diff --git a/include/linux/agp_backend.h b/include/linux/agp_backend.h
+index abc521c..5b7c431 100644
+--- a/include/linux/agp_backend.h
++++ b/include/linux/agp_backend.h
+@@ -87,7 +87,14 @@ struct agp_memory {
+ 	u32 physical;
+ 	u8 is_bound;
+ 	u8 is_flushed;
++	u8 is_mapped;
+         u8 vmalloc_flag;
++	/* Following are used in graphics dma remapping case,
++	 * for map/unmap via sg interfaces.
++	 */
++	struct scatterlist *sg_list;
++	int num_sg;
++	u8 sg_vmalloc_flag;
+ };
  
- #endif /* !CONFIG_DMAR */
- #endif /* __DMAR_H__ */
+ #define AGP_NORMAL_MEMORY 0
 -- 
 1.5.3.5
 
