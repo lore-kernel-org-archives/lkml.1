@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbXLRMdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbXLRMji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060AbXLRMdZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 07:33:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbXLRMdF
+	id S1755532AbXLRMji (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 07:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbXLRMjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 07:33:05 -0500
-Received: from elvis.franken.de ([193.175.24.41]:41099 "EHLO elvis.franken.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753909AbXLRMdC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 07:33:02 -0500
-Date: Tue, 18 Dec 2007 13:31:52 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
-       Bob Picco <bob.picco@hp.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Andy Whitcroft <apw@shadowen.org>, Andi Kleen <ak@muc.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Keith Mannthey <kmannth@gmail.com>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Fix crash with FLAT_MEMORY and ARCH_PFN_OFFSET != 0
-Message-ID: <20071218123152.GA19536@alpha.franken.de>
-References: <20071218120300.7565AE3030@solo.franken.de> <20071218042404.df5d459c.akpm@linux-foundation.org>
+	Tue, 18 Dec 2007 07:39:31 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:43449 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752063AbXLRMjb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 07:39:31 -0500
+Date: Tue, 18 Dec 2007 13:39:29 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: wit <is01kzh@gmail.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: About mounting the sysfs
+In-Reply-To: <105610bf0712172310ob56ae9ch4fa63e132011ae18@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0712181337090.32270@fbirervta.pbzchgretzou.qr>
+References: <105610bf0712172310ob56ae9ch4fa63e132011ae18@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071218042404.df5d459c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 18, 2007 at 04:24:04AM -0800, Andrew Morton wrote:
-> On Tue, 18 Dec 2007 13:03:00 +0100 (CET) Thomas Bogendoerfer <tsbogend@alpha.franken.de> wrote:
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -3427,7 +3427,7 @@ static void __init_refok alloc_node_mem_map(struct pglist_data *pgdat)
-> >  		mem_map = NODE_DATA(0)->node_mem_map;
-> >  #ifdef CONFIG_ARCH_POPULATES_NODE_MAP
-> >  		if (page_to_pfn(mem_map) != pgdat->node_start_pfn)
-> > -			mem_map -= pgdat->node_start_pfn;
-> > +			mem_map -= (pgdat->node_start_pfn - ARCH_PFN_OFFSET);
-> >  #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
-> >  	}
-> >  #endif
-> 
-> hm.  It's rather non-trivial to verify that this will compile OK on all
-> architectures.
 
-I grepped through include/asm-* and found:
+On Dec 18 2007 15:10, wit wrote:
+>
+>1. What is the d_alloc_root used for? Actually, the question should
+>be: why we have to call d_alloc_root.
 
-#if defined(CONFIG_FLATMEM)
+>I think the root already has its dentry,
 
-#ifndef ARCH_PFN_OFFSET
-#define ARCH_PFN_OFFSET         (0UL)
-#endif
+It does not.
 
-in include/asm-generic/memory_model.h. So I'm still confident, that
-this works on all architectures. It's tested on MIPS.
+>why we have to allocate another while we mounting a file
+>system?
+>
+>2. Why we call d_alloc_root to allocate a dentry for the mount point
+>while the usual mount point of sysfs is defined by the user (something
+>like /sysfs but not /).
 
-Thomas.
+/sys is a dentry that belongs to the / vfsmount, but we need a
+/ that belongs to the <whatever you are going to mount> vfsmount.
 
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessary a
-good idea.                                                [ RFC1925, 2.3 ]
+> See below:
+>	root = d_alloc_root(inode);
+>	if (!root) {
+>		pr_debug("%s: could not get root dentry!\n",__FUNCTION__);
+>		iput(inode);
+>		return -ENOMEM;
+>	}
+>	root->d_fsdata = &sysfs_root;
+>	sb->s_root = root;
+>
+>does this means settting the sysfs' mount point to "/" but not "/sysfs".
