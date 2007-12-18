@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbXLRRlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbXLRRpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564AbXLRRlR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 12:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbXLRRlH
+	id S1757666AbXLRRpy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 12:45:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbXLRRpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 12:41:07 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:34013 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbXLRRlG (ORCPT
+	Tue, 18 Dec 2007 12:45:47 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:62203 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752588AbXLRRpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 12:41:06 -0500
+	Tue, 18 Dec 2007 12:45:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=LBnNY4Pxl+VGbAZRwKC33AlPI2Ee6RcPrBHMePem4zYbnFkrQOnjODtlXnbT9xjanWjvUnHtlCx1AR9OuDvHLMK+kUcrLKdWHp0jvKolc/gV3zpFdA9jnnG8jNhW8t/v+zUEYba4z3bV6sYlFADmorecFHFakPxbj6a4ohSdgiA=
-Message-ID: <c166aa9f0712180941o765cba7fxf31705560a51a06c@mail.gmail.com>
-Date: Tue, 18 Dec 2007 11:41:05 -0600
-From: "Andrew Dyer" <amdyer@gmail.com>
-To: wim@iguana.be
-Subject: watchdog behaviour on close? (watchdog-api.txt)
-Cc: linux-kernel@vger.kernel.org
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=QVNdTiFIBmiz829uNGYaRM1DEYPsU1PG0h3N6JSTpQ1nRjdz0q/DSN5DTxLMnxvnVhOp0ye9AoGOswnfj4pg0tfNhGfQmcuEutM36+pAFvlMzGjTbh0qtg1xQQbonEBXvo9m1OdOhd2RQvbmmVmr46LCN9IkbX8zuPKGVYInsKc=
+Message-ID: <5caa9b870712180945o17c797f7rb00a1b0d3fc12fc6@mail.gmail.com>
+Date: Tue, 18 Dec 2007 17:45:45 +0000
+From: "Steve Davies" <davies147@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: VIA Velocity and 802.1q VLAN support
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -28,24 +27,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, I am trying to implement a watchdog driver in 2.6.23 for the i.MXL
-cpu (based off of drivers/char/watchdog/s3c2410_wdt.c).
+Hi,
 
-I had a question about the api doc for the watchdog
-(Documentation/watchdog-api.txt).  Line 37 says "When the device is
-closed, the watchdog is disabled."  Later on (Line 56) it says
-"Drivers will not disable the watchdog, unless a specific magic
-character 'V' has been sent /dev/watchdog just before closing the
-file."
+After a significant amout of archive searching, and code tweaking, I
+am giving up and asking the list :)
 
-I would assume that from reading L37 that the driver would
-unconditionally shut down the watchdog when closing (unless
-CONFIG_WATCHDOG_NOWAYOUT or the nowayout module param is specified),
-but line 56 seems to contradict that.
+I have a number of EPIA boards which need to operate in a mixed
+tagged-VLAN and untagged-interface environment using their onboard
+VIA-Velocity NICs. I am running a Debian ETCH 2.6.18 kernel, but have
+managed to backport the latest 2.6.24-rc5 via-velocity driver fairly
+simply. Sadly this does not seem to fix the problem.
 
-Can you clarify the intended behaviour?
+Having added some debug kprintf, it appears as if the hardware VLAN
+support is never enabled in this driver (vptr->vlgrp == NULL at all
+times). I added a velocity_vlan_rx_register method, and enabled the
+NETIF_F_HW_VLAN_RX feature, which did start to cause the appropriate
+NIC registers to be set, but this simply stopped the inbound data
+working entirely if a tagged vlan was created.
 
-I am not subscribed to the mailing list, so please cc: replies to me.
--- 
-Hardware, n.:
-        The parts of a computer system that can be kicked.
+It manages to send packets both on the correct (tagged) vlan, and on
+the untagged interface. The stock driver also receives packets on the
+untagged interface okay, but inbound tagged packets never seem to make
+it into the net subsystem.
+
+I assume that the NIC is not allowing tagged packets into the driver
+due to its built-in hardware acceleration/filtering :(
+
+Is it inappropriate to beg for help and suggestions?
+
+Thanks,
+Steve
