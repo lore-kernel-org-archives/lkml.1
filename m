@@ -1,70 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934261AbXLRCng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935050AbXLRCos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934261AbXLRCng (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 21:43:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbXLRCn2
+	id S935050AbXLRCos (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 21:44:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbXLRCoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 21:43:28 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:28699 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432AbXLRCn0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 21:43:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YJF3t6wmHmQEPs4rk3XPRBbB1IfCwex8w2RjwaRKGi3Vt8b2pX6ImUyxo7CEqQm6P+FqrfoIYBi/o5G3rjQaSmDNsKqyoAnDEV2hjk904wmsXuM4mEp4O/fngGK4jDrUSSv9Dfe9RWFPMuZLJI71rCNaDB+oPxlpbYTxjaAv03E=
-Message-ID: <9e4733910712171843u579c34efia53d0571a782dd19@mail.gmail.com>
-Date: Mon, 17 Dec 2007 21:43:26 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] Makefile
-In-Reply-To: <20071218023928.8530.25171.stgit@terra.home>
+	Mon, 17 Dec 2007 21:44:38 -0500
+Received: from waste.org ([66.93.16.53]:36929 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758046AbXLRCog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 21:44:36 -0500
+Date: Mon, 17 Dec 2007 20:42:04 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       jens.axboe@oracle.com, liml@rtr.ca, lkml@rtr.ca, matthew@wil.cx,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: QUEUE_FLAG_CLUSTER: not working in 2.6.24 ?
+Message-ID: <20071218024204.GR19691@waste.org>
+References: <20071213200219.GI10104@kernel.dk> <476190BE.9010405@rtr.ca> <20071213200958.GK10104@kernel.dk> <20071213140207.111f94e2.akpm@linux-foundation.org> <1197584106.3154.55.camel@localhost.localdomain> <20071213142935.47ff19d9.akpm@linux-foundation.org> <20071215010940.GB28613@csn.ul.ie> <20071214180206.e0325503.akpm@linux-foundation.org> <20071216215519.GA7710@csn.ul.ie> <20071217112457.d7940c63.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071218023913.8530.46661.stgit@terra.home>
-	 <20071218023928.8530.25171.stgit@terra.home>
+In-Reply-To: <20071217112457.d7940c63.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ignore this patch, I forgot to remove it before mailing the series.
+On Mon, Dec 17, 2007 at 11:24:57AM -0800, Randy Dunlap wrote:
+> On Sun, 16 Dec 2007 21:55:20 +0000 Mel Gorman wrote:
+> 
+> > > > Just using cp to read the file is enough to cause problems but I included
+> > > > a very basic program below that produces the BUG_ON checks. Is this a known
+> > > > issue or am I using the interface incorrectly?
+> > > 
+> > > I'd say you're using it correctly but you've found a hitherto unknown bug. 
+> > > On i386 highmem machines with CONFIG_HIGHPTE (at least) pte_offset_map()
+> > > takes kmap_atomic(), so pagemap_pte_range() can't do copy_to_user() as it
+> > > presently does.
+> > > 
+> > > Drat.
+> > > 
+> > > Still, that shouldn't really disrupt the testing which you're doing.  You
+> > > could disable CONFIG_HIGHPTE to shut it up.
+> > > 
+> > 
+> > Yes, that did the trick. Using pagemap, it was trivial to show that the
+> > 2.6.24-rc5-mm1 kernel was placing pages in reverse physical order like
+> > the following output shows
+> > 
+> > b:  32763 v:   753091 p:    65559 . 65558 contig: 1
+> > b:  32764 v:   753092 p:    65558 . 65557 contig: 1
+> > b:  32765 v:   753093 p:    65557 . 65556 contig: 1
+> > b:  32766 v:   753094 p:    65556 . 65555 contig: 1
+> > b:  32767 v:   753095 p:    65555 . 65555 contig: 1
+> > 
+> > p: is the PFN of the page v: is the page offset within an anonymous
+> > mapping and b: is the number of non-contiguous blocks in the anonymous
+> > mapping. With the patch applied, it looks more like;
+> > 
+> > b:   1232 v:   752964 p:    58944 ................ 87328 contig: 15
+> > b:   1233 v:   752980 p:    87328 ................ 91200 contig: 15
+> > b:   1234 v:   752996 p:    91200 ................ 40272 contig: 15
+> > b:   1235 v:   753012 p:    40272 ................ 85664 contig: 15
+> > b:   1236 v:   753028 p:    85664 ................ 87312 contig: 15
+> > 
+> > so mappings are using contiguous pages again. This was the final test
+> > program I used in case it's of any interest.
+> > 
+> > Thanks
+> > 
+> > /*
+> >  * showcontiguous.c
+> >  *
+> >  * Use the /proc/pid/pagemap interface to give an indication of how contiguous
+> >  * physical memory is in an anonymous virtual memory mapping
+> >  */
+> 
+> Matt,
+> Did you ever make your python pagemap scripts available?
+> If not, would you?
 
-On 12/17/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
->
-> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
-> ---
->
->  Makefile |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
->
->
-> diff --git a/Makefile b/Makefile
-> index c1825aa..15ada3f 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -35,6 +35,9 @@ MAKEFLAGS += -rR --no-print-directory
->  # To put more focus on warnings, be less verbose as default
->  # Use 'make V=1' to see the full commands
->
-> +ARCH=powerpc
-> +CROSS_COMPILE=powerpc-603e-linux-gnu-
-> +
->  ifdef V
->    ifeq ("$(origin V)", "command line")
->      KBUILD_VERBOSE = $(V)
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+There's a collection of them at http://selenic.com/repo/pagemap.
+They're largely proof of concept, and I'm not sure I finished adapting
+them all to the final 64-bit interface.
 
+As it happens, the above regression I actually spotted immediately by
+doing a simple hexdump on my very first test of the interface - lots
+of pfns counting backwards. Mentioned it a few times to various people
+in the cc: list and on lkml but never got around to tracking it down
+myself..
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Mathematics is the supreme nostalgia of our time.
