@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbXLROjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbXLROkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757282AbXLROjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 09:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbXLROjD
+	id S1757447AbXLROkT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 09:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbXLROkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 09:39:03 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57301 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756722AbXLROjB (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 09:39:01 -0500
-Date: Wed, 19 Dec 2007 01:38:49 +1100
-From: David Chinner <dgc@sgi.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: xfs@oss.sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Do not reset xfsquota flags on quotaless ro mount
-Message-ID: <20071218143849.GP4396912@sgi.com>
-References: <Pine.LNX.4.64.0712181459210.32270@fbirervta.pbzchgretzou.qr>
+	Tue, 18 Dec 2007 09:40:07 -0500
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:4982 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753203AbXLROkG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 09:40:06 -0500
+Date: Tue, 18 Dec 2007 15:40:04 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "eric miao" <eric.y.miao@gmail.com>
+Cc: "David Brownell" <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       i2c@lm-sensors.org, bgardner@wabtec.com
+Subject: Re: [PATCH 2.6.24-rc5-mm 3/3] gpiolib: obsolete
+ drivers/i2c/chips/pca9539.c
+Message-ID: <20071218154004.738e7894@hyperion.delvare>
+In-Reply-To: <f17812d70712171754q3b71a39dl7d17f5d9e5b8014c@mail.gmail.com>
+References: <f17812d70712142016q73abffc2w99174c40f847152c@mail.gmail.com>
+	<20071216204214.01fd7a16@hyperion.delvare>
+	<f17812d70712162233h759432a9i15b8e12d1a5fb828@mail.gmail.com>
+	<20071217180953.1BB8E16AF21@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<20071217212953.260f7826@hyperion.delvare>
+	<f17812d70712171754q3b71a39dl7d17f5d9e5b8014c@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712181459210.32270@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 18, 2007 at 03:04:03PM +0100, Jan Engelhardt wrote:
-> Hi,
-> 
-> 
-> In https://bugzilla.novell.com/show_bug.cgi?id=345338 it is claimed that
-> resetting the quota flags in the mounting sequence rw,ro,rw is a bug, but I
+Hi Eric,
 
-You mounted without quotas in the middle step, thereby invalidating
-them.
+On Tue, 18 Dec 2007 09:54:42 +0800, eric miao wrote:
+> Well, I guess it would be a smooth path if we rename the
+> drivers/i2c/chips/pca9539.c
+> since that's old style I2C driver, which means the driver name is not
+> so useful external
+> so the impact is actually minimum.
 
-> would say this is not the case, as quota is metadata, and the log is replayed
-> in ro mode even for other filesystems. Yet, it is still not nice, and I have
-> been trying with this patch, which does not do the right thing yet. (It does a
-> recovery when mounting for the 3rd time, which probably just says that I did
-> not know too much of xfs internals to cook up a nicely working patch.)
-> Opinions?
+That's fine with me, just send me a patch.
 
-Log recovery occurs on read only mounts. Log recovery on filesystems without
-quota enabled ignores quota changes in the log (as quotas are not enabled
-and hence we can't assume that there's dquots still on disk). Hence a
-mount read only without quota enabled will leave quota inconsistent on disk.
-
-i.e
-
-> 	mount -o usrquota,grpquota /dev/mapper/myxfs /mnt
-> 	umount /mnt
-> 	mount -o ro /dev/mapper/myxfs /mnt
-
-Quota is now potentially inconsistent, and hence:
-
-> 	umount /mnt
-> 	mount -o usrquota,grpquota /dev/mapper/myxfs /mnt
-
-This mount *must* recalculate it. So, behaviour is as expected
-given the above command sequence.
-
-You should use this as the middle step:
-
-	mount -o ro,usrquota,grpquota /dev/mapper/myxfs /mnt
-
-So that log replay replays all the journalled quota changes so
-that the quota remains consistent with the rest of the filesystem.
-Then you wont see a recalc when you remount rw.
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Jean Delvare
