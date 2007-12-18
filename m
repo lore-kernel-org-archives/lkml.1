@@ -1,224 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbXLREM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbXLREYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760825AbXLREM0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 23:12:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbXLREMO
+	id S1757312AbXLREYA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 23:24:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbXLREXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 23:12:14 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:3820 "EHLO perches.com"
+	Mon, 17 Dec 2007 23:23:52 -0500
+Received: from THUNK.ORG ([69.25.196.29]:39124 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbXLREMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 23:12:12 -0500
-Subject: [PATCH] MAINTAINERS: remove Adam Fritzler, update his email
-	address in other sources
-From: Joe Perches <joe@perches.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Adam Fritzler <mid@zigamorph.net>,
-       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-       Jeff Garzik <jgarzik@pobox.com>, Mike Phillips <mikep@linuxtr.net>,
-       Philip Blundell <philb@gnu.org>, linux-scsi@vger.kernel.org,
-       netdev@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 17 Dec 2007 20:12:06 -0800
-Message-Id: <1197951126.4891.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	id S1750777AbXLREXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 23:23:51 -0500
+Date: Mon, 17 Dec 2007 23:23:37 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: David Newall <david@davidnewall.com>
+Cc: Andy Lutomirski <luto@myrealbox.com>, John Reiser <jreiser@BitWagon.com>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       security@kernel.org
+Subject: Re: /dev/urandom uses uninit bytes, leaks user data
+Message-ID: <20071218042337.GT7070@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Newall <david@davidnewall.com>,
+	Andy Lutomirski <luto@myrealbox.com>,
+	John Reiser <jreiser@BitWagon.com>, Matt Mackall <mpm@selenic.com>,
+	linux-kernel@vger.kernel.org, security@kernel.org
+References: <20071214232322.GE17344@thunk.org> <47632010.6030709@BitWagon.com> <20071215043208.GF17344@thunk.org> <4766A40D.4080804@BitWagon.com> <20071217173623.GC7070@thunk.org> <476719E5.1010505@myrealbox.com> <20071218030533.GN7070@thunk.org> <47673AD8.9010702@davidnewall.com> <20071218034656.GR7070@thunk.org> <476747DC.4040309@davidnewall.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <476747DC.4040309@davidnewall.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adam isn't a maintainer anymore.
-His old email address bounces.
-Update to new email address.
+On Tue, Dec 18, 2007 at 02:39:00PM +1030, David Newall wrote:
+>
+> Thus, the entropy saved at shutdown can be known at boot-time.  (You can 
+> examine the saved entropy on disk.)
+>
 
-On Mon, Dec 17, 2007 at 01:03:48PM -0800, Joe Perches wrote:
-> > You seem to have an old email address in the
-> > linux-kernel MAINTAINERS file.
-> > Should it be deleted or changed?
-On Mon, 2007-12-17 at 19:27 -0800, Adam Fritzler wrote:
-> I am no longer actively involved. If you can mark me as a former point
-> of contact, that's fine, or you can just delete the entry. My name is
-> still in the source, but with the old address. It'd great if the
-> address in source was updated.
+If you can examine the saved entropy on disk, you can also introduce a
+trojan horse kernel that logs all keystrokes and all generated entropy
+to the FBI carnivore server --- you can replace the gpg binary with
+one which ships copies of the session keys to the CIA --- and you can
+replace the freeswan server with one which generates emphermal keys by
+encrypting the current timestamp with a key known only by the NSA.  So
+if the attacker has access to your disk between shutdown and boot up,
+you are *done*.   /dev/random is the least of your worries.
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- MAINTAINERS                      |    7 -------
- drivers/net/eexpress.c           |    2 +-
- drivers/net/tokenring/abyss.c    |    2 +-
- drivers/net/tokenring/abyss.h    |    2 +-
- drivers/net/tokenring/madgemc.c  |    2 +-
- drivers/net/tokenring/madgemc.h  |    2 +-
- drivers/net/tokenring/proteon.c  |    2 +-
- drivers/net/tokenring/skisa.c    |    2 +-
- drivers/net/tokenring/tms380tr.c |    2 +-
- drivers/net/tokenring/tms380tr.h |    2 +-
- drivers/net/tokenring/tmspci.c   |    2 +-
- drivers/scsi/aha1542.c           |    2 +-
- 12 files changed, 11 insertions(+), 18 deletions(-)
+Really, why is it that people are so enamored about proposing these
+totally bogus scenarios?  Yes, if you have direct physical access to
+your machine, you can compromise it.  But there are far easier ways
+that such a vulnerability can be exploited, rather than making it easy
+to carry out an cryptoanalytic attack on /dev/random.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 9507b42..690f172 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3758,13 +3758,6 @@ W:	http://www.kernel.org/pub/linux/kernel/people/bunk/trivial/
- T:	git kernel.org:/pub/scm/linux/kernel/git/bunk/trivial.git
- S:	Maintained
- 
--TMS380 TOKEN-RING NETWORK DRIVER
--P:	Adam Fritzler
--M:	mid@auk.cx
--L:	linux-tr@linuxtr.net
--W:	http://www.auk.cx/tms380tr/
--S:	Maintained
--
- TULIP NETWORK DRIVER
- L:	tulip-users@lists.sourceforge.net
- W:	http://sourceforge.net/projects/tulip/
-diff --git a/drivers/net/eexpress.c b/drivers/net/eexpress.c
-index 70509ed..46c3c99 100644
---- a/drivers/net/eexpress.c
-+++ b/drivers/net/eexpress.c
-@@ -9,7 +9,7 @@
-  * Many modifications, and currently maintained, by
-  *  Philip Blundell <philb@gnu.org>
-  * Added the Compaq LTE  Alan Cox <alan@redhat.com>
-- * Added MCA support Adam Fritzler <mid@auk.cx>
-+ * Added MCA support Adam Fritzler <mid@zigamorph.net>
-  *
-  * Note - this driver is experimental still - it has problems on faster
-  * machines. Someone needs to sit down and go through it line by line with
-diff --git a/drivers/net/tokenring/abyss.c b/drivers/net/tokenring/abyss.c
-index 124cfd4..be60792 100644
---- a/drivers/net/tokenring/abyss.c
-+++ b/drivers/net/tokenring/abyss.c
-@@ -10,7 +10,7 @@
-  *      - Madge Smart 16/4 PCI Mk2
-  *
-  *  Maintainer(s):
-- *    AF	Adam Fritzler		mid@auk.cx
-+ *    AF	Adam Fritzler		mid@zigamorph.net
-  *
-  *  Modification History:
-  *	30-Dec-99	AF	Split off from the tms380tr driver.
-diff --git a/drivers/net/tokenring/abyss.h b/drivers/net/tokenring/abyss.h
-index 0ee6e4f..93376e1 100644
---- a/drivers/net/tokenring/abyss.h
-+++ b/drivers/net/tokenring/abyss.h
-@@ -2,7 +2,7 @@
-  * abyss.h: Header for the abyss tms380tr module
-  *
-  * Authors:
-- * - Adam Fritzler <mid@auk.cx>
-+ * - Adam Fritzler <mid@zigamorph.net>
-  */
- 
- #ifndef __LINUX_MADGETR_H
-diff --git a/drivers/net/tokenring/madgemc.c b/drivers/net/tokenring/madgemc.c
-index 5a41513..b7c819f 100644
---- a/drivers/net/tokenring/madgemc.c
-+++ b/drivers/net/tokenring/madgemc.c
-@@ -11,7 +11,7 @@
-  *	- Madge Smart 16/4 Ringnode MC32 (??)
-  *
-  *  Maintainer(s):
-- *    AF	Adam Fritzler		mid@auk.cx
-+ *    AF	Adam Fritzler		mid@zigamorph.net
-  *
-  *  Modification History:
-  *	16-Jan-00	AF	Created
-diff --git a/drivers/net/tokenring/madgemc.h b/drivers/net/tokenring/madgemc.h
-index 2dd8222..b368e59 100644
---- a/drivers/net/tokenring/madgemc.h
-+++ b/drivers/net/tokenring/madgemc.h
-@@ -2,7 +2,7 @@
-  * madgemc.h: Header for the madgemc tms380tr module
-  *
-  * Authors:
-- * - Adam Fritzler <mid@auk.cx>
-+ * - Adam Fritzler <mid@zigamorph.net>
-  */
- 
- #ifndef __LINUX_MADGEMC_H
-diff --git a/drivers/net/tokenring/proteon.c b/drivers/net/tokenring/proteon.c
-index ca6b659..8fece14 100644
---- a/drivers/net/tokenring/proteon.c
-+++ b/drivers/net/tokenring/proteon.c
-@@ -12,7 +12,7 @@
-  *	- Proteon 1392, 1392+
-  *
-  *  Maintainer(s):
-- *    AF        Adam Fritzler           mid@auk.cx
-+ *    AF        Adam Fritzler           mid@zigamorph.net
-  *    JF	Jochen Friedrich	jochen@scram.de
-  *
-  *  Modification History:
-diff --git a/drivers/net/tokenring/skisa.c b/drivers/net/tokenring/skisa.c
-index 32e8d5a..74eae3c 100644
---- a/drivers/net/tokenring/skisa.c
-+++ b/drivers/net/tokenring/skisa.c
-@@ -13,7 +13,7 @@
-  *	- SysKonnect TR4/16(+) ISA	(SK-4190)
-  *
-  *  Maintainer(s):
-- *    AF        Adam Fritzler           mid@auk.cx
-+ *    AF        Adam Fritzler           mid@zigamorph.net
-  *    JF	Jochen Friedrich	jochen@scram.de
-  *
-  *  Modification History:
-diff --git a/drivers/net/tokenring/tms380tr.c b/drivers/net/tokenring/tms380tr.c
-index d5fa36d..5daec2b 100644
---- a/drivers/net/tokenring/tms380tr.c
-+++ b/drivers/net/tokenring/tms380tr.c
-@@ -30,7 +30,7 @@
-  *  Maintainer(s):
-  *    JS	Jay Schulist		jschlst@samba.org
-  *    CG	Christoph Goos		cgoos@syskonnect.de
-- *    AF	Adam Fritzler		mid@auk.cx
-+ *    AF	Adam Fritzler		mid@zigamorph.net
-  *    MLP       Mike Phillips           phillim@amtrak.com
-  *    JF	Jochen Friedrich	jochen@scram.de
-  *     
-diff --git a/drivers/net/tokenring/tms380tr.h b/drivers/net/tokenring/tms380tr.h
-index 7daf74e..7697b17 100644
---- a/drivers/net/tokenring/tms380tr.h
-+++ b/drivers/net/tokenring/tms380tr.h
-@@ -3,7 +3,7 @@
-  *
-  * Authors:
-  * - Christoph Goos <cgoos@syskonnect.de>
-- * - Adam Fritzler <mid@auk.cx>
-+ * - Adam Fritzler <mid@zigamorph.net>
-  */
- 
- #ifndef __LINUX_TMS380TR_H
-diff --git a/drivers/net/tokenring/tmspci.c b/drivers/net/tokenring/tmspci.c
-index 1c18f78..a24153c 100644
---- a/drivers/net/tokenring/tmspci.c
-+++ b/drivers/net/tokenring/tmspci.c
-@@ -14,7 +14,7 @@
-  *      - 3Com 3C339 Token Link Velocity
-  *
-  *  Maintainer(s):
-- *    AF	Adam Fritzler		mid@auk.cx
-+ *    AF	Adam Fritzler		mid@zigamorph.net
-  *
-  *  Modification History:
-  *	30-Dec-99	AF	Split off from the tms380tr driver.
-diff --git a/drivers/scsi/aha1542.c b/drivers/scsi/aha1542.c
-index bbcc2c5..3aa978b 100644
---- a/drivers/scsi/aha1542.c
-+++ b/drivers/scsi/aha1542.c
-@@ -21,7 +21,7 @@
-  *  Modified by Chris Faulhaber <jedgar@fxp.org>
-  *        Added module command-line options
-  *        19-Jul-99
-- *  Modified by Adam Fritzler <mid@auk.cx>
-+ *  Modified by Adam Fritzler <mid@zigamorph.net>
-  *        Added proper detection of the AHA-1640 (MCA version of AHA-1540)
-  */
- 
+(And yes, after using the saved state to load the entropy at
+boot-time, the saved state file is overwritten, and if you're
+paranoid, you can scrub the disk after it is read and mixed into the
+entropy pool.  And yes, the saved state is *not* the entropy pool used
+during the previous boot, but entropy extracted using SHA-1 based
+CRNG.)
 
+>> If you have a server, the best thing you can do is use a hardware
+>> random number generator, if it exists.  Fortunately a number of
+>> hardware platforms, such as IBM blades and Thinkpads, come with TPM
+>> modules that include hardware RNG's.  That's ultimately the best way
+>> to solve these issues.
+>
+> Just how random are they?  Do they turn out to be quite predictable if 
+> you're IBM?
+
+They use a noise diode, so they are as good as any other hardware
+random number generator.  Of course, you ultimately have to trust the
+supplier of your hardware not to do something screwy, and Thinkpads
+are now made by Lenovo, which has caused some US Government types to
+get paranoid --- but that's why the best way to do things is to get
+entropy from as many places as possible, and mix it all into
+/dev/random.  If any one of them is unknown to the attacker, he's stuck.  
+
+And if you are sufficiently paranoid, you obviously can't use
+commodity hardware, and how do you know that some time along time ago,
+someone snuck in a evil secret code into the C compiler that was
+designed to survive a bootstrap process[1]?  And how do you know that
+your keyboard controller hasn't been gimmicked to record your key
+strokes and then send them out by adding jitter that can be read by an
+attacker looking at the timing of your ssh packets[2]?
+
+But seriously, if you are that paranoid, better build your hardware
+from scratch, and then hand assemble your compiler, and then do a
+line-by-line audit of all of your source code.  It's going to be the
+only way to be sure....
+
+						- Ted
+
+[1] Ken Thompson, Reflections on Trusting Trust.
+	http://cm.bell-labs.com/who/ken/trust.html
+
+[2] Gaurav Shah, Andres Molina and Matt Blaze, Keyboards and Covert Channels.
+	http://www.usenix.org/events/sec06/tech/shah/shah_html/index.html
 
