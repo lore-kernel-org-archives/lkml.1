@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755853AbXLRXhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbXLRXiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755853AbXLRXhB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 18:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbXLRXgw
+	id S1757023AbXLRXiO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 18:38:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbXLRXh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 18:36:52 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60694 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753566AbXLRXgv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 18:36:51 -0500
-Date: Tue, 18 Dec 2007 15:36:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Marcin =?ISO-8859-1?Q?=5F=5Flusarz?= <marcin.slusarz@gmail.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] usb/storage/initializers.c: fix signedness difference
-Message-Id: <20071218153642.cf8c6a0b.akpm@linux-foundation.org>
-In-Reply-To: <20071209212337.GA9440@joi>
-References: <20071209212337.GA9440@joi>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Dec 2007 18:37:59 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:41572 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751299AbXLRXh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 18:37:58 -0500
+Message-Id: <20071218233758.164807000@sgi.com>
+References: <20071218233757.981161000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 18 Dec 2007 15:37:58 -0800
+From: travis@sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] x86: fix show cpuinfo cpu number always zero
+Content-Disposition: inline; filename=cpuinfo_x86-fix
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Dec 2007 22:23:42 +0100
-Marcin __lusarz <marcin.slusarz@gmail.com> wrote:
+This fix corrects the problem that early_identify_cpu() sets
+cpu_index to '0' (needed when called by setup_arch) after
+smp_store_cpu_info() had set it to the correct value.
 
-> usb/storage/initializers.c: fix signedness difference
-> 
-> Signed-off-by: Marcin __lusarz <marcin.slusarz@gmail.com>
-> ---
->  drivers/usb/storage/initializers.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/usb/storage/initializers.c b/drivers/usb/storage/initializers.c
-> index ee5b42a..187dd1e 100644
-> --- a/drivers/usb/storage/initializers.c
-> +++ b/drivers/usb/storage/initializers.c
-> @@ -66,7 +66,8 @@ int usb_stor_ucr61s2b_init(struct us_data *us)
->  {
->  	struct bulk_cb_wrap *bcb = (struct bulk_cb_wrap*) us->iobuf;
->  	struct bulk_cs_wrap *bcs = (struct bulk_cs_wrap*) us->iobuf;
-> -	int res, partial;
-> +	int res;
-> +	unsigned int partial;
->  	static char init_string[] = "\xec\x0a\x06\x00$PCCHIPS";
-> 
->  	US_DEBUGP("Sending UCR-61S2B initialization packet...\n");
+The error shows up in 'cat /proc/cpuinfo' will all cpus = 0.
 
-Often we just wouldn't bother about something this minor.
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/kernel/smpboot_64.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-But I see later on that we pass the address of `partial' into some other
-function and I am guessing that this produces some warning with some tool
-which you didn't tell us about? 
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -141,8 +141,8 @@ static void __cpuinit smp_store_cpu_info
+ 	struct cpuinfo_x86 *c = &cpu_data(id);
+ 
+ 	*c = boot_cpu_data;
+-	c->cpu_index = id;
+ 	identify_cpu(c);
++	c->cpu_index = id;
+ 	print_cpu_info(c);
+ }
+ 
+
+-- 
