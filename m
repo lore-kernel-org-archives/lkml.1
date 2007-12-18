@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935092AbXLRAPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762306AbXLRAQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935092AbXLRAPm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 19:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbXLRAPe
+	id S1762306AbXLRAQQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 19:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760914AbXLRAPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 19:15:34 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43821 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754181AbXLRAPd (ORCPT
+	Mon, 17 Dec 2007 19:15:53 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:63529 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760157AbXLRAPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 19:15:33 -0500
-Date: Tue, 18 Dec 2007 00:07:40 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, Alan Cox <alan@redhat.com>,
-       Greg Kroah-Hartman <greg@kroah.com>, <jgarzik@pobox.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, <wingel@nano-system.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       <james.smart@emulex.com>, <linux-driver@qlogic.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC/PATCH 2/4] pci: Remove users of pci_enable_device_bars()
-Message-ID: <20071218000740.446a6adf@the-village.bc.nu>
-In-Reply-To: <20071217230126.26291DDE34@ozlabs.org>
-References: <1197932473.576079.142524077033.qpush@grosgo>
-	<20071217230126.26291DDE34@ozlabs.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 17 Dec 2007 19:15:52 -0500
+Message-Id: <200712180003.lBI03N7F092396@www262.sakura.ne.jp>
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: "\"\\\"Serge E. Hallyn\\\"\"" <serue@us.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 18 Dec 2007 09:03:23 +0900
+References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com>
+In-Reply-To: <20071217194802.GA14156@sergelap.austin.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Dec 2007 10:01:14 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Hello.
 
-> This patch converts users of pci_enable_device_bars() to the new
-> pci_enable_device_{io,mem} interface.
-> 
-> The new API fits nicely, except maybe for the QLA case where a bit of
-> code re-organization might be a good idea but I prefer sticking to the
-> simple patch as I don't have hardware to test on.
-> 
-> I'll also need some feedback on the cs5520 change
+Serge E. Hallyn wrote:
+> CAP_MKNOD will be removed from its capability
+I think it is not enough because the root can rename/unlink device files
+(mv /dev/sda1 /dev/tmp; mv /dev/sda2 /dev/sda1; mv /dev/tmp /dev/sda2).
 
-5520 in fact is always enabled as it is the host bridge.
-pci_enable_device_io will do just fine. The 5520 fun is if you disable it
-the system hangs.
+> To use your approach, i guess we would have to use selinux (or tomoyo)
+> to enforce that devices may only be created under /dev?
+Everyone can use this filesystem alone.
+But use with MAC (or whatever access control mechanisms that prevent
+attackers from unmounting/overlaying this filesystem) is recomennded.
