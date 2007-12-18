@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbXLRPt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759736AbXLRPvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759289AbXLRPt6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 10:49:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757822AbXLRPtv
+	id S1759736AbXLRPvh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 10:51:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbXLRPva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 10:49:51 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:44285 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757673AbXLRPtu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 10:49:50 -0500
-Date: Tue, 18 Dec 2007 10:49:49 -0500
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, Rene Herman <rene.herman@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80 on some AMD64x2 laptops, etc.
-Message-ID: <20071218154949.GG2310@csclub.uwaterloo.ca>
-References: <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <20071214131502.GA14359@elte.hu> <4762C551.5070003@zytor.com> <20071214210652.GB28793@elf.ucw.cz> <4763001A.1070102@zytor.com> <20071214232955.545ab809@the-village.bc.nu> <4766E453.1030202@keyaccess.nl> <20071217232011.GB12647@elf.ucw.cz> <20071218000608.05493fa3@the-village.bc.nu>
+	Tue, 18 Dec 2007 10:51:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35270 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753670AbXLRPv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 10:51:29 -0500
+Message-ID: <4767EC73.2030507@redhat.com>
+Date: Tue, 18 Dec 2007 09:51:15 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071218000608.05493fa3@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Halcrow <mhalcrow@us.ibm.com>
+CC: mike@halcrow.us, Jarod Wilson <jwilson@redhat.com>
+Subject: [PATCH] ecryptfs: fix string overflow on long cipher names
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 18, 2007 at 12:06:08AM +0000, Alan Cox wrote:
-> 300MHz 486 -> Nat Semi Geode.
-> 
-> NextGen as you say are 386 - 586 depending on the BIOS hypercode but I
-> believe lack WP even in > 386 mode.
+Passing a cipher name > 32 chars on mount results in an overflow
+when the cipher name is printed, because the last character
+in the struct ecryptfs_key_tfm's cipher_name string was never 
+zeroed.
 
-Geode identifies itself as family 5 though.  It may prefer 486 code but
-it's still family 5.  Well Geode GX, SCx200 and LX that is.  I imagine
-the Geode NX would be family 6.
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
 
---
-Len Sorensen
+---
+
+Index: linux-2.6.24-rc3/fs/ecryptfs/crypto.c
+===================================================================
+--- linux-2.6.24-rc3.orig/fs/ecryptfs/crypto.c
++++ linux-2.6.24-rc3/fs/ecryptfs/crypto.c
+@@ -1847,6 +1847,7 @@ ecryptfs_add_new_key_tfm(struct ecryptfs
+ 	mutex_init(&tmp_tfm->key_tfm_mutex);
+ 	strncpy(tmp_tfm->cipher_name, cipher_name,
+ 		ECRYPTFS_MAX_CIPHER_NAME_SIZE);
++	tmp_tfm->cipher_name[ECRYPTFS_MAX_CIPHER_NAME_SIZE] = '\0';
+ 	tmp_tfm->key_size = key_size;
+ 	rc = ecryptfs_process_key_cipher(&tmp_tfm->key_tfm,
+ 					 tmp_tfm->cipher_name,
+
+
+
