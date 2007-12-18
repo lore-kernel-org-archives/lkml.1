@@ -1,116 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbXLRDwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760420AbXLREIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbXLRDwm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 22:52:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbXLRDwd
+	id S1760420AbXLREIw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 23:08:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbXLREIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 22:52:33 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:15580 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbXLRDwc (ORCPT
+	Mon, 17 Dec 2007 23:08:42 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:38191 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751168AbXLREIm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 22:52:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=RXw6YEZzMafixdYZBRL/T4MhPEYdKD3j6A46ycjNJUIjkT4ZYl5Ev0joIVrRT/JEScxakmbaxU00uWwceqpBPWmG82s9YCehfQlCw4u+cUvamr83pz1DI19HsNrO6wcAtnnyuDZrCK4kBwbT+q9aU4XvJM/+/qWZe9MiEX+5YNI=
-Message-ID: <476743F0.8090609@gmail.com>
-Date: Tue, 18 Dec 2007 12:52:16 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 17 Dec 2007 23:08:42 -0500
+Message-ID: <476747DC.4040309@davidnewall.com>
+Date: Tue, 18 Dec 2007 14:39:00 +1030
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: shyam_iyer@dell.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB (v3)
-References: <12954112.1197908230928.JavaMail.root@wombat.diezmil.com>
-In-Reply-To: <12954112.1197908230928.JavaMail.root@wombat.diezmil.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: multipart/mixed;
- boundary="------------040807020909090500040200"
+To: Theodore Tso <tytso@mit.edu>, David Newall <david@davidnewall.com>,
+       Andy Lutomirski <luto@myrealbox.com>,
+       John Reiser <jreiser@BitWagon.com>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, security@kernel.org
+Subject: Re: /dev/urandom uses uninit bytes, leaks user data
+References: <20071214201305.GL19691@waste.org> <4762EB63.8070100@BitWagon.com> <20071214232322.GE17344@thunk.org> <47632010.6030709@BitWagon.com> <20071215043208.GF17344@thunk.org> <4766A40D.4080804@BitWagon.com> <20071217173623.GC7070@thunk.org> <476719E5.1010505@myrealbox.com> <20071218030533.GN7070@thunk.org> <47673AD8.9010702@davidnewall.com> <20071218034656.GR7070@thunk.org>
+In-Reply-To: <20071218034656.GR7070@thunk.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040807020909090500040200
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Theodore Tso wrote:
+> On Tue, Dec 18, 2007 at 01:43:28PM +1030, David Newall wrote:
+>   
+>> On a server, keyboard and mouse are rarely used.  As you've described it, 
+>> that leaves only the disk, and during the boot process, disk accesses and 
+>> timing are somewhat predictable.  Whether this is sufficient to break the 
+>> RNG is (clearly) a matter of debate.
+>>     
+>
+> In normal operaiton, entropy is accumlated on the system, extracted
+> via /dev/urandom at shutdown, and then loaded back into the system
+> when it boots up.
 
-Please apply the attached patch and try to use cdrom w/o specifying any
-parameter and report kernel log.
+Thus, the entropy saved at shutdown can be known at boot-time.  (You can 
+examine the saved entropy on disk.)
 
-Thanks.
 
--- 
-tejun
+> If you have a server, the best thing you can do is use a hardware
+> random number generator, if it exists.  Fortunately a number of
+> hardware platforms, such as IBM blades and Thinkpads, come with TPM
+> modules that include hardware RNG's.  That's ultimately the best way
+> to solve these issues.
 
---------------040807020909090500040200
-Content-Type: text/plain;
- name="patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="patch"
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvYXRhL2xpYmF0YS1jb3JlLmMgYi9kcml2ZXJzL2F0YS9s
-aWJhdGEtY29yZS5jCmluZGV4IDQ3NTNhMTguLmFjYWE4YjggMTAwNjQ0Ci0tLSBhL2RyaXZl
-cnMvYXRhL2xpYmF0YS1jb3JlLmMKKysrIGIvZHJpdmVycy9hdGEvbGliYXRhLWNvcmUuYwpA
-QCAtNDUzNyw2ICs0NTM3LDEwIEBAIHN0YXRpYyB2b2lkIGF0YV9maWxsX3NnKHN0cnVjdCBh
-dGFfcXVldWVkX2NtZCAqcWMpCiAJCSAqIE5vdGUgaC93IGRvZXNuJ3Qgc3VwcG9ydCA2NC1i
-aXQsIHNvIHdlIHVuY29uZGl0aW9uYWxseQogCQkgKiB0cnVuY2F0ZSBkbWFfYWRkcl90IHRv
-IHUzMi4KIAkJICovCisJCWlmIChzZ19kbWFfYWRkcmVzcyhzZykgJiB+RE1BX0JJVF9NQVNL
-KDMyKSkKKwkJCWF0YV9kZXZfcHJpbnRrKHFjLT5kZXYsIEtFUk5fV0FSTklORywKKwkJCQkg
-ICAgICAgIlhYWCBETUEgYWRkcmVzcyAlbGx4IGlzIGFib3ZlIDMyYml0XG4iLAorCQkJCSAg
-ICAgICBzZ19kbWFfYWRkcmVzcyhzZykpOwogCQlhZGRyID0gKHUzMikgc2dfZG1hX2FkZHJl
-c3Moc2cpOwogCQlzZ19sZW4gPSBzZ19kbWFfbGVuKHNnKTsKIApAQCAtNjYyOCw2ICs2NjMy
-LDEwIEBAIGludCBhdGFfcG9ydF9zdGFydChzdHJ1Y3QgYXRhX3BvcnQgKmFwKQogCWlmIChy
-YykKIAkJcmV0dXJuIHJjOwogCisJYXRhX3BvcnRfcHJpbnRrKGFwLCBLRVJOX0lORk8sICJY
-WFg6IHByZCAlcC8lbGx4IHBhZCAlcC8lbGx4XG4iLAorCQkJYXAtPnByZCwgKHVuc2lnbmVk
-IGxvbmcgbG9uZylhcC0+cHJkX2RtYSwKKwkJCWFwLT5wYWQsICh1bnNpZ25lZCBsb25nIGxv
-bmcpYXAtPnBhZF9kbWEpOworCiAJRFBSSU5USygicHJkIGFsbG9jLCB2aXJ0ICVwLCBkbWEg
-JWxseFxuIiwgYXAtPnByZCwKIAkJKHVuc2lnbmVkIGxvbmcgbG9uZylhcC0+cHJkX2RtYSk7
-CiAJcmV0dXJuIDA7CmRpZmYgLS1naXQgYS9kcml2ZXJzL2F0YS9zYXRhX252LmMgYi9kcml2
-ZXJzL2F0YS9zYXRhX252LmMKaW5kZXggZWQ1ZGM3Yy4uYzU1ZDJhZSAxMDA2NDQKLS0tIGEv
-ZHJpdmVycy9hdGEvc2F0YV9udi5jCisrKyBiL2RyaXZlcnMvYXRhL3NhdGFfbnYuYwpAQCAt
-MjQ3LDYgKzI0Nyw3IEBAIHN0cnVjdCBudl9hZG1hX3BvcnRfcHJpdiB7CiAJdm9pZCBfX2lv
-bWVtCQkqY3RsX2Jsb2NrOwogCXZvaWQgX19pb21lbQkJKmdlbl9ibG9jazsKIAl2b2lkIF9f
-aW9tZW0JCSpub3RpZmllcl9jbGVhcl9ibG9jazsKKwl1NjQJCQlhZG1hX2RtYV9tYXNrOwog
-CXU4CQkJZmxhZ3M7CiAJaW50CQkJbGFzdF9pc3N1ZV9uY3E7CiB9OwpAQCAtNzQ4LDcgKzc0
-OSw3IEBAIHN0YXRpYyBpbnQgbnZfYWRtYV9zbGF2ZV9jb25maWcoc3RydWN0IHNjc2lfZGV2
-aWNlICpzZGV2KQogCQlhZG1hX2VuYWJsZSA9IDA7CiAJCW52X2FkbWFfcmVnaXN0ZXJfbW9k
-ZShhcCk7CiAJfSBlbHNlIHsKLQkJYm91bmNlX2xpbWl0ID0gKmFwLT5kZXYtPmRtYV9tYXNr
-OworCQlib3VuY2VfbGltaXQgPSBwcC0+YWRtYV9kbWFfbWFzazsKIAkJc2VnbWVudF9ib3Vu
-ZGFyeSA9IE5WX0FETUFfRE1BX0JPVU5EQVJZOwogCQlzZ190YWJsZXNpemUgPSBOVl9BRE1B
-X1NHVEJMX1RPVEFMX0xFTjsKIAkJYWRtYV9lbmFibGUgPSAxOwpAQCAtMTEzNCwxMCArMTEz
-NSwyMCBAQCBzdGF0aWMgaW50IG52X2FkbWFfcG9ydF9zdGFydChzdHJ1Y3QgYXRhX3BvcnQg
-KmFwKQogCXZvaWQgKm1lbTsKIAlkbWFfYWRkcl90IG1lbV9kbWE7CiAJdm9pZCBfX2lvbWVt
-ICptbWlvOworCXN0cnVjdCBwY2lfZGV2ICpwZGV2ID0gdG9fcGNpX2RldihkZXYpOwogCXUx
-NiB0bXA7CiAKIAlWUFJJTlRLKCJFTlRFUlxuIik7CiAKKwkvKiBFbnN1cmUgRE1BIG1hc2sg
-aXMgc2V0IHRvIDMyLWJpdCBiZWZvcmUgYWxsb2NhdGluZyBsZWdhY3kgUFJEIGFuZAorCSAg
-IHBhZCBidWZmZXJzICovCisJcmMgPSBwY2lfc2V0X2RtYV9tYXNrKHBkZXYsIERNQV9CSVRf
-TUFTSygzMikpOworCWlmIChyYykKKwkJcmV0dXJuIHJjOworCXJjID0gcGNpX3NldF9jb25z
-aXN0ZW50X2RtYV9tYXNrKHBkZXYsIERNQV9CSVRfTUFTSygzMikpOworCWlmIChyYykKKwkJ
-cmV0dXJuIHJjOworCiAJcmMgPSBhdGFfcG9ydF9zdGFydChhcCk7CiAJaWYgKHJjKQogCQly
-ZXR1cm4gcmM7CkBAIC0xMTUzLDYgKzExNjQsMTUgQEAgc3RhdGljIGludCBudl9hZG1hX3Bv
-cnRfc3RhcnQoc3RydWN0IGF0YV9wb3J0ICphcCkKIAlwcC0+bm90aWZpZXJfY2xlYXJfYmxv
-Y2sgPSBwcC0+Z2VuX2Jsb2NrICsKIAkgICAgICAgTlZfQURNQV9OT1RJRklFUl9DTEVBUiAr
-ICg0ICogYXAtPnBvcnRfbm8pOwogCisJLyogTm93IHRoYXQgdGhlIGxlZ2FjeSBQUkQgYW5k
-IHBhZGRpbmcgYnVmZmVyIGFyZSBhbGxvY2F0ZWQgd2UgY2FuCisJICAgc2FmZWx5IHJhaXNl
-IHRoZSBETUEgbWFzayB0byBhbGxvY2F0ZSB0aGUgQ1BCL0FQUkQgdGFibGUuCisJICAgVGhl
-c2UgYXJlIGFsbG93ZWQgdG8gZmFpbCBzaW5jZSB3ZSBzdG9yZSB0aGUgdmFsdWUgdGhhdCBl
-bmRzIHVwCisJICAgYmVpbmcgdXNlZCB0byBzZXQgYXMgdGhlIGJvdW5jZSBsaW1pdCBpbiBz
-bGF2ZV9jb25maWcgbGF0ZXIgaWYKKwkgICBuZWVkZWQuICovCisJcGNpX3NldF9kbWFfbWFz
-ayhwZGV2LCBETUFfQklUX01BU0soNjQpKTsKKwlwY2lfc2V0X2NvbnNpc3RlbnRfZG1hX21h
-c2socGRldiwgRE1BX0JJVF9NQVNLKDY0KSk7CisJcHAtPmFkbWFfZG1hX21hc2sgPSAqZGV2
-LT5kbWFfbWFzazsKKwogCW1lbSA9IGRtYW1fYWxsb2NfY29oZXJlbnQoZGV2LCBOVl9BRE1B
-X1BPUlRfUFJJVl9ETUFfU1osCiAJCQkJICAmbWVtX2RtYSwgR0ZQX0tFUk5FTCk7CiAJaWYg
-KCFtZW0pCkBAIC0yNDE4LDEyICsyNDM4LDYgQEAgc3RhdGljIGludCBudl9pbml0X29uZShz
-dHJ1Y3QgcGNpX2RldiAqcGRldiwgY29uc3Qgc3RydWN0IHBjaV9kZXZpY2VfaWQgKmVudCkK
-IAlocHJpdi0+dHlwZSA9IHR5cGU7CiAJaG9zdC0+cHJpdmF0ZV9kYXRhID0gaHByaXY7CiAK
-LQkvKiBzZXQgNjRiaXQgZG1hIG1hc2tzLCBtYXkgZmFpbCAqLwotCWlmICh0eXBlID09IEFE
-TUEpIHsKLQkJaWYgKHBjaV9zZXRfZG1hX21hc2socGRldiwgRE1BXzY0QklUX01BU0spID09
-IDApCi0JCQlwY2lfc2V0X2NvbnNpc3RlbnRfZG1hX21hc2socGRldiwgRE1BXzY0QklUX01B
-U0spOwotCX0KLQogCS8qIHJlcXVlc3QgYW5kIGlvbWFwIE5WX01NSU9fQkFSICovCiAJcmMg
-PSBwY2ltX2lvbWFwX3JlZ2lvbnMocGRldiwgMSA8PCBOVl9NTUlPX0JBUiwgRFJWX05BTUUp
-OwogCWlmIChyYykKZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvbGliYXRhLmggYi9pbmNs
-dWRlL2xpbnV4L2xpYmF0YS5oCg==
---------------040807020909090500040200--
+Just how random are they?  Do they turn out to be quite predictable if 
+you're IBM?
