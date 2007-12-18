@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbXLRWaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbXLRWao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753395AbXLRWaR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 17:30:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXLRWaB
+	id S1755855AbXLRWao (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 17:30:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXLRWac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 17:30:01 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50379
+	Tue, 18 Dec 2007 17:30:32 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50384
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752135AbXLRWaA (ORCPT
+	by vger.kernel.org with ESMTP id S1752151AbXLRWaa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 17:30:00 -0500
-Date: Tue, 18 Dec 2007 14:29:56 -0800 (PST)
-Message-Id: <20071218.142956.26529678.davem@davemloft.net>
+	Tue, 18 Dec 2007 17:30:30 -0500
+Date: Tue, 18 Dec 2007 14:30:26 -0800 (PST)
+Message-Id: <20071218.143026.78772130.davem@davemloft.net>
 To: stefanr@s5r6.in-berlin.de
 Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@suse.de,
        krh@bitplanet.net, linux1394-devel@lists.sourceforge.net
@@ -32,9 +32,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Date: Tue, 18 Dec 2007 11:38:27 +0100
 
-> Also note:
->   - The very same code did not oops at this point in 2.6.22.  It only
->     started doing so in 2.6.23.
+>   - There has been no other report of this kind for any other
+>     architecture yet.  I would expect e.g. the PPC64 folks to report
+>     bugs in our dma mappings eventually.
 
-2.6.23 is when the sparc64 IOMMU code started relying upon
-the dev_archdata bits being correct.
+Irrelevant fact, powerpc handles it's dev_archdata differently
+from sparc64.
