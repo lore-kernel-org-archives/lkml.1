@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752102AbXLRTFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752090AbXLRTSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752102AbXLRTFH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 14:05:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbXLRTEz
+	id S1752090AbXLRTSm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 14:18:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbXLRTSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 14:04:55 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:56234 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbXLRTEy (ORCPT
+	Tue, 18 Dec 2007 14:18:32 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:48822 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750985AbXLRTSb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 14:04:54 -0500
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: akepner@sgi.com, Andrew Morton <akpm@linux-foundation.org>,
-       grundler@parisc-linux.org, jbarnes@virtuousgeek.org, jes@sgi.com,
-       randy.dunlap@oracle.com, James.Bottomley@steeleye.com,
-       davem@davemloft.net, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] dma: passing "attributes" to dma_map_* routines
-X-Message-Flag: Warning: May contain useful information
-References: <20071218001758.GO21916@sgi.com>
-	<4767FA62.9060002@s5r6.in-berlin.de>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 18 Dec 2007 11:04:47 -0800
-In-Reply-To: <4767FA62.9060002@s5r6.in-berlin.de> (Stefan Richter's message of "Tue, 18 Dec 2007 17:50:42 +0100")
-Message-ID: <adaejdj3ju8.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Tue, 18 Dec 2007 14:18:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=COxh9zVk24fNYcWzPo+dSDH5xzKCqxlewq7b8MSgk0mkumK3T5RoF4j5bIKZSOMhjGodtQHr64bmkJb9lcxghVIGpFgkrHOE1CDDd00l2MR0i/6rrSgapI1Abc285nh2vyOBgLnKiViRy/LyxA7p5ATkdRbrRJqLaa9Glgp6Zc0=
+Message-ID: <3efb10970712181118w58daac1dw52f776ccf1dd0eae@mail.gmail.com>
+Date: Tue, 18 Dec 2007 20:18:30 +0100
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] atmel_serial: Split the interrupt handler
+Cc: "Andrew Victor" <linux@maxim.org.za>,
+       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071218181921.2478baa9@dhcp-252-066.norway.atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Dec 2007 19:04:48.0485 (UTC) FILETIME=[DC354950:01C841A8]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1197987255-23045-1-git-send-email-hskinnemoen@atmel.com>
+	 <3efb10970712180723x2cd22c5ei6b342f0ab7cc39c2@mail.gmail.com>
+	 <20071218181921.2478baa9@dhcp-252-066.norway.atmel.com>
+X-Google-Sender-Auth: d28c8a00b555cfe8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > Waaay back in October I sent some patches for passing additional 
- > > attributes to the dma_map_* routines:
- > > 
- > > http://marc.info/?l=linux-kernel&m=119137949604365&w=2
- > 
- > Do I understand correctly?:  A device and the CPUs communicate via two
- > separate memory areas:  A data buffer and a status FIFO.  The NUMA
- > interconnect may reorder accesses of the device to the areas.  (Write
- > accesses?  Read accesses?  Both?)
+Hello Haavard,
 
-Yes, that is correct.  In-flight DMA writes from the device to system
-memory can pass each other, so that the CPU sees a "complete" status
-in the completion queue before the operation in question has actually
-finished updating CPU memory.
+> > BTW: Attached I have added a 2nd patch that I use for Preempt-RT. (For
+> > cleaner startup, and to get rid of useless IRQ-threads.
+>
+> Hrm. That assumption isn't valid on AVR32...on AP7000, for example,
+> IRQ1 is used by the LCD controller.
 
- > To ensure synchronization between device and CPUs, you want to mark a
- > memory area which is to be dma-mapped with a flag which says:  "Writes
- > to the memory region will cause in-flight DMA to be flushed".  Whose
- > writes?  A write access from the device or a write access from a CPU?
+In that case, forget that (dirty) patch completely for now. It does
+not break things on Preempt-RT, we only will have a IRQ-1 kernel
+thread that is never scheduled. (Of which I think is actually a
+irq-manage bug, if there are no handlers that are scheduled on that
+thread, it should not even start the thread.)
 
-Write access from the device.  The idea is to set the flag on the
-completion queue, so that when the device writes the "complete" status
-for the operation, all DMAs associated with that operation are flushed
-first.
+I will verify/test the complete patchset tomorrow.
 
- - R.
+Kind Regards,
+
+Remy
