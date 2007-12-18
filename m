@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbXLRWDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbXLRWFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757327AbXLRWDb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 17:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXLRWDX
+	id S1756433AbXLRWFV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 17:05:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbXLRWFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 17:03:23 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54154 "EHLO
+	Tue, 18 Dec 2007 17:05:04 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54316 "EHLO
 	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753143AbXLRWDV (ORCPT
+	with ESMTP id S1752836AbXLRWFD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 17:03:21 -0500
-Date: Tue, 18 Dec 2007 22:02:13 +0000 (GMT)
+	Tue, 18 Dec 2007 17:05:03 -0500
+Date: Tue, 18 Dec 2007 22:03:13 +0000 (GMT)
 From: Hugh Dickins <hugh@veritas.com>
 X-X-Sender: hugh@blonde.wat.veritas.com
 To: Andrew Morton <akpm@linux-foundation.org>
 cc: Christoph Rohland <hans-christoph.rohland@sap.com>,
-       Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/9] tmpfs: allocate on read when stacked
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 6/9] tmpfs: make shmem_unuse more preemptible
 In-Reply-To: <Pine.LNX.4.64.0712182144370.26235@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0712182201290.27165@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0712182202180.27165@blonde.wat.veritas.com>
 References: <Pine.LNX.4.64.0712182144370.26235@blonde.wat.veritas.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -26,70 +26,96 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tmpfs is expected to limit the memory used (unless mounted with nr_blocks=0
-or size=0).  But if a stacked filesystem such as unionfs gets pages from a
-sparse tmpfs file by reading holes, and then writes to them, it can easily
-exceed any such limit at present.
+shmem_unuse is at present an unbroken search through every swap vector page
+of every tmpfs file which might be swapped, all under shmem_swaplist_lock.
+This dates from long ago, when the caller held mmlist_lock over it all too:
+long gone, but there's never been much pressure for preemptible swapoff.
 
-So suppress the SGP_READ "don't allocate page" ZERO_PAGE optimization when
-reading for the kernel (a KERNEL_DS check, ugh, sorry about that).  Indeed,
-pessimistically mark such pages as dirty, so they cannot get reclaimed and
-unaccounted by mistake.  The venerable shmem_recalc_inode code (originally
-to account for the reclaim of clean pages) suffices to get the accounting
-right when swappages are dropped in favour of more uptodate filepages.
+Make it a little more preemptible, replacing shmem_swaplist_lock by
+shmem_swaplist_mutex, inserting a cond_resched in the main loop, and
+a cond_resched_lock (on info->lock) at one convenient point in the
+shmem_unuse_inode loop, where it has no outstanding kmap_atomic.
 
-This also fixes the NULL shmem_swp_entry BUG or oops in shmem_writepage,
-caused by unionfs writing to a very sparse tmpfs file: to minimize memory
-allocation in swapout, tmpfs requires the swap vector be allocated upfront,
-which wasn't always happening in this stacked case.
+If we're serious about preemptible swapoff, there's much further to go
+e.g. I'm stupid to let the kmap_atomics of the decreasingly significant
+HIGHMEM case dictate preemptiblility for other configs.  But as in the
+earlier patch to make swapoff scan ptes preemptibly, my hidden agenda is
+really towards making memcgroups work, hardly about preemptibility at all.
 
 Signed-off-by: Hugh Dickins <hugh@veritas.com>
 ---
 
- mm/shmem.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ mm/shmem.c |   23 ++++++++++++++++-------
+ 1 file changed, 16 insertions(+), 7 deletions(-)
 
---- tmpfs4/mm/shmem.c	2007-12-05 16:42:19.000000000 +0000
-+++ tmpfs5/mm/shmem.c	2007-12-05 16:42:19.000000000 +0000
-@@ -80,6 +80,7 @@
- enum sgp_type {
- 	SGP_READ,	/* don't exceed i_size, don't allocate page */
- 	SGP_CACHE,	/* don't exceed i_size, may allocate page */
-+	SGP_DIRTY,	/* like SGP_CACHE, but set new page dirty */
- 	SGP_WRITE,	/* may exceed i_size, may allocate page */
+--- tmpfs5/mm/shmem.c	2007-12-05 16:42:19.000000000 +0000
++++ tmpfs6/mm/shmem.c	2007-12-06 16:34:56.000000000 +0000
+@@ -193,7 +193,7 @@ static struct backing_dev_info shmem_bac
  };
  
-@@ -1333,6 +1334,8 @@ repeat:
- 		clear_highpage(filepage);
- 		flush_dcache_page(filepage);
- 		SetPageUptodate(filepage);
-+		if (sgp == SGP_DIRTY)
-+			set_page_dirty(filepage);
- 	}
- done:
- 	*pagep = filepage;
-@@ -1518,6 +1521,15 @@ static void do_shmem_file_read(struct fi
- 	struct inode *inode = filp->f_path.dentry->d_inode;
- 	struct address_space *mapping = inode->i_mapping;
- 	unsigned long index, offset;
-+	enum sgp_type sgp = SGP_READ;
-+
-+	/*
-+	 * Might this read be for a stacking filesystem?  Then when reading
-+	 * holes of a sparse file, we actually need to allocate those pages,
-+	 * and even mark them dirty, so it cannot exceed the max_blocks limit.
-+	 */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		sgp = SGP_DIRTY;
+ static LIST_HEAD(shmem_swaplist);
+-static DEFINE_SPINLOCK(shmem_swaplist_lock);
++static DEFINE_MUTEX(shmem_swaplist_mutex);
  
- 	index = *ppos >> PAGE_CACHE_SHIFT;
- 	offset = *ppos & ~PAGE_CACHE_MASK;
-@@ -1536,7 +1548,7 @@ static void do_shmem_file_read(struct fi
- 				break;
+ static void shmem_free_blocks(struct inode *inode, long pages)
+ {
+@@ -796,9 +796,9 @@ static void shmem_delete_inode(struct in
+ 		inode->i_size = 0;
+ 		shmem_truncate(inode);
+ 		if (!list_empty(&info->swaplist)) {
+-			spin_lock(&shmem_swaplist_lock);
++			mutex_lock(&shmem_swaplist_mutex);
+ 			list_del_init(&info->swaplist);
+-			spin_unlock(&shmem_swaplist_lock);
++			mutex_unlock(&shmem_swaplist_mutex);
  		}
+ 	}
+ 	BUG_ON(inode->i_blocks);
+@@ -851,6 +851,14 @@ static int shmem_unuse_inode(struct shme
+ 	for (idx = SHMEM_NR_DIRECT; idx < limit; idx += ENTRIES_PER_PAGE, dir++) {
+ 		if (unlikely(idx == stage)) {
+ 			shmem_dir_unmap(dir-1);
++			if (cond_resched_lock(&info->lock)) {
++				/* check it has not been truncated */
++				if (limit > info->next_index) {
++					limit = info->next_index;
++					if (idx >= limit)
++						goto lost2;
++				}
++			}
+ 			dir = shmem_dir_map(info->i_indirect) +
+ 			    ENTRIES_PER_PAGE/2 + idx/ENTRIES_PER_PAGEPAGE;
+ 			while (!*dir) {
+@@ -924,7 +932,7 @@ int shmem_unuse(swp_entry_t entry, struc
+ 	struct shmem_inode_info *info;
+ 	int found = 0;
  
--		desc->error = shmem_getpage(inode, index, &page, SGP_READ, NULL);
-+		desc->error = shmem_getpage(inode, index, &page, sgp, NULL);
- 		if (desc->error) {
- 			if (desc->error == -EINVAL)
- 				desc->error = 0;
+-	spin_lock(&shmem_swaplist_lock);
++	mutex_lock(&shmem_swaplist_mutex);
+ 	list_for_each_safe(p, next, &shmem_swaplist) {
+ 		info = list_entry(p, struct shmem_inode_info, swaplist);
+ 		if (!info->swapped)
+@@ -935,8 +943,9 @@ int shmem_unuse(swp_entry_t entry, struc
+ 			found = 1;
+ 			break;
+ 		}
++		cond_resched();
+ 	}
+-	spin_unlock(&shmem_swaplist_lock);
++	mutex_unlock(&shmem_swaplist_mutex);
+ 	return found;
+ }
+ 
+@@ -996,10 +1005,10 @@ static int shmem_writepage(struct page *
+ 		shmem_swp_unmap(entry);
+ 		spin_unlock(&info->lock);
+ 		if (list_empty(&info->swaplist)) {
+-			spin_lock(&shmem_swaplist_lock);
++			mutex_lock(&shmem_swaplist_mutex);
+ 			/* move instead of add in case we're racing */
+ 			list_move_tail(&info->swaplist, &shmem_swaplist);
+-			spin_unlock(&shmem_swaplist_lock);
++			mutex_unlock(&shmem_swaplist_mutex);
+ 		}
+ 		swap_duplicate(swap);
+ 		BUG_ON(page_mapped(page));
