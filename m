@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752256AbXLRTo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbXLRTpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752256AbXLRTo4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 14:44:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750700AbXLRTor
+	id S1752723AbXLRTpa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 14:45:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbXLRTpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 14:44:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:14708 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbXLRToq (ORCPT
+	Tue, 18 Dec 2007 14:45:16 -0500
+Received: from hs-out-0708.google.com ([64.233.178.240]:31418 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750700AbXLRTpO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 14:44:46 -0500
+	Tue, 18 Dec 2007 14:45:14 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ok4VemOSOGbt+xQ8JHc2J0QHSscCisQev/NE49qShXwPWq9Gw7qiQhfS32QOX1OTI0C+qIOUkInakjeST0FgGrOR66lHGoQFoLQD7q/2+/8CmGkGhC4iWzk90AxpLjes2P/zXrrvsuUSRkchocYzBqLBrRYFTt+AqS1Tc5A1MbE=
-Message-ID: <83a51e120712181144l65633b32r72cc369f9d012f47@mail.gmail.com>
-Date: Tue, 18 Dec 2007 14:44:44 -0500
+        b=rW6qNBXlkttg2xTNK66F7/Ai/nG2GIt8gg9LWYUvFXXvqJziinGka09GUEZroJU0TXOvap3dnfFgDulySgIQ1SNcBK1Wa7EX7vdyX5RI6vsqSAF6REWtzHTPmmbXCtYRHxZ4LBBtD5sQSeRWw9xCmAuuhFaY+jnnyIyvA/Jl7Qg=
+Message-ID: <83a51e120712181145l75a19e72o3194676b05a855a6@mail.gmail.com>
+Date: Tue, 18 Dec 2007 14:45:13 -0500
 From: "James Nichols" <jamesnichols3@gmail.com>
 To: "Eric Dumazet" <dada1@cosmosbay.com>
 Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
