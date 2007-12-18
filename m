@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbXLRRyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbXLRR60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758254AbXLRRyW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 12:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbXLRRyP
+	id S1757450AbXLRR60 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 12:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXLRR6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 12:54:15 -0500
-Received: from waste.org ([66.93.16.53]:51529 "EHLO waste.org"
+	Tue, 18 Dec 2007 12:58:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53603 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753305AbXLRRyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 12:54:14 -0500
-Date: Tue, 18 Dec 2007 11:53:16 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       protasnb@gmail.com
-Subject: Re: Top kernel oopses/warnings this week
-Message-ID: <20071218175316.GW17536@waste.org>
-References: <4762CF8C.90808@linux.intel.com> <20071217172331.GA23070@elte.hu> <20071217133631.5bbc5842@laptopd505.fenrus.org> <12c511ca0712171458n1bc05b40nab6b4b7c92433c8d@mail.gmail.com> <476703A4.7000401@linux.intel.com> <12c511ca0712171526h242a7de8vadec78cd48747bd@mail.gmail.com> <20071217154727.404e4bc4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712171607370.21557@woody.linux-foundation.org> <20071218023141.GM7070@thunk.org> <47676FAE.30200@linux.intel.com>
+	id S1752796AbXLRR6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 12:58:18 -0500
+Date: Tue, 18 Dec 2007 18:57:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: unify extable_{32|64}.c
+Message-ID: <20071218175753.GA10584@elte.hu>
+References: <1197974193.7734.18.camel@brick> <476806AF.5030405@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47676FAE.30200@linux.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <476806AF.5030405@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17, 2007 at 10:58:54PM -0800, Arjan van de Ven wrote:
-> Theodore Tso wrote:
-> >On Mon, Dec 17, 2007 at 04:21:12PM -0800, Linus Torvalds wrote:
-> >>which also gets bonus points for being totally unreadable, and thus 100% 
-> >>in the spirit of uuid's.
-> >
-> >Heh.  UUID's don't have to be readable; just universally unique.  Code
-> >on the other hand should be readable.   :-)
+
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+
+> Hi Harvey,
 > 
-> Linus' suggested... improvement should either be done in all 3 places or 
-> none ;)
-> Since you're the maintainer... what's your suggestion?
+> Harvey Harrison wrote:
+> > Introduce fixup_exception() on X86_64 and use it in kprobes to
+> > eliminate an #ifdef.
+> > 
+> > Only X86_64 needs search_extable() due to a stepping bug.
+> 
+> It's a good work!
+> If you can work on it, please add a prototype declaration of
+> fixup_exception() in asm-x86/uaccess_64.h too.
 
-For the record:
+FYI, i've already added this to x86.git, it was needed for 64-bit to 
+build fine.
 
-RANDOM NUMBER DRIVER
-P:      Matt Mackall
-M:      mpm@selenic.com
-S:      Maintained
-
--- 
-Mathematics is the supreme nostalgia of our time.
+	Ingo
