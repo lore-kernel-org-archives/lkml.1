@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbXLRMZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbXLRM00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755272AbXLRMZU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 07:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbXLRMZH
+	id S1755795AbXLRM00 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 07:26:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbXLRM0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 07:25:07 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:59467 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753081AbXLRMZF (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 07:25:05 -0500
-Date: Tue, 18 Dec 2007 23:24:45 +1100
-From: David Chinner <dgc@sgi.com>
-To: Damien Wyart <damien.wyart@free.fr>
-Cc: David Chinner <dgc@sgi.com>, Christoph Hellwig <hch@infradead.org>,
-       Lachlan McIlroy <lachlan@sgi.com>, Peter Leckie <pleckie@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, linux-xfs@oss.sgi.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Important regression with XFS update for 2.6.24-rc6
-Message-ID: <20071218122445.GJ4396912@sgi.com>
-References: <20071218112804.GA3069@localhost.localdomain>
+	Tue, 18 Dec 2007 07:26:17 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51762 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753731AbXLRM0Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 07:26:16 -0500
+Date: Tue, 18 Dec 2007 04:24:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Bob Picco <bob.picco@hp.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Andy Whitcroft <apw@shadowen.org>, Andi Kleen <ak@muc.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, "Keith Mannthey" <kmannth@gmail.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Fix crash with FLAT_MEMORY and ARCH_PFN_OFFSET != 0
+Message-Id: <20071218042404.df5d459c.akpm@linux-foundation.org>
+In-Reply-To: <20071218120300.7565AE3030@solo.franken.de>
+References: <20071218120300.7565AE3030@solo.franken.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071218112804.GA3069@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 18, 2007 at 12:28:04PM +0100, Damien Wyart wrote:
-> Hello,
+On Tue, 18 Dec 2007 13:03:00 +0100 (CET) Thomas Bogendoerfer <tsbogend@alpha.franken.de> wrote:
+
+> When using FLAT_MEMORY and ARCH_PFN_OFFSET is not 0, the kernel
+> crashes in memmap_init_zone(). This bug got introduced by
+> commit c713216deebd95d2b0ab38fef8bb2361c0180c2d
 > 
-> As a follow-up to <http://marc.info/?l=linux-kernel&m=119796120524618&w=2>
-> (LKML seems down right now so I am not linking to it), I have detected an
-> important problem with these two patches: after applying them by hand
-> (downloaded them raw from SGI's gitweb) on top of 2.6.24-rc5-git5 (they have
-> not yet been pulled into mainline by Linux as of this morning) for testing
-> purposes, I noticed upon reboot that "ls -l" on directories with many files
-> and subdirectories (around 5000 entries) takes several hundreds of MB in RAM
-> and then dies with "memory exhausted" error.
+> Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> ---
+> 
+>  mm/page_alloc.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index b5a58d4..496f7f3 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -3427,7 +3427,7 @@ static void __init_refok alloc_node_mem_map(struct pglist_data *pgdat)
+>  		mem_map = NODE_DATA(0)->node_mem_map;
+>  #ifdef CONFIG_ARCH_POPULATES_NODE_MAP
+>  		if (page_to_pfn(mem_map) != pgdat->node_start_pfn)
+> -			mem_map -= pgdat->node_start_pfn;
+> +			mem_map -= (pgdat->node_start_pfn - ARCH_PFN_OFFSET);
+>  #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
+>  	}
+>  #endif
 
-Ok. I haven't noticed anything wrong with directories up to about 250,000
-files in the last few days. The ls -l I just did on a directory with
-15000 entries (btree format) used about 5MB of RAM. extent format
-directories appear to work fine as well (tested 500 entries).
+hm.  It's rather non-trivial to verify that this will compile OK on all
+architectures.
 
-Can you:
-
-	a) isolate the problem to one patch or the other. My guess
-	   would be the directory mod, but.....
-	b) show your working ;)
-		- what platform (i386, x86_64, etc)
-		- what debug options
-		- commands and output that shows the problem
-		- strace of ls -l going bad
-		- xfs_info from filesystem in question
-
-> I also noticed that ldconfig takes a lot of time to complete, and firefox
-> seems also to eat much more memory than usual. Reverting the two patches
-> (going back to vanilla rc5-git5) makes these problems go away.  I am not
-> able to test right now if only one of the patches is bogus or if both of
-> them are concerned.
-
-Well, there goes a).....
-
-> As the symptoms are easy to reproduce, I guess this is some kind of brown
-> paper bag bug and will be easy for XFS experts to spot.
-
-Well, not reproducable on my test boxes. It may well be a brown paper
-bag job, but it's not obvious.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
