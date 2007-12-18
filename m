@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764243AbXLRSWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764611AbXLRSX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764243AbXLRSWw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 13:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759312AbXLRSVG
+	id S1764611AbXLRSX2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 13:23:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760784AbXLRSVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 13:21:06 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52524 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763265AbXLRSVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 13:21:04 -0500
-Date: Tue, 18 Dec 2007 13:19:39 -0500 (EST)
-From: Chip Coldwell <coldwell@redhat.com>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-cc: - ARM Linux <linux@arm.linux.org.uk>, Russell@frank.harvard.edu,
-       kernel@avr32linux.org, linux-kernel@vger.kernel.org,
-       Andrew Victor <linux@maxim.org.za>, Remy Bohmer <linux@bohmer.net>,
-       ARM@frank.harvard.edu,
-       Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH 4/5] atmel_serial: Split the interrupt handler
-In-Reply-To: <20071218181019.2af46418@dhcp-252-066.norway.atmel.com>
-Message-ID: <alpine.LFD.0.9999.0712181318300.27475@localhost.localdomain>
-References: <1197997575-13292-1-git-send-email-hskinnemoen@atmel.com> <1197997575-13292-2-git-send-email-hskinnemoen@atmel.com> <1197997575-13292-3-git-send-email-hskinnemoen@atmel.com> <1197997575-13292-4-git-send-email-hskinnemoen@atmel.com>
- <1197997575-13292-5-git-send-email-hskinnemoen@atmel.com> <20071218181019.2af46418@dhcp-252-066.norway.atmel.com>
+	Tue, 18 Dec 2007 13:21:14 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:1638 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763274AbXLRSVM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 13:21:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mYCuNMoffymmDQDjIzEPensnMcIcvzc+s1IjXHIQJ7GFeyi12451PErmq10FaV2eKj4XB4Nz9a3CDTcoHbaAx2sFjHFMkHAEXapdxcGM3EAzFx0tGm5DlBtBXhB78T27Voi2oZZ1Gf/2aqf4dbBmDbOgfMMkbAeBDpwoTGX4Sbk=
+Message-ID: <83a51e120712181021p4c4c2a13g8820271f1e00361b@mail.gmail.com>
+Date: Tue, 18 Dec 2007 13:21:10 -0500
+From: "James Nichols" <jamesnichols3@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0712181910580.4422@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com>
+	 <Pine.LNX.4.64.0712180009390.32270@fbirervta.pbzchgretzou.qr>
+	 <83a51e120712180734i334399dbl51f44fe32d815f7d@mail.gmail.com>
+	 <Pine.LNX.4.64.0712181704380.4422@fbirervta.pbzchgretzou.qr>
+	 <83a51e120712180845k6cadf67bn5dd66fb2d3ac72d4@mail.gmail.com>
+	 <Pine.LNX.4.64.0712181818360.4422@fbirervta.pbzchgretzou.qr>
+	 <83a51e120712181009pf954f43mcb63ea4dab638458@mail.gmail.com>
+	 <Pine.LNX.4.64.0712181910580.4422@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+> Here is a purely hypothethical (and in practice unlikely) idea:
+> Java opens up too many sockets (more than you really request) and the
+> kernel, for whatever reason, does not deliver packets to programs
+> which have maxed out their fds. Well it would already help if the
+> java blob was split into multiple blobs (assuming the problem
+> persists), as the best testcase is the smallest possible one. So if
+> it is reproducable without the web blob, great step there.
+>
 
-On Tue, 18 Dec 2007, Haavard Skinnemoen wrote:
 
-> On Tue, 18 Dec 2007 18:06:14 +0100
-> Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-> 
-> > From: Remy Bohmer <hskinnemoen@atmel.com>
-> 
-> Heh. That's obviously wrong. Wonder what happened there?
-> 
-> Looks like Chip's address got mangled too.
+Right, I don't disagree with you there.  FWIW, I can disable entire
+parts of the application and have already narrowed down reproduction
+of this issue to the 200 threads that make the webservice calls, so it
+doesn't have anything to do with any of the GUI or other background
+services that my application executes.
 
-You can find me at <coldwell@gmail.com> or <coldwell@redhat.com> these
-days, although <coldwell@frank.harvard.edu> still works for the time
-being.
 
-Chip
+You said:
 
-- -- 
-Charles M. "Chip" Coldwell
-Senior Software Engineer
-Red Hat, Inc
-978-392-2426
+> Well you could still blame Java. I am sure that if you program was C,
+> the problem could be narrowed down much easier.
 
-GPG ID:  852E052F
-GPG FPR: 77E5 2B51 4907 F08A 7E92  DE80 AFA9 9A8F 852E 052F
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHaA87r6maj4UuBS8RApaiAKCDFvC/WtA/s0pysvMIZIsTlAcN7wCffRoa
-JwA3E6Kt16pU9yi1dx1lCWk=
-=M528
------END PGP SIGNATURE-----
+I'm curious to know how this problem would be easier to narrow down if
+it were written in C.
