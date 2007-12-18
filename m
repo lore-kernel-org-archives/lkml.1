@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbXLRSML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762476AbXLRSOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762715AbXLRSML (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 13:12:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761371AbXLRSLv
+	id S1762476AbXLRSOd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 13:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbXLRSOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 13:11:51 -0500
-Received: from styx.suse.cz ([82.119.242.94]:60732 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760909AbXLRSLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 13:11:50 -0500
-Date: Tue, 18 Dec 2007 19:11:48 +0100
-From: Jan Kara <jack@suse.cz>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Don't send quota messages repeatedly when hardlimit reached
-Message-ID: <20071218181148.GH31091@duck.suse.cz>
+	Tue, 18 Dec 2007 13:14:25 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:53224 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754170AbXLRSOY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 13:14:24 -0500
+Date: Tue, 18 Dec 2007 19:14:23 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: James Nichols <jamesnichols3@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
+In-Reply-To: <83a51e120712181009pf954f43mcb63ea4dab638458@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0712181910580.4422@fbirervta.pbzchgretzou.qr>
+References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com> 
+ <Pine.LNX.4.64.0712180009390.32270@fbirervta.pbzchgretzou.qr> 
+ <83a51e120712180734i334399dbl51f44fe32d815f7d@mail.gmail.com> 
+ <Pine.LNX.4.64.0712181704380.4422@fbirervta.pbzchgretzou.qr> 
+ <83a51e120712180845k6cadf67bn5dd66fb2d3ac72d4@mail.gmail.com> 
+ <Pine.LNX.4.64.0712181818360.4422@fbirervta.pbzchgretzou.qr>
+ <83a51e120712181009pf954f43mcb63ea4dab638458@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
 
-  attached patch makes sending of quota netlink messages behave the same
-way as printing to console - i.e., we send a message when hardlimit is
-reached and then send next message only when user gets below hardlimit.
-This avoids flooding with message about hardlimit being reached... Andrew,
-please apply. Thanks.
-
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
----
-
-We should send quota message to netlink only once when hardlimit
-is reached. Otherwise user could easily make the system busy by
-trying to exceed the hardlimit (and also the messages could
-be anoying if you cannot stop writing just now).
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff --git a/fs/dquot.c b/fs/dquot.c
-index 686ab63..cee7c6f 100644
---- a/fs/dquot.c
-+++ b/fs/dquot.c
-@@ -827,6 +827,18 @@ static inline void dquot_decr_space(struct dquot *dquot, qsize_t number)
- 	clear_bit(DQ_BLKS_B, &dquot->dq_flags);
- }
- 
-+static int warning_issued(struct dquot *dquot, const int warntype)
-+{
-+	int flag = (warntype == QUOTA_NL_BHARDWARN ||
-+		warntype == QUOTA_NL_BSOFTLONGWARN) ? DQ_BLKS_B :
-+		((warntype == QUOTA_NL_IHARDWARN ||
-+		warntype == QUOTA_NL_ISOFTLONGWARN) ? DQ_INODES_B : 0);
-+
-+	if (!flag)
-+		return 0;
-+	return test_and_set_bit(flag, &dquot->dq_flags);
-+}
-+
- #ifdef CONFIG_PRINT_QUOTA_WARNING
- static int flag_print_warnings = 1;
- 
-@@ -845,16 +857,12 @@ static inline int need_print_warning(struct dquot *dquot)
- }
- 
- /* Print warning to user which exceeded quota */
--static void print_warning(struct dquot *dquot, const char warntype)
-+static void print_warning(struct dquot *dquot, const int warntype)
- {
- 	char *msg = NULL;
- 	struct tty_struct *tty;
--	int flag = (warntype == QUOTA_NL_BHARDWARN ||
--		warntype == QUOTA_NL_BSOFTLONGWARN) ? DQ_BLKS_B :
--		((warntype == QUOTA_NL_IHARDWARN ||
--		warntype == QUOTA_NL_ISOFTLONGWARN) ? DQ_INODES_B : 0);
- 
--	if (!need_print_warning(dquot) || (flag && test_and_set_bit(flag, &dquot->dq_flags)))
-+	if (!need_print_warning(dquot))
- 		return;
- 
- 	mutex_lock(&tty_mutex);
-@@ -970,7 +977,8 @@ static inline void flush_warnings(struct dquot * const *dquots, char *warntype)
- 	int i;
- 
- 	for (i = 0; i < MAXQUOTAS; i++)
--		if (dquots[i] != NODQUOT && warntype[i] != QUOTA_NL_NOWARN) {
-+		if (dquots[i] != NODQUOT && warntype[i] != QUOTA_NL_NOWARN &&
-+		    !warning_issued(dquots[i], warntype[i])) {
- #ifdef CONFIG_PRINT_QUOTA_WARNING
- 			print_warning(dquots[i], warntype[i]);
- #endif
+On Dec 18 2007 13:09, James Nichols wrote:
+>
+>> >> Well you could still blame Java. I am sure that if you program was C,
+>> >> the problem could be narrowed down much easier.
+>> >
+>> >That may very well be true, but I can't rewrite the whole 500K line
+>> >application in C at this point.  Plus, it's a web app which would be
+>> >"fun" to implement in C.
+>>
+>> Well I do not require you to do /that/, but you could try adhering to
+>> the unix philosophy later on that one program should do (ideally) one
+>> thing, and if the java blob already serves the webpage, then opening
+>> sockets and doing xyz could probably live in another program.
+>
+>Fair enough.  So if the application was written in C, how would that
+>make this problem any easier to narrow down?
+>
+Here is a purely hypothethical (and in practice unlikely) idea:
+Java opens up too many sockets (more than you really request) and the
+kernel, for whatever reason, does not deliver packets to programs
+which have maxed out their fds. Well it would already help if the
+java blob was split into multiple blobs (assuming the problem
+persists), as the best testcase is the smallest possible one. So if
+it is reproducable without the web blob, great step there.
