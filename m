@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbXLRVEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbXLRVJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754000AbXLRVEB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 16:04:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbXLRVDy
+	id S1753566AbXLRVJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 16:09:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXLRVJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 16:03:54 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38512 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752018AbXLRVDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 16:03:53 -0500
-Date: Tue, 18 Dec 2007 22:02:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>, ak@suse.de,
-       akpm@linux-foundation.org, anthony@codemonkey.ws, avi@qumranet.com,
-       chrisw@sous-sol.org, ehabkost@redhat.com, hpa@zytor.com,
-       jeremy@goop.org, linux-kernel@vger.kernel.org, roland@redhat.com,
-       rostedt@goodmis.org, rusty@rustcorp.com.au, tglx@linutronix.de,
-       virtualization@lists.linux-foundation.org, zach@vmware.com
-Subject: Re: [PATCH] finish processor.h integration
-Message-ID: <20071218210233.GA23855@elte.hu>
-References: <1198008293639-git-send-email-gcosta@redhat.com> <E1J4jSf-00024X-GN@faramir.fjphome.nl> <5d6222a80712181300l707035e7mdb8a6e0d7a5ddca8@mail.gmail.com>
+	Tue, 18 Dec 2007 16:09:52 -0500
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:36259 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751227AbXLRVJv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 16:09:51 -0500
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: akepner@sgi.com, Andrew Morton <akpm@linux-foundation.org>,
+       grundler@parisc-linux.org, jbarnes@virtuousgeek.org, jes@sgi.com,
+       randy.dunlap@oracle.com, James.Bottomley@steeleye.com,
+       davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] dma: passing "attributes" to dma_map_* routines
+X-Message-Flag: Warning: May contain useful information
+References: <20071218001758.GO21916@sgi.com>
+	<4767FA62.9060002@s5r6.in-berlin.de> <20071218200759.GE412@sgi.com>
+	<476834AC.9050401@s5r6.in-berlin.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 18 Dec 2007 13:09:49 -0800
+In-Reply-To: <476834AC.9050401@s5r6.in-berlin.de> (Stefan Richter's message of "Tue, 18 Dec 2007 21:59:24 +0100")
+Message-ID: <adar6hj1zhe.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5d6222a80712181300l707035e7mdb8a6e0d7a5ddca8@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 18 Dec 2007 21:09:50.0090 (UTC) FILETIME=[53835EA0:01C841BA]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > However, your older patch series looks like you want this behavior also
+ > in areas which are mapped by dma_map_sg(), do you?.  Still, adding two
+ > functions of the kind like above, if necessary, might still be
+ > preferable to changing the call parameters of existing functions or to
+ > overloading enum dma_data_direction.
 
-* Glauber de Oliveira Costa <glommer@gmail.com> wrote:
+Yes, the _sg variants are needed, because we want to map userspace
+regions with this attribute and there's of course no guarantee that
+userspace memory is contiguous.
 
-> On Dec 18, 2007 6:54 PM, Frans Pop <elendil@planet.nl> wrote:
-> > Glauber de Oliveira Costa wrote:
-> > > What's left in processor_32.h and processor_64.h cannot be cleanly
-> > > integrated. However, it's just a couple of definitions. They are moved
-> > > to processor.h around ifdefs, and the original files are deleted. Note
-> > > that there's much less headers included in the final version.
-> >
-> > Either I must be missing something or this patch was corrupted somehow.
-> 
-> neither.
-> Note the else in the middle. It's just a mistake in the comment.
-> Ingo, do you want me to send an update with it ?
-
-no need, i'll pick up the current patches.
-
-	Ingo
+ - R.
