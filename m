@@ -1,251 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754440AbXLRKgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbXLRKjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754440AbXLRKgt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 05:36:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXLRKgl
+	id S1754521AbXLRKjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 05:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbXLRKjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 05:36:41 -0500
-Received: from ro-out-1112.google.com ([72.14.202.180]:54844 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbXLRKgk (ORCPT
+	Tue, 18 Dec 2007 05:39:06 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:44625 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753188AbXLRKjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 05:36:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Fg+Xpbb9voZxgb7Vq44q+ge0ob3rwie9Gk927AAosVMS5sk3cLZiquJcTfk3PUXLDXEyLdftkxNHvBOWvWr9/LqtEeypXWYjqlK3rg30ZL8zwwqISAityt0ZK7YNhYqUP/bU3lk5cVpp+cgv1Cc4JgHVVjzliDAl3UFutvRQV1M=
-Subject: [PATCH] x86: unify extable_{32|64}.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Tue, 18 Dec 2007 02:36:33 -0800
-Message-Id: <1197974193.7734.18.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Tue, 18 Dec 2007 05:39:04 -0500
+Message-ID: <4767A323.7090205@s5r6.in-berlin.de>
+Date: Tue, 18 Dec 2007 11:38:27 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@suse.de,
+       krh@bitplanet.net, linux1394-devel@lists.sourceforge.net
+Subject: Re: No dma_sync_* during pci_probe? (Sparc, post 2.6.22 regression)
+References: <bug-9160-4803@http.bugzilla.kernel.org/>	<47112797.7060003@s5r6.in-berlin.de>	<47670BDF.80409@s5r6.in-berlin.de> <20071217.165032.41424988.davem@davemloft.net>
+In-Reply-To: <20071217.165032.41424988.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce fixup_exception() on X86_64 and use it in kprobes to
-eliminate an #ifdef.
+[As pointed out elsewhere in the thread, this is indeed about sparc64,
+not sparc per se.]
 
-Only X86_64 needs search_extable() due to a stepping bug.
+David Miller wrote:
+> From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Date: Tue, 18 Dec 2007 00:53:03 +0100
+> 
+>> The fault happens due to dma_sync_single_for_device() which
+>> drivers/firewire/fw-ohci.c calls in ar_context_add_page() when still
+>> being in its pci_probe method.  I suspect that --- at least on Sparc and
+>> after 2.6.22 --- it is not possible anymore to use dma_sync_* before the
+>> pci_device's or device's probe was finished.
+>> 
+>> Would that be a bug in the Sparc platform code?  Or a bug in driver core
+>> code or in PCI code?  Or am I expected to refrain from dma_sync_* calls
+>> until after the probe returned?
+> 
+> The problem is likely what device struct you are passing to
+> dma_sync_single_for_device(), it has to be a real pci_dev or similar
+> that has it's dev_archdata properly initialized.
+> 
+> I bet dev_archdata in whatever "struct device" is being passed in has
+> a NULL iommu pointer or something like that.
+> 
+> Oh yeah, I see what you're doing, that won't work, please pass in
+> the correct device struct pointer.  Please pass in the &pci_dev->dev
+> not this ohci->card.device thing.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/x86/kernel/kprobes.c |   12 +--------
- arch/x86/mm/Makefile_32   |    2 +-
- arch/x86/mm/Makefile_64   |    2 +-
- arch/x86/mm/extable.c     |   62 +++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/mm/extable_32.c  |   35 -------------------------
- arch/x86/mm/extable_64.c  |   34 ------------------------
- 6 files changed, 65 insertions(+), 82 deletions(-)
+No, the dev argument is alright.  We use it a few lines above in the
+same function in a call to dma_map_single().  The dev argument is IMO
+correctly obtained here:
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 1a0d96d..045a45e 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -902,19 +902,9 @@ int __kprobes kprobe_fault_handler(struct pt_regs *regs, int trapnr)
- 		 * In case the user-specified fault handler returned
- 		 * zero, try to fix up.
- 		 */
--#ifdef CONFIG_X86_64
--		{
--			const struct exception_table_entry *fixup;
--			fixup = search_exception_tables(regs->ip);
--			if (fixup) {
--				regs->ip = fixup->fixup;
--				return 1;
--			}
--		}
--#else
- 		if (fixup_exception(regs))
- 			return 1;
--#endif
-+
- 		/*
- 		 * fixup routine could not handle it,
- 		 * Let do_page_fault() fix it.
-diff --git a/arch/x86/mm/Makefile_32 b/arch/x86/mm/Makefile_32
-index a01aca7..6a5e981 100644
---- a/arch/x86/mm/Makefile_32
-+++ b/arch/x86/mm/Makefile_32
-@@ -2,7 +2,7 @@
- # Makefile for the linux i386-specific parts of the memory manager.
- #
- 
--obj-y	:= init_32.o pgtable_32.o fault_32.o ioremap_32.o extable_32.o pageattr_32.o mmap.o
-+obj-y	:= init_32.o pgtable_32.o fault_32.o ioremap_32.o extable.o pageattr_32.o mmap.o
- 
- obj-$(CONFIG_NUMA) += discontig_32.o
- obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
-diff --git a/arch/x86/mm/Makefile_64 b/arch/x86/mm/Makefile_64
-index b5a7448..09c997f 100644
---- a/arch/x86/mm/Makefile_64
-+++ b/arch/x86/mm/Makefile_64
-@@ -2,7 +2,7 @@
- # Makefile for the linux x86_64-specific parts of the memory manager.
- #
- 
--obj-y	 := init_64.o fault_64.o ioremap_64.o extable_64.o pageattr_64.o mmap.o
-+obj-y	 := init_64.o fault_64.o ioremap_64.o extable.o pageattr_64.o mmap.o
- obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
- obj-$(CONFIG_NUMA) += numa_64.o
- obj-$(CONFIG_K8_NUMA) += k8topology_64.o
-diff --git a/arch/x86/mm/extable.c b/arch/x86/mm/extable.c
-new file mode 100644
-index 0000000..7e8db53
---- /dev/null
-+++ b/arch/x86/mm/extable.c
-@@ -0,0 +1,62 @@
-+#include <linux/module.h>
-+#include <linux/spinlock.h>
-+#include <asm/uaccess.h>
-+
-+
-+int fixup_exception(struct pt_regs *regs)
-+{
-+	const struct exception_table_entry *fixup;
-+
-+#ifdef CONFIG_PNPBIOS
-+	if (unlikely(SEGMENT_IS_PNP_CODE(regs->cs))) {
-+		extern u32 pnp_bios_fault_eip, pnp_bios_fault_esp;
-+		extern u32 pnp_bios_is_utter_crap;
-+		pnp_bios_is_utter_crap = 1;
-+		printk(KERN_CRIT "PNPBIOS fault.. attempting recovery.\n");
-+		__asm__ volatile(
-+			"movl %0, %%esp\n\t"
-+			"jmp *%1\n\t"
-+			: : "g" (pnp_bios_fault_esp), "g" (pnp_bios_fault_eip));
-+		panic("do_trap: can't hit this");
-+	}
-+#endif
-+
-+	fixup = search_exception_tables(regs->ip);
-+	if (fixup) {
-+		regs->ip = fixup->fixup;
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_X86_64
-+/*
-+ * Need to defined our own search_extable on X86_64 to work around
-+ * a B stepping K8 bug.
-+ */
-+const struct exception_table_entry *
-+search_extable(const struct exception_table_entry *first,
-+	       const struct exception_table_entry *last,
-+	       unsigned long value)
-+{
-+	/* B stepping K8 bug */
-+	if ((value >> 32) == 0)
-+		value |= 0xffffffffUL << 32;
-+
-+	while (first <= last) {
-+		const struct exception_table_entry *mid;
-+		long diff;
-+
-+		mid = (last - first) / 2 + first;
-+		diff = mid->insn - value;
-+		if (diff == 0)
-+			return mid;
-+		else if (diff < 0)
-+			first = mid+1;
-+		else
-+			last = mid-1;
-+	}
-+	return NULL;
-+}
-+#endif
-diff --git a/arch/x86/mm/extable_32.c b/arch/x86/mm/extable_32.c
-deleted file mode 100644
-index 4168546..0000000
---- a/arch/x86/mm/extable_32.c
-+++ /dev/null
-@@ -1,35 +0,0 @@
--/*
-- * linux/arch/i386/mm/extable.c
-- */
--
--#include <linux/module.h>
--#include <linux/spinlock.h>
--#include <asm/uaccess.h>
--
--int fixup_exception(struct pt_regs *regs)
--{
--	const struct exception_table_entry *fixup;
--
--#ifdef CONFIG_PNPBIOS
--	if (unlikely(SEGMENT_IS_PNP_CODE(regs->cs)))
--	{
--		extern u32 pnp_bios_fault_eip, pnp_bios_fault_esp;
--		extern u32 pnp_bios_is_utter_crap;
--		pnp_bios_is_utter_crap = 1;
--		printk(KERN_CRIT "PNPBIOS fault.. attempting recovery.\n");
--		__asm__ volatile(
--			"movl %0, %%esp\n\t"
--			"jmp *%1\n\t"
--			: : "g" (pnp_bios_fault_esp), "g" (pnp_bios_fault_eip));
--		panic("do_trap: can't hit this");
--	}
--#endif
--
--	fixup = search_exception_tables(regs->ip);
--	if (fixup) {
--		regs->ip = fixup->fixup;
--		return 1;
--	}
--
--	return 0;
--}
-diff --git a/arch/x86/mm/extable_64.c b/arch/x86/mm/extable_64.c
-deleted file mode 100644
-index 79ac6e7..0000000
---- a/arch/x86/mm/extable_64.c
-+++ /dev/null
-@@ -1,34 +0,0 @@
--/*
-- * linux/arch/x86_64/mm/extable.c
-- */
--
--#include <linux/module.h>
--#include <linux/spinlock.h>
--#include <linux/init.h>
--#include <asm/uaccess.h>
--
--/* Simple binary search */
--const struct exception_table_entry *
--search_extable(const struct exception_table_entry *first,
--	       const struct exception_table_entry *last,
--	       unsigned long value)
--{
--	/* Work around a B stepping K8 bug */
--	if ((value >> 32) == 0)
--		value |= 0xffffffffUL << 32; 
--
--        while (first <= last) {
--		const struct exception_table_entry *mid;
--		long diff;
--
--		mid = (last - first) / 2 + first;
--		diff = mid->insn - value;
--                if (diff == 0)
--                        return mid;
--                else if (diff < 0)
--                        first = mid+1;
--                else
--                        last = mid-1;
--        }
--        return NULL;
--}
+static int
+pci_probe(struct pci_dev *dev, const struct pci_device_id *ent)
+{
+	...
+	fw_card_initialize(&ohci->card, &ohci_driver, &dev->dev);
+	...
+}
+
+void
+fw_card_initialize(struct fw_card *card, const struct fw_card_driver
+*driver, struct device *device)
+{
+	...
+	card->device = device;
+	...
+}
+
+So, ohci->card.device is in fact &pci_dev->dev.
+
+Also note:
+  - The very same code did not oops at this point in 2.6.22.  It only
+    started doing so in 2.6.23.
+  - There has been no other report of this kind for any other
+    architecture yet.  I would expect e.g. the PPC64 folks to report
+    bugs in our dma mappings eventually.
+
+-----
+Two footnotes:
+
+  - Although the 2.6.22 firewire subsystem does not oops during the
+pci_probe like it does in 2.6.23 and 2.6.24, it does lock up sometime
+later during actual use.  However this is not surprising, as I found and
+fixed some portential DMA mapping issues in the fw-sbp2 highlevel driver
+sometime after 2.6.22.  But due to the pci_probe problem, the firewire
+subsystem doesn't get as far on sparc64 on 2.6.23 and 2.6.24.
+
+  - One thing which we do slightly wrong in ar_context_add_page() is that we
+1.) dma-map the buffer,
+2.) continue to write into the buffer from the CPU,
+3.) then sync it for the device.
+I let the reporter try a patch which inserted a
+dma_sync_single_for_cpu() right after the dma_map_single() in order to
+be clearly entitled to access the buffer by the CPU, but that didn't fix it.
+
 -- 
-1.5.4.rc0.1143.g1a8a
-
-
-
+Stefan Richter
+-=====-=-=== ==-- =--=-
+http://arcgraph.de/sr/
