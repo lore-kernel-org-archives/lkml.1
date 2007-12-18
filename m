@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765961AbXLRAfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932701AbXLRAkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765961AbXLRAfy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 19:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762076AbXLRAfm
+	id S932701AbXLRAkI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 19:40:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXLRAjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 19:35:42 -0500
-Received: from stinky.trash.net ([213.144.137.162]:40052 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761024AbXLRAfl (ORCPT
+	Mon, 17 Dec 2007 19:39:55 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:35502 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751544AbXLRAjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 19:35:41 -0500
-Message-ID: <476715DB.6050808@trash.net>
-Date: Tue, 18 Dec 2007 01:35:39 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
+	Mon, 17 Dec 2007 19:39:54 -0500
+Date: Mon, 17 Dec 2007 18:39:55 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+Message-ID: <20071218003955.GA27048@sergelap.austin.ibm.com>
+References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp>
 MIME-Version: 1.0
-To: Thomas Graf <tgraf@suug.ch>
-CC: Chris Friesen <cfriesen@nortel.com>, yoshfuji@linux-ipv6.org,
-       dada1@cosmosbay.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: "ip neigh show" not showing arp cache entries?
-References: <4760279E.1080203@nortel.com> <47602DD0.8070402@cosmosbay.com> <47605934.2060604@nortel.com> <20071213.070641.20411400.yoshfuji@linux-ipv6.org> <476696A5.1010101@nortel.com> <4766B99D.8060408@trash.net> <4766D261.1020005@nortel.com> <47670B88.4010906@trash.net> <20071218003312.GR11220@postel.suug.ch>
-In-Reply-To: <20071218003312.GR11220@postel.suug.ch>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712180003.lBI03N7F092396@www262.sakura.ne.jp>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Graf wrote:
-> * Patrick McHardy <kaber@trash.net> 2007-12-18 00:51
->> Chris Friesen wrote:
->>> Patrick McHardy wrote:
->>>
->>>> From a kernel perspective there are only complete dumps, the
->>>> filtering is done by iproute. So the fact that it shows them
->>>> when querying specifically implies there is a bug in the
->>>> iproute neighbour filter. Does it work if you omit "all"
->>> >from the ip neigh show command?
->>>
->>> Omitting "all" gives identical results.  It is still missing entries 
->>> when compared with the output of "arp".
->>
->> In that case the easiest way to debug this is probably if you
->> add some debugging to ip/ipneigh.c:print_neigh() since I'm
->> unable to reproduce this problem. A printf for all the filter
->> conditions (=> return 0) at the top should do.
+Quoting Tetsuo Handa (penguin-kernel@i-love.sakura.ne.jp):
+> Hello.
 > 
-> Alternatively, you can download libnl and run
-> 
-> 	NLCB=debug src/nl-neigh-dump brief
-> 
-> and check if the netlink message is sent by the kenrel for the
-> neighbour in question. 
+> Serge E. Hallyn wrote:
+> > CAP_MKNOD will be removed from its capability
+> I think it is not enough because the root can rename/unlink device files
+> (mv /dev/sda1 /dev/tmp; mv /dev/sda2 /dev/sda1; mv /dev/tmp /dev/sda2).
 
+Sure but that doesn't bother us :)
 
-It should be, according to Chris, "ip neigh show <ip>" does
-show the missing entries, and in case of neighbour entries
-all filtering is done in userspace.
+The admin in the container has his own /dev directory and can do what he
+likes with the devices he's allowed to have.  He just shouldn't have
+access to others.  If he wants to rename /dev/sda1 to /dev/sda5 that's
+his choice.
 
+> > To use your approach, i guess we would have to use selinux (or tomoyo)
+> > to enforce that devices may only be created under /dev?
+> Everyone can use this filesystem alone.
 
+Sure but it is worthless alone.
+
+No?
+
+What will keep the container admin from doing 'mknod /root/hda1 b 3 1'?
+
+> But use with MAC (or whatever access control mechanisms that prevent
+> attackers from unmounting/overlaying this filesystem) is recomennded.
+
+-serge
