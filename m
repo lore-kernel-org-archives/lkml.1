@@ -1,169 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbXLRNtC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbXLRNuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbXLRNtC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 08:49:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbXLRNsy
+	id S1756580AbXLRNuu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 08:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbXLRNun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 08:48:54 -0500
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:3157 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755088AbXLRNsx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 08:48:53 -0500
-Date: Tue, 18 Dec 2007 14:48:50 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Hans de Goede <j.w.r.degoede@hhs.nl>,
-       Lennart Poettering <mzxreary@0pointer.de>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH] dmi: Let drivers walk the DMI table
-Message-ID: <20071218144850.55e916c1@hyperion.delvare>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 18 Dec 2007 08:50:43 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55822 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755106AbXLRNum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 08:50:42 -0500
+Message-ID: <4767CFC5.3010703@redhat.com>
+Date: Tue, 18 Dec 2007 11:48:53 -0200
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
+       zach@vmware.com, roland@redhat.com
+Subject: Re: [PATCH 21/21] [PATCH] finish processor.h integration
+References: <11979320302030-git-send-email-gcosta@redhat.com> <11979320354186-git-send-email-gcosta@redhat.com> <11979320401316-git-send-email-gcosta@redhat.com> <11979320451308-git-send-email-gcosta@redhat.com> <1197932050948-git-send-email-gcosta@redhat.com> <11979320551036-git-send-email-gcosta@redhat.com> <11979320603229-git-send-email!-gcosta@redhat.com> <11979320653161-git-send-email-gcosta@redhat.com> <11979320693300-git-send-email-gcosta@redhat.com> <20071218131932.GA9457@elte.hu> <20071218133818.GA9941@elte.hu>
+In-Reply-To: <20071218133818.GA9941@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+>>> What's left in processor_32.h and processor_64.h cannot be cleanly 
+>>> integrated. However, it's just a couple of definitions. They are 
+>>> moved to processor.h around ifdefs, and the original files are 
+>>> deleted. Note that there's much less headers included in the final 
+>>> version.
+>> and this patch breaks the build on the attached config, with:
+>>
+>>    CC      arch/x86/mm/boot_ioremap_32.o
+>>  In file included from include/asm/fixmap_32.h:28,
+>>                   from include/asm/fixmap.h:2,
+>>                   from include/asm/pgtable_32.h:16,
+>>                   from include/asm/pgtable.h:2,
+>>                   from arch/x86/mm/boot_ioremap_32.c:21:
+>>  include/asm/acpi.h:159: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'acpi_fake_nodes'
+>>  make[1]: *** [arch/x86/mm/boot_ioremap_32.o] Error 1
+>>  make: *** [arch/x86/mm/boot_ioremap_32.o] Error 2
+> 
+> really, please do _much_ more careful unification. We unified two full 
+> architectures in .24-rc1 and there was _not a single regression_ due to 
+> that unification. Not a single build failure, not a single boot or 
+> runtime failure.
+IIRC, 24-rc1 was a different story. Most, if not all patches, had no 
+binary diff, etc. This is not the case here.
 
-This patch is for review and comments, not merge. As the first user for
-this new functionality is a hardware monitoring driver [1], this patch
-will be better merged via the hwmon tree. If anyone has objections with
-regards to this patch, please let me know.
+> here the problem is apparently caused by your patch, a careless 
+> 'unification' of include file sections. 32-bit had this:
 
-[1] http://lists.lm-sensors.org/pipermail/lm-sensors/2007-December/022164.html
-
-* * * * *
-
-Let drivers walk the DMI table for their own needs. Some drivers need
-data stored in OEM-specific DMI records for proper operation.
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
- drivers/firmware/dmi_scan.c |   61 +++++++++++++++++++++++++++++++++----------
- include/linux/dmi.h         |    3 ++
- 2 files changed, 50 insertions(+), 14 deletions(-)
-
---- linux-2.6.24-rc5.orig/drivers/firmware/dmi_scan.c	2007-12-12 12:36:34.000000000 +0100
-+++ linux-2.6.24-rc5/drivers/firmware/dmi_scan.c	2007-12-18 14:27:28.000000000 +0100
-@@ -36,18 +36,12 @@ static char * __init dmi_string(const st
-  *	We have to be cautious here. We have seen BIOSes with DMI pointers
-  *	pointing to completely the wrong place for example
-  */
--static int __init dmi_table(u32 base, int len, int num,
--			    void (*decode)(const struct dmi_header *))
-+static void dmi_table(u8 *buf, int len, int num,
-+		      void (*decode)(const struct dmi_header *))
- {
--	u8 *buf, *data;
-+	u8 *data = buf;
- 	int i = 0;
- 
--	buf = dmi_ioremap(base, len);
--	if (buf == NULL)
--		return -1;
--
--	data = buf;
--
- 	/*
- 	 *	Stop when we see all the items the table claimed to have
- 	 *	OR we run off the end of the table (also happens)
-@@ -68,7 +62,23 @@ static int __init dmi_table(u32 base, in
- 		data += 2;
- 		i++;
- 	}
--	dmi_iounmap(buf, len);
-+}
-+
-+static u32 dmi_base;
-+static u16 dmi_len;
-+static u16 dmi_num;
-+
-+static int __init dmi_walk_early(void (*decode)(const struct dmi_header *))
-+{
-+	u8 *buf;
-+
-+	buf = dmi_ioremap(dmi_base, dmi_len);
-+	if (buf == NULL)
-+		return -1;
-+
-+	dmi_table(buf, dmi_len, dmi_num, decode);
-+
-+	dmi_iounmap(buf, dmi_len);
- 	return 0;
- }
- 
-@@ -273,9 +283,9 @@ static int __init dmi_present(const char
- 
- 	memcpy_fromio(buf, p, 15);
- 	if ((memcmp(buf, "_DMI_", 5) == 0) && dmi_checksum(buf)) {
--		u16 num = (buf[13] << 8) | buf[12];
--		u16 len = (buf[7] << 8) | buf[6];
--		u32 base = (buf[11] << 24) | (buf[10] << 16) |
-+		dmi_num = (buf[13] << 8) | buf[12];
-+		dmi_len = (buf[7] << 8) | buf[6];
-+		dmi_base = (buf[11] << 24) | (buf[10] << 16) |
- 			(buf[9] << 8) | buf[8];
- 
- 		/*
-@@ -287,7 +297,7 @@ static int __init dmi_present(const char
- 			       buf[14] >> 4, buf[14] & 0xF);
- 		else
- 			printk(KERN_INFO "DMI present.\n");
--		if (dmi_table(base,len, num, dmi_decode) == 0)
-+		if (dmi_walk_early(dmi_decode) == 0)
- 			return 0;
- 	}
- 	return 1;
-@@ -470,3 +480,26 @@ int dmi_get_year(int field)
- 	return year;
- }
- 
-+/**
-+ *	dmi_walk - Walk the DMI table and get called back for every record
-+ *	@decode: Callback function
-+ *
-+ *	Returns -1 when the DMI table can't be reached, 0 on success.
-+ */
-+int dmi_walk(void (*decode)(const struct dmi_header *))
-+{
-+	u8 *buf;
-+
-+	if (!dmi_available)
-+		return -1;
-+
-+	buf = ioremap(dmi_base, dmi_len);
-+	if (buf == NULL)
-+		return -1;
-+
-+	dmi_table(buf, dmi_len, dmi_num, decode);
-+
-+	iounmap(buf);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(dmi_walk);
---- linux-2.6.24-rc5.orig/include/linux/dmi.h	2007-12-12 12:36:34.000000000 +0100
-+++ linux-2.6.24-rc5/include/linux/dmi.h	2007-12-18 14:27:28.000000000 +0100
-@@ -78,6 +78,7 @@ extern const struct dmi_device * dmi_fin
- extern void dmi_scan_machine(void);
- extern int dmi_get_year(int field);
- extern int dmi_name_in_vendors(const char *str);
-+extern int dmi_walk(void (*decode)(const struct dmi_header *));
- 
- #else
- 
-@@ -87,6 +88,8 @@ static inline const struct dmi_device * 
- 	const struct dmi_device *from) { return NULL; }
- static inline int dmi_get_year(int year) { return 0; }
- static inline int dmi_name_in_vendors(const char *s) { return 0; }
-+static inline int dmi_walk(void (*decode)(const struct dmi_header *))
-+	{ return -1; }
- 
- #endif
- 
+Point is this patches do unification, but they are not just that, as you 
+can see. I am attempting to cleanup headers that appears not to be used, 
+  I am effectivelly adding a new feature to x86_64, and so on. I am 
+testing everything, all I sent works in my configs, and your testing, 
+and point out the configs that breaks is really much appreciated.
 
 
--- 
-Jean Delvare
+> -#include <asm/vm86.h>
+> -#include <asm/math_emu.h>
+> -#include <asm/segment.h>
+> -#include <asm/page.h>
+> -#include <asm/types.h>
+> -#include <asm/sigcontext.h>
+> -#include <asm/cpufeature.h>
+> -#include <asm/msr.h>
+> -#include <asm/system.h>
+> -#include <linux/threads.h>
+> -#include <linux/init.h>
+> -#include <asm/desc_defs.h>
+> 
+> 64-bit had this:
+> 
+> -#include <asm/segment.h>
+> -#include <asm/page.h>
+> -#include <asm/types.h>
+> -#include <asm/sigcontext.h>
+> -#include <asm/cpufeature.h>
+> -#include <linux/threads.h>
+> -#include <asm/msr.h>
+> -#include <asm/current.h>
+> -#include <asm/system.h>
+> -#include <linux/personality.h>
+> -#include <asm/desc_defs.h>
+> 
+> and the 'unified' processor.h has:
+> 
+> +#include <asm/desc_defs.h>
+> +#include <asm/msr.h>
+>  #include <asm/page.h>
+>  #include <asm/percpu.h>
+>  #include <asm/system.h>
+>  #include <asm/percpu.h>
+>  #include <linux/cpumask.h>
+>  #include <linux/cache.h>
+> +#include <linux/personality.h>
+> 
+> Those are visible, _crutial_ differences totally unmentioned in the 
+> patch.
+ >
+> yes, our include file dependencies are a jungle, the differences between 
+> 32-bit and 64-bit are arbitrary in 80% of the cases, but still there's 
+> no reason why this couldnt be done correctly. The patch below is a quick 
+> bandaid that adds the missing bits.
+
+And that's because I'm trying to drop headers that are not used anymore. 
+Again, getting test for other people but me, helps making sure it's 
+correct. I am working on updating the series now, and will send an 
+updated version.
+
+
+> 	Ingo
+> 
+> ------------------>
+> Subject: x86: fix include file mess
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> fix include file mess.
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  include/asm-x86/processor.h |   16 ++++++++++++++--
+>  1 file changed, 14 insertions(+), 2 deletions(-)
+> 
+> Index: linux-x86.q/include/asm-x86/processor.h
+> ===================================================================
+> --- linux-x86.q.orig/include/asm-x86/processor.h
+> +++ linux-x86.q/include/asm-x86/processor.h
+> @@ -6,15 +6,27 @@
+>  struct task_struct;
+>  struct mm_struct;
+>  
+> +#ifdef CONFIG_X86_32
+> +# include <asm/math_emu.h>
+> +# include <asm/vm86.h>
+> +#endif
+> +
+> +#include <asm/cpufeature.h>
+> +#include <asm/current.h>
+>  #include <asm/desc_defs.h>
+>  #include <asm/msr.h>
+>  #include <asm/page.h>
+>  #include <asm/percpu.h>
+> +#include <asm/segment.h>
+> +#include <asm/sigcontext.h>
+>  #include <asm/system.h>
+> -#include <asm/percpu.h>
+> -#include <linux/cpumask.h>
+> +#include <asm/types.h>
+> +
+>  #include <linux/cache.h>
+> +#include <linux/cpumask.h>
+> +#include <linux/init.h>
+>  #include <linux/personality.h>
+> +#include <linux/threads.h>
+>  
+>  /*
+>   * Default implementation of macro that returns current
+
