@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbXLROET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757110AbXLROIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757961AbXLROET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 09:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756238AbXLROEH
+	id S1757110AbXLROIx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 09:08:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755771AbXLROIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 09:04:07 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:52604 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756150AbXLROEG (ORCPT
+	Tue, 18 Dec 2007 09:08:44 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:38895 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755551AbXLROIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 09:04:06 -0500
-Date: Tue, 18 Dec 2007 15:04:03 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: xfs@oss.sgi.com
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Do not reset xfsquota flags on quotaless ro mount
-Message-ID: <Pine.LNX.4.64.0712181459210.32270@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 18 Dec 2007 09:08:43 -0500
+Subject: Re: 2.6.24-rc5-mm1 -- INFO: possible circular locking dependency
+	detected -- pm-suspend/5800 is trying to acquire lock
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       ipw3945-devel@lists.sourceforge.net, Len Brown <len.brown@intel.com>,
+       Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <a44ae5cd0712180603v2a37023dj714a8500c14c08de@mail.gmail.com> (sfid-20071218_140331_639413_FA8FEBF7)
+References: <a44ae5cd0712180603v2a37023dj714a8500c14c08de@mail.gmail.com>
+	 (sfid-20071218_140331_639413_FA8FEBF7)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-BNmijsOA0s70fjnylvjg"
+Date: Tue, 18 Dec 2007 15:08:06 +0100
+Message-Id: <1197986886.4885.156.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+
+--=-BNmijsOA0s70fjnylvjg
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
 
-In https://bugzilla.novell.com/show_bug.cgi?id=345338 it is claimed that
-resetting the quota flags in the mounting sequence rw,ro,rw is a bug, but I
-would say this is not the case, as quota is metadata, and the log is replayed
-in ro mode even for other filesystems. Yet, it is still not nice, and I have
-been trying with this patch, which does not do the right thing yet. (It does a
-recovery when mounting for the 3rd time, which probably just says that I did
-not know too much of xfs internals to cook up a nicely working patch.)
-Opinions?
+On Tue, 2007-12-18 at 09:03 -0500, Miles Lane wrote:
+> I have only seen this happen once, and cannot reproduce it.  I'll keep
+> trying, though.
+>=20
+> Dec 16 22:10:48 syntropy kernel: [  231.718023]
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D
 
-===
+Do you have a version that isn't line-wrapped before I try to unwrap it?
 
-In the following action sequence, quota is unnecessarily recalculated
-at the 3rd mount invocation:
+Thanks,
+johannes
 
-	mount -o usrquota,grpquota /dev/mapper/myxfs /mnt
-	umount /mnt
-	mount -o ro /dev/mapper/myxfs /mnt
-	umount /mnt
-	mount -o usrquota,grpquota /dev/mapper/myxfs /mnt
+--=-BNmijsOA0s70fjnylvjg
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-This patch skips clearing the quota flags on read-only mounts.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
----
- fs/xfs/xfs_qmops.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+iQIVAwUAR2fURaVg1VMiehFYAQLaKQ/+OC9McTwIpKYiqW7a78BOW1/ncYXEir9v
+RACKn4H8oHmy0eRlweLNEc4u7Ax67ymFhMlbGme+dQvpDtADVDyDxxEx6hu8yy9f
+GNsntj7jV8CEl0VALxjcqm4mdQ6BfyBJuu/90aE346R2SL9JUGTgnfEmJ2sTCIIt
+qi6KQj2MwJYHENGFy/wABc8Wo2Zr1CQWIqBJLzIBUITcv7irfNrtnx0bGor0hLg3
+H+NlIDywEkgeOzCQkvIMCIC33q1Tk9RL4bEJjLURseIL4MJYdEpWgoo50OPHCcXg
+hsAIhZHETBjTZHOVlMHkolI4uAeMbrl87aEk6K6r0umCcbqWSgqx0ZkbXrIWjTVP
+6je4ZIRQlX/jqHCEvkBQZ9Sao2FxnbtzlyhhdtRuaRGaxEkD3pPeijOUNzLlhMRw
+GzwpiYEihH7y3xcDwIlfhAYbbSUXhIVYWPfF7AgSsnua+NCEhGZOgXGRNYHy+00M
+GjhHExe585FTi9Nl0Ld6mPsnYZcka2wINw5l4bN4cn8Fa7If0Hsb+eMDxDwv8Bp0
+kdxFNOiC3QLMsu3g6EQQLca2oFIs6gOu9oHTtC0EC5706uRq5yo0ICLcUQPB0ll4
+HxGQvCTL7IOg/8KsqMkstz4ulwn8QTqG0L6aLOTVTdlgJ1lN1YD6GbTs07gsv46v
+0U6ObGrXAw8=
+=nWKb
+-----END PGP SIGNATURE-----
 
-Index: linux-2.6/fs/xfs/xfs_qmops.c
-===================================================================
---- linux-2.6.orig/fs/xfs/xfs_qmops.c
-+++ linux-2.6/fs/xfs/xfs_qmops.c
-@@ -134,7 +134,14 @@ static struct xfs_qmops xfs_qmcore_stub 
- int
- xfs_qmops_get(struct xfs_mount *mp, struct xfs_mount_args *args)
- {
--	if (args->flags & (XFSMNT_UQUOTA | XFSMNT_PQUOTA | XFSMNT_GQUOTA)) {
-+	bool c;
-+
-+	c = args->flags & (XFSMNT_UQUOTA | XFSMNT_GQUOTA | XFSMNT_PQUOTA);
-+#ifdef CONFIG_XFS_QUOTA
-+	c |= mp->m_flags & XFS_MOUNT_RDONLY;
-+#endif
-+
-+	if (c) {
- #ifdef CONFIG_XFS_QUOTA
- 		mp->m_qm_ops = &xfs_qmcore_xfs;
- #else
+--=-BNmijsOA0s70fjnylvjg--
+
