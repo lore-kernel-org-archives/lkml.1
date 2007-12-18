@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751758AbXLRU2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbXLRU3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751758AbXLRU2G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 15:28:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbXLRU1w
+	id S1753930AbXLRU3S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 15:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbXLRU3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 15:27:52 -0500
-Received: from emh03.mail.saunalahti.fi ([62.142.5.109]:35073 "EHLO
-	emh03.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752162AbXLRU1v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 15:27:51 -0500
-X-Greylist: delayed 569 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Dec 2007 15:27:51 EST
-Date: Tue, 18 Dec 2007 22:18:10 +0200 (EET)
-From: Kai Makisara <Kai.Makisara@kolumbus.fi>
-X-X-Sender: makisara@kai.makisara.local
-To: James Bottomley <James.Bottomley@SteelEye.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, John Stoffel <john@stoffel.org>,
-       fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Boaz Harrosh <bharrosh@panasas.com>
-Subject: Re: 2.6.24-rc5: tape drive not responding
-In-Reply-To: <1197928348.3204.14.camel@localhost.localdomain>
-Message-ID: <alpine.LSU.0.999999.0712182207570.5289@kai.makisara.local>
-References: <18277.52079.718004.969358@stoffel.org>  <20071217112551H.fujita.tomonori@lab.ntt.co.jp>  <20071217031510.c3d500fd.akpm@linux-foundation.org>  <18278.55130.471797.398922@stoffel.org>  <18278.58314.892734.490418@stoffel.org> 
- <20071217134344.3f024461.akpm@linux-foundation.org> <1197928348.3204.14.camel@localhost.localdomain>
-User-Agent: Alpine 0.999999 (LSU 847 2007-12-06)
+	Tue, 18 Dec 2007 15:29:07 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46451 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751979AbXLRU3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 15:29:06 -0500
+Message-ID: <47682D74.9010509@redhat.com>
+Date: Tue, 18 Dec 2007 15:28:36 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Antivirus: VAMS
+To: James Nichols <jamesnichols3@gmail.com>
+CC: Eric Dumazet <dada1@cosmosbay.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org
+Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
+References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com>	 <Pine.LNX.4.64.0712180009390.32270@fbirervta.pbzchgretzou.qr>	 <83a51e120712180734i334399dbl51f44fe32d815f7d@mail.gmail.com>	 <Pine.LNX.4.64.0712181704380.4422@fbirervta.pbzchgretzou.qr>	 <83a51e120712180845k6cadf67bn5dd66fb2d3ac72d4@mail.gmail.com>	 <Pine.LNX.4.64.0712181818360.4422@fbirervta.pbzchgretzou.qr>	 <83a51e120712181009pf954f43mcb63ea4dab638458@mail.gmail.com>	 <Pine.LNX.4.64.0712181910580.4422@fbirervta.pbzchgretzou.qr>	 <83a51e120712181021p4c4c2a13g8820271f1e00361b@mail.gmail.com>	 <4768123A.7040603@cosmosbay.com> <83a51e120712181145l75a19e72o3194676b05a855a6@mail.gmail.com>
+In-Reply-To: <83a51e120712181145l75a19e72o3194676b05a855a6@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007, James Bottomley wrote:
-
+On 12/18/2007 02:45 PM, James Nichols wrote:
 > 
-> On Mon, 2007-12-17 at 13:43 -0800, Andrew Morton wrote:
-> > On Mon, 17 Dec 2007 16:02:02 -0500
-> > "John Stoffel" <john@stoffel.org> wrote:
-> > 
-> > > 
-> > > Just to confirm, the propsed patch to st.c fixes the issue with
-> > > 2.6.24-rc5 as well at 2.6.24-rc5-mm1 with access to my DLT tape
-> > > drives.
-> > 
-> > err, what patch to st.c?
+> I've run tcpdump for all IPs during this problem.  I haven't tried
+> doing it for a single explicit IP address- due to the nature of the
+> workload it's very difficult to know which IPs will be hit at any
+> given moment.   What I did see in the full IP captures is that the
+> returning ACKs don't show up in the packet capture.  Unfortunately,
+> tcpdump reported that some packets were dropped during the capture.
+> Is it possible that the kernel was dropping the packets before they
+> could be captured by tcpdump?
 > 
-> That's this one:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=acdd0b1c371b2fbb4b6110a51ba69cb0af9e6f45
-> 
-I have done some tests. Firstly, I did not see the BUG with 2.6.24-rc5. 
-Looking at include/linux/scatterlist.h suggested that CONFIG_DEBUG_SG has 
-something to do with this. When enabled SG debugging, I also saw the BUG. 
-Adding this patch solved the problem.
 
-You can add
-
-Acked-by: Kai Makisara <Kai.Makisara@kolumbus.fi>
-
-if you want. This fix should be included in 2.6.24.
-
--- 
-Kai
+The only way to get a reliable trace is to run a capture from a port
+mirror on the switch the server is connected to. Capturing from inside
+the server at the same time and comparing the traces could be useful.
