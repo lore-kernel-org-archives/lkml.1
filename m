@@ -1,104 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936225AbXLRCsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934349AbXLRCvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936225AbXLRCsX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 21:48:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761127AbXLRCrt
+	id S934349AbXLRCvS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 21:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbXLRCvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 21:47:49 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:31156 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574AbXLRCrs (ORCPT
+	Mon, 17 Dec 2007 21:51:08 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:9048 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751574AbXLRCvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 21:47:48 -0500
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 2/2 2.6.25] cxgb3 - Fix EEH, missing softirq blocking
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Mon, 17 Dec 2007 18:47:41 -0800
-Message-ID: <20071218024741.6590.85489.stgit@speedy5>
-User-Agent: StGIT/0.12
+	Mon, 17 Dec 2007 21:51:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=I4e6JbXxsQs3UbTFZbjKqOYy5/BeThkgPuYiS5+7IJDMc4OI0vE1cbi+J/oLcxbLRiloqVx7EeB7zi9z04YOoBP31YPe24iZMWYksyGah/y9YxqM6PC18sazCUykitiB/AUZvba8LTNjuqwtBYfl/yHZ6BBpLirHCoeIyMjIPI0=
+Message-ID: <47673593.6040104@gmail.com>
+Date: Tue, 18 Dec 2007 11:50:59 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: shyam_iyer@dell.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB (v3)
+References: <12954112.1197908230928.JavaMail.root@wombat.diezmil.com>
+In-Reply-To: <12954112.1197908230928.JavaMail.root@wombat.diezmil.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+Hello,
 
-set_pci_drvdata() stores a pointer to the adapter,
-not the net device.
-Add missing softirq blocking in t3_mgmt_tx.
+shyam_iyer@dell.com wrote:
+> --- sata_nv.c.orig	2007-12-17 21:08:12.000000000 +0530
+> +++ sata_nv.c	2007-12-17 21:08:25.000000000 +0530
+> @@ -2407,6 +2407,12 @@
+>  			type = GENERIC;
+>  	}
+>  
+> +	/* set 64bit dma masks, may fail */
+> +	if (type == ADMA) {
+> +		if (pci_set_dma_mask(pdev, DMA_64BIT_MASK) == 0)
+> +			pci_set_consistent_dma_mask(pdev, DMA_64BIT_MASK);
+> +	}
+> +
+>  	ppi[0] = &nv_port_info[type];
+>  	rc = ata_pci_prepare_sff_host(pdev, ppi, &host);
+>  	if (rc)
+> @@ -2418,12 +2424,6 @@
+>  	hpriv->type = type;
+>  	host->private_data = hpriv;
+>  
+> -	/* set 64bit dma masks, may fail */
+> -	if (type == ADMA) {
+> -		if (pci_set_dma_mask(pdev, DMA_64BIT_MASK) == 0)
+> -			pci_set_consistent_dma_mask(pdev, DMA_64BIT_MASK);
+> -	}
+> -
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+This is weird.  IIRC, the problem is caused by allocating consistent
+memory for legacy DMA over 32bit limit.  Your patch moves setting 64bit
+DMA mask upward but it doesn't affect anything because
+ata_pci_prepare_sff_host() and hpriv allocation are not DMA memory
+allocations and thus unaffected by DMA mask.
 
- drivers/net/cxgb3/cxgb3_main.c |   14 ++++----------
- drivers/net/cxgb3/sge.c        |    7 ++++++-
- 2 files changed, 10 insertions(+), 11 deletions(-)
+Robert's last patch seems correct to me.  I have no idea why it doesn't
+work for you tho.  Another interesting point is that you are reporting
+data corruption instead of time out or HSM violation, which indicates
+that the PRD table is accessible but what it contains is incorrect.
 
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index d1aa777..0e3dcbf 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -2408,9 +2408,7 @@ void t3_fatal_err(struct adapter *adapter)
- static pci_ers_result_t t3_io_error_detected(struct pci_dev *pdev,
- 					     pci_channel_state_t state)
- {
--	struct net_device *dev = pci_get_drvdata(pdev);
--	struct port_info *pi = netdev_priv(dev);
--	struct adapter *adapter = pi->adapter;
-+	struct adapter *adapter = pci_get_drvdata(pdev);
- 	int i;
- 
- 	/* Stop all ports */
-@@ -2444,9 +2442,7 @@ static pci_ers_result_t t3_io_error_detected(struct pci_dev *pdev,
-  */
- static pci_ers_result_t t3_io_slot_reset(struct pci_dev *pdev)
- {
--	struct net_device *dev = pci_get_drvdata(pdev);
--	struct port_info *pi = netdev_priv(dev);
--	struct adapter *adapter = pi->adapter;
-+	struct adapter *adapter = pci_get_drvdata(pdev);
- 
- 	if (pci_enable_device(pdev)) {
- 		dev_err(&pdev->dev,
-@@ -2469,9 +2465,7 @@ static pci_ers_result_t t3_io_slot_reset(struct pci_dev *pdev)
-  */
- static void t3_io_resume(struct pci_dev *pdev)
- {
--	struct net_device *dev = pci_get_drvdata(pdev);
--	struct port_info *pi = netdev_priv(dev);
--	struct adapter *adapter = pi->adapter;
-+	struct adapter *adapter = pci_get_drvdata(pdev);
- 	int i;
- 
- 	/* Restart the ports */
-@@ -2491,7 +2485,7 @@ static void t3_io_resume(struct pci_dev *pdev)
- 
- 	if (is_offload(adapter)) {
- 		__set_bit(OFFLOAD_DEVMAP_BIT, &adapter->registered_device_map);
--		if (offload_open(dev))
-+		if (offload_open(adapter->port[0]))
- 			printk(KERN_WARNING
- 			       "Could not bring back offload capabilities\n");
- 	}
-diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-index cef153d..6367cee 100644
---- a/drivers/net/cxgb3/sge.c
-+++ b/drivers/net/cxgb3/sge.c
-@@ -1364,7 +1364,12 @@ static void restart_ctrlq(unsigned long data)
-  */
- int t3_mgmt_tx(struct adapter *adap, struct sk_buff *skb)
- {
--	return ctrl_xmit(adap, &adap->sge.qs[0].txq[TXQ_CTRL], skb);
-+	int ret; 
-+	local_bh_disable();
-+	ret = ctrl_xmit(adap, &adap->sge.qs[0].txq[TXQ_CTRL], skb);
-+	local_bh_enable();
-+
-+	return ret;
- }
- 
- /**
+I guess it's time to print out some memory addresses.  I'll prep a debug
+patch soon.
+
+Thanks.
+
+-- 
+tejun
