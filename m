@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765846AbXLRDNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759904AbXLRDdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765846AbXLRDNT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 22:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbXLRDNL
+	id S1759904AbXLRDdt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 22:33:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbXLRDdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 22:13:11 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:38165 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752315AbXLRDNK (ORCPT
+	Mon, 17 Dec 2007 22:33:39 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:3674 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751862AbXLRDdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 22:13:10 -0500
-Message-ID: <47673AD8.9010702@davidnewall.com>
-Date: Tue, 18 Dec 2007 13:43:28 +1030
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Andy Lutomirski <luto@myrealbox.com>,
-       John Reiser <jreiser@BitWagon.com>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org, security@kernel.org
-Subject: Re: /dev/urandom uses uninit bytes, leaks user data
-References: <4762DAB1.1020807@BitWagon.com> <20071214201305.GL19691@waste.org> <4762EB63.8070100@BitWagon.com> <20071214232322.GE17344@thunk.org> <47632010.6030709@BitWagon.com> <20071215043208.GF17344@thunk.org> <4766A40D.4080804@BitWagon.com> <20071217173623.GC7070@thunk.org> <476719E5.1010505@myrealbox.com> <20071218030533.GN7070@thunk.org>
-In-Reply-To: <20071218030533.GN7070@thunk.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Dec 2007 22:33:38 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: cfriesen@nortel.com (Chris Friesen)
+Subject: Re: "ip neigh show" not showing arp cache entries?
+Cc: yoshfuji@linux-ipv6.org, dada1@cosmosbay.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Organization: Core
+In-Reply-To: <476696A5.1010101@nortel.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1J4TCz-0005L8-00@gondolin.me.apana.org.au>
+Date: Tue, 18 Dec 2007 11:33:29 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Mon, Dec 17, 2007 at 07:52:53PM -0500, Andy Lutomirski wrote:
->   
->> It runs on a freshly booted machine (no 
->> DSA involved, so we're not automatically hosed), so an attacker knows the 
->> initial pool state.  
->>     
+Chris Friesen <cfriesen@nortel.com> wrote:
 >
-> Not just a freshly booted system.  The system has to be a freshly
-> booted, AND freshly installed system.  Normally you mix in a random
-> seed at boot time.  And during the boot sequence, the block I/O will
-> be mixing randomness into the entropy pool, and as the user logs in,
-> the keyboard and mouse will be mixing more entropy into the pool.  So
-> you'll have to assume that all entropy inputs have somehow been
-> disabled as well. 
->   
+> However, if I specifically try to print out one of the missing entries, 
+> it shows up:
+> 
+> root@typhoon-base-unit0:/root> /tmp/ip neigh show 192.168.24.81
+> 192.168.24.81 dev bond2 lladdr 00:01:af:14:e9:8a REACHABLE
 
-On a server, keyboard and mouse are rarely used.  As you've described 
-it, that leaves only the disk, and during the boot process, disk 
-accesses and timing are somewhat predictable.  Whether this is 
-sufficient to break the RNG is (clearly) a matter of debate.
+What about
+
+	ip -4 neigh show
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
