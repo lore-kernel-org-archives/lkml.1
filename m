@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbXLRL2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbXLRL35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891AbXLRL2R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 06:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbXLRL2H
+	id S1755088AbXLRL35 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 06:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbXLRL3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 06:28:07 -0500
-Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:58622 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753720AbXLRL2G (ORCPT
+	Tue, 18 Dec 2007 06:29:50 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52250 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753164AbXLRL3t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 06:28:06 -0500
-Date: Tue, 18 Dec 2007 12:28:04 +0100
-From: Damien Wyart <damien.wyart@free.fr>
-To: David Chinner <dgc@sgi.com>, Christoph Hellwig <hch@infradead.org>,
-       Lachlan McIlroy <lachlan@sgi.com>, Peter Leckie <pleckie@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-xfs@oss.sgi.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Important regression with XFS update for 2.6.24-rc6
-Message-ID: <20071218112804.GA3069@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 18 Dec 2007 06:29:49 -0500
+Date: Tue, 18 Dec 2007 03:28:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Gregory Haskins <ghaskins@novell.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       linux-kernel@vger.kernel.org, rostedt@goodmis.org
+Subject: Re: [PATCH] sched: dynamically update the root-domain span/online
+ maps
+Message-Id: <20071218032812.cbb6c823.akpm@linux-foundation.org>
+In-Reply-To: <20071218104800.GC29466@elte.hu>
+References: <200712172339.lBHNdmDD008149@imap1.linux-foundation.org>
+	<20071218005217.4957.3055.stgit@novell1.haskins.net>
+	<20071218104800.GC29466@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, 18 Dec 2007 11:48:00 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-As a follow-up to
-<http://marc.info/?l=linux-kernel&m=119796120524618&w=2> (LKML seems
-down right now so I am not linking to it), I have detected an important
-problem with these two patches: after applying them by hand (downloaded
-them raw from SGI's gitweb) on top of 2.6.24-rc5-git5 (they have not yet
-been pulled into mainline by Linux as of this morning) for testing
-purposes, I noticed upon reboot that "ls -l" on directories with many
-files and subdirectories (around 5000 entries) takes several hundreds of
-MB in RAM and then dies with "memory exhausted" error.
+> 
+> * Gregory Haskins <ghaskins@novell.com> wrote:
+> 
+> > http://marc.info/?l=linux-mm-commits&m=119793598429477&w=2
+> > 
+> > I have confirmed that it builds and boots clean, and it passes 
+> > checkpatch. However, my test machine seems to be having problems with 
+> > suspend-to-ram that are unrelated to this patch that prevent me from 
+> > verifying the fix entirely. If Gautham or Andrew could confirm that it 
+> > resolves their suspend-to-ram issue, I would be most appreciative.
+> 
+> i'm reluctant to apply it without test results, unless we have a very 
+> clear picture of what happened on Andrew's box and how this updated 
+> patch resolves that problem. (or once Andrew tests your patch and deems 
+> it OK.)
+> 
 
-I also noticed that ldconfig takes a lot of time to complete, and
-firefox seems also to eat much more memory than usual. Reverting the two
-patches (going back to vanilla rc5-git5) makes these problems go away.
-I am not able to test right now if only one of the patches is bogus or
-if both of them are concerned.
+<wades through a pile of new compile errors>
 
-As the symptoms are easy to reproduce, I guess this is some kind of
-brown paper bag bug and will be easy for XFS experts to spot.
+<tests it>
 
-
-Best,
-
--- 
-Damien Wyart
+Seems OK now - resume-from-RAM actually resumes.
