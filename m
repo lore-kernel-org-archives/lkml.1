@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbXLRTr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbXLRTw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752660AbXLRTr1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 14:47:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbXLRTrU
+	id S1752570AbXLRTw0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 14:52:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbXLRTwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 14:47:20 -0500
-Received: from gate.crashing.org ([63.228.1.57]:57910 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751317AbXLRTrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 14:47:19 -0500
-Subject: Re: [RFC/PATCH 4/4] [POWERPC] pci: Disable IO/Mem on a device when
-	resources can't be allocated
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, Alan Cox <alan@redhat.com>,
-       Greg Kroah-Hartman <greg@kroah.com>, jgarzik@pobox.com,
-       wingel@nano-system.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       james.smart@emulex.com, linux-driver@qlogic.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071218125643.B7874@jurassic.park.msu.ru>
-References: <1197932473.576079.142524077033.qpush@grosgo>
-	 <20071217230127.46B3BDDE38@ozlabs.org>
-	 <20071218125643.B7874@jurassic.park.msu.ru>
-Content-Type: text/plain
-Date: Tue, 18 Dec 2007 22:36:09 +1100
-Message-Id: <1197977769.13400.42.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Dec 2007 14:52:18 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:37747 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760AbXLRTwQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 14:52:16 -0500
+Date: Tue, 18 Dec 2007 20:52:07 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-arch@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] initrd: Fix virtual/physical mix-up in overwrite test
+In-Reply-To: <20071218030131.8b272833.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0712182051050.24841@anakin>
+References: <Pine.LNX.4.64.0712161148340.5869@anakin>
+ <20071218030131.8b272833.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2007-12-18 at 12:56 +0300, Ivan Kokshaysky wrote:
-> On Tue, Dec 18, 2007 at 10:01:15AM +1100, Benjamin Herrenschmidt wrote:
-> > @@ -1040,7 +1040,10 @@ static inline void __devinit alloc_resou
-> >  		r->flags |= IORESOURCE_UNSET;
-> >  		r->end -= r->start;
-> >  		r->start = 0;
+On Tue, 18 Dec 2007, Andrew Morton wrote:
+> On Sun, 16 Dec 2007 11:51:00 +0100 (CET) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On recent kernels, I get the following error when using an initrd:
+> > 
+> > | initrd overwritten (0x00b78000 < 0x07668000) - disabling it.
+> > 
+> > My Amiga 4000 has 12 MiB of RAM at physical address 0x07400000 (virtual
+> > 0x00000000).
+> > The initrd is located at the end of RAM: 0x00b78000 - 0x00c00000 (virtual).
+> > The overwrite test compares the (virtual) initrd location to the (physical)
+> > first available memory location, which fails.
+> > 
+> > This patch converts initrd_start to a page frame number, so it can be safely
+> > compared with min_low_pfn.
+> > 
+> > Before the introduction of discontiguous memory support on m68k
+> > (12d810c1b8c2b913d48e629e2b5c01d105029839), min_low_pfn was just left
+> > untouched by the m68k-specific code (zero, I guess), and everything worked
+> > fine.
 > 
-> Perhaps we should use IORESOURCE_UNSET universally... It's a lot better
-> than clearing r->start which is in fact architecture dependent thing
-> and in the end just destroys information for no purpose.
+> breaks x86.
+> 
+> init/main.c: In function 'start_kernel':
+> init/main.c:601: error: implicit declaration of function 'virt_to_pfn'
+> init/main.c:603: warning: format '%08lx' expects type 'long unsigned int', but argument 2 has type 'int'
 
-I'm not totally sure. I was actually tempted to switch powerpc to get
-rid of it lately :-)
+Interestingly, virt_to_pfn() exists on a few architectures only :-(
 
-The problem is that a resource is never "unset" on PCI... the BAR always
-contains something... the question is whether that something is going to
-be problematic or not, or rather, whether that something can be
-"allocated" (ie. fitted into the resource tree in a free spot or not).
+So what's the correct portable construct to use instead?
 
-And we have a way of knowing that already which is ... resource->parent
-being NULL or not. That also happens to be what
-pci_assign_unassigned_resources() uses and I think the various arch
-pcibios_enable_device() should use (in fact I have a fix to make PowerPC
-use that) instead of testing res->start or even IORESOURCE_UNSET. 
+Gr{oetje,eeting}s,
 
-Anything that isn't in the resource tree is potentially stale and thus
-mustn't be enabled (ie. IO/MEM decoding must not be enabled on a device
-that has a BAR whose res->parent is NULL).
+						Geert
 
-The reason why we introduced use of IORESOURCE_UNSET on powerpc goes
-back from when we had our own resource assignment code there that was
-somewhat a half-assed version of what pci_assign_unassigned_resources().
-We decided to introduce IORESOURCE_UNSET rather than testing res->start
-because it could cope with a value of 0 being valid, and on machines
-with no legacy ISA stuff at all, 0 is a valid BAR value for some things,
-and we weren't smart enough to reassign those things in all
-circumstances.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Nowadays, that doesn't seem necessary anymore, and in fact, I think we
-can still support those valid 0 BARs -and- not have IORESOURCE_UNSET by
-standardizing on the idea that res->parent is the only indicator of a
-resource validity... unless I'm missing something which is quite
-possible :-)
-
-Cheers,
-Ben.
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
