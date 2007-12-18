@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936364AbXLRAc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765961AbXLRAfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936364AbXLRAc1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 19:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763038AbXLRAcS
+	id S1765961AbXLRAfy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 19:35:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762076AbXLRAfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 19:32:18 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:32823 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761109AbXLRAcR (ORCPT
+	Mon, 17 Dec 2007 19:35:42 -0500
+Received: from stinky.trash.net ([213.144.137.162]:40052 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761024AbXLRAfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 19:32:17 -0500
-Date: Mon, 17 Dec 2007 16:21:12 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       protasnb@gmail.com, tytso@thunk.org
-Subject: Re: Top kernel oopses/warnings this week
-In-Reply-To: <20071217154727.404e4bc4@laptopd505.fenrus.org>
-Message-ID: <alpine.LFD.0.9999.0712171607370.21557@woody.linux-foundation.org>
-References: <4762CF8C.90808@linux.intel.com> <20071217172331.GA23070@elte.hu> <20071217133631.5bbc5842@laptopd505.fenrus.org> <12c511ca0712171458n1bc05b40nab6b4b7c92433c8d@mail.gmail.com> <476703A4.7000401@linux.intel.com> <12c511ca0712171526h242a7de8vadec78cd48747bd@mail.gmail.com>
- <20071217154727.404e4bc4@laptopd505.fenrus.org>
+	Mon, 17 Dec 2007 19:35:41 -0500
+Message-ID: <476715DB.6050808@trash.net>
+Date: Tue, 18 Dec 2007 01:35:39 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Thomas Graf <tgraf@suug.ch>
+CC: Chris Friesen <cfriesen@nortel.com>, yoshfuji@linux-ipv6.org,
+       dada1@cosmosbay.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: "ip neigh show" not showing arp cache entries?
+References: <4760279E.1080203@nortel.com> <47602DD0.8070402@cosmosbay.com> <47605934.2060604@nortel.com> <20071213.070641.20411400.yoshfuji@linux-ipv6.org> <476696A5.1010101@nortel.com> <4766B99D.8060408@trash.net> <4766D261.1020005@nortel.com> <47670B88.4010906@trash.net> <20071218003312.GR11220@postel.suug.ch>
+In-Reply-To: <20071218003312.GR11220@postel.suug.ch>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thomas Graf wrote:
+> * Patrick McHardy <kaber@trash.net> 2007-12-18 00:51
+>> Chris Friesen wrote:
+>>> Patrick McHardy wrote:
+>>>
+>>>> From a kernel perspective there are only complete dumps, the
+>>>> filtering is done by iproute. So the fact that it shows them
+>>>> when querying specifically implies there is a bug in the
+>>>> iproute neighbour filter. Does it work if you omit "all"
+>>> >from the ip neigh show command?
+>>>
+>>> Omitting "all" gives identical results.  It is still missing entries 
+>>> when compared with the output of "arp".
+>>
+>> In that case the easiest way to debug this is probably if you
+>> add some debugging to ip/ipneigh.c:print_neigh() since I'm
+>> unable to reproduce this problem. A printf for all the filter
+>> conditions (=> return 0) at the top should do.
+> 
+> Alternatively, you can download libnl and run
+> 
+> 	NLCB=debug src/nl-neigh-dump brief
+> 
+> and check if the netlink message is sent by the kenrel for the
+> neighbour in question. 
 
 
-On Mon, 17 Dec 2007, Arjan van de Ven wrote:
->
-> +char *get_boot_uuid(void)
-> +{
-> +	static char target[38];
-> +	unsigned char *uuid;
-> +
-> +	if (sysctl_bootid[8] == 0)
-> +		generate_random_uuid(sysctl_bootid);
-> +	/* sysctl_bootid is signed, to print we need unsigned .. */
-> +	uuid = sysctl_bootid;
-> +
-> +	if (target[0] == 0) {
-> +		sprintf(target, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-"
-> +			"%02x%02x%02x%02x%02x%02x",
+It should be, according to Chris, "ip neigh show <ip>" does
+show the missing entries, and in case of neighbour entries
+all filtering is done in userspace.
 
-Why isn't *everything* inside that "if (target[0] == 0" check?
 
-IOW, that function should look something like
-
-	const char *get_boot_uuid(void)
-	{
-		static char target[38];
-
-		if (!target[0])
-			fill_boot_uid(target)
-		return target;
-	}
-
-which also allows you to clean it up a bit.
-
-I'd _also_ suggest that you'd actually try to avoid that horrid sequence 
-of "%02x..", and instead just make sure that sysctl_bootid[] is 4-byte 
-aligned, and then you can do
-
-	sprintf("%08x-%04x-%04x-%04x-%04x%08x",
-		ntohl(0[(u32 *)uuid]),
-		ntohs(2[(u16 *)uuid]),
-		ntohs(3[(u16 *)uuid]),
-		ntohs(4[(u16 *)uuid]),
-		ntohs(5[(u16 *)uuid]),
-		ntohl(3[(u32 *)uuid]));
-
-which also gets bonus points for being totally unreadable, and thus 100% 
-in the spirit of uuid's.
-
-		Linus
