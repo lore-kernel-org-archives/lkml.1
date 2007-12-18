@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbXLRM6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732AbXLRNDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbXLRM6B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 07:58:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbXLRM5w
+	id S1755732AbXLRNDK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 08:03:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbXLRNC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 07:57:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54078 "EHLO mx2.mail.elte.hu"
+	Tue, 18 Dec 2007 08:02:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58113 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753352AbXLRM5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 07:57:51 -0500
-Date: Tue, 18 Dec 2007 13:57:19 +0100
+	id S1753949AbXLRNC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 08:02:56 -0500
+Date: Tue, 18 Dec 2007 14:01:14 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gregory Haskins <ghaskins@novell.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       linux-kernel@vger.kernel.org, rostedt@goodmis.org
-Subject: Re: [PATCH] sched: dynamically update the root-domain span/online
-	maps
-Message-ID: <20071218125719.GA18064@elte.hu>
-References: <200712172339.lBHNdmDD008149@imap1.linux-foundation.org> <20071218005217.4957.3055.stgit@novell1.haskins.net> <20071218104800.GC29466@elte.hu> <20071218032812.cbb6c823.akpm@linux-foundation.org>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] arch/x86/: Spelling fixes
+Message-ID: <20071218130114.GA2447@elte.hu>
+References: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918890.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071218032812.cbb6c823.akpm@linux-foundation.org>
+In-Reply-To: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918890.git.joe@perches.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,21 +36,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+* Joe Perches <joe@perches.com> wrote:
 
-> > i'm reluctant to apply it without test results, unless we have a 
-> > very clear picture of what happened on Andrew's box and how this 
-> > updated patch resolves that problem. (or once Andrew tests your 
-> > patch and deems it OK.)
 > 
-> <wades through a pile of new compile errors>
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  arch/x86/kernel/apic_32.c    |    2 +-
+>  arch/x86/kernel/mpparse_32.c |    2 +-
+>  arch/x86/kernel/vm86_32.c    |    2 +-
+>  arch/x86/mm/srat_64.c        |    2 +-
 
-hm, due to any of these patches?
-
-> <tests it>
-> 
-> Seems OK now - resume-from-RAM actually resumes.
-
-cool, thanks! I've added it to sched-devel.git and have updated it.
+thanks, applied.
 
 	Ingo
