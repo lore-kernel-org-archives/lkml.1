@@ -1,71 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761324AbXLRB4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762896AbXLRB5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761324AbXLRB4P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 20:56:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbXLRBz6
+	id S1762896AbXLRB5p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 20:57:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbXLRB5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 20:55:58 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:33710 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbXLRBz5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 20:55:57 -0500
-Date: Mon, 17 Dec 2007 19:55:57 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-Message-ID: <20071218015557.GA28652@sergelap.austin.ibm.com>
-References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071218003955.GA27048@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 17 Dec 2007 20:57:37 -0500
+Received: from mga02.intel.com ([134.134.136.20]:44173 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752639AbXLRB5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 20:57:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,178,1196668800"; 
+   d="scan'208";a="298982018"
+Subject: [patch 3/3]pci: avoid save the same type of cap multiple times
+From: Shaohua Li <shaohua.li@intel.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>
+Content-Type: text/plain
+Date: Tue, 18 Dec 2007 09:57:09 +0800
+Message-Id: <1197943029.17023.18.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Serge E. Hallyn (serue@us.ibm.com):
-> Quoting Tetsuo Handa (penguin-kernel@i-love.sakura.ne.jp):
-> > Hello.
-> > 
-> > Serge E. Hallyn wrote:
-> > > CAP_MKNOD will be removed from its capability
-> > I think it is not enough because the root can rename/unlink device files
-> > (mv /dev/sda1 /dev/tmp; mv /dev/sda2 /dev/sda1; mv /dev/tmp /dev/sda2).
-> 
-> Sure but that doesn't bother us :)
-> 
-> The admin in the container has his own /dev directory and can do what he
-> likes with the devices he's allowed to have.  He just shouldn't have
-> access to others.  If he wants to rename /dev/sda1 to /dev/sda5 that's
-> his choice.
-> 
-> > > To use your approach, i guess we would have to use selinux (or tomoyo)
-> > > to enforce that devices may only be created under /dev?
-> > Everyone can use this filesystem alone.
-> 
-> Sure but it is worthless alone.
-> 
-> No?
+Avoid adding the same type of cap multiple times, otherwise we will see dead loop.
 
-Oh, no, I'm sorry - I was thinking in terms of my requirements again.
-But your requirements are to ensure that an application accessing a
-device at a well-known location get what it expect.
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 
-So then the main quesiton is still the one I think Al had asked - what
-keeps a rogue CAP_SYS_MOUNT process from doing
-mount --bind /dev/hda1 /dev/null ?
+Index: linux/drivers/pci/pci.c
+===================================================================
+--- linux.orig/drivers/pci/pci.c	2007-12-18 09:37:12.000000000 +0800
++++ linux/drivers/pci/pci.c	2007-12-18 09:41:26.000000000 +0800
+@@ -551,6 +551,7 @@ static int pci_save_pcie_state(struct pc
+ 	int pos, i = 0;
+ 	struct pci_cap_saved_state *save_state;
+ 	u16 *cap;
++	int found = 0;
+ 
+ 	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
+ 	if (pos <= 0)
+@@ -559,6 +560,8 @@ static int pci_save_pcie_state(struct pc
+ 	save_state = pci_find_saved_cap(dev, PCI_CAP_ID_EXP);
+ 	if (!save_state)
+ 		save_state = kzalloc(sizeof(*save_state) + sizeof(u16) * 4, GFP_KERNEL);
++	else
++		found = 1;
+ 	if (!save_state) {
+ 		dev_err(&dev->dev, "Out of memory in pci_save_pcie_state\n");
+ 		return -ENOMEM;
+@@ -570,7 +573,8 @@ static int pci_save_pcie_state(struct pc
+ 	pci_read_config_word(dev, pos + PCI_EXP_SLTCTL, &cap[i++]);
+ 	pci_read_config_word(dev, pos + PCI_EXP_RTCTL, &cap[i++]);
+ 	save_state->cap_nr = PCI_CAP_ID_EXP;
+-	pci_add_saved_cap(dev, save_state);
++	if (!found)
++		pci_add_saved_cap(dev, save_state);
+ 	return 0;
+ }
+ 
+@@ -598,6 +602,7 @@ static int pci_save_pcix_state(struct pc
+ 	int pos, i = 0;
+ 	struct pci_cap_saved_state *save_state;
+ 	u16 *cap;
++	int found = 0;
+ 
+ 	pos = pci_find_capability(dev, PCI_CAP_ID_PCIX);
+ 	if (pos <= 0)
+@@ -606,6 +611,8 @@ static int pci_save_pcix_state(struct pc
+ 	save_state = pci_find_saved_cap(dev, PCI_CAP_ID_PCIX);
+ 	if (!save_state)
+ 		save_state = kzalloc(sizeof(*save_state) + sizeof(u16), GFP_KERNEL);
++	else
++		found = 1;
+ 	if (!save_state) {
+ 		dev_err(&dev->dev, "Out of memory in pci_save_pcie_state\n");
+ 		return -ENOMEM;
+@@ -614,7 +621,8 @@ static int pci_save_pcix_state(struct pc
+ 
+ 	pci_read_config_word(dev, pos + PCI_X_CMD, &cap[i++]);
+ 	save_state->cap_nr = PCI_CAP_ID_PCIX;
+-	pci_add_saved_cap(dev, save_state);
++	if (!found)
++		pci_add_saved_cap(dev, save_state);
+ 	return 0;
+ }
+ 
 
-thanks,
--serge
 
-> What will keep the container admin from doing 'mknod /root/hda1 b 3 1'?
-> 
-> > But use with MAC (or whatever access control mechanisms that prevent
-> > attackers from unmounting/overlaying this filesystem) is recomennded.
-> 
-> -serge
