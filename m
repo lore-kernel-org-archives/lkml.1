@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757241AbXLROxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbXLRO5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757241AbXLROxV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 09:53:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbXLROxK
+	id S1757598AbXLRO5X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 09:57:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbXLRO5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 09:53:10 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:56151 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755282AbXLROxJ (ORCPT
+	Tue, 18 Dec 2007 09:57:14 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:35744 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753948AbXLRO5N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 09:53:09 -0500
-Message-ID: <4767DE91.9060803@nortel.com>
-Date: Tue, 18 Dec 2007 08:52:01 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: yoshfuji@linux-ipv6.org, dada1@cosmosbay.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: "ip neigh show" not showing arp cache entries?
-References: <E1J4TCz-0005L8-00@gondolin.me.apana.org.au>
-In-Reply-To: <E1J4TCz-0005L8-00@gondolin.me.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Dec 2007 14:52:08.0161 (UTC) FILETIME=[8FF36D10:01C84185]
+	Tue, 18 Dec 2007 09:57:13 -0500
+Subject: Re: 2.6.24-rc5-mm1 -- INFO: possible circular locking dependency
+	detected -- pm-suspend/5800 is trying to acquire lock
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       ipw3945-devel@lists.sourceforge.net, Len Brown <len.brown@intel.com>,
+       Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <a44ae5cd0712180641n15ceae8bp977efe9a5b45e6bc@mail.gmail.com> (sfid-20071218_144150_051683_83D9589E)
+References: <a44ae5cd0712180603v2a37023dj714a8500c14c08de@mail.gmail.com>
+	 <1197986886.4885.156.camel@johannes.berg>
+	 <a44ae5cd0712180641n15ceae8bp977efe9a5b45e6bc@mail.gmail.com>
+	 (sfid-20071218_144150_051683_83D9589E)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-hRdJylCaQ45BEXgq2z/I"
+Date: Tue, 18 Dec 2007 15:57:06 +0100
+Message-Id: <1197989826.4885.169.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> Chris Friesen <cfriesen@nortel.com> wrote:
-> 
->>However, if I specifically try to print out one of the missing entries, 
->>it shows up:
->>
->>root@typhoon-base-unit0:/root> /tmp/ip neigh show 192.168.24.81
->>192.168.24.81 dev bond2 lladdr 00:01:af:14:e9:8a REACHABLE
-> 
-> 
-> What about
-> 
-> 	ip -4 neigh show
 
-Looks like that did it.  Why does specifying the family make a difference?
+--=-hRdJylCaQ45BEXgq2z/I
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-root@typhoon-base-unit0:/root> ip neigh show
-10.41.18.1 dev eth6 lladdr 00:00:5e:00:01:01 STALE
-172.24.137.0 dev bond0 lladdr 00:c0:8b:08:e4:88 REACHABLE
-172.24.0.9 dev bond0 lladdr 00:07:e9:41:4b:b4 REACHABLE
-10.41.18.101 dev eth6 lladdr 00:0e:0c:5e:95:bd REACHABLE
-172.24.0.11 dev bond0 lladdr 00:03:cc:51:06:5e STALE
-172.24.132.1 dev bond0 lladdr 00:01:af:14:e9:88 REACHABLE
-172.24.0.15 dev bond0 lladdr 00:0e:0c:85:fd:d2 STALE
-172.24.0.3 dev bond0 lladdr 00:01:af:14:c8:cc REACHABLE
-172.24.0.5 dev bond0 lladdr 00:01:af:15:e0:6a STALE
 
-root@typhoon-base-unit0:/root> ip -4 neigh show
-192.168.24.81 dev bond2 lladdr 00:01:af:14:e9:8a REACHABLE
-172.24.132.2 dev bond0  FAILED
-172.24.136.0 dev bond0 lladdr 00:c0:8b:07:b3:7e REACHABLE
-10.41.18.1 dev eth6 lladdr 00:00:5e:00:01:01 STALE
-172.24.137.0 dev bond0 lladdr 00:c0:8b:08:e4:88 REACHABLE
-172.24.0.9 dev bond0 lladdr 00:07:e9:41:4b:b4 REACHABLE
-10.41.18.101 dev eth6 lladdr 00:0e:0c:5e:95:bd REACHABLE
-172.24.0.11 dev bond0 lladdr 00:03:cc:51:06:5e STALE
-172.24.132.1 dev bond0 lladdr 00:01:af:14:e9:88 REACHABLE
-172.24.0.15 dev bond0 lladdr 00:0e:0c:85:fd:d2 STALE
-172.24.0.3 dev bond0 lladdr 00:01:af:14:c8:cc REACHABLE
-172.24.0.5 dev bond0 lladdr 00:01:af:15:e0:6a STALE
+> Sorry.  GMail doesn't support sending unwrapped text, as far as I can
+> tell.  I will send the log segment to you as an attachment.  Also,
+> when I sent my .config inline to Andrew recently, it tripped his spam
+> filter.  I'll attach it as well.
 
-Chris
+Thanks. This is a bug in iwlwifi.
+
+The problem is actually another case where my workqueue debugging with
+lockdep is triggering a warning :))
+
+Here's the thing:
+
+iwl3945_cancel_deferred_work does=20
+
+cancel_delayed_work_sync(&priv->init_alive_start);
+
+(which is the "(&(&priv->init_alive_start)->work)" lock)
+
+but it is called from within a locked section of
+mutex_lock(&priv->mutex); (locked from iwl3945_pci_suspend)
+
+On the other hand, the task that runs from the init_alive_start
+workqueue is iwl3945_bg_init_alive_start() which will lock the same
+mutex.
+
+So the deadlock condition is that you can be in
+cancel_delayed_work_sync() above while the mutex is locked, and be
+waiting for iwl_3945_bg_init_alive_start() which tries to lock the
+mutex.
+
+johannes
+
+--=-hRdJylCaQ45BEXgq2z/I
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR2ffwaVg1VMiehFYAQJ1sw//d3WjOmOMlwroYtDEVaG86jP8YfTS3RLg
++HDmGC+xXZAqGSJK1/g02/oexaMSJUKAXctNcL7L7jc0gIiPRCA3UDkuMQAZG7Iw
+3hTwb7vxZL5/cwdqwEeEbJuor2yAond8o5L+w1480HMCpsXMaUyc6oCv39hxlfVL
+RYcAmfBpKYdh68Y9NkASaabJLQjgXwIFGYmFpigOghjWITZCH19+mdLoRMcbG9bE
+He3DfTNR0ShgvJT0C0KUPEpW0XnNODc+/iOdmxJknAK3FYtlH1gFHPNfOw4dKpMA
+cFmEgM3IxhWDRKuuI1ZtPJyPBIHGxXwBZRP+vPx6jSYZYhVSP1VQ+xmfcdDr/ggp
+C4yFemYiWmJFzdqjPndVWJnjJDO4cgmL1SG9uDaxLF14OCAU6Vz5LkmwDEPJYj/Z
+ZdSSbIKZjbmME+5G8Jl1ek+WO93V+X6mhS46nc1ZpBw5XxFueba+UjkC6oan0TeJ
+N1ciKOTooSYfbZSbla9UaAiQvPizawPJAuSeTji4pa8pAQ2+57b3dFoFCPGAoaj3
+Qt4lB/2XlufUOQ5d5VVJde39d7iYbgrA8TCPGo76n0NY3vF6atApLScqzdKPYma7
+JDXKclIwhw8MTR1iLtztA8YuN8cUD7JDdGGctZyJqaJrS7SLq1xkuH6fMXsDtuIf
+csgW708C/rg=
+=L9ty
+-----END PGP SIGNATURE-----
+
+--=-hRdJylCaQ45BEXgq2z/I--
+
