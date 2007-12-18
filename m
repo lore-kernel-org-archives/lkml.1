@@ -1,193 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756625AbXLRV7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbXLRWAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756625AbXLRV7o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 16:59:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbXLRV7f
+	id S1756748AbXLRWAb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 17:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbXLRWAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 16:59:35 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35935 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753691AbXLRV7e (ORCPT
+	Tue, 18 Dec 2007 17:00:21 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59775 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753290AbXLRWAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 16:59:34 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "peerchen" <peerchen@gmail.com>
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "akpm" <akpm@linux-foundation.org>, "acurrid" <acurrid@nvidia.com>,
-       "pchen" <pchen@nvidia.com>
-Subject: Re: [PATCH] msi: set 'En' bit of MSI Mapping Capability
-References: <200712182300373901202@gmail.com>
-Date: Tue, 18 Dec 2007 14:59:08 -0700
-In-Reply-To: <200712182300373901202@gmail.com> (peerchen@gmail.com's message
-	of "Tue, 18 Dec 2007 23:00:52 +0800")
-Message-ID: <m14pefaclv.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 18 Dec 2007 17:00:20 -0500
+Date: Tue, 18 Dec 2007 21:59:22 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Christoph Rohland <hans-christoph.rohland@sap.com>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/9] tmpfs: shuffle add_to_swap_caches
+In-Reply-To: <Pine.LNX.4.64.0712182144370.26235@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0712182157480.27165@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0712182144370.26235@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"peerchen" <peerchen@gmail.com> writes:
+add_to_swap_cache doesn't amount to much: merge it into its sole caller
+read_swap_cache_async.  But we'll be needing to call __add_to_swap_cache
+from shmem.c, so promote it to the new add_to_swap_cache.  Both were
+static, so there's no interface confusion to worry about.
 
-> According to the HyperTransport spec, 'En' indicate if the MSI Mapping is
-> active.
-> Set the 'En' bit when setup pci and add the quirk for some nvidia devices. 
->
-> The patch base on kernel 2.6.24-rc5
+And lose that inappropriate "Anon pages are already on the LRU" comment
+in the merging: they're not already on the LRU, as Nick Piggin noticed.
 
-Ok.  This is starting to look good.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-> Signed-off-by: Andy Currid <acurrid@nvidia.com>
-> Signed-off-by: Peer Chen <pchen@nvidia.com>
->
-> ---
-> diff -uprN -X linux-2.6.24-rc5-vanilla/Documentation/dontdiff
-> linux-2.6.24-rc5-vanilla/drivers/pci/probe.c
-> linux-2.6.24-rc5/drivers/pci/probe.c
-> --- linux-2.6.24-rc5-vanilla/drivers/pci/probe.c 2007-12-18 14:35:46.000000000
-> -0500
-> +++ linux-2.6.24-rc5/drivers/pci/probe.c 2007-12-18 16:28:29.000000000 -0500
-> @@ -721,6 +721,9 @@ static int pci_setup_device(struct pci_d
->  
->  	/* "Unknown power state" */
->  	dev->current_state = PCI_UNKNOWN;
-> +	
-> +	/* Enable HT MSI mapping */
-> +	ht_enable_msi_mapping(dev);
->  
->  	/* Early fixups, before probing the BARs */
->  	pci_fixup_device(pci_fixup_early, dev);
-> diff -uprN -X linux-2.6.24-rc5-vanilla/Documentation/dontdiff
-> linux-2.6.24-rc5-vanilla/drivers/pci/quirks.c
-> linux-2.6.24-rc5/drivers/pci/quirks.c
-> --- linux-2.6.24-rc5-vanilla/drivers/pci/quirks.c 2007-12-18 14:35:46.000000000
-> -0500
-> +++ linux-2.6.24-rc5/drivers/pci/quirks.c 2007-12-18 16:28:41.000000000 -0500
-> @@ -1705,6 +1705,45 @@ static void __devinit quirk_nvidia_ck804
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_CK804_PCIE,
->  			quirk_nvidia_ck804_msi_ht_cap);
->  
-> +static void __devinit quirk_msi_ht_cap_disable(struct pci_dev *dev) {
-> +	struct pci_dev *host_bridge;
-> +	int pos, ttl = 48;
-> +
-> +	/* HT MSI mapping should be disabled on devices that are below
-> +	 * a non-Hypertransport host bridge. Locate the host bridge...
-> + 	 */
-> +
-> +	if ((host_bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0,0))) == NULL) {
-> +		printk(KERN_WARNING
-> + "PCI: quirk_msi_ht_cap_disable didn't locate host bridge\n");
-> +		return;
-> +	}
-> +
-> + if ((pos = pci_find_ht_capability(host_bridge, HT_CAPTYPE_SLAVE)) != 0) {
-> +		/* Host bridge is to HT */
-> +		return;
-> +	}
-> +
-> +	/* Host bridge is not to HT, disable HT MSI mapping on this device */
-> +
-> +	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
-> +	while (pos && ttl--) {
-> +		u8 flags;
-> +
-> + if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS, &flags) == 0) {
-> + printk(KERN_INFO "PCI: Quirk disabling HT MSI mapping on %s\n",
-> +			       pci_name(dev));
-> +
-> +			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
-> +					      flags & ~HT_MSI_FLAGS_ENABLE);
-> +		}
-> +		pos = pci_find_next_ht_capability(dev, pos,
-> +						  HT_CAPTYPE_MSI_MAPPING);
-> +	}
-> +}
-> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID,
-> + quirk_msi_ht_cap_disable);
+ mm/swap_state.c |   53 ++++++++++++++++------------------------------
+ 1 file changed, 19 insertions(+), 34 deletions(-)
 
-Could you explain the need for this quirk?
-
-My expectation would be that if we turned an MSI interrupt into a
-hypertransport interrupt then if we hit a non-hyptransport bridge
-upstream it would just turn the hypertransport interrupts into
-whatever makes sense for the upstream bridge.  I can see it being
-excess work and adding some latency but I don't see it being a
-correctness problem. 
-
-Or are my expectations off and the NVIDIA chipsets do not handle
-hypertransport interrupts the way I would expect.  Dropping them
-instead of converting when going to a non-hypertransport host bridge.
-
-
->  static void __devinit quirk_msi_intx_disable_bug(struct pci_dev *dev)
->  {
->  	dev->dev_flags |= PCI_DEV_FLAGS_MSI_INTX_DISABLE_BUG;
-> diff -uprN -X linux-2.6.24-rc5-vanilla/Documentation/dontdiff
-> linux-2.6.24-rc5-vanilla/include/asm-generic/pci.h
-> linux-2.6.24-rc5/include/asm-generic/pci.h
-> --- linux-2.6.24-rc5-vanilla/include/asm-generic/pci.h 2007-12-18
-> 14:35:52.000000000 -0500
-> +++ linux-2.6.24-rc5/include/asm-generic/pci.h 2007-12-18 16:29:12.000000000
-> -0500
-> @@ -45,6 +45,10 @@ pcibios_select_root(struct pci_dev *pdev
->  
->  #define pcibios_scan_all_fns(a, b)	0
->  
-> +#ifndef HAVE_ARCH_HT_ENABLE_MSI_MAPPING
-> +#define ht_enable_msi_mapping(a)	0
-> +#endif /* HAVE_ARCH_HT_ENABLE_MSI_MAPPING */
-> +
->  #ifndef HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ
->  static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
->  {
-> diff -uprN -X linux-2.6.24-rc5-vanilla/Documentation/dontdiff
-> linux-2.6.24-rc5-vanilla/include/asm-x86/pci.h
-> linux-2.6.24-rc5/include/asm-x86/pci.h
-> --- linux-2.6.24-rc5-vanilla/include/asm-x86/pci.h 2007-12-18 14:35:51.000000000
-> -0500
-> +++ linux-2.6.24-rc5/include/asm-x86/pci.h 2007-12-18 16:28:58.000000000 -0500
-> @@ -75,6 +75,27 @@ static inline void pci_dma_burst_advice(
->  }
->  #endif
->  
-> +#ifdef CONFIG_PCI
-> +#define HAVE_ARCH_HT_ENABLE_MSI_MAPPING
-> +static inline void ht_enable_msi_mapping(struct pci_dev *dev)
-> +{
-> +	int pos, ttl = 48;
-> +
-> +	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
-> +	while (pos && ttl--) {
-> +		u8 flags;
-> +
-> + if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS, &flags) == 0) {
-> + printk(KERN_INFO "PCI: Enabling HT MSI Mapping on %s\n",
-> +						dev->dev.bus_id);
-> +
-> +			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
-> +					      flags | HT_MSI_FLAGS_ENABLE);
-
-Here I see two things that we should do better.
-1) If the BIOS has already properly enabled the capability we don't
-   need to do anything or print any message.  i.e.
-   if (!(flags & HT_MSI_FLAGS_ENABLE)) {
-	printk(...)
-        pci_write_config_byte()
-   }
-
-2) The hypertransport specification allows for an optional register
-   that specifies the address of the msi mapping window.  If that
-   register is present we should program it to the architectural
-   defined address on x86 before enabling the device.
-        
-   
-> +		}
-> + pos = pci_find_next_ht_capability(dev, pos, HT_CAPTYPE_MSI_MAPPING);
-> +	}
-> +}
-> +#endif
->  
->  #endif  /* __KERNEL__ */
-> -
+--- tmpfs1/mm/swap_state.c	2007-12-05 16:42:16.000000000 +0000
++++ tmpfs2/mm/swap_state.c	2007-12-05 16:42:16.000000000 +0000
+@@ -64,10 +64,10 @@ void show_swap_cache_info(void)
+ }
+ 
+ /*
+- * __add_to_swap_cache resembles add_to_page_cache on swapper_space,
++ * add_to_swap_cache resembles add_to_page_cache on swapper_space,
+  * but sets SwapCache flag and private instead of mapping and index.
+  */
+-static int __add_to_swap_cache(struct page *page, swp_entry_t entry,
++static int add_to_swap_cache(struct page *page, swp_entry_t entry,
+ 			       gfp_t gfp_mask)
+ {
+ 	int error;
+@@ -94,28 +94,6 @@ static int __add_to_swap_cache(struct pa
+ 	return error;
+ }
+ 
+-static int add_to_swap_cache(struct page *page, swp_entry_t entry,
+-				gfp_t gfp_mask)
+-{
+-	int error;
+-
+-	BUG_ON(PageLocked(page));
+-	if (!swap_duplicate(entry))
+-		return -ENOENT;
+-
+-	SetPageLocked(page);
+-	error = __add_to_swap_cache(page, entry, gfp_mask & GFP_KERNEL);
+-	/*
+-	 * Anon pages are already on the LRU, we don't run lru_cache_add here.
+-	 */
+-	if (error) {
+-		ClearPageLocked(page);
+-		swap_free(entry);
+-		return error;
+-	}
+-	return 0;
+-}
+-
+ /*
+  * This must be called only on pages that have
+  * been verified to be in the swap cache.
+@@ -165,7 +143,7 @@ int add_to_swap(struct page * page, gfp_
+ 		/*
+ 		 * Add it to the swap cache and mark it dirty
+ 		 */
+-		err = __add_to_swap_cache(page, entry,
++		err = add_to_swap_cache(page, entry,
+ 				gfp_mask|__GFP_NOMEMALLOC|__GFP_NOWARN);
+ 
+ 		switch (err) {
+@@ -210,7 +188,7 @@ void delete_from_swap_cache(struct page 
+  */
+ int move_to_swap_cache(struct page *page, swp_entry_t entry)
+ {
+-	int err = __add_to_swap_cache(page, entry, GFP_ATOMIC);
++	int err = add_to_swap_cache(page, entry, GFP_ATOMIC);
+ 	if (!err) {
+ 		remove_from_page_cache(page);
+ 		page_cache_release(page);	/* pagecache ref */
+@@ -335,16 +313,21 @@ struct page *read_swap_cache_async(swp_e
+ 		}
+ 
+ 		/*
++		 * Swap entry may have been freed since our caller observed it.
++		 */
++		if (!swap_duplicate(entry))
++			break;
++
++		/*
+ 		 * Associate the page with swap entry in the swap cache.
+-		 * May fail (-ENOENT) if swap entry has been freed since
+-		 * our caller observed it.  May fail (-EEXIST) if there
+-		 * is already a page associated with this entry in the
+-		 * swap cache: added by a racing read_swap_cache_async,
+-		 * or by try_to_swap_out (or shmem_writepage) re-using
+-		 * the just freed swap entry for an existing page.
++		 * May fail (-EEXIST) if there is already a page associated
++		 * with this entry in the swap cache: added by a racing
++		 * read_swap_cache_async, or add_to_swap or shmem_writepage
++		 * re-using the just freed swap entry for an existing page.
+ 		 * May fail (-ENOMEM) if radix-tree node allocation failed.
+ 		 */
+-		err = add_to_swap_cache(new_page, entry, gfp_mask);
++		SetPageLocked(new_page);
++		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
+ 		if (!err) {
+ 			/*
+ 			 * Initiate read into locked page and return.
+@@ -353,7 +336,9 @@ struct page *read_swap_cache_async(swp_e
+ 			swap_readpage(NULL, new_page);
+ 			return new_page;
+ 		}
+-	} while (err != -ENOENT && err != -ENOMEM);
++		ClearPageLocked(new_page);
++		swap_free(entry);
++	} while (err != -ENOMEM);
+ 
+ 	if (new_page)
+ 		page_cache_release(new_page);
