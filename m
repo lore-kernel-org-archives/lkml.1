@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932657AbXLRHAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934477AbXLRHBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932657AbXLRHAo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 02:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756191AbXLRHAg
+	id S934477AbXLRHBB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 02:01:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758182AbXLRHAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 02:00:36 -0500
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:48126 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756167AbXLRHAf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 02:00:35 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=dP5Lg5h4tKjCY2wniHJnkB/PELBb8mUiBLjbDLnGaAaQZbkBJxLri+injAA2xCmDSFBjk5CMXqkJyxdqqYRZVOnIUPpMQXXuCXarq1BVThE4jBLoXi9ww5yrQPG4rLZ+8jB5Lg0+yaaX0rJAGsp4J+k76gkNhMDvJci42Ul3oGA=  ;
-X-YMail-OSG: AXOoyncVM1miH4qo0OKIYKYrEVnLyLJjV63j4xFHMYu3onvLRrn0JosRLtxBICykElBczZPogA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 10/28] FS-Cache: Recruit a couple of page flags for cache management [try #2]
-Date: Tue, 18 Dec 2007 18:00:23 +1100
-User-Agent: KMail/1.9.5
-Cc: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
-       sds@tycho.nsa.gov, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-References: <200712141508.23756.nickpiggin@yahoo.com.au> <20071205193909.24617.26538.stgit@warthog.procyon.org.uk> <643.1197930966@redhat.com>
-In-Reply-To: <643.1197930966@redhat.com>
+	Tue, 18 Dec 2007 02:00:39 -0500
+Received: from mga09.intel.com ([134.134.136.24]:23870 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757466AbXLRHAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 02:00:37 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,179,1196668800"; 
+   d="scan'208";a="244084830"
+Message-ID: <47676FAE.30200@linux.intel.com>
+Date: Mon, 17 Dec 2007 22:58:54 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       protasnb@gmail.com
+Subject: Re: Top kernel oopses/warnings this week
+References: <4762CF8C.90808@linux.intel.com> <20071217172331.GA23070@elte.hu> <20071217133631.5bbc5842@laptopd505.fenrus.org> <12c511ca0712171458n1bc05b40nab6b4b7c92433c8d@mail.gmail.com> <476703A4.7000401@linux.intel.com> <12c511ca0712171526h242a7de8vadec78cd48747bd@mail.gmail.com> <20071217154727.404e4bc4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712171607370.21557@woody.linux-foundation.org> <20071218023141.GM7070@thunk.org>
+In-Reply-To: <20071218023141.GM7070@thunk.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712181800.23578.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 18 December 2007 09:36, David Howells wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > I'd much prefer if you would handle this in the filesystem, and have it
-> > set PG_private whenever fscache needs to receive a callback, and DTRT
-> > depending on whether PG_fscache etc. is set or not.
->
-> That's tricky and slower[*].  One of the things I want to do is to modify
-> iso9660 to do be able to do caching, but PG_private is 'owned' by the
-> generic buffer cache code.
+Theodore Tso wrote:
+> On Mon, Dec 17, 2007 at 04:21:12PM -0800, Linus Torvalds wrote:
+>> which also gets bonus points for being totally unreadable, and thus 100% 
+>> in the spirit of uuid's.
+> 
+> Heh.  UUID's don't have to be readable; just universally unique.  Code
+> on the other hand should be readable.   :-)
 
-Maybe it is harder, but it is the right way to do it. So you
-should modify the filesystems rather than core code.
+Linus' suggested... improvement should either be done in all 3 places or none ;)
+Since you're the maintainer... what's your suggestion?
+
+> 
+> If you want something more readable, you could print the MAC address
+> and boot time.  Of course some crazy people seem to think leaking the
+> MAC address will somehow be a privacy violation.  And printing a
+> random UUID is a lot simpler....
+
+boot UUID is nice in that it's different each boot, so that an oops that happens twice will have a
+different UUID even if it's the same machine, while repeat-reports of the same oops will have
+the same UUID. So I very much like to use some form of UUID; since the boot UUID has the
+same properties I was happy to share this; if it gets too ugly or evil code wise I can always
+pick something else ;-)
