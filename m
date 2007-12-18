@@ -1,195 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765083AbXLRDj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763909AbXLRDkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765083AbXLRDj4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 22:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbXLRDje
+	id S1763909AbXLRDkx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 22:40:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbXLRDkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 22:39:34 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:38481 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752509AbXLRDjd (ORCPT
+	Mon, 17 Dec 2007 22:40:42 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:59853 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752942AbXLRDkl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 22:39:33 -0500
-X-Greylist: delayed 3600 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Dec 2007 22:39:32 EST
-Date: Mon, 17 Dec 2007 21:39:26 -0500
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH 6/7] Convert pfc8563 i2c driver from old style to new style
-In-reply-to: <20071218023913.8530.46661.stgit@terra.home>
-To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Message-id: <20071218023926.8530.83421.stgit@terra.home>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-References: <20071218023913.8530.46661.stgit@terra.home>
-User-Agent: StGIT/0.13
+	Mon, 17 Dec 2007 22:40:41 -0500
+Message-Id: <200712180340.lBI3eQk3039357@www262.sakura.ne.jp>
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: serge@hallyn.com
+Cc: "\"\\\"Serge E. Hallyn\\\"\"" <serue@us.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-2022-JP"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 18 Dec 2007 12:40:25 +0900
+References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <20071218015557.GA28652@sergelap.austin.ibm.com> <200712180226.lBI2QL1d020811@www262.sakura.ne.jp> <20071218025329.GA12429@vino.hallyn.com>
+In-Reply-To: <20071218025329.GA12429@vino.hallyn.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert pfc8563 i2c driver from old style to new style. The
-driver is also modified to support device tree names via the
-i2c mod alias mechanism.
+Hello.
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+Serge E. Hallyn wrote:
+> Nope, try
+> 
+>   touch /root/hda1
+>   ls -l /root/hda1
+>   mount --bind /dev/hda1 /root/hda1
+>   ls -l /root/hda1
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+[root@sakura ~]# touch /root/hda1
+[root@sakura ~]# ls -l /root/hda1
+-rw-r--r-- 1 root root 0 Dec 18 12:04 /root/hda1
+[root@sakura ~]# mount --bind /dev/hda1 /root/hda1
+[root@sakura ~]# ls -l /root/hda1
+brw-r----- 1 root disk 3, 1 Dec 18  2007 /root/hda1
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
----
+Oh, surprising.
+I didn't know mount() accepts non-directory for mount-point.
+But I think this is not a mount operation
+because I can't see the contents of /dev/hda1 through /root/hda1 .
+Can I see the contents of /dev/hda1 through /root/hda1 ?
 
- drivers/rtc/rtc-pcf8563.c |  107 +++++++++++----------------------------------
- 1 files changed, 27 insertions(+), 80 deletions(-)
 
+> Then it sounds like this filesystem is something Tomoyo can use.
 
-diff --git a/drivers/rtc/rtc-pcf8563.c b/drivers/rtc/rtc-pcf8563.c
-index 0242d80..e1ea2a0 100644
---- a/drivers/rtc/rtc-pcf8563.c
-+++ b/drivers/rtc/rtc-pcf8563.c
-@@ -25,10 +25,6 @@
-  * located at 0x51 will pass the validation routine due to
-  * the way the registers are implemented.
-  */
--static unsigned short normal_i2c[] = { I2C_CLIENT_END };
--
--/* Module parameters */
--I2C_CLIENT_INSMOD;
- 
- #define PCF8563_REG_ST1		0x00 /* status */
- #define PCF8563_REG_ST2		0x01
-@@ -72,9 +68,6 @@ struct pcf8563 {
- 	int c_polarity;	/* 0: MO_C=1 means 19xx, otherwise MO_C=1 means 20xx */
- };
- 
--static int pcf8563_probe(struct i2c_adapter *adapter, int address, int kind);
--static int pcf8563_detach(struct i2c_client *client);
--
- /*
-  * In the routines that deal directly with the pcf8563 hardware, we use
-  * rtc_time -- month 0-11, hour 0-23, yr = calendar year-epoch.
-@@ -257,98 +250,52 @@ static const struct rtc_class_ops pcf8563_rtc_ops = {
- 	.set_time	= pcf8563_rtc_set_time,
- };
- 
--static int pcf8563_attach(struct i2c_adapter *adapter)
-+static int pcf8563_remove(struct i2c_client *client)
- {
--	return i2c_probe(adapter, &addr_data, pcf8563_probe);
-+	struct rtc_device *rtc = i2c_get_clientdata(client);
-+
-+	if (rtc)
-+		rtc_device_unregister(rtc);
-+
-+	return 0;
- }
- 
-+static struct i2c_device_id pcf8563_id[] = {
-+	OF_I2C_ID("philips,pcf8563", 0)
-+	OF_I2C_ID("epson,rtc8564", 0)
-+	{},
-+};
-+MODULE_DEVICE_TABLE(i2c, pcf8563_id);
-+
-+static int pcf8563_probe(struct i2c_client *client, const struct i2c_device_id *id);
-+
- static struct i2c_driver pcf8563_driver = {
- 	.driver		= {
--		.name	= "pcf8563",
-+		.name	= "rtc-pcf8563",
- 	},
- 	.id		= I2C_DRIVERID_PCF8563,
--	.attach_adapter = &pcf8563_attach,
--	.detach_client	= &pcf8563_detach,
-+	.probe = &pcf8563_probe,
-+	.remove = &pcf8563_remove,
-+	.id_table	= pcf8563_id,
- };
- 
--static int pcf8563_probe(struct i2c_adapter *adapter, int address, int kind)
-+static int pcf8563_probe(struct i2c_client *client, const struct i2c_device_id *id)
- {
--	struct pcf8563 *pcf8563;
--	struct i2c_client *client;
-+	int result;
- 	struct rtc_device *rtc;
- 
--	int err = 0;
--
--	dev_dbg(&adapter->dev, "%s\n", __FUNCTION__);
--
--	if (!i2c_check_functionality(adapter, I2C_FUNC_I2C)) {
--		err = -ENODEV;
--		goto exit;
--	}
--
--	if (!(pcf8563 = kzalloc(sizeof(struct pcf8563), GFP_KERNEL))) {
--		err = -ENOMEM;
--		goto exit;
--	}
--
--	client = &pcf8563->client;
--	client->addr = address;
--	client->driver = &pcf8563_driver;
--	client->adapter	= adapter;
--
--	strlcpy(client->name, pcf8563_driver.driver.name, I2C_NAME_SIZE);
--
--	/* Verify the chip is really an PCF8563 */
--	if (kind < 0) {
--		if (pcf8563_validate_client(client) < 0) {
--			err = -ENODEV;
--			goto exit_kfree;
--		}
--	}
--
--	/* Inform the i2c layer */
--	if ((err = i2c_attach_client(client)))
--		goto exit_kfree;
--
--	dev_info(&client->dev, "chip found, driver version " DRV_VERSION "\n");
-+	result = pcf8563_validate_client(client);
-+	if (result)
-+		return result;
- 
- 	rtc = rtc_device_register(pcf8563_driver.driver.name, &client->dev,
- 				&pcf8563_rtc_ops, THIS_MODULE);
--
--	if (IS_ERR(rtc)) {
--		err = PTR_ERR(rtc);
--		goto exit_detach;
--	}
-+	if (IS_ERR(rtc))
-+		return PTR_ERR(rtc);
- 
- 	i2c_set_clientdata(client, rtc);
- 
- 	return 0;
--
--exit_detach:
--	i2c_detach_client(client);
--
--exit_kfree:
--	kfree(pcf8563);
--
--exit:
--	return err;
--}
--
--static int pcf8563_detach(struct i2c_client *client)
--{
--	struct pcf8563 *pcf8563 = container_of(client, struct pcf8563, client);
--	int err;
--	struct rtc_device *rtc = i2c_get_clientdata(client);
--
--	if (rtc)
--		rtc_device_unregister(rtc);
--
--	if ((err = i2c_detach_client(client)))
--		return err;
--
--	kfree(pcf8563);
--
--	return 0;
- }
- 
- static int __init pcf8563_init(void)
+I had / partition mounted for read-only so that the admin can't do
+'mknod /root/hda1 b 3 1' in 2003, and I named it
+"Security Advancement Know-how Upon Readonly Approach for Linux" or SAKURA Linux.
+This filesystem (SYAORAN) is developed to make /dev writable and tamper-proof
+when / partition is read-only or protected by MAC.
+TOMOYO is a pathname-based MAC implementation, and
+SAKURA and SYAORAN were merged into TOMOYO Linux. ;-)
 
+Regards.
