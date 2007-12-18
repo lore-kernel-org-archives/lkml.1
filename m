@@ -1,95 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbXLRVYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbXLRVY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757879AbXLRVYp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 16:24:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbXLRVSE
+	id S1758040AbXLRVY7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 16:24:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbXLRVUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 16:18:04 -0500
-Received: from are.twiddle.net ([64.81.246.98]:35611 "EHLO are.twiddle.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753047AbXLRVRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 16:17:42 -0500
-X-Greylist: delayed 3172 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Dec 2007 16:17:42 EST
-Date: Tue, 18 Dec 2007 12:22:34 -0800
-From: Richard Henderson <rth@twiddle.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>
-Subject: Re: PCI resource problems caused by improper address rounding
-Message-ID: <20071218202234.GA24525@twiddle.net>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Chuck Ebbert <cebbert@redhat.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>
-References: <47671377.6000405@redhat.com> <alpine.LFD.0.9999.0712171648150.21557@woody.linux-foundation.org> <47680489.6040809@redhat.com> <alpine.LFD.0.9999.0712180946030.21557@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0712180946030.21557@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 18 Dec 2007 16:20:37 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45447 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755050AbXLRVUe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 16:20:34 -0500
+Date: Tue, 18 Dec 2007 22:20:32 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: James Nichols <jamesnichols3@gmail.com>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
+In-Reply-To: <47682F8C.20205@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0712182218000.4422@fbirervta.pbzchgretzou.qr>
+References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com> 
+ <Pine.LNX.4.64.0712180009390.32270@fbirervta.pbzchgretzou.qr> 
+ <83a51e120712180734i334399dbl51f44fe32d815f7d@mail.gmail.com> 
+ <Pine.LNX.4.64.0712181704380.4422@fbirervta.pbzchgretzou.qr> 
+ <83a51e120712180845k6cadf67bn5dd66fb2d3ac72d4@mail.gmail.com> 
+ <Pine.LNX.4.64.0712181818360.4422@fbirervta.pbzchgretzou.qr> 
+ <83a51e120712181009pf954f43mcb63ea4dab638458@mail.gmail.com> 
+ <Pine.LNX.4.64.0712181910580.4422@fbirervta.pbzchgretzou.qr> 
+ <83a51e120712181021p4c4c2a13g8820271f1e00361b@mail.gmail.com> 
+ <4768123A.7040603@cosmosbay.com> <83a51e120712181144l65633b32r72cc369f9d012f47@mail.gmail.com>
+ <47682F8C.20205@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 18, 2007 at 10:21:50AM -0800, Linus Torvalds wrote:
-> > https://bugzilla.redhat.com/show_bug.cgi?id=425794#c0
-> 
-> That bugzilla entry doesn't even have a dmesg output or anything like 
-> that. I'd really like to see what the 
 
-I've added dmesg, /proc/iomem, and lspci -v output to that bug.
-
-Basically, we have
-
-	c0000000-cfffffff : free
-	ddf00000-dfefffff : PCI Bus #04
-	e0000000-efffffff : pnp 00:0b
-	f0000000-fedfffff : less than 256MB
-
-The annoying part is that there's no device (that I can see) 
-behind PCI Bus #04, so it might as well be disabled and that
-entire d0000000-dfffffff area reclaimed.
-
-> That patch might as well just do
-> 
-> 	pci_mem_start = gapstart;
-> 
-> and get rid of all that rounding code entirely, since the patch just 
-> assumes that it's safe to use memory after gapstart (which is known to not 
-> be true, and is the whole and only reason for that code in the first 
-> place: BIOSes *invariably* get resource allocation wrong, and forget to 
-> tell us about some resource they set up).
-
-That would have been an excellent comment to add to that code then,
-rather than just "rounding up to the next 1MB area", because purely
-as rounding code it is erroneous.
-
-> The *other* patch in the bugzilla entry seems more correct, in that yes, 
-> we should make sure that we don't allocate resources over 4G if the 
-> resource won't fit. That said, I think that patch is wrong too: we should 
-> just fix pcibios_align_resource() to check that case for MEM resouces (the 
-> same way it already knows about the magic rules for IO resources).
-
-I'll give that patch a try, modified a tad to still include the
-force_32_bit quirk.
-
-> So I'd suggest just fixing pcibios_align_resource() instead. Something 
-> like the appended might work (and then you could perhaps quirk it to 
-> always clear the PCI_BASE_ADDRESS_MEM_TYPE_64 thing for VGA controllers, 
-
-That won't work, because PCI_BASE_ADDRESS_MEM_TYPE_64 controls how
-many bits need to be written back to the BAR.  If we changed that
-to PCI_BASE_ADDRESS_MEM_TYPE_32, we wouldn't clear the high 32-bits
-of the BAR.
-
-> ... and that would be an X server issue!).
-
-Of course, fixing the X server to *handle* 64-bit BARs is the correct
-solution.  I've no idea how involved that is, but I have a sneeking
-suspicion that it uses that damned CARD32 datatype for everything.
-
-
-r~
+On Dec 18 2007 21:37, Eric Dumazet wrote:
+>
+> If turning off tcp_sack makes the problem go away, why dont you
+> turn it off all the time ?
+>
+That would just be workaround. I welcome the efforts to track this;
+not all users have the time to do so.
+Disabling tcp_sack also disabled it kernel-wide, which, well... for
+2.6.25 there is a TCPOPTSTRIP netfilter target slated with which
+SACK could be stripped only for a given host list or processes from
+a UID.
