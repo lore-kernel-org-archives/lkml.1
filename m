@@ -1,57 +1,48 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374AbXLAS3t (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 1 Dec 2007 13:29:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbXLAS3k
+	id S1756717AbXLSSto (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 19 Dec 2007 13:49:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXLSStf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Dec 2007 13:29:40 -0500
-Received: from mk-filter-3-a-2.mail.uk.tiscali.com ([212.74.100.50]:51845 "EHLO
-	mk-filter-3-a-2.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752594AbXLAS3j (ORCPT
+	Wed, 19 Dec 2007 13:49:35 -0500
+Received: from server5.servera.info ([81.177.3.205]:38391 "EHLO
+	server5.servera.info" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752380AbXLSStf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Dec 2007 13:29:39 -0500
-X-Trace: 653546007-mk-filter-3.mail.uk.tiscali.com-WEBB2C-$ALLOWED_RELAY-ALLOWED-B2C-WEBMAIL
-X-SBRS: -1.0
-X-RemoteIP: 212.74.100.143
-X-IP-MAIL-FROM: mailingsec@handbag.com
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAPc2UUfUSmSPWmdsb2JhbACOVGoBFAuBPAE
-Date: Sat, 1 Dec 2007 19:29:35 +0100
-Message-ID: <472FF56A00003ED7@mail-3-uk.mail.tiscali.sys>
-From: mailingsec@handbag.com
-Subject: From Mr.Fadil.m.Abdulhussein
+	Wed, 19 Dec 2007 13:49:35 -0500
+To: francisn@hanmail.net, jlampel@gis.net, hudgens@infoave.net,
+	20030929092053.09748.00000019@mb-m25.aol.com, hesse@halcyon.com,
+	hannah@goes.net, hate@hehe.com, wug@finhall.demon.co.uk,
+	gschimr@ilinks.net, plenty900@yahoo.com
+Subject: Delivery Status Notification
+Date: Tue, 18 Dec 2007 21:59:32 +0300
+From: jotn23 <jotn23@designsbymoore.com>
+Message-ID: <713c940149710318648fdd429a67c062@opendetails.com>
+X-Priority: 3
+X-Mailer: PHPMailer [version 1.73]
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - server5.servera.info
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [99 99] / [47 12]
+X-AntiAbuse: Sender Address Domain - server5.servera.info
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753374AbXLAS3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756717AbXLSSto@vger.kernel.org>
 
-Dear:Sir/Madam
+Phentermine is used, in combination with diet and exercise, to help you lose weight. 
 
-I want to solicit your attention to receive money on my behalf.The 
-purpose of my contacting you is because you live in outside Repoblic of Iraq.
+It works by decreasing your appetite. This medication is sometimes prescribed for other uses.
+Ask your doctor or pharmacist for more information or read at our resource.
+Take any missed dose as soon as possible but not if it is within 8 hours of the next dose. 
+Keep in a tightly-closed container, away from heat and light. Brief storage is permitted.
 
-When you reply this message, I will send you the full details and more information
-about myself and the funds.You can contact me with this Email; fadilabdulhus@yahoo.es
+Attain without seeing a doctor your Phentermine 37.5mg Pills!
+WWW.NEWABOUTIT.TK
 
-
-Mr.Fadil.m.Abdulhussein
-
-
-___________________________________________________________
-
-Tiscali Broadband from 14.99 with free setup!
-http://www.tiscali.co.uk/products/broadband/
-
-
-
-
-___________________________________________________________
-
-Tiscali Broadband from 14.99 with free setup!
-http://www.tiscali.co.uk/products/broadband/
-
+______
+Unsubscribe from the list:
+www.newaboutit.tk
 
