@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbXLRWJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbXLRWLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757573AbXLRWJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 17:09:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbXLRWJs
+	id S1757990AbXLRWLg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 17:11:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408AbXLRWL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 17:09:48 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:6531 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754955AbXLRWJr (ORCPT
+	Tue, 18 Dec 2007 17:11:28 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54971 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755231AbXLRWL1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 17:09:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kYZd/ISYIHXtam1u+5m984P6DJNMdJauDMyOTxifeajVzbOeYeIivEnqccS590lo0Omyv+vLvjBl7KLWqsqa4L4RvMHlCRBuivjC85dY0z46ilau5721cRtlYK2kVzQ2pr4X1PIppO8Yoa6H8K0zlvXLxVa/8KfO8PHs6388Zo0=
-Message-ID: <9e0cf0bf0712181409p2475e1fdk779fdee4fa274722@mail.gmail.com>
-Date: Wed, 19 Dec 2007 00:09:46 +0200
-From: "Alon Bar-Lev" <alon.barlev@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [MIPS] Build an embedded initramfs into mips kernel
-Cc: linux-mips@ftp.linux-mips.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <47683B2D.9030608@zytor.com>
+	Tue, 18 Dec 2007 17:11:27 -0500
+Date: Tue, 18 Dec 2007 22:10:34 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Erez Zadok <ezk@cs.sunysb.edu>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] unionfs: work better with tmpfs
+Message-ID: <Pine.LNX.4.64.0712182207400.28390@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9e0cf0bf0712181208m7f16b9acpf3dba67f3556a613@mail.gmail.com>
-	 <47683B2D.9030608@zytor.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/18/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> Make sure your /init doesn't depend on an interpreter or library which
-> isn't available.
+Here's a few patches to unionfs, which together with the tmpfs
+patches I just posted, get that combination working better.
 
-Thank you for your answer.
+ fs/stack.c         |    6 +++
+ fs/unionfs/inode.c |   83 +++++++++++++++++++++----------------------
+ fs/unionfs/mmap.c  |    3 -
+ 3 files changed, 47 insertions(+), 45 deletions(-)
 
-I already checked.
+But on the way I've noticed a number of issues with unionfs not dealt
+with in these patches.
 
-/init is hardlink to busybox, it depends on libc.so.0 which is available at /lib
+1. Please try unionfs with lockdep configured on (perhaps while running LTP
+to get coverage of a variety of cases): I soon gave up, not knowing which
+way round the locks should really be taken e.g. unionfs_read_lock versus
+unionfs_lock_dentry.
 
-But shouldn't I get a different error code if this is the case?
+2. I'm worried about the locking generally (no doubt it's difficult!).
+My 2/4 patch half-fixes one issue, but raises others: if some function
+in a filesystem is usually called with i_mutex held, are you safe to be
+calling it (not knowing that lower filesystem) without its i_mutex held?
 
-Best Regards,
-Alon Bar-Lev.
+3. LTP's rename14 tends to fill the filesystem with inodes, which prevent
+further tests from running (but not on all machines: a timing issue perhaps).
+I have to run LTP with rename14 moved aside.
+
+4. Though you made improvements, some blocks still remain mysteriously
+allocated even after the unionfs should be empty e.g. after an LTP run.
+
+Hugh
