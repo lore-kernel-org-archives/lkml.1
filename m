@@ -1,84 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbXLRITT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbXLRIYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752588AbXLRITT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 03:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbXLRITL
+	id S1752788AbXLRIYk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 03:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbXLRIYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 03:19:11 -0500
-Received: from mail.suse.de ([195.135.220.2]:45180 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751555AbXLRITK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 03:19:10 -0500
-Date: Tue, 18 Dec 2007 09:19:07 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/9] readahead: clean up and simplify the code for filemap page fault readahead
-Message-ID: <20071218081907.GB32114@wotan.suse.de>
-References: <20071216115927.986126305@mail.ustc.edu.cn> <20071216120417.748714367@mail.ustc.edu.cn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 18 Dec 2007 03:24:32 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:63437 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750807AbXLRIYa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 03:24:30 -0500
+From: Swen Schillig <swen@vnet.ibm.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] drivers/s390/: Spelling fixes
+Date: Tue, 18 Dec 2007 09:24:28 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-s390@vger.kernel.org, linux390@de.ibm.com
+References: <1197920439-5455-7-git-send-email-joe@perches.com>
+In-Reply-To: <1197920439-5455-7-git-send-email-joe@perches.com>
+Organization: IBM
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071216120417.748714367@mail.ustc.edu.cn>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200712180924.29223.swen@vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 16, 2007 at 07:59:30PM +0800, Fengguang Wu wrote:
-
-> @@ -1321,78 +1401,69 @@ int filemap_fault(struct vm_area_struct 
->  	struct address_space *mapping = file->f_mapping;
->  	struct file_ra_state *ra = &file->f_ra;
->  	struct inode *inode = mapping->host;
-> +	pgoff_t offset = vmf->pgoff;
->  	struct page *page;
->  	unsigned long size;
-> -	int did_readaround = 0;
->  	int ret = 0;
->  
->  	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
->  	if (vmf->pgoff >= size)
->  		return VM_FAULT_SIGBUS;
->  
-> -	/* If we don't want any read-ahead, don't bother */
-> -	if (VM_RandomReadHint(vma))
-> -		goto no_cached_page;
-> -
->  	/*
-> -	 * Do we have something in the page cache already?
-> +	 * Do we have something in the page cache already that
-> +	 * is unlocked and already up-to-date?
+On Monday 17 December 2007 20:40, Joe Perches wrote:
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/s390/block/dasd_3990_erp.c |    2 +-
+>  drivers/s390/block/dasd_eckd.c     |    2 +-
+>  drivers/s390/char/sclp_rw.c        |    2 +-
+>  drivers/s390/char/tape_3590.c      |    2 +-
+>  drivers/s390/cio/airq.c            |    2 +-
+>  drivers/s390/scsi/zfcp_erp.c       |    2 +-
+>  drivers/s390/scsi/zfcp_qdio.c      |    2 +-
+>  7 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/s390/block/dasd_3990_erp.c b/drivers/s390/block/dasd_3990_erp.c
+> index 5b7385e..c02f960 100644
+> --- a/drivers/s390/block/dasd_3990_erp.c
+> +++ b/drivers/s390/block/dasd_3990_erp.c
+> @@ -2620,7 +2620,7 @@ dasd_3990_erp_handle_match_erp(struct dasd_ccw_req *erp_head,
+>   * DASD_3990_ERP_ACTION
+>   *
+>   * DESCRIPTION
+> - *   controll routine for 3990 erp actions.
+> + *   control routine for 3990 erp actions.
+>   *   Has to be called with the queue lock (namely the s390_irq_lock) acquired.
+>   *
+>   * PARAMETER
+> diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c
+> index 44adf84..6038d91 100644
+> --- a/drivers/s390/block/dasd_eckd.c
+> +++ b/drivers/s390/block/dasd_eckd.c
+> @@ -1542,7 +1542,7 @@ dasd_eckd_performance(struct dasd_device *device, void __user *argp)
+>  	prssdp = (struct dasd_psf_prssd_data *) cqr->data;
+>  	memset(prssdp, 0, sizeof (struct dasd_psf_prssd_data));
+>  	prssdp->order = PSF_ORDER_PRSSD;
+> -	prssdp->suborder = 0x01;	/* Perfomance Statistics */
+> +	prssdp->suborder = 0x01;	/* Performance Statistics */
+>  	prssdp->varies[1] = 0x01;	/* Perf Statistics for the Subsystem */
+> 
+>  	ccw = cqr->cpaddr;
+> diff --git a/drivers/s390/char/sclp_rw.c b/drivers/s390/char/sclp_rw.c
+> index d6b06ab..ad7195d 100644
+> --- a/drivers/s390/char/sclp_rw.c
+> +++ b/drivers/s390/char/sclp_rw.c
+> @@ -76,7 +76,7 @@ sclp_make_buffer(void *page, unsigned short columns, unsigned short htab)
+>  }
+> 
+>  /*
+> - * Return a pointer to the orignal page that has been used to create
+> + * Return a pointer to the original page that has been used to create
+>   * the buffer.
+>   */
+>  void *
+> diff --git a/drivers/s390/char/tape_3590.c b/drivers/s390/char/tape_3590.c
+> index da25f8e..8246ef3 100644
+> --- a/drivers/s390/char/tape_3590.c
+> +++ b/drivers/s390/char/tape_3590.c
+> @@ -1495,7 +1495,7 @@ tape_3590_unit_check(struct tape_device *device, struct tape_request *request,
+>  			   device->cdev->dev.bus_id);
+>  		return tape_3590_erp_basic(device, request, irb, -EPERM);
+>  	case 0x8013:
+> -		PRINT_WARN("(%s): Another host has priviliged access to the "
+> +		PRINT_WARN("(%s): Another host has privileged access to the "
+>  			   "tape device\n", device->cdev->dev.bus_id);
+>  		PRINT_WARN("(%s): To solve the problem unload the current "
+>  			   "cartridge!\n", device->cdev->dev.bus_id);
+> diff --git a/drivers/s390/cio/airq.c b/drivers/s390/cio/airq.c
+> index 5287631..5eada73 100644
+> --- a/drivers/s390/cio/airq.c
+> +++ b/drivers/s390/cio/airq.c
+> @@ -23,7 +23,7 @@ static adapter_int_handler_t adapter_handler;
+>   * register for adapter interrupts
+>   *
+>   * With HiperSockets the zSeries architecture provides for
+> - *  means of adapter interrups, pseudo I/O interrupts that are
+> + *  means of adapter interrupts, pseudo I/O interrupts that are
+>   *  not tied to an I/O subchannel, but to an adapter. However,
+>   *  it doesn't disclose the info how to enable/disable them, but
+>   *  to recognize them only. Perhaps we should consider them
+> diff --git a/drivers/s390/scsi/zfcp_erp.c b/drivers/s390/scsi/zfcp_erp.c
+> index 07fa824..8925b3a 100644
+> --- a/drivers/s390/scsi/zfcp_erp.c
+> +++ b/drivers/s390/scsi/zfcp_erp.c
+> @@ -1285,7 +1285,7 @@ zfcp_erp_strategy_do_action(struct zfcp_erp_action *erp_action)
+>  	 * note: no lock in subsequent strategy routines
+>  	 * (this allows these routine to call schedule, e.g.
+>  	 * kmalloc with such flags or qdio_initialize & friends)
+> -	 * Note: in case of timeout, the seperate strategies will fail
+> +	 * Note: in case of timeout, the separate strategies will fail
+>  	 * anyhow. No need for a special action. Even worse, a nameserver
+>  	 * failure would not wake up waiting ports without the call.
 >  	 */
-> -retry_find:
-> -	page = find_lock_page(mapping, vmf->pgoff);
-> -	/*
-> -	 * For sequential accesses, we use the generic readahead logic.
-> -	 */
-> -	if (VM_SequentialReadHint(vma)) {
-> -		if (!page) {
-> -			page_cache_sync_readahead(mapping, ra, file,
-> -							   vmf->pgoff, 1);
-> -			page = find_lock_page(mapping, vmf->pgoff);
-> -			if (!page)
-> -				goto no_cached_page;
-> -		}
-> -		if (PageReadahead(page)) {
-> -			page_cache_async_readahead(mapping, ra, file, page,
-> -							   vmf->pgoff, 1);
-> -		}
-> -	}
-> +	read_lock_irq(&mapping->tree_lock);
-> +	page = radix_tree_lookup(&mapping->page_tree, offset);
-> +	if (likely(page)) {
-> +		int got_lock, uptodate;
-> +		page_cache_get(page);
-> +
-> +		got_lock = !TestSetPageLocked(page);
-> +		uptodate = PageUptodate(page);
-> +		read_unlock_irq(&mapping->tree_lock);
+> diff --git a/drivers/s390/scsi/zfcp_qdio.c b/drivers/s390/scsi/zfcp_qdio.c
+> index 51d92b1..22fdc17 100644
+> --- a/drivers/s390/scsi/zfcp_qdio.c
+> +++ b/drivers/s390/scsi/zfcp_qdio.c
+> @@ -529,7 +529,7 @@ zfcp_qdio_sbals_wipe(struct zfcp_fsf_req *fsf_req)
+> 
+> 
+>  /**
+> - * zfcp_qdio_sbale_fill - set address and lenght in current SBALE
+> + * zfcp_qdio_sbale_fill - set address and length in current SBALE
+>   *	on request_queue
+>   */
+>  static void
 
-If we could avoid open coding tree_lock here (and expanding its coverage
-to PageUptodate), that would be nice. I don't think it gains us too much.
+ACK 
+for the zfcp bits.
+
+Cheers Swen
