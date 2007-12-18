@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbXLRPzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbXLRP4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbXLRPzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 10:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbXLRPza
+	id S1759532AbXLRP4L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 10:56:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbXLRPz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 10:55:30 -0500
-Received: from hc652a898.dhcp.vt.edu ([198.82.168.152]:34276 "EHLO
-	hc652a898.dhcp.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755779AbXLRPza (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 10:55:30 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-In-Reply-To: Your message of "Thu, 06 Dec 2007 15:29:07 GMT."
-             <20071206152906.GA3974@ucw.cz>
-From: Valdis.Kletnieks@vt.edu
-References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp>
-            <20071206152906.GA3974@ucw.cz>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1197993320_3561P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 18 Dec 2007 10:55:57 -0500
+Received: from gate.crashing.org ([63.228.1.57]:49012 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756020AbXLRPz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 10:55:56 -0500
+Cc: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Message-Id: <054B7122-6815-4483-96FE-7B4098198FA1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+In-Reply-To: <20071218023915.8530.67500.stgit@terra.home>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Date: Tue, 18 Dec 2007 10:55:20 -0500
-Message-ID: <22795.1197993320@turing-police.cc.vt.edu>
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH 1/7] Copy mpc-i2c to preserve support for ARCH=ppc and allow changes on ARCH=powerpc
+Date: Tue, 18 Dec 2007 09:53:28 -0600
+References: <20071218023913.8530.46661.stgit@terra.home> <20071218023915.8530.67500.stgit@terra.home>
+X-Mailer: Apple Mail (2.915)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1197993320_3561P
-Content-Type: text/plain; charset=us-ascii
 
-On Thu, 06 Dec 2007 15:29:07 GMT, Pavel Machek said:
-> 
-> > Why not use SELinux?
-> > 
-> >  Because SELinux doesn't guarantee filename and its attribute.
-> >  The purpose of this filesystem is to ensure filename and its attribute
-> >  (e.g. /dev/null is guaranteed to be a character device file
-> >  with major=1 and minor=3).
-> 
-> Why not improve selinux to be able to assign label of new file based
-> on directory label and name?
+On Dec 17, 2007, at 8:39 PM, Jon Smirl wrote:
 
-The problem isn't the label, it's the *other* attributes...
+> Temporarily copy the mpc-i2c driver to continue support for the ppc  
+> architecture until it is removed in mid-2008. This file should be  
+> deleted as part of ppc's final removal.
+>
+> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+>
+> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+>
+> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+> ---
+>
+> arch/ppc/configs/TQM8540_defconfig     |    2
+> arch/ppc/configs/TQM8541_defconfig     |    2
+> arch/ppc/configs/TQM8555_defconfig     |    2
+> arch/ppc/configs/TQM8560_defconfig     |    2
+> arch/ppc/configs/mpc834x_sys_defconfig |    2
+> arch/ppc/configs/mpc8540_ads_defconfig |    2
+> arch/ppc/configs/mpc8548_cds_defconfig |    2
+> arch/ppc/configs/mpc8555_cds_defconfig |    2
+> arch/ppc/configs/mpc8560_ads_defconfig |    2
+> drivers/i2c/busses/Kconfig             |   16 +
+> drivers/i2c/busses/Makefile            |    1
+> drivers/i2c/busses/i2c-mpc-ppc.c       |  418 +++++++++++++++++++++++ 
+> +++++++++
+> 12 files changed, 443 insertions(+), 10 deletions(-)
+> create mode 100644 drivers/i2c/busses/i2c-mpc-ppc.c
 
-What happens if /dev/null has the correct SELinux label, but the major/minor
-is 1,27 rather than 1,3?
+Nak.
 
---==_Exmh_1197993320_3561P
-Content-Type: application/pgp-signature
+Just ifdef the probe functionality in i2c-mpc.c based on  
+CONFIG_PPC_MERGE.  Your patch set shows the reason you should do  
+this.  You provide fixes to the error path handling, but only for i2c- 
+mpc.c and not i2c-mpc-ppc.c.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHZ+1ocC3lWbTT17ARAngTAJ9QfwLJNFNr1P3xkx5sgdmSX8uKSQCg+PBx
-xN3ncXAs8Pg/PHTZLgK4LyY=
-=tYdE
------END PGP SIGNATURE-----
-
---==_Exmh_1197993320_3561P--
+- k
