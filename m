@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbXLRX3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755853AbXLRXhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755981AbXLRX3b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 18:29:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbXLRX3W
+	id S1755853AbXLRXhB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 18:37:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbXLRXgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 18:29:22 -0500
-Received: from mga02.intel.com ([134.134.136.20]:53718 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753914AbXLRX3V convert rfc822-to-8bit (ORCPT
+	Tue, 18 Dec 2007 18:36:52 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60694 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753566AbXLRXgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 18:29:21 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,182,1196668800"; 
-   d="scan'208";a="243393315"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
+	Tue, 18 Dec 2007 18:36:51 -0500
+Date: Tue, 18 Dec 2007 15:36:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marcin =?ISO-8859-1?Q?=5F=5Flusarz?= <marcin.slusarz@gmail.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb/storage/initializers.c: fix signedness difference
+Message-Id: <20071218153642.cf8c6a0b.akpm@linux-foundation.org>
+In-Reply-To: <20071209212337.GA9440@joi>
+References: <20071209212337.GA9440@joi>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH RFC][try 2] IA64 signal : remove redundant code in setup_sigcontext()
-Date: Tue, 18 Dec 2007 15:29:19 -0800
-Message-ID: <1FE6DD409037234FAB833C420AA843EC22DA39@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <20071122033249.GM12494@parisc-linux.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH RFC][try 2] IA64 signal : remove redundant code in setup_sigcontext()
-Thread-Index: AcgsuHC1GqPcdKsbSSK09aJQgmlwTQVE98TA
-References: <4744F46B.6050004@cn.fujitsu.com> <20071122033249.GM12494@parisc-linux.org>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Matthew Wilcox" <matthew@wil.cx>, "Shi Weihua" <shiwh@cn.fujitsu.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>
-X-OriginalArrivalTime: 18 Dec 2007 23:29:20.0268 (UTC) FILETIME=[D0872CC0:01C841CD]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> This patch removes some redundant code in the function setup_sigcontext().
->> 
->> The registers ar.ccv,b7,r14,ar.csd,ar.ssd,r2-r3 and r16-r31 are not restored 
->> in restore_sigcontext() when (flags & IA64_SC_FLAG_IN_SYSCALL) is true. 
->> So we don't need to zero those variables in setup_sigcontext().
->
-> Erm, couldn't those registers contain information the process shouldn't
-> see?
+On Sun, 9 Dec 2007 22:23:42 +0100
+Marcin __lusarz <marcin.slusarz@gmail.com> wrote:
 
-No, this looks safe.  setup_sigcontext() is stashing things out on the
-user stack to be used by restore_sigcontext() should the application want
-to return from the signal handler.  But restore_sigcontext isn't actually
-in charge of putting values into machine registers, it just does the copy
-back from user space to the place where the asm code will restore registers
-on the way back to userland.  In this instance "restored" means "set back to
-the state they had before the signal happened".  If they aren't "restored"
-they'll have scratch values ... but those scratch values will have come
-from the application (while it was executing the signal handler).  Not
-leaked from the kernel or from some other application.
+> usb/storage/initializers.c: fix signedness difference
+> 
+> Signed-off-by: Marcin __lusarz <marcin.slusarz@gmail.com>
+> ---
+>  drivers/usb/storage/initializers.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/usb/storage/initializers.c b/drivers/usb/storage/initializers.c
+> index ee5b42a..187dd1e 100644
+> --- a/drivers/usb/storage/initializers.c
+> +++ b/drivers/usb/storage/initializers.c
+> @@ -66,7 +66,8 @@ int usb_stor_ucr61s2b_init(struct us_data *us)
+>  {
+>  	struct bulk_cb_wrap *bcb = (struct bulk_cb_wrap*) us->iobuf;
+>  	struct bulk_cs_wrap *bcs = (struct bulk_cs_wrap*) us->iobuf;
+> -	int res, partial;
+> +	int res;
+> +	unsigned int partial;
+>  	static char init_string[] = "\xec\x0a\x06\x00$PCCHIPS";
+> 
+>  	US_DEBUGP("Sending UCR-61S2B initialization packet...\n");
 
--Tony
+Often we just wouldn't bother about something this minor.
+
+But I see later on that we pass the address of `partial' into some other
+function and I am guessing that this produces some warning with some tool
+which you didn't tell us about? 
