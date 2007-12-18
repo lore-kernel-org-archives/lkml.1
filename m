@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbXLRCAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765402AbXLRCB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759246AbXLRCAg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 21:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbXLRCAZ
+	id S1765402AbXLRCB6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 21:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXLRCBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 21:00:25 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:37191 "EHLO havoc.gtf.org"
+	Mon, 17 Dec 2007 21:01:47 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:43941 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753161AbXLRCAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 21:00:22 -0500
-Date: Mon, 17 Dec 2007 21:00:20 -0500
+	id S1751429AbXLRCBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 21:01:43 -0500
+Date: Mon, 17 Dec 2007 21:01:42 -0500
 From: Jeff Garzik <jeff@garzik.org>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata fixes
-Message-ID: <20071218020020.GA1455@havoc.gtf.org>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] net driver fixes
+Message-ID: <20071218020142.GA1580@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,1118 +25,961 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-In 2.6.24, we turned on ACPI support in libata.  This is needed in order
-to support suspend/resume and BIOS passworded drives, but it inevitably
-brought with it a host of new regressions -- which is what happens
-anytime you blindly accept ATA commands the BIOS has decided to toss
-your way.  :)
-
-It is bigger than I would like for -rc5, but the bulk of these
-changes are Tejun addressing regressions from 2.6.23, most of which
-are ACPI-related.
-
+A couple serious fixes (wireless, e100, sky2) and a bevy of minor ones.
 
 Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
 
 to receive the following updates:
 
- drivers/ata/libata-acpi.c |  387 +++++++++++++++++++++++++++++++--------------
- drivers/ata/libata-core.c |  101 +++++++++----
- drivers/ata/libata-eh.c   |    4 +-
- drivers/ata/libata.h      |    8 +-
- drivers/ata/sata_mv.c     |   30 +++-
- drivers/ata/sata_sil.c    |   18 +--
- include/linux/ata.h       |   15 ++
- include/linux/libata.h    |   29 +++-
- 8 files changed, 419 insertions(+), 173 deletions(-)
+ MAINTAINERS                                    |    6 ++
+ drivers/net/e100.c                             |    5 ++-
+ drivers/net/hamachi.c                          |   70 +++++++++++++-----------
+ drivers/net/ibm_newemac/debug.c                |    2 +-
+ drivers/net/ixgb/ixgb_main.c                   |   16 +++++-
+ drivers/net/pcmcia/pcnet_cs.c                  |    1 +
+ drivers/net/s2io.c                             |    4 +-
+ drivers/net/sis190.c                           |   10 ++--
+ drivers/net/sky2.c                             |    9 +++-
+ drivers/net/smc911x.h                          |    2 +-
+ drivers/net/starfire.c                         |    2 +-
+ drivers/net/sundance.c                         |   34 ++++++------
+ drivers/net/ucc_geth.c                         |    2 +-
+ drivers/net/ucc_geth_mii.h                     |    2 +-
+ drivers/net/wireless/Kconfig                   |    1 +
+ drivers/net/wireless/b43/leds.c                |    4 ++
+ drivers/net/wireless/b43/main.c                |   22 ++++----
+ drivers/net/wireless/b43/rfkill.c              |   37 +++++++++++--
+ drivers/net/wireless/bcm43xx/bcm43xx_debugfs.c |    2 +-
+ drivers/net/wireless/ipw2200.c                 |    7 ++-
+ drivers/net/wireless/iwlwifi/iwl3945-base.c    |    5 ++-
+ drivers/net/wireless/iwlwifi/iwl4965-base.c    |    5 ++-
+ drivers/net/wireless/zd1211rw/zd_mac.c         |   10 +++-
+ net/mac80211/ieee80211_rate.c                  |    1 +
+ 24 files changed, 168 insertions(+), 91 deletions(-)
 
-Mark Lord (1):
-      sata_mv: improve warnings about Highpoint RocketRAID 23xx cards
+Adrian Bunk (3):
+      drivers/net/sis190.c section fix
+      drivers/net/s2io.c section fixes
+      wireless/ipw2200.c: add __dev{init,exit} annotations
 
-Tejun Heo (15):
-      sata_sil: fix spurious IRQ handling
-      libata: clear link->eh_info.serror from ata_std_postreset()
-      libata: add ST3160023AS / 3.42 to NCQ blacklist
-      libata-acpi: adjust constness in ata_acpi_gtm/stm() parameters
-      libata: update ata_*_printk() macros such that level can be a variable
-      libata: add more opcodes to ata.h
-      libata: ata_dev_disable() should be called from EH context
-      libata-acpi: add new hooks ata_acpi_dissociate() and ata_acpi_on_disable()
-      libata-acpi: implement and use ata_acpi_init_gtm()
-      libata-acpi: implement dev->gtf_cache and evaluate _GTF right after _STM during resume
-      libata-acpi: improve ACPI disabling
-      libata-acpi: improve _GTF execution error handling and reporting
-      libata-acpi: implement _GTF command filtering
-      libata: update atapi_eh_request_sense() such that lbam/lbah contains buffer size
-      libata: fix ATAPI draining
+Al Viro (4):
+      sundance fixes
+      starfire VLAN fix
+      hamachi endianness fixes
+      sis190 endianness
 
-diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
-index 545ea86..7bf4bef 100644
---- a/drivers/ata/libata-acpi.c
-+++ b/drivers/ata/libata-acpi.c
-@@ -6,6 +6,7 @@
-  * Copyright (C) 2006 Randy Dunlap
-  */
+Andrew Morton (2):
+      ucc_geth: minor whitespace fix
+      bcm43xx_debugfs sscanf fix
+
+Anton Vorontsov (1):
+      ucc_geth: really fix section mismatch
+
+Auke Kok (1):
+      e100: free IRQ to remove warningwhenrebooting
+
+Cyrill Gorcunov (2):
+      ieee80211_rate: missed unlock
+      iwlwifi3945/4965: fix rate control algo reference leak
+
+Dan Williams (1):
+      libertas: select WIRELESS_EXT
+
+Jiri Slaby (1):
+      Net: ibm_newemac, remove SPIN_LOCK_UNLOCKED
+
+Komuro (1):
+      pcnet_cs: add new id
+
+Larry Finger (1):
+      b43: Fix rfkill radio LED
+
+Matheos Worku (1):
+      ixgb: make sure jumbos stay enabled after reset
+
+Paul Mundt (1):
+      net: smc911x: shut up compiler warnings
+
+Stefano Brivio (1):
+      libertas: add Dan Williams as maintainer
+
+Stephen Hemminger (1):
+      sky2: RX lockup fix
+
+Ulrich Kunitz (1):
+      zd1211rw: Fix alignment problems
+
+Zhu Yi (1):
+      iwlwifi: fix rf_kill state inconsistent during suspend and resume
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 9507b42..c331ba3 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2489,6 +2489,12 @@ M:	mtk.manpages@gmail.com
+ W:	ftp://ftp.kernel.org/pub/linux/docs/manpages
+ S:	Maintained
  
-+#include <linux/module.h>
- #include <linux/ata.h>
- #include <linux/delay.h>
- #include <linux/device.h>
-@@ -25,6 +26,18 @@
- #include <acpi/acmacros.h>
- #include <acpi/actypes.h>
- 
-+enum {
-+	ATA_ACPI_FILTER_SETXFER	= 1 << 0,
-+	ATA_ACPI_FILTER_LOCK	= 1 << 1,
++MARVELL LIBERTAS WIRELESS DRIVER
++P:	Dan Williams
++M:	dcbw@redhat.com
++L:	libertas-dev@lists.infradead.org
++S:	Maintained
 +
-+	ATA_ACPI_FILTER_DEFAULT	= ATA_ACPI_FILTER_SETXFER |
-+				  ATA_ACPI_FILTER_LOCK,
-+};
-+
-+static unsigned int ata_acpi_gtf_filter = ATA_ACPI_FILTER_DEFAULT;
-+module_param_named(acpi_gtf_filter, ata_acpi_gtf_filter, int, 0644);
-+MODULE_PARM_DESC(acpi_gtf_filter, "filter mask for ACPI _GTF commands, set to filter out (0x1=set xfermode, 0x2=lock/freeze lock)");
-+
- #define NO_PORT_MULT		0xffff
- #define SATA_ADR(root, pmp)	(((root) << 16) | (pmp))
- 
-@@ -41,6 +54,12 @@ static int is_pci_dev(struct device *dev)
- 	return (dev->bus == &pci_bus_type);
- }
- 
-+static void ata_acpi_clear_gtf(struct ata_device *dev)
-+{
-+	kfree(dev->gtf_cache);
-+	dev->gtf_cache = NULL;
-+}
-+
- /**
-  * ata_acpi_associate_sata_port - associate SATA port with ACPI objects
-  * @ap: target SATA port
-@@ -94,6 +113,9 @@ static void ata_acpi_associate_ide_port(struct ata_port *ap)
- 
- 		dev->acpi_handle = acpi_get_child(ap->acpi_handle, i);
- 	}
-+
-+	if (ata_acpi_gtm(ap, &ap->__acpi_init_gtm) == 0)
-+		ap->pflags |= ATA_PFLAG_INIT_GTM_VALID;
- }
- 
- static void ata_acpi_handle_hotplug(struct ata_port *ap, struct kobject *kobj,
-@@ -188,6 +210,32 @@ void ata_acpi_associate(struct ata_host *host)
- }
- 
- /**
-+ * ata_acpi_dissociate - dissociate ATA host from ACPI objects
-+ * @host: target ATA host
-+ *
-+ * This function is called during driver detach after the whole host
-+ * is shut down.
-+ *
-+ * LOCKING:
-+ * EH context.
-+ */
-+void ata_acpi_dissociate(struct ata_host *host)
-+{
-+	int i;
-+
-+	/* Restore initial _GTM values so that driver which attaches
-+	 * afterward can use them too.
-+	 */
-+	for (i = 0; i < host->n_ports; i++) {
-+		struct ata_port *ap = host->ports[i];
-+		const struct ata_acpi_gtm *gtm = ata_acpi_init_gtm(ap);
-+
-+		if (ap->acpi_handle && gtm)
-+			ata_acpi_stm(ap, gtm);
-+	}
-+}
-+
-+/**
-  * ata_acpi_gtm - execute _GTM
-  * @ap: target ATA port
-  * @gtm: out parameter for _GTM result
-@@ -200,7 +248,7 @@ void ata_acpi_associate(struct ata_host *host)
-  * RETURNS:
-  * 0 on success, -ENOENT if _GTM doesn't exist, -errno on failure.
-  */
--int ata_acpi_gtm(const struct ata_port *ap, struct ata_acpi_gtm *gtm)
-+int ata_acpi_gtm(struct ata_port *ap, struct ata_acpi_gtm *gtm)
- {
- 	struct acpi_buffer output = { .length = ACPI_ALLOCATE_BUFFER };
- 	union acpi_object *out_obj;
-@@ -259,15 +307,16 @@ EXPORT_SYMBOL_GPL(ata_acpi_gtm);
-  * RETURNS:
-  * 0 on success, -ENOENT if _STM doesn't exist, -errno on failure.
-  */
--int ata_acpi_stm(const struct ata_port *ap, struct ata_acpi_gtm *stm)
-+int ata_acpi_stm(struct ata_port *ap, const struct ata_acpi_gtm *stm)
- {
- 	acpi_status status;
-+	struct ata_acpi_gtm		stm_buf = *stm;
- 	struct acpi_object_list         input;
- 	union acpi_object               in_params[3];
- 
- 	in_params[0].type = ACPI_TYPE_BUFFER;
- 	in_params[0].buffer.length = sizeof(struct ata_acpi_gtm);
--	in_params[0].buffer.pointer = (u8 *)stm;
-+	in_params[0].buffer.pointer = (u8 *)&stm_buf;
- 	/* Buffers for id may need byteswapping ? */
- 	in_params[1].type = ACPI_TYPE_BUFFER;
- 	in_params[1].buffer.length = 512;
-@@ -297,7 +346,6 @@ EXPORT_SYMBOL_GPL(ata_acpi_stm);
-  * ata_dev_get_GTF - get the drive bootup default taskfile settings
-  * @dev: target ATA device
-  * @gtf: output parameter for buffer containing _GTF taskfile arrays
-- * @ptr_to_free: pointer which should be freed
-  *
-  * This applies to both PATA and SATA drives.
-  *
-@@ -311,11 +359,10 @@ EXPORT_SYMBOL_GPL(ata_acpi_stm);
-  * EH context.
-  *
-  * RETURNS:
-- * Number of taskfiles on success, 0 if _GTF doesn't exist or doesn't
-- * contain valid data.
-+ * Number of taskfiles on success, 0 if _GTF doesn't exist.  -EINVAL
-+ * if _GTF is invalid.
-  */
--static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf,
--			   void **ptr_to_free)
-+static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf)
- {
- 	struct ata_port *ap = dev->link->ap;
- 	acpi_status status;
-@@ -323,6 +370,12 @@ static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf,
- 	union acpi_object *out_obj;
- 	int rc = 0;
- 
-+	/* if _GTF is cached, use the cached value */
-+	if (dev->gtf_cache) {
-+		out_obj = dev->gtf_cache;
-+		goto done;
-+	}
-+
- 	/* set up output buffer */
- 	output.length = ACPI_ALLOCATE_BUFFER;
- 	output.pointer = NULL;	/* ACPI-CA sets this; save/free it later */
-@@ -333,12 +386,14 @@ static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf,
- 
- 	/* _GTF has no input parameters */
- 	status = acpi_evaluate_object(dev->acpi_handle, "_GTF", NULL, &output);
-+	out_obj = dev->gtf_cache = output.pointer;
- 
- 	if (ACPI_FAILURE(status)) {
- 		if (status != AE_NOT_FOUND) {
- 			ata_dev_printk(dev, KERN_WARNING,
- 				       "_GTF evaluation failed (AE 0x%x)\n",
- 				       status);
-+			rc = -EINVAL;
- 		}
- 		goto out_free;
- 	}
-@@ -350,14 +405,15 @@ static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf,
- 				__FUNCTION__,
- 				(unsigned long long)output.length,
- 				output.pointer);
-+		rc = -EINVAL;
- 		goto out_free;
+ MARVELL MV643XX ETHERNET DRIVER
+ P:	Dale Farnsworth
+ M:	dale@farnsworth.org
+diff --git a/drivers/net/e100.c b/drivers/net/e100.c
+index e1c8a0d..2b06e4b 100644
+--- a/drivers/net/e100.c
++++ b/drivers/net/e100.c
+@@ -2737,8 +2737,9 @@ static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
+ 		pci_enable_wake(pdev, PCI_D3cold, 0);
  	}
  
--	out_obj = output.pointer;
- 	if (out_obj->type != ACPI_TYPE_BUFFER) {
- 		ata_dev_printk(dev, KERN_WARNING,
- 			       "_GTF unexpected object type 0x%x\n",
- 			       out_obj->type);
-+		rc = -EINVAL;
- 		goto out_free;
- 	}
- 
-@@ -365,21 +421,23 @@ static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf,
- 		ata_dev_printk(dev, KERN_WARNING,
- 			       "unexpected _GTF length (%d)\n",
- 			       out_obj->buffer.length);
-+		rc = -EINVAL;
- 		goto out_free;
- 	}
- 
--	*ptr_to_free = out_obj;
--	*gtf = (void *)out_obj->buffer.pointer;
-+ done:
- 	rc = out_obj->buffer.length / REGS_PER_GTF;
--
--	if (ata_msg_probe(ap))
--		ata_dev_printk(dev, KERN_DEBUG, "%s: returning "
--			"gtf=%p, gtf_count=%d, ptr_to_free=%p\n",
--			__FUNCTION__, *gtf, rc, *ptr_to_free);
-+	if (gtf) {
-+		*gtf = (void *)out_obj->buffer.pointer;
-+		if (ata_msg_probe(ap))
-+			ata_dev_printk(dev, KERN_DEBUG,
-+				       "%s: returning gtf=%p, gtf_count=%d\n",
-+				       __FUNCTION__, *gtf, rc);
-+	}
- 	return rc;
- 
-  out_free:
--	kfree(output.pointer);
-+	ata_acpi_clear_gtf(dev);
- 	return rc;
- }
- 
-@@ -393,22 +451,21 @@ static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf,
- 
- int ata_acpi_cbl_80wire(struct ata_port *ap)
- {
--	struct ata_acpi_gtm gtm;
-+	const struct ata_acpi_gtm *gtm = ata_acpi_init_gtm(ap);
- 	int valid = 0;
- 
--	/* No _GTM data, no information */
--	if (ata_acpi_gtm(ap, &gtm) < 0)
-+	if (!gtm)
- 		return 0;
- 
- 	/* Split timing, DMA enabled */
--	if ((gtm.flags & 0x11) == 0x11 && gtm.drive[0].dma < 55)
-+	if ((gtm->flags & 0x11) == 0x11 && gtm->drive[0].dma < 55)
- 		valid |= 1;
--	if ((gtm.flags & 0x14) == 0x14 && gtm.drive[1].dma < 55)
-+	if ((gtm->flags & 0x14) == 0x14 && gtm->drive[1].dma < 55)
- 		valid |= 2;
- 	/* Shared timing, DMA enabled */
--	if ((gtm.flags & 0x11) == 0x01 && gtm.drive[0].dma < 55)
-+	if ((gtm->flags & 0x11) == 0x01 && gtm->drive[0].dma < 55)
- 		valid |= 1;
--	if ((gtm.flags & 0x14) == 0x04 && gtm.drive[0].dma < 55)
-+	if ((gtm->flags & 0x14) == 0x04 && gtm->drive[0].dma < 55)
- 		valid |= 2;
- 
- 	/* Drive check */
-@@ -421,8 +478,62 @@ int ata_acpi_cbl_80wire(struct ata_port *ap)
- 
- EXPORT_SYMBOL_GPL(ata_acpi_cbl_80wire);
- 
-+static void ata_acpi_gtf_to_tf(struct ata_device *dev,
-+			       const struct ata_acpi_gtf *gtf,
-+			       struct ata_taskfile *tf)
-+{
-+	ata_tf_init(dev, tf);
+-	pci_disable_device(pdev);
+ 	free_irq(pdev->irq, netdev);
 +
-+	tf->flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
-+	tf->protocol = ATA_PROT_NODATA;
-+	tf->feature = gtf->tf[0];	/* 0x1f1 */
-+	tf->nsect   = gtf->tf[1];	/* 0x1f2 */
-+	tf->lbal    = gtf->tf[2];	/* 0x1f3 */
-+	tf->lbam    = gtf->tf[3];	/* 0x1f4 */
-+	tf->lbah    = gtf->tf[4];	/* 0x1f5 */
-+	tf->device  = gtf->tf[5];	/* 0x1f6 */
-+	tf->command = gtf->tf[6];	/* 0x1f7 */
-+}
-+
-+static int ata_acpi_filter_tf(const struct ata_taskfile *tf,
-+			      const struct ata_taskfile *ptf)
-+{
-+	if (ata_acpi_gtf_filter & ATA_ACPI_FILTER_SETXFER) {
-+		/* libata doesn't use ACPI to configure transfer mode.
-+		 * It will only confuse device configuration.  Skip.
-+		 */
-+		if (tf->command == ATA_CMD_SET_FEATURES &&
-+		    tf->feature == SETFEATURES_XFER)
-+			return 1;
-+	}
-+
-+	if (ata_acpi_gtf_filter & ATA_ACPI_FILTER_LOCK) {
-+		/* BIOS writers, sorry but we don't wanna lock
-+		 * features unless the user explicitly said so.
-+		 */
-+
-+		/* DEVICE CONFIGURATION FREEZE LOCK */
-+		if (tf->command == ATA_CMD_CONF_OVERLAY &&
-+		    tf->feature == ATA_DCO_FREEZE_LOCK)
-+			return 1;
-+
-+		/* SECURITY FREEZE LOCK */
-+		if (tf->command == ATA_CMD_SEC_FREEZE_LOCK)
-+			return 1;
-+
-+		/* SET MAX LOCK and SET MAX FREEZE LOCK */
-+		if ((!ptf || ptf->command != ATA_CMD_READ_NATIVE_MAX) &&
-+		    tf->command == ATA_CMD_SET_MAX &&
-+		    (tf->feature == ATA_SET_MAX_LOCK ||
-+		     tf->feature == ATA_SET_MAX_FREEZE_LOCK))
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-- * taskfile_load_raw - send taskfile registers to host controller
-+ * ata_acpi_run_tf - send taskfile registers to host controller
-  * @dev: target ATA device
-  * @gtf: raw ATA taskfile register set (0x1f1 - 0x1f7)
-  *
-@@ -441,56 +552,77 @@ EXPORT_SYMBOL_GPL(ata_acpi_cbl_80wire);
-  * EH context.
-  *
-  * RETURNS:
-- * 0 on success, -errno on failure.
-+ * 1 if command is executed successfully.  0 if ignored, rejected or
-+ * filtered out, -errno on other errors.
-  */
--static int taskfile_load_raw(struct ata_device *dev,
--			      const struct ata_acpi_gtf *gtf)
-+static int ata_acpi_run_tf(struct ata_device *dev,
-+			   const struct ata_acpi_gtf *gtf,
-+			   const struct ata_acpi_gtf *prev_gtf)
- {
--	struct ata_port *ap = dev->link->ap;
--	struct ata_taskfile tf, rtf;
-+	struct ata_taskfile *pptf = NULL;
-+	struct ata_taskfile tf, ptf, rtf;
- 	unsigned int err_mask;
-+	const char *level;
-+	char msg[60];
-+	int rc;
++	pci_disable_device(pdev);
+ 	pci_set_power_state(pdev, PCI_D3hot);
  
- 	if ((gtf->tf[0] == 0) && (gtf->tf[1] == 0) && (gtf->tf[2] == 0)
- 	    && (gtf->tf[3] == 0) && (gtf->tf[4] == 0) && (gtf->tf[5] == 0)
- 	    && (gtf->tf[6] == 0))
- 		return 0;
- 
--	ata_tf_init(dev, &tf);
-+	ata_acpi_gtf_to_tf(dev, gtf, &tf);
-+	if (prev_gtf) {
-+		ata_acpi_gtf_to_tf(dev, prev_gtf, &ptf);
-+		pptf = &ptf;
-+	}
- 
--	/* convert gtf to tf */
--	tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE; /* TBD */
--	tf.protocol = ATA_PROT_NODATA;
--	tf.feature = gtf->tf[0];	/* 0x1f1 */
--	tf.nsect   = gtf->tf[1];	/* 0x1f2 */
--	tf.lbal    = gtf->tf[2];	/* 0x1f3 */
--	tf.lbam    = gtf->tf[3];	/* 0x1f4 */
--	tf.lbah    = gtf->tf[4];	/* 0x1f5 */
--	tf.device  = gtf->tf[5];	/* 0x1f6 */
--	tf.command = gtf->tf[6];	/* 0x1f7 */
-+	if (!ata_acpi_filter_tf(&tf, pptf)) {
-+		rtf = tf;
-+		err_mask = ata_exec_internal(dev, &rtf, NULL,
-+					     DMA_NONE, NULL, 0, 0);
- 
--	if (ata_msg_probe(ap))
--		ata_dev_printk(dev, KERN_DEBUG, "executing ACPI cmd "
--			       "%02x/%02x:%02x:%02x:%02x:%02x:%02x\n",
--			       tf.command, tf.feature, tf.nsect,
--			       tf.lbal, tf.lbam, tf.lbah, tf.device);
--
--	rtf = tf;
--	err_mask = ata_exec_internal(dev, &rtf, NULL, DMA_NONE, NULL, 0, 0);
--	if (err_mask) {
--		ata_dev_printk(dev, KERN_ERR,
--			"ACPI cmd %02x/%02x:%02x:%02x:%02x:%02x:%02x failed "
--			"(Emask=0x%x Stat=0x%02x Err=0x%02x)\n",
--			tf.command, tf.feature, tf.nsect, tf.lbal, tf.lbam,
--			tf.lbah, tf.device, err_mask, rtf.command, rtf.feature);
--		return -EIO;
-+		switch (err_mask) {
-+		case 0:
-+			level = KERN_DEBUG;
-+			snprintf(msg, sizeof(msg), "succeeded");
-+			rc = 1;
-+			break;
-+
-+		case AC_ERR_DEV:
-+			level = KERN_INFO;
-+			snprintf(msg, sizeof(msg),
-+				 "rejected by device (Stat=0x%02x Err=0x%02x)",
-+				 rtf.command, rtf.feature);
-+			rc = 0;
-+			break;
-+
-+		default:
-+			level = KERN_ERR;
-+			snprintf(msg, sizeof(msg),
-+				 "failed (Emask=0x%x Stat=0x%02x Err=0x%02x)",
-+				 err_mask, rtf.command, rtf.feature);
-+			rc = -EIO;
-+			break;
-+		}
-+	} else {
-+		level = KERN_INFO;
-+		snprintf(msg, sizeof(msg), "filtered out");
-+		rc = 0;
- 	}
- 
--	return 0;
-+	ata_dev_printk(dev, level,
-+		       "ACPI cmd %02x/%02x:%02x:%02x:%02x:%02x:%02x %s\n",
-+		       tf.command, tf.feature, tf.nsect, tf.lbal,
-+		       tf.lbam, tf.lbah, tf.device, msg);
-+
-+	return rc;
- }
- 
- /**
-  * ata_acpi_exec_tfs - get then write drive taskfile settings
-  * @dev: target ATA device
-+ * @nr_executed: out paramter for the number of executed commands
-  *
-  * Evaluate _GTF and excute returned taskfiles.
-  *
-@@ -498,35 +630,36 @@ static int taskfile_load_raw(struct ata_device *dev,
-  * EH context.
-  *
-  * RETURNS:
-- * Number of executed taskfiles on success, 0 if _GTF doesn't exist or
-- * doesn't contain valid data.  -errno on other errors.
-+ * Number of executed taskfiles on success, 0 if _GTF doesn't exist.
-+ * -errno on other errors.
-  */
--static int ata_acpi_exec_tfs(struct ata_device *dev)
-+static int ata_acpi_exec_tfs(struct ata_device *dev, int *nr_executed)
- {
--	struct ata_acpi_gtf *gtf = NULL;
--	void *ptr_to_free = NULL;
-+	struct ata_acpi_gtf *gtf = NULL, *pgtf = NULL;
- 	int gtf_count, i, rc;
- 
- 	/* get taskfiles */
--	gtf_count = ata_dev_get_GTF(dev, &gtf, &ptr_to_free);
-+	rc = ata_dev_get_GTF(dev, &gtf);
-+	if (rc < 0)
-+		return rc;
-+	gtf_count = rc;
- 
- 	/* execute them */
--	for (i = 0, rc = 0; i < gtf_count; i++) {
--		int tmp;
--
--		/* ACPI errors are eventually ignored.  Run till the
--		 * end even after errors.
--		 */
--		tmp = taskfile_load_raw(dev, gtf++);
--		if (!rc)
--			rc = tmp;
-+	for (i = 0; i < gtf_count; i++, gtf++) {
-+		rc = ata_acpi_run_tf(dev, gtf, pgtf);
-+		if (rc < 0)
-+			break;
-+		if (rc) {
-+			(*nr_executed)++;
-+			pgtf = gtf;
-+		}
- 	}
- 
--	kfree(ptr_to_free);
-+	ata_acpi_clear_gtf(dev);
- 
--	if (rc == 0)
--		return gtf_count;
--	return rc;
-+	if (rc < 0)
-+		return rc;
-+	return 0;
- }
- 
- /**
-@@ -596,27 +729,8 @@ static int ata_acpi_push_id(struct ata_device *dev)
-  */
- int ata_acpi_on_suspend(struct ata_port *ap)
- {
--	unsigned long flags;
--	int rc;
--
--	/* proceed iff per-port acpi_handle is valid */
--	if (!ap->acpi_handle)
--		return 0;
--	BUG_ON(ap->flags & ATA_FLAG_ACPI_SATA);
--
--	/* store timing parameters */
--	rc = ata_acpi_gtm(ap, &ap->acpi_gtm);
--
--	spin_lock_irqsave(ap->lock, flags);
--	if (rc == 0)
--		ap->pflags |= ATA_PFLAG_GTM_VALID;
--	else
--		ap->pflags &= ~ATA_PFLAG_GTM_VALID;
--	spin_unlock_irqrestore(ap->lock, flags);
--
--	if (rc == -ENOENT)
--		rc = 0;
--	return rc;
-+	/* nada */
-+	return 0;
- }
- 
- /**
-@@ -631,18 +745,34 @@ int ata_acpi_on_suspend(struct ata_port *ap)
-  */
- void ata_acpi_on_resume(struct ata_port *ap)
- {
-+	const struct ata_acpi_gtm *gtm = ata_acpi_init_gtm(ap);
- 	struct ata_device *dev;
- 
--	if (ap->acpi_handle && (ap->pflags & ATA_PFLAG_GTM_VALID)) {
--		BUG_ON(ap->flags & ATA_FLAG_ACPI_SATA);
-+	if (ap->acpi_handle && gtm) {
-+		/* _GTM valid */
- 
- 		/* restore timing parameters */
--		ata_acpi_stm(ap, &ap->acpi_gtm);
--	}
-+		ata_acpi_stm(ap, gtm);
- 
--	/* schedule _GTF */
--	ata_link_for_each_dev(dev, &ap->link)
--		dev->flags |= ATA_DFLAG_ACPI_PENDING;
-+		/* _GTF should immediately follow _STM so that it can
-+		 * use values set by _STM.  Cache _GTF result and
-+		 * schedule _GTF.
-+		 */
-+		ata_link_for_each_dev(dev, &ap->link) {
-+			ata_acpi_clear_gtf(dev);
-+			if (ata_dev_get_GTF(dev, NULL) >= 0)
-+				dev->flags |= ATA_DFLAG_ACPI_PENDING;
-+		}
-+	} else {
-+		/* SATA _GTF needs to be evaulated after _SDD and
-+		 * there's no reason to evaluate IDE _GTF early
-+		 * without _STM.  Clear cache and schedule _GTF.
-+		 */
-+		ata_link_for_each_dev(dev, &ap->link) {
-+			ata_acpi_clear_gtf(dev);
-+			dev->flags |= ATA_DFLAG_ACPI_PENDING;
-+		}
-+	}
- }
- 
- /**
-@@ -664,6 +794,7 @@ int ata_acpi_on_devcfg(struct ata_device *dev)
- 	struct ata_port *ap = dev->link->ap;
- 	struct ata_eh_context *ehc = &ap->link.eh_context;
- 	int acpi_sata = ap->flags & ATA_FLAG_ACPI_SATA;
-+	int nr_executed = 0;
- 	int rc;
- 
- 	if (!dev->acpi_handle)
-@@ -682,14 +813,14 @@ int ata_acpi_on_devcfg(struct ata_device *dev)
- 	}
- 
- 	/* do _GTF */
--	rc = ata_acpi_exec_tfs(dev);
--	if (rc < 0)
-+	rc = ata_acpi_exec_tfs(dev, &nr_executed);
-+	if (rc)
- 		goto acpi_err;
- 
- 	dev->flags &= ~ATA_DFLAG_ACPI_PENDING;
- 
- 	/* refresh IDENTIFY page if any _GTF command has been executed */
--	if (rc > 0) {
-+	if (nr_executed) {
- 		rc = ata_dev_reread_id(dev, 0);
- 		if (rc < 0) {
- 			ata_dev_printk(dev, KERN_ERR, "failed to IDENTIFY "
-@@ -701,17 +832,39 @@ int ata_acpi_on_devcfg(struct ata_device *dev)
  	return 0;
- 
-  acpi_err:
--	/* let EH retry on the first failure, disable ACPI on the second */
--	if (dev->flags & ATA_DFLAG_ACPI_FAILED) {
--		ata_dev_printk(dev, KERN_WARNING, "ACPI on devcfg failed the "
--			       "second time, disabling (errno=%d)\n", rc);
--
--		dev->acpi_handle = NULL;
-+	/* ignore evaluation failure if we can continue safely */
-+	if (rc == -EINVAL && !nr_executed && !(ap->pflags & ATA_PFLAG_FROZEN))
-+		return 0;
- 
--		/* if port is working, request IDENTIFY reload and continue */
--		if (!(ap->pflags & ATA_PFLAG_FROZEN))
--			rc = 1;
-+	/* fail and let EH retry once more for unknown IO errors */
-+	if (!(dev->flags & ATA_DFLAG_ACPI_FAILED)) {
-+		dev->flags |= ATA_DFLAG_ACPI_FAILED;
-+		return rc;
+@@ -2780,6 +2781,8 @@ static void e100_shutdown(struct pci_dev *pdev)
+ 		pci_enable_wake(pdev, PCI_D3cold, 0);
  	}
--	dev->flags |= ATA_DFLAG_ACPI_FAILED;
+ 
++	free_irq(pdev->irq, netdev);
 +
-+	ata_dev_printk(dev, KERN_WARNING,
-+		       "ACPI: failed the second time, disabled\n");
-+	dev->acpi_handle = NULL;
+ 	pci_disable_device(pdev);
+ 	pci_set_power_state(pdev, PCI_D3hot);
+ }
+diff --git a/drivers/net/hamachi.c b/drivers/net/hamachi.c
+index ed407c8..b53f6b6 100644
+--- a/drivers/net/hamachi.c
++++ b/drivers/net/hamachi.c
+@@ -204,8 +204,10 @@ KERN_INFO "   Further modifications by Keith Underwood <keithu@parl.clemson.edu>
+ /* Condensed bus+endian portability operations. */
+ #if ADDRLEN == 64
+ #define cpu_to_leXX(addr)	cpu_to_le64(addr)
++#define leXX_to_cpu(addr)	le64_to_cpu(addr)
+ #else
+ #define cpu_to_leXX(addr)	cpu_to_le32(addr)
++#define leXX_to_cpu(addr)	le32_to_cpu(addr)
+ #endif
+ 
+ 
+@@ -465,12 +467,12 @@ enum intr_status_bits {
+ 
+ /* The Hamachi Rx and Tx buffer descriptors. */
+ struct hamachi_desc {
+-	u32 status_n_length;
++	__le32 status_n_length;
+ #if ADDRLEN == 64
+ 	u32 pad;
+-	u64 addr;
++	__le64 addr;
+ #else
+-	u32 addr;
++	__le32 addr;
+ #endif
+ };
+ 
+@@ -874,13 +876,13 @@ static int hamachi_open(struct net_device *dev)
+ 
+ #if ADDRLEN == 64
+ 	/* writellll anyone ? */
+-	writel(cpu_to_le64(hmp->rx_ring_dma), ioaddr + RxPtr);
+-	writel(cpu_to_le64(hmp->rx_ring_dma) >> 32, ioaddr + RxPtr + 4);
+-	writel(cpu_to_le64(hmp->tx_ring_dma), ioaddr + TxPtr);
+-	writel(cpu_to_le64(hmp->tx_ring_dma) >> 32, ioaddr + TxPtr + 4);
++	writel(hmp->rx_ring_dma, ioaddr + RxPtr);
++	writel(hmp->rx_ring_dma >> 32, ioaddr + RxPtr + 4);
++	writel(hmp->tx_ring_dma, ioaddr + TxPtr);
++	writel(hmp->tx_ring_dma >> 32, ioaddr + TxPtr + 4);
+ #else
+-	writel(cpu_to_le32(hmp->rx_ring_dma), ioaddr + RxPtr);
+-	writel(cpu_to_le32(hmp->tx_ring_dma), ioaddr + TxPtr);
++	writel(hmp->rx_ring_dma, ioaddr + RxPtr);
++	writel(hmp->tx_ring_dma, ioaddr + TxPtr);
+ #endif
+ 
+ 	/* TODO:  It would make sense to organize this as words since the card
+@@ -1019,8 +1021,8 @@ static inline int hamachi_tx(struct net_device *dev)
+ 		skb = hmp->tx_skbuff[entry];
+ 		if (skb) {
+ 			pci_unmap_single(hmp->pci_dev,
+-				hmp->tx_ring[entry].addr, skb->len,
+-				PCI_DMA_TODEVICE);
++				leXX_to_cpu(hmp->tx_ring[entry].addr),
++				skb->len, PCI_DMA_TODEVICE);
+ 			dev_kfree_skb(skb);
+ 			hmp->tx_skbuff[entry] = NULL;
+ 		}
+@@ -1071,10 +1073,10 @@ static void hamachi_tx_timeout(struct net_device *dev)
+ 	{
+ 		printk(KERN_DEBUG "  Rx ring %p: ", hmp->rx_ring);
+ 		for (i = 0; i < RX_RING_SIZE; i++)
+-			printk(" %8.8x", (unsigned int)hmp->rx_ring[i].status_n_length);
++			printk(" %8.8x", le32_to_cpu(hmp->rx_ring[i].status_n_length));
+ 		printk("\n"KERN_DEBUG"  Tx ring %p: ", hmp->tx_ring);
+ 		for (i = 0; i < TX_RING_SIZE; i++)
+-			printk(" %4.4x", hmp->tx_ring[i].status_n_length);
++			printk(" %4.4x", le32_to_cpu(hmp->tx_ring[i].status_n_length));
+ 		printk("\n");
+ 	}
+ 
+@@ -1099,14 +1101,15 @@ static void hamachi_tx_timeout(struct net_device *dev)
+ 		struct sk_buff *skb;
+ 
+ 		if (i >= TX_RING_SIZE - 1)
+-			hmp->tx_ring[i].status_n_length = cpu_to_le32(
+-				DescEndRing |
+-				(hmp->tx_ring[i].status_n_length & 0x0000FFFF));
++			hmp->tx_ring[i].status_n_length =
++				cpu_to_le32(DescEndRing) |
++				(hmp->tx_ring[i].status_n_length &
++				 cpu_to_le32(0x0000ffff));
+ 		else
+-			hmp->tx_ring[i].status_n_length &= 0x0000ffff;
++			hmp->tx_ring[i].status_n_length &= cpu_to_le32(0x0000ffff);
+ 		skb = hmp->tx_skbuff[i];
+ 		if (skb){
+-			pci_unmap_single(hmp->pci_dev, hmp->tx_ring[i].addr,
++			pci_unmap_single(hmp->pci_dev, leXX_to_cpu(hmp->tx_ring[i].addr),
+ 				skb->len, PCI_DMA_TODEVICE);
+ 			dev_kfree_skb(skb);
+ 			hmp->tx_skbuff[i] = NULL;
+@@ -1128,7 +1131,8 @@ static void hamachi_tx_timeout(struct net_device *dev)
+ 		struct sk_buff *skb = hmp->rx_skbuff[i];
+ 
+ 		if (skb){
+-			pci_unmap_single(hmp->pci_dev, hmp->rx_ring[i].addr,
++			pci_unmap_single(hmp->pci_dev,
++				leXX_to_cpu(hmp->rx_ring[i].addr),
+ 				hmp->rx_buf_sz, PCI_DMA_FROMDEVICE);
+ 			dev_kfree_skb(skb);
+ 			hmp->rx_skbuff[i] = NULL;
+@@ -1420,7 +1424,7 @@ static irqreturn_t hamachi_interrupt(int irq, void *dev_instance)
+ 					/* Free the original skb. */
+ 					if (skb){
+ 						pci_unmap_single(hmp->pci_dev,
+-							hmp->tx_ring[entry].addr,
++							leXX_to_cpu(hmp->tx_ring[entry].addr),
+ 							skb->len,
+ 							PCI_DMA_TODEVICE);
+ 						dev_kfree_skb_irq(skb);
+@@ -1500,11 +1504,11 @@ static int hamachi_rx(struct net_device *dev)
+ 		if (desc_status & DescOwn)
+ 			break;
+ 		pci_dma_sync_single_for_cpu(hmp->pci_dev,
+-					    desc->addr,
++					    leXX_to_cpu(desc->addr),
+ 					    hmp->rx_buf_sz,
+ 					    PCI_DMA_FROMDEVICE);
+ 		buf_addr = (u8 *) hmp->rx_skbuff[entry]->data;
+-		frame_status = le32_to_cpu(get_unaligned((s32*)&(buf_addr[data_size - 12])));
++		frame_status = le32_to_cpu(get_unaligned((__le32*)&(buf_addr[data_size - 12])));
+ 		if (hamachi_debug > 4)
+ 			printk(KERN_DEBUG "  hamachi_rx() status was %8.8x.\n",
+ 				frame_status);
+@@ -1518,9 +1522,9 @@ static int hamachi_rx(struct net_device *dev)
+ 				   dev->name, desc, &hmp->rx_ring[hmp->cur_rx % RX_RING_SIZE]);
+ 			printk(KERN_WARNING "%s: Oversized Ethernet frame -- next status %x/%x last status %x.\n",
+ 				   dev->name,
+-				   hmp->rx_ring[(hmp->cur_rx+1) % RX_RING_SIZE].status_n_length & 0xffff0000,
+-				   hmp->rx_ring[(hmp->cur_rx+1) % RX_RING_SIZE].status_n_length & 0x0000ffff,
+-				   hmp->rx_ring[(hmp->cur_rx-1) % RX_RING_SIZE].status_n_length);
++				   le32_to_cpu(hmp->rx_ring[(hmp->cur_rx+1) % RX_RING_SIZE].status_n_length) & 0xffff0000,
++				   le32_to_cpu(hmp->rx_ring[(hmp->cur_rx+1) % RX_RING_SIZE].status_n_length) & 0x0000ffff,
++				   le32_to_cpu(hmp->rx_ring[(hmp->cur_rx-1) % RX_RING_SIZE].status_n_length));
+ 			hmp->stats.rx_length_errors++;
+ 		} /* else  Omit for prototype errata??? */
+ 		if (frame_status & 0x00380000) {
+@@ -1566,7 +1570,7 @@ static int hamachi_rx(struct net_device *dev)
+ #endif
+ 				skb_reserve(skb, 2);	/* 16 byte align the IP header */
+ 				pci_dma_sync_single_for_cpu(hmp->pci_dev,
+-							    hmp->rx_ring[entry].addr,
++							    leXX_to_cpu(hmp->rx_ring[entry].addr),
+ 							    hmp->rx_buf_sz,
+ 							    PCI_DMA_FROMDEVICE);
+ 				/* Call copy + cksum if available. */
+@@ -1579,12 +1583,12 @@ static int hamachi_rx(struct net_device *dev)
+ 					+ entry*sizeof(*desc), pkt_len);
+ #endif
+ 				pci_dma_sync_single_for_device(hmp->pci_dev,
+-							       hmp->rx_ring[entry].addr,
++							       leXX_to_cpu(hmp->rx_ring[entry].addr),
+ 							       hmp->rx_buf_sz,
+ 							       PCI_DMA_FROMDEVICE);
+ 			} else {
+ 				pci_unmap_single(hmp->pci_dev,
+-						 hmp->rx_ring[entry].addr,
++						 leXX_to_cpu(hmp->rx_ring[entry].addr),
+ 						 hmp->rx_buf_sz, PCI_DMA_FROMDEVICE);
+ 				skb_put(skb = hmp->rx_skbuff[entry], pkt_len);
+ 				hmp->rx_skbuff[entry] = NULL;
+@@ -1787,21 +1791,21 @@ static int hamachi_close(struct net_device *dev)
+ 	for (i = 0; i < RX_RING_SIZE; i++) {
+ 		skb = hmp->rx_skbuff[i];
+ 		hmp->rx_ring[i].status_n_length = 0;
+-		hmp->rx_ring[i].addr = 0xBADF00D0; /* An invalid address. */
+ 		if (skb) {
+ 			pci_unmap_single(hmp->pci_dev,
+-				hmp->rx_ring[i].addr, hmp->rx_buf_sz,
+-				PCI_DMA_FROMDEVICE);
++				leXX_to_cpu(hmp->rx_ring[i].addr),
++				hmp->rx_buf_sz, PCI_DMA_FROMDEVICE);
+ 			dev_kfree_skb(skb);
+ 			hmp->rx_skbuff[i] = NULL;
+ 		}
++		hmp->rx_ring[i].addr = cpu_to_leXX(0xBADF00D0); /* An invalid address. */
+ 	}
+ 	for (i = 0; i < TX_RING_SIZE; i++) {
+ 		skb = hmp->tx_skbuff[i];
+ 		if (skb) {
+ 			pci_unmap_single(hmp->pci_dev,
+-				hmp->tx_ring[i].addr, skb->len,
+-				PCI_DMA_TODEVICE);
++				leXX_to_cpu(hmp->tx_ring[i].addr),
++				skb->len, PCI_DMA_TODEVICE);
+ 			dev_kfree_skb(skb);
+ 			hmp->tx_skbuff[i] = NULL;
+ 		}
+diff --git a/drivers/net/ibm_newemac/debug.c b/drivers/net/ibm_newemac/debug.c
+index a2fc660..86b756a 100644
+--- a/drivers/net/ibm_newemac/debug.c
++++ b/drivers/net/ibm_newemac/debug.c
+@@ -26,7 +26,7 @@
+ 
+ #include "core.h"
+ 
+-static spinlock_t emac_dbg_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(emac_dbg_lock);
+ 
+ static void emac_desc_dump(struct emac_instance *p)
+ {
+diff --git a/drivers/net/ixgb/ixgb_main.c b/drivers/net/ixgb/ixgb_main.c
+index 3021234..bf9085f 100644
+--- a/drivers/net/ixgb/ixgb_main.c
++++ b/drivers/net/ixgb/ixgb_main.c
+@@ -320,10 +320,22 @@ ixgb_down(struct ixgb_adapter *adapter, boolean_t kill_watchdog)
+ void
+ ixgb_reset(struct ixgb_adapter *adapter)
+ {
++	struct ixgb_hw *hw = &adapter->hw;
+ 
+-	ixgb_adapter_stop(&adapter->hw);
+-	if(!ixgb_init_hw(&adapter->hw))
++	ixgb_adapter_stop(hw);
++	if (!ixgb_init_hw(hw))
+ 		DPRINTK(PROBE, ERR, "ixgb_init_hw failed.\n");
 +
-+	/* We can safely continue if no _GTF command has been executed
-+	 * and port is not frozen.
-+	 */
-+	if (!nr_executed && !(ap->pflags & ATA_PFLAG_FROZEN))
-+		return 0;
-+
++	/* restore frame size information */
++	IXGB_WRITE_REG(hw, MFS, hw->max_frame_size << IXGB_MFS_SHIFT);
++	if (hw->max_frame_size >
++	    IXGB_MAX_ENET_FRAME_SIZE_WITHOUT_FCS + ENET_FCS_LENGTH) {
++		u32 ctrl0 = IXGB_READ_REG(hw, CTRL0);
++		if (!(ctrl0 & IXGB_CTRL0_JFE)) {
++			ctrl0 |= IXGB_CTRL0_JFE;
++			IXGB_WRITE_REG(hw, CTRL0, ctrl0);
++		}
++	}
+ }
+ 
+ /**
+diff --git a/drivers/net/pcmcia/pcnet_cs.c b/drivers/net/pcmcia/pcnet_cs.c
+index db6a97d..51bbd58 100644
+--- a/drivers/net/pcmcia/pcnet_cs.c
++++ b/drivers/net/pcmcia/pcnet_cs.c
+@@ -1746,6 +1746,7 @@ static struct pcmcia_device_id pcnet_ids[] = {
+ 	PCMCIA_DEVICE_CIS_PROD_ID12("NDC", "Ethernet", 0x01c43ae1, 0x00b2e941, "NE2K.cis"),
+ 	PCMCIA_DEVICE_CIS_PROD_ID12("PMX   ", "PE-200", 0x34f3f1c8, 0x10b59f8c, "PE-200.cis"),
+ 	PCMCIA_DEVICE_CIS_PROD_ID12("TAMARACK", "Ethernet", 0xcf434fba, 0x00b2e941, "tamarack.cis"),
++	PCMCIA_DEVICE_PROD_ID12("Ethernet", "CF Size PC Card", 0x00b2e941, 0x43ac239b),
+ 	PCMCIA_DEVICE_PROD_ID123("Fast Ethernet", "CF Size PC Card", "1.0",
+ 		0xb4be14e3, 0x43ac239b, 0x0877b627),
+ 	PCMCIA_DEVICE_NULL
+diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
+index 121cb10..9d80f1c 100644
+--- a/drivers/net/s2io.c
++++ b/drivers/net/s2io.c
+@@ -3737,7 +3737,7 @@ static int s2io_enable_msi_x(struct s2io_nic *nic)
+ }
+ 
+ /* Handle software interrupt used during MSI(X) test */
+-static irqreturn_t __devinit s2io_test_intr(int irq, void *dev_id)
++static irqreturn_t s2io_test_intr(int irq, void *dev_id)
+ {
+ 	struct s2io_nic *sp = dev_id;
+ 
+@@ -3748,7 +3748,7 @@ static irqreturn_t __devinit s2io_test_intr(int irq, void *dev_id)
+ }
+ 
+ /* Test interrupt path by forcing a a software IRQ */
+-static int __devinit s2io_test_msi(struct s2io_nic *sp)
++static int s2io_test_msi(struct s2io_nic *sp)
+ {
+ 	struct pci_dev *pdev = sp->pdev;
+ 	struct XENA_dev_config __iomem *bar0 = sp->bar0;
+diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
+index 7200883..7eab072 100644
+--- a/drivers/net/sis190.c
++++ b/drivers/net/sis190.c
+@@ -474,7 +474,7 @@ static inline void sis190_map_to_asic(struct RxDesc *desc, dma_addr_t mapping,
+ static inline void sis190_make_unusable_by_asic(struct RxDesc *desc)
+ {
+ 	desc->PSize = 0x0;
+-	desc->addr = 0xdeadbeef;
++	desc->addr = cpu_to_le32(0xdeadbeef);
+ 	desc->size &= cpu_to_le32(RingEnd);
+ 	wmb();
+ 	desc->status = 0x0;
+@@ -580,7 +580,7 @@ static int sis190_rx_interrupt(struct net_device *dev,
+ 		struct RxDesc *desc = tp->RxDescRing + entry;
+ 		u32 status;
+ 
+-		if (desc->status & OWNbit)
++		if (le32_to_cpu(desc->status) & OWNbit)
+ 			break;
+ 
+ 		status = le32_to_cpu(desc->PSize);
+@@ -1381,7 +1381,7 @@ out:
  	return rc;
  }
-+
-+/**
-+ * ata_acpi_on_disable - ATA ACPI hook called when a device is disabled
-+ * @dev: target ATA device
-+ *
-+ * This function is called when @dev is about to be disabled.
-+ *
-+ * LOCKING:
-+ * EH context.
-+ */
-+void ata_acpi_on_disable(struct ata_device *dev)
-+{
-+	ata_acpi_clear_gtf(dev);
-+}
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index e4dea86..4753a18 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -64,6 +64,7 @@
- #include <linux/libata.h>
- #include <asm/semaphore.h>
- #include <asm/byteorder.h>
-+#include <linux/cdrom.h>
  
- #include "libata.h"
- 
-@@ -622,6 +623,7 @@ void ata_dev_disable(struct ata_device *dev)
- 	if (ata_dev_enabled(dev)) {
- 		if (ata_msg_drv(dev->link->ap))
- 			ata_dev_printk(dev, KERN_WARNING, "disabled\n");
-+		ata_acpi_on_disable(dev);
- 		ata_down_xfermask_limit(dev, ATA_DNXFER_FORCE_PIO0 |
- 					     ATA_DNXFER_QUIET);
- 		dev->class++;
-@@ -3923,6 +3925,7 @@ void ata_std_postreset(struct ata_link *link, unsigned int *classes)
- 	/* clear SError */
- 	if (sata_scr_read(link, SCR_ERROR, &serror) == 0)
- 		sata_scr_write(link, SCR_ERROR, serror);
-+	link->eh_info.serror = 0;
- 
- 	/* is double-select really necessary? */
- 	if (classes[0] != ATA_DEV_NONE)
-@@ -4149,6 +4152,7 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
- 	{ "HITACHI HDS7250SASUN500G*", NULL,    ATA_HORKAGE_NONCQ },
- 	{ "HITACHI HDS7225SBSUN250G*", NULL,    ATA_HORKAGE_NONCQ },
- 	{ "ST380817AS",		"3.42",		ATA_HORKAGE_NONCQ },
-+	{ "ST3160023AS",	"3.42",		ATA_HORKAGE_NONCQ },
- 
- 	/* Blacklist entries taken from Silicon Image 3124/3132
- 	   Windows driver .inf file - also several Linux problem reports */
-@@ -4649,6 +4653,43 @@ int ata_check_atapi_dma(struct ata_queued_cmd *qc)
- }
- 
- /**
-+ *	atapi_qc_may_overflow - Check whether data transfer may overflow
-+ *	@qc: ATA command in question
-+ *
-+ *	ATAPI commands which transfer variable length data to host
-+ *	might overflow due to application error or hardare bug.  This
-+ *	function checks whether overflow should be drained and ignored
-+ *	for @qc.
-+ *
-+ *	LOCKING:
-+ *	None.
-+ *
-+ *	RETURNS:
-+ *	1 if @qc may overflow; otherwise, 0.
-+ */
-+static int atapi_qc_may_overflow(struct ata_queued_cmd *qc)
-+{
-+	if (qc->tf.protocol != ATA_PROT_ATAPI &&
-+	    qc->tf.protocol != ATA_PROT_ATAPI_DMA)
-+		return 0;
-+
-+	if (qc->tf.flags & ATA_TFLAG_WRITE)
-+		return 0;
-+
-+	switch (qc->cdb[0]) {
-+	case READ_10:
-+	case READ_12:
-+	case WRITE_10:
-+	case WRITE_12:
-+	case GPCMD_READ_CD:
-+	case GPCMD_READ_CD_MSF:
-+		return 0;
-+	}
-+
-+	return 1;
-+}
-+
-+/**
-  *	ata_std_qc_defer - Check whether a qc needs to be deferred
-  *	@qc: ATA command in question
-  *
-@@ -5136,23 +5177,19 @@ static void atapi_send_cdb(struct ata_port *ap, struct ata_queued_cmd *qc)
-  *	Inherited from caller.
-  *
-  */
--
--static void __atapi_pio_bytes(struct ata_queued_cmd *qc, unsigned int bytes)
-+static int __atapi_pio_bytes(struct ata_queued_cmd *qc, unsigned int bytes)
+-static void __devexit sis190_mii_remove(struct net_device *dev)
++static void sis190_mii_remove(struct net_device *dev)
  {
- 	int do_write = (qc->tf.flags & ATA_TFLAG_WRITE);
--	struct scatterlist *sg = qc->__sg;
--	struct scatterlist *lsg = sg_last(qc->__sg, qc->n_elem);
- 	struct ata_port *ap = qc->ap;
-+	struct ata_eh_info *ehi = &qc->dev->link->eh_info;
-+	struct scatterlist *sg;
- 	struct page *page;
- 	unsigned char *buf;
- 	unsigned int offset, count;
--	int no_more_sg = 0;
--
--	if (qc->curbytes + bytes >= qc->nbytes)
--		ap->hsm_task_state = HSM_ST_LAST;
+ 	struct sis190_private *tp = netdev_priv(dev);
  
- next_sg:
--	if (unlikely(no_more_sg)) {
-+	sg = qc->cursg;
-+	if (unlikely(!sg)) {
- 		/*
- 		 * The end of qc->sg is reached and the device expects
- 		 * more data to transfer. In order not to overrun qc->sg
-@@ -5161,21 +5198,28 @@ next_sg:
- 		 *    - for write case, padding zero data to the device
- 		 */
- 		u16 pad_buf[1] = { 0 };
--		unsigned int words = bytes >> 1;
- 		unsigned int i;
+@@ -1538,9 +1538,9 @@ static int __devinit sis190_get_mac_addr_from_eeprom(struct pci_dev *pdev,
  
--		if (words) /* warning if bytes > 1 */
--			ata_dev_printk(qc->dev, KERN_WARNING,
--				       "%u bytes trailing data\n", bytes);
-+		if (bytes > qc->curbytes - qc->nbytes + ATAPI_MAX_DRAIN) {
-+			ata_ehi_push_desc(ehi, "too much trailing data "
-+					  "buf=%u cur=%u bytes=%u",
-+					  qc->nbytes, qc->curbytes, bytes);
-+			return -1;
-+		}
+ 	/* Get MAC address from EEPROM */
+ 	for (i = 0; i < MAC_ADDR_LEN / 2; i++) {
+-		__le16 w = sis190_read_eeprom(ioaddr, EEPROMMACAddr + i);
++		u16 w = sis190_read_eeprom(ioaddr, EEPROMMACAddr + i);
  
--		for (i = 0; i < words; i++)
-+		 /* overflow is exptected for misc ATAPI commands */
-+		if (bytes && !atapi_qc_may_overflow(qc))
-+			ata_dev_printk(qc->dev, KERN_WARNING, "ATAPI %u bytes "
-+				       "trailing data (cdb=%02x nbytes=%u)\n",
-+				       bytes, qc->cdb[0], qc->nbytes);
-+
-+		for (i = 0; i < (bytes + 1) / 2; i++)
- 			ap->ops->data_xfer(qc->dev, (unsigned char *)pad_buf, 2, do_write);
+-		((u16 *)dev->dev_addr)[i] = le16_to_cpu(w);
++		((__le16 *)dev->dev_addr)[i] = cpu_to_le16(w);
+ 	}
  
--		ap->hsm_task_state = HSM_ST_LAST;
--		return;
--	}
-+		qc->curbytes += bytes;
+ 	sis190_set_rgmii(tp, sis190_read_eeprom(ioaddr, EEPROMInfo));
+diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
+index 6197afb..a74fc11 100644
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -822,8 +822,13 @@ static void sky2_mac_init(struct sky2_hw *hw, unsigned port)
  
--	sg = qc->cursg;
-+		return 0;
+ 	sky2_write32(hw, SK_REG(port, RX_GMF_CTRL_T), rx_reg);
+ 
+-	/* Flush Rx MAC FIFO on any flow control or error */
+-	sky2_write16(hw, SK_REG(port, RX_GMF_FL_MSK), GMR_FS_ANY_ERR);
++	if (hw->chip_id == CHIP_ID_YUKON_XL) {
++		/* Hardware errata - clear flush mask */
++		sky2_write16(hw, SK_REG(port, RX_GMF_FL_MSK), 0);
++	} else {
++		/* Flush Rx MAC FIFO on any flow control or error */
++		sky2_write16(hw, SK_REG(port, RX_GMF_FL_MSK), GMR_FS_ANY_ERR);
 +	}
  
- 	page = sg_page(sg);
- 	offset = sg->offset + qc->cursg_ofs;
-@@ -5210,19 +5254,20 @@ next_sg:
- 	}
+ 	/* Set threshold to 0xa (64 bytes) + 1 to workaround pause bug  */
+ 	reg = RX_GMF_FL_THR_DEF + 1;
+diff --git a/drivers/net/smc911x.h b/drivers/net/smc911x.h
+index d04e4fa..7defa63 100644
+--- a/drivers/net/smc911x.h
++++ b/drivers/net/smc911x.h
+@@ -76,7 +76,7 @@
  
- 	bytes -= count;
-+	if ((count & 1) && bytes)
-+		bytes--;
- 	qc->curbytes += count;
- 	qc->cursg_ofs += count;
  
- 	if (qc->cursg_ofs == sg->length) {
--		if (qc->cursg == lsg)
--			no_more_sg = 1;
--
- 		qc->cursg = sg_next(qc->cursg);
- 		qc->cursg_ofs = 0;
- 	}
  
- 	if (bytes)
- 		goto next_sg;
-+
-+	return 0;
- }
- 
- /**
-@@ -5265,7 +5310,8 @@ static void atapi_pio_bytes(struct ata_queued_cmd *qc)
- 
- 	VPRINTK("ata%u: xfering %d bytes\n", ap->print_id, bytes);
- 
--	__atapi_pio_bytes(qc, bytes);
-+	if (__atapi_pio_bytes(qc, bytes))
-+		goto err_out;
- 	ata_altstatus(ap); /* flush */
- 
- 	return;
-@@ -7208,18 +7254,14 @@ static void ata_port_detach(struct ata_port *ap)
- 
- 	ata_port_wait_eh(ap);
- 
--	/* EH is now guaranteed to see UNLOADING, so no new device
--	 * will be attached.  Disable all existing devices.
-+	/* EH is now guaranteed to see UNLOADING - EH context belongs
-+	 * to us.  Disable all existing devices.
- 	 */
--	spin_lock_irqsave(ap->lock, flags);
--
- 	ata_port_for_each_link(link, ap) {
- 		ata_link_for_each_dev(dev, link)
- 			ata_dev_disable(dev);
- 	}
- 
--	spin_unlock_irqrestore(ap->lock, flags);
--
- 	/* Final freeze & EH.  All in-flight commands are aborted.  EH
- 	 * will be skipped and retrials will be terminated with bad
- 	 * target.
-@@ -7251,6 +7293,9 @@ void ata_host_detach(struct ata_host *host)
- 
- 	for (i = 0; i < host->n_ports; i++)
- 		ata_port_detach(host->ports[i]);
-+
-+	/* the host is dead now, dissociate ACPI */
-+	ata_acpi_dissociate(host);
- }
- 
- /**
-diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
-index e6605f0..f0124a8 100644
---- a/drivers/ata/libata-eh.c
-+++ b/drivers/ata/libata-eh.c
-@@ -1264,8 +1264,8 @@ static unsigned int atapi_eh_request_sense(struct ata_queued_cmd *qc)
- 		tf.feature |= ATAPI_PKT_DMA;
- 	} else {
- 		tf.protocol = ATA_PROT_ATAPI;
--		tf.lbam = (8 * 1024) & 0xff;
--		tf.lbah = (8 * 1024) >> 8;
-+		tf.lbam = SCSI_SENSE_BUFFERSIZE;
-+		tf.lbah = 0;
- 	}
- 
- 	return ata_exec_internal(dev, &tf, cdb, DMA_FROM_DEVICE,
-diff --git a/drivers/ata/libata.h b/drivers/ata/libata.h
-index 0e6cf3a..bbe59c2 100644
---- a/drivers/ata/libata.h
-+++ b/drivers/ata/libata.h
-@@ -108,15 +108,19 @@ extern void ata_lpm_schedule(struct ata_port *ap, enum link_pm);
- #ifdef CONFIG_ATA_ACPI
- extern void ata_acpi_associate_sata_port(struct ata_port *ap);
- extern void ata_acpi_associate(struct ata_host *host);
-+extern void ata_acpi_dissociate(struct ata_host *host);
- extern int ata_acpi_on_suspend(struct ata_port *ap);
- extern void ata_acpi_on_resume(struct ata_port *ap);
--extern int ata_acpi_on_devcfg(struct ata_device *adev);
-+extern int ata_acpi_on_devcfg(struct ata_device *dev);
-+extern void ata_acpi_on_disable(struct ata_device *dev);
- #else
- static inline void ata_acpi_associate_sata_port(struct ata_port *ap) { }
- static inline void ata_acpi_associate(struct ata_host *host) { }
-+static inline void ata_acpi_dissociate(struct ata_host *host) { }
- static inline int ata_acpi_on_suspend(struct ata_port *ap) { return 0; }
- static inline void ata_acpi_on_resume(struct ata_port *ap) { }
--static inline int ata_acpi_on_devcfg(struct ata_device *adev) { return 0; }
-+static inline int ata_acpi_on_devcfg(struct ata_device *dev) { return 0; }
-+static inline void ata_acpi_on_disable(struct ata_device *dev) { }
- #endif
- 
- /* libata-scsi.c */
-diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-index fe0105d..37b850a 100644
---- a/drivers/ata/sata_mv.c
-+++ b/drivers/ata/sata_mv.c
-@@ -2506,11 +2506,31 @@ static int mv_chip_id(struct ata_host *host, unsigned int board_idx)
- 		if (pdev->vendor == PCI_VENDOR_ID_TTI &&
- 		    (pdev->device == 0x2300 || pdev->device == 0x2310))
- 		{
--			printk(KERN_WARNING "sata_mv: Highpoint RocketRAID BIOS"
--				" will CORRUPT DATA on attached drives when"
--				" configured as \"Legacy\".  BEWARE!\n");
--			printk(KERN_WARNING "sata_mv: Use BIOS \"JBOD\" volumes"
--				" instead for safety.\n");
-+			/*
-+			 * Highpoint RocketRAID PCIe 23xx series cards:
-+			 *
-+			 * Unconfigured drives are treated as "Legacy"
-+			 * by the BIOS, and it overwrites sector 8 with
-+			 * a "Lgcy" metadata block prior to Linux boot.
-+			 *
-+			 * Configured drives (RAID or JBOD) leave sector 8
-+			 * alone, but instead overwrite a high numbered
-+			 * sector for the RAID metadata.  This sector can
-+			 * be determined exactly, by truncating the physical
-+			 * drive capacity to a nice even GB value.
-+			 *
-+			 * RAID metadata is at: (dev->n_sectors & ~0xfffff)
-+			 *
-+			 * Warn the user, lest they think we're just buggy.
-+			 */
-+			printk(KERN_WARNING DRV_NAME ": Highpoint RocketRAID"
-+				" BIOS CORRUPTS DATA on all attached drives,"
-+				" regardless of if/how they are configured."
-+				" BEWARE!\n");
-+			printk(KERN_WARNING DRV_NAME ": For data safety, do not"
-+				" use sectors 8-9 on \"Legacy\" drives,"
-+				" and avoid the final two gigabytes on"
-+				" all RocketRAID BIOS initialized drives.\n");
- 		}
- 	case chip_6042:
- 		hpriv->ops = &mv6xxx_ops;
-diff --git a/drivers/ata/sata_sil.c b/drivers/ata/sata_sil.c
-index 4e6e381..f5119bf 100644
---- a/drivers/ata/sata_sil.c
-+++ b/drivers/ata/sata_sil.c
-@@ -390,23 +390,19 @@ static void sil_host_intr(struct ata_port *ap, u32 bmdma2)
- 		sil_scr_read(ap, SCR_ERROR, &serror);
- 		sil_scr_write(ap, SCR_ERROR, serror);
- 
--		/* Trigger hotplug and accumulate SError only if the
--		 * port isn't already frozen.  Otherwise, PHY events
--		 * during hardreset makes controllers with broken SIEN
--		 * repeat probing needlessly.
-+		/* Sometimes spurious interrupts occur, double check
-+		 * it's PHYRDY CHG.
- 		 */
--		if (!(ap->pflags & ATA_PFLAG_FROZEN)) {
--			ata_ehi_hotplugged(&ap->link.eh_info);
-+		if (serror & SERR_PHYRDY_CHG) {
- 			ap->link.eh_info.serror |= serror;
-+			goto freeze;
- 		}
- 
--		goto freeze;
-+		if (!(bmdma2 & SIL_DMA_COMPLETE))
-+			return;
- 	}
- 
--	if (unlikely(!qc))
--		goto freeze;
--
--	if (unlikely(qc->tf.flags & ATA_TFLAG_POLLING)) {
-+	if (unlikely(!qc || (qc->tf.flags & ATA_TFLAG_POLLING))) {
- 		/* this sometimes happens, just clear IRQ */
- 		ata_chk_status(ap);
- 		return;
-diff --git a/include/linux/ata.h b/include/linux/ata.h
-index 5c4e54a..72ab808 100644
---- a/include/linux/ata.h
-+++ b/include/linux/ata.h
-@@ -190,6 +190,8 @@ enum {
- 	ATA_CMD_READ_LOG_EXT	= 0x2f,
- 	ATA_CMD_PMP_READ	= 0xE4,
- 	ATA_CMD_PMP_WRITE	= 0xE8,
-+	ATA_CMD_CONF_OVERLAY	= 0xB1,
-+	ATA_CMD_SEC_FREEZE_LOCK	= 0xF5,
- 
- 	/* READ_LOG_EXT pages */
- 	ATA_LOG_SATA_NCQ	= 0x10,
-@@ -239,6 +241,19 @@ enum {
- 	SATA_AN			= 0x05,  /* Asynchronous Notification */
- 	SATA_DIPM		= 0x03,  /* Device Initiated Power Management */
- 
-+	/* feature values for SET_MAX */
-+	ATA_SET_MAX_ADDR	= 0x00,
-+	ATA_SET_MAX_PASSWD	= 0x01,
-+	ATA_SET_MAX_LOCK	= 0x02,
-+	ATA_SET_MAX_UNLOCK	= 0x03,
-+	ATA_SET_MAX_FREEZE_LOCK	= 0x04,
-+
-+	/* feature values for DEVICE CONFIGURATION OVERLAY */
-+	ATA_DCO_RESTORE		= 0xC0,
-+	ATA_DCO_FREEZE_LOCK	= 0xC1,
-+	ATA_DCO_IDENTIFY	= 0xC2,
-+	ATA_DCO_SET		= 0xC3,
-+
- 	/* ATAPI stuff */
- 	ATAPI_PKT_DMA		= (1 << 0),
- 	ATAPI_DMADIR		= (1 << 2),	/* ATAPI data dir:
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index ef52a07..124033c 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -119,6 +119,8 @@ enum {
- 	ATA_DEF_BUSY_WAIT	= 10000,
- 	ATA_SHORT_PAUSE		= (HZ >> 6) + 1,
- 
-+	ATAPI_MAX_DRAIN		= 16 << 10,
-+
- 	ATA_SHT_EMULATED	= 1,
- 	ATA_SHT_CMD_PER_LUN	= 1,
- 	ATA_SHT_THIS_ID		= -1,
-@@ -211,7 +213,7 @@ enum {
- 
- 	ATA_PFLAG_SUSPENDED	= (1 << 17), /* port is suspended (power) */
- 	ATA_PFLAG_PM_PENDING	= (1 << 18), /* PM operation pending */
--	ATA_PFLAG_GTM_VALID	= (1 << 19), /* acpi_gtm data valid */
-+	ATA_PFLAG_INIT_GTM_VALID = (1 << 19), /* initial gtm data valid */
- 
- 	/* struct ata_queued_cmd flags */
- 	ATA_QCFLAG_ACTIVE	= (1 << 0), /* cmd not yet ack'd to scsi lyer */
-@@ -498,6 +500,7 @@ struct ata_device {
- 	struct scsi_device	*sdev;		/* attached SCSI device */
- #ifdef CONFIG_ATA_ACPI
- 	acpi_handle		acpi_handle;
-+	union acpi_object	*gtf_cache;
- #endif
- 	/* n_sector is used as CLEAR_OFFSET, read comment above CLEAR_OFFSET */
- 	u64			n_sectors;	/* size of device, if ATA */
-@@ -653,7 +656,7 @@ struct ata_port {
- 
- #ifdef CONFIG_ATA_ACPI
- 	acpi_handle		acpi_handle;
--	struct ata_acpi_gtm	acpi_gtm;
-+	struct ata_acpi_gtm	__acpi_init_gtm; /* use ata_acpi_init_gtm() */
- #endif
- 	u8			sector_buf[ATA_SECT_SIZE]; /* owned by EH */
- };
-@@ -939,10 +942,20 @@ enum {
- 
- /* libata-acpi.c */
- #ifdef CONFIG_ATA_ACPI
-+static inline const struct ata_acpi_gtm *ata_acpi_init_gtm(struct ata_port *ap)
-+{
-+	if (ap->pflags & ATA_PFLAG_INIT_GTM_VALID)
-+		return &ap->__acpi_init_gtm;
-+	return NULL;
-+}
- extern int ata_acpi_cbl_80wire(struct ata_port *ap);
--int ata_acpi_stm(const struct ata_port *ap, struct ata_acpi_gtm *stm);
--int ata_acpi_gtm(const struct ata_port *ap, struct ata_acpi_gtm *stm);
-+int ata_acpi_stm(struct ata_port *ap, const struct ata_acpi_gtm *stm);
-+int ata_acpi_gtm(struct ata_port *ap, struct ata_acpi_gtm *stm);
- #else
-+static inline const struct ata_acpi_gtm *ata_acpi_init_gtm(struct ata_port *ap)
-+{
-+	return NULL;
-+}
- static inline int ata_acpi_cbl_80wire(struct ata_port *ap) { return 0; }
- #endif
- 
-@@ -1013,18 +1026,18 @@ extern void ata_do_eh(struct ata_port *ap, ata_prereset_fn_t prereset,
-  * printk helpers
-  */
- #define ata_port_printk(ap, lv, fmt, args...) \
--	printk(lv"ata%u: "fmt, (ap)->print_id , ##args)
-+	printk("%sata%u: "fmt, lv, (ap)->print_id , ##args)
- 
- #define ata_link_printk(link, lv, fmt, args...) do { \
- 	if ((link)->ap->nr_pmp_links) \
--		printk(lv"ata%u.%02u: "fmt, (link)->ap->print_id, \
-+		printk("%sata%u.%02u: "fmt, lv, (link)->ap->print_id,	\
- 		       (link)->pmp , ##args); \
- 	else \
--		printk(lv"ata%u: "fmt, (link)->ap->print_id , ##args); \
-+		printk("%sata%u: "fmt, lv, (link)->ap->print_id , ##args); \
- 	} while(0)
- 
- #define ata_dev_printk(dev, lv, fmt, args...) \
--	printk(lv"ata%u.%02u: "fmt, (dev)->link->ap->print_id, \
-+	printk("%sata%u.%02u: "fmt, lv, (dev)->link->ap->print_id,	\
- 	       (dev)->link->pmp + (dev)->devno , ##args)
+-#if	 SMC_USE_PXA_DMA
++#ifdef SMC_USE_PXA_DMA
+ #define SMC_USE_DMA
  
  /*
+diff --git a/drivers/net/starfire.c b/drivers/net/starfire.c
+index bcc430b..6e00dc8 100644
+--- a/drivers/net/starfire.c
++++ b/drivers/net/starfire.c
+@@ -1742,7 +1742,7 @@ static void set_rx_mode(struct net_device *dev)
+ 			if (vlan_group_get_device(np->vlgrp, i)) {
+ 				if (vlan_count >= 32)
+ 					break;
+-				writew(cpu_to_be16(i), filter_addr);
++				writew(i, filter_addr);
+ 				filter_addr += 16;
+ 				vlan_count++;
+ 			}
+diff --git a/drivers/net/sundance.c b/drivers/net/sundance.c
+index ff98f5d..0a6186d 100644
+--- a/drivers/net/sundance.c
++++ b/drivers/net/sundance.c
+@@ -340,9 +340,9 @@ enum mac_ctrl1_bits {
+ /* Note that using only 32 bit fields simplifies conversion to big-endian
+    architectures. */
+ struct netdev_desc {
+-	u32 next_desc;
+-	u32 status;
+-	struct desc_frag { u32 addr, length; } frag[1];
++	__le32 next_desc;
++	__le32 status;
++	struct desc_frag { __le32 addr, length; } frag[1];
+ };
+ 
+ /* Bits in netdev_desc.status */
+@@ -495,8 +495,8 @@ static int __devinit sundance_probe1 (struct pci_dev *pdev,
+ 		goto err_out_res;
+ 
+ 	for (i = 0; i < 3; i++)
+-		((u16 *)dev->dev_addr)[i] =
+-			le16_to_cpu(eeprom_read(ioaddr, i + EEPROM_SA_OFFSET));
++		((__le16 *)dev->dev_addr)[i] =
++			cpu_to_le16(eeprom_read(ioaddr, i + EEPROM_SA_OFFSET));
+ 	memcpy(dev->perm_addr, dev->dev_addr, dev->addr_len);
+ 
+ 	dev->base_addr = (unsigned long)ioaddr;
+@@ -1090,8 +1090,8 @@ reset_tx (struct net_device *dev)
+ 		skb = np->tx_skbuff[i];
+ 		if (skb) {
+ 			pci_unmap_single(np->pci_dev,
+-				np->tx_ring[i].frag[0].addr, skb->len,
+-				PCI_DMA_TODEVICE);
++				le32_to_cpu(np->tx_ring[i].frag[0].addr),
++				skb->len, PCI_DMA_TODEVICE);
+ 			if (irq)
+ 				dev_kfree_skb_irq (skb);
+ 			else
+@@ -1214,7 +1214,7 @@ static irqreturn_t intr_handler(int irq, void *dev_instance)
+ 				skb = np->tx_skbuff[entry];
+ 				/* Free the original skb. */
+ 				pci_unmap_single(np->pci_dev,
+-					np->tx_ring[entry].frag[0].addr,
++					le32_to_cpu(np->tx_ring[entry].frag[0].addr),
+ 					skb->len, PCI_DMA_TODEVICE);
+ 				dev_kfree_skb_irq (np->tx_skbuff[entry]);
+ 				np->tx_skbuff[entry] = NULL;
+@@ -1233,7 +1233,7 @@ static irqreturn_t intr_handler(int irq, void *dev_instance)
+ 				skb = np->tx_skbuff[entry];
+ 				/* Free the original skb. */
+ 				pci_unmap_single(np->pci_dev,
+-					np->tx_ring[entry].frag[0].addr,
++					le32_to_cpu(np->tx_ring[entry].frag[0].addr),
+ 					skb->len, PCI_DMA_TODEVICE);
+ 				dev_kfree_skb_irq (np->tx_skbuff[entry]);
+ 				np->tx_skbuff[entry] = NULL;
+@@ -1311,19 +1311,19 @@ static void rx_poll(unsigned long data)
+ 				&& (skb = dev_alloc_skb(pkt_len + 2)) != NULL) {
+ 				skb_reserve(skb, 2);	/* 16 byte align the IP header */
+ 				pci_dma_sync_single_for_cpu(np->pci_dev,
+-							    desc->frag[0].addr,
++							    le32_to_cpu(desc->frag[0].addr),
+ 							    np->rx_buf_sz,
+ 							    PCI_DMA_FROMDEVICE);
+ 
+ 				skb_copy_to_linear_data(skb, np->rx_skbuff[entry]->data, pkt_len);
+ 				pci_dma_sync_single_for_device(np->pci_dev,
+-							       desc->frag[0].addr,
++							       le32_to_cpu(desc->frag[0].addr),
+ 							       np->rx_buf_sz,
+ 							       PCI_DMA_FROMDEVICE);
+ 				skb_put(skb, pkt_len);
+ 			} else {
+ 				pci_unmap_single(np->pci_dev,
+-					desc->frag[0].addr,
++					le32_to_cpu(desc->frag[0].addr),
+ 					np->rx_buf_sz,
+ 					PCI_DMA_FROMDEVICE);
+ 				skb_put(skb = np->rx_skbuff[entry], pkt_len);
+@@ -1709,23 +1709,23 @@ static int netdev_close(struct net_device *dev)
+ 	/* Free all the skbuffs in the Rx queue. */
+ 	for (i = 0; i < RX_RING_SIZE; i++) {
+ 		np->rx_ring[i].status = 0;
+-		np->rx_ring[i].frag[0].addr = 0xBADF00D0; /* An invalid address. */
+ 		skb = np->rx_skbuff[i];
+ 		if (skb) {
+ 			pci_unmap_single(np->pci_dev,
+-				np->rx_ring[i].frag[0].addr, np->rx_buf_sz,
+-				PCI_DMA_FROMDEVICE);
++				le32_to_cpu(np->rx_ring[i].frag[0].addr),
++				np->rx_buf_sz, PCI_DMA_FROMDEVICE);
+ 			dev_kfree_skb(skb);
+ 			np->rx_skbuff[i] = NULL;
+ 		}
++		np->rx_ring[i].frag[0].addr = cpu_to_le32(0xBADF00D0); /* poison */
+ 	}
+ 	for (i = 0; i < TX_RING_SIZE; i++) {
+ 		np->tx_ring[i].next_desc = 0;
+ 		skb = np->tx_skbuff[i];
+ 		if (skb) {
+ 			pci_unmap_single(np->pci_dev,
+-				np->tx_ring[i].frag[0].addr, skb->len,
+-				PCI_DMA_TODEVICE);
++				le32_to_cpu(np->tx_ring[i].frag[0].addr),
++				skb->len, PCI_DMA_TODEVICE);
+ 			dev_kfree_skb(skb);
+ 			np->tx_skbuff[i] = NULL;
+ 		}
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 7f68990..abac7db 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3447,7 +3447,7 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+ 	u16 length, howmany = 0;
+ 	u32 bd_status;
+ 	u8 *bdBuffer;
+-	struct net_device * dev;
++	struct net_device *dev;
+ 
+ 	ugeth_vdbg("%s: IN", __FUNCTION__);
+ 
+diff --git a/drivers/net/ucc_geth_mii.h b/drivers/net/ucc_geth_mii.h
+index d834370..1e45b20 100644
+--- a/drivers/net/ucc_geth_mii.h
++++ b/drivers/net/ucc_geth_mii.h
+@@ -96,5 +96,5 @@ enum enet_tbi_mii_reg {
+ int uec_mdio_read(struct mii_bus *bus, int mii_id, int regnum);
+ int uec_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value);
+ int __init uec_mdio_init(void);
+-void __exit uec_mdio_exit(void);
++void uec_mdio_exit(void);
+ #endif				/* __UEC_MII_H */
+diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
+index 2b733c5..5583719 100644
+--- a/drivers/net/wireless/Kconfig
++++ b/drivers/net/wireless/Kconfig
+@@ -264,6 +264,7 @@ config IPW2200_DEBUG
+ config LIBERTAS
+ 	tristate "Marvell 8xxx Libertas WLAN driver support"
+ 	depends on WLAN_80211
++	select WIRELESS_EXT
+ 	select IEEE80211
+ 	select FW_LOADER
+ 	---help---
+diff --git a/drivers/net/wireless/b43/leds.c b/drivers/net/wireless/b43/leds.c
+index 19e5885..6c0e2b9 100644
+--- a/drivers/net/wireless/b43/leds.c
++++ b/drivers/net/wireless/b43/leds.c
+@@ -163,6 +163,9 @@ static void b43_map_led(struct b43_wldev *dev,
+ 		b43_register_led(dev, &dev->led_radio, name,
+ 				 b43_rfkill_led_name(dev),
+ 				 led_index, activelow);
++		/* Sync the RF-kill LED state with the switch state. */
++		if (dev->radio_hw_enable)
++			b43_led_turn_on(dev, led_index, activelow);
+ 		break;
+ 	case B43_LED_WEIRD:
+ 	case B43_LED_ASSOC:
+@@ -232,4 +235,5 @@ void b43_leds_exit(struct b43_wldev *dev)
+ 	b43_unregister_led(&dev->led_tx);
+ 	b43_unregister_led(&dev->led_rx);
+ 	b43_unregister_led(&dev->led_assoc);
++	b43_unregister_led(&dev->led_radio);
+ }
+diff --git a/drivers/net/wireless/b43/main.c b/drivers/net/wireless/b43/main.c
+index b45eecc..1c93b4f 100644
+--- a/drivers/net/wireless/b43/main.c
++++ b/drivers/net/wireless/b43/main.c
+@@ -2163,7 +2163,6 @@ static void b43_mgmtframe_txantenna(struct b43_wldev *dev, int antenna)
+ static void b43_chip_exit(struct b43_wldev *dev)
+ {
+ 	b43_radio_turn_off(dev, 1);
+-	b43_leds_exit(dev);
+ 	b43_gpio_cleanup(dev);
+ 	/* firmware is released later */
+ }
+@@ -2191,11 +2190,10 @@ static int b43_chip_init(struct b43_wldev *dev)
+ 	err = b43_gpio_init(dev);
+ 	if (err)
+ 		goto out;	/* firmware is released later */
+-	b43_leds_init(dev);
+ 
+ 	err = b43_upload_initvals(dev);
+ 	if (err)
+-		goto err_leds_exit;
++		goto err_gpio_clean;
+ 	b43_radio_turn_on(dev);
+ 
+ 	b43_write16(dev, 0x03E6, 0x0000);
+@@ -2271,8 +2269,7 @@ out:
+ 
+ err_radio_off:
+ 	b43_radio_turn_off(dev, 1);
+-err_leds_exit:
+-	b43_leds_exit(dev);
++err_gpio_clean:
+ 	b43_gpio_cleanup(dev);
+ 	return err;
+ }
+@@ -3273,10 +3270,7 @@ static void b43_wireless_core_exit(struct b43_wldev *dev)
+ 		return;
+ 	b43_set_status(dev, B43_STAT_UNINIT);
+ 
+-	mutex_unlock(&dev->wl->mutex);
+-	b43_rfkill_exit(dev);
+-	mutex_lock(&dev->wl->mutex);
+-
++	b43_leds_exit(dev);
+ 	b43_rng_exit(dev->wl);
+ 	b43_pio_free(dev);
+ 	b43_dma_free(dev);
+@@ -3405,12 +3399,12 @@ static int b43_wireless_core_init(struct b43_wldev *dev)
+ 	memset(wl->mac_addr, 0, ETH_ALEN);
+ 	b43_upload_card_macaddress(dev);
+ 	b43_security_init(dev);
+-	b43_rfkill_init(dev);
+ 	b43_rng_init(wl);
+ 
+ 	b43_set_status(dev, B43_STAT_INITIALIZED);
+ 
+-      out:
++	b43_leds_init(dev);
++out:
+ 	return err;
+ 
+       err_chip_exit:
+@@ -3499,6 +3493,10 @@ static int b43_start(struct ieee80211_hw *hw)
+ 	int did_init = 0;
+ 	int err = 0;
+ 
++	/* First register RFkill.
++	 * LEDs that are registered later depend on it. */
++	b43_rfkill_init(dev);
++
+ 	mutex_lock(&wl->mutex);
+ 
+ 	if (b43_status(dev) < B43_STAT_INITIALIZED) {
+@@ -3528,6 +3526,8 @@ static void b43_stop(struct ieee80211_hw *hw)
+ 	struct b43_wl *wl = hw_to_b43_wl(hw);
+ 	struct b43_wldev *dev = wl->current_dev;
+ 
++	b43_rfkill_exit(dev);
++
+ 	mutex_lock(&wl->mutex);
+ 	if (b43_status(dev) >= B43_STAT_STARTED)
+ 		b43_wireless_core_stop(dev);
+diff --git a/drivers/net/wireless/b43/rfkill.c b/drivers/net/wireless/b43/rfkill.c
+index 9b1f905..98cf70c 100644
+--- a/drivers/net/wireless/b43/rfkill.c
++++ b/drivers/net/wireless/b43/rfkill.c
+@@ -25,6 +25,8 @@
+ #include "rfkill.h"
+ #include "b43.h"
+ 
++#include <linux/kmod.h>
++
+ 
+ /* Returns TRUE, if the radio is enabled in hardware. */
+ static bool b43_is_hw_radio_enabled(struct b43_wldev *dev)
+@@ -50,7 +52,10 @@ static void b43_rfkill_poll(struct input_polled_dev *poll_dev)
+ 	bool report_change = 0;
+ 
+ 	mutex_lock(&wl->mutex);
+-	B43_WARN_ON(b43_status(dev) < B43_STAT_INITIALIZED);
++	if (unlikely(b43_status(dev) < B43_STAT_INITIALIZED)) {
++		mutex_unlock(&wl->mutex);
++		return;
++	}
+ 	enabled = b43_is_hw_radio_enabled(dev);
+ 	if (unlikely(enabled != dev->radio_hw_enable)) {
+ 		dev->radio_hw_enable = enabled;
+@@ -60,8 +65,12 @@ static void b43_rfkill_poll(struct input_polled_dev *poll_dev)
+ 	}
+ 	mutex_unlock(&wl->mutex);
+ 
+-	if (unlikely(report_change))
+-		input_report_key(poll_dev->input, KEY_WLAN, enabled);
++	/* send the radio switch event to the system - note both a key press
++	 * and a release are required */
++	if (unlikely(report_change)) {
++		input_report_key(poll_dev->input, KEY_WLAN, 1);
++		input_report_key(poll_dev->input, KEY_WLAN, 0);
++	}
+ }
+ 
+ /* Called when the RFKILL toggled in software. */
+@@ -69,13 +78,15 @@ static int b43_rfkill_soft_toggle(void *data, enum rfkill_state state)
+ {
+ 	struct b43_wldev *dev = data;
+ 	struct b43_wl *wl = dev->wl;
+-	int err = 0;
++	int err = -EBUSY;
+ 
+ 	if (!wl->rfkill.registered)
+ 		return 0;
+ 
+ 	mutex_lock(&wl->mutex);
+-	B43_WARN_ON(b43_status(dev) < B43_STAT_INITIALIZED);
++	if (b43_status(dev) < B43_STAT_INITIALIZED)
++		goto out_unlock;
++	err = 0;
+ 	switch (state) {
+ 	case RFKILL_STATE_ON:
+ 		if (!dev->radio_hw_enable) {
+@@ -133,9 +144,25 @@ void b43_rfkill_init(struct b43_wldev *dev)
+ 	rfk->poll_dev->poll = b43_rfkill_poll;
+ 	rfk->poll_dev->poll_interval = 1000; /* msecs */
+ 
++	rfk->poll_dev->input->name = rfk->name;
++	rfk->poll_dev->input->id.bustype = BUS_HOST;
++	rfk->poll_dev->input->id.vendor = dev->dev->bus->boardinfo.vendor;
++	rfk->poll_dev->input->evbit[0] = BIT(EV_KEY);
++	set_bit(KEY_WLAN, rfk->poll_dev->input->keybit);
++
+ 	err = rfkill_register(rfk->rfkill);
+ 	if (err)
+ 		goto err_free_polldev;
++
++#ifdef CONFIG_RFKILL_INPUT_MODULE
++	/* B43 RF-kill isn't useful without the rfkill-input subsystem.
++	 * Try to load the module. */
++	err = request_module("rfkill-input");
++	if (err)
++		b43warn(wl, "Failed to load the rfkill-input module. "
++			"The built-in radio LED will not work.\n");
++#endif /* CONFIG_RFKILL_INPUT */
++
+ 	err = input_register_polled_device(rfk->poll_dev);
+ 	if (err)
+ 		goto err_unreg_rfk;
+diff --git a/drivers/net/wireless/bcm43xx/bcm43xx_debugfs.c b/drivers/net/wireless/bcm43xx/bcm43xx_debugfs.c
+index 35dbe45..76e9dd8 100644
+--- a/drivers/net/wireless/bcm43xx/bcm43xx_debugfs.c
++++ b/drivers/net/wireless/bcm43xx/bcm43xx_debugfs.c
+@@ -219,7 +219,7 @@ static ssize_t tsf_write_file(struct file *file, const char __user *user_buf,
+ 	ssize_t buf_size;
+ 	ssize_t res;
+ 	unsigned long flags;
+-	u64 tsf;
++	unsigned long long tsf;
+ 
+ 	buf_size = min(count, sizeof (really_big_buffer) - 1);
+ 	down(&big_buffer_sem);
+diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
+index 54f44e5..da51f47 100644
+--- a/drivers/net/wireless/ipw2200.c
++++ b/drivers/net/wireless/ipw2200.c
+@@ -10751,7 +10751,7 @@ static void ipw_bg_link_down(struct work_struct *work)
+ 	mutex_unlock(&priv->mutex);
+ }
+ 
+-static int ipw_setup_deferred_work(struct ipw_priv *priv)
++static int __devinit ipw_setup_deferred_work(struct ipw_priv *priv)
+ {
+ 	int ret = 0;
+ 
+@@ -11600,7 +11600,8 @@ static void ipw_prom_free(struct ipw_priv *priv)
+ #endif
+ 
+ 
+-static int ipw_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
++static int __devinit ipw_pci_probe(struct pci_dev *pdev,
++				   const struct pci_device_id *ent)
+ {
+ 	int err = 0;
+ 	struct net_device *net_dev;
+@@ -11767,7 +11768,7 @@ static int ipw_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	return err;
+ }
+ 
+-static void ipw_pci_remove(struct pci_dev *pdev)
++static void __devexit ipw_pci_remove(struct pci_dev *pdev)
+ {
+ 	struct ipw_priv *priv = pci_get_drvdata(pdev);
+ 	struct list_head *p, *q;
+diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+index 4bdf237..3d1da07 100644
+--- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -4743,8 +4743,10 @@ static void iwl_irq_tasklet(struct iwl_priv *priv)
+ 		 *   when we loaded driver, and is now set to "enable".
+ 		 * After we're Alive, RF_KILL gets handled by
+ 		 *   iwl_rx_card_state_notif() */
+-		if (!hw_rf_kill && !test_bit(STATUS_ALIVE, &priv->status))
++		if (!hw_rf_kill && !test_bit(STATUS_ALIVE, &priv->status)) {
++			clear_bit(STATUS_RF_KILL_HW, &priv->status);
+ 			queue_work(priv->workqueue, &priv->restart);
++		}
+ 
+ 		handled |= CSR_INT_BIT_RF_KILL;
+ 	}
+@@ -6171,6 +6173,7 @@ static void iwl_alive_start(struct iwl_priv *priv)
+ 		mutex_lock(&priv->mutex);
+ 
+ 		if (rc) {
++			iwl_rate_control_unregister(priv->hw);
+ 			IWL_ERROR("Failed to register network "
+ 				  "device (error %d)\n", rc);
+ 			return;
+diff --git a/drivers/net/wireless/iwlwifi/iwl4965-base.c b/drivers/net/wireless/iwlwifi/iwl4965-base.c
+index 8f85564..b54fe5e 100644
+--- a/drivers/net/wireless/iwlwifi/iwl4965-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl4965-base.c
+@@ -5059,8 +5059,10 @@ static void iwl_irq_tasklet(struct iwl_priv *priv)
+ 		 *   when we loaded driver, and is now set to "enable".
+ 		 * After we're Alive, RF_KILL gets handled by
+ 		 *   iwl_rx_card_state_notif() */
+-		if (!hw_rf_kill && !test_bit(STATUS_ALIVE, &priv->status))
++		if (!hw_rf_kill && !test_bit(STATUS_ALIVE, &priv->status)) {
++			clear_bit(STATUS_RF_KILL_HW, &priv->status);
+ 			queue_work(priv->workqueue, &priv->restart);
++		}
+ 
+ 		handled |= CSR_INT_BIT_RF_KILL;
+ 	}
+@@ -6527,6 +6529,7 @@ static void iwl_alive_start(struct iwl_priv *priv)
+ 		mutex_lock(&priv->mutex);
+ 
+ 		if (rc) {
++			iwl_rate_control_unregister(priv->hw);
+ 			IWL_ERROR("Failed to register network "
+ 				  "device (error %d)\n", rc);
+ 			return;
+diff --git a/drivers/net/wireless/zd1211rw/zd_mac.c b/drivers/net/wireless/zd1211rw/zd_mac.c
+index a903645..5298a8b 100644
+--- a/drivers/net/wireless/zd1211rw/zd_mac.c
++++ b/drivers/net/wireless/zd1211rw/zd_mac.c
+@@ -1130,6 +1130,8 @@ static void zd_mac_rx(struct zd_mac *mac, struct sk_buff *skb)
+ 	__skb_trim(skb, skb->len -
+ 		        (IEEE80211_FCS_LEN + sizeof(struct rx_status)));
+ 
++	ZD_ASSERT(IS_ALIGNED((unsigned long)skb->data, 4));
++
+ 	update_qual_rssi(mac, skb->data, skb->len, stats.signal,
+ 		         status->signal_strength);
+ 
+@@ -1166,15 +1168,19 @@ static void do_rx(unsigned long mac_ptr)
+ int zd_mac_rx_irq(struct zd_mac *mac, const u8 *buffer, unsigned int length)
+ {
+ 	struct sk_buff *skb;
++	unsigned int reserved =
++		ALIGN(max_t(unsigned int,
++		            sizeof(struct zd_rt_hdr), ZD_PLCP_HEADER_SIZE), 4) -
++		ZD_PLCP_HEADER_SIZE;
+ 
+-	skb = dev_alloc_skb(sizeof(struct zd_rt_hdr) + length);
++	skb = dev_alloc_skb(reserved + length);
+ 	if (!skb) {
+ 		struct ieee80211_device *ieee = zd_mac_to_ieee80211(mac);
+ 		dev_warn(zd_mac_dev(mac), "Could not allocate skb.\n");
+ 		ieee->stats.rx_dropped++;
+ 		return -ENOMEM;
+ 	}
+-	skb_reserve(skb, sizeof(struct zd_rt_hdr));
++	skb_reserve(skb, reserved);
+ 	memcpy(__skb_put(skb, length), buffer, length);
+ 	skb_queue_tail(&mac->rx_queue, skb);
+ 	tasklet_schedule(&mac->rx_tasklet);
+diff --git a/net/mac80211/ieee80211_rate.c b/net/mac80211/ieee80211_rate.c
+index 7254bd6..3260a4a 100644
+--- a/net/mac80211/ieee80211_rate.c
++++ b/net/mac80211/ieee80211_rate.c
+@@ -33,6 +33,7 @@ int ieee80211_rate_control_register(struct rate_control_ops *ops)
+ 		if (!strcmp(alg->ops->name, ops->name)) {
+ 			/* don't register an algorithm twice */
+ 			WARN_ON(1);
++			mutex_unlock(&rate_ctrl_mutex);
+ 			return -EALREADY;
+ 		}
+ 	}
