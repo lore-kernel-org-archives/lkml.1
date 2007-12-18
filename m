@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbXLRNpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbXLRNrK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756247AbXLRNpN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 08:45:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbXLRNo4
+	id S1756392AbXLRNrK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 08:47:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbXLRNq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 08:44:56 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:41272 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755003AbXLRNoy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 08:44:54 -0500
-Date: Tue, 18 Dec 2007 06:43:15 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Adam Fritzler <mid@zigamorph.net>,
-       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-       Jeff Garzik <jgarzik@pobox.com>, Mike Phillips <mikep@linuxtr.net>,
-       Philip Blundell <philb@gnu.org>, linux-scsi@vger.kernel.org,
-       netdev@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH] MAINTAINERS: remove Adam Fritzler, update his email address in other sources
-Message-ID: <20071218134128.GB5785@parisc-linux.org>
-References: <1197951126.4891.13.camel@localhost> <20071217202800.1c898441.akpm@linux-foundation.org> <1197953283.4891.24.camel@localhost>
-MIME-Version: 1.0
+	Tue, 18 Dec 2007 08:46:57 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:40367 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755126AbXLRNqz (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 08:46:55 -0500
+Date: Wed, 19 Dec 2007 00:46:44 +1100
+From: David Chinner <dgc@sgi.com>
+To: Bret Towe <magnade@gmail.com>
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: xfs mknod regression
+Message-ID: <20071218134644.GO4396912@sgi.com>
+References: <dda83e780712172048n4d40cfcbw4a4d3106fc99f02e@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1197953283.4891.24.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <dda83e780712172048n4d40cfcbw4a4d3106fc99f02e@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17, 2007 at 08:48:03PM -0800, Joe Perches wrote:
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 9507b42..690f172 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3758,13 +3758,6 @@ W:	http://www.kernel.org/pub/linux/kernel/people/bunk/trivial/
->  T:	git kernel.org:/pub/scm/linux/kernel/git/bunk/trivial.git
->  S:	Maintained
->  
-> -TMS380 TOKEN-RING NETWORK DRIVER
-> -P:	Adam Fritzler
-> -M:	mid@auk.cx
-> -L:	linux-tr@linuxtr.net
-> -W:	http://www.auk.cx/tms380tr/
-> -S:	Maintained
+On Mon, Dec 17, 2007 at 08:48:40PM -0800, Bret Towe wrote:
+> I hit a bug in 2.6.24-rc looks to be in 2.6.23 also so not sure how
+> long it's been there
+> with an xfs filesystem pbuilder has an issue using device files it
+> makes for chroot
+> the mknod command looks to work fine the file is created
+> however when attempting to use one of the created files you see
+> something like the below
+> 
+> ghoststar dev # echo "hi" > null
+> bash: null: No such device or address
+> ghoststar dev # ls -l null
+> crw-rw-rw- 1 root root 1, 3 2007-12-17 20:34 null
+> ghoststar dev # ls -l /dev/null
+> crw-rw-rw- 1 root root 1, 3 2007-10-05 17:29 /dev/null
+> ghoststar dev # echo "hi" > /dev/null
+> ghoststar dev #
 
-That's pretty unfriendly.  Presumably the linux-tr list is still active
-and would still help people with that driver.  So how about:
+Ok. Works on 2.6.22. doesn't work on latest xfsdev. I'll
+look into it.
 
- TMS380 TOKEN-RING NETWORK DRIVER
--P:   Adam Fritzler
--M:   mid@auk.cx
- L:   linux-tr@linuxtr.net
-?W:?
--S:   Maintained
-+S:   Orphan
+Cheers,
 
-(Dunno what to do about W:)
-
+Dave.
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
