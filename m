@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbXLRQfP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbXLRQgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154AbXLRQfP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 11:35:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbXLRQfE
+	id S1758934AbXLRQgQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 11:36:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbXLRQgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 11:35:04 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:37397 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752903AbXLRQfD (ORCPT
+	Tue, 18 Dec 2007 11:36:00 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:21580 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755891AbXLRQf7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 11:35:03 -0500
-Date: Tue, 18 Dec 2007 08:34:47 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: shashi59 <sasikumar.periyasamy@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Memory Read Error
-Message-Id: <20071218083447.ac2eabcd.randy.dunlap@oracle.com>
-In-Reply-To: <14390531.post@talk.nabble.com>
-References: <14390531.post@talk.nabble.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 18 Dec 2007 11:35:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=lG+xv9aqDWjDmkSi/zXXr0pXcQR/rdPVdZX+E+IfXwuwLggx7QuHhRPNw/hVlTqmrTXZqWC7Xbro2QdFtRuX+/0Xt7lVSZHvL1kWO8I5FnsmbH6/cbW7ICmUIDpOZ2qhFkmEPTVeJSENjtYmtjcoZDxe/Y2mjP+PDSibZqq1KEw=
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] iwlwifi: fix typo in 'drivers/net/wireless/iwlwifi/Kconfig'
+Date: Tue, 18 Dec 2007 17:36:12 +0100
+User-Agent: KMail/1.9.7
+Cc: yi.zhu@intel.com, linville@tuxdriver.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200712181736.13130.mboton@gmail.com>
+From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Dec 2007 02:13:30 -0800 (PST) shashi59 wrote:
+This patch fixes a typo in 'drivers/net/wireless/iwlwifi/Kconfig'.
 
-> 
-> I am newbie for Linux Kernel.How can I read the memory area like the range
-> between ffff0000 to ffffffff.Directly i read that area it shows some error
-> like this "unable to handle kernel paging request at virtual address
-> ffff0000". So,I don't know, how to solve this error .Please anyone help
-> me....
+Signed-off-by: Miguel Boton <mboton@gmail.com>
 
-"Unable to handle kernel paging request at virtual address ffff...."
-is almost always indicative of a kernel bug and not a memory error.
+diff --git a/drivers/net/wireless/iwlwifi/Kconfig b/drivers/net/wireless/iwlwifi/Kconfig
+index f495466..ca8597a 100644
+--- a/drivers/net/wireless/iwlwifi/Kconfig
++++ b/drivers/net/wireless/iwlwifi/Kconfig
+@@ -43,7 +43,7 @@ config IWL4965_HT
+ 	  for the iwl4965 driver.
+ 
+ config IWL4965_SPECTRUM_MEASUREMENT
+-	bool "Enable Spectrum Measurement in iw4965 driver"
++	bool "Enable Spectrum Measurement in iwl4965 driver"
+ 	depends on IWL4965
+ 	---help---
+ 	  This option will enable spectrum measurement for the iwl4965 driver.
 
-Please gather bug reporting data and report it as described in the
-file: REPORTING-BUGS in the kernel source tree's top-level directory.
 
-However:  if the kernel is very old, the answer may be just to use a
-newer kernel version.  Or if the kernel is a vendor-supported kernel
-version, then that vendor is probably where the bug report should go.
-
----
-~Randy
+-- 
+	Miguel Botón
