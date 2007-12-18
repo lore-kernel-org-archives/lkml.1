@@ -1,170 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbXLRNuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbXLRNvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756580AbXLRNuu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 08:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbXLRNun
+	id S1756779AbXLRNvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 08:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbXLRNvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 08:50:43 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55822 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755106AbXLRNum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 08:50:42 -0500
-Message-ID: <4767CFC5.3010703@redhat.com>
-Date: Tue, 18 Dec 2007 11:48:53 -0200
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 18 Dec 2007 08:51:07 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46570 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756237AbXLRNvG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 08:51:06 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <ak@muc.de>
+Cc: Paul Mackerras <paulus@samba.org>, Greg KH <gregkh@suse.de>,
+       David Miller <davem@davemloft.net>, venkatesh.pallipadi@intel.com,
+       rdreier@cisco.com, torvalds@linux-foundation.org, airlied@skynet.ie,
+       davej@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
+Subject: Re: [RFC PATCH 08/12] PAT 64b: coherent mmap and sysfs bin ioctl
+References: <20071213235543.568682000@intel.com>
+	<20071213235712.813201000@intel.com> <20071214001932.GA10389@suse.de>
+	<20071213.163505.14070110.davem@davemloft.net>
+	<20071214063424.GB10100@suse.de>
+	<18277.40798.828760.919571@cargo.ozlabs.ibm.com>
+	<20071217124137.GA18648@muc.de>
+	<m1ejdkd3qk.fsf@ebiederm.dsl.xmission.com>
+	<20071218093553.GA20611@muc.de>
+Date: Tue, 18 Dec 2007 06:48:45 -0700
+In-Reply-To: <20071218093553.GA20611@muc.de> (Andi Kleen's message of "18 Dec
+	2007 10:35:53 +0100, Tue, 18 Dec 2007 10:35:53 +0100")
+Message-ID: <m1k5nc9kqq.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       zach@vmware.com, roland@redhat.com
-Subject: Re: [PATCH 21/21] [PATCH] finish processor.h integration
-References: <11979320302030-git-send-email-gcosta@redhat.com> <11979320354186-git-send-email-gcosta@redhat.com> <11979320401316-git-send-email-gcosta@redhat.com> <11979320451308-git-send-email-gcosta@redhat.com> <1197932050948-git-send-email-gcosta@redhat.com> <11979320551036-git-send-email-gcosta@redhat.com> <11979320603229-git-send-email!-gcosta@redhat.com> <11979320653161-git-send-email-gcosta@redhat.com> <11979320693300-git-send-email-gcosta@redhat.com> <20071218131932.GA9457@elte.hu> <20071218133818.GA9941@elte.hu>
-In-Reply-To: <20071218133818.GA9941@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
->>> What's left in processor_32.h and processor_64.h cannot be cleanly 
->>> integrated. However, it's just a couple of definitions. They are 
->>> moved to processor.h around ifdefs, and the original files are 
->>> deleted. Note that there's much less headers included in the final 
->>> version.
->> and this patch breaks the build on the attached config, with:
->>
->>    CC      arch/x86/mm/boot_ioremap_32.o
->>  In file included from include/asm/fixmap_32.h:28,
->>                   from include/asm/fixmap.h:2,
->>                   from include/asm/pgtable_32.h:16,
->>                   from include/asm/pgtable.h:2,
->>                   from arch/x86/mm/boot_ioremap_32.c:21:
->>  include/asm/acpi.h:159: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'acpi_fake_nodes'
->>  make[1]: *** [arch/x86/mm/boot_ioremap_32.o] Error 1
->>  make: *** [arch/x86/mm/boot_ioremap_32.o] Error 2
-> 
-> really, please do _much_ more careful unification. We unified two full 
-> architectures in .24-rc1 and there was _not a single regression_ due to 
-> that unification. Not a single build failure, not a single boot or 
-> runtime failure.
-IIRC, 24-rc1 was a different story. Most, if not all patches, had no 
-binary diff, etc. This is not the case here.
+Andi Kleen <ak@muc.de> writes:
 
-> here the problem is apparently caused by your patch, a careless 
-> 'unification' of include file sections. 32-bit had this:
+>> Well the other alternative looks like having a second file per par
+>> bar.  Say resource0_wc to support the write-combining mode, possibly
+>
+> The intention was to support memory not in bars, but give a generic
+> IOMMU mapped memory interface for user space e.g. for the X server.
+> But that needs a way to return the bus address for the mmap mapping
+> and ioctl was the best I came up with for that.
+> Given it was never finished.
 
-Point is this patches do unification, but they are not just that, as you 
-can see. I am attempting to cleanup headers that appears not to be used, 
-  I am effectivelly adding a new feature to x86_64, and so on. I am 
-testing everything, all I sent works in my configs, and your testing, 
-and point out the configs that breaks is really much appreciated.
+Ok that part wasn't obvious.  The only thing we mmap in sysfs today
+are the bars.
 
+Taking normal memory and iommu mapping it to a device and then having
+a user space accessible version is a bit different.  We need a special
+interface to allocate it and map it through the iommu to user space.
+This needs to be a driver or a support subsystem like DRM.  Once
+we have gone that far then we can map those address to user space.
 
-> -#include <asm/vm86.h>
-> -#include <asm/math_emu.h>
-> -#include <asm/segment.h>
-> -#include <asm/page.h>
-> -#include <asm/types.h>
-> -#include <asm/sigcontext.h>
-> -#include <asm/cpufeature.h>
-> -#include <asm/msr.h>
-> -#include <asm/system.h>
-> -#include <linux/threads.h>
-> -#include <linux/init.h>
-> -#include <asm/desc_defs.h>
-> 
-> 64-bit had this:
-> 
-> -#include <asm/segment.h>
-> -#include <asm/page.h>
-> -#include <asm/types.h>
-> -#include <asm/sigcontext.h>
-> -#include <asm/cpufeature.h>
-> -#include <linux/threads.h>
-> -#include <asm/msr.h>
-> -#include <asm/current.h>
-> -#include <asm/system.h>
-> -#include <linux/personality.h>
-> -#include <asm/desc_defs.h>
-> 
-> and the 'unified' processor.h has:
-> 
-> +#include <asm/desc_defs.h>
-> +#include <asm/msr.h>
->  #include <asm/page.h>
->  #include <asm/percpu.h>
->  #include <asm/system.h>
->  #include <asm/percpu.h>
->  #include <linux/cpumask.h>
->  #include <linux/cache.h>
-> +#include <linux/personality.h>
-> 
-> Those are visible, _crutial_ differences totally unmentioned in the 
-> patch.
- >
-> yes, our include file dependencies are a jungle, the differences between 
-> 32-bit and 64-bit are arbitrary in 80% of the cases, but still there's 
-> no reason why this couldnt be done correctly. The patch below is a quick 
-> bandaid that adds the missing bits.
+I expect from the sysfs perspective those per device regions should look
+a lot like bars showing contiguous chunks of memory RAM from the devices
+perspective.  At which point having two files instead of just one can
+solve the problem without an ioctl.
 
-And that's because I'm trying to drop headers that are not used anymore. 
-Again, getting test for other people but me, helps making sure it's 
-correct. I am working on updating the series now, and will send an 
-updated version.
+For contiguous to device memory we also have some permission issues
+so I'm not yet certain that it make sense to expose it through sysfs.
 
+Regardless that seems to be solving a completely new aspect of the problem,
+and we can solve that problem separately.
 
-> 	Ingo
-> 
-> ------------------>
-> Subject: x86: fix include file mess
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> fix include file mess.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  include/asm-x86/processor.h |   16 ++++++++++++++--
->  1 file changed, 14 insertions(+), 2 deletions(-)
-> 
-> Index: linux-x86.q/include/asm-x86/processor.h
-> ===================================================================
-> --- linux-x86.q.orig/include/asm-x86/processor.h
-> +++ linux-x86.q/include/asm-x86/processor.h
-> @@ -6,15 +6,27 @@
->  struct task_struct;
->  struct mm_struct;
->  
-> +#ifdef CONFIG_X86_32
-> +# include <asm/math_emu.h>
-> +# include <asm/vm86.h>
-> +#endif
-> +
-> +#include <asm/cpufeature.h>
-> +#include <asm/current.h>
->  #include <asm/desc_defs.h>
->  #include <asm/msr.h>
->  #include <asm/page.h>
->  #include <asm/percpu.h>
-> +#include <asm/segment.h>
-> +#include <asm/sigcontext.h>
->  #include <asm/system.h>
-> -#include <asm/percpu.h>
-> -#include <linux/cpumask.h>
-> +#include <asm/types.h>
-> +
->  #include <linux/cache.h>
-> +#include <linux/cpumask.h>
-> +#include <linux/init.h>
->  #include <linux/personality.h>
-> +#include <linux/threads.h>
->  
->  /*
->   * Default implementation of macro that returns current
+Eric
+
 
