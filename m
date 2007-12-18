@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbXLRK71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbXLRLB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753696AbXLRK71 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 05:59:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbXLRK7A
+	id S1754778AbXLRLB6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 06:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbXLRLBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 05:59:00 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:59042 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753483AbXLRK67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 05:58:59 -0500
-Date: Tue, 18 Dec 2007 11:58:50 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: swapping in 2.6.24-rc5-git3
-Message-ID: <20071218105850.GA4249@ics.muni.cz>
-References: <20071217131726.GA14091@ics.muni.cz> <20071217171532.GK6979@atrey.karlin.mff.cuni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071217171532.GK6979@atrey.karlin.mff.cuni.cz>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Muni-Spam-TestIP: 147.251.54.96
-X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 18 Dec 2007 11:58:52 +0100 (CET)
+	Tue, 18 Dec 2007 06:01:49 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43829 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753380AbXLRLBs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 06:01:48 -0500
+Date: Tue, 18 Dec 2007 03:01:31 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-arch@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] initrd: Fix virtual/physical mix-up in overwrite test
+Message-Id: <20071218030131.8b272833.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0712161148340.5869@anakin>
+References: <Pine.LNX.4.64.0712161148340.5869@anakin>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17, 2007 at 06:15:32PM +0100, Jan Kara wrote:
->   I think yes. 0 swappiness doesn't mean "no swapping at all". From the
-> code in shrink_active_list() it seems that it just decreases likeliness
-> of removing pages of mmaped files (i.e., also executables loaded in memory).
+On Sun, 16 Dec 2007 11:51:00 +0100 (CET) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-So, I tried to add some prints. 
+> On recent kernels, I get the following error when using an initrd:
+> 
+> | initrd overwritten (0x00b78000 < 0x07668000) - disabling it.
+> 
+> My Amiga 4000 has 12 MiB of RAM at physical address 0x07400000 (virtual
+> 0x00000000).
+> The initrd is located at the end of RAM: 0x00b78000 - 0x00c00000 (virtual).
+> The overwrite test compares the (virtual) initrd location to the (physical)
+> first available memory location, which fails.
+> 
+> This patch converts initrd_start to a page frame number, so it can be safely
+> compared with min_low_pfn.
+> 
+> Before the introduction of discontiguous memory support on m68k
+> (12d810c1b8c2b913d48e629e2b5c01d105029839), min_low_pfn was just left
+> untouched by the m68k-specific code (zero, I guess), and everything worked
+> fine.
 
-I have mapped ratio about 78 while scp-ing the file. Distress suddenly raises
-from 0 to 100. At this poing, all the processes are swapped out.
+breaks x86.
 
-I guess it happens if scp is faster than the local disk which happens if
-I scp-ing over GE from desktop (with fast disk - and reading) to laptop (slow
-disk - and writing).
-
-This is my settings.
-/proc/sys/vm/*
-block_dump:0
-dirty_background_ratio:10
-dirty_expire_centisecs:2999
-dirty_ratio:40
-dirty_writeback_centisecs:499
-drop_caches:0
-laptop_mode:0
-legacy_va_layout:0
-lowmem_reserve_ratio:256	256	32
-max_map_count:65536
-min_free_kbytes:4006
-nr_pdflush_threads:2
-oom_kill_allocating_task:0
-overcommit_memory:0
-overcommit_ratio:50
-page-cluster:3
-panic_on_oom:0
-percpu_pagelist_fraction:0
-stat_interval:1
-swappiness:0
-vfs_cache_pressure:100
-
--- 
-Luká¹ Hejtmánek
+init/main.c: In function 'start_kernel':
+init/main.c:601: error: implicit declaration of function 'virt_to_pfn'
+init/main.c:603: warning: format '%08lx' expects type 'long unsigned int', but argument 2 has type 'int'
