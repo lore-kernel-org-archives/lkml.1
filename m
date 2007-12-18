@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbXLRKss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbXLRKy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbXLRKss (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 05:48:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbXLRKsi
+	id S1754151AbXLRKy0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 05:54:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbXLRKyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 05:48:38 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36507 "EHLO mx2.mail.elte.hu"
+	Tue, 18 Dec 2007 05:54:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42457 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753180AbXLRKsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 05:48:38 -0500
-Date: Tue, 18 Dec 2007 11:48:00 +0100
+	id S1753185AbXLRKyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 05:54:17 -0500
+Date: Tue, 18 Dec 2007 11:53:57 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org
-Subject: Re: [PATCH] sched: dynamically update the root-domain span/online
-	maps
-Message-ID: <20071218104800.GC29466@elte.hu>
-References: <200712172339.lBHNdmDD008149@imap1.linux-foundation.org> <20071218005217.4957.3055.stgit@novell1.haskins.net>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH] x86: unify extable_{32|64}.c
+Message-ID: <20071218105357.GD29466@elte.hu>
+References: <1197974193.7734.18.camel@brick>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071218005217.4957.3055.stgit@novell1.haskins.net>
+In-Reply-To: <1197974193.7734.18.camel@brick>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,19 +36,13 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gregory Haskins <ghaskins@novell.com> wrote:
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> http://marc.info/?l=linux-mm-commits&m=119793598429477&w=2
+> Introduce fixup_exception() on X86_64 and use it in kprobes to 
+> eliminate an #ifdef.
 > 
-> I have confirmed that it builds and boots clean, and it passes 
-> checkpatch. However, my test machine seems to be having problems with 
-> suspend-to-ram that are unrelated to this patch that prevent me from 
-> verifying the fix entirely. If Gautham or Andrew could confirm that it 
-> resolves their suspend-to-ram issue, I would be most appreciative.
+> Only X86_64 needs search_extable() due to a stepping bug.
 
-i'm reluctant to apply it without test results, unless we have a very 
-clear picture of what happened on Andrew's box and how this updated 
-patch resolves that problem. (or once Andrew tests your patch and deems 
-it OK.)
+thanks, applied.
 
 	Ingo
