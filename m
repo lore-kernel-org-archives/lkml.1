@@ -1,37 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762383AbXLRG7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933353AbXLRG7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762383AbXLRG7V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 01:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbXLRG7J
+	id S933353AbXLRG7h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 01:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761519AbXLRG7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 01:59:09 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32848
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752854AbXLRG7H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 01:59:07 -0500
-Date: Mon, 17 Dec 2007 22:59:06 -0800 (PST)
-Message-Id: <20071217.225906.171649283.davem@davemloft.net>
-To: ebiederm@xmission.com
-Cc: pidoux@ccr.jussieu.fr, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, akpm@linux-foundation.org
-Subject: Re: [PATCH] sysctl: Fix ax25 checks
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m163yxdjrb.fsf_-_@ebiederm.dsl.xmission.com>
-References: <20071215101810.GA3143@ami.dom.local>
-	<476595EC.5050103@ccr.jussieu.fr>
-	<m163yxdjrb.fsf_-_@ebiederm.dsl.xmission.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 18 Dec 2007 01:59:20 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:45831 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760451AbXLRG7T (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 01:59:19 -0500
+Date: Tue, 18 Dec 2007 17:59:11 +1100
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.24-rc6
+User-Agent: nail 11.25 7/29/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071218065911.EDC8158C4C0F@chook.melbourne.sgi.com>
+From: lachlan@sgi.com (Lachlan McIlroy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 17 Dec 2007 15:44:08 -0700
+Please pull from the for-linus branch:
+    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+This will update the following files:
 
-Applied, thanks Eric.
+ fs/xfs/linux-2.6/xfs_file.c |    4 ++--
+ fs/xfs/xfs_dir2_block.c     |    6 ++----
+ fs/xfs/xfs_dir2_leaf.c      |    2 +-
+ fs/xfs/xfs_dir2_sf.c        |    9 +++------
+ fs/xfs/xfs_inode.c          |    6 ++++--
+ 5 files changed, 12 insertions(+), 15 deletions(-)
+
+through these commits:
+
+commit 041388b54ed95cd169546bd83bacd08ee32bd7ea
+Author: Lachlan McIlroy <lachlan@redback.melbourne.sgi.com>
+Date:   Tue Dec 18 16:19:34 2007 +1100
+
+    [XFS] Put the correct offset in dirent d_off
+    
+    The recent filldir regression fix was not putting the correct d_off in
+    each dirent. This was resulting in incorrect cookies being passed to dmapi
+    ioctls and the wrong offset appearing in the dirents. readdir was
+    unaffected as the filp->f_pos was being updated with the correct offset
+    and this was being written into the last dirent in each buffer. Fix the
+    XFS code to do the right thing.
+    
+    SGI-PV: 973746
+    SGI-Modid: xfs-linux-melb:xfs-kern:30240a
+    
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Christoph Hellwig <hch@infradead.org>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+
+commit c734c79bc397eace039bea406997efa89f879c14
+Author: Lachlan McIlroy <lachlan@sgi.com>
+Date:   Tue Dec 18 16:17:41 2007 +1100
+
+    [XFS] Don't wait for pending I/Os when purging blocks beyond eof.
+    
+    On last close of a file we purge blocks beyond eof. The same code is used
+    when we truncate the file size down. In this case we need to wait for any
+    pending I/Os for dirty pages beyond the new eof. For the last close case
+    we are not changing the file size and therefore do not need to wait for
+    any I/Os to complete. This fixes a performance bottleneck where writes
+    into the page cache and cache flushes can become mutually exclusive.
+    
+    SGI-PV: 964002
+    SGI-Modid: xfs-linux-melb:xfs-kern:30220a
+    
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+    Signed-off-by: Peter Leckie <pleckie@sgi.com>
