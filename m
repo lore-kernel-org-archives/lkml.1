@@ -1,75 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbXLRDBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765111AbXLRDDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762944AbXLRDBz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 22:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXLRDBq
+	id S1765111AbXLRDDW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 22:03:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXLRDDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 22:01:46 -0500
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:44804 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752495AbXLRDBp (ORCPT
+	Mon, 17 Dec 2007 22:03:06 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:37873
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750814AbXLRDDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 22:01:45 -0500
-Message-ID: <476738A0.9010601@cs.columbia.edu>
-Date: Mon, 17 Dec 2007 22:04:00 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 17 Dec 2007 22:03:04 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH] sched: dynamically update the root-domain span/online maps
+To: srostedt@redhat.com
+Cc: mingo@elte.hu, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ghaskins@novell.com
+Date: Mon, 17 Dec 2007 21:40:32 -0500
+Message-ID: <20071218023805.4390.19471.stgit@novell1.haskins.net>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       linux-fsdevel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <476724E3.6060901@cs.columbia.edu> <20071218020933.GA28745@sergelap.austin.ibm.com>
-In-Reply-To: <20071218020933.GA28745@sergelap.austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Steven,
+  I posted a suspend-to-ram fix to sched-devel earlier today:
 
-Serge E. Hallyn wrote:
-> Quoting Oren Laadan (orenl@cs.columbia.edu):
->> I hate to bring this again, but what if the admin in the container
->> mounts an external file system (eg. nfs, usb, loop mount from a file,
->> or via fuse), and that file system already has a device that we would
->> like to ban inside that container ?
-> 
-> Miklos' user mount patches enforced that if !capable(CAP_MKNOD),
-> then mnt->mnt_flags |= MNT_NODEV.  So that's no problem.
+http://lkml.org/lkml/2007/12/17/445
 
-Yes, that works to disallow all device files from a mounted file system.
+This fix should also be applied to -rt as I introduced the same regression
+there.  Here is a version of the fix for 23-rt13.  I can submit a version for
+24-rc5-rt1 at your request.
 
-But it's a black and white thing: either they are all banned or allowed;
-you can't have some devices allowed and others not, depending on type
-A scenario where this may be useful is, for instance, if we some apps in
-the container to execute withing a pre-made chroot (sub)tree within that
-container.
+Regards,
+-Greg
 
-> 
-> But that's been pulled out of -mm! ?  Crap.
-> 
->> Since anyway we will have to keep a white- (or black-) list of devices
->> that are permitted in a container, and that list may change even change
->> per container -- why not enforce the access control at the VFS layer ?
->> It's safer in the long run.
-> 
-> By that you mean more along the lines of Pavel's patch than my whitelist
-> LSM, or you actually mean Tetsuo's filesystem (i assume you don't mean that
-> by 'vfs layer' :), or something different entirely?
+---------------------------------
 
-:)
+The baseline code statically builds the span maps when the domain is formed.
+Previous attempts at dynamically updating the maps caused a suspend-to-ram
+regression, which should now be fixed.
 
-By 'vfs' I mean at open() time, and not at mount(), or mknod() time.
-Either yours or Pavel's; I tend to prefer not to use LSM as it may
-collide with future security modules.
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: Gautham R Shenoy <ego@in.ibm.com>
+---
 
-Oren.
+ kernel/sched.c |   28 ++++++++++++++++------------
+ 1 files changed, 16 insertions(+), 12 deletions(-)
 
-> 
-> thanks,
-> -serge
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 244c4b5..95b8c99 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -281,8 +281,6 @@ struct rt_rq {
+  * exclusive cpuset is created, we also create and attach a new root-domain
+  * object.
+  *
+- * By default the system creates a single root-domain with all cpus as
+- * members (mimicking the global state we have today).
+  */
+ struct root_domain {
+ 	atomic_t refcount;
+@@ -300,6 +298,10 @@ struct root_domain {
+ #endif
+ };
+ 
++/*
++ * By default the system creates a single root-domain with all cpus as
++ * members (mimicking the global state we have today).
++ */
+ static struct root_domain def_root_domain;
+ 
+ #endif
+@@ -6066,6 +6068,10 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
+ 	atomic_inc(&rd->refcount);
+ 	rq->rd = rd;
+ 
++	cpu_set(rq->cpu, rd->span);
++	if (cpu_isset(rq->cpu, cpu_online_map))
++		cpu_set(rq->cpu, rd->online);
++
+ 	for (class = sched_class_highest; class; class = class->next) {
+ 		if (class->join_domain)
+ 			class->join_domain(rq);
+@@ -6074,12 +6080,12 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
+ 	spin_unlock_irqrestore(&rq->lock, flags);
+ }
+ 
+-static void init_rootdomain(struct root_domain *rd, const cpumask_t *map)
++static void init_rootdomain(struct root_domain *rd)
+ {
+ 	memset(rd, 0, sizeof(*rd));
+ 
+-	rd->span = *map;
+-	cpus_and(rd->online, rd->span, cpu_online_map);
++	cpus_clear(rd->span);
++	cpus_clear(rd->online);
+ 
+ 	cpupri_init(&rd->cpupri);
+ 
+@@ -6087,13 +6093,11 @@ static void init_rootdomain(struct root_domain *rd, const cpumask_t *map)
+ 
+ static void init_defrootdomain(void)
+ {
+-	cpumask_t cpus = CPU_MASK_ALL;
+-
+-	init_rootdomain(&def_root_domain, &cpus);
++	init_rootdomain(&def_root_domain);
+ 	atomic_set(&def_root_domain.refcount, 1);
+ }
+ 
+-static struct root_domain *alloc_rootdomain(const cpumask_t *map)
++static struct root_domain *alloc_rootdomain(void)
+ {
+ 	struct root_domain *rd;
+ 
+@@ -6101,7 +6105,7 @@ static struct root_domain *alloc_rootdomain(const cpumask_t *map)
+ 	if (!rd)
+ 		return NULL;
+ 
+-	init_rootdomain(rd, map);
++	init_rootdomain(rd);
+ 
+ 	return rd;
+ }
+@@ -6523,7 +6527,7 @@ static int build_sched_domains(const cpumask_t *cpu_map)
+ 	sched_group_nodes_bycpu[first_cpu(*cpu_map)] = sched_group_nodes;
+ #endif
+ 
+-	rd = alloc_rootdomain(cpu_map);
++	rd = alloc_rootdomain();
+ 	if (!rd) {
+ 		printk(KERN_WARNING "Cannot alloc root domain\n");
+ 		return -ENOMEM;
+@@ -7021,7 +7025,6 @@ void __init sched_init(void)
+ #ifdef CONFIG_SMP
+ 		rq->sd = NULL;
+ 		rq->rd = NULL;
+-		rq_attach_root(rq, &def_root_domain);
+ 		rq->active_balance = 0;
+ 		rq->next_balance = jiffies;
+ 		rq->push_cpu = 0;
+@@ -7030,6 +7033,7 @@ void __init sched_init(void)
+ 		INIT_LIST_HEAD(&rq->migration_queue);
+ 		rq->rt.highest_prio = MAX_RT_PRIO;
+ 		rq->rt.overloaded = 0;
++		rq_attach_root(rq, &def_root_domain);
+ #endif
+ 		atomic_set(&rq->nr_iowait, 0);
+ 
+
