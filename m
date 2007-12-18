@@ -1,199 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbXLRVTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbXLRVTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbXLRVTg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 16:19:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbXLRVRk
+	id S1754377AbXLRVTw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 16:19:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbXLRVRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 16:17:40 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58120 "EHLO mx1.redhat.com"
+	Tue, 18 Dec 2007 16:17:41 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58121 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753001AbXLRVRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753009AbXLRVRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Dec 2007 16:17:34 -0500
-Message-Id: <20071218211550.292178257@redhat.com>
+Message-Id: <20071218211549.799342532@redhat.com>
 References: <20071218211539.250334036@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 18 Dec 2007 16:15:57 -0500
+Date: Tue, 18 Dec 2007 16:15:52 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org, lee.shermerhorn@hp.com,
        Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 18/20] mlock vma pages under mmap_sem held for read
-Content-Disposition: inline; filename=noreclaim-04.1a-lock-vma-pages-under-read-lock.patch
+Subject: [patch 13/20] Non-reclaimable page statistics
+Content-Disposition: inline; filename=noreclaim-01.2-report-nonreclaimable-memory.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 V2 -> V3:
-+ rebase to 23-mm1 atop RvR's split lru series [no change]
-+ fix function return types [void -> int] to fix build when
-  not configured.
++ rebase to 23-mm1 atop RvR's split LRU series
 
-New in V2.
+V1 -> V2:
+	no changes
 
-We need to hold the mmap_sem for write to initiatate mlock()/munlock()
-because we may need to merge/split vmas.  However, this can lead to
-very long lock hold times attempting to fault in a large memory region
-to mlock it into memory.   This can hold off other faults against the
-mm [multithreaded tasks] and other scans of the mm, such as via /proc.
-To alleviate this, downgrade the mmap_sem to read mode during the 
-population of the region for locking.  This is especially the case 
-if we need to reclaim memory to lock down the region.  We [probably?]
-don't need to do this for unlocking as all of the pages should be
-resident--they're already mlocked.
+Report non-reclaimable pages per zone and system wide.
 
-Now, the caller's of the mlock functions [mlock_fixup() and 
-mlock_vma_pages_range()] expect the mmap_sem to be returned in write
-mode.  Changing all callers appears to be way too much effort at this
-point.  So, restore write mode before returning.  Note that this opens
-a window where the mmap list could change in a multithreaded process.
-So, at least for mlock_fixup(), where we could be called in a loop over
-multiple vmas, we check that a vma still exists at the start address
-and that vma still covers the page range [start,end).  If not, we return
-an error, -EAGAIN, and let the caller deal with it.
+Note:  may want to track/report some specific reasons for 
+nonreclaimability for deciding when to splice the noreclaim
+lists back to the normal lru.  That will be tricky,
+especially in shrink_active_list(), where we'd need someplace
+to save the per page reason for non-reclaimability until the
+pages are dumped back onto the noreclaim list from the pagevec.
 
-Return -EAGAIN from mlock_vma_pages_range() function and mlock_fixup()
-if the vma at 'start' disappears or changes so that the page range
-[start,end) is no longer contained in the vma.  Again, let the caller
-deal with it.  Looks like only sys_remap_file_pages() [via mmap_region()]
-should actually care.
+Note:  my tests indicate that NR_NORECLAIM and probably the
+other LRU stats aren't being maintained properly--especially
+with large amounts of mlocked memory and the mlock patch in
+this series installed.  Can't be sure of this, as I don't 
+know why the pages are on the noreclaim list. Needs further
+investigation.
 
-With this patch, I no longer see processes like ps(1) blocked for seconds
-or minutes at a time waiting for a large [multiple gigabyte] region to be
-locked down.  
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
 
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by:  Rik van Riel <riel@redhat.com>
-
-Index: Linux/mm/mlock.c
+Index: linux-2.6.24-rc4-mm1/mm/page_alloc.c
 ===================================================================
---- Linux.orig/mm/mlock.c	2007-11-12 16:21:59.000000000 -0500
-+++ Linux/mm/mlock.c	2007-11-12 16:22:01.000000000 -0500
-@@ -215,6 +215,37 @@ int __mlock_vma_pages_range(struct vm_ar
- 	return ret;
- }
+--- linux-2.6.24-rc4-mm1.orig/mm/page_alloc.c
++++ linux-2.6.24-rc4-mm1/mm/page_alloc.c
+@@ -1882,12 +1882,20 @@ void show_free_areas(void)
+ 	}
  
-+/**
-+ * mlock_vma_pages_range
-+ * @vma - vm area to mlock into memory
-+ * @start - start address in @vma of range to mlock,
-+ * @end   - end address in @vma of range
-+ *
-+ * Called with current->mm->mmap_sem held write locked.  Downgrade to read
-+ * for faulting in pages.  This can take a looong time for large segments.
-+ *
-+ * We need to restore the mmap_sem to write locked because our callers'
-+ * callers expect this.	 However, because the mmap could have changed
-+ * [in a multi-threaded process], we need to recheck.
-+ */
-+int mlock_vma_pages_range(struct vm_area_struct *vma,
-+			unsigned long start, unsigned long end)
-+{
-+	struct mm_struct *mm = vma->vm_mm;
-+
-+	downgrade_write(&mm->mmap_sem);
-+	__mlock_vma_pages_range(vma, start, end, 1);
-+
-+	up_read(&mm->mmap_sem);
-+	/* vma can change or disappear */
-+	down_write(&mm->mmap_sem);
-+	vma = find_vma(mm, start);
-+	/* non-NULL vma must contain @start, but need to check @end */
-+	if (!vma ||  end > vma->vm_end)
-+		return -EAGAIN;
-+	return 0;
-+}
-+
- #else /* CONFIG_NORECLAIM_MLOCK */
- 
- /*
-@@ -281,14 +312,38 @@ success:
- 	mm->locked_vm += nr_pages;
- 
- 	/*
--	 * vm_flags is protected by the mmap_sem held in write mode.
-+	 * vm_flags is protected by the mmap_sem held for write.
- 	 * It's okay if try_to_unmap_one unmaps a page just after we
- 	 * set VM_LOCKED, __mlock_vma_pages_range will bring it back.
- 	 */
- 	vma->vm_flags = newflags;
- 
-+	/*
-+	 * mmap_sem is currently held for write.  If we're locking pages,
-+	 * downgrade the write lock to a read lock so that other faults,
-+	 * mmap scans, ... while we fault in all pages.
-+	 */
-+	if (lock)
-+		downgrade_write(&mm->mmap_sem);
-+
- 	__mlock_vma_pages_range(vma, start, end, lock);
- 
-+	if (lock) {
-+		/*
-+		 * Need to reacquire mmap sem in write mode, as our callers
-+		 * expect this.  We have no support for atomically upgrading
-+		 * a sem to write, so we need to check for changes while sem
-+		 * is unlocked.
-+		 */
-+		up_read(&mm->mmap_sem);
-+		/* vma can change or disappear */
-+		down_write(&mm->mmap_sem);
-+		*prev = find_vma(mm, start);
-+		/* non-NULL *prev must contain @start, but need to check @end */
-+		if (!(*prev) || end > (*prev)->vm_end)
-+			ret = -EAGAIN;
-+	}
-+
- out:
- 	if (ret == -ENOMEM)
- 		ret = -EAGAIN;
-Index: Linux/mm/internal.h
+ 	printk("Active_anon:%lu active_file:%lu inactive_anon%lu\n"
+-		" inactive_file:%lu dirty:%lu writeback:%lu unstable:%lu\n"
++		" inactive_file:%lu"
++//TODO:  check/adjust line lengths
++#ifdef CONFIG_NORECLAIM
++		" noreclaim:%lu"
++#endif
++		" dirty:%lu writeback:%lu unstable:%lu\n"
+ 		" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
+ 		global_page_state(NR_ACTIVE_ANON),
+ 		global_page_state(NR_ACTIVE_FILE),
+ 		global_page_state(NR_INACTIVE_ANON),
+ 		global_page_state(NR_INACTIVE_FILE),
++#ifdef CONFIG_NORECLAIM
++		global_page_state(NR_NORECLAIM),
++#endif
+ 		global_page_state(NR_FILE_DIRTY),
+ 		global_page_state(NR_WRITEBACK),
+ 		global_page_state(NR_UNSTABLE_NFS),
+@@ -1914,6 +1922,9 @@ void show_free_areas(void)
+ 			" inactive_anon:%lukB"
+ 			" active_file:%lukB"
+ 			" inactive_file:%lukB"
++#ifdef CONFIG_NORECLAIM
++			" noreclaim:%lukB"
++#endif
+ 			" present:%lukB"
+ 			" pages_scanned:%lu"
+ 			" all_unreclaimable? %s"
+@@ -1927,6 +1938,9 @@ void show_free_areas(void)
+ 			K(zone_page_state(zone, NR_INACTIVE_ANON)),
+ 			K(zone_page_state(zone, NR_ACTIVE_FILE)),
+ 			K(zone_page_state(zone, NR_INACTIVE_FILE)),
++#ifdef CONFIG_NORECLAIM
++			K(zone_page_state(zone, NR_NORECLAIM)),
++#endif
+ 			K(zone->present_pages),
+ 			zone->pages_scanned,
+ 			(zone_is_all_unreclaimable(zone) ? "yes" : "no")
+Index: linux-2.6.24-rc4-mm1/mm/vmstat.c
 ===================================================================
---- Linux.orig/mm/internal.h	2007-11-12 16:21:59.000000000 -0500
-+++ Linux/mm/internal.h	2007-11-12 16:22:01.000000000 -0500
-@@ -53,24 +53,21 @@ extern int __mlock_vma_pages_range(struc
- /*
-  * mlock all pages in this vma range.  For mmap()/mremap()/...
-  */
--static inline void mlock_vma_pages_range(struct vm_area_struct *vma,
--			unsigned long start, unsigned long end)
--{
--	__mlock_vma_pages_range(vma, start, end, 1);
--}
-+extern int mlock_vma_pages_range(struct vm_area_struct *vma,
-+			unsigned long start, unsigned long end);
- 
- /*
-  * munlock range of pages.   For munmap() and exit().
-  * Always called to operate on a full vma that is being unmapped.
-  */
--static inline void munlock_vma_pages_range(struct vm_area_struct *vma,
-+static inline int munlock_vma_pages_range(struct vm_area_struct *vma,
- 			unsigned long start, unsigned long end)
- {
- // TODO:  verify my assumption.  Should we just drop the start/end args?
- 	VM_BUG_ON(start != vma->vm_start || end != vma->vm_end);
- 
- 	vma->vm_flags &= ~VM_LOCKED;	/* try_to_unlock() needs this */
--	__mlock_vma_pages_range(vma, start, end, 0);
-+	return __mlock_vma_pages_range(vma, start, end, 0);
- }
- 
- extern void clear_page_mlock(struct page *page);
-@@ -82,10 +79,10 @@ static inline int is_mlocked_vma(struct 
- }
- static inline void clear_page_mlock(struct page *page) { }
- static inline void mlock_vma_page(struct page *page) { }
--static inline void mlock_vma_pages_range(struct vm_area_struct *vma,
--			unsigned long start, unsigned long end) { }
--static inline void munlock_vma_pages_range(struct vm_area_struct *vma,
--			unsigned long start, unsigned long end) { }
-+static inline int mlock_vma_pages_range(struct vm_area_struct *vma,
-+			unsigned long start, unsigned long end) { return 0; }
-+static inline int munlock_vma_pages_range(struct vm_area_struct *vma,
-+			unsigned long start, unsigned long end) { return 0; }
- 
- #endif /* CONFIG_NORECLAIM_MLOCK */
- 
+--- linux-2.6.24-rc4-mm1.orig/mm/vmstat.c
++++ linux-2.6.24-rc4-mm1/mm/vmstat.c
+@@ -690,6 +690,9 @@ static const char * const vmstat_text[] 
+ 	"nr_active_anon",
+ 	"nr_inactive_file",
+ 	"nr_active_file",
++#ifdef CONFIG_NORECLAIM
++	"nr_noreclaim",
++#endif
+ 	"nr_anon_pages",
+ 	"nr_mapped",
+ 	"nr_file_pages",
+Index: linux-2.6.24-rc4-mm1/drivers/base/node.c
+===================================================================
+--- linux-2.6.24-rc4-mm1.orig/drivers/base/node.c
++++ linux-2.6.24-rc4-mm1/drivers/base/node.c
+@@ -52,6 +52,9 @@ static ssize_t node_read_meminfo(struct 
+ 		       "Node %d Inactive(anon): %8lu kB\n"
+ 		       "Node %d Active(file):   %8lu kB\n"
+ 		       "Node %d Inactive(file): %8lu kB\n"
++#ifdef CONFIG_NORECLAIM
++		       "Node %d Noreclaim:    %8lu kB\n"
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		       "Node %d HighTotal:      %8lu kB\n"
+ 		       "Node %d HighFree:       %8lu kB\n"
+@@ -76,6 +79,9 @@ static ssize_t node_read_meminfo(struct 
+ 		       nid, node_page_state(nid, NR_INACTIVE_ANON),
+ 		       nid, node_page_state(nid, NR_ACTIVE_FILE),
+ 		       nid, node_page_state(nid, NR_INACTIVE_FILE),
++#ifdef CONFIG_NORECLAIM
++		       nid, node_page_state(nid, NR_NORECLAIM),
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		       nid, K(i.totalhigh),
+ 		       nid, K(i.freehigh),
+Index: linux-2.6.24-rc4-mm1/fs/proc/proc_misc.c
+===================================================================
+--- linux-2.6.24-rc4-mm1.orig/fs/proc/proc_misc.c
++++ linux-2.6.24-rc4-mm1/fs/proc/proc_misc.c
+@@ -162,6 +162,9 @@ static int meminfo_read_proc(char *page,
+ 		"Inactive(anon): %8lu kB\n"
+ 		"Active(file):   %8lu kB\n"
+ 		"Inactive(file): %8lu kB\n"
++#ifdef CONFIG_NORECLAIM
++		"Noreclaim:    %8lu kB\n"
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		"HighTotal:      %8lu kB\n"
+ 		"HighFree:       %8lu kB\n"
+@@ -194,6 +197,9 @@ static int meminfo_read_proc(char *page,
+ 		K(global_page_state(NR_INACTIVE_ANON)),
+ 		K(global_page_state(NR_ACTIVE_FILE)),
+ 		K(global_page_state(NR_INACTIVE_FILE)),
++#ifdef CONFIG_NORECLAIM
++		K(global_page_state(NR_NORECLAIM)),
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		K(i.totalhigh),
+ 		K(i.freehigh),
 
 -- 
 All Rights Reversed
