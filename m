@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752557AbXLRIEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbXLRIOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752557AbXLRIEg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 03:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbXLRIE2
+	id S1752725AbXLRIOG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 03:14:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbXLRINx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 03:04:28 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:50663 "EHLO smtp.drzeus.cx"
+	Tue, 18 Dec 2007 03:13:53 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:48873 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750957AbXLRIE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 03:04:27 -0500
-Date: Tue, 18 Dec 2007 09:04:24 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: "Kyungmin Park" <kmpark@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][MMC] Fix wrong EXT_CSD_REV handling
-Message-ID: <20071218090424.19729464@poseidon.drzeus.cx>
-In-Reply-To: <9c9fda240712131801w5aec854eg71f3dc7ad49ddeb@mail.gmail.com>
-References: <20071213071311.GA2970@party>
-	<20071213085332.18d2790d@poseidon.drzeus.cx>
-	<9c9fda240712130008s227a77dsbd9333c5227d51eb@mail.gmail.com>
-	<20071213092437.7aa2b928@poseidon.drzeus.cx>
-	<9c9fda240712131801w5aec854eg71f3dc7ad49ddeb@mail.gmail.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+	id S1750700AbXLRINw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 03:13:52 -0500
+Date: Tue, 18 Dec 2007 09:13:50 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch 1/3] block: non-atomic queue_flags prep
+Message-ID: <20071218081350.GA32114@wotan.suse.de>
+References: <20071215054315.GA30335@wotan.suse.de> <20071218074439.GB31964@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071218074439.GB31964@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Dec 2007 11:01:03 +0900
-"Kyungmin Park" <kmpark@infradead.org> wrote:
-
+On Tue, Dec 18, 2007 at 08:44:40AM +0100, Jens Axboe wrote:
+> On Sat, Dec 15 2007, Nick Piggin wrote:
+> > Hi,
+> > 
+> > This is just an idea I had, which might make request processing a little
+> > bit cheaper depending on queue behaviour. For example if it is getting plugged
+> > unplugged frequently (as I think is the case for some database workloads),
+> > then we might save one or two atomic operations per request.
+> > 
+> > Anyway, I'm not completely sure if I have ensured all queue_flags users are
+> > safe (I think md may need a bit of help). But overall it seems quite doable.
 > 
-> Yes, reserved word should or must be zero, then it should check "if
-> (ext_csd_struct <= 2)" instead of ">= 2".
-> In the Spec. 4.2, it can have three value 0, 1, or 2. There's no other
-> restriction.
+> Looks ok to me, I'll throw it into the testing mix. Thanks Nick!
 
-As I said, the spec doesn't say "must", and I've seen cards with bogus data in there so I'm afraid we can't rely on the fields being zero. The version field is the only decent way of determining what to expect in the rest of the structure.
+OK... actually if you are expecting it to be widely tested, can you change
+the BUG_ONs in queue_flag_set / queue_flag_clear into WARN_ON?
 
-Rgds
--- 
-     -- Pierre Ossman
+That way it's less likely to take down people's systems...
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Thanks!
