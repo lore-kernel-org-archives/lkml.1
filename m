@@ -1,96 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbXLRO5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbXLRPCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757598AbXLRO5X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 09:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbXLRO5O
+	id S1757584AbXLRPCi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 10:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756298AbXLRPCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 09:57:14 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:35744 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753948AbXLRO5N (ORCPT
+	Tue, 18 Dec 2007 10:02:31 -0500
+Received: from wr-out-0506.google.com ([64.233.184.229]:49188 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756274AbXLRPC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 09:57:13 -0500
-Subject: Re: 2.6.24-rc5-mm1 -- INFO: possible circular locking dependency
-	detected -- pm-suspend/5800 is trying to acquire lock
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       ipw3945-devel@lists.sourceforge.net, Len Brown <len.brown@intel.com>,
-       Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <a44ae5cd0712180641n15ceae8bp977efe9a5b45e6bc@mail.gmail.com> (sfid-20071218_144150_051683_83D9589E)
-References: <a44ae5cd0712180603v2a37023dj714a8500c14c08de@mail.gmail.com>
-	 <1197986886.4885.156.camel@johannes.berg>
-	 <a44ae5cd0712180641n15ceae8bp977efe9a5b45e6bc@mail.gmail.com>
-	 (sfid-20071218_144150_051683_83D9589E)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-hRdJylCaQ45BEXgq2z/I"
-Date: Tue, 18 Dec 2007 15:57:06 +0100
-Message-Id: <1197989826.4885.169.camel@johannes.berg>
+	Tue, 18 Dec 2007 10:02:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=KzPG7KiXkWwXfFP8PZx4/YQPt7rRaQsalQ485o9t+UPFd6a6+yxFzCSDO5uIyM1MDEWsjDV3vJuCpM+sSap8J7wd0eoEYdNxbMqeSpwZGruCewftLmvsNioyW+BPt+AEhox9wMLHc3PL1QyC39Q6VRl25CO31Mj+LAbRv9DPKPw=
+Date: Tue, 18 Dec 2007 23:00:52 +0800
+From: "peerchen" <peerchen@gmail.com>
+To: "linux-kernel" <linux-kernel@vger.kernel.org>
+Cc: "akpm" <akpm@linux-foundation.org>, "acurrid" <acurrid@nvidia.com>,
+       "pchen" <pchen@nvidia.com>, "ebiederm" <ebiederm@xmission.com>
+Subject: [PATCH] msi: set 'En' bit of MSI Mapping Capability
+Message-ID: <200712182300373901202@gmail.com>
+X-mailer: Foxmail 6, 6, 105, 21 [cn]
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+According to the HyperTransport spec, 'En' indicate if the MSI Mapping is active.
+Set the 'En' bit when setup pci and add the quirk for some nvidia devices. 
 
---=-hRdJylCaQ45BEXgq2z/I
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+The patch base on kernel 2.6.24-rc5
 
+Signed-off-by: Andy Currid <acurrid@nvidia.com>
+Signed-off-by: Peer Chen <pchen@nvidia.com>
 
-> Sorry.  GMail doesn't support sending unwrapped text, as far as I can
-> tell.  I will send the log segment to you as an attachment.  Also,
-> when I sent my .config inline to Andrew recently, it tripped his spam
-> filter.  I'll attach it as well.
-
-Thanks. This is a bug in iwlwifi.
-
-The problem is actually another case where my workqueue debugging with
-lockdep is triggering a warning :))
-
-Here's the thing:
-
-iwl3945_cancel_deferred_work does=20
-
-cancel_delayed_work_sync(&priv->init_alive_start);
-
-(which is the "(&(&priv->init_alive_start)->work)" lock)
-
-but it is called from within a locked section of
-mutex_lock(&priv->mutex); (locked from iwl3945_pci_suspend)
-
-On the other hand, the task that runs from the init_alive_start
-workqueue is iwl3945_bg_init_alive_start() which will lock the same
-mutex.
-
-So the deadlock condition is that you can be in
-cancel_delayed_work_sync() above while the mutex is locked, and be
-waiting for iwl_3945_bg_init_alive_start() which tries to lock the
-mutex.
-
-johannes
-
---=-hRdJylCaQ45BEXgq2z/I
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR2ffwaVg1VMiehFYAQJ1sw//d3WjOmOMlwroYtDEVaG86jP8YfTS3RLg
-+HDmGC+xXZAqGSJK1/g02/oexaMSJUKAXctNcL7L7jc0gIiPRCA3UDkuMQAZG7Iw
-3hTwb7vxZL5/cwdqwEeEbJuor2yAond8o5L+w1480HMCpsXMaUyc6oCv39hxlfVL
-RYcAmfBpKYdh68Y9NkASaabJLQjgXwIFGYmFpigOghjWITZCH19+mdLoRMcbG9bE
-He3DfTNR0ShgvJT0C0KUPEpW0XnNODc+/iOdmxJknAK3FYtlH1gFHPNfOw4dKpMA
-cFmEgM3IxhWDRKuuI1ZtPJyPBIHGxXwBZRP+vPx6jSYZYhVSP1VQ+xmfcdDr/ggp
-C4yFemYiWmJFzdqjPndVWJnjJDO4cgmL1SG9uDaxLF14OCAU6Vz5LkmwDEPJYj/Z
-ZdSSbIKZjbmME+5G8Jl1ek+WO93V+X6mhS46nc1ZpBw5XxFueba+UjkC6oan0TeJ
-N1ciKOTooSYfbZSbla9UaAiQvPizawPJAuSeTji4pa8pAQ2+57b3dFoFCPGAoaj3
-Qt4lB/2XlufUOQ5d5VVJde39d7iYbgrA8TCPGo76n0NY3vF6atApLScqzdKPYma7
-JDXKclIwhw8MTR1iLtztA8YuN8cUD7JDdGGctZyJqaJrS7SLq1xkuH6fMXsDtuIf
-csgW708C/rg=
-=L9ty
------END PGP SIGNATURE-----
-
---=-hRdJylCaQ45BEXgq2z/I--
+---
+diff -uprN -X linux-2.6.24-rc5-vanilla/Documentation/dontdiff linux-2.6.24-rc5-vanilla/drivers/pci/probe.c linux-2.6.24-rc5/drivers/pci/probe.c
+--- linux-2.6.24-rc5-vanilla/drivers/pci/probe.c	2007-12-18 14:35:46.000000000 -0500
++++ linux-2.6.24-rc5/drivers/pci/probe.c	2007-12-18 16:28:29.000000000 -0500
+@@ -721,6 +721,9 @@ static int pci_setup_device(struct pci_d
+ 
+ 	/* "Unknown power state" */
+ 	dev->current_state = PCI_UNKNOWN;
++	
++	/* Enable HT MSI mapping */
++	ht_enable_msi_mapping(dev);
+ 
+ 	/* Early fixups, before probing the BARs */
+ 	pci_fixup_device(pci_fixup_early, dev);
+diff -uprN -X linux-2.6.24-rc5-vanilla/Documentation/dontdiff linux-2.6.24-rc5-vanilla/drivers/pci/quirks.c linux-2.6.24-rc5/drivers/pci/quirks.c
+--- linux-2.6.24-rc5-vanilla/drivers/pci/quirks.c	2007-12-18 14:35:46.000000000 -0500
++++ linux-2.6.24-rc5/drivers/pci/quirks.c	2007-12-18 16:28:41.000000000 -0500
+@@ -1705,6 +1705,45 @@ static void __devinit quirk_nvidia_ck804
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_CK804_PCIE,
+ 			quirk_nvidia_ck804_msi_ht_cap);
+ 
++static void __devinit quirk_msi_ht_cap_disable(struct pci_dev *dev) {
++	struct pci_dev *host_bridge;
++	int pos, ttl = 48;
++
++	/* HT MSI mapping should be disabled on devices that are below
++	 * a non-Hypertransport host bridge. Locate the host bridge...
++ 	 */
++
++	if ((host_bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0,0))) == NULL) {
++		printk(KERN_WARNING
++			 "PCI: quirk_msi_ht_cap_disable didn't locate host bridge\n");
++		return;
++	}
++
++	if ((pos = pci_find_ht_capability(host_bridge, HT_CAPTYPE_SLAVE)) != 0) {
++		/* Host bridge is to HT */
++		return;
++	}
++
++	/* Host bridge is not to HT, disable HT MSI mapping on this device */
++
++	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
++	while (pos && ttl--) {
++		u8 flags;
++
++		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS, &flags) == 0) {
++			printk(KERN_INFO "PCI: Quirk disabling HT MSI mapping on %s\n",
++			       pci_name(dev));
++
++			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
++					      flags & ~HT_MSI_FLAGS_ENABLE);
++		}
++		pos = pci_find_next_ht_capability(dev, pos,
++						  HT_CAPTYPE_MSI_MAPPING);
++	}
++}
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID,
++							quirk_msi_ht_cap_disable);
++
+ static void __devinit quirk_msi_intx_disable_bug(struct pci_dev *dev)
+ {
+ 	dev->dev_flags |= PCI_DEV_FLAGS_MSI_INTX_DISABLE_BUG;
+diff -uprN -X linux-2.6.24-rc5-vanilla/Documentation/dontdiff linux-2.6.24-rc5-vanilla/include/asm-generic/pci.h linux-2.6.24-rc5/include/asm-generic/pci.h
+--- linux-2.6.24-rc5-vanilla/include/asm-generic/pci.h	2007-12-18 14:35:52.000000000 -0500
++++ linux-2.6.24-rc5/include/asm-generic/pci.h	2007-12-18 16:29:12.000000000 -0500
+@@ -45,6 +45,10 @@ pcibios_select_root(struct pci_dev *pdev
+ 
+ #define pcibios_scan_all_fns(a, b)	0
+ 
++#ifndef HAVE_ARCH_HT_ENABLE_MSI_MAPPING
++#define ht_enable_msi_mapping(a)	0
++#endif /* HAVE_ARCH_HT_ENABLE_MSI_MAPPING */
++
+ #ifndef HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ
+ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+ {
+diff -uprN -X linux-2.6.24-rc5-vanilla/Documentation/dontdiff linux-2.6.24-rc5-vanilla/include/asm-x86/pci.h linux-2.6.24-rc5/include/asm-x86/pci.h
+--- linux-2.6.24-rc5-vanilla/include/asm-x86/pci.h	2007-12-18 14:35:51.000000000 -0500
++++ linux-2.6.24-rc5/include/asm-x86/pci.h	2007-12-18 16:28:58.000000000 -0500
+@@ -75,6 +75,27 @@ static inline void pci_dma_burst_advice(
+ }
+ #endif
+ 
++#ifdef CONFIG_PCI
++#define HAVE_ARCH_HT_ENABLE_MSI_MAPPING
++static inline void ht_enable_msi_mapping(struct pci_dev *dev)
++{
++	int pos, ttl = 48;
++
++	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
++	while (pos && ttl--) {
++		u8 flags;
++
++		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS, &flags) == 0) {
++			printk(KERN_INFO "PCI: Enabling HT MSI Mapping on %s\n",
++						dev->dev.bus_id);
++
++			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
++					      flags | HT_MSI_FLAGS_ENABLE);
++		}
++		pos = pci_find_next_ht_capability(dev, pos, HT_CAPTYPE_MSI_MAPPING);
++	}
++}
++#endif
+ 
+ #endif  /* __KERNEL__ */
+-
 
