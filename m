@@ -1,128 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933251AbXLRCxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964795AbXLRCyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933251AbXLRCxc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 21:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbXLRCxY
+	id S964795AbXLRCyw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 21:54:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760139AbXLRCyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 21:53:24 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42204 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752988AbXLRCxX (ORCPT
+	Mon, 17 Dec 2007 21:54:43 -0500
+Received: from smtp114.sbc.mail.re2.yahoo.com ([68.142.229.91]:47139 "HELO
+	smtp114.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755016AbXLRCym (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 21:53:23 -0500
-Date: Mon, 17 Dec 2007 18:52:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Valdis.Kletnieks@vt.edu, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
-Subject: Re: 2.6.24-rc5-mm1 - wonky disk cache and CDROM behavior...
-Message-Id: <20071217185213.d0d02149.akpm@linux-foundation.org>
-In-Reply-To: <20071218023732.GA3215@darkstar.te-china.tietoenator.com>
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
-	<30457.1197931451@turing-police.cc.vt.edu>
-	<20071217145644.2d6374e4.akpm@linux-foundation.org>
-	<11403.1197943676@turing-police.cc.vt.edu>
-	<20071218023732.GA3215@darkstar.te-china.tietoenator.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Dec 2007 21:54:42 -0500
+X-YMail-OSG: PtSFZvEVM1k847gbU8wstjnjO_9hhI1vHFx5n8CCY1rm24i2b5ob71_JPHVdtdqsj0Lxp.BfCg--
+Date: Mon, 17 Dec 2007 20:53:33 -0600
+From: serge@hallyn.com
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+Message-ID: <20071218025329.GA12429@vino.hallyn.com>
+References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <20071218015557.GA28652@sergelap.austin.ibm.com> <200712180226.lBI2QL1d020811@www262.sakura.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712180226.lBI2QL1d020811@www262.sakura.ne.jp>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Dec 2007 10:37:32 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+Quoting Tetsuo Handa (penguin-kernel@i-love.sakura.ne.jp):
+> Hello.
+> 
+> Serge E. Hallyn wrote:
+> > But your requirements are to ensure that an application accessing a
+> > device at a well-known location get what it expect.
+> 
+> Yes. That's the purpose of this filesystem.
+> 
+> 
+> > So then the main quesiton is still the one I think Al had asked - what
+> > keeps a rogue CAP_SYS_MOUNT process from doing
+> > mount --bind /dev/hda1 /dev/null ?
+> 
+> Excuse me, but I guess you meant "mount --bind /dev/ /root/" or something
+> because mount operation requires directories.
 
-> On Mon, Dec 17, 2007 at 09:07:56PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> > On Mon, 17 Dec 2007 14:56:44 PST, Andrew Morton said:
-> > 
-> > (Adding Al Viro to the list, he's listed as "file systems" and MAINTAINERS
-> > doesn't list 'isofs' anyplace.  Will Al or Andrew please vector to whoever
-> > actually does that code?)
-> > 
-> > > > I try it again, and it reports it died at the same exact place, but in about
-> > > > 2 seconds flat, and reports 91M/sec transfer.  OK, that's *weird*, I didn't
-> > > > think that blocks read from /dev/cdrom would get cached, but OK.
-> > > 
-> > > It'll remain cached if something is holding the device open.
-> > 
-> > Does it need to be "device open", or are there other things as well? If the
-> > drop_cache was hosed, that would result in the same symptoms, no?
-> > 
-> > > Something's holding s_umount for writing I guess.  Possibly busted error
-> > > handling somewhere totally different.
-> > 
-> > Aha - found what was holding it - an attempt to loopback mount the truncated
-> > file (before I realized it was truncated) had failed - I had gotten a 'Killed'
-> > back from the mount, but I didn't realize it had pulled an actual oops:
-> > 
-> > Dec 17 15:54:33 turing-police kernel: [14503.402385] attempt to access beyond end of device
-> > Dec 17 15:54:33 turing-police kernel: [14503.402391] loop1: rw=0, want=1284500, limit=314240
-> > Dec 17 15:54:33 turing-police kernel: [14503.402395] ISOFS: unable to read i-node block
-> > Dec 17 15:54:33 turing-police kernel: [14503.402428] Unable to handle kernel NULL pointer dereference at 000000000000010b RIP:
-> > Dec 17 15:54:33 turing-police kernel: [14503.402440]  [<ffffffff802a096b>] iput+0x11/0x80
-> > ...
-> > Dec 17 15:54:33 turing-police kernel: [14503.403008] Call Trace:
-> > Dec 17 15:54:33 turing-police kernel: [14503.403026]  [<ffffffff802ff73e>] isofs_fill_super+0x7e9/0xa6b
-> > Dec 17 15:54:33 turing-police kernel: [14503.403045]  [<ffffffff80523d28>] __down_write_nested+0x3d/0xa1
-> > Dec 17 15:54:33 turing-police kernel: [14503.403061]  [<ffffffff80523d97>] __down_write+0xb/0xd
-> > Dec 17 15:54:33 turing-police kernel: [14503.403076]  [<ffffffff8028fb63>] sget+0x397/0x3a9
-> > Dec 17 15:54:33 turing-police kernel: [14503.403090]  [<ffffffff8028f204>] set_bdev_super+0x0/0x14
-> > Dec 17 15:54:33 turing-police kernel: [14503.403106]  [<ffffffff80290301>] get_sb_bdev+0x109/0x157
-> > Dec 17 15:54:33 turing-police kernel: [14503.403120]  [<ffffffff802fef55>] isofs_fill_super+0x0/0xa6b
-> > Dec 17 15:54:33 turing-police kernel: [14503.403138]  [<ffffffff802fe2e9>] isofs_get_sb+0x13/0x15
-> > Dec 17 15:54:33 turing-police kernel: [14503.403151]  [<ffffffff80290075>] vfs_kern_mount+0x90/0x11a
-> > Dec 17 15:54:33 turing-police kernel: [14503.403167]  [<ffffffff8029015c>] do_kern_mount+0x47/0xe3
-> > Dec 17 15:54:33 turing-police kernel: [14503.403183]  [<ffffffff802a5012>] do_mount+0x717/0x78a
-> > Dec 17 15:54:33 turing-police kernel: [14503.403199]  [<ffffffff805242fc>] _read_lock_irq+0x9/0xb
-> > Dec 17 15:54:33 turing-police kernel: [14503.403212]  [<ffffffff8026cce0>] find_lock_page+0x8c/0x97
-> > Dec 17 15:54:33 turing-police kernel: [14503.403227]  [<ffffffff8026ecb6>] filemap_fault+0x1fa/0x3c6
-> > Dec 17 15:54:33 turing-police kernel: [14503.403241]  [<ffffffff8026cb6b>] unlock_page+0x2d/0x31
-> > Dec 17 15:54:33 turing-police kernel: [14503.403254]  [<ffffffff8027925c>] __do_fault+0x38d/0x3c3
-> > Dec 17 15:54:33 turing-police kernel: [14503.403274]  [<ffffffff8027ab68>] handle_mm_fault+0x36d/0x6e9
-> > Dec 17 15:54:33 turing-police kernel: [14503.403293]  [<ffffffff80271903>] __alloc_pages+0x68/0x2f6
-> > Dec 17 15:54:33 turing-police kernel: [14503.403314]  [<ffffffff802a510e>] sys_mount+0x89/0xcb
-> > Dec 17 15:54:33 turing-police kernel: [14503.403328]  [<ffffffff80214f34>] syscall_trace_enter+0x97/0x9b
-> > Dec 17 15:54:33 turing-police kernel: [14503.403344]  [<ffffffff8020c34c>] tracesys+0xdc/0xe1
-> > Dec 17 15:54:33 turing-police kernel: [14503.403359]
-> > Dec 17 15:54:33 turing-police kernel: [14503.403366]
-> > Dec 17 15:54:33 turing-police kernel: [14503.403367] Code: 48 8b 87 10 01 00 00 48 83 bf 38 02 00 00 40 48 8b 40 38 75
-> > 
-> > I don't mind it failing the mount, but the oops seems excessive.  I suspect
-> > that *somewhere* in that stack trace, we're wanting something like a
-> > 
-> > 	if (!foo_ptr)
-> > 		return -EIO;
-> > 
-> > but I admit not being competent enough to decide where that should be.
-> > 
-> 
-> Hi,
-> Could you please try the below patch:
-> 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
-> 
-> ---
-> fs/isofs/inode.c |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff -upr linux/fs/isofs/inode.c linux.new/fs/isofs/inode.c
-> --- linux/fs/isofs/inode.c	2007-12-18 10:31:12.000000000 +0800
-> +++ linux.new/fs/isofs/inode.c	2007-12-18 10:31:56.000000000 +0800
-> @@ -1414,7 +1414,7 @@ struct inode *isofs_iget(struct super_bl
->  		ret = isofs_read_inode(inode);
->  		if (ret < 0) {
->  			iget_failed(inode);
-> -			inode = ERR_PTR(ret);
-> +			return NULL;
->  		} else {
->  			unlock_new_inode(inode);
->  		}
-> 
+Nope, try
 
-Yup.
+	touch /root/hda1
+	ls -l /root/hda1
+	mount --bind /dev/hda1 /root/hda1
+	ls -l /root/hda1
 
-David, this is concerning.  More such error-path bugs in that code will
-take years and years to get found and fixed.  The best way to eliminate
-them is a line-by-line re-review of the patchset.
+But I see tomoyo prevents that
 
+> MAC can prevent a rogue CAP_SYS_MOUNT process from doing
+> "mount --bind /dev/ /root/".
+> For example, regarding TOMOYO Linux, you need to give
+> "allow_mount /dev/ /root/ --bind 0" permission
+> to permit "mount --bind /dev/ /root/" request.
+
+Ok, that answers my question.  Thanks.
+
+(I won't go into "who gets to say allow_mount" :)
+
+> Did you mean "ln -s /dev/hda1 /dev/null" or "ln /dev/hda1 /dev/null"?
+> No problem. MAC can prevent such requests too.
+
+Then it sounds like this filesystem is something Tomoyo can use.
+
+thanks,
+-serge
