@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759904AbXLRDdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761320AbXLRDgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759904AbXLRDdt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 22:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbXLRDdj
+	id S1761320AbXLRDgV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 22:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbXLRDgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 22:33:39 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:3674 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751862AbXLRDdi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 22:33:38 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: cfriesen@nortel.com (Chris Friesen)
-Subject: Re: "ip neigh show" not showing arp cache entries?
-Cc: yoshfuji@linux-ipv6.org, dada1@cosmosbay.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Organization: Core
-In-Reply-To: <476696A5.1010101@nortel.com>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1J4TCz-0005L8-00@gondolin.me.apana.org.au>
-Date: Tue, 18 Dec 2007 11:33:29 +0800
+	Mon, 17 Dec 2007 22:36:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46678 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751862AbXLRDgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 22:36:10 -0500
+Message-ID: <47674011.2050905@redhat.com>
+Date: Mon, 17 Dec 2007 22:35:45 -0500
+From: Steven Rostedt <srostedt@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: mingo@elte.hu, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH] sched: dynamically update the root-domain span/online
+ maps
+References: <20071218023805.4390.19471.stgit@novell1.haskins.net>
+In-Reply-To: <20071218023805.4390.19471.stgit@novell1.haskins.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen <cfriesen@nortel.com> wrote:
->
-> However, if I specifically try to print out one of the missing entries, 
-> it shows up:
+Gregory Haskins wrote:
+> Hi Steven,
+>   I posted a suspend-to-ram fix to sched-devel earlier today:
 > 
-> root@typhoon-base-unit0:/root> /tmp/ip neigh show 192.168.24.81
-> 192.168.24.81 dev bond2 lladdr 00:01:af:14:e9:8a REACHABLE
+> http://lkml.org/lkml/2007/12/17/445
+> 
+> This fix should also be applied to -rt as I introduced the same regression
+> there.  Here is a version of the fix for 23-rt13.  I can submit a version for
+> 24-rc5-rt1 at your request.
+> 
 
-What about
+Thanks Gregory,
 
-	ip -4 neigh show
+I'll put this into the 2.6.23.11-rt14 queue. I have someone that tells 
+me that suspend to RAM breaks. I'll have him try the new update and let 
+me know if it fixes his issue before releasing it. I'll also let 
+everyone know the results as well.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+-- Steve
