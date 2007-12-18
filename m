@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760393AbXLRQng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760166AbXLRQpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760393AbXLRQng (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 11:43:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757824AbXLRQnO
+	id S1760166AbXLRQpu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 11:45:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbXLRQpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 11:43:14 -0500
-Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:39172 "HELO
-	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757610AbXLRQnN (ORCPT
+	Tue, 18 Dec 2007 11:45:41 -0500
+Received: from mu-out-0910.google.com ([209.85.134.190]:4106 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756442AbXLRQpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 11:43:13 -0500
-X-YMail-OSG: CCpZM2gVM1mUlhvOnOJgvf9O19DpehDbNGMNH0WQdN6HZI9uIIxsGvyN_mEo3Z5d20eU65qjwQ--
-X-RocketYMMF: rancidfat
-Date: Tue, 18 Dec 2007 08:43:11 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-To: Valdis.Kletnieks@vt.edu, Pavel Machek <pavel@ucw.cz>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <22795.1197993320@turing-police.cc.vt.edu>
+	Tue, 18 Dec 2007 11:45:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MoWgbemMMHdyra27gtATZKR8uyl/WPK3MNb3CM8ApfTbRo+PKMNN6tVXeoSX+8GJOxmmbePGNWzUBlIpS9vDtsBdrUlVV+rAYHGgHe7nHug8kiMnDuI9Yz6xWXCmh7SHJ1pnMNN6xxl1KUT11ppKFgQMNrSkltdAOpwJsIa5XuY=
+Message-ID: <83a51e120712180845k6cadf67bn5dd66fb2d3ac72d4@mail.gmail.com>
+Date: Tue, 18 Dec 2007 11:45:39 -0500
+From: "James Nichols" <jamesnichols3@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0712181704380.4422@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <968709.86780.qm@web36604.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com>
+	 <Pine.LNX.4.64.0712180009390.32270@fbirervta.pbzchgretzou.qr>
+	 <83a51e120712180734i334399dbl51f44fe32d815f7d@mail.gmail.com>
+	 <Pine.LNX.4.64.0712181704380.4422@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Well you could still blame Java. I am sure that if you program was C,
+> the problem could be narrowed down much easier.
 
---- Valdis.Kletnieks@vt.edu wrote:
-
-> On Thu, 06 Dec 2007 15:29:07 GMT, Pavel Machek said:
-> > 
-> > > Why not use SELinux?
-> > > 
-> > >  Because SELinux doesn't guarantee filename and its attribute.
-> > >  The purpose of this filesystem is to ensure filename and its attribute
-> > >  (e.g. /dev/null is guaranteed to be a character device file
-> > >  with major=1 and minor=3).
-> > 
-> > Why not improve selinux to be able to assign label of new file based
-> > on directory label and name?
-> 
-> The problem isn't the label, it's the *other* attributes...
-> 
-> What happens if /dev/null has the correct SELinux label, but the major/minor
-> is 1,27 rather than 1,3?
-
-Isn't this the kind of thing that Bastille is good for?
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+That may very well be true, but I can't rewrite the whole 500K line
+application in C at this point.  Plus, it's a web app which would be
+"fun" to implement in C.
