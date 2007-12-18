@@ -1,243 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbXLRVVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbXLRVVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753867AbXLRVVZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 16:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbXLRVRp
+	id S1756456AbXLRVVn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 16:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbXLRVRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 16:17:45 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58136 "EHLO mx1.redhat.com"
+	Tue, 18 Dec 2007 16:17:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58135 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753103AbXLRVRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753106AbXLRVRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Dec 2007 16:17:36 -0500
-Message-Id: <20071218211550.392853742@redhat.com>
+Message-Id: <20071218211550.001517876@redhat.com>
 References: <20071218211539.250334036@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 18 Dec 2007 16:15:58 -0500
+Date: Tue, 18 Dec 2007 16:15:54 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org, lee.shermerhorn@hp.com,
        Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 19/20] handle mlocked pages during map/unmap and truncate
-Content-Disposition: inline; filename=noreclaim-04.2-move-mlocked-pages-off-the-LRU.patch
+Subject: [patch 15/20] ramfs pages are non-reclaimable
+Content-Disposition: inline; filename=noreclaim-02-ramdisk-and-ramfs-pages-are-nonreclaimable.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 V2 -> V3:
-+ rebase to 23-mm1 atop RvR's split lru series [no changes]
++  rebase to 23-mm1 atop RvR's split LRU series [no changes]
 
 V1 -> V2:
-+  modified mmap.c:mmap_region() to return error if mlock_vma_pages_range()
-   does.  This can only occur if the vma gets removed/changed while
-   we're switching mmap_sem lock modes.   Most callers don't care, but
-   sys_remap_file_pages() appears to.
++  add ramfs pages to this class of non-reclaimable pages by
+   marking ramfs address_space [mapping] as non-reclaimble.
 
-Rework of Nick Piggins's "mm: move mlocked pages off the LRU" patch
--- part 2 0f 2.
+Christoph Lameter pointed out that ram disk pages also clutter the
+LRU lists.  When vmscan finds them dirty and tries to clean them,
+the ram disk writeback function just redirties the page so that it
+goes back onto the active list.  Round and round she goes...
 
-Remove mlocked pages from the LRU using "NoReclaim infrastructure"
-during mmap()/mremap().  Try to move back to normal LRU lists on
-munmap() when last locked mapping removed.  Removed PageMlocked()
-status when page truncated from file.
+Define new address_space flag [shares address_space flags member
+with mapping's gfp mask] to indicate that the address space contains
+all non-reclaimable pages.  This will provide for efficient testing
+of ramdisk pages in page_reclaimable().
+
+Also provide wrapper functions to set/test the noreclaim state to
+minimize #ifdefs in ramdisk driver and any other users of this
+facility.
+
+Set the noreclaim state on address_space structures for new
+ramdisk inodes.  Test the noreclaim state in page_reclaimable()
+to cull non-reclaimable pages.
+
+Similarly, ramfs pages are non-reclaimable.  Set the 'noreclaim'
+address_space flag for new ramfs inodes.
+
+These changes depend on [CONFIG_]NORECLAIM.
 
 
-Originally Signed-off-by: Nick Piggin <npiggin@suse.de>
 Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
 Signed-off-by:  Rik van Riel <riel@redhat.com>
 
-Index: Linux/mm/mmap.c
+Index: linux-2.6.24-rc4-mm1/include/linux/pagemap.h
 ===================================================================
---- Linux.orig/mm/mmap.c	2007-11-12 16:21:48.000000000 -0500
-+++ Linux/mm/mmap.c	2007-11-12 16:22:03.000000000 -0500
-@@ -32,6 +32,8 @@
- #include <asm/tlb.h>
- #include <asm/mmu_context.h>
- 
-+#include "internal.h"
-+
- #ifndef arch_mmap_check
- #define arch_mmap_check(addr, len, flags)	(0)
- #endif
-@@ -1211,9 +1213,13 @@ out:	
- 	vm_stat_account(mm, vm_flags, file, len >> PAGE_SHIFT);
- 	if (vm_flags & VM_LOCKED) {
- 		mm->locked_vm += len >> PAGE_SHIFT;
--		make_pages_present(addr, addr + len);
--	}
--	if ((flags & MAP_POPULATE) && !(flags & MAP_NONBLOCK))
-+		/*
-+		 * makes pages present; downgrades, drops, requires mmap_sem
-+		 */
-+		error = mlock_vma_pages_range(vma, addr, addr + len);
-+		if (error)
-+			return error;	/* vma gone! */
-+	} else if ((flags & MAP_POPULATE) && !(flags & MAP_NONBLOCK))
- 		make_pages_present(addr, addr + len);
- 	return addr;
- 
-@@ -1892,6 +1898,19 @@ int do_munmap(struct mm_struct *mm, unsi
- 	vma = prev? prev->vm_next: mm->mmap;
- 
- 	/*
-+	 * unlock any mlock()ed ranges before detaching vmas
-+	 */
-+	if (mm->locked_vm) {
-+		struct vm_area_struct *tmp = vma;
-+		while (tmp && tmp->vm_start < end) {
-+			if (tmp->vm_flags & VM_LOCKED)
-+				munlock_vma_pages_range(tmp,
-+						 tmp->vm_start, tmp->vm_end);
-+			tmp = tmp->vm_next;
-+		}
-+	}
-+
-+	/*
- 	 * Remove the vma's, and unmap the actual pages
- 	 */
- 	detach_vmas_to_be_unmapped(mm, vma, prev, end);
-@@ -2024,7 +2043,7 @@ out:
- 	mm->total_vm += len >> PAGE_SHIFT;
- 	if (flags & VM_LOCKED) {
- 		mm->locked_vm += len >> PAGE_SHIFT;
--		make_pages_present(addr, addr + len);
-+		mlock_vma_pages_range(vma, addr, addr + len);
+--- linux-2.6.24-rc4-mm1.orig/include/linux/pagemap.h
++++ linux-2.6.24-rc4-mm1/include/linux/pagemap.h
+@@ -30,6 +30,28 @@ static inline void mapping_set_error(str
  	}
- 	return addr;
  }
-@@ -2035,13 +2054,26 @@ EXPORT_SYMBOL(do_brk);
- void exit_mmap(struct mm_struct *mm)
+ 
++#ifdef CONFIG_NORECLAIM
++#define AS_NORECLAIM	(__GFP_BITS_SHIFT + 2)	/* e.g., ramdisk, SHM_LOCK */
++
++static inline void mapping_set_noreclaim(struct address_space *mapping)
++{
++	set_bit(AS_NORECLAIM, &mapping->flags);
++}
++
++static inline int mapping_non_reclaimable(struct address_space *mapping)
++{
++	if (mapping && (mapping->flags & AS_NORECLAIM))
++		return 1;
++	return 0;
++}
++#else
++static inline void mapping_set_noreclaim(struct address_space *mapping) { }
++static inline int mapping_non_reclaimable(struct address_space *mapping)
++{
++	return 0;
++}
++#endif
++
+ static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
  {
- 	struct mmu_gather *tlb;
--	struct vm_area_struct *vma = mm->mmap;
-+	struct vm_area_struct *vma;
- 	unsigned long nr_accounted = 0;
- 	unsigned long end;
- 
- 	/* mm's last user has gone, and its about to be pulled down */
- 	arch_exit_mmap(mm);
- 
-+	if (mm->locked_vm) {
-+		vma = mm->mmap;
-+		while (vma) {
-+			if (vma->vm_flags & VM_LOCKED)
-+				munlock_vma_pages_range(vma,
-+						vma->vm_start, vma->vm_end);
-+			vma = vma->vm_next;
-+		}
-+	}
-+
-+	vma = mm->mmap;
-+
-+
- 	lru_add_drain();
- 	flush_cache_mm(mm);
- 	tlb = tlb_gather_mmu(mm, 1);
-Index: Linux/mm/mremap.c
+ 	return (__force gfp_t)mapping->flags & __GFP_BITS_MASK;
+Index: linux-2.6.24-rc4-mm1/mm/vmscan.c
 ===================================================================
---- Linux.orig/mm/mremap.c	2007-11-12 16:21:48.000000000 -0500
-+++ Linux/mm/mremap.c	2007-11-12 16:22:03.000000000 -0500
-@@ -23,6 +23,8 @@
- #include <asm/cacheflush.h>
- #include <asm/tlbflush.h>
+--- linux-2.6.24-rc4-mm1.orig/mm/vmscan.c
++++ linux-2.6.24-rc4-mm1/mm/vmscan.c
+@@ -2241,6 +2241,7 @@ int zone_reclaim(struct zone *zone, gfp_
+  *               If !NULL, called from fault path.
+  *
+  * Reasons page might not be reclaimable:
++ * + page's mapping marked non-reclaimable
+  * TODO - later patches
+  *
+  * TODO:  specify locking assumptions
+@@ -2250,6 +2251,9 @@ int page_reclaimable(struct page *page, 
  
-+#include "internal.h"
+ 	VM_BUG_ON(PageNoreclaim(page));
+ 
++	if (mapping_non_reclaimable(page_mapping(page)))
++		return 0;
 +
- static pmd_t *get_old_pmd(struct mm_struct *mm, unsigned long addr)
- {
- 	pgd_t *pgd;
-@@ -232,8 +234,8 @@ static unsigned long move_vma(struct vm_
- 	if (vm_flags & VM_LOCKED) {
- 		mm->locked_vm += new_len >> PAGE_SHIFT;
- 		if (new_len > old_len)
--			make_pages_present(new_addr + old_len,
--					   new_addr + new_len);
-+			mlock_vma_pages_range(vma, new_addr + old_len,
-+						   new_addr + new_len);
- 	}
+ 	/* TODO:  test page [!]reclaimable conditions */
  
- 	return new_addr;
-@@ -373,7 +375,7 @@ unsigned long do_mremap(unsigned long ad
- 			vm_stat_account(mm, vma->vm_flags, vma->vm_file, pages);
- 			if (vma->vm_flags & VM_LOCKED) {
- 				mm->locked_vm += pages;
--				make_pages_present(addr + old_len,
-+				mlock_vma_pages_range(vma, addr + old_len,
- 						   addr + new_len);
- 			}
- 			ret = addr;
-Index: Linux/mm/vmscan.c
+ 	return 1;
+Index: linux-2.6.24-rc4-mm1/fs/ramfs/inode.c
 ===================================================================
---- Linux.orig/mm/vmscan.c	2007-11-12 16:21:59.000000000 -0500
-+++ Linux/mm/vmscan.c	2007-11-12 16:22:03.000000000 -0500
-@@ -534,6 +534,10 @@ static unsigned long shrink_page_list(st
- 				goto activate_locked;
- 			case SWAP_AGAIN:
- 				goto keep_locked;
-+			case SWAP_MLOCK:
-+				ClearPageActive(page);
-+				SetPageNoreclaim(page);
-+				goto keep_locked;	/* to noreclaim list */
- 			case SWAP_SUCCESS:
- 				; /* try to free the page below */
- 			}
-Index: Linux/mm/filemap.c
-===================================================================
---- Linux.orig/mm/filemap.c	2007-11-12 16:21:48.000000000 -0500
-+++ Linux/mm/filemap.c	2007-11-12 16:22:03.000000000 -0500
-@@ -2504,8 +2504,16 @@ generic_file_direct_IO(int rw, struct ki
- 	if (rw == WRITE) {
- 		write_len = iov_length(iov, nr_segs);
- 		end = (offset + write_len - 1) >> PAGE_CACHE_SHIFT;
--	       	if (mapping_mapped(mapping))
-+		if (mapping_mapped(mapping)) {
-+			/*
-+			 * Calling unmap_mapping_range like this is wrong,
-+			 * because it can lead to mlocked pages being
-+			 * discarded (this is true even before the Noreclaim
-+			 * mlock work). direct-IO vs pagecache is a load of
-+			 * junk anyway, so who cares.
-+			 */
- 			unmap_mapping_range(mapping, offset, write_len, 0);
-+		}
- 	}
- 
- 	retval = filemap_write_and_wait(mapping);
-Index: Linux/mm/truncate.c
-===================================================================
---- Linux.orig/mm/truncate.c	2007-11-12 16:21:48.000000000 -0500
-+++ Linux/mm/truncate.c	2007-11-12 16:22:03.000000000 -0500
-@@ -18,6 +18,7 @@
- #include <linux/task_io_accounting_ops.h>
- #include <linux/buffer_head.h>	/* grr. try_to_release_page,
- 				   do_invalidatepage */
-+#include "internal.h"
- 
- 
- /**
-@@ -104,6 +105,7 @@ truncate_complete_page(struct address_sp
- 		do_invalidatepage(page, 0);
- 
- 	remove_from_page_cache(page);
-+	clear_page_mlock(page);
- 	ClearPageUptodate(page);
- 	ClearPageMappedToDisk(page);
- 	page_cache_release(page);	/* pagecache ref */
-@@ -128,6 +130,7 @@ invalidate_complete_page(struct address_
- 	if (PagePrivate(page) && !try_to_release_page(page, 0))
- 		return 0;
- 
-+	clear_page_mlock(page);
- 	ret = remove_mapping(mapping, page);
- 
- 	return ret;
-@@ -354,6 +357,7 @@ invalidate_complete_page2(struct address
- 	if (PageDirty(page))
- 		goto failed;
- 
-+	clear_page_mlock(page);
- 	BUG_ON(PagePrivate(page));
- 	__remove_from_page_cache(page);
- 	write_unlock_irq(&mapping->tree_lock);
+--- linux-2.6.24-rc4-mm1.orig/fs/ramfs/inode.c
++++ linux-2.6.24-rc4-mm1/fs/ramfs/inode.c
+@@ -61,6 +61,7 @@ struct inode *ramfs_get_inode(struct sup
+ 		inode->i_mapping->a_ops = &ramfs_aops;
+ 		inode->i_mapping->backing_dev_info = &ramfs_backing_dev_info;
+ 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
++		mapping_set_noreclaim(inode->i_mapping);
+ 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+ 		switch (mode & S_IFMT) {
+ 		default:
 
 -- 
 All Rights Reversed
