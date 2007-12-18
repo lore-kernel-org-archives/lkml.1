@@ -1,74 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761788AbXLRBR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760676AbXLRBSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761788AbXLRBR7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 20:17:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXLRBRt
+	id S1760676AbXLRBSc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 20:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbXLRBST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 20:17:49 -0500
-Received: from THAUM.MIT.EDU ([18.95.3.27]:48826 "EHLO luto.stanford.edu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751862AbXLRBRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 20:17:48 -0500
-X-Greylist: delayed 1495 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Dec 2007 20:17:48 EST
-Message-ID: <476719E5.1010505@myrealbox.com>
-Date: Mon, 17 Dec 2007 19:52:53 -0500
-From: Andy Lutomirski <luto@myrealbox.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Mon, 17 Dec 2007 20:18:19 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:36800
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753092AbXLRBSR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 20:18:17 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH] sched: dynamically update the root-domain span/online maps
+To: mingo@elte.hu
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org
+Date: Mon, 17 Dec 2007 19:55:42 -0500
+Message-ID: <20071218005217.4957.3055.stgit@novell1.haskins.net>
+In-Reply-To: <200712172339.lBHNdmDD008149@imap1.linux-foundation.org>
+References: <200712172339.lBHNdmDD008149@imap1.linux-foundation.org>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, John Reiser <jreiser@BitWagon.com>,
-       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       security@kernel.org
-Subject: Re: /dev/urandom uses uninit bytes, leaks user data
-References: <4762DAB1.1020807@BitWagon.com> <20071214201305.GL19691@waste.org> <4762EB63.8070100@BitWagon.com> <20071214232322.GE17344@thunk.org> <47632010.6030709@BitWagon.com> <20071215043208.GF17344@thunk.org> <4766A40D.4080804@BitWagon.com> <20071217173623.GC7070@thunk.org>
-In-Reply-To: <20071217173623.GC7070@thunk.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Mon, Dec 17, 2007 at 08:30:05AM -0800, John Reiser wrote:
->>>> [You have yet to show that...]
->>>> There is a path that goes from user data into the pool.
->> Note particularly that the path includes data from other users.
->> Under the current implementation, anyone who accesses /dev/urandom
->> is subject to having some bytes from their address space being captured
->> and mixed into the pool.
-> 
-> Again, you haven't *proven* this yet.
+Hi Ingo,
+   The following patch applies to sched-devel to replace the root-domain patch
+   that was reverted as noted here:
 
-Has anyone *proven* that using uninitialized data this way is safe?  As 
-a *user* of this stuff, I'm *very* hesitant to trust Linux's RNG when I 
-hear things like this.  (Hint: most protocols are considered insecure 
-until proven otherwise, not the other way around.)
+http://marc.info/?l=linux-mm-commits&m=119793598429477&w=2
 
-Consider:  add_entropy_words is reversible [1], presumably in the sense 
-that words could be removed, so, if there added words are independent of 
-the state, there is no loss of entropy.  But it also appears reversible 
-in the sense that if the pool has a known state and entropy words are 
-added, most of which are known, the unknown ones can be found (if 
-nothing else, if there are only a few bits of entropy there, you can try 
-all possibilities).
+I have confirmed that it builds and boots clean, and it passes checkpatch.
+However, my test machine seems to be having problems with suspend-to-ram that
+are unrelated to this patch that prevent me from verifying the fix entirely.
+If Gautham or Andrew could confirm that it resolves their suspend-to-ram
+issue, I would be most appreciative.
 
-Now imagine a security program.  It runs some forward secret protocol 
-and it's very safe not to leak data that would break forward secrecy 
-(mlockall, memset when done with stuff, etc).  It runs on a freshly 
-booted machine (no DSA involved, so we're not automatically hosed), so 
-an attacker knows the initial pool state.  Conveniently, some *secret* 
-(say an ephemeral key, or, worse, a password) gets mixed in to the pool. 
-  There are apparently at most three bytes of extra data mixed in, but 
-suppose the attacker knows add the words that were supposed to get mixed 
-in.  Now the program clears all its state to "ensure" forward secrecy, 
-and *then* the machine gets hacked.  Now the attacker can learn (with at 
-most 2^24 guesses worth of computation) 24 bits worth of a secret, which 
-could quite easily reduce the work involved in breaking whatever forward 
-secret protocol was involved from intractable to somewhat easy.  Or it 
-could leak three bytes of password.  Or whatever.
+Regards,
+-Greg
 
-Sorry for the somewhat inflammatory email, but this is absurd.
+--------------------------------------
+sched: dynamically update the root-domain span/online maps
 
---Andy
+The baseline code statically builds the span maps when the domain is formed.
+Previous attempts at dynamically updating the maps caused a suspend-to-ram
+regression, which should now be fixed.
 
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: Gautham R Shenoy <ego@in.ibm.com>
+---
 
-[1] http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg238406.html
+ kernel/sched.c |   31 +++++++++++++++++++------------
+ 1 files changed, 19 insertions(+), 12 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index dc6fb24..48cfec1 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -359,8 +359,6 @@ struct rt_rq {
+  * exclusive cpuset is created, we also create and attach a new root-domain
+  * object.
+  *
+- * By default the system creates a single root-domain with all cpus as
+- * members (mimicking the global state we have today).
+  */
+ struct root_domain {
+ 	atomic_t refcount;
+@@ -375,6 +373,10 @@ struct root_domain {
+ 	atomic_t rto_count;
+ };
+ 
++/*
++ * By default the system creates a single root-domain with all cpus as
++ * members (mimicking the global state we have today).
++ */
+ static struct root_domain def_root_domain;
+ 
+ #endif
+@@ -5854,6 +5856,9 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
+ 				class->leave_domain(rq);
+ 		}
+ 
++		cpu_clear(rq->cpu, old_rd->span);
++		cpu_clear(rq->cpu, old_rd->online);
++
+ 		if (atomic_dec_and_test(&old_rd->refcount))
+ 			kfree(old_rd);
+ 	}
+@@ -5861,6 +5866,10 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
+ 	atomic_inc(&rd->refcount);
+ 	rq->rd = rd;
+ 
++	cpu_set(rq->cpu, rd->span);
++	if (cpu_isset(rq->cpu, cpu_online_map))
++		cpu_set(rq->cpu, rd->online);
++
+ 	for (class = sched_class_highest; class; class = class->next) {
+ 		if (class->join_domain)
+ 			class->join_domain(rq);
+@@ -5869,23 +5878,21 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
+ 	spin_unlock_irqrestore(&rq->lock, flags);
+ }
+ 
+-static void init_rootdomain(struct root_domain *rd, const cpumask_t *map)
++static void init_rootdomain(struct root_domain *rd)
+ {
+ 	memset(rd, 0, sizeof(*rd));
+ 
+-	rd->span = *map;
+-	cpus_and(rd->online, rd->span, cpu_online_map);
++	cpus_clear(rd->span);
++	cpus_clear(rd->online);
+ }
+ 
+ static void init_defrootdomain(void)
+ {
+-	cpumask_t cpus = CPU_MASK_ALL;
+-
+-	init_rootdomain(&def_root_domain, &cpus);
++	init_rootdomain(&def_root_domain);
+ 	atomic_set(&def_root_domain.refcount, 1);
+ }
+ 
+-static struct root_domain *alloc_rootdomain(const cpumask_t *map)
++static struct root_domain *alloc_rootdomain(void)
+ {
+ 	struct root_domain *rd;
+ 
+@@ -5893,7 +5900,7 @@ static struct root_domain *alloc_rootdomain(const cpumask_t *map)
+ 	if (!rd)
+ 		return NULL;
+ 
+-	init_rootdomain(rd, map);
++	init_rootdomain(rd);
+ 
+ 	return rd;
+ }
+@@ -6314,7 +6321,7 @@ static int build_sched_domains(const cpumask_t *cpu_map)
+ 	sched_group_nodes_bycpu[first_cpu(*cpu_map)] = sched_group_nodes;
+ #endif
+ 
+-	rd = alloc_rootdomain(cpu_map);
++	rd = alloc_rootdomain();
+ 	if (!rd) {
+ 		printk(KERN_WARNING "Cannot alloc root domain\n");
+ 		return -ENOMEM;
+@@ -6886,7 +6893,6 @@ void __init sched_init(void)
+ #ifdef CONFIG_SMP
+ 		rq->sd = NULL;
+ 		rq->rd = NULL;
+-		rq_attach_root(rq, &def_root_domain);
+ 		rq->active_balance = 0;
+ 		rq->next_balance = jiffies;
+ 		rq->push_cpu = 0;
+@@ -6895,6 +6901,7 @@ void __init sched_init(void)
+ 		INIT_LIST_HEAD(&rq->migration_queue);
+ 		rq->rt.highest_prio = MAX_RT_PRIO;
+ 		rq->rt.overloaded = 0;
++		rq_attach_root(rq, &def_root_domain);
+ #endif
+ 		atomic_set(&rq->nr_iowait, 0);
+ 
+
