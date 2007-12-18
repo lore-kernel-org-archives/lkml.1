@@ -1,92 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbXLROco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbXLROis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbXLROco (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 09:32:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbXLROcg
+	id S1756579AbXLROis (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 09:38:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbXLROij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 09:32:36 -0500
-Received: from smtp-dmz-232-tuesday.dmz.nerim.net ([195.5.254.232]:53986 "EHLO
-	kellthuzad.dmz.nerim.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751641AbXLROcf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 09:32:35 -0500
-From: Damien Wyart <damien.wyart@free.fr>
-To: David Chinner <dgc@sgi.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Lachlan McIlroy <lachlan@sgi.com>,
-       Peter Leckie <pleckie@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, linux-xfs@oss.sgi.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Important regression with XFS update for 2.6.24-rc6
-References: <20071218112804.GA3069@localhost.localdomain>
-	<20071218122445.GJ4396912@sgi.com>
-Date: Tue, 18 Dec 2007 15:30:31 +0100
-In-Reply-To: <20071218122445.GJ4396912@sgi.com> (David Chinner's message of
-	"Tue, 18 Dec 2007 23:24:45 +1100")
-Message-ID: <877ijckrco.fsf@free.fr>
-User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/23.0.50
+	Tue, 18 Dec 2007 09:38:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59357 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752903AbXLROii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 09:38:38 -0500
+Date: Tue, 18 Dec 2007 15:38:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [git pull] scheduler fixes
+Message-ID: <20071218143825.GA30325@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Chinner <dgc@sgi.com> [071218 13:24]:
-> Ok. I haven't noticed anything wrong with directories up to about
-> 250,000 files in the last few days. The ls -l I just did on
-> a directory with 15000 entries (btree format) used about 5MB of RAM.
-> extent format directories appear to work fine as well (tested 500
-> entries).
 
-Ok, nice to know the problem is not so frequent.
+Linus, please pull the latest scheduler git tree from:
 
-> Can you:
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
 
-> 	a) isolate the problem to one patch or the other. My guess
-> 	   would be the directory mod, but.....
+Thanks,
 
-Yes, it is indeed the directory patch. But even if I still sometimes get
-huge memory usage with ls (using the patched kernel), this is quite
-rare, and the problem is now mainly getting entries in the listing
-repeated, and the ls process taking longer than without the patch. But
-this is mainly after booting. I guess the cache plays a role and even
-using drop_caches, I can't reproduce the problem. Only on fresh reboot
-do I get it systematically, but much less often the memory problem. And
-as said earlier, after fresh boot on rc5-git5 without the directory
-patch, the ls -l goes normal (no repeated entries).
+	Ingo
 
-> 	b) show your working ;)
+------------------>
+Dmitry Adamushko (1):
+      sched: fix crash on ia64, introduce task_current()
 
-Sorry, I forgot this part in my initial report.
+Eric Dumazet (1):
+      sched: sysctl, proc_dointvec_minmax() expects int values for
 
-> 		- what platform (i386, x86_64, etc)
+Ingo Molnar (2):
+      sched: touch softlockup watchdog after idling
+      sched: do not hurt SCHED_BATCH on wakeup
 
-i386.
+Livio Soares (1):
+      sched: mark rwsem functions as __sched for wchan/profiling
 
-> 		- what debug options
+ kernel/rwsem.c      |    5 +++--
+ kernel/sched.c      |   18 ++++++++++++------
+ kernel/sched_fair.c |    3 +--
+ kernel/sysctl.c     |    8 ++++----
+ lib/rwsem.c         |    2 +-
+ 5 files changed, 21 insertions(+), 15 deletions(-)
 
-Nothing special, the kernel has 4K stacks, and xfs partitions are
-mounted with noatime,nodiratime.
-
-> 		- commands and output that shows the problem
-
-It is mainly "ls -l" in a quite crowded directory.
-
-> 		- strace of ls -l going bad
-> 		- xfs_info from filesystem in question
-
-I have put the files at http://damien.wyart.free.fr/xfs/
-
-strace_xfs_problem.1.gz and strace_xfs_problem.2.gz have been created
-with the problematic kernel, and are quite bigger than
-strace_xfs_problem.normal.gz, which has been created with the vanilla
-rc5-git5. There is also xfs_info.
-
-
-I can provide further details if needed (maybe kernel config, but
-nothing special on the xfs side), but I confirm the behavior is
-different with and without the directory patch
-(041388b54ed95cd169546bd83bacd08ee32bd7ea on oss.sgi), and doesn't look
-normal with the patch.
-
--- 
-Damien Wyart
+diff --git a/kernel/rwsem.c b/kernel/rwsem.c
+index 1ec620c..cae050b 100644
+--- a/kernel/rwsem.c
++++ b/kernel/rwsem.c
+@@ -6,6 +6,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/kernel.h>
++#include <linux/sched.h>
+ #include <linux/module.h>
+ #include <linux/rwsem.h>
+ 
+@@ -15,7 +16,7 @@
+ /*
+  * lock for reading
+  */
+-void down_read(struct rw_semaphore *sem)
++void __sched down_read(struct rw_semaphore *sem)
+ {
+ 	might_sleep();
+ 	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
+@@ -42,7 +43,7 @@ EXPORT_SYMBOL(down_read_trylock);
+ /*
+  * lock for writing
+  */
+-void down_write(struct rw_semaphore *sem)
++void __sched down_write(struct rw_semaphore *sem)
+ {
+ 	might_sleep();
+ 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
+diff --git a/kernel/sched.c b/kernel/sched.c
+index c6e551d..3df84ea 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -508,10 +508,15 @@ EXPORT_SYMBOL_GPL(cpu_clock);
+ # define finish_arch_switch(prev)	do { } while (0)
+ #endif
+ 
++static inline int task_current(struct rq *rq, struct task_struct *p)
++{
++	return rq->curr == p;
++}
++
+ #ifndef __ARCH_WANT_UNLOCKED_CTXSW
+ static inline int task_running(struct rq *rq, struct task_struct *p)
+ {
+-	return rq->curr == p;
++	return task_current(rq, p);
+ }
+ 
+ static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next)
+@@ -540,7 +545,7 @@ static inline int task_running(struct rq *rq, struct task_struct *p)
+ #ifdef CONFIG_SMP
+ 	return p->oncpu;
+ #else
+-	return rq->curr == p;
++	return task_current(rq, p);
+ #endif
+ }
+ 
+@@ -663,6 +668,7 @@ void sched_clock_idle_wakeup_event(u64 delta_ns)
+ 	struct rq *rq = cpu_rq(smp_processor_id());
+ 	u64 now = sched_clock();
+ 
++	touch_softlockup_watchdog();
+ 	rq->idle_clock += delta_ns;
+ 	/*
+ 	 * Override the previous timestamp and ignore all
+@@ -3334,7 +3340,7 @@ unsigned long long task_sched_runtime(struct task_struct *p)
+ 
+ 	rq = task_rq_lock(p, &flags);
+ 	ns = p->se.sum_exec_runtime;
+-	if (rq->curr == p) {
++	if (task_current(rq, p)) {
+ 		update_rq_clock(rq);
+ 		delta_exec = rq->clock - p->se.exec_start;
+ 		if ((s64)delta_exec > 0)
+@@ -4021,7 +4027,7 @@ void rt_mutex_setprio(struct task_struct *p, int prio)
+ 
+ 	oldprio = p->prio;
+ 	on_rq = p->se.on_rq;
+-	running = task_running(rq, p);
++	running = task_current(rq, p);
+ 	if (on_rq) {
+ 		dequeue_task(rq, p, 0);
+ 		if (running)
+@@ -4332,7 +4338,7 @@ recheck:
+ 	}
+ 	update_rq_clock(rq);
+ 	on_rq = p->se.on_rq;
+-	running = task_running(rq, p);
++	running = task_current(rq, p);
+ 	if (on_rq) {
+ 		deactivate_task(rq, p, 0);
+ 		if (running)
+@@ -7101,7 +7107,7 @@ void sched_move_task(struct task_struct *tsk)
+ 
+ 	update_rq_clock(rq);
+ 
+-	running = task_running(rq, tsk);
++	running = task_current(rq, tsk);
+ 	on_rq = tsk->se.on_rq;
+ 
+ 	if (on_rq) {
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index c33f0ce..da7c061 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -511,8 +511,7 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+ 
+ 	if (!initial) {
+ 		/* sleeps upto a single latency don't count. */
+-		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se) &&
+-				task_of(se)->policy != SCHED_BATCH)
++		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se))
+ 			vruntime -= sysctl_sched_latency;
+ 
+ 		/* ensure we never gain time by being placed backwards. */
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 1135de7..c68f68d 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -225,10 +225,10 @@ static struct ctl_table root_table[] = {
+ };
+ 
+ #ifdef CONFIG_SCHED_DEBUG
+-static unsigned long min_sched_granularity_ns = 100000;		/* 100 usecs */
+-static unsigned long max_sched_granularity_ns = NSEC_PER_SEC;	/* 1 second */
+-static unsigned long min_wakeup_granularity_ns;			/* 0 usecs */
+-static unsigned long max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
++static int min_sched_granularity_ns = 100000;		/* 100 usecs */
++static int max_sched_granularity_ns = NSEC_PER_SEC;	/* 1 second */
++static int min_wakeup_granularity_ns;			/* 0 usecs */
++static int max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
+ #endif
+ 
+ static struct ctl_table kern_table[] = {
+diff --git a/lib/rwsem.c b/lib/rwsem.c
+index cdb4e3d..7d02700 100644
+--- a/lib/rwsem.c
++++ b/lib/rwsem.c
+@@ -146,7 +146,7 @@ __rwsem_do_wake(struct rw_semaphore *sem, int downgrading)
+ /*
+  * wait for a lock to be granted
+  */
+-static struct rw_semaphore *
++static struct rw_semaphore __sched *
+ rwsem_down_failed_common(struct rw_semaphore *sem,
+ 			struct rwsem_waiter *waiter, signed long adjustment)
+ {
