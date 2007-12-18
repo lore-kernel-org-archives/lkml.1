@@ -1,144 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbXLRXVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbXLRX3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbXLRXVr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 18:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbXLRXVj
+	id S1755981AbXLRX3b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 18:29:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbXLRX3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 18:21:39 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48458 "EHLO mx1.redhat.com"
+	Tue, 18 Dec 2007 18:29:22 -0500
+Received: from mga02.intel.com ([134.134.136.20]:53718 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753307AbXLRXVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 18:21:38 -0500
-Message-ID: <47685565.3040906@redhat.com>
-Date: Tue, 18 Dec 2007 18:19:01 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1753914AbXLRX3V convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 18:29:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,182,1196668800"; 
+   d="scan'208";a="243393315"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-CC: Roland McGrath <roland@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net, systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] x86: add reenter_kprobe helper
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH RFC][try 2] IA64 signal : remove redundant code in setup_sigcontext()
+Date: Tue, 18 Dec 2007 15:29:19 -0800
+Message-ID: <1FE6DD409037234FAB833C420AA843EC22DA39@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20071122033249.GM12494@parisc-linux.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH RFC][try 2] IA64 signal : remove redundant code in setup_sigcontext()
+Thread-Index: AcgsuHC1GqPcdKsbSSK09aJQgmlwTQVE98TA
+References: <4744F46B.6050004@cn.fujitsu.com> <20071122033249.GM12494@parisc-linux.org>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Matthew Wilcox" <matthew@wil.cx>, "Shi Weihua" <shiwh@cn.fujitsu.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>
+X-OriginalArrivalTime: 18 Dec 2007 23:29:20.0268 (UTC) FILETIME=[D0872CC0:01C841CD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kprobe reenter logic from deeply indented section to helper function.
-This improves code readability.
+>> This patch removes some redundant code in the function setup_sigcontext().
+>> 
+>> The registers ar.ccv,b7,r14,ar.csd,ar.ssd,r2-r3 and r16-r31 are not restored 
+>> in restore_sigcontext() when (flags & IA64_SC_FLAG_IN_SYSCALL) is true. 
+>> So we don't need to zero those variables in setup_sigcontext().
+>
+> Erm, couldn't those registers contain information the process shouldn't
+> see?
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
----
-Harvey, I picked up your patch and enhanced it.
-I think this idea is good for improving readability.
+No, this looks safe.  setup_sigcontext() is stashing things out on the
+user stack to be used by restore_sigcontext() should the application want
+to return from the signal handler.  But restore_sigcontext isn't actually
+in charge of putting values into machine registers, it just does the copy
+back from user space to the place where the asm code will restore registers
+on the way back to userland.  In this instance "restored" means "set back to
+the state they had before the signal happened".  If they aren't "restored"
+they'll have scratch values ... but those scratch values will have come
+from the application (while it was executing the signal handler).  Not
+leaked from the kernel or from some other application.
 
- arch/x86/kernel/kprobes.c |   68 +++++++++++++++++++++++-----------------------
- 1 file changed, 35 insertions(+), 33 deletions(-)
-
-Index: b/arch/x86/kernel/kprobes.c
-===================================================================
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -427,6 +427,38 @@ void __kprobes arch_prepare_kretprobe(st
- 	/* Replace the return addr with trampoline addr */
- 	*sara = (unsigned long) &kretprobe_trampoline;
- }
-+/*
-+ * We have reentered the kprobe_handler(), since another probe was hit while
-+ * within the handler. We save the original kprobes variables and just single
-+ * step on the instruction of the new probe without calling any user handlers.
-+ */
-+static int __kprobes reenter_kprobe(struct kprobe *p, struct pt_regs *regs,
-+				   struct kprobe_ctlblk *kcb)
-+{
-+	if (kcb->kprobe_status == KPROBE_HIT_SS &&
-+	    *p->ainsn.insn == BREAKPOINT_INSTRUCTION) {
-+		regs->flags &= ~X86_EFLAGS_TF;
-+		regs->flags |= kcb->kprobe_saved_flags;
-+		return 0;
-+#ifdef CONFIG_X86_64
-+	} else if (kcb->kprobe_status == KPROBE_HIT_SSDONE) {
-+		/* TODO: Provide re-entrancy from post_kprobes_handler() and
-+		 * avoid exception stack corruption while single-stepping on
-+		 * the instruction of the new probe.
-+		 */
-+		arch_disarm_kprobe(p);
-+		regs->ip = (unsigned long)p->addr;
-+		reset_current_kprobe();
-+		return 1;
-+#endif
-+	}
-+	save_previous_kprobe(kcb);
-+	set_current_kprobe(p, regs, kcb);
-+	kprobes_inc_nmissed_count(p);
-+	prepare_singlestep(p, regs);
-+	kcb->kprobe_status = KPROBE_REENTER;
-+	return 1;
-+}
-
- /*
-  * Interrupts are disabled on entry as trap3 is an interrupt gate and they
-@@ -451,39 +483,9 @@ static int __kprobes kprobe_handler(stru
- 	/* Check we're not actually recursing */
- 	if (kprobe_running()) {
- 		p = get_kprobe(addr);
--		if (p) {
--			if (kcb->kprobe_status == KPROBE_HIT_SS &&
--				*p->ainsn.insn == BREAKPOINT_INSTRUCTION) {
--				regs->flags &= ~X86_EFLAGS_TF;
--				regs->flags |= kcb->kprobe_saved_flags;
--				goto no_kprobe;
--#ifdef CONFIG_X86_64
--			} else if (kcb->kprobe_status == KPROBE_HIT_SSDONE) {
--				/* TODO: Provide re-entrancy from
--				 * post_kprobes_handler() and avoid exception
--				 * stack corruption while single-stepping on
--				 * the instruction of the new probe.
--				 */
--				arch_disarm_kprobe(p);
--				regs->ip = (unsigned long)p->addr;
--				reset_current_kprobe();
--				ret = 1;
--				goto no_kprobe;
--#endif
--			}
--			/* We have reentered the kprobe_handler(), since
--			 * another probe was hit while within the handler.
--			 * We here save the original kprobes variables and
--			 * just single step on the instruction of the new probe
--			 * without calling any user handlers.
--			 */
--			save_previous_kprobe(kcb);
--			set_current_kprobe(p, regs, kcb);
--			kprobes_inc_nmissed_count(p);
--			prepare_singlestep(p, regs);
--			kcb->kprobe_status = KPROBE_REENTER;
--			ret = 1;
--		} else {
-+		if (p)
-+			ret = reenter_kprobe(p, regs, kcb);
-+		else {
- 			if (*addr != BREAKPOINT_INSTRUCTION) {
- 			/* The breakpoint instruction was removed by
- 			 * another cpu right after we hit, no further
-
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
-
-
+-Tony
