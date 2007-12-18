@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759993AbXLRPof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbXLRPpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759993AbXLRPof (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 10:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbXLRPoO
+	id S1759859AbXLRPpP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 10:45:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbXLRPo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 10:44:14 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55402 "EHLO mx3.mail.elte.hu"
+	Tue, 18 Dec 2007 10:44:59 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55558 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757673AbXLRPoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 10:44:12 -0500
-Date: Tue, 18 Dec 2007 16:43:19 +0100
+	id S1756158AbXLRPo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 10:44:58 -0500
+Date: Tue, 18 Dec 2007 16:44:15 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Glauber de Oliveira Costa <gcosta@redhat.com>
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
@@ -19,12 +19,12 @@ Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
        ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
        zach@vmware.com, roland@redhat.com
 Subject: Re: [PATCH 21/21] [PATCH] finish processor.h integration
-Message-ID: <20071218154319.GA11369@elte.hu>
-References: <11979320401316-git-send-email-gcosta@redhat.com> <11979320451308-git-send-email-gcosta@redhat.com> <1197932050948-git-send-email-gcosta@redhat.com> <11979320551036-git-send-email-gcosta@redhat.com> <11979320603229-git-send-email!-gcosta@redhat.com> <11979320653161-git-send-email-gcosta@redhat.com> <11979320693300-git-send-email-gcosta@redhat.com> <20071218131932.GA9457@elte.hu> <20071218133818.GA9941@elte.hu> <4767CFC5.3010703@redhat.com>
+Message-ID: <20071218154415.GA12238@elte.hu>
+References: <11979320451308-git-send-email-gcosta@redhat.com> <1197932050948-git-send-email-gcosta@redhat.com> <11979320551036-git-send-email-gcosta@redhat.com> <11979320603229-git-send-email!-gcosta@redhat.com> <11979320653161-git-send-email-gcosta@redhat.com> <11979320693300-git-send-email-gcosta@redhat.com> <20071218131932.GA9457@elte.hu> <20071218133818.GA9941@elte.hu> <20071218134018.GA13193@elte.hu> <4767D005.6040909@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4767CFC5.3010703@redhat.com>
+In-Reply-To: <4767D005.6040909@redhat.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,18 +41,20 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
 
->> here the problem is apparently caused by your patch, a careless 
->> 'unification' of include file sections. 32-bit had this:
+> Ingo Molnar wrote:
+>> * Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>>> yes, our include file dependencies are a jungle, the differences between 
+>>> 32-bit and 64-bit are arbitrary in 80% of the cases, but still there's no 
+>>> reason why this couldnt be done correctly. The patch below is a quick 
+>>> bandaid that adds the missing bits.
+>>
+>> the bandaid didnt work - so i removed the 21/21 patch for the time being.
 >
-> Point is this patches do unification, but they are not just that, as 
-> you can see. I am attempting to cleanup headers that appears not to be 
-> used, [...]
+> I will also have updates for other patches, If you want, you can drop 
+> the series entirely, and wait for the new one to come
 
-do cleanups and unification in _separate_ patches. We do not want to 
-change a SINGLE LINE OF SOURCE CODE in a patch that says "unify" and 
-moves a block of code from one file to another, ok? If you see some 
-obvious cleanups do it in pre or post patches (whichever looks more 
-logical). That makes it totally bisectable and i can drop the bogus 
-cleanup patch instead of having to drop a full unification patch.
+please send delta patches for this lot from now on - those are a lot 
+more testable.
 
 	Ingo
