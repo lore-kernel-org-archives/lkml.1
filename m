@@ -1,120 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762254AbXLRCdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762972AbXLRCeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762254AbXLRCdU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 21:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbXLRCdG
+	id S1762972AbXLRCeW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 21:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbXLRCeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 21:33:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:5177 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbXLRCdD (ORCPT
+	Mon, 17 Dec 2007 21:34:15 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:45399 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbXLRCeN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 21:33:03 -0500
+	Mon, 17 Dec 2007 21:34:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=sx2exb5ua4vkK/8P94Jv3u47TDR/BzbC4X//vI8MIj9iGgay1ICHbgUcTz5q1bSpbRILQ7xNS0vjBlHNAW6QRQC8BxnCkjs2eq920FqjDUL0FKcjsuwvcup2MKGStpFaMf+AoX/cPEXtnI/ZQDPzADRflIe1SWPbd86ohbtt7ew=
-Date: Tue, 18 Dec 2007 10:37:32 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc5-mm1 - wonky disk cache and CDROM behavior...
-Message-ID: <20071218023732.GA3215@darkstar.te-china.tietoenator.com>
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org> <30457.1197931451@turing-police.cc.vt.edu> <20071217145644.2d6374e4.akpm@linux-foundation.org> <11403.1197943676@turing-police.cc.vt.edu>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JEKRrNNvS5A01jw1vLE/bL+pcjWm//FLi1r1s01pg0jgnZgLZDqpATpEn8C95doL+zVj36kfYpteT1Twt7n3wZGhxmSX+z7f7OIBlgR0N+x22H/UNcuNN5PsAhPDlYlDSmvequDxG0vbXLCqtmDrfaT2cE+GY9piddWS+8SYRN0=
+Message-ID: <520b60a90712171834n61b09f23rc4c907ce3e8458cf@mail.gmail.com>
+Date: Mon, 17 Dec 2007 21:34:13 -0500
+From: mvtodevnull@gmail.com
+To: "Larry Finger" <larry.finger@lwfinger.net>
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore to mutex
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Michael Buesch" <mb@bu3sch.de>,
+       "Daniel Walker" <dwalker@mvista.com>, "Ray Lee" <ray-lk@madrabbit.org>,
+       "=?ISO-8859-1?Q?Simon_Holm_Th=F8gersen?=" <odie@cs.aau.dk>,
+       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, "Ingo Molnar" <mingo@elte.hu>, kjwinchester@gmail.com,
+       jonathan@jonmasters.org, akpm@linux-foundation.org,
+       bcm43xx-dev@lists.berlios.de
+In-Reply-To: <47671F5F.5020400@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <11403.1197943676@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20071213003028.676998182@mvista.com>
+	 <47633BAE.6040604@lwfinger.net>
+	 <520b60a90712142037j14d54de5nf5657ab2927fb3f5@mail.gmail.com>
+	 <520b60a90712142039t539faeddo68e73816fe1b3237@mail.gmail.com>
+	 <47637FDA.2030303@lwfinger.net>
+	 <520b60a90712150438p1f0ae40bt5975b494ab75203c@mail.gmail.com>
+	 <520b60a90712161817uaa2d1a8y5dfb13b586ca30ad@mail.gmail.com>
+	 <47661CA1.3080808@lwfinger.net>
+	 <520b60a90712162317r5c2f2569gbd75c09742ff5493@mail.gmail.com>
+	 <47671F5F.5020400@lwfinger.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17, 2007 at 09:07:56PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 17 Dec 2007 14:56:44 PST, Andrew Morton said:
-> 
-> (Adding Al Viro to the list, he's listed as "file systems" and MAINTAINERS
-> doesn't list 'isofs' anyplace.  Will Al or Andrew please vector to whoever
-> actually does that code?)
-> 
-> > > I try it again, and it reports it died at the same exact place, but in about
-> > > 2 seconds flat, and reports 91M/sec transfer.  OK, that's *weird*, I didn't
-> > > think that blocks read from /dev/cdrom would get cached, but OK.
-> > 
-> > It'll remain cached if something is holding the device open.
-> 
-> Does it need to be "device open", or are there other things as well? If the
-> drop_cache was hosed, that would result in the same symptoms, no?
-> 
-> > Something's holding s_umount for writing I guess.  Possibly busted error
-> > handling somewhere totally different.
-> 
-> Aha - found what was holding it - an attempt to loopback mount the truncated
-> file (before I realized it was truncated) had failed - I had gotten a 'Killed'
-> back from the mount, but I didn't realize it had pulled an actual oops:
-> 
-> Dec 17 15:54:33 turing-police kernel: [14503.402385] attempt to access beyond end of device
-> Dec 17 15:54:33 turing-police kernel: [14503.402391] loop1: rw=0, want=1284500, limit=314240
-> Dec 17 15:54:33 turing-police kernel: [14503.402395] ISOFS: unable to read i-node block
-> Dec 17 15:54:33 turing-police kernel: [14503.402428] Unable to handle kernel NULL pointer dereference at 000000000000010b RIP:
-> Dec 17 15:54:33 turing-police kernel: [14503.402440]  [<ffffffff802a096b>] iput+0x11/0x80
-> ...
-> Dec 17 15:54:33 turing-police kernel: [14503.403008] Call Trace:
-> Dec 17 15:54:33 turing-police kernel: [14503.403026]  [<ffffffff802ff73e>] isofs_fill_super+0x7e9/0xa6b
-> Dec 17 15:54:33 turing-police kernel: [14503.403045]  [<ffffffff80523d28>] __down_write_nested+0x3d/0xa1
-> Dec 17 15:54:33 turing-police kernel: [14503.403061]  [<ffffffff80523d97>] __down_write+0xb/0xd
-> Dec 17 15:54:33 turing-police kernel: [14503.403076]  [<ffffffff8028fb63>] sget+0x397/0x3a9
-> Dec 17 15:54:33 turing-police kernel: [14503.403090]  [<ffffffff8028f204>] set_bdev_super+0x0/0x14
-> Dec 17 15:54:33 turing-police kernel: [14503.403106]  [<ffffffff80290301>] get_sb_bdev+0x109/0x157
-> Dec 17 15:54:33 turing-police kernel: [14503.403120]  [<ffffffff802fef55>] isofs_fill_super+0x0/0xa6b
-> Dec 17 15:54:33 turing-police kernel: [14503.403138]  [<ffffffff802fe2e9>] isofs_get_sb+0x13/0x15
-> Dec 17 15:54:33 turing-police kernel: [14503.403151]  [<ffffffff80290075>] vfs_kern_mount+0x90/0x11a
-> Dec 17 15:54:33 turing-police kernel: [14503.403167]  [<ffffffff8029015c>] do_kern_mount+0x47/0xe3
-> Dec 17 15:54:33 turing-police kernel: [14503.403183]  [<ffffffff802a5012>] do_mount+0x717/0x78a
-> Dec 17 15:54:33 turing-police kernel: [14503.403199]  [<ffffffff805242fc>] _read_lock_irq+0x9/0xb
-> Dec 17 15:54:33 turing-police kernel: [14503.403212]  [<ffffffff8026cce0>] find_lock_page+0x8c/0x97
-> Dec 17 15:54:33 turing-police kernel: [14503.403227]  [<ffffffff8026ecb6>] filemap_fault+0x1fa/0x3c6
-> Dec 17 15:54:33 turing-police kernel: [14503.403241]  [<ffffffff8026cb6b>] unlock_page+0x2d/0x31
-> Dec 17 15:54:33 turing-police kernel: [14503.403254]  [<ffffffff8027925c>] __do_fault+0x38d/0x3c3
-> Dec 17 15:54:33 turing-police kernel: [14503.403274]  [<ffffffff8027ab68>] handle_mm_fault+0x36d/0x6e9
-> Dec 17 15:54:33 turing-police kernel: [14503.403293]  [<ffffffff80271903>] __alloc_pages+0x68/0x2f6
-> Dec 17 15:54:33 turing-police kernel: [14503.403314]  [<ffffffff802a510e>] sys_mount+0x89/0xcb
-> Dec 17 15:54:33 turing-police kernel: [14503.403328]  [<ffffffff80214f34>] syscall_trace_enter+0x97/0x9b
-> Dec 17 15:54:33 turing-police kernel: [14503.403344]  [<ffffffff8020c34c>] tracesys+0xdc/0xe1
-> Dec 17 15:54:33 turing-police kernel: [14503.403359]
-> Dec 17 15:54:33 turing-police kernel: [14503.403366]
-> Dec 17 15:54:33 turing-police kernel: [14503.403367] Code: 48 8b 87 10 01 00 00 48 83 bf 38 02 00 00 40 48 8b 40 38 75
-> 
-> I don't mind it failing the mount, but the oops seems excessive.  I suspect
-> that *somewhere* in that stack trace, we're wanting something like a
-> 
-> 	if (!foo_ptr)
-> 		return -EIO;
-> 
-> but I admit not being competent enough to decide where that should be.
-> 
+On Dec 17, 2007 8:16 PM, Larry Finger <larry.finger@lwfinger.net> wrote:
+>
+> I hope that you have now convinced yourself that you should be using b43 and not messing around
+> forcing b43legacy to use a device for which it was not intended.
+>
 
-Hi,
-Could you please try the below patch:
+I was convinced the moment I realized it worked exactly the same as
+b43 (if they work the same, I'd rather use the intended driver). The
+b43legacy test was more out of desperation than anything serious. I
+thought I should share though, since my original question was about
+the firmware and because the difference between versions (or lack
+thereof) had been discussed in this thread.
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+> You should concentrate on what in your environment changed when you rebooted. If you can get the 200
+> kBs rate back, please note the noise and signal levels as compared to the values when you are
+> restricted to 40 kBs.
+>
 
----
-fs/isofs/inode.c |    2 +-
-1 file changed, 1 insertion(+), 1 deletion(-)
+Really, the only thing that might have changed is some things that may
+have caused noise were turned off -- in other words, there should have
+been more noise with the 200 kB/s, but of course that doesn't make
+sense. It should be noted though that even at 200 kB/s, the b43 driver
+was operating at less than half the speed of bcm43xx. That being said,
+I've been trying very hard to repeat this, but cannot. I'll keep
+trying though, and make sure to note everything possible if it ever
+happens again.
 
-diff -upr linux/fs/isofs/inode.c linux.new/fs/isofs/inode.c
---- linux/fs/isofs/inode.c	2007-12-18 10:31:12.000000000 +0800
-+++ linux.new/fs/isofs/inode.c	2007-12-18 10:31:56.000000000 +0800
-@@ -1414,7 +1414,7 @@ struct inode *isofs_iget(struct super_bl
- 		ret = isofs_read_inode(inode);
- 		if (ret < 0) {
- 			iget_failed(inode);
--			inode = ERR_PTR(ret);
-+			return NULL;
- 		} else {
- 			unlock_new_inode(inode);
- 		}
+> Is it possible for you to test your laptop on another AP?
+>
 
-
+Not currently, but I'll try to find a way to do so -- not sure how
+long it'll take.
