@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbXLRNlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbXLRNpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbXLRNlZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 08:41:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbXLRNlR
+	id S1756247AbXLRNpN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 08:45:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbXLRNo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 08:41:17 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47704 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752661AbXLRNlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 08:41:16 -0500
-Date: Tue, 18 Dec 2007 14:40:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       zach@vmware.com, roland@redhat.com
-Subject: Re: [PATCH 21/21] [PATCH] finish processor.h integration
-Message-ID: <20071218134018.GA13193@elte.hu>
-References: <11979320354186-git-send-email-gcosta@redhat.com> <11979320401316-git-send-email-gcosta@redhat.com> <11979320451308-git-send-email-gcosta@redhat.com> <1197932050948-git-send-email-gcosta@redhat.com> <11979320551036-git-send-email-gcosta@redhat.com> <11979320603229-git-send-email!-gcosta@redhat.com> <11979320653161-git-send-email-gcosta@redhat.com> <11979320693300-git-send-email-gcosta@redhat.com> <20071218131932.GA9457@elte.hu> <20071218133818.GA9941@elte.hu>
+	Tue, 18 Dec 2007 08:44:56 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:41272 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755003AbXLRNoy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 08:44:54 -0500
+Date: Tue, 18 Dec 2007 06:43:15 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Adam Fritzler <mid@zigamorph.net>,
+       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+       Jeff Garzik <jgarzik@pobox.com>, Mike Phillips <mikep@linuxtr.net>,
+       Philip Blundell <philb@gnu.org>, linux-scsi@vger.kernel.org,
+       netdev@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
+Subject: Re: [PATCH] MAINTAINERS: remove Adam Fritzler, update his email address in other sources
+Message-ID: <20071218134128.GB5785@parisc-linux.org>
+References: <1197951126.4891.13.camel@localhost> <20071217202800.1c898441.akpm@linux-foundation.org> <1197953283.4891.24.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071218133818.GA9941@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1197953283.4891.24.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 17, 2007 at 08:48:03PM -0800, Joe Perches wrote:
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 9507b42..690f172 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3758,13 +3758,6 @@ W:	http://www.kernel.org/pub/linux/kernel/people/bunk/trivial/
+>  T:	git kernel.org:/pub/scm/linux/kernel/git/bunk/trivial.git
+>  S:	Maintained
+>  
+> -TMS380 TOKEN-RING NETWORK DRIVER
+> -P:	Adam Fritzler
+> -M:	mid@auk.cx
+> -L:	linux-tr@linuxtr.net
+> -W:	http://www.auk.cx/tms380tr/
+> -S:	Maintained
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+That's pretty unfriendly.  Presumably the linux-tr list is still active
+and would still help people with that driver.  So how about:
 
-> yes, our include file dependencies are a jungle, the differences 
-> between 32-bit and 64-bit are arbitrary in 80% of the cases, but still 
-> there's no reason why this couldnt be done correctly. The patch below 
-> is a quick bandaid that adds the missing bits.
+ TMS380 TOKEN-RING NETWORK DRIVER
+-P:   Adam Fritzler
+-M:   mid@auk.cx
+ L:   linux-tr@linuxtr.net
+?W:?
+-S:   Maintained
++S:   Orphan
 
-the bandaid didnt work - so i removed the 21/21 patch for the time 
-being.
+(Dunno what to do about W:)
 
-	Ingo
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
