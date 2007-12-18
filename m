@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764428AbXLRAWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765858AbXLRAXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764428AbXLRAWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 19:22:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbXLRAWl
+	id S1765858AbXLRAXh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 19:23:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759701AbXLRAX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 19:22:41 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45075 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756036AbXLRAWk (ORCPT
+	Mon, 17 Dec 2007 19:23:27 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41006 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756724AbXLRAX0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 19:22:40 -0500
-Message-ID: <476712BD.4020008@zytor.com>
-Date: Mon, 17 Dec 2007 16:22:21 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 17 Dec 2007 19:23:26 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Neil Horman <nhorman@tuxdriver.com>, Ben Woodard <woodard@redhat.com>,
+       Neil Horman <nhorman@redhat.com>, kexec@lists.infradead.org,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
+       Yinghai Lu <yhlu.kernel@gmail.com>, hpa@zytor.com, tglx@linutronix.de,
+       mingo@redhat.com
+Subject: Re: [PATCH] kexec: force x86_64 arches to boot kdump kernels on boot cpu
+References: <20071211192434.GD10999@hmsreliant.think-freely.org>
+	<86802c440712111151t29acd38kf9fac8e41743f3e4@mail.gmail.com>
+	<20071211205955.GF10999@hmsreliant.think-freely.org>
+	<20071212142132.GC4889@bingen.suse.de>
+	<20071212155515.GA29735@hmsendeavour.rdu.redhat.com>
+	<20071212160722.GD4889@bingen.suse.de>
+	<m1prxbu2ah.fsf@ebiederm.dsl.xmission.com>
+	<20071212202215.GB29735@hmsendeavour.rdu.redhat.com>
+	<m1lk7ztx9p.fsf@ebiederm.dsl.xmission.com>
+	<20071213143922.GA4674@hmsreliant.think-freely.org>
+	<20071213151629.GB31269@one.firstfloor.org>
+Date: Mon, 17 Dec 2007 17:13:25 -0700
+In-Reply-To: <20071213151629.GB31269@one.firstfloor.org> (Andi Kleen's message
+	of "Thu, 13 Dec 2007 16:16:29 +0100")
+Message-ID: <m1tzmgdfmi.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Jan Engelhardt <jengelh@computergmbh.de>,
-       Parag Warudkar <parag.warudkar@gmail.com>, devzero@web.de,
-       Matt.Domsch@dell.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [RFC] be more verbose when probing EDD
-References: <49448787@web.de>	<82e4877d0712161159r2572dbbfi15159c66e4b7e33b@mail.gmail.com>	<20071216201849.24f7aa5f@the-village.bc.nu>	<Pine.LNX.4.64.0712180023310.32270@fbirervta.pbzchgretzou.qr> <20071218001007.2324dbfc@the-village.bc.nu>
-In-Reply-To: <20071218001007.2324dbfc@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Does printk support escape sequences? The last time I tried
->> printk("\e[1;35m omg ponies \e[0m"); that did not went too successful.
-> 
-> It should handle \r correctly. If not that is easy to fix.
-> 
-> Escape codes are bad and should not be used - you may have a serial
-> console and not be on a Linux console
+Andi Kleen <andi@firstfloor.org> writes:
 
-It's not printk(), or the console, that's the issue...
-Consider logging to a file, which is quite common.
+> On Thu, Dec 13, 2007 at 09:39:22AM -0500, Neil Horman wrote:
+>> 
+>> Ok, new patch attached, taking into account Andi's request for a cleaner
+> method
+>
+> Sorry for not noticing that earlier, but was there a specific reason this needs
+> to be an early quirk at all? kexec can only happen after the standard quirks
+> ran.
+> I think it should be fine as a standard "late" quirk.
 
-Dumping formatting characters in there is a bit evil.
+Just to document things.  The important thing is this quirk happens
+before calibrate_delay().  Which is still before the normal pci
+subsystem gets initialized.  So that seems to require an early_quirk
+as the pci subsystem is not initialized by that point.
 
-Instead of using \r and overwrite, something like
+The only case we are likely to hit this is kdump because BIOS almost
+always boot us on the cpu with apic id  == 0.  However in the case
+of this bug if we happen to boot on a cpu with apic id >= 16 we
+won't be able to boot the linux kernel either, because calibrate_delay
+will fail.
 
-Testing foo... ok
-
-printk(KERN_INFO "Testing foo... ");
-foo();
-printk("ok\n");
-
-... really is a lot better.  We used to do that a lot more.
-
-	-hpa
+Eric
