@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbXLRK7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbXLRK71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbXLRK7P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 05:59:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbXLRK67
+	id S1753696AbXLRK71 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 05:59:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbXLRK7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 18 Dec 2007 05:59:00 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:59042 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753483AbXLRK67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Dec 2007 05:58:59 -0500
-Received: from ro-out-1112.google.com ([72.14.202.179]:28909 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753427AbXLRK66 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 05:58:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=paP6FxAyO+zdxm3Nw/d5VRP9zjS/gpYG1dn2Qe2J2BX2DPt4Sfk0xU/ck6LMe9c/bWRHRBApQFV44AbfEaHOGgIFZ29fWhiIE/7z72WEe1J5KgobE4rNed03NYsZI8B8vU6GlFBnksQJX2nCHOd8ecM8uzLAoLN+OOZLqVO5oJY=
-Subject: [PATCH] x86: Use helper in fault_64.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Tue, 18 Dec 2007 02:58:55 -0800
-Message-Id: <1197975535.7734.21.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Date: Tue, 18 Dec 2007 11:58:50 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: swapping in 2.6.24-rc5-git3
+Message-ID: <20071218105850.GA4249@ics.muni.cz>
+References: <20071217131726.GA14091@ics.muni.cz> <20071217171532.GK6979@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071217171532.GK6979@atrey.karlin.mff.cuni.cz>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Muni-Spam-TestIP: 147.251.54.96
+X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 18 Dec 2007 11:58:52 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the fixup_exception() helper in fault_64.c
+On Mon, Dec 17, 2007 at 06:15:32PM +0100, Jan Kara wrote:
+>   I think yes. 0 swappiness doesn't mean "no swapping at all". From the
+> code in shrink_active_list() it seems that it just decreases likeliness
+> of removing pages of mmaped files (i.e., also executables loaded in memory).
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-This is only appropriate if CONFIG_PNP_BIOS cannot be set on
-X86_64, which looks to be the case, but needs confirmation.
+So, I tried to add some prints. 
 
- arch/x86/mm/fault_64.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+I have mapped ratio about 78 while scp-ing the file. Distress suddenly raises
+from 0 to 100. At this poing, all the processes are swapped out.
 
-diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
-index 121c7bd..3a94941 100644
---- a/arch/x86/mm/fault_64.c
-+++ b/arch/x86/mm/fault_64.c
-@@ -298,7 +298,6 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
- 	struct mm_struct *mm;
- 	struct vm_area_struct * vma;
- 	unsigned long address;
--	const struct exception_table_entry *fixup;
- 	int write, fault;
- 	unsigned long flags;
- 	siginfo_t info;
-@@ -508,9 +507,7 @@ bad_area_nosemaphore:
- no_context:
- 	
- 	/* Are we prepared to handle this kernel fault?  */
--	fixup = search_exception_tables(regs->ip);
--	if (fixup) {
--		regs->ip = fixup->fixup;
-+	if (fixup_exception(regs)) {
- 		return;
- 	}
- 
+I guess it happens if scp is faster than the local disk which happens if
+I scp-ing over GE from desktop (with fast disk - and reading) to laptop (slow
+disk - and writing).
+
+This is my settings.
+/proc/sys/vm/*
+block_dump:0
+dirty_background_ratio:10
+dirty_expire_centisecs:2999
+dirty_ratio:40
+dirty_writeback_centisecs:499
+drop_caches:0
+laptop_mode:0
+legacy_va_layout:0
+lowmem_reserve_ratio:256	256	32
+max_map_count:65536
+min_free_kbytes:4006
+nr_pdflush_threads:2
+oom_kill_allocating_task:0
+overcommit_memory:0
+overcommit_ratio:50
+page-cluster:3
+panic_on_oom:0
+percpu_pagelist_fraction:0
+stat_interval:1
+swappiness:0
+vfs_cache_pressure:100
+
 -- 
-1.5.4.rc0.1143.g1a8a
-
-
-
+Luká¹ Hejtmánek
