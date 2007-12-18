@@ -1,213 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbXLROis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbXLROjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbXLROis (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 09:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbXLROij
+	id S1757282AbXLROjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 09:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbXLROjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 09:38:39 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59357 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752903AbXLROii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 09:38:38 -0500
-Date: Tue, 18 Dec 2007 15:38:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [git pull] scheduler fixes
-Message-ID: <20071218143825.GA30325@elte.hu>
-MIME-Version: 1.0
+	Tue, 18 Dec 2007 09:39:03 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57301 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756722AbXLROjB (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 09:39:01 -0500
+Date: Wed, 19 Dec 2007 01:38:49 +1100
+From: David Chinner <dgc@sgi.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: xfs@oss.sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Do not reset xfsquota flags on quotaless ro mount
+Message-ID: <20071218143849.GP4396912@sgi.com>
+References: <Pine.LNX.4.64.0712181459210.32270@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0712181459210.32270@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 18, 2007 at 03:04:03PM +0100, Jan Engelhardt wrote:
+> Hi,
+> 
+> 
+> In https://bugzilla.novell.com/show_bug.cgi?id=345338 it is claimed that
+> resetting the quota flags in the mounting sequence rw,ro,rw is a bug, but I
 
-Linus, please pull the latest scheduler git tree from:
+You mounted without quotas in the middle step, thereby invalidating
+them.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+> would say this is not the case, as quota is metadata, and the log is replayed
+> in ro mode even for other filesystems. Yet, it is still not nice, and I have
+> been trying with this patch, which does not do the right thing yet. (It does a
+> recovery when mounting for the 3rd time, which probably just says that I did
+> not know too much of xfs internals to cook up a nicely working patch.)
+> Opinions?
 
-Thanks,
+Log recovery occurs on read only mounts. Log recovery on filesystems without
+quota enabled ignores quota changes in the log (as quotas are not enabled
+and hence we can't assume that there's dquots still on disk). Hence a
+mount read only without quota enabled will leave quota inconsistent on disk.
 
-	Ingo
+i.e
 
------------------->
-Dmitry Adamushko (1):
-      sched: fix crash on ia64, introduce task_current()
+> 	mount -o usrquota,grpquota /dev/mapper/myxfs /mnt
+> 	umount /mnt
+> 	mount -o ro /dev/mapper/myxfs /mnt
 
-Eric Dumazet (1):
-      sched: sysctl, proc_dointvec_minmax() expects int values for
+Quota is now potentially inconsistent, and hence:
 
-Ingo Molnar (2):
-      sched: touch softlockup watchdog after idling
-      sched: do not hurt SCHED_BATCH on wakeup
+> 	umount /mnt
+> 	mount -o usrquota,grpquota /dev/mapper/myxfs /mnt
 
-Livio Soares (1):
-      sched: mark rwsem functions as __sched for wchan/profiling
+This mount *must* recalculate it. So, behaviour is as expected
+given the above command sequence.
 
- kernel/rwsem.c      |    5 +++--
- kernel/sched.c      |   18 ++++++++++++------
- kernel/sched_fair.c |    3 +--
- kernel/sysctl.c     |    8 ++++----
- lib/rwsem.c         |    2 +-
- 5 files changed, 21 insertions(+), 15 deletions(-)
+You should use this as the middle step:
 
-diff --git a/kernel/rwsem.c b/kernel/rwsem.c
-index 1ec620c..cae050b 100644
---- a/kernel/rwsem.c
-+++ b/kernel/rwsem.c
-@@ -6,6 +6,7 @@
- 
- #include <linux/types.h>
- #include <linux/kernel.h>
-+#include <linux/sched.h>
- #include <linux/module.h>
- #include <linux/rwsem.h>
- 
-@@ -15,7 +16,7 @@
- /*
-  * lock for reading
-  */
--void down_read(struct rw_semaphore *sem)
-+void __sched down_read(struct rw_semaphore *sem)
- {
- 	might_sleep();
- 	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
-@@ -42,7 +43,7 @@ EXPORT_SYMBOL(down_read_trylock);
- /*
-  * lock for writing
-  */
--void down_write(struct rw_semaphore *sem)
-+void __sched down_write(struct rw_semaphore *sem)
- {
- 	might_sleep();
- 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
-diff --git a/kernel/sched.c b/kernel/sched.c
-index c6e551d..3df84ea 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -508,10 +508,15 @@ EXPORT_SYMBOL_GPL(cpu_clock);
- # define finish_arch_switch(prev)	do { } while (0)
- #endif
- 
-+static inline int task_current(struct rq *rq, struct task_struct *p)
-+{
-+	return rq->curr == p;
-+}
-+
- #ifndef __ARCH_WANT_UNLOCKED_CTXSW
- static inline int task_running(struct rq *rq, struct task_struct *p)
- {
--	return rq->curr == p;
-+	return task_current(rq, p);
- }
- 
- static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next)
-@@ -540,7 +545,7 @@ static inline int task_running(struct rq *rq, struct task_struct *p)
- #ifdef CONFIG_SMP
- 	return p->oncpu;
- #else
--	return rq->curr == p;
-+	return task_current(rq, p);
- #endif
- }
- 
-@@ -663,6 +668,7 @@ void sched_clock_idle_wakeup_event(u64 delta_ns)
- 	struct rq *rq = cpu_rq(smp_processor_id());
- 	u64 now = sched_clock();
- 
-+	touch_softlockup_watchdog();
- 	rq->idle_clock += delta_ns;
- 	/*
- 	 * Override the previous timestamp and ignore all
-@@ -3334,7 +3340,7 @@ unsigned long long task_sched_runtime(struct task_struct *p)
- 
- 	rq = task_rq_lock(p, &flags);
- 	ns = p->se.sum_exec_runtime;
--	if (rq->curr == p) {
-+	if (task_current(rq, p)) {
- 		update_rq_clock(rq);
- 		delta_exec = rq->clock - p->se.exec_start;
- 		if ((s64)delta_exec > 0)
-@@ -4021,7 +4027,7 @@ void rt_mutex_setprio(struct task_struct *p, int prio)
- 
- 	oldprio = p->prio;
- 	on_rq = p->se.on_rq;
--	running = task_running(rq, p);
-+	running = task_current(rq, p);
- 	if (on_rq) {
- 		dequeue_task(rq, p, 0);
- 		if (running)
-@@ -4332,7 +4338,7 @@ recheck:
- 	}
- 	update_rq_clock(rq);
- 	on_rq = p->se.on_rq;
--	running = task_running(rq, p);
-+	running = task_current(rq, p);
- 	if (on_rq) {
- 		deactivate_task(rq, p, 0);
- 		if (running)
-@@ -7101,7 +7107,7 @@ void sched_move_task(struct task_struct *tsk)
- 
- 	update_rq_clock(rq);
- 
--	running = task_running(rq, tsk);
-+	running = task_current(rq, tsk);
- 	on_rq = tsk->se.on_rq;
- 
- 	if (on_rq) {
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index c33f0ce..da7c061 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -511,8 +511,7 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
- 
- 	if (!initial) {
- 		/* sleeps upto a single latency don't count. */
--		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se) &&
--				task_of(se)->policy != SCHED_BATCH)
-+		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se))
- 			vruntime -= sysctl_sched_latency;
- 
- 		/* ensure we never gain time by being placed backwards. */
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 1135de7..c68f68d 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -225,10 +225,10 @@ static struct ctl_table root_table[] = {
- };
- 
- #ifdef CONFIG_SCHED_DEBUG
--static unsigned long min_sched_granularity_ns = 100000;		/* 100 usecs */
--static unsigned long max_sched_granularity_ns = NSEC_PER_SEC;	/* 1 second */
--static unsigned long min_wakeup_granularity_ns;			/* 0 usecs */
--static unsigned long max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
-+static int min_sched_granularity_ns = 100000;		/* 100 usecs */
-+static int max_sched_granularity_ns = NSEC_PER_SEC;	/* 1 second */
-+static int min_wakeup_granularity_ns;			/* 0 usecs */
-+static int max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
- #endif
- 
- static struct ctl_table kern_table[] = {
-diff --git a/lib/rwsem.c b/lib/rwsem.c
-index cdb4e3d..7d02700 100644
---- a/lib/rwsem.c
-+++ b/lib/rwsem.c
-@@ -146,7 +146,7 @@ __rwsem_do_wake(struct rw_semaphore *sem, int downgrading)
- /*
-  * wait for a lock to be granted
-  */
--static struct rw_semaphore *
-+static struct rw_semaphore __sched *
- rwsem_down_failed_common(struct rw_semaphore *sem,
- 			struct rwsem_waiter *waiter, signed long adjustment)
- {
+	mount -o ro,usrquota,grpquota /dev/mapper/myxfs /mnt
+
+So that log replay replays all the journalled quota changes so
+that the quota remains consistent with the rest of the filesystem.
+Then you wont see a recalc when you remount rw.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
