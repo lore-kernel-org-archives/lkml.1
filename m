@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbXLRMQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbXLRMQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755722AbXLRMQM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 07:16:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbXLRMP6
+	id S1756020AbXLRMQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 07:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbXLRMQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 07:15:58 -0500
-Received: from mail.suse.de ([195.135.220.2]:51854 "EHLO mx1.suse.de"
+	Tue, 18 Dec 2007 07:16:17 -0500
+Received: from ns.suse.de ([195.135.220.2]:51893 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752063AbXLRMP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 07:15:57 -0500
-Date: Tue, 18 Dec 2007 11:32:40 +0100
-Message-ID: <s5hzlw8xph3.wl%tiwai@suse.de>
+	id S1755772AbXLRMQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 07:16:15 -0500
+Date: Tue, 18 Dec 2007 11:32:58 +0100
+Message-ID: <s5hy7bsxpgl.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jaroslav Kysela <perex@perex.cz>, Nils Faerber <nils@kernelconcepts.de>
-Subject: Re: [PATCH] sound/: Spelling fixes
-In-Reply-To: <1197920439-5455-32-git-send-email-joe@perches.com>
-References: <1197920439-5455-32-git-send-email-joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] include/sound/: Spelling fixes
+In-Reply-To: <1197920439-5455-33-git-send-email-joe@perches.com>
+References: <1197920439-5455-33-git-send-email-joe@perches.com>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -27,24 +26,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Mon, 17 Dec 2007 11:40:38 -0800,
+At Mon, 17 Dec 2007 11:40:39 -0800,
 Joe Perches wrote:
 > 
 > 
 > Signed-off-by: Joe Perches <joe@perches.com>
 > ---
->  sound/drivers/serial-u16550.c    |    6 ++--
->  sound/isa/es18xx.c               |    2 +-
->  sound/pci/au88x0/au88x0_core.c   |    2 +-
->  sound/pci/cs46xx/cs46xx_lib.c    |    2 +-
->  sound/pci/hda/hda_codec.h        |    2 +-
->  sound/pci/rme9652/hdsp.c         |    2 +-
->  sound/pci/rme9652/hdspm.c        |    4 +-
->  sound/pci/rme9652/rme9652.c      |    4 +-
->  sound/pci/trident/trident_main.c |   44 +++++++++++++++++++-------------------
->  9 files changed, 34 insertions(+), 34 deletions(-)
+>  include/sound/ad1848.h      |    2 +-
+>  include/sound/cs4231-regs.h |    2 +-
+>  include/sound/soc-dapm.h    |    2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
 
-Applied to ALSA tree now.  Thanks.
+Applied to ALSA tree.  Thanks.
 
 
 Takashi
