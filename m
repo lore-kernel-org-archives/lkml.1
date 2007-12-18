@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761309AbXLRR2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbXLRRbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761309AbXLRR2w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 12:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbXLRR2n
+	id S1759969AbXLRRbg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 12:31:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754961AbXLRRb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 12:28:43 -0500
-Received: from main.gmane.org ([80.91.229.2]:45948 "EHLO ciao.gmane.org"
+	Tue, 18 Dec 2007 12:31:28 -0500
+Received: from mout1.freenet.de ([195.4.92.91]:50976 "EHLO mout1.freenet.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755174AbXLRR2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 12:28:42 -0500
-X-Injected-Via-Gmane: http://gmane.org/
+	id S1753405AbXLRRb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 12:31:27 -0500
+From: Karsten Wiese <fzu@wemgehoertderstaat.de>
 To: linux-kernel@vger.kernel.org
-From: Matthew Bloch <matthew@bytemark.co.uk>
-Subject: Testing RAM from userspace / question about memmap= arguments
-Date: Tue, 18 Dec 2007 17:06:24 +0000
-Message-ID: <fk8umh$n7o$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [RFC/PATCH] 2.6.24-rcx: Make sys_poll() wait at least timeout ms
+Date: Tue, 18 Dec 2007 18:31:23 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: desk2.office.bytemark.co.uk
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+Content-Disposition: inline
+Message-Id: <200712181831.24202.fzu@wemgehoertderstaat.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi - I'm trying to come up with a way of thoroughly testing every byte
-of RAM from within Linux on amd64 (so that it can be automated better
-than using memtest86+), and came up with an idea which I'm not sure is
-supported or practical.
+Hi,
 
-The obvious problem with testing memory from user space is that you
-can't mlock all of it, so the best you can do is about three quarters,
-and hope that the rest of the memory is okay.
+while playing with jackd on 2.6.24-rcx, I found poll() timing out too early.
+That is: earlier than its timeout argument specified.
+Setting poll()'s timeout argument to "required timeout" + "1 jiffy in ms"
+fixed it. Patch below should fix it too. Correct?
+Untested.
+Otherwise 2.6.24-rc5 ticks just fine here, thanks.
 
-In order to test all of the memory, I'd like to run the user-space
-memtester over two boots of the kernel.
+      Karsten
+ 
+------------->
+Make sys_poll() wait at least timeout ms
 
-Say we have a 1024MB machine, the first boot I'd not specify any
-arguments and assume the kernel would start at the bottom of physical
-memory and work its way up, so that the kernel & working userspace would
-live at the bottom, and the rest would be testable from space.
+schedule_timeout(jiffies) waits for at least jiffies - 1.
+Add 1 jiffie to the timeout_jiffies calculated in sys_poll() to wait at least
+timeout_msecs, like poll() manpage says.
 
-On the second boot, could I then specify:
+Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
+---
+ fs/select.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-memmap=exact memmap=512M@512M memmap=512M@0
-
-i.e. such that the kernel's idea of the usable memory started in the
-middle of physical RAM, and that's where it would locate itself?  That
-way, on the second boot, the same test in userspace would definitely
-grab the previously inaccessible RAM at the start for testing.
-
-I can see a few potential problems, but since my understanding of the
-low-level memory mapping is muddy at best, I won't speculate; I'd just
-appreciate any more expert views on whether this does work, or could be
-made to work.
-
-Thanks,
-
+diff --git a/fs/select.c b/fs/select.c
+index 47f4792..5633fe9 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -739,7 +739,7 @@ asmlinkage long sys_poll(struct pollfd __user *ufds, unsigned int nfds,
+ 			timeout_jiffies = -1;
+ 		else
+ #endif
+-			timeout_jiffies = msecs_to_jiffies(timeout_msecs);
++			timeout_jiffies = msecs_to_jiffies(timeout_msecs) + 1;
+ 	} else {
+ 		/* Infinite (< 0) or no (0) timeout */
+ 		timeout_jiffies = timeout_msecs;
 -- 
-Matthew
+1.5.3.6
 
