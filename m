@@ -1,114 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbXLRVLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbXLRVRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbXLRVLz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 16:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbXLRVLr
+	id S1754032AbXLRVRs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 16:17:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbXLRVRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 16:11:47 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38973 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752407AbXLRVLp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 16:11:45 -0500
-Date: Tue, 18 Dec 2007 13:09:15 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Richard Henderson <rth@twiddle.net>
-cc: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
-       Keith Packard <keithp@keithp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: PCI resource problems caused by improper address rounding
-In-Reply-To: <20071218202234.GA24525@twiddle.net>
-Message-ID: <alpine.LFD.0.9999.0712181240280.21557@woody.linux-foundation.org>
-References: <47671377.6000405@redhat.com> <alpine.LFD.0.9999.0712171648150.21557@woody.linux-foundation.org> <47680489.6040809@redhat.com> <alpine.LFD.0.9999.0712180946030.21557@woody.linux-foundation.org> <20071218202234.GA24525@twiddle.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Tue, 18 Dec 2007 16:17:34 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58099 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751140AbXLRVRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 16:17:33 -0500
+Message-Id: <20071218211548.681844332@redhat.com>
+References: <20071218211539.250334036@redhat.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 18 Dec 2007 16:15:40 -0500
+From: Rik van Riel <riel@redhat.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, lee.shermerhorn@hp.com,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: [patch 01/20] convert anon_vma list lock a read/write lock
+Content-Disposition: inline; filename=make-anon_vma-lock-rw.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Make the anon_vma list lock a read/write lock.  Heaviest use of this
+lock is in the page_referenced()/try_to_unmap() calls from vmscan
+[shrink_page_list()].  These functions can use a read lock to allow
+some parallelism for different cpus trying to reclaim pages mapped
+via the same set of vmas.
 
+This change should not change the footprint of the anon_vma in the
+non-debug case.
 
-On Tue, 18 Dec 2007, Richard Henderson wrote:
-> 
-> I've added dmesg, /proc/iomem, and lspci -v output to that bug.
-> 
-> Basically, we have
-> 
-> 	c0000000-cfffffff : free
-> 	ddf00000-dfefffff : PCI Bus #04
-> 	e0000000-efffffff : pnp 00:0b
-> 	f0000000-fedfffff : less than 256MB
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by:  Rik van Riel <riel@redhat.com>
 
-Gaah. 
+Index: Linux/include/linux/rmap.h
+===================================================================
+--- Linux.orig/include/linux/rmap.h	2007-11-28 10:54:36.000000000 -0500
++++ Linux/include/linux/rmap.h	2007-11-28 11:12:37.000000000 -0500
+@@ -25,7 +25,7 @@
+  * pointing to this anon_vma once its vma list is empty.
+  */
+ struct anon_vma {
+-	spinlock_t lock;	/* Serialize access to vma list */
++	rwlock_t rwlock;	/* Serialize access to vma list */
+ 	struct list_head head;	/* List of private "related" vmas */
+ };
+ 
+@@ -43,18 +43,21 @@ static inline void anon_vma_free(struct 
+ 	kmem_cache_free(anon_vma_cachep, anon_vma);
+ }
+ 
++/*
++ * This needs to be a write lock for __vma_link()
++ */
+ static inline void anon_vma_lock(struct vm_area_struct *vma)
+ {
+ 	struct anon_vma *anon_vma = vma->anon_vma;
+ 	if (anon_vma)
+-		spin_lock(&anon_vma->lock);
++		write_lock(&anon_vma->rwlock);
+ }
+ 
+ static inline void anon_vma_unlock(struct vm_area_struct *vma)
+ {
+ 	struct anon_vma *anon_vma = vma->anon_vma;
+ 	if (anon_vma)
+-		spin_unlock(&anon_vma->lock);
++		write_unlock(&anon_vma->rwlock);
+ }
+ 
+ /*
+Index: Linux/mm/rmap.c
+===================================================================
+--- Linux.orig/mm/rmap.c	2007-11-28 10:54:37.000000000 -0500
++++ Linux/mm/rmap.c	2007-11-28 11:12:37.000000000 -0500
+@@ -25,7 +25,7 @@
+  *   mm->mmap_sem
+  *     page->flags PG_locked (lock_page)
+  *       mapping->i_mmap_lock
+- *         anon_vma->lock
++ *         anon_vma->rwlock
+  *           mm->page_table_lock or pte_lock
+  *             zone->lru_lock (in mark_page_accessed, isolate_lru_page)
+  *             swap_lock (in swap_duplicate, swap_info_get)
+@@ -68,7 +68,7 @@ int anon_vma_prepare(struct vm_area_stru
+ 		if (anon_vma) {
+ 			allocated = NULL;
+ 			locked = anon_vma;
+-			spin_lock(&locked->lock);
++			write_lock(&locked->rwlock);
+ 		} else {
+ 			anon_vma = anon_vma_alloc();
+ 			if (unlikely(!anon_vma))
+@@ -87,7 +87,7 @@ int anon_vma_prepare(struct vm_area_stru
+ 		spin_unlock(&mm->page_table_lock);
+ 
+ 		if (locked)
+-			spin_unlock(&locked->lock);
++			write_unlock(&locked->rwlock);
+ 		if (unlikely(allocated))
+ 			anon_vma_free(allocated);
+ 	}
+@@ -113,9 +113,9 @@ void anon_vma_link(struct vm_area_struct
+ 	struct anon_vma *anon_vma = vma->anon_vma;
+ 
+ 	if (anon_vma) {
+-		spin_lock(&anon_vma->lock);
++		write_lock(&anon_vma->rwlock);
+ 		list_add_tail(&vma->anon_vma_node, &anon_vma->head);
+-		spin_unlock(&anon_vma->lock);
++		write_unlock(&anon_vma->rwlock);
+ 	}
+ }
+ 
+@@ -127,12 +127,12 @@ void anon_vma_unlink(struct vm_area_stru
+ 	if (!anon_vma)
+ 		return;
+ 
+-	spin_lock(&anon_vma->lock);
++	write_lock(&anon_vma->rwlock);
+ 	list_del(&vma->anon_vma_node);
+ 
+ 	/* We must garbage collect the anon_vma if it's empty */
+ 	empty = list_empty(&anon_vma->head);
+-	spin_unlock(&anon_vma->lock);
++	write_unlock(&anon_vma->rwlock);
+ 
+ 	if (empty)
+ 		anon_vma_free(anon_vma);
+@@ -142,7 +142,7 @@ static void anon_vma_ctor(struct kmem_ca
+ {
+ 	struct anon_vma *anon_vma = data;
+ 
+-	spin_lock_init(&anon_vma->lock);
++ 	rwlock_init(&anon_vma->rwlock);
+ 	INIT_LIST_HEAD(&anon_vma->head);
+ }
+ 
+@@ -169,7 +169,7 @@ static struct anon_vma *page_lock_anon_v
+ 		goto out;
+ 
+ 	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
+-	spin_lock(&anon_vma->lock);
++	read_lock(&anon_vma->rwlock);
+ 	return anon_vma;
+ out:
+ 	rcu_read_unlock();
+@@ -178,7 +178,7 @@ out:
+ 
+ static void page_unlock_anon_vma(struct anon_vma *anon_vma)
+ {
+-	spin_unlock(&anon_vma->lock);
++	read_unlock(&anon_vma->rwlock);
+ 	rcu_read_unlock();
+ }
+ 
+Index: Linux/mm/mmap.c
+===================================================================
+--- Linux.orig/mm/mmap.c	2007-11-28 10:54:36.000000000 -0500
++++ Linux/mm/mmap.c	2007-11-28 11:12:37.000000000 -0500
+@@ -564,7 +564,7 @@ again:			remove_next = 1 + (end > next->
+ 	if (vma->anon_vma)
+ 		anon_vma = vma->anon_vma;
+ 	if (anon_vma) {
+-		spin_lock(&anon_vma->lock);
++		write_lock(&anon_vma->rwlock);
+ 		/*
+ 		 * Easily overlooked: when mprotect shifts the boundary,
+ 		 * make sure the expanding vma has anon_vma set if the
+@@ -618,7 +618,7 @@ again:			remove_next = 1 + (end > next->
+ 	}
+ 
+ 	if (anon_vma)
+-		spin_unlock(&anon_vma->lock);
++		write_unlock(&anon_vma->rwlock);
+ 	if (mapping)
+ 		spin_unlock(&mapping->i_mmap_lock);
+ 
+Index: Linux/mm/migrate.c
+===================================================================
+--- Linux.orig/mm/migrate.c	2007-11-28 10:54:36.000000000 -0500
++++ Linux/mm/migrate.c	2007-11-28 11:12:37.000000000 -0500
+@@ -229,12 +229,12 @@ static void remove_anon_migration_ptes(s
+ 	 * We hold the mmap_sem lock. So no need to call page_lock_anon_vma.
+ 	 */
+ 	anon_vma = (struct anon_vma *) (mapping - PAGE_MAPPING_ANON);
+-	spin_lock(&anon_vma->lock);
++	read_lock(&anon_vma->rwlock);
+ 
+ 	list_for_each_entry(vma, &anon_vma->head, anon_vma_node)
+ 		remove_migration_pte(vma, old, new);
+ 
+-	spin_unlock(&anon_vma->lock);
++	read_unlock(&anon_vma->rwlock);
+ }
+ 
+ /*
 
-That really is very unlucky. That 256M only goes at one point in the low 
-4GB, but the thing is, it fits perfectly well above it, and dammit, that 
-resource is explicitly a 64-bit resource or a really good reason. 
+-- 
+All Rights Reversed
 
-However, I wonder about that
-
-	e0000000-efffffff : pnp 00:0b
-
-thing. I actually suspect that that whole allocation is literally *meant* 
-for that 256MB graphics aperture, but the kernel explicitly avoids it 
-because it's listed in the PnP tables.
-
-I wonder what the heck is the point of that pnp entry. Just for fun, can 
-you try to just disable CONFIG_PNP, and see if it all works then?
-
-Björn Helgaas added to Cc to clarify what those pnp entries tend to mean, 
-and whether there is possibly some way to match up a specific pnp entry 
-with the PCI device that might want to use it. Because that is a nice 
-256MB region that really doesn't seem to make sense for anything else than 
-the graphics buffer - there's nothing else in your system that seems 
-likely (although I guess it could be for some docking port, but even then 
-I'd have expected one of the PCI bridges to map it!)
-
-But apart from the question about that pnp 00:0b device, the kernel 
-resource allocation really does look perfectly fine, and while we could 
-shoe-horn it into the low 4GB in this case by just hoping that there is 
-nothing undocumented there (and there probably isn't), it's really 
-annoying considering that big graphics areas are a hell of a good reason 
-to use those 64-bit resources.
-
-It's not like 256MB is even as large as they come, half-gig graphics cards 
-are getting to be fairly common at the high end, and X absolutely _has_ to 
-be able to handle a 64-bit address for those. 
-
-Also, I'm surprised it doesn't work with X already: the ChangeLog for X 
-says that there are "Minor fixes to the handling of 64-bit PCI BARs [..]" 
-in 4.6.99.18, so I'd have assumed that XFree86-4.7.0 should be able to 
-handle this perfectly well.
-
-I'll add Keithp to the cc too, to see if the X issues can be clarified. 
-Maybe he can set us right. But maybe you just have an old X server? If so, 
-considering the situation, I really think the kernel has done a good job 
-already, and I'd be *very* nervous about making the kernel allocate new 
-PCI resources right after the end-of-memory thing.
-
-I bet it would work in this case, but as mentioned, we definitely know of 
-cases where the BIOS did *not* document the magic memory region that was 
-stolen for UMA graphics, and trying to put PCI devices just after the top 
-of reserved memory in the e820 list causes machines to not work at all 
-because the address decoding will clash.
-
-Of course, we could also make the minimum address more of a *hint*, and 
-only make the resource allocator only abut the top-of-known-memory when it 
-absolutely has to, but on the other hand, in this case it really doesn't 
-have to, since there's just _tons_ of space for 64-bit resources. So the 
-correct thing really does seem to be to just use the 64-bit hw that is 
-there.
-
-> That would have been an excellent comment to add to that code then,
-> rather than just "rounding up to the next 1MB area", because purely
-> as rounding code it is erroneous.
-
-Patches to add comments are welcome. There are few enough people who 
-actually work on the PCI resource allocation code these days (I wish there 
-were more), and it's very rare that anybody else than me or Ivan ends up 
-even *looking* at it. So it's not been a big issue.
-
-				Linus
