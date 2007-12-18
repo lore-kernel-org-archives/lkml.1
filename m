@@ -1,58 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757258AbXLRWBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbXLRWCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757258AbXLRWBz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 17:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXLRWBo
+	id S1757339AbXLRWCb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 17:02:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbXLRWCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 17:01:44 -0500
-Received: from iriserv.iradimed.com ([72.242.190.170]:31080 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756764AbXLRWBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 17:01:42 -0500
-Message-ID: <47684342.3010807@cfl.rr.com>
-Date: Tue, 18 Dec 2007 17:01:38 -0500
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 18 Dec 2007 17:02:20 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59915 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753047AbXLRWCT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 17:02:19 -0500
+Date: Tue, 18 Dec 2007 22:01:24 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Christoph Rohland <hans-christoph.rohland@sap.com>,
+       Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org
+Subject: [PATCH 4/9] tmpfs: allow filepage alongside swappage
+In-Reply-To: <Pine.LNX.4.64.0712182144370.26235@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0712182200230.27165@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0712182144370.26235@blonde.wat.veritas.com>
 MIME-Version: 1.0
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: BUG: attempt to access beyond end of device
-References: <4766BB17.10803@m3y3r.de> <4768400B.9090306@cfl.rr.com>
-In-Reply-To: <4768400B.9090306@cfl.rr.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Dec 2007 22:01:57.0081 (UTC) FILETIME=[9B585490:01C841C1]
-X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1023-15614.001
-X-TM-AS-Result: No--9.151200-5.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops, try that again with Jens' new address.
+tmpfs has long allowed for a fresh filepage to be created in pagecache,
+just before shmem_getpage gets the chance to match it up with the swappage
+which already belongs to that offset.  But unionfs_writepage now does a
+find_or_create_page, divorced from shmem_getpage, which leaves conflicting
+filepage and swappage outstanding indefinitely, when unionfs is over tmpfs.
 
-Phillip Susi wrote:
-> Thomas Meyer wrote:
->> Hi,
->>
->> is somebody actually working on this bug?
->>
->> http://bugzilla.kernel.org/show_bug.cgi?id=9370
->>
->> I don't want to be impolite, but it's now more than a month since the
->> bug was opened.
->>
->> The bug still exists in v2.6.24-rc5-43-gda8cadb:
-> 
-> Have you tried simply removing the line mentioned in the bug report from 
-> pktcdvd.c?
-> 
-> rq->cmd_type = REQ_TYPE_BLOCK_PC;
-> 
-> 
-> Maybe Jens can comment on if that would be correct since he is more 
-> familiar with the code than I.
-> 
+Therefore shmem_writepage (where a page is swizzled from file to swap) must
+now be on the lookout for existing swap, ready to free it in favour of the
+more uptodate filepage, instead of BUGging on that clash.  And when the
+add_to_page_cache fails in shmem_unuse_inode, it must defer to an uptodate
+filepage, otherwise swapoff would hang.  Whereas when add_to_page_cache
+fails in shmem_getpage, it should retry in the same way it already does.
 
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+
+ mm/shmem.c |   69 ++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 44 insertions(+), 25 deletions(-)
+
+--- tmpfs3/mm/shmem.c	2007-12-05 16:42:18.000000000 +0000
++++ tmpfs4/mm/shmem.c	2007-12-05 16:42:19.000000000 +0000
+@@ -827,6 +827,7 @@ static int shmem_unuse_inode(struct shme
+ 	struct page *subdir;
+ 	swp_entry_t *ptr;
+ 	int offset;
++	int error;
+ 
+ 	idx = 0;
+ 	ptr = info->i_direct;
+@@ -884,7 +885,20 @@ lost2:
+ found:
+ 	idx += offset;
+ 	inode = &info->vfs_inode;
+-	if (add_to_page_cache(page, inode->i_mapping, idx, GFP_ATOMIC) == 0) {
++	error = add_to_page_cache(page, inode->i_mapping, idx, GFP_ATOMIC);
++	if (error == -EEXIST) {
++		struct page *filepage = find_get_page(inode->i_mapping, idx);
++		if (filepage) {
++			/*
++			 * There might be a more uptodate page coming down
++			 * from a stacked writepage: forget our swappage if so.
++			 */
++			if (PageUptodate(filepage))
++				error = 0;
++			page_cache_release(filepage);
++		}
++	}
++	if (!error) {
+ 		delete_from_swap_cache(page);
+ 		set_page_dirty(page);
+ 		info->flags |= SHMEM_PAGEIN;
+@@ -937,44 +951,45 @@ static int shmem_writepage(struct page *
+ 	struct inode *inode;
+ 
+ 	BUG_ON(!PageLocked(page));
+-	/*
+-	 * shmem_backing_dev_info's capabilities prevent regular writeback or
+-	 * sync from ever calling shmem_writepage; but a stacking filesystem
+-	 * may use the ->writepage of its underlying filesystem, in which case
+-	 * we want to do nothing when that underlying filesystem is tmpfs
+-	 * (writing out to swap is useful as a response to memory pressure, but
+-	 * of no use to stabilize the data) - just redirty the page, unlock it
+-	 * and claim success in this case.  AOP_WRITEPAGE_ACTIVATE, and the
+-	 * page_mapped check below, must be avoided unless we're in reclaim.
+-	 */
+-	if (!wbc->for_reclaim) {
+-		set_page_dirty(page);
+-		unlock_page(page);
+-		return 0;
+-	}
+-	BUG_ON(page_mapped(page));
+-
+ 	mapping = page->mapping;
+ 	index = page->index;
+ 	inode = mapping->host;
+ 	info = SHMEM_I(inode);
+ 	if (info->flags & VM_LOCKED)
+ 		goto redirty;
+-	swap = get_swap_page();
+-	if (!swap.val)
++	if (!total_swap_pages)
+ 		goto redirty;
+ 
++	/*
++	 * shmem_backing_dev_info's capabilities prevent regular writeback or
++	 * sync from ever calling shmem_writepage; but a stacking filesystem
++	 * may use the ->writepage of its underlying filesystem, in which case
++	 * tmpfs should write out to swap only in response to memory pressure,
++	 * and not for pdflush or sync.  However, in those cases, we do still
++	 * want to check if there's a redundant swappage to be discarded.
++	 */
++	if (wbc->for_reclaim)
++		swap = get_swap_page();
++	else
++		swap.val = 0;
++
+ 	spin_lock(&info->lock);
+-	shmem_recalc_inode(inode);
+ 	if (index >= info->next_index) {
+ 		BUG_ON(!(info->flags & SHMEM_TRUNCATE));
+ 		goto unlock;
+ 	}
+ 	entry = shmem_swp_entry(info, index, NULL);
+-	BUG_ON(!entry);
+-	BUG_ON(entry->val);
++	if (entry->val) {
++		/*
++		 * The more uptodate page coming down from a stacked
++		 * writepage should replace our old swappage.
++		 */
++		free_swap_and_cache(*entry);
++		shmem_swp_set(info, entry, 0);
++	}
++	shmem_recalc_inode(inode);
+ 
+-	if (add_to_swap_cache(page, swap, GFP_ATOMIC) == 0) {
++	if (swap.val && add_to_swap_cache(page, swap, GFP_ATOMIC) == 0) {
+ 		remove_from_page_cache(page);
+ 		shmem_swp_set(info, entry, swap.val);
+ 		shmem_swp_unmap(entry);
+@@ -986,6 +1001,7 @@ static int shmem_writepage(struct page *
+ 			spin_unlock(&shmem_swaplist_lock);
+ 		}
+ 		swap_duplicate(swap);
++		BUG_ON(page_mapped(page));
+ 		page_cache_release(page);	/* pagecache ref */
+ 		set_page_dirty(page);
+ 		unlock_page(page);
+@@ -998,7 +1014,10 @@ unlock:
+ 	swap_free(swap);
+ redirty:
+ 	set_page_dirty(page);
+-	return AOP_WRITEPAGE_ACTIVATE;	/* Return with the page locked */
++	if (wbc->for_reclaim)
++		return AOP_WRITEPAGE_ACTIVATE;	/* Return with page locked */
++	unlock_page(page);
++	return 0;
+ }
+ 
+ #ifdef CONFIG_NUMA
