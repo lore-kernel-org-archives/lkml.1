@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbXLRPdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbXLRPeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758388AbXLRPdY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 10:33:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbXLRPdP
+	id S1757140AbXLRPeg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 10:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756659AbXLRPe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 10:33:15 -0500
-Received: from chello089077114002.chello.pl ([89.77.114.2]:36213 "EHLO
-	astralstorm.puszkin.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751641AbXLRPdO (ORCPT
+	Tue, 18 Dec 2007 10:34:29 -0500
+Received: from mu-out-0910.google.com ([209.85.134.184]:21908 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756516AbXLRPe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 10:33:14 -0500
-Date: Tue, 18 Dec 2007 16:33:02 +0100
-From: Radoslaw Szkodzinski (AstralStorm) <lkml@astralstorm.puszkin.org>
-To: David Newall <david@davidnewall.com>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-Message-ID: <20071218163302.3f54de45@astralstorm.puszkin.org>
-In-Reply-To: <47661096.7020107@davidnewall.com>
-References: <200712162026.BFJ01924.tOFJSFOQMVHOLF@I-love.SAKURA.ne.jp>
-	<47650C88.6040105@davidnewall.com>
-	<200712162036.JAJ09389.OQOVtOHMFLFSFJ@I-love.SAKURA.ne.jp>
-	<476512F1.5010701@davidnewall.com>
-	<200712162103.IEC69233.FFOFOOtJMQHSLV@I-love.SAKURA.ne.jp>
-	<200712162114.BJE04102.tOMFHOOFSJVQFL@I-love.SAKURA.ne.jp>
-	<47661096.7020107@davidnewall.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/+MWAjzo.w_gtxMS2pRC=ZHN";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Tue, 18 Dec 2007 10:34:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KuQyrRVSjiybArTQy5rER7TQCBeF6sN+aO37VnIgogMDBJglECzAd/C8jWm6xq0fQLvRCkLt+21z3xVJt62Gmnrqx3SoLSmpP8Bwst175WNC9LYaG5fB3W+kzVVFma40av2En72vhcLzk/LvSUYGoYTckqDvLzucUBEJ3kdBrxk=
+Message-ID: <83a51e120712180734i334399dbl51f44fe32d815f7d@mail.gmail.com>
+Date: Tue, 18 Dec 2007 10:34:26 -0500
+From: "James Nichols" <jamesnichols3@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0712180009390.32270@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com>
+	 <Pine.LNX.4.64.0712180009390.32270@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/+MWAjzo.w_gtxMS2pRC=ZHN
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+> Try uploading something through rsync+ssh, or scp+ssh. If it aborts
+> or hangs after a while, that may be an strong indication of a crappy
+> router. Also, I'd advise to upgrade to something newer like >=
+> 2.6.22. There was one of those SACK-broken routers around here too,
+> but it seemed to have been replaced (or linux got a mysterious fix
+> :-) as one day when I tried turning off SACK, rsync didnot abort
+> anymore on new connections.
 
-On Mon, 17 Dec 2007 16:30:54 +1030
-David Newall <david@davidnewall.com> wrote:
+Uploads to hosts other then 2000 being hit by my app via webservices
+run flawlessly to completion.  I really don't think it is my routing
+equipment- I've completely rebuilt the whole network infrastructure
+several times in the 4 years that I've had this problem, have moved to
+different colo facilities, and several other network related factors
+and still have seen this problem.
 
-> Tetsuo Handa wrote:
-> > If Bob is malicious and creates /dev/sda1 with block-8-2 attribute [...]
->=20
-> Bob can't do that.  Only root can.
+It's very challenging for me to upgrade the kernel as this is a
+production system and I need to run on whatever the latest RedHat
+supports for support contract reasons.  I probably could do it if
+there are specific fixes that there is reason to believe will make my
+problem go away.
 
-Not even root can, if you remove him the capability. Only udev can.
-(which possibly doesn't have to run as root, given correct capability
-set?)
 
-Of course root may be able to change the configuration of udev to
-create device nodes of his liking if you allow that...
-
---Sig_/+MWAjzo.w_gtxMS2pRC=ZHN
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQFHZ+g0BlhXA0ALOYMRAnXvAJ4vn5xjQB6WayfS1Zz1ytnXePuvKQCgjB/n
-N/EHRP9zLd13TkVnyZV8sBI=
-=sNnv
------END PGP SIGNATURE-----
-
---Sig_/+MWAjzo.w_gtxMS2pRC=ZHN--
+> Though, if SACK was the problem, the problem would be much more
+> likely to appear after the handshake. YMMV.
