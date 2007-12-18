@@ -1,52 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbXLRVVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbXLRVVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753198AbXLRVVI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 16:21:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbXLRVRo
+	id S1753867AbXLRVVZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 16:21:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbXLRVRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 16:17:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58134 "EHLO mx1.redhat.com"
+	Tue, 18 Dec 2007 16:17:45 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58136 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753101AbXLRVRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753103AbXLRVRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Dec 2007 16:17:36 -0500
-Message-Id: <20071218211549.621840854@redhat.com>
+Message-Id: <20071218211550.392853742@redhat.com>
 References: <20071218211539.250334036@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 18 Dec 2007 16:15:50 -0500
+Date: Tue, 18 Dec 2007 16:15:58 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, lee.shermerhorn@hp.com
-Subject: [patch 11/20] add newly swapped in pages to the inactive list
-Content-Disposition: inline; filename=rvr-swapin-inactive.patch
+Cc: linux-kernel@vger.kernel.org, lee.shermerhorn@hp.com,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: [patch 19/20] handle mlocked pages during map/unmap and truncate
+Content-Disposition: inline; filename=noreclaim-04.2-move-mlocked-pages-off-the-LRU.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Swapin_readahead can read in a lot of data that the processes in
-memory never need.  Adding swap cache pages to the inactive list
-prevents them from putting too much pressure on the working set.
+V2 -> V3:
++ rebase to 23-mm1 atop RvR's split lru series [no changes]
 
-This has the potential to help the programs that are already in
-memory, but it could also be a disadvantage to processes that
-are trying to get swapped in.
+V1 -> V2:
++  modified mmap.c:mmap_region() to return error if mlock_vma_pages_range()
+   does.  This can only occur if the vma gets removed/changed while
+   we're switching mmap_sem lock modes.   Most callers don't care, but
+   sys_remap_file_pages() appears to.
 
-In short, this patch needs testing.
+Rework of Nick Piggins's "mm: move mlocked pages off the LRU" patch
+-- part 2 0f 2.
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
+Remove mlocked pages from the LRU using "NoReclaim infrastructure"
+during mmap()/mremap().  Try to move back to normal LRU lists on
+munmap() when last locked mapping removed.  Removed PageMlocked()
+status when page truncated from file.
 
-Index: linux-2.6.23-mm1/mm/swap_state.c
+
+Originally Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by:  Rik van Riel <riel@redhat.com>
+
+Index: Linux/mm/mmap.c
 ===================================================================
---- linux-2.6.23-mm1.orig/mm/swap_state.c
-+++ linux-2.6.23-mm1/mm/swap_state.c
-@@ -370,7 +370,7 @@ struct page *read_swap_cache_async(swp_e
- 			/*
- 			 * Initiate read into locked page and return.
- 			 */
--			lru_cache_add_active_anon(new_page);
-+			lru_cache_add_anon(new_page);
- 			swap_readpage(NULL, new_page);
- 			return new_page;
- 		}
+--- Linux.orig/mm/mmap.c	2007-11-12 16:21:48.000000000 -0500
++++ Linux/mm/mmap.c	2007-11-12 16:22:03.000000000 -0500
+@@ -32,6 +32,8 @@
+ #include <asm/tlb.h>
+ #include <asm/mmu_context.h>
+ 
++#include "internal.h"
++
+ #ifndef arch_mmap_check
+ #define arch_mmap_check(addr, len, flags)	(0)
+ #endif
+@@ -1211,9 +1213,13 @@ out:	
+ 	vm_stat_account(mm, vm_flags, file, len >> PAGE_SHIFT);
+ 	if (vm_flags & VM_LOCKED) {
+ 		mm->locked_vm += len >> PAGE_SHIFT;
+-		make_pages_present(addr, addr + len);
+-	}
+-	if ((flags & MAP_POPULATE) && !(flags & MAP_NONBLOCK))
++		/*
++		 * makes pages present; downgrades, drops, requires mmap_sem
++		 */
++		error = mlock_vma_pages_range(vma, addr, addr + len);
++		if (error)
++			return error;	/* vma gone! */
++	} else if ((flags & MAP_POPULATE) && !(flags & MAP_NONBLOCK))
+ 		make_pages_present(addr, addr + len);
+ 	return addr;
+ 
+@@ -1892,6 +1898,19 @@ int do_munmap(struct mm_struct *mm, unsi
+ 	vma = prev? prev->vm_next: mm->mmap;
+ 
+ 	/*
++	 * unlock any mlock()ed ranges before detaching vmas
++	 */
++	if (mm->locked_vm) {
++		struct vm_area_struct *tmp = vma;
++		while (tmp && tmp->vm_start < end) {
++			if (tmp->vm_flags & VM_LOCKED)
++				munlock_vma_pages_range(tmp,
++						 tmp->vm_start, tmp->vm_end);
++			tmp = tmp->vm_next;
++		}
++	}
++
++	/*
+ 	 * Remove the vma's, and unmap the actual pages
+ 	 */
+ 	detach_vmas_to_be_unmapped(mm, vma, prev, end);
+@@ -2024,7 +2043,7 @@ out:
+ 	mm->total_vm += len >> PAGE_SHIFT;
+ 	if (flags & VM_LOCKED) {
+ 		mm->locked_vm += len >> PAGE_SHIFT;
+-		make_pages_present(addr, addr + len);
++		mlock_vma_pages_range(vma, addr, addr + len);
+ 	}
+ 	return addr;
+ }
+@@ -2035,13 +2054,26 @@ EXPORT_SYMBOL(do_brk);
+ void exit_mmap(struct mm_struct *mm)
+ {
+ 	struct mmu_gather *tlb;
+-	struct vm_area_struct *vma = mm->mmap;
++	struct vm_area_struct *vma;
+ 	unsigned long nr_accounted = 0;
+ 	unsigned long end;
+ 
+ 	/* mm's last user has gone, and its about to be pulled down */
+ 	arch_exit_mmap(mm);
+ 
++	if (mm->locked_vm) {
++		vma = mm->mmap;
++		while (vma) {
++			if (vma->vm_flags & VM_LOCKED)
++				munlock_vma_pages_range(vma,
++						vma->vm_start, vma->vm_end);
++			vma = vma->vm_next;
++		}
++	}
++
++	vma = mm->mmap;
++
++
+ 	lru_add_drain();
+ 	flush_cache_mm(mm);
+ 	tlb = tlb_gather_mmu(mm, 1);
+Index: Linux/mm/mremap.c
+===================================================================
+--- Linux.orig/mm/mremap.c	2007-11-12 16:21:48.000000000 -0500
++++ Linux/mm/mremap.c	2007-11-12 16:22:03.000000000 -0500
+@@ -23,6 +23,8 @@
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
+ 
++#include "internal.h"
++
+ static pmd_t *get_old_pmd(struct mm_struct *mm, unsigned long addr)
+ {
+ 	pgd_t *pgd;
+@@ -232,8 +234,8 @@ static unsigned long move_vma(struct vm_
+ 	if (vm_flags & VM_LOCKED) {
+ 		mm->locked_vm += new_len >> PAGE_SHIFT;
+ 		if (new_len > old_len)
+-			make_pages_present(new_addr + old_len,
+-					   new_addr + new_len);
++			mlock_vma_pages_range(vma, new_addr + old_len,
++						   new_addr + new_len);
+ 	}
+ 
+ 	return new_addr;
+@@ -373,7 +375,7 @@ unsigned long do_mremap(unsigned long ad
+ 			vm_stat_account(mm, vma->vm_flags, vma->vm_file, pages);
+ 			if (vma->vm_flags & VM_LOCKED) {
+ 				mm->locked_vm += pages;
+-				make_pages_present(addr + old_len,
++				mlock_vma_pages_range(vma, addr + old_len,
+ 						   addr + new_len);
+ 			}
+ 			ret = addr;
+Index: Linux/mm/vmscan.c
+===================================================================
+--- Linux.orig/mm/vmscan.c	2007-11-12 16:21:59.000000000 -0500
++++ Linux/mm/vmscan.c	2007-11-12 16:22:03.000000000 -0500
+@@ -534,6 +534,10 @@ static unsigned long shrink_page_list(st
+ 				goto activate_locked;
+ 			case SWAP_AGAIN:
+ 				goto keep_locked;
++			case SWAP_MLOCK:
++				ClearPageActive(page);
++				SetPageNoreclaim(page);
++				goto keep_locked;	/* to noreclaim list */
+ 			case SWAP_SUCCESS:
+ 				; /* try to free the page below */
+ 			}
+Index: Linux/mm/filemap.c
+===================================================================
+--- Linux.orig/mm/filemap.c	2007-11-12 16:21:48.000000000 -0500
++++ Linux/mm/filemap.c	2007-11-12 16:22:03.000000000 -0500
+@@ -2504,8 +2504,16 @@ generic_file_direct_IO(int rw, struct ki
+ 	if (rw == WRITE) {
+ 		write_len = iov_length(iov, nr_segs);
+ 		end = (offset + write_len - 1) >> PAGE_CACHE_SHIFT;
+-	       	if (mapping_mapped(mapping))
++		if (mapping_mapped(mapping)) {
++			/*
++			 * Calling unmap_mapping_range like this is wrong,
++			 * because it can lead to mlocked pages being
++			 * discarded (this is true even before the Noreclaim
++			 * mlock work). direct-IO vs pagecache is a load of
++			 * junk anyway, so who cares.
++			 */
+ 			unmap_mapping_range(mapping, offset, write_len, 0);
++		}
+ 	}
+ 
+ 	retval = filemap_write_and_wait(mapping);
+Index: Linux/mm/truncate.c
+===================================================================
+--- Linux.orig/mm/truncate.c	2007-11-12 16:21:48.000000000 -0500
++++ Linux/mm/truncate.c	2007-11-12 16:22:03.000000000 -0500
+@@ -18,6 +18,7 @@
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/buffer_head.h>	/* grr. try_to_release_page,
+ 				   do_invalidatepage */
++#include "internal.h"
+ 
+ 
+ /**
+@@ -104,6 +105,7 @@ truncate_complete_page(struct address_sp
+ 		do_invalidatepage(page, 0);
+ 
+ 	remove_from_page_cache(page);
++	clear_page_mlock(page);
+ 	ClearPageUptodate(page);
+ 	ClearPageMappedToDisk(page);
+ 	page_cache_release(page);	/* pagecache ref */
+@@ -128,6 +130,7 @@ invalidate_complete_page(struct address_
+ 	if (PagePrivate(page) && !try_to_release_page(page, 0))
+ 		return 0;
+ 
++	clear_page_mlock(page);
+ 	ret = remove_mapping(mapping, page);
+ 
+ 	return ret;
+@@ -354,6 +357,7 @@ invalidate_complete_page2(struct address
+ 	if (PageDirty(page))
+ 		goto failed;
+ 
++	clear_page_mlock(page);
+ 	BUG_ON(PagePrivate(page));
+ 	__remove_from_page_cache(page);
+ 	write_unlock_irq(&mapping->tree_lock);
 
 -- 
 All Rights Reversed
