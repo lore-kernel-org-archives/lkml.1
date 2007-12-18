@@ -1,133 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935651AbXLRAJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936578AbXLRAJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935651AbXLRAJL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 19:09:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758948AbXLRAIy
+	id S936578AbXLRAJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 19:09:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933202AbXLRAJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 19:08:54 -0500
-Received: from smtp5-g19.free.fr ([212.27.42.35]:39423 "EHLO smtp5-g19.free.fr"
+	Mon, 17 Dec 2007 19:09:50 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55692 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758638AbXLRAIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 19:08:53 -0500
-X-Greylist: delayed 96681 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Dec 2007 19:08:53 EST
-Message-ID: <47670F90.4020004@ccr.jussieu.fr>
-Date: Tue, 18 Dec 2007 01:08:48 +0100
-From: Bernard Pidoux <pidoux@ccr.jussieu.fr>
-Organization: Universite Pierre & Marie Curie - Paris 6
-User-Agent: Thunderbird 2.0.0.4 (X11/20070620)
+	id S933074AbXLRAJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Dec 2007 19:09:49 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: Could not set non-blocking flag with 2.6.24-rc5
+Date: Tue, 18 Dec 2007 01:28:46 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <20071213201601.GA5831@dose.home.local>
+In-Reply-To: <20071213201601.GA5831@dose.home.local>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Linux Netdev List <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] sysctl:  Fix ax25 checks
-References: <476303C8.2060507@ccr.jussieu.fr>	<20071215101810.GA3143@ami.dom.local>	<476595EC.5050103@ccr.jussieu.fr> <m163yxdjrb.fsf_-_@ebiederm.dsl.xmission.com>
-In-Reply-To: <m163yxdjrb.fsf_-_@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712180128.46688.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric,
+On Thursday, 13 of December 2007, Tino Keitel wrote:
+> Hi folks,
+> 
+> I often build Debian packages inside a chroot. Today I discovered a
+> failure during an "aptitude update", which is a command to download new
+> package lists for the package management. In strace, the lines around
+> the failure look like this:
 
-I applied your patch and now I have all /proc/sys/net/ax25
-created and initialized as before.
+Can you please have a look at http://bugzilla.kernel.org/show_bug.cgi?id=9557
+and provide the information requested in there?
 
-Thanks.
-
-Bernard Pidoux
-
-
-
-
-Eric W. Biederman wrote:
-> Bernard Pidoux <pidoux@ccr.jussieu.fr> writes:
-> 
->> With 2.6.24-rc5 there is no /proc/net/ax25
-> 
-> /proc/sys/net/ax25?
-> 
->> Here is an extract from dmesg after boot :
-> 
-> Groan.  I thought I had found the last of the bugs with
-> my sysctl sanity checks.  I guess you actually have to
-> use ax25 for this bug to show up.
-> 
-> Thank you for catching this. 
-> 
->> =======================
->> sysctl table check failed: /net/ax25/ax0/ax25_default_mode .3.9.1.2 Unknown
->> sysctl binary path
->> Pid: 2936, comm: kissattach Not tainted 2.6.24-rc5 #1
->>  [<c012ca6a>] set_fail+0x3b/0x43
->>  [<c012ce7a>] sysctl_check_table+0x408/0x456
->>  [<c012ce8e>] sysctl_check_table+0x41c/0x456
->>  [<c012ce8e>] sysctl_check_table+0x41c/0x456
->>  [<c02ac64a>] _spin_unlock+0x14/0x1c
->>  [<c012ce8e>] sysctl_check_table+0x41c/0x456
->>  [<c011e681>] sysctl_set_parent+0x19/0x2a
->>  [<c011f55c>] register_sysctl_table+0x45/0x85
->>  [<d8be9d26>] ax25_register_sysctl+0x112/0x11c [ax25]
->>  [<d8be6c76>] ax25_device_event+0x2e/0x90 [ax25]
->>  [<c012c560>] notifier_call_chain+0x2a/0x47
->>  [<c012c59f>] raw_notifier_call_chain+0x17/0x1a
->>  [<c0259290>] dev_open+0x6f/0x75
->>  [<c0257ee7>] dev_change_flags+0x9c/0x148
->>  [<c0256ab3>] __dev_get_by_name+0x68/0x73
->>  [<c0292307>] devinet_ioctl+0x22e/0x53b
->>  [<c0259074>] dev_ioctl+0x472/0x5ba
->>  [<c024d4ba>] sock_ioctl+0x1aa/0x1cf
->>  [<c024d310>] sock_ioctl+0x0/0x1cf
->>  [<c016bc19>] do_ioctl+0x19/0x4c
->>  [<c016be40>] vfs_ioctl+0x1f4/0x20b
->>  [<c0103d01>] sysenter_past_esp+0x9a/0xa9
->>  [<c016be9c>] sys_ioctl+0x45/0x5d
->>  [<c0103cc6>] sysenter_past_esp+0x5f/0xa9
->>  =======================
->> sysctl table check failed: /net/ax25/ax0/backoff_type .3.9.1.3 Unknown sysctl
->> binary path
->> (...) truncated
->>  =======================
->> sysctl table check failed: /net/ax25/ax0/connect_mode .3.9.1.4 Unknown sysctl
->> binary path
->> (...)
->>  =======================
->> sysctl table check failed: /net/ax25/ax0/standard_window_size .3.9.1.5 Unknown
->> sysctl binary path
->>  =======================
->> (...)
->>
->> and so on ...
->>
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> ---
->  kernel/sysctl_check.c |    7 ++++++-
->  1 files changed, 6 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
-> index bed939f..a68425a 100644
-> --- a/kernel/sysctl_check.c
-> +++ b/kernel/sysctl_check.c
-> @@ -428,7 +428,7 @@ static struct trans_ctl_table trans_net_netrom_table[] = {
->  	{}
->  };
->  
-> -static struct trans_ctl_table trans_net_ax25_table[] = {
-> +static struct trans_ctl_table trans_net_ax25_param_table[] = {
->  	{ NET_AX25_IP_DEFAULT_MODE,	"ip_default_mode" },
->  	{ NET_AX25_DEFAULT_MODE,	"ax25_default_mode" },
->  	{ NET_AX25_BACKOFF_TYPE,	"backoff_type" },
-> @@ -446,6 +446,11 @@ static struct trans_ctl_table trans_net_ax25_table[] = {
->  	{}
->  };
->  
-> +static struct trans_ctl_table trans_net_ax25_table[] = {
-> +	{ 0, NULL, trans_net_ax25_param_table },
-> +	{}
-> +};
-> +
->  static struct trans_ctl_table trans_net_bridge_table[] = {
->  	{ NET_BRIDGE_NF_CALL_ARPTABLES,		"bridge-nf-call-arptables" },
->  	{ NET_BRIDGE_NF_CALL_IPTABLES,		"bridge-nf-call-iptables" },
+Thanks,
+Rafael
