@@ -1,115 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761306AbXLRR7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759633AbXLRSIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761306AbXLRR7a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 12:59:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbXLRR7W
+	id S1759633AbXLRSIb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 13:08:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbXLRSIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 12:59:22 -0500
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:4734 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753042AbXLRR7V (ORCPT
+	Tue, 18 Dec 2007 13:08:22 -0500
+Received: from mga06.intel.com ([134.134.136.21]:28419 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753961AbXLRSIV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 12:59:21 -0500
-Date: Tue, 18 Dec 2007 18:59:18 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Shaohua Li <shaohua.li@intel.com>, Mike Houston <mikeserv@bmts.com>,
-       Adrian Bunk <bunk@stusta.de>, Elvis Pranskevichus <el@prans.net>,
-       mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org, Adam Belay <ambx1@neo.rr.com>,
-       Zhao Yakui <yakui.zhao@intel.com>, Thomas Renninger <trenn@suse.de>,
-       lenb@kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [lm-sensors] 2.6.24-rc4 hwmon it87 probe fails
-Message-ID: <20071218185918.5d2d4c7d@hyperion.delvare>
-In-Reply-To: <200712171014.44360.bjorn.helgaas@hp.com>
-References: <20071204215154.7f26285e.mikeserv@bmts.com>
-	<20071209230211.1c2077cf.mikeserv@bmts.com>
-	<1197856779.7782.2.camel@sli10-desk.sh.intel.com>
-	<200712171014.44360.bjorn.helgaas@hp.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Dec 2007 13:08:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,181,1196668800"; 
+   d="scan'208";a="299832142"
+Message-ID: <47680C16.1090905@linux.intel.com>
+Date: Tue, 18 Dec 2007 10:06:14 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       protasnb@gmail.com, tytso@thunk.org, mpm@selenic.com
+Subject: Re: Top kernel oopses/warnings this week
+References: <4762CF8C.90808@linux.intel.com> <20071217172331.GA23070@elte.hu> <20071217133631.5bbc5842@laptopd505.fenrus.org> <12c511ca0712171458n1bc05b40nab6b4b7c92433c8d@mail.gmail.com> <476703A4.7000401@linux.intel.com> <12c511ca0712171526h242a7de8vadec78cd48747bd@mail.gmail.com> <20071217154727.404e4bc4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712171607370.21557@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.9999.0712171607370.21557@woody.linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------060103070607080108090004"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bjorn,
+This is a multi-part message in MIME format.
+--------------060103070607080108090004
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Mon, 17 Dec 2007 10:14:43 -0700, Bjorn Helgaas wrote:
-> On Sunday 16 December 2007 06:59:39 pm Shaohua Li wrote:
-> > On Sun, 2007-12-09 at 23:02 -0500, Mike Houston wrote:
-> > > On Mon, 10 Dec 2007 10:31:27 +0800
-> > > Shaohua Li <shaohua.li@intel.com> wrote:
-> > > > This should exist in previous kernel (before we remove acpi
-> > > > motherboard driver) too. Basically it's a broken BIOS. Could below
-> > > > patch work around it?
-> > > > 
-> > > > Thanks,
-> > > > Shaohua
-> > > > 
-> > > > Index: linux/drivers/pnp/system.c
-> > > > ===================================================================
-> > > > --- linux.orig/drivers/pnp/system.c	2007-12-10
-> > > > 10:17:46.000000000 +0800 +++ linux/drivers/pnp/system.c
-> > > 
-> > > Thanks Shaohua, I tested this as well and it appears to have worked
-> > > around the issue for me.
-> > > 
-> > > Now, in dmesg, I get:
-> > > 
-> > > system 00:01: ioport range 0x290-0x29f has been reserved
-> > > (...)
-> > > system 00:01: ioport range 0x290-0x294 could not be reserved
-> > > 
-> > > In /proc/ioports I see:
-> > > 
-> > > 0290-029f : pnp 00:01
-> > >   0290-0297 : it87
-> > >     0290-0297 : it87
-> >
-> > Unfortunately this can't solve all such issues.
-
-I don't see any issue here, but anyway it doesn't really matter as the
-proposed patch is not sufficient for all affected motherboards.
-
-> > 
-> > Adam & Bjorn,
-> > Could we just reserve IO ports >= 0x1000 in pnp system driver? The
-> > purpose of the driver is to avoid resource conflict with PCI device, and
-> > PCI device can't user io port < 0x1000.
+Linus Torvalds wrote:
 > 
-> The purpose of the PNP system driver is to avoid conflicts with
-> *all* devices.  And if the PNP core were a little smarter, we
-> wouldn't need the system driver at all.  We don't have one for
-> PCI -- the PCI core manages resources for all PCI devices, even
-> ones that have no driver.
+> On Mon, 17 Dec 2007, Arjan van de Ven wrote:
+>> +char *get_boot_uuid(void)
+>> +{
+>> +	static char target[38];
+>> +	unsigned char *uuid;
+>> +
+>> +	if (sysctl_bootid[8] == 0)
+>> +		generate_random_uuid(sysctl_bootid);
+>> +	/* sysctl_bootid is signed, to print we need unsigned .. */
+>> +	uuid = sysctl_bootid;
+>> +
+>> +	if (target[0] == 0) {
+>> +		sprintf(target, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-"
+>> +			"%02x%02x%02x%02x%02x%02x",
 > 
-> Why is 0x1000 a magic number?  drivers/acpi/motherboard.c used to
-> ignore IO port ranges that ended below PCIBIOS_MIN_IO (== 0x1000 for
-> most architectures).  I don't think Linux will assign IO ports below
-> PCIBIOS_MIN_IO to a PCI device, but the BIOS could, and I've seen
-> CardBus devices below PCIBIOS_MIN_IO.
+> Why isn't *everything* inside that "if (target[0] == 0" check?
 > 
-> I think having drivers/pnp/system.c ignore resources below
-> PCIBIOS_MIN_IO would be a hack that happens to cover up problems
-> like this without understanding the real cause.
+> IOW, that function should look something like
 
-The real cause is pretty clear here: broken BIOS. In an ideal world we
-would ask the manufacturer for a fixed BIOS and they would give that to
-us, unfortunately my experience is that it won't happen. So, unless we
-accept that idea that some users won't be able to use some of their
-devices because of broken resource enumeration in their BIOS, we will
-have to find a workaround, whatever it is.
 
-My initial idea was to identify the faulty motherboard using DMI and to
-force pnpacpi=off on the faulty motherboards. If this is considered too
-aggressive, maybe we can just reject resource declarations that
-intersect (but don't match) 0x290-0x297 for these motherboards. Either
-way, we have to do something, and we have to do it quickly. 2.6.24
-final isn't too far away, and more importantly, the patch that revealed
-the problem has been backported to 2.6.23.10 so people are experiencing
-regressions already.
+ok so this got a lot more involved than I was hoping for;
+something like below will help me (and kerneloops.org ;) for the short term,
+while I'll see what I can do for random.c in a few dead moments soon, for a 2.6.25
+enhancement...
 
--- 
-Jean Delvare
+
+Subject: [patch] terminate the oops printing with a defined string/uuid
+From: Arjan van de Ven <arjan@linux.intel.com>
+
+Right now, it's hard for automated tools to determine when an oops has
+ended; there's no clear marker for this. For later kernels I would also
+like a UUID to printed here, but for short term I've put all zeros there
+since printing a UUID seems to involve cleaning up/rewriting quite a chunk
+of random.c and that's more involved -> later patch.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+
+---
+  kernel/panic.c         |    1 +
+  1 files changed, 1 insertion(+), 0 deletions(-)
+
+Index: linux-2.6.24-rc5/kernel/panic.c
+===================================================================
+--- linux-2.6.24-rc5.orig/kernel/panic.c
++++ linux-2.6.24-rc5/kernel/panic.c
+@@ -272,6 +273,7 @@ void oops_enter(void)
+  void oops_exit(void)
+  {
+  	do_oops_enter_exit();
++	printk("---[ end of trace 00000000-0000-0000-0000-000000000000 ]---\n");
+  }
+
+  #ifdef CONFIG_CC_STACKPROTECTOR
+
+
+--------------060103070607080108090004
+Content-Type: text/x-patch;
+ name="oopsend.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="oopsend.patch"
+
+Subject: [patch] terminate the oops printing with a defined string/uuid
+From: Arjan van de Ven <arjan@linux.intel.com>
+
+Right now, it's hard for automated tools to determine when an oops has
+ended; there's no clear marker for this. For later kernels I would also
+like a UUID to printed here, but for short term I've put all zeros there
+since printing a UUID seems to involve cleaning up/rewriting quite a chunk
+of random.c and that's more involved -> later patch.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+
+---
+ kernel/panic.c         |    1 +
+ 1 files changed, 1 insertion(+), 0 deletions(-)
+
+Index: linux-2.6.24-rc5/kernel/panic.c
+===================================================================
+--- linux-2.6.24-rc5.orig/kernel/panic.c
++++ linux-2.6.24-rc5/kernel/panic.c
+@@ -272,6 +273,7 @@ void oops_enter(void)
+ void oops_exit(void)
+ {
+ 	do_oops_enter_exit();
++	printk("---[ end of trace 0000-00-00-00-000000 ]---\n");
+ }
+ 
+ #ifdef CONFIG_CC_STACKPROTECTOR
+
+--------------060103070607080108090004--
