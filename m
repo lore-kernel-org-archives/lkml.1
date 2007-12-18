@@ -1,104 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbXLRWsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbXLRWu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbXLRWsQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 17:48:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbXLRWrv
+	id S1755739AbXLRWu2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 17:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXLRWuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 17:47:51 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55075 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753867AbXLRWru (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 17:47:50 -0500
-Date: Tue, 18 Dec 2007 14:46:36 -0800
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.23.12
-Message-ID: <20071218224635.GB12696@kroah.com>
-References: <20071218224559.GA12696@kroah.com>
-MIME-Version: 1.0
+	Tue, 18 Dec 2007 17:50:19 -0500
+Received: from 1wt.eu ([62.212.114.60]:2777 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751672AbXLRWuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 17:50:18 -0500
+Date: Tue, 18 Dec 2007 23:47:03 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Alon Bar-Lev <alon.barlev@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-mips@ftp.linux-mips.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [MIPS] Build an embedded initramfs into mips kernel
+Message-ID: <20071218224702.GI15227@1wt.eu>
+References: <9e0cf0bf0712181208m7f16b9acpf3dba67f3556a613@mail.gmail.com> <47683B2D.9030608@zytor.com> <9e0cf0bf0712181409p2475e1fdk779fdee4fa274722@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071218224559.GA12696@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <9e0cf0bf0712181409p2475e1fdk779fdee4fa274722@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index ada10d5..96c3f02 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 23
--EXTRAVERSION = .11
-+EXTRAVERSION = .12
- NAME = Arr Matey! A Hairy Bilge Rat!
- 
- # *DOCUMENTATION*
-diff --git a/drivers/pnp/pnpacpi/rsparser.c b/drivers/pnp/pnpacpi/rsparser.c
-index 5abf5ea..0e3b8d0 100644
---- a/drivers/pnp/pnpacpi/rsparser.c
-+++ b/drivers/pnp/pnpacpi/rsparser.c
-@@ -82,11 +82,9 @@ static void pnpacpi_parse_allocated_irqresource(struct pnp_resource_table *res,
- 	while (!(res->irq_resource[i].flags & IORESOURCE_UNSET) &&
- 	       i < PNP_MAX_IRQ)
- 		i++;
--	if (i >= PNP_MAX_IRQ) {
--		printk(KERN_ERR "pnpacpi: exceeded the max number of IRQ "
--				"resources: %d \n", PNP_MAX_IRQ);
-+	if (i >= PNP_MAX_IRQ)
- 		return;
--	}
-+
- 	res->irq_resource[i].flags = IORESOURCE_IRQ;	// Also clears _UNSET flag
- 	res->irq_resource[i].flags |= irq_flags(triggering, polarity);
- 	irq = acpi_register_gsi(gsi, triggering, polarity);
-@@ -165,9 +163,6 @@ static void pnpacpi_parse_allocated_dmaresource(struct pnp_resource_table *res,
- 		}
- 		res->dma_resource[i].start = dma;
- 		res->dma_resource[i].end = dma;
--	} else {
--		printk(KERN_ERR "pnpacpi: exceeded the max number of DMA "
--				"resources: %d \n", PNP_MAX_DMA);
- 	}
- }
- 
-@@ -189,9 +184,6 @@ static void pnpacpi_parse_allocated_ioresource(struct pnp_resource_table *res,
- 		}
- 		res->port_resource[i].start = io;
- 		res->port_resource[i].end = io + len - 1;
--	} else {
--		printk(KERN_ERR "pnpacpi: exceeded the max number of IO "
--				"resources: %d \n", PNP_MAX_PORT);
- 	}
- }
- 
-@@ -215,9 +207,6 @@ static void pnpacpi_parse_allocated_memresource(struct pnp_resource_table *res,
- 
- 		res->mem_resource[i].start = mem;
- 		res->mem_resource[i].end = mem + len - 1;
--	} else {
--		printk(KERN_ERR "pnpacpi: exceeded the max number of mem "
--				"resources: %d\n", PNP_MAX_MEM);
- 	}
- }
- 
-diff --git a/include/linux/pnp.h b/include/linux/pnp.h
-index 62decab..16b46aa 100644
---- a/include/linux/pnp.h
-+++ b/include/linux/pnp.h
-@@ -13,8 +13,8 @@
- #include <linux/errno.h>
- #include <linux/mod_devicetable.h>
- 
--#define PNP_MAX_PORT		24
--#define PNP_MAX_MEM		12
-+#define PNP_MAX_PORT		8
-+#define PNP_MAX_MEM		4
- #define PNP_MAX_IRQ		2
- #define PNP_MAX_DMA		2
- #define PNP_NAME_LEN		50
+On Wed, Dec 19, 2007 at 12:09:46AM +0200, Alon Bar-Lev wrote:
+> On 12/18/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> > Make sure your /init doesn't depend on an interpreter or library which
+> > isn't available.
+> 
+> Thank you for your answer.
+> 
+> I already checked.
+> 
+> /init is hardlink to busybox, it depends on libc.so.0 which is available at /lib
+
+Are you sure that libc.so.0 is enough and that you don't need any ld.so ?
+
+> But shouldn't I get a different error code if this is the case?
+
+If it does not find part of the dynamic linker or libraries, this error
+makes sense to me.
+
+You should try to build a static init with any stupid thing such as a
+hello world to ensure that the problem really comes from the init and
+nothing else.
+
+Regards,
+Willy
+
