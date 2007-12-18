@@ -1,141 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbXLRIYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbXLRIbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752788AbXLRIYk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 03:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbXLRIYc
+	id S1753013AbXLRIbz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 03:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbXLRIbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 03:24:32 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:63437 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750807AbXLRIYa (ORCPT
+	Tue, 18 Dec 2007 03:31:47 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58079 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbXLRIbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 03:24:30 -0500
-From: Swen Schillig <swen@vnet.ibm.com>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] drivers/s390/: Spelling fixes
-Date: Tue, 18 Dec 2007 09:24:28 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-s390@vger.kernel.org, linux390@de.ibm.com
-References: <1197920439-5455-7-git-send-email-joe@perches.com>
-In-Reply-To: <1197920439-5455-7-git-send-email-joe@perches.com>
-Organization: IBM
+	Tue, 18 Dec 2007 03:31:46 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Roland Dreier <rdreier@cisco.com>, venkatesh.pallipadi@intel.com,
+       ak@muc.de, torvalds@linux-foundation.org, gregkh@suse.de,
+       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       jesse.barnes@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 06/12] PAT 64b: Add ioremap_wc support
+References: <20071213235543.568682000@intel.com>
+	<20071213235712.339088000@intel.com> <ada8x3x7vw5.fsf@cisco.com>
+	<m1sl25q4rc.fsf@ebiederm.dsl.xmission.com> <ada4pel7v6a.fsf@cisco.com>
+	<m1odctq3tn.fsf@ebiederm.dsl.xmission.com>
+	<20071214214026.GC717@linux-os.sc.intel.com>
+Date: Tue, 18 Dec 2007 01:29:45 -0700
+In-Reply-To: <20071214214026.GC717@linux-os.sc.intel.com> (Suresh B. Siddha's
+	message of "Fri, 14 Dec 2007 13:40:27 -0800")
+Message-ID: <m1fxy0be2u.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712180924.29223.swen@vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 17 December 2007 20:40, Joe Perches wrote:
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/s390/block/dasd_3990_erp.c |    2 +-
->  drivers/s390/block/dasd_eckd.c     |    2 +-
->  drivers/s390/char/sclp_rw.c        |    2 +-
->  drivers/s390/char/tape_3590.c      |    2 +-
->  drivers/s390/cio/airq.c            |    2 +-
->  drivers/s390/scsi/zfcp_erp.c       |    2 +-
->  drivers/s390/scsi/zfcp_qdio.c      |    2 +-
->  7 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/s390/block/dasd_3990_erp.c b/drivers/s390/block/dasd_3990_erp.c
-> index 5b7385e..c02f960 100644
-> --- a/drivers/s390/block/dasd_3990_erp.c
-> +++ b/drivers/s390/block/dasd_3990_erp.c
-> @@ -2620,7 +2620,7 @@ dasd_3990_erp_handle_match_erp(struct dasd_ccw_req *erp_head,
->   * DASD_3990_ERP_ACTION
->   *
->   * DESCRIPTION
-> - *   controll routine for 3990 erp actions.
-> + *   control routine for 3990 erp actions.
->   *   Has to be called with the queue lock (namely the s390_irq_lock) acquired.
->   *
->   * PARAMETER
-> diff --git a/drivers/s390/block/dasd_eckd.c b/drivers/s390/block/dasd_eckd.c
-> index 44adf84..6038d91 100644
-> --- a/drivers/s390/block/dasd_eckd.c
-> +++ b/drivers/s390/block/dasd_eckd.c
-> @@ -1542,7 +1542,7 @@ dasd_eckd_performance(struct dasd_device *device, void __user *argp)
->  	prssdp = (struct dasd_psf_prssd_data *) cqr->data;
->  	memset(prssdp, 0, sizeof (struct dasd_psf_prssd_data));
->  	prssdp->order = PSF_ORDER_PRSSD;
-> -	prssdp->suborder = 0x01;	/* Perfomance Statistics */
-> +	prssdp->suborder = 0x01;	/* Performance Statistics */
->  	prssdp->varies[1] = 0x01;	/* Perf Statistics for the Subsystem */
-> 
->  	ccw = cqr->cpaddr;
-> diff --git a/drivers/s390/char/sclp_rw.c b/drivers/s390/char/sclp_rw.c
-> index d6b06ab..ad7195d 100644
-> --- a/drivers/s390/char/sclp_rw.c
-> +++ b/drivers/s390/char/sclp_rw.c
-> @@ -76,7 +76,7 @@ sclp_make_buffer(void *page, unsigned short columns, unsigned short htab)
->  }
-> 
->  /*
-> - * Return a pointer to the orignal page that has been used to create
-> + * Return a pointer to the original page that has been used to create
->   * the buffer.
->   */
->  void *
-> diff --git a/drivers/s390/char/tape_3590.c b/drivers/s390/char/tape_3590.c
-> index da25f8e..8246ef3 100644
-> --- a/drivers/s390/char/tape_3590.c
-> +++ b/drivers/s390/char/tape_3590.c
-> @@ -1495,7 +1495,7 @@ tape_3590_unit_check(struct tape_device *device, struct tape_request *request,
->  			   device->cdev->dev.bus_id);
->  		return tape_3590_erp_basic(device, request, irb, -EPERM);
->  	case 0x8013:
-> -		PRINT_WARN("(%s): Another host has priviliged access to the "
-> +		PRINT_WARN("(%s): Another host has privileged access to the "
->  			   "tape device\n", device->cdev->dev.bus_id);
->  		PRINT_WARN("(%s): To solve the problem unload the current "
->  			   "cartridge!\n", device->cdev->dev.bus_id);
-> diff --git a/drivers/s390/cio/airq.c b/drivers/s390/cio/airq.c
-> index 5287631..5eada73 100644
-> --- a/drivers/s390/cio/airq.c
-> +++ b/drivers/s390/cio/airq.c
-> @@ -23,7 +23,7 @@ static adapter_int_handler_t adapter_handler;
->   * register for adapter interrupts
->   *
->   * With HiperSockets the zSeries architecture provides for
-> - *  means of adapter interrups, pseudo I/O interrupts that are
-> + *  means of adapter interrupts, pseudo I/O interrupts that are
->   *  not tied to an I/O subchannel, but to an adapter. However,
->   *  it doesn't disclose the info how to enable/disable them, but
->   *  to recognize them only. Perhaps we should consider them
-> diff --git a/drivers/s390/scsi/zfcp_erp.c b/drivers/s390/scsi/zfcp_erp.c
-> index 07fa824..8925b3a 100644
-> --- a/drivers/s390/scsi/zfcp_erp.c
-> +++ b/drivers/s390/scsi/zfcp_erp.c
-> @@ -1285,7 +1285,7 @@ zfcp_erp_strategy_do_action(struct zfcp_erp_action *erp_action)
->  	 * note: no lock in subsequent strategy routines
->  	 * (this allows these routine to call schedule, e.g.
->  	 * kmalloc with such flags or qdio_initialize & friends)
-> -	 * Note: in case of timeout, the seperate strategies will fail
-> +	 * Note: in case of timeout, the separate strategies will fail
->  	 * anyhow. No need for a special action. Even worse, a nameserver
->  	 * failure would not wake up waiting ports without the call.
->  	 */
-> diff --git a/drivers/s390/scsi/zfcp_qdio.c b/drivers/s390/scsi/zfcp_qdio.c
-> index 51d92b1..22fdc17 100644
-> --- a/drivers/s390/scsi/zfcp_qdio.c
-> +++ b/drivers/s390/scsi/zfcp_qdio.c
-> @@ -529,7 +529,7 @@ zfcp_qdio_sbals_wipe(struct zfcp_fsf_req *fsf_req)
-> 
-> 
->  /**
-> - * zfcp_qdio_sbale_fill - set address and lenght in current SBALE
-> + * zfcp_qdio_sbale_fill - set address and length in current SBALE
->   *	on request_queue
->   */
->  static void
+"Siddha, Suresh B" <suresh.b.siddha@intel.com> writes:
 
-ACK 
-for the zfcp bits.
+> Yes. We are looking for comments for our proposal to track the
+> reserved/non-reserved regions some what different.
+> This is the critical issue which had been holding off PAT for years now...
 
-Cheers Swen
+The mattr infrastructure appears to do a decent job of handling the
+reserved page mapping case.  It essentially reinvents struct
+vm_area_struct, and so I expect we can do things a little more easily
+if we use the existing vm_area_struct with it's vm_page_prot member
+for our checks, all rooted at a dummy reserved page inode.  That way
+we don't need to do anything special on unmap.
+
+For normal pages we always have them in the kernel mapping and
+we use them there.  change_page_attr also comes in from the AGP
+drivers and changes the caching attributes on a few of those.  So when
+mapping a normal page we need to require it to be write-back or
+whatever change_page_attr has set it to.  I expect 2 bits 
+of page->flags with the proper default can handle that.
+
+change_page_attr needs to check non kernel mappings of a page 
+and either fix them or fail.
+
+If we perform the checks I have described for normal pages
+in /dev/mem (in remap_pfn_pages?) that should be our
+most difficult case handled.
+
+Eric
+
+> <snip from the other mails>
+>
+> Change x86_64 identity map to only map non-reserved memory. This helps
+> to handle UC/WC mapping of reserved region in a much simple manner
+> (we don't have to do cpa any more, as such not keep track of the actual
+> reference counts. We still track all the usages to keep the mappings
+> consistent. We just avoid the headache of splitting mattr regions for
+> managing ref counts for every individual usage of the reserved
+> area).
+
+Well we do want to early map the ``isa'' region.
+>
+> For now, we don't track RAM pages using memattr infrastructure. This is because,
+> memattr infrastructure is not enough. i.e., while the page is getting
+> tracked using memattr infrastructure, potentially the page can get
+> freed(a bug that we need to catch, to avoid attribute aliasing).
+> For example, a driver does ioremap_uc and an application mapped the
+> same page using /dev/mem. When the driver does iounamp and free the page,
+> /dev/mem mapping is still live and we run into aliasing issue.
+
+/dev/mem is particular weird because it doesn't own the page, and thus
+will always be the second user if we are talking about pages in ram.
+
+> Can we use the existing page struct to keep track of the attribute
+> and usage?
+
+Yes but not the way you describe below.
+
+> /dev/mem mappings then can increment the page ref count and not
+> allow to free the page while the /dev/mem mappings are active. And allow
+> /dev/mem to map only those pages which are marked reserved (which the driver
+> does before doing iomap).
+
+Part of the usefulness of /dev/mem is that it can do silly things like
+map pages someone else in the kernel is using.  /dev/mem by it's very
+nature does not own ram pages so we need to handle that differently.
+
+> Or when a WB mapping through /dev/mem is active, don't allow any driver
+> to map the page as UC.. Can we do this tracking for RAM pages through
+> struct page. Or there any issues we should keep in mind..
+
+I think some bits in page->flags should do the trick.  The semantics
+of change_page_attr are interesting in this case.
+
+Eric
