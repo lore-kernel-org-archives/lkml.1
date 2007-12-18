@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764015AbXLRSWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764243AbXLRSWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764015AbXLRSWd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 13:22:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763242AbXLRSVB
+	id S1764243AbXLRSWw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 13:22:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759312AbXLRSVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 13:21:01 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56386 "EHLO pasmtpA.tele.dk"
+	Tue, 18 Dec 2007 13:21:06 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52524 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763207AbXLRSVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 13:21:00 -0500
-Date: Tue, 18 Dec 2007 19:22:51 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: unify module_{32|64}.h
-Message-ID: <20071218182251.GA17602@uranus.ravnborg.org>
-References: <1197979470.7734.34.camel@brick>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1197979470.7734.34.camel@brick>
-User-Agent: Mutt/1.4.2.1i
+	id S1763265AbXLRSVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 13:21:04 -0500
+Date: Tue, 18 Dec 2007 13:19:39 -0500 (EST)
+From: Chip Coldwell <coldwell@redhat.com>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+cc: - ARM Linux <linux@arm.linux.org.uk>, Russell@frank.harvard.edu,
+       kernel@avr32linux.org, linux-kernel@vger.kernel.org,
+       Andrew Victor <linux@maxim.org.za>, Remy Bohmer <linux@bohmer.net>,
+       ARM@frank.harvard.edu,
+       Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 4/5] atmel_serial: Split the interrupt handler
+In-Reply-To: <20071218181019.2af46418@dhcp-252-066.norway.atmel.com>
+Message-ID: <alpine.LFD.0.9999.0712181318300.27475@localhost.localdomain>
+References: <1197997575-13292-1-git-send-email-hskinnemoen@atmel.com> <1197997575-13292-2-git-send-email-hskinnemoen@atmel.com> <1197997575-13292-3-git-send-email-hskinnemoen@atmel.com> <1197997575-13292-4-git-send-email-hskinnemoen@atmel.com>
+ <1197997575-13292-5-git-send-email-hskinnemoen@atmel.com> <20071218181019.2af46418@dhcp-252-066.norway.atmel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 18, 2007 at 04:04:30AM -0800, Harvey Harrison wrote:
-> This adds one case to the MODULE_PROC_FAMILY block testing
-> for X86_64.  There are no new things defined on X86_64 than
-> there were before.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+On Tue, 18 Dec 2007, Haavard Skinnemoen wrote:
+
+> On Tue, 18 Dec 2007 18:06:14 +0100
+> Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  include/asm-x86/module.h    |   83 +++++++++++++++++++++++++++++++++++++++++-
->  include/asm-x86/module_32.h |   75 --------------------------------------
->  include/asm-x86/module_64.h |   10 -----
->  3 files changed, 81 insertions(+), 87 deletions(-)
+> > From: Remy Bohmer <hskinnemoen@atmel.com>
 > 
-> diff --git a/include/asm-x86/module.h b/include/asm-x86/module.h
-> index 2b2f18d..994837c 100644
-> --- a/include/asm-x86/module.h
-> +++ b/include/asm-x86/module.h
-> @@ -1,5 +1,84 @@
-> +#ifndef _ASM_MODULE_H
-> +#define _ASM_MODULE_H
-> +
-> +/* x86_32/64 are simple */
-> +struct mod_arch_specific
-> +{
-> +};
-> +
->  #ifdef CONFIG_X86_32
-> -# include "module_32.h"
-> +# define Elf_Shdr Elf32_Shdr
-> +# define Elf_Sym Elf32_Sym
-> +# define Elf_Ehdr Elf32_Ehdr
->  #else
-> -# include "module_64.h"
-> +# define Elf_Shdr Elf64_Shdr
-> +# define Elf_Sym Elf64_Sym
-> +# define Elf_Ehdr Elf64_Ehdr
->  #endif
-> +
-> +#ifdef CONFIG_X86_64
-> +/* X86_64 does not define MODULE_PROC_FAMILY */
+> Heh. That's obviously wrong. Wonder what happened there?
+> 
+> Looks like Chip's address got mangled too.
 
-Why is MODULE_PROC_FAMILY not relevant for 64 bit x86?
+You can find me at <coldwell@gmail.com> or <coldwell@redhat.com> these
+days, although <coldwell@frank.harvard.edu> still works for the time
+being.
 
-Introducing it does not belong to a unification patch,
-but a follow-up patch. But I guess we would like to distingush
-on te selected processor when testing module compatibility
-also for 64 bit x86.
+Chip
 
-	Sam
+- -- 
+Charles M. "Chip" Coldwell
+Senior Software Engineer
+Red Hat, Inc
+978-392-2426
+
+GPG ID:  852E052F
+GPG FPR: 77E5 2B51 4907 F08A 7E92  DE80 AFA9 9A8F 852E 052F
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHaA87r6maj4UuBS8RApaiAKCDFvC/WtA/s0pysvMIZIsTlAcN7wCffRoa
+JwA3E6Kt16pU9yi1dx1lCWk=
+=M528
+-----END PGP SIGNATURE-----
