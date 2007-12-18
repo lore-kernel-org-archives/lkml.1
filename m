@@ -1,35 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbXLRXA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbXLRXKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755705AbXLRXA3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 18:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbXLRXAV
+	id S1754586AbXLRXKM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 18:10:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbXLRXJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 18:00:21 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:33889 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752626AbXLRXAU (ORCPT
+	Tue, 18 Dec 2007 18:09:59 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:43681 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbXLRXJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 18:00:20 -0500
-Date: Tue, 18 Dec 2007 23:00:16 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: RFC: permit link(2)  to work across --bind mounts ?
-Message-ID: <20071218230016.GF8181@ftp.linux.org.uk>
-References: <47684DBD.6030502@rtr.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47684DBD.6030502@rtr.ca>
-User-Agent: Mutt/1.4.1i
+	Tue, 18 Dec 2007 18:09:59 -0500
+Date: Tue, 18 Dec 2007 18:09:43 -0500
+Message-Id: <200712182309.lBIN9haS032087@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] unionfs: restructure unionfs_setattr 
+In-reply-to: Your message of "Tue, 18 Dec 2007 22:14:14 GMT."
+             <Pine.LNX.4.64.0712182213300.28390@blonde.wat.veritas.com> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 18, 2007 at 05:46:21PM -0500, Mark Lord wrote:
-> Why does link(2) not support hard-linking across bind mount points
-> of the same underlying filesystem ?
+In message <Pine.LNX.4.64.0712182213300.28390@blonde.wat.veritas.com>, Hugh Dickins writes:
+> In order to fix unionfs truncation, we need to move the lower notify_change
+> out of the loop in unionfs_setattr.  But when I came to do that, I couldn't
+[...]
 
-Because it gives you a security boundary around a subtree.
+Hugh, I want to understand how patches 3/4 and 4/4 are related.  In patch 3
+you say "in order to fix truncation" but you mention a truncation problem
+only in patch 4; is there a patch ordering problem, or they're both related
+to the same issue (with 3/4 being a code cleanup, and 4/4 actually fixing
+the problem)?
+
+What tests did you conduct to tickle this truncation problem: I assume
+fsx-linux through unionfs, mounted on tmpfs?  Did that include both series
+of patches (your 9 tmpfs patches, plus the two memcgrpoup?).
+
+Thanks,
+Erez.
