@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbXLRE34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759701AbXLREd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758262AbXLRE34 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Dec 2007 23:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbXLRE3q
+	id S1759701AbXLREd0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Dec 2007 23:33:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXLREdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Dec 2007 23:29:46 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47409 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750954AbXLRE3o (ORCPT
+	Mon, 17 Dec 2007 23:33:18 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60964 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751168AbXLREdR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Dec 2007 23:29:44 -0500
-Date: Mon, 17 Dec 2007 20:28:00 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Adam Fritzler <mid@zigamorph.net>,
-       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-       Jeff Garzik <jgarzik@pobox.com>, Mike Phillips <mikep@linuxtr.net>,
-       Philip Blundell <philb@gnu.org>, linux-scsi@vger.kernel.org,
-       netdev@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH] MAINTAINERS: remove Adam Fritzler, update his email
- address in other sources
-Message-Id: <20071217202800.1c898441.akpm@linux-foundation.org>
-In-Reply-To: <1197951126.4891.13.camel@localhost>
-References: <1197951126.4891.13.camel@localhost>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Dec 2007 23:33:17 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <ak@muc.de>
+Cc: Paul Mackerras <paulus@samba.org>, Greg KH <gregkh@suse.de>,
+       David Miller <davem@davemloft.net>, venkatesh.pallipadi@intel.com,
+       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
+       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       jesse.barnes@intel.com, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com
+Subject: Re: [RFC PATCH 08/12] PAT 64b: coherent mmap and sysfs bin ioctl
+References: <20071213235543.568682000@intel.com>
+	<20071213235712.813201000@intel.com> <20071214001932.GA10389@suse.de>
+	<20071213.163505.14070110.davem@davemloft.net>
+	<20071214063424.GB10100@suse.de>
+	<18277.40798.828760.919571@cargo.ozlabs.ibm.com>
+	<20071217124137.GA18648@muc.de>
+Date: Mon, 17 Dec 2007 21:30:11 -0700
+In-Reply-To: <20071217124137.GA18648@muc.de> (Andi Kleen's message of "17 Dec
+	2007 13:41:37 +0100, Mon, 17 Dec 2007 13:41:37 +0100")
+Message-ID: <m1ejdkd3qk.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007 20:12:06 -0800 Joe Perches <joe@perches.com> wrote:
+Andi Kleen <ak@muc.de> writes:
 
-> Adam isn't a maintainer anymore.
-> His old email address bounces.
-> Update to new email address.
-> 
-> On Mon, Dec 17, 2007 at 01:03:48PM -0800, Joe Perches wrote:
-> > > You seem to have an old email address in the
-> > > linux-kernel MAINTAINERS file.
-> > > Should it be deleted or changed?
-> On Mon, 2007-12-17 at 19:27 -0800, Adam Fritzler wrote:
-> > I am no longer actively involved. If you can mark me as a former point
-> > of contact, that's fine, or you can just delete the entry. My name is
-> > still in the source, but with the old address. It'd great if the
-> > address in source was updated.
-> 
-> ...
->  
-> -TMS380 TOKEN-RING NETWORK DRIVER
-> -P:	Adam Fritzler
-> -M:	mid@auk.cx
-> -L:	linux-tr@linuxtr.net
-> -W:	http://www.auk.cx/tms380tr/
-> -S:	Maintained
+> On Mon, Dec 17, 2007 at 08:57:50AM +1100, Paul Mackerras wrote:
+>> Greg KH writes:
+>> 
+>> > Ok, sorry, it wasn't blindingly obvious that this was for pci sysfs
+>> > devices that are mmaped, that makes a bit more sense.
+>> > 
+>> > But I'd like to see what ioctl is wanted here first.
+>> 
+>> I believe the ioctl would be to set whether the mapping goes to I/O or
+>> memory space, 
 >
-> ...
+> x86 cannot really access IO space through mmap so no that wasn't planned
+
+0000_00FD_FC00_0000h - 0000_00FD_FDFF_FFFFh On a hypertransport based
+system should work.  There is a 32MB window for it.
+
+However the I/O vs mem distinction doesn't matter anyway if we start out
+per bar because we already know if it is I/O or mem.
+
+> The main planned use was to get the translated bus address (after IOMMU)
+> for a mapping and to set the caching modes.
 >
-> - * Added MCA support Adam Fritzler <mid@auk.cx>
-> + * Added MCA support Adam Fritzler <mid@zigamorph.net>
+>> So the alternative to the ioctl would be to have multiple files in
+>> sysfs, one per combination of modes -- i.e., 4 files, or 3 if we
+>> exclude the "I/O with write combining" mode, which would be
+>> reasonable.
+>
+> At least for the IOMMU translation case that wouldn't work.
 
-This is fairly pointless - it'll just break again when Adam moves again.
+Well the other alternative looks like having a second file per par
+bar.  Say resource0_wc to support the write-combining mode, possibly
+restricted to just prefetchable bars.
 
-Every problem can be solved with another layer of...
+If that is all we have to worry about my inclination is to suggest
+a second file, because that feels a bit more generally useable.  As
+that attribute could be applied to ordinary reads and writes to and
+from the bar.
 
-Please: just replace all instances with plain old "Adam Fritzler" and then
-ensure that the lookup key "Adam Fritzler" has an accurate (and
-non-duplicated anywhere else!) entry in MAINTAINERS or CREDITS or whatever.
-
-
-
-btw, I cheerfully skipped all your spelling-fixes patches.  Some will have
-stuck via subsystem maintainers but I have a secret "no spelling fixes
-unless they're end-user-visible" policy.  That means I'll take spelling
-fixes only if they're in printks or in Documentation/*.  This is a little
-defense mechanism to avoid getting buried in micropatches.
-
-I'd suggest that you find out if Adrian is still running the trivial tree
-and if so, patchbomb him.
+Eric
