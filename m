@@ -1,62 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbXLSUDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403AbXLSULJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757391AbXLSUDS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 15:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbXLSUDA
+	id S1756403AbXLSULJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 15:11:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbXLSUK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 15:03:00 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50336 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753671AbXLSUC7 (ORCPT
+	Wed, 19 Dec 2007 15:10:56 -0500
+Received: from spirit.analogic.com ([204.178.40.4]:1496 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750714AbXLSUKz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 15:02:59 -0500
-Date: Wed, 19 Dec 2007 12:02:52 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Daniel Walker <dwalker@mvista.com>
-cc: Miles Lane <miles.lane@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc5-mm1 -- inconsistent {in-hardirq-W} -> {hardirq-on-W}
- usage -- pm-hibernate/9940 [HC0[0]:SC0[0]:HE1:SE1]
-In-Reply-To: <1198092200.2716.49.camel@imap.mvista.com>
-Message-ID: <Pine.LNX.4.64.0712191158140.28180@schroedinger.engr.sgi.com>
-References: <a44ae5cd0712190517t7c80e15bv759fa5486dfca234@mail.gmail.com> 
- <47693385.1010901@gmail.com>  <1198089729.2716.45.camel@imap.mvista.com>
- <1198092200.2716.49.camel@imap.mvista.com>
+	Wed, 19 Dec 2007 15:10:55 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 19 Dec 2007 20:10:28.0691 (UTC) FILETIME=[332AC230:01C8427B]
+Content-class: urn:content-classes:message
+Subject: Trying to convert old modules to newer kernels
+Date: Wed, 19 Dec 2007 15:10:28 -0500
+Message-ID: <Pine.LNX.4.61.0712191503370.4688@chaos.analogic.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Trying to convert old modules to newer kernels
+thread-index: AchCezM0spJyEjxJSweGqIEJ8vqxvA==
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Linux kernel" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Dec 2007, Daniel Walker wrote:
-
-> > It looks like the swsusp_save() calls drain_all_pages() , which calls
-> > on_each_cpu() .. On return on_each_cpu() unconditionally enables
-> > interrupts so the rest of the resume process has interrupt enable
-> > (which , it looks like, shouldn't happen) and then you get the lockdep()
-> > warning due to the above..
-> > 
-> > Not sure if this has been found already, or not?
-
-Hmmm... It will unconditionally enable interrupts regardless how we call 
-this. We could explicity save and restore interrrupts in 
-swsusp_save() I guess. Why is swsusp_save() disabling interrupts?
-
-> > Should drain_all_pages() really be drain_local_pages() ?
-> 
-> It looks like it was drain_local_pages, but the following patch
-> 
-> page-allocator-clean-up-pcp-draining-functions.patch
-> 
-> Changes that in -mm .. I added Christoph Lameter to the CC since it's
-> his patch ..
-
-We could reexport drain_local_pages() again but then I do not understand 
-why we would only drain the pages of this processor and not of all other
-processors as well. It seems that software suspend intend was to flush 
-them all right?
 
 
+Here is a so-called BUG when trying to insert the following
+module into the kernel (2.6.22.1).
+
+
+BUG: unable to handle kernel paging request at virtual address 6814ec83
+  printing eip:
+c016d013
+*pde = 00000000
+Oops: 0000 [#1]
+PREEMPT SMP 
+Modules linked in: MemDev parport_pc lp parport nfsd exportfs lockd sunrpc iptable_filter ip_tables x_tables e1000 e100 mii nls_cp437 msdos fat dm_mod usbhid ff_memless uhci_hcd ehci_hcd video container button battery ac rtc ipv6 ext3 jbd ata_piix libata aic7xxx scsi_transport_spi sd_mod scsi_mod
+CPU:    0
+EIP:    0060:[<c016d013>]    Not tainted VLI
+EFLAGS: 00010046   (2.6.22.1 #2)
+EIP is at kmem_cache_alloc+0x23/0x80
+eax: 00000000   ebx: 00000246   ecx: f8913300   edx: 6814ec83
+esi: 00000000   edi: f8913000   ebp: ef27e000   esp: ef27ff74
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process insmod (pid: 4593, ti=ef27e000 task=f614f550 task.ti=ef27e000)
+Stack: f8913300 00000000 00000000 f8913013 f7fff880 000000d0 00000000 ef27e000
+        c012b907 ffffffff 00000000 c0140279 bffedc07 bffedc08 0807a018 00000000
+        c0102b82 0807a018 000018c9 0807a008 00000000 00000000 bffeabc8 00000080 
+Call Trace:
+  [<f8913013>] init_module+0x13/0x48 [MemDev]
+  [<c012b907>] blocking_notifier_call_chain+0x17/0x20
+  [<c0140279>] sys_init_module+0xd9/0x140
+  [<c0102b82>] sysenter_past_esp+0x5f/0x85
+  =======================
+Code: 90 8d b4 26 00 00 00 00 83 ec 0c f6 c2 10 89 74 24 04 89 d6 89 7c 24 08 89 c7 89 1c 24 75 49 9c 5b fa 64 a1 04 20 47 c0 8b 14 87 <8b> 02 85 c0 74 25 c7 42 0c 01 00 00 00 48 89 02 8b 54 82 18 53 
+EIP: [<c016d013>] kmem_cache_alloc+0x23/0x80 SS:ESP 0068:ef27ff74
+
+
+
+Here is the code that causes the crash.
+
+
+#include <linux/autoconf.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/poll.h>
+#include <linux/mm.h>
+static const char devname[]="Device";
+#define NR_PAGES 0x10
+
+struct DMA {
+     void *ptr;
+     unsigned long addr;
+     size_t len;
+     };
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//
+//  The top-level object that gets allocated once, when the module is
+//  installed.
+//
+struct INFO {
+     struct file_operations fa;          // Kernel connection
+     struct semaphore dev_sem;
+     struct DMA dma[NR_PAGES];           // Can map one megabyte
+     uint32_t vm_start;                  // Where mmap() starts
+     uint32_t pages;                     // Number of pages mapped
+     atomic_t open;                      // Number of opens
+     };
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+static struct INFO *info;
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//
+//   Initialize the module and return 0 if everything is okay.
+//   Return a negative error-code if not.
+//
+static int32_t startup()
+{
+     if((info = kmalloc(sizeof(struct INFO), GFP_KERNEL)) == NULL) {
+         printk(KERN_ALERT"%s : Can't allocate memory\n", devname);
+         return -ENOMEM;
+     }
+     return 0;
+}
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//
+//  Cleanup the module in preparation for removal.
+//
+static void quit() {
+     kfree(info);
+     printk(KERN_INFO"%s : Module removed\n", devname);
+}
+MODULE_LICENSE("GPL");
+MODULE_ALIAS("MemDev");
+module_init(startup);
+module_exit(quit);
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Anybody have a clue why this should error out? Am I using
+some reserved names??? I got rid of __init and anything
+else that I thought could cause the fault, plus got rid
+of all the code!
+
+
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
