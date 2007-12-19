@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbXLSJFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbXLSJLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbXLSJFE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 04:05:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbXLSJEs
+	id S1753399AbXLSJLp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 04:11:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbXLSJL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 04:04:48 -0500
-Received: from mail.gmx.net ([213.165.64.20]:55539 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751287AbXLSJEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 04:04:47 -0500
-X-Authenticated: #24222693
-X-Provags-ID: V01U2FsdGVkX1+rqXIIe+er4Vy4eMaybV52mA0J+tBEb7n5YRixzn
-	iukGda6p8FnC76
-From: Robert Gerlach <khnz@gmx.de>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH] Fujitsu application panel driver
-Date: Wed, 19 Dec 2007 10:04:41 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Dmitry Torokhov <dtor@insightbb.com>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-References: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net> <200711191350.31965.khnz@gmx.de> <20071119151918.19ebd8aa@freepuppy.rosehill>
-In-Reply-To: <20071119151918.19ebd8aa@freepuppy.rosehill>
+	Wed, 19 Dec 2007 04:11:29 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:48860 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752062AbXLSJLV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 04:11:21 -0500
+Message-ID: <4768E02F.20700@cosmosbay.com>
+Date: Wed, 19 Dec 2007 10:11:11 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200712191004.42565.khnz@gmx.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+To: dotanb@dev.mellanox.co.il
+CC: linux-kernel@vger.kernel.org
+Subject: Re: The code segment of the user level in PPC64 are in VMAs with
+ write permissions
+References: <4768C675.1030804@dev.mellanox.co.il>
+In-Reply-To: <4768C675.1030804@dev.mellanox.co.il>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 19 Dec 2007 10:11:18 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 20 November 2007 00:19:18 schrieb Stephen Hemminger:
-> On Mon, 19 Nov 2007 13:50:30 +0100
->
-> Robert Gerlach <khnz@gmx.de> wrote:
-> > Am Montag 19 November 2007 05:43:07 schrieb Stephen Hemminger:
-> > > On Sun, 18 Nov 2007 23:36:58 +0100
-> > >
-> > > Robert Gerlach <khnz@gmx.de> wrote:
-> > > > Am Dienstag 23 Oktober 2007 21:55:55 schrieb Stephen Hemminger:
-> > > > > +MODULE_ALIAS("dmi:*:svnFUJITSU:pnLifeBook*:pvr*:rvnFUJITSU:*");
-> > > > > +MODULE_ALIAS("dmi:*:svnFUJITSU:pnLifebook*:pvr*:rvnFUJITSU:*");
-> > > >
-> > > > Please make sure that this module is not autoload on Lifebook tablets
-> > > > (T series and P1[56]10). It works fine, but only supports a subset of
-> > > > features (4 of 7 buttons and no display orientation for my T4010).
-> > >
-> > > I would rather get those tablets working (with help). Rather than
-> > > trying to enumerate all the possible DMI values of the full range of
-> > > different laptops.
-> >
-> > I've played with apanel some month ago. I've never found the keys and the
-> > switch over the I2C bus. So I was starting my own module (fsc_btns) to
-> > play with the IO range announced by ACPI. There I found it all. But my
-> > module doesn't work on all Lifebooks (S7110 for example; has no such ACPI
-> > device).
->
-> Are you sure the IO range isn't really the same as the I2C bus.
+Dotan Barak a écrit :
+> Hi all.
+> 
+> I noticed that the code segment of the user level in PPC64 machines
+> is in a VMA with a write permission enabled.
+> 
+> I'm using the following machine attributes:
+> *************************************************************
+> Host Name         : mtlsqt185
+> Host Architecture : ppc64
+> Linux Distribution: SUSE Linux Enterprise Server 10 (ppc) VERSION = 10 
+> PATCHLEVEL = 1
+> Kernel Version    : 2.6.16.53-0.16-ppc64
+> GCC Version       : gcc (GCC) 4.1.2 20070115 (prerelease) (SUSE Linux)
+> Memory size       : 1740232 kB
+> Number of CPUs    : 8
+> cpu MHz           : 4005.000000MHz
+> Driver Version    : OFED-1.2.5.4-20071210-0614
+> HCA ID(s)         : mlx4_0
+> HCA model(s)      : 25418
+> FW version(s)     : 2.3.906
+> Board(s)          : IBM08A0000001
+> *************************************************************
+> 
+> I printed the address of a function in my program and i got the value 
+> 0x1005ac80.
+> 
+> I printed the VMAs in my process and i got the following output:
+> mtlsqt185:~ # cat /proc/17366/maps
+> 00100000-00103000 r-xp 00100000 00:00 0
+> 10000000-1004a000 r-xp 00000000 08:03 1063667                            
+> /tmp/tsscr/svn.mlx_tp/branches/ofed1.2.5/gen2/userspace/useraccess/gen2_basic/gen2_basic 
+> 
+> 1005a000-1005e000 rw-p 0004a000 08:03 1063667                            
+> /tmp/tsscr/svn.mlx_tp/branches/ofed1.2.5/gen2/userspace/useraccess/gen2_basic/gen2_basic 
+> 
+> 1005e000-1015f000 rw-p 1005e000 00:00 0                                  
+> [heap]
+> 
+> Is this is a security hole (any virus can change the code in the code 
+> segment ...)
+> 
+> can you please CC me the answers o this question?
+> 
 
-No, I'm not sure. But, I was looking through the spec and played with my 
-Lifebook, and again with no success.
+This is because on PPC architecture, address of a function points to a small
+data area (a function descriptor) where the caller can find informations about :
 
-> See: http://apanel.sourceforge.net/tech.php
+- Address (in the text segment, so readonly) of the target function
+- Address of the TOC for this function.
 
-Doesn't help ether.
 
-
-  Robert
+http://www.linux-foundation.org/spec/ELF/ppc64/PPC-elf64abi-1.9.html#FUNC-ADDRESS
