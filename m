@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbXLSQxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbXLSQxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbXLSQxW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 11:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbXLSQxJ
+	id S1756179AbXLSQxo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 11:53:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbXLSQxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 11:53:09 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:51050 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbXLSQxH (ORCPT
+	Wed, 19 Dec 2007 11:53:34 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:20882 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753340AbXLSQxd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 11:53:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ue5hbY1YMXY7H0gT+OnY0lMHcDhAKCvfQOfTCikrQfhCiF0nzFYCsy6TF9kPXKCHhOu3hjuxU1wZ7DjuNYZrW34aga5P50ZoxVywpzgsFjKB0l0poyokdOw4Ymcfy34nBu3iXzWXC3Y8yBGLRL+wovyH2wRrVqHvVxWIiP6A26E=
-Message-ID: <83a51e120712190853q33d9c7c1t4a46380665b7538b@mail.gmail.com>
-Date: Wed, 19 Dec 2007 11:53:06 -0500
-From: "James Nichols" <jamesnichols3@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
-Cc: "Jan Engelhardt" <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
-       "Linux Netdev List" <netdev@vger.kernel.org>
-In-Reply-To: <47682F8C.20205@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Dec 2007 11:53:33 -0500
+Subject: Re: [patch 02/20] make the inode i_mmap_lock a reader/writer lock
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com
+In-Reply-To: <20071219113107.5301f9f0@cuia.boston.redhat.com>
+References: <20071218211539.250334036@redhat.com>
+	 <20071218211548.784184591@redhat.com>
+	 <200712191148.06506.nickpiggin@yahoo.com.au>
+	 <1198079529.5333.12.camel@localhost>
+	 <20071219113107.5301f9f0@cuia.boston.redhat.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Wed, 19 Dec 2007 11:53:38 -0500
+Message-Id: <1198083218.5333.48.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com>
-	 <Pine.LNX.4.64.0712181704380.4422@fbirervta.pbzchgretzou.qr>
-	 <83a51e120712180845k6cadf67bn5dd66fb2d3ac72d4@mail.gmail.com>
-	 <Pine.LNX.4.64.0712181818360.4422@fbirervta.pbzchgretzou.qr>
-	 <83a51e120712181009pf954f43mcb63ea4dab638458@mail.gmail.com>
-	 <Pine.LNX.4.64.0712181910580.4422@fbirervta.pbzchgretzou.qr>
-	 <83a51e120712181021p4c4c2a13g8820271f1e00361b@mail.gmail.com>
-	 <4768123A.7040603@cosmosbay.com>
-	 <83a51e120712181144l65633b32r72cc369f9d012f47@mail.gmail.com>
-	 <47682F8C.20205@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So you see outgoing SYN packets, but no SYN replies coming from the remote
-> peer ?  (you mention ACKS, but the first packet received from the remote
->  peer should be a SYN+ACK),
+On Wed, 2007-12-19 at 11:31 -0500, Rik van Riel wrote:
+> On Wed, 19 Dec 2007 10:52:09 -0500
+> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> 
+> > I keep these patches up to date for testing.  I don't have conclusive
+> > evidence whether they alleviate or exacerbate the problem nor by how
+> > much.  
+> 
+> When the queued locking from Ingo's x86 tree hits mainline,
+> I suspect that spinlocks may end up behaving a lot nicer.
 
-Right, I meant to say SYN+ACK.  I don't see them coming back.
+That would be worth testing with our problematic workloads...
 
+> 
+> Should I drop the rwlock patches from my tree for now and
+> focus on just the page reclaim stuff?
 
-> When the problem comes, instead of restarting the application, please take a
-> tcpdump of say 10.000 packets.
-> Then turn off tcp_sack and take a 2nd tcpdump sample, and make both samples
-> available to us.
+That's fine with me.  They're out there is anyone is interested.  I'll
+keep them up to date in my tree [and hope they don't conflict with split
+lru and noreclaim patches too much] for occasional testing.
 
-I can take these captures and take a look at the results.
-Unfortunately, I don't think I'll be able to make the captures
-available to the general public.
+Lee
 
-
-
-> If turning off tcp_sack makes the problem go away, why dont you turn it off
-> all the time ?
-
-Unfortunately, I think that will be the answer if I can't get any help
-fixing this problem in the kernel.  It's a bummer, because many of the
-remote hosts my application communicates with are on wireless links,
-so there may be performance implications to turning SACK off.
