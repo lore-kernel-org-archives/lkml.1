@@ -1,79 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756013AbXLSSq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbXLSSss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756013AbXLSSq6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 13:46:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbXLSSqt
+	id S1755523AbXLSSss (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 13:48:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbXLSSsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 13:46:49 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:53283 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752043AbXLSSqs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 13:46:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=W+6XGkLPXx4O3VCNPZaU+JgVNj16fdkTs5gU8yH/Iszf/1O1Spnu6eFzNQq9oCRnbjY5G9PAy+UyFSbrSkq+9C5C36x3yk0JxbsZtI8hwMMxm7K7BeQCjYSlNEz6Atyq7fCQDZGS7Gatv0FVCC7/xmYEytFZo/RqTAwxCVyO/G4=
-Message-ID: <9e0cf0bf0712191046q702eefb0vdd0526360eceddc1@mail.gmail.com>
-Date: Wed, 19 Dec 2007 20:46:46 +0200
-From: "Alon Bar-Lev" <alon.barlev@gmail.com>
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: Re: [MIPS] Build an embedded initramfs into mips kernel
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-mips@ftp.linux-mips.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071218224702.GI15227@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Dec 2007 13:48:40 -0500
+Received: from mx39.mail.ru ([194.67.23.35]:58222 "EHLO mx39.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751672AbXLSSsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 13:48:39 -0500
+Date: Wed, 19 Dec 2007 21:50:50 +0300
+From: Anton Vorontsov <cbou@mail.ru>
+To: Andres Salomon <dilinger@queued.net>
+Cc: cbouatmailru@gmail.com, David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/5] power: RFC: introduce a new power API
+Message-ID: <20071219185050.GA1570@localhost.localdomain>
+Reply-To: cbou@mail.ru
+References: <20071216212443.4a1fff3d@ephemeral> <1197858984.3798.201.camel@shinybook.infradead.org> <20071217055123.GA2274@zarina> <20071217024139.2f81e36d@ephemeral> <20071217112416.GA25948@localhost.localdomain> <20071218021001.46783004@ephemeral> <20071219123546.GA6277@localhost.localdomain> <20071219130241.21f0b416@ephemeral>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-References: <9e0cf0bf0712181208m7f16b9acpf3dba67f3556a613@mail.gmail.com>
-	 <47683B2D.9030608@zytor.com>
-	 <9e0cf0bf0712181409p2475e1fdk779fdee4fa274722@mail.gmail.com>
-	 <20071218224702.GI15227@1wt.eu>
+In-Reply-To: <20071219130241.21f0b416@ephemeral>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for your help.
-Indeed the dynamic loader of uclibc is the cause.
-I upgraded to latest uclibc-0.9.29, and finally the files was linked
-against uclibc's ld.
-But it did not work...
-Tried to run a dynamic linked executable via static shell, and got
-floating point exception.
-Tried to compile toolchain and uclibc with softfloat, but still did not work.
-So I moved to glibc and all works correctly.
+On Wed, Dec 19, 2007 at 01:02:41PM -0500, Andres Salomon wrote:
+[...]
+> > > Hm.  It occurs to me that there's nothing keeping us from having a
+> > > single callback for the driver properties.  Keeping the other patches
+> > > the same, do you prefer the following approach versus what was originally
+> > > in patch#3?
+> > 
+> > Why so difficult? Maybe like this:
+> > 
+> 
+> The point is to get rid of 'propval', and having the core driver define
+> formats.  That's one of the places where we ran into problems with the
+> current API; by having the core driver define what type a property should
+> be returning, we limit battery drivers to what they can display, as well
 
-Thank you for quick response!
-I will continue the discussion at uclibc lists.
+Limiting is:
+- I want to do A.
+- I won't let you do that.
 
-Best Regards,
-Alon Bar-Lev.
+But you don't want convert and write integer attributes directly to
+sysfs.
 
-On 12/19/07, Willy Tarreau <w@1wt.eu> wrote:
-> On Wed, Dec 19, 2007 at 12:09:46AM +0200, Alon Bar-Lev wrote:
-> > On 12/18/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> > > Make sure your /init doesn't depend on an interpreter or library which
-> > > isn't available.
-> >
-> > Thank you for your answer.
-> >
-> > I already checked.
-> >
-> > /init is hardlink to busybox, it depends on libc.so.0 which is available at /lib
->
-> Are you sure that libc.so.0 is enough and that you don't need any ld.so ?
->
-> > But shouldn't I get a different error code if this is the case?
->
-> If it does not find part of the dynamic linker or libraries, this error
-> makes sense to me.
->
-> You should try to build a static init with any stupid thing such as a
-> hello world to ensure that the problem really comes from the init and
-> nothing else.
->
-> Regards,
-> Willy
->
->
+If you do so, class will end up converting everything back from
+strings to integers (as in _leds case. And another example, though
+bad one, is drivers/power/apm_power.c).
+
+> as encourage a lot of non-shared code to end up in the core driver.  That's
+> the reason why we strcpy into 'buf', rather than val->strval.
+
+When properties are pure integers why you so eager to fill sysfs by
+yourself?
+
+You don't want to pad "voltage" property with zeroes. Probably you
+want free-form S/N property. Ok, it fits quite well in the purposed
+scheme: fill strval.
+
+Can you imagine an use case when this approach doesn't work?
+
+> For transitioning, we could certainly just use val->strval all of the time,
+> but there's not much point in doing that in the long term; we might as well
+> just pass around 'buf'.
+
+No, we don't need strval for every property. Most of them are integers,
+and power_supply_sysfs.c doing its small job: representing internal
+structure to sysfs, through strings. Strings aren't there in the
+first place.
+
+> > diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
+> > index c998e68..00f0b71 100644
+> > --- a/drivers/power/olpc_battery.c
+> > +++ b/drivers/power/olpc_battery.c
+> > @@ -176,13 +176,13 @@ static int olpc_bat_get_property(struct power_supply *psy,
+> >  
+> >  		switch (ec_byte >> 4) {
+> >  		case 1:
+> > -			val->strval = "Gold Peak";
+> > +			ret = sprintf(val->strval, "%s\n", "Gold Peak");
+> >  			break;
+> >  		case 2:
+> > -			val->strval = "BYD";
+> > +			ret = sprintf(val->strval, "%s\n", "BYD");
+> >  			break;
+> >  		default:
+> > -			val->strval = "Unknown";
+> > +			ret = sprintf(val->strval, "%s\n", "Unknown");
+> >  			break;
+> >  		}
+> >  		break;
+> > diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
+> > index 249f61b..83e127d 100644
+> > --- a/drivers/power/power_supply_sysfs.c
+> > +++ b/drivers/power/power_supply_sysfs.c
+> > @@ -54,7 +54,9 @@ static ssize_t power_supply_show_property(struct device *dev,
+> >  	ssize_t ret;
+> >  	struct power_supply *psy = dev_get_drvdata(dev);
+> >  	const ptrdiff_t off = attr - power_supply_attrs;
+> > -	union power_supply_propval value;
+> > +	union power_supply_propval value = {
+> > +		.strval = buf,
+> > +	};
+> >  
+> >  	ret = psy->get_property(psy, off, &value);
+> >  
+> > @@ -75,7 +77,7 @@ static ssize_t power_supply_show_property(struct device *dev,
+> >  		return sprintf(buf, "%s\n",
+> >  			       capacity_level_text[value.intval]);
+> >  	else if (off >= POWER_SUPPLY_PROP_MODEL_NAME)
+> > -		return sprintf(buf, "%s\n", value.strval);
+> > +		return ret;
+> >  
+> >  	return sprintf(buf, "%d\n", value.intval);
+> >  }
+> 
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
