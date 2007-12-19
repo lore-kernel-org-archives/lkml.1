@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbXLSNnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbXLSNoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756418AbXLSNnm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 08:43:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbXLSNne
+	id S1756732AbXLSNoF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 08:44:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbXLSNnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 08:43:34 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:59942 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753036AbXLSNne (ORCPT
+	Wed, 19 Dec 2007 08:43:53 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:57456 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753080AbXLSNnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 08:43:34 -0500
-Date: Wed, 19 Dec 2007 16:43:50 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Johannes Weiner <hannes@saeurebad.de>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Alan Cox <alan@redhat.com>, Greg Kroah-Hartman <greg@kroah.com>,
-       jgarzik@pobox.com, wingel@nano-system.com,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, james.smart@emulex.com,
-       linux-driver@qlogic.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH]] x86: pci: Disable IO/Mem on a device when
-	resources can't be allocated
-Message-ID: <20071219134350.GA19698@jurassic.park.msu.ru>
-References: <1197932473.576079.142524077033.qpush@grosgo> <x7prx4vq3e.fsf@saeurebad.de> <1197936157.13400.9.camel@pasglop> <20071218123715.A7874@jurassic.park.msu.ru> <1198041019.18908.32.camel@pasglop>
+	Wed, 19 Dec 2007 08:43:52 -0500
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: RFC: permit link(2)  to work across --bind mounts ?
+To: Al Viro <viro@ftp.linux.org.uk>, Mark Lord <lkml@rtr.ca>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Reply-To: 7eggert@gmx.de
+Date: Wed, 19 Dec 2007 14:43:26 +0100
+References: <9BTqk-2ck-31@gated-at.bofh.it> <9BTJN-2Sv-21@gated-at.bofh.it> <9BTTr-35L-13@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1198041019.18908.32.camel@pasglop>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1J4zCp-0003fj-5I@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/9gxyAdqEP/9PuOY7SvIK9Hh9T3FBabBbwaak
+ fmKVLEFXR5wq0jkDiimI6sPiXiK67v7Oud+X5BGdlMj0ueuN4e
+ z0ec1uoiuDJkUDWehcvKg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 19, 2007 at 04:10:19PM +1100, Benjamin Herrenschmidt wrote:
-> This patch changes the x86 PCI code to disable IO and/or Memory
-> decoding on a PCI device when a resource of that type failed to
-> be allocated.
+Al Viro <viro@ftp.linux.org.uk> wrote:
+> On Tue, Dec 18, 2007 at 11:00:16PM +0000, Al Viro wrote:
+>> On Tue, Dec 18, 2007 at 05:46:21PM -0500, Mark Lord wrote:
 
-Oh, this opens up a can of worms ;-)
+>> > Why does link(2) not support hard-linking across bind mount points
+>> > of the same underlying filesystem ?
+>> 
+>> Because it gives you a security boundary around a subtree.
+> 
+> PS: that had been discussed quite a few times, but to avoid searches:
+> consider e.g. mount --bind /tmp /tmp; now you've got a situation when
+> users can't create links to elsewhere no root fs, even though they
+> have /tmp writable to them.  Similar technics works for other isolation
+> needs - basically, you can confine rename/link to given subtree.  IOW,
+> it's a deliberate feature.  Note that you can bind a bunch of trees
+> into chroot and get predictable restrictions regardless of how the
+> stuff might get rearranged a year later in the main tree, etc.
 
-In ideal world, the patch would be perfectly valid. But on x86 we have
-at least two firmware layers (E820 and ACPI), each with its own (often
-totally crazy) view on system resources. OTOH, we cannot completely ignore
-the firmware - otherwise the resource allocator could step onto some
-hidden/undocumented system decode ranges...
-One of the typical reasons for "dangling BAR" on x86 is that a resource
-allocation failed because BIOS has reserved address region for the
-very same BAR ;-)
+Since nobody knows about this "security boundary" and everybody knows about
+the annoying "can't link across bind-mountpoints bug", what about introducing
+a mount option to allow link()ing?
 
-Perhaps you've seen most recent illustration of x86 resource allocation
-problems:
- http://lkml.org/lkml/2007/12/17/429
-
-Plus there are lots of x86 hardware like host bridges with a BAR
-representing the system RAM, IOAPIC BARs with some high order bits
-hardwired to "1" and so on. Which also doesn't make life any easier.
-
-That's why I still think that res->parent check is not enough for
-x86 and we need some resource flag that tells generic PCI code
-"We failed to allocate this resource, but please don't touch it!".
-Some code is already using IORESOURCE_PCI_FIXED for that purpose, so it
-would suffice.
-On the other hand, with that flag we can move all those horrible
-exceptions like PCI_CLASS_BRIDGE_HOST (which nearly breaks alpha, BTW)
-and PCI_CLASS_SYSTEM_PIC from generic code to arch/x86 where it belongs.
-
-> I'll wait for more comments today and post the whole 5 again tomorrow
-> as official candidates for inclusion :-) (BTW. What is people general
-> feeling about inline vs. non inline for the functions in pci.c ?)
-
-I think inlines are prettier, but not allowing direct use of the _flag
-function is a valid argument too. So I'm fine with both.
-
-Ivan.
