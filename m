@@ -1,55 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757377AbXLSANT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbXLSAOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757377AbXLSANT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 19:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbXLSANJ
+	id S1758185AbXLSAOy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 19:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbXLSAOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 19:13:09 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45251 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751299AbXLSANH (ORCPT
+	Tue, 18 Dec 2007 19:14:46 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:48379 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751672AbXLSAOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 19:13:07 -0500
-Date: Tue, 18 Dec 2007 16:12:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
-Cc: dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org,
-       daniel.ritz@gmx.ch, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] usbtouchscreen: fix buffer overflow, make more egalax
- work
-Message-Id: <20071218161254.ca6ee09a.akpm@linux-foundation.org>
-In-Reply-To: <200712112105.11184.daniel.ritz-ml@swissonline.ch>
-References: <200712112105.11184.daniel.ritz-ml@swissonline.ch>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Dec 2007 19:14:45 -0500
+Message-ID: <47686269.2090103@cosmosbay.com>
+Date: Wed, 19 Dec 2007 01:14:33 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] kernel/sys.c : Get rid of expensive divides in groups_sort()
+Content-Type: multipart/mixed;
+ boundary="------------040605090806020507030406"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 19 Dec 2007 01:14:40 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Dec 2007 21:05:10 +0100
-Daniel Ritz <daniel.ritz-ml@swissonline.ch> wrote:
+This is a multi-part message in MIME format.
+--------------040605090806020507030406
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> [PATCH] usbtouchscreen: fix buffer overflow, make more egalax work
-> 
-> fixes a buffer overflow in mutli-packet handling code. the overflow can only
-> happen with eGalax devices and is even there very unlikely (only non-report
-> packet are affected any only when truncated after the first byte).
-> 
-> it also changes the mutli-packet handling code not to drop unknown packets,
-> but rather just drop one byte. this allows synchronizing on report packets
-> in the data stream. it's required for some egalax devices to work at all.
-> 
-> also removes the pointless 'flags' member of the device struct and sets the
-> version number to 0.6. and some minor cleanups.
-> 
+groups_sort() can be quite long if user loads a large gid table.
 
-Sentences start with a capital letter, please.
+This is because GROUP_AT(group_info, some_integer) uses an integer divide.
+So having to do XXX thousand divides during one syscall can lead to very high 
+latencies. (NGROUPS_MAX=65536)
 
-The term "buffer overflow" tends to get people's juices flowing, yet this
-patch has been languishing for a week.
+In the past (25 Mar 2006), an analog problem was found in groups_search()
+(commit d74beb9f33a5f16d2965f11b275e401f225c949d ) and at that time I changed 
+some variables to unsigned int.
 
-I'll queue it up as for-2.6.24-unless-someone-tells-me-otherwise, thanks. 
-(After having capitalised the sentences, grr.)
+I believe that a more generic fix is to make sure NGROUPS_PER_BLOCK is unsigned.
 
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+
+--------------040605090806020507030406
+Content-Type: text/plain;
+ name="NGROUPS_PER_BLOCK.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="NGROUPS_PER_BLOCK.patch"
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index ac3d496..725a491 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -775,7 +775,7 @@ static inline int above_background_load(void)
+ 
+ struct io_context;			/* See blkdev.h */
+ #define NGROUPS_SMALL		32
+-#define NGROUPS_PER_BLOCK	((int)(PAGE_SIZE / sizeof(gid_t)))
++#define NGROUPS_PER_BLOCK	((unsigned int)(PAGE_SIZE / sizeof(gid_t)))
+ struct group_info {
+ 	int ngroups;
+ 	atomic_t usage;
+diff --git a/kernel/sys.c b/kernel/sys.c
+index d1fe71e..091e58f 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1148,7 +1148,7 @@ static int groups_to_user(gid_t __user *grouplist,
+ 	int count = group_info->ngroups;
+ 
+ 	for (i = 0; i < group_info->nblocks; i++) {
+-		int cp_count = min(NGROUPS_PER_BLOCK, count);
++		int cp_count = min_t(int, NGROUPS_PER_BLOCK, count);
+ 		int off = i * NGROUPS_PER_BLOCK;
+ 		int len = cp_count * sizeof(*grouplist);
+ 
+@@ -1168,7 +1168,7 @@ static int groups_from_user(struct group_info *group_info,
+ 	int count = group_info->ngroups;
+ 
+ 	for (i = 0; i < group_info->nblocks; i++) {
+-		int cp_count = min(NGROUPS_PER_BLOCK, count);
++		int cp_count = min_t(int, NGROUPS_PER_BLOCK, count);
+ 		int off = i * NGROUPS_PER_BLOCK;
+ 		int len = cp_count * sizeof(*grouplist);
+ 
+
+--------------040605090806020507030406--
