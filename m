@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbXLSOxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbXLSOyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbXLSOxo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 09:53:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXLSOxf
+	id S1756848AbXLSOyX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 09:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbXLSOyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 09:53:35 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43946 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753261AbXLSOxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 09:53:34 -0500
-Date: Wed, 19 Dec 2007 09:53:07 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: Re: [patch 17/20] non-reclaimable mlocked pages
-Message-ID: <20071219095307.683978b0@cuia.boston.redhat.com>
-In-Reply-To: <1198074247.6484.17.camel@twins>
-References: <20071218211539.250334036@redhat.com>
-	<20071218211550.186819416@redhat.com>
-	<200712191156.48507.nickpiggin@yahoo.com.au>
-	<20071219084534.4fee8718@bree.surriel.com>
-	<1198074247.6484.17.camel@twins>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+	Wed, 19 Dec 2007 09:54:15 -0500
+Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:4054 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753098AbXLSOyP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 09:54:15 -0500
+Date: Wed, 19 Dec 2007 15:54:12 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Steve Hardy <steve@linuxrealtime.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [PATCH 1/1] : hwmon - new chip driver for TI  ADS7828 A-D
+Message-ID: <20071219155412.4519fb43@hyperion.delvare>
+In-Reply-To: <4768340C.60208@linuxrealtime.co.uk>
+References: <4754441F.1030405@linuxrealtime.co.uk>
+	<20071212022550.d8d3b295.akpm@linux-foundation.org>
+	<4768340C.60208@linuxrealtime.co.uk>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,21 +29,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Dec 2007 15:24:07 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
+Hi Steve, Andrew,
 
-> I thought Lee had patches that moved pages with long rmap chains (both
-> anon and file) out onto the non-reclaim list, for those a slow
-> background scan does make sense.
+Thanks for the review Andrew. I have some more comments, I'll reply to
+the original post.
 
-I suspect we won't be needing that code.  The SEQ replacement for
-swap backed pages might reduce the number of pages that need to
-be scanned to a reasonable number.
+On Tue, 18 Dec 2007 20:56:44 +0000, Steve Hardy wrote:
+> >> +static int ads7828_attach_adapter(struct i2c_adapter *adapter)
+> >> +{
+> >> +    if (!(adapter->class & I2C_CLASS_HWMON))
+> >> +        return 0;
+> > 
+> > Can this happen?
+> 
+> Hmmm, this code exists in pretty much all of the other hwmon
+> drivers, so I will leave it in.
+> 
+> I think it relates to I2C vs ISA connected devices, to avoid
+> detecting something with the correct ID on the wrong bus?
 
-Remember, steady states are not a big problem with the current VM.
-It's the sudden burst of scanning that happens when the VM decides
-that it should start swapping (and every anonymous page is referenced)
-that kills large systems.
+Not at all ;) It relates to I2C buses being used in various devices
+such as TV adapters, which do not have hardware monitoring chips and do
+not like being randomly probed for I2C devices as most hardware
+monitoring drivers do when you load them.
 
 -- 
-All Rights Reversed
+Jean Delvare
