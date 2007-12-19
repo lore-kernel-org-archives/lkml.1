@@ -1,160 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbXLSC6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbXLSDIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862AbXLSC6W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 21:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbXLSC6K
+	id S1754484AbXLSDIc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 22:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbXLSDIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 21:58:10 -0500
-Received: from mga11.intel.com ([192.55.52.93]:30171 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751672AbXLSC6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 21:58:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,182,1196668800"; 
-   d="scan'208";a="448592474"
-Subject: Re: [ipw3945-devel] 2.6.24-rc5-mm1 -- INFO: possible circular
-	locking dependency	detected -- pm-suspend/5800 is trying to acquire lock
-From: Zhu Yi <yi.zhu@intel.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Miles Lane <miles.lane@gmail.com>, Len Brown <len.brown@intel.com>,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       ipw3945-devel@lists.sourceforge.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1197989826.4885.169.camel@johannes.berg>
-References: <a44ae5cd0712180603v2a37023dj714a8500c14c08de@mail.gmail.com>
-	 <1197986886.4885.156.camel@johannes.berg>
-	 <a44ae5cd0712180641n15ceae8bp977efe9a5b45e6bc@mail.gmail.com>
-	 (sfid-20071218_144150_051683_83D9589E)  <1197989826.4885.169.camel@johannes.berg>
-Content-Type: multipart/mixed; boundary="=-FK830ol8qJSWEzXFA0oQ"
-Organization: Intel Corp.
-Date: Wed, 19 Dec 2007 10:58:02 +0800
-Message-Id: <1198033082.2857.303.camel@debian.sh.intel.com>
+	Tue, 18 Dec 2007 22:08:23 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:60109 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751941AbXLSDIW (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 22:08:22 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Dave Young <hidave.darkstar@gmail.com>, Shaohua Li <shaohua.li@intel.com>,
+       Rene Herman <rene.herman@keyaccess.nl>, yakui.zhao@intel.com,
+       Chris Holvenstot <cholvenstot@comcast.net>,
+       linux-kernel@vger.kernel.org, trenn@suse.de,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: pnpacpi : exceeded the max number of IO resources
+In-Reply-To: Your message of "Wed, 05 Dec 2007 13:39:04 MST."
+             <200712051339.04936.bjorn.helgaas@hp.com>
+From: Valdis.Kletnieks@vt.edu
+References: <1196428488.7066.6.camel@localhost> <1196729713.13969.1.camel@sli10-desk.sh.intel.com> <20071204011540.GA2713@darkstar.lan>
+            <200712051339.04936.bjorn.helgaas@hp.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+Content-Type: multipart/signed; boundary="==_Exmh_1198033659_2768P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 18 Dec 2007 22:07:39 -0500
+Message-ID: <26206.1198033659@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1198033659_2768P
+Content-Type: text/plain; charset=us-ascii
 
---=-FK830ol8qJSWEzXFA0oQ
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+On Wed, 05 Dec 2007 13:39:04 MST, Bjorn Helgaas said:
 
-
-On Tue, 2007-12-18 at 15:57 +0100, Johannes Berg wrote:
-> Thanks. This is a bug in iwlwifi.
+> > -#define PNP_MAX_PORT		24
+> > +#define PNP_MAX_PORT		128
+> >  #define PNP_MAX_MEM		12
+> >  #define PNP_MAX_IRQ		2
+> >  #define PNP_MAX_DMA		2
 > 
-> The problem is actually another case where my workqueue debugging with
-> lockdep is triggering a warning :))
+> I don't think we can increase PNP_MAX_PORT to 128.  Only one or two
+> devices need that many, so just bumping the max wastes a LOT of space.
+> A struct resource is seven longs, so on a 32-bit system with sixteen
+> PNP devices, we'd be wasting (128-24)*7*4*16 = almost 47Kbytes.
 > 
-> Here's the thing:
+> In hindsight, I should not have removed drivers/acpi/motherboard.c
+> until we had dynamic PNP resource tables.  We could revert that
+> change [1], but the driver's been gone since 2.6.21, so I don't
+> think it's that urgent.  It's just that we used to silently ignore
+> resources past the limits, and in -mm, we now print a KERN_ERR message.
 > 
-> iwl3945_cancel_deferred_work does 
+> So I think we should either remove the message altogether (so we're
+> exactly like 2.6.23 in this regard), or at least tone it down to
+> a KERN_WARN or something.
 > 
-> cancel_delayed_work_sync(&priv->init_alive_start);
-> 
-> (which is the "(&(&priv->init_alive_start)->work)" lock)
-> 
-> but it is called from within a locked section of
-> mutex_lock(&priv->mutex); (locked from iwl3945_pci_suspend)
-> 
-> On the other hand, the task that runs from the init_alive_start
-> workqueue is iwl3945_bg_init_alive_start() which will lock the same
-> mutex.
-> 
-> So the deadlock condition is that you can be in
-> cancel_delayed_work_sync() above while the mutex is locked, and be
-> waiting for iwl_3945_bg_init_alive_start() which tries to lock the
-> mutex.
+> And we need to get Thomas' dynamic patch into -mm ASAP :-)
 
-Thanks for the analysis.
+*ping*! :)
 
-Miles, please try the attached patch. I'll send a patch for both 3945
-and 4965 to linux-wireless later.
+My laptop still hits the PNP_MAX_MEM=12 warning in -rc5-mm1 - what's the
+status on Thomas's patch?  No biggie - I just want to make sure it hasn't
+been dropped through the cracks someplace....
 
-Thanks,
--yi
+--==_Exmh_1198033659_2768P
+Content-Type: application/pgp-signature
 
---=-FK830ol8qJSWEzXFA0oQ
-Content-Disposition: attachment; filename=fix-3945-deadlock-susp.patch
-Content-Type: text/x-patch; name=fix-3945-deadlock-susp.patch; charset=GB2312
-Content-Transfer-Encoding: 7bit
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-index 88cf035..f0303e8 100644
---- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-@@ -6355,8 +6355,6 @@ static void __iwl3945_down(struct iwl3945_priv *priv)
- 	/* Unblock any waiting calls */
- 	wake_up_interruptible_all(&priv->wait_command_queue);
- 
--	iwl3945_cancel_deferred_work(priv);
--
- 	/* Wipe out the EXIT_PENDING status bit if we are not actually
- 	 * exiting the module */
- 	if (!exit_pending)
-@@ -6431,6 +6429,8 @@ static void iwl3945_down(struct iwl3945_priv *priv)
- 	mutex_lock(&priv->mutex);
- 	__iwl3945_down(priv);
- 	mutex_unlock(&priv->mutex);
-+
-+	iwl3945_cancel_deferred_work(priv);
- }
- 
- #define MAX_HW_RESTARTS 5
-@@ -8739,10 +8739,9 @@ static void iwl3945_pci_remove(struct pci_dev *pdev)
- 
- 	IWL_DEBUG_INFO("*** UNLOAD DRIVER ***\n");
- 
--	mutex_lock(&priv->mutex);
- 	set_bit(STATUS_EXIT_PENDING, &priv->status);
--	__iwl3945_down(priv);
--	mutex_unlock(&priv->mutex);
-+
-+	iwl3945_down(priv);
- 
- 	/* Free MAC hash list for ADHOC */
- 	for (i = 0; i < IWL_IBSS_MAC_HASH_SIZE; i++) {
-@@ -8801,12 +8800,10 @@ static int iwl3945_pci_suspend(struct pci_dev *pdev, pm_message_t state)
- {
- 	struct iwl3945_priv *priv = pci_get_drvdata(pdev);
- 
--	mutex_lock(&priv->mutex);
--
- 	set_bit(STATUS_IN_SUSPEND, &priv->status);
- 
- 	/* Take down the device; powers it off, etc. */
--	__iwl3945_down(priv);
-+	iwl3945_down(priv);
- 
- 	if (priv->mac80211_registered)
- 		ieee80211_stop_queues(priv->hw);
-@@ -8815,8 +8812,6 @@ static int iwl3945_pci_suspend(struct pci_dev *pdev, pm_message_t state)
- 	pci_disable_device(pdev);
- 	pci_set_power_state(pdev, PCI_D3hot);
- 
--	mutex_unlock(&priv->mutex);
--
- 	return 0;
- }
- 
-@@ -8874,8 +8869,6 @@ static int iwl3945_pci_resume(struct pci_dev *pdev)
- 
- 	printk(KERN_INFO "Coming out of suspend...\n");
- 
--	mutex_lock(&priv->mutex);
--
- 	pci_set_power_state(pdev, PCI_D0);
- 	err = pci_enable_device(pdev);
- 	pci_restore_state(pdev);
-@@ -8889,7 +8882,6 @@ static int iwl3945_pci_resume(struct pci_dev *pdev)
- 	pci_write_config_byte(pdev, 0x41, 0x00);
- 
- 	iwl3945_resume(priv);
--	mutex_unlock(&priv->mutex);
- 
- 	return 0;
- }
+iD8DBQFHaIr7cC3lWbTT17ARAj4EAKDxwSNyOd17emL8BYAFUlNSTwIa0ACfd58u
+zdTW+wgZYVQLSVnBd7qqlZY=
+=Esrb
+-----END PGP SIGNATURE-----
 
---=-FK830ol8qJSWEzXFA0oQ--
-
+--==_Exmh_1198033659_2768P--
