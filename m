@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbXLSNLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbXLSNLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbXLSNLK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 08:11:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbXLSNK5
+	id S1753237AbXLSNLn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 08:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbXLSNLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 08:10:57 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:11287 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751280AbXLSNK4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 08:10:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PgnbAekqtmkyyxnelq245M/+HbAhBD7B884xwMBlHMSiU+yS/wiyxTaDr4Qh2jUI++Ork7yBTAZUTUix4BXaGt4xDc66Mbwyug8OfYTzeDrKT68kID0bnVveF9L1C6BYrHdFVfAAfdIPURE72+IoQ+1bFz0nvXlypnsvP/zDzEc=
-Message-ID: <a44ae5cd0712190510h72998e1dj5b03a00461a554f3@mail.gmail.com>
-Date: Wed, 19 Dec 2007 08:10:54 -0500
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Zhu Yi" <yi.zhu@intel.com>
-Subject: Re: [ipw3945-devel] 2.6.24-rc5-mm1 -- INFO: possible circular locking dependency detected -- pm-suspend/5800 is trying to acquire lock
-Cc: "Johannes Berg" <johannes@sipsolutions.net>,
-       "Len Brown" <len.brown@intel.com>, netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ipw3945-devel@lists.sourceforge.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Pavel Machek" <pavel@suse.cz>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <1198033082.2857.303.camel@debian.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Dec 2007 08:11:30 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:62328 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752537AbXLSNL3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 08:11:29 -0500
+Date: Wed, 19 Dec 2007 14:11:00 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: "Remy Bohmer" <linux@bohmer.net>
+Cc: "Andrew Victor" <linux@maxim.org.za>,
+       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] atmel_serial: Split the interrupt handler
+Message-ID: <20071219141100.7384aff9@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <3efb10970712190450p64d4e7a2k7b80d47349be9570@mail.gmail.com>
+References: <1197987255-23045-1-git-send-email-hskinnemoen@atmel.com>
+	<3efb10970712180723x2cd22c5ei6b342f0ab7cc39c2@mail.gmail.com>
+	<20071219133411.24d146e7@dhcp-252-066.norway.atmel.com>
+	<3efb10970712190450p64d4e7a2k7b80d47349be9570@mail.gmail.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a44ae5cd0712180603v2a37023dj714a8500c14c08de@mail.gmail.com>
-	 <1197986886.4885.156.camel@johannes.berg>
-	 <a44ae5cd0712180641n15ceae8bp977efe9a5b45e6bc@mail.gmail.com>
-	 <1197989826.4885.169.camel@johannes.berg>
-	 <1198033082.2857.303.camel@debian.sh.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 18, 2007 9:58 PM, Zhu Yi <yi.zhu@intel.com> wrote:
->
-> On Tue, 2007-12-18 at 15:57 +0100, Johannes Berg wrote:
-> > Thanks. This is a bug in iwlwifi.
-> >
-> > The problem is actually another case where my workqueue debugging with
-> > lockdep is triggering a warning :))
-> >
-> > Here's the thing:
-> >
-> > iwl3945_cancel_deferred_work does
-> >
-> > cancel_delayed_work_sync(&priv->init_alive_start);
-> >
-> > (which is the "(&(&priv->init_alive_start)->work)" lock)
-> >
-> > but it is called from within a locked section of
-> > mutex_lock(&priv->mutex); (locked from iwl3945_pci_suspend)
-> >
-> > On the other hand, the task that runs from the init_alive_start
-> > workqueue is iwl3945_bg_init_alive_start() which will lock the same
-> > mutex.
-> >
-> > So the deadlock condition is that you can be in
-> > cancel_delayed_work_sync() above while the mutex is locked, and be
-> > waiting for iwl_3945_bg_init_alive_start() which tries to lock the
-> > mutex.
->
-> Thanks for the analysis.
->
-> Miles, please try the attached patch. I'll send a patch for both 3945
-> and 4965 to linux-wireless later.
+On Wed, 19 Dec 2007 13:50:16 +0100
+"Remy Bohmer" <linux@bohmer.net> wrote:
 
-I tested it and it looks good here.  Thanks!
+> Hello Haavard,
+> 
+> > Hmm...perhaps we can eliminate the locking in the status handler
+> > too...? Does anyone see a problem with this patch?  
+> 
+> I have not seen any problem so far, besides, I am very happy with a
+> lockless interrupt handling, because this helps reducing latencies.
+> 
+> Tested it on top of the other 5 patches, and everything still works,
+> also tested under stress conditions.
+> 
+> So:
+> Acked-by: Remy Bohmer <linux@bohmer.net>
 
-        Miles
+Thanks. I think we can actually do it even simpler -- just check if any
+of the relevant bits in pending are set, and schedule the tasklet if
+they are.
+
+Now, I suspect the locking is currently broken -- we need to guard
+against updates to read_status_mask and ignore_status_mask, but I think
+we can get away with only adding some locking to the tasklet, not the
+interrupt handler.
+
+Hrm. We probably need to lock while updating icount. That's a problem
+since we do that from the tx interrupt handler...and I don't suppose we
+want to move most of the atmel_tx_chars() code into the tasklet too...?
+
+Haavard
