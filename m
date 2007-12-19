@@ -1,59 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbXLSLcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbXLSLj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbXLSLcY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 06:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbXLSLcO
+	id S1753884AbXLSLj5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 06:39:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbXLSLju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 06:32:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55721 "EHLO mx2.mail.elte.hu"
+	Wed, 19 Dec 2007 06:39:50 -0500
+Received: from il.qumranet.com ([82.166.9.18]:33878 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752528AbXLSLcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 06:32:13 -0500
-Date: Wed, 19 Dec 2007 12:31:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: Re: Inline local_bh_disable when TRACE_IRQFLAGS
-Message-ID: <20071219113152.GD20736@elte.hu>
-References: <20071219034033.GA5770@gondor.apana.org.au>
+	id S1751349AbXLSLjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 06:39:49 -0500
+Message-ID: <47690304.1090903@qumranet.com>
+Date: Wed, 19 Dec 2007 13:39:48 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071219034033.GA5770@gondor.apana.org.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [kvm-devel] Guest kernel hangs in smp kvm for older kernels prior
+ to tsc sync cleanup
+References: <47680173.6060606@qumranet.com> <20071218221930.GA26109@elte.hu> <4768BB43.1000609@qumranet.com> <4768FE27.7020305@qumranet.com>
+In-Reply-To: <4768FE27.7020305@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Avi Kivity wrote:
+>  
+> Testing shows wrmsr and rdtsc function normally.
+>
+> I'll try pinning the vcpus to cpus and see if that helps.
+>
 
-* Herbert Xu <herbert@gondor.apana.org.au> wrote:
+It does.
 
-> Hi Ingo:
-> 
-> I noticed that local_bh_disable is now always out-of-line.  The change 
-> was made when TRACE_IRQFLAGS was added.  However, with TRACE_IRQFLAGS 
-> off, local_bh_disable does exactly the same work as before.  In 
-> particular, it does pretty much the same as what preempt_disable does 
-> and the latter is always inline.
-> 
-> So I'm wondering if it would be reasonable to make it out-of-line when 
-> TRACE_IRQFLAGS is off.  This may make a difference because the 
-> networking stack is a frequent user of local_bh_disable and 
-> local_bh_enable.
+-- 
+error compiling committee.c: too many arguments to function
 
-do you mean to make it inline again?
-
-(btw., generally i think local_bh_disable() is a poor API because it is 
-opaque about the data structure dependency that it governs. Explicit 
-exclusion rules generally work better.)
-
-	Ingo
