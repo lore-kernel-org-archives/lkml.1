@@ -1,168 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbXLSJiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbXLSJp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754745AbXLSJiu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 04:38:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbXLSJin
+	id S1754426AbXLSJp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 04:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbXLSJpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 04:38:43 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59460 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752500AbXLSJil (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 04:38:41 -0500
-Date: Wed, 19 Dec 2007 20:38:34 +1100
-From: David Chinner <dgc@sgi.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [patch, rfc] mm.h, security.h, key.h and preventing namespace poisoning
-Message-ID: <20071219093834.GW4396912@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Wed, 19 Dec 2007 04:45:15 -0500
+Received: from sacred.ru ([62.205.161.221]:45478 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751668AbXLSJpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 04:45:13 -0500
+Message-ID: <4768E7B2.40203@openvz.org>
+Date: Wed, 19 Dec 2007 12:43:14 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Oren Laadan <orenl@cs.columbia.edu>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+CC: linux-fsdevel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <476724E3.6060901@cs.columbia.edu> <20071218020933.GA28745@sergelap.austin.ibm.com> <476738A0.9010601@cs.columbia.edu>
+In-Reply-To: <476738A0.9010601@cs.columbia.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 19 Dec 2007 12:43:20 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folks,
+Oren Laadan wrote:
+> Serge E. Hallyn wrote:
+>> Quoting Oren Laadan (orenl@cs.columbia.edu):
+>>> I hate to bring this again, but what if the admin in the container
+>>> mounts an external file system (eg. nfs, usb, loop mount from a file,
+>>> or via fuse), and that file system already has a device that we would
+>>> like to ban inside that container ?
+>> Miklos' user mount patches enforced that if !capable(CAP_MKNOD),
+>> then mnt->mnt_flags |= MNT_NODEV.  So that's no problem.
+> 
+> Yes, that works to disallow all device files from a mounted file system.
+> 
+> But it's a black and white thing: either they are all banned or allowed;
+> you can't have some devices allowed and others not, depending on type
+> A scenario where this may be useful is, for instance, if we some apps in
+> the container to execute withing a pre-made chroot (sub)tree within that
+> container.
+> 
+>> But that's been pulled out of -mm! ?  Crap.
+>>
+>>> Since anyway we will have to keep a white- (or black-) list of devices
+>>> that are permitted in a container, and that list may change even change
+>>> per container -- why not enforce the access control at the VFS layer ?
+>>> It's safer in the long run.
+>> By that you mean more along the lines of Pavel's patch than my whitelist
+>> LSM, or you actually mean Tetsuo's filesystem (i assume you don't mean that
+>> by 'vfs layer' :), or something different entirely?
+> 
+> :)
+> 
+> By 'vfs' I mean at open() time, and not at mount(), or mknod() time.
+> Either yours or Pavel's; I tend to prefer not to use LSM as it may
+> collide with future security modules.
 
-I just updated a git tree and started getting errors on a
-"copy_keys" macro warning.
+Oren, AFAIS you've seen my patches for device access controller, right?
 
-The code I've been working on uses a ->copy_keys() method for
-copying the keys in a btree block from one place to another. I've
-been working on this code for a while
-(http://oss.sgi.com/archives/xfs/2007-11/msg00046.html) and keep the
-tree I'm working in reletively up to date (lags linus by a couple of
-weeks at most). The update I did this afternoon gave a conflict
-warning with the macro in include/linux/key.h.
+Maybe we can revisit the issue then and try to come to agreement on what
+kind of model and implementation we all want?
 
-Given that I'm not directly including key.h anywhere in the XFS
-code, I'm getting the namespace polluted indirectly from some other
-include that is necessary.
+> Oren.
+> 
+>> thanks,
+>> -serge
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-As it turns out, this commit from 13 days ago:
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7cd94146cd504016315608e297219f9fb7b1413b
-
-included security.h in mm.h and that is how I'm seeing the namespace
-poisoning coming from key.h when !CONFIG_KEY.
-
-Including security.h in mm.h means much wider includes for pretty
-much the entire kernel, and it opens up namespace issues like this
-that never previously existed.
-
-The patch below (only tested for !CONFIG_KEYS && !CONFIG_SECURITY)
-moves security.h into the mmap.c and nommu.c files that need it so
-it doesn't end up with kernel wide scope.
-
-Comments?
-
----
- include/linux/mm.h       |   16 ----------------
- include/linux/security.h |   26 +++++++++++++++++++++++++-
- mm/mmap.c                |    1 +
- mm/nommu.c               |    1 +
- 4 files changed, 27 insertions(+), 17 deletions(-)
-
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 1b7b95c..520238c 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -12,7 +12,6 @@
- #include <linux/prio_tree.h>
- #include <linux/debug_locks.h>
- #include <linux/mm_types.h>
--#include <linux/security.h>
- 
- struct mempolicy;
- struct anon_vma;
-@@ -514,21 +513,6 @@ static inline void set_page_links(struct page *page, enum zone_type zone,
- }
- 
- /*
-- * If a hint addr is less than mmap_min_addr change hint to be as
-- * low as possible but still greater than mmap_min_addr
-- */
--static inline unsigned long round_hint_to_min(unsigned long hint)
--{
--#ifdef CONFIG_SECURITY
--	hint &= PAGE_MASK;
--	if (((void *)hint != NULL) &&
--	    (hint < mmap_min_addr))
--		return PAGE_ALIGN(mmap_min_addr);
--#endif
--	return hint;
--}
--
--/*
-  * Some inline functions in vmstat.h depend on page_zone()
-  */
- #include <linux/vmstat.h>
-diff --git a/include/linux/security.h b/include/linux/security.h
-index ac05083..e9ba391 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -2568,6 +2568,19 @@ void security_key_free(struct key *key);
- int security_key_permission(key_ref_t key_ref,
- 			    struct task_struct *context, key_perm_t perm);
- 
-+/*
-+ * If a hint addr is less than mmap_min_addr change hint to be as
-+ * low as possible but still greater than mmap_min_addr
-+ */
-+static inline unsigned long round_hint_to_min(unsigned long hint)
-+{
-+	hint &= PAGE_MASK;
-+	if (((void *)hint != NULL) &&
-+	    (hint < mmap_min_addr))
-+		return PAGE_ALIGN(mmap_min_addr);
-+	return hint;
-+}
-+
- #else
- 
- static inline int security_key_alloc(struct key *key,
-@@ -2588,7 +2601,18 @@ static inline int security_key_permission(key_ref_t key_ref,
- 	return 0;
- }
- 
--#endif
-+static inline unsigned long round_hint_to_min(unsigned long hint)
-+{
-+	return hint;
-+}
-+
-+#endif /* CONFIG_SECURITY */
-+
-+#else /* !CONFIG_KEYS */
-+static inline unsigned long round_hint_to_min(unsigned long hint)
-+{
-+	return hint;
-+}
- #endif /* CONFIG_KEYS */
- 
- #endif /* ! __LINUX_SECURITY_H */
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 15678aa..0d666de 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -26,6 +26,7 @@
- #include <linux/mount.h>
- #include <linux/mempolicy.h>
- #include <linux/rmap.h>
-+#include <linux/security.h>
- 
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-diff --git a/mm/nommu.c b/mm/nommu.c
-index b989cb9..99702d1 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -28,6 +28,7 @@
- #include <linux/personality.h>
- #include <linux/security.h>
- #include <linux/syscalls.h>
-+#include <linux/security.h>
- 
- #include <asm/uaccess.h>
- #include <asm/tlb.h>
