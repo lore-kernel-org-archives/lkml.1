@@ -1,121 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbXLSVoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbXLSVui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755511AbXLSVoW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 16:44:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbXLSVoN
+	id S1754926AbXLSVui (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 16:50:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbXLSVu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 16:44:13 -0500
-Received: from ro-out-1112.google.com ([72.14.202.177]:36471 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753090AbXLSVoL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 16:44:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=F6smDMLDvFlWXNWOo84boMvb81Rd6IMTReDYKtE/2nCk9tGukW/VidrnP6TLFqjhXUxVRlFZ1N3qwr7cojofOtUj8WsUBiab7+Hfb8OaEPRWYI4j39Sh3zG6slvOjCsOx5C5jQJciTtMTLuP0q+C+qtGWlr1mnm+rpNiaAFLT60=
-Message-ID: <3efb10970712191344l7656f2b3m8d9fbde193f39eaa@mail.gmail.com>
-Date: Wed, 19 Dec 2007 22:44:10 +0100
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [patch 1/3] Add generic routine for parsing map-like options on kernel cmd-line (repost:CC to LKML)
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
-       "Ingo Molnar" <mingo@elte.hu>, "Juergen Beisert" <jbe@pengutronix.de>,
-       "Darren Hart" <dvhltc@us.ibm.com>, linux-rt-users@vger.kernel.org,
-       "Sven-Thorsten Dietrich" <sdietrich@novell.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071219130059.d99489d1.randy.dunlap@oracle.com>
+	Wed, 19 Dec 2007 16:50:29 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33724 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751672AbXLSVu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 16:50:29 -0500
+Message-ID: <476991C6.2070909@redhat.com>
+Date: Wed, 19 Dec 2007 16:48:54 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+CC: Roland McGrath <roland@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net, systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/3] x86: add reenter_kprobe helper
+X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071219194551.315868746@bohmer.net>
-	 <4769787e.01b4420a.2b28.ffff88cf@mx.google.com>
-	 <20071219130059.d99489d1.randy.dunlap@oracle.com>
-X-Google-Sender-Auth: eb3ae899bafb68f5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Randy,
+From:  Harvey Harrison <harvey.harrison@gmail.com>
 
-Sorry for the language errors, English is not my Native language, so I
-make these stupid errors...
+[ mhiramat@redhat.com: updated it to latest x86.git ]
 
-> > + *   get_map_option - Parse integer from an option map
-> The @param lines (below) need to go here, immediately following the
-> function short description (the line above).  No intervening blank
-> lines.
+Factor common X86_32, X86_64 kprobe reenter logic from deeply
+indented section to helper function.
 
-OK, I will adapt that.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+---
 
-> > +int get_map_option(const char *str, const char *key, int *pint)
-> > +{
-> > +     char  buf[COMMAND_LINE_SIZE];
->
-> COMMAND_LINE_SIZE varies from 256 to 2048, depending on $ARCH.
-> That's a bit too much to declare on a function's local stack --
-> unless you are very certain of the call tree to this point and
-> that the total stack size is safe.  Can you just kmalloc() this
-> buf?
+ arch/x86/kernel/kprobes.c |   26 +++++++++++++++-----------
+ 1 file changed, 15 insertions(+), 11 deletions(-)
 
-I know it is big on a 4k stack, and I also think it is not very nice...
-But kmalloc() panics the kernel if I do it as soon as in the __setup() code.
+Index: b/arch/x86/kernel/kprobes.c
+===================================================================
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -427,6 +427,20 @@ void __kprobes arch_prepare_kretprobe(st
+ 	/* Replace the return addr with trampoline addr */
+ 	*sara = (unsigned long) &kretprobe_trampoline;
+ }
++/*
++ * We have reentered the kprobe_handler(), since another probe was hit while
++ * within the handler. We save the original kprobes variables and just single
++ * step on the instruction of the new probe without calling any user handlers.
++ */
++static void __kprobes reenter_kprobe(struct kprobe *p, struct pt_regs *regs,
++				     struct kprobe_ctlblk *kcb)
++{
++	save_previous_kprobe(kcb);
++	set_current_kprobe(p, regs, kcb);
++	kprobes_inc_nmissed_count(p);
++	prepare_singlestep(p, regs);
++	kcb->kprobe_status = KPROBE_REENTER;
++}
 
-The problem is that the original string may not be modified by the
-cmdline-parser, and I do not know the length of the command up front,
-(except that it cannot be longer than this define). Allocating a
-global buffer is not safe and needs locking. So actually only what
-left for me was the stack... or rewrite the used C-library-routines
-completely myself, for this purpose only, which is also not nice.
+ /*
+  * Interrupts are disabled on entry as trap3 is an interrupt gate and they
+@@ -471,17 +485,7 @@ static int __kprobes kprobe_handler(stru
+ 				goto no_kprobe;
+ #endif
+ 			}
+-			/* We have reentered the kprobe_handler(), since
+-			 * another probe was hit while within the handler.
+-			 * We here save the original kprobes variables and
+-			 * just single step on the instruction of the new probe
+-			 * without calling any user handlers.
+-			 */
+-			save_previous_kprobe(kcb);
+-			set_current_kprobe(p, regs, kcb);
+-			kprobes_inc_nmissed_count(p);
+-			prepare_singlestep(p, regs);
+-			kcb->kprobe_status = KPROBE_REENTER;
++			reenter_kprobe(p, regs, kcb);
+ 			return 1;
+ 		} else {
+ 			if (*addr != BREAKPOINT_INSTRUCTION) {
+-- 
+Masami Hiramatsu
 
-I hope someone could point to me to another possibilty, that I did not
-think of yet.
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-
-Kind Regards,
-
-Remy
-
->
-> > +     char  *p, *substr;
-> > +     int   found = 0;
-> > +
-> > +     /* We must copy the string to the stack, because strsep()
-> > +        changes it.*/
-> > +     strncpy(buf, str, COMMAND_LINE_SIZE);
-> > +     buf[COMMAND_LINE_SIZE-1] = '\0';
-> > +
-> > +     p = buf;
-> > +     substr = strsep(&p, ",");
-> > +     while ((!found) && (substr != NULL)) {
-> > +             if (strlen(substr) != 0) {
-> > +                     if (key == NULL) {
-> > +                             /* Check for the absence of any ':' */
-> > +                             if (strchr(substr, ':') == NULL) {
-> > +                                     sscanf(substr, "%d", pint);
-> > +                                     found = 1;
-> > +                             }
-> > +                     } else {
-> > +                             /* check if the first part of the key matches */
-> > +                             if (!strncmp(substr, key, strlen(key))) {
-> > +                                     substr += strlen(key);
-> > +                                     /* Now the next char must be a ':',
-> > +                                        if not, search for the next match */
-> > +                                     if (*substr == ':') {
-> > +                                             substr++;
-> > +                                             sscanf(substr, "%d", pint);
-> > +                                             found = 1;
-> > +                                     }
-> > +                             }
-> > +                     }
-> > +             }
-> > +             substr = strsep(&p, ",");
-> > +     }
-> > +     return found;
-> > +}
->
-> ---
-> ~Randy
->
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
