@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759109AbXLSAoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbXLSAoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759109AbXLSAoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 19:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbXLSAnx
+	id S1759438AbXLSAoq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 19:44:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbXLSAoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 19:43:53 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43998 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754692AbXLSAnw (ORCPT
+	Tue, 18 Dec 2007 19:44:38 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:45548 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754248AbXLSAoh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 19:43:52 -0500
-Date: Wed, 19 Dec 2007 09:38:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] memcgroup: work better with tmpfs
-Message-Id: <20071219093840.7d466c2b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0712182215460.29209@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0712182215460.29209@blonde.wat.veritas.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Dec 2007 19:44:37 -0500
+Date: Tue, 18 Dec 2007 18:43:22 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Out of memory and no killable processes: 2.6.22-2-686-bigmem
+In-reply-to: <fa.oSel00y9Hn5hvV3laxPiw9blEfU@ifi.uio.no>
+To: Nico Schottelius <nico-kernel-20071219@schottelius.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Message-id: <4768692A.3030204@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.oSel00y9Hn5hvV3laxPiw9blEfU@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Dec 2007 22:19:22 +0000 (GMT)
-Hugh Dickins <hugh@veritas.com> wrote:
-> 1. Why is spin_lock_irqsave rather than spin_lock needed on mz->lru_lock?
-> If it is needed, doesn't mem_cgroup_isolate_pages need to use it too?
+Nico Schottelius wrote:
+> Hello!
 > 
-When I wrote a patch to treat lru_lock (it was not per-zone yet.), I got a
-comment to use irqsafe version. So I wonder there is some plan which needs
-irq safe locking.
-About mem_cgroup_isolate_pages(), zone->lock is acquired with irq-disable 
-before it is called. Then, it's not necesary there.
-
-But as you say, it looks we can do it without irq-disable, now.
-
-
-> 2. There's mem_cgroup_charge and mem_cgroup_cache_charge (wouldn't the
-> former be better called mem_cgroup_charge_mapped? why does the latter
-> test MEM_CGROUP_TYPE_ALL instead of MEM_CGROUP_TYPE_CACHED? I still don't
-> understand your enums there).  But there's only mem_cgroup_uncharge.
-> So when, for example, an add_to_page_cache fails, the uncharge may not
-> balance the charge?
->
-Ah...it seems bug. We should add type handling in uncharge. 
-Then, changing control_type after start using mem_cgroup seems dangerous.
-(Default is ALL now.)
-
-Maybe following will be fix.
-
-- allow changing contorl_type only when there is no task.
-- run force_empty when control_type is changed. and drop all charges.
-
-This will change current behavior but I think it's reasonable.
-How do you think ?
-
-> 3. mem_cgroup_charge_common has rcu_read_lock/unlock around its
-> rcu_dereference; mem_cgroup_cache_charge does not: is that right?
+> We are running Debian with 2.6.22-2-686-bigmem on Dell Blade 1955 hardware
+> and get a Kernel Panic with oom + message that there are no processes
+> left to kill:
 > 
-As you say, it seems bug. (sigh, my bug..)
-I'd like to fix.
+> http://home.schottelius.org/~nico/unix/linux/oom_no_killable-2.6.22-1.jpeg
+> 
+> Anyone an idea, what's the cause for that? This error happened on two of
+> those machines,
+> 
+> What I can see in our analysis done with munin is that the number of
+> open inodes and inode table size decreased within some days from 40k
+> to next to zero. Munin uses
+> 
+>    awk '{print "used.value " $1-$2 "\nmax.value " $1}' < /proc/sys/fs/inode-nr
+> 
+> to log those value (happened on both machines).
+> 
+> Thanks for any hint and CC as usual, please.
 
-> 4. That page_assign_page_cgroup in free_hot_cold_page, what case is that
-> handling?  Wouldn't there be a leak if it ever happens?  I've been running
-> with a BUG_ON(page->page_cgroup) there and not hit it - should it perhaps
-> be a "Bad page state" case?
+How much RAM is in these machines? If you're running tons of memory, it 
+really is better to run a 64-bit kernel if possible. I believe there are 
+some cases where low memory can be pretty easily exhausted on machines 
+with lots of high memory.
 
-I agree with you.
-
-Thank you for review !
-
-Regards
--Kame
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
