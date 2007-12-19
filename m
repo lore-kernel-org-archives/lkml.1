@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbXLSSMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbXLSSNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754599AbXLSSMy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 13:12:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbXLSSMo
+	id S1754654AbXLSSNx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 13:13:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbXLSSNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 13:12:44 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:1537 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752543AbXLSSMm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 13:12:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HLhSBD4c7r31SnrIQg0A+p3/vI+wgQOXbiKugSxgn9gIIigScBGY5IoBbwvTRy+qkzTdQsnotYEwXsyoUJZV/9x5aaZFYXBP7YSnvRjm3FPMH19Ojxg77Fgxp+gY1VZmCp3i5sgTV4EfQsu+dcfl6+KCyViavh+gaHmoH9BD9Dk=
-Message-ID: <83a51e120712191012r64783b7dk56cc4fbcbdd5685c@mail.gmail.com>
-Date: Wed, 19 Dec 2007 13:12:41 -0500
-From: "James Nichols" <jamesnichols3@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
-Cc: "Eric Dumazet" <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
-       "Linux Netdev List" <netdev@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0712191857270.12329@fbirervta.pbzchgretzou.qr>
+	Wed, 19 Dec 2007 13:13:42 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:7528 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752630AbXLSSNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 13:13:41 -0500
+Date: Wed, 19 Dec 2007 19:13:37 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch 1/3] block: non-atomic queue_flags prep
+Message-ID: <20071219181336.GC10470@kernel.dk>
+References: <20071215054315.GA30335@wotan.suse.de> <20071218074439.GB31964@kernel.dk> <20071218081350.GA32114@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com>
-	 <Pine.LNX.4.64.0712181910580.4422@fbirervta.pbzchgretzou.qr>
-	 <83a51e120712181021p4c4c2a13g8820271f1e00361b@mail.gmail.com>
-	 <4768123A.7040603@cosmosbay.com>
-	 <83a51e120712181144l65633b32r72cc369f9d012f47@mail.gmail.com>
-	 <47682F8C.20205@cosmosbay.com>
-	 <83a51e120712190853q33d9c7c1t4a46380665b7538b@mail.gmail.com>
-	 <47694FCC.1020507@cosmosbay.com>
-	 <83a51e120712190943m3bf0e2e4v2ea6b660142e9a5a@mail.gmail.com>
-	 <Pine.LNX.4.64.0712191857270.12329@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <20071218081350.GA32114@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The router could be sooo crappy that it drops all packets from
-> TCP streams that have SACK enabled and the client has opened
-> 200+ SACK connections previously... something like that?
+On Tue, Dec 18 2007, Nick Piggin wrote:
+> On Tue, Dec 18, 2007 at 08:44:40AM +0100, Jens Axboe wrote:
+> > On Sat, Dec 15 2007, Nick Piggin wrote:
+> > > Hi,
+> > > 
+> > > This is just an idea I had, which might make request processing a little
+> > > bit cheaper depending on queue behaviour. For example if it is getting plugged
+> > > unplugged frequently (as I think is the case for some database workloads),
+> > > then we might save one or two atomic operations per request.
+> > > 
+> > > Anyway, I'm not completely sure if I have ensured all queue_flags users are
+> > > safe (I think md may need a bit of help). But overall it seems quite doable.
+> > 
+> > Looks ok to me, I'll throw it into the testing mix. Thanks Nick!
+> 
+> OK... actually if you are expecting it to be widely tested, can you change
+> the BUG_ONs in queue_flag_set / queue_flag_clear into WARN_ON?
+> 
+> That way it's less likely to take down people's systems...
 
-I don't know, maybe.  My router is a fairly new model Cisco and is
-pretty major (i.e. pretty expensive), so it's not just a total piece
-of crap.  Plus, I never restart it when I see these issues.  I just
-turn tcp_sack off, the problem goes away, and I'm able to renable
-tcp_sack a few hours later and it works fine until many hours later
-when I see the SYN_SENT problem again.
+Agree, will do so.
+
+-- 
+Jens Axboe
+
