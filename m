@@ -1,172 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbXLSWdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754828AbXLSWfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbXLSWdc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 17:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbXLSWdY
+	id S1754828AbXLSWfV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 17:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbXLSWfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 17:33:24 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37122 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbXLSWdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 17:33:23 -0500
-Message-ID: <47699C29.4010706@redhat.com>
-Date: Wed, 19 Dec 2007 16:33:13 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 19 Dec 2007 17:35:06 -0500
+Received: from ro-out-1112.google.com ([72.14.202.180]:29840 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751184AbXLSWfD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 17:35:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XA6uVl1HEsl2HCBwF8JKr1Il/amldd7vAWzVMKZvRImbWiOHS+gUnnUfWhUisVgXa4Y+Q30M+1oY5qr2IQ9XGfzk/1uRsn7WTXqtpkVjqJc6MHciQZl77niVwA4FPg66QK2F42+m3ZCQ+kVXk8Pgt7PBDx+15hLxu5vDJragCNg=
+Message-ID: <82e4877d0712191435r5d3163f2i684270b6b41f4fd0@mail.gmail.com>
+Date: Wed, 19 Dec 2007 17:35:01 -0500
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH] e1000: Use deferrable timer for watchdog
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, "Arjan van de Ven" <arjan@linux.intel.com>
+In-Reply-To: <47698F4E.40209@intel.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Roman Zippel <zippel@linux-m68k.org>
-Subject: [PATCH] hfs: handle more on-disk corruptions without oopsing
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0712182040470.3616@mini.warudkars.net>
+	 <47696AC9.90204@intel.com>
+	 <82e4877d0712191139k4dbae463icf2a59c8c0104010@mail.gmail.com>
+	 <47698F4E.40209@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hfs seems prone to bad things when it encounters on disk corruption.
-Many values are read from disk, and used as lengths to memcpy, as an
-example.  This patch fixes up several of these problematic cases.
+On Dec 19, 2007 4:38 PM, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+> Parag Warudkar wrote:
+> > On 12/19/07, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+>
+> why would this patch reduce wakeups even more than round_jiffies()? Does it make
+> our ~2 second update interval not reliable? can you quantify "shows it reduces" ?
+> Or timer only runs once every two seconds...
 
-o sanity check the on-disk maximum key lengths on mount
-  (these are set to a defined value at mkfs time and shouldn't differ)
-o check on-disk node keylens against the maximum key length for each tree
-o fix hfs_btree_open so that going out via free_tree: doesn't wind
-  up in hfs_releasepage, which wants to follow the very pointer
-  we were trying to set up:
-	HFS_SB(sb)->cat_tree = hfs_btree_open()
-		...
-		failure gets to hfs_releasepage and tries
-		to follow HFS_SB(sb)->cat_tree
+Without the patch - here is what powertop reports steady on my desktop -
 
-Tested with the fsfuzzer; it survives more than it used to.
+Wakeups-from-idle per second :  8.5     interval: 1.9s
+no ACPI power usage estimate available
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
----
+Top causes for wakeups:
+  28.6% (  4.0)     <kernel core> : clocksource_register (clocksource_watchdog)
+  14.3% (  2.0)         automount : futex_wait (hrtimer_wakeup)
+  14.3% (  2.0)              ntpd : do_setitimer (it_real_fn)
+  14.3% (  2.0)           ntpdate : do_adjtimex (sync_cmos_clock)
+   7.1% (  1.0)       <interrupt> : PS/2 keyboard/mouse/touchpad
+   7.1% (  1.0)       <interrupt> : eth0
+   7.1% (  1.0)                ip : e1000_intr_msi (e1000_watchdog)
 
-Index: linux-2.6.24-rc3/fs/hfs/brec.c
-===================================================================
---- linux-2.6.24-rc3.orig/fs/hfs/brec.c
-+++ linux-2.6.24-rc3/fs/hfs/brec.c
-@@ -44,10 +44,21 @@ u16 hfs_brec_keylen(struct hfs_bnode *no
- 		recoff = hfs_bnode_read_u16(node, node->tree->node_size - (rec + 1) * 2);
- 		if (!recoff)
- 			return 0;
--		if (node->tree->attributes & HFS_TREE_BIGKEYS)
-+		if (node->tree->attributes & HFS_TREE_BIGKEYS) {
- 			retval = hfs_bnode_read_u16(node, recoff) + 2;
--		else
-+			if (retval > node->tree->max_key_len + 2) {
-+				printk(KERN_ERR "hfs: keylen %d too large\n",
-+					retval);
-+				retval = HFS_BAD_KEYLEN;
-+			}
-+		} else {
- 			retval = (hfs_bnode_read_u8(node, recoff) | 1) + 1;
-+			if (retval > node->tree->max_key_len + 1) {
-+				printk(KERN_ERR "hfs: keylen %d too large\n",
-+					retval);
-+				retval = HFS_BAD_KEYLEN;
-+			}
-+		}
- 	}
- 	return retval;
- }
-Index: linux-2.6.24-rc3/fs/hfs/bfind.c
-===================================================================
---- linux-2.6.24-rc3.orig/fs/hfs/bfind.c
-+++ linux-2.6.24-rc3/fs/hfs/bfind.c
-@@ -52,6 +52,11 @@ int __hfs_brec_find(struct hfs_bnode *bn
- 		rec = (e + b) / 2;
- 		len = hfs_brec_lenoff(bnode, rec, &off);
- 		keylen = hfs_brec_keylen(bnode, rec);
-+		if (keylen == HFS_BAD_KEYLEN) {
-+			printk(KERN_ERR "hfs: keylen %d too long\n", keylen);
-+			res = -EINVAL;
-+			goto done;
-+		}
- 		hfs_bnode_read(bnode, fd->key, off, keylen);
- 		cmpval = bnode->tree->keycmp(fd->key, fd->search_key);
- 		if (!cmpval) {
-@@ -67,6 +72,11 @@ int __hfs_brec_find(struct hfs_bnode *bn
- 	if (rec != e && e >= 0) {
- 		len = hfs_brec_lenoff(bnode, e, &off);
- 		keylen = hfs_brec_keylen(bnode, e);
-+		if (keylen == HFS_BAD_KEYLEN) {
-+			printk(KERN_ERR "hfs: keylen %d too long\n", keylen);
-+			res = -EINVAL;
-+			goto done;
-+		}
- 		hfs_bnode_read(bnode, fd->key, off, keylen);
- 	}
- done:
-@@ -198,6 +208,11 @@ int hfs_brec_goto(struct hfs_find_data *
- 
- 	len = hfs_brec_lenoff(bnode, fd->record, &off);
- 	keylen = hfs_brec_keylen(bnode, fd->record);
-+	if (keylen == HFS_BAD_KEYLEN) {
-+		printk(KERN_ERR "hfs: keylen %d too long\n", keylen);
-+		res = -EINVAL;
-+		goto out;
-+	}
- 	fd->keyoffset = off;
- 	fd->keylength = keylen;
- 	fd->entryoffset = off + keylen;
-Index: linux-2.6.24-rc3/fs/hfs/hfs.h
-===================================================================
---- linux-2.6.24-rc3.orig/fs/hfs/hfs.h
-+++ linux-2.6.24-rc3/fs/hfs/hfs.h
-@@ -28,6 +28,8 @@
- #define HFS_MAX_NAMELEN		128
- #define HFS_MAX_VALENCE		32767U
- 
-+#define HFS_BAD_KEYLEN		0xFF
-+
- /* Meanings of the drAtrb field of the MDB,
-  * Reference: _Inside Macintosh: Files_ p. 2-61
-  */
-@@ -167,6 +169,9 @@ typedef union hfs_btree_key {
- 	struct hfs_ext_key ext;
- } hfs_btree_key;
- 
-+#define HFS_MAX_CAT_KEYLEN	(sizeof(struct hfs_cat_key) - sizeof(u8))
-+#define HFS_MAX_EXT_KEYLEN	(sizeof(struct hfs_ext_key) - sizeof(u8))
-+
- typedef union hfs_btree_key btree_key;
- 
- struct hfs_extent {
-Index: linux-2.6.24-rc3/fs/hfs/btree.c
-===================================================================
---- linux-2.6.24-rc3.orig/fs/hfs/btree.c
-+++ linux-2.6.24-rc3/fs/hfs/btree.c
-@@ -81,6 +81,17 @@ struct hfs_btree *hfs_btree_open(struct 
- 		goto fail_page;
- 	if (!tree->node_count)
- 		goto fail_page;
-+	if ((id == HFS_EXT_CNID) && (tree->max_key_len != HFS_MAX_EXT_KEYLEN)) {
-+		printk(KERN_ERR "hfs: invalid extent max_key_len %d\n",
-+			tree->max_key_len);
-+		goto fail_page;
-+	}
-+	if ((id == HFS_CAT_CNID) && (tree->max_key_len != HFS_MAX_CAT_KEYLEN)) {
-+		printk(KERN_ERR "hfs: invalid catalog max_key_len %d\n",
-+			tree->max_key_len);
-+		goto fail_page;
-+	}
-+
- 	tree->node_size_shift = ffs(size) - 1;
- 	tree->pages_per_bnode = (tree->node_size + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
- 
-@@ -89,9 +100,9 @@ struct hfs_btree *hfs_btree_open(struct 
- 	return tree;
- 
-  fail_page:
--	tree->inode->i_mapping->a_ops = &hfs_aops;
- 	page_cache_release(page);
-  free_tree:
-+	tree->inode->i_mapping->a_ops = &hfs_aops;
- 	iput(tree->inode);
- 	kfree(tree);
- 	return NULL;
+$> stop network; rmmod e1000e
+$> patch e1000e/netdev.c ; rebuild ; insmod
+$> Wait for things to settle
 
+With the patch here is what it shows steadily -
 
+Wakeups-from-idle per second :  7.5     interval: 5.8s
+no ACPI power usage estimate available
+
+Top causes for wakeups:
+  32.4% (  2.2)     <kernel core> : clocksource_register (clocksource_watchdog)
+  17.6% (  1.2)              ntpd : do_setitimer (it_real_fn)
+  14.7% (  1.0)           ntpdate : do_adjtimex (sync_cmos_clock)
+   8.8% (  0.6)       <interrupt> : eth0
+   5.9% (  0.4)          events/1 : __netdev_watchdog_up (dev_watchdog)
+   5.9% (  0.4)     <kernel core> : neigh_table_init_no_netlink
+(neigh_periodic_   5.9% (  0.4)   <kernel module> :
+neigh_table_init_no_netlink (neigh_periodic_timer)
+
+So no longer e1000_watchdog is waking up the CPU for its own sake - it
+still runs but when the CPU is already out of IDLE to run something
+else that needs to be run undeferred.
+Wakeups from IDLE are down by 1 - from 8.5 to 7.5 .
+
+>
+> maybe I just don't understand the effect of timer_set_deferrable() - we're already
+> deferring it ourselves when we want to. If that is not working then I suggest that
+> we fix that first instead of postponing the critical first run of the e1000
+> watchdog task.
+
+There is of course a difference between round_jiffies() and
+timer_set_deferrable() if that's what you were referring to.
+round_jiffies() will make the timer run at whatever rounded value no
+matter if the CPU is already IDLE or not. Making the timer deferrable
+makes it run only when the CPU is NOT IDLE - that is to say it is busy
+running something else - another non-deferrable timer for instance.
+
+>
+> People in the datacenter really don't want to see more delays when bringing up
+> link, and we get frequent calls about it already being long on gigabit (not even
+> minding spanning tree). Adding 25% to that time isn't going to down very nicely
+> with them.
+>
+Well but when the machine is coming up the CPU is not going to be IDLE
+and your initial timer will likely run when it wants to - i.e.
+deferable timers won't be deferred if the CPU is not IDLE.
+On the other hand Data center people do care about power consumption
+and they would much rather make sure they don't lose network links on
+Production boxes - so a properly configured machine/network should not
+need to bring up the link more than a small number of times if at all.
+Lastly e1000 is also sold with many desktop machines (like mine) and
+those people will surely appreciate lesser wakeups.
+
+I don't have GigE connection where my desktop is located and with
+100Mbps I don't notice any measurable delay in bringing up the link -
+may be you could try with this patch and see exactly how longer if at
+all it takes to bring up the link on a GigE connected machine.
+
+Parag
