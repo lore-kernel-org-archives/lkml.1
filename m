@@ -1,117 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbXLSBHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbXLSBNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757501AbXLSBHd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 20:07:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbXLSBHF
+	id S1754582AbXLSBNp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 20:13:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbXLSBNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 20:07:05 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55045 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751848AbXLSBHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 20:07:03 -0500
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] IGET: Handle errors in ISOFS correctly
-To: akpm@linux-foundation.org
-Cc: hidave.darkstar@gmail.com, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       hch@lst.de, jack@ucw.cz, linux-kernel@vger.kernel.org
-Date: Wed, 19 Dec 2007 01:06:45 +0000
-Message-ID: <20071219010645.26352.22255.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.13
+	Tue, 18 Dec 2007 20:13:33 -0500
+Received: from py-out-1112.google.com ([64.233.166.176]:7352 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752467AbXLSBNc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 20:13:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:reply-to:to:cc:subject:message-id:mime-version:content-type;
+        b=d+PvMphdLeC/tl6P5VJU/6UGoBsvJvmf7u1FEF9Y/kZQivKZlsXjzbSDSllEayHKR6wqN9Vj/1xkJ25W5OOAkGD3MRGR2Oi70ZhQba5YOpU4pK48sz+O0KvrigLTH6IqPEygTEA2VjeSpQfT/0rKZ+cewTXqXZW6KP7sWF8iX9A=
+Date: Tue, 18 Dec 2007 20:13:28 -0500 (EST)
+From: Parag Warudkar <parag.warudkar@gmail.com>
+X-X-Sender: parag@mini.warudkars.net
+Reply-To: parag.warudkar@gmail.com
+To: netdev@vger.kernel.org
+cc: shemminger@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] sky2: Use deferrable timer for watchdog
+Message-ID: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handle errors in ISOFS correctly.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+sky2 can use deferrable timer for watchdog - reduces wakeups from idle per 
+second.
 
- fs/isofs/inode.c |   22 +++++++++++++---------
- 1 files changed, 13 insertions(+), 9 deletions(-)
+Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
 
-diff --git a/fs/isofs/inode.c b/fs/isofs/inode.c
-index a854831..4d76594 100644
---- a/fs/isofs/inode.c
-+++ b/fs/isofs/inode.c
-@@ -841,7 +841,7 @@ root_found:
- 	sbi->s_joliet_level = joliet_level;
- 
- 	/* check the root inode */
--	if (!inode)
-+	if (IS_ERR(inode))
- 		goto out_no_root;
- 	if (!inode->i_op)
- 		goto out_bad_root;
-@@ -875,11 +875,12 @@ root_found:
- 	 */
- out_bad_root:
- 	printk(KERN_WARNING "%s: root inode not initialized\n", __func__);
--	goto out_iput;
--out_no_root:
--	printk(KERN_WARNING "%s: get root inode failed\n", __func__);
- out_iput:
- 	iput(inode);
-+	goto out_no_inode;
-+out_no_root:
-+	printk(KERN_WARNING "%s: get root inode failed\n", __func__);
-+out_no_inode:
- #ifdef CONFIG_JOLIET
- 	if (sbi->s_nls_iocharset)
- 		unload_nls(sbi->s_nls_iocharset);
-@@ -929,7 +930,7 @@ static int isofs_statfs (struct dentry *dentry, struct kstatfs *buf)
- /*
-  * Get a set of blocks; filling in buffer_heads if already allocated
-  * or getblk() if they are not.  Returns the number of blocks inserted
-- * (0 == error.)
-+ * (-ve == error.)
-  */
- int isofs_get_blocks(struct inode *inode, sector_t iblock_s,
- 		     struct buffer_head **bh, unsigned long nblocks)
-@@ -939,11 +940,12 @@ int isofs_get_blocks(struct inode *inode, sector_t iblock_s,
- 	unsigned int firstext;
- 	unsigned long nextblk, nextoff;
- 	long iblock = (long)iblock_s;
--	int section, rv;
-+	int section, rv, error;
- 	struct iso_inode_info *ei = ISOFS_I(inode);
- 
- 	lock_kernel();
- 
-+	error = -EIO;
- 	rv = 0;
- 	if (iblock < 0 || iblock != iblock_s) {
- 		printk(KERN_DEBUG "%s: block number too large\n", __func__);
-@@ -982,8 +984,10 @@ int isofs_get_blocks(struct inode *inode, sector_t iblock_s,
- 
- 			offset += sect_size;
- 			ninode = isofs_iget(inode->i_sb, nextblk, nextoff);
--			if (!ninode)
-+			if (IS_ERR(ninode)) {
-+				error = PTR_ERR(ninode);
- 				goto abort;
-+			}
- 			firstext  = ISOFS_I(ninode)->i_first_extent;
- 			sect_size = ISOFS_I(ninode)->i_section_size >> ISOFS_BUFFER_BITS(ninode);
- 			nextblk   = ISOFS_I(ninode)->i_next_section_block;
-@@ -1016,7 +1020,7 @@ int isofs_get_blocks(struct inode *inode, sector_t iblock_s,
- 
- abort:
- 	unlock_kernel();
--	return rv;
-+	return rv != 0 ? rv : error;
- }
- 
- /*
-@@ -1030,7 +1034,7 @@ static int isofs_get_block(struct inode *inode, sector_t iblock,
- 		return -EROFS;
- 	}
- 
--	return isofs_get_blocks(inode, iblock, &bh_result, 1) ? 0 : -EIO;
-+	return isofs_get_blocks(inode, iblock, &bh_result, 1);
- }
- 
- static int isofs_bmap(struct inode *inode, sector_t block)
+--- linux-2.6/drivers/net/sky2.c	2007-12-07 10:04:39.000000000 -0500
++++ linux-2.6-work/drivers/net/sky2.c	2007-12-18 20:07:58.000000000 -0500
+@@ -4230,7 +4230,10 @@
+  			sky2_show_addr(dev1);
+  	}
 
+-	setup_timer(&hw->watchdog_timer, sky2_watchdog, (unsigned long) hw);
++	hw->watchdog_timer.function = sky2_watchdog;
++	hw->watchdog_timer.data = (unsigned long) hw;
++	init_timer_deferrable(&hw->watchdog_timer);
++
+  	INIT_WORK(&hw->restart_work, sky2_restart);
+
+  	pci_set_drvdata(pdev, hw);
