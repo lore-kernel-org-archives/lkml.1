@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbXLSNZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbXLSN3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbXLSNZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 08:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbXLSNZS
+	id S1756218AbXLSN3b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 08:29:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXLSN3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 08:25:18 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:63024 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752442AbXLSNZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 08:25:17 -0500
-Date: Wed, 19 Dec 2007 14:24:51 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: "Remy Bohmer" <linux@bohmer.net>
-Cc: "Andrew Victor" <linux@maxim.org.za>,
-       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
-       "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] atmel_serial: Split the interrupt handler
-Message-ID: <20071219142451.1e72f68c@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <3efb10970712190518x384f06e7q39f8fd2a53e50d60@mail.gmail.com>
-References: <1197987255-23045-1-git-send-email-hskinnemoen@atmel.com>
-	<3efb10970712180723x2cd22c5ei6b342f0ab7cc39c2@mail.gmail.com>
-	<20071219133411.24d146e7@dhcp-252-066.norway.atmel.com>
-	<3efb10970712190450p64d4e7a2k7b80d47349be9570@mail.gmail.com>
-	<20071219141100.7384aff9@dhcp-252-066.norway.atmel.com>
-	<3efb10970712190518x384f06e7q39f8fd2a53e50d60@mail.gmail.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Dec 2007 08:29:22 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:59755 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753080AbXLSN3V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 08:29:21 -0500
+Date: Wed, 19 Dec 2007 06:29:19 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Filippos Papadopoulos <psybases@gmail.com>
+Cc: Boaz Harrosh <bharrosh@panasas.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: INITIO scsi driver fails to work properly
+Message-ID: <20071219132918.GB26272@parisc-linux.org>
+References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com> <20071217031841.f483e5ac.akpm@linux-foundation.org> <9f00bd9d0712170341u7fef1fc9pc9986dda1a0475cb@mail.gmail.com> <47666904.8060605@panasas.com> <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Dec 2007 14:18:18 +0100
-"Remy Bohmer" <linux@bohmer.net> wrote:
+On Wed, Dec 19, 2007 at 10:48:27AM +0200, Filippos Papadopoulos wrote:
+> Would it be better to open a bug report at bugzilla?
 
-> Hello Haavard,
-> 
-> > Hrm. We probably need to lock while updating icount. That's a problem
-> > since we do that from the tx interrupt handler...and I don't suppose we
-> > want to move most of the atmel_tx_chars() code into the tasklet too...?
-> 
-> I do not see a reason why not moving transmit to a tasklet. It is only
-> time critical to read in time. If the transmit is postponed for a
-> while, it will only slow down transmission, while not reading in time
-> results in lost data.
+No, it wouldn't.  Bugzilla is a place where bug reports go to be
+ignored.  Witness 9370 where despite my best efforts to move discussion
+to the mailing list, it's been thoroughly ignored because the original
+reporte insists on posting additional information there instead of to
+the mailing list.
 
-Ok, let's try that. But I'm afraid this means that we can't move the
-sysrq processing back into hardirq context since if we're going to do
-break handling, we need to update icount.brk as well.
-
-Haavard
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
