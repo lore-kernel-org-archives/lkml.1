@@ -1,91 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbXLSA5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbXLSA5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757051AbXLSA5J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 19:57:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbXLSA44
+	id S1759338AbXLSA5Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 19:57:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756660AbXLSA5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 19:56:56 -0500
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:45965 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754257AbXLSA4z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 19:56:55 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=t0T8F23jMXAUTek9ZcaowMg6a8fTFKHZFjoXDq760nOIxuebgwMwJH6fpFtZtm6G/GDR4LtWS4HPM8f629WkFWmBVH2xnVu5aSkZQ4FALQA6Y95m3DaPPHX/kjyMzNjs8KEO+Mpckm6Tw8/E/6TcOz8rWoNf/+oiwI4w5FcFur8=  ;
-X-YMail-OSG: J20gcpMVM1mCVw6rVDNgkPUAf7aXHvEzkZYSuXUriyjxbW5X7bYJXeAfxTxsvKYZU9b3Yn_Dqw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [patch 17/20] non-reclaimable mlocked pages
-Date: Wed, 19 Dec 2007 11:56:48 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, lee.shermerhorn@hp.com,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-References: <20071218211539.250334036@redhat.com> <20071218211550.186819416@redhat.com>
-In-Reply-To: <20071218211550.186819416@redhat.com>
+	Tue, 18 Dec 2007 19:57:03 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43076 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759462AbXLSA5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 19:57:01 -0500
+Message-ID: <47686C09.1070602@redhat.com>
+Date: Tue, 18 Dec 2007 19:55:37 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Robert Hancock <hancockr@shaw.ca>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Richard Henderson <rth@twiddle.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
+       Keith Packard <keithp@keithp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: PCI resource problems caused by improper address rounding
+References: <fa.WmGIH8th8MfmciABVSBi6whxeFE@ifi.uio.no> <fa.Obg5E3fyax+MaF94//uo40q/Zyk@ifi.uio.no> <fa./6K5nXEIpws4VU8HtJhQjF4AoGg@ifi.uio.no> <fa.V82IIxMkW3eu+9B44NfoyYYQDP4@ifi.uio.no> <fa.DM9AyNQQtam66XpKVeXeqS639os@ifi.uio.no> <fa.f5O3U527Rv8DNk05hDFRjdCaeFE@ifi.uio.no> <47686197.6080807@shaw.ca>
+In-Reply-To: <47686197.6080807@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712191156.48507.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 December 2007 08:15, Rik van Riel wrote:
+On 12/18/2007 07:11 PM, Robert Hancock wrote:
+>> However, I wonder about that
+>>
+>>     e0000000-efffffff : pnp 00:0b
+>>
+>> thing. I actually suspect that that whole allocation is literally
+>> *meant* for that 256MB graphics aperture, but the kernel explicitly
+>> avoids it because it's listed in the PnP tables.
+> 
+> That is probably the MMCONFIG aperture, in that case any attempt to map
+> the graphics BAR there will have disastrous results. (This BIOS has an
+> MCFG table, though it looks like this Fedora kernel has MMCONFIG
+> disabled, so we can't tell what it actually contains.)
+> 
 
-> Rework of a patch by Nick Piggin -- part 1 of 2.
->
-> This patch:
->
-> 1) defines the [CONFIG_]NORECLAIM_MLOCK sub-option and the
->    stub version of the mlock/noreclaim APIs when it's
->    not configured.  Depends on [CONFIG_]NORECLAIM.
->
-> 2) add yet another page flag--PG_mlocked--to indicate that
->    the page is locked for efficient testing in vmscan and,
->    optionally, fault path.  This allows early culling of
->    nonreclaimable pages, preventing them from getting to
->    page_referenced()/try_to_unmap().  Also allows separate
->    accounting of mlock'd pages, as Nick's original patch
->    did.
->
->    Uses a bit available only to 64-bit systems.
->
->    Note:  Nick's original mlock patch used a PG_mlocked
->    flag.  I had removed this in favor of the PG_noreclaim
->    flag + an mlock_count [new page struct member].  I
->    restored the PG_mlocked flag to eliminate the new
->    count field.
->
-> 3) add the mlock/noreclaim infrastructure to mm/mlock.c,
->    with internal APIs in mm/internal.h.  This is a rework
->    of Nick's original patch to these files, taking into
->    account that mlocked pages are now kept on noreclaim
->    LRU list.
->
-> 4) update vmscan.c:page_reclaimable() to check PageMlocked()
->    and, if vma passed in, the vm_flags.  Note that the vma
->    will only be passed in for new pages in the fault path;
->    and then only if the "cull nonreclaimable pages in fault
->    path" patch is included.
->
-> 5) add try_to_unlock() to rmap.c to walk a page's rmap and
->    ClearPageMlocked() if no other vmas have it mlocked.
->    Reuses as much of try_to_unmap() as possible.  This
->    effectively replaces the use of one of the lru list links
->    as an mlock count.  If this mechanism let's pages in mlocked
->    vmas leak through w/o PG_mlocked set [I don't know that it
->    does], we should catch them later in try_to_unmap().  One
->    hopes this will be rare, as it will be relatively expensive.
+You can boot with "pci=mmconf" to enable it.
 
-Hmm, I still don't know (or forgot) why you don't just use the
-old scheme of having an mlock count in the LRU bit, and removing
-the mlocked page from the LRU completely.
-
-These mlocked pages don't need to be on a non-reclaimable list,
-because we can find them again via the ptes when they become
-unlocked, and there is no point background scanning them, because
-they're always going to be locked while they're mlocked.
