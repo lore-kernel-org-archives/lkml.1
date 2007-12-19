@@ -1,173 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbXLSHto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbXLSILf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbXLSHto (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 02:49:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbXLSHtg
+	id S1754534AbXLSILf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 03:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbXLSILZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 02:49:36 -0500
-Received: from hs-out-0708.google.com ([64.233.178.244]:44832 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752185AbXLSHte (ORCPT
+	Wed, 19 Dec 2007 03:11:25 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:43010 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751050AbXLSILZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 02:49:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KsFqUuPJRz6j4PFkJ9s2DA0uBKrFG2DF5W5YjBp72eLUNi8cxu9n1UkQ+g4VEXPAUYpIwXJtfPJlUvs2PjBz5V+mZs9nzFBrXb7LLYEnYDbtI3Qock21RVEJRKmqEiu+YceDviXtI6diVSv1ZKau1XhLjvWkA+8I2mfwmp7V8+4=
-Message-ID: <a8e1da0712182349k34926f55o1a667a65e925c84a@mail.gmail.com>
-Date: Wed, 19 Dec 2007 15:49:32 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: 2.6.24-rc5-mm1
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mdharm-usb@one-eyed-alien.net, gregkh@suse.de,
-       linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net
-In-Reply-To: <a8e1da0712161714w23998e49q6e30ffe8d46db0dd@mail.gmail.com>
+	Wed, 19 Dec 2007 03:11:25 -0500
+Message-ID: <4768D216.3000904@lwfinger.net>
+Date: Wed, 19 Dec 2007 00:11:02 -0800
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
+To: mvtodevnull@gmail.com
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Michael Buesch <mb@bu3sch.de>,
+       Daniel Walker <dwalker@mvista.com>, Ray Lee <ray-lk@madrabbit.org>,
+       =?ISO-8859-1?Q?Simon_Holm_Th=F8gerse?= =?ISO-8859-1?Q?n?= 
+	<odie@cs.aau.dk>,
+       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, Ingo Molnar <mingo@elte.hu>, kjwinchester@gmail.com,
+       jonathan@jonmasters.org, akpm@linux-foundation.org,
+       bcm43xx-dev@lists.berlios.de
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
+ to mutex
+References: <20071213003028.676998182@mvista.com>	 <520b60a90712142037j14d54de5nf5657ab2927fb3f5@mail.gmail.com>	 <520b60a90712142039t539faeddo68e73816fe1b3237@mail.gmail.com>	 <47637FDA.2030303@lwfinger.net>	 <520b60a90712150438p1f0ae40bt5975b494ab75203c@mail.gmail.com>	 <520b60a90712161817uaa2d1a8y5dfb13b586ca30ad@mail.gmail.com>	 <47661CA1.3080808@lwfinger.net>	 <520b60a90712162317r5c2f2569gbd75c09742ff5493@mail.gmail.com>	 <47671F5F.5020400@lwfinger.net>	 <520b60a90712171834n61b09f23rc4c907ce3e8458cf@mail.gmail.com> <520b60a90712181812l3fd6c4cbicece82a4487d0587@mail.gmail.com>
+In-Reply-To: <520b60a90712181812l3fd6c4cbicece82a4487d0587@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a8e1da0712132132t6bcef833vc492e4164c22705a@mail.gmail.com>
-	 <Pine.LNX.4.44L0.0712141039050.4768-100000@iolanthe.rowland.org>
-	 <a8e1da0712161714w23998e49q6e30ffe8d46db0dd@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 17, 2007 9:14 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> On Dec 14, 2007 11:44 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Fri, 14 Dec 2007, Dave Young wrote:
-> >
-> > > Hi,
-> > > The behaviour of my mp3 player (also act as usb-storage device) seems
-> > > changed from rc5 to rc5-mm1.
-> >
-> > This can't be considered a bug, right?
->
-> I'm not sure.
->
->
-> > It's just that the player
-> > changed from one slightly non-standard behavior to a different slightly
-> > non-standard behavior.
-> >
-> >
-> > > <dmesg output under rc5>:
-> > > =========
-> > > usb 1-7: new high speed USB device using ehci_hcd and address 7
-> > > usb 1-7: configuration #1 chosen from 1 choice
-> > > scsi4 : SCSI emulation for USB Mass Storage devices
-> > > usb-storage: device found at 7
-> > > usb-storage: waiting for device to settle before scanning
-> > > scsi 4:0:0:0: Direct-Access                   Newman mp3       PQ: 0 ANSI: 0 CCS
-> > > sd 4:0:0:0: [sdb] 245248 512-byte hardware sectors (126 MB)
-> > > sd 4:0:0:0: [sdb] Write Protect is on
-> > > sd 4:0:0:0: [sdb] Mode Sense: 03 00 80 00
-> > > sd 4:0:0:0: [sdb] Assuming drive cache: write through
-> > > sd 4:0:0:0: [sdb] 245248 512-byte hardware sectors (126 MB)
-> > > sd 4:0:0:0: [sdb] Write Protect is on
-> > > sd 4:0:0:0: [sdb] Mode Sense: 03 00 80 00
-> > > sd 4:0:0:0: [sdb] Assuming drive cache: write through
-> > >  sdb: sdb1
-> > > sd 4:0:0:0: [sdb] Attached SCSI removable disk
-> > > sd 4:0:0:0: Attached scsi generic sg1 type 0
-> > > usb-storage: device scan complete
-> > >
-> > > ==========
-> > > try mount it (or just blockdev --rereadpt), then write protect become off:
-> > > ==========
-> > >
-> > > sd 4:0:0:0: [sdb] 245248 512-byte hardware sectors (126 MB)
-> > > sd 4:0:0:0: [sdb] Write Protect is off
-> > > sd 4:0:0:0: [sdb] Mode Sense: 03 00 00 00
-> > > sd 4:0:0:0: [sdb] Assuming drive cache: write through
-> > > sd 4:0:0:0: [sdb] 245248 512-byte hardware sectors (126 MB)
-> > > sd 4:0:0:0: [sdb] Write Protect is off
-> > > sd 4:0:0:0: [sdb] Mode Sense: 03 00 00 00
-> > > sd 4:0:0:0: [sdb] Assuming drive cache: write through
-> > >  sdb: sdb1
-> >
-> > This output won't appear if you simply mount the device.  So how do you
-> > know that mounting turns off write protect?
->
-> This can be observed by eye:
-> dmesg -> mount -> dmesg
->
-> >
-> > > But under rc5-mm1, after mount command being executed, it is just
-> > > mouted as read only partition without set the write-protect to off
-> > >
-> > > I tried "blockdev --rereadpt", it do set the write-protect to off as rc5 kernel.
-> > >
-> > > Below is the output of dmesg under rc5-mm1
-> > > ==========
-> > > usb 1-8: new high speed USB device using ehci_hcd and address 6
-> > > usb 1-8: configuration #1 chosen from 1 choice
-> > > scsi3 : SCSI emulation for USB Mass Storage devices
-> > > usb-storage: device found at 6
-> > > usb-storage: waiting for device to settle before scanning
-> > > scsi 3:0:0:0: Direct-Access                   Newman mp3       PQ: 0 ANSI: 0 CCS
-> > > sd 3:0:0:0: [sdb] 245248 512-byte hardware sectors (126 MB)
-> > > sd 3:0:0:0: [sdb] Write Protect is on
-> > > sd 3:0:0:0: [sdb] Mode Sense: 03 00 80 00
-> > > sd 3:0:0:0: [sdb] Assuming drive cache: write through
-> > > sd 3:0:0:0: [sdb] 245248 512-byte hardware sectors (126 MB)
-> > > sd 3:0:0:0: [sdb] Write Protect is on
-> > > sd 3:0:0:0: [sdb] Mode Sense: 03 00 80 00
-> > > sd 3:0:0:0: [sdb] Assuming drive cache: write through
-> > >  sdb: sdb1
-> >
-> > This looks exactly the same as the output above (except for various
-> > port, device, and bus numbers).
->
-> Yes, but lacks the part of "'Write Protect if off'  and other lines".
->
-> >
-> > If you turn on CONFIG_USB_STORAGE_DEBUG for both kernels and compare
-> > the dmesg output for the mount command, that might highlight the
-> > difference.
->
-> Ok, I will test with do once have time, thanks.
->
+mvtodevnull@gmail.com wrote:
+> Larry, thanks for being so patient so far. Tomorrow I plan to take my
+> laptop to somewhere with coffee and a wireless network. For now
+> though, can you tell me if these messages could be related:
+> PCI: Cannot allocate resource region 7 of bridge 0000:00:05.0
+> PCI: Cannot allocate resource region 8 of bridge 0000:00:05.0
 
-There's not useful infomation with DEBUG on.
+I don't know what these regions are, but I doubt if they have any relation to your problem.
+> 
+> or could tsc being marked as unstable have anything to do with the
+> speed of network transfers?
 
-I tested on another machine with kernel 2.6.24-rc2. And the result is
-diffrent again.
-Here is the result:
+Absolutely not.
 
-1. on 2.6.24-rc2, when I plugin the player the kernel reports below messages:
+Larry
 
-usb-storage: waiting for device to settle before scanning
-/*[lets mark the below part as part 1]*/
-scsi 0:0:0:0: Direct-Access                   Newman mp3       PQ: 0 ANSI: 0 CCS
-sd 0:0:0:0: [sda] 245248 512-byte hardware sectors (126 MB)
-sd 0:0:0:0: [sda] Write Protect is on
-sd 0:0:0:0: [sda] Mode Sense: 03 00 80 00
-sd 0:0:0:0: [sda] Assuming drive cache: write through
-sd 0:0:0:0: [sda] 245248 512-byte hardware sectors (126 MB)
-sd 0:0:0:0: [sda] Write Protect is on
-sd 0:0:0:0: [sda] Mode Sense: 03 00 80 00
-sd 0:0:0:0: [sda] Assuming drive cache: write through
- sda: sda1
-/*[lets mark the below part as part 2]*/
-sd 0:0:0:0: [sda] Attached SCSI removable disk
-usb-storage: device scan complete
-sd 0:0:0:0: [sda] 245248 512-byte hardware sectors (126 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 03 00 00 00
-sd 0:0:0:0: [sda] Assuming drive cache: write through
-sd 0:0:0:0: [sda] 245248 512-byte hardware sectors (126 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 03 00 00 00
-sd 0:0:0:0: [sda] Assuming drive cache: write through
- sda: sda1
 
-2. on 2.6.24-rc5 kernel reports only the part 1, after try mount the
-disk it reports the part 2 and mount the partition as rw
-
-3. on 2.6.24-rc5 kernel reports only the part 1, after try mount the
-disk it just mount the partition as ro with nothing more messages.
-
-Regards
-dave
