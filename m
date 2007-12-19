@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbXLSBTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbXLSBWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758656AbXLSBTS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 20:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbXLSBTJ
+	id S1757807AbXLSBWj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 20:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbXLSBWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 20:19:09 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38686 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753150AbXLSBTI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 20:19:08 -0500
-Date: Tue, 18 Dec 2007 17:19:04 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Chinner <dgc@sgi.com>
-cc: Lachlan McIlroy <lachlan@sgi.com>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: Re: [GIT PULL] XFS update for 2.6.24-rc6
-In-Reply-To: <20071219004126.GS4396912@sgi.com>
-Message-ID: <alpine.LFD.0.9999.0712181718430.21557@woody.linux-foundation.org>
-References: <20071218065911.EDC8158C4C0F@chook.melbourne.sgi.com> <20071219004126.GS4396912@sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 18 Dec 2007 20:22:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39608 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752783AbXLSBWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 20:22:31 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20071217185213.d0d02149.akpm@linux-foundation.org>
+References: <20071217185213.d0d02149.akpm@linux-foundation.org> <20071213024050.7d6e5f3e.akpm@linux-foundation.org> <30457.1197931451@turing-police.cc.vt.edu> <20071217145644.2d6374e4.akpm@linux-foundation.org> <11403.1197943676@turing-police.cc.vt.edu> <20071218023732.GA3215@darkstar.te-china.tietoenator.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, Dave Young <hidave.darkstar@gmail.com>,
+       Valdis.Kletnieks@vt.edu, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc5-mm1 - wonky disk cache and CDROM behavior...
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 19 Dec 2007 01:22:21 +0000
+Message-ID: <26475.1198027341@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-
-On Wed, 19 Dec 2007, David Chinner wrote:
->
-> On Tue, Dec 18, 2007 at 05:59:11PM +1100, Lachlan McIlroy wrote:
-> > Please pull from the for-linus branch:
-> >     git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
+> > -			inode = ERR_PTR(ret);
+> > +			return NULL;
+> >  		} else {
+> >  			unlock_new_inode(inode);
+> >  		}
+> > 
 > 
-> Linus, please don't pull this yet. A problem has been found in
-> the dirent fix, and we've just fixed another mknod related regression
-> so we've got another couple of fixes still to go in XFS for 2.6.24.
-> 
+> Yup.
 
-Too late, it's already long since pulled.
+Nope.  The correct fix is to make the various callers use IS_ERR() to check
+the result of this function rather than checking for a NULL return.
 
-		Linus
+> David, this is concerning.  More such error-path bugs in that code will take
+> years and years to get found and fixed.
+
+Yes, I know.  I've looked over the patches several times, however I know there
+may be bugs in there because I may have made assumptions about what I've
+written that cause me to overlook things.  It's a danger of checking your own
+code:-(
+
+> The best way to eliminate them is a line-by-line re-review of the patchset.
+
+And ideally by someone other than me.  Some of them have been reviewed by
+other people, but I'm not sure that all have.
+
+However, I've just had another look through.  ISOFS appears to be the only one
+in which I'd missed updating the callers.  I've sent you a patch for it.
+
+Note that I expressed reservations about three filesystems in the cover note
+(FAT, HPPFS and HOSTFS), but nothing seems to have come of it.
+
+David
