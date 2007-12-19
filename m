@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756623AbXLSODi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbXLSOGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756623AbXLSODi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 09:03:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbXLSOD2
+	id S1757181AbXLSOGp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 09:06:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbXLSOGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 09:03:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38696 "EHLO mx3.mail.elte.hu"
+	Wed, 19 Dec 2007 09:06:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50997 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751537AbXLSOD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 09:03:27 -0500
-Date: Wed, 19 Dec 2007 15:03:13 +0100
+	id S1753268AbXLSOGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 09:06:36 -0500
+Date: Wed, 19 Dec 2007 15:06:24 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: Re: Inline local_bh_disable when TRACE_IRQFLAGS
-Message-ID: <20071219140313.GE21282@elte.hu>
-References: <20071219034033.GA5770@gondor.apana.org.au> <20071219113152.GD20736@elte.hu> <20071219115019.GA9099@gondor.apana.org.au>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [kvm-devel] Guest kernel hangs in smp kvm for older kernels
+	prior to tsc sync cleanup
+Message-ID: <20071219140624.GF21282@elte.hu>
+References: <47680173.6060606@qumranet.com> <20071218221930.GA26109@elte.hu> <4768BB43.1000609@qumranet.com> <4768FE27.7020305@qumranet.com> <47690304.1090903@qumranet.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071219115019.GA9099@gondor.apana.org.au>
+In-Reply-To: <47690304.1090903@qumranet.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,38 +36,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Herbert Xu <herbert@gondor.apana.org.au> wrote:
+* Avi Kivity <avi@qumranet.com> wrote:
 
-> On Wed, Dec 19, 2007 at 12:31:52PM +0100, Ingo Molnar wrote:
-> >
-> > > So I'm wondering if it would be reasonable to make it out-of-line 
-> > > when TRACE_IRQFLAGS is off.  This may make a difference because 
-> > > the networking stack is a frequent user of local_bh_disable and 
-> > > local_bh_enable.
-> > 
-> > do you mean to make it inline again?
-> 
-> Yes I meant in-line :)
+> Avi Kivity wrote:
+>>  Testing shows wrmsr and rdtsc function normally.
+>>
+>> I'll try pinning the vcpus to cpus and see if that helps.
+>>
+>
+> It does.
 
-if that decreases code size then i guess we could do that.
-
-> > (btw., generally i think local_bh_disable() is a poor API because it 
-> > is opaque about the data structure dependency that it governs. 
-> > Explicit exclusion rules generally work better.)
-> 
-> I see where you're coming from especially with your preemptible 
-> softirq work.  However I'm mostly thinking about the existing callers 
-> of local_bh_disable in the networking stack.
-
-yeah, i was just commenting on the general concept of 'naked' 
-local_bh_disable(). And just to make it clear: with that i'm not 
-implying anything about the quality of the networking code - networking 
-is one of the cleanest [if not the cleanest] subsystems in the kernel. 
-
-It's just that it's long term more useful for us if our "global scope" 
-APIs have direct, programmatic relationship to the data structures / 
-data flow they control. So i'd love to have the same flow/performance, 
-just coded a bit more explicitly. [preempt_disable() for example has 
-similar issues.]
+do we let the guest read the physical CPU's TSC? That would be trouble.
 
 	Ingo
