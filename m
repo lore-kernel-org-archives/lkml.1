@@ -1,158 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbXLSRkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbXLSRn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754532AbXLSRkU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 12:40:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbXLSRkF
+	id S1754028AbXLSRn0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 12:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbXLSRnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 12:40:05 -0500
-Received: from fk-out-0910.google.com ([209.85.128.185]:26555 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752563AbXLSRkD (ORCPT
+	Wed, 19 Dec 2007 12:43:16 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:65056 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbXLSRnP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 12:40:03 -0500
+	Wed, 19 Dec 2007 12:43:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=fotzgFh6PmZNrCEQDrKaqhyVosxcDzJyHpT0tQ7+UdgYzULTsSp71GovT1cIl3L64D1KdOzfah2Fjp/ckIE8Y5AknEjsX57wU01tXCfh/SYj/CMsGPhg3u5bgXtKpwUMis0MEB5sTwv+QdEjrABD5pkkZzqeTykVeNm02pgGK78=
-Date: Wed, 19 Dec 2007 20:39:49 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] lockdep: tiny code cleanup according to checkpatch
-Message-ID: <20071219173949.GC7413@cvg.cvg>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dGBTw2Qa0JUbMkhEXEpS9YkUbjup0OS75enEpiiCgSgxyQVPhpBLNZn3y0XZWqqHNtivwq1e+92M/SVX0KORk+Va2sMv4yBv0iIknsYWI/7rkY1pnZg7vcJcNfYoMwIP528YM6Nzhj8SbB66hn+bqiDusdPAdMpLjGeeoxsBbmQ=
+Message-ID: <83a51e120712190943m3bf0e2e4v2ea6b660142e9a5a@mail.gmail.com>
+Date: Wed, 19 Dec 2007 12:43:13 -0500
+From: "James Nichols" <jamesnichols3@gmail.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
+       "Linux Netdev List" <netdev@vger.kernel.org>
+In-Reply-To: <47694FCC.1020507@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com>
+	 <Pine.LNX.4.64.0712181818360.4422@fbirervta.pbzchgretzou.qr>
+	 <83a51e120712181009pf954f43mcb63ea4dab638458@mail.gmail.com>
+	 <Pine.LNX.4.64.0712181910580.4422@fbirervta.pbzchgretzou.qr>
+	 <83a51e120712181021p4c4c2a13g8820271f1e00361b@mail.gmail.com>
+	 <4768123A.7040603@cosmosbay.com>
+	 <83a51e120712181144l65633b32r72cc369f9d012f47@mail.gmail.com>
+	 <47682F8C.20205@cosmosbay.com>
+	 <83a51e120712190853q33d9c7c1t4a46380665b7538b@mail.gmail.com>
+	 <47694FCC.1020507@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes a tiny code cleanup over lockdep.c
-according to checkpatch. Nothing serious - space
-cleanup, noninline keyword moved in between of
-storage class and type.
+On 12/19/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> James Nichols a écrit :
+> >> So you see outgoing SYN packets, but no SYN replies coming from the remote
+> >> peer ?  (you mention ACKS, but the first packet received from the remote
+> >>  peer should be a SYN+ACK),
+> >
+> > Right, I meant to say SYN+ACK.  I don't see them coming back.
+>
+> So... Really unlikely a linux problem, but ...
+>
 
-Signed-Off-By: Cyrill Gorcunov <gorcunov@gmail.com>
----
 
- kernel/lockdep.c |   23 +++++++++--------------
- 1 files changed, 9 insertions(+), 14 deletions(-)
+I don't know how you can be so sure.  Turning tcp_sack off instantly
+resovles the problem and all connections are succesful.  I can't
+imagine even the most far-fetched scenario where a router or every
+single remote endpoints would suddenly stop causing the problem just
+by removing a single TCP option.
 
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 723bd9f..397bfd0 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -274,14 +274,12 @@ void lockdep_off(void)
- {
- 	current->lockdep_recursion++;
- }
--
- EXPORT_SYMBOL(lockdep_off);
- 
- void lockdep_on(void)
- {
- 	current->lockdep_recursion--;
- }
--
- EXPORT_SYMBOL(lockdep_on);
- 
- /*
-@@ -427,7 +425,7 @@ static const char *usage_str[] =
- 	[LOCK_ENABLED_HARDIRQS_READ] =	"hardirq-on-R",
- };
- 
--const char * __get_key_name(struct lockdep_subclass_key *key, char *str)
-+const char *__get_key_name(struct lockdep_subclass_key *key, char *str)
- {
- 	return kallsyms_lookup((unsigned long)key, NULL, NULL, NULL, str);
- }
-@@ -543,7 +541,7 @@ static void print_lock_class_header(struct lock_class *class, int depth)
- 	}
- 	printk("%*s }\n", depth, "");
- 
--	printk("%*s ... key      at: ",depth,"");
-+	printk("%*s ... key      at: ", depth, "");
- 	print_ip_sym((unsigned long)class->key);
- }
- 
-@@ -565,7 +563,7 @@ static void print_lock_dependencies(struct lock_class *class, int depth)
- 
- 		print_lock_dependencies(entry->class, depth + 1);
- 
--		printk("%*s ... acquired at:\n",depth,"");
-+		printk("%*s ... acquired at:\n", depth, "");
- 		print_stack_trace(&entry->trace, 2);
- 		printk("\n");
- 	}
-@@ -724,7 +722,7 @@ register_lock_class(struct lockdep_map *lock, unsigned int subclass, int force)
- 
- 	/*
- 	 * Debug-check: all keys must be persistent!
-- 	 */
-+	 */
- 	if (!static_obj(lock->key)) {
- 		debug_locks_off();
- 		printk("INFO: trying to register non-static key.\n");
-@@ -941,7 +939,7 @@ static noinline int print_circular_bug_tail(void)
- 
- #define RECURSION_LIMIT 40
- 
--static int noinline print_infinite_recursion_bug(void)
-+static noinline int print_infinite_recursion_bug(void)
- {
- 	if (!debug_locks_off_graph_unlock())
- 		return 0;
-@@ -1575,7 +1573,7 @@ static int validate_chain(struct task_struct *curr, struct lockdep_map *lock,
- }
- #else
- static inline int validate_chain(struct task_struct *curr,
--	       	struct lockdep_map *lock, struct held_lock *hlock,
-+		struct lockdep_map *lock, struct held_lock *hlock,
- 		int chain_head, u64 chain_key)
- {
- 	return 1;
-@@ -1792,7 +1790,7 @@ static int mark_lock_irq(struct task_struct *curr, struct held_lock *this,
- {
- 	int ret = 1;
- 
--	switch(new_bit) {
-+	switch (new_bit) {
- 	case LOCK_USED_IN_HARDIRQ:
- 		if (!valid_state(curr, this, new_bit, LOCK_ENABLED_HARDIRQS))
- 			return 0;
-@@ -2051,7 +2049,6 @@ void trace_hardirqs_on(void)
- 	curr->hardirq_enable_event = ++curr->irq_events;
- 	debug_atomic_inc(&hardirqs_on_events);
- }
--
- EXPORT_SYMBOL(trace_hardirqs_on);
- 
- /*
-@@ -2340,7 +2337,6 @@ void lockdep_init_map(struct lockdep_map *lock, const char *name,
- 	if (subclass)
- 		register_lock_class(lock, subclass, 1);
- }
--
- EXPORT_SYMBOL_GPL(lockdep_init_map);
- 
- /*
-@@ -2705,7 +2701,6 @@ void lock_acquire(struct lockdep_map *lock, unsigned int subclass,
- 	current->lockdep_recursion = 0;
- 	raw_local_irq_restore(flags);
- }
--
- EXPORT_SYMBOL_GPL(lock_acquire);
- 
- void lock_release(struct lockdep_map *lock, int nested, unsigned long ip)
-@@ -3080,8 +3075,8 @@ print_freed_lock_bug(struct task_struct *curr, const void *mem_from,
- 	dump_stack();
- }
- 
--static inline int not_in_range(const void* mem_from, unsigned long mem_len,
--				const void* lock_from, unsigned long lock_len)
-+static inline int not_in_range(const void *mem_from, unsigned long mem_len,
-+				const void *lock_from, unsigned long lock_len)
- {
- 	return lock_from + lock_len <= mem_from ||
- 		mem_from + mem_len <= lock_from;
+
+> > I can take these captures and take a look at the results.
+> > Unfortunately, I don't think I'll be able to make the captures
+> > available to the general public.
+>
+> I dont understand, why dont you change IPs to mask them with 192.168.X.Y, or
+> just ME, and peer1, peer2, peer...
+
+I will see if I can do that, but it's major pain with 2000 hosts.
+Plus, there is application data in the packets that I can't allow into
+the public domain.  I really don't think I can pull it off... I
+literally would have to go through our legal department.
+
+>
+> Random ideas :
+>
+> 1) Is your server behind a NET router or something ?
+
+What's a NET router?  I am behind a Cisco router and a firewall, but
+these network components have completely been replaced/rebuilt several
+times in the 4+ years that we've had this problem.  I've looked at the
+logs there and neither are doing anything other than passing the
+traffic along.
+
+> 2) Are you sure you are not using connection tracking, and hit a limit on it ?
+
+I'm using ip_conntrack, but the limit I have for max entries is 65K.
+The most I've seen in there are a couple thousand- that was one of the
+first things I monitored very closely.
