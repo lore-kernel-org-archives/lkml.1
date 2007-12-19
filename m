@@ -1,81 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbXLSJp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbXLSJuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754426AbXLSJp1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 04:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbXLSJpP
+	id S1753913AbXLSJuv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 04:50:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbXLSJun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 04:45:15 -0500
-Received: from sacred.ru ([62.205.161.221]:45478 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751668AbXLSJpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 04:45:13 -0500
-Message-ID: <4768E7B2.40203@openvz.org>
-Date: Wed, 19 Dec 2007 12:43:14 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Oren Laadan <orenl@cs.columbia.edu>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-CC: linux-fsdevel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <476724E3.6060901@cs.columbia.edu> <20071218020933.GA28745@sergelap.austin.ibm.com> <476738A0.9010601@cs.columbia.edu>
-In-Reply-To: <476738A0.9010601@cs.columbia.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Dec 2007 04:50:43 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:52623 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750966AbXLSJum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 04:50:42 -0500
+Date: Wed, 19 Dec 2007 10:50:09 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Victor <linux@maxim.org.za>, Remy Bohmer <linux@bohmer.net>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, kernel@avr32linux.org
+Subject: Re: [PATCH 4/5] atmel_serial: Split the interrupt handler
+Message-ID: <20071219105009.744b6a5e@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <4768548C.9040005@gmail.com>
+References: <1197997575-13292-1-git-send-email-hskinnemoen@atmel.com>
+	<1197997575-13292-2-git-send-email-hskinnemoen@atmel.com>
+	<1197997575-13292-3-git-send-email-hskinnemoen@atmel.com>
+	<1197997575-13292-4-git-send-email-hskinnemoen@atmel.com>
+	<1197997575-13292-5-git-send-email-hskinnemoen@atmel.com>
+	<4768548C.9040005@gmail.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 19 Dec 2007 12:43:20 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oren Laadan wrote:
-> Serge E. Hallyn wrote:
->> Quoting Oren Laadan (orenl@cs.columbia.edu):
->>> I hate to bring this again, but what if the admin in the container
->>> mounts an external file system (eg. nfs, usb, loop mount from a file,
->>> or via fuse), and that file system already has a device that we would
->>> like to ban inside that container ?
->> Miklos' user mount patches enforced that if !capable(CAP_MKNOD),
->> then mnt->mnt_flags |= MNT_NODEV.  So that's no problem.
-> 
-> Yes, that works to disallow all device files from a mounted file system.
-> 
-> But it's a black and white thing: either they are all banned or allowed;
-> you can't have some devices allowed and others not, depending on type
-> A scenario where this may be useful is, for instance, if we some apps in
-> the container to execute withing a pre-made chroot (sub)tree within that
-> container.
-> 
->> But that's been pulled out of -mm! ?  Crap.
->>
->>> Since anyway we will have to keep a white- (or black-) list of devices
->>> that are permitted in a container, and that list may change even change
->>> per container -- why not enforce the access control at the VFS layer ?
->>> It's safer in the long run.
->> By that you mean more along the lines of Pavel's patch than my whitelist
->> LSM, or you actually mean Tetsuo's filesystem (i assume you don't mean that
->> by 'vfs layer' :), or something different entirely?
-> 
-> :)
-> 
-> By 'vfs' I mean at open() time, and not at mount(), or mknod() time.
-> Either yours or Pavel's; I tend to prefer not to use LSM as it may
-> collide with future security modules.
+On Wed, 19 Dec 2007 00:15:24 +0100
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-Oren, AFAIS you've seen my patches for device access controller, right?
-
-Maybe we can revisit the issue then and try to come to agreement on what
-kind of model and implementation we all want?
-
-> Oren.
+> On 12/18/2007 06:06 PM, Haavard Skinnemoen wrote:
+> >  	port = &atmel_ports[pdev->id];
+> >  	atmel_init_port(port, pdev);
+> >  
+> > +	data = kmalloc(ATMEL_SERIAL_RINGSIZE, GFP_KERNEL);
+> > +	if (!data)
 > 
->> thanks,
->> -serge
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> {
+>         clk_disable(atmel_port->clk);
+>         clk_put(atmel_port->clk);
 
+Indeed, thanks.
+
+Hmm...the existing error path gets this wrong too. It's actually a
+bit risky to disable the clock here since we might end up losing the
+console.
+
+I wonder what we're really supposed to do if the console is initialized
+successfully, but the corresponding device fails to probe...?
+
+> > @@ -1022,6 +1144,7 @@ static int __devexit atmel_serial_remove(struct platform_device *pdev)
+> >  
+> >  	if (port) {
+> >  		ret = uart_remove_one_port(&atmel_uart, port);
+> 
+> Don't you need tasklet_kill() here (or somewhere)?
+
+Absolutely. Thanks again.
+
+> > +		kfree(atmel_port->rx_ring.buf);
+> >  		kfree(port);
+
+Hmm...this actually looks like a bug too. "port" is allocated
+statically, so it shouldn't be freed. I wonder if anyone ever use this
+driver as a module?
+
+Haavard
