@@ -1,139 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbXLSRAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbXLSRFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756917AbXLSRAn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 12:00:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbXLSRAf
+	id S1755577AbXLSRFO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 12:05:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbXLSRFC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 12:00:35 -0500
-Received: from el-out-1112.google.com ([209.85.162.182]:1459 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752894AbXLSRAe (ORCPT
+	Wed, 19 Dec 2007 12:05:02 -0500
+Received: from fk-out-0910.google.com ([209.85.128.188]:57202 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750810AbXLSRFA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 12:00:34 -0500
+	Wed, 19 Dec 2007 12:05:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=wMDWrVSLLfYKEFvoVcARpbmegLHaysVsrMT5T6sdOWGxKlEOgrCqjPQ0fn1r+Cg1FUBvmKxerZDfFMTw/v/zPlWIc7dDNAG8acdeXiDHxLOtjGLrTlC2oJb58V1350fLzreIusFFm6hvo1yzNFLP3wyPz+18q7xwmjvZDeqO3qk=
-Message-ID: <82e4877d0712190900y17670831k51429996f78e954a@mail.gmail.com>
-Date: Wed, 19 Dec 2007 12:00:31 -0500
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Fix DMI out of memory problems
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, ak@suse.de,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20071219165420.GA15291@elte.hu>
+        h=message-id:date:reply-to:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=b24oX/49lr3fqZQqMczNdyeSieaYYfLFCu7UnYFgOVZXXwF9tsCrMoJjkSOeyusWjbIe8dXzsSdyFkcGvekKTIKDx0IzkKbf7Fk8c3luGT1p+Ii8zDcxiRFJHoO5TsgEj38bqGBvfYKHZ3X7tOCpHUk2Ln/2pmEo7fr3QKGGczw=
+Message-ID: <47694F35.6070401@qumranet.com>
+Date: Wed, 19 Dec 2007 19:04:53 +0200
+Reply-To: dor.laor@qumranet.com
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Amit Shah <amit.shah@qumranet.com>
+CC: kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@argo.co.il>, Gerd Hoffmann <kraxel@redhat.com>
+Subject: Re: [kvm-devel] Guest kernel hangs in smp kvm for older kernelsprior
+ to tsc sync cleanup
+References: <47680173.6060606@qumranet.com> <47692A47.4040803@argo.co.il><5d6222a80712190732h515a63e6y49c64c0f572f044@mail.gmail.com> <200712192225.53748.amit.shah@qumranet.com>
+In-Reply-To: <200712192225.53748.amit.shah@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0712181848430.3663@mini.warudkars.net>
-	 <20071219104823.GI3521@elte.hu>
-	 <82e4877d0712190848r4168b3dp80e53fdcd7c82ce5@mail.gmail.com>
-	 <20071219165420.GA15291@elte.hu>
+From: Dor Laor <dor.laor@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 19, 2007 11:54 AM, Ingo Molnar <mingo@elte.hu> wrote:
+Amit Shah wrote:
 >
-> * Parag Warudkar <parag.warudkar@gmail.com> wrote:
+> On Wednesday 19 December 2007 21:02:06 Glauber de Oliveira Costa wrote:
+> > On Dec 19, 2007 12:27 PM, Avi Kivity <avi@argo.co.il> wrote:
+> > > Ingo Molnar wrote:
+> > > > * Avi Kivity <avi@qumranet.com> wrote:
+> > > >> Avi Kivity wrote:
+> > > >>>  Testing shows wrmsr and rdtsc function normally.
+> > > >>>
+> > > >>> I'll try pinning the vcpus to cpus and see if that helps.
+> > > >>
+> > > >> It does.
+> > > >
+> > > > do we let the guest read the physical CPU's TSC? That would be 
+> trouble.
+> > >
+> > > vmx (and svm) allow us to add an offset to the physical tsc.  We 
+> set it
+> > > on startup to -tsc (so that an rdtsc on boot would return 0), and
+> > > massage it on vcpu migration so that guest rdtsc is monotonic.
+> > >
+> > > The net effect is that tsc on a vcpu can experience large forward 
+> jumps
+> > > and changes in rate, but no negative jumps.
+> >
+> > Changes in rate does not sound good. It's possibly what's screwing up
+> > my paravirt clock implementation in smp.
 >
-> > --- 2.6.24-rc5-patched        2007-12-19 07:21:05.000000000 -0500
-> > +++ 2.6.24-rc5-new    2007-12-19 11:36:54.000000000 -0500
+> Do you mean in the case of VM migration, or just starting them on a single
+> host?
 >
-> hm, i see no OOM messages in the diff - what am i missing?
+It's the cpu preemption stuff on local host and not VM migration
 >
-> best would be to run:
+> > Since the host updates guest time prior to putting vcpu to run, two
+> > vcpus that start running at different times will have different system
+> > values.
+> >
+> > Now if the vcpu that started running later probes the time first,
+> > we'll se the time going backwards. A constant tsc rate is the only way
+> > around
+> > my limited mind sees around the problem (besides, obviously, _not_
+> > making the system time per-vcpu).
 >
->  sort 2.6.24-rc5-patched > new.log
->  sort 2.6.24-rc5-new > old.log
->  diff -up old.log new.log
+> -------------------------------------------------------------------------
+> SF.Net email is sponsored by:
+> Check out the new SourceForge.net Marketplace.
+> It's the best place to buy or sell services
+> for just about anything Open Source.
+> http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace
+> _______________________________________________
+> kvm-devel mailing list
+> kvm-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/kvm-devel
 >
-> to remove line ordering issues.
 
-Pasted the wrong diff - just wanted to feel normal about the day I guess.
-
-Here is the right one -
-2.6.24-rc5  is without patch, 2.6.24-rc5-new is with patch.
-
---- old.log	2007-12-19 11:59:15.000000000 -0500
-+++ new.log	2007-12-19 11:59:08.000000000 -0500
-@@ -76,7 +76,7 @@ ahci 0000:00:1f.2: flags: 64bit ncq sntf
- ahci 0000:00:1f.2: version 3.0
- Allocate Port Service[0000:00:01.0:pcie00]
- Allocating PCI resources starting at d4000000 (gap: d0000000:2ee00000)
--APIC timer calibration result 12499727
-+APIC timer calibration result 12499803
- assign_interrupt_mode Found MSI capability
- ata1: SATA link down (SStatus 0 SControl 310)
- ata1: SATA max UDMA/100 mmio m512@0xf9ffec00 tf 0xf9ffec80 irq 17
-@@ -105,8 +105,8 @@ ata8.00: ATA-7: ST3300622AS, 3.AAH, max
- ata8.00: configured for UDMA/133
- ata8: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
- ata8: SATA max UDMA/133 abar m2048@0xf9eff000 port 0xf9eff380 irq 318
--audit(1198063330.636:1): initialized
--audit(1198063349.305:2): policy loaded auid=4294967295
-+audit(1198064108.636:1): initialized
-+audit(1198064127.320:2): policy loaded auid=4294967295
- audit: initializing netlink socket (disabled)
-  BIOS-e820: 0000000000000000 - 000000000009ec00 (usable)
-  BIOS-e820: 000000000009ec00 - 00000000000a0000 (reserved)
-@@ -133,8 +133,8 @@ Boot video device is 0000:02:00.0
- Bridge firewalling registered
- Brought up 2 CPUs
- Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 1547375
--Calibrating delay using timer specific routine.. 4399.87 BogoMIPS (lpj=8799757)
--Calibrating delay using timer specific routine.. 4403.76 BogoMIPS (lpj=8807520)
-+Calibrating delay using timer specific routine.. 4399.95 BogoMIPS (lpj=8799915)
-+Calibrating delay using timer specific routine.. 4403.90 BogoMIPS (lpj=8807800)
- Capability LSM initialized as secondary
- Checking aperture...
- checking if image is initramfs...<7>Switched to high resolution mode on CPU 1
-@@ -164,8 +164,6 @@ device-mapper: multipath: version 1.0.5
-   DMA zone: 2823 pages, LIFO batch:0
-   DMA zone: 56 pages used for memmap
- DMI present.
--dmi_save_oem_strings_devices: out of memory.
--dmi_string: out of memory.
- Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
- drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
- e1000e: Copyright (c) 1999-2007 Intel Corporation.
-@@ -227,9 +225,9 @@ Initializing XFRM netlink socket
- Inode-cache hash table entries: 524288 (order: 10, 4194304 bytes)
- input: AT Translated Set 2 keyboard as /class/input/input1
- input: ImPS/2 Generic Wheel Mouse as /class/input/input0
--input: PC Speaker as /class/input/input2
-+input: PC Speaker as /class/input/input3
- input: Power Button (CM) as /class/input/input4
--input: Power Button (FF) as /class/input/input3
-+input: Power Button (FF) as /class/input/input2
- Intel(R) Core(TM)2 Duo CPU     E4500  @ 2.20GHz stepping 0d
- IOAPIC[0]: apic_id 2, address 0xfec00000, GSI 0-23
- io scheduler anticipatory registered
-@@ -251,7 +249,7 @@ ldm_parse_tocblock(): Cannot find TOCBLO
- libata version 3.00 loaded.
- Linux agpgart interface v0.102
- Linux Plug and Play Support v0.97 (c) Adam Belay
--Linux version 2.6.24-rc5 (parag@pavillion.hsd1.mi.comcast.net) (gcc
-version 4.1.2 20070626 (Red Hat 4.1.2-14)) #1 SMP Wed Dec 19 07:39:04
-EST 2007
-+Linux version 2.6.24-rc5 (parag@pavillion.hsd1.mi.comcast.net) (gcc
-version 4.1.2 20070626 (Red Hat 4.1.2-14)) #2 SMP Wed Dec 19 11:32:37
-EST 2007
- Linux video capture interface: v2.00
- lo: Disabled Privacy Extensions
- lp: driver loaded but no devices found
-@@ -450,7 +448,7 @@ TCP bind hash table entries: 65536 (orde
- TCP established hash table entries: 262144 (order: 10, 4194304 bytes)
- TCP: Hash tables configured (established 262144 bind 65536)
- TCP reno registered
--time.c: Detected 2199.952 MHz processor.
-+time.c: Detected 2199.958 MHz processor.
- Time: tsc clocksource has been installed.
- Total HugeTLB memory allocated, 0
- TSC calibrated against HPET
-
-
-Parag
