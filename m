@@ -1,112 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbXLSPOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759165AbXLSPOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758887AbXLSPOl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 10:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbXLSPOb
+	id S1759165AbXLSPOy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 10:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758624AbXLSPOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 10:14:31 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:52803 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753467AbXLSPOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 10:14:30 -0500
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Andrew Victor <linux@maxim.org.za>
-Cc: Remy Bohmer <linux@bohmer.net>, linux-arm-kernel@lists.arm.linux.org.uk,
-       Russell King <linux@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-       kernel@avr32linux.org, Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH v2 4/6] atmel_serial: Fix bugs in probe() error path and remove()
-Date: Wed, 19 Dec 2007 16:12:08 +0100
-Message-Id: <1198077130-9021-5-git-send-email-hskinnemoen@atmel.com>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1198077130-9021-4-git-send-email-hskinnemoen@atmel.com>
-References: <1198077130-9021-1-git-send-email-hskinnemoen@atmel.com>
- <1198077130-9021-2-git-send-email-hskinnemoen@atmel.com>
- <1198077130-9021-3-git-send-email-hskinnemoen@atmel.com>
- <1198077130-9021-4-git-send-email-hskinnemoen@atmel.com>
+	Wed, 19 Dec 2007 10:14:35 -0500
+Received: from hancock.steeleye.com ([71.30.118.248]:58197 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758045AbXLSPOd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 10:14:33 -0500
+Subject: [GIT PATCH] SCSI bug fixes for 2.6.24-rc5
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 19 Dec 2007 09:14:30 -0600
+Message-Id: <1198077270.5487.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When an error happens in probe(), the clocks should be disabled, but
-only if the port isn't already used as a console.
+This patch series is a sequence of late arriving bug fixes, mainly in
+drivers but also one debugging scatterlist BUG_ON() in the tape ULD.
+The initio bug fixes are definitely required, we just don't have
+confirmation that they're the whole fix yet, so an additional fix for
+initio may be necessary.
 
-In remove(), the port struct shouldn't be freed because it's defined
-statically.
+The patch is available at:
 
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+
+The short changelog is:
+
+Alan Cox (1):
+      initio: fix conflict when loading driver
+
+Boaz Harrosh (1):
+      initio: bugfix for accessors patch
+
+FUJITA Tomonori (1):
+      st: fix kernel BUG at include/linux/scatterlist.h:59!
+
+James Bottomley (1):
+      dpt_i2o: driver is only 32 bit so don't set 64 bit DMA mask
+
+Tony Battersby (2):
+      sym53c8xx: fix "irq X: nobody cared" regression
+      sym53c8xx: fix free_irq() regression
+
+The diffstat:
+
+ dpt_i2o.c              |    3 +--
+ initio.c               |    2 ++
+ st.c                   |    1 +
+ sym53c8xx_2/sym_glue.c |    2 +-
+ sym53c8xx_2/sym_hipd.c |    2 +-
+ 5 files changed, 6 insertions(+), 4 deletions(-)
+
+The complete patch is attached below.
+
+James
+
 ---
- drivers/serial/atmel_serial.c |   39 +++++++++++++++++++++++++++++----------
- 1 files changed, 29 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index a6b3828..d2b4b0a 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -941,8 +941,18 @@ static int __init atmel_late_console_init(void)
- 
- core_initcall(atmel_late_console_init);
- 
-+static inline bool atmel_is_console_port(struct uart_port *port)
-+{
-+	return port->cons && port->cons->index == port->line;
-+}
-+
- #else
- #define ATMEL_CONSOLE_DEVICE	NULL
-+
-+static inline bool atmel_is_console_port(struct uart_port *port)
-+{
-+	return false;
-+}
- #endif
- 
- static struct uart_driver atmel_uart = {
-@@ -1000,9 +1010,19 @@ static int __devinit atmel_serial_probe(struct platform_device *pdev)
- 	atmel_init_port(port, pdev);
- 
- 	ret = uart_add_one_port(&atmel_uart, &port->uart);
--	if (!ret) {
--		device_init_wakeup(&pdev->dev, 1);
--		platform_set_drvdata(pdev, port);
-+	if (ret)
-+		goto err_add_port;
-+
-+	device_init_wakeup(&pdev->dev, 1);
-+	platform_set_drvdata(pdev, port);
-+
-+	return 0;
-+
-+err_add_port:
-+	if (!atmel_is_console_port(&port->uart)) {
-+		clk_disable(port->clk);
-+		clk_put(port->clk);
-+		port->clk = NULL;
+diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
+index 70f48a1..b31d1c9 100644
+--- a/drivers/scsi/dpt_i2o.c
++++ b/drivers/scsi/dpt_i2o.c
+@@ -906,8 +906,7 @@ static int adpt_install_hba(struct scsi_host_template* sht, struct pci_dev* pDev
  	}
  
- 	return ret;
-@@ -1014,16 +1034,15 @@ static int __devexit atmel_serial_remove(struct platform_device *pdev)
- 	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
- 	int ret = 0;
+ 	pci_set_master(pDev);
+-	if (pci_set_dma_mask(pDev, DMA_64BIT_MASK) &&
+-	    pci_set_dma_mask(pDev, DMA_32BIT_MASK))
++	if (pci_set_dma_mask(pDev, DMA_32BIT_MASK))
+ 		return -EINVAL;
  
--	clk_disable(atmel_port->clk);
--	clk_put(atmel_port->clk);
--
- 	device_init_wakeup(&pdev->dev, 0);
- 	platform_set_drvdata(pdev, NULL);
+ 	base_addr0_phys = pci_resource_start(pDev,0);
+diff --git a/drivers/scsi/initio.c b/drivers/scsi/initio.c
+index 4c4465d..01bf018 100644
+--- a/drivers/scsi/initio.c
++++ b/drivers/scsi/initio.c
+@@ -2616,6 +2616,7 @@ static void initio_build_scb(struct initio_host * host, struct scsi_ctrl_blk * c
+ 		scsi_for_each_sg(cmnd, sglist, cblk->sglen, i) {
+ 			sg->data = cpu_to_le32((u32)sg_dma_address(sglist));
+ 			total_len += sg->len = cpu_to_le32((u32)sg_dma_len(sglist));
++			++sg;
+ 		}
  
--	if (port) {
--		ret = uart_remove_one_port(&atmel_uart, port);
--		kfree(port);
--	}
-+	ret = uart_remove_one_port(&atmel_uart, port);
-+
-+	/* "port" is allocated statically, so we shouldn't free it */
-+
-+	clk_disable(atmel_port->clk);
-+	clk_put(atmel_port->clk);
+ 		cblk->buflen = (scsi_bufflen(cmnd) > total_len) ?
+@@ -2867,6 +2868,7 @@ static int initio_probe_one(struct pci_dev *pdev,
+ 	}
+ 	host = (struct initio_host *)shost->hostdata;
+ 	memset(host, 0, sizeof(struct initio_host));
++	host->addr = pci_resource_start(pdev, 0);
  
- 	return ret;
+ 	if (!request_region(host->addr, 256, "i91u")) {
+ 		printk(KERN_WARNING "initio: I/O port range 0x%x is busy.\n", host->addr);
+diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
+index 98dfd6e..328c47c 100644
+--- a/drivers/scsi/st.c
++++ b/drivers/scsi/st.c
+@@ -3611,6 +3611,7 @@ static struct st_buffer *
+ 
+ 	tb->dma = need_dma;
+ 	tb->buffer_size = got;
++	sg_init_table(tb->sg, max_sg);
+ 
+ 	return tb;
  }
--- 
-1.5.3.4
+diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
+index 0f74aba..9e0908d 100644
+--- a/drivers/scsi/sym53c8xx_2/sym_glue.c
++++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
+@@ -1243,7 +1243,7 @@ static void sym_free_resources(struct sym_hcb *np, struct pci_dev *pdev)
+ 	 *  Free O/S specific resources.
+ 	 */
+ 	if (pdev->irq)
+-		free_irq(pdev->irq, np);
++		free_irq(pdev->irq, np->s.host);
+ 	if (np->s.ioaddr)
+ 		pci_iounmap(pdev, np->s.ioaddr);
+ 	if (np->s.ramaddr)
+diff --git a/drivers/scsi/sym53c8xx_2/sym_hipd.c b/drivers/scsi/sym53c8xx_2/sym_hipd.c
+index 463f119..254bdae 100644
+--- a/drivers/scsi/sym53c8xx_2/sym_hipd.c
++++ b/drivers/scsi/sym53c8xx_2/sym_hipd.c
+@@ -2791,7 +2791,7 @@ irqreturn_t sym_interrupt(struct Scsi_Host *shost)
+ 	istat = INB(np, nc_istat);
+ 	if (istat & INTF) {
+ 		OUTB(np, nc_istat, (istat & SIGP) | INTF | np->istat_sem);
+-		istat = INB(np, nc_istat);		/* DUMMY READ */
++		istat |= INB(np, nc_istat);		/* DUMMY READ */
+ 		if (DEBUG_FLAGS & DEBUG_TINY) printf ("F ");
+ 		sym_wakeup_done(np);
+ 	}
+
 
