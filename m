@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbXLSQu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbXLSQxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755715AbXLSQu5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 11:50:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbXLSQur
+	id S1755702AbXLSQxW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 11:53:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbXLSQxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 11:50:47 -0500
-Received: from adsl-76-243-235-52.dsl.chcgil.sbcglobal.net ([76.243.235.52]:58459
-	"EHLO accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752885AbXLSQuq (ORCPT
+	Wed, 19 Dec 2007 11:53:09 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:51050 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbXLSQxH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 11:50:46 -0500
-Subject: Re: INITIO scsi driver fails to work properly
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Filippos Papadopoulos <psybases@gmail.com>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <20071219132918.GB26272@parisc-linux.org>
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
-	 <20071217031841.f483e5ac.akpm@linux-foundation.org>
-	 <9f00bd9d0712170341u7fef1fc9pc9986dda1a0475cb@mail.gmail.com>
-	 <47666904.8060605@panasas.com>
-	 <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
-	 <20071219132918.GB26272@parisc-linux.org>
-Content-Type: text/plain
-Date: Wed, 19 Dec 2007 10:50:40 -0600
-Message-Id: <1198083040.5487.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+	Wed, 19 Dec 2007 11:53:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ue5hbY1YMXY7H0gT+OnY0lMHcDhAKCvfQOfTCikrQfhCiF0nzFYCsy6TF9kPXKCHhOu3hjuxU1wZ7DjuNYZrW34aga5P50ZoxVywpzgsFjKB0l0poyokdOw4Ymcfy34nBu3iXzWXC3Y8yBGLRL+wovyH2wRrVqHvVxWIiP6A26E=
+Message-ID: <83a51e120712190853q33d9c7c1t4a46380665b7538b@mail.gmail.com>
+Date: Wed, 19 Dec 2007 11:53:06 -0500
+From: "James Nichols" <jamesnichols3@gmail.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
+       "Linux Netdev List" <netdev@vger.kernel.org>
+In-Reply-To: <47682F8C.20205@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com>
+	 <Pine.LNX.4.64.0712181704380.4422@fbirervta.pbzchgretzou.qr>
+	 <83a51e120712180845k6cadf67bn5dd66fb2d3ac72d4@mail.gmail.com>
+	 <Pine.LNX.4.64.0712181818360.4422@fbirervta.pbzchgretzou.qr>
+	 <83a51e120712181009pf954f43mcb63ea4dab638458@mail.gmail.com>
+	 <Pine.LNX.4.64.0712181910580.4422@fbirervta.pbzchgretzou.qr>
+	 <83a51e120712181021p4c4c2a13g8820271f1e00361b@mail.gmail.com>
+	 <4768123A.7040603@cosmosbay.com>
+	 <83a51e120712181144l65633b32r72cc369f9d012f47@mail.gmail.com>
+	 <47682F8C.20205@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> So you see outgoing SYN packets, but no SYN replies coming from the remote
+> peer ?  (you mention ACKS, but the first packet received from the remote
+>  peer should be a SYN+ACK),
 
-On Wed, 2007-12-19 at 06:29 -0700, Matthew Wilcox wrote:
-> On Wed, Dec 19, 2007 at 10:48:27AM +0200, Filippos Papadopoulos wrote:
-> > Would it be better to open a bug report at bugzilla?
-> 
-> No, it wouldn't.  Bugzilla is a place where bug reports go to be
-> ignored.  Witness 9370 where despite my best efforts to move discussion
-> to the mailing list, it's been thoroughly ignored because the original
-> reporte insists on posting additional information there instead of to
-> the mailing list.
-
-That's a bit harsh on bugzilla.  It is of use to people whose job it is
-to track outstanding bugs.
-
-However, Matthew is completely correct, it's useless for getting bugs
-fixed *if* the information isn't on the mailing list.  The reason for
-using mailing list is the more eyes principle:  if you email linux-scsi,
-all the SCSI experts will see it, not just the one email listed as owner
-in bugzilla.  Likewise, as the bug goes through analysis, if it turns
-out to be in a different area, that areas mailing list can be added to
-the Cc list.
-
-So, to get the best of both worlds, file a bugzilla and note the bugid.
-Then email a complete report to the relevant list, but add [BUG <bugid>]
-to the subject line and cc bugme-daemon@bugzilla.kernel.org  If you do
-this, bugzilla will keep track of the entire discussion as it progresses
-and allow those who track bugs through bugzilla to get a pretty accurate
-idea of the status.  You should never need to touch bugzilla again once
-the initial bug report is filed: all future information flow is via the
-mailing lists.
-
-James
+Right, I meant to say SYN+ACK.  I don't see them coming back.
 
 
+> When the problem comes, instead of restarting the application, please take a
+> tcpdump of say 10.000 packets.
+> Then turn off tcp_sack and take a 2nd tcpdump sample, and make both samples
+> available to us.
+
+I can take these captures and take a look at the results.
+Unfortunately, I don't think I'll be able to make the captures
+available to the general public.
+
+
+
+> If turning off tcp_sack makes the problem go away, why dont you turn it off
+> all the time ?
+
+Unfortunately, I think that will be the answer if I can't get any help
+fixing this problem in the kernel.  It's a bummer, because many of the
+remote hosts my application communicates with are on wireless links,
+so there may be performance implications to turning SACK off.
