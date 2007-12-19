@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbXLSOxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbXLSOxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756109AbXLSOxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 09:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXLSOxK
+	id S1757528AbXLSOxo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 09:53:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXLSOxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 09:53:10 -0500
-Received: from il.qumranet.com ([82.166.9.18]:32980 "EHLO il.qumranet.com"
+	Wed, 19 Dec 2007 09:53:35 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43946 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752821AbXLSOxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 09:53:09 -0500
-Message-ID: <47693054.20501@qumranet.com>
-Date: Wed, 19 Dec 2007 16:53:08 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Avi Kivity <avi@qumranet.com>, kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [kvm-devel] Guest kernel hangs in smp kvm for older kernels	prior
- to tsc sync cleanup
-References: <47680173.6060606@qumranet.com> <20071218221930.GA26109@elte.hu> <4768BB43.1000609@qumranet.com> <4768FE27.7020305@qumranet.com> <47690304.1090903@qumranet.com> <20071219140624.GF21282@elte.hu>
-In-Reply-To: <20071219140624.GF21282@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753261AbXLSOxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 09:53:34 -0500
+Date: Wed, 19 Dec 2007 09:53:07 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: [patch 17/20] non-reclaimable mlocked pages
+Message-ID: <20071219095307.683978b0@cuia.boston.redhat.com>
+In-Reply-To: <1198074247.6484.17.camel@twins>
+References: <20071218211539.250334036@redhat.com>
+	<20071218211550.186819416@redhat.com>
+	<200712191156.48507.nickpiggin@yahoo.com.au>
+	<20071219084534.4fee8718@bree.surriel.com>
+	<1198074247.6484.17.camel@twins>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Avi Kivity <avi@qumranet.com> wrote:
->
->   
->> Avi Kivity wrote:
->>     
->>>  Testing shows wrmsr and rdtsc function normally.
->>>
->>> I'll try pinning the vcpus to cpus and see if that helps.
->>>
->>>       
->> It does.
->>     
->
-> do we let the guest read the physical CPU's TSC? That would be trouble.
->
->   
+On Wed, 19 Dec 2007 15:24:07 +0100
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-vmx (and svm) allow us to add an offset to the physical tsc.  We set it
-on startup to -tsc (so that an rdtsc on boot would return 0), and
-massage it on vcpu migration so that guest rdtsc is monotonic.
+> I thought Lee had patches that moved pages with long rmap chains (both
+> anon and file) out onto the non-reclaim list, for those a slow
+> background scan does make sense.
 
-The net effect is that tsc on a vcpu can experience large forward jumps
-and changes in rate, but no negative jumps.
+I suspect we won't be needing that code.  The SEQ replacement for
+swap backed pages might reduce the number of pages that need to
+be scanned to a reasonable number.
+
+Remember, steady states are not a big problem with the current VM.
+It's the sudden burst of scanning that happens when the VM decides
+that it should start swapping (and every anonymous page is referenced)
+that kills large systems.
 
 -- 
-error compiling committee.c: too many arguments to function
+All Rights Reversed
