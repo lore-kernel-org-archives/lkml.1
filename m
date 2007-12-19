@@ -1,94 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbXLSXtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbXLSXxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757532AbXLSXtr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 18:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXLSXtk
+	id S1758018AbXLSXxS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 18:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbXLSXxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 18:49:40 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39098 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbXLSXtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 18:49:39 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: 2.6.24-rc5-mm1 -- inconsistent {in-hardirq-W} -> {hardirq-on-W} usage -- pm-hibernate/9940 [HC0[0]:SC0[0]:HE1:SE1]
-Date: Thu, 20 Dec 2007 01:09:19 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Daniel Walker <dwalker@mvista.com>, Miles Lane <miles.lane@gmail.com>,
-       Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <a44ae5cd0712190517t7c80e15bv759fa5486dfca234@mail.gmail.com> <200712200029.31709.rjw@sisk.pl> <Pine.LNX.4.64.0712191511310.2001@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0712191511310.2001@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 19 Dec 2007 18:53:10 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:50186 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753428AbXLSXxJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 18:53:09 -0500
+X-Greylist: delayed 1302 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Dec 2007 18:53:09 EST
+X-Sasl-enc: 5XUmOk4YaTVNYTrFcNr8ARfH0AAHXXiG9BdaRuRPajxA 1198107086
+Subject: RE: printf internals
+From: Scott Russell <catfather@donpoo.net>
+To: Siva Prasad <sprasad@bivio.net>
+Cc: Clemens Koller <clemens.koller@anagramm.de>,
+       David Newall <david@davidnewall.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF540@corpexc01.corp.networkrobots.com>
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D7011A8217@corpexc01.corp.networkrobots.com>
+	 <4761E289.9070007@davidnewall.com> <4762AC35.3010706@anagramm.de>
+	 <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF540@corpexc01.corp.networkrobots.com>
+Content-Type: text/plain
+Date: Wed, 19 Dec 2007 18:31:25 -0500
+Message-Id: <1198107085.7740.0.camel@oasis.donpoo.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712200109.20452.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 20 of December 2007, Christoph Lameter wrote:
-> On Thu, 20 Dec 2007, Rafael J. Wysocki wrote:
-> 
-> > > We could reexport drain_local_pages() again but then I do not understand 
-> > > why we would only drain the pages of this processor and not of all other
-> > > processors as well. It seems that software suspend intend was to flush 
-> > > them all right?
-> > 
-> > Well, not exactly.  We are on one CPU at this point, the others have been
-> > disabled.
-> 
-> Ok so the others are flush. Here is a patch to re-export 
-> drain_local_pages() again and use it for software suspend:
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> ---
->  include/linux/gfp.h     |    1 +
->  kernel/power/snapshot.c |    2 +-
->  mm/page_alloc.c         |    2 +-
->  3 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.24-rc5-mm1/kernel/power/snapshot.c
-> ===================================================================
-> --- linux-2.6.24-rc5-mm1.orig/kernel/power/snapshot.c	2007-12-19 11:59:25.233961700 -0800
-> +++ linux-2.6.24-rc5-mm1/kernel/power/snapshot.c	2007-12-19 15:16:34.179661929 -0800
-> @@ -1203,7 +1203,7 @@ asmlinkage int swsusp_save(void)
->  
->  	printk(KERN_INFO "PM: Creating hibernation image: \n");
->  
-> -	drain_all_pages();
-> +	drain_local_pages(NULL);
->  	nr_pages = count_data_pages();
->  	nr_highmem = count_highmem_pages();
->  	printk(KERN_INFO "PM: Need to copy %u pages\n", nr_pages + nr_highmem);
 
-You've omitted the second instance, right before the copy_data_pages() call.
+On Wed, 2007-12-19 at 14:33 -0800, Siva Prasad wrote:
+> Thank you very much for your response Clemens.
+> 
+> I tried strace on a regular system. It does not show which tty, etc., as it uses the stdout (fd = 1) and write(1, ...) to it.
+> 
+> This is not a student project. I am trying to build my own kernel and ramdisk. Kernel boots fine to a point where it starts accessing ramdisk and executes init scripts. From there on nothing gets printed. I did some debugging and found that prints of user land programs are not coming to the serial console, while kernel prints are working fine. I found all the programs getting executed, by placing a printk in execve routine and printing the arguments.
+> 
+> So, I wanted to trace down the path from user program to the kernel and see why it is not printing messages from user program. I placed a printk in drivers/char/tty_io.c:tty_write() and it is not getting called from my file system. I tried the same thing on my good system (say regular PC) and it works as expected.
+> 
+> Any clues that can help debug this issue is highly appreciated.
+> How can I get access to the same printf string inside kernel.
 
-> Index: linux-2.6.24-rc5-mm1/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.24-rc5-mm1.orig/mm/page_alloc.c	2007-12-19 12:01:00.630421258 -0800
-> +++ linux-2.6.24-rc5-mm1/mm/page_alloc.c	2007-12-19 15:12:19.850545818 -0800
-> @@ -930,7 +930,7 @@ static void drain_pages(unsigned int cpu
->  /*
->   * Spill all of this CPU's per-cpu pages back into the buddy allocator.
->   */
-> -static void drain_local_pages(void *arg)
-> +void drain_local_pages(void *arg)
->  {
->  	drain_pages(smp_processor_id());
->  }
-> Index: linux-2.6.24-rc5-mm1/include/linux/gfp.h
-> ===================================================================
-> --- linux-2.6.24-rc5-mm1.orig/include/linux/gfp.h	2007-12-19 15:13:51.926950065 -0800
-> +++ linux-2.6.24-rc5-mm1/include/linux/gfp.h	2007-12-19 15:16:11.951564369 -0800
-> @@ -229,5 +229,6 @@ extern void FASTCALL(free_cold_page(stru
->  void page_alloc_init(void);
->  void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp);
->  void drain_all_pages(void);
-> +void drain_local_pages(void *dummy);
->  
->  #endif /* __LINUX_GFP_H */
+This sounds like you're printing out the serial console instead.
+
+-- 
+Scott <catfather@donpoo.net>
+AIM: BlueCame1
+
