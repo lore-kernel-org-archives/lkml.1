@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbXLSOGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbXLSOHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757181AbXLSOGp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 09:06:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbXLSOGh
+	id S1757365AbXLSOHr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 09:07:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbXLSOHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 09:06:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50997 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753268AbXLSOGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 09:06:36 -0500
-Date: Wed, 19 Dec 2007 15:06:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [kvm-devel] Guest kernel hangs in smp kvm for older kernels
-	prior to tsc sync cleanup
-Message-ID: <20071219140624.GF21282@elte.hu>
-References: <47680173.6060606@qumranet.com> <20071218221930.GA26109@elte.hu> <4768BB43.1000609@qumranet.com> <4768FE27.7020305@qumranet.com> <47690304.1090903@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47690304.1090903@qumranet.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 19 Dec 2007 09:07:39 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:61318 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753884AbXLSOHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 09:07:39 -0500
+Date: Wed, 19 Dec 2007 15:07:34 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: git@vger.kernel.org
+Cc: Chip Coldwell <coldwell@redhat.com>, linux@arm.linux.org.uk,
+       kernel@avr32linux.org, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, Bohmer <linux@bohmer.net>,
+       Andrew Victor <linux@maxim.org.za>
+Subject: Re: [PATCH 4/5] atmel_serial: Split the interrupt handler
+Message-ID: <20071219150734.50b1f847@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20071219124008.4945e592@dhcp-252-066.norway.atmel.com>
+References: <1197997575-13292-1-git-send-email-hskinnemoen@atmel.com>
+	<1197997575-13292-2-git-send-email-hskinnemoen@atmel.com>
+	<1197997575-13292-3-git-send-email-hskinnemoen@atmel.com>
+	<1197997575-13292-4-git-send-email-hskinnemoen@atmel.com>
+	<1197997575-13292-5-git-send-email-hskinnemoen@atmel.com>
+	<20071218181019.2af46418@dhcp-252-066.norway.atmel.com>
+	<alpine.LFD.0.9999.0712181318300.27475@localhost.localdomain>
+	<20071219124008.4945e592@dhcp-252-066.norway.atmel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 19 Dec 2007 12:40:08 +0100
+Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 
-* Avi Kivity <avi@qumranet.com> wrote:
+> Btw, the funny thing is that, looking at my shell history, I think I
+> actually did the right thing when committing your patches:
+> 
+> git commit -s --author 'Remy Bohmer <linux@bohmer.net>'
+> git commit -s --author 'Chip Coldwell <coldwell@frank.harvard.edu>'
+> 
+> But for some reason only your names stuck, not your e-mail addresses...
 
-> Avi Kivity wrote:
->>  Testing shows wrmsr and rdtsc function normally.
->>
->> I'll try pinning the vcpus to cpus and see if that helps.
->>
->
-> It does.
+It just happened again. Seems like if git-rebase hits a conflict, and I
+just do "git-rebase --continue" after resolving it (and updating the
+index), the original author's name is used, but not his e-mail address.
 
-do we let the guest read the physical CPU's TSC? That would be trouble.
+Looks like a bug in git-rebase...?
 
-	Ingo
+Haavard
