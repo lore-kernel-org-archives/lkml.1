@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbXLSTZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbXLST0F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbXLSTZs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 14:25:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXLSTZl
+	id S1756477AbXLST0F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 14:26:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbXLSTZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 14:25:41 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:32173 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752229AbXLSTZk (ORCPT
+	Wed, 19 Dec 2007 14:25:53 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:16306 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752874AbXLSTZw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 14:25:40 -0500
+	Wed, 19 Dec 2007 14:25:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Fq+5117K6UM4nH/s+CMy9AF+0iVLasFoWz4MZc6kDKH/Q8xLrAEHjHyhZD2ZYykVR7InPFaztjXMJIDIyy3aXNZLnFQ9ib/kXp8K5M95r379yZc8oHWfZsO/0imcMVWNCIpfkY/OcHpUKYfc8efbDtUhU7svGhhoqsulpFemrwI=
-Message-ID: <4769702D.90000@gmail.com>
-Date: Wed, 19 Dec 2007 20:25:33 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=L8S6IL2ZSLdHmdPgMtxNmehHNe07+efqxsxICADpDzhN44BYx1jOi9zocj0jM1q/hDiv/zr8HdEBblX0XmsC4/xmX99/Gdvog+Ldp3nQTBA1mPhH4yemj1P5eHXoOJh48gcA/awqJqWIFacmzKMaByLZAIQ4UsZj3J2ie2tVlW4=
+Date: Wed, 19 Dec 2007 20:27:20 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>
+Subject: Re: [PATCH 5/6] udf: fix signedness issue
+Message-ID: <20071219192707.GA18305@joi>
+References: <20071216021556.GF26986@joi> <20071217163216.GI6979@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-To: ManojKwal <kmanojcse23@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: kobject_add failed for tts/0 (-13)-EACCES
-References: <14384475.post@talk.nabble.com>
-In-Reply-To: <14384475.post@talk.nabble.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20071217163216.GI6979@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/18/2007 06:39 AM, ManojKwal wrote:
-> io scheduler cfq registered
-> serial_dtsp_init()
-> serial_dtsp_probe()
-> dtsp_uart.0: tts/0 at MMIO 0x20200000 (irq = 2) is a ttyS
-> kobject_add failed for tts/0 (-13)
-> [<c001d918>] (dump_stack+0x0/0x14) from [<c00c9d74>]
-> (kobject_add+0x168/0x1a4)
-> [<c00c9c0c>] (kobject_add+0x0/0x1a4) from [<c00eab84>]
-> (class_device_add+0x88/0x420)
->  r8 = C0114240  r7 = 0CC00040  r6 = C3E11BC0  r5 = C0323440
->  r4 = C0323440 
-> [<c00eaafc>] (class_device_add+0x0/0x420) from [<c00eaf38>]
-> (class_device_register+0x1c/0x20)
-> [<c00eaf1c>] (class_device_register+0x0/0x20) from [<c00eafc8>]
-> (class_device_create+0x8c/0xc4)
->  r4 = C0323440 
-> [<c00eaf3c>] (class_device_create+0x0/0xc4) from [<c00d0ef0>]
-> (tty_register_device+0xc8/0xe8)
-> [<c00d0e28>] (tty_register_device+0x0/0xe8) from [<c00e500c>]
-> (uart_add_one_port+0x22c/0x2a0)
->  r7 = C011FAE4  r6 = 00000002  r5 = 00000000  r4 = 60000013
-> [<c00e4de0>] (uart_add_one_port+0x0/0x2a0) from [<c00e6a9c>]
-> (serial_dtsp_probe+0x40/0x60)
+On Mon, Dec 17, 2007 at 05:32:17PM +0100, Jan Kara wrote:
+> > sparse generated:
+> > fs/udf/namei.c:896:15: originally declared here
+> > fs/udf/namei.c:1147:41: warning: incorrect type in argument 3 (different signedness)
+> > fs/udf/namei.c:1147:41:    expected int *offset
+> > fs/udf/namei.c:1147:41:    got unsigned int *<noident>
+> > fs/udf/namei.c:1152:78: warning: incorrect type in argument 3 (different signedness)
+> > fs/udf/namei.c:1152:78:    expected int *offset
+> > fs/udf/namei.c:1152:78:    got unsigned int *<noident>
+> >
+> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+>   I don't think this is right. udf_get_fileident() should take "unsigned
+> int *" as an offset, not just "int". This means changing struct
+> udf_fileident_bh to use unsigned int too but that is better anyway.
+>   And BTW the type shouldn't be uint32_t but really unsigned int in
+> udf_rename (int needn't have 32 bits on all archs (although I think it
+> has currently)).
+That would be hard. Look what is happening with soffset and eoffset
+eg in udf_fileident_read() - these fields are used as signed ints.
 
-Actually this is the first time google sees this function name. Where's that
-kernel from?
-
-regards,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+Marcin
