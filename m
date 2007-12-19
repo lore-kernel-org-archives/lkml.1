@@ -1,41 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbXLSDbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832AbXLSDey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756199AbXLSDbz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 22:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbXLSDbs
+	id S1755832AbXLSDey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 22:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbXLSDeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 22:31:48 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:55323 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752358AbXLSDbr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 22:31:47 -0500
-Date: Tue, 18 Dec 2007 22:30:56 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>,
-       Dave Young <hidave.darkstar@gmail.com>, Valdis.Kletnieks@vt.edu,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: 2.6.24-rc5-mm1 - wonky disk cache and CDROM behavior...
-Message-ID: <20071219033056.GA11148@c2.user-mode-linux.org>
-References: <20071217185213.d0d02149.akpm@linux-foundation.org> <20071213024050.7d6e5f3e.akpm@linux-foundation.org> <30457.1197931451@turing-police.cc.vt.edu> <20071217145644.2d6374e4.akpm@linux-foundation.org> <11403.1197943676@turing-police.cc.vt.edu> <20071218023732.GA3215@darkstar.te-china.tietoenator.com> <26475.1198027341@redhat.com> <20071218180458.c80a0575.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071218180458.c80a0575.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+	Tue, 18 Dec 2007 22:34:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57612 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751299AbXLSDeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 22:34:46 -0500
+Message-ID: <476890CC.1020100@redhat.com>
+Date: Tue, 18 Dec 2007 22:32:28 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
+CC: Roland McGrath <roland@redhat.com>, prasanna@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/2] x86: fix kprobe_handler reenable preemption
+References: <4768555A.3000604@redhat.com>
+In-Reply-To: <4768555A.3000604@redhat.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 18, 2007 at 06:04:58PM -0800, Andrew Morton wrote:
-> Nobody seems to look after hppfs.  I'll resend the fat and hostfs patches to
-> maintainers for a review, please.
+Hi
 
-It's mine - I'll take a look at it.
+Masami Hiramatsu wrote:
+> Fix a preemption bug in kprobe_handler(). It has to call preempt_enable()
+> before returning.
+> I think this is critical on preemptive kernel.
 
-				Jeff
+Sorry, this patch has a mistake.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> ---
+>  arch/x86/kernel/kprobes.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> Index: b/arch/x86/kernel/kprobes.c
+> ===================================================================
+> --- a/arch/x86/kernel/kprobes.c	2007-12-18 12:51:00.000000000 -0500
+> +++ b/arch/x86/kernel/kprobes.c	2007-12-18 12:53:38.000000000 -0500
+> @@ -467,7 +467,8 @@
+>  				arch_disarm_kprobe(p);
+>  				regs->ip = (unsigned long)p->addr;
+>  				reset_current_kprobe();
+> -				return 1;
+> +				ret = 1;
+> +				goto no_kprobe;
+>  #endif
+>  			}
+>  			/* We have reentered the kprobe_handler(), since
+> @@ -481,7 +482,7 @@
+>  			kprobes_inc_nmissed_count(p);
+>  			prepare_singlestep(p, regs);
+>  			kcb->kprobe_status = KPROBE_REENTER;
+> -			return 1;
+> +			ret = 1;
+
+Here, "return 1;" is correct. After single step is done, preemption is enabled
+in post_kprobe_handler().
+
+>  		} else {
+>  			if (*addr != BREAKPOINT_INSTRUCTION) {
+>  			/* The breakpoint instruction was removed by
+> 
 
 -- 
-Work email - jdike at linux dot intel dot com
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+
