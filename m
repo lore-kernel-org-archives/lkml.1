@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbXLSBOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbXLSBO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758274AbXLSBOg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 20:14:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbXLSBOZ
+	id S1758895AbXLSBO7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 20:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbXLSBOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 20:14:25 -0500
-Received: from are.twiddle.net ([64.81.246.98]:46263 "EHLO are.twiddle.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757334AbXLSBOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 20:14:24 -0500
-Date: Tue, 18 Dec 2007 17:12:10 -0800
-From: Richard Henderson <rth@twiddle.net>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
-       Keith Packard <keithp@keithp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: PCI resource problems caused by improper address rounding
-Message-ID: <20071219011210.GA25738@twiddle.net>
-Mail-Followup-To: Chuck Ebbert <cebbert@redhat.com>,
-	Robert Hancock <hancockr@shaw.ca>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
-	Keith Packard <keithp@keithp.com>,
-	Bjorn Helgaas <bjorn.helgaas@hp.com>
-References: <fa.WmGIH8th8MfmciABVSBi6whxeFE@ifi.uio.no> <fa.Obg5E3fyax+MaF94//uo40q/Zyk@ifi.uio.no> <fa./6K5nXEIpws4VU8HtJhQjF4AoGg@ifi.uio.no> <fa.V82IIxMkW3eu+9B44NfoyYYQDP4@ifi.uio.no> <fa.DM9AyNQQtam66XpKVeXeqS639os@ifi.uio.no> <fa.f5O3U527Rv8DNk05hDFRjdCaeFE@ifi.uio.no> <47686197.6080807@shaw.ca> <47686C09.1070602@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47686C09.1070602@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 18 Dec 2007 20:14:50 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51190 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753068AbXLSBOt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 20:14:49 -0500
+Date: Tue, 18 Dec 2007 20:14:36 -0500
+Message-Id: <200712190114.lBJ1Ean2023273@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] unionfs: restructure unionfs_setattr 
+In-reply-to: Your message of "Wed, 19 Dec 2007 00:53:12 GMT."
+             <Pine.LNX.4.64.0712190030390.5639@blonde.wat.veritas.com> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 18, 2007 at 07:55:37PM -0500, Chuck Ebbert wrote:
-> You can boot with "pci=mmconf" to enable it.
+In message <Pine.LNX.4.64.0712190030390.5639@blonde.wat.veritas.com>, Hugh Dickins writes:
+> On Tue, 18 Dec 2007, Erez Zadok wrote:
+> > In message <Pine.LNX.4.64.0712182213300.28390@blonde.wat.veritas.com>, Hugh Dickins writes:
+> > > In order to fix unionfs truncation, we need to move the lower notify_change
+> > > out of the loop in unionfs_setattr.  But when I came to do that, I couldn't
+> > [...]
+> > 
+> > Hugh, I want to understand how patches 3/4 and 4/4 are related.  In patch 3
+> > you say "in order to fix truncation" but you mention a truncation problem
+> > only in patch 4; is there a patch ordering problem, or they're both related
+> > to the same issue (with 3/4 being a code cleanup, and 4/4 actually fixing
+> > the problem)?
+> 
+> I needed to move that notify_change out of the loop, to fix the truncation
+> problem, but had great difficulty understanding the loop.  So, just as you
+> say, made the code cleanup first in 3/4, then fixed the problem in 4/4.
+> 
+> But that cleanup does need your review and testing.
 
-Heh.
+A quick look at your setattr patches seems very promising.  And I've further
+realized more cleanup is possible: because we call revalidate_chain at the
+opening to ->setattr, we're guaranteed to have a valid lower dentry, so for
+example we can remove the else case for "if (lower_dentry)".
 
-PCI: BIOS Bug: MCFG area at e0000000 is not E820-reserved
-PCI: Not using MMCONFIG.
+I'll be testing this and your other patches, plus look into the locking
+issues you brought up.
 
-
-r~
+Thanks,
+Erez.
