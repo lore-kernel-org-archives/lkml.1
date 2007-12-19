@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbXLSRKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbXLSRPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757522AbXLSRKA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 12:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbXLSRJu
+	id S1754902AbXLSRPH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 12:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXLSRO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 12:09:50 -0500
-Received: from il.qumranet.com ([82.166.9.18]:38796 "EHLO il.qumranet.com"
+	Wed, 19 Dec 2007 12:14:57 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:45132 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752899AbXLSRJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 12:09:50 -0500
-Message-ID: <4769505C.5020309@qumranet.com>
-Date: Wed, 19 Dec 2007 19:09:48 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: dor.laor@qumranet.com
-CC: Amit Shah <amit.shah@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@argo.co.il>, Gerd Hoffmann <kraxel@redhat.com>
-Subject: Re: [kvm-devel] Guest kernel hangs in smp kvm for older kernelsprior
- to tsc sync cleanup
-References: <47680173.6060606@qumranet.com> <47692A47.4040803@argo.co.il><5d6222a80712190732h515a63e6y49c64c0f572f044@mail.gmail.com> <200712192225.53748.amit.shah@qumranet.com> <47694F35.6070401@qumranet.com>
-In-Reply-To: <47694F35.6070401@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751830AbXLSRO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 12:14:56 -0500
+Subject: Re: [PATCH] Move page_assign_page_cgroup to VM_BUG_ON in
+	free_hot_cold_page
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Hugh Dickins <hugh@veritas.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20071219061834.8461.3974.sendpatchset@balbir-laptop>
+References: <20071219061834.8461.3974.sendpatchset@balbir-laptop>
+Content-Type: text/plain
+Date: Wed, 19 Dec 2007 09:14:33 -0800
+Message-Id: <1198084473.15321.48.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dor Laor wrote:
->> > >
->> > > vmx (and svm) allow us to add an offset to the physical tsc.  We 
->> set it
->> > > on startup to -tsc (so that an rdtsc on boot would return 0), and
->> > > massage it on vcpu migration so that guest rdtsc is monotonic.
->> > >
->> > > The net effect is that tsc on a vcpu can experience large forward 
->> jumps
->> > > and changes in rate, but no negative jumps.
->> >
->> > Changes in rate does not sound good. It's possibly what's screwing up
->> > my paravirt clock implementation in smp.
->>
->> Do you mean in the case of VM migration, or just starting them on a 
->> single
->> host?
->>
-> It's the cpu preemption stuff on local host and not VM migration
+On Wed, 2007-12-19 at 11:48 +0530, Balbir Singh wrote:
+> diff -puN mm/page_alloc.c~memory-controller-move-to-bug-on-in-free_hot_cold_page mm/page_alloc.c
+> --- linux-2.6.24-rc5/mm/page_alloc.c~memory-controller-move-to-bug-on-in-free_hot_cold_page     2007-12-19 11:31:46.000000000 +0530
+> +++ linux-2.6.24-rc5-balbir/mm/page_alloc.c     2007-12-19 11:33:45.000000000 +0530
+> @@ -995,7 +995,7 @@ static void fastcall free_hot_cold_page(
+>  
+>         if (!PageHighMem(page))
+>                 debug_check_no_locks_freed(page_address(page), PAGE_SIZE);
+> -       page_assign_page_cgroup(page, NULL);
+> +       VM_BUG_ON(page_get_page_cgroup(page));
+>         arch_free_page(page, 0);
+>         kernel_map_pages(page, 1, 0); 
 
-No, migrating a vcpu to another cpu.
+Hi Balbir,
 
--- 
-error compiling committee.c: too many arguments to function
+You generally want to do these like:
+
+	foo = page_assign_page_cgroup(page, NULL);
+	VM_BUG_ON(foo);
+
+Some embedded people have been known to optimize kernel size like this:
+
+	#define VM_BUG_ON(x) do{}while(0)
+
+-- Dave
 
