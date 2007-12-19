@@ -1,90 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbXLSAOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbXLSAUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758185AbXLSAOy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 19:14:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbXLSAOq
+	id S1757488AbXLSAUU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 19:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbXLSAUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 19:14:46 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:48379 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751672AbXLSAOp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 19:14:45 -0500
-Message-ID: <47686269.2090103@cosmosbay.com>
-Date: Wed, 19 Dec 2007 01:14:33 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] kernel/sys.c : Get rid of expensive divides in groups_sort()
-Content-Type: multipart/mixed;
- boundary="------------040605090806020507030406"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 19 Dec 2007 01:14:40 +0100 (CET)
+	Tue, 18 Dec 2007 19:20:07 -0500
+Received: from mfe1.polimi.it ([131.175.12.23]:51394 "EHLO polimi.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752491AbXLSAUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 19:20:05 -0500
+Date: Wed, 19 Dec 2007 01:15:04 +0100
+From: Stefano Brivio <stefano.brivio@polimi.it>
+To: Stefano Brivio <stefano.brivio@polimi.it>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Mattias Nissler <mattias.nissler@gmx.de>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       gregkh@suse.de
+Subject: Re: [PATCH v2 0/8] rate control rework
+Message-ID: <20071219011504.445c55be@morte>
+In-Reply-To: <20071218233749.871878037@polimi.it>
+References: <20071218233749.871878037@polimi.it>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.3.3.310218, Antispam-Engine: 2.5.2.311128, Antispam-Data: 2007.11.6.30824
+X-PerlMx-Spam: Gauge=II, Probability=22%, Report='RELAY_IN_PBL_11 2.5, BODY_SIZE_100_199 0, RDNS_GENERIC_POOLED 0, RDNS_SUSP 0, RDNS_SUSP_GENERIC 0, RELAY_IN_PBL 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040605090806020507030406
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Sorry, people are telling me that this is line wrapped. Which is strange
+because claws-mail doesn't show that, will try to fix and resend anyway.
+Sorry again for the noise.
 
-groups_sort() can be quite long if user loads a large gid table.
 
-This is because GROUP_AT(group_info, some_integer) uses an integer divide.
-So having to do XXX thousand divides during one syscall can lead to very high 
-latencies. (NGROUPS_MAX=65536)
-
-In the past (25 Mar 2006), an analog problem was found in groups_search()
-(commit d74beb9f33a5f16d2965f11b275e401f225c949d ) and at that time I changed 
-some variables to unsigned int.
-
-I believe that a more generic fix is to make sure NGROUPS_PER_BLOCK is unsigned.
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-
---------------040605090806020507030406
-Content-Type: text/plain;
- name="NGROUPS_PER_BLOCK.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="NGROUPS_PER_BLOCK.patch"
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index ac3d496..725a491 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -775,7 +775,7 @@ static inline int above_background_load(void)
- 
- struct io_context;			/* See blkdev.h */
- #define NGROUPS_SMALL		32
--#define NGROUPS_PER_BLOCK	((int)(PAGE_SIZE / sizeof(gid_t)))
-+#define NGROUPS_PER_BLOCK	((unsigned int)(PAGE_SIZE / sizeof(gid_t)))
- struct group_info {
- 	int ngroups;
- 	atomic_t usage;
-diff --git a/kernel/sys.c b/kernel/sys.c
-index d1fe71e..091e58f 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1148,7 +1148,7 @@ static int groups_to_user(gid_t __user *grouplist,
- 	int count = group_info->ngroups;
- 
- 	for (i = 0; i < group_info->nblocks; i++) {
--		int cp_count = min(NGROUPS_PER_BLOCK, count);
-+		int cp_count = min_t(int, NGROUPS_PER_BLOCK, count);
- 		int off = i * NGROUPS_PER_BLOCK;
- 		int len = cp_count * sizeof(*grouplist);
- 
-@@ -1168,7 +1168,7 @@ static int groups_from_user(struct group_info *group_info,
- 	int count = group_info->ngroups;
- 
- 	for (i = 0; i < group_info->nblocks; i++) {
--		int cp_count = min(NGROUPS_PER_BLOCK, count);
-+		int cp_count = min_t(int, NGROUPS_PER_BLOCK, count);
- 		int off = i * NGROUPS_PER_BLOCK;
- 		int len = cp_count * sizeof(*grouplist);
- 
-
---------------040605090806020507030406--
+--
+Ciao
+Stefano
