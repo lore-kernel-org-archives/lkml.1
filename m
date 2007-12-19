@@ -1,89 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbXLSWhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbXLSXAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755944AbXLSWhP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 17:37:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbXLSWhD
+	id S1754745AbXLSXAt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 18:00:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbXLSXAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 17:37:03 -0500
-Received: from nofear-snat.bivio.net ([216.142.75.231]:31729 "EHLO
-	corpexc01.corp.networkrobots.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752944AbXLSWhA convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 17:37:00 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 19 Dec 2007 18:00:38 -0500
+Received: from mga02.intel.com ([134.134.136.20]:7034 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752582AbXLSXAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 18:00:37 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,186,1196668800"; 
+   d="scan'208";a="243708148"
+Message-ID: <4769A272.5060802@intel.com>
+Date: Wed, 19 Dec 2007 15:00:02 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: printf internals
-Date: Wed, 19 Dec 2007 14:33:15 -0800
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF540@corpexc01.corp.networkrobots.com>
-In-Reply-To: <4762AC35.3010706@anagramm.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: printf internals
-Thread-Index: Acg+bB2ZyI+LjZ4IQKaXKiKorA2z3gEIdW2Q
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D7011A8217@corpexc01.corp.networkrobots.com> <4761E289.9070007@davidnewall.com> <4762AC35.3010706@anagramm.de>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: "Clemens Koller" <clemens.koller@anagramm.de>,
-       "David Newall" <david@davidnewall.com>
-Cc: <linux-kernel@vger.kernel.org>
+To: Parag Warudkar <parag.warudkar@gmail.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH] e1000: Use deferrable timer for watchdog
+References: <Pine.LNX.4.64.0712182040470.3616@mini.warudkars.net>	 <47696AC9.90204@intel.com>	 <82e4877d0712191139k4dbae463icf2a59c8c0104010@mail.gmail.com>	 <47698F4E.40209@intel.com> <82e4877d0712191435r5d3163f2i684270b6b41f4fd0@mail.gmail.com>
+In-Reply-To: <82e4877d0712191435r5d3163f2i684270b6b41f4fd0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Dec 2007 23:00:36.0649 (UTC) FILETIME=[F7958990:01C84292]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you very much for your response Clemens.
+Parag Warudkar wrote:
+> On Dec 19, 2007 4:38 PM, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+>> Parag Warudkar wrote:
+>>> On 12/19/07, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+>> why would this patch reduce wakeups even more than round_jiffies()? Does it make
+>> our ~2 second update interval not reliable? can you quantify "shows it reduces" ?
+>> Or timer only runs once every two seconds...
+> 
+> Without the patch - here is what powertop reports steady on my desktop -
+> 
+> Wakeups-from-idle per second :  8.5     interval: 1.9s
+> no ACPI power usage estimate available
+> 
+> Top causes for wakeups:
+>   28.6% (  4.0)     <kernel core> : clocksource_register (clocksource_watchdog)
+>   14.3% (  2.0)         automount : futex_wait (hrtimer_wakeup)
+>   14.3% (  2.0)              ntpd : do_setitimer (it_real_fn)
+>   14.3% (  2.0)           ntpdate : do_adjtimex (sync_cmos_clock)
+>    7.1% (  1.0)       <interrupt> : PS/2 keyboard/mouse/touchpad
+>    7.1% (  1.0)       <interrupt> : eth0
+>    7.1% (  1.0)                ip : e1000_intr_msi (e1000_watchdog)
+> 
+> $> stop network; rmmod e1000e
+> $> patch e1000e/netdev.c ; rebuild ; insmod
+> $> Wait for things to settle
+> 
+> With the patch here is what it shows steadily -
+> 
+> Wakeups-from-idle per second :  7.5     interval: 5.8s
+> no ACPI power usage estimate available
+> 
+> Top causes for wakeups:
+>   32.4% (  2.2)     <kernel core> : clocksource_register (clocksource_watchdog)
+>   17.6% (  1.2)              ntpd : do_setitimer (it_real_fn)
+>   14.7% (  1.0)           ntpdate : do_adjtimex (sync_cmos_clock)
+>    8.8% (  0.6)       <interrupt> : eth0
+>    5.9% (  0.4)          events/1 : __netdev_watchdog_up (dev_watchdog)
+>    5.9% (  0.4)     <kernel core> : neigh_table_init_no_netlink
+> (neigh_periodic_   5.9% (  0.4)   <kernel module> :
+> neigh_table_init_no_netlink (neigh_periodic_timer)
+> 
+> So no longer e1000_watchdog is waking up the CPU for its own sake - it
+> still runs but when the CPU is already out of IDLE to run something
+> else that needs to be run undeferred.
+> Wakeups from IDLE are down by 1 - from 8.5 to 7.5 .
+> 
+>> maybe I just don't understand the effect of timer_set_deferrable() - we're already
+>> deferring it ourselves when we want to. If that is not working then I suggest that
+>> we fix that first instead of postponing the critical first run of the e1000
+>> watchdog task.
+> 
+> There is of course a difference between round_jiffies() and
+> timer_set_deferrable() if that's what you were referring to.
+> round_jiffies() will make the timer run at whatever rounded value no
+> matter if the CPU is already IDLE or not. Making the timer deferrable
+> makes it run only when the CPU is NOT IDLE - that is to say it is busy
+> running something else - another non-deferrable timer for instance.
+> 
+>> People in the datacenter really don't want to see more delays when bringing up
+>> link, and we get frequent calls about it already being long on gigabit (not even
+>> minding spanning tree). Adding 25% to that time isn't going to down very nicely
+>> with them.
+>>
+> Well but when the machine is coming up the CPU is not going to be IDLE
+> and your initial timer will likely run when it wants to - i.e.
+> deferable timers won't be deferred if the CPU is not IDLE.
+> On the other hand Data center people do care about power consumption
+> and they would much rather make sure they don't lose network links on
+> Production boxes - so a properly configured machine/network should not
+> need to bring up the link more than a small number of times if at all.
+> Lastly e1000 is also sold with many desktop machines (like mine) and
+> those people will surely appreciate lesser wakeups.
+> 
+> I don't have GigE connection where my desktop is located and with
+> 100Mbps I don't notice any measurable delay in bringing up the link -
+> may be you could try with this patch and see exactly how longer if at
+> all it takes to bring up the link on a GigE connected machine.
 
-I tried strace on a regular system. It does not show which tty, etc., as it uses the stdout (fd = 1) and write(1, ...) to it.
+OK, I think that would be an interesting venture and I'm willing to see if I can
+get those numbers.
 
-This is not a student project. I am trying to build my own kernel and ramdisk. Kernel boots fine to a point where it starts accessing ramdisk and executes init scripts. From there on nothing gets printed. I did some debugging and found that prints of user land programs are not coming to the serial console, while kernel prints are working fine. I found all the programs getting executed, by placing a printk in execve routine and printing the arguments.
+I'm just wondering if round_jiffies() is largely obsolete because of this. It
+might just make things worse
 
-So, I wanted to trace down the path from user program to the kernel and see why it is not printing messages from user program. I placed a printk in drivers/char/tty_io.c:tty_write() and it is not getting called from my file system. I tried the same thing on my good system (say regular PC) and it works as expected.
-
-Any clues that can help debug this issue is highly appreciated.
-How can I get access to the same printf string inside kernel.
-
-Thanks
-Siva
-
-
-
------Original Message-----
-From: Clemens Koller [mailto:clemens.koller@anagramm.de] 
-Sent: Friday, December 14, 2007 8:16 AM
-To: David Newall
-Cc: Siva Prasad; linux-kernel@vger.kernel.org
-Subject: Re: printf internals
-
-David Newall schrieb:
- > Siva Prasad wrote:
- >> I am looking at how exactly does the printf in user programs succeeds in
- >> displaying characters to the serial console.
- >
- > Is it a student assignment?  This is so not the right mailing list.
-
-Come on, are we playing hide and seek here?
-
-You can use strace to follow a typical hello world example and
-see what device it opens to feed the hello out.
-I.e. it can be to the current /dev/ttyX and not to /dev/console
-or if you are logged in via SSH to a machine, the device
-is again different... or if you use screen, ...
-
-Work your way from there and then use a Linux Source code
-Cross Reference (lxr, ask Google for one) and follow the code.
-
-Regards,
--- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
-
+Auke
