@@ -1,71 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbXLSAiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759233AbXLSAiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758894AbXLSAiS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 19:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbXLSAiK
+	id S1759233AbXLSAiw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 19:38:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbXLSAin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 19:38:10 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:41535 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754912AbXLSAiJ (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 19:38:09 -0500
-Date: Wed, 19 Dec 2007 11:37:45 +1100
-From: David Chinner <dgc@sgi.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Bret Towe <magnade@gmail.com>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, rjw@sisk.pl
-Subject: Re: xfs mknod regression
-Message-ID: <20071219003745.GR4396912@sgi.com>
-References: <dda83e780712172048n4d40cfcbw4a4d3106fc99f02e@mail.gmail.com> <20071218173642.GA7338@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071218173642.GA7338@infradead.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 18 Dec 2007 19:38:43 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:44780 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbXLSAim (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 19:38:42 -0500
+Date: Tue, 18 Dec 2007 18:38:35 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PCI resource problems caused by improper address rounding
+In-reply-to: <fa.Obg5E3fyax+MaF94//uo40q/Zyk@ifi.uio.no>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>
+Message-id: <4768680B.6060702@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.WmGIH8th8MfmciABVSBi6whxeFE@ifi.uio.no>
+ <fa.Obg5E3fyax+MaF94//uo40q/Zyk@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 18, 2007 at 05:36:42PM +0000, Christoph Hellwig wrote:
+Linus Torvalds wrote:
 > 
-> This was broken by my '[XFS] simplify xfs_create/mknod/symlink prototype',
-> which assigned the re-shuffled ondisk dev_t back to the rdev variable in
-> xfs_vn_mknod.  Because of that i_rdev is set to the ondisk dev_t instead
-> of the linux dev_t later down the function.
+> On Mon, 17 Dec 2007, Chuck Ebbert wrote:
+>> Looks like a commit that I can't find in git due to the arch merge
+>> has broken PCI address assignment. This patch by Richard Henderson
+>> against 2.6.23 fixes it for x86_64:
+>>
+>> --- linux-2.6.23.x86_64/arch/x86_64/kernel/e820.c	2007-10-09 13:31:38.000000000 -0700
+>> +++ linux-2.6.23.x86_64-rth/arch/x86_64/kernel/e820.c	2007-12-15 12:37:44.000000000 -0800
+>> @@ -718,8 +718,8 @@ __init void e820_setup_gap(void)
+>>  	while ((gapsize >> 4) > round)
+>>  		round += round;
+>>  	/* Fun with two's complement */
+>> -	pci_mem_start = (gapstart + round) & -round;
+>> +	pci_mem_start = (gapstart + round - 1) & -round;
 > 
-> Fortunately the fix for it is trivial:  we can just remove the
-> assignment because xfs_revalidate_inode has done the proper job before
-> unlocking the inode.
+> No, it's very much meant to be that way.
 > 
+> We do *not* want to have the PCI memory abutthe end of memory exactly. So 
+> it leaves a gap in between "gapstart" and the actual start of PCI memory 
+> addressing very much on purpose.
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> In fact, the very commit (it's f0eca9626c6becb6fc56106b2e4287c6c784af3d in 
+> the kernel tree) you mention actually explicitly *explains* that, although 
+> maybe it's a bit indirect: if you start allocating PCI resources directly 
+> after the end-of-RAM thing, you can easily end up using addresses that are 
+> actually inside the magic stolen system RAM that is being used for UMA 
+> video etc.
 > 
-> Index: linux-2.6-xfs/fs/xfs/linux-2.6/xfs_iops.c
-> ===================================================================
-> --- linux-2.6-xfs.orig/fs/xfs/linux-2.6/xfs_iops.c	2007-12-18 18:23:32.000000000 +0100
-> +++ linux-2.6-xfs/fs/xfs/linux-2.6/xfs_iops.c	2007-12-18 18:23:43.000000000 +0100
-> @@ -345,9 +345,7 @@ xfs_vn_mknod(
->  		ASSERT(vp);
->  		ip = vn_to_inode(vp);
->  
-> -		if (S_ISCHR(mode) || S_ISBLK(mode))
-> -			ip->i_rdev = rdev;
-> -		else if (S_ISDIR(mode))
-> +		if (S_ISDIR(mode))
->  			xfs_validate_fields(ip);
->  		d_instantiate(dentry, ip);
->  		xfs_validate_fields(dir);
+> So you very much want to have a buffer in between the end-of-RAM and the 
+> actual start of the region we try to allocate in. 
+> 
+> So why do you want them to be close, anyway? 
+> 
+> 		Linus
+> 
+> PS. On a different topic: if you do
+> 
+> 	git log --follow arch/x86/kernel/e820_64.c
+> 
+> you'd see the history past the renames in git. Or just do a "git blame -C" 
+> which will also follow renames (and copies).
 
-Thanks for this, Christoph - I'll run some tests on it and check it in.
+That patch is from the 2.6.14 era - I don't think we even did PnP ACPI 
+resource reservation handling then? It could be that the BIOS was trying 
+to tell us that UMA memory region is reserved using PnP ACPI 
+reservations, but we just ignored it.
 
-Rafael - this is a regression introduced in 2.6.24-rc1 if you want to
-track it.
+It seems rather arbitrary in how much it leaves unused - and in this 
+case, likely prevents us from using the nice big open gap that the BIOS 
+presumably expected the graphics card to be mapped into.
 
-Cheers,
+I suspect this buffer space insertion is really not needed at this 
+point. The patch description is likely technically correct in that the 
+BIOS should have reserved it in E820, but (according to MS comments in a 
+presentation I read) Windows doesn't use E820 for anything other than 
+figuring out where RAM is, it uses PnP ACPI for figuring out areas it 
+needs to avoid. Since BIOS writers test against that behavior, there are 
+surely lots of systems where ignoring PnP ACPI reservations and relying 
+only on E820 would result in things really going blammo (like mappings 
+things over MMCONFIG tables for instance). So disabling it on modern 
+machines is really not an option. And if it's enabled, you likely 
+wouldn't hit the problem it tries to fix.
 
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
