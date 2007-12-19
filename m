@@ -1,299 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbXLSJdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbXLSJiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862AbXLSJdw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 04:33:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbXLSJdl
+	id S1754745AbXLSJiu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 04:38:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbXLSJin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 04:33:41 -0500
-Received: from mfe1.polimi.it ([131.175.12.23]:56834 "EHLO polimi.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752623AbXLSJdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 04:33:39 -0500
-Date: Wed, 19 Dec 2007 10:28:24 +0100
-From: Stefano Brivio <stefano.brivio@polimi.it>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Mattias Nissler <mattias.nissler@gmx.de>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 7/8] debugfs: allow access to signed values
-Message-ID: <20071219102824.60b066b4@morte>
-In-Reply-To: <20071219012739.6dcdd150@morte>
-References: <20071219001955.055692620@polimi.it>
-	<20071219012739.6dcdd150@morte>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i686-pc-linux-gnu)
+	Wed, 19 Dec 2007 04:38:43 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59460 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752500AbXLSJil (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 04:38:41 -0500
+Date: Wed, 19 Dec 2007 20:38:34 +1100
+From: David Chinner <dgc@sgi.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [patch, rfc] mm.h, security.h, key.h and preventing namespace poisoning
+Message-ID: <20071219093834.GW4396912@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-PMX-Version: 5.3.3.310218, Antispam-Engine: 2.5.2.311128, Antispam-Data: 2007.12.19.10242
-X-PerlMx-Spam: Gauge=II, Probability=22%, Report='RELAY_IN_PBL_11 2.5, RDNS_GENERIC_POOLED 0, RDNS_SUSP 0, RDNS_SUSP_GENERIC 0, RELAY_IN_PBL 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __STOCK_PHRASE_24 0, __STOCK_PHRASE_7 0'
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add debugfs_create_s{8,16,32,64}. For these to work properly, we need to remove
-a cast in libfs.
+Folks,
 
-Cc: Johannes Berg <johannes@sipsolutions.net>
-Signed-off-by: Stefano Brivio <stefano.brivio@polimi.it>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+I just updated a git tree and started getting errors on a
+"copy_keys" macro warning.
+
+The code I've been working on uses a ->copy_keys() method for
+copying the keys in a btree block from one place to another. I've
+been working on this code for a while
+(http://oss.sgi.com/archives/xfs/2007-11/msg00046.html) and keep the
+tree I'm working in reletively up to date (lags linus by a couple of
+weeks at most). The update I did this afternoon gave a conflict
+warning with the macro in include/linux/key.h.
+
+Given that I'm not directly including key.h anywhere in the XFS
+code, I'm getting the namespace polluted indirectly from some other
+include that is necessary.
+
+As it turns out, this commit from 13 days ago:
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7cd94146cd504016315608e297219f9fb7b1413b
+
+included security.h in mm.h and that is how I'm seeing the namespace
+poisoning coming from key.h when !CONFIG_KEY.
+
+Including security.h in mm.h means much wider includes for pretty
+much the entire kernel, and it opens up namespace issues like this
+that never previously existed.
+
+The patch below (only tested for !CONFIG_KEYS && !CONFIG_SECURITY)
+moves security.h into the mmap.c and nommu.c files that need it so
+it doesn't end up with kernel wide scope.
+
+Comments?
 
 ---
- fs/debugfs/file.c       |  166 ++++++++++++++++++++++++++++++++++++++++++++++++
- fs/libfs.c              |    4 -
- include/linux/debugfs.h |   30 ++++++++
- 3 files changed, 197 insertions(+), 3 deletions(-)
+ include/linux/mm.h       |   16 ----------------
+ include/linux/security.h |   26 +++++++++++++++++++++++++-
+ mm/mmap.c                |    1 +
+ mm/nommu.c               |    1 +
+ 4 files changed, 27 insertions(+), 17 deletions(-)
 
-Index: wireless-2.6/fs/debugfs/file.c
-===================================================================
---- wireless-2.6.orig/fs/debugfs/file.c
-+++ wireless-2.6/fs/debugfs/file.c
-@@ -221,6 +221,172 @@ struct dentry *debugfs_create_u64(const
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 1b7b95c..520238c 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -12,7 +12,6 @@
+ #include <linux/prio_tree.h>
+ #include <linux/debug_locks.h>
+ #include <linux/mm_types.h>
+-#include <linux/security.h>
+ 
+ struct mempolicy;
+ struct anon_vma;
+@@ -514,21 +513,6 @@ static inline void set_page_links(struct page *page, enum zone_type zone,
  }
- EXPORT_SYMBOL_GPL(debugfs_create_u64);
-
-+
-+static void debugfs_s8_set(void *data, u64 val)
-+{
-+	*(s8 *)data = val;
-+}
-+static u64 debugfs_s8_get(void *data)
-+{
-+	return *(s8 *)data;
-+}
-+DEFINE_SIMPLE_ATTRIBUTE(fops_s8, debugfs_s8_get, debugfs_s8_set, "%lld\n");
-+
-+/**
-+ * debugfs_create_s8 - create a debugfs file that is used to read and write a signed 8-bit value
-+ * @name: a pointer to a string containing the name of the file to create.
-+ * @mode: the permission that the file should have
-+ * @parent: a pointer to the parent dentry for this file.  This should be a
-+ *          directory dentry if set.  If this parameter is %NULL, then the
-+ *          file will be created in the root of the debugfs filesystem.
-+ * @value: a pointer to the variable that the file should read to and write
-+ *         from.
-+ *
-+ * This function creates a file in debugfs with the given name that
-+ * contains the value of the variable @value.  If the @mode variable is so
-+ * set, it can be read from, and written to.
-+ *
-+ * This function will return a pointer to a dentry if it succeeds.  This
-+ * pointer must be passed to the debugfs_remove() function when the file is
-+ * to be removed (no automatic cleanup happens if your module is unloaded,
-+ * you are responsible here.)  If an error occurs, %NULL will be returned.
-+ *
-+ * If debugfs is not enabled in the kernel, the value -%ENODEV will be
-+ * returned.  It is not wise to check for this value, but rather, check for
-+ * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
-+ * code.
-+ */
-+struct dentry *debugfs_create_s8(const char *name, mode_t mode,
-+				 struct dentry *parent, s8 *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_s8);
-+}
-+EXPORT_SYMBOL_GPL(debugfs_create_s8);
-+
-+static void debugfs_s16_set(void *data, u64 val)
-+{
-+	*(s16 *)data = val;
-+}
-+static u64 debugfs_s16_get(void *data)
-+{
-+	return *(s16 *)data;
-+}
-+DEFINE_SIMPLE_ATTRIBUTE(fops_s16, debugfs_s16_get, debugfs_s16_set, "%lld\n");
-+
-+/**
-+ * debugfs_create_s16 - create a debugfs file that is used to read and write a signed 16-bit value
-+ * @name: a pointer to a string containing the name of the file to create.
-+ * @mode: the permission that the file should have
-+ * @parent: a pointer to the parent dentry for this file.  This should be a
-+ *          directory dentry if set.  If this parameter is %NULL, then the
-+ *          file will be created in the root of the debugfs filesystem.
-+ * @value: a pointer to the variable that the file should read to and write
-+ *         from.
-+ *
-+ * This function creates a file in debugfs with the given name that
-+ * contains the value of the variable @value.  If the @mode variable is so
-+ * set, it can be read from, and written to.
-+ *
-+ * This function will return a pointer to a dentry if it succeeds.  This
-+ * pointer must be passed to the debugfs_remove() function when the file is
-+ * to be removed (no automatic cleanup happens if your module is unloaded,
-+ * you are responsible here.)  If an error occurs, %NULL will be returned.
-+ *
-+ * If debugfs is not enabled in the kernel, the value -%ENODEV will be
-+ * returned.  It is not wise to check for this value, but rather, check for
-+ * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
-+ * code.
-+ */
-+struct dentry *debugfs_create_s16(const char *name, mode_t mode,
-+				  struct dentry *parent, s16 *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_s16);
-+}
-+EXPORT_SYMBOL_GPL(debugfs_create_s16);
-+
-+static void debugfs_s32_set(void *data, u64 val)
-+{
-+	*(s32 *)data = val;
-+}
-+static u64 debugfs_s32_get(void *data)
-+{
-+	return *(s32 *)data;
-+}
-+DEFINE_SIMPLE_ATTRIBUTE(fops_s32, debugfs_s32_get, debugfs_s32_set, "%lld\n");
-+
-+/**
-+ * debugfs_create_s32 - create a debugfs file that is used to read and write a signed 32-bit value
-+ * @name: a pointer to a string containing the name of the file to create.
-+ * @mode: the permission that the file should have
-+ * @parent: a pointer to the parent dentry for this file.  This should be a
-+ *          directory dentry if set.  If this parameter is %NULL, then the
-+ *          file will be created in the root of the debugfs filesystem.
-+ * @value: a pointer to the variable that the file should read to and write
-+ *         from.
-+ *
-+ * This function creates a file in debugfs with the given name that
-+ * contains the value of the variable @value.  If the @mode variable is so
-+ * set, it can be read from, and written to.
-+ *
-+ * This function will return a pointer to a dentry if it succeeds.  This
-+ * pointer must be passed to the debugfs_remove() function when the file is
-+ * to be removed (no automatic cleanup happens if your module is unloaded,
-+ * you are responsible here.)  If an error occurs, %NULL will be returned.
-+ *
-+ * If debugfs is not enabled in the kernel, the value -%ENODEV will be
-+ * returned.  It is not wise to check for this value, but rather, check for
-+ * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
-+ * code.
-+ */
-+struct dentry *debugfs_create_s32(const char *name, mode_t mode,
-+				 struct dentry *parent, s32 *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_s32);
-+}
-+EXPORT_SYMBOL_GPL(debugfs_create_s32);
-+
-+static void debugfs_s64_set(void *data, u64 val)
-+{
-+	*(s64 *)data = val;
-+}
-+
-+static u64 debugfs_s64_get(void *data)
-+{
-+	return *(s64 *)data;
-+}
-+DEFINE_SIMPLE_ATTRIBUTE(fops_s64, debugfs_s64_get, debugfs_s64_set, "%lld\n");
-+
-+/**
-+ * debugfs_create_s64 - create a debugfs file that is used to read and write a signed 64-bit value
-+ * @name: a pointer to a string containing the name of the file to create.
-+ * @mode: the permission that the file should have
-+ * @parent: a pointer to the parent dentry for this file.  This should be a
-+ *          directory dentry if set.  If this parameter is %NULL, then the
-+ *          file will be created in the root of the debugfs filesystem.
-+ * @value: a pointer to the variable that the file should read to and write
-+ *         from.
-+ *
-+ * This function creates a file in debugfs with the given name that
-+ * contains the value of the variable @value.  If the @mode variable is so
-+ * set, it can be read from, and written to.
-+ *
-+ * This function will return a pointer to a dentry if it succeeds.  This
-+ * pointer must be passed to the debugfs_remove() function when the file is
-+ * to be removed (no automatic cleanup happens if your module is unloaded,
-+ * you are responsible here.)  If an error occurs, %NULL will be returned.
-+ *
-+ * If debugfs is not enabled in the kernel, the value -%ENODEV will be
-+ * returned.  It is not wise to check for this value, but rather, check for
-+ * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
-+ * code.
-+ */
-+struct dentry *debugfs_create_s64(const char *name, mode_t mode,
-+				 struct dentry *parent, u64 *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_s64);
-+}
-+EXPORT_SYMBOL_GPL(debugfs_create_s64);
-+
- DEFINE_SIMPLE_ATTRIBUTE(fops_x8, debugfs_u8_get, debugfs_u8_set, "0x%02llx\n");
-
- DEFINE_SIMPLE_ATTRIBUTE(fops_x16, debugfs_u16_get, debugfs_u16_set, "0x%04llx\n");
-
-Index: wireless-2.6/fs/libfs.c
-===================================================================
---- wireless-2.6.orig/fs/libfs.c
-+++ wireless-2.6/fs/libfs.c
-@@ -586,7 +586,7 @@ int simple_transaction_release(struct in
- /* Simple attribute files */
-
- struct simple_attr {
--	u64 (*get)(void *);
-+	unsigned long long (*get)(void *);
- 	void (*set)(void *, u64);
- 	char get_buf[24];	/* enough to store a u64 and "\n\0" */
- 	char set_buf[24];
-@@ -643,7 +643,7 @@ ssize_t simple_attr_read(struct file *fi
- 	else	  /* first read */
- 		size = scnprintf(attr->get_buf, sizeof(attr->get_buf),
- 				 attr->fmt,
--				 (unsigned long long)attr->get(attr->data));
-+				 attr->get(attr->data));
-
- 	ret = simple_read_from_buffer(buf, len, ppos, attr->get_buf, size);
- 	mutex_unlock(&attr->mutex);
-Index: wireless-2.6/include/linux/debugfs.h
-===================================================================
---- wireless-2.6.orig/include/linux/debugfs.h
-+++ wireless-2.6/include/linux/debugfs.h
-@@ -65,7 +65,7 @@ struct dentry *debugfs_create_blob(const
-
- #include <linux/err.h>
-
+ 
+ /*
+- * If a hint addr is less than mmap_min_addr change hint to be as
+- * low as possible but still greater than mmap_min_addr
+- */
+-static inline unsigned long round_hint_to_min(unsigned long hint)
+-{
+-#ifdef CONFIG_SECURITY
+-	hint &= PAGE_MASK;
+-	if (((void *)hint != NULL) &&
+-	    (hint < mmap_min_addr))
+-		return PAGE_ALIGN(mmap_min_addr);
+-#endif
+-	return hint;
+-}
+-
 -/*
+  * Some inline functions in vmstat.h depend on page_zone()
+  */
+ #include <linux/vmstat.h>
+diff --git a/include/linux/security.h b/include/linux/security.h
+index ac05083..e9ba391 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -2568,6 +2568,19 @@ void security_key_free(struct key *key);
+ int security_key_permission(key_ref_t key_ref,
+ 			    struct task_struct *context, key_perm_t perm);
+ 
 +/*
-  * We do not return NULL from these functions if CONFIG_DEBUG_FS is not enabled
-  * so users have a chance to detect if there was a real error or not.  We don't
-  * want to duplicate the design decision mistakes of procfs and devfs again.
-@@ -128,6 +128,34 @@ static inline struct dentry *debugfs_cre
- 	return ERR_PTR(-ENODEV);
++ * If a hint addr is less than mmap_min_addr change hint to be as
++ * low as possible but still greater than mmap_min_addr
++ */
++static inline unsigned long round_hint_to_min(unsigned long hint)
++{
++	hint &= PAGE_MASK;
++	if (((void *)hint != NULL) &&
++	    (hint < mmap_min_addr))
++		return PAGE_ALIGN(mmap_min_addr);
++	return hint;
++}
++
+ #else
+ 
+ static inline int security_key_alloc(struct key *key,
+@@ -2588,7 +2601,18 @@ static inline int security_key_permission(key_ref_t key_ref,
+ 	return 0;
  }
-
-+static inline struct dentry *debugfs_create_s8(const char *name, mode_t mode,
-+					       struct dentry *parent,
-+					       u8 *value)
+ 
+-#endif
++static inline unsigned long round_hint_to_min(unsigned long hint)
 +{
-+	return ERR_PTR(-ENODEV);
++	return hint;
 +}
 +
-+static inline struct dentry *debugfs_create_s16(const char *name, mode_t mode,
-+					       struct dentry *parent,
-+					       s16 *value)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
++#endif /* CONFIG_SECURITY */
 +
-+static inline struct dentry *debugfs_create_s32(const char *name, mode_t mode,
-+					       struct dentry *parent,
-+					       s32 *value)
++#else /* !CONFIG_KEYS */
++static inline unsigned long round_hint_to_min(unsigned long hint)
 +{
-+	return ERR_PTR(-ENODEV);
++	return hint;
 +}
-+
-+static inline struct dentry *debugfs_create_s64(const char *name, mode_t mode,
-+					       struct dentry *parent,
-+					       s64 *value)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
- static inline struct dentry *debugfs_create_x8(const char *name, mode_t mode,
- 					       struct dentry *parent,
- 					       u8 *value)
-
-
--- 
-Ciao
-Stefano
+ #endif /* CONFIG_KEYS */
+ 
+ #endif /* ! __LINUX_SECURITY_H */
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 15678aa..0d666de 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -26,6 +26,7 @@
+ #include <linux/mount.h>
+ #include <linux/mempolicy.h>
+ #include <linux/rmap.h>
++#include <linux/security.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/cacheflush.h>
+diff --git a/mm/nommu.c b/mm/nommu.c
+index b989cb9..99702d1 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -28,6 +28,7 @@
+ #include <linux/personality.h>
+ #include <linux/security.h>
+ #include <linux/syscalls.h>
++#include <linux/security.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/tlb.h>
