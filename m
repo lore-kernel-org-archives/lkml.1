@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbXLSPQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbXLSPVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759383AbXLSPQT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 10:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbXLSPQG
+	id S1758503AbXLSPVW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 10:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbXLSPVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 10:16:06 -0500
-Received: from ns4.abinetworks.biz ([216.218.212.66]:55424 "EHLO
-	ns4.abinetworks.biz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755249AbXLSPQF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 10:16:05 -0500
-Message-ID: <4769358B.2020406@abinetworks.biz>
-Date: Wed, 19 Dec 2007 16:15:23 +0100
-From: Gianluca Alberici <gianluca@abinetworks.biz>
-User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
-X-Accept-Language: en-us, en
+	Wed, 19 Dec 2007 10:21:09 -0500
+Received: from il.qumranet.com ([82.166.9.18]:42728 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754374AbXLSPVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 10:21:08 -0500
+Message-ID: <476936E2.9010902@qumranet.com>
+Date: Wed, 19 Dec 2007 17:21:06 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.23.9 NFS BUG ?
+To: Ingo Molnar <mingo@elte.hu>
+CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [kvm-devel] Guest kernel hangs in smp kvm for older kernels	prior
+ to tsc sync cleanup
+References: <47680173.6060606@qumranet.com> <20071218221930.GA26109@elte.hu> <4768BB43.1000609@qumranet.com> <4768FE27.7020305@qumranet.com> <47690304.1090903@qumranet.com> <20071219140624.GF21282@elte.hu> <47693054.20501@qumranet.com> <20071219150938.GA15267@elte.hu>
+In-Reply-To: <20071219150938.GA15267@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Ingo Molnar wrote:
+> try this test perhaps in an SMP guest:
+>
+>  http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
+>
+> you can ignore TSC warps - but no GTOD or CLOCK warps should occur.
+>
+>   
 
-Sorry for repeating but as far as i can see 2.6.23.11/12 got no changes 
-into NFS.
+On a broken guest kernel, I see gtod and clock warps.  On a good guest 
+kernel, I do not, presumably because the tsc clocksource is marked as 
+unstable.
 
-I've run into this problem 2.6.23.9. The open syscall will return 
-"Invalid argument" when O_TRUNC is set on existing files.
+I see tsc warps on both.  8 threads on 4 cpus.
 
-The same file can be opened for append or removed.
+-- 
+error compiling committee.c: too many arguments to function
 
-The evidence is for example:
-
-mars:~# mount localhost:/opt/nfs/ /mnt/tmp
-mars:~# echo "Hello" > /mnt/tmp/test-file
-mars:~# echo "Hello" > /mnt/tmp/test-file
-bash: /mnt/tmp/test-file: Invalid argument
-mars:~# echo "Hello" > /mnt/tmp/test-file
-bash: /mnt/tmp/test-file: Invalid argument
-mars:~# echo "Hello" > /mnt/tmp/test-file
-bash: /mnt/tmp/test-file: Invalid argument
-mars:~# rm /mnt/tmp/test-file
-mars:~# echo "Hello" > /mnt/tmp/test-file
-mars:~# echo "Hello" > /mnt/tmp/test-file
-bash: /mnt/tmp/test-file: Invalid argument
-
-
-This is not present in 2.6.21.7.
-This is really ugly...is this a bug or what ?
-
-TIA
-
-Gianluca
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
