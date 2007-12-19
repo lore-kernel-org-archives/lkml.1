@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbXLSKIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbXLSKNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753263AbXLSKIr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 05:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbXLSKIh
+	id S1753291AbXLSKNi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 05:13:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbXLSKNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 05:08:37 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:14727 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751863AbXLSKIg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 05:08:36 -0500
-Message-ID: <4768ED97.9080905@panasas.com>
-Date: Wed, 19 Dec 2007 12:08:23 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 19 Dec 2007 05:13:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54421 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750982AbXLSKN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 05:13:29 -0500
+Date: Wed, 19 Dec 2007 11:12:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
+       zach@vmware.com, roland@redhat.com
+Subject: Re: [PATCH 1/2] remove __init modifier from header declaration
+Message-ID: <20071219101236.GB3521@elte.hu>
+References: <11979967763153-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
-To: Filippos Papadopoulos <psybases@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: INITIO scsi driver fails to work properly
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>	 <20071217031841.f483e5ac.akpm@linux-foundation.org>	 <9f00bd9d0712170341u7fef1fc9pc9986dda1a0475cb@mail.gmail.com>	 <47666904.8060605@panasas.com> <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
-In-Reply-To: <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Dec 2007 10:08:26.0278 (UTC) FILETIME=[1887F460:01C84227]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11979967763153-git-send-email-gcosta@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 19 2007 at 10:48 +0200, "Filippos Papadopoulos" <psybases@gmail.com> wrote:
-> On Dec 17, 2007 2:18 PM, Boaz Harrosh <bharrosh@panasas.com> wrote:
->> I have found one problem. Please try patch [2] below and report.
->> If it still fails try to enable debugging by setting with patch [1]
->> these values at top of drivers/scsi/initio.c. And send dmsgs.
->>
->> Boaz
->>
+
+* Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
+
+> This patch removes the __init modifier from an extern function 
+> declaration in acpi.h.
 > 
-> 
-> I tried patch[2] (addition of   sg++)  at 2.6.24-rc5-mm1 but the
-> system hangs after some seconds when the initio driver loads.
-> I will try patch[1] next week to see what happens.
->
-Please first pull from scsi-rc-fixes git-tree first. it has a couple
-of other fixes for initio plus patch[2] included.
-(maybe its already in -mm tree I'm not sure).
-If still don't work try enable debug with patch[1] and send messages
+> Besides not being strictly needed, it requires the inclusion of 
+> linux/init.h, which is usually not even included directly, increasing 
+> header mess by a lot.
 
-> Would it be better to open a bug report at bugzilla?
->
-I would prefer linux-scsi ml
+thanks, applied.
 
-<snip>
+btw., people have been talking about reducing the include file mess for 
+nearly a decade now, but it didnt get that much better - at least not in 
+include/asm-x86/*.h. So include file dependency flattening patches would 
+be more than welcome as well. (and unlike unification patches they have 
+no expectation of being 100% perfect, so a natural ping-pong of fixes, 
+until the changes are fully correct, would be natural.)
 
-Boaz
+	Ingo
