@@ -1,115 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753467AbXLSRun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbXLSR4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753467AbXLSRun (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 12:50:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbXLSRuf
+	id S1753847AbXLSR4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 12:56:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbXLSR4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 12:50:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37565 "EHLO mx2.redhat.com"
+	Wed, 19 Dec 2007 12:56:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53926 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750810AbXLSRue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 12:50:34 -0500
-Message-ID: <476959DB.1030507@redhat.com>
-Date: Wed, 19 Dec 2007 11:50:19 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1751896AbXLSR4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 12:56:30 -0500
+Date: Wed, 19 Dec 2007 18:56:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Parag Warudkar <parag.warudkar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, ak@suse.de,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: Fix DMI out of memory problems
+Message-ID: <20071219175604.GA7029@elte.hu>
+References: <Pine.LNX.4.64.0712181848430.3663@mini.warudkars.net> <20071219104823.GI3521@elte.hu> <82e4877d0712190848r4168b3dp80e53fdcd7c82ce5@mail.gmail.com> <20071219165420.GA15291@elte.hu> <82e4877d0712190900y17670831k51429996f78e954a@mail.gmail.com> <20071219170631.GA18353@elte.hu> <82e4877d0712190909y6b449e0cgee3ba7363cd5e85b@mail.gmail.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Michael Halcrow <mhalcrow@us.ibm.com>
-CC: mike@halcrow.us
-Subject: [PATCH] ecryptfs: remove debug as mount option, and warn if set via
- modprobe
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <82e4877d0712190909y6b449e0cgee3ba7363cd5e85b@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ecryptfs_debug really should not be a mount option; it is not per-mount,
-but rather sets a global "ecryptfs_verbosity" variable which affects all
-mounted filesysytems.  It's already settable as a module load option, 
-I think we can leave it at that.
 
-Also, if set, since secret values come out in debug messages, kick
-things off with a stern warning.
+* Parag Warudkar <parag.warudkar@gmail.com> wrote:
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
----
+> On Dec 19, 2007 12:06 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Parag Warudkar <parag.warudkar@gmail.com> wrote:
+> >
+> > > Here is the right one -
+> > > 2.6.24-rc5  is without patch, 2.6.24-rc5-new is with patch.
+> >
+> > >  DMI present.
+> > > -dmi_save_oem_strings_devices: out of memory.
+> > > -dmi_string: out of memory.
+> >
+> > ok. I guess absent a real regression/bug reported by someone who gets
+> > these messages, we can do your patches in 2.6.25. DMI stuff is quite
+> > hardware dependent so it's hard to get the code tested well.
+> >
+> 
+> Yep, I agree.
+> 
+> Andrew if you want to keep it in -mm till 2.6.25 - that'd hopefully 
+> give it some testing.
 
-ndex: linux-2.6.24-rc3/fs/ecryptfs/main.c
-===================================================================
---- linux-2.6.24-rc3.orig/fs/ecryptfs/main.c
-+++ linux-2.6.24-rc3/fs/ecryptfs/main.c
-@@ -226,17 +226,15 @@ out:
- 	return rc;
- }
- 
--enum { ecryptfs_opt_sig, ecryptfs_opt_ecryptfs_sig, ecryptfs_opt_debug,
--       ecryptfs_opt_ecryptfs_debug, ecryptfs_opt_cipher,
--       ecryptfs_opt_ecryptfs_cipher, ecryptfs_opt_ecryptfs_key_bytes,
-+enum { ecryptfs_opt_sig, ecryptfs_opt_ecryptfs_sig,
-+       ecryptfs_opt_cipher, ecryptfs_opt_ecryptfs_cipher,
-+       ecryptfs_opt_ecryptfs_key_bytes,
-        ecryptfs_opt_passthrough, ecryptfs_opt_xattr_metadata,
-        ecryptfs_opt_encrypted_view, ecryptfs_opt_err };
- 
- static match_table_t tokens = {
- 	{ecryptfs_opt_sig, "sig=%s"},
- 	{ecryptfs_opt_ecryptfs_sig, "ecryptfs_sig=%s"},
--	{ecryptfs_opt_debug, "debug=%u"},
--	{ecryptfs_opt_ecryptfs_debug, "ecryptfs_debug=%u"},
- 	{ecryptfs_opt_cipher, "cipher=%s"},
- 	{ecryptfs_opt_ecryptfs_cipher, "ecryptfs_cipher=%s"},
- 	{ecryptfs_opt_ecryptfs_key_bytes, "ecryptfs_key_bytes=%u"},
-@@ -313,7 +311,6 @@ static int ecryptfs_parse_options(struct
- 	substring_t args[MAX_OPT_ARGS];
- 	int token;
- 	char *sig_src;
--	char *debug_src;
- 	char *cipher_name_dst;
- 	char *cipher_name_src;
- 	char *cipher_key_bytes_src;
-@@ -341,16 +338,6 @@ static int ecryptfs_parse_options(struct
- 			}
- 			sig_set = 1;
- 			break;
--		case ecryptfs_opt_debug:
--		case ecryptfs_opt_ecryptfs_debug:
--			debug_src = args[0].from;
--			ecryptfs_verbosity =
--				(int)simple_strtol(debug_src, &debug_src,
--						   0);
--			ecryptfs_printk(KERN_DEBUG,
--					"Verbosity set to [%d]" "\n",
--					ecryptfs_verbosity);
--			break;
- 		case ecryptfs_opt_cipher:
- 		case ecryptfs_opt_ecryptfs_cipher:
- 			cipher_name_src = args[0].from;
-@@ -911,6 +898,10 @@ static int __init ecryptfs_init(void)
- 		       "rc = [%d]\n", rc);
- 		goto out_release_messaging;
- 	}
-+	if (ecryptfs_verbosity > 0)
-+		printk(KERN_CRIT "eCryptfs verbosity set to %d. Secret values "
-+			"will be written to the syslog!\n", ecryptfs_verbosity);
-+
- 	goto out;
- out_release_messaging:
- 	ecryptfs_release_messaging(ecryptfs_transport);
-Index: linux-2.6.24-rc3/fs/ecryptfs/super.c
-===================================================================
---- linux-2.6.24-rc3.orig/fs/ecryptfs/super.c
-+++ linux-2.6.24-rc3/fs/ecryptfs/super.c
-@@ -175,10 +175,6 @@ static int ecryptfs_show_options(struct 
- 	}
- 	mutex_unlock(&mount_crypt_stat->global_auth_tok_list_mutex);
- 
--	/* Note this is global and probably shouldn't be a mount option */
--	if (ecryptfs_verbosity)
--		seq_printf(m, ",ecryptfs_debug=%d\n", ecryptfs_verbosity);
--
- 	seq_printf(m, ",ecryptfs_cipher=%s",
- 		mount_crypt_stat->global_default_cipher_name);
- 
+i've added it to x86.git - that gets included in -mm.
 
+	Ingo
