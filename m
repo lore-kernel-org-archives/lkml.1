@@ -1,103 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbXLSKqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbXLSKsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752829AbXLSKqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 05:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXLSKqG
+	id S1753242AbXLSKsu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 05:48:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbXLSKsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 05:46:06 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33065 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751318AbXLSKqF (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 05:46:05 -0500
-Date: Wed, 19 Dec 2007 21:45:44 +1100
-From: David Chinner <dgc@sgi.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Damien Wyart <damien.wyart@free.fr>, Christoph Hellwig <hch@infradead.org>,
-       Lachlan McIlroy <lachlan@sgi.com>, Peter Leckie <pleckie@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, linux-xfs@oss.sgi.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Important regression with XFS update for 2.6.24-rc6
-Message-ID: <20071219104544.GC4612@sgi.com>
-References: <20071218112804.GA3069@localhost.localdomain> <20071218122445.GJ4396912@sgi.com> <877ijckrco.fsf@free.fr> <20071218151946.GQ4396912@sgi.com>
-Mime-Version: 1.0
+	Wed, 19 Dec 2007 05:48:43 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60745 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751557AbXLSKsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 05:48:42 -0500
+Date: Wed, 19 Dec 2007 11:48:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Parag Warudkar <parag.warudkar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, ak@suse.de,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: Fix DMI out of memory problems
+Message-ID: <20071219104823.GI3521@elte.hu>
+References: <Pine.LNX.4.64.0712181848430.3663@mini.warudkars.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071218151946.GQ4396912@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0712181848430.3663@mini.warudkars.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 19, 2007 at 02:19:47AM +1100, David Chinner wrote:
-> On Tue, Dec 18, 2007 at 03:30:31PM +0100, Damien Wyart wrote:
-> > * David Chinner <dgc@sgi.com> [071218 13:24]:
-> > > Ok. I haven't noticed anything wrong with directories up to about
-> > > 250,000 files in the last few days. The ls -l I just did on
-> > > a directory with 15000 entries (btree format) used about 5MB of RAM.
-> > > extent format directories appear to work fine as well (tested 500
-> > > entries).
-> > 
-> > Ok, nice to know the problem is not so frequent.
-> 
-> .....
-> 
-> > I have put the files at http://damien.wyart.free.fr/xfs/
-> > 
-> > strace_xfs_problem.1.gz and strace_xfs_problem.2.gz have been created
-> > with the problematic kernel, and are quite bigger than
-> > strace_xfs_problem.normal.gz, which has been created with the vanilla
-> > rc5-git5. There is also xfs_info.
-> 
-> Looks like several getdents() through the directory the getdents()
-> call starts outputting the first files again. It gets to a certain
-> point and always goes back to the beginning. However, it appears to
-> get to the end eventually (without ever getting past the bad offset).
 
-UML and a bunch of printk's to the rescue.
+* Parag Warudkar <parag.warudkar@gmail.com> wrote:
 
-So we went back to double buffering, which then screwed up the d_off
-of the dirents. I changed the temporary dirents to point to the current
-offset so that filldir got what it expected when filling the user buffer.
+> People with HP Desktops (including me) encounter couple of DMI errors 
+> during boot - dmi_save_oem_strings_devices: out of memory and 
+> dmi_string: out of memory.
+>
+> On some HP desktops the DMI data include OEM strings (type 11) out of 
+> which only few are meaningful and most other are empty. DMI code 
+> religiously creates copies of these 27 strings (65 bytes each in my 
+> case) and goes OOM in dmi_string().
+>
+> If DMI_MAX_DATA is bumped up a little then it goes and fails in 
+> dmi_save_oem_strings while allocating dmi_devices of sizeof(struct 
+> dmi_device) corresponding to these strings.
+>
+> On x86_64 since we cannot use alloc_bootmem this early, the code uses 
+> a static array of 2048 bytes (DMI_MAX_DATA) for allocating the memory 
+> DMI needs. It does not survive the creation of empty strings and 
+> devices.
+>
+> Fix this by detecting and not newly allocating empty strings and 
+> instead using a one statically defined dmi_empty_string.
+>
+> Also do not create a new struct dmi_device for each empty string - use 
+> one statically define dmi_device with .name=dmi_empty_string and add 
+> that to the dmi_devices list.
+>
+> On x64 this should stop the OOM with same current size of DMI_MAX_DATA 
+> and on x86 this should save a good amount of (27*65 bytes + 
+> 27*sizeof(struct dmi_device) bootmem.
+>
+> Compile and boot tested on both x86 and x86_64.
 
-Except it appears that it I didn't to initialise the current
-offset for the first dirent read from the temporary buffer so filldir
-occasionally got an uninitialised offset. Can someone pass me a
-brown paper bag, please?
+thanks, i've applied your patch to x86.git. (tentative merge target of 
+2.6.25)
 
-In my local testing, more often than not, that uninitialised offset
-reads as zero which is where the looping comes from. Sometimes it
-points off into wacko-land, which is probably how we eventually get
-the looping terminating before you run out of memory.
+[ note: i had to manually fix up your patch because your email client 
+  added an extra space to every diff line - see 
+  Documentation/email-clients.txt on how to avoid that. I also did a few 
+  small cleanups - please check patches via scripts/checkpatch.pl. I've 
+  attached the merged patch below. ]
 
-That also explains why we haven't seen it - it requires the user buffer
-to fill on the first entry of a backing buffer and so it is largely
-dependent on the pattern of name lengths, page size and filesystem
-block size aligning just right to trigger the problem.
+What's the worst-case symptom you get with that bug - any failure type 
+thing - or only annoying boot messages? Could you perhaps post the diff 
+-u between the unpatched and patched kernel's full dmesg/bootlog? Are 
+there any specific DMI quirks that are skipped due to us wasting DMI 
+space on empty strings?
 
-Can you test this patch, Damien?
+Also, shouldnt we perhaps increase DMI_MAX_DATA from 2K to 4K?
 
-Cheers,
+	Ingo
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+--------------->
+Subject: x86: fix DMI out of memory problems
+From: Parag Warudkar <parag.warudkar@gmail.com>
 
+People with HP Desktops (including me) encounter couple of DMI errors
+during boot - dmi_save_oem_strings_devices: out of memory and
+dmi_string: out of memory.
+
+On some HP desktops the DMI data include OEM strings (type 11) out of
+which only few are meaningful and most other are empty. DMI code
+religiously creates copies of these 27 strings (65 bytes each in my
+case) and goes OOM in dmi_string().
+
+If DMI_MAX_DATA is bumped up a little then it goes and fails in
+dmi_save_oem_strings while allocating dmi_devices of sizeof(struct
+dmi_device) corresponding to these strings.
+
+On x86_64 since we cannot use alloc_bootmem this early, the code uses a
+static array of 2048 bytes (DMI_MAX_DATA) for allocating the memory DMI
+needs. It does not survive the creation of empty strings and devices.
+
+Fix this by detecting and not newly allocating empty strings and instead
+using a one statically defined dmi_empty_string.
+
+Also do not create a new struct dmi_device for each empty string - use
+one statically define dmi_device with .name=dmi_empty_string and add
+that to the dmi_devices list.
+
+On x64 this should stop the OOM with same current size of DMI_MAX_DATA
+and on x86 this should save a good amount of (27*65 bytes +
+27*sizeof(struct dmi_device) bootmem.
+
+Compile and boot tested on both 32-bit and 64-bit x86.
+
+Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- fs/xfs/linux-2.6/xfs_file.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/firmware/dmi_scan.c |   24 +++++++++++++++++++++---
+ 1 file changed, 21 insertions(+), 3 deletions(-)
 
-Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_file.c
+Index: linux-x86.q/drivers/firmware/dmi_scan.c
 ===================================================================
---- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_file.c	2007-12-19 00:26:40.000000000 +1100
-+++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_file.c	2007-12-19 21:26:38.701143555 +1100
-@@ -348,6 +348,7 @@ xfs_file_readdir(
+--- linux-x86.q.orig/drivers/firmware/dmi_scan.c
++++ linux-x86.q/drivers/firmware/dmi_scan.c
+@@ -8,6 +8,8 @@
+ #include <linux/slab.h>
+ #include <asm/dmi.h>
  
- 		size = buf.used;
- 		de = (struct hack_dirent *)buf.dirent;
-+		curr_offset = de->offset /* & 0x7fffffff */;
- 		while (size > 0) {
- 			if (filldir(dirent, de->name, de->namlen,
- 					curr_offset & 0x7fffffff,
++static char dmi_empty_string[] = "        ";
++
+ static char * __init dmi_string(const struct dmi_header *dm, u8 s)
+ {
+ 	const u8 *bp = ((u8 *) dm) + dm->length;
+@@ -21,11 +23,16 @@ static char * __init dmi_string(const st
+ 		}
+ 
+ 		if (*bp != 0) {
+-			str = dmi_alloc(strlen(bp) + 1);
++			size_t len = strlen(bp)+1;
++			size_t cmp_len = len > 8 ? 8 : len;
++
++			if (!memcmp(bp, dmi_empty_string, cmp_len))
++				return dmi_empty_string;
++			str = dmi_alloc(len);
+ 			if (str != NULL)
+ 				strcpy(str, bp);
+ 			else
+-				printk(KERN_ERR "dmi_string: out of memory.\n");
++				printk(KERN_ERR "dmi_string: cannot allocate %Zu bytes.\n", len);
+ 		}
+ 	}
+ 
+@@ -175,12 +182,23 @@ static void __init dmi_save_devices(cons
+ 	}
+ }
+ 
++static struct dmi_device empty_oem_string_dev = {
++	.name = dmi_empty_string,
++};
++
+ static void __init dmi_save_oem_strings_devices(const struct dmi_header *dm)
+ {
+ 	int i, count = *(u8 *)(dm + 1);
+ 	struct dmi_device *dev;
+ 
+ 	for (i = 1; i <= count; i++) {
++		char *devname = dmi_string(dm, i);
++
++		if (!strcmp(devname, dmi_empty_string)) {
++			list_add(&empty_oem_string_dev.list, &dmi_devices);
++			continue;
++		}
++
+ 		dev = dmi_alloc(sizeof(*dev));
+ 		if (!dev) {
+ 			printk(KERN_ERR
+@@ -189,7 +207,7 @@ static void __init dmi_save_oem_strings_
+ 		}
+ 
+ 		dev->type = DMI_DEV_TYPE_OEM_STRING;
+-		dev->name = dmi_string(dm, i);
++		dev->name = devname;
+ 		dev->device_data = NULL;
+ 
+ 		list_add(&dev->list, &dmi_devices);
