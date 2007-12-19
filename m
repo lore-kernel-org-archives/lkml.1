@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbXLSGdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbXLSGnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752154AbXLSGdv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 01:33:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbXLSGdm
+	id S1753943AbXLSGnK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 01:43:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbXLSGm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 01:33:42 -0500
-Received: from il.qumranet.com ([82.166.9.18]:35725 "EHLO il.qumranet.com"
+	Wed, 19 Dec 2007 01:42:56 -0500
+Received: from mx1.suse.de ([195.135.220.2]:39624 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755118AbXLSGdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 01:33:41 -0500
-Message-ID: <4768BB43.1000609@qumranet.com>
-Date: Wed, 19 Dec 2007 08:33:39 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1751594AbXLSGmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 01:42:55 -0500
+Date: Tue, 18 Dec 2007 22:45:10 -0800
+From: Greg KH <gregkh@suse.de>
+To: Stefano Brivio <stefano.brivio@polimi.it>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Mattias Nissler <mattias.nissler@gmx.de>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 7/8] debugfs: allow access to signed values
+Message-ID: <20071219064510.GA18876@suse.de>
+References: <20071219001955.055692620@polimi.it>> <20071219012739.6dcdd150@morte>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Guest kernel hangs in smp kvm for older kernels prior to tsc
- sync cleanup
-References: <47680173.6060606@qumranet.com> <20071218221930.GA26109@elte.hu>
-In-Reply-To: <20071218221930.GA26109@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071219012739.6dcdd150@morte>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->> While the change mentions that it fixes a time warp bug, it also says 
->> it should be rare.  So clearly kvm smp tsc handing is buggy.  
->> Ingo/Thomas, (or anybody else), do you have any insight as to what kvm 
->> can be doing wrong to trigger this behavior?
->>     
->
-> hm. Those time warps were really small, due to the small imperfections 
-> in the "sync up all CPUs to the same moment and do a WRMSR to clear all 
-> their TSCs" mechanism. I.e. at most a few usec time warps. I really dont 
-> know how that should result in udevd hanging. Can you debug udevd in any 
-> way?
->
->   
+On Wed, Dec 19, 2007 at 01:27:39AM +0100, Stefano Brivio wrote:
+> Add debugfs_create_s{8,16,32,64}. For these to work properly, we need to remove
+> a cast in libfs.
+> 
+> Cc: Johannes Berg <johannes@sipsolutions.net>
+> To: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-off-by: Stefano Brivio <stefano.brivio@polimi.it>
+> ---
+> Greg,
+> 
+> here comes an implementation of debugfs_create_s{8,16,32,64} which avoids code
+> duplication, suggested by Johannes Berg. We would need this to be merged to
+> 2.6.25, as we need those functions to be available for rc80211-pid, the new
+> mac80211 rate control algorithm.
 
-Adding debug didn't help.  I'll try some sysrq keys to see what the 
-guest thinks is happening.
+Looks good to me, do you want me to add this to my tree and send it to
+Linus when 2.6.25 opens up, or do you want this to go through the
+wireless tree as you have patches relying on it?
 
-> so the only thing that KVM might be doing incorrectly here is the 
-> emulation of the WRMSR that clears the TSC of each vcpu?
->   
+Whatever works the best for you is fine for me.  If the wireless tree,
+feel free to add:
+	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+to the patch.
 
-By inspection, it is correct.  Of course I may be missing something, so 
-I'll write a unit test for it.  It should also be much slower than the 
-native wrmsr.
+thanks,
 
--- 
-error compiling committee.c: too many arguments to function
-
+greg k-h
