@@ -1,91 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbXLSBll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbXLSBrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbXLSBll (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 20:41:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbXLSBlb
+	id S1756388AbXLSBrM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 20:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbXLSBqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 20:41:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41803 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752783AbXLSBla (ORCPT
+	Tue, 18 Dec 2007 20:46:55 -0500
+Received: from an-out-0708.google.com ([209.85.132.240]:21755 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753252AbXLSBqy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 20:41:30 -0500
-Date: Tue, 18 Dec 2007 17:38:58 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Richard Henderson <rth@twiddle.net>
-cc: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
-       Keith Packard <keithp@keithp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: PCI resource problems caused by improper address rounding
-In-Reply-To: <alpine.LFD.0.9999.0712181412530.21557@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.9999.0712181722260.21557@woody.linux-foundation.org>
-References: <47671377.6000405@redhat.com> <alpine.LFD.0.9999.0712171648150.21557@woody.linux-foundation.org> <47680489.6040809@redhat.com> <alpine.LFD.0.9999.0712180946030.21557@woody.linux-foundation.org> <20071218202234.GA24525@twiddle.net>
- <alpine.LFD.0.9999.0712181240280.21557@woody.linux-foundation.org> <20071218215143.GA24769@twiddle.net> <alpine.LFD.0.9999.0712181412530.21557@woody.linux-foundation.org>
+	Tue, 18 Dec 2007 20:46:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:reply-to:to:cc:subject:message-id:mime-version:content-type;
+        b=kKMzaSiMrEGOgR06Hrtyj7vRajnYl2rOJE0mR27vT1OUbovTRAZil3kXuhh7ulITgMVHBIKteMc0UMyeP4/GqgQP+ngnuq9Qn+2BK+mzBYHC6jg0cPeSBmJEE46ykfpWy9Q5BRY9kvU246ikXemi7Yy2m/shWXflm9mK78tO/fs=
+Date: Tue, 18 Dec 2007 20:46:48 -0500 (EST)
+From: Parag Warudkar <parag.warudkar@gmail.com>
+X-X-Sender: parag@mini.warudkars.net
+Reply-To: parag.warudkar@gmail.com
+To: linux.nics@intel.com, netdev@vger.kernel.org
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] e1000: Use deferrable timer for watchdog
+Message-ID: <Pine.LNX.4.64.0712182040470.3616@mini.warudkars.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Use deferrable timer for watchdog. Reduces wakeups from idle per second.
 
-On Tue, 18 Dec 2007, Linus Torvalds wrote:
-> 
-> That question also brings up another issue: how come did we actually 
-> choose address 0xc0000000 with the original patch you sent in? If we can't 
-> find it in the parent resources, we shouldn't have accepted it even if it 
-> had room for it!
+Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
 
-That
+--- linux-2.6/drivers/net/e1000/e1000_main.c	2007-12-07 10:04:39.000000000 -0500
++++ linux-2.6-work/drivers/net/e1000/e1000_main.c	2007-12-18 20:38:38.000000000 -0500
+@@ -1030,7 +1030,7 @@
+  	adapter->tx_fifo_stall_timer.function = &e1000_82547_tx_fifo_stall;
+  	adapter->tx_fifo_stall_timer.data = (unsigned long) adapter;
 
-	PCI: Cannot allocate resource region 9 of bridge 0000:00:01.0
-	PCI: Cannot allocate resource region 1 of device 0000:01:00.0
+-	init_timer(&adapter->watchdog_timer);
++	init_timer_deferrable(&adapter->watchdog_timer);
+  	adapter->watchdog_timer.function = &e1000_watchdog;
+  	adapter->watchdog_timer.data = (unsigned long) adapter;
 
-thing is really starting to bug me.
-
-I bet that is the real problem here, but it's not printing out enough 
-information about the resource to actually give us much of a clue about 
-what is wrong.
-
-I suspect that it had a bridge mapping (device 0:01.0) that included the 
-range from 0xc0000000 to 0xcfffffff, but there was something stupid wrong 
-with it (eg the BIOS had allocated overlapping regions), so we disabled 
-it. That, in turn, then caused us to also refuse the existing 0xc0000000 
-mapping for the graphics card (device 01:00.0), because now there was no 
-valid resource for it.
-
-But that PCI bridge resource handling happens even *before* we look at any 
-PnP reserved areas (because we - for really good reasons - trust the 
-hardware a _lot_ more than we trust any idiotic firmware tables), so I 
-wonder what that strange PCI bridge mapping in 00:01.0 was - it must have 
-been _really_ off in order to not fit in the resource tree.
-
-Could you just make it print out what the bridge resources are when it 
-scans them? Something like the appended..
-
-		Linus
-
----
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index 42ba0e2..37c4b92 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -117,11 +117,16 @@ static void __init pcibios_allocate_bus_resources(struct list_head *bus_list)
- 	/* Depth-First Search on bus tree */
- 	list_for_each_entry(bus, bus_list, node) {
- 		if ((dev = bus->self)) {
-+			printk(KERN_DEBUG "PCI: Bridge %s\n", pci_name(dev));
- 			for (idx = PCI_BRIDGE_RESOURCES;
- 			    idx < PCI_NUM_RESOURCES; idx++) {
- 				r = &dev->resource[idx];
- 				if (!r->flags)
- 					continue;
-+				printk(KERN_DEBUG "PCI: Bridge resource "
-+					"%08llx-%08llx (f=%lx)\n",
-+					r->start, r->end, r->flags);
-+
- 				pr = pci_find_parent_resource(dev, r);
- 				if (!r->start || !pr ||
- 				    request_resource(pr, r) < 0) {
