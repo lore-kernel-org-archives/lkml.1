@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbXLST2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbXLSTdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756259AbXLST2q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 14:28:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbXLST2j
+	id S1755580AbXLSTdY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 14:33:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbXLSTdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 14:28:39 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39121 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753223AbXLST2i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 14:28:38 -0500
-Subject: Re: [patch 02/20] make the inode i_mmap_lock a reader/writer lock
-From: Peter Zijlstra <peterz@infradead.org>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Rik van Riel <riel@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1198083218.5333.48.camel@localhost>
-References: <20071218211539.250334036@redhat.com>
-	 <20071218211548.784184591@redhat.com>
-	 <200712191148.06506.nickpiggin@yahoo.com.au>
-	 <1198079529.5333.12.camel@localhost>
-	 <20071219113107.5301f9f0@cuia.boston.redhat.com>
-	 <1198083218.5333.48.camel@localhost>
-Content-Type: text/plain
-Date: Wed, 19 Dec 2007 20:28:23 +0100
-Message-Id: <1198092503.6484.21.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Dec 2007 14:33:16 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44544 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753116AbXLSTdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 14:33:16 -0500
+Date: Wed, 19 Dec 2007 20:32:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Len Brown <lenb@kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Voluntary leave_mm before entering ACPI C3
+Message-ID: <20071219193255.GA2158@elte.hu>
+References: <20071219183443.GA547@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071219183443.GA547@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2007-12-19 at 11:53 -0500, Lee Schermerhorn wrote:
-> On Wed, 2007-12-19 at 11:31 -0500, Rik van Riel wrote:
-> > On Wed, 19 Dec 2007 10:52:09 -0500
-> > Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
-> > 
-> > > I keep these patches up to date for testing.  I don't have conclusive
-> > > evidence whether they alleviate or exacerbate the problem nor by how
-> > > much.  
-> > 
-> > When the queued locking from Ingo's x86 tree hits mainline,
-> > I suspect that spinlocks may end up behaving a lot nicer.
+* Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+
+> Aviod TLB flush IPIs during C3 states by voluntary leave_mm() before 
+> entering C3.
 > 
-> That would be worth testing with our problematic workloads...
+> The performance impact of TLB flush on C3 should not be significant 
+> with respect to C3 wakeup latency. Also, CPUs tend to flush TLB in 
+> hardware while in C3 anyways.
 > 
-> > 
-> > Should I drop the rwlock patches from my tree for now and
-> > focus on just the page reclaim stuff?
+> On a 8 logical CPU system, running make -j2, the number of tlbflush 
+> IPIs goes down from 40 per second to ~ 0. Total number of interrupts 
+> during the run of this workload was ~1200 per second, which makes it 
+> ~3% savings in wakeups.
 > 
-> That's fine with me.  They're out there is anyone is interested.  I'll
-> keep them up to date in my tree [and hope they don't conflict with split
-> lru and noreclaim patches too much] for occasional testing.
+> There was no measurable performance or power impact however.
 
-Of course, someone would need to implement ticket locks for ia64 -
-preferably without the 256 cpu limit.
+thanks, applied to x86.git. Nice and elegant patch!
 
-Nick, growing spinlock_t to 64 bits would yield space for 64k cpus,
-right? I'm guessing that would be enough for a while, even for SGI.
+Btw., since the TLB flush state machine is really subtle and fragile, 
+could you try to run the following mmap stresstest i wrote some time 
+ago:
 
+   http://redhat.com/~mingo/threaded-mmap-stresstest/
 
+for a couple of hours. It runs nr_cpus threads which then do a "random 
+crazy mix" of mappings/unmappings/remappings of a 800 MB memory window. 
+The more sockets/cores, the crazier the TLB races get ;-)
+
+	Ingo
