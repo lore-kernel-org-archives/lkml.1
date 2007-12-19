@@ -1,200 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbXLSAgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbXLSAiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758543AbXLSAgy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 19:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbXLSAgr
+	id S1758894AbXLSAiS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 19:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbXLSAiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 19:36:47 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:55250 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753616AbXLSAgq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 19:36:46 -0500
-Message-ID: <47686777.7050605@cosmosbay.com>
-Date: Wed, 19 Dec 2007 01:36:07 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kernel/sys.c : Get rid of expensive divides in groups_sort()
-References: <47686269.2090103@cosmosbay.com> <20071218162453.e0156041.akpm@linux-foundation.org>
-In-Reply-To: <20071218162453.e0156041.akpm@linux-foundation.org>
-Content-Type: multipart/mixed;
- boundary="------------030904090104000509010200"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 19 Dec 2007 01:36:14 +0100 (CET)
+	Tue, 18 Dec 2007 19:38:10 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:41535 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754912AbXLSAiJ (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 18 Dec 2007 19:38:09 -0500
+Date: Wed, 19 Dec 2007 11:37:45 +1100
+From: David Chinner <dgc@sgi.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Bret Towe <magnade@gmail.com>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com, rjw@sisk.pl
+Subject: Re: xfs mknod regression
+Message-ID: <20071219003745.GR4396912@sgi.com>
+References: <dda83e780712172048n4d40cfcbw4a4d3106fc99f02e@mail.gmail.com> <20071218173642.GA7338@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071218173642.GA7338@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030904090104000509010200
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-
-Andrew Morton a écrit :
-> On Wed, 19 Dec 2007 01:14:33 +0100
-> Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Tue, Dec 18, 2007 at 05:36:42PM +0000, Christoph Hellwig wrote:
 > 
->> groups_sort() can be quite long if user loads a large gid table.
->>
->> This is because GROUP_AT(group_info, some_integer) uses an integer divide.
->> So having to do XXX thousand divides during one syscall can lead to very high 
->> latencies. (NGROUPS_MAX=65536)
->>
->> In the past (25 Mar 2006), an analog problem was found in groups_search()
->> (commit d74beb9f33a5f16d2965f11b275e401f225c949d ) and at that time I changed 
->> some variables to unsigned int.
->>
->> I believe that a more generic fix is to make sure NGROUPS_PER_BLOCK is unsigned.
->>
+> This was broken by my '[XFS] simplify xfs_create/mknod/symlink prototype',
+> which assigned the re-shuffled ondisk dev_t back to the rdev variable in
+> xfs_vn_mknod.  Because of that i_rdev is set to the ondisk dev_t instead
+> of the linux dev_t later down the function.
 > 
->> diff --git a/include/linux/sched.h b/include/linux/sched.h
->> index ac3d496..725a491 100644
->> --- a/include/linux/sched.h
->> +++ b/include/linux/sched.h
->> @@ -775,7 +775,7 @@ static inline int above_background_load(void)
->>  
->>  struct io_context;			/* See blkdev.h */
->>  #define NGROUPS_SMALL		32
->> -#define NGROUPS_PER_BLOCK	((int)(PAGE_SIZE / sizeof(gid_t)))
-> 
-> That was a dopey thing to do.  Both PAGE_SIZE and sizeof() are unsigned and
-> we went and cast it to a signed thing, even though it is a nonsense to ever
-> consider a negative value of this.
-
-Maybe the author intention was to cast it to an "int", instead of "long", I 
-dont know...
-
-> 
->> +#define NGROUPS_PER_BLOCK	((unsigned int)(PAGE_SIZE / sizeof(gid_t)))
->>  struct group_info {
->>  	int ngroups;
->>  	atomic_t usage;
->> diff --git a/kernel/sys.c b/kernel/sys.c
->> index d1fe71e..091e58f 100644
->> --- a/kernel/sys.c
->> +++ b/kernel/sys.c
->> @@ -1148,7 +1148,7 @@ static int groups_to_user(gid_t __user *grouplist,
->>  	int count = group_info->ngroups;
->>  
->>  	for (i = 0; i < group_info->nblocks; i++) {
->> -		int cp_count = min(NGROUPS_PER_BLOCK, count);
->> +		int cp_count = min_t(int, NGROUPS_PER_BLOCK, count);
->>  		int off = i * NGROUPS_PER_BLOCK;
->>  		int len = cp_count * sizeof(*grouplist);
->>  
->> @@ -1168,7 +1168,7 @@ static int groups_from_user(struct group_info *group_info,
->>  	int count = group_info->ngroups;
->>  
->>  	for (i = 0; i < group_info->nblocks; i++) {
->> -		int cp_count = min(NGROUPS_PER_BLOCK, count);
->> +		int cp_count = min_t(int, NGROUPS_PER_BLOCK, count);
->>  		int off = i * NGROUPS_PER_BLOCK;
->>  		int len = cp_count * sizeof(*grouplist);
->>  
-> 
-> We now have a jumble of signed and unsigned, stuck together with min_t
-> sticky tape.
-> 
-> Please, take a closer look in there and see if there's anything which
-> *needs* to be signed: is there anything which can actually, sensibly have a
-> negative quantity?  I bet there isn't, and I bet the code would be cleaner,
-> faster and more obviously correct if it was converted to unsigned throughout.
-> 
-> I blame C.  Negative quantities are rare, and C's default of treating
-> scalars as signed was a mistake.  Oh well.
+> Fortunately the fix for it is trivial:  we can just remove the
+> assignment because xfs_revalidate_inode has done the proper job before
+> unlocking the inode.
 > 
 > 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> 
+> Index: linux-2.6-xfs/fs/xfs/linux-2.6/xfs_iops.c
+> ===================================================================
+> --- linux-2.6-xfs.orig/fs/xfs/linux-2.6/xfs_iops.c	2007-12-18 18:23:32.000000000 +0100
+> +++ linux-2.6-xfs/fs/xfs/linux-2.6/xfs_iops.c	2007-12-18 18:23:43.000000000 +0100
+> @@ -345,9 +345,7 @@ xfs_vn_mknod(
+>  		ASSERT(vp);
+>  		ip = vn_to_inode(vp);
+>  
+> -		if (S_ISCHR(mode) || S_ISBLK(mode))
+> -			ip->i_rdev = rdev;
+> -		else if (S_ISDIR(mode))
+> +		if (S_ISDIR(mode))
+>  			xfs_validate_fields(ip);
+>  		d_instantiate(dentry, ip);
+>  		xfs_validate_fields(dir);
 
-Yes I agree that 'unsigned' should be the default...
+Thanks for this, Christoph - I'll run some tests on it and check it in.
 
-Well, I was trying to keep patch small, but as you have some time, I will make 
-it bigger :)
+Rafael - this is a regression introduced in 2.6.24-rc1 if you want to
+track it.
 
-[PATCH] kernel/sys.c : Get rid of expensive divides in groups_sort()
+Cheers,
 
-groups_sort() can be quite long if user loads a large gid table.
-
-This is because GROUP_AT(group_info, some_integer) uses an integer divide.
-So having to do XXX thousand divides during one syscall can lead to very high 
-latencies. (NGROUPS_MAX=65536)
-
-In the past (25 Mar 2006), an analog problem was found in groups_search()
-(commit d74beb9f33a5f16d2965f11b275e401f225c949d ) and at that time I changed 
-some variables to unsigned int.
-
-I believe that a more generic fix is to make sure NGROUPS_PER_BLOCK is unsigned.
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-
---------------030904090104000509010200
-Content-Type: text/plain;
- name="NGROUPS_PER_BLOCK.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="NGROUPS_PER_BLOCK.patch"
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index ac3d496..725a491 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -775,7 +775,7 @@ static inline int above_background_load(void)
- 
- struct io_context;			/* See blkdev.h */
- #define NGROUPS_SMALL		32
--#define NGROUPS_PER_BLOCK	((int)(PAGE_SIZE / sizeof(gid_t)))
-+#define NGROUPS_PER_BLOCK	((unsigned int)(PAGE_SIZE / sizeof(gid_t)))
- struct group_info {
- 	int ngroups;
- 	atomic_t usage;
-diff --git a/kernel/sys.c b/kernel/sys.c
-index d1fe71e..d632352 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1145,16 +1145,16 @@ static int groups_to_user(gid_t __user *grouplist,
-     struct group_info *group_info)
- {
- 	int i;
--	int count = group_info->ngroups;
-+	unsigned int count = group_info->ngroups;
- 
- 	for (i = 0; i < group_info->nblocks; i++) {
--		int cp_count = min(NGROUPS_PER_BLOCK, count);
--		int off = i * NGROUPS_PER_BLOCK;
--		int len = cp_count * sizeof(*grouplist);
-+		unsigned int cp_count = min(NGROUPS_PER_BLOCK, count);
-+		unsigned int len = cp_count * sizeof(*grouplist);
- 
--		if (copy_to_user(grouplist+off, group_info->blocks[i], len))
-+		if (copy_to_user(grouplist, group_info->blocks[i], len))
- 			return -EFAULT;
- 
-+		grouplist += NGROUPS_PER_BLOCK;
- 		count -= cp_count;
- 	}
- 	return 0;
-@@ -1165,16 +1165,16 @@ static int groups_from_user(struct group_info *group_info,
-     gid_t __user *grouplist)
- {
- 	int i;
--	int count = group_info->ngroups;
-+	unsigned int count = group_info->ngroups;
- 
- 	for (i = 0; i < group_info->nblocks; i++) {
--		int cp_count = min(NGROUPS_PER_BLOCK, count);
--		int off = i * NGROUPS_PER_BLOCK;
--		int len = cp_count * sizeof(*grouplist);
-+		unsigned int cp_count = min(NGROUPS_PER_BLOCK, count);
-+		unsigned int len = cp_count * sizeof(*grouplist);
- 
--		if (copy_from_user(group_info->blocks[i], grouplist+off, len))
-+		if (copy_from_user(group_info->blocks[i], grouplist, len))
- 			return -EFAULT;
- 
-+		grouplist += NGROUPS_PER_BLOCK;
- 		count -= cp_count;
- 	}
- 	return 0;
-
---------------030904090104000509010200--
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
