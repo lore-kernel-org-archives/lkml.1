@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbXLSBeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbXLSBll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756639AbXLSBeB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 20:34:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbXLSBdw
+	id S1756138AbXLSBll (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 20:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbXLSBlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 20:33:52 -0500
-Received: from hs-out-0708.google.com ([64.233.178.243]:21688 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752479AbXLSBdv (ORCPT
+	Tue, 18 Dec 2007 20:41:31 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41803 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752783AbXLSBla (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 20:33:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ANi+c8EkZZF0Xh496XqPl4ZXVFbYU8Ir6z23Ev7iiF7BCJTy/lok9EGMuHGvEeIyXfP22xHoU0cG9TWKsa+DxFa3FA7+X+USvXZteW9SvmDhulVpj8SRU8TZTYqkiD/wjbZMjoQPl9oeYiyenqmmQgU8jKLHEI9QEMVAdtlQn+g=
-Message-ID: <a8e1da0712181733l10006686n9d694c5f289a6322@mail.gmail.com>
-Date: Wed, 19 Dec 2007 09:33:50 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "David Howells" <dhowells@redhat.com>
-Subject: Re: 2.6.24-rc5-mm1 - wonky disk cache and CDROM behavior...
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, Valdis.Kletnieks@vt.edu,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <26475.1198027341@redhat.com>
+	Tue, 18 Dec 2007 20:41:30 -0500
+Date: Tue, 18 Dec 2007 17:38:58 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Richard Henderson <rth@twiddle.net>
+cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
+       Keith Packard <keithp@keithp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: PCI resource problems caused by improper address rounding
+In-Reply-To: <alpine.LFD.0.9999.0712181412530.21557@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.9999.0712181722260.21557@woody.linux-foundation.org>
+References: <47671377.6000405@redhat.com> <alpine.LFD.0.9999.0712171648150.21557@woody.linux-foundation.org> <47680489.6040809@redhat.com> <alpine.LFD.0.9999.0712180946030.21557@woody.linux-foundation.org> <20071218202234.GA24525@twiddle.net>
+ <alpine.LFD.0.9999.0712181240280.21557@woody.linux-foundation.org> <20071218215143.GA24769@twiddle.net> <alpine.LFD.0.9999.0712181412530.21557@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
-	 <30457.1197931451@turing-police.cc.vt.edu>
-	 <20071217145644.2d6374e4.akpm@linux-foundation.org>
-	 <11403.1197943676@turing-police.cc.vt.edu>
-	 <20071218023732.GA3215@darkstar.te-china.tietoenator.com>
-	 <20071217185213.d0d02149.akpm@linux-foundation.org>
-	 <26475.1198027341@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 19, 2007 9:22 AM, David Howells <dhowells@redhat.com> wrote:
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> > > -                   inode = ERR_PTR(ret);
-> > > +                   return NULL;
-> > >             } else {
-> > >                     unlock_new_inode(inode);
-> > >             }
-> > >
-> >
-> > Yup.
->
-> Nope.  The correct fix is to make the various callers use IS_ERR() to check
-> the result of this function rather than checking for a NULL return.
->
-> > David, this is concerning.  More such error-path bugs in that code will take
-> > years and years to get found and fixed.
->
-> Yes, I know.  I've looked over the patches several times, however I know there
-> may be bugs in there because I may have made assumptions about what I've
-> written that cause me to overlook things.  It's a danger of checking your own
-> code:-(
->
-> > The best way to eliminate them is a line-by-line re-review of the patchset.
->
-> And ideally by someone other than me.  Some of them have been reviewed by
-> other people, but I'm not sure that all have.
->
-> However, I've just had another look through.  ISOFS appears to be the only one
-> in which I'd missed updating the callers.  I've sent you a patch for it.
->
-> Note that I expressed reservations about three filesystems in the cover note
-> (FAT, HPPFS and HOSTFS), but nothing seems to have come of it.
->
-Hi,
 
-The oops is at iput, I use 'return NULL ' is because I don't want to
-change the the behaviour of iput in fs/inode.c.
 
-Regards
-dave
+On Tue, 18 Dec 2007, Linus Torvalds wrote:
+> 
+> That question also brings up another issue: how come did we actually 
+> choose address 0xc0000000 with the original patch you sent in? If we can't 
+> find it in the parent resources, we shouldn't have accepted it even if it 
+> had room for it!
+
+That
+
+	PCI: Cannot allocate resource region 9 of bridge 0000:00:01.0
+	PCI: Cannot allocate resource region 1 of device 0000:01:00.0
+
+thing is really starting to bug me.
+
+I bet that is the real problem here, but it's not printing out enough 
+information about the resource to actually give us much of a clue about 
+what is wrong.
+
+I suspect that it had a bridge mapping (device 0:01.0) that included the 
+range from 0xc0000000 to 0xcfffffff, but there was something stupid wrong 
+with it (eg the BIOS had allocated overlapping regions), so we disabled 
+it. That, in turn, then caused us to also refuse the existing 0xc0000000 
+mapping for the graphics card (device 01:00.0), because now there was no 
+valid resource for it.
+
+But that PCI bridge resource handling happens even *before* we look at any 
+PnP reserved areas (because we - for really good reasons - trust the 
+hardware a _lot_ more than we trust any idiotic firmware tables), so I 
+wonder what that strange PCI bridge mapping in 00:01.0 was - it must have 
+been _really_ off in order to not fit in the resource tree.
+
+Could you just make it print out what the bridge resources are when it 
+scans them? Something like the appended..
+
+		Linus
+
+---
+diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+index 42ba0e2..37c4b92 100644
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -117,11 +117,16 @@ static void __init pcibios_allocate_bus_resources(struct list_head *bus_list)
+ 	/* Depth-First Search on bus tree */
+ 	list_for_each_entry(bus, bus_list, node) {
+ 		if ((dev = bus->self)) {
++			printk(KERN_DEBUG "PCI: Bridge %s\n", pci_name(dev));
+ 			for (idx = PCI_BRIDGE_RESOURCES;
+ 			    idx < PCI_NUM_RESOURCES; idx++) {
+ 				r = &dev->resource[idx];
+ 				if (!r->flags)
+ 					continue;
++				printk(KERN_DEBUG "PCI: Bridge resource "
++					"%08llx-%08llx (f=%lx)\n",
++					r->start, r->end, r->flags);
++
+ 				pr = pci_find_parent_resource(dev, r);
+ 				if (!r->start || !pr ||
+ 				    request_resource(pr, r) < 0) {
