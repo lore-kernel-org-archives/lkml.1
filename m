@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbXLSSZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbXLSSaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbXLSSZH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 13:25:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbXLSSY4
+	id S1755233AbXLSSaS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 13:30:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbXLSSaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 13:24:56 -0500
-Received: from mu-out-0910.google.com ([209.85.134.185]:11071 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751053AbXLSSYz (ORCPT
+	Wed, 19 Dec 2007 13:30:07 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57926 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751418AbXLSSaG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 13:24:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=Zm6Xs1SrysbfFLXXp75I/psvJeoQV2K2wsmx2UaqasyTewHCuOyjEsFdAAiE7LownfmMfcCTUfhRlQ5feCdw7R5s1/l0NRkF/QBzX05/CoIChHnrX/m2cYEKPGfsR0OBoQM5h71pArQtjcQh7MQESUZcS+nKxPvhK50ts5BERHg=
-Date: Wed, 19 Dec 2007 19:26:26 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: perex@perex.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sound/core.h: include sound/driver.h
-Message-ID: <20071219182622.GB18104@joi>
-References: <20071208205040.GG5087@joi> <s5hwsrh5yjt.wl%tiwai@suse.de> <20071216015825.GA26986@joi> <s5hsl211xeu.wl%tiwai@suse.de>
+	Wed, 19 Dec 2007 13:30:06 -0500
+Date: Wed, 19 Dec 2007 19:30:05 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "Peters, Gordon" <gordon.peters@intel.com>
+cc: "Gosney, JeremiX" <jeremix.gosney@intel.com>, linux-kernel@vger.kernel.org,
+       "Sy, Dely L" <dely.l.sy@intel.com>
+Subject: RE: ARP Bug?
+In-Reply-To: <3A64AD58EE71B34FB333E733C62CDE3C04A83F60@orsmsx414.amr.corp.intel.com>
+Message-ID: <Pine.LNX.4.64.0712191929430.12329@fbirervta.pbzchgretzou.qr>
+References: <F2B6B9EAC551DA4AA8833629D55D9CA8482D4C@orsmsx418.amr.corp.intel.com>
+ <Pine.LNX.4.64.0712150231090.22877@fbirervta.pbzchgretzou.qr>
+ <3A64AD58EE71B34FB333E733C62CDE3C04A83F60@orsmsx414.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <s5hsl211xeu.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17, 2007 at 10:30:01AM +0100, Takashi Iwai wrote:
-> At Sun, 16 Dec 2007 02:58:31 +0100,
-> Marcin Slusarz wrote:
-> >
-> > On Fri, Dec 14, 2007 at 12:02:46PM +0100, Takashi Iwai wrote:
-> > > At Sat, 8 Dec 2007 21:50:45 +0100,
-> > > Marcin Ślusarz wrote:
-> > > >
-> > > > sound/core.h: include sound/driver.h
-> > > >
-> > > > include sound/driver.h in sound/core.h because core.h
-> > > > uses SNDRV_CARDS (which is defined in sound/driver.h)
-> > > >
-> > > > Signed-off-by: Marcin Ślusarz <marcin.slusarz@gmail.com>
-> > >
-> > > Right now I have another (bigger) change for this include path, so
-> > > this patch won't be needed any more.
-> > >
-> > > I applied the patches to sound/* except for this one and
-> > > sound/memory.c.   Thanks!
-> > >
-> > Is there anything wrong with patch for rawmidi [1]?
->
-> Ah, sorry, forgot to mention it.
->
-> I'm still considering whether it's the best way.  The changes look
-> exaggerated just for fixing sparse warnings.
 
-It think it will let future code inspections a bit easier.
-But if you have a better idea how to fix it, let me know.
+On Dec 19 2007 09:47, Peters, Gordon wrote:
 
-Marcin
+>Call me crazy,
+
+For top-posting, yes. :)
+
+> but if I have 2 NICs in a system and all the traffic is
+>going through one of them and then that one NIC cable gets pulled, the
+>other NIC, that half of the traffic should have been going through in
+>the first place, should still work. However, with this type of
+>functionality, it does not. Effectively both NICs are now dead even
+>though the cable has only been pulled from eth0. Once you pull the cable
+>to that "primary" NIC, all traffic stops; even when the "secondary" NIC
+>is up and working fine. That in my professional opinion is broken.
+
+I think you should finally reveal your interface configuration
+otherwise it's all smoke and mirrors.
