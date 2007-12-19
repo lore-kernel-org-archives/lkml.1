@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbXLSKNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbXLSKPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291AbXLSKNi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 05:13:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbXLSKNa
+	id S1753953AbXLSKPc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 05:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbXLSKPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 05:13:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54421 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750982AbXLSKN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 05:13:29 -0500
-Date: Wed, 19 Dec 2007 11:12:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       zach@vmware.com, roland@redhat.com
-Subject: Re: [PATCH 1/2] remove __init modifier from header declaration
-Message-ID: <20071219101236.GB3521@elte.hu>
-References: <11979967763153-git-send-email-gcosta@redhat.com>
+	Wed, 19 Dec 2007 05:15:25 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:61270 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751780AbXLSKPY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 05:15:24 -0500
+Date: Wed, 19 Dec 2007 11:15:18 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux Frame Buffer Device Development 
+	<linux-fbdev-devel@lists.sourceforge.net>
+Subject: [PATCH 0/2] ps3fb bug fixes for 2.6.24
+Message-ID: <Pine.LNX.4.62.0712191105220.16918@pademelon.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <11979967763153-git-send-email-gcosta@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-581292904-1198059318=:16918"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-* Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
+---584337861-581292904-1198059318=:16918
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> This patch removes the __init modifier from an extern function 
-> declaration in acpi.h.
-> 
-> Besides not being strictly needed, it requires the inclusion of 
-> linux/init.h, which is usually not even included directly, increasing 
-> header mess by a lot.
+	Hi Linus, Andrew,
 
-thanks, applied.
+Here are 2 bug fixes for the PS3 Virtual Frame Buffer Device Driver:
+  [1] ps3fb: Update for firmware 2.10
+  [2] ps3fb: Fix ps3fb free_irq() dev_id
 
-btw., people have been talking about reducing the include file mess for 
-nearly a decade now, but it didnt get that much better - at least not in 
-include/asm-x86/*.h. So include file dependency flattening patches would 
-be more than welcome as well. (and unlike unification patches they have 
-no expectation of being 100% perfect, so a natural ping-pong of fixes, 
-until the changes are fully correct, would be natural.)
+The first one fixes a problem with PS3 firmware 2.10 (released yesterday),
+which causes a non-working display.
 
-	Ingo
+The second one fixes an incorrect dev_id parameter used with the free_irq()
+calls.
+
+Please apply for 2.6.24. Thanks!
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-581292904-1198059318=:16918--
