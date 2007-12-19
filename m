@@ -1,56 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbXLSOHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbXLSOLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757365AbXLSOHr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 09:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbXLSOHj
+	id S1757275AbXLSOLI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 09:11:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbXLSOKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 09:07:39 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:61318 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753884AbXLSOHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 09:07:39 -0500
-Date: Wed, 19 Dec 2007 15:07:34 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: git@vger.kernel.org
-Cc: Chip Coldwell <coldwell@redhat.com>, linux@arm.linux.org.uk,
-       kernel@avr32linux.org, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, Bohmer <linux@bohmer.net>,
-       Andrew Victor <linux@maxim.org.za>
-Subject: Re: [PATCH 4/5] atmel_serial: Split the interrupt handler
-Message-ID: <20071219150734.50b1f847@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20071219124008.4945e592@dhcp-252-066.norway.atmel.com>
-References: <1197997575-13292-1-git-send-email-hskinnemoen@atmel.com>
-	<1197997575-13292-2-git-send-email-hskinnemoen@atmel.com>
-	<1197997575-13292-3-git-send-email-hskinnemoen@atmel.com>
-	<1197997575-13292-4-git-send-email-hskinnemoen@atmel.com>
-	<1197997575-13292-5-git-send-email-hskinnemoen@atmel.com>
-	<20071218181019.2af46418@dhcp-252-066.norway.atmel.com>
-	<alpine.LFD.0.9999.0712181318300.27475@localhost.localdomain>
-	<20071219124008.4945e592@dhcp-252-066.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Dec 2007 09:10:55 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:39635 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752739AbXLSOKy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 09:10:54 -0500
+Date: Wed, 19 Dec 2007 08:10:04 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       linux-fsdevel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+Message-ID: <20071219141004.GA31694@sergelap.austin.ibm.com>
+References: <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <476724E3.6060901@cs.columbia.edu> <20071218020933.GA28745@sergelap.austin.ibm.com> <476738A0.9010601@cs.columbia.edu> <4768E7B2.40203@openvz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4768E7B2.40203@openvz.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Dec 2007 12:40:08 +0100
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-
-> Btw, the funny thing is that, looking at my shell history, I think I
-> actually did the right thing when committing your patches:
+Quoting Pavel Emelyanov (xemul@openvz.org):
+> Oren Laadan wrote:
+> > Serge E. Hallyn wrote:
+> >> Quoting Oren Laadan (orenl@cs.columbia.edu):
+> >>> I hate to bring this again, but what if the admin in the container
+> >>> mounts an external file system (eg. nfs, usb, loop mount from a file,
+> >>> or via fuse), and that file system already has a device that we would
+> >>> like to ban inside that container ?
+> >> Miklos' user mount patches enforced that if !capable(CAP_MKNOD),
+> >> then mnt->mnt_flags |= MNT_NODEV.  So that's no problem.
+> > 
+> > Yes, that works to disallow all device files from a mounted file system.
+> > 
+> > But it's a black and white thing: either they are all banned or allowed;
+> > you can't have some devices allowed and others not, depending on type
+> > A scenario where this may be useful is, for instance, if we some apps in
+> > the container to execute withing a pre-made chroot (sub)tree within that
+> > container.
+> > 
+> >> But that's been pulled out of -mm! ?  Crap.
+> >>
+> >>> Since anyway we will have to keep a white- (or black-) list of devices
+> >>> that are permitted in a container, and that list may change even change
+> >>> per container -- why not enforce the access control at the VFS layer ?
+> >>> It's safer in the long run.
+> >> By that you mean more along the lines of Pavel's patch than my whitelist
+> >> LSM, or you actually mean Tetsuo's filesystem (i assume you don't mean that
+> >> by 'vfs layer' :), or something different entirely?
+> > 
+> > :)
+> > 
+> > By 'vfs' I mean at open() time, and not at mount(), or mknod() time.
+> > Either yours or Pavel's; I tend to prefer not to use LSM as it may
+> > collide with future security modules.
 > 
-> git commit -s --author 'Remy Bohmer <linux@bohmer.net>'
-> git commit -s --author 'Chip Coldwell <coldwell@frank.harvard.edu>'
+> Oren, AFAIS you've seen my patches for device access controller, right?
 > 
-> But for some reason only your names stuck, not your e-mail addresses...
+> Maybe we can revisit the issue then and try to come to agreement on what
+> kind of model and implementation we all want?
 
-It just happened again. Seems like if git-rebase hits a conflict, and I
-just do "git-rebase --continue" after resolving it (and updating the
-index), the original author's name is used, but not his e-mail address.
+That would be great, Pavel.  I do prefer your solution over my LSM, so
+if we can get an elegant block device control right in the vfs code that
+would be my preference.
 
-Looks like a bug in git-rebase...?
+The only thing that makes me keep wanting to go back to an LSM is the
+fact that the code defining the whitelist seems out of place in the vfs.
+But I guess that's actually separated into a modular cgroup, with the
+actual enforcement built in at the vfs.  So that's really the best
+solution.
 
-Haavard
+-serge
