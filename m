@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbXLSQcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbXLSQdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbXLSQcN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 11:32:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbXLSQb6
+	id S1753767AbXLSQdx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 11:33:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbXLSQdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 11:31:58 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33937 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750760AbXLSQb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 11:31:58 -0500
-Date: Wed, 19 Dec 2007 11:31:07 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, lee.shermerhorn@hp.com
-Subject: Re: [patch 02/20] make the inode i_mmap_lock a reader/writer lock
-Message-ID: <20071219113107.5301f9f0@cuia.boston.redhat.com>
-In-Reply-To: <1198079529.5333.12.camel@localhost>
-References: <20071218211539.250334036@redhat.com>
-	<20071218211548.784184591@redhat.com>
-	<200712191148.06506.nickpiggin@yahoo.com.au>
-	<1198079529.5333.12.camel@localhost>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Dec 2007 11:33:43 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:48463 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750920AbXLSQdm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 11:33:42 -0500
+Message-ID: <476947C1.2010405@s5r6.in-berlin.de>
+Date: Wed, 19 Dec 2007 17:33:05 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@suse.de,
+       krh@bitplanet.net, linux1394-devel@lists.sourceforge.net
+Subject: Re: No dma_sync_* during pci_probe? (Sparc, post 2.6.22 regression)
+References: <47670BDF.80409@s5r6.in-berlin.de>	<20071217.165032.41424988.davem@davemloft.net>	<4767A323.7090205@s5r6.in-berlin.de> <20071218.142956.26529678.davem@davemloft.net>
+In-Reply-To: <20071218.142956.26529678.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Dec 2007 10:52:09 -0500
-Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+David Miller wrote:
+> From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Date: Tue, 18 Dec 2007 11:38:27 +0100
+> 
+>> Also note:
+>>   - The very same code did not oops at this point in 2.6.22.  It only
+>>     started doing so in 2.6.23.
+> 
+> 2.6.23 is when the sparc64 IOMMU code started relying upon
+> the dev_archdata bits being correct.
 
-> I keep these patches up to date for testing.  I don't have conclusive
-> evidence whether they alleviate or exacerbate the problem nor by how
-> much.  
+And why are the dev_archdata corrupt?
+Does arch/sparc64/kernel/pci.c fill them in incorrectly or too late?
 
-When the queued locking from Ingo's x86 tree hits mainline,
-I suspect that spinlocks may end up behaving a lot nicer.
-
-Should I drop the rwlock patches from my tree for now and
-focus on just the page reclaim stuff?
-
+drivers/firewire/fw_ohci.c needs them for dma_map_single() +
+dma_sync_single_for_device() in the pci_driver.probe(), sometime after
+it called pci_enable_device(), before finishing the probe.
 -- 
-All Rights Reversed
+Stefan Richter
+-=====-=-=== ==-- =--==
+http://arcgraph.de/sr/
