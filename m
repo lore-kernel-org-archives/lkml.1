@@ -1,82 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbXLSBQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbXLSBTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757795AbXLSBQr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 20:16:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbXLSBQj
+	id S1758656AbXLSBTS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 20:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbXLSBTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 20:16:39 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49277 "EHLO
+	Tue, 18 Dec 2007 20:19:09 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38686 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754307AbXLSBQi (ORCPT
+	by vger.kernel.org with ESMTP id S1753150AbXLSBTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 20:16:38 -0500
-Date: Tue, 18 Dec 2007 17:10:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: dwalker@mvista.com, matthias.kaehlcke@gmail.com,
-       linux-kernel@vger.kernel.org, linux@bohmer.net, linuxppc-dev@ozlabs.org,
-       mingo@elte.hu, kjwinchester@gmail.com
-Subject: Re: [PATCH 1/3] ps3: vuart: fix error path locking
-Message-Id: <20071218171050.5bf220fa.akpm@linux-foundation.org>
-In-Reply-To: <4760922C.2060908@am.sony.com>
-References: <20071213003028.676998182@mvista.com>
-	<4760922C.2060908@am.sony.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Dec 2007 20:19:08 -0500
+Date: Tue, 18 Dec 2007 17:19:04 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Chinner <dgc@sgi.com>
+cc: Lachlan McIlroy <lachlan@sgi.com>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: Re: [GIT PULL] XFS update for 2.6.24-rc6
+In-Reply-To: <20071219004126.GS4396912@sgi.com>
+Message-ID: <alpine.LFD.0.9999.0712181718430.21557@woody.linux-foundation.org>
+References: <20071218065911.EDC8158C4C0F@chook.melbourne.sgi.com> <20071219004126.GS4396912@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Dec 2007 18:00:12 -0800
-Geoff Levand <geoffrey.levand@am.sony.com> wrote:
 
-> > This stray down would cause a permanent sleep which doesn't seem correct. 
-> > The other uses of this semaphore appear fairly mutex like it's even initialized
-> > with init_MUTEX() ..  So here a patch for removing this one down().
-> > 
-> > Signed-off-by: Daniel Walker <dwalker@mvista.com>
-> > 
-> > ---
-> >  drivers/ps3/ps3-vuart.c |    1 -
-> >  1 file changed, 1 deletion(-)
+
+On Wed, 19 Dec 2007, David Chinner wrote:
+>
+> On Tue, Dec 18, 2007 at 05:59:11PM +1100, Lachlan McIlroy wrote:
+> > Please pull from the for-linus branch:
+> >     git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 > 
+> Linus, please don't pull this yet. A problem has been found in
+> the dirent fix, and we've just fixed another mknod related regression
+> so we've got another couple of fixes still to go in XFS for 2.6.24.
 > 
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> 
-> 
-> Looks, good. 
 
-Looks bad to me.
+Too late, it's already long since pulled.
 
-> Andrew, Please apply.
-
-The current code:
-
-	if (result) {
-		dev_dbg(&dev->core, "%s:%d: drv->probe failed\n",
-			__func__, __LINE__);
-		down(&vuart_bus_priv.probe_mutex);
-		goto fail_probe;
-	}
-
-	up(&vuart_bus_priv.probe_mutex);
-
-	return result;
-
-fail_probe:
-	ps3_vuart_set_interrupt_mask(dev, 0);
-	kfree(dev->driver_priv);
-	dev->driver_priv = NULL;
-fail_dev_malloc:
-	vuart_bus_priv.devices[dev->port_number] = NULL;
-fail_busy:
-	ps3_vuart_bus_interrupt_put();
-fail_setup_interrupt:
-	up(&vuart_bus_priv.probe_mutex);
-	dev_dbg(&dev->core, "%s:%d: failed\n", __func__, __LINE__);
-	return result;
-}
-
-is correct.  Although not exactly a thing of beauty.
+		Linus
