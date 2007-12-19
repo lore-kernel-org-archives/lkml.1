@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbXLSBO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbXLSBQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758895AbXLSBO7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Dec 2007 20:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbXLSBOu
+	id S1757795AbXLSBQr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Dec 2007 20:16:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbXLSBQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Dec 2007 20:14:50 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51190 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753068AbXLSBOt (ORCPT
+	Tue, 18 Dec 2007 20:16:39 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49277 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754307AbXLSBQi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Dec 2007 20:14:49 -0500
-Date: Tue, 18 Dec 2007 20:14:36 -0500
-Message-Id: <200712190114.lBJ1Ean2023273@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] unionfs: restructure unionfs_setattr 
-In-reply-to: Your message of "Wed, 19 Dec 2007 00:53:12 GMT."
-             <Pine.LNX.4.64.0712190030390.5639@blonde.wat.veritas.com> 
-X-MailKey: Erez_Zadok
+	Tue, 18 Dec 2007 20:16:38 -0500
+Date: Tue, 18 Dec 2007 17:10:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: dwalker@mvista.com, matthias.kaehlcke@gmail.com,
+       linux-kernel@vger.kernel.org, linux@bohmer.net, linuxppc-dev@ozlabs.org,
+       mingo@elte.hu, kjwinchester@gmail.com
+Subject: Re: [PATCH 1/3] ps3: vuart: fix error path locking
+Message-Id: <20071218171050.5bf220fa.akpm@linux-foundation.org>
+In-Reply-To: <4760922C.2060908@am.sony.com>
+References: <20071213003028.676998182@mvista.com>
+	<4760922C.2060908@am.sony.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <Pine.LNX.4.64.0712190030390.5639@blonde.wat.veritas.com>, Hugh Dickins writes:
-> On Tue, 18 Dec 2007, Erez Zadok wrote:
-> > In message <Pine.LNX.4.64.0712182213300.28390@blonde.wat.veritas.com>, Hugh Dickins writes:
-> > > In order to fix unionfs truncation, we need to move the lower notify_change
-> > > out of the loop in unionfs_setattr.  But when I came to do that, I couldn't
-> > [...]
+On Wed, 12 Dec 2007 18:00:12 -0800
+Geoff Levand <geoffrey.levand@am.sony.com> wrote:
+
+> > This stray down would cause a permanent sleep which doesn't seem correct. 
+> > The other uses of this semaphore appear fairly mutex like it's even initialized
+> > with init_MUTEX() ..  So here a patch for removing this one down().
 > > 
-> > Hugh, I want to understand how patches 3/4 and 4/4 are related.  In patch 3
-> > you say "in order to fix truncation" but you mention a truncation problem
-> > only in patch 4; is there a patch ordering problem, or they're both related
-> > to the same issue (with 3/4 being a code cleanup, and 4/4 actually fixing
-> > the problem)?
+> > Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> > 
+> > ---
+> >  drivers/ps3/ps3-vuart.c |    1 -
+> >  1 file changed, 1 deletion(-)
 > 
-> I needed to move that notify_change out of the loop, to fix the truncation
-> problem, but had great difficulty understanding the loop.  So, just as you
-> say, made the code cleanup first in 3/4, then fixed the problem in 4/4.
 > 
-> But that cleanup does need your review and testing.
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> 
+> 
+> Looks, good. 
 
-A quick look at your setattr patches seems very promising.  And I've further
-realized more cleanup is possible: because we call revalidate_chain at the
-opening to ->setattr, we're guaranteed to have a valid lower dentry, so for
-example we can remove the else case for "if (lower_dentry)".
+Looks bad to me.
 
-I'll be testing this and your other patches, plus look into the locking
-issues you brought up.
+> Andrew, Please apply.
 
-Thanks,
-Erez.
+The current code:
+
+	if (result) {
+		dev_dbg(&dev->core, "%s:%d: drv->probe failed\n",
+			__func__, __LINE__);
+		down(&vuart_bus_priv.probe_mutex);
+		goto fail_probe;
+	}
+
+	up(&vuart_bus_priv.probe_mutex);
+
+	return result;
+
+fail_probe:
+	ps3_vuart_set_interrupt_mask(dev, 0);
+	kfree(dev->driver_priv);
+	dev->driver_priv = NULL;
+fail_dev_malloc:
+	vuart_bus_priv.devices[dev->port_number] = NULL;
+fail_busy:
+	ps3_vuart_bus_interrupt_put();
+fail_setup_interrupt:
+	up(&vuart_bus_priv.probe_mutex);
+	dev_dbg(&dev->core, "%s:%d: failed\n", __func__, __LINE__);
+	return result;
+}
+
+is correct.  Although not exactly a thing of beauty.
