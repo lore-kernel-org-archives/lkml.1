@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbXLSPl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbXLSPoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbXLSPl0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 10:41:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbXLSPlT
+	id S1758820AbXLSPoR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 10:44:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbXLSPoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 10:41:19 -0500
-Received: from il.qumranet.com ([82.166.9.18]:33274 "EHLO il.qumranet.com"
+	Wed, 19 Dec 2007 10:44:04 -0500
+Received: from saeurebad.de ([85.214.36.134]:37403 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753291AbXLSPlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 10:41:18 -0500
-Message-ID: <47693B9D.7080809@qumranet.com>
-Date: Wed, 19 Dec 2007 17:41:17 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1756600AbXLSPoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 10:44:03 -0500
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Bodo Eggert <7eggert@gmx.de>, Mark Lord <lkml@rtr.ca>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: RFC: permit link(2)  to work across --bind mounts ?
+References: <9BTqk-2ck-31@gated-at.bofh.it> <9BTJN-2Sv-21@gated-at.bofh.it>
+	<9BTTr-35L-13@gated-at.bofh.it>
+	<E1J4zCp-0003fj-5I@be1.7eggert.dyndns.org>
+	<20071219142351.GI8181@ftp.linux.org.uk>
+Date: Wed, 19 Dec 2007 16:42:32 +0100
+In-Reply-To: <20071219142351.GI8181@ftp.linux.org.uk> (Al Viro's message of
+	"Wed, 19 Dec 2007 14:23:51 +0000")
+Message-ID: <x7k5na1yjb.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-CC: Avi Kivity <avi@argo.co.il>, Ingo Molnar <mingo@elte.hu>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Gerd Hoffmann <kraxel@redhat.com>
-Subject: Re: [kvm-devel] Guest kernel hangs in smp kvm for older kernels prior
- to tsc sync cleanup
-References: <47680173.6060606@qumranet.com> <20071218221930.GA26109@elte.hu>	 <4768BB43.1000609@qumranet.com> <4768FE27.7020305@qumranet.com>	 <47690304.1090903@qumranet.com> <20071219140624.GF21282@elte.hu>	 <47692A47.4040803@argo.co.il> <5d6222a80712190732h515a63e6y49c64c0f572f044@mail.gmail.com>
-In-Reply-To: <5d6222a80712190732h515a63e6y49c64c0f572f044@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> Changes in rate does not sound good. It's possibly what's screwing up
-> my paravirt clock implementation in smp.
->   
+Hi Al,
 
-You should renew the timebase on vcpu migration, and hook cpufreq so 
-that changes in frequency are reflected in the timebase.
+Al Viro <viro@ftp.linux.org.uk> writes:
 
-> Since the host updates guest time prior to putting vcpu to run, two
-> vcpus that start running at different times will have different system
-> values.
+> On Wed, Dec 19, 2007 at 02:43:26PM +0100, Bodo Eggert wrote:
 >
-> Now if the vcpu that started running later probes the time first,
-> we'll se the time going backwards. A constant tsc rate is the only way
-> around
-> my limited mind sees around the problem (besides, obviously, _not_
-> making the system time per-vcpu).
->   
+>> Since nobody knows about this "security boundary" and everybody knows about
+>> the annoying "can't link across bind-mountpoints bug",
+>
+> ... how about teaching people to RTFM?  Starting, perhaps, with man 2
+> link?
 
-I tried disabling frequency scaling (rmmod acpi_cpufreq) but that didn't 
-help my present problems.
+Making people RTFM?  Are you trippin? ;)
 
--- 
-error compiling committee.c: too many arguments to function
+But in the sense of providing mechanism not (only) policy, a mount
+option for that behaviour would still be nice.
 
+	Hannes
