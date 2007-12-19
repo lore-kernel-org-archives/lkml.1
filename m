@@ -1,95 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbXLSQk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbXLSQmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753804AbXLSQk6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 11:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbXLSQku
+	id S1754713AbXLSQmS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 11:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXLSQmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 11:40:50 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:12601 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751276AbXLSQkt (ORCPT
+	Wed, 19 Dec 2007 11:42:07 -0500
+Received: from there.is.no.cabal.ca ([134.117.69.58]:47046 "EHLO
+	fattire.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751562AbXLSQmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 11:40:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=L2ZWQE1fNFJwo0lbGSbFvJSrvVV8dlY+0yISObghQc3ENw/HpZed/Ued6z5zNo/si/QfCFoup3Yg7+IuSCCAr/SGFB91jubfJ8RPOMEzPDCu+NTdF2XWF0jHeHhX6I9zgXixph5iIPdaQrkhJVbTq3AciFowFp3EIUbwGsFde1E=
-Message-ID: <3efb10970712190840m39876762yb4d31c36723c3b8a@mail.gmail.com>
-Date: Wed, 19 Dec 2007 17:40:44 +0100
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-Subject: Re: [PATCH v2 0/6] atmel_serial: Cleanups, irq handler splitup & DMA
-Cc: "Andrew Victor" <linux@maxim.org.za>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       "Russell King" <linux@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-       kernel@avr32linux.org
-In-Reply-To: <20071219170935.4df62471@dhcp-252-066.norway.atmel.com>
+	Wed, 19 Dec 2007 11:42:06 -0500
+Date: Wed, 19 Dec 2007 11:42:04 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: David Chinner <dgc@sgi.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org
+Subject: Re: [ia64] BUG: sleeping in atomic
+Message-ID: <20071219164204.GA18161@fattire.cabal.ca>
+References: <20071219055430.GV4396912@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1198077130-9021-1-git-send-email-hskinnemoen@atmel.com>
-	 <3efb10970712190757m18f8851cq54061ff109790805@mail.gmail.com>
-	 <20071219170935.4df62471@dhcp-252-066.norway.atmel.com>
-X-Google-Sender-Auth: 080bd65a49489ae2
+In-Reply-To: <20071219055430.GV4396912@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Haavard,
+On Wed, Dec 19, 2007 at 04:54:30PM +1100, David Chinner wrote:
+> [ 5667.086055] BUG: sleeping function called from invalid context at kernel/fork.c:401
+> 
 
-> Could you try the patch below? It's a bit strange that you got an oops
-> though...
+The problem is that mmput is called under the read_lock by
+find_thread_for_addr... The comment above seems to indicate that gdb
+needs to be able to access any child tasks register backing store
+memory... This seems pretty broken.
 
-It is not really strange... spinlocks are mutexes on preempt-rt, and
-recursive mutex locking is not allowed, this is one differences with
-the mainline spinlock.
+cheers, Kyle
 
-But... I tried that patch, and it works a lot better, no oopses
-anymore, but I noticed that I sometimes get an input overrun (ttyS0: 1
-input overrun(s) ) during stress conditions.
-This is something I did not notice before, maybe it was already there,
-or has something changed in this area that it is now more sensitive
-for this?
+---
 
-Kind Regards,
+Who knows, maybe gdb is saner now?
 
-Remy
-
-2007/12/19, Haavard Skinnemoen <hskinnemoen@atmel.com>:
-> On Wed, 19 Dec 2007 16:57:04 +0100
-> "Remy Bohmer" <linux@bohmer.net> wrote:
->
-> > Hello Haavard,
-> >
-> > Sorry.. But I get an Oops on Preempt-RT with the latest set of
-> > patches. I did not see it earlier today with the other set of patches.
->
-> Hmm...from the backtrace, it looks like lock recursion -- port->lock is
-> held for the whole duration of the tasklet, but we somehow end up in
-> uart_start(), which grabs the lock again.
->
-> Could you try the patch below? It's a bit strange that you got an oops
-> though...
->
-> Haavard
->
-> diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-> index 7967054..948c643 100644
-> --- a/drivers/serial/atmel_serial.c
-> +++ b/drivers/serial/atmel_serial.c
-> @@ -666,7 +666,13 @@ static void atmel_rx_from_ring(struct uart_port *port)
->                 uart_insert_char(port, status, ATMEL_US_OVRE, c.ch, flg);
->         }
->
-> +       /*
-> +        * Drop the lock here since it might end up calling
-> +        * uart_start(), which takes the lock.
-> +        */
-> +       spin_unlock(&port->lock);
->         tty_flip_buffer_push(port->info->tty);
-> +       spin_lock(&port->lock);
->  }
->
->  static void atmel_rx_from_dma(struct uart_port *port)
->
+diff --git a/arch/ia64/kernel/ptrace.c b/arch/ia64/kernel/ptrace.c
+index 2e96f17..b609704 100644
+--- a/arch/ia64/kernel/ptrace.c
++++ b/arch/ia64/kernel/ptrace.c
+@@ -1418,7 +1418,7 @@ asmlinkage long
+ sys_ptrace (long request, pid_t pid, unsigned long addr, unsigned long data)
+ {
+ 	struct pt_regs *pt;
+-	unsigned long urbs_end, peek_or_poke;
++	unsigned long urbs_end;
+ 	struct task_struct *child;
+ 	struct switch_stack *sw;
+ 	long ret;
+@@ -1430,23 +1430,12 @@ sys_ptrace (long request, pid_t pid, unsigned long addr, unsigned long data)
+ 		goto out;
+ 	}
+ 
+-	peek_or_poke = (request == PTRACE_PEEKTEXT
+-			|| request == PTRACE_PEEKDATA
+-			|| request == PTRACE_POKETEXT
+-			|| request == PTRACE_POKEDATA);
+-	ret = -ESRCH;
+-	read_lock(&tasklist_lock);
+-	{
+-		child = find_task_by_pid(pid);
+-		if (child) {
+-			if (peek_or_poke)
+-				child = find_thread_for_addr(child, addr);
+-			get_task_struct(child);
+-		}
+-	}
+-	read_unlock(&tasklist_lock);
+-	if (!child)
++	child = ptrace_get_task_struct(pid);
++	if (IS_ERR(child)) {
++		ret = PTR_ERR(child);
+ 		goto out;
++	}
++
+ 	ret = -EPERM;
+ 	if (pid == 1)		/* no messing around with init! */
+ 		goto out_tsk;
