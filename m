@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbXLSNqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbXLSNtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756987AbXLSNqv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 08:46:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbXLSNqn
+	id S1756606AbXLSNtg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 08:49:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbXLSNt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 08:46:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43353 "EHLO mx2.mail.elte.hu"
+	Wed, 19 Dec 2007 08:49:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44910 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753478AbXLSNqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 08:46:42 -0500
-Date: Wed, 19 Dec 2007 14:45:46 +0100
+	id S1753009AbXLSNt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 08:49:28 -0500
+Date: Wed, 19 Dec 2007 14:48:07 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-Cc: Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       zach@vmware.com, roland@redhat.com
-Subject: Re: [PATCH] finish processor.h integration
-Message-ID: <20071219134546.GA21282@elte.hu>
-References: <1198008293639-git-send-email-gcosta@redhat.com> <20071219101736.GC3521@elte.hu> <5d6222a80712190415q7921b244ua073a8c64ab30597@mail.gmail.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: bcm43xx-dev@lists.berlios.de, Larry Finger <larry.finger@lwfinger.net>,
+       mvtodevnull@gmail.com, Daniel Walker <dwalker@mvista.com>,
+       akpm@linux-foundation.org, Ray Lee <ray-lk@madrabbit.org>,
+       n <odie@cs.aau.dk>,
+       SimonHolm=?iso-8859-1?q?Th=F8gerse?=@mail.berlios.de,
+       matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org,
+       jonathan@jonmasters.org, kjwinchester@gmail.com, linux@bohmer.net
+Subject: Re: [PATCH 3/3] net: wireless: bcm43xx: big_buffer_sem semaphore
+	to mutex
+Message-ID: <20071219134805.GC21282@elte.hu>
+References: <20071213003028.676998182@mvista.com> <520b60a90712181812l3fd6c4cbicece82a4487d0587@mail.gmail.com> <4768D216.3000904@lwfinger.net> <200712191046.54147.mb@bu3sch.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5d6222a80712190415q7921b244ua073a8c64ab30597@mail.gmail.com>
+In-Reply-To: <200712191046.54147.mb@bu3sch.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,18 +41,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Glauber de Oliveira Costa <glommer@gmail.com> wrote:
+* Michael Buesch <mb@bu3sch.de> wrote:
 
-> > i fixed it up by hand - the result is below - does it look OK to 
-> > you? (Also, could you check latest x86.git whether i've picked up 
-> > all your patches correctly - the reject might be indicative of some 
-> > missing pieces.)
+> On Wednesday 19 December 2007 09:11:02 Larry Finger wrote:
+> > > 
+> > > or could tsc being marked as unstable have anything to do with the
+> > > speed of network transfers?
+> > 
+> > Absolutely not.
 > 
-> Your fix is okay. The other patches seems to be all there. The reason 
-> for this is that it conflicts with Roland's (welcome) i387 patches.
+> Well, if the clocksource of the machine is unstable it _can_ cause all 
+> kinds of weird things. If you think something is broken in the tsc 
+> stuff, please switch to using another clocksource.
 
-ah, indeed - i forgot about that interaction. Your patches passed a
-few hundred random builds and bootups meanwhile so i think they are
-now 100% Perfect (tm) :-)
+also, if it gets marked unstable (which is typical on laptops) then the 
+kernel switches to a more stable, non-TSC clocksource automatically. 
+(hpet or pit)
 
 	Ingo
