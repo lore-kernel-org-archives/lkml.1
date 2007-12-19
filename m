@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbXLSMzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbXLSNLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbXLSMzn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 07:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbXLSMzf
+	id S1754541AbXLSNLK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 08:11:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbXLSNK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 07:55:35 -0500
-Received: from mout2.freenet.de ([195.4.92.92]:38310 "EHLO mout2.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752532AbXLSMze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 07:55:34 -0500
-From: Karsten Wiese <fzu@wemgehoertderstaat.de>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [RFC/PATCH] 2.6.24-rcx: Make sys_poll() wait at least timeout ms
-Date: Wed, 19 Dec 2007 13:55:25 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: linux-kernel@vger.kernel.org
-References: <fa.QbT8/KZb1MTA5+n7SD6kFi6mqso@ifi.uio.no> <200712190206.56428.fzu@wemgehoertderstaat.de> <4768820E.9050700@shaw.ca>
-In-Reply-To: <4768820E.9050700@shaw.ca>
+	Wed, 19 Dec 2007 08:10:57 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:11287 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751280AbXLSNK4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 08:10:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PgnbAekqtmkyyxnelq245M/+HbAhBD7B884xwMBlHMSiU+yS/wiyxTaDr4Qh2jUI++Ork7yBTAZUTUix4BXaGt4xDc66Mbwyug8OfYTzeDrKT68kID0bnVveF9L1C6BYrHdFVfAAfdIPURE72+IoQ+1bFz0nvXlypnsvP/zDzEc=
+Message-ID: <a44ae5cd0712190510h72998e1dj5b03a00461a554f3@mail.gmail.com>
+Date: Wed, 19 Dec 2007 08:10:54 -0500
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Zhu Yi" <yi.zhu@intel.com>
+Subject: Re: [ipw3945-devel] 2.6.24-rc5-mm1 -- INFO: possible circular locking dependency detected -- pm-suspend/5800 is trying to acquire lock
+Cc: "Johannes Berg" <johannes@sipsolutions.net>,
+       "Len Brown" <len.brown@intel.com>, netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ipw3945-devel@lists.sourceforge.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Pavel Machek" <pavel@suse.cz>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <1198033082.2857.303.camel@debian.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712191355.25993.fzu@wemgehoertderstaat.de>
+References: <a44ae5cd0712180603v2a37023dj714a8500c14c08de@mail.gmail.com>
+	 <1197986886.4885.156.camel@johannes.berg>
+	 <a44ae5cd0712180641n15ceae8bp977efe9a5b45e6bc@mail.gmail.com>
+	 <1197989826.4885.169.camel@johannes.berg>
+	 <1198033082.2857.303.camel@debian.sh.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 19. Dezember 2007 schrieb Robert Hancock:
-> Karsten Wiese wrote:
-> > Am Mittwoch, 19. Dezember 2007 schrieb Robert Hancock:
-> >> That seems fishy. What is your value of HZ and what is the timeout value 
-> >> that was passed in the bad case?
-> > 
-> > HZ set to 250, timeout to 4ms.
-> > Time spent in poll() taken by clock_gettime(CLOCK_MONOTONIC, &time)
-> > before and after poll()call: i.e 62us.
-> > Time measured with hpet gave 166us once.
-> 
-> msecs_to_jiffies (kernel/time.c) has this:
-> 
-> #if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
-> 	/*
-> 	 * HZ is equal to or smaller than 1000, and 1000 is a nice
-> 	 * round multiple of HZ, divide with the factor between them,
-> 	 * but round upwards:
-> 	 */
-> 	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
-> 
-> With HZ=250 and m=4 this gives 7/4 or only 1 jiffy, which is not more 
-> than 4ms, but if we are already at near the end of the current jiffy it 
-> could be much less than that (potentially almost no time at all).
-> 
-> Maybe we could convert poll to use a hrtimer for this instead?
+On Dec 18, 2007 9:58 PM, Zhu Yi <yi.zhu@intel.com> wrote:
+>
+> On Tue, 2007-12-18 at 15:57 +0100, Johannes Berg wrote:
+> > Thanks. This is a bug in iwlwifi.
+> >
+> > The problem is actually another case where my workqueue debugging with
+> > lockdep is triggering a warning :))
+> >
+> > Here's the thing:
+> >
+> > iwl3945_cancel_deferred_work does
+> >
+> > cancel_delayed_work_sync(&priv->init_alive_start);
+> >
+> > (which is the "(&(&priv->init_alive_start)->work)" lock)
+> >
+> > but it is called from within a locked section of
+> > mutex_lock(&priv->mutex); (locked from iwl3945_pci_suspend)
+> >
+> > On the other hand, the task that runs from the init_alive_start
+> > workqueue is iwl3945_bg_init_alive_start() which will lock the same
+> > mutex.
+> >
+> > So the deadlock condition is that you can be in
+> > cancel_delayed_work_sync() above while the mutex is locked, and be
+> > waiting for iwl_3945_bg_init_alive_start() which tries to lock the
+> > mutex.
+>
+> Thanks for the analysis.
+>
+> Miles, please try the attached patch. I'll send a patch for both 3945
+> and 4965 to linux-wireless later.
 
-That wouldn't fix configs without hrtimers.
+I tested it and it looks good here.  Thanks!
 
-The linux manpage reflects current behaviour:
-from man2/poll.2.gz
-"The timeout argument specifies an upper limit on the time for which
-poll() will block, in milliseconds."
-To achieve "at least" timeouts we'd have to add a jiffy's ms to the
-timeout in userspace.
-
-I'd like to let sys_poll() behave according to posix's manpage:
-from man3p/poll.3p.gz
-"poll() shall wait at least timeout milliseconds"
-Thats easier to specify in userspace. No need to know the running kernel's
-HZ.
-
-Above posix/linux difference also shows in select() manpages.
-epoll_wait() (linux only) manpage also says "maximum time of timeout"
-A more complete patch would tweek (p)poll (p)select and epoll_(p)wait.
-There are possibly more syscalls affected that I'm not aware off.
-
-Is there upstream interest?
-
-      Karsten
+        Miles
