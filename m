@@ -1,110 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbXLSFxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbXLSFyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbXLSFxd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 00:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbXLSFxZ
+	id S1755355AbXLSFyu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 00:54:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbXLSFym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 00:53:25 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:49262 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbXLSFxY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 00:53:24 -0500
-Message-ID: <4768B1C5.1000604@linux.vnet.ibm.com>
-Date: Wed, 19 Dec 2007 11:23:09 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] memcgroup: work better with tmpfs
-References: <Pine.LNX.4.64.0712182215460.29209@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0712182215460.29209@blonde.wat.veritas.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Dec 2007 00:54:42 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:45929 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751233AbXLSFyl (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 00:54:41 -0500
+Date: Wed, 19 Dec 2007 16:54:30 +1100
+From: David Chinner <dgc@sgi.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org
+Subject: [ia64] BUG: sleeping in atomic
+Message-ID: <20071219055430.GV4396912@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> Here's a couple of patches to get memcgroups working better with tmpfs
-> and shmem, in conjunction with the tmpfs patches I just posted.  There
-> will be another to come later on, but I shouldn't wait any longer to get
-> these out to you.
-> 
+Just saw this again:
 
-Hi, Hugh,
+[ 5667.086055] BUG: sleeping function called from invalid context at kernel/fork.c:401
+[ 5667.087314] in_atomic():1, irqs_disabled():0
+[ 5667.088210]
+[ 5667.088212] Call Trace:
+[ 5667.089104]  [<a000000100015e00>] show_stack+0x80/0xa0
+[ 5667.089106]                                 sp=e0000038f6507a00 bsp=e0000038f6500f48
+[ 5667.116025]  [<a000000100015e50>] dump_stack+0x30/0x60
+[ 5667.116028]                                 sp=e0000038f6507bd0 bsp=e0000038f6500f30
+[ 5667.118317]  [<a0000001000af8a0>] __might_sleep+0x1e0/0x200
+[ 5667.118320]                                 sp=e0000038f6507bd0 bsp=e0000038f6500f08
+[ 5667.142316]  [<a0000001000c55a0>] mmput+0x20/0x220
+[ 5667.142319]                                 sp=e0000038f6507bd0 bsp=e0000038f6500ee0
+[ 5667.164201]  [<a000000100033ae0>] sys_ptrace+0x460/0x15c0
+[ 5667.164203]                                 sp=e0000038f6507bd0 bsp=e0000038f6500dd0
+[ 5667.175488]  [<a00000010000b4a0>] ia64_ret_from_syscall+0x0/0x20
+[ 5667.175490]                                 sp=e0000038f6507e30 bsp=e0000038f6500dd0
+[ 5667.199324]  [<a000000000010620>] __kernel_syscall_via_break+0x0/0x20
+[ 5667.199327]                                 sp=e0000038f6508000 bsp=e0000038f6500dd0
+[ 5682.626704] BUG: sleeping function called from invalid context at kernel/fork.c:401
 
-Thank you so much for the review, some comments below
+When stracing a process on 2.6.24-rc3 on ia64. commandline to reproduce:
 
-> (The missing patch will want to leave a mem_cgroup associated with a tmpfs
-> file or shm object, so that if its pages get brought back from swap by
-> swapoff, they can be associated with that mem_cgroup rather than the one
-> which happens to be running swapoff.)
-> 
->  mm/memcontrol.c |   81 ++++++++++++++++++++--------------------------
->  mm/shmem.c      |   28 +++++++++++++++
->  2 files changed, 63 insertions(+), 46 deletions(-)
-> 
-> But on the way I've noticed a number of issues with memcgroups not dealt
-> with in these patches.
-> 
-> 1. Why is spin_lock_irqsave rather than spin_lock needed on mz->lru_lock?
-> If it is needed, doesn't mem_cgroup_isolate_pages need to use it too?
-> 
+# strace ls -l /mnt/scratch/test
 
-We always call mem_cgroup_isolate_pages() from shrink_(in)active_pages
-under spin_lock_irq of the zone's lru lock. That's the reason that we
-don't explicitly use it in the routine.
+ISTR reporting this some time ago (maybe 2.6.22?)....
 
-> 2. There's mem_cgroup_charge and mem_cgroup_cache_charge (wouldn't the
-> former be better called mem_cgroup_charge_mapped? why does the latter
+Cheers,
 
-Yes, it would be. After we've refactored the code, the new name makes sense.
-
-> test MEM_CGROUP_TYPE_ALL instead of MEM_CGROUP_TYPE_CACHED? I still don't
-> understand your enums there).
-
-We do that to ensure that we charge page cache pages only when the
-accounting type is set to MEM_CGROUP_TYPE_ALL. If the type is anything
-else, we ignore cached pages, we did not have MEM_CGROUP_TYPE_CACHED
-initially when the patches went in.
-
- But there's only mem_cgroup_uncharge.
-> So when, for example, an add_to_page_cache fails, the uncharge may not
-> balance the charge?
-> 
-
-We use mem_cgroup_uncharge() everywhere. The reason being, we might
-switch control type, we uncharge pages that have a page_cgroup
-associated with them, hence once we;ve charged, uncharge does not
-distinguish between charge types.
-
-> 3. mem_cgroup_charge_common has rcu_read_lock/unlock around its
-> rcu_dereference; mem_cgroup_cache_charge does not: is that right?
-> 
-
-Very good catch! Will fix it.
-
-> 4. That page_assign_page_cgroup in free_hot_cold_page, what case is that
-> handling?  Wouldn't there be a leak if it ever happens?  I've been running
-> with a BUG_ON(page->page_cgroup) there and not hit it - should it perhaps
-> be a "Bad page state" case?
-> 
-
-Our cleanup in page_cache_uncharge() does take care of cleaning up the
-page_cgroup. I think you've got it right, it should be a BUG_ON in
-free_hot_cold_page()
-
-> Hugh
-
-Thanks for the detailed review and fixes.
-
+Dave.
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
