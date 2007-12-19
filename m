@@ -1,75 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbXLSONp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbXLSOYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757521AbXLSONp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 09:13:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbXLSONh
+	id S1755186AbXLSOYH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 09:24:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbXLSOX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 09:13:37 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:56924 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754374AbXLSONg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 09:13:36 -0500
-Date: Wed, 19 Dec 2007 08:13:30 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       linux-fsdevel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-Message-ID: <20071219141330.GB31694@sergelap.austin.ibm.com>
-References: <20071216080441.435456586@I-love.SAKURA.ne.jp> <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <476724E3.6060901@cs.columbia.edu> <20071218020933.GA28745@sergelap.austin.ibm.com> <476738A0.9010601@cs.columbia.edu>
-MIME-Version: 1.0
+	Wed, 19 Dec 2007 09:23:56 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:60767 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752532AbXLSOXz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 09:23:55 -0500
+Date: Wed, 19 Dec 2007 14:23:51 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Mark Lord <lkml@rtr.ca>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: RFC: permit link(2)  to work across --bind mounts ?
+Message-ID: <20071219142351.GI8181@ftp.linux.org.uk>
+References: <9BTqk-2ck-31@gated-at.bofh.it> <9BTJN-2Sv-21@gated-at.bofh.it> <9BTTr-35L-13@gated-at.bofh.it> <E1J4zCp-0003fj-5I@be1.7eggert.dyndns.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <476738A0.9010601@cs.columbia.edu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <E1J4zCp-0003fj-5I@be1.7eggert.dyndns.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oren Laadan (orenl@cs.columbia.edu):
-> 
-> Serge E. Hallyn wrote:
-> > Quoting Oren Laadan (orenl@cs.columbia.edu):
-> >> I hate to bring this again, but what if the admin in the container
-> >> mounts an external file system (eg. nfs, usb, loop mount from a file,
-> >> or via fuse), and that file system already has a device that we would
-> >> like to ban inside that container ?
-> > 
-> > Miklos' user mount patches enforced that if !capable(CAP_MKNOD),
-> > then mnt->mnt_flags |= MNT_NODEV.  So that's no problem.
-> 
-> Yes, that works to disallow all device files from a mounted file system.
-> 
-> But it's a black and white thing: either they are all banned or allowed;
-> you can't have some devices allowed and others not, depending on type
-> A scenario where this may be useful is, for instance, if we some apps in
-> the container to execute withing a pre-made chroot (sub)tree within that
-> container.
+On Wed, Dec 19, 2007 at 02:43:26PM +0100, Bodo Eggert wrote:
 
-Yes, it's workable short-term, and we've always said that a more
-complete solution would be worked on later, as people have time.
+> Since nobody knows about this "security boundary" and everybody knows about
+> the annoying "can't link across bind-mountpoints bug",
 
-> > But that's been pulled out of -mm! ?  Crap.
-> > 
-> >> Since anyway we will have to keep a white- (or black-) list of devices
-> >> that are permitted in a container, and that list may change even change
-> >> per container -- why not enforce the access control at the VFS layer ?
-> >> It's safer in the long run.
-> > 
-> > By that you mean more along the lines of Pavel's patch than my whitelist
-> > LSM, or you actually mean Tetsuo's filesystem (i assume you don't mean that
-> > by 'vfs layer' :), or something different entirely?
-> 
-> :)
-> 
-> By 'vfs' I mean at open() time, and not at mount(), or mknod() time.
-> Either yours or Pavel's; I tend to prefer not to use LSM as it may
-> collide with future security modules.
-
-Yeah I keep waffling.  The LSM is so simple...  but i do prefer Pavel's
-patch.  Let's keep pursuing that.
-
--serge
+... how about teaching people to RTFM?  Starting, perhaps, with man 2 link?
