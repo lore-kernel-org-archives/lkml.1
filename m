@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbXLSFSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbXLSFVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753408AbXLSFSx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 00:18:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbXLSFSp
+	id S1753893AbXLSFVq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 00:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbXLSFVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 00:18:45 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57141 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbXLSFSp (ORCPT
+	Wed, 19 Dec 2007 00:21:38 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:23409 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbXLSFVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 00:18:45 -0500
-Date: Wed, 19 Dec 2007 14:17:53 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [patch 10/20] SEQ replacement for anonymous pages
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, lee.shermerhorn@hp.com
-In-Reply-To: <20071218211549.536791435@redhat.com>
-References: <20071218211539.250334036@redhat.com> <20071218211549.536791435@redhat.com>
-Message-Id: <20071219140904.9858.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 19 Dec 2007 00:21:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=HGPg1VUOTUnU8LErWy/mlluSy08A7NNv3ZSWeIctVEDkOPS+U7kkq2Y1Y+3QdKmw2arMeVv0bvztoyBNgnNP7q5vojDWQshrY/2k3mP1Zo5lN/5rwaeleQxF+cZDuACR1ympQsFeNQ59ZPNFJmEqvQZW+SoAWygUte90JbikJ/Y=
+Subject: Re: [PATCH 3/4] x86: add kprobe-booster to X86_64
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Roland McGrath <roland@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, prasanna@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <4768A18F.4040406@redhat.com>
+References: <1197930464.23402.112.camel@brick>
+	 <20071218112936.GE9002@elte.hu> <1197978160.7734.31.camel@brick>
+	 <4767D02C.6030704@redhat.com> <1198031400.7734.41.camel@brick>
+	 <4768A18F.4040406@redhat.com>
+Content-Type: text/plain
+Date: Tue, 18 Dec 2007 21:21:34 -0800
+Message-Id: <1198041694.10357.2.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rik-san,
+On Tue, 2007-12-18 at 23:43 -0500, Masami Hiramatsu wrote:
+> Harvey Harrison wrote:
+> > On Tue, 2007-12-18 at 08:50 -0500, Masami Hiramatsu wrote:
+> >> Hi Harvey,
+> >>
+> >> Thank you for cleaning this up.
+> >>
+> >> Harvey Harrison wrote:
+> >>> Subject: [PATCH] x86: kprobes leftover cleanups
+> >>>
+> >>> Eliminate __always_inline, all of these static functions are
+> >>> only called once.  Minor whitespace cleanup.  Eliminate one
+> >>> supefluous return at end of void function.  Reverse sense of
+> >>> #ifndef to be #ifdef to show the case only affects X86_32.
+> >> Unfortunately, to prevent kprobe recursive call, all functions which
+> >> is called from kprobes must be inlined or have __kprobes.
+> >> If __always_inline macro still work, I prefer to use it. If not,
+> >> it must have a __kprobe attribute like as below.
+> > 
+> > I thought all static functions that were only called once were
+> > automatically inlined these days?  Otherwise __always_inline and
+> > inline are exactly the same in the kernel.
+> 
+> Yes, it will be (not obviously) inlined, currently.
+> However, IMHO, it is not fail-safe coding.
+> 
 
-> To keep the maximum amount of necessary work reasonable, we scale the
-> active to inactive ratio with the size of memory, using the formula
-> active:inactive ratio = sqrt(memory in GB * 10).
+Fair enough, you seem to have a deeper understanding of the code than
+I, I'd suggest __kprobes as a better annotation for this purpose though.
 
-Great.
+> I think we might better take care of someone who will modify the code
+> in the future. If they call those functions from other place,
+> it will not be inlined, and may be placed out of .kprobes.text.
+> In that case, we can not prevent inserting kprobes in those functions.
+> 
+> Thus, I recommend you to add __kprobes on those functions.
+> That indicates which functions will be used by kprobes and gives
+> hints how to write functions which will be called from kprobes.
+> (And also, it simplifies coding rule.)
 
-why do you think best formula is sqrt(GB*10)?
-please tell me if you don't mind.
+Patch forthcoming.
 
-and i have a bit worry to it works well or not on small systems.
-because it is indicate 1:1 ratio on less than 100MB memory system.
-Do you think this viewpoint?
-
-
-/kosaki
+Harvey
 
