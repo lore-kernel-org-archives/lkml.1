@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbXLSXe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbXLSXfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756769AbXLSXe5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 18:34:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbXLSXet
+	id S1757925AbXLSXfW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 18:35:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbXLSXfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 18:34:49 -0500
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:34513 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752319AbXLSXes (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 18:34:48 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=pobFPFw3QGXAaTLAHVEMrY03QpPr1snVzElhmeIvyf4tiy6oCMRHljGtP+dhObYk8WP0vAT4HwVp+rQcjrAETHTdklZISIsg7nYvJKF3nCyWMHs0I1W4AbKbUTsRf2Gs7Ovv2wcpF7isMenkJmFRSe1cvlGJSInVLighm0Bq6u8=  ;
-X-YMail-OSG: 7VXKBhkVM1lX6WPryCZ9Kn.RtI7EJFRtktDC7BY9gch1nNer
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [patch 17/20] non-reclaimable mlocked pages
-Date: Thu, 20 Dec 2007 10:34:22 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-References: <20071218211539.250334036@redhat.com> <200712191156.48507.nickpiggin@yahoo.com.au> <20071219084534.4fee8718@bree.surriel.com>
-In-Reply-To: <20071219084534.4fee8718@bree.surriel.com>
+	Wed, 19 Dec 2007 18:35:04 -0500
+Received: from nofear-snat.bivio.net ([216.142.75.231]:33254 "EHLO
+	corpexc01.corp.networkrobots.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757516AbXLSXe7 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 18:34:59 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712201034.22668.nickpiggin@yahoo.com.au>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: printf internals
+Date: Wed, 19 Dec 2007 15:31:15 -0800
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF56B@corpexc01.corp.networkrobots.com>
+In-Reply-To: <1198107085.7740.0.camel@oasis.donpoo.home>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: printf internals
+Thread-Index: AchClsMdyDxsjMeDSYSFTMXDdvaWMQAAD4BA
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D7011A8217@corpexc01.corp.networkrobots.com> <4761E289.9070007@davidnewall.com> <4762AC35.3010706@anagramm.de> <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF540@corpexc01.corp.networkrobots.com> <1198107085.7740.0.camel@oasis.donpoo.home>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: "Scott Russell" <catfather@donpoo.net>
+Cc: "Clemens Koller" <clemens.koller@anagramm.de>,
+       "David Newall" <david@davidnewall.com>, <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 December 2007 00:45, Rik van Riel wrote:
-> On Wed, 19 Dec 2007 11:56:48 +1100
->
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > On Wednesday 19 December 2007 08:15, Rik van Riel wrote:
-> > > Rework of a patch by Nick Piggin -- part 1 of 2.
-> > >
-> > > This patch:
-> > >
-> > > 1) defines the [CONFIG_]NORECLAIM_MLOCK sub-option and the
-> > >    stub version of the mlock/noreclaim APIs when it's
-> > >    not configured.  Depends on [CONFIG_]NORECLAIM.
-> >
-> > Hmm, I still don't know (or forgot) why you don't just use the
-> > old scheme of having an mlock count in the LRU bit, and removing
-> > the mlocked page from the LRU completely.
->
-> How do we detect those pages reliably in the lumpy reclaim code?
 
-They will have PG_mlocked set.
+Yes!... this is a embedded system, and will not have monitor. So, serial
+is the default console.
+
+I pass cmdline as "root=/dev/ram rw console=ttyS0,115200"
+
+Thanks
+Siva
 
 
-> > These mlocked pages don't need to be on a non-reclaimable list,
-> > because we can find them again via the ptes when they become
-> > unlocked, and there is no point background scanning them, because
-> > they're always going to be locked while they're mlocked.
->
-> Agreed.
->
-> The main reason I sent out these patches now is that I just
-> wanted to get some comments from other upstream developers.
->
-> I have gotten distracted by other work so much that I spent
-> most of my time forward porting the patch set, and not enough
-> time working with the rest of the upstream community to get
-> the code moving forward.
->
-> To be honest, I have only briefly looked at the non-reclaimable
-> code.  I would be more than happy to merge any improvements to
-> that code.
+-----Original Message-----
+From: Scott Russell [mailto:catfather@donpoo.net] 
+Sent: Wednesday, December 19, 2007 3:31 PM
+To: Siva Prasad
+Cc: Clemens Koller; David Newall; linux-kernel@vger.kernel.org
+Subject: RE: printf internals
 
-I haven't had too much time to look at it either, although it does
-seem like a reasonable idea.
 
-However the mlock code could be completely separate from the slow
-scan pages (and not be on those LRUs at all).
+On Wed, 2007-12-19 at 14:33 -0800, Siva Prasad wrote:
+> Thank you very much for your response Clemens.
+> 
+> I tried strace on a regular system. It does not show which tty, etc.,
+as it uses the stdout (fd = 1) and write(1, ...) to it.
+> 
+> This is not a student project. I am trying to build my own kernel and
+ramdisk. Kernel boots fine to a point where it starts accessing ramdisk
+and executes init scripts. From there on nothing gets printed. I did
+some debugging and found that prints of user land programs are not
+coming to the serial console, while kernel prints are working fine. I
+found all the programs getting executed, by placing a printk in execve
+routine and printing the arguments.
+> 
+> So, I wanted to trace down the path from user program to the kernel
+and see why it is not printing messages from user program. I placed a
+printk in drivers/char/tty_io.c:tty_write() and it is not getting called
+from my file system. I tried the same thing on my good system (say
+regular PC) and it works as expected.
+> 
+> Any clues that can help debug this issue is highly appreciated.
+> How can I get access to the same printf string inside kernel.
+
+This sounds like you're printing out the serial console instead.
+
+-- 
+Scott <catfather@donpoo.net>
+AIM: BlueCame1
+
