@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbXLST0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbXLST1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756477AbXLST0F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 14:26:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbXLSTZx
+	id S1756219AbXLST1U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 14:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXLST1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 14:25:53 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:16306 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752874AbXLSTZw (ORCPT
+	Wed, 19 Dec 2007 14:27:07 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:63870 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753365AbXLST1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 14:25:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=L8S6IL2ZSLdHmdPgMtxNmehHNe07+efqxsxICADpDzhN44BYx1jOi9zocj0jM1q/hDiv/zr8HdEBblX0XmsC4/xmX99/Gdvog+Ldp3nQTBA1mPhH4yemj1P5eHXoOJh48gcA/awqJqWIFacmzKMaByLZAIQ4UsZj3J2ie2tVlW4=
-Date: Wed, 19 Dec 2007 20:27:20 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>
-Subject: Re: [PATCH 5/6] udf: fix signedness issue
-Message-ID: <20071219192707.GA18305@joi>
-References: <20071216021556.GF26986@joi> <20071217163216.GI6979@atrey.karlin.mff.cuni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20071217163216.GI6979@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 19 Dec 2007 14:27:06 -0500
+Subject: Re: 2.6.24-rc5-mm1 -- inconsistent {in-hardirq-W} ->
+	{hardirq-on-W} usage -- pm-hibernate/9940 [HC0[0]:SC0[0]:HE1:SE1]
+From: Daniel Walker <dwalker@mvista.com>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, clameter@sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1198089729.2716.45.camel@imap.mvista.com>
+References: <a44ae5cd0712190517t7c80e15bv759fa5486dfca234@mail.gmail.com>
+	 <47693385.1010901@gmail.com>  <1198089729.2716.45.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Wed, 19 Dec 2007 11:23:20 -0800
+Message-Id: <1198092200.2716.49.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 17, 2007 at 05:32:17PM +0100, Jan Kara wrote:
-> > sparse generated:
-> > fs/udf/namei.c:896:15: originally declared here
-> > fs/udf/namei.c:1147:41: warning: incorrect type in argument 3 (different signedness)
-> > fs/udf/namei.c:1147:41:    expected int *offset
-> > fs/udf/namei.c:1147:41:    got unsigned int *<noident>
-> > fs/udf/namei.c:1152:78: warning: incorrect type in argument 3 (different signedness)
-> > fs/udf/namei.c:1152:78:    expected int *offset
-> > fs/udf/namei.c:1152:78:    got unsigned int *<noident>
-> >
-> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
->   I don't think this is right. udf_get_fileident() should take "unsigned
-> int *" as an offset, not just "int". This means changing struct
-> udf_fileident_bh to use unsigned int too but that is better anyway.
->   And BTW the type shouldn't be uint32_t but really unsigned int in
-> udf_rename (int needn't have 32 bits on all archs (although I think it
-> has currently)).
-That would be hard. Look what is happening with soffset and eoffset
-eg in udf_fileident_read() - these fields are used as signed ints.
+On Wed, 2007-12-19 at 10:42 -0800, Daniel Walker wrote:
+> On Wed, 2007-12-19 at 10:06 -0500, Miles Lane wrote:
+> > [   11.827653] PM: Creating hibernation image:
+> > [   11.827658] WARNING: at arch/x86/kernel/smp_32.c:561 
+> > native_smp_call_function_mask()
+> > [   11.827661] Pid: 9940, comm: pm-hibernate Not tainted
+> > 2.6.24-rc5-mm1 #8
+> > [   11.827665]  [<c0107d55>] show_trace_log_lvl+0x12/0x25
+> > [   11.827673]  [<c010848a>] show_trace+0xd/0x10
+> > [   11.827677]  [<c0108763>] dump_stack+0x57/0x5f
+> > [   11.827681]  [<c0117db4>] native_smp_call_function_mask+0x41/0x126
+> > [   11.827686]  [<c01192d9>] smp_call_function+0x18/0x1f
+> > [   11.827690]  [<c012c624>] on_each_cpu+0x12/0x40
+> > [   11.827695]  [<c0166ece>] drain_all_pages+0x13/0x16
+> > [   11.827700]  [<c014f7b3>] swsusp_save+0x18/0x46b
+> > [   11.827705]  [<c03103fa>] swsusp_arch_suspend+0x2a/0x2c
+> > [   11.827710]  [<c014e7d8>] hibernate+0xba/0x16e
+> > [   11.827714]  [<c014d56b>] state_store+0x45/0xac
+> > [   11.827717]  [<c01ffe95>] kobj_attr_store+0x1a/0x22
+> > [   11.827722]  [<c01b92c7>] sysfs_write_file+0xb8/0xe3
+> > [   11.827726]  [<c01837eb>] vfs_write+0xa4/0x120
+> > [   11.827731]  [<c0183d5e>] sys_write+0x3b/0x60
+> > [   11.827734]  [<c0106bae>] sysenter_past_esp+0x6b/0xc1
+> > [   11.827738]  =======================
+> ...
+> > [   15.624993] =================================
+> > [   15.624995] [ INFO: inconsistent lock state ]
+> > [   15.624998] 2.6.24-rc5-mm1 #8
+> > [   15.624999] ---------------------------------
+> > [   15.625001] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+> 
+> It looks like the swsusp_save() calls drain_all_pages() , which calls
+> on_each_cpu() .. On return on_each_cpu() unconditionally enables
+> interrupts so the rest of the resume process has interrupt enable
+> (which , it looks like, shouldn't happen) and then you get the lockdep()
+> warning due to the above..
+> 
+> Not sure if this has been found already, or not?
+> 
+> Should drain_all_pages() really be drain_local_pages() ?
 
-Marcin
+It looks like it was drain_local_pages, but the following patch
+
+page-allocator-clean-up-pcp-draining-functions.patch
+
+Changes that in -mm .. I added Christoph Lameter to the CC since it's
+his patch ..
+
+Daniel
+
