@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761540AbXLTWzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763682AbXLTWss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761540AbXLTWzP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:55:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbXLTWzA
+	id S1763682AbXLTWss (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:48:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbXLTWsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:55:00 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46246 "EHLO
+	Thu, 20 Dec 2007 17:48:39 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59814 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752313AbXLTWzA (ORCPT
+	with ESMTP id S1750918AbXLTWsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:55:00 -0500
+	Thu, 20 Dec 2007 17:48:38 -0500
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: peerchen@gmail.com, linux-kernel@vger.kernel.org, acurrid@nvidia.com,
-       pchen@nvidia.com
+To: "Peer Chen" <pchen@nvidia.com>
+Cc: "peerchen" <peerchen@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "akpm" <akpm@linux-foundation.org>, "Andy Currid" <ACurrid@nvidia.com>
 Subject: Re: [PATCH] msi: set 'En' bit of MSI Mapping Capability
 References: <200712182300373901202@gmail.com>
-	<20071219164125.a3eac8ba.akpm@linux-foundation.org>
-	<20071219164555.1916fa42.akpm@linux-foundation.org>
-Date: Thu, 20 Dec 2007 15:54:07 -0700
-In-Reply-To: <20071219164555.1916fa42.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 19 Dec 2007 16:45:55 -0800")
-Message-ID: <m17ij97zao.fsf@ebiederm.dsl.xmission.com>
+	<m14pefaclv.fsf@ebiederm.dsl.xmission.com>
+	<15F501D1A78BD343BE8F4D8DB854566B1F24C119@hkemmail01.nvidia.com>
+Date: Thu, 20 Dec 2007 15:48:08 -0700
+In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B1F24C119@hkemmail01.nvidia.com>
+	(Peer Chen's message of "Thu, 20 Dec 2007 21:43:00 +0800")
+Message-ID: <m1d4t17zkn.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,35 +30,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+"Peer Chen" <pchen@nvidia.com> writes:
 
-> On Wed, 19 Dec 2007 16:41:25 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->
->> It would be better to just add a stub implementation of
->> ht_enable_msi_mapping() for all the other architectures - avoid fancy cpp
->> tricks.
->
->
-> And by this I really do mean going into each include/asm-*/pci.h and adding
->
->
-> struct pci_dev;		(if needed)
-> ...
->
-> static inline void ht_enable_msi_mapping(struct pci_dev *dev)
-> {
-> }
->
->
-> no macros, no ifdef tricks, no include tricks.  Just straight, clean, fully
-> typechecked C.
+> The quirk is for our Intel platform, we don't want HT MSI mapping
+> enabled in any of our devices.
 
-Andrew thanks for the code style review.  I goofed about recommending the
-ARCH_HAVE_XXXX thing.
+Why is this a problem?  I seem to recall a real hypertransport bus
+downstream of the Intel cpu.
 
-I'm going to concentrate on the content for the moment.  I think we
-are very close to a general solution to a very common problem with
-MSI interrupts.
+If there is a real hypertransport bus in the middle then what happens
+if someone puts a tunnel that uses hypertransport between the two chips?
+
+I feel very dense right now.  I don't understand why enabling the
+mapping on an Intel based system is a problem.  I am afraid there is
+some important gap in my understanding in which case we may need to
+rethink enabling the hypertransport capability by default.
+
+If disabling the hypertransport bus is simply an optimization, or it
+is to deal with an issue that appears exclusive to Nvidia chips
+I have no problem with your quirk.
 
 Eric
