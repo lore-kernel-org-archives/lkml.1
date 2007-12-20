@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbXLTW54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761834AbXLTWoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759382AbXLTW54 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:57:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764569AbXLTW5p
+	id S1761834AbXLTWoV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755566AbXLTWoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:57:45 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:4855 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1764537AbXLTW5o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:57:44 -0500
-Date: Thu, 20 Dec 2007 17:57:42 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Randy Dunlap <randy.dunlap@oracle.com>, <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [RFC] kobject/kset/ktype documentation and example code updated
-In-Reply-To: <20071220212700.GB5808@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0712201741570.29911-100000@netrider.rowland.org>
+	Thu, 20 Dec 2007 17:44:11 -0500
+Received: from ns2.suse.de ([195.135.220.15]:54301 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754133AbXLTWoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 17:44:08 -0500
+Date: Thu, 20 Dec 2007 14:40:06 -0800
+From: Greg KH <gregkh@suse.de>
+To: Tony Camuso <tcamuso@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
+Message-ID: <20071220224006.GA16855@suse.de>
+References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <476AB3B5.9080808@redhat.com> <20071220215719.GA8528@suse.de> <476AEE7B.6050708@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <476AEE7B.6050708@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Dec 2007, Greg KH wrote:
+On Thu, Dec 20, 2007 at 05:36:43PM -0500, Tony Camuso wrote:
+> Greg KH wrote:
+>> On Thu, Dec 20, 2007 at 01:25:57PM -0500, Tony Camuso wrote:
+>> Any reason why these changes were never submitted to the upstream kernel
+>> versions?  Or do you all just want to keep patching your newer releases
+>> with this information forever?  :)
+>
+> I really don't know why these changes were never submitted to the
+> upstream kernel versions".
+>
+> I was brought on the scene about six months ago as HP's on-site engineer
+> at RH, and this was one of the things they wanted me to do.
+>
+> We wanted a solution that was more generic and could manage this
+> problem preemptively, rather than using blacklists. Maintenance of
+> blacklists is a bother and almost always done after a new system
+> with this problem is discovered.
+>
+> Furthermore, blacklisting whole platforms to use legacy pci config
+> penalizes any mmconfig-friendly buses in those platforms, particularly
+> the pci express buses, and causes such platforms to be non-compliant
+> with the pci expres spec.
 
-> > >  - A ktype is the type of object that embeds a kobject. Every structure
-> > >    that embeds a kobject needs a corresponding ktype.  The ktype controls
-> > >    what happens when a kobject is no longer referenced and the kobject's
-> > >    default representation in sysfs.
-> > 
-> > I can't quite parse the last sentence above.  Is it:
-> > 
-> > The ktype controls (a) what happens ...
-> > and (b) the kobject's default representation in sysfs.
-> > 
-> > ?
-> 
-> How about:
-> 	- A ktype is the type of object that embeds a kobject.  Every
-> 	  structure that embeds a kobject needs a corresponding ktype.
-> 	  The ktype controls what happens to the kobject when it is
-> 	  created and destroyed.
+Sure, I realize this, but it solves the problem in one way for broken
+hardware, such that it at least allows it to work, right?  It also
+provides a better incentive for the manufacturer to fix their bios,
+which as you are on-site at HP, it would seem odd that they would just
+not do that instead of trying to work around this in the kernel...
 
-I still don't like it.  How about being a little more explicit:
+thanks,
 
-	A ktype controls certain operations for structures with 
-	embedded kobjects.  For example, if struct foo contains an 
-	embedded kobject member then there should be a foo_ktype object 
-	with pointers to the methods for struct foo's.  These methods
-	control what happens when the kobject embedded in a struct foo
-	is added or destroyed.  Every time a new struct foo is created, 
-	&foo_ktype would be passed as the ktype argument in the 
-	kobject_init() call for the structure's embedded kobject.  
-	Each type of structure (not just foo!) with an embedded kobject 
-	needs to have its own corresponding ktype object.
-
-Alan Stern
-
+greg k-h
