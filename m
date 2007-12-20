@@ -1,116 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762323AbXLTORb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762882AbXLTORz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762323AbXLTORb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 09:17:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932887AbXLTOLc
+	id S1762882AbXLTORz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 09:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932898AbXLTOLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 20 Dec 2007 09:11:36 -0500
+Received: from mx2.suse.de ([195.135.220.15]:56618 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932880AbXLTOLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 20 Dec 2007 09:11:32 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:49480 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932336AbXLTOL3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 09:11:29 -0500
-Date: Thu, 20 Dec 2007 14:09:58 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>, riel <riel@redhat.com>,
-       Lennart Poettering <mztabzr@0pointer.de>
-Subject: Re: [rfc][patch] mm: madvise(WILLNEED) for anonymous memory
-In-Reply-To: <1198155938.6821.3.camel@twins>
-Message-ID: <Pine.LNX.4.64.0712201339010.18399@blonde.wat.veritas.com>
-References: <1198155938.6821.3.camel@twins>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Mailbox-Line: From jjohansen@suse.de Thu Dec 20 06:09:43 2007
+Message-Id: <20071220140943.444518117@suse.de>
+References: <20071220140910.934607826@suse.de>
+User-Agent: quilt/0.46-60
+Date: Thu, 20 Dec 2007 06:09:24 -0800
+From: John@suse.de, Johansen@suse.de
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
+       John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 14/47] Add a struct vfsmount parameter to vfs_rmdir()
+Content-Disposition: inline; filename=vfs-rmdir.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Dec 2007, Peter Zijlstra wrote:
-> 
-> Lennart asked for madvise(WILLNEED) to work on anonymous pages, he plans
-> to use this to pre-fault pages. He currently uses: mlock/munlock for
-> this purpose.
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
-I certainly agree with this in principle: it just seems an unnecessary
-and surprising restriction to refuse on anonymous vmas; I guess the only
-reason for not adding this was not having anyone asking for it until now.
-Though, does Lennart realize he could use MAP_POPULATE in the mmap?
+Signed-off-by: Tony Jones <tonyj@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
-> 
-> [ compile tested only ]
+---
+ fs/ecryptfs/inode.c   |    4 +++-
+ fs/namei.c            |    4 ++--
+ fs/nfsd/nfs4recover.c |    2 +-
+ fs/nfsd/vfs.c         |    8 +++++---
+ fs/reiserfs/xattr.c   |    2 +-
+ fs/unionfs/unlink.c   |    5 ++++-
+ include/linux/fs.h    |    2 +-
+ 7 files changed, 17 insertions(+), 10 deletions(-)
 
-I haven't tried it either, but generally it looks plausible.
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -532,14 +532,16 @@ out:
+ static int ecryptfs_rmdir(struct inode *dir, struct dentry *dentry)
+ {
+ 	struct dentry *lower_dentry;
++	struct vfsmount *lower_mnt;
+ 	struct dentry *lower_dir_dentry;
+ 	int rc;
+ 
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
++	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
+ 	dget(dentry);
+ 	lower_dir_dentry = lock_parent(lower_dentry);
+ 	dget(lower_dentry);
+-	rc = vfs_rmdir(lower_dir_dentry->d_inode, lower_dentry);
++	rc = vfs_rmdir(lower_dir_dentry->d_inode, lower_dentry, lower_mnt);
+ 	dput(lower_dentry);
+ 	if (!rc)
+ 		d_delete(lower_dentry);
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2202,7 +2202,7 @@ void dentry_unhash(struct dentry *dentry
+ 	spin_unlock(&dcache_lock);
+ }
+ 
+-int vfs_rmdir(struct inode *dir, struct dentry *dentry)
++int vfs_rmdir(struct inode *dir, struct dentry *dentry,struct vfsmount *mnt)
+ {
+ 	int error = may_delete(dir, dentry, 1);
+ 
+@@ -2269,7 +2269,7 @@ static long do_rmdir(int dfd, const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto exit3;
+-	error = vfs_rmdir(nd.path.dentry->d_inode, dentry);
++	error = vfs_rmdir(nd.path.dentry->d_inode, dentry, nd.path.mnt);
+ 	mnt_drop_write(nd.path.mnt);
+ exit3:
+ 	dput(dentry);
+--- a/fs/nfsd/nfs4recover.c
++++ b/fs/nfsd/nfs4recover.c
+@@ -279,7 +279,7 @@ nfsd4_clear_clid_dir(struct dentry *dir,
+ 	 * a kernel from the future.... */
+ 	nfsd4_list_rec_dir(dentry, nfsd4_remove_clid_file);
+ 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
+-	status = vfs_rmdir(dir->d_inode, dentry);
++	status = vfs_rmdir(dir->d_inode, dentry, rec_dir.path.mnt);
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+ 	return status;
+ }
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1734,6 +1734,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+ 				char *fname, int flen)
+ {
+ 	struct dentry	*dentry, *rdentry;
++	struct svc_export *exp;
+ 	struct inode	*dirp;
+ 	__be32		err;
+ 	int		host_err;
+@@ -1748,6 +1749,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+ 	fh_lock_nested(fhp, I_MUTEX_PARENT);
+ 	dentry = fhp->fh_dentry;
+ 	dirp = dentry->d_inode;
++	exp = fhp->fh_export;
+ 
+ 	rdentry = lookup_one_len(fname, dentry, flen);
+ 	host_err = PTR_ERR(rdentry);
+@@ -1765,21 +1767,21 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+ 
+ 	if (type != S_IFDIR) { /* It's UNLINK */
+ #ifdef MSNFS
+-		if ((fhp->fh_export->ex_flags & NFSEXP_MSNFS) &&
++		if ((exp->ex_flags & NFSEXP_MSNFS) &&
+ 			(atomic_read(&rdentry->d_count) > 1)) {
+ 			host_err = -EPERM;
+ 		} else
+ #endif
+ 		host_err = vfs_unlink(dirp, rdentry);
+ 	} else { /* It's RMDIR */
+-		host_err = vfs_rmdir(dirp, rdentry);
++		host_err = vfs_rmdir(dirp, rdentry, exp->ex_path.mnt);
+ 	}
+ 
+ 	dput(rdentry);
+ 
+ 	if (host_err)
+ 		goto out_nfserr;
+-	if (EX_ISSYNC(fhp->fh_export))
++	if (EX_ISSYNC(exp))
+ 		host_err = nfsd_sync_dir(dentry);
+ 
+ out_nfserr:
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -747,7 +747,7 @@ int reiserfs_delete_xattrs(struct inode 
+ 	if (dir->d_inode->i_nlink <= 2) {
+ 		root = get_xa_root(inode->i_sb, XATTR_REPLACE);
+ 		reiserfs_write_lock_xattrs(inode->i_sb);
+-		err = vfs_rmdir(root->d_inode, dir);
++		err = vfs_rmdir(root->d_inode, dir, NULL);
+ 		reiserfs_write_unlock_xattrs(inode->i_sb);
+ 		dput(root);
+ 	} else {
+--- a/fs/unionfs/unlink.c
++++ b/fs/unionfs/unlink.c
+@@ -125,6 +125,7 @@ static int unionfs_rmdir_first(struct in
+ {
+ 	int err;
+ 	struct dentry *lower_dentry;
++	struct vfsmount *lower_mnt;
+ 	struct dentry *lower_dir_dentry = NULL;
+ 
+ 	/* Here we need to remove whiteout entries. */
+@@ -133,6 +134,7 @@ static int unionfs_rmdir_first(struct in
+ 		goto out;
+ 
+ 	lower_dentry = unionfs_lower_dentry(dentry);
++	lower_mnt = unionfs_lower_mnt(dentry);
+ 
+ 	lower_dir_dentry = lock_parent(lower_dentry);
+ 
+@@ -140,7 +142,8 @@ static int unionfs_rmdir_first(struct in
+ 	dget(lower_dentry);
+ 	err = is_robranch(dentry);
+ 	if (!err)
+-		err = vfs_rmdir(lower_dir_dentry->d_inode, lower_dentry);
++		err = vfs_rmdir(lower_dir_dentry->d_inode, lower_dentry,
++				lower_mnt);
+ 	dput(lower_dentry);
+ 
+ 	fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1074,7 +1074,7 @@ extern int vfs_mkdir(struct inode *, str
+ extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
+ extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
+ extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
+-extern int vfs_rmdir(struct inode *, struct dentry *);
++extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
+ extern int vfs_unlink(struct inode *, struct dentry *);
+ extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
+ 
 
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
-> diff --git a/mm/madvise.c b/mm/madvise.c
-> index 93ee375..eff60ce 100644
-> --- a/mm/madvise.c
-> +++ b/mm/madvise.c
-> @@ -100,6 +100,24 @@ out:
->  	return error;
->  }
->  
-> +static long madvice_willneed_anon(struct vm_area_struct *vma,
-> +				  struct vm_area_struct **prev,
-> +				  unsigned long start, unsigned long end)
+-- 
 
-mavise.c uses "madvise_" rather than " madvice_" throughout,
-so please go with the flow.
-
-> +{
-> +	int ret, len;
-> +
-> +	*prev = vma;
-> +	if (end > vma->vm_end)
-> +		end = vma->vm_end;
-
-Please check, but I think the upper level ensures end is within range.
-
-> +
-> +	len = end - start;
-> +	ret = get_user_pages(current, current->mm, start, len,
-> +			0, 0, NULL, NULL);
-> +	if (ret < 0)
-> +		return ret;
-> +	return ret == len ? 0 : -1;
-
-It's not good to return -1 as an alternative to a real errno:
-it'll look like -EPERM.  If you copied that from somewhere, better
-send a patch to fix the somewhere!  Ah, yes, make_pages_present: it
-happens that nobody is interested in its return value, so we could
-make it a void; but that'd just be a cleanup.  What to do here if
-non-negative ret less than len?  Oh, just return 0, that's good
-enough in this case (the file case always returns 0).
-
-Hmm, might it be better to use make_pages_present itself,
-fixing its retval, rather than using get_user_pages directly?
-(I'd hope the caching makes its repeat of find_vma not an overhead.)
-
-Interesting divergence: make_pages_present faults in writable pages
-in a writable vma, whereas the file case's force_page_cache_readahead
-doesn't even insert the pages into the mm.
-
-> +}
-> +
->  /*
->   * Schedule all required I/O operations.  Do not wait for completion.
->   */
-> @@ -110,7 +128,7 @@ static long madvise_willneed(struct vm_area_struct * vma,
->  	struct file *file = vma->vm_file;
->  
->  	if (!file)
-> -		return -EBADF;
-> +		return madvice_willneed_anon(vma, prev, start, end);
->  
->  	if (file->f_mapping->a_ops->get_xip_page) {
->  		/* no bad return value, but ignore advice */
-
-And there's a correctly invisible hunk to the patch too: this
-extension of MADV_WILLNEED also does not require down_write of
-mmap_sem, so madvise_need_mmap_write can remain unchanged.
-
-Hugh
