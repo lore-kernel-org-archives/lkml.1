@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761350AbXLTVck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761848AbXLTVdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761350AbXLTVck (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 16:32:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXLTVcb
+	id S1761848AbXLTVdw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 16:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbXLTVdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 16:32:31 -0500
-Received: from mga01.intel.com ([192.55.52.88]:30748 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753529AbXLTVc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 16:32:29 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,191,1196668800"; 
-   d="scan'208";a="452213559"
-Message-ID: <476ADDA6.9070107@intel.com>
-Date: Thu, 20 Dec 2007 13:24:54 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-CC: Parag Warudkar <parag.warudkar@gmail.com>,
-       Arjan van de Ven <arjan@linux.intel.com>, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sky2: Use deferrable timer for watchdog
-References: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>	<20071220091603.0d69b045@deepthought>	<823114761-1198171803-cardhu_decombobulator_blackberry.rim.net-937108990-@bxe019.bisx.prod.on.blackberry>	<20071220095121.7859c023@deepthought>	<476ABDDF.8080607@intel.com>	<476ABE7D.60901@linux.intel.com>	<476AC105.9090206@intel.com>	<82e4877d0712201200h7b994175u841d1efa047cefff@mail.gmail.com>	<476ACABC.4010503@linux.intel.com>	<82e4877d0712201236l2962cc86y73f0be0d6e2ae4be@mail.gmail.com> <20071220130841.6d2801f2@deepthought>
-In-Reply-To: <20071220130841.6d2801f2@deepthought>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 20 Dec 2007 16:33:44 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43573 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753393AbXLTVdn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 16:33:43 -0500
+Date: Thu, 20 Dec 2007 21:07:41 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Joe Perches <joe@perches.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, trivial@kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: Trailing periods in kernel messages
+Message-ID: <20071220210741.6dc3caf5@the-village.bc.nu>
+In-Reply-To: <20071220162923.GB27885@shadowen.org>
+References: <474E6BD0.20103@cn.fujitsu.com>
+	<E1IxfE8-0000Sr-9w@faramir.fjphome.nl>
+	<474E8669.6060409@cn.fujitsu.com>
+	<200711291120.19595.elendil@planet.nl>
+	<20071129032036.4c021617.akpm@linux-foundation.org>
+	<474F6372.70705@cn.fujitsu.com>
+	<1196386259.22120.101.camel@localhost>
+	<474F6D4D.9010006@cn.fujitsu.com>
+	<1196390128.22120.118.camel@localhost>
+	<20071220162923.GB27885@shadowen.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Dec 2007 21:25:29.0235 (UTC) FILETIME=[D81D0630:01C8434E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
-> On Thu, 20 Dec 2007 15:36:13 -0500
-> "Parag Warudkar" <parag.warudkar@gmail.com> wrote:
+> I missed the context on this one.  So this is checking for periods at
+> the end of messages for printk's.  We would need something a little
+> cleverer to ensure we are only checking the contents of the string.  But
+> eminently doable.
 > 
->> On Dec 20, 2007 3:04 PM, Arjan van de Ven <arjan@linux.intel.com> wrote:
->>>> I think it is reasonable for Network driver watchdogs to use a
->>>> deferrable timer - if the machine is 100% IDLE there is no one needing
->>>> the network to be up. If there is something running even on the other
->>>> CPU - that is going to cause an IPI, reschedule, TLB invalidation etc.
->>>> which will make it very likely in practice that each CPU will be
->>>> interrupted in reasonable amount of time.
->>> this is not correct; many machines are idle waiting for network data. Think of webservers...
->> Yes, I forgot the receive case. So if a server was 100% IDLE and a web
->> server was listening for network data and we reach 0 wakeups per
->> second on the CPU where the network watchdog timer is scheduled to run
->> deferred _and_ the network link went down, it would cause the watchdog
->> to not run and redo the link until some one else wakes up that CPU
->> later.
->> So as long as we make sure we don't convert every timer to deferrable
->> we should be ok - may be this can be resolved easily by having a
->> non-deferrable "dont-allow-deferring-for-too-long" timer on each CPU
->> that just causes at least one wake up in some reasonable time delta
->> from the previous wakeup (whoever caused that one.) It is still
->> beneficial in that all deferrable timers would run at once without
->> needing to have separate wakeup for each.
->>
->>>> Of course there are theoretical cases where we could land into a
->>>> situation where a CPU in a multiprocessor machine is IDLE infinitely
->>>> and that causes the watchdog that happens to be bound to run on the
->>>> same CPU to not run. To take care of these unlikely cases I think the
->>>> timer mechanism should have a reasonable limit on how long a CPU can
->>>> go IDLE if there are deferrable timers.
->>> how about something else instead: a timer mechanism that takes a range instead..
->>> that at least has defined semantics; the deferrable semantics really are "indefinite".
->>> Lets keep at least the semantics clear and clean.
->>>
->> Would not the simpler solution of installing a non-deferrable timer
->> per cpu which will not allow the CPU to go IDLE for more than x units
->> of time at once  (or something to that effect) work? Range would
->> complicate the thing and I am not sure how many cases will know
->> reasonably correct range for their normal operation. In this instance
->> of the e1000 watchdog what range could it give and be successful at
->> what it wants to do - bring up the link in reasonable amount of time,
->> while also realizing the power savings?
->>
->> Perhaps depending on Server/Laptop/Desktop machine (may be based on
->> Preemption) we could have normal or deferrable timers but that'll
->> exclude Servers from power savings and I am not sure Data center folks
->> will like that :) .
->>
->> Parag
+> /me plays
 > 
-> 
-> The problem is that on a server the receiver will go deaf if the chip
-> bug that the watchdog is looking for triggers.  Yes, no packets in
-> and it happily will just sit there.
-> 
-> So for now, I am not going to apply your simple patch and work on a 
-> two stage timer per arjan's suggestion for a later release.
+> Ok, yes this seems ok.  Have added it for 0.13.
 
-I also think that's the right way to go for now. I'll ask jeff to hold off on the
-two patches for now.
+Please remove it.
 
-Auke
+The kernel printk messages are sentences. English language sentences end
+with a full stop. They are messages printed up for normal human beings to
+read and they should therefore be properly written.
 
+In fact you should warn if it ends with a newline without a full stop
+unless the next line is continuation of quoted text because that suggests
+a full stop has been missed out incorrectly.
+
+Alan
