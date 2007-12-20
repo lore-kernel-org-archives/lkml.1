@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938176AbXLTSQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938396AbXLTSR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938176AbXLTSQS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 13:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764948AbXLTSQG
+	id S938396AbXLTSR1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 13:17:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763842AbXLTSRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 13:16:06 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:43007 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763899AbXLTSQF (ORCPT
+	Thu, 20 Dec 2007 13:17:19 -0500
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:40247 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761807AbXLTSRS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 13:16:05 -0500
-Date: Thu, 20 Dec 2007 11:16:03 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Tony Camuso <tcamuso@redhat.com>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-Message-ID: <20071220181603.GF29690@parisc-linux.org>
-References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <20071220173528.GE29690@parisc-linux.org> <476AAE99.7090301@redhat.com>
+	Thu, 20 Dec 2007 13:17:18 -0500
+X-Greylist: delayed 578 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Dec 2007 13:17:18 EST
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: Benjamin Herrenschmidt <bherren@au1.ibm.com>, linux-kernel@vger.kernel.org,
+       OpenFabrics General <general@lists.openfabrics.org>,
+       Wen Xiong <wenxiong@us.ibm.com>
+Subject: Re: [ofa-general] iommu dma mapping alignment requirements
+X-Message-Flag: Warning: May contain useful information
+References: <476AA2E2.5010007@opengridcomputing.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 20 Dec 2007 10:07:39 -0800
+In-Reply-To: <476AA2E2.5010007@opengridcomputing.com> (Steve Wise's message of "Thu, 20 Dec 2007 11:14:10 -0600")
+Message-ID: <adalk7pz1ck.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <476AAE99.7090301@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 20 Dec 2007 18:07:39.0663 (UTC) FILETIME=[354C11F0:01C84333]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 01:04:09PM -0500, Tony Camuso wrote:
-> Sorry, that was the 82Q963/Q965 graphics controller, PCI ID 2992.
-> 
-> I can't remember why I thought PCI ID 2992 maps to 830M/MG. I think
-> it was in some intel doc about the ICH8 or ICH9.
-> 
-> Nevertheless, I have an hp dc5700 microtower right here on the floor
-> next to me, and it hangs when the bus sizing code does an mmconfig
-> write to the BAR at offset 0x18 in this device (id 2992).
+ > It appears that my problem boils down to a single host page of memory
+ > that is mapped for dma, and the dma address returned by dma_map_sg()
+ > is _not_ 64KB aligned.  Here is an example:
 
-Oh, that's the same bug others (including me) have been complaining
-about.
+ > My first question is: Is there an assumption or requirement in linux
+ > that dma_addressess should have the same alignment as the host address
+ > they are mapped to?  IE the rdma core is mapping the entire 64KB page,
+ > but the mapping doesn't begin on a 64KB page boundary.
 
-http://marc.info/?l=linux-kernel&m=118809338631160&w=2
+I don't think this is explicitly documented anywhere, but it certainly
+seems that we want the bus address to be page-aligned in this case.
+For mthca/mlx4 at least, we tell the adapter what the host page size
+is (so that it knows how to align doorbell pages etc) and I think this
+sort of thing would confuse the HW.
 
-> It hangs in exactly the same place every time.
-> 
-> I am surmising that the write to that BAR is causing a MCE.
-
-Bad deduction.  What's happening is that the write to the BAR is causing
-it to overlap the decode for mmconfig space.  So the mmconfig write to
-set the BAR back never gets through.
-
-I have a different idea to fix this problem.  Instead of writing
-0xffffffff, we could look for an unused bit of space in the E820 map and
-write, say, 0xdfffffff to the low 32-bits of a BAR.  Then it wouldn't
-overlap, and we could find its size using MMCONFIG.
-
-Does anyone know how Windows handles these machines?  Obviously, if it's
-using MMCONFIG, it'd have the same problems.  Does it just use type 1
-for initial sizing?  Or does it use type 1 for all accesses below 256
-bytes?
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+ - R.
