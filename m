@@ -1,97 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbXLTAEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbXLTAGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755642AbXLTAEo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 19:04:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbXLTAEd
+	id S1757229AbXLTAGT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 19:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbXLTAGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 19:04:33 -0500
-Received: from nz-out-0506.google.com ([64.233.162.228]:6051 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752548AbXLTAEd (ORCPT
+	Wed, 19 Dec 2007 19:06:06 -0500
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:57691 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752993AbXLTAGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 19:04:33 -0500
-Message-ID: <1a9da18c0712191604u5a230382t5ad99a6f464416e5@mail.gmail.com>
-Date: Wed, 19 Dec 2007 16:04:30 -0800
-From: "=?UTF-8?Q?Masoud_Sharbiani?=
-	=?UTF-8?Q?_\"=D9=85=D8=B3=D8=B9=D9=88=D8=AF_?=
-	=?UTF-8?Q?=D8=B4=D8=B1=D8=A8=DB=8C=D8=A7=D9=86=DB=8C\"?=" 
-	<masouds@masoud.ir>
-To: "Siva Prasad" <sprasad@bivio.net>
-Subject: Re: printf internals
-Cc: "Scott Russell" <catfather@donpoo.net>,
-       "Clemens Koller" <clemens.koller@anagramm.de>,
-       "David Newall" <david@davidnewall.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF56B@corpexc01.corp.networkrobots.com>
+	Wed, 19 Dec 2007 19:06:04 -0500
+Message-ID: <4769B228.4030705@cs.columbia.edu>
+Date: Wed, 19 Dec 2007 19:07:04 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Pavel Emelyanov <xemul@openvz.org>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       linux-fsdevel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+References: <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <476724E3.6060901@cs.columbia.edu> <20071218020933.GA28745@sergelap.austin.ibm.com> <476738A0.9010601@cs.columbia.edu> <4768E7B2.40203@openvz.org> <20071219141004.GA31694@sergelap.austin.ibm.com>
+In-Reply-To: <20071219141004.GA31694@sergelap.austin.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D7011A8217@corpexc01.corp.networkrobots.com>
-	 <4761E289.9070007@davidnewall.com> <4762AC35.3010706@anagramm.de>
-	 <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF540@corpexc01.corp.networkrobots.com>
-	 <1198107085.7740.0.camel@oasis.donpoo.home>
-	 <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF56B@corpexc01.corp.networkrobots.com>
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/19/07, Siva Prasad <sprasad@bivio.net> wrote:
->
-> Yes!... this is a embedded system, and will not have monitor. So, serial
-> is the default console.
->
-> I pass cmdline as "root=/dev/ram rw console=ttyS0,115200"
 
-Adding a CONSOLE=/dev/ttyS0 works for me on both Debian and Redhat;
-You also want a inittab entry for console on serial device. (use
-google and find it yourself).
-cheers,
-Masoud
 
-> Thanks
-> Siva
->
->
-> -----Original Message-----
-> From: Scott Russell [mailto:catfather@donpoo.net]
-> Sent: Wednesday, December 19, 2007 3:31 PM
-> To: Siva Prasad
-> Cc: Clemens Koller; David Newall; linux-kernel@vger.kernel.org
-> Subject: RE: printf internals
->
->
-> On Wed, 2007-12-19 at 14:33 -0800, Siva Prasad wrote:
-> > Thank you very much for your response Clemens.
-> >
-> > I tried strace on a regular system. It does not show which tty, etc.,
-> as it uses the stdout (fd = 1) and write(1, ...) to it.
-> >
-> > This is not a student project. I am trying to build my own kernel and
-> ramdisk. Kernel boots fine to a point where it starts accessing ramdisk
-> and executes init scripts. From there on nothing gets printed. I did
-> some debugging and found that prints of user land programs are not
-> coming to the serial console, while kernel prints are working fine. I
-> found all the programs getting executed, by placing a printk in execve
-> routine and printing the arguments.
-> >
-> > So, I wanted to trace down the path from user program to the kernel
-> and see why it is not printing messages from user program. I placed a
-> printk in drivers/char/tty_io.c:tty_write() and it is not getting called
-> from my file system. I tried the same thing on my good system (say
-> regular PC) and it works as expected.
-> >
-> > Any clues that can help debug this issue is highly appreciated.
-> > How can I get access to the same printf string inside kernel.
->
-> This sounds like you're printing out the serial console instead.
->
-> --
-> Scott <catfather@donpoo.net>
-> AIM: BlueCame1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Serge E. Hallyn wrote:
+> Quoting Pavel Emelyanov (xemul@openvz.org):
+>> Oren Laadan wrote:
+>>> Serge E. Hallyn wrote:
+>>>> Quoting Oren Laadan (orenl@cs.columbia.edu):
+>>>>> I hate to bring this again, but what if the admin in the container
+>>>>> mounts an external file system (eg. nfs, usb, loop mount from a file,
+>>>>> or via fuse), and that file system already has a device that we would
+>>>>> like to ban inside that container ?
+>>>> Miklos' user mount patches enforced that if !capable(CAP_MKNOD),
+>>>> then mnt->mnt_flags |= MNT_NODEV.  So that's no problem.
+>>> Yes, that works to disallow all device files from a mounted file system.
+>>>
+>>> But it's a black and white thing: either they are all banned or allowed;
+>>> you can't have some devices allowed and others not, depending on type
+>>> A scenario where this may be useful is, for instance, if we some apps in
+>>> the container to execute withing a pre-made chroot (sub)tree within that
+>>> container.
+>>>
+>>>> But that's been pulled out of -mm! ?  Crap.
+>>>>
+>>>>> Since anyway we will have to keep a white- (or black-) list of devices
+>>>>> that are permitted in a container, and that list may change even change
+>>>>> per container -- why not enforce the access control at the VFS layer ?
+>>>>> It's safer in the long run.
+>>>> By that you mean more along the lines of Pavel's patch than my whitelist
+>>>> LSM, or you actually mean Tetsuo's filesystem (i assume you don't mean that
+>>>> by 'vfs layer' :), or something different entirely?
+>>> :)
+>>>
+>>> By 'vfs' I mean at open() time, and not at mount(), or mknod() time.
+>>> Either yours or Pavel's; I tend to prefer not to use LSM as it may
+>>> collide with future security modules.
+>> Oren, AFAIS you've seen my patches for device access controller, right?
+
+If you mean this one:
+http://openvz.org/pipermail/devel/2007-September/007647.html
+then ack :)
+
+>>
+>> Maybe we can revisit the issue then and try to come to agreement on what
+>> kind of model and implementation we all want?
+> 
+> That would be great, Pavel.  I do prefer your solution over my LSM, so
+> if we can get an elegant block device control right in the vfs code that
+> would be my preference.
+
+I concur.
+
+So it seems to me that we are all in favor of the model where open()
+of a device will consult a black/white-list. Also, we are all in favor
+of a non-LSM implementation, Pavel's code being a good example.
+
+Oren.
+
+> The only thing that makes me keep wanting to go back to an LSM is the
+> fact that the code defining the whitelist seems out of place in the vfs.
+> But I guess that's actually separated into a modular cgroup, with the
+> actual enforcement built in at the vfs.  So that's really the best
+> solution.
+> 
+> -serge
