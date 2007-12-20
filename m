@@ -1,61 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762629AbXLUAQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762836AbXLTXur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762629AbXLUAQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:16:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbXLUAQV
+	id S1762836AbXLTXur (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 18:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760937AbXLTXu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:16:21 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:53692 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752669AbXLUAQU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:16:20 -0500
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Trying to convert old modules to newer kernels
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Reply-To: 7eggert@gmx.de
-Date: Fri, 21 Dec 2007 01:16:09 +0100
-References: <9CdyE-1A6-7@gated-at.bofh.it> <9CdIw-1Op-29@gated-at.bofh.it> <9Cebz-2sz-29@gated-at.bofh.it> <9Cvcw-5mu-15@gated-at.bofh.it> <9CwhY-76J-11@gated-at.bofh.it> <9Cyk3-1Zc-29@gated-at.bofh.it> <9CB8a-6zV-13@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Thu, 20 Dec 2007 18:50:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48066 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760770AbXLTXu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 18:50:27 -0500
+Date: Fri, 21 Dec 2007 00:47:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
+Message-ID: <20071220234759.GA29776@elte.hu>
+References: <1198190447.29917.9.camel@heimdal.trondhjem.org> <20071220145415.f737e7f3.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1J5VYf-0004go-9q@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+bkKXDkyyxXnSjpADBoMsVCtGxSEkH1WJRW/l
- I1ONGtnIZxdMU0iVW61VSQgvRy4+FXmpXikQ9+aC7CoS89AwBd
- O+A00Gx6BY8y/ySzbuHZw==
+Content-Disposition: inline
+In-Reply-To: <20071220145415.f737e7f3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
-> On Thu, 20 Dec 2007, Sam Ravnborg wrote:
 
->>> It never gets to the printk(). You were right about the
->>> compilation. Somebody changed the kernel to compile with
->>> parameter passing in REGISTERS! This means that EVERYTHING
->>> needs to be compiled the same way, 'C' calling conventions
->>> were not good enough!
->>
->> How did you build the module. It reads like you failed to use
->> kbuild to build your module which is why you did not pass
->> correct options to gcc - correct?
->>
->> If you did not use kbuild - why not?
->> Is there anything missing you need?
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> I need to get rid of -mregparm=3 on gcc's command line. It
-> is completely incompatible with the standard calling conventions
-> used in all our assembly-language files in our drivers. We make
-> very high-speed number-crunching drivers that munge high-speed
-> data into images. We need to do that in assembly as we have
-> always done.
+> Yes - I don't know why the smp_processor_id() test has suddenly 
+> started triggering in there.
 
-According to my quick googling, "__attribute__((regparm,0))" is what you need.
+it's a "must not happen".
 
+here:
+
+>  		__raw_spin_lock(&die.lock);
+>  		raw_local_save_flags(flags);
+> -		die.lock_owner = smp_processor_id();
+> +		die.lock_owner = raw_smp_processor_id();
+
+we just disabled irqs with raw_local_save_flags().
+
+
+here:
+
+>  mem_parity_error(unsigned char reason, struct pt_regs * regs)
+>  {
+>  	printk(KERN_EMERG "Uhhuh. NMI received for unknown reason %02x on "
+> -		"CPU %d.\n", reason, smp_processor_id());
+> +		"CPU %d.\n", reason, raw_smp_processor_id());
+>  	printk(KERN_EMERG "You have some hardware problem, likely on the PCI bus.\n");
+
+we are straight into an NMI which has hardirqs disabled.
+
+
+>  	printk(KERN_EMERG "Uhhuh. NMI received for unknown reason %02x on "
+> -		"CPU %d.\n", reason, smp_processor_id());
+> +		"CPU %d.\n", reason, raw_smp_processor_id());
+
+ditto.
+
+> @@ -708,7 +708,7 @@ void __kprobes die_nmi(struct pt_regs *r
+>  	bust_spinlocks(1);
+>  	printk(KERN_EMERG "%s", msg);
+>  	printk(" on CPU%d, ip %08lx, registers:\n",
+> -		smp_processor_id(), regs->ip);
+> +		raw_smp_processor_id(), regs->ip);
+
+same.
+
+it needs to be found out why the preempt_count suddenly went to zero. Is 
+task struct corruption out of question?
+
+	Ingo
