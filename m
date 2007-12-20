@@ -1,86 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760447AbXLTBlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbXLTBlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760447AbXLTBlI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 20:41:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758821AbXLTBfM
+	id S1760291AbXLTBlZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 20:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759061AbXLTBfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 20:35:12 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:11731 "EHLO
+	Wed, 19 Dec 2007 20:35:15 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:12451 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657AbXLTBeG (ORCPT
+	with ESMTP id S1758303AbXLTBeX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 20:34:06 -0500
+	Wed, 19 Dec 2007 20:34:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=N/cuN83Qx8+ZmAxjAKcyYB1DouOjmr+DTeczajOZfPbKO6/8q8dpdV+b1nQv7tGo/91mapOGN9w++DA6VmVR/q4uunOhV6QWmb4vWqxSo/7u84NJzPaEgqjA6WV1hsNwP2UkzxRq+CKeu9Z6z3T5Mg2EtS+p+dNimU3J7zmtS3M=
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=ec+pnWhIKuPbfYDpmqV7TiHfGBE1hSR3e2142vV+XmRkfkUNwM50SjGcHicd67nBd0PatMrv7Cc73I1vh/4xERFZ5T7lqjM9W/uynf0s7Jvokdk8aOK2nShvqXJB0wLLD7Az78ABc+BVv1QW6USQayGSjeIXjfbxMpNQDak5Bpc=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 04/63] ide-cd: fix error messages in cdrom_{read,write}_check_ireason()
-Date: Thu, 20 Dec 2007 01:53:47 +0100
+Subject: [PATCH 20/63] ide-cd: remove needless zeroing of 'info' fields from ide_cdrom_setup()
+Date: Thu, 20 Dec 2007 02:08:20 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200712200208.20568.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712200153.47923.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+ide_cd_probe() zeroes 'info' prior to calling ide_cdrom_setup() so there
+is no need to explicitly zero 'info' fields in the latter function.
+
+Ditto for fields of CDROM_STATE_FLAGS(), CDROM_CONFIG_FLAGS() and 'cdi'
+(all are embedded in 'info').
+
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-cd.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+-254 bytes
+ drivers/ide/ide-cd.c |   44 +++++++-------------------------------------
+ 1 file changed, 7 insertions(+), 37 deletions(-)
 
 Index: b/drivers/ide/ide-cd.c
 ===================================================================
 --- a/drivers/ide/ide-cd.c
 +++ b/drivers/ide/ide-cd.c
-@@ -1062,8 +1062,8 @@ int cdrom_read_check_ireason (ide_drive_
- 		return 0;
- 	else if (ireason == 0) {
- 		/* Whoops... The drive is expecting to receive data from us! */
--		printk(KERN_ERR "%s: read_intr: Drive wants to transfer data the "
--						"wrong way!\n", drive->name);
-+		printk(KERN_ERR "%s: %s: wrong transfer direction!\n",
-+				drive->name, __FUNCTION__);
+@@ -2844,30 +2844,16 @@ int ide_cdrom_setup (ide_drive_t *drive)
+ 	drive->special.all	= 0;
  
- 		/* Throw some data at the drive so it doesn't hang
- 		   and quit this request. */
-@@ -1080,8 +1080,8 @@ int cdrom_read_check_ireason (ide_drive_
- 		return 0;
- 	} else {
- 		/* Drive wants a command packet, or invalid ireason... */
--		printk(KERN_ERR "%s: read_intr: bad interrupt reason %x\n", drive->name,
--								ireason);
-+		printk(KERN_ERR "%s: %s: bad interrupt reason 0x%02x\n",
-+				drive->name, __FUNCTION__, ireason);
+ 	CDROM_STATE_FLAGS(drive)->media_changed = 1;
+-	CDROM_STATE_FLAGS(drive)->toc_valid     = 0;
+-	CDROM_STATE_FLAGS(drive)->door_locked   = 0;
+ 
+ #if NO_DOOR_LOCKING
+ 	CDROM_CONFIG_FLAGS(drive)->no_doorlock = 1;
+-#else
+-	CDROM_CONFIG_FLAGS(drive)->no_doorlock = 0;
+ #endif
+-
+-	CDROM_CONFIG_FLAGS(drive)->drq_interrupt = ((drive->id->config & 0x0060) == 0x20);
+-	CDROM_CONFIG_FLAGS(drive)->is_changer = 0;
+-	CDROM_CONFIG_FLAGS(drive)->cd_r = 0;
+-	CDROM_CONFIG_FLAGS(drive)->cd_rw = 0;
+-	CDROM_CONFIG_FLAGS(drive)->test_write = 0;
+-	CDROM_CONFIG_FLAGS(drive)->dvd = 0;
+-	CDROM_CONFIG_FLAGS(drive)->dvd_r = 0;
+-	CDROM_CONFIG_FLAGS(drive)->dvd_ram = 0;
++	if ((drive->id->config & 0x0060) == 0x20)
++		CDROM_CONFIG_FLAGS(drive)->drq_interrupt = 1;
+ 	CDROM_CONFIG_FLAGS(drive)->no_eject = 1;
+-	CDROM_CONFIG_FLAGS(drive)->supp_disc_present = 0;
+-	CDROM_CONFIG_FLAGS(drive)->audio_play = 0;
+ 	CDROM_CONFIG_FLAGS(drive)->close_tray = 1;
+-	
++
+ 	/* limit transfer size per interrupt. */
+-	CDROM_CONFIG_FLAGS(drive)->limit_nframes = 0;
+ 	/* a testament to the nice quality of Samsung drives... */
+ 	if (!strcmp(drive->id->model, "SAMSUNG CD-ROM SCR-2430"))
+ 		CDROM_CONFIG_FLAGS(drive)->limit_nframes = 1;
+@@ -2878,16 +2864,6 @@ int ide_cdrom_setup (ide_drive_t *drive)
+ 		CDROM_CONFIG_FLAGS(drive)->no_speed_select = 1;
+ 
+ #if ! STANDARD_ATAPI
+-	/* by default Sanyo 3 CD changer support is turned off and
+-           ATAPI Rev 2.2+ standard support for CD changers is used */
+-	cdi->sanyo_slot = 0;
+-
+-	CDROM_CONFIG_FLAGS(drive)->nec260 = 0;
+-	CDROM_CONFIG_FLAGS(drive)->toctracks_as_bcd = 0;
+-	CDROM_CONFIG_FLAGS(drive)->tocaddr_as_bcd = 0;
+-	CDROM_CONFIG_FLAGS(drive)->playmsf_as_bcd = 0;
+-	CDROM_CONFIG_FLAGS(drive)->subchan_as_bcd = 0;
+-
+ 	if (strcmp (drive->id->model, "V003S0DS") == 0 &&
+ 	    drive->id->fw_rev[4] == '1' &&
+ 	    drive->id->fw_rev[6] <= '2') {
+@@ -2921,8 +2897,10 @@ int ide_cdrom_setup (ide_drive_t *drive)
+ 		CDROM_CONFIG_FLAGS(drive)->playmsf_as_bcd = 1;
+ 		CDROM_CONFIG_FLAGS(drive)->subchan_as_bcd = 1;
  	}
+-        /* Sanyo 3 CD changer uses a non-standard command
+-           for CD changing */
++	/*
++	 * Sanyo 3 CD changer uses a non-standard command for CD changing
++	 * (by default standard ATAPI support for CD changers is used).
++	 */
+         else if ((strcmp(drive->id->model, "CD-ROM CDR-C3 G") == 0) ||
+                  (strcmp(drive->id->model, "CD-ROM CDR-C3G") == 0) ||
+                  (strcmp(drive->id->model, "CD-ROM CDR_C36") == 0)) {
+@@ -2931,14 +2909,6 @@ int ide_cdrom_setup (ide_drive_t *drive)
+         }
+ #endif /* not STANDARD_ATAPI */
  
- 	cdrom_end_request(drive, 0);
-@@ -1626,8 +1626,8 @@ static int cdrom_write_check_ireason(ide
- 		return 0;
- 	else if (ireason == 2) {
- 		/* Whoops... The drive wants to send data. */
--		printk(KERN_ERR "%s: write_intr: wrong transfer direction!\n",
--							drive->name);
-+		printk(KERN_ERR "%s: %s: wrong transfer direction!\n",
-+				drive->name, __FUNCTION__);
+-	info->toc		= NULL;
+-	info->buffer		= NULL;
+-	info->sector_buffered	= 0;
+-	info->nsectors_buffered	= 0;
+-	info->changer_info      = NULL;
+-	info->last_block	= 0;
+-	info->start_seek	= 0;
+-
+ 	nslots = ide_cdrom_probe_capabilities (drive);
  
- 		while (len > 0) {
- 			int dum = 0;
-@@ -1636,8 +1636,8 @@ static int cdrom_write_check_ireason(ide
- 		}
- 	} else {
- 		/* Drive wants a command packet, or invalid ireason... */
--		printk(KERN_ERR "%s: write_intr: bad interrupt reason %x\n",
--							drive->name, ireason);
-+		printk(KERN_ERR "%s: %s: bad interrupt reason 0x%02x\n",
-+				drive->name, __FUNCTION__, ireason);
- 	}
- 
- 	cdrom_end_request(drive, 0);
+ 	/*
