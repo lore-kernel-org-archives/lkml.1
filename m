@@ -1,67 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbXLTFxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbXLTFx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758010AbXLTFxl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 00:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbXLTFxd
+	id S1753185AbXLTFx5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 00:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758223AbXLTFxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 00:53:33 -0500
-Received: from poseidon.rz.tu-clausthal.de ([139.174.2.21]:60702 "EHLO
-	poseidon.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751476AbXLTFxc convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 00:53:32 -0500
-From: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>
-To: Scott <linux-kernel@bluecamel.eml.cc>
-Subject: Re: almost daily Kernel oops with 2.6.23.9 - and now 2.6.23.11 as well
-Date: Thu, 20 Dec 2007 06:53:28 +0100
-User-Agent: KMail/1.9.7
-References: <200712160106.00464.volker.armin.hemmann@tu-clausthal.de> <200712200313.54425.volker.armin.hemmann@tu-clausthal.de> <1198122641.8341.1.camel@oasis.donpoo.home>
-In-Reply-To: <1198122641.8341.1.camel@oasis.donpoo.home>
-Cc: linux-kernel@vger.kernel.org
+	Thu, 20 Dec 2007 00:53:45 -0500
+Received: from ozlabs.org ([203.10.76.45]:34854 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758151AbXLTFxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 00:53:43 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: linux-scsi@vger.kernel.org
+Subject: [PATCH 5/5] sg_ring: Convert scsi_debug
+Date: Thu, 20 Dec 2007 16:53:36 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Douglas Gilbert <dougg@torque.net>
+References: <200712201645.19035.rusty@rustcorp.com.au> <200712201650.42299.rusty@rustcorp.com.au> <200712201651.59283.rusty@rustcorp.com.au>
+In-Reply-To: <200712201651.59283.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712200653.28996.volker.armin.hemmann@tu-clausthal.de>
+Message-Id: <200712201653.36632.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Donnerstag, 20. Dezember 2007, you wrote:
-> On Thu, 2007-12-20 at 03:13 +0100, Hemmann, Volker Armin wrote:
-> > On Montag, 17. Dezember 2007, you wrote:
-> >
-> > and another one, this time tainted with the nvidia module:
-> > 5194.130985] Unable to handle kernel paging request at 0000030000000000
-> > RIP:
->
-> This really sounds like bad hardware. Either memory or the mobo/riser
-> card the memory is on. You might try lowering the memory timings of your
-> memory in BIOS. Try removing 1/2 of your memory. If it still remove the
-> other 1/2 and put the first 1/2 back and try again.
+Douglas Gilbert pointed out that converting scsi_debug would be a good
+demonstration of the conversion required for other SCSI devices.
 
-if this is bad hardware why:
+Details of the changes:
+1) ->use_sg is replaced by ->sg, which if non-NULL, contains the sg_ring.
+2) ->request_buffer can be NULL (it's only relevent if ->sg isn't set)
+3) sg_ring_for_each is no longer required, just iterate directly over ->sg.
+4) The iterator updates a struct sg_ring (sg) and an index (k), so previous
+   references to sg become &sg->sg[k] (the k'th element within the sg_ring sg).
 
-- didn't this show up earlier?
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-- did a several hour memtest run couple of weeks ago didn't show up anything?
-
-- and does stuff like compiling all of kde 3.5.8 or the latest kde4 rc finish 
-without any problems?
-
-If it would be bad hardware, I should see segfaults left and right, right? but 
-I don't see them.  In fact, apart from the oopses the system works fine - 
-even with the oopses the system works fine, apart from the occasional stuck 
-ps aux
-
-And this messages:
-[41160.823959] kio_http_cache_[25229] general protection rip:32621f1fe9 
-rsp:7fff59a3d270 error:0
-show up on closing konqueror tabs/Konqueror. There are no surprising exits, no 
-apps vanishing. 
-
-But I will run memtest86+ (or should I use memtest86?).
-
-Glück Auf,
-Volker
+diff -r c5fe2cab1d48 drivers/scsi/scsi_debug.c
+--- a/drivers/scsi/scsi_debug.c	Thu Dec 20 13:12:43 2007 +1100
++++ b/drivers/scsi/scsi_debug.c	Thu Dec 20 13:39:24 2007 +1100
+@@ -601,16 +601,16 @@ static int fill_from_dev_buffer(struct s
+ 	int k, req_len, act_len, len, active;
+ 	void * kaddr;
+ 	void * kaddr_off;
+-	struct scatterlist * sg;
++	struct sg_ring * sg;
+ 
+ 	if (0 == scp->request_bufflen)
+ 		return 0;
+-	if (NULL == scp->request_buffer)
+-		return (DID_ERROR << 16);
+ 	if (! ((scp->sc_data_direction == DMA_BIDIRECTIONAL) ||
+ 	      (scp->sc_data_direction == DMA_FROM_DEVICE)))
+ 		return (DID_ERROR << 16);
+-	if (0 == scp->use_sg) {
++	if (NULL == scp->sg) {
++		if (NULL == scp->request_buffer)
++			return (DID_ERROR << 16);
+ 		req_len = scp->request_bufflen;
+ 		act_len = (req_len < arr_len) ? req_len : arr_len;
+ 		memcpy(scp->request_buffer, arr, act_len);
+@@ -622,14 +622,14 @@ static int fill_from_dev_buffer(struct s
+ 	}
+ 	active = 1;
+ 	req_len = act_len = 0;
+-	scsi_for_each_sg(scp, sg, scp->use_sg, k) {
++	sg_ring_for_each(scp->sg, sg, k) {
+ 		if (active) {
+ 			kaddr = (unsigned char *)
+-				kmap_atomic(sg_page(sg), KM_USER0);
++				kmap_atomic(sg_page(&sg->sg[k]), KM_USER0);
+ 			if (NULL == kaddr)
+ 				return (DID_ERROR << 16);
+-			kaddr_off = (unsigned char *)kaddr + sg->offset;
+-			len = sg->length;
++			kaddr_off = (unsigned char *)kaddr + sg->sg[k].offset;
++			len = sg->sg[k].length;
+ 			if ((req_len + len) > arr_len) {
+ 				active = 0;
+ 				len = arr_len - req_len;
+@@ -638,7 +638,7 @@ static int fill_from_dev_buffer(struct s
+ 			kunmap_atomic(kaddr, KM_USER0);
+ 			act_len += len;
+ 		}
+-		req_len += sg->length;
++		req_len += sg->sg[k].length;
+ 	}
+ 	if (scp->resid)
+ 		scp->resid -= act_len;
+@@ -654,29 +654,29 @@ static int fetch_to_dev_buffer(struct sc
+ 	int k, req_len, len, fin;
+ 	void * kaddr;
+ 	void * kaddr_off;
+-	struct scatterlist * sg;
++	struct sg_ring * sg;
+ 
+ 	if (0 == scp->request_bufflen)
+ 		return 0;
+-	if (NULL == scp->request_buffer)
+-		return -1;
+ 	if (! ((scp->sc_data_direction == DMA_BIDIRECTIONAL) ||
+ 	      (scp->sc_data_direction == DMA_TO_DEVICE)))
+ 		return -1;
+-	if (0 == scp->use_sg) {
++	if (NULL == scp->sg) {
++		if (NULL == scp->request_buffer)
++			return -1;
+ 		req_len = scp->request_bufflen;
+ 		len = (req_len < max_arr_len) ? req_len : max_arr_len;
+ 		memcpy(arr, scp->request_buffer, len);
+ 		return len;
+ 	}
+-	sg = scsi_sglist(scp);
+ 	req_len = fin = 0;
+-	for (k = 0; k < scp->use_sg; ++k, sg = sg_next(sg)) {
+-		kaddr = (unsigned char *)kmap_atomic(sg_page(sg), KM_USER0);
++	sg_ring_for_each(scp->sg, sg, k) {
++		kaddr = (unsigned char *)kmap_atomic(sg_page(&sg->sg[k]),
++						     KM_USER0);
+ 		if (NULL == kaddr)
+ 			return -1;
+-		kaddr_off = (unsigned char *)kaddr + sg->offset;
+-		len = sg->length;
++		kaddr_off = (unsigned char *)kaddr + sg->sg[k].offset;
++		len = sg->sg[k].length;
+ 		if ((req_len + len) > max_arr_len) {
+ 			len = max_arr_len - req_len;
+ 			fin = 1;
+@@ -685,7 +685,7 @@ static int fetch_to_dev_buffer(struct sc
+ 		kunmap_atomic(kaddr, KM_USER0);
+ 		if (fin)
+ 			return req_len + len;
+-		req_len += sg->length;
++		req_len += sg->sg[k].length;
+ 	}
+ 	return req_len;
+ }
