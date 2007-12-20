@@ -1,113 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934216AbXLTOYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934321AbXLTOYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934216AbXLTOYc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 09:24:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932934AbXLTOM0
+	id S934321AbXLTOYv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 09:24:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932866AbXLTOM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 09:12:26 -0500
-Received: from mail.gmx.net ([213.165.64.20]:43862 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932891AbXLTOMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 09:12:23 -0500
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX19TFr18PmNTjlmbErLaOWPSZ3oskGAbzkLhFQUFfd
-	HyW8OX9fFK5m4H
-Date: Thu, 20 Dec 2007 15:12:17 +0100
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Krzysztof Oledzki <olel@ans.pl>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Osterried <osterried@jesse.de>, protasnb@gmail.com,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bug 9182] Critical memory leak (dirty pages)
-Message-ID: <20071220141217.GA4745@atjola.homenet>
-References: <20071215221935.306A5108068@picon.linux-foundation.org> <Pine.LNX.4.64.0712152358240.14491@bizon.gios.gov.pl> <20071215203539.d6f71e96.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161016290.25065@bizon.gios.gov.pl> <20071216015112.d0ab08a1.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161440030.25065@bizon.gios.gov.pl> <alpine.LFD.0.9999.0712190903350.21557@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.0.9999.0712190903350.21557@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Y-GMX-Trusted: 0
+	Thu, 20 Dec 2007 09:12:27 -0500
+Received: from ns1.suse.de ([195.135.220.2]:40824 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933012AbXLTOMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 09:12:25 -0500
+X-Mailbox-Line: From jjohansen@suse.de Thu Dec 20 06:09:45 2007
+Message-Id: <20071220140945.488810901@suse.de>
+References: <20071220140910.934607826@suse.de>
+User-Agent: quilt/0.46-60
+Date: Thu, 20 Dec 2007 06:09:37 -0800
+From: John@suse.de, Johansen@suse.de
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
+       John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 27/47] Add a struct vfsmount parameter to vfs_removexattr()
+Content-Disposition: inline; filename=vfs-removexattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.12.19 09:44:50 -0800, Linus Torvalds wrote:
-> 
-> 
-> On Sun, 16 Dec 2007, Krzysztof Oledzki wrote:
-> > 
-> > I'll confirm this tomorrow but it seems that even switching to data=ordered
-> > (AFAIK default o ext3) is indeed enough to cure this problem.
-> 
-> Ok, do we actually have any ext3 expert following this? I have no idea 
-> about what the journalling code does, but I have painful memories of ext3 
-> doing really odd buffer-head-based IO and totally bypassing all the normal 
-> page dirty logic.
-> 
-> Judging by the symptoms (sorry for not following this well, it came up 
-> while I was mostly away travelling), something probably *does* clear the 
-> dirty bit on the pages, but the dirty *accounting* is not done properly, 
-> so the kernel keeps thinking it has dirty pages.
-> 
-> Now, a simple "grep" shows that ext3 does not actually do any 
-> ClearPageDirty() or similar on its own, although maybe I missed some other 
-> subtle way this can happen. And the *normal* VFS routines that do 
-> ClearPageDirty should all be doing the proper accounting.
-> 
-> So I see a couple of possible cases:
-> 
->  - actually clearing the PG_dirty bit somehow, without doing the 
->    accounting.
-> 
->    This looks very unlikely. PG_dirty is always cleared by some variant of 
->    "*ClearPageDirty()", and that bit definition isn't used for anything 
->    else in the whole kernel judging by "grep" (the page allocator tests 
->    the bit, that's it).
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
-OK, so I looked for PG_dirty anyway.
+Signed-off-by: Tony Jones <tonyj@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
-In 46d2277c796f9f4937bfa668c40b2e3f43e93dd0 you made try_to_free_buffers
-bail out if the page is dirty.
+---
+ fs/nfsd/vfs.c         |    7 ++++---
+ fs/unionfs/xattr.c    |    4 +++-
+ fs/xattr.c            |   12 ++++++------
+ include/linux/xattr.h |    2 +-
+ 4 files changed, 14 insertions(+), 11 deletions(-)
 
-Then in 3e67c0987d7567ad666641164a153dca9a43b11d, Andrew fixed
-truncate_complete_page, because it called cancel_dirty_page (and thus
-cleared PG_dirty) after try_to_free_buffers was called via
-do_invalidatepage.
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -2032,6 +2032,7 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
+ int
+ nfsd_set_posix_acl(struct svc_fh *fhp, int type, struct posix_acl *acl)
+ {
++	struct vfsmount *mnt;
+ 	struct inode *inode = fhp->fh_dentry->d_inode;
+ 	char *name;
+ 	void *value = NULL;
+@@ -2064,14 +2065,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+ 	} else
+ 		size = 0;
+ 
++	mnt = fhp->fh_export->ex_path.mnt;
+ 	if (size)
+-		error = vfs_setxattr(fhp->fh_dentry, fhp->fh_export->ex_path.mnt,
+-				     name, value, size,0);
++		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size, 0);
+ 	else {
+ 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
+ 			error = 0;
+ 		else {
+-			error = vfs_removexattr(fhp->fh_dentry, name);
++			error = vfs_removexattr(fhp->fh_dentry, mnt, name);
+ 			if (error == -ENODATA)
+ 				error = 0;
+ 		}
+--- a/fs/unionfs/xattr.c
++++ b/fs/unionfs/xattr.c
+@@ -106,6 +106,7 @@ out:
+ int unionfs_removexattr(struct dentry *dentry, const char *name)
+ {
+ 	struct dentry *lower_dentry = NULL;
++	struct vfsmount *lower_mnt;
+ 	int err = -EOPNOTSUPP;
+ 
+ 	unionfs_read_lock(dentry->d_sb);
+@@ -117,8 +118,9 @@ int unionfs_removexattr(struct dentry *d
+ 	}
+ 
+ 	lower_dentry = unionfs_lower_dentry(dentry);
++	lower_mnt = unionfs_lower_mnt(dentry);
+ 
+-	err = vfs_removexattr(lower_dentry, (char *) name);
++	err = vfs_removexattr(lower_dentry, lower_mnt, (char *) name);
+ 
+ out:
+ 	unionfs_check_dentry(dentry);
+--- a/fs/xattr.c
++++ b/fs/xattr.c
+@@ -190,7 +190,7 @@ vfs_listxattr(struct dentry *dentry, str
+ EXPORT_SYMBOL_GPL(vfs_listxattr);
+ 
+ int
+-vfs_removexattr(struct dentry *dentry, char *name)
++vfs_removexattr(struct dentry *dentry, struct vfsmount *mnt, char *name)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+@@ -476,7 +476,7 @@ sys_flistxattr(int fd, char __user *list
+  * Extended attribute REMOVE operations
+  */
+ static long
+-removexattr(struct dentry *d, char __user *name)
++removexattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name)
+ {
+ 	int error;
+ 	char kname[XATTR_NAME_MAX + 1];
+@@ -487,7 +487,7 @@ removexattr(struct dentry *d, char __use
+ 	if (error < 0)
+ 		return error;
+ 
+-	return vfs_removexattr(d, kname);
++	return vfs_removexattr(dentry, mnt, kname);
+ }
+ 
+ asmlinkage long
+@@ -499,7 +499,7 @@ sys_removexattr(char __user *path, char 
+ 	error = user_path_walk(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = removexattr(nd.path.dentry, name);
++	error = removexattr(nd.path.dentry, nd.path.mnt, name);
+ 	path_put(&nd.path);
+ 	return error;
+ }
+@@ -513,7 +513,7 @@ sys_lremovexattr(char __user *path, char
+ 	error = user_path_walk_link(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = removexattr(nd.path.dentry, name);
++	error = removexattr(nd.path.dentry, nd.path.mnt, name);
+ 	path_put(&nd.path);
+ 	return error;
+ }
+@@ -530,7 +530,7 @@ sys_fremovexattr(int fd, char __user *na
+ 		return error;
+ 	dentry = f->f_path.dentry;
+ 	audit_inode(NULL, dentry);
+-	error = removexattr(dentry, name);
++	error = removexattr(dentry, f->f_path.mnt, name);
+ 	fput(f);
+ 	return error;
+ }
+--- a/include/linux/xattr.h
++++ b/include/linux/xattr.h
+@@ -51,7 +51,7 @@ ssize_t vfs_getxattr(struct dentry *, st
+ ssize_t vfs_listxattr(struct dentry *d, struct vfsmount *, char *list, size_t size);
+ int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
+ 		 int);
+-int vfs_removexattr(struct dentry *, char *);
++int vfs_removexattr(struct dentry *, struct vfsmount *, char *);
+ 
+ ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
+ ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);
 
-Now, if I'm not mistaken, we can end up as follows.
+-- 
 
-truncate_complete_page()
-  cancel_dirty_page() // PG_dirty cleared, decr. dirty pages
-  do_invalidatepage()
-    ext3_invalidatepage()
-      journal_invalidatepage()
-        journal_unmap_buffer()
-          __dispose_buffer()
-            __journal_unfile_buffer()
-              __journal_temp_unlink_buffer()
-                mark_buffer_dirty(); // PG_dirty set, incr. dirty pages
-
-If journal_unmap_buffer then returns 0, try_to_free_buffers is not
-called and neither is cancel_dirty_page, so the dirty pages accounting
-is not decreased again.
-
-As try_to_free_buffers got its ext3 hack back in
-ecdfc9787fe527491baefc22dce8b2dbd5b2908d, maybe
-3e67c0987d7567ad666641164a153dca9a43b11d should be reverted? (Except for
-the accounting fix in cancel_dirty_page, of course).
-
-
-On a side note, before 8368e328dfe1c534957051333a87b3210a12743b the task
-io accounting for cancelled writes happened always happened if the page
-was dirty, regardless of page->mapping. This was also already true for
-the old test_clear_page_dirty code, and the commit log for
-8368e328dfe1c534957051333a87b3210a12743b doesn't mention that semantic
-change either, so maybe the "if (account_size)" block should be moved
-out of the if "(mapping && ...)" block?
-
-Björn - not sending patches because he needs sleep and wouldn't have a
-        damn clue about what to write as a commit message anyway
