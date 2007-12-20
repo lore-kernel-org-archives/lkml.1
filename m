@@ -1,120 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758681AbXLTIcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbXLTIkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758681AbXLTIcG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 03:32:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbXLTIbx
+	id S1758774AbXLTIkw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 03:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbXLTIkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 03:31:53 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:13331 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754745AbXLTIbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 03:31:52 -0500
-Date: Thu, 20 Dec 2007 09:27:10 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 41/63] ide-cd: move lba_to_msf() and msf_to_lba() to
-	<linux/cdrom.h>
-Message-ID: <20071220082710.GJ13958@kernel.dk>
-References: <200712200224.16183.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712200224.16183.bzolnier@gmail.com>
+	Thu, 20 Dec 2007 03:40:42 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40658
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751314AbXLTIkl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 03:40:41 -0500
+Date: Thu, 20 Dec 2007 00:40:33 -0800 (PST)
+Message-Id: <20071220.004033.75315225.davem@davemloft.net>
+To: stefanr@s5r6.in-berlin.de
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@suse.de,
+       krh@bitplanet.net, linux1394-devel@lists.sourceforge.net
+Subject: Re: No dma_sync_* during pci_probe? (Sparc, post 2.6.22 regression)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <476947C1.2010405@s5r6.in-berlin.de>
+References: <4767A323.7090205@s5r6.in-berlin.de>
+	<20071218.142956.26529678.davem@davemloft.net>
+	<476947C1.2010405@s5r6.in-berlin.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20 2007, Bartlomiej Zolnierkiewicz wrote:
-> 
-> * Move lba_to_msf() and msf_to_lba() to <linux/cdrom.h>
->   (use 'u8' type instead of 'byte' while at it).
-> 
-> * Remove msf_to_lba() copy from drivers/cdrom/cdrom.c.
-> 
-> Cc: Jens Axboe <axboe@kernel.dk>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date: Wed, 19 Dec 2007 17:33:05 +0100
 
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
+> Does arch/sparc64/kernel/pci.c fill them in incorrectly or too late?
 
-> ---
->  drivers/cdrom/cdrom.c |    6 ------
->  drivers/ide/ide-cd.c  |   18 ------------------
->  include/linux/cdrom.h |   14 ++++++++++++++
->  3 files changed, 14 insertions(+), 24 deletions(-)
-> 
-> Index: b/drivers/cdrom/cdrom.c
-> ===================================================================
-> --- a/drivers/cdrom/cdrom.c
-> +++ b/drivers/cdrom/cdrom.c
-> @@ -2787,12 +2787,6 @@ int cdrom_ioctl(struct file * file, stru
->  	return -ENOSYS;
->  }
->  
-> -static inline
-> -int msf_to_lba(char m, char s, char f)
-> -{
-> -	return (((m * CD_SECS) + s) * CD_FRAMES + f) - CD_MSF_OFFSET;
-> -}
-> -
->  /*
->   * Required when we need to use READ_10 to issue other than 2048 block
->   * reads
-> Index: b/drivers/ide/ide-cd.c
-> ===================================================================
-> --- a/drivers/ide/ide-cd.c
-> +++ b/drivers/ide/ide-cd.c
-> @@ -1643,24 +1643,6 @@ void msf_from_bcd (struct atapi_msf *msf
->  	msf->frame  = BCD2BIN(msf->frame);
->  }
->  
-> -static inline
-> -void lba_to_msf (int lba, byte *m, byte *s, byte *f)
-> -{
-> -	lba += CD_MSF_OFFSET;
-> -	lba &= 0xffffff;  /* negative lbas use only 24 bits */
-> -	*m = lba / (CD_SECS * CD_FRAMES);
-> -	lba %= (CD_SECS * CD_FRAMES);
-> -	*s = lba / CD_FRAMES;
-> -	*f = lba % CD_FRAMES;
-> -}
-> -
-> -
-> -static inline
-> -int msf_to_lba (byte m, byte s, byte f)
-> -{
-> -	return (((m * CD_SECS) + s) * CD_FRAMES + f) - CD_MSF_OFFSET;
-> -}
-> -
->  static int cdrom_check_status(ide_drive_t *drive, struct request_sense *sense)
->  {
->  	struct request req;
-> Index: b/include/linux/cdrom.h
-> ===================================================================
-> --- a/include/linux/cdrom.h
-> +++ b/include/linux/cdrom.h
-> @@ -1184,6 +1184,20 @@ struct media_event_desc {
->  
->  extern int cdrom_get_media_event(struct cdrom_device_info *cdi, struct media_event_desc *med);
->  
-> +static inline void lba_to_msf(int lba, u8 *m, u8 *s, u8 *f)
-> +{
-> +	lba += CD_MSF_OFFSET;
-> +	lba &= 0xffffff;  /* negative lbas use only 24 bits */
-> +	*m = lba / (CD_SECS * CD_FRAMES);
-> +	lba %= (CD_SECS * CD_FRAMES);
-> +	*s = lba / CD_FRAMES;
-> +	*f = lba % CD_FRAMES;
-> +}
-> +
-> +static inline int msf_to_lba(u8 m, u8 s, u8 f)
-> +{
-> +	return (((m * CD_SECS) + s) * CD_FRAMES + f) - CD_MSF_OFFSET;
-> +}
->  #endif  /* End of kernel only stuff */ 
->  
->  #endif  /* _LINUX_CDROM_H */
+The problem is that I created indirection that was totally unused, the
+operation vectors members for these cases thus didn't get filled in,
+and we OOPS trying to call NULL pointers as functions :-)
 
--- 
-Jens Axboe
+This should fix the crash:
 
+diff --git a/include/asm-sparc64/dma-mapping.h b/include/asm-sparc64/dma-mapping.h
+index 1fc6554..38cbec7 100644
+--- a/include/asm-sparc64/dma-mapping.h
++++ b/include/asm-sparc64/dma-mapping.h
+@@ -25,15 +25,9 @@ struct dma_ops {
+ 	void (*sync_single_for_cpu)(struct device *dev,
+ 				    dma_addr_t dma_handle, size_t size,
+ 				    enum dma_data_direction direction);
+-	void (*sync_single_for_device)(struct device *dev,
+-				       dma_addr_t dma_handle, size_t size,
+-				       enum dma_data_direction direction);
+ 	void (*sync_sg_for_cpu)(struct device *dev, struct scatterlist *sg,
+ 				int nelems,
+ 				enum dma_data_direction direction);
+-	void (*sync_sg_for_device)(struct device *dev, struct scatterlist *sg,
+-				   int nelems,
+-				   enum dma_data_direction direction);
+ };
+ extern const struct dma_ops *dma_ops;
+ 
+@@ -105,7 +99,7 @@ static inline void dma_sync_single_for_device(struct device *dev,
+ 					      size_t size,
+ 					      enum dma_data_direction direction)
+ {
+-	dma_ops->sync_single_for_device(dev, dma_handle, size, direction);
++	/* No flushing needed to sync cpu writes to the device.  */
+ }
+ 
+ static inline void dma_sync_single_range_for_cpu(struct device *dev,
+@@ -123,7 +117,7 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
+ 						    size_t size,
+ 						    enum dma_data_direction direction)
+ {
+-	dma_sync_single_for_device(dev, dma_handle+offset, size, direction);
++	/* No flushing needed to sync cpu writes to the device.  */
+ }
+ 
+ 
+@@ -138,7 +132,7 @@ static inline void dma_sync_sg_for_device(struct device *dev,
+ 					  struct scatterlist *sg, int nelems,
+ 					  enum dma_data_direction direction)
+ {
+-	dma_ops->sync_sg_for_device(dev, sg, nelems, direction);
++	/* No flushing needed to sync cpu writes to the device.  */
+ }
+ 
+ static inline int dma_mapping_error(dma_addr_t dma_addr)
