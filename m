@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932168AbXLTMJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762629AbXLTMJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932168AbXLTMJB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 07:09:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760400AbXLTMBE
+	id S1762629AbXLTMJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 07:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760776AbXLTMBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 07:01:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38431 "EHLO mx1.redhat.com"
+	Thu, 20 Dec 2007 07:01:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38432 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761045AbXLTMAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 07:00:44 -0500
+	id S1760355AbXLTMAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 07:00:46 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,190 +19,177 @@ X-Fcc: ~/Mail/linus
 Cc: linux-kernel@vger.kernel.org
 In-Reply-To: Roland McGrath's message of  Thursday, 20 December 2007 03:52:00 -0800 <20071220115200.C767E26F98A@magilla.localdomain>
 References: <20071220115200.C767E26F98A@magilla.localdomain>
-Subject: [PATCH -mm 33/43] x86 TLS desc_struct cleanup
-Message-Id: <20071220115957.0BE5526F98B@magilla.localdomain>
-Date: Thu, 20 Dec 2007 03:59:57 -0800 (PST)
+Subject: [PATCH -mm 29/43] x86 user_regset math_emu
+Message-Id: <20071220115948.0D68F26F98A@magilla.localdomain>
+Date: Thu, 20 Dec 2007 03:59:48 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This cleans up the TLS code to use struct desc_struct and to separate the
-encoding and installation magic from the interface wrappers.
+This converts the ptrace/signal accessors for i387 math_emu
+state to the user_regset interface style, and calls these
+from the old interfaces.
+
+It also cleans up math_emulate's ptrace check to be a
+single-step check, which is what it really wants.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/kernel/tls.c  |   89 ++++++++++++++++++++++++-----------------------
- include/asm-x86/desc.h |   11 +++++-
- 2 files changed, 54 insertions(+), 46 deletions(-)
+ arch/x86/math-emu/fpu_entry.c |   86 +++++++++++++++++++++++++---------------
+ 1 files changed, 54 insertions(+), 32 deletions(-)
 
-diff --git a/arch/x86/kernel/tls.c b/arch/x86/kernel/tls.c
-index 98f428b..f11c92a 100644
---- a/arch/x86/kernel/tls.c
-+++ b/arch/x86/kernel/tls.c
-@@ -24,6 +24,29 @@ static int get_free_idx(void)
- 	return -ESRCH;
+diff --git a/arch/x86/math-emu/fpu_entry.c b/arch/x86/math-emu/fpu_entry.c
+index 377c60d..cfbdaa1 100644
+--- a/arch/x86/math-emu/fpu_entry.c
++++ b/arch/x86/math-emu/fpu_entry.c
+@@ -25,10 +25,11 @@
+  +---------------------------------------------------------------------------*/
+ 
+ #include <linux/signal.h>
+-#include <linux/ptrace.h>
++#include <linux/regset.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/desc.h>
++#include <asm/user.h>
+ 
+ #include "fpu_system.h"
+ #include "fpu_emu.h"
+@@ -198,9 +199,7 @@ asmlinkage void math_emulate(long arg)
+ 			code_limit = 0xffffffff;
+ 	}
+ 
+-	FPU_lookahead = 1;
+-	if (current->ptrace & PT_PTRACED)
+-		FPU_lookahead = 0;
++	FPU_lookahead = !(FPU_EFLAGS & X86_EFLAGS_TF);
+ 
+ 	if (!valid_prefix(&byte1, (u_char __user **) & FPU_EIP,
+ 			  &addr_modes.override)) {
+@@ -673,31 +672,37 @@ void math_abort(struct info *info, unsigned int signal)
+ #define sstatus_word() \
+   ((S387->swd & ~SW_Top & 0xffff) | ((S387->ftop << SW_Top_Shift) & SW_Top))
+ 
+-int restore_i387_soft(void *s387, struct _fpstate __user *buf)
++int fpregs_soft_set(struct task_struct *target,
++		    const struct user_regset *regset,
++		    unsigned int pos, unsigned int count,
++		    const void *kbuf, const void __user *ubuf)
+ {
+-	u_char __user *d = (u_char __user *) buf;
++	struct i387_soft_struct *s387 = &target->thread.i387.soft;
++	void *space = s387->st_space;
++	int ret;
+ 	int offset, other, i, tags, regnr, tag, newtop;
+ 
+ 	RE_ENTRANT_CHECK_OFF;
+-	FPU_access_ok(VERIFY_READ, d, 7 * 4 + 8 * 10);
+-	if (__copy_from_user(&S387->cwd, d, 7 * 4))
+-		return -1;
++	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, s387, 0,
++				 offsetof(struct i387_soft_struct, st_space));
+ 	RE_ENTRANT_CHECK_ON;
+ 
+-	d += 7 * 4;
++	if (ret)
++		return ret;
+ 
+ 	S387->ftop = (S387->swd >> SW_Top_Shift) & 7;
+ 	offset = (S387->ftop & 7) * 10;
+ 	other = 80 - offset;
+ 
+ 	RE_ENTRANT_CHECK_OFF;
++
+ 	/* Copy all registers in stack order. */
+-	if (__copy_from_user(((u_char *) & S387->st_space) + offset, d, other))
+-		return -1;
+-	if (offset)
+-		if (__copy_from_user
+-		    ((u_char *) & S387->st_space, d + other, offset))
+-			return -1;
++	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++				 space + offset, 0, other);
++	if (!ret && offset)
++		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++					 space, 0, offset);
++
+ 	RE_ENTRANT_CHECK_ON;
+ 
+ 	/* The tags may need to be corrected now. */
+@@ -716,16 +721,21 @@ int restore_i387_soft(void *s387, struct _fpstate __user *buf)
+ 	}
+ 	S387->twd = tags;
+ 
+-	return 0;
++	return ret;
  }
  
-+static void set_tls_desc(struct task_struct *p, int idx,
-+			 const struct user_desc *info)
-+{
-+	struct thread_struct *t = &p->thread;
-+	struct desc_struct *desc = &t->tls_array[idx - GDT_ENTRY_TLS_MIN];
-+	int cpu;
+-int save_i387_soft(void *s387, struct _fpstate __user * buf)
++int fpregs_soft_get(struct task_struct *target,
++		    const struct user_regset *regset,
++		    unsigned int pos, unsigned int count,
++		    void *kbuf, void __user *ubuf)
+ {
+-	u_char __user *d = (u_char __user *) buf;
++	struct i387_soft_struct *s387 = &target->thread.i387.soft;
++	const void *space = s387->st_space;
++	int ret;
+ 	int offset = (S387->ftop & 7) * 10, other = 80 - offset;
+ 
+ 	RE_ENTRANT_CHECK_OFF;
+-	FPU_access_ok(VERIFY_WRITE, d, 7 * 4 + 8 * 10);
 +
-+	/*
-+	 * We must not get preempted while modifying the TLS.
-+	 */
-+	cpu = get_cpu();
+ #ifdef PECULIAR_486
+ 	S387->cwd &= ~0xe080;
+ 	/* An 80486 sets nearly all of the reserved bits to 1. */
+@@ -735,21 +745,33 @@ int save_i387_soft(void *s387, struct _fpstate __user * buf)
+ 	S387->fcs &= ~0xf8000000;
+ 	S387->fos |= 0xffff0000;
+ #endif /* PECULIAR_486 */
+-	if (__copy_to_user(d, &S387->cwd, 7 * 4))
+-		return -1;
+-	RE_ENTRANT_CHECK_ON;
+ 
+-	d += 7 * 4;
++	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, s387, 0,
++				  offsetof(struct i387_soft_struct, st_space));
+ 
+-	RE_ENTRANT_CHECK_OFF;
+ 	/* Copy all registers in stack order. */
+-	if (__copy_to_user(d, ((u_char *) & S387->st_space) + offset, other))
+-		return -1;
+-	if (offset)
+-		if (__copy_to_user
+-		    (d + other, (u_char *) & S387->st_space, offset))
+-			return -1;
++	if (!ret)
++		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++					  space + offset, 0, other);
++	if (!ret)
++		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++					  space, 0, offset);
 +
-+	if (LDT_empty(info))
-+		desc->a = desc->b = 0;
-+	else
-+		fill_ldt(desc, info);
-+
-+	if (t == &current->thread)
-+		load_TLS(t, cpu);
-+
-+	put_cpu();
+ 	RE_ENTRANT_CHECK_ON;
+ 
+-	return 1;
++	return ret;
 +}
 +
- /*
-  * Set a given TLS descriptor:
-  */
-@@ -31,10 +54,7 @@ int do_set_thread_area(struct task_struct *p, int idx,
- 		       struct user_desc __user *u_info,
- 		       int can_allocate)
- {
--	struct thread_struct *t = &p->thread;
- 	struct user_desc info;
--	u32 *desc;
--	int cpu;
- 
- 	if (copy_from_user(&info, u_info, sizeof(info)))
- 		return -EFAULT;
-@@ -57,23 +77,8 @@ int do_set_thread_area(struct task_struct *p, int idx,
- 	if (idx < GDT_ENTRY_TLS_MIN || idx > GDT_ENTRY_TLS_MAX)
- 		return -EINVAL;
- 
--	desc = (u32 *) &t->tls_array[idx - GDT_ENTRY_TLS_MIN];
-+	set_tls_desc(p, idx, &info);
- 
--	/*
--	 * We must not get preempted while modifying the TLS.
--	 */
--	cpu = get_cpu();
--
--	if (LDT_empty(&info)) {
--		desc[0] = 0;
--		desc[1] = 0;
--	} else
--		fill_ldt((struct desc_struct *)desc, &info);
--
--	if (t == &current->thread)
--		load_TLS(t, cpu);
--
--	put_cpu();
- 	return 0;
- }
- 
-@@ -87,42 +92,38 @@ asmlinkage int sys_set_thread_area(struct user_desc __user *u_info)
-  * Get the current Thread-Local Storage area:
-  */
- 
--#define GET_LIMIT(desc)		(((desc)[0] & 0x0ffff) | ((desc)[1] & 0xf0000))
--#define GET_32BIT(desc)		(((desc)[1] >> 22) & 1)
--#define GET_CONTENTS(desc)	(((desc)[1] >> 10) & 3)
--#define GET_WRITABLE(desc)	(((desc)[1] >>  9) & 1)
--#define GET_LIMIT_PAGES(desc)	(((desc)[1] >> 23) & 1)
--#define GET_PRESENT(desc)	(((desc)[1] >> 15) & 1)
--#define GET_USEABLE(desc)	(((desc)[1] >> 20) & 1)
--#define GET_LONGMODE(desc)	(((desc)[1] >> 21) & 1)
-+static void fill_user_desc(struct user_desc *info, int idx,
-+			   const struct desc_struct *desc)
-+
++int save_i387_soft(void *s387, struct _fpstate __user *buf)
 +{
-+	memset(info, 0, sizeof(*info));
-+	info->entry_number = idx;
-+	info->base_addr = get_desc_base(desc);
-+	info->limit = get_desc_limit(desc);
-+	info->seg_32bit = desc->d;
-+	info->contents = desc->type >> 2;
-+	info->read_exec_only = !(desc->type & 2);
-+	info->limit_in_pages = desc->g;
-+	info->seg_not_present = !desc->p;
-+	info->useable = desc->avl;
-+#ifdef CONFIG_X86_64
-+	info->lm = desc->l;
-+#endif
-+}
- 
- int do_get_thread_area(struct task_struct *p, int idx,
- 		       struct user_desc __user *u_info)
- {
--	struct thread_struct *t = &p->thread;
- 	struct user_desc info;
--	u32 *desc;
- 
- 	if (idx == -1 && get_user(idx, &u_info->entry_number))
- 		return -EFAULT;
-+
- 	if (idx < GDT_ENTRY_TLS_MIN || idx > GDT_ENTRY_TLS_MAX)
- 		return -EINVAL;
- 
--	desc = (u32 *) &t->tls_array[idx - GDT_ENTRY_TLS_MIN];
--
--	memset(&info, 0, sizeof(struct user_desc));
--	info.entry_number = idx;
--	info.base_addr = get_desc_base((struct desc_struct *)desc);
--	info.limit = GET_LIMIT(desc);
--	info.seg_32bit = GET_32BIT(desc);
--	info.contents = GET_CONTENTS(desc);
--	info.read_exec_only = !GET_WRITABLE(desc);
--	info.limit_in_pages = GET_LIMIT_PAGES(desc);
--	info.seg_not_present = !GET_PRESENT(desc);
--	info.useable = GET_USEABLE(desc);
--#ifdef CONFIG_X86_64
--	info.lm = GET_LONGMODE(desc);
--#endif
-+	fill_user_desc(&info, idx,
-+		       &p->thread.tls_array[idx - GDT_ENTRY_TLS_MIN]);
- 
- 	if (copy_to_user(u_info, &info, sizeof(info)))
- 		return -EFAULT;
-diff --git a/include/asm-x86/desc.h b/include/asm-x86/desc.h
-index 6c781bf..df28de6 100644
---- a/include/asm-x86/desc.h
-+++ b/include/asm-x86/desc.h
-@@ -7,7 +7,8 @@
- #include <asm/mmu.h>
- #include <linux/smp.h>
- 
--static inline void fill_ldt(struct desc_struct *desc, struct user_desc *info)
-+static inline void fill_ldt(struct desc_struct *desc,
-+			    const struct user_desc *info)
- {
- 	desc->limit0 = info->limit & 0x0ffff;
- 	desc->base0 = info->base_addr & 0x0000ffff;
-@@ -275,10 +276,16 @@ static inline void load_LDT(mm_context_t *pc)
- 	preempt_enable();
- }
- 
--static inline unsigned long get_desc_base(struct desc_struct *desc)
-+static inline unsigned long get_desc_base(const struct desc_struct *desc)
- {
- 	return desc->base0 | ((desc->base1) << 16) | ((desc->base2) << 24);
- }
-+
-+static inline unsigned long get_desc_limit(const struct desc_struct *desc)
-+{
-+	return desc->limit0 | (desc->limit << 16);
++	return fpregs_soft_get(current, NULL,
++			       0, sizeof(struct user_i387_struct),
++			       NULL, buf) ? -1 : 1;
 +}
 +
- static inline void _set_gate(int gate, unsigned type, void *addr,
- 			      unsigned dpl, unsigned ist, unsigned seg)
- {
++int restore_i387_soft(void *s387, struct _fpstate __user *buf)
++{
++	return fpregs_soft_set(current, NULL,
++			       0, sizeof(struct user_i387_struct),
++			       NULL, buf) ? -1 : 1;
+ }
 -- 
 1.5.3.6
 
