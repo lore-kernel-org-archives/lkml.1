@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbXLTMGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762655AbXLTMG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762103AbXLTMGf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 07:06:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761223AbXLTMA5
+	id S1762655AbXLTMG7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 07:06:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761188AbXLTMAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 07:00:57 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38425 "EHLO mx1.redhat.com"
+	Thu, 20 Dec 2007 07:00:53 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38421 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760970AbXLTMAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 07:00:36 -0500
+	id S1760955AbXLTMAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 07:00:33 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,1244 +19,312 @@ X-Fcc: ~/Mail/linus
 Cc: linux-kernel@vger.kernel.org
 In-Reply-To: Roland McGrath's message of  Thursday, 20 December 2007 03:52:00 -0800 <20071220115200.C767E26F98A@magilla.localdomain>
 References: <20071220115200.C767E26F98A@magilla.localdomain>
-Subject: [PATCH -mm 32/43] x86 i387 cleanup
-Message-Id: <20071220115954.CB4C826F98B@magilla.localdomain>
-Date: Thu, 20 Dec 2007 03:59:54 -0800 (PST)
+Subject: [PATCH -mm 41/43] x86 ia32_binfmt removal
+Message-Id: <20071220120019.1D4A326F98E@magilla.localdomain>
+Date: Thu, 20 Dec 2007 04:00:19 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes all the old code that is no longer used after
-the i387 unification and cleanup.  The i387_64.h is renamed
-to i387.h with no changes, but since it replaces the nonempty
-one-line stub i387.h it looks like a big diff and not a rename.
+Remove the old ia32_binfmt.c file, which is no longer used.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/ia32/fpu32.c     |  181 ----------------------
- arch/x86/kernel/i387_64.c |  119 ---------------
- include/asm-x86/i387.h    |  369 ++++++++++++++++++++++++++++++++++++++++++++-
- include/asm-x86/i387_32.h |  149 ------------------
- include/asm-x86/i387_64.h |  368 --------------------------------------------
- 5 files changed, 368 insertions(+), 818 deletions(-)
+ arch/x86/ia32/ia32_binfmt.c |  284 -------------------------------------------
+ 1 files changed, 0 insertions(+), 284 deletions(-)
 
-diff --git a/arch/x86/ia32/fpu32.c b/arch/x86/ia32/fpu32.c
+diff --git a/arch/x86/ia32/ia32_binfmt.c b/arch/x86/ia32/ia32_binfmt.c
 deleted file mode 100644
-index ae80745..0000000
---- a/arch/x86/ia32/fpu32.c
+index 806135c..0000000
+--- a/arch/x86/ia32/ia32_binfmt.c
 +++ /dev/null
-@@ -1,181 +0,0 @@
--/*
-- * Copyright 2002 Andi Kleen, SuSE Labs.
-- * FXSAVE<->i387 conversion support. Based on code by Gareth Hughes.
-- * This is used for ptrace, signals and coredumps in 32bit emulation.
-- */
--
--#include <linux/sched.h>
--#include <asm/sigcontext32.h>
--#include <asm/processor.h>
--#include <asm/uaccess.h>
--#include <asm/i387.h>
--
--static inline unsigned short twd_i387_to_fxsr(unsigned short twd)
--{
--	unsigned int tmp; /* to avoid 16 bit prefixes in the code */
--
--	/* Transform each pair of bits into 01 (valid) or 00 (empty) */
--	tmp = ~twd;
--	tmp = (tmp | (tmp>>1)) & 0x5555; /* 0V0V0V0V0V0V0V0V */
--	/* and move the valid bits to the lower byte. */
--	tmp = (tmp | (tmp >> 1)) & 0x3333; /* 00VV00VV00VV00VV */
--	tmp = (tmp | (tmp >> 2)) & 0x0f0f; /* 0000VVVV0000VVVV */
--	tmp = (tmp | (tmp >> 4)) & 0x00ff; /* 00000000VVVVVVVV */
--	return tmp;
--}
--
--#define FPREG_ADDR(f, n)	((void *)&(f)->st_space + (n) * 16);
--#define FP_EXP_TAG_VALID	0
--#define FP_EXP_TAG_ZERO		1
--#define FP_EXP_TAG_SPECIAL	2
--#define FP_EXP_TAG_EMPTY	3
--
--static inline unsigned long twd_fxsr_to_i387(struct i387_fxsave_struct *fxsave)
--{
--	struct _fpxreg *st;
--	unsigned long tos = (fxsave->swd >> 11) & 7;
--	unsigned long twd = (unsigned long) fxsave->twd;
--	unsigned long tag;
--	unsigned long ret = 0xffff0000;
--	int i;
--
--	for (i = 0; i < 8; i++, twd >>= 1) {
--		if (twd & 0x1) {
--			st = FPREG_ADDR(fxsave, (i - tos) & 7);
--
--			switch (st->exponent & 0x7fff) {
--			case 0x7fff:
--				tag = FP_EXP_TAG_SPECIAL;
--				break;
--			case 0x0000:
--				if (!st->significand[0] &&
--				    !st->significand[1] &&
--				    !st->significand[2] &&
--				    !st->significand[3])
--					tag = FP_EXP_TAG_ZERO;
--				else
--					tag = FP_EXP_TAG_SPECIAL;
--				break;
--			default:
--				if (st->significand[3] & 0x8000)
--					tag = FP_EXP_TAG_VALID;
--				else
--					tag = FP_EXP_TAG_SPECIAL;
--				break;
--			}
--		} else {
--			tag = FP_EXP_TAG_EMPTY;
--		}
--		ret |= tag << (2 * i);
--	}
--	return ret;
--}
--
--#define G(num, val) err |= __get_user(val, num + (u32 __user *)buf)
--
--static inline int convert_fxsr_from_user(struct i387_fxsave_struct *fxsave,
--					 struct _fpstate_ia32 __user *buf)
--{
--	struct _fpxreg *to;
--	struct _fpreg __user *from;
--	int i, err = 0;
--	u32 v;
--
--	G(0, fxsave->cwd);
--	G(1, fxsave->swd);
--	G(2, fxsave->twd);
--	fxsave->twd = twd_i387_to_fxsr(fxsave->twd);
--	G(3, fxsave->rip);
--	G(4, v);
--	/* cs ignored */
--	fxsave->fop = v>>16;
--	G(5, fxsave->rdp);
--	/* 6: ds ignored */
--	if (err)
--		return -1;
--
--	to = (struct _fpxreg *)&fxsave->st_space[0];
--	from = &buf->_st[0];
--	for (i = 0; i < 8; i++, to++, from++) {
--		if (__copy_from_user(to, from, sizeof(*from)))
--			return -1;
--	}
--	return 0;
--}
--
--#define P(num, val) err |= __put_user(val, num + (u32 __user *)buf)
--
--static inline int convert_fxsr_to_user(struct _fpstate_ia32 __user *buf,
--				       struct i387_fxsave_struct *fxsave,
--				       struct pt_regs *regs,
--				       struct task_struct *tsk)
--{
--	struct _fpreg __user *to;
--	struct _fpxreg *from;
--	int i, err = 0;
--	u16 cs, ds;
--
--	if (tsk == current) {
--		/*
--		 * should be actually ds/cs at fpu exception time, but
--		 * that information is not available in 64bit mode.
--		 */
--		asm("movw %%ds,%0 " : "=r" (ds));
--		asm("movw %%cs,%0 " : "=r" (cs));
--	} else {
--		 /* ptrace. task has stopped. */
--		ds = tsk->thread.ds;
--		cs = regs->cs;
--	}
--
--	P(0, (u32)fxsave->cwd | 0xffff0000);
--	P(1, (u32)fxsave->swd | 0xffff0000);
--	P(2, twd_fxsr_to_i387(fxsave));
--	P(3, (u32)fxsave->rip);
--	P(4,  cs | ((u32)fxsave->fop) << 16);
--	P(5, fxsave->rdp);
--	P(6, 0xffff0000 | ds);
--
--	if (err)
--		return -1;
--
--	to = &buf->_st[0];
--	from = (struct _fpxreg *) &fxsave->st_space[0];
--	for (i = 0; i < 8; i++, to++, from++) {
--		if (__copy_to_user(to, from, sizeof(*to)))
--			return -1;
--	}
--	return 0;
--}
--
--int restore_i387_ia32(struct task_struct *tsk,
--		      struct _fpstate_ia32 __user *buf, int fsave)
--{
--	clear_fpu(tsk);
--	if (!fsave) {
--		if (__copy_from_user(&tsk->thread.i387.fxsave,
--				     &buf->_fxsr_env[0],
--				     sizeof(struct i387_fxsave_struct)))
--			return -1;
--		tsk->thread.i387.fxsave.mxcsr &= mxcsr_feature_mask;
--		set_stopped_child_used_math(tsk);
--	}
--	return convert_fxsr_from_user(&tsk->thread.i387.fxsave, buf);
--}
--
--int save_i387_ia32(struct task_struct *tsk, struct _fpstate_ia32 __user *buf,
--		   struct pt_regs *regs, int fsave)
--{
--	int err = 0;
--
--	init_fpu(tsk);
--	if (convert_fxsr_to_user(buf, &tsk->thread.i387.fxsave, regs, tsk))
--		return -1;
--	if (fsave)
--		return 0;
--	err |= __put_user(tsk->thread.i387.fxsave.swd, &buf->status);
--	err |= __put_user(X86_FXSR_MAGIC, &buf->magic);
--	err |= __copy_to_user(&buf->_fxsr_env[0], &tsk->thread.i387.fxsave,
--			      sizeof(struct i387_fxsave_struct));
--	return err ? -1 : 1;
--}
-diff --git a/arch/x86/kernel/i387_64.c b/arch/x86/kernel/i387_64.c
-deleted file mode 100644
-index f335a76..0000000
---- a/arch/x86/kernel/i387_64.c
-+++ /dev/null
-@@ -1,119 +0,0 @@
--/*
-- *  Copyright (C) 1994 Linus Torvalds
-- *  Copyright (C) 2002 Andi Kleen, SuSE Labs
-- *
-- *  Pentium III FXSR, SSE support
-- *  General FPU state handling cleanups
-- *	Gareth Hughes <gareth@valinux.com>, May 2000
+@@ -1,284 +0,0 @@
+-/* 
+- * Written 2000,2002 by Andi Kleen. 
 - * 
-- *  x86-64 rework 2002 Andi Kleen. 
-- *  Does direct fxsave in and out of user space now for signal handlers.
-- *  All the FSAVE<->FXSAVE conversion code has been moved to the 32bit emulation,
-- *  the 64bit user space sees a FXSAVE frame directly. 
-- */
+- * Loosely based on the sparc64 and IA64 32bit emulation loaders.
+- * This tricks binfmt_elf.c into loading 32bit binaries using lots 
+- * of ugly preprocessor tricks. Talk about very very poor man's inheritance.
+- */ 
 -
+-#include <linux/types.h>
+-#include <linux/stddef.h>
+-#include <linux/rwsem.h>
 -#include <linux/sched.h>
--#include <linux/init.h>
--#include <asm/processor.h>
--#include <asm/i387.h>
--#include <asm/sigcontext.h>
--#include <asm/user.h>
+-#include <linux/compat.h>
+-#include <linux/string.h>
+-#include <linux/binfmts.h>
+-#include <linux/mm.h>
+-#include <linux/security.h>
+-#include <linux/elfcore-compat.h>
+-
+-#include <asm/segment.h> 
 -#include <asm/ptrace.h>
+-#include <asm/processor.h>
+-#include <asm/user32.h>
+-#include <asm/sigcontext32.h>
+-#include <asm/fpu32.h>
+-#include <asm/i387.h>
 -#include <asm/uaccess.h>
+-#include <asm/ia32.h>
+-#include <asm/vdso.h>
 -
--unsigned int mxcsr_feature_mask __read_mostly = 0xffffffff;
+-#undef	ELF_ARCH
+-#undef	ELF_CLASS
+-#define ELF_CLASS	ELFCLASS32
+-#define ELF_ARCH	EM_386
 -
--void mxcsr_feature_mask_init(void)
+-#undef	elfhdr
+-#undef	elf_phdr
+-#undef	elf_note
+-#undef	elf_addr_t
+-#define elfhdr		elf32_hdr
+-#define elf_phdr	elf32_phdr
+-#define elf_note	elf32_note
+-#define elf_addr_t	Elf32_Off
+-
+-#define ELF_NAME "elf/i386"
+-
+-#define AT_SYSINFO 32
+-#define AT_SYSINFO_EHDR		33
+-
+-extern int sysctl_vsyscall32;
+-
+-#undef ARCH_DLINFO
+-#define ARCH_DLINFO do {  \
+-	if (sysctl_vsyscall32) { \
+-		NEW_AUX_ENT(AT_SYSINFO, (u32)VDSO_ENTRY);		\
+-		NEW_AUX_ENT(AT_SYSINFO_EHDR, (u32)VDSO_CURRENT_BASE);	\
+-	}	\
+-} while(0)
+-
+-struct file;
+-
+-#define IA32_EMULATOR 1
+-
+-#undef ELF_ET_DYN_BASE
+-
+-#define ELF_ET_DYN_BASE		(TASK_UNMAPPED_BASE + 0x1000000)
+-
+-#define jiffies_to_timeval(a,b) do { (b)->tv_usec = 0; (b)->tv_sec = (a)/HZ; }while(0)
+-
+-#define _GET_SEG(x) \
+-	({ __u32 seg; asm("movl %%" __stringify(x) ",%0" : "=r"(seg)); seg; })
+-
+-/* Assumes current==process to be dumped */
+-#undef	ELF_CORE_COPY_REGS
+-#define ELF_CORE_COPY_REGS(pr_reg, regs)       		\
+-	pr_reg[0] = regs->bx;				\
+-	pr_reg[1] = regs->cx;				\
+-	pr_reg[2] = regs->dx;				\
+-	pr_reg[3] = regs->si;				\
+-	pr_reg[4] = regs->di;				\
+-	pr_reg[5] = regs->bp;				\
+-	pr_reg[6] = regs->ax;				\
+-	pr_reg[7] = _GET_SEG(ds);   			\
+-	pr_reg[8] = _GET_SEG(es);			\
+-	pr_reg[9] = _GET_SEG(fs);			\
+-	pr_reg[10] = _GET_SEG(gs);			\
+-	pr_reg[11] = regs->orig_ax;			\
+-	pr_reg[12] = regs->ip;				\
+-	pr_reg[13] = regs->cs;				\
+-	pr_reg[14] = regs->flags;			\
+-	pr_reg[15] = regs->sp;				\
+-	pr_reg[16] = regs->ss;
+-
+-
+-#define elf_prstatus	compat_elf_prstatus
+-#define elf_prpsinfo	compat_elf_prpsinfo
+-#define elf_fpregset_t	struct user_i387_ia32_struct
+-#define	elf_fpxregset_t	struct user32_fxsr_struct
+-#define user		user32
+-
+-#undef elf_read_implies_exec
+-#define elf_read_implies_exec(ex, executable_stack)     (executable_stack != EXSTACK_DISABLE_X)
+-
+-#define elf_core_copy_regs		elf32_core_copy_regs
+-static inline void elf32_core_copy_regs(compat_elf_gregset_t *elfregs,
+-					struct pt_regs *regs)
 -{
--	unsigned int mask;
--	clts();
--	memset(&current->thread.i387.fxsave, 0, sizeof(struct i387_fxsave_struct));
--	asm volatile("fxsave %0" : : "m" (current->thread.i387.fxsave));
--	mask = current->thread.i387.fxsave.mxcsr_mask;
--	if (mask == 0) mask = 0x0000ffbf;
--	mxcsr_feature_mask &= mask;
--	stts();
+-	ELF_CORE_COPY_REGS((&elfregs->ebx), regs)
 -}
 -
--/*
-- * Called at bootup to set up the initial FPU state that is later cloned
-- * into all processes.
-- */
--void __cpuinit fpu_init(void)
--{
--	unsigned long oldcr0 = read_cr0();
--	extern void __bad_fxsave_alignment(void);
--		
--	if (offsetof(struct task_struct, thread.i387.fxsave) & 15)
--		__bad_fxsave_alignment();
--	set_in_cr4(X86_CR4_OSFXSR);
--	set_in_cr4(X86_CR4_OSXMMEXCPT);
--
--	write_cr0(oldcr0 & ~((1UL<<3)|(1UL<<2))); /* clear TS and EM */
--
--	mxcsr_feature_mask_init();
--	/* clean state in init */
--	current_thread_info()->status = 0;
--	clear_used_math();
--}
--
--void init_fpu(struct task_struct *child)
--{
--	if (tsk_used_math(child)) {
--		if (child == current)
--			unlazy_fpu(child);
--		return;
--	}	
--	memset(&child->thread.i387.fxsave, 0, sizeof(struct i387_fxsave_struct));
--	child->thread.i387.fxsave.cwd = 0x37f;
--	child->thread.i387.fxsave.mxcsr = 0x1f80;
--	/* only the device not available exception or ptrace can call init_fpu */
--	set_stopped_child_used_math(child);
--}
--
--/*
-- * ptrace request handlers.
-- */
--
--int get_fpregs(struct user_i387_struct __user *buf, struct task_struct *tsk)
--{
--	init_fpu(tsk);
--	return __copy_to_user(buf, &tsk->thread.i387.fxsave,
--			       sizeof(struct user_i387_struct)) ? -EFAULT : 0;
--}
--
--int set_fpregs(struct task_struct *tsk, struct user_i387_struct __user *buf)
--{
--	if (__copy_from_user(&tsk->thread.i387.fxsave, buf, 
--			     sizeof(struct user_i387_struct)))
--		return -EFAULT;
--		return 0;
--}
--
--/*
-- * FPU state for core dumps.
-- */
--
--int dump_fpu( struct pt_regs *regs, struct user_i387_struct *fpu )
--{
--	struct task_struct *tsk = current;
--
--	if (!used_math())
--		return 0;
--
--	unlazy_fpu(tsk);
--	memcpy(fpu, &tsk->thread.i387.fxsave, sizeof(struct user_i387_struct)); 
+-#define elf_core_copy_task_regs		elf32_core_copy_task_regs
+-static inline int elf32_core_copy_task_regs(struct task_struct *t,
+-					    compat_elf_gregset_t* elfregs)
+-{	
+-	struct pt_regs *pp = task_pt_regs(t);
+-	ELF_CORE_COPY_REGS((&elfregs->ebx), pp);
+-	/* fix wrong segments */ 
+-	elfregs->ds = t->thread.ds;
+-	elfregs->fs = t->thread.fsindex;
+-	elfregs->gs = t->thread.gsindex;
+-	elfregs->es = t->thread.es;
 -	return 1; 
 -}
 -
--int dump_task_fpu(struct task_struct *tsk, struct user_i387_struct *fpu)
+-#define elf_core_copy_task_fpregs	elf32_core_copy_task_fpregs
+-static inline int 
+-elf32_core_copy_task_fpregs(struct task_struct *tsk, struct pt_regs *regs,
+-			    elf_fpregset_t *fpu)
 -{
--	int fpvalid = !!tsk_used_math(tsk);
+-	struct _fpstate_ia32 *fpstate = (void*)fpu; 
+-	mm_segment_t oldfs = get_fs();
 -
--	if (fpvalid) {
--		if (tsk == current)
--			unlazy_fpu(tsk);
--		memcpy(fpu, &tsk->thread.i387.fxsave, sizeof(struct user_i387_struct)); 	
--}
--	return fpvalid;
--}
-diff --git a/include/asm-x86/i387.h b/include/asm-x86/i387.h
-index b2bc005..b52b891 100644
---- a/include/asm-x86/i387.h
-+++ b/include/asm-x86/i387.h
-@@ -1 +1,368 @@
--#include "i387_64.h"
-+/*
-+ * Copyright (C) 1994 Linus Torvalds
-+ *
-+ * Pentium III FXSR, SSE support
-+ * General FPU state handling cleanups
-+ *	Gareth Hughes <gareth@valinux.com>, May 2000
-+ * x86-64 work by Andi Kleen 2002
-+ */
-+
-+#ifndef _ASM_X86_I387_H
-+#define _ASM_X86_I387_H
-+
-+#include <linux/sched.h>
-+#include <linux/kernel_stat.h>
-+#include <linux/regset.h>
-+#include <asm/processor.h>
-+#include <asm/sigcontext.h>
-+#include <asm/user.h>
-+#include <asm/uaccess.h>
-+
-+extern void fpu_init(void);
-+extern unsigned int mxcsr_feature_mask;
-+extern void mxcsr_feature_mask_init(void);
-+extern void init_fpu(struct task_struct *child);
-+extern asmlinkage void math_state_restore(void);
-+
-+extern user_regset_active_fn fpregs_active, xfpregs_active;
-+extern user_regset_get_fn fpregs_get, xfpregs_get, fpregs_soft_get;
-+extern user_regset_set_fn fpregs_set, xfpregs_set, fpregs_soft_set;
-+
-+#ifdef CONFIG_X86_64
-+
-+/* Ignore delayed exceptions from user space */
-+static inline void tolerant_fwait(void)
-+{
-+	asm volatile("1: fwait\n"
-+		     "2:\n"
-+		     "   .section __ex_table,\"a\"\n"
-+		     "	.align 8\n"
-+		     "	.quad 1b,2b\n"
-+		     "	.previous\n");
-+}
-+
-+static inline int restore_fpu_checking(struct i387_fxsave_struct *fx)
-+{
-+	int err;
-+
-+	asm volatile("1:  rex64/fxrstor (%[fx])\n\t"
-+		     "2:\n"
-+		     ".section .fixup,\"ax\"\n"
-+		     "3:  movl $-1,%[err]\n"
-+		     "    jmp  2b\n"
-+		     ".previous\n"
-+		     ".section __ex_table,\"a\"\n"
-+		     "   .align 8\n"
-+		     "   .quad  1b,3b\n"
-+		     ".previous"
-+		     : [err] "=r" (err)
-+#if 0 /* See comment in __save_init_fpu() below. */
-+		     : [fx] "r" (fx), "m" (*fx), "0" (0));
-+#else
-+		     : [fx] "cdaSDb" (fx), "m" (*fx), "0" (0));
-+#endif
-+	if (unlikely(err))
-+		init_fpu(current);
-+	return err;
-+}
-+
-+#define X87_FSW_ES (1 << 7)	/* Exception Summary */
-+
-+/* AMD CPUs don't save/restore FDP/FIP/FOP unless an exception
-+   is pending. Clear the x87 state here by setting it to fixed
-+   values. The kernel data segment can be sometimes 0 and sometimes
-+   new user value. Both should be ok.
-+   Use the PDA as safe address because it should be already in L1. */
-+static inline void clear_fpu_state(struct i387_fxsave_struct *fx)
-+{
-+	if (unlikely(fx->swd & X87_FSW_ES))
-+		 asm volatile("fnclex");
-+	alternative_input(ASM_NOP8 ASM_NOP2,
-+		     "    emms\n"		/* clear stack tags */
-+		     "    fildl %%gs:0",	/* load to clear state */
-+		     X86_FEATURE_FXSAVE_LEAK);
-+}
-+
-+static inline int save_i387_checking(struct i387_fxsave_struct __user *fx)
-+{
-+	int err;
-+
-+	asm volatile("1:  rex64/fxsave (%[fx])\n\t"
-+		     "2:\n"
-+		     ".section .fixup,\"ax\"\n"
-+		     "3:  movl $-1,%[err]\n"
-+		     "    jmp  2b\n"
-+		     ".previous\n"
-+		     ".section __ex_table,\"a\"\n"
-+		     "   .align 8\n"
-+		     "   .quad  1b,3b\n"
-+		     ".previous"
-+		     : [err] "=r" (err), "=m" (*fx)
-+#if 0 /* See comment in __fxsave_clear() below. */
-+		     : [fx] "r" (fx), "0" (0));
-+#else
-+		     : [fx] "cdaSDb" (fx), "0" (0));
-+#endif
-+	if (unlikely(err) && __clear_user(fx, sizeof(struct i387_fxsave_struct)))
-+		err = -EFAULT;
-+	/* No need to clear here because the caller clears USED_MATH */
-+	return err;
-+}
-+
-+static inline void __save_init_fpu(struct task_struct *tsk)
-+{
-+	/* Using "rex64; fxsave %0" is broken because, if the memory operand
-+	   uses any extended registers for addressing, a second REX prefix
-+	   will be generated (to the assembler, rex64 followed by semicolon
-+	   is a separate instruction), and hence the 64-bitness is lost. */
-+#if 0
-+	/* Using "fxsaveq %0" would be the ideal choice, but is only supported
-+	   starting with gas 2.16. */
-+	__asm__ __volatile__("fxsaveq %0"
-+			     : "=m" (tsk->thread.i387.fxsave));
-+#elif 0
-+	/* Using, as a workaround, the properly prefixed form below isn't
-+	   accepted by any binutils version so far released, complaining that
-+	   the same type of prefix is used twice if an extended register is
-+	   needed for addressing (fix submitted to mainline 2005-11-21). */
-+	__asm__ __volatile__("rex64/fxsave %0"
-+			     : "=m" (tsk->thread.i387.fxsave));
-+#else
-+	/* This, however, we can work around by forcing the compiler to select
-+	   an addressing mode that doesn't require extended registers. */
-+	__asm__ __volatile__("rex64/fxsave %P2(%1)"
-+			     : "=m" (tsk->thread.i387.fxsave)
-+			     : "cdaSDb" (tsk),
-+				"i" (offsetof(__typeof__(*tsk),
-+					      thread.i387.fxsave)));
-+#endif
-+	clear_fpu_state(&tsk->thread.i387.fxsave);
-+	task_thread_info(tsk)->status &= ~TS_USEDFPU;
-+}
-+
-+/*
-+ * Signal frame handlers.
-+ */
-+
-+static inline int save_i387(struct _fpstate __user *buf)
-+{
-+	struct task_struct *tsk = current;
-+	int err = 0;
-+
-+	BUILD_BUG_ON(sizeof(struct user_i387_struct) !=
-+			sizeof(tsk->thread.i387.fxsave));
-+
-+	if ((unsigned long)buf % 16)
-+		printk("save_i387: bad fpstate %p\n", buf);
-+
-+	if (!used_math())
-+		return 0;
-+	clear_used_math(); /* trigger finit */
-+	if (task_thread_info(tsk)->status & TS_USEDFPU) {
-+		err = save_i387_checking((struct i387_fxsave_struct __user *)buf);
-+		if (err) return err;
-+		task_thread_info(tsk)->status &= ~TS_USEDFPU;
-+		stts();
-+	} else {
-+		if (__copy_to_user(buf, &tsk->thread.i387.fxsave,
-+				   sizeof(struct i387_fxsave_struct)))
-+			return -1;
-+	}
-+	return 1;
-+}
-+
-+/*
-+ * This restores directly out of user space. Exceptions are handled.
-+ */
-+static inline int restore_i387(struct _fpstate __user *buf)
-+{
-+	set_used_math();
-+	if (!(task_thread_info(current)->status & TS_USEDFPU)) {
-+		clts();
-+		task_thread_info(current)->status |= TS_USEDFPU;
-+	}
-+	return restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
-+}
-+
-+#else  /* CONFIG_X86_32 */
-+
-+static inline void tolerant_fwait(void)
-+{
-+	asm volatile("fnclex ; fwait");
-+}
-+
-+static inline void restore_fpu(struct task_struct *tsk)
-+{
-+	/*
-+	 * The "nop" is needed to make the instructions the same
-+	 * length.
-+	 */
-+	alternative_input(
-+		"nop ; frstor %1",
-+		"fxrstor %1",
-+		X86_FEATURE_FXSR,
-+		"m" ((tsk)->thread.i387.fxsave));
-+}
-+
-+/* We need a safe address that is cheap to find and that is already
-+   in L1 during context switch. The best choices are unfortunately
-+   different for UP and SMP */
-+#ifdef CONFIG_SMP
-+#define safe_address (__per_cpu_offset[0])
-+#else
-+#define safe_address (kstat_cpu(0).cpustat.user)
-+#endif
-+
-+/*
-+ * These must be called with preempt disabled
-+ */
-+static inline void __save_init_fpu(struct task_struct *tsk)
-+{
-+	/* Use more nops than strictly needed in case the compiler
-+	   varies code */
-+	alternative_input(
-+		"fnsave %[fx] ;fwait;" GENERIC_NOP8 GENERIC_NOP4,
-+		"fxsave %[fx]\n"
-+		"bt $7,%[fsw] ; jnc 1f ; fnclex\n1:",
-+		X86_FEATURE_FXSR,
-+		[fx] "m" (tsk->thread.i387.fxsave),
-+		[fsw] "m" (tsk->thread.i387.fxsave.swd) : "memory");
-+	/* AMD K7/K8 CPUs don't save/restore FDP/FIP/FOP unless an exception
-+	   is pending.  Clear the x87 state here by setting it to fixed
-+	   values. safe_address is a random variable that should be in L1 */
-+	alternative_input(
-+		GENERIC_NOP8 GENERIC_NOP2,
-+		"emms\n\t"	  	/* clear stack tags */
-+		"fildl %[addr]", 	/* set F?P to defined value */
-+		X86_FEATURE_FXSAVE_LEAK,
-+		[addr] "m" (safe_address));
-+	task_thread_info(tsk)->status &= ~TS_USEDFPU;
-+}
-+
-+/*
-+ * Signal frame handlers...
-+ */
-+extern int save_i387(struct _fpstate __user *buf);
-+extern int restore_i387(struct _fpstate __user *buf);
-+
-+#endif	/* CONFIG_X86_64 */
-+
-+static inline void __unlazy_fpu(struct task_struct *tsk)
-+{
-+	if (task_thread_info(tsk)->status & TS_USEDFPU) {
-+		__save_init_fpu(tsk);
-+		stts();
-+	} else
-+		tsk->fpu_counter = 0;
-+}
-+
-+static inline void __clear_fpu(struct task_struct *tsk)
-+{
-+	if (task_thread_info(tsk)->status & TS_USEDFPU) {
-+		tolerant_fwait();
-+		task_thread_info(tsk)->status &= ~TS_USEDFPU;
-+		stts();
-+	}
-+}
-+
-+static inline void kernel_fpu_begin(void)
-+{
-+	struct thread_info *me = current_thread_info();
-+	preempt_disable();
-+	if (me->status & TS_USEDFPU)
-+		__save_init_fpu(me->task);
-+	else
-+		clts();
-+}
-+
-+static inline void kernel_fpu_end(void)
-+{
-+	stts();
-+	preempt_enable();
-+}
-+
-+#ifdef CONFIG_X86_64
-+
-+static inline void save_init_fpu(struct task_struct *tsk)
-+{
-+	__save_init_fpu(tsk);
-+	stts();
-+}
-+
-+#define unlazy_fpu	__unlazy_fpu
-+#define clear_fpu	__clear_fpu
-+
-+#else  /* CONFIG_X86_32 */
-+
-+/*
-+ * These disable preemption on their own and are safe
-+ */
-+static inline void save_init_fpu(struct task_struct *tsk)
-+{
-+	preempt_disable();
-+	__save_init_fpu(tsk);
-+	stts();
-+	preempt_enable();
-+}
-+
-+static inline void unlazy_fpu(struct task_struct *tsk)
-+{
-+	preempt_disable();
-+	__unlazy_fpu(tsk);
-+	preempt_enable();
-+}
-+
-+static inline void clear_fpu(struct task_struct *tsk)
-+{
-+	preempt_disable();
-+	__clear_fpu(tsk);
-+	preempt_enable();
-+}
-+
-+#endif	/* CONFIG_X86_64 */
-+
-+/*
-+ * ptrace request handlers...
-+ */
-+extern int get_fpregs(struct user_i387_struct __user *buf,
-+		      struct task_struct *tsk);
-+extern int set_fpregs(struct task_struct *tsk,
-+		      struct user_i387_struct __user *buf);
-+
-+struct user_fxsr_struct;
-+extern int get_fpxregs(struct user_fxsr_struct __user *buf,
-+		       struct task_struct *tsk);
-+extern int set_fpxregs(struct task_struct *tsk,
-+		       struct user_fxsr_struct __user *buf);
-+
-+/*
-+ * i387 state interaction
-+ */
-+static inline unsigned short get_fpu_cwd(struct task_struct *tsk)
-+{
-+	if (cpu_has_fxsr) {
-+		return tsk->thread.i387.fxsave.cwd;
-+	} else {
-+		return (unsigned short)tsk->thread.i387.fsave.cwd;
-+	}
-+}
-+
-+static inline unsigned short get_fpu_swd(struct task_struct *tsk)
-+{
-+	if (cpu_has_fxsr) {
-+		return tsk->thread.i387.fxsave.swd;
-+	} else {
-+		return (unsigned short)tsk->thread.i387.fsave.swd;
-+	}
-+}
-+
-+static inline unsigned short get_fpu_mxcsr(struct task_struct *tsk)
-+{
-+	if (cpu_has_xmm) {
-+		return tsk->thread.i387.fxsave.mxcsr;
-+	} else {
-+		return MXCSR_DEFAULT;
-+	}
-+}
-+
-+#endif	/* _ASM_X86_I387_H */
-diff --git a/include/asm-x86/i387_32.h b/include/asm-x86/i387_32.h
-deleted file mode 100644
-index 9ac2502..0000000
---- a/include/asm-x86/i387_32.h
-+++ /dev/null
-@@ -1,149 +0,0 @@
--/*
-- * Copyright (C) 1994 Linus Torvalds
-- *
-- * Pentium III FXSR, SSE support
-- * General FPU state handling cleanups
-- *	Gareth Hughes <gareth@valinux.com>, May 2000
-- */
--
--#ifndef __ASM_I386_I387_H
--#define __ASM_I386_I387_H
--
--#include <linux/sched.h>
--#include <linux/init.h>
--#include <linux/kernel_stat.h>
--#include <asm/processor.h>
--#include <asm/sigcontext.h>
--#include <asm/user.h>
--
--extern void mxcsr_feature_mask_init(void);
--extern void init_fpu(struct task_struct *);
--
--/*
-- * FPU lazy state save handling...
-- */
--
--/*
-- * The "nop" is needed to make the instructions the same
-- * length.
-- */
--#define restore_fpu(tsk)			\
--	alternative_input(			\
--		"nop ; frstor %1",		\
--		"fxrstor %1",			\
--		X86_FEATURE_FXSR,		\
--		"m" ((tsk)->thread.i387.fxsave))
--
--extern void kernel_fpu_begin(void);
--#define kernel_fpu_end() do { stts(); preempt_enable(); } while(0)
--
--/* We need a safe address that is cheap to find and that is already
--   in L1 during context switch. The best choices are unfortunately
--   different for UP and SMP */
--#ifdef CONFIG_SMP
--#define safe_address (__per_cpu_offset[0])
--#else
--#define safe_address (kstat_cpu(0).cpustat.user)
--#endif
--
--/*
-- * These must be called with preempt disabled
-- */
--static inline void __save_init_fpu( struct task_struct *tsk )
--{
--	/* Use more nops than strictly needed in case the compiler
--	   varies code */
--	alternative_input(
--		"fnsave %[fx] ;fwait;" GENERIC_NOP8 GENERIC_NOP4,
--		"fxsave %[fx]\n"
--		"bt $7,%[fsw] ; jnc 1f ; fnclex\n1:",
--		X86_FEATURE_FXSR,
--		[fx] "m" (tsk->thread.i387.fxsave),
--		[fsw] "m" (tsk->thread.i387.fxsave.swd) : "memory");
--	/* AMD K7/K8 CPUs don't save/restore FDP/FIP/FOP unless an exception
--	   is pending.  Clear the x87 state here by setting it to fixed
--   	   values. safe_address is a random variable that should be in L1 */
--	alternative_input(
--		GENERIC_NOP8 GENERIC_NOP2,
--		"emms\n\t"	  	/* clear stack tags */
--		"fildl %[addr]", 	/* set F?P to defined value */
--		X86_FEATURE_FXSAVE_LEAK,
--		[addr] "m" (safe_address));
--	task_thread_info(tsk)->status &= ~TS_USEDFPU;
--}
--
--#define __unlazy_fpu( tsk ) do {				\
--	if (task_thread_info(tsk)->status & TS_USEDFPU) {	\
--		__save_init_fpu(tsk);				\
--		stts();						\
--	} else							\
--		tsk->fpu_counter = 0;				\
--} while (0)
--
--#define __clear_fpu( tsk )					\
--do {								\
--	if (task_thread_info(tsk)->status & TS_USEDFPU) {	\
--		asm volatile("fnclex ; fwait");			\
--		task_thread_info(tsk)->status &= ~TS_USEDFPU;	\
--		stts();						\
--	}							\
--} while (0)
--
--
--/*
-- * These disable preemption on their own and are safe
-- */
--static inline void save_init_fpu( struct task_struct *tsk )
--{
--	preempt_disable();
--	__save_init_fpu(tsk);
--	stts();
--	preempt_enable();
--}
--
--#define unlazy_fpu( tsk ) do {	\
--	preempt_disable();	\
--	__unlazy_fpu(tsk);	\
--	preempt_enable();	\
--} while (0)
--
--#define clear_fpu( tsk ) do {	\
--	preempt_disable();	\
--	__clear_fpu( tsk );	\
--	preempt_enable();	\
--} while (0)
--
--/*
-- * FPU state interaction...
-- */
--extern unsigned short get_fpu_cwd( struct task_struct *tsk );
--extern unsigned short get_fpu_swd( struct task_struct *tsk );
--extern unsigned short get_fpu_mxcsr( struct task_struct *tsk );
--extern asmlinkage void math_state_restore(void);
--
--/*
-- * Signal frame handlers...
-- */
--extern int save_i387( struct _fpstate __user *buf );
--extern int restore_i387( struct _fpstate __user *buf );
--
--/*
-- * ptrace request handers...
-- */
--extern int get_fpregs( struct user_i387_struct __user *buf,
--		       struct task_struct *tsk );
--extern int set_fpregs( struct task_struct *tsk,
--		       struct user_i387_struct __user *buf );
--
--extern int get_fpxregs( struct user_fxsr_struct __user *buf,
--			struct task_struct *tsk );
--extern int set_fpxregs( struct task_struct *tsk,
--			struct user_fxsr_struct __user *buf );
--
--/*
-- * FPU state for core dumps...
-- */
--extern int dump_fpu( struct pt_regs *regs,
--		     struct user_i387_struct *fpu );
--
--#endif /* __ASM_I386_I387_H */
-diff --git a/include/asm-x86/i387_64.h b/include/asm-x86/i387_64.h
-deleted file mode 100644
-index b52b891..0000000
---- a/include/asm-x86/i387_64.h
-+++ /dev/null
-@@ -1,368 +0,0 @@
--/*
-- * Copyright (C) 1994 Linus Torvalds
-- *
-- * Pentium III FXSR, SSE support
-- * General FPU state handling cleanups
-- *	Gareth Hughes <gareth@valinux.com>, May 2000
-- * x86-64 work by Andi Kleen 2002
-- */
--
--#ifndef _ASM_X86_I387_H
--#define _ASM_X86_I387_H
--
--#include <linux/sched.h>
--#include <linux/kernel_stat.h>
--#include <linux/regset.h>
--#include <asm/processor.h>
--#include <asm/sigcontext.h>
--#include <asm/user.h>
--#include <asm/uaccess.h>
--
--extern void fpu_init(void);
--extern unsigned int mxcsr_feature_mask;
--extern void mxcsr_feature_mask_init(void);
--extern void init_fpu(struct task_struct *child);
--extern asmlinkage void math_state_restore(void);
--
--extern user_regset_active_fn fpregs_active, xfpregs_active;
--extern user_regset_get_fn fpregs_get, xfpregs_get, fpregs_soft_get;
--extern user_regset_set_fn fpregs_set, xfpregs_set, fpregs_soft_set;
--
--#ifdef CONFIG_X86_64
--
--/* Ignore delayed exceptions from user space */
--static inline void tolerant_fwait(void)
--{
--	asm volatile("1: fwait\n"
--		     "2:\n"
--		     "   .section __ex_table,\"a\"\n"
--		     "	.align 8\n"
--		     "	.quad 1b,2b\n"
--		     "	.previous\n");
--}
--
--static inline int restore_fpu_checking(struct i387_fxsave_struct *fx)
--{
--	int err;
--
--	asm volatile("1:  rex64/fxrstor (%[fx])\n\t"
--		     "2:\n"
--		     ".section .fixup,\"ax\"\n"
--		     "3:  movl $-1,%[err]\n"
--		     "    jmp  2b\n"
--		     ".previous\n"
--		     ".section __ex_table,\"a\"\n"
--		     "   .align 8\n"
--		     "   .quad  1b,3b\n"
--		     ".previous"
--		     : [err] "=r" (err)
--#if 0 /* See comment in __save_init_fpu() below. */
--		     : [fx] "r" (fx), "m" (*fx), "0" (0));
--#else
--		     : [fx] "cdaSDb" (fx), "m" (*fx), "0" (0));
--#endif
--	if (unlikely(err))
--		init_fpu(current);
--	return err;
--}
--
--#define X87_FSW_ES (1 << 7)	/* Exception Summary */
--
--/* AMD CPUs don't save/restore FDP/FIP/FOP unless an exception
--   is pending. Clear the x87 state here by setting it to fixed
--   values. The kernel data segment can be sometimes 0 and sometimes
--   new user value. Both should be ok.
--   Use the PDA as safe address because it should be already in L1. */
--static inline void clear_fpu_state(struct i387_fxsave_struct *fx)
--{
--	if (unlikely(fx->swd & X87_FSW_ES))
--		 asm volatile("fnclex");
--	alternative_input(ASM_NOP8 ASM_NOP2,
--		     "    emms\n"		/* clear stack tags */
--		     "    fildl %%gs:0",	/* load to clear state */
--		     X86_FEATURE_FXSAVE_LEAK);
--}
--
--static inline int save_i387_checking(struct i387_fxsave_struct __user *fx)
--{
--	int err;
--
--	asm volatile("1:  rex64/fxsave (%[fx])\n\t"
--		     "2:\n"
--		     ".section .fixup,\"ax\"\n"
--		     "3:  movl $-1,%[err]\n"
--		     "    jmp  2b\n"
--		     ".previous\n"
--		     ".section __ex_table,\"a\"\n"
--		     "   .align 8\n"
--		     "   .quad  1b,3b\n"
--		     ".previous"
--		     : [err] "=r" (err), "=m" (*fx)
--#if 0 /* See comment in __fxsave_clear() below. */
--		     : [fx] "r" (fx), "0" (0));
--#else
--		     : [fx] "cdaSDb" (fx), "0" (0));
--#endif
--	if (unlikely(err) && __clear_user(fx, sizeof(struct i387_fxsave_struct)))
--		err = -EFAULT;
--	/* No need to clear here because the caller clears USED_MATH */
--	return err;
--}
--
--static inline void __save_init_fpu(struct task_struct *tsk)
--{
--	/* Using "rex64; fxsave %0" is broken because, if the memory operand
--	   uses any extended registers for addressing, a second REX prefix
--	   will be generated (to the assembler, rex64 followed by semicolon
--	   is a separate instruction), and hence the 64-bitness is lost. */
--#if 0
--	/* Using "fxsaveq %0" would be the ideal choice, but is only supported
--	   starting with gas 2.16. */
--	__asm__ __volatile__("fxsaveq %0"
--			     : "=m" (tsk->thread.i387.fxsave));
--#elif 0
--	/* Using, as a workaround, the properly prefixed form below isn't
--	   accepted by any binutils version so far released, complaining that
--	   the same type of prefix is used twice if an extended register is
--	   needed for addressing (fix submitted to mainline 2005-11-21). */
--	__asm__ __volatile__("rex64/fxsave %0"
--			     : "=m" (tsk->thread.i387.fxsave));
--#else
--	/* This, however, we can work around by forcing the compiler to select
--	   an addressing mode that doesn't require extended registers. */
--	__asm__ __volatile__("rex64/fxsave %P2(%1)"
--			     : "=m" (tsk->thread.i387.fxsave)
--			     : "cdaSDb" (tsk),
--				"i" (offsetof(__typeof__(*tsk),
--					      thread.i387.fxsave)));
--#endif
--	clear_fpu_state(&tsk->thread.i387.fxsave);
--	task_thread_info(tsk)->status &= ~TS_USEDFPU;
--}
--
--/*
-- * Signal frame handlers.
-- */
--
--static inline int save_i387(struct _fpstate __user *buf)
--{
--	struct task_struct *tsk = current;
--	int err = 0;
--
--	BUILD_BUG_ON(sizeof(struct user_i387_struct) !=
--			sizeof(tsk->thread.i387.fxsave));
--
--	if ((unsigned long)buf % 16)
--		printk("save_i387: bad fpstate %p\n", buf);
--
--	if (!used_math())
+-	if (!tsk_used_math(tsk))
 -		return 0;
--	clear_used_math(); /* trigger finit */
--	if (task_thread_info(tsk)->status & TS_USEDFPU) {
--		err = save_i387_checking((struct i387_fxsave_struct __user *)buf);
--		if (err) return err;
--		task_thread_info(tsk)->status &= ~TS_USEDFPU;
--		stts();
--	} else {
--		if (__copy_to_user(buf, &tsk->thread.i387.fxsave,
--				   sizeof(struct i387_fxsave_struct)))
--			return -1;
--	}
+-	if (!regs)
+-		regs = task_pt_regs(tsk);
+-	if (tsk == current)
+-		unlazy_fpu(tsk);
+-	set_fs(KERNEL_DS); 
+-	save_i387_ia32(tsk, fpstate, regs, 1);
+-	/* Correct for i386 bug. It puts the fop into the upper 16bits of 
+-	   the tag word (like FXSAVE), not into the fcs*/ 
+-	fpstate->cssel |= fpstate->tag & 0xffff0000; 
+-	set_fs(oldfs); 
+-	return 1; 
+-}
+-
+-#define ELF_CORE_COPY_XFPREGS 1
+-#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
+-#define elf_core_copy_task_xfpregs	elf32_core_copy_task_xfpregs
+-static inline int 
+-elf32_core_copy_task_xfpregs(struct task_struct *t, elf_fpxregset_t *xfpu)
+-{
+-	struct pt_regs *regs = task_pt_regs(t);
+-	if (!tsk_used_math(t))
+-		return 0;
+-	if (t == current)
+-		unlazy_fpu(t); 
+-	memcpy(xfpu, &t->thread.i387.fxsave, sizeof(elf_fpxregset_t));
+-	xfpu->fcs = regs->cs; 
+-	xfpu->fos = t->thread.ds; /* right? */ 
 -	return 1;
 -}
 -
--/*
-- * This restores directly out of user space. Exceptions are handled.
-- */
--static inline int restore_i387(struct _fpstate __user *buf)
+-#undef elf_check_arch
+-#define elf_check_arch(x) \
+-	((x)->e_machine == EM_386)
+-
+-extern int force_personality32;
+-
+-#undef	ELF_EXEC_PAGESIZE
+-#undef	ELF_HWCAP
+-#undef	ELF_PLATFORM
+-#undef	SET_PERSONALITY
+-#define ELF_EXEC_PAGESIZE PAGE_SIZE
+-#define ELF_HWCAP (boot_cpu_data.x86_capability[0])
+-#define ELF_PLATFORM  ("i686")
+-#define SET_PERSONALITY(ex, ibcs2)			\
+-do {							\
+-	unsigned long new_flags = 0;				\
+-	if ((ex).e_ident[EI_CLASS] == ELFCLASS32)		\
+-		new_flags = _TIF_IA32;				\
+-	if ((current_thread_info()->flags & _TIF_IA32)		\
+-	    != new_flags)					\
+-		set_thread_flag(TIF_ABI_PENDING);		\
+-	else							\
+-		clear_thread_flag(TIF_ABI_PENDING);		\
+-	/* XXX This overwrites the user set personality */	\
+-	current->personality |= force_personality32;		\
+-} while (0)
+-
+-/* Override some function names */
+-#define elf_format			elf32_format
+-
+-#define init_elf_binfmt			init_elf32_binfmt
+-#define exit_elf_binfmt			exit_elf32_binfmt
+-
+-#define load_elf_binary load_elf32_binary
+-
+-#undef	ELF_PLAT_INIT
+-#define ELF_PLAT_INIT(r, load_addr)	elf32_init(r)
+-
+-#undef start_thread
+-#define start_thread(regs,new_rip,new_rsp) do { \
+-	asm volatile("movl %0,%%fs" :: "r" (0)); \
+-	asm volatile("movl %0,%%es; movl %0,%%ds": :"r" (__USER32_DS)); \
+-	load_gs_index(0); \
+-	(regs)->ip = (new_rip); \
+-	(regs)->sp = (new_rsp); \
+-	(regs)->flags = X86_EFLAGS_IF; \
+-	(regs)->cs = __USER32_CS; \
+-	(regs)->ss = __USER32_DS; \
+-	set_fs(USER_DS); \
+-} while(0) 
+-
+-
+-#include <linux/module.h>
+-
+-MODULE_DESCRIPTION("Binary format loader for compatibility with IA32 ELF binaries."); 
+-MODULE_AUTHOR("Eric Youngdale, Andi Kleen");
+-
+-#undef MODULE_DESCRIPTION
+-#undef MODULE_AUTHOR
+-
+-static void elf32_init(struct pt_regs *);
+-
+-#define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
+-#define arch_setup_additional_pages syscall32_setup_pages
+-extern int syscall32_setup_pages(struct linux_binprm *, int exstack);
+-
+-#include "../../../fs/binfmt_elf.c" 
+-
+-static void elf32_init(struct pt_regs *regs)
 -{
--	set_used_math();
--	if (!(task_thread_info(current)->status & TS_USEDFPU)) {
--		clts();
--		task_thread_info(current)->status |= TS_USEDFPU;
--	}
--	return restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
+-	struct task_struct *me = current; 
+-	regs->di = 0;
+-	regs->si = 0;
+-	regs->dx = 0;
+-	regs->cx = 0;
+-	regs->ax = 0;
+-	regs->bx = 0;
+-	regs->bp = 0;
+-	regs->r8 = regs->r9 = regs->r10 = regs->r11 = regs->r12 =
+-		regs->r13 = regs->r14 = regs->r15 = 0; 
+-    me->thread.fs = 0; 
+-	me->thread.gs = 0;
+-	me->thread.fsindex = 0; 
+-	me->thread.gsindex = 0;
+-    me->thread.ds = __USER_DS; 
+-	me->thread.es = __USER_DS;
 -}
 -
--#else  /* CONFIG_X86_32 */
+-#ifdef CONFIG_SYSCTL
+-/* Register vsyscall32 into the ABI table */
+-#include <linux/sysctl.h>
 -
--static inline void tolerant_fwait(void)
--{
--	asm volatile("fnclex ; fwait");
+-static ctl_table abi_table2[] = {
+-	{
+-		.procname	= "vsyscall32",
+-		.data		= &sysctl_vsyscall32,
+-		.maxlen		= sizeof(int),
+-		.mode		= 0644,
+-		.proc_handler	= proc_dointvec
+-	},
+-	{}
+-};
+-
+-static ctl_table abi_root_table2[] = {
+-	{
+-		.ctl_name = CTL_ABI,
+-		.procname = "abi",
+-		.mode = 0555,
+-		.child = abi_table2
+-	},
+-	{}
+-};
+-
+-static __init int ia32_binfmt_init(void)
+-{ 
+-	register_sysctl_table(abi_root_table2);
+-	return 0;
 -}
--
--static inline void restore_fpu(struct task_struct *tsk)
--{
--	/*
--	 * The "nop" is needed to make the instructions the same
--	 * length.
--	 */
--	alternative_input(
--		"nop ; frstor %1",
--		"fxrstor %1",
--		X86_FEATURE_FXSR,
--		"m" ((tsk)->thread.i387.fxsave));
--}
--
--/* We need a safe address that is cheap to find and that is already
--   in L1 during context switch. The best choices are unfortunately
--   different for UP and SMP */
--#ifdef CONFIG_SMP
--#define safe_address (__per_cpu_offset[0])
--#else
--#define safe_address (kstat_cpu(0).cpustat.user)
+-__initcall(ia32_binfmt_init);
 -#endif
--
--/*
-- * These must be called with preempt disabled
-- */
--static inline void __save_init_fpu(struct task_struct *tsk)
--{
--	/* Use more nops than strictly needed in case the compiler
--	   varies code */
--	alternative_input(
--		"fnsave %[fx] ;fwait;" GENERIC_NOP8 GENERIC_NOP4,
--		"fxsave %[fx]\n"
--		"bt $7,%[fsw] ; jnc 1f ; fnclex\n1:",
--		X86_FEATURE_FXSR,
--		[fx] "m" (tsk->thread.i387.fxsave),
--		[fsw] "m" (tsk->thread.i387.fxsave.swd) : "memory");
--	/* AMD K7/K8 CPUs don't save/restore FDP/FIP/FOP unless an exception
--	   is pending.  Clear the x87 state here by setting it to fixed
--	   values. safe_address is a random variable that should be in L1 */
--	alternative_input(
--		GENERIC_NOP8 GENERIC_NOP2,
--		"emms\n\t"	  	/* clear stack tags */
--		"fildl %[addr]", 	/* set F?P to defined value */
--		X86_FEATURE_FXSAVE_LEAK,
--		[addr] "m" (safe_address));
--	task_thread_info(tsk)->status &= ~TS_USEDFPU;
--}
--
--/*
-- * Signal frame handlers...
-- */
--extern int save_i387(struct _fpstate __user *buf);
--extern int restore_i387(struct _fpstate __user *buf);
--
--#endif	/* CONFIG_X86_64 */
--
--static inline void __unlazy_fpu(struct task_struct *tsk)
--{
--	if (task_thread_info(tsk)->status & TS_USEDFPU) {
--		__save_init_fpu(tsk);
--		stts();
--	} else
--		tsk->fpu_counter = 0;
--}
--
--static inline void __clear_fpu(struct task_struct *tsk)
--{
--	if (task_thread_info(tsk)->status & TS_USEDFPU) {
--		tolerant_fwait();
--		task_thread_info(tsk)->status &= ~TS_USEDFPU;
--		stts();
--	}
--}
--
--static inline void kernel_fpu_begin(void)
--{
--	struct thread_info *me = current_thread_info();
--	preempt_disable();
--	if (me->status & TS_USEDFPU)
--		__save_init_fpu(me->task);
--	else
--		clts();
--}
--
--static inline void kernel_fpu_end(void)
--{
--	stts();
--	preempt_enable();
--}
--
--#ifdef CONFIG_X86_64
--
--static inline void save_init_fpu(struct task_struct *tsk)
--{
--	__save_init_fpu(tsk);
--	stts();
--}
--
--#define unlazy_fpu	__unlazy_fpu
--#define clear_fpu	__clear_fpu
--
--#else  /* CONFIG_X86_32 */
--
--/*
-- * These disable preemption on their own and are safe
-- */
--static inline void save_init_fpu(struct task_struct *tsk)
--{
--	preempt_disable();
--	__save_init_fpu(tsk);
--	stts();
--	preempt_enable();
--}
--
--static inline void unlazy_fpu(struct task_struct *tsk)
--{
--	preempt_disable();
--	__unlazy_fpu(tsk);
--	preempt_enable();
--}
--
--static inline void clear_fpu(struct task_struct *tsk)
--{
--	preempt_disable();
--	__clear_fpu(tsk);
--	preempt_enable();
--}
--
--#endif	/* CONFIG_X86_64 */
--
--/*
-- * ptrace request handlers...
-- */
--extern int get_fpregs(struct user_i387_struct __user *buf,
--		      struct task_struct *tsk);
--extern int set_fpregs(struct task_struct *tsk,
--		      struct user_i387_struct __user *buf);
--
--struct user_fxsr_struct;
--extern int get_fpxregs(struct user_fxsr_struct __user *buf,
--		       struct task_struct *tsk);
--extern int set_fpxregs(struct task_struct *tsk,
--		       struct user_fxsr_struct __user *buf);
--
--/*
-- * i387 state interaction
-- */
--static inline unsigned short get_fpu_cwd(struct task_struct *tsk)
--{
--	if (cpu_has_fxsr) {
--		return tsk->thread.i387.fxsave.cwd;
--	} else {
--		return (unsigned short)tsk->thread.i387.fsave.cwd;
--	}
--}
--
--static inline unsigned short get_fpu_swd(struct task_struct *tsk)
--{
--	if (cpu_has_fxsr) {
--		return tsk->thread.i387.fxsave.swd;
--	} else {
--		return (unsigned short)tsk->thread.i387.fsave.swd;
--	}
--}
--
--static inline unsigned short get_fpu_mxcsr(struct task_struct *tsk)
--{
--	if (cpu_has_xmm) {
--		return tsk->thread.i387.fxsave.mxcsr;
--	} else {
--		return MXCSR_DEFAULT;
--	}
--}
--
--#endif	/* _ASM_X86_I387_H */
 -- 
 1.5.3.6
 
