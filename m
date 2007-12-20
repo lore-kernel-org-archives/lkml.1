@@ -1,142 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbXLTFx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbXLTFzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185AbXLTFx5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 00:53:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758223AbXLTFxp
+	id S1758570AbXLTFzJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 00:55:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbXLTFy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 00:53:45 -0500
-Received: from ozlabs.org ([203.10.76.45]:34854 "EHLO ozlabs.org"
+	Thu, 20 Dec 2007 00:54:58 -0500
+Received: from lixom.net ([66.141.50.11]:38439 "EHLO mail.lixom.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758151AbXLTFxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 00:53:43 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linux-scsi@vger.kernel.org
-Subject: [PATCH 5/5] sg_ring: Convert scsi_debug
-Date: Thu, 20 Dec 2007 16:53:36 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Douglas Gilbert <dougg@torque.net>
-References: <200712201645.19035.rusty@rustcorp.com.au> <200712201650.42299.rusty@rustcorp.com.au> <200712201651.59283.rusty@rustcorp.com.au>
-In-Reply-To: <200712201651.59283.rusty@rustcorp.com.au>
+	id S1751678AbXLTFy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 00:54:58 -0500
+Date: Thu, 20 Dec 2007 00:01:19 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Jon Smirl <jonsmirl@gmail.com>, i2c@lm-sensors.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] Convert PowerPC MPC i2c to of_platform_driver from
+	platform_driver
+Message-ID: <20071220060119.GA8456@lixom.net>
+References: <20071220044136.20091.70984.stgit@terra.home> <20071220044144.20091.35917.stgit@terra.home> <20071220051618.GB29058@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712201653.36632.rusty@rustcorp.com.au>
+In-Reply-To: <20071220051618.GB29058@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Douglas Gilbert pointed out that converting scsi_debug would be a good
-demonstration of the conversion required for other SCSI devices.
+On Thu, Dec 20, 2007 at 04:16:18PM +1100, David Gibson wrote:
+> On Wed, Dec 19, 2007 at 11:41:44PM -0500, Jon Smirl wrote:
+> > Convert MPC i2c driver from being a platform_driver to an open
+> > firmware version. Error returns were improved. Routine names were
+> > changed from fsl_ to mpc_ to make them match the file name.
+> 
+> In discussions BenH and I have had, we've actually concluded that
+> moving this from platform drivers to of_platform drives is not
+> actually a good idea.
+> 
+> In fact we're planning to move away from of_platform devices and
+> drivers and instead develop a framework for instantiating platform
+> devices or i2c devices or whatever devices from the device tree nodes.
 
-Details of the changes:
-1) ->use_sg is replaced by ->sg, which if non-NULL, contains the sg_ring.
-2) ->request_buffer can be NULL (it's only relevent if ->sg isn't set)
-3) sg_ring_for_each is no longer required, just iterate directly over ->sg.
-4) The iterator updates a struct sg_ring (sg) and an index (k), so previous
-   references to sg become &sg->sg[k] (the k'th element within the sg_ring sg).
+There's been talk about that for a long time. Whenever that framework
+is done, all the other drivers that have been converted (or written)
+must/can be converted back as well.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Meanwhile, this should go in so those of us who can make use of the
+other improvements the series brings can make use of them.
 
-diff -r c5fe2cab1d48 drivers/scsi/scsi_debug.c
---- a/drivers/scsi/scsi_debug.c	Thu Dec 20 13:12:43 2007 +1100
-+++ b/drivers/scsi/scsi_debug.c	Thu Dec 20 13:39:24 2007 +1100
-@@ -601,16 +601,16 @@ static int fill_from_dev_buffer(struct s
- 	int k, req_len, act_len, len, active;
- 	void * kaddr;
- 	void * kaddr_off;
--	struct scatterlist * sg;
-+	struct sg_ring * sg;
- 
- 	if (0 == scp->request_bufflen)
- 		return 0;
--	if (NULL == scp->request_buffer)
--		return (DID_ERROR << 16);
- 	if (! ((scp->sc_data_direction == DMA_BIDIRECTIONAL) ||
- 	      (scp->sc_data_direction == DMA_FROM_DEVICE)))
- 		return (DID_ERROR << 16);
--	if (0 == scp->use_sg) {
-+	if (NULL == scp->sg) {
-+		if (NULL == scp->request_buffer)
-+			return (DID_ERROR << 16);
- 		req_len = scp->request_bufflen;
- 		act_len = (req_len < arr_len) ? req_len : arr_len;
- 		memcpy(scp->request_buffer, arr, act_len);
-@@ -622,14 +622,14 @@ static int fill_from_dev_buffer(struct s
- 	}
- 	active = 1;
- 	req_len = act_len = 0;
--	scsi_for_each_sg(scp, sg, scp->use_sg, k) {
-+	sg_ring_for_each(scp->sg, sg, k) {
- 		if (active) {
- 			kaddr = (unsigned char *)
--				kmap_atomic(sg_page(sg), KM_USER0);
-+				kmap_atomic(sg_page(&sg->sg[k]), KM_USER0);
- 			if (NULL == kaddr)
- 				return (DID_ERROR << 16);
--			kaddr_off = (unsigned char *)kaddr + sg->offset;
--			len = sg->length;
-+			kaddr_off = (unsigned char *)kaddr + sg->sg[k].offset;
-+			len = sg->sg[k].length;
- 			if ((req_len + len) > arr_len) {
- 				active = 0;
- 				len = arr_len - req_len;
-@@ -638,7 +638,7 @@ static int fill_from_dev_buffer(struct s
- 			kunmap_atomic(kaddr, KM_USER0);
- 			act_len += len;
- 		}
--		req_len += sg->length;
-+		req_len += sg->sg[k].length;
- 	}
- 	if (scp->resid)
- 		scp->resid -= act_len;
-@@ -654,29 +654,29 @@ static int fetch_to_dev_buffer(struct sc
- 	int k, req_len, len, fin;
- 	void * kaddr;
- 	void * kaddr_off;
--	struct scatterlist * sg;
-+	struct sg_ring * sg;
- 
- 	if (0 == scp->request_bufflen)
- 		return 0;
--	if (NULL == scp->request_buffer)
--		return -1;
- 	if (! ((scp->sc_data_direction == DMA_BIDIRECTIONAL) ||
- 	      (scp->sc_data_direction == DMA_TO_DEVICE)))
- 		return -1;
--	if (0 == scp->use_sg) {
-+	if (NULL == scp->sg) {
-+		if (NULL == scp->request_buffer)
-+			return -1;
- 		req_len = scp->request_bufflen;
- 		len = (req_len < max_arr_len) ? req_len : max_arr_len;
- 		memcpy(arr, scp->request_buffer, len);
- 		return len;
- 	}
--	sg = scsi_sglist(scp);
- 	req_len = fin = 0;
--	for (k = 0; k < scp->use_sg; ++k, sg = sg_next(sg)) {
--		kaddr = (unsigned char *)kmap_atomic(sg_page(sg), KM_USER0);
-+	sg_ring_for_each(scp->sg, sg, k) {
-+		kaddr = (unsigned char *)kmap_atomic(sg_page(&sg->sg[k]),
-+						     KM_USER0);
- 		if (NULL == kaddr)
- 			return -1;
--		kaddr_off = (unsigned char *)kaddr + sg->offset;
--		len = sg->length;
-+		kaddr_off = (unsigned char *)kaddr + sg->sg[k].offset;
-+		len = sg->sg[k].length;
- 		if ((req_len + len) > max_arr_len) {
- 			len = max_arr_len - req_len;
- 			fin = 1;
-@@ -685,7 +685,7 @@ static int fetch_to_dev_buffer(struct sc
- 		kunmap_atomic(kaddr, KM_USER0);
- 		if (fin)
- 			return req_len + len;
--		req_len += sg->length;
-+		req_len += sg->sg[k].length;
- 	}
- 	return req_len;
- }
+
+Thanks,
+
+Olof
