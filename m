@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbXLTBiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759665AbXLTBi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759428AbXLTBiG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 20:38:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757001AbXLTBen
+	id S1759665AbXLTBi0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 20:38:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758818AbXLTBeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 20:34:43 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:11733 "EHLO
+	Wed, 19 Dec 2007 20:34:44 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:12147 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756629AbXLTBeL (ORCPT
+	with ESMTP id S1756986AbXLTBeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 20:34:11 -0500
+	Wed, 19 Dec 2007 20:34:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=FzOUWVFAZYY9QbWqwuxDRIf0dhMYO+wQod0R9/yGIiY2c6voS0d/MKKXfrPWoMKJSjDM9mIJqH9lFIn2tvhbp04yxutnFiIEewU12l6SGk48XJxSBIDHFIU1kx4M7ZnloqUYJgJWxINVlpx/Vb3FqOqoOdVRlJSqkDC17Yl0j9E=
+        b=ZLQbWXDRKVYAhppldscL3YYcYYeYv4VQoBIUfzDHk9V9WLMWIErDcPqqguZrJSL501EO+LE7JFOw7cm436/8ozsArR/iqqtdXLGCUBnzIopBedAu3jWkY/5J6Hrx+H4oMHqd6yN3/QQRZuGcIdi/TmUpdozGbCSZBbB3z5fXTHU=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 10/63] ide-cd: use xfer_func_t in cdrom_pc_intr()
-Date: Thu, 20 Dec 2007 01:59:49 +0100
+Subject: [PATCH 11/63] ide-cd: add ide_cd_pad_transfer() helper
+Date: Thu, 20 Dec 2007 02:00:38 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -25,119 +25,128 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712200159.49846.bzolnier@gmail.com>
+Message-Id: <200712200200.38615.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Unify writing and reading handling in cdrom_pc_intr() using xfer_func_t.
+Add ide_cd_pad_transfer() helper and use it in cdrom_[new]pc_intr()
+and cdrom_{read,write}_check_ireason().
 
 There should be no functionality changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-cd.c |   47 +++++++++++++++++------------------------------
- 1 file changed, 17 insertions(+), 30 deletions(-)
+-39 bytes
+ drivers/ide/ide-cd.c |   51 +++++++++++++++++++++++++--------------------------
+ 1 file changed, 25 insertions(+), 26 deletions(-)
 
 Index: b/drivers/ide/ide-cd.c
 ===================================================================
 --- a/drivers/ide/ide-cd.c
 +++ b/drivers/ide/ide-cd.c
-@@ -1005,6 +1005,8 @@ static ide_startstop_t cdrom_transfer_pa
-  * Block read functions.
-  */
+@@ -1007,6 +1007,15 @@ static ide_startstop_t cdrom_transfer_pa
  
-+typedef void (xfer_func_t)(ide_drive_t *, void *, u32);
+ typedef void (xfer_func_t)(ide_drive_t *, void *, u32);
+ 
++static void ide_cd_pad_transfer(ide_drive_t *drive, xfer_func_t *xf, int len)
++{
++	while (len > 0) {
++		int dum = 0;
++		xf(drive, &dum, sizeof(dum));
++		len -= sizeof(dum);
++	}
++}
 +
  /*
   * Buffer up to SECTORS_TO_TRANSFER sectors from the drive in our sector
   * buffer.  Once the first sector is added, any subsequent sectors are
-@@ -1430,10 +1432,10 @@ static ide_startstop_t cdrom_start_read 
- /* Interrupt routine for packet command completion. */
- static ide_startstop_t cdrom_pc_intr (ide_drive_t *drive)
- {
--	int ireason, len, thislen;
- 	struct request *rq = HWGROUP(drive)->rq;
-+	xfer_func_t *xferfunc = NULL;
-+	int stat, ireason, len, thislen, write;
- 	u8 lowcyl = 0, highcyl = 0;
--	int stat;
+@@ -1063,17 +1072,15 @@ int cdrom_read_check_ireason (ide_drive_
+ 	if (ireason == 2)
+ 		return 0;
+ 	else if (ireason == 0) {
++		ide_hwif_t *hwif = drive->hwif;
++
+ 		/* Whoops... The drive is expecting to receive data from us! */
+ 		printk(KERN_ERR "%s: %s: wrong transfer direction!\n",
+ 				drive->name, __FUNCTION__);
  
- 	/* Check for errors. */
- 	if (cdrom_decode_status(drive, 0, &stat))
-@@ -1478,44 +1480,31 @@ static ide_startstop_t cdrom_pc_intr (id
- 
- 	/* Figure out how much data to transfer. */
- 	thislen = rq->data_len;
--	if (thislen > len) thislen = len;
-+	if (thislen > len)
-+		thislen = len;
- 
--	/* The drive wants to be written to. */
- 	if (ireason == 0) {
--		if (!rq->data) {
--			blk_dump_rq_flags(rq, "cdrom_pc_intr, write");
--			goto confused;
+ 		/* Throw some data at the drive so it doesn't hang
+ 		   and quit this request. */
+-		while (len > 0) {
+-			int dum = 0;
+-			HWIF(drive)->atapi_output_bytes(drive, &dum, sizeof (dum));
+-			len -= sizeof (dum);
 -		}
--		/* Transfer the data. */
--		HWIF(drive)->atapi_output_bytes(drive, rq->data, thislen);
--
++		ide_cd_pad_transfer(drive, hwif->atapi_output_bytes, len);
+ 	} else  if (ireason == 1) {
+ 		/* Some drives (ASUS) seem to tell us that status
+ 		 * info is available. just get it and ignore.
+@@ -1500,15 +1507,8 @@ static ide_startstop_t cdrom_pc_intr (id
+ 		/* Transfer the data. */
+ 		xferfunc(drive, rq->data, thislen);
+ 
 -		/* If we haven't moved enough data to satisfy the drive,
 -		   add some padding. */
 -		while (len > thislen) {
 -			int dum = 0;
--			HWIF(drive)->atapi_output_bytes(drive, &dum, sizeof(dum));
+-			xferfunc(drive, &dum, sizeof(dum));
 -			len -= sizeof(dum);
 -		}
 -
--		/* Keep count of how much data we've moved. */
--		rq->data += thislen;
--		rq->data_len -= thislen;
-+		write = 1;
-+		xferfunc = HWIF(drive)->atapi_output_bytes;
-+	} else if (ireason == 2) {
-+		write = 0;
-+		xferfunc = HWIF(drive)->atapi_input_bytes;
- 	}
- 
--	/* Same drill for reading. */
--	else if (ireason == 2) {
-+	if (xferfunc) {
- 		if (!rq->data) {
--			blk_dump_rq_flags(rq, "cdrom_pc_intr, read");
-+			blk_dump_rq_flags(rq, write ? "cdrom_pc_intr, write"
-+						    : "cdrom_pc_intr, read");
- 			goto confused;
- 		}
- 		/* Transfer the data. */
--		HWIF(drive)->atapi_input_bytes(drive, rq->data, thislen);
-+		xferfunc(drive, rq->data, thislen);
- 
- 		/* If we haven't moved enough data to satisfy the drive,
- 		   add some padding. */
- 		while (len > thislen) {
- 			int dum = 0;
--			HWIF(drive)->atapi_input_bytes(drive, &dum, sizeof(dum));
-+			xferfunc(drive, &dum, sizeof(dum));
- 			len -= sizeof(dum);
- 		}
- 
-@@ -1523,7 +1512,7 @@ static ide_startstop_t cdrom_pc_intr (id
+ 		/* Keep count of how much data we've moved. */
++		len -= thislen;
  		rq->data += thislen;
  		rq->data_len -= thislen;
  
--		if (blk_sense_request(rq))
-+		if (write && blk_sense_request(rq))
- 			rq->sense_len += thislen;
- 	} else {
- confused:
-@@ -1647,8 +1636,6 @@ static int cdrom_write_check_ireason(ide
- 	return 1;
- }
+@@ -1525,6 +1525,13 @@ confused:
+ 		return ide_stopped;
+ 	}
  
--typedef void (xfer_func_t)(ide_drive_t *, void *, u32);
++	/*
++	 * If we haven't moved enough data to satisfy the drive,
++	 * add some padding.
++	 */
++	if (len > 0)
++		ide_cd_pad_transfer(drive, xferfunc, len);
++
+ 	/* Now we wait for another interrupt. */
+ 	ide_set_handler(drive, &cdrom_pc_intr, ATAPI_WAIT_PC, cdrom_timer_expiry);
+ 	return ide_started;
+@@ -1617,15 +1624,13 @@ static int cdrom_write_check_ireason(ide
+ 	if (ireason == 0)
+ 		return 0;
+ 	else if (ireason == 2) {
++		ide_hwif_t *hwif = drive->hwif;
++
+ 		/* Whoops... The drive wants to send data. */
+ 		printk(KERN_ERR "%s: %s: wrong transfer direction!\n",
+ 				drive->name, __FUNCTION__);
+ 
+-		while (len > 0) {
+-			int dum = 0;
+-			HWIF(drive)->atapi_input_bytes(drive, &dum, sizeof(dum));
+-			len -= sizeof(dum);
+-		}
++		ide_cd_pad_transfer(drive, hwif->atapi_input_bytes, len);
+ 	} else {
+ 		/* Drive wants a command packet, or invalid ireason... */
+ 		printk(KERN_ERR "%s: %s: bad interrupt reason 0x02%x\n",
+@@ -1754,14 +1759,8 @@ static ide_startstop_t cdrom_newpc_intr(
+ 	/*
+ 	 * pad, if necessary
+ 	 */
+-	if (len > 0) {
+-		while (len > 0) {
+-			int pad = 0;
 -
- /*
-  * best way to deal with dma that is not sector aligned right now... note
-  * that in this path we are not using ->data or ->buffer at all. this irs
+-			xferfunc(drive, &pad, sizeof(pad));
+-			len -= sizeof(pad);
+-		}
+-	}
++	if (len > 0)
++		ide_cd_pad_transfer(drive, xferfunc, len);
+ 
+ 	BUG_ON(HWGROUP(drive)->handler != NULL);
+ 
