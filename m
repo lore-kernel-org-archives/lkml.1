@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762143AbXLTMDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760947AbXLTMEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762143AbXLTMDt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 07:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761001AbXLTMAj
+	id S1760947AbXLTMEL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 07:04:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761020AbXLTMAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 07:00:39 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38393 "EHLO mx1.redhat.com"
+	Thu, 20 Dec 2007 07:00:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38398 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760345AbXLTMAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 07:00:20 -0500
+	id S1760743AbXLTMAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 07:00:21 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -16,171 +16,1159 @@ From: Roland McGrath <roland@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
 X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org
 In-Reply-To: Roland McGrath's message of  Thursday, 20 December 2007 03:52:00 -0800 <20071220115200.C767E26F98A@magilla.localdomain>
 References: <20071220115200.C767E26F98A@magilla.localdomain>
-Subject: [PATCH -mm 11/43] powerpc user_regset altivec
-Message-Id: <20071220115739.4978126F98A@magilla.localdomain>
-Date: Thu, 20 Dec 2007 03:57:39 -0800 (PST)
+Subject: [PATCH -mm 30/43] x86: i387 renaming
+Message-Id: <20071220115951.B4E1726F98A@magilla.localdomain>
+Date: Thu, 20 Dec 2007 03:59:51 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implements user_regset-style accessors for the powerpc Altivec data,
-and rewrites the existing ptrace code in terms of those calls.
+This renames arch/x86/kernel/{i387_32.c => i387.c}.
+This is a pure renaming, but paves the way for merging
+the 32-bit and 64-bit versions of this code.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/powerpc/kernel/ptrace.c |  112 +++++++++++++++++++++++++++++-------------
- 1 files changed, 78 insertions(+), 34 deletions(-)
+ arch/x86/kernel/Makefile_32 |    3 +-
+ arch/x86/kernel/i387.c      |  551 +++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/i387_32.c   |  551 -------------------------------------------
+ 3 files changed, 553 insertions(+), 552 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index f1ce646..7cdf35a 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -22,6 +22,7 @@
- #include <linux/errno.h>
- #include <linux/ptrace.h>
- #include <linux/regset.h>
-+#include <linux/elf.h>
- #include <linux/user.h>
- #include <linux/security.h>
- #include <linux/signal.h>
-@@ -163,30 +164,87 @@ static int set_fpregs(void __user *data, struct task_struct *task,
-  * (combined (32- and 64-bit) gdb.
-  */
+diff --git a/arch/x86/kernel/Makefile_32 b/arch/x86/kernel/Makefile_32
+index c7a959d..a671980 100644
+--- a/arch/x86/kernel/Makefile_32
++++ b/arch/x86/kernel/Makefile_32
+@@ -7,9 +7,10 @@ CPPFLAGS_vmlinux.lds += -Ui386
  
-+static int vr_active(struct task_struct *target,
-+		     const struct user_regset *regset)
+ obj-y	:= process_32.o signal_32.o entry_32.o traps_32.o irq_32.o \
+ 		time_32.o ioport_32.o ldt.o setup_32.o i8259_32.o sys_i386_32.o \
+-		pci-dma_32.o i386_ksyms_32.o i387_32.o bootflag.o e820_32.o\
++		pci-dma_32.o i386_ksyms_32.o bootflag.o e820_32.o\
+ 		quirks.o i8237.o topology.o alternative.o i8253.o tsc_32.o io_delay.o rtc.o
+ 
++obj-y				+= i387.o
+ obj-y				+= ptrace.o
+ obj-y				+= ds.o
+ obj-y				+= tls.o
+diff --git a/arch/x86/kernel/i387.c b/arch/x86/kernel/i387.c
+new file mode 100644
+index 0000000..bebe034
+--- /dev/null
++++ b/arch/x86/kernel/i387.c
+@@ -0,0 +1,551 @@
++/*
++ *  Copyright (C) 1994 Linus Torvalds
++ *
++ *  Pentium III FXSR, SSE support
++ *  General FPU state handling cleanups
++ *	Gareth Hughes <gareth@valinux.com>, May 2000
++ */
++
++#include <linux/sched.h>
++#include <linux/module.h>
++#include <asm/processor.h>
++#include <asm/i387.h>
++#include <asm/math_emu.h>
++#include <asm/sigcontext.h>
++#include <asm/user.h>
++#include <asm/ptrace.h>
++#include <asm/uaccess.h>
++
++#ifdef CONFIG_MATH_EMULATION
++#define HAVE_HWFP (boot_cpu_data.hard_math)
++#else
++#define HAVE_HWFP 1
++#endif
++
++static unsigned long mxcsr_feature_mask __read_mostly = 0xffffffff;
++
++void mxcsr_feature_mask_init(void)
 +{
-+	flush_altivec_to_thread(target);
-+	return target->thread.used_vr ? regset->n : 0;
++	unsigned long mask = 0;
++	clts();
++	if (cpu_has_fxsr) {
++		memset(&current->thread.i387.fxsave, 0,
++		       sizeof(struct i387_fxsave_struct));
++		asm volatile("fxsave %0" : : "m" (current->thread.i387.fxsave));
++		mask = current->thread.i387.fxsave.mxcsr_mask;
++		if (mask == 0)
++			mask = 0x0000ffbf;
++	}
++	mxcsr_feature_mask &= mask;
++	stts();
 +}
 +
-+static int vr_get(struct task_struct *target, const struct user_regset *regset,
-+		  unsigned int pos, unsigned int count,
-+		  void *kbuf, void __user *ubuf)
++/*
++ * The _current_ task is using the FPU for the first time
++ * so initialize it and set the mxcsr to its default
++ * value at reset if we support XMM instructions and then
++ * remeber the current task has used the FPU.
++ */
++void init_fpu(struct task_struct *tsk)
 +{
-+	int ret;
-+
-+	flush_altivec_to_thread(target);
-+
-+	BUILD_BUG_ON(offsetof(struct thread_struct, vscr) !=
-+		     offsetof(struct thread_struct, vr[32]));
-+
-+	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				  &target->thread.vr, 0,
-+				  33 * sizeof(vector128));
-+	if (!ret) {
-+		/*
-+		 * Copy out only the low-order word of vrsave.
-+		 */
-+		union {
-+			elf_vrreg_t reg;
-+			u32 word;
-+		} vrsave;
-+		memset(&vrsave, 0, sizeof(vrsave));
-+		vrsave.word = target->thread.vrsave;
-+		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
-+					  33 * sizeof(vector128), -1);
++	if (cpu_has_fxsr) {
++		memset(&tsk->thread.i387.fxsave, 0,
++		       sizeof(struct i387_fxsave_struct));
++		tsk->thread.i387.fxsave.cwd = 0x37f;
++		if (cpu_has_xmm)
++			tsk->thread.i387.fxsave.mxcsr = 0x1f80;
++	} else {
++		memset(&tsk->thread.i387.fsave, 0,
++		       sizeof(struct i387_fsave_struct));
++		tsk->thread.i387.fsave.cwd = 0xffff037fu;
++		tsk->thread.i387.fsave.swd = 0xffff0000u;
++		tsk->thread.i387.fsave.twd = 0xffffffffu;
++		tsk->thread.i387.fsave.fos = 0xffff0000u;
 +	}
++	/* only the device not available exception
++	 * or ptrace can call init_fpu */
++	set_stopped_child_used_math(tsk);
++}
 +
++/*
++ * FPU lazy state save handling.
++ */
++
++void kernel_fpu_begin(void)
++{
++	struct thread_info *thread = current_thread_info();
++
++	preempt_disable();
++	if (thread->status & TS_USEDFPU) {
++		__save_init_fpu(thread->task);
++		return;
++	}
++	clts();
++}
++EXPORT_SYMBOL_GPL(kernel_fpu_begin);
++
++/*
++ * FPU tag word conversions.
++ */
++
++static inline unsigned short twd_i387_to_fxsr(unsigned short twd)
++{
++	unsigned int tmp; /* to avoid 16 bit prefixes in the code */
++
++	/* Transform each pair of bits into 01 (valid) or 00 (empty) */
++	tmp = ~twd;
++	tmp = (tmp | (tmp >> 1)) & 0x5555; /* 0V0V0V0V0V0V0V0V */
++	/* and move the valid bits to the lower byte. */
++	tmp = (tmp | (tmp >> 1)) & 0x3333; /* 00VV00VV00VV00VV */
++	tmp = (tmp | (tmp >> 2)) & 0x0f0f; /* 0000VVVV0000VVVV */
++	tmp = (tmp | (tmp >> 4)) & 0x00ff; /* 00000000VVVVVVVV */
++
++	return tmp;
++}
++
++static inline unsigned long twd_fxsr_to_i387(struct i387_fxsave_struct *fxsave)
++{
++	struct _fpxreg *st = NULL;
++	unsigned long tos = (fxsave->swd >> 11) & 7;
++	unsigned long twd = (unsigned long) fxsave->twd;
++	unsigned long tag;
++	unsigned long ret = 0xffff0000u;
++	int i;
++
++#define FPREG_ADDR(f, n)	((void *)&(f)->st_space + (n) * 16);
++
++	for (i = 0; i < 8; i++) {
++		if (twd & 0x1) {
++			st = FPREG_ADDR(fxsave, (i - tos) & 7);
++
++			switch (st->exponent & 0x7fff) {
++			case 0x7fff:
++				tag = 2;		/* Special */
++				break;
++			case 0x0000:
++				if (!st->significand[0] &&
++				    !st->significand[1] &&
++				    !st->significand[2] &&
++				    !st->significand[3]) {
++					tag = 1;	/* Zero */
++				} else {
++					tag = 2;	/* Special */
++				}
++				break;
++			default:
++				if (st->significand[3] & 0x8000) {
++					tag = 0;	/* Valid */
++				} else {
++					tag = 2;	/* Special */
++				}
++				break;
++			}
++		} else {
++			tag = 3;			/* Empty */
++		}
++		ret |= (tag << (2 * i));
++		twd = twd >> 1;
++	}
 +	return ret;
 +}
 +
-+static int vr_set(struct task_struct *target, const struct user_regset *regset,
-+		  unsigned int pos, unsigned int count,
-+		  const void *kbuf, const void __user *ubuf)
++/*
++ * FPU state interaction.
++ */
++
++unsigned short get_fpu_cwd(struct task_struct *tsk)
 +{
-+	int ret;
-+
-+	flush_altivec_to_thread(target);
-+
-+	BUILD_BUG_ON(offsetof(struct thread_struct, vscr) !=
-+		     offsetof(struct thread_struct, vr[32]));
-+
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				 &target->thread.vr, 0, 33 * sizeof(vector128));
-+	if (!ret && count > 0) {
-+		/*
-+		 * We use only the first word of vrsave.
-+		 */
-+		union {
-+			elf_vrreg_t reg;
-+			u32 word;
-+		} vrsave;
-+		memset(&vrsave, 0, sizeof(vrsave));
-+		vrsave.word = target->thread.vrsave;
-+		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
-+					 33 * sizeof(vector128), -1);
-+		if (!ret)
-+			target->thread.vrsave = vrsave.word;
++	if (cpu_has_fxsr) {
++		return tsk->thread.i387.fxsave.cwd;
++	} else {
++		return (unsigned short)tsk->thread.i387.fsave.cwd;
 +	}
++}
 +
++unsigned short get_fpu_swd(struct task_struct *tsk)
++{
++	if (cpu_has_fxsr) {
++		return tsk->thread.i387.fxsave.swd;
++	} else {
++		return (unsigned short)tsk->thread.i387.fsave.swd;
++	}
++}
++
++#if 0
++unsigned short get_fpu_twd(struct task_struct *tsk)
++{
++	if (cpu_has_fxsr) {
++		return tsk->thread.i387.fxsave.twd;
++	} else {
++		return (unsigned short)tsk->thread.i387.fsave.twd;
++	}
++}
++#endif  /*  0  */
++
++unsigned short get_fpu_mxcsr(struct task_struct *tsk)
++{
++	if (cpu_has_xmm) {
++		return tsk->thread.i387.fxsave.mxcsr;
++	} else {
++		return 0x1f80;
++	}
++}
++
++#if 0
++
++void set_fpu_cwd(struct task_struct *tsk, unsigned short cwd)
++{
++	if (cpu_has_fxsr) {
++		tsk->thread.i387.fxsave.cwd = cwd;
++	} else {
++		tsk->thread.i387.fsave.cwd = ((long)cwd | 0xffff0000u);
++	}
++}
++
++void set_fpu_swd(struct task_struct *tsk, unsigned short swd)
++{
++	if (cpu_has_fxsr) {
++		tsk->thread.i387.fxsave.swd = swd;
++	} else {
++		tsk->thread.i387.fsave.swd = ((long)swd | 0xffff0000u);
++	}
++}
++
++void set_fpu_twd(struct task_struct *tsk, unsigned short twd)
++{
++	if (cpu_has_fxsr) {
++		tsk->thread.i387.fxsave.twd = twd_i387_to_fxsr(twd);
++	} else {
++		tsk->thread.i387.fsave.twd = ((long)twd | 0xffff0000u);
++	}
++}
++
++#endif  /*  0  */
++
++/*
++ * FXSR floating point environment conversions.
++ */
++
++static int convert_fxsr_to_user(struct _fpstate __user *buf,
++				struct i387_fxsave_struct *fxsave)
++{
++	unsigned long env[7];
++	struct _fpreg __user *to;
++	struct _fpxreg *from;
++	int i;
++
++	env[0] = (unsigned long)fxsave->cwd | 0xffff0000ul;
++	env[1] = (unsigned long)fxsave->swd | 0xffff0000ul;
++	env[2] = twd_fxsr_to_i387(fxsave);
++	env[3] = fxsave->fip;
++	env[4] = fxsave->fcs | ((unsigned long)fxsave->fop << 16);
++	env[5] = fxsave->foo;
++	env[6] = fxsave->fos;
++
++	if (__copy_to_user(buf, env, 7 * sizeof(unsigned long)))
++		return 1;
++
++	to = &buf->_st[0];
++	from = (struct _fpxreg *) &fxsave->st_space[0];
++	for (i = 0; i < 8; i++, to++, from++) {
++		unsigned long __user *t = (unsigned long __user *)to;
++		unsigned long *f = (unsigned long *)from;
++
++		if (__put_user(*f, t) ||
++		    __put_user(*(f + 1), t + 1) ||
++		    __put_user(from->exponent, &to->exponent))
++			return 1;
++	}
++	return 0;
++}
++
++static int convert_fxsr_from_user(struct i387_fxsave_struct *fxsave,
++				  struct _fpstate __user *buf)
++{
++	unsigned long env[7];
++	struct _fpxreg *to;
++	struct _fpreg __user *from;
++	int i;
++
++	if (__copy_from_user(env, buf, 7 * sizeof(long)))
++		return 1;
++
++	fxsave->cwd = (unsigned short)(env[0] & 0xffff);
++	fxsave->swd = (unsigned short)(env[1] & 0xffff);
++	fxsave->twd = twd_i387_to_fxsr((unsigned short)(env[2] & 0xffff));
++	fxsave->fip = env[3];
++	fxsave->fop = (unsigned short)((env[4] & 0xffff0000ul) >> 16);
++	fxsave->fcs = (env[4] & 0xffff);
++	fxsave->foo = env[5];
++	fxsave->fos = env[6];
++
++	to = (struct _fpxreg *) &fxsave->st_space[0];
++	from = &buf->_st[0];
++	for (i = 0; i < 8; i++, to++, from++) {
++		unsigned long *t = (unsigned long *)to;
++		unsigned long __user *f = (unsigned long __user *)from;
++
++		if (__get_user(*t, f) ||
++		    __get_user(*(t + 1), f + 1) ||
++		    __get_user(to->exponent, &from->exponent))
++			return 1;
++	}
++	return 0;
++}
++
++/*
++ * Signal frame handlers.
++ */
++
++static inline int save_i387_fsave(struct _fpstate __user *buf)
++{
++	struct task_struct *tsk = current;
++
++	unlazy_fpu(tsk);
++	tsk->thread.i387.fsave.status = tsk->thread.i387.fsave.swd;
++	if (__copy_to_user(buf, &tsk->thread.i387.fsave,
++			   sizeof(struct i387_fsave_struct)))
++		return -1;
++	return 1;
++}
++
++static int save_i387_fxsave(struct _fpstate __user *buf)
++{
++	struct task_struct *tsk = current;
++	int err = 0;
++
++	unlazy_fpu(tsk);
++
++	if (convert_fxsr_to_user(buf, &tsk->thread.i387.fxsave))
++		return -1;
++
++	err |= __put_user(tsk->thread.i387.fxsave.swd, &buf->status);
++	err |= __put_user(X86_FXSR_MAGIC, &buf->magic);
++	if (err)
++		return -1;
++
++	if (__copy_to_user(&buf->_fxsr_env[0], &tsk->thread.i387.fxsave,
++			   sizeof(struct i387_fxsave_struct)))
++		return -1;
++	return 1;
++}
++
++int save_i387(struct _fpstate __user *buf)
++{
++	if (!used_math())
++		return 0;
++
++	/* This will cause a "finit" to be triggered by the next
++	 * attempted FPU operation by the 'current' process.
++	 */
++	clear_used_math();
++
++	if (HAVE_HWFP) {
++		if (cpu_has_fxsr) {
++			return save_i387_fxsave(buf);
++		} else {
++			return save_i387_fsave(buf);
++		}
++	} else {
++		return save_i387_soft(&current->thread.i387.soft, buf);
++	}
++}
++
++static inline int restore_i387_fsave(struct _fpstate __user *buf)
++{
++	struct task_struct *tsk = current;
++	clear_fpu(tsk);
++	return __copy_from_user(&tsk->thread.i387.fsave, buf,
++				sizeof(struct i387_fsave_struct));
++}
++
++static int restore_i387_fxsave(struct _fpstate __user *buf)
++{
++	int err;
++	struct task_struct *tsk = current;
++	clear_fpu(tsk);
++	err = __copy_from_user(&tsk->thread.i387.fxsave, &buf->_fxsr_env[0],
++			       sizeof(struct i387_fxsave_struct));
++	/* mxcsr reserved bits must be masked to zero for security reasons */
++	tsk->thread.i387.fxsave.mxcsr &= mxcsr_feature_mask;
++	return err ? 1 : convert_fxsr_from_user(&tsk->thread.i387.fxsave, buf);
++}
++
++int restore_i387(struct _fpstate __user *buf)
++{
++	int err;
++
++	if (HAVE_HWFP) {
++		if (cpu_has_fxsr) {
++			err = restore_i387_fxsave(buf);
++		} else {
++			err = restore_i387_fsave(buf);
++		}
++	} else {
++		err = restore_i387_soft(&current->thread.i387.soft, buf);
++	}
++	set_used_math();
++	return err;
++}
++
++/*
++ * ptrace request handlers.
++ */
++
++static inline int get_fpregs_fsave(struct user_i387_struct __user *buf,
++				   struct task_struct *tsk)
++{
++	return __copy_to_user(buf, &tsk->thread.i387.fsave,
++			      sizeof(struct user_i387_struct));
++}
++
++static inline int get_fpregs_fxsave(struct user_i387_struct __user *buf,
++				    struct task_struct *tsk)
++{
++	return convert_fxsr_to_user((struct _fpstate __user *)buf,
++				    &tsk->thread.i387.fxsave);
++}
++
++int get_fpregs(struct user_i387_struct __user *buf, struct task_struct *tsk)
++{
++	if (HAVE_HWFP) {
++		if (cpu_has_fxsr) {
++			return get_fpregs_fxsave(buf, tsk);
++		} else {
++			return get_fpregs_fsave(buf, tsk);
++		}
++	} else {
++		return save_i387_soft(&tsk->thread.i387.soft,
++				      (struct _fpstate __user *)buf);
++	}
++}
++
++static inline int set_fpregs_fsave(struct task_struct *tsk,
++				   struct user_i387_struct __user *buf)
++{
++	return __copy_from_user(&tsk->thread.i387.fsave, buf,
++				sizeof(struct user_i387_struct));
++}
++
++static inline int set_fpregs_fxsave(struct task_struct *tsk,
++				    struct user_i387_struct __user *buf)
++{
++	return convert_fxsr_from_user(&tsk->thread.i387.fxsave,
++				      (struct _fpstate __user *)buf);
++}
++
++int set_fpregs(struct task_struct *tsk, struct user_i387_struct __user *buf)
++{
++	if (HAVE_HWFP) {
++		if (cpu_has_fxsr) {
++			return set_fpregs_fxsave(tsk, buf);
++		} else {
++			return set_fpregs_fsave(tsk, buf);
++		}
++	} else {
++		return restore_i387_soft(&tsk->thread.i387.soft,
++					 (struct _fpstate __user *)buf);
++	}
++}
++
++int get_fpxregs(struct user_fxsr_struct __user *buf, struct task_struct *tsk)
++{
++	if (cpu_has_fxsr) {
++		if (__copy_to_user(buf, &tsk->thread.i387.fxsave,
++				   sizeof(struct user_fxsr_struct)))
++			return -EFAULT;
++		return 0;
++	} else {
++		return -EIO;
++	}
++}
++
++int set_fpxregs(struct task_struct *tsk, struct user_fxsr_struct __user *buf)
++{
++	int ret = 0;
++
++	if (cpu_has_fxsr) {
++		if (__copy_from_user(&tsk->thread.i387.fxsave, buf,
++				     sizeof(struct user_fxsr_struct)))
++			ret = -EFAULT;
++		/* mxcsr reserved bits must be masked to zero
++		 * for security reasons */
++		tsk->thread.i387.fxsave.mxcsr &= mxcsr_feature_mask;
++	} else {
++		ret = -EIO;
++	}
 +	return ret;
 +}
 +
- /*
-  * Get contents of AltiVec register state in task TASK
-  */
- static int get_vrregs(unsigned long __user *data, struct task_struct *task)
- {
--	unsigned long regsize;
++/*
++ * FPU state for core dumps.
++ */
++
++static inline void copy_fpu_fsave(struct task_struct *tsk,
++				  struct user_i387_struct *fpu)
++{
++	memcpy(fpu, &tsk->thread.i387.fsave,
++	       sizeof(struct user_i387_struct));
++}
++
++static inline void copy_fpu_fxsave(struct task_struct *tsk,
++				   struct user_i387_struct *fpu)
++{
++	unsigned short *to;
++	unsigned short *from;
++	int i;
++
++	memcpy(fpu, &tsk->thread.i387.fxsave, 7 * sizeof(long));
++
++	to = (unsigned short *)&fpu->st_space[0];
++	from = (unsigned short *)&tsk->thread.i387.fxsave.st_space[0];
++	for (i = 0; i < 8; i++, to += 5, from += 8)
++		memcpy(to, from, 5 * sizeof(unsigned short));
++}
++
++int dump_fpu(struct pt_regs *regs, struct user_i387_struct *fpu)
++{
++	int fpvalid;
++	struct task_struct *tsk = current;
++
++	fpvalid = !!used_math();
++	if (fpvalid) {
++		unlazy_fpu(tsk);
++		if (cpu_has_fxsr) {
++			copy_fpu_fxsave(tsk, fpu);
++		} else {
++			copy_fpu_fsave(tsk, fpu);
++		}
++	}
++
++	return fpvalid;
++}
++EXPORT_SYMBOL(dump_fpu);
++
++int dump_task_fpu(struct task_struct *tsk, struct user_i387_struct *fpu)
++{
++	int fpvalid = !!tsk_used_math(tsk);
++
++	if (fpvalid) {
++		if (tsk == current)
++			unlazy_fpu(tsk);
++		if (cpu_has_fxsr)
++			copy_fpu_fxsave(tsk, fpu);
++		else
++			copy_fpu_fsave(tsk, fpu);
++	}
++	return fpvalid;
++}
++
++int dump_task_extended_fpu(struct task_struct *tsk,
++			   struct user_fxsr_struct *fpu)
++{
++	int fpvalid = tsk_used_math(tsk) && cpu_has_fxsr;
++
++	if (fpvalid) {
++		if (tsk == current)
++		       unlazy_fpu(tsk);
++		memcpy(fpu, &tsk->thread.i387.fxsave, sizeof(*fpu));
++	}
++	return fpvalid;
++}
+diff --git a/arch/x86/kernel/i387_32.c b/arch/x86/kernel/i387_32.c
+deleted file mode 100644
+index bebe034..0000000
+--- a/arch/x86/kernel/i387_32.c
++++ /dev/null
+@@ -1,551 +0,0 @@
+-/*
+- *  Copyright (C) 1994 Linus Torvalds
+- *
+- *  Pentium III FXSR, SSE support
+- *  General FPU state handling cleanups
+- *	Gareth Hughes <gareth@valinux.com>, May 2000
+- */
 -
--	/* copy AltiVec registers VR[0] .. VR[31] */
--	regsize = 32 * sizeof(vector128);
--	if (copy_to_user(data, task->thread.vr, regsize))
--		return -EFAULT;
--	data += (regsize / sizeof(unsigned long));
+-#include <linux/sched.h>
+-#include <linux/module.h>
+-#include <asm/processor.h>
+-#include <asm/i387.h>
+-#include <asm/math_emu.h>
+-#include <asm/sigcontext.h>
+-#include <asm/user.h>
+-#include <asm/ptrace.h>
+-#include <asm/uaccess.h>
 -
--	/* copy VSCR */
--	regsize = 1 * sizeof(vector128);
--	if (copy_to_user(data, &task->thread.vscr, regsize))
-+	if (!access_ok(VERIFY_WRITE, data,
-+		       33 * sizeof(vector128) + sizeof(u32)))
- 		return -EFAULT;
--	data += (regsize / sizeof(unsigned long));
- 
--	/* copy VRSAVE */
--	if (put_user(task->thread.vrsave, (u32 __user *)data))
--		return -EFAULT;
+-#ifdef CONFIG_MATH_EMULATION
+-#define HAVE_HWFP (boot_cpu_data.hard_math)
+-#else
+-#define HAVE_HWFP 1
+-#endif
 -
+-static unsigned long mxcsr_feature_mask __read_mostly = 0xffffffff;
+-
+-void mxcsr_feature_mask_init(void)
+-{
+-	unsigned long mask = 0;
+-	clts();
+-	if (cpu_has_fxsr) {
+-		memset(&current->thread.i387.fxsave, 0,
+-		       sizeof(struct i387_fxsave_struct));
+-		asm volatile("fxsave %0" : : "m" (current->thread.i387.fxsave));
+-		mask = current->thread.i387.fxsave.mxcsr_mask;
+-		if (mask == 0)
+-			mask = 0x0000ffbf;
+-	}
+-	mxcsr_feature_mask &= mask;
+-	stts();
+-}
+-
+-/*
+- * The _current_ task is using the FPU for the first time
+- * so initialize it and set the mxcsr to its default
+- * value at reset if we support XMM instructions and then
+- * remeber the current task has used the FPU.
+- */
+-void init_fpu(struct task_struct *tsk)
+-{
+-	if (cpu_has_fxsr) {
+-		memset(&tsk->thread.i387.fxsave, 0,
+-		       sizeof(struct i387_fxsave_struct));
+-		tsk->thread.i387.fxsave.cwd = 0x37f;
+-		if (cpu_has_xmm)
+-			tsk->thread.i387.fxsave.mxcsr = 0x1f80;
+-	} else {
+-		memset(&tsk->thread.i387.fsave, 0,
+-		       sizeof(struct i387_fsave_struct));
+-		tsk->thread.i387.fsave.cwd = 0xffff037fu;
+-		tsk->thread.i387.fsave.swd = 0xffff0000u;
+-		tsk->thread.i387.fsave.twd = 0xffffffffu;
+-		tsk->thread.i387.fsave.fos = 0xffff0000u;
+-	}
+-	/* only the device not available exception
+-	 * or ptrace can call init_fpu */
+-	set_stopped_child_used_math(tsk);
+-}
+-
+-/*
+- * FPU lazy state save handling.
+- */
+-
+-void kernel_fpu_begin(void)
+-{
+-	struct thread_info *thread = current_thread_info();
+-
+-	preempt_disable();
+-	if (thread->status & TS_USEDFPU) {
+-		__save_init_fpu(thread->task);
+-		return;
+-	}
+-	clts();
+-}
+-EXPORT_SYMBOL_GPL(kernel_fpu_begin);
+-
+-/*
+- * FPU tag word conversions.
+- */
+-
+-static inline unsigned short twd_i387_to_fxsr(unsigned short twd)
+-{
+-	unsigned int tmp; /* to avoid 16 bit prefixes in the code */
+-
+-	/* Transform each pair of bits into 01 (valid) or 00 (empty) */
+-	tmp = ~twd;
+-	tmp = (tmp | (tmp >> 1)) & 0x5555; /* 0V0V0V0V0V0V0V0V */
+-	/* and move the valid bits to the lower byte. */
+-	tmp = (tmp | (tmp >> 1)) & 0x3333; /* 00VV00VV00VV00VV */
+-	tmp = (tmp | (tmp >> 2)) & 0x0f0f; /* 0000VVVV0000VVVV */
+-	tmp = (tmp | (tmp >> 4)) & 0x00ff; /* 00000000VVVVVVVV */
+-
+-	return tmp;
+-}
+-
+-static inline unsigned long twd_fxsr_to_i387(struct i387_fxsave_struct *fxsave)
+-{
+-	struct _fpxreg *st = NULL;
+-	unsigned long tos = (fxsave->swd >> 11) & 7;
+-	unsigned long twd = (unsigned long) fxsave->twd;
+-	unsigned long tag;
+-	unsigned long ret = 0xffff0000u;
+-	int i;
+-
+-#define FPREG_ADDR(f, n)	((void *)&(f)->st_space + (n) * 16);
+-
+-	for (i = 0; i < 8; i++) {
+-		if (twd & 0x1) {
+-			st = FPREG_ADDR(fxsave, (i - tos) & 7);
+-
+-			switch (st->exponent & 0x7fff) {
+-			case 0x7fff:
+-				tag = 2;		/* Special */
+-				break;
+-			case 0x0000:
+-				if (!st->significand[0] &&
+-				    !st->significand[1] &&
+-				    !st->significand[2] &&
+-				    !st->significand[3]) {
+-					tag = 1;	/* Zero */
+-				} else {
+-					tag = 2;	/* Special */
+-				}
+-				break;
+-			default:
+-				if (st->significand[3] & 0x8000) {
+-					tag = 0;	/* Valid */
+-				} else {
+-					tag = 2;	/* Special */
+-				}
+-				break;
+-			}
+-		} else {
+-			tag = 3;			/* Empty */
+-		}
+-		ret |= (tag << (2 * i));
+-		twd = twd >> 1;
+-	}
+-	return ret;
+-}
+-
+-/*
+- * FPU state interaction.
+- */
+-
+-unsigned short get_fpu_cwd(struct task_struct *tsk)
+-{
+-	if (cpu_has_fxsr) {
+-		return tsk->thread.i387.fxsave.cwd;
+-	} else {
+-		return (unsigned short)tsk->thread.i387.fsave.cwd;
+-	}
+-}
+-
+-unsigned short get_fpu_swd(struct task_struct *tsk)
+-{
+-	if (cpu_has_fxsr) {
+-		return tsk->thread.i387.fxsave.swd;
+-	} else {
+-		return (unsigned short)tsk->thread.i387.fsave.swd;
+-	}
+-}
+-
+-#if 0
+-unsigned short get_fpu_twd(struct task_struct *tsk)
+-{
+-	if (cpu_has_fxsr) {
+-		return tsk->thread.i387.fxsave.twd;
+-	} else {
+-		return (unsigned short)tsk->thread.i387.fsave.twd;
+-	}
+-}
+-#endif  /*  0  */
+-
+-unsigned short get_fpu_mxcsr(struct task_struct *tsk)
+-{
+-	if (cpu_has_xmm) {
+-		return tsk->thread.i387.fxsave.mxcsr;
+-	} else {
+-		return 0x1f80;
+-	}
+-}
+-
+-#if 0
+-
+-void set_fpu_cwd(struct task_struct *tsk, unsigned short cwd)
+-{
+-	if (cpu_has_fxsr) {
+-		tsk->thread.i387.fxsave.cwd = cwd;
+-	} else {
+-		tsk->thread.i387.fsave.cwd = ((long)cwd | 0xffff0000u);
+-	}
+-}
+-
+-void set_fpu_swd(struct task_struct *tsk, unsigned short swd)
+-{
+-	if (cpu_has_fxsr) {
+-		tsk->thread.i387.fxsave.swd = swd;
+-	} else {
+-		tsk->thread.i387.fsave.swd = ((long)swd | 0xffff0000u);
+-	}
+-}
+-
+-void set_fpu_twd(struct task_struct *tsk, unsigned short twd)
+-{
+-	if (cpu_has_fxsr) {
+-		tsk->thread.i387.fxsave.twd = twd_i387_to_fxsr(twd);
+-	} else {
+-		tsk->thread.i387.fsave.twd = ((long)twd | 0xffff0000u);
+-	}
+-}
+-
+-#endif  /*  0  */
+-
+-/*
+- * FXSR floating point environment conversions.
+- */
+-
+-static int convert_fxsr_to_user(struct _fpstate __user *buf,
+-				struct i387_fxsave_struct *fxsave)
+-{
+-	unsigned long env[7];
+-	struct _fpreg __user *to;
+-	struct _fpxreg *from;
+-	int i;
+-
+-	env[0] = (unsigned long)fxsave->cwd | 0xffff0000ul;
+-	env[1] = (unsigned long)fxsave->swd | 0xffff0000ul;
+-	env[2] = twd_fxsr_to_i387(fxsave);
+-	env[3] = fxsave->fip;
+-	env[4] = fxsave->fcs | ((unsigned long)fxsave->fop << 16);
+-	env[5] = fxsave->foo;
+-	env[6] = fxsave->fos;
+-
+-	if (__copy_to_user(buf, env, 7 * sizeof(unsigned long)))
+-		return 1;
+-
+-	to = &buf->_st[0];
+-	from = (struct _fpxreg *) &fxsave->st_space[0];
+-	for (i = 0; i < 8; i++, to++, from++) {
+-		unsigned long __user *t = (unsigned long __user *)to;
+-		unsigned long *f = (unsigned long *)from;
+-
+-		if (__put_user(*f, t) ||
+-		    __put_user(*(f + 1), t + 1) ||
+-		    __put_user(from->exponent, &to->exponent))
+-			return 1;
+-	}
 -	return 0;
-+	return vr_get(task, NULL, 0, 33 * sizeof(vector128) + sizeof(u32),
-+		      NULL, data);
- }
- 
- /*
-@@ -194,25 +252,11 @@ static int get_vrregs(unsigned long __user *data, struct task_struct *task)
-  */
- static int set_vrregs(struct task_struct *task, unsigned long __user *data)
- {
--	unsigned long regsize;
+-}
 -
--	/* copy AltiVec registers VR[0] .. VR[31] */
--	regsize = 32 * sizeof(vector128);
--	if (copy_from_user(task->thread.vr, data, regsize))
--		return -EFAULT;
--	data += (regsize / sizeof(unsigned long));
+-static int convert_fxsr_from_user(struct i387_fxsave_struct *fxsave,
+-				  struct _fpstate __user *buf)
+-{
+-	unsigned long env[7];
+-	struct _fpxreg *to;
+-	struct _fpreg __user *from;
+-	int i;
 -
--	/* copy VSCR */
--	regsize = 1 * sizeof(vector128);
--	if (copy_from_user(&task->thread.vscr, data, regsize))
--		return -EFAULT;
--	data += (regsize / sizeof(unsigned long));
+-	if (__copy_from_user(env, buf, 7 * sizeof(long)))
+-		return 1;
 -
--	/* copy VRSAVE */
--	if (get_user(task->thread.vrsave, (u32 __user *)data))
-+	if (!access_ok(VERIFY_READ, data, 33 * sizeof(vector128) + sizeof(u32)))
- 		return -EFAULT;
- 
+-	fxsave->cwd = (unsigned short)(env[0] & 0xffff);
+-	fxsave->swd = (unsigned short)(env[1] & 0xffff);
+-	fxsave->twd = twd_i387_to_fxsr((unsigned short)(env[2] & 0xffff));
+-	fxsave->fip = env[3];
+-	fxsave->fop = (unsigned short)((env[4] & 0xffff0000ul) >> 16);
+-	fxsave->fcs = (env[4] & 0xffff);
+-	fxsave->foo = env[5];
+-	fxsave->fos = env[6];
+-
+-	to = (struct _fpxreg *) &fxsave->st_space[0];
+-	from = &buf->_st[0];
+-	for (i = 0; i < 8; i++, to++, from++) {
+-		unsigned long *t = (unsigned long *)to;
+-		unsigned long __user *f = (unsigned long __user *)from;
+-
+-		if (__get_user(*t, f) ||
+-		    __get_user(*(t + 1), f + 1) ||
+-		    __get_user(to->exponent, &from->exponent))
+-			return 1;
+-	}
 -	return 0;
-+	return vr_set(task, NULL, 0, 33 * sizeof(vector128) + sizeof(u32),
-+		      NULL, data);
- }
- #endif /* CONFIG_ALTIVEC */
- 
+-}
+-
+-/*
+- * Signal frame handlers.
+- */
+-
+-static inline int save_i387_fsave(struct _fpstate __user *buf)
+-{
+-	struct task_struct *tsk = current;
+-
+-	unlazy_fpu(tsk);
+-	tsk->thread.i387.fsave.status = tsk->thread.i387.fsave.swd;
+-	if (__copy_to_user(buf, &tsk->thread.i387.fsave,
+-			   sizeof(struct i387_fsave_struct)))
+-		return -1;
+-	return 1;
+-}
+-
+-static int save_i387_fxsave(struct _fpstate __user *buf)
+-{
+-	struct task_struct *tsk = current;
+-	int err = 0;
+-
+-	unlazy_fpu(tsk);
+-
+-	if (convert_fxsr_to_user(buf, &tsk->thread.i387.fxsave))
+-		return -1;
+-
+-	err |= __put_user(tsk->thread.i387.fxsave.swd, &buf->status);
+-	err |= __put_user(X86_FXSR_MAGIC, &buf->magic);
+-	if (err)
+-		return -1;
+-
+-	if (__copy_to_user(&buf->_fxsr_env[0], &tsk->thread.i387.fxsave,
+-			   sizeof(struct i387_fxsave_struct)))
+-		return -1;
+-	return 1;
+-}
+-
+-int save_i387(struct _fpstate __user *buf)
+-{
+-	if (!used_math())
+-		return 0;
+-
+-	/* This will cause a "finit" to be triggered by the next
+-	 * attempted FPU operation by the 'current' process.
+-	 */
+-	clear_used_math();
+-
+-	if (HAVE_HWFP) {
+-		if (cpu_has_fxsr) {
+-			return save_i387_fxsave(buf);
+-		} else {
+-			return save_i387_fsave(buf);
+-		}
+-	} else {
+-		return save_i387_soft(&current->thread.i387.soft, buf);
+-	}
+-}
+-
+-static inline int restore_i387_fsave(struct _fpstate __user *buf)
+-{
+-	struct task_struct *tsk = current;
+-	clear_fpu(tsk);
+-	return __copy_from_user(&tsk->thread.i387.fsave, buf,
+-				sizeof(struct i387_fsave_struct));
+-}
+-
+-static int restore_i387_fxsave(struct _fpstate __user *buf)
+-{
+-	int err;
+-	struct task_struct *tsk = current;
+-	clear_fpu(tsk);
+-	err = __copy_from_user(&tsk->thread.i387.fxsave, &buf->_fxsr_env[0],
+-			       sizeof(struct i387_fxsave_struct));
+-	/* mxcsr reserved bits must be masked to zero for security reasons */
+-	tsk->thread.i387.fxsave.mxcsr &= mxcsr_feature_mask;
+-	return err ? 1 : convert_fxsr_from_user(&tsk->thread.i387.fxsave, buf);
+-}
+-
+-int restore_i387(struct _fpstate __user *buf)
+-{
+-	int err;
+-
+-	if (HAVE_HWFP) {
+-		if (cpu_has_fxsr) {
+-			err = restore_i387_fxsave(buf);
+-		} else {
+-			err = restore_i387_fsave(buf);
+-		}
+-	} else {
+-		err = restore_i387_soft(&current->thread.i387.soft, buf);
+-	}
+-	set_used_math();
+-	return err;
+-}
+-
+-/*
+- * ptrace request handlers.
+- */
+-
+-static inline int get_fpregs_fsave(struct user_i387_struct __user *buf,
+-				   struct task_struct *tsk)
+-{
+-	return __copy_to_user(buf, &tsk->thread.i387.fsave,
+-			      sizeof(struct user_i387_struct));
+-}
+-
+-static inline int get_fpregs_fxsave(struct user_i387_struct __user *buf,
+-				    struct task_struct *tsk)
+-{
+-	return convert_fxsr_to_user((struct _fpstate __user *)buf,
+-				    &tsk->thread.i387.fxsave);
+-}
+-
+-int get_fpregs(struct user_i387_struct __user *buf, struct task_struct *tsk)
+-{
+-	if (HAVE_HWFP) {
+-		if (cpu_has_fxsr) {
+-			return get_fpregs_fxsave(buf, tsk);
+-		} else {
+-			return get_fpregs_fsave(buf, tsk);
+-		}
+-	} else {
+-		return save_i387_soft(&tsk->thread.i387.soft,
+-				      (struct _fpstate __user *)buf);
+-	}
+-}
+-
+-static inline int set_fpregs_fsave(struct task_struct *tsk,
+-				   struct user_i387_struct __user *buf)
+-{
+-	return __copy_from_user(&tsk->thread.i387.fsave, buf,
+-				sizeof(struct user_i387_struct));
+-}
+-
+-static inline int set_fpregs_fxsave(struct task_struct *tsk,
+-				    struct user_i387_struct __user *buf)
+-{
+-	return convert_fxsr_from_user(&tsk->thread.i387.fxsave,
+-				      (struct _fpstate __user *)buf);
+-}
+-
+-int set_fpregs(struct task_struct *tsk, struct user_i387_struct __user *buf)
+-{
+-	if (HAVE_HWFP) {
+-		if (cpu_has_fxsr) {
+-			return set_fpregs_fxsave(tsk, buf);
+-		} else {
+-			return set_fpregs_fsave(tsk, buf);
+-		}
+-	} else {
+-		return restore_i387_soft(&tsk->thread.i387.soft,
+-					 (struct _fpstate __user *)buf);
+-	}
+-}
+-
+-int get_fpxregs(struct user_fxsr_struct __user *buf, struct task_struct *tsk)
+-{
+-	if (cpu_has_fxsr) {
+-		if (__copy_to_user(buf, &tsk->thread.i387.fxsave,
+-				   sizeof(struct user_fxsr_struct)))
+-			return -EFAULT;
+-		return 0;
+-	} else {
+-		return -EIO;
+-	}
+-}
+-
+-int set_fpxregs(struct task_struct *tsk, struct user_fxsr_struct __user *buf)
+-{
+-	int ret = 0;
+-
+-	if (cpu_has_fxsr) {
+-		if (__copy_from_user(&tsk->thread.i387.fxsave, buf,
+-				     sizeof(struct user_fxsr_struct)))
+-			ret = -EFAULT;
+-		/* mxcsr reserved bits must be masked to zero
+-		 * for security reasons */
+-		tsk->thread.i387.fxsave.mxcsr &= mxcsr_feature_mask;
+-	} else {
+-		ret = -EIO;
+-	}
+-	return ret;
+-}
+-
+-/*
+- * FPU state for core dumps.
+- */
+-
+-static inline void copy_fpu_fsave(struct task_struct *tsk,
+-				  struct user_i387_struct *fpu)
+-{
+-	memcpy(fpu, &tsk->thread.i387.fsave,
+-	       sizeof(struct user_i387_struct));
+-}
+-
+-static inline void copy_fpu_fxsave(struct task_struct *tsk,
+-				   struct user_i387_struct *fpu)
+-{
+-	unsigned short *to;
+-	unsigned short *from;
+-	int i;
+-
+-	memcpy(fpu, &tsk->thread.i387.fxsave, 7 * sizeof(long));
+-
+-	to = (unsigned short *)&fpu->st_space[0];
+-	from = (unsigned short *)&tsk->thread.i387.fxsave.st_space[0];
+-	for (i = 0; i < 8; i++, to += 5, from += 8)
+-		memcpy(to, from, 5 * sizeof(unsigned short));
+-}
+-
+-int dump_fpu(struct pt_regs *regs, struct user_i387_struct *fpu)
+-{
+-	int fpvalid;
+-	struct task_struct *tsk = current;
+-
+-	fpvalid = !!used_math();
+-	if (fpvalid) {
+-		unlazy_fpu(tsk);
+-		if (cpu_has_fxsr) {
+-			copy_fpu_fxsave(tsk, fpu);
+-		} else {
+-			copy_fpu_fsave(tsk, fpu);
+-		}
+-	}
+-
+-	return fpvalid;
+-}
+-EXPORT_SYMBOL(dump_fpu);
+-
+-int dump_task_fpu(struct task_struct *tsk, struct user_i387_struct *fpu)
+-{
+-	int fpvalid = !!tsk_used_math(tsk);
+-
+-	if (fpvalid) {
+-		if (tsk == current)
+-			unlazy_fpu(tsk);
+-		if (cpu_has_fxsr)
+-			copy_fpu_fxsave(tsk, fpu);
+-		else
+-			copy_fpu_fsave(tsk, fpu);
+-	}
+-	return fpvalid;
+-}
+-
+-int dump_task_extended_fpu(struct task_struct *tsk,
+-			   struct user_fxsr_struct *fpu)
+-{
+-	int fpvalid = tsk_used_math(tsk) && cpu_has_fxsr;
+-
+-	if (fpvalid) {
+-		if (tsk == current)
+-		       unlazy_fpu(tsk);
+-		memcpy(fpu, &tsk->thread.i387.fxsave, sizeof(*fpu));
+-	}
+-	return fpvalid;
+-}
 -- 
 1.5.3.6
 
