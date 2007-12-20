@@ -1,44 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763316AbXLTV7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762406AbXLTWAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763316AbXLTV7Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 16:59:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762001AbXLTV67
+	id S1762406AbXLTWAA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:00:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757237AbXLTV7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 16:58:59 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47154 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761595AbXLTV66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 16:58:58 -0500
-Date: Thu, 20 Dec 2007 13:57:41 -0800
-From: Greg KH <gregkh@suse.de>
-To: Tony Camuso <tcamuso@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [Fwd: Re: [PATCH 4/5]PCI: x86 MMCONFIG: introduce
-	pcibios_fix_bus_scan()]
-Message-ID: <20071220215741.GB8528@suse.de>
-References: <476A5F69.2030501@redhat.com> <20071220171914.GA5636@suse.de> <476AA8E4.6090609@redhat.com> <20071220175236.GA24425@suse.de> <476AAFB7.1000003@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <476AAFB7.1000003@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 20 Dec 2007 16:59:49 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55964
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1762001AbXLTV7r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 16:59:47 -0500
+Date: Thu, 20 Dec 2007 13:59:46 -0800 (PST)
+Message-Id: <20071220.135946.229974767.davem@davemloft.net>
+To: joe@perches.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       acme@ghostprotocols.net, dccp@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] net/dccp/: Spelling fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1197920439-5455-24-git-send-email-joe@perches.com>
+References: <1197920439-5455-24-git-send-email-joe@perches.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 01:08:55PM -0500, Tony Camuso wrote:
-> Greg KH wrote:
->
->> But you never answered my questions about _who_ would be responding to
->> those log messages about reporting things...
->> thanks,
->> greg k-h
->
-> I did.
->
-> I said I would remove that string, because I don't want all that email,
-> either. It's a little past the middle of the post appended here.
+From: Joe Perches <joe@perches.com>
+Date: Mon, 17 Dec 2007 11:40:30 -0800
 
-Oops, sorry, I missed that response, my apologies.
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-greg k-h
+Applied.
