@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762629AbXLTMJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762844AbXLTMJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762629AbXLTMJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 07:09:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760776AbXLTMBF
+	id S1762844AbXLTMJq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 07:09:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXLTMBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 07:01:05 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38432 "EHLO mx1.redhat.com"
+	Thu, 20 Dec 2007 07:01:07 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38433 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760355AbXLTMAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 07:00:46 -0500
+	id S1761083AbXLTMAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 07:00:47 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,177 +19,182 @@ X-Fcc: ~/Mail/linus
 Cc: linux-kernel@vger.kernel.org
 In-Reply-To: Roland McGrath's message of  Thursday, 20 December 2007 03:52:00 -0800 <20071220115200.C767E26F98A@magilla.localdomain>
 References: <20071220115200.C767E26F98A@magilla.localdomain>
-Subject: [PATCH -mm 29/43] x86 user_regset math_emu
-Message-Id: <20071220115948.0D68F26F98A@magilla.localdomain>
-Date: Thu, 20 Dec 2007 03:59:48 -0800 (PST)
+Subject: [PATCH -mm 34/43] x86 user_regset TLS
+Message-Id: <20071220115958.D1E0A26F98D@magilla.localdomain>
+Date: Thu, 20 Dec 2007 03:59:58 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This converts the ptrace/signal accessors for i387 math_emu
-state to the user_regset interface style, and calls these
-from the old interfaces.
-
-It also cleans up math_emulate's ptrace check to be a
-single-step check, which is what it really wants.
+This adds accessor functions in the user_regset style for the TLS data.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/math-emu/fpu_entry.c |   86 +++++++++++++++++++++++++---------------
- 1 files changed, 54 insertions(+), 32 deletions(-)
+ arch/x86/kernel/tls.c |   89 +++++++++++++++++++++++++++++++++++++++++++++---
+ arch/x86/kernel/tls.h |   21 +++++++++++
+ 2 files changed, 104 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/math-emu/fpu_entry.c b/arch/x86/math-emu/fpu_entry.c
-index 377c60d..cfbdaa1 100644
---- a/arch/x86/math-emu/fpu_entry.c
-+++ b/arch/x86/math-emu/fpu_entry.c
-@@ -25,10 +25,11 @@
-  +---------------------------------------------------------------------------*/
- 
- #include <linux/signal.h>
--#include <linux/ptrace.h>
+diff --git a/arch/x86/kernel/tls.c b/arch/x86/kernel/tls.c
+index f11c92a..6dfd4e7 100644
+--- a/arch/x86/kernel/tls.c
++++ b/arch/x86/kernel/tls.c
+@@ -2,6 +2,7 @@
+ #include <linux/errno.h>
+ #include <linux/sched.h>
+ #include <linux/user.h>
 +#include <linux/regset.h>
  
  #include <asm/uaccess.h>
  #include <asm/desc.h>
-+#include <asm/user.h>
+@@ -10,6 +11,8 @@
+ #include <asm/processor.h>
+ #include <asm/proto.h>
  
- #include "fpu_system.h"
- #include "fpu_emu.h"
-@@ -198,9 +199,7 @@ asmlinkage void math_emulate(long arg)
- 			code_limit = 0xffffffff;
- 	}
- 
--	FPU_lookahead = 1;
--	if (current->ptrace & PT_PTRACED)
--		FPU_lookahead = 0;
-+	FPU_lookahead = !(FPU_EFLAGS & X86_EFLAGS_TF);
- 
- 	if (!valid_prefix(&byte1, (u_char __user **) & FPU_EIP,
- 			  &addr_modes.override)) {
-@@ -673,31 +672,37 @@ void math_abort(struct info *info, unsigned int signal)
- #define sstatus_word() \
-   ((S387->swd & ~SW_Top & 0xffff) | ((S387->ftop << SW_Top_Shift) & SW_Top))
- 
--int restore_i387_soft(void *s387, struct _fpstate __user *buf)
-+int fpregs_soft_set(struct task_struct *target,
-+		    const struct user_regset *regset,
-+		    unsigned int pos, unsigned int count,
-+		    const void *kbuf, const void __user *ubuf)
- {
--	u_char __user *d = (u_char __user *) buf;
-+	struct i387_soft_struct *s387 = &target->thread.i387.soft;
-+	void *space = s387->st_space;
-+	int ret;
- 	int offset, other, i, tags, regnr, tag, newtop;
- 
- 	RE_ENTRANT_CHECK_OFF;
--	FPU_access_ok(VERIFY_READ, d, 7 * 4 + 8 * 10);
--	if (__copy_from_user(&S387->cwd, d, 7 * 4))
--		return -1;
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, s387, 0,
-+				 offsetof(struct i387_soft_struct, st_space));
- 	RE_ENTRANT_CHECK_ON;
- 
--	d += 7 * 4;
-+	if (ret)
-+		return ret;
- 
- 	S387->ftop = (S387->swd >> SW_Top_Shift) & 7;
- 	offset = (S387->ftop & 7) * 10;
- 	other = 80 - offset;
- 
- 	RE_ENTRANT_CHECK_OFF;
++#include "tls.h"
 +
- 	/* Copy all registers in stack order. */
--	if (__copy_from_user(((u_char *) & S387->st_space) + offset, d, other))
--		return -1;
--	if (offset)
--		if (__copy_from_user
--		    ((u_char *) & S387->st_space, d + other, offset))
--			return -1;
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				 space + offset, 0, other);
-+	if (!ret && offset)
-+		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+					 space, 0, offset);
-+
- 	RE_ENTRANT_CHECK_ON;
- 
- 	/* The tags may need to be corrected now. */
-@@ -716,16 +721,21 @@ int restore_i387_soft(void *s387, struct _fpstate __user *buf)
- 	}
- 	S387->twd = tags;
- 
--	return 0;
-+	return ret;
+ /*
+  * sys_alloc_thread_area: get a yet unused TLS descriptor index.
+  */
+@@ -25,7 +28,7 @@ static int get_free_idx(void)
  }
  
--int save_i387_soft(void *s387, struct _fpstate __user * buf)
-+int fpregs_soft_get(struct task_struct *target,
-+		    const struct user_regset *regset,
-+		    unsigned int pos, unsigned int count,
-+		    void *kbuf, void __user *ubuf)
+ static void set_tls_desc(struct task_struct *p, int idx,
+-			 const struct user_desc *info)
++			 const struct user_desc *info, int n)
  {
--	u_char __user *d = (u_char __user *) buf;
-+	struct i387_soft_struct *s387 = &target->thread.i387.soft;
-+	const void *space = s387->st_space;
-+	int ret;
- 	int offset = (S387->ftop & 7) * 10, other = 80 - offset;
+ 	struct thread_struct *t = &p->thread;
+ 	struct desc_struct *desc = &t->tls_array[idx - GDT_ENTRY_TLS_MIN];
+@@ -36,10 +39,14 @@ static void set_tls_desc(struct task_struct *p, int idx,
+ 	 */
+ 	cpu = get_cpu();
  
- 	RE_ENTRANT_CHECK_OFF;
--	FPU_access_ok(VERIFY_WRITE, d, 7 * 4 + 8 * 10);
-+
- #ifdef PECULIAR_486
- 	S387->cwd &= ~0xe080;
- 	/* An 80486 sets nearly all of the reserved bits to 1. */
-@@ -735,21 +745,33 @@ int save_i387_soft(void *s387, struct _fpstate __user * buf)
- 	S387->fcs &= ~0xf8000000;
- 	S387->fos |= 0xffff0000;
- #endif /* PECULIAR_486 */
--	if (__copy_to_user(d, &S387->cwd, 7 * 4))
--		return -1;
--	RE_ENTRANT_CHECK_ON;
+-	if (LDT_empty(info))
+-		desc->a = desc->b = 0;
+-	else
+-		fill_ldt(desc, info);
++	while (n-- > 0) {
++		if (LDT_empty(info))
++			desc->a = desc->b = 0;
++		else
++			fill_ldt(desc, info);
++		++info;
++		++desc;
++	}
  
--	d += 7 * 4;
-+	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, s387, 0,
-+				  offsetof(struct i387_soft_struct, st_space));
+ 	if (t == &current->thread)
+ 		load_TLS(t, cpu);
+@@ -77,7 +84,7 @@ int do_set_thread_area(struct task_struct *p, int idx,
+ 	if (idx < GDT_ENTRY_TLS_MIN || idx > GDT_ENTRY_TLS_MAX)
+ 		return -EINVAL;
  
--	RE_ENTRANT_CHECK_OFF;
- 	/* Copy all registers in stack order. */
--	if (__copy_to_user(d, ((u_char *) & S387->st_space) + offset, other))
--		return -1;
--	if (offset)
--		if (__copy_to_user
--		    (d + other, (u_char *) & S387->st_space, offset))
--			return -1;
-+	if (!ret)
-+		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+					  space + offset, 0, other);
-+	if (!ret)
-+		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+					  space, 0, offset);
-+
- 	RE_ENTRANT_CHECK_ON;
+-	set_tls_desc(p, idx, &info);
++	set_tls_desc(p, idx, &info, 1);
  
--	return 1;
-+	return ret;
-+}
-+
-+int save_i387_soft(void *s387, struct _fpstate __user *buf)
-+{
-+	return fpregs_soft_get(current, NULL,
-+			       0, sizeof(struct user_i387_struct),
-+			       NULL, buf) ? -1 : 1;
-+}
-+
-+int restore_i387_soft(void *s387, struct _fpstate __user *buf)
-+{
-+	return fpregs_soft_set(current, NULL,
-+			       0, sizeof(struct user_i387_struct),
-+			       NULL, buf) ? -1 : 1;
+ 	return 0;
  }
+@@ -134,3 +141,73 @@ asmlinkage int sys_get_thread_area(struct user_desc __user *u_info)
+ {
+ 	return do_get_thread_area(current, -1, u_info);
+ }
++
++int regset_tls_active(struct task_struct *target,
++		      const struct user_regset *regset)
++{
++	struct thread_struct *t = &target->thread;
++	int n = GDT_ENTRY_TLS_ENTRIES;
++	while (n > 0 && desc_empty(&t->tls_array[n - 1]))
++		--n;
++	return n;
++}
++
++int regset_tls_get(struct task_struct *target, const struct user_regset *regset,
++		   unsigned int pos, unsigned int count,
++		   void *kbuf, void __user *ubuf)
++{
++	const struct desc_struct *tls;
++
++	if (pos > GDT_ENTRY_TLS_ENTRIES * sizeof(struct user_desc) ||
++	    (pos % sizeof(struct user_desc)) != 0 ||
++	    (count % sizeof(struct user_desc)) != 0)
++		return -EINVAL;
++
++	pos /= sizeof(struct user_desc);
++	count /= sizeof(struct user_desc);
++
++	tls = &target->thread.tls_array[pos];
++
++	if (kbuf) {
++		struct user_desc *info = kbuf;
++		while (count-- > 0)
++			fill_user_desc(info++, GDT_ENTRY_TLS_MIN + pos++,
++				       tls++);
++	} else {
++		struct user_desc __user *u_info = ubuf;
++		while (count-- > 0) {
++			struct user_desc info;
++			fill_user_desc(&info, GDT_ENTRY_TLS_MIN + pos++, tls++);
++			if (__copy_to_user(u_info++, &info, sizeof(info)))
++				return -EFAULT;
++		}
++	}
++
++	return 0;
++}
++
++int regset_tls_set(struct task_struct *target, const struct user_regset *regset,
++		   unsigned int pos, unsigned int count,
++		   const void *kbuf, const void __user *ubuf)
++{
++	struct user_desc infobuf[GDT_ENTRY_TLS_ENTRIES];
++	const struct user_desc *info;
++
++	if (pos > GDT_ENTRY_TLS_ENTRIES * sizeof(struct user_desc) ||
++	    (pos % sizeof(struct user_desc)) != 0 ||
++	    (count % sizeof(struct user_desc)) != 0)
++		return -EINVAL;
++
++	if (kbuf)
++		info = kbuf;
++	else if (__copy_from_user(infobuf, ubuf, count))
++		return -EFAULT;
++	else
++		info = infobuf;
++
++	set_tls_desc(target,
++		     GDT_ENTRY_TLS_MIN + (pos / sizeof(struct user_desc)),
++		     info, count / sizeof(struct user_desc));
++
++	return 0;
++}
+diff --git a/arch/x86/kernel/tls.h b/arch/x86/kernel/tls.h
+new file mode 100644
+index 0000000..2f083a2
+--- /dev/null
++++ b/arch/x86/kernel/tls.h
+@@ -0,0 +1,21 @@
++/*
++ * Internal declarations for x86 TLS implementation functions.
++ *
++ * Copyright (C) 2007 Red Hat, Inc.  All rights reserved.
++ *
++ * This copyrighted material is made available to anyone wishing to use,
++ * modify, copy, or redistribute it subject to the terms and conditions
++ * of the GNU General Public License v.2.
++ *
++ * Red Hat Author: Roland McGrath.
++ */
++
++#ifndef _ARCH_X86_KERNEL_TLS_H
++
++#include <linux/regset.h>
++
++extern user_regset_active_fn regset_tls_active;
++extern user_regset_get_fn regset_tls_get;
++extern user_regset_set_fn regset_tls_set;
++
++#endif	/* _ARCH_X86_KERNEL_TLS_H */
 -- 
 1.5.3.6
 
