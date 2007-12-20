@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbXLTANr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbXLTAUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758386AbXLTANr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 19:13:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbXLTANj
+	id S1758543AbXLTAUh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 19:20:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbXLTAU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 19:13:39 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:3289 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752548AbXLTANi (ORCPT
+	Wed, 19 Dec 2007 19:20:29 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:38778 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750810AbXLTAU1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 19:13:38 -0500
-Date: Wed, 19 Dec 2007 18:12:24 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH 0/5]PCI: x86 MMCONFIG
-In-reply-to: <fa.3T2SqNjavN55hanLOjr3RO+WalE@ifi.uio.no>
-To: Greg KH <gregkh@suse.de>
-Cc: tcamuso@redhat.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, prarit@redhat.com
-Message-id: <4769B368.1030402@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.zIbPFbLub6ANMT5vMxS6hx+dfv0@ifi.uio.no>
- <fa.3T2SqNjavN55hanLOjr3RO+WalE@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 19 Dec 2007 19:20:27 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [lm-sensors] 2.6.24-rc4 hwmon it87 probe fails
+Date: Wed, 19 Dec 2007 17:20:21 -0700
+User-Agent: KMail/1.9.6
+Cc: Shaohua Li <shaohua.li@intel.com>, Mike Houston <mikeserv@bmts.com>,
+       Adrian Bunk <bunk@stusta.de>, Elvis Pranskevichus <el@prans.net>,
+       mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org, Adam Belay <ambx1@neo.rr.com>,
+       Zhao Yakui <yakui.zhao@intel.com>, Thomas Renninger <trenn@suse.de>,
+       lenb@kernel.org, linux-acpi@vger.kernel.org,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>
+References: <20071204215154.7f26285e.mikeserv@bmts.com> <200712171014.44360.bjorn.helgaas@hp.com> <20071218185918.5d2d4c7d@hyperion.delvare>
+In-Reply-To: <20071218185918.5d2d4c7d@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712191720.23026.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Dec 19, 2007 at 05:17:46PM -0500, tcamuso@redhat.com wrote:
->> OVERVIEW
->> =======
->>
->> The patches should be applied in sequence to obviate any
->> possible build problems.
->>
->> The patch-set was built against 2.6.24-rc5
->>
->> Description
->> ===========
->>
->> There exist devices that do not respond correctly to PCI
->> MMCONFIG accesses in x86 platforms.
-> 
-> What devices are these?  Do you have reports of them somewhere?
-> 
->> This patch-set detects the problem by comparing an MMCONFIG
->> read to a Legacy PCI config read of the vendor/device dword
->> of every device discovered during the PCI probing sequence.
->>
->> A miscompare means that a device does not correctly respond
->> to MMCONFIG accesses. When the patch code detects this condition,
->> the bus that serves this device, and all subordinate buses, will
->> be programmed to use Legacy PCI Config accesses.
->>
->> This patch-set DOES NOT detect devices that generate machine
->> checks against MMCONFIG accesses. For such systems,
->> "pci=nommconf" is required in the boot command.
-> 
-> That sounds like this patchset can cause bad side affects on hardware
-> that currently works just fine.  That is not a good thing to be adding
-> to the kernel, right?
+On Tuesday 18 December 2007 10:59:18 am Jean Delvare wrote:
+> The real cause is pretty clear here: broken BIOS. In an ideal world we
+> would ask the manufacturer for a fixed BIOS and they would give that to
+> us, unfortunately my experience is that it won't happen. So, unless we
+> accept that idea that some users won't be able to use some of their
+> devices because of broken resource enumeration in their BIOS, we will
+> have to find a workaround, whatever it is.
 
-I think we need more details on why this patch is needed. Also, we 
-already have something like this in arch/x86/pci/mmconfig-shared.c, in 
-the unreachable_devices function. This attempts to detect devices where 
-MMCONFIG cannot access the configuration space (one of these would be at 
-least one device in the AMD K8 built-in northbridge). If this is not 
-sufficient, I would suggest expanding that mechanism instead of adding 
-all this new code.
+I suspect the manufacturers would say "Oh, the sensors?  The BIOS
+isn't broken, you're just supposed to use WMI or some (undocumented)
+ACPI device to get at those."
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+I know next to nothing about WMI, and there are probably IP issues
+in that area.  But I'd rather spend effort in figuring out the "right"
+way to do this.  Until we do it the same way as Windows, we can pile
+on hacks till the cows come home, and we'll still have issues.
 
+I added Carlos to the cc: list because he's been doing a lot of
+interesting-looking work on WMI.
+
+> My initial idea was to identify the faulty motherboard using DMI and to
+> force pnpacpi=off on the faulty motherboards. If this is considered too
+> aggressive, maybe we can just reject resource declarations that
+> intersect (but don't match) 0x290-0x297 for these motherboards. Either
+> way, we have to do something, and we have to do it quickly. 2.6.24
+> final isn't too far away, and more importantly, the patch that revealed
+> the problem has been backported to 2.6.23.10 so people are experiencing
+> regressions already.
+
+Windows apparently doesn't reject those resource declarations, so I'm
+a bit hesitant to do it in Linux.  That tends to cover up problems,
+and then it becomes very difficult to remove the band-aid and figure
+out a correct fix in the future.
+
+Bjorn
