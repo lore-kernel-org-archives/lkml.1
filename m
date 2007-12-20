@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760877AbXLTBoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760968AbXLTBo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760877AbXLTBoi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 20:44:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758345AbXLTBfp
+	id S1760968AbXLTBo5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 20:44:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759145AbXLTBfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 20:35:45 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:12879 "EHLO
+	Wed, 19 Dec 2007 20:35:48 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:11731 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758365AbXLTBfH (ORCPT
+	with ESMTP id S1758978AbXLTBfG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 20:35:07 -0500
+	Wed, 19 Dec 2007 20:35:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=OFUsh06X9iw/WrMDkdrx56XI+ZTer38g9KZzsO8qsQYF120hnGAGttPrSEOhRy01u2fnTUsFPAWp/RqJP+jBpmTiQEQori65/14SF8PYIv2RztUsPLMbsMEBvJk51cG9aV8JAlSZXGkqDs8hgEyrDTiSiLrJX6YdFKY0+Ps9sXM=
+        b=cNUZrZuxNMcXzOE5d99omSQkM0R8YDLxoCaszAWi7m8lzRbFpYp777bNX5Wu3zvbu4iCW9UYJD86953mn2d+/BvYxl9cVdBx4DVnF7gakCXUrSK8viWde4/dJ3uDeKdhtuuhbStpGn0Y0TDvyapmTPh/PSkhf5A+CTpcaKI9owg=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 63/63] ide-cd: update driver version, comments and copyrights
-Date: Thu, 20 Dec 2007 02:40:20 +0100
+Subject: [PATCH 62/63] ide-cd: unify request end exit path in cdrom_decode_status()
+Date: Thu, 20 Dec 2007 02:39:39 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -25,64 +25,100 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712200240.21077.bzolnier@gmail.com>
+Message-Id: <200712200239.39261.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Bump driver version.
-
-* Remove filename and stale TODO from comments.
-
-* Add my copyrights.
+There should be no functionality changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-cd.c |   17 ++++-------------
- 1 file changed, 4 insertions(+), 13 deletions(-)
+-59 bytes
+ drivers/ide/ide-cd.c |   50 ++++++++++++++++++++++++--------------------------
+ 1 file changed, 24 insertions(+), 26 deletions(-)
 
 Index: b/drivers/ide/ide-cd.c
 ===================================================================
 --- a/drivers/ide/ide-cd.c
 +++ b/drivers/ide/ide-cd.c
-@@ -1,14 +1,14 @@
- /*
-- * linux/drivers/ide/ide-cd.c
-+ * ATAPI CD-ROM driver.
-  *
-- * Copyright (C) 1994, 1995, 1996  scott snyder  <snyder@fnald0.fnal.gov>
-+ * Copyright (C) 1994-1996  Scott Snyder <snyder@fnald0.fnal.gov>
-  * Copyright (C) 1996-1998  Erik Andersen <andersee@debian.org>
-  * Copyright (C) 1998-2000  Jens Axboe <axboe@suse.de>
-+ * Copyright (C)      2007  Bartlomiej Zolnierkiewicz
-  *
-  * May be copied or modified under the terms of the GNU General Public
-  * License.  See linux/COPYING for more information.
-  *
-- * ATAPI CD-ROM driver.  To be used with ide.c.
-  * See Documentation/cdrom/ide-cd for usage information.
-  *
-  * Suggestions are welcome. Patches that work are more welcome though. ;-)
-@@ -19,20 +19,11 @@
-  * ftp://fission.dt.wdc.com/pub/standards/SFF_atapi/spec/SFF8020-r2.6/PS/8020r26.ps
-  * ftp://ftp.avc-pioneer.com/Mtfuji4/Spec/Fuji4r10.pdf
-  *
-- * Drives that deviate from these standards will be accommodated as much
-- * as possible via compile time or command-line options.  Since I only have
-- * a few drives, you generally need to send me patches...
-- *
-- * ----------------------------------
-- * TO DO LIST:
-- * -Make it so that Pioneer CD DR-A24X and friends don't get screwed up on
-- *   boot
-- *
-  * For historical changelog please see:
-  *	Documentation/ide/ChangeLog.ide-cd.1994-2004
-  */
+@@ -332,7 +332,6 @@ static int cdrom_decode_status(ide_drive
  
--#define IDECD_VERSION "4.61"
-+#define IDECD_VERSION "5.00"
+ 	} else if (blk_pc_request(rq) || rq->cmd_type == REQ_TYPE_ATA_PC) {
+ 		/* All other functions, except for READ. */
+-		unsigned long flags;
  
- #include <linux/module.h>
- #include <linux/types.h>
+ 		/*
+ 		 * if we have an error, pass back CHECK_CONDITION as the
+@@ -370,15 +369,7 @@ static int cdrom_decode_status(ide_drive
+ 		 * remove failed request completely and end it when the
+ 		 * request sense has completed
+ 		 */
+-		if (stat & ERR_STAT) {
+-			spin_lock_irqsave(&ide_lock, flags);
+-			blkdev_dequeue_request(rq);
+-			HWGROUP(drive)->rq = NULL;
+-			spin_unlock_irqrestore(&ide_lock, flags);
+-
+-			cdrom_queue_request_sense(drive, rq->sense, rq);
+-		} else
+-			cdrom_end_request(drive, 0);
++		goto end_request;
+ 
+ 	} else if (blk_fs_request(rq)) {
+ 		int do_end_request = 0;
+@@ -458,23 +449,15 @@ static int cdrom_decode_status(ide_drive
+ 		   sense data. We need this in order to perform end of media
+ 		   processing */
+ 
+-		if (do_end_request) {
+-			if (stat & ERR_STAT) {
+-				unsigned long flags;
+-				spin_lock_irqsave(&ide_lock, flags);
+-				blkdev_dequeue_request(rq);
+-				HWGROUP(drive)->rq = NULL;
+-				spin_unlock_irqrestore(&ide_lock, flags);
++		if (do_end_request)
++			goto end_request;
+ 
+-				cdrom_queue_request_sense(drive, rq->sense, rq);
+-			} else
+-				cdrom_end_request(drive, 0);
+-		} else {
+-			/* If we got a CHECK_CONDITION status,
+-			   queue a request sense command. */
+-			if (stat & ERR_STAT)
+-				cdrom_queue_request_sense(drive, NULL, NULL);
+-		}
++		/*
++		 * If we got a CHECK_CONDITION status,
++		 * queue a request sense command.
++		 */
++		if (stat & ERR_STAT)
++			cdrom_queue_request_sense(drive, NULL, NULL);
+ 	} else {
+ 		blk_dump_rq_flags(rq, "ide-cd: bad rq");
+ 		cdrom_end_request(drive, 0);
+@@ -482,6 +465,21 @@ static int cdrom_decode_status(ide_drive
+ 
+ 	/* Retry, or handle the next request. */
+ 	return 1;
++
++end_request:
++	if (stat & ERR_STAT) {
++		unsigned long flags;
++
++		spin_lock_irqsave(&ide_lock, flags);
++		blkdev_dequeue_request(rq);
++		HWGROUP(drive)->rq = NULL;
++		spin_unlock_irqrestore(&ide_lock, flags);
++
++		cdrom_queue_request_sense(drive, rq->sense, rq);
++	} else
++		cdrom_end_request(drive, 0);
++
++	return 1;
+ }
+ 
+ static int cdrom_timer_expiry(ide_drive_t *drive)
