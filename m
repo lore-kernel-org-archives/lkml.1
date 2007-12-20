@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759665AbXLTBi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759885AbXLTBil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759665AbXLTBi0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 20:38:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758818AbXLTBeo
+	id S1759885AbXLTBil (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 20:38:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757269AbXLTBes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 20:34:44 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:12147 "EHLO
+	Wed, 19 Dec 2007 20:34:48 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:11733 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756986AbXLTBeM (ORCPT
+	with ESMTP id S1757624AbXLTBeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 20:34:12 -0500
+	Wed, 19 Dec 2007 20:34:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=ZLQbWXDRKVYAhppldscL3YYcYYeYv4VQoBIUfzDHk9V9WLMWIErDcPqqguZrJSL501EO+LE7JFOw7cm436/8ozsArR/iqqtdXLGCUBnzIopBedAu3jWkY/5J6Hrx+H4oMHqd6yN3/QQRZuGcIdi/TmUpdozGbCSZBbB3z5fXTHU=
+        b=tA3G/J42tKuM50AAhIfPTZ+AqdBuNUyyf/CNAd3rGdTxyn+G5DweE0qstv2JqI4mUld8gKBvH5QK17fySw2u4/mzb5b/MQMSdAYpNdlsc++FXG68Wkbj9LUUpDusIhOO12oZMxNgtLroTCV/sU/XtIDGeKqiGT/4kEXj9a8oxqo=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 11/63] ide-cd: add ide_cd_pad_transfer() helper
-Date: Thu, 20 Dec 2007 02:00:38 +0100
+Subject: [PATCH 14/63] ide-cd: fix trailing whitespaces in changelog
+Date: Thu, 20 Dec 2007 02:02:49 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -25,128 +25,96 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712200200.38615.bzolnier@gmail.com>
+Message-Id: <200712200202.49548.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add ide_cd_pad_transfer() helper and use it in cdrom_[new]pc_intr()
-and cdrom_{read,write}_check_ireason().
-
-There should be no functionality changes caused by this patch.
-
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
--39 bytes
- drivers/ide/ide-cd.c |   51 +++++++++++++++++++++++++--------------------------
- 1 file changed, 25 insertions(+), 26 deletions(-)
+ drivers/ide/ide-cd.c |   23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
 Index: b/drivers/ide/ide-cd.c
 ===================================================================
 --- a/drivers/ide/ide-cd.c
 +++ b/drivers/ide/ide-cd.c
-@@ -1007,6 +1007,15 @@ static ide_startstop_t cdrom_transfer_pa
- 
- typedef void (xfer_func_t)(ide_drive_t *, void *, u32);
- 
-+static void ide_cd_pad_transfer(ide_drive_t *drive, xfer_func_t *xf, int len)
-+{
-+	while (len > 0) {
-+		int dum = 0;
-+		xf(drive, &dum, sizeof(dum));
-+		len -= sizeof(dum);
-+	}
-+}
-+
- /*
-  * Buffer up to SECTORS_TO_TRANSFER sectors from the drive in our sector
-  * buffer.  Once the first sector is added, any subsequent sectors are
-@@ -1063,17 +1072,15 @@ int cdrom_read_check_ireason (ide_drive_
- 	if (ireason == 2)
- 		return 0;
- 	else if (ireason == 0) {
-+		ide_hwif_t *hwif = drive->hwif;
-+
- 		/* Whoops... The drive is expecting to receive data from us! */
- 		printk(KERN_ERR "%s: %s: wrong transfer direction!\n",
- 				drive->name, __FUNCTION__);
- 
- 		/* Throw some data at the drive so it doesn't hang
- 		   and quit this request. */
--		while (len > 0) {
--			int dum = 0;
--			HWIF(drive)->atapi_output_bytes(drive, &dum, sizeof (dum));
--			len -= sizeof (dum);
--		}
-+		ide_cd_pad_transfer(drive, hwif->atapi_output_bytes, len);
- 	} else  if (ireason == 1) {
- 		/* Some drives (ASUS) seem to tell us that status
- 		 * info is available. just get it and ignore.
-@@ -1500,15 +1507,8 @@ static ide_startstop_t cdrom_pc_intr (id
- 		/* Transfer the data. */
- 		xferfunc(drive, rq->data, thislen);
- 
--		/* If we haven't moved enough data to satisfy the drive,
--		   add some padding. */
--		while (len > thislen) {
--			int dum = 0;
--			xferfunc(drive, &dum, sizeof(dum));
--			len -= sizeof(dum);
--		}
--
- 		/* Keep count of how much data we've moved. */
-+		len -= thislen;
- 		rq->data += thislen;
- 		rq->data_len -= thislen;
- 
-@@ -1525,6 +1525,13 @@ confused:
- 		return ide_stopped;
- 	}
- 
-+	/*
-+	 * If we haven't moved enough data to satisfy the drive,
-+	 * add some padding.
-+	 */
-+	if (len > 0)
-+		ide_cd_pad_transfer(drive, xferfunc, len);
-+
- 	/* Now we wait for another interrupt. */
- 	ide_set_handler(drive, &cdrom_pc_intr, ATAPI_WAIT_PC, cdrom_timer_expiry);
- 	return ide_started;
-@@ -1617,15 +1624,13 @@ static int cdrom_write_check_ireason(ide
- 	if (ireason == 0)
- 		return 0;
- 	else if (ireason == 2) {
-+		ide_hwif_t *hwif = drive->hwif;
-+
- 		/* Whoops... The drive wants to send data. */
- 		printk(KERN_ERR "%s: %s: wrong transfer direction!\n",
- 				drive->name, __FUNCTION__);
- 
--		while (len > 0) {
--			int dum = 0;
--			HWIF(drive)->atapi_input_bytes(drive, &dum, sizeof(dum));
--			len -= sizeof(dum);
--		}
-+		ide_cd_pad_transfer(drive, hwif->atapi_input_bytes, len);
- 	} else {
- 		/* Drive wants a command packet, or invalid ireason... */
- 		printk(KERN_ERR "%s: %s: bad interrupt reason 0x02%x\n",
-@@ -1754,14 +1759,8 @@ static ide_startstop_t cdrom_newpc_intr(
- 	/*
- 	 * pad, if necessary
- 	 */
--	if (len > 0) {
--		while (len > 0) {
--			int pad = 0;
--
--			xferfunc(drive, &pad, sizeof(pad));
--			len -= sizeof(pad);
--		}
--	}
-+	if (len > 0)
-+		ide_cd_pad_transfer(drive, xferfunc, len);
- 
- 	BUG_ON(HWGROUP(drive)->handler != NULL);
- 
+@@ -129,16 +129,15 @@
+  * 3.14  May 29, 1996 -- Add work-around for Vertos 600.
+  *                        (From Hennus Bergman <hennus@sky.ow.nl>.)
+  * 3.15  July 2, 1996 -- Added support for Sanyo 3 CD changers
+- *                        from Ben Galliart <bgallia@luc.edu> with 
+- *                        special help from Jeff Lightfoot 
++ *                        from Ben Galliart <bgallia@luc.edu> with
++ *                        special help from Jeff Lightfoot
+  *                        <jeffml@pobox.com>
+  * 3.15a July 9, 1996 -- Improved Sanyo 3 CD changer identification
+  * 3.16  Jul 28, 1996 -- Fix from Gadi to reduce kernel stack usage for ioctl.
+  * 3.17  Sep 17, 1996 -- Tweak audio reads for some drives.
+  *                       Start changing CDROMLOADFROMSLOT to CDROM_SELECT_DISC.
+  * 3.18  Oct 31, 1996 -- Added module and DMA support.
+- *                       
+- *                       
++ *
+  * 4.00  Nov 5, 1996   -- New ide-cd maintainer,
+  *                                 Erik B. Andersen <andersee@debian.org>
+  *                     -- Newer Creative drives don't always set the error
+@@ -153,8 +152,8 @@
+  *                     -- Add some probes of drive capability during setup.
+  *
+  * 4.01  Nov 11, 1996  -- Split into ide-cd.c and ide-cd.h
+- *                     -- Removed CDROMMECHANISMSTATUS and CDROMSLOTTABLE 
+- *                          ioctls in favor of a generalized approach 
++ *                     -- Removed CDROMMECHANISMSTATUS and CDROMSLOTTABLE
++ *                          ioctls in favor of a generalized approach
+  *                          using the generic cdrom driver.
+  *                     -- Fully integrated with the 2.1.X kernel.
+  *                     -- Other stuff that I forgot (lots of changes)
+@@ -163,7 +162,7 @@
+  *                          to fix the drive door locking problems.
+  *
+  * 4.03  Dec 04, 1996  -- Added DSC overlap support.
+- * 4.04  Dec 29, 1996  -- Added CDROMREADRAW ioclt based on patch 
++ * 4.04  Dec 29, 1996  -- Added CDROMREADRAW ioclt based on patch
+  *                          by Ales Makarov (xmakarov@sun.felk.cvut.cz)
+  *
+  * 4.05  Nov 20, 1997  -- Modified to print more drive info on init
+@@ -186,7 +185,7 @@
+  *                     -- Cleaned up the global namespace a bit by making more
+  *                         functions static that should already have been.
+  * 4.11  Mar 12, 1998  -- Added support for the CDROM_SELECT_SPEED ioctl
+- *                         based on a patch for 2.0.33 by Jelle Foks 
++ *                         based on a patch for 2.0.33 by Jelle Foks
+  *                         <jelle@scintilla.utwente.nl>, a patch for 2.0.33
+  *                         by Toni Giorgino <toni@pcape2.pi.infn.it>, the SCSI
+  *                         version, and my own efforts.  -erik
+@@ -194,8 +193,8 @@
+  *                         inform me of where "Illegal mode for this track"
+  *                         was never returned due to a comparison on data
+  *                         types of limited range.
+- * 4.12  Mar 29, 1998  -- Fixed bug in CDROM_SELECT_SPEED so write speed is 
+- *                         now set ionly for CD-R and CD-RW drives.  I had 
++ * 4.12  Mar 29, 1998  -- Fixed bug in CDROM_SELECT_SPEED so write speed is
++ *                         now set ionly for CD-R and CD-RW drives.  I had
+  *                         removed this support because it produced errors.
+  *                         It produced errors _only_ for non-writers. duh.
+  * 4.13  May 05, 1998  -- Suppress useless "in progress of becoming ready"
+@@ -206,7 +205,7 @@
+  *                         since the .pdf version doesn't seem to work...
+  *                     -- Updated the TODO list to something more current.
+  *
+- * 4.15  Aug 25, 1998  -- Updated ide-cd.h to respect mechine endianess, 
++ * 4.15  Aug 25, 1998  -- Updated ide-cd.h to respect mechine endianess,
+  *                         patch thanks to "Eddie C. Dost" <ecd@skynet.be>
+  *
+  * 4.50  Oct 19, 1998  -- New maintainers!
+@@ -270,7 +269,7 @@
+  *			- Mode sense and mode select moved to the
+  *			  Uniform layer.
+  *			- Fixed a problem with WPI CDS-32X drive - it
+- *			  failed the capabilities 
++ *			  failed the capabilities
+  *
+  * 4.57  Apr 7, 2000	- Fixed sense reporting.
+  *			- Fixed possible oops in ide_cdrom_get_last_session()
