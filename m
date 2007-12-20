@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761877AbXLTMeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760750AbXLTMoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761877AbXLTMeo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 07:34:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760409AbXLTMeV
+	id S1760750AbXLTMoa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 07:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755711AbXLTMoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 07:34:21 -0500
-Received: from mu-out-0910.google.com ([209.85.134.188]:58138 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760201AbXLTMeU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 07:34:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
-        b=TitwwgBlVTlGGOAsWNM58NosF4xRKYYKe2CvwXEy2+B5TEl+lxOtbPV1GUJ3IWYThYYsjHvuGTtp0sbt/VCovA7rw/oOu9OQTZrHK9AhHQ+TZ0P4FcqwygSqEH22b0EnHOEdZ9B68ZoWg1/AUjwdHve1OPsGhatv94s5newgKNo=
-Message-ID: <476A6147.3020302@gmail.com>
-Date: Thu, 20 Dec 2007 13:34:15 +0100
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Thu, 20 Dec 2007 07:44:21 -0500
+Received: from elvis.franken.de ([193.175.24.41]:51512 "EHLO elvis.franken.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754616AbXLTMoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 07:44:21 -0500
+Date: Thu, 20 Dec 2007 13:43:51 +0100
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-kernel@vger.kernel.org, Bob Picco <bob.picco@hp.com>,
+       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
+       Andi Kleen <ak@muc.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Keith Mannthey <kmannth@gmail.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@osdl.org>, ralf@linux-mips.org
+Subject: Re: [PATCH] Fix crash with FLAT_MEMORY and ARCH_PFN_OFFSET != 0
+Message-ID: <20071220124351.GA8880@alpha.franken.de>
+References: <20071218120300.7565AE3030@solo.franken.de> <20071218135828.GB24917@csn.ul.ie> <20071218160938.GA20688@alpha.franken.de> <20071220114405.GA9623@csn.ul.ie>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: man-pages-2.74 is released
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071220114405.GA9623@csn.ul.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday
+On Thu, Dec 20, 2007 at 11:44:06AM +0000, Mel Gorman wrote:
+> --- a/include/asm-mips/page.h
+> +++ b/include/asm-mips/page.h
+> @@ -37,13 +37,6 @@
+>  #include <linux/pfn.h>
+>  #include <asm/io.h>
+>  
+> -/*
+> - * It's normally defined only for FLATMEM config but it's
+> - * used in our early mem init code for all memory models.
+> - * So always define it.
+> - */
+> -#define ARCH_PFN_OFFSET		PFN_UP(PHYS_OFFSET)
+> -
 
-I've released man-pages-2.74.
+hmm, doesn't this break what I've fixed ? Without this #define
+ARCH_PFN_OFFSET gets defined to 0 and the bug is back. Or did
+I miss anything ?
 
-This release is now available for download at:
+Thomas.
 
-    http://www.kernel.org/pub/linux/docs/man-pages
-    or ftp://ftp.kernel.org/pub/linux/docs/man-pages
-
-Changes in this release can be seen at
-http://www.kernel.org/doc/man-pages/changelog.html#release_2.74
-A summary of the changes in this release that may be of interest to readers
-of this list is provided below.
-
-Cheers,
-
-Michael
-
-
-
-Changes to individual pages
----------------------------
-
-mount.2
-    mtk, after a note by Sam Morris
-        Clarify that MS_NODIRATIME provides a subset of the
-        functionality provided by MS_NOATIME.
-
-spu_create.2
-    Jeremy Kerr
-        We can use context FDs for the dirfd argument to the *at()
-        syscalls.
-
-times.2
-    mtk, after a note from David Brown and Andrew Morton
-        http://marc.info/?l=linux-kernel&m=119447727031225&w=2
-        Rework the text describing the return value to be closer
-        to the requirements of POSIX.1; move Linux details
-        to NOTES and add a warning not to rely on those details.
-        Add a warning about the -1 to -4095 bug which results
-        in a 41 second window where the glibc wrapper will wrongly
-        return -1 indicating an error.
-
-vcs.4
-    Samuel Thibault
-        Document VT_GETHIFONTMASK (new in 2.6.18) and add to example
-        program;
-spufs.7
-    Jeremy Kerr
-        Add a little information about the differences to mbox.
+-- 
+Crap can work. Given enough thrust pigs will fly, but it's not necessary a
+good idea.                                                [ RFC1925, 2.3 ]
