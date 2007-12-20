@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764795AbXLTQeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765021AbXLTQgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764795AbXLTQeZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 11:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbXLTQeQ
+	id S1765021AbXLTQgM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 11:36:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbXLTQf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 11:34:16 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37723 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758669AbXLTQeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 11:34:15 -0500
-Date: Thu, 20 Dec 2007 17:33:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Yinghai Lu <Yinghai.Lu@Sun.COM>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: not needed patch
-Message-ID: <20071220163352.GA6930@elte.hu>
-References: <200712192057.02500.yinghai.lu@sun.com> <20071220142906.GA20794@elte.hu> <476A983F.1060704@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <476A983F.1060704@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 20 Dec 2007 11:35:57 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:43537 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756184AbXLTQf4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 11:35:56 -0500
+Subject: Re: [PATCH] Move page_assign_page_cgroup to VM_BUG_ON in
+	free_hot_cold_page
+From: Dave Hansen <haveblue@us.ibm.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Peter Zijlstra <peterz@infradead.org>, Hugh Dickins <hugh@veritas.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <476A972F.6050904@linux.vnet.ibm.com>
+References: <20071219061834.8461.3974.sendpatchset@balbir-laptop>
+	 <1198084473.15321.48.camel@localhost>
+	 <Pine.LNX.4.64.0712201312490.17015@blonde.wat.veritas.com>
+	 <1198158702.6821.8.camel@twins>
+	 <Pine.LNX.4.64.0712201411510.22773@blonde.wat.veritas.com>
+	 <1198160410.6821.13.camel@twins>  <476A972F.6050904@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 20 Dec 2007 08:35:31 -0800
+Message-Id: <1198168531.15321.63.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Travis <travis@sgi.com> wrote:
-
-> >> by revert commit fbdcf18df73758b2e187ab94678b30cd5f6ff9f9, we could 
-> >> use c->cpu_index in identify_cpu.
-> > 
-> > but that's 2.6.25 stuff, right? Travis?
-> > 
+On Thu, 2007-12-20 at 21:54 +0530, Balbir Singh wrote:
 > 
-> Looking at this more closely, yes my change is not needed and should 
-> be removed.  I'm not sure what caused my cpu # to be all zeros when I 
-> was testing, but it now works ok without my change.
+> I was going to say the same thing, page_get_page_cgroup() does not hold
+> any references. May be _get_ in the name is confusing. 
 
-how about this question:
+OK, you three had the entire conversation outing me before I even fot to
+respond! :)
 
-> > well, it might in the worst-case be a superfluous change, but not 
-> > cause any problems in 2.6.24, right?
+Yeah, I thought it was a refcount acquisition.  Balbir, it's fine the
+way it stands (except for the slightly confusing name).
 
-	Ingo
+-- Dave
+
