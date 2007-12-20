@@ -1,85 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbXLUA13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764739AbXLTWtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758367AbXLUA13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbXLUA1U
+	id S1764739AbXLTWtK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:49:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764005AbXLTWsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:27:20 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58116 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752791AbXLUA1T (ORCPT
+	Thu, 20 Dec 2007 17:48:51 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:15489 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763448AbXLTWsu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:27:19 -0500
-Date: Thu, 20 Dec 2007 23:38:40 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Joe Perches <joe@perches.com>, Andy Whitcroft <apw@shadowen.org>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, trivial@kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>
-Subject: Re: Trailing periods in kernel messages
-Message-ID: <20071220233840.154c73c6@the-village.bc.nu>
-In-Reply-To: <20071220222250.GJ27081@thunk.org>
-References: <200711291120.19595.elendil@planet.nl>
-	<20071129032036.4c021617.akpm@linux-foundation.org>
-	<474F6372.70705@cn.fujitsu.com>
-	<1196386259.22120.101.camel@localhost>
-	<474F6D4D.9010006@cn.fujitsu.com>
-	<1196390128.22120.118.camel@localhost>
-	<20071220162923.GB27885@shadowen.org>
-	<20071220210741.6dc3caf5@the-village.bc.nu>
-	<1198186984.6183.72.camel@localhost>
-	<20071220215411.183d03c0@the-village.bc.nu>
-	<20071220222250.GJ27081@thunk.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Dec 2007 17:48:50 -0500
+Message-ID: <476AF124.6090404@oracle.com>
+Date: Thu, 20 Dec 2007 14:48:04 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [RFC] kobject/kset/ktype documentation and example code updated
+References: <20071220003031.GA15129@kroah.com> <20071219223206.ada18362.randy.dunlap@oracle.com> <20071220212700.GB5808@kroah.com> <20071220140659.71f6cce6.randy.dunlap@oracle.com> <20071220221252.GA16431@kroah.com> <20071220142952.ff562b22.randy.dunlap@oracle.com> <20071220224258.GA16932@kroah.com>
+In-Reply-To: <20071220224258.GA16932@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Um, what?  Kernel messages are *not* in English.
+Greg KH wrote:
+> On Thu, Dec 20, 2007 at 02:29:52PM -0800, Randy Dunlap wrote:
+>> On Thu, 20 Dec 2007 14:12:52 -0800 Greg KH wrote:
+>>
+>>> On Thu, Dec 20, 2007 at 02:06:59PM -0800, Randy Dunlap wrote:
+>>>> On Thu, 20 Dec 2007 13:27:00 -0800 Greg KH wrote:
+>>>>> On Wed, Dec 19, 2007 at 10:32:06PM -0800, Randy Dunlap wrote:
+>>>>>> On Wed, 19 Dec 2007 16:30:31 -0800 Greg KH wrote:
+>>>>>>>     int kobject_uevent(struct kobject *kobj, enum kobject_action action);
+>>>>>>>
+>>>>>>> Use the KOBJ_ADD action for when the kobject is first added to the kernel.
+>>>>>>> This should be done only after any attributes or children of the kobject
+>>>>>>> have been initialized properly, as userspace will instantly start to look
+>>>>>> 		s/will/may/
+>>>>> No, it's usually a "will", as udev is damm fast these days :)
+>>>> But that's the point.  It assumes that udev is being used.  :(
+>>> Yes, kernel developers need to be aware that udev _will_ be used, you
+>>> can not do things that will assume it is not running.
+>> so are you saying that udev is required now?
+>> I missed that information somehow/somewhere.
 > 
-> Take a look at a machine after it is freshly booted.  The following
-> messages are *not* English:
+> No, not at all, it's not required.
 > 
-> [    0.000000] BIOS-provided physical RAM map:
-> [    0.000000]  BIOS-e820: 0000000000000000 - 0000000000099800 (usable)
-> [    0.000000]  BIOS-e820: 0000000000099800 - 00000000000a0000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000000d6000 - 00000000000d8000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-> [    0.000000]  BIOS-e820: 0000000000100000 - 00000000bf6b0000 (usable)
-> [    0.000000]  BIOS-e820: 00000000bf6b0000 - 00000000bf6cc000 (ACPI data)
-> [    0.000000]  BIOS-e820: 00000000bf6cc000 - 00000000bf700000 (ACPI NVS)
-> [    0.000000]  BIOS-e820: 00000000bf700000 - 00000000c0000000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000f0000000 - 00000000f4000000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
+> Just that if you are creating kobjects, you need to be aware that there
+> are programs out there, like udev[1], that expect once the kobject is
+> announced, to have all of the attributes present at the same time.
 > 
-> Do you really want to turn that into complete English sentences?
+> Does that explain it better?
 
-Properly it should have a full stop after the table.
- 
-> Or how about these?
+Yes.  Thanks.
 
-> [   15.077264] TCP: Hash tables configured (established 131072 bind 65536)
-                         ^Subject   ^ Verb     
+> thanks,
+> 
+> greg k-h
+> 
+> [1] There are at least 2 other programs like udev used by distros these
+> days, udev is not the only player in this area anymore.
 
-> [   15.077278] TCP reno registered
-                      ^ Subject ^Verb
-etc
 
-> in some cases, it would make the kernel messages harder to parse by an
-> automated log parser.
-
-Not all are sentences but many are including some of your examples, and
-they should have full stops therefore.
-
-Alan
+-- 
+~Randy
