@@ -1,50 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761122AbXLTUfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbXLTUg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761122AbXLTUfA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 15:35:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbXLTUek
+	id S1760620AbXLTUg3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 15:36:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbXLTUgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 15:34:40 -0500
-Received: from mga07.intel.com ([143.182.124.22]:59321 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760752AbXLTUei (ORCPT
+	Thu, 20 Dec 2007 15:36:18 -0500
+Received: from hs-out-0708.google.com ([64.233.178.249]:58537 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755132AbXLTUgQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 15:34:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,191,1196668800"; 
-   d="scan'208";a="346341669"
-Message-ID: <476ACDC6.8070904@linux.intel.com>
-Date: Thu, 20 Dec 2007 21:17:10 +0100
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
-To: David Newall <david@davidnewall.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Marcel Holtmann <marcel@holtmann.org>,
+	Thu, 20 Dec 2007 15:36:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=funuxAFSesyKB4nsYj/qgd6seJkr92VMjZAYJFwO1R+17NxajJq5BMSvgmVgv23wDWxb5zoy5Ls/4154m9BN8DEzfBq4m/wYVouhT8HYfZiREOGGmy+uDcTw48CfDnDaPfqcPKS9+cQYZdrOp22yp46yG8pVZAAFJKMbVrvG+Y8=
+Message-ID: <82e4877d0712201236l2962cc86y73f0be0d6e2ae4be@mail.gmail.com>
+Date: Thu, 20 Dec 2007 15:36:13 -0500
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Arjan van de Ven" <arjan@linux.intel.com>
+Subject: Re: [PATCH] sky2: Use deferrable timer for watchdog
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       netdev@vger.kernel.org, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org
-Subject: Re: Kernel bug: bluetooth meets TTY layer
-References: <476A895C.7040903@linux.intel.com> <476AC51F.70400@davidnewall.com>
-In-Reply-To: <476AC51F.70400@davidnewall.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <476ACABC.4010503@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>
+	 <20071220091603.0d69b045@deepthought>
+	 <823114761-1198171803-cardhu_decombobulator_blackberry.rim.net-937108990-@bxe019.bisx.prod.on.blackberry>
+	 <20071220095121.7859c023@deepthought> <476ABDDF.8080607@intel.com>
+	 <476ABE7D.60901@linux.intel.com> <476AC105.9090206@intel.com>
+	 <82e4877d0712201200h7b994175u841d1efa047cefff@mail.gmail.com>
+	 <476ACABC.4010503@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote:
-> Hi Arjan,
-> 
-> I've not been able to find this file, "drivers/bluetooth/hci_tty.c", but 
-> anyway, This seems to be what happens: Hci_uart_close() flushes using 
-> hci_uart_flush().  Subsequently, in hci_dev_do_close(), (one step in 
-> hci_unregister_dev()), hci_uart_flush() is called again.  The comment in 
-> uart_flush_buffer(), relating to the WARN_ON(), indicates you can't 
-> flush after the port is closed; which sounds reasonable.  I think 
-> hci_uart_close() should set hdev->flush to NULL before returning.  
-> Hci_dev_do_close() does check for this.  The code path is rather 
-> involved and I'm not entirely clear of all steps, but I think that's 
-> what should be done.
-> 
-> Patch for stupidly obsolete kernel attached.
+On Dec 20, 2007 3:04 PM, Arjan van de Ven <arjan@linux.intel.com> wrote:
+> > I think it is reasonable for Network driver watchdogs to use a
+> > deferrable timer - if the machine is 100% IDLE there is no one needing
+> > the network to be up. If there is something running even on the other
+> > CPU - that is going to cause an IPI, reschedule, TLB invalidation etc.
+> > which will make it very likely in practice that each CPU will be
+> > interrupted in reasonable amount of time.
+>
+> this is not correct; many machines are idle waiting for network data. Think of webservers...
 
-looks reasonable; unfortunately I don't know the tty code well enough to judge this patch...
-Alan?
+Yes, I forgot the receive case. So if a server was 100% IDLE and a web
+server was listening for network data and we reach 0 wakeups per
+second on the CPU where the network watchdog timer is scheduled to run
+deferred _and_ the network link went down, it would cause the watchdog
+to not run and redo the link until some one else wakes up that CPU
+later.
+So as long as we make sure we don't convert every timer to deferrable
+we should be ok - may be this can be resolved easily by having a
+non-deferrable "dont-allow-deferring-for-too-long" timer on each CPU
+that just causes at least one wake up in some reasonable time delta
+from the previous wakeup (whoever caused that one.) It is still
+beneficial in that all deferrable timers would run at once without
+needing to have separate wakeup for each.
+
+>
+> >
+> > Of course there are theoretical cases where we could land into a
+> > situation where a CPU in a multiprocessor machine is IDLE infinitely
+> > and that causes the watchdog that happens to be bound to run on the
+> > same CPU to not run. To take care of these unlikely cases I think the
+> > timer mechanism should have a reasonable limit on how long a CPU can
+> > go IDLE if there are deferrable timers.
+>
+> how about something else instead: a timer mechanism that takes a range instead..
+> that at least has defined semantics; the deferrable semantics really are "indefinite".
+> Lets keep at least the semantics clear and clean.
+>
+
+Would not the simpler solution of installing a non-deferrable timer
+per cpu which will not allow the CPU to go IDLE for more than x units
+of time at once  (or something to that effect) work? Range would
+complicate the thing and I am not sure how many cases will know
+reasonably correct range for their normal operation. In this instance
+of the e1000 watchdog what range could it give and be successful at
+what it wants to do - bring up the link in reasonable amount of time,
+while also realizing the power savings?
+
+Perhaps depending on Server/Laptop/Desktop machine (may be based on
+Preemption) we could have normal or deferrable timers but that'll
+exclude Servers from power savings and I am not sure Data center folks
+will like that :) .
+
+Parag
