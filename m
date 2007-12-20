@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932222AbXLUAIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764127AbXLUAAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932222AbXLUAIA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:08:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbXLUAHv
+	id S1764127AbXLUAAO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 19:00:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759229AbXLTX75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:07:51 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:11172 "EHLO
+	Thu, 20 Dec 2007 18:59:57 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:64408 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753308AbXLUAHr (ORCPT
+	with ESMTP id S1759109AbXLTX7y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:07:47 -0500
+	Thu, 20 Dec 2007 18:59:54 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Nj7d4l0HfDOZxjW+B4KPx2GIhladokqwCu7EE3N6lD+6eLGgESj8dOT27SJqtCM4qqdCY5jPerXIOtb+Ad34u+XEPs0ueHJYReAlY3nd4VlyNdeVstlc9vJm+feU8lACKzSoKn2Mv02UPV/g5sf8rfsMhInZLHAd49fTlQ8e7Rw=
-Message-ID: <8b67d60712201607k66d67fa2la8b21fc698fdb3ab@mail.gmail.com>
-Date: Fri, 21 Dec 2007 00:07:46 +0000
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=TrbD2a6R2QqinzaxpxJFvRAz6dqFbtjpr8xTUh2cwiNN5kHfDPuZczYUfx696AgpzzsKZbHGd7EkkR/3tbXyezaV1I9VuweWfErxAA26SK6DkzsFLUr5VT1DYMJYq/wJ3vYvOo8yBm8SCEQvRN0nJe3iFy/Q3JfJJxC/J8vUO3k=
+Message-ID: <8b67d60712201559h5dbb2a17q8f16223b26b88006@mail.gmail.com>
+Date: Thu, 20 Dec 2007 23:59:52 +0000
 From: "Adrian McMenamin" <lkmladrian@gmail.com>
 To: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
        "Paul Mundt" <lethal@linux-sh.org>, axboe@kernel.dk
-Subject: Re: [PATCH - SH/Dreamcast] Add support for GD-Rom device
-In-Reply-To: <8b67d60712201559h5dbb2a17q8f16223b26b88006@mail.gmail.com>
+Subject: [PATCH - SH/Dreamcast] Add support for GD-Rom device
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <8b67d60712201559h5dbb2a17q8f16223b26b88006@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20/12/2007, Adrian McMenamin <lkmladrian@gmail.com> wrote:
-> This patch adds support for the CD Rom device (called a "GD Rom") on
-> the SEGA Dreamcast.This device has a command block similar to a
-> standard ATA-3 device, though implements Sega's proprietary packet
-> interface - the so-called "Sega Packet Interface".
->
+This patch adds support for the CD Rom device (called a "GD Rom") on
+the SEGA Dreamcast.This device has a command block similar to a
+standard ATA-3 device, though implements Sega's proprietary packet
+interface - the so-called "Sega Packet Interface".
 
-Fairly typically, I noticed I had chopped the final line from the
-patch as soon as I had sent it.
+There have been previous GD Rom drivers for Linux knocking about
+(though never anywhere near the mainline), though this is a new driver
+and most importantly uses DMA and not PIO for reads. It also directly
+supports the SEGA proprietary GD-Rom format.
 
-I've also fixed a small difference in the Kconfig
+This is the second posting and I think I've taken on board all or
+almost all the suggestions/change requests made last time. But
+grateful for all comments.
+
+This is targetted at Paul Mundt's 2.6.25 queue, but should also
+compile against 2.6.24-rc5
+
+I am using it play mp3s off CD even as I write this and it seems to
+work pretty well :)
+
+Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
 
 
 diff -ruN linux-2.6-orig/drivers/block/Kconfig linux-2.6/drivers/block/Kconfig
 --- linux-2.6-orig/drivers/block/Kconfig	2007-12-15 22:23:47.000000000 +0000
 +++ linux-2.6/drivers/block/Kconfig	2007-12-20 23:36:15.000000000 +0000
 @@ -105,6 +105,18 @@
- 	  "MicroSolutions backpack protocol", "DataStor Commuter protocol"
+  	  "MicroSolutions backpack protocol", "DataStor Commuter protocol"
  	  etc.).
 
 +config	GDROM
@@ -62,10 +70,20 @@ diff -ruN linux-2.6-orig/drivers/block/Kconfig linux-2.6/drivers/block/Kconfig
 +	  You can also build this as a module - which will be called gdrom.ko
 +
 +
- source "drivers/block/paride/Kconfig"
+  source "drivers/block/paride/Kconfig"
 
- config BLK_CPQ_DA
+  config BLK_CPQ_DA
+@@ -425,10 +437,4 @@
+ 	  block device driver.  It communicates with a back-end driver
+ 	  in another domain which drives the actual block device.
 
+-config VIRTIO_BLK
+-	tristate "Virtio block driver (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL && VIRTIO
+-	---help---
+-	  This is the virtual block driver for lguest.  Say Y or M.
+-
+  endif # BLK_DEV
 diff -ruN linux-2.6-orig/drivers/cdrom/gdrom.c linux-2.6/drivers/cdrom/gdrom.c
 --- linux-2.6-orig/drivers/cdrom/gdrom.c	1970-01-01 01:00:00.000000000 +0100
 +++ linux-2.6/drivers/cdrom/gdrom.c	2007-12-20 23:36:15.000000000 +0000
@@ -900,4 +918,3 @@ diff -ruN linux-2.6-orig/drivers/cdrom/Makefile linux-2.6/drivers/cdrom/Makefile
  obj-$(CONFIG_CDROM_PKTCDVD)	+=		cdrom.o
 
  obj-$(CONFIG_VIOCD)		+= viocd.o      cdrom.o
-+obj-$(CONFIG_GDROM)		+= gdrom.o	cdrom.o
