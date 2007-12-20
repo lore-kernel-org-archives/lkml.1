@@ -1,88 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759917AbXLTJcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759069AbXLTJuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759917AbXLTJcf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 04:32:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758138AbXLTJcK
+	id S1759069AbXLTJuZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 04:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbXLTJuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 04:32:10 -0500
-Received: from mu-out-0910.google.com ([209.85.134.185]:3226 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757393AbXLTJcG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 04:32:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QvNHy6BWqq9tu4VEb/lcF1WaYSWt7t33DpafE6jhY4Oou+ZEDQik+yXa2785y3lGmbeQCkpNiWwJLfGumtk4NDs9ctFQeMULJ1u3eoyrh8u/ElFORkAhEUKxXRFAF3J/DjRq65g8r/fOLAcwDl7Jcn2mTJ3eZ+72PVrf63DMSUs=
-Message-ID: <32209efe0712200132k68ba2b40gf6e3a103c216e57@mail.gmail.com>
-Date: Thu, 20 Dec 2007 01:32:02 -0800
-From: "Natalie Protasevich" <protasnb@gmail.com>
-To: "Matthew Wilcox" <matthew@wil.cx>
-Subject: Re: INITIO scsi driver fails to work properly
-Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Filippos Papadopoulos" <psybases@gmail.com>,
-       "Boaz Harrosh" <bharrosh@panasas.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20071219170542.GC26272@parisc-linux.org>
+	Thu, 20 Dec 2007 04:50:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53873 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755825AbXLTJuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 04:50:12 -0500
+Date: Thu, 20 Dec 2007 10:49:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH 0/5] x86: another attempt at x86 pagetable unification
+Message-ID: <20071220094940.GA14227@elte.hu>
+References: <20071219223534.129042140@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
-	 <20071217031841.f483e5ac.akpm@linux-foundation.org>
-	 <9f00bd9d0712170341u7fef1fc9pc9986dda1a0475cb@mail.gmail.com>
-	 <47666904.8060605@panasas.com>
-	 <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
-	 <20071219132918.GB26272@parisc-linux.org>
-	 <1198083040.5487.14.camel@localhost.localdomain>
-	 <20071219170542.GC26272@parisc-linux.org>
+In-Reply-To: <20071219223534.129042140@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 19, 2007 9:05 AM, Matthew Wilcox <matthew@wil.cx> wrote:
-> On Wed, Dec 19, 2007 at 10:50:40AM -0600, James Bottomley wrote:
-> > So, to get the best of both worlds, file a bugzilla and note the bugid.
-> > Then email a complete report to the relevant list, but add [BUG <bugid>]
-> > to the subject line and cc bugme-daemon@bugzilla.kernel.org  If you do
-> > this, bugzilla will keep track of the entire discussion as it progresses
-> > and allow those who track bugs through bugzilla to get a pretty accurate
-> > idea of the status.  You should never need to touch bugzilla again once
-> > the initial bug report is filed: all future information flow is via the
-> > mailing lists.
->
-> The problem is that it appears to the casual observer as if they can
-> then add information to the bug through the web interface.  But that
-> information will never be forwarded to the mailing list.  Unless there's
-> a way of marking bugs as 'unchangable through the web interface' or 'all
-> messages appended to this bug need to be forwarded', Bugzilla just
-> doesn't fit our needs.
->
-> The Debian BTS fits our way of working much better.  Perhaps somebody
-> should investigate a migration.
 
-This is excellent observation by Matthew and James. There is no magic
-in bugzilla not being loved, it is just "not the right set of features
-for effective work on a problem". It doesn't support multiple
-developer' collaboration well.
-This distaste is not universal, since some people don't have a problem
-with bugzilla as is, maybe those who tend to work on problems
-"alone"...
-But making it to be a workable tool for everyone is definitely worth it.
-Any other favorite bugzillas that are nice to work with and that have
-the advantage above?
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
->
-> --
-> Intel are signing my paycheques ... these opinions are still mine
-> "Bill, look, we understand that you're interested in selling us this
-> operating system, but compare it to ours.  We can't possibly take such
-> a retrograde step."
-> --
->
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> Here's another round of the pagetable unification patches.  I've done 
+> a few dozen rounds of randconfig builds on both 32- and 64-bit, so I 
+> hope that will prevent compile problems in your test environment.
+> 
+> I've also boot-tested 64-bit and 32-bit PAE/non-PAE configs (both 
+> paravirt and non-paravirt).
+
+i've done a dozen random tests too and it's looking good so far. Nice 
+work!
+
+pgtable_32.h and pgtable_64.h still look a tiny bit messy from the 
+include file dependencies POV. For example pgtable_32.h:
+
+ #include <asm/processor.h>
+ #include <asm/fixmap.h>
+ #include <linux/threads.h>
+ #include <asm/paravirt.h>
+
+ #include <linux/bitops.h>
+ #include <linux/slab.h>
+ #include <linux/list.h>
+ #include <linux/spinlock.h>
+
+that asm/paravirt.h include is already present in pgtable.h, in a 
+somewhat quirky way:
+
+#ifdef CONFIG_PARAVIRT
+#include <asm/paravirt.h>
+#else  /* !CONFIG_PARAVIRT */
+
+also, most of the:
+
+  scripts/checkpatch.pl --file include/asm-x86/pgtable*.h
+
+complaints are real ones and should be fixed.
+
+would you be interested in cleaning up that stuff once and forever? It 
+would be a fine approach if you just tried to quickly push for a "high 
+quality" end result in a series of patches and sent that series to me, 
+without having tested it fully through - i can figure out whatever build 
+breakages and dependencies there still are. So there would be no 
+expectation of getting such a cleanup series right in the first (or 
+second, or third) attempt, this is spaghetti code that has been 
+accumulated up for years. The important thing would be to be careful to 
+not introduce runtime breakages accidentally - build breakages due to 
+some include file dependency we can sort out just fine. Hm?
+
+	Ingo
