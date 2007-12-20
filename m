@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761201AbXLTVCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761577AbXLTVCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761201AbXLTVCf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 16:02:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbXLTVC1
+	id S1761577AbXLTVCu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 16:02:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbXLTVCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 16:02:27 -0500
-Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:42948 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752313AbXLTVC1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 16:02:27 -0500
-Message-ID: <476AD84E.4000507@opengridcomputing.com>
-Date: Thu, 20 Dec 2007 15:02:06 -0600
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 20 Dec 2007 16:02:40 -0500
+Received: from gw.goop.org ([64.81.55.164]:33510 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761372AbXLTVCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 16:02:38 -0500
+Message-ID: <476AD86B.8000901@goop.org>
+Date: Thu, 20 Dec 2007 13:02:35 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: benh@au1.ibm.com
-CC: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       OpenFabrics General <general@lists.openfabrics.org>,
-       Benjamin Herrenschmidt <bherren@au1.ibm.com>,
-       Wen Xiong <wenxiong@us.ibm.com>, Olof Johansson <olof@lixom.net>,
-       Paul Mackerras <pmac@au1.ibm.com>
-Subject: Re: iommu dma mapping alignment requirements
-References: <476AA2E2.5010007@opengridcomputing.com> <1198181862.6779.3.camel@pasglop>
-In-Reply-To: <1198181862.6779.3.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Eduardo Habkost <ehabkost@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+Subject: Re: [PATCH 2/5] x86: unify pgtable*.h
+References: <20071219223534.129042140@goop.org> <20071219223604.519474386@goop.org> <20071220121954.GY5322@blackpad.ctb.virtua.com.br>
+In-Reply-To: <20071220121954.GY5322@blackpad.ctb.virtua.com.br>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> Adding A few more people to the discussion. You may well be right and we
-> would have to provide the same alignment, though that sucks a bit as one
-> of the reason we switched to 4K for the IOMMU is that the iommu space
-> available on pSeries is very small and we were running out of it with
-> 64K pages and lots of networking activity.
-> 
+Eduardo Habkost wrote:
+> On Wed, Dec 19, 2007 at 02:35:36PM -0800, Jeremy Fitzhardinge wrote:
+>   
+>> +static inline pte_t pte_mkclean(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_DIRTY)); return pte; }
+>> +static inline pte_t pte_mkold(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_ACCESSED)); return pte; }
+>> +static inline pte_t pte_wrprotect(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_RW)); return pte; }
+>> +static inline pte_t pte_mkexec(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_NX)); return pte; }
+>> +static inline pte_t pte_mkdirty(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_DIRTY)); return pte; }
+>> +static inline pte_t pte_mkyoung(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_ACCESSED)); return pte; }
+>> +static inline pte_t pte_mkwrite(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_RW)); return pte; }
+>> +static inline pte_t pte_mkhuge(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) | _PAGE_PSE)); return pte; }
+>> +static inline pte_t pte_clrhuge(pte_t pte)	{ set_pte(&pte, __pte(pte_val(pte) & ~_PAGE_PSE)); return pte; }
+>>     
+>
+>
+> Is set_pte() really supposed to be used here? pte_val() and __pte()
+> are already hooked by paravirt_ops if needed, and it looks like we
+> don't want to call paravirt_ops set_pte() here.
+>   
 
-But smarter NIC drivers can resolve this too, I think, but perhaps 
-carving up full pages of mapped buffers instead of just assuming mapping 
-is free...
+No, you're right.  That looks pretty stupid.  It will work, but it's
+clearly sub-optimal.
 
-perhaps...
+
+> I don't know if I understood fully the semantics of set_pte(), but
+> it seems that the paravirt_ops implementations expect set_pte() to be
+> called for PTEs that are actually inside existing pagetables (and not
+> for short-lived stack variables, like on this case).
+>
+> Was this tested under Xen and/or VMI?
+>   
+Yes, Xen.  It's always OK to use set_pte on something that isn't
+actually part of a pagetable, since it can be used on pagetables which
+are under construction.  But it may end up doing too much work.
+
+    J
