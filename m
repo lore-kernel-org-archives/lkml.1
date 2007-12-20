@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761378AbXLTMy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbXLTNCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761378AbXLTMy7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 07:54:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758915AbXLTMyv
+	id S1760975AbXLTNCf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 08:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759666AbXLTNC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 07:54:51 -0500
-Received: from ro-out-1112.google.com ([72.14.202.179]:33961 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753398AbXLTMyu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 07:54:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EmowBWiIB7vSs+cbJNoyrU8m5DtIDxwFtGAMiw+s70jBLZtnahIiz4P90qFiuDw+ZncrrLb3H7jwA7d9VJyja2anvJZwQTV3Nqb06BOx7e4Wbm3m7LmbrBkxxSDrOVZ6L/iGEVnFX1h8SUveGCQpLfBt7DUpJGi5eI9Ki66SVlw=
-Message-ID: <a44ae5cd0712200454vc8ff0fbo20d0ee216557efac@mail.gmail.com>
-Date: Thu, 20 Dec 2007 07:54:48 -0500
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "David Howells" <dhowells@redhat.com>
-Subject: Re: OOPS: 2.6.24-rc5-mm1 -- EIP is at r_show+0x2a/0x70 -- (triggered by "cat /proc/iomem")
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
-       "Russell King" <rmk+lkml@arm.linux.org.uk>
-In-Reply-To: <5102.1198150640@redhat.com>
+	Thu, 20 Dec 2007 08:02:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36779 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755379AbXLTNCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 08:02:24 -0500
+Date: Thu, 20 Dec 2007 14:00:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH -mm 00/43] user_regset framework -- arch maintainers
+	take note!
+Message-ID: <20071220130042.GA28770@elte.hu>
+References: <20071220115200.C767E26F98A@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a44ae5cd0712192040k7480682eoa29f33d70a91c618@mail.gmail.com>
-	 <4769F409.6030300@gmail.com> <4769FF37.5060308@gmail.com>
-	 <20071219220307.d69c0fde.akpm@linux-foundation.org>
-	 <5102.1198150640@redhat.com>
+In-Reply-To: <20071220115200.C767E26F98A@magilla.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 20, 2007 6:37 AM, David Howells <dhowells@redhat.com> wrote:
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> > I would be suspecting iget-stop-procfs-from-using-iget-and-read_inode.patch.
->
-> I think your suspicions are very unlikely.  The patch only affects
-> proc_get_inode() - and looking at the patch backtrace, it looks like the
-> system is successfully past that already (it's unlikely that
-> proc_reg_read+0x60/0x74 would have been reached otherwise).
->
-> If my patch to procfs is wrong, it would affect all proc files and ought be
-> immediately detectable.
 
-I tested the patch Andrew sent.  I ran "cat /proc/iomem" before trying
-a suspend-to-disk.  It worked fine.  Then I suspended and resumed.
-This time, "cat /proc/iomem" caused the stack trace to be generated.
-So, you are right, you patch is not the problem.
+* Roland McGrath <roland@redhat.com> wrote:
 
-Thanks,
-              Miles
+> This is a large series of patches, but there are only a couple that 
+> you need to read in detail to know how to get started on cleaning up 
+> your arch code (1, 4, 6).
+> 
+> user_regset is a new kernel-internal interface into the arch code for 
+> accessing the user-space view of machine-specific state (registers et 
+> al--everything machine-specific that is visible via ptrace and the 
+> like, or should be).  The idea is that arch code will have just one 
+> place it has to support fetching and changing the user-visible machine 
+> state of a user thread.  This same interface can be used for writing 
+> core dumps, to underlie the implementation of PTRACE_GETREGS, 
+> PTRACE_SETREGS, and the like, and by any new set of debugging 
+> facilities that might come along.
+[...]
+> Patches 26 through 43 affect only arch/x86 code.  I have not CC'd 
+> these ones to linux-arch.  They include a bunch of cleanup that is 
+> specific to the idiosyncracies of the x86 code and isn't interesting 
+> as an example for what another arch would do.
+
+thanks Roland - this is a really impressive set of cleanups 
+generalizations!
+
+Testing feedback: i've put the x86 and core bits into x86.git and your 
+regset series has so far successfully passed a couple of hundred 
+iterations of random-qa on 32-bit and 64-bit x86 as well. (with a few 
+ptrace tests added to the mix as well) So it's all green as far as 
+arch/x86 and core goes :-)
+
+	Ingo
