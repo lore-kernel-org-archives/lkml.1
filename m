@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbXLTNCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761340AbXLTNGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760975AbXLTNCf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 08:02:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759666AbXLTNC0
+	id S1761340AbXLTNGD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 08:06:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbXLTNFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 08:02:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36779 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755379AbXLTNCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 08:02:24 -0500
-Date: Thu, 20 Dec 2007 14:00:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH -mm 00/43] user_regset framework -- arch maintainers
-	take note!
-Message-ID: <20071220130042.GA28770@elte.hu>
-References: <20071220115200.C767E26F98A@magilla.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071220115200.C767E26F98A@magilla.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 20 Dec 2007 08:05:54 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49931 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753992AbXLTNFx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 08:05:53 -0500
+Subject: [rfc][patch] mm: madvise(WILLNEED) for anonymous memory
+From: Peter Zijlstra <peterz@infradead.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Cc: hugh <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       riel <riel@redhat.com>, Lennart Poettering <mztabzr@0pointer.de>
+Content-Type: text/plain
+Date: Thu, 20 Dec 2007 14:05:38 +0100
+Message-Id: <1198155938.6821.3.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Roland McGrath <roland@redhat.com> wrote:
+Lennart asked for madvise(WILLNEED) to work on anonymous pages, he plans
+to use this to pre-fault pages. He currently uses: mlock/munlock for
+this purpose.
 
-> This is a large series of patches, but there are only a couple that 
-> you need to read in detail to know how to get started on cleaning up 
-> your arch code (1, 4, 6).
-> 
-> user_regset is a new kernel-internal interface into the arch code for 
-> accessing the user-space view of machine-specific state (registers et 
-> al--everything machine-specific that is visible via ptrace and the 
-> like, or should be).  The idea is that arch code will have just one 
-> place it has to support fetching and changing the user-visible machine 
-> state of a user thread.  This same interface can be used for writing 
-> core dumps, to underlie the implementation of PTRACE_GETREGS, 
-> PTRACE_SETREGS, and the like, and by any new set of debugging 
-> facilities that might come along.
-[...]
-> Patches 26 through 43 affect only arch/x86 code.  I have not CC'd 
-> these ones to linux-arch.  They include a bunch of cleanup that is 
-> specific to the idiosyncracies of the x86 code and isn't interesting 
-> as an example for what another arch would do.
+[ compile tested only ]
 
-thanks Roland - this is a really impressive set of cleanups 
-generalizations!
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+diff --git a/mm/madvise.c b/mm/madvise.c
+index 93ee375..eff60ce 100644
+--- a/mm/madvise.c
++++ b/mm/madvise.c
+@@ -100,6 +100,24 @@ out:
+ 	return error;
+ }
+ 
++static long madvice_willneed_anon(struct vm_area_struct *vma,
++				  struct vm_area_struct **prev,
++				  unsigned long start, unsigned long end)
++{
++	int ret, len;
++
++	*prev = vma;
++	if (end > vma->vm_end)
++		end = vma->vm_end;
++
++	len = end - start;
++	ret = get_user_pages(current, current->mm, start, len,
++			0, 0, NULL, NULL);
++	if (ret < 0)
++		return ret;
++	return ret == len ? 0 : -1;
++}
++
+ /*
+  * Schedule all required I/O operations.  Do not wait for completion.
+  */
+@@ -110,7 +128,7 @@ static long madvise_willneed(struct vm_area_struct * vma,
+ 	struct file *file = vma->vm_file;
+ 
+ 	if (!file)
+-		return -EBADF;
++		return madvice_willneed_anon(vma, prev, start, end);
+ 
+ 	if (file->f_mapping->a_ops->get_xip_page) {
+ 		/* no bad return value, but ignore advice */
 
-Testing feedback: i've put the x86 and core bits into x86.git and your 
-regset series has so far successfully passed a couple of hundred 
-iterations of random-qa on 32-bit and 64-bit x86 as well. (with a few 
-ptrace tests added to the mix as well) So it's all green as far as 
-arch/x86 and core goes :-)
 
-	Ingo
