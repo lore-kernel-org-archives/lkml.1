@@ -1,126 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbXLTPDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764212AbXLTPFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763455AbXLTPDP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 10:03:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbXLTPC6
+	id S1764212AbXLTPFZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 10:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbXLTPFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 10:02:58 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:43021 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756134AbXLTPC5 (ORCPT
+	Thu, 20 Dec 2007 10:05:11 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:50513 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756134AbXLTPFJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 10:02:57 -0500
-Date: Thu, 20 Dec 2007 10:02:56 -0500
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-Cc: Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Trying to convert old modules to newer kernels
-Message-ID: <20071220150255.GE2308@csclub.uwaterloo.ca>
-References: <Pine.LNX.4.61.0712191503370.4688@chaos.analogic.com> <20071219202323.GH2310@csclub.uwaterloo.ca> <Pine.LNX.4.61.0712191555150.4514@chaos.analogic.com>
+	Thu, 20 Dec 2007 10:05:09 -0500
+Date: Thu, 20 Dec 2007 16:04:53 +0100
+From: Jan Kara <jack@suse.cz>
+To: Bj?rn Steinbrink <B.Steinbrink@gmx.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Krzysztof Oledzki <olel@ans.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Osterried <osterried@jesse.de>, protasnb@gmail.com,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 9182] Critical memory leak (dirty pages)
+Message-ID: <20071220150453.GB764@atrey.karlin.mff.cuni.cz>
+References: <20071215221935.306A5108068@picon.linux-foundation.org> <Pine.LNX.4.64.0712152358240.14491@bizon.gios.gov.pl> <20071215203539.d6f71e96.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161016290.25065@bizon.gios.gov.pl> <20071216015112.d0ab08a1.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161440030.25065@bizon.gios.gov.pl> <alpine.LFD.0.9999.0712190903350.21557@woody.linux-foundation.org> <20071220141217.GA4745@atjola.homenet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0712191555150.4514@chaos.analogic.com>
+In-Reply-To: <20071220141217.GA4745@atjola.homenet>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 19, 2007 at 03:56:45PM -0500, linux-os (Dick Johnson) wrote:
+> On 2007.12.19 09:44:50 -0800, Linus Torvalds wrote:
+> > 
+> > 
+> > On Sun, 16 Dec 2007, Krzysztof Oledzki wrote:
+> > > 
+> > > I'll confirm this tomorrow but it seems that even switching to data=ordered
+> > > (AFAIK default o ext3) is indeed enough to cure this problem.
+> > 
+> > Ok, do we actually have any ext3 expert following this? I have no idea 
+> > about what the journalling code does, but I have painful memories of ext3 
+> > doing really odd buffer-head-based IO and totally bypassing all the normal 
+> > page dirty logic.
+> > 
+> > Judging by the symptoms (sorry for not following this well, it came up 
+> > while I was mostly away travelling), something probably *does* clear the 
+> > dirty bit on the pages, but the dirty *accounting* is not done properly, 
+> > so the kernel keeps thinking it has dirty pages.
+> > 
+> > Now, a simple "grep" shows that ext3 does not actually do any 
+> > ClearPageDirty() or similar on its own, although maybe I missed some other 
+> > subtle way this can happen. And the *normal* VFS routines that do 
+> > ClearPageDirty should all be doing the proper accounting.
+> > 
+> > So I see a couple of possible cases:
+> > 
+> >  - actually clearing the PG_dirty bit somehow, without doing the 
+> >    accounting.
+> > 
+> >    This looks very unlikely. PG_dirty is always cleared by some variant of 
+> >    "*ClearPageDirty()", and that bit definition isn't used for anything 
+> >    else in the whole kernel judging by "grep" (the page allocator tests 
+> >    the bit, that's it).
 > 
-> On Wed, 19 Dec 2007, Lennart Sorensen wrote:
+> OK, so I looked for PG_dirty anyway.
 > 
-> > On Wed, Dec 19, 2007 at 03:10:28PM -0500, linux-os (Dick Johnson) wrote:
-> >>
-> >>
-> >> Here is a so-called BUG when trying to insert the following
-> >> module into the kernel (2.6.22.1).
-> >>
-> >>
-> >> BUG: unable to handle kernel paging request at virtual address 6814ec83
-> >>   printing eip:
-> >> c016d013
-> >> *pde = 00000000
-> >> Oops: 0000 [#1]
-> >> PREEMPT SMP
-> >> Modules linked in: MemDev parport_pc lp parport nfsd exportfs lockd sunrpc iptable_filter ip_tables x_tables e1000 e100 mii nls_cp437 msdos fat dm_mod usbhid ff_memless uhci_hcd ehci_hcd video container button battery ac rtc ipv6 ext3 jbd ata_piix libata aic7xxx scsi_transport_spi sd_mod scsi_mod
-> >> CPU:    0
-> >> EIP:    0060:[<c016d013>]    Not tainted VLI
-> >> EFLAGS: 00010046   (2.6.22.1 #2)
-> >> EIP is at kmem_cache_alloc+0x23/0x80
-> >> eax: 00000000   ebx: 00000246   ecx: f8913300   edx: 6814ec83
-> >> esi: 00000000   edi: f8913000   ebp: ef27e000   esp: ef27ff74
-> >> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> >> Process insmod (pid: 4593, ti=ef27e000 task=f614f550 task.ti=ef27e000)
-> >> Stack: f8913300 00000000 00000000 f8913013 f7fff880 000000d0 00000000 ef27e000
-> >>         c012b907 ffffffff 00000000 c0140279 bffedc07 bffedc08 0807a018 00000000
-> >>         c0102b82 0807a018 000018c9 0807a008 00000000 00000000 bffeabc8 00000080
-> >> Call Trace:
-> >>   [<f8913013>] init_module+0x13/0x48 [MemDev]
-> >>   [<c012b907>] blocking_notifier_call_chain+0x17/0x20
-> >>   [<c0140279>] sys_init_module+0xd9/0x140
-> >>   [<c0102b82>] sysenter_past_esp+0x5f/0x85
-> >>   =======================
-> >> Code: 90 8d b4 26 00 00 00 00 83 ec 0c f6 c2 10 89 74 24 04 89 d6 89 7c 24 08 89 c7 89 1c 24 75 49 9c 5b fa 64 a1 04 20 47 c0 8b 14 87 <8b> 02 85 c0 74 25 c7 42 0c 01 00 00 00 48 89 02 8b 54 82 18 53
-> >> EIP: [<c016d013>] kmem_cache_alloc+0x23/0x80 SS:ESP 0068:ef27ff74
-> >>
-> >>
-> >>
-> >> Here is the code that causes the crash.
-> >>
-> >>
-> >> #include <linux/autoconf.h>
-> >> #include <linux/module.h>
-> >> #include <linux/kernel.h>
-> >> #include <linux/init.h>
-> >> #include <linux/poll.h>
-> >> #include <linux/mm.h>
-> >> static const char devname[]="Device";
-> >> #define NR_PAGES 0x10
-> >>
-> >> struct DMA {
-> >>      void *ptr;
-> >>      unsigned long addr;
-> >>      size_t len;
-> >>      };
-> >> //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-> >> //
-> >> //  The top-level object that gets allocated once, when the module is
-> >> //  installed.
-> >> //
-> >> struct INFO {
-> >>      struct file_operations fa;          // Kernel connection
-> >>      struct semaphore dev_sem;
-> >>      struct DMA dma[NR_PAGES];           // Can map one megabyte
-> >>      uint32_t vm_start;                  // Where mmap() starts
-> >>      uint32_t pages;                     // Number of pages mapped
-> >>      atomic_t open;                      // Number of opens
-> >>      };
-> >> //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-> >> static struct INFO *info;
-> >> //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-> >> //
-> >> //   Initialize the module and return 0 if everything is okay.
-> >> //   Return a negative error-code if not.
-> >> //
-> >> static int32_t startup()
-> >> {
-> >>      if((info = kmalloc(sizeof(struct INFO), GFP_KERNEL)) == NULL) {
-> >>          printk(KERN_ALERT"%s : Can't allocate memory\n", devname);
-> >
-> > Missing space after KERN_ALERT?
+> In 46d2277c796f9f4937bfa668c40b2e3f43e93dd0 you made try_to_free_buffers
+> bail out if the page is dirty.
 > 
-> I certainly hope that it's not the problem! That would
-> invalidate both the kernel and the compiler!
+> Then in 3e67c0987d7567ad666641164a153dca9a43b11d, Andrew fixed
+> truncate_complete_page, because it called cancel_dirty_page (and thus
+> cleared PG_dirty) after try_to_free_buffers was called via
+> do_invalidatepage.
+> 
+> Now, if I'm not mistaken, we can end up as follows.
+> 
+> truncate_complete_page()
+>   cancel_dirty_page() // PG_dirty cleared, decr. dirty pages
+>   do_invalidatepage()
+>     ext3_invalidatepage()
+>       journal_invalidatepage()
+>         journal_unmap_buffer()
+>           __dispose_buffer()
+>             __journal_unfile_buffer()
+>               __journal_temp_unlink_buffer()
+>                 mark_buffer_dirty(); // PG_dirty set, incr. dirty pages
+> 
+> If journal_unmap_buffer then returns 0, try_to_free_buffers is not
+> called and neither is cancel_dirty_page, so the dirty pages accounting
+> is not decreased again.
+  Yes, this can happen. The call to mark_buffer_dirty() is a fallout
+from journal_unfile_buffer() trying to sychronise JBD private dirty bit
+(jbddirty) with the standard dirty bit. We could actually clear the
+jbddirty bit before calling journal_unfile_buffer() so that this doesn't
+happen but since Linus changed remove_from_pagecache() to not care about
+redirtying the page I guess it's not needed any more...
 
-It was the only thing that looked a bit odd.  Although white space
-generally shouldn't matter in C.
-
-Well maybe the module was just compiled against a different source tree
-than the running kernel it was loaded into.
-
-I suppose comment out the printk and see if it's breaking on that line
-or somewhere else.  Or just make it a printk with no variables.
-
---
-Len Sorensen
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
