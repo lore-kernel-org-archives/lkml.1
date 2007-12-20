@@ -1,97 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966844AbXLTPrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966935AbXLTPsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966844AbXLTPrk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 10:47:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965367AbXLTP1l
+	id S966935AbXLTPsF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 10:48:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935155AbXLTP22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 10:27:41 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:56727 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965358AbXLTP1j (ORCPT
+	Thu, 20 Dec 2007 10:28:28 -0500
+Received: from mga06.intel.com ([134.134.136.21]:48998 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935137AbXLTP2Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 10:27:39 -0500
-Date: Thu, 20 Dec 2007 15:26:00 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>, riel <riel@redhat.com>,
-       Lennart Poettering <mztabzr@0pointer.de>
-Subject: Re: [rfc][patch] mm: madvise(WILLNEED) for anonymous memory
-In-Reply-To: <1198162078.6821.27.camel@twins>
-Message-ID: <Pine.LNX.4.64.0712201508290.857@blonde.wat.veritas.com>
-References: <1198155938.6821.3.camel@twins>  <Pine.LNX.4.64.0712201339010.18399@blonde.wat.veritas.com>
- <1198162078.6821.27.camel@twins>
+	Thu, 20 Dec 2007 10:28:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,190,1196668800"; 
+   d="scan'208";a="243917287"
+Message-ID: <476A895C.7040903@linux.intel.com>
+Date: Thu, 20 Dec 2007 16:25:16 +0100
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Marcel Holtmann <marcel@holtmann.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Kernel bug: bluetooth meets TTY layer
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Dec 2007, Peter Zijlstra wrote:
-> On Thu, 2007-12-20 at 14:09 +0000, Hugh Dickins wrote:
-> > On Thu, 20 Dec 2007, Peter Zijlstra wrote:
-> > 
-> > I certainly agree with this in principle: it just seems an unnecessary
-> > and surprising restriction to refuse on anonymous vmas; I guess the only
-> > reason for not adding this was not having anyone asking for it until now.
-> > Though, does Lennart realize he could use MAP_POPULATE in the mmap?
-> 
-> I think he's trying to get his data swapped-in.
+Hi,
 
-That's perfectly reasonable, fair enough.
+with the help of kerneloops.org I've spotted a nice little interaction
+between the TTY layer and the bluetooth code, however the tty layer is
+not something I'm all too familiar with so I rather ask than brute-force
+fix the code incorrectly.
 
-> > > +{
-> > > +	int ret, len;
-> > > +
-> > > +	*prev = vma;
-> > > +	if (end > vma->vm_end)
-> > > +		end = vma->vm_end;
-> > 
-> > Please check, but I think the upper level ensures end is within range.
-> 
-> It certainly looks like it, but I since the file case did this check I
-> thought it prudent to also do it. I guess I might as well remove both.
+The raw details are at:
+http://www.kerneloops.org/search.php?search=uart_flush_buffer
 
-Ah, so it does.  Yes, please do remove both.
+What happens is that, on closing the bluetooth tty,
+the tty layer goes into the release_dev() function,
+which first does a bunch of stuff, then sets the file->private_data to NULL,
+does some more stuff  and then calls the ldisc close function. Which in this
+case, is hci_uart_tty_close().
 
-> > Hmm, might it be better to use make_pages_present itself,
-> > fixing its retval, rather than using get_user_pages directly?
-> > (I'd hope the caching makes its repeat of find_vma not an overhead.)
-> > 
-> > Interesting divergence: make_pages_present faults in writable pages
-> > in a writable vma, whereas the file case's force_page_cache_readahead
-> > doesn't even insert the pages into the mm.
-> 
-> Yeah, the find_vma and write fault thing are the reason I didn't use
-> make_pages_present.
+Now, hci_uart_tty_close() calls hci_uart_close() which clears some internal bit,
+and then calls hci_uart_flush()... which calls back to the tty layers' uart_flush_buffer() function.
+(in drivers/bluetooth/hci_tty.c around line 194)
+Which then WARN_ON()'s because that's not allowed/supposed to be called
+this late in the shutdown of the port....
 
-The write fault thing is irrelevant now, actually: now do_anonymous_page
-doesn't use ZERO_PAGE, it puts in a writable page if the vma flags permit,
-even when it's just a read fault (and its write_access arg is redundant).
+should the bluetooth driver even call this flush function at all??
 
-> 
-> I had noticed the difference in pte population between
-> force_page_cache_readahead and make_pages_present, but it seemed to me
-> that writing a function to walk the page tables and populate the
-> swapcache but not populate the ptes wasn't worth the effort.
+Greetings,
+    Arjan van de Ven
 
-I was about to agree with you, when you made the observation:
 
-> Ah, another, more important difference:
-> 
-> force_page_cache_readahead will not wait for the read to complete,
-> whereas get_user_pages() will be fully synchronous.
-> 
-> I think I'd better come up with something else then,..
-
-Yes, that's an interesting point.  Maybe first put in what you have,
-to stop it from saying -EBADF on anon; then make it asynch later.
-
-The asynch code: perhaps not worth doing for MADV_WILLNEED alone,
-but might prove useful for more general use when swapping in.
-Not really the same as Con's swap prefetch, but worth looking
-at that for reference.  But I guess this becomes a much bigger
-issue than you were intending to get into here.
-
-Hugh
