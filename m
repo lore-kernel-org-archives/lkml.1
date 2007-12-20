@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932155AbXLTWDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763924AbXLTWDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932155AbXLTWDI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:03:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763840AbXLTWCv
+	id S1763924AbXLTWDf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762578AbXLTWDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:02:51 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35693
+	Thu, 20 Dec 2007 17:03:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35701
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1763822AbXLTWCt (ORCPT
+	by vger.kernel.org with ESMTP id S1754927AbXLTWDW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:02:49 -0500
-Date: Thu, 20 Dec 2007 14:02:49 -0800 (PST)
-Message-Id: <20071220.140249.137042900.davem@davemloft.net>
+	Thu, 20 Dec 2007 17:03:22 -0500
+Date: Thu, 20 Dec 2007 14:03:21 -0800 (PST)
+Message-Id: <20071220.140321.134140937.davem@davemloft.net>
 To: joe@perches.com
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, hadi@cyberus.ca,
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, paul.moore@hp.com,
        netdev@vger.kernel.org
-Subject: Re: [PATCH] net/sched/: Spelling fixes
+Subject: Re: [PATCH] net/netlabel/: Spelling fixes
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1197920439-5455-30-git-send-email-joe@perches.com>
-References: <1197920439-5455-30-git-send-email-joe@perches.com>
+In-Reply-To: <1197920439-5455-29-git-send-email-joe@perches.com>
+References: <1197920439-5455-29-git-send-email-joe@perches.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,9 +28,8 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joe Perches <joe@perches.com>
-Date: Mon, 17 Dec 2007 11:40:36 -0800
+Date: Mon, 17 Dec 2007 11:40:35 -0800
 
-> 
 > Signed-off-by: Joe Perches <joe@perches.com>
 
 Applied, thanks.
