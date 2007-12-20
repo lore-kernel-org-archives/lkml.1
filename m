@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbXLTSxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbXLTSxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756749AbXLTSxh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 13:53:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbXLTSxZ
+	id S1757233AbXLTSxv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 13:53:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755626AbXLTSx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 13:53:25 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:44463 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752973AbXLTSxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 13:53:24 -0500
-From: akepner@sgi.com
-Date: Thu, 20 Dec 2007 10:51:54 -0800
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, grundler@parisc-linux.org,
-       jbarnes@virtuousgeek.org, jes@sgi.com, randy.dunlap@oracle.com,
-       rdreier@cisco.com, James.Bottomley@steeleye.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] dma: passing "attributes" to dma_map_* routines
-Message-ID: <20071220185154.GK412@sgi.com>
-References: <20071218001758.GO21916@sgi.com> <4767FA62.9060002@s5r6.in-berlin.de> <20071218200759.GE412@sgi.com> <476834AC.9050401@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <476834AC.9050401@s5r6.in-berlin.de>
-User-Agent: Mutt/1.4.1i
+	Thu, 20 Dec 2007 13:53:29 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45592 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754590AbXLTSx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 13:53:26 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200712181807.53907.nickpiggin@yahoo.com.au>
+References: <200712181807.53907.nickpiggin@yahoo.com.au> <200712141521.24227.nickpiggin@yahoo.com.au> <20071205194020.24617.28880.stgit@warthog.procyon.org.uk> <731.1197932071@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
+       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov, casey@schaufler-ca.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 24/28] AFS: Add a function to excise a rejected write from the pagecache [try #2]
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Thu, 20 Dec 2007 18:49:10 +0000
+Message-ID: <6538.1198176550@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 18, 2007 at 09:59:24PM +0100, Stefan Richter wrote:
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-> ....
-> So that would be option 3) of yours, though without your attrs
-> parameter.  Do you expect the need for even more flags for other kinds
-> of special behavior?
+> > Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > > This reintroduces the fault vs truncate race window, which must be fixed.
+> >
+> > Hmmm...  perhaps.
+> 
+> What do you mean by perhaps?
 
-I was hoping to keep the option of adding additional 
-flags, but for now there's no obvious need for other
-flags that I'm aware of.
+I mean 'perhaps'.  I'm not sure I remember what the race was, so I can't
+evaluate whether or not the same race crops up in AFS too.  So: can you
+describe the race please.
 
--- 
-Arthur
+> No, you could do writeback caching but disallow read of dirty data.
 
+Someone might already have read-access via mmap at the point someone attempts
+to write to an mmapped region.  That means that I'd have to revoke the read
+access of the first someone before letting the write take place.
+
+Does NFS do this?
+
+> > > But otherwise I guess if you really want to discard the dirty data after
+> > > a failed writeback attempt, what's wrong with just
+> > > invalidate_inode_pages2?
+> >
+> > Erm...  Because it deadlocks?
+> 
+> Why don't you call it after calling end_page_writeback?
+
+Because then there can be a race over who gets to flush the dead write.
+Actually, this may no longer be a problem with your write_begin() changes.
+I'll need to have another look at those.
+
+Besides, I don't agree that invalidate_inode_pages2() is necessarily the right
+way to do things.
+
+David
