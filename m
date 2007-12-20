@@ -1,85 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938260AbXLTPvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938348AbXLTPvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938260AbXLTPvb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 10:51:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938078AbXLTPu1
+	id S938348AbXLTPvs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 10:51:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938090AbXLTPud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 10:50:27 -0500
-Received: from eth6445.sa.adsl.internode.on.net ([150.101.30.44]:39160 "EHLO
-	aix.gdt.id.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S938074AbXLTPuZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 10:50:25 -0500
-X-Greylist: delayed 3712 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Dec 2007 10:50:24 EST
-Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
-From: Glen Turner <gdt@gdt.id.au>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: James Nichols <jamesnichols3@gmail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0712191857270.12329@fbirervta.pbzchgretzou.qr>
-References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com>
-	 <Pine.LNX.4.64.0712181818360.4422@fbirervta.pbzchgretzou.qr>
-	 <83a51e120712181009pf954f43mcb63ea4dab638458@mail.gmail.com>
-	 <Pine.LNX.4.64.0712181910580.4422@fbirervta.pbzchgretzou.qr>
-	 <83a51e120712181021p4c4c2a13g8820271f1e00361b@mail.gmail.com>
-	 <4768123A.7040603@cosmosbay.com>
-	 <83a51e120712181144l65633b32r72cc369f9d012f47@mail.gmail.com>
-	 <47682F8C.20205@cosmosbay.com>
-	 <83a51e120712190853q33d9c7c1t4a46380665b7538b@mail.gmail.com>
-	 <47694FCC.1020507@cosmosbay.com>
-	 <83a51e120712190943m3bf0e2e4v2ea6b660142e9a5a@mail.gmail.com>
-	 <Pine.LNX.4.64.0712191857270.12329@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Organization: <http://www.aarnet.edu.au/~gdt/>
-Date: Fri, 21 Dec 2007 01:11:35 +1030
-Message-Id: <1198161695.6154.47.camel@andromache>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Thu, 20 Dec 2007 10:50:33 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48356 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938082AbXLTPua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 10:50:30 -0500
+Message-ID: <476A8F36.2050007@redhat.com>
+Date: Thu, 20 Dec 2007 09:50:14 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Roman Zippel <zippel@linux-m68k.org>
+Subject: [PATCH] UPDATED: hfs: handle more on-disk corruptions without oopsing
+References: <47699C29.4010706@redhat.com>
+In-Reply-To: <47699C29.4010706@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[speculation by network engineer -- not kernel hacker -- follows]
+Andrew, I double-issued warnings in some cases.  Mind replacing
+with this one?
 
-> The router could be sooo crappy that it drops all packets from
-> TCP streams that have SACK enabled and the client has opened
-> 200+ SACK connections previously... something like that?
+Thanks,
+-Eric
 
-As far as any third party is concerned the existing TCP connections
-continue to have negotiated "SACK Permitted". Only new connections
-will not negotiate this.  So "router crappiness" promptly disappearing
-doesn't seem too likely (a way I could see this happening is if the
-Linux box sends a Ack for each connection and this clears out Sack
-datastructures on the third party).
+hfs seems prone to bad things when it encounters on disk corruption.
+Many values are read from disk, and used as lengths to memcpy, as an
+example.  This patch fixes up several of these problematic cases.
 
-But I'd be very surprised if the router is acting as anything more
-that a network-layer device. It might perhaps have some soft connection
-state being used for generating accounting records.  Being Cisco
-it's probably a switch-router, so it might carry some per-port hard
-state for validating source IP addresses and ARPs on each port.
+o sanity check the on-disk maximum key lengths on mount
+  (these are set to a defined value at mkfs time and shouldn't differ)
+o check on-disk node keylens against the maximum key length for each tree
+o fix hfs_btree_open so that going out via free_tree: doesn't wind
+  up in hfs_releasepage, which wants to follow the very pointer
+  we were trying to set up:
+	HFS_SB(sb)->cat_tree = hfs_btree_open()
+		...
+		failure gets to hfs_releasepage and tries
+		to follow HFS_SB(sb)->cat_tree
 
-The firewall is much more likely to be carrying per-flow Sack
-state. The Cisco PIX had a bug with SACK handling (CSCse14419,
-fixed in 7.0(7), 7.1(2.34), 7.2(2.2), 8.0(0.141) but perhaps it
-has regressed). A simple trace either side of the firewall will
-show the inconsistency between the TCP sequence number (which
-gets randomised) and the Sack sequence number (which didn't).
-You could disable the TCP Sequence Number Randomisation feature
-and see if the fault reoccurs.
+Tested with the fsfuzzer; it survives more than it used to.
 
-You'd probably should also investigate the Linux kernel,
-especially the size and locks of the components of the Sack data
-structures and what happens to those data structures after Sack is
-disabled (presumably the Sack data structure is in some unhappy
-circumstance, and disabling Sack allows the data to be discarded,
-magically unclaging the box).
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+---
 
-In the absence of the reporter wanting to dump the kernel's
-core, how about a patch to print the Sack datastructure when
-the command to disable Sack is received by the kernel?
-Maybe just print the last 16b of the IP address?
-
-Best wishes, Glen
+Index: linux-2.6.24-rc3/fs/hfs/brec.c
+===================================================================
+--- linux-2.6.24-rc3.orig/fs/hfs/brec.c
++++ linux-2.6.24-rc3/fs/hfs/brec.c
+@@ -44,10 +44,21 @@ u16 hfs_brec_keylen(struct hfs_bnode *no
+ 		recoff = hfs_bnode_read_u16(node, node->tree->node_size - (rec + 1) * 2);
+ 		if (!recoff)
+ 			return 0;
+-		if (node->tree->attributes & HFS_TREE_BIGKEYS)
++		if (node->tree->attributes & HFS_TREE_BIGKEYS) {
+ 			retval = hfs_bnode_read_u16(node, recoff) + 2;
+-		else
++			if (retval > node->tree->max_key_len + 2) {
++				printk(KERN_ERR "hfs: keylen %d too large\n",
++					retval);
++				retval = HFS_BAD_KEYLEN;
++			}
++		} else {
+ 			retval = (hfs_bnode_read_u8(node, recoff) | 1) + 1;
++			if (retval > node->tree->max_key_len + 1) {
++				printk(KERN_ERR "hfs: keylen %d too large\n",
++					retval);
++				retval = HFS_BAD_KEYLEN;
++			}
++		}
+ 	}
+ 	return retval;
+ }
+Index: linux-2.6.24-rc3/fs/hfs/bfind.c
+===================================================================
+--- linux-2.6.24-rc3.orig/fs/hfs/bfind.c
++++ linux-2.6.24-rc3/fs/hfs/bfind.c
+@@ -52,6 +52,10 @@ int __hfs_brec_find(struct hfs_bnode *bn
+ 		rec = (e + b) / 2;
+ 		len = hfs_brec_lenoff(bnode, rec, &off);
+ 		keylen = hfs_brec_keylen(bnode, rec);
++		if (keylen == HFS_BAD_KEYLEN) {
++			res = -EINVAL;
++			goto done;
++		}
+ 		hfs_bnode_read(bnode, fd->key, off, keylen);
+ 		cmpval = bnode->tree->keycmp(fd->key, fd->search_key);
+ 		if (!cmpval) {
+@@ -67,6 +71,10 @@ int __hfs_brec_find(struct hfs_bnode *bn
+ 	if (rec != e && e >= 0) {
+ 		len = hfs_brec_lenoff(bnode, e, &off);
+ 		keylen = hfs_brec_keylen(bnode, e);
++		if (keylen == HFS_BAD_KEYLEN) {
++			res = -EINVAL;
++			goto done;
++		}
+ 		hfs_bnode_read(bnode, fd->key, off, keylen);
+ 	}
+ done:
+@@ -198,6 +206,10 @@ int hfs_brec_goto(struct hfs_find_data *
+ 
+ 	len = hfs_brec_lenoff(bnode, fd->record, &off);
+ 	keylen = hfs_brec_keylen(bnode, fd->record);
++	if (keylen == HFS_BAD_KEYLEN) {
++		res = -EINVAL;
++		goto out;
++	}
+ 	fd->keyoffset = off;
+ 	fd->keylength = keylen;
+ 	fd->entryoffset = off + keylen;
+Index: linux-2.6.24-rc3/fs/hfs/hfs.h
+===================================================================
+--- linux-2.6.24-rc3.orig/fs/hfs/hfs.h
++++ linux-2.6.24-rc3/fs/hfs/hfs.h
+@@ -28,6 +28,8 @@
+ #define HFS_MAX_NAMELEN		128
+ #define HFS_MAX_VALENCE		32767U
+ 
++#define HFS_BAD_KEYLEN		0xFF
++
+ /* Meanings of the drAtrb field of the MDB,
+  * Reference: _Inside Macintosh: Files_ p. 2-61
+  */
+@@ -167,6 +169,9 @@ typedef union hfs_btree_key {
+ 	struct hfs_ext_key ext;
+ } hfs_btree_key;
+ 
++#define HFS_MAX_CAT_KEYLEN	(sizeof(struct hfs_cat_key) - sizeof(u8))
++#define HFS_MAX_EXT_KEYLEN	(sizeof(struct hfs_ext_key) - sizeof(u8))
++
+ typedef union hfs_btree_key btree_key;
+ 
+ struct hfs_extent {
+Index: linux-2.6.24-rc3/fs/hfs/btree.c
+===================================================================
+--- linux-2.6.24-rc3.orig/fs/hfs/btree.c
++++ linux-2.6.24-rc3/fs/hfs/btree.c
+@@ -81,6 +81,17 @@ struct hfs_btree *hfs_btree_open(struct 
+ 		goto fail_page;
+ 	if (!tree->node_count)
+ 		goto fail_page;
++	if ((id == HFS_EXT_CNID) && (tree->max_key_len != HFS_MAX_EXT_KEYLEN)) {
++		printk(KERN_ERR "hfs: invalid extent max_key_len %d\n",
++			tree->max_key_len);
++		goto fail_page;
++	}
++	if ((id == HFS_CAT_CNID) && (tree->max_key_len != HFS_MAX_CAT_KEYLEN)) {
++		printk(KERN_ERR "hfs: invalid catalog max_key_len %d\n",
++			tree->max_key_len);
++		goto fail_page;
++	}
++
+ 	tree->node_size_shift = ffs(size) - 1;
+ 	tree->pages_per_bnode = (tree->node_size + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+ 
+@@ -89,9 +100,9 @@ struct hfs_btree *hfs_btree_open(struct 
+ 	return tree;
+ 
+  fail_page:
+-	tree->inode->i_mapping->a_ops = &hfs_aops;
+ 	page_cache_release(page);
+  free_tree:
++	tree->inode->i_mapping->a_ops = &hfs_aops;
+ 	iput(tree->inode);
+ 	kfree(tree);
+ 	return NULL;
 
