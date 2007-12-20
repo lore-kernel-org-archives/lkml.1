@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765368AbXLTQgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936495AbXLTQh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765368AbXLTQgc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 11:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765069AbXLTQgV
+	id S936495AbXLTQh5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 11:37:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763596AbXLTQhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 11:36:21 -0500
-Received: from tango.0pointer.de ([85.214.72.216]:33235 "EHLO
-	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765067AbXLTQgU (ORCPT
+	Thu, 20 Dec 2007 11:37:43 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:27446 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761550AbXLTQhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 11:36:20 -0500
-X-Greylist: delayed 434 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Dec 2007 11:36:20 EST
-Date: Thu, 20 Dec 2007 17:29:02 +0100
-From: Lennart Poettering <mzxreary@0pointer.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Nick Piggin <npiggin@suse.de>,
-       riel <riel@redhat.com>
-Subject: Re: [rfc][patch] mm: madvise(WILLNEED) for anonymous memory
-Message-ID: <20071220162902.GA1945@tango.0pointer.de>
-References: <1198155938.6821.3.camel@twins> <Pine.LNX.4.64.0712201339010.18399@blonde.wat.veritas.com>
+	Thu, 20 Dec 2007 11:37:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Q2SUCVu7B6ePotUvKBXSKJsZgyEF7WcM5931dhpdxoyl7DqyaYnk1cP+rCsBBM1XjuESeNOruLO7mNtVyM1IT6azBB7Y3KhGWNyxcb9nkebP12FegJVnRH3s90FrWMVlyNxJqX6rjhM2BiIX/OYhCVchY8g8GwJ9hjr9m5tzy6o=
+Message-ID: <83a51e120712200837p9e3d1a4g15b5f4763597073e@mail.gmail.com>
+Date: Thu, 20 Dec 2007 11:37:39 -0500
+From: "James Nichols" <jamesnichols3@gmail.com>
+To: "Glen Turner" <gdt@gdt.id.au>
+Subject: Re: After many hours all outbound connections get stuck in SYN_SENT
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Eric Dumazet" <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
+       "Linux Netdev List" <netdev@vger.kernel.org>
+In-Reply-To: <1198161695.6154.47.camel@andromache>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712201339010.18399@blonde.wat.veritas.com>
-Organization: Red Hat, Inc.
-X-Campaign-1: ()  ASCII Ribbon Campaign
-X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
-User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
+References: <83a51e120712141239u52d2dd68p1b6ee7ed08f2cecf@mail.gmail.com>
+	 <83a51e120712181021p4c4c2a13g8820271f1e00361b@mail.gmail.com>
+	 <4768123A.7040603@cosmosbay.com>
+	 <83a51e120712181144l65633b32r72cc369f9d012f47@mail.gmail.com>
+	 <47682F8C.20205@cosmosbay.com>
+	 <83a51e120712190853q33d9c7c1t4a46380665b7538b@mail.gmail.com>
+	 <47694FCC.1020507@cosmosbay.com>
+	 <83a51e120712190943m3bf0e2e4v2ea6b660142e9a5a@mail.gmail.com>
+	 <Pine.LNX.4.64.0712191857270.12329@fbirervta.pbzchgretzou.qr>
+	 <1198161695.6154.47.camel@andromache>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20.12.07 14:09, Hugh Dickins (hugh@veritas.com) wrote:
+> But I'd be very surprised if the router is acting as anything more
+> that a network-layer device. It might perhaps have some soft connection
+> state being used for generating accounting records.  Being Cisco
+> it's probably a switch-router, so it might carry some per-port hard
+> state for validating source IP addresses and ARPs on each port.
+>
+> The firewall is much more likely to be carrying per-flow Sack
+> state. The Cisco PIX had a bug with SACK handling (CSCse14419,
+> fixed in 7.0(7), 7.1(2.34), 7.2(2.2), 8.0(0.141) but perhaps it
+> has regressed). A simple trace either side of the firewall will
+> show the inconsistency between the TCP sequence number (which
+> gets randomised) and the Sack sequence number (which didn't).
+> You could disable the TCP Sequence Number Randomisation feature
+> and see if the fault reoccurs.
 
-> > Lennart asked for madvise(WILLNEED) to work on anonymous pages, he plans
-> > to use this to pre-fault pages. He currently uses: mlock/munlock for
-> > this purpose.
-> 
-> I certainly agree with this in principle: it just seems an unnecessary
-> and surprising restriction to refuse on anonymous vmas; I guess the only
-> reason for not adding this was not having anyone asking for it until now.
-> Though, does Lennart realize he could use MAP_POPULATE in the mmap?
+I do have TCP Sequence # Randomization enabled on my router.  However,
+if this was causing an issue, wouldn't it always occur and cause
+connection issues, not just after 38 hours of correct operation?  I
+can look into turning this off, but I'll likely have to jump through
+several hoops which will be challenging if I don't have a very clear
+definitive reason why this is causing this issue.  Plus, I've had this
+problem with at least 2 other sets of network switches over the past 4
+years.  I'm actually running 7.0(6), which doesn't have the fix you
+mentioned.  If it really is possible that this issue wouldn't always
+cause problems, but only after hours of succesful operation, then I
+could probably motivate the upgrade.  I can try to setup a trace, but
+this is a lot of work for other people in my organization, so it will
+take quite some time.
 
-Not really. First, if the mmap() is hidden somewhere in glibc (i.e. as
-part of malloc() or whatever) it's not really possible to do
-MAP_POPULATE. Also, I need this for some memory that is allocated
-during the whole runtime but only seldomly used. Thus I am happy if it
-is swapped out, but everytime I want to use it I want to make sure it
-is paged in before I pass it on to the RT thread. So, there's a
-mmap() during startup only, and then, during the whole runtime of my
-program I want to page in the memory again and again, with long
-intervals in between, but with no call to mmap()/munmap().
 
-Lennart
+> You'd probably should also investigate the Linux kernel,
+> especially the size and locks of the components of the Sack data
+> structures and what happens to those data structures after Sack is
+> disabled (presumably the Sack data structure is in some unhappy
+> circumstance, and disabling Sack allows the data to be discarded,
+> magically unclaging the box).
+>
+> In the absence of the reporter wanting to dump the kernel's
+> core, how about a patch to print the Sack datastructure when
+> the command to disable Sack is received by the kernel?
+> Maybe just print the last 16b of the IP address?
 
--- 
-Lennart Poettering                        Red Hat, Inc.
-lennart [at] poettering [dot] net         ICQ# 11060553
-http://0pointer.net/lennart/           GnuPG 0x1A015CC4
+Given the fact that I've had this problem for so long, over a variety
+of networking hardware vendors and colo-facilities, this really sounds
+good to me.  It will be challenging for me to justify a kernel core
+dump, but a simple patch to dump the Sack data would be do-able.
