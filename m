@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765797AbXLTWWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbXLTWXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765797AbXLTWWj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:22:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765597AbXLTWVu
+	id S1756530AbXLTWXF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:23:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765751AbXLTWWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:21:50 -0500
-Received: from smtprelay03.ispgateway.de ([80.67.18.15]:57138 "EHLO
-	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765433AbXLTWVt (ORCPT
+	Thu, 20 Dec 2007 17:22:34 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59167 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765730AbXLTWWc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:21:49 -0500
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [PATCH 0/4] add task handling notifier
-Date: Thu, 20 Dec 2007 23:25:14 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <476A780C.76E4.0078.0@novell.com>
-In-Reply-To: <476A780C.76E4.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 20 Dec 2007 17:22:32 -0500
+Date: Thu, 20 Dec 2007 22:08:53 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Joe Perches <joe@perches.com>
+Cc: David Miller <davem@davemloft.net>, apw@shadowen.org, lizf@cn.fujitsu.com,
+       akpm@linux-foundation.org, elendil@planet.nl,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, trivial@kernel.org,
+       rdunlap@xenotime.net, jschopp@austin.ibm.com
+Subject: Re: Trailing periods in kernel messages
+Message-ID: <20071220220853.4f7c639c@the-village.bc.nu>
+In-Reply-To: <1198188468.6183.80.camel@localhost>
+References: <1196390128.22120.118.camel@localhost>
+	<20071220162923.GB27885@shadowen.org>
+	<20071220210741.6dc3caf5@the-village.bc.nu>
+	<20071220.135133.262055434.davem@davemloft.net>
+	<1198188468.6183.80.camel@localhost>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712202325.14922.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan,
+> I believe though that printk messages are not sentences but are
+> logging statements.  Statements do not require full-stops.
+> 
+> Opinions, of course, vary.
 
-I like and support your idea!
+I do not believe "opinions" are relevant here. Relevant would be cites
+from respected style guides (Fowlers, Oxford Guide To Style et al.) to
+show they do not need a full stop. 
 
-On Thursday 20 December 2007, Jan Beulich wrote:
-> With more and more sub-systems/sub-components leaving their footprint
-> in task handling functions, it seems reasonable to add notifiers that
-> these components can use instead of having them all patch themselves
-> directly into core files.
+I've not found one, but I am open to references.
 
-Yes, but why export variables? Wouldn't it be better to export 
-an API? 
-
-That simplifies the callers (they all pass "current" as task 
-and "task_notifier_list" as arguments).
-
-It also prevents exposing internal variables (notifier lists 
-ARE internal variables) to modules.
-
-What do you think?
-
-
-Best Regards
-
-Ingo Oeser
+Alan
