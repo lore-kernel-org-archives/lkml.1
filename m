@@ -1,102 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764933AbXLUAbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762201AbXLTX7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764933AbXLUAbe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:31:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbXLUAbI
+	id S1762201AbXLTX7e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 18:59:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbXLTX71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:31:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51539 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756119AbXLUAbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:31:06 -0500
-Date: Fri, 21 Dec 2007 01:30:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: trond.myklebust@fys.uio.no, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
-Message-ID: <20071221003035.GA10123@elte.hu>
-References: <1198190447.29917.9.camel@heimdal.trondhjem.org> <20071220145415.f737e7f3.akpm@linux-foundation.org> <20071220234759.GA29776@elte.hu> <20071220161934.0f55029a.akpm@linux-foundation.org>
+	Thu, 20 Dec 2007 18:59:27 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:35465 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754276AbXLTX70 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 18:59:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=S+CLFedFNMmOZvx2EA7+pRIAkAYU1sCgk3oiPfL9bhHwpanor/mXinW+uMj6gaQUWMjEatjJ1B1ARnwY78gd1yS5unuLfY3dz0E0mCk6eyUiOrZQRqK3jc8CGM0KSfzGW2SVqpTUeO2v2FKNRF+e3QXqd5Nakx5d18Hb6GBnwU8=
+Message-ID: <9e4733910712201559k459ab574m74f7a84a637c8f0c@mail.gmail.com>
+Date: Thu, 20 Dec 2007 18:59:25 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/5] Version 17, series to add device tree naming to i2c
+In-Reply-To: <20071220044136.20091.70984.stgit@terra.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071220161934.0f55029a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20071220044136.20091.70984.stgit@terra.home>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Are there any other objections to this patch? If not, can it be
+targeted for 2.6.25?
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+On 12/19/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+> Since copying i2c-mpc.c to maintain support for the ppc architecture seems to be an issue; instead rework i2c-mpc.c to use CONFIG_PPC_MERGE #ifdefs to support both the ppc and powerpc architecture. When ppc is deleted in six months these #ifdefs will need to be removed.
+>
+> Another rework of the i2c for powerpc device tree patch. This version implements standard alias naming only on the powerpc platform and only for the device tree names. The old naming mechanism of i2c_client.name,driver_name is left in place and not changed for non-powerpc platforms. This patch is fully capable of dynamically loading the i2c modules. You can modprobe in the i2c-mpc driver and the i2c modules described in the device tree will be automatically loaded. Modules also work if compiled in.
+>
+> The follow on patch to module-init-tools is also needed since the i2c subsystem has never implemented dynamic loading.
+>
+> The following series implements standard linux module aliasing for i2c modules on arch=powerpc. It then converts the mpc i2c driver from being a platform driver to an open firmware one. I2C device names are picked up from the device tree. Module aliasing is used to translate from device tree names into to linux kernel names. Several i2c drivers are updated to use the new aliasing.
+>
+> --
+> Jon Smirl
+> jonsmirl@gmail.com
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-> On Fri, 21 Dec 2007 00:47:59 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > >  		__raw_spin_lock(&die.lock);
-> > >  		raw_local_save_flags(flags);
-> > > -		die.lock_owner = smp_processor_id();
-> > > +		die.lock_owner = raw_smp_processor_id();
-> > 
-> > we just disabled irqs with raw_local_save_flags().
-> 
-> <chases x86 spaghetti for a while>
-> 
-> raw_local_save_flags() doesn't disable interrupts?
 
-argh. Indeed! (I wanted us to fix that misleading name eons ago, to 
-*_save_flags_only(), but some stupid bikeshed painting discussion 
-prevented it from ever happening.)
-
-that should have been raw_local_irq_save(flags)!
-
-but ... why is it done like that? Why do we first take the die.lock and 
-disable interrupts afterwards? It's highly weird. 64-bit does it all 
-correctly in traps_64.c, so unification will help us out - but so far 
-perhaps the patch below we should do in 2.6.24?
-
-	Ingo
-
------------->
-Subject: x86: fix die() to not be preemptible
-From: Ingo Molnar <mingo@elte.hu>
-
-Andrew "Eagle Eye" Morton noticed that we use raw_local_save_flags()
-instead of raw_local_irq_save(flags) in die().
-
-do it correctly - and first disable interrupts, then take the spinlock.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/traps_32.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-Index: linux-x86.q/arch/x86/kernel/traps_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/traps_32.c
-+++ linux-x86.q/arch/x86/kernel/traps_32.c
-@@ -373,14 +373,13 @@ void die(const char * str, struct pt_reg
- 
- 	if (die.lock_owner != raw_smp_processor_id()) {
- 		console_verbose();
-+		raw_local_irq_save(flags);
- 		__raw_spin_lock(&die.lock);
--		raw_local_save_flags(flags);
- 		die.lock_owner = smp_processor_id();
- 		die.lock_owner_depth = 0;
- 		bust_spinlocks(1);
--	}
--	else
--		raw_local_save_flags(flags);
-+	} else
-+		raw_local_irq_save(flags);
- 
- 	if (++die.lock_owner_depth < 3) {
- 		unsigned long esp;
+-- 
+Jon Smirl
+jonsmirl@gmail.com
