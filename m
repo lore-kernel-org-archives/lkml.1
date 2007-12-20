@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbXLTAqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbXLTArS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbXLTAqO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 19:46:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbXLTAp7
+	id S1756519AbXLTArS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 19:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbXLTArF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 19:45:59 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54218 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752548AbXLTAp7 (ORCPT
+	Wed, 19 Dec 2007 19:47:05 -0500
+Received: from slackadelic.com ([65.196.224.53]:60493 "EHLO
+	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbXLTArE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 19:45:59 -0500
-Date: Wed, 19 Dec 2007 16:45:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: peerchen@gmail.com, linux-kernel@vger.kernel.org, acurrid@nvidia.com,
-       pchen@nvidia.com, ebiederm@xmission.com
-Subject: Re: [PATCH] msi: set 'En' bit of MSI Mapping Capability
-Message-Id: <20071219164555.1916fa42.akpm@linux-foundation.org>
-In-Reply-To: <20071219164125.a3eac8ba.akpm@linux-foundation.org>
-References: <200712182300373901202@gmail.com>
-	<20071219164125.a3eac8ba.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Dec 2007 19:47:04 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [lm-sensors] 2.6.24-rc4 hwmon it87 probe fails
+Date: Thu, 20 Dec 2007 00:45:14 +0000
+User-Agent: KMail/1.9.7
+Cc: Jean Delvare <khali@linux-fr.org>, Shaohua Li <shaohua.li@intel.com>,
+       Mike Houston <mikeserv@bmts.com>, Adrian Bunk <bunk@stusta.de>,
+       Elvis Pranskevichus <el@prans.net>, mhoffman@lightlink.com,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+       Adam Belay <ambx1@neo.rr.com>, Zhao Yakui <yakui.zhao@intel.com>,
+       Thomas Renninger <trenn@suse.de>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org
+References: <20071204215154.7f26285e.mikeserv@bmts.com> <20071218185918.5d2d4c7d@hyperion.delvare> <200712191720.23026.bjorn.helgaas@hp.com>
+In-Reply-To: <200712191720.23026.bjorn.helgaas@hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712200045.16899.carlos@strangeworlds.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Dec 2007 16:41:25 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thursday 20 December 2007 00:20:21 Bjorn Helgaas wrote:
+> I suspect the manufacturers would say "Oh, the sensors?  The BIOS
+> isn't broken, you're just supposed to use WMI or some (undocumented)
+> ACPI device to get at those."
 
-> It would be better to just add a stub implementation of
-> ht_enable_msi_mapping() for all the other architectures - avoid fancy cpp
-> tricks.
+It's quite possible - can we have DSDTs for the boards in question so we can 
+quickly check if this is a possibility? (Basically, to see if they have 
+PNP0C14 devices - if they don't, then I'm afraid it's nothing to do with 
+WMI).
 
-
-And by this I really do mean going into each include/asm-*/pci.h and adding
-
-
-struct pci_dev;		(if needed)
-...
-
-static inline void ht_enable_msi_mapping(struct pci_dev *dev)
-{
-}
-
-
-no macros, no ifdef tricks, no include tricks.  Just straight, clean, fully
-typechecked C.
-
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
