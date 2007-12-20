@@ -1,89 +1,413 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935907AbXLTOc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933064AbXLTOd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935907AbXLTOc7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 09:32:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933077AbXLTONp
+	id S933064AbXLTOd3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 09:33:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933133AbXLTONr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 09:13:45 -0500
-Received: from ns2.suse.de ([195.135.220.15]:56904 "EHLO mx2.suse.de"
+	Thu, 20 Dec 2007 09:13:47 -0500
+Received: from ns.suse.de ([195.135.220.2]:41115 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933208AbXLTONh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 09:13:37 -0500
+	id S933216AbXLTONm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 09:13:42 -0500
 X-Mailbox-Line: From jjohansen@suse.de Thu Dec 20 06:09:48 2007
-Message-Id: <20071220140948.529829822@suse.de>
+Message-Id: <20071220140948.672608897@suse.de>
 References: <20071220140910.934607826@suse.de>
 User-Agent: quilt/0.46-60
-Date: Thu, 20 Dec 2007 06:09:55 -0800
+Date: Thu, 20 Dec 2007 06:09:56 -0800
 From: John@suse.de, Johansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       John Johansen <jjohansen@suse.de>, Andreas Gruenbacher <agruen@suse.de>
-Subject: [AppArmor 45/47] Add AppArmor LSM to security/Makefile
-Content-Disposition: inline; filename=apparmor-intree.diff
+       John Johansen <jjohansen@suse.de>, Jesse Michael <jmichael@suse.de>
+Subject: [AppArmor 46/47] add simple network toggles to apparmor
+Content-Disposition: inline; filename=apparmor-network.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: John Johansen <jjohansen@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: Jesse Michael <jmichael@suse.de>
 
 ---
- security/Kconfig          |    1 +
- security/Makefile         |    1 +
- security/apparmor/Kconfig |   22 ++++++++++++++++++++--
- 3 files changed, 22 insertions(+), 2 deletions(-)
+ security/apparmor/Makefile           |    7 +
+ security/apparmor/apparmor.h         |    7 +
+ security/apparmor/lsm.c              |  129 ++++++++++++++++++++++++++++++++++-
+ security/apparmor/main.c             |   96 ++++++++++++++++++++++++++
+ security/apparmor/module_interface.c |   20 +++++
+ 5 files changed, 255 insertions(+), 4 deletions(-)
 
---- a/security/Kconfig
-+++ b/security/Kconfig
-@@ -105,6 +105,7 @@ config SECURITY_ROOTPLUG
+--- a/security/apparmor/Makefile
++++ b/security/apparmor/Makefile
+@@ -8,6 +8,11 @@ apparmor-y := main.o list.o procattr.o l
+ quiet_cmd_make-caps = GEN     $@
+ cmd_make-caps = sed -n -e "/CAP_FS_MASK/d" -e "s/^\#define[ \\t]\\+CAP_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\$$/[\\2]  = \"\\1\",/p" $< | tr A-Z a-z > $@
  
- source security/selinux/Kconfig
- source security/smack/Kconfig
-+source security/apparmor/Kconfig
+-$(obj)/main.o : $(obj)/capability_names.h
++quiet_cmd_make-af = GEN     $@
++cmd_make-af = sed -n -e "/AF_MAX/d" -e "/AF_LOCAL/d" -e "s/^\#define[ \\t]\\+AF_\\([A-Z0-9_]\\+\\)[ \\t]\\+\\([0-9]\\+\\)\\(.*\\)\$$/[\\2]  = \"\\1\",/p" $< | tr A-Z a-z > $@
++
++$(obj)/main.o : $(obj)/capability_names.h $(obj)/af_names.h
+ $(obj)/capability_names.h : $(srctree)/include/linux/capability.h
+ 	$(call cmd,make-caps)
++$(obj)/af_names.h : $(srctree)/include/linux/socket.h
++	$(call cmd,make-af)
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -16,6 +16,8 @@
+ #include <linux/fs.h>
+ #include <linux/binfmts.h>
+ #include <linux/rcupdate.h>
++#include <linux/socket.h>
++#include <net/sock.h>
  
- endmenu
+ /*
+  * We use MAY_READ, MAY_WRITE, MAY_EXEC, MAY_APPEND and the following flags
+@@ -169,6 +171,7 @@ struct aa_profile {
+ 	struct list_head task_contexts;
+ 	spinlock_t lock;
+ 	unsigned long int_flags;
++	u16 network_families[AF_MAX];
+ };
  
---- a/security/Makefile
-+++ b/security/Makefile
-@@ -16,5 +16,6 @@ obj-$(CONFIG_SECURITY)			+= security.o d
- # Must precede capability.o in order to stack properly.
- obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
- obj-$(CONFIG_SECURITY_SMACK)		+= commoncap.o smack/built-in.o
-+obj-$(CONFIG_SECURITY_APPARMOR)		+= commoncap.o apparmor/
- obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
- obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
---- a/security/apparmor/Kconfig
-+++ b/security/apparmor/Kconfig
-@@ -1,9 +1,27 @@
- config SECURITY_APPARMOR
--	tristate "AppArmor support"
--	depends on SECURITY!=n
-+	bool "AppArmor support"
-+	depends on SECURITY
-+	select AUDIT
- 	help
- 	  This enables the AppArmor security module.
- 	  Required userspace tools (if they are not included in your
- 	  distribution) and further information may be found at
- 	  <http://forge.novell.com/modules/xfmod/project/?apparmor>
+ extern struct list_head profile_ns_list;
+@@ -215,6 +218,7 @@ struct aa_audit {
+ 	int request_mask, denied_mask;
+ 	struct iattr *iattr;
+ 	pid_t task, parent;
++	int family, type, protocol;
+ 	int error_code;
+ };
+ 
+@@ -276,6 +280,9 @@ extern void aa_change_task_context(struc
+ 				   struct aa_profile *previous_profile);
+ extern int aa_may_ptrace(struct aa_task_context *cxt,
+ 			 struct aa_profile *tracee);
++extern int aa_net_perm(struct aa_profile *profile, char *operation,
++			int family, int type, int protocol);
++extern int aa_revalidate_sk(struct sock *sk, char *operation);
+ 
+ /* list.c */
+ extern struct aa_namespace *__aa_find_namespace(const char *name,
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -18,6 +18,7 @@
+ #include <linux/ctype.h>
+ #include <linux/sysctl.h>
+ #include <linux/audit.h>
++#include <net/sock.h>
+ 
+ #include "apparmor.h"
+ #include "inline.h"
+@@ -616,6 +617,117 @@ static void apparmor_task_free_security(
+ 	aa_release(task);
+ }
+ 
++static int apparmor_socket_create(int family, int type, int protocol, int kern)
++{
++	struct aa_profile *profile;
++	int error = 0;
 +
- 	  If you are unsure how to answer this question, answer N.
++	if (kern)
++		return 0;
 +
-+config SECURITY_APPARMOR_BOOTPARAM_VALUE
-+	int "AppArmor boot parameter default value"
-+	depends on SECURITY_APPARMOR
-+	range 0 1
-+	default 1
-+	help
-+	  This option sets the default value for the kernel parameter
-+	  'apparmor', which allows AppArmor to be enabled or disabled
-+          at boot.  If this option is set to 0 (zero), the AppArmor
-+	  kernel parameter will default to 0, disabling AppArmor at
-+	  bootup.  If this option is set to 1 (one), the AppArmor
-+	  kernel parameter will default to 1, enabling AppArmor at
-+	  bootup.
++	profile = aa_get_profile(current);
++	if (profile)
++		error = aa_net_perm(profile, "socket_create", family,
++							type, protocol);
++	aa_put_profile(profile);
 +
-+	  If you are unsure how to answer this question, answer 1.
++	return error;
++}
++
++static int apparmor_socket_post_create(struct socket *sock, int family,
++					int type, int protocol, int kern)
++{
++	struct sock *sk = sock->sk;
++
++	if (kern)
++		return 0;
++
++	return aa_revalidate_sk(sk, "socket_post_create");
++}
++
++static int apparmor_socket_bind(struct socket *sock,
++				struct sockaddr *address, int addrlen)
++{
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_bind");
++}
++
++static int apparmor_socket_connect(struct socket *sock,
++					struct sockaddr *address, int addrlen)
++{
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_connect");
++}
++
++static int apparmor_socket_listen(struct socket *sock, int backlog)
++{
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_listen");
++}
++
++static int apparmor_socket_accept(struct socket *sock, struct socket *newsock)
++{
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_accept");
++}
++
++static int apparmor_socket_sendmsg(struct socket *sock,
++					struct msghdr *msg, int size)
++{
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_sendmsg");
++}
++
++static int apparmor_socket_recvmsg(struct socket *sock,
++				   struct msghdr *msg, int size, int flags)
++{
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_recvmsg");
++}
++
++static int apparmor_socket_getsockname(struct socket *sock)
++{
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_getsockname");
++}
++
++static int apparmor_socket_getpeername(struct socket *sock)
++{
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_getpeername");
++}
++
++static int apparmor_socket_getsockopt(struct socket *sock, int level,
++					int optname)
++{
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_getsockopt");
++}
++
++static int apparmor_socket_setsockopt(struct socket *sock, int level,
++					int optname)
++{
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_setsockopt");
++}
++
++static int apparmor_socket_shutdown(struct socket *sock, int how)
++{
++	struct sock *sk = sock->sk;
++
++	return aa_revalidate_sk(sk, "socket_shutdown");
++}
++
+ static int apparmor_getprocattr(struct task_struct *task, char *name,
+ 				char **value)
+ {
+@@ -716,9 +828,6 @@ struct security_operations apparmor_ops 
+ 	.capable =			apparmor_capable,
+ 	.syslog =			cap_syslog,
+ 
+-	.netlink_send =			cap_netlink_send,
+-	.netlink_recv =			cap_netlink_recv,
+-
+ 	.bprm_apply_creds =		cap_bprm_apply_creds,
+ 	.bprm_set_security =		apparmor_bprm_set_security,
+ 	.bprm_secureexec =		apparmor_bprm_secureexec,
+@@ -754,6 +863,20 @@ struct security_operations apparmor_ops 
+ 
+ 	.getprocattr =			apparmor_getprocattr,
+ 	.setprocattr =			apparmor_setprocattr,
++
++	.socket_create =		apparmor_socket_create,
++	.socket_post_create =		apparmor_socket_post_create,
++	.socket_bind =			apparmor_socket_bind,
++	.socket_connect =		apparmor_socket_connect,
++	.socket_listen =		apparmor_socket_listen,
++	.socket_accept =		apparmor_socket_accept,
++	.socket_sendmsg =		apparmor_socket_sendmsg,
++	.socket_recvmsg =		apparmor_socket_recvmsg,
++	.socket_getsockname =		apparmor_socket_getsockname,
++	.socket_getpeername =		apparmor_socket_getpeername,
++	.socket_getsockopt =		apparmor_socket_getsockopt,
++	.socket_setsockopt =		apparmor_socket_setsockopt,
++	.socket_shutdown =		apparmor_socket_shutdown,
+ };
+ 
+ static void info_message(const char *str)
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -14,6 +14,9 @@
+ #include <linux/audit.h>
+ #include <linux/mount.h>
+ #include <linux/ptrace.h>
++#include <linux/socket.h>
++#include <linux/net.h>
++#include <net/sock.h>
+ 
+ #include "apparmor.h"
+ 
+@@ -341,6 +344,24 @@ static void aa_audit_file_mask(struct au
+ 	audit_log_format(ab, " %s=\"%s::%s\"", name, user, other);
+ }
+ 
++static const char *address_families[] = {
++#include "af_names.h"
++};
++
++static const char *sock_types[] = {
++	"unknown(0)",
++	"stream",
++	"dgram",
++	"raw",
++	"rdm",
++	"seqpacket",
++	"dccp",
++	"unknown(7)",
++	"unknown(8)",
++	"unknown(9)",
++	"packet",
++};
++
+ /**
+  * aa_audit - Log an audit event to the audit subsystem
+  * @profile: profile to check against
+@@ -406,6 +427,24 @@ static int aa_audit_base(struct aa_profi
+ 		audit_log_untrustedstring(ab, sa->name2);
+ 	}
+ 
++	if (sa->family || sa->type) {
++		if (address_families[sa->family])
++			audit_log_format(ab, " family=\"%s\"",
++					 address_families[sa->family]);
++		else
++			audit_log_format(ab, " family=\"unknown(%d)\"",
++					 sa->family);
++
++		if (sock_types[sa->type])
++			audit_log_format(ab, " sock_type=\"%s\"",
++					 sock_types[sa->type]);
++		else
++			audit_log_format(ab, " sock_type=\"unknown(%d)\"",
++					 sa->type);
++
++		audit_log_format(ab, " protocol=%d", sa->protocol);
++	}
++
+ 	audit_log_format(ab, " pid=%d", current->pid);
+ 
+ 	if (profile) {
+@@ -725,6 +764,63 @@ int aa_link(struct aa_profile *profile,
+ 	return error;
+ }
+ 
++int aa_net_perm(struct aa_profile *profile, char *operation,
++		int family, int type, int protocol)
++{
++	struct aa_audit sa;
++	int error = 0;
++	u16 family_mask;
++
++	if ((family < 0) || (family >= AF_MAX))
++		return -EINVAL;
++
++	if ((type < 0) || (type >= SOCK_MAX))
++		return -EINVAL;
++
++	/* unix domain and netlink sockets are handled by ipc */
++	if (family == AF_UNIX || family == AF_NETLINK)
++		return 0;
++
++	family_mask = profile->network_families[family];
++
++	error = (family_mask & (1 << type)) ? 0 : -EACCES;
++
++	memset(&sa, 0, sizeof(sa));
++	sa.operation = operation;
++	sa.gfp_mask = GFP_KERNEL;
++	sa.family = family;
++	sa.type = type;
++	sa.protocol = protocol;
++	sa.error_code = error;
++
++	error = aa_audit(profile, &sa);
++
++	return error;
++}
++
++int aa_revalidate_sk(struct sock *sk, char *operation)
++{
++	struct aa_profile *profile;
++	int error = 0;
++
++	/* this is some debugging code to flush out the network hooks that
++	   that are called in interrupt context */
++	if (in_interrupt()) {
++		printk("AppArmor Debug: Hook being called from interrupt context\n");
++		dump_stack();
++		return 0;
++	}
++
++	profile = aa_get_profile(current);
++	if (profile)
++		error = aa_net_perm(profile, operation,
++				    sk->sk_family, sk->sk_type,
++				    sk->sk_protocol);
++	aa_put_profile(profile);
++
++	return error;
++}
++
+ /*******************************
+  * Global task related functions
+  *******************************/
+--- a/security/apparmor/module_interface.c
++++ b/security/apparmor/module_interface.c
+@@ -283,6 +283,8 @@ static struct aa_profile *aa_unpack_prof
+ {
+ 	struct aa_profile *profile = NULL;
+ 	struct aa_audit sa;
++	size_t size = 0;
++	int i;
+ 
+ 	int error = -EPROTO;
+ 
+@@ -311,6 +313,24 @@ static struct aa_profile *aa_unpack_prof
+ 	if (!aa_is_u32(e, &(profile->capabilities), NULL))
+ 		goto fail;
+ 
++	size = aa_is_array(e, "net_allowed_af");
++	if (size) {
++		if (size > AF_MAX)
++			goto fail;
++
++		for (i = 0; i < size; i++) {
++			if (!aa_is_u16(e, &profile->network_families[i], NULL))
++				goto fail;
++		}
++		if (!aa_is_nameX(e, AA_ARRAYEND, NULL))
++			goto fail;
++		/* allow unix domain and netlink sockets they are handled
++		 * by IPC
++		 */
++	}
++	profile->network_families[AF_UNIX] = 0xffff;
++	profile->network_families[AF_NETLINK] = 0xffff;
++
+ 	/* get file rules */
+ 	profile->file_rules = aa_unpack_dfa(e);
+ 	if (IS_ERR(profile->file_rules)) {
 
 -- 
 
