@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760295AbXLTUNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760070AbXLTUN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760295AbXLTUNh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 15:13:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759248AbXLTULr
+	id S1760070AbXLTUN4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 15:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759833AbXLTUMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 15:11:47 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45395 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759242AbXLTULq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 15:11:46 -0500
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
-       rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
-       Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 15/15] replace x86_read/write_per_cpu with a common function.
-Date: Thu, 20 Dec 2007 18:04:10 -0200
-Message-Id: <11981813802836-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11981813691362-git-send-email-gcosta@redhat.com>
-References: <11981810504172-git-send-email-gcosta@redhat.com> <11981811293763-git-send-email-gcosta@redhat.com> <11981811852758-git-send-email-gcosta@redhat.com> <11981812041672-git-send-email-gcosta@redhat.com> <1198181215625-git-send-email-gcosta@redhat.com> <1198181224677-git-send-email-gcosta@redhat.com> <11981812412879-git-send-email-gcosta@redhat.com> <11981812771615-git-send-email-gcosta@redhat.com> <1198181309285-git-send-email-gcosta@redhat.com> <11981813192341-git-send-email-gcosta@redhat.com> <11981813292926-git-send-email-gcosta@redhat.com> <11981813384090-git-send-email-gcosta@redhat.com> <1198181348746-git-send-email-gcosta@redhat.com> <11981813592589-git-send-email-gcosta@redhat.com> <11981813691362-git-send-email-gcosta@redhat.com>
+	Thu, 20 Dec 2007 15:12:46 -0500
+Received: from mga06.intel.com ([134.134.136.21]:47276 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759798AbXLTUMo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 15:12:44 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,191,1196668800"; 
+   d="scan'208";a="301985351"
+Message-ID: <476ACABC.4010503@linux.intel.com>
+Date: Thu, 20 Dec 2007 21:04:12 +0100
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
+MIME-Version: 1.0
+To: Parag Warudkar <parag.warudkar@gmail.com>
+CC: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       netdev@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sky2: Use deferrable timer for watchdog
+References: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>	 <20071220091603.0d69b045@deepthought>	 <823114761-1198171803-cardhu_decombobulator_blackberry.rim.net-937108990-@bxe019.bisx.prod.on.blackberry>	 <20071220095121.7859c023@deepthought> <476ABDDF.8080607@intel.com>	 <476ABE7D.60901@linux.intel.com> <476AC105.9090206@intel.com> <82e4877d0712201200h7b994175u841d1efa047cefff@mail.gmail.com>
+In-Reply-To: <82e4877d0712201200h7b994175u841d1efa047cefff@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86_read_per_cpu() and its writeish sister are not present in x86_64. So in
-this patch, we replace them with __get_cpu_var(), which is present in both
+Parag Warudkar wrote:
+> On Dec 20, 2007 2:22 PM, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+>> ok, that's just bad and if there's no user-defineable limit to the deferral I
+>> definately don't like this change.
+>>
+>> Can I safely assume that any irq will cause all deferred timers to run?
+> 
+> I think even other causes for wakeup like process related ones will
+> cause the CPU to go busy and run the timers.
+> This, coupled with the fact that no one is yet able to reach 0 wakeups
+> per second makes it pretty unlikely that deferrable timers will be
+> deferred indefinitely.
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
----
- arch/x86/kernel/paravirt.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+0.8 is easy on single core today.
+multicore just increases how idle you can be for a given core.
 
-Index: linux-2.6-x86/arch/x86/kernel/paravirt.c
-===================================================================
---- linux-2.6-x86.orig/arch/x86/kernel/paravirt.c	2007-12-20 19:08:11.000000000 -0800
-+++ linux-2.6-x86/arch/x86/kernel/paravirt.c	2007-12-20 19:08:18.000000000 -0800
-@@ -238,18 +238,18 @@
- 
- static inline void enter_lazy(enum paravirt_lazy_mode mode)
- {
--	BUG_ON(x86_read_percpu(paravirt_lazy_mode) != PARAVIRT_LAZY_NONE);
-+	BUG_ON(__get_cpu_var(paravirt_lazy_mode) != PARAVIRT_LAZY_NONE);
- 	BUG_ON(preemptible());
- 
--	x86_write_percpu(paravirt_lazy_mode, mode);
-+	__get_cpu_var(paravirt_lazy_mode) = mode;
- }
- 
- void paravirt_leave_lazy(enum paravirt_lazy_mode mode)
- {
--	BUG_ON(x86_read_percpu(paravirt_lazy_mode) != mode);
-+	BUG_ON(__get_cpu_var(paravirt_lazy_mode) != mode);
- 	BUG_ON(preemptible());
- 
--	x86_write_percpu(paravirt_lazy_mode, PARAVIRT_LAZY_NONE);
-+	__get_cpu_var(paravirt_lazy_mode) = PARAVIRT_LAZY_NONE;
- }
- 
- void paravirt_enter_lazy_mmu(void)
-@@ -274,7 +274,7 @@
- 
- enum paravirt_lazy_mode paravirt_get_lazy_mode(void)
- {
--	return x86_read_percpu(paravirt_lazy_mode);
-+	return __get_cpu_var(paravirt_lazy_mode);
- }
- 
- struct pv_info pv_info = {
+> 
+>> If this is the case then for e1000 this patch is still OK since the watchdog needs
+>> to run (1) after a link up/down interrupt or (2) to update statistics. Those
+>> statistics won't increase if there is no traffic of course...
+>>
+> 
+> I think it is reasonable for Network driver watchdogs to use a
+> deferrable timer - if the machine is 100% IDLE there is no one needing
+> the network to be up. If there is something running even on the other
+> CPU - that is going to cause an IPI, reschedule, TLB invalidation etc.
+> which will make it very likely in practice that each CPU will be
+> interrupted in reasonable amount of time.
+
+this is not correct; many machines are idle waiting for network data. Think of webservers...
+
+> 
+> Of course there are theoretical cases where we could land into a
+> situation where a CPU in a multiprocessor machine is IDLE infinitely
+> and that causes the watchdog that happens to be bound to run on the
+> same CPU to not run. To take care of these unlikely cases I think the
+> timer mechanism should have a reasonable limit on how long a CPU can
+> go IDLE if there are deferrable timers.
+
+how about something else instead: a timer mechanism that takes a range instead..
+that at least has defined semantics; the deferrable semantics really are "indefinite".
+Lets keep at least the semantics clear and clean.
+
