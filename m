@@ -1,56 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbXLTTiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbXLTTjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753822AbXLTTiF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 14:38:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbXLTThy
+	id S1754149AbXLTTjw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 14:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbXLTTjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 14:37:54 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47146 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751483AbXLTThx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 14:37:53 -0500
-Message-ID: <476AC48D.6000103@redhat.com>
-Date: Thu, 20 Dec 2007 14:37:49 -0500
-From: Tony Camuso <tcamuso@redhat.com>
-Reply-To: tcamuso@redhat.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <20071220173528.GE29690@parisc-linux.org> <476AAE99.7090301@redhat.com> <20071220181603.GF29690@parisc-linux.org>
-In-Reply-To: <20071220181603.GF29690@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Dec 2007 14:39:45 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:38716 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbXLTTjo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 14:39:44 -0500
+Message-ID: <476AC51F.70400@davidnewall.com>
+Date: Fri, 21 Dec 2007 06:10:15 +1030
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=_hawking.rebel.net.au-4809-1198179583-0001-2"
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Marcel Holtmann <marcel@holtmann.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Kernel bug: bluetooth meets TTY layer
+References: <476A895C.7040903@linux.intel.com>
+In-Reply-To: <476A895C.7040903@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> Bad deduction.  What's happening is that the write to the BAR is causing
-> it to overlap the decode for mmconfig space.  So the mmconfig write to
-> set the BAR back never gets through.
-> 
-> I have a different idea to fix this problem.  Instead of writing
-> 0xffffffff, we could look for an unused bit of space in the E820 map and
-> write, say, 0xdfffffff to the low 32-bits of a BAR.  Then it wouldn't
-> overlap, and we could find its size using MMCONFIG.
-> 
-Let me see if I understand this correctly.
+--=_hawking.rebel.net.au-4809-1198179583-0001-2
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Writing this BAR with 0xffffffff causes it to decode all further mmconfig
-references based at addr 0xfxxxxxxx as its own?
+Hi Arjan,
 
-If I've got that right, then why don't any of the other BARs do that? Is
-it because this one's a 64-bit BAR?
+I've not been able to find this file, "drivers/bluetooth/hci_tty.c", but 
+anyway, This seems to be what happens: Hci_uart_close() flushes using 
+hci_uart_flush().  Subsequently, in hci_dev_do_close(), (one step in 
+hci_unregister_dev()), hci_uart_flush() is called again.  The comment in 
+uart_flush_buffer(), relating to the WARN_ON(), indicates you can't 
+flush after the port is closed; which sounds reasonable.  I think 
+hci_uart_close() should set hdev->flush to NULL before returning.  
+Hci_dev_do_close() does check for this.  The code path is rather 
+involved and I'm not entirely clear of all steps, but I think that's 
+what should be done.
 
-AFIK, there are no devices out there that require 32-bits of address
-space, so using 0xdfffffff in the low register would certainly work.
+Patch for stupidly obsolete kernel attached.
 
-However, the PCI spec says that we should be able to write 0xffffffff
-to the BAR, buggy BIOS and hardware notwithstanding.
+David
 
-Does anybody see that change as being within the purview of the patch-set
-I am proposing? Or is that another patch for another time?
+--=_hawking.rebel.net.au-4809-1198179583-0001-2
+Content-Type: text/x-diff; name="hci_ldisc.c.patch"; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="hci_ldisc.c.patch"
+
+--- hci_ldisc.c	2007-09-11 02:54:02.000000000 +0930
++++ hci_ldisc.c.new	2007-12-21 06:03:11.000000000 +1030
+@@ -203,16 +203,17 @@
+ static int hci_uart_close(struct hci_dev *hdev)
+ {
+ 	BT_DBG("hdev %p", hdev);
+ 
+ 	if (!test_and_clear_bit(HCI_RUNNING, &hdev->flags))
+ 		return 0;
+ 
+ 	hci_uart_flush(hdev);
++	hdev->flush = NULL;
+ 	return 0;
+ }
+ 
+ /* Send frames from HCI layer */
+ static int hci_uart_send_frame(struct sk_buff *skb)
+ {
+ 	struct hci_dev* hdev = (struct hci_dev *) skb->dev;
+ 	struct tty_struct *tty;
+
+--=_hawking.rebel.net.au-4809-1198179583-0001-2--
