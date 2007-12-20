@@ -1,42 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbXLTTuD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbXLTUBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755762AbXLTTuD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 14:50:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbXLTTty
+	id S1754906AbXLTUBV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 15:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbXLTUBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 14:49:54 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:47187 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753529AbXLTTty (ORCPT
+	Thu, 20 Dec 2007 15:01:03 -0500
+Received: from nz-out-0506.google.com ([64.233.162.226]:61827 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753083AbXLTUBB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 14:49:54 -0500
-Date: Thu, 20 Dec 2007 22:50:21 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Tony Camuso <tcamuso@redhat.com>, Loic Prylli <loic@myri.com>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-Message-ID: <20071220195021.GA427@jurassic.park.msu.ru>
-References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <20071220173528.GE29690@parisc-linux.org> <476AAE99.7090301@redhat.com> <20071220181603.GF29690@parisc-linux.org> <476AB920.7040604@myri.com> <476ABCBF.8090006@redhat.com> <20071220190833.GH29690@parisc-linux.org>
+	Thu, 20 Dec 2007 15:01:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VDrBAtBpovzpJyAAG3/TaMTbkJlVtBm1FUf6hg7hzTMvUgY48xmEds1a9qpsRwv4Fct48gSDuai8CMWBC+3PGv8jnxCYW77RYV2QtCC05o65cy5iyiSo386dDgMQkLL5lCnWfrZySTBCu2Ff8YhCPXAr5cpDCI+5OrHUYDcauG0=
+Message-ID: <82e4877d0712201200h7b994175u841d1efa047cefff@mail.gmail.com>
+Date: Thu, 20 Dec 2007 15:00:59 -0500
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH] sky2: Use deferrable timer for watchdog
+Cc: "Arjan van de Ven" <arjan@linux.intel.com>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       netdev@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <476AC105.9090206@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071220190833.GH29690@parisc-linux.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>
+	 <20071220091603.0d69b045@deepthought>
+	 <823114761-1198171803-cardhu_decombobulator_blackberry.rim.net-937108990-@bxe019.bisx.prod.on.blackberry>
+	 <20071220095121.7859c023@deepthought> <476ABDDF.8080607@intel.com>
+	 <476ABE7D.60901@linux.intel.com> <476AC105.9090206@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 12:08:33PM -0700, Matthew Wilcox wrote:
-> On Thu, Dec 20, 2007 at 02:04:31PM -0500, Tony Camuso wrote:
-> > Does anybody see a down side to this?
-> 
-> It'll be slower than it would be if we used mmconfig directly.  Now yes,
-> nobody should be using pci config space in performance critical paths
-> ... but see the tg3 driver.
+On Dec 20, 2007 2:22 PM, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+> ok, that's just bad and if there's no user-defineable limit to the deferral I
+> definately don't like this change.
+>
+> Can I safely assume that any irq will cause all deferred timers to run?
 
-Use type 1 just for the first 64 bytes and tg3 will be happy. All we need
-is to avoid touching BARs with mmconfig.
+I think even other causes for wakeup like process related ones will
+cause the CPU to go busy and run the timers.
+This, coupled with the fact that no one is yet able to reach 0 wakeups
+per second makes it pretty unlikely that deferrable timers will be
+deferred indefinitely.
 
-Ivan.
+>
+> If this is the case then for e1000 this patch is still OK since the watchdog needs
+> to run (1) after a link up/down interrupt or (2) to update statistics. Those
+> statistics won't increase if there is no traffic of course...
+>
+
+I think it is reasonable for Network driver watchdogs to use a
+deferrable timer - if the machine is 100% IDLE there is no one needing
+the network to be up. If there is something running even on the other
+CPU - that is going to cause an IPI, reschedule, TLB invalidation etc.
+which will make it very likely in practice that each CPU will be
+interrupted in reasonable amount of time.
+
+Of course there are theoretical cases where we could land into a
+situation where a CPU in a multiprocessor machine is IDLE infinitely
+and that causes the watchdog that happens to be bound to run on the
+same CPU to not run. To take care of these unlikely cases I think the
+timer mechanism should have a reasonable limit on how long a CPU can
+go IDLE if there are deferrable timers.
+
+Parag
