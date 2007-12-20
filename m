@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936604AbXLTQbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764795AbXLTQeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936604AbXLTQbs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 11:31:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761665AbXLTQbg
+	id S1764795AbXLTQeZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 11:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbXLTQeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 11:31:36 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4523 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759854AbXLTQbf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 11:31:35 -0500
-Date: Thu, 20 Dec 2007 16:29:23 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Joe Perches <joe@perches.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, trivial@kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>
-Subject: Re: Trailing periods in kernel messages
-Message-ID: <20071220162923.GB27885@shadowen.org>
-References: <474E6BD0.20103@cn.fujitsu.com> <E1IxfE8-0000Sr-9w@faramir.fjphome.nl> <474E8669.6060409@cn.fujitsu.com> <200711291120.19595.elendil@planet.nl> <20071129032036.4c021617.akpm@linux-foundation.org> <474F6372.70705@cn.fujitsu.com> <1196386259.22120.101.camel@localhost> <474F6D4D.9010006@cn.fujitsu.com> <1196390128.22120.118.camel@localhost>
+	Thu, 20 Dec 2007 11:34:16 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37723 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758669AbXLTQeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 11:34:15 -0500
+Date: Thu, 20 Dec 2007 17:33:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Yinghai Lu <Yinghai.Lu@Sun.COM>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: not needed patch
+Message-ID: <20071220163352.GA6930@elte.hu>
+References: <200712192057.02500.yinghai.lu@sun.com> <20071220142906.GA20794@elte.hu> <476A983F.1060704@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1196390128.22120.118.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <476A983F.1060704@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 29, 2007 at 06:35:28PM -0800, Joe Perches wrote:
-> On Fri, 2007-11-30 at 09:54 +0800, Li Zefan wrote:
-> > So it doesn't deserve the effort to eliminate these periods, isn't it?
-> 
-> I hope these will eventually disappear.
-> 
-> > Or we can add a check to checkpatch.pl to prevent new ones.
-> 
-> Perhaps that's a good idea.
-> 
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index cbb4258..707f84c 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -1390,6 +1390,10 @@ sub process {
->  		if ($line =~ /\*\s*\)\s*k[czm]alloc\b/) {
->  			WARN("unnecessary cast may hide bugs, see http://c-faq.com/malloc/mallocnocast.html\n" . $herecurr);
->  		}
-> +
-> +		if ($rawline =~ /(print|pr_(emerg|alert|crit|err|warning|notice|info|debug)).*\.\\n\"/) {
-> +			WARN("unnecessary period before newline\n" . $herecurr);
-> +		}
 
-I missed the context on this one.  So this is checking for periods at
-the end of messages for printk's.  We would need something a little
-cleverer to ensure we are only checking the contents of the string.  But
-eminently doable.
+* Mike Travis <travis@sgi.com> wrote:
 
-/me plays
+> >> by revert commit fbdcf18df73758b2e187ab94678b30cd5f6ff9f9, we could 
+> >> use c->cpu_index in identify_cpu.
+> > 
+> > but that's 2.6.25 stuff, right? Travis?
+> > 
+> 
+> Looking at this more closely, yes my change is not needed and should 
+> be removed.  I'm not sure what caused my cpu # to be all zeros when I 
+> was testing, but it now works ok without my change.
 
-Ok, yes this seems ok.  Have added it for 0.13.
+how about this question:
 
--apw
+> > well, it might in the worst-case be a superfluous change, but not 
+> > cause any problems in 2.6.24, right?
+
+	Ingo
