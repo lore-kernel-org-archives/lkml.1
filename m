@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbXLTEmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759651AbXLTEnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbXLTEmv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 23:42:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758759AbXLTElz
+	id S1759651AbXLTEnM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 23:43:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758902AbXLTEl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 23:41:55 -0500
-Received: from vms040pub.verizon.net ([206.46.252.40]:49045 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758716AbXLTElx (ORCPT
+	Wed, 19 Dec 2007 23:41:59 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:44205 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758873AbXLTEl5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 23:41:53 -0500
-Date: Wed, 19 Dec 2007 23:41:40 -0500
+	Wed, 19 Dec 2007 23:41:57 -0500
+Date: Wed, 19 Dec 2007 23:41:38 -0500
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH 2/5] Modify several rtc drivers to use the alias names list
-	property of i2c
+Subject: [PATCH 1/5] Implement module aliasing for i2c to translate from	device
+ tree names
 In-reply-to: <20071220044136.20091.70984.stgit@terra.home>
 To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Message-id: <20071220044140.20091.31851.stgit@terra.home>
+Message-id: <20071220044138.20091.31417.stgit@terra.home>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 Content-transfer-encoding: 7bit
@@ -26,350 +26,201 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch modifies the ds1307, ds1374, and rs5c372 i2c drivers to support
-device tree names using the new i2c mod alias support
+This patch allows new style i2c chip drivers to have alias names using
+the official kernel aliasing system and MODULE_DEVICE_TABLE(). I've
+tested it on PowerPC and x86. This change is required for PowerPC
+device tree support.
 
 Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 ---
 
- arch/powerpc/sysdev/fsl_soc.c |   44 ++++----------------------------
- drivers/rtc/rtc-ds1307.c      |   20 +++++++++++++-
- drivers/rtc/rtc-ds1374.c      |    9 ++++++
- drivers/rtc/rtc-m41t80.c      |   57 ++++++++++++++++++++++++++++-------------
- drivers/rtc/rtc-rs5c372.c     |   16 ++++++++++--
- 5 files changed, 85 insertions(+), 61 deletions(-)
+ drivers/i2c/i2c-core.c          |   32 ++++++++++++++++++++++++++------
+ include/linux/i2c.h             |    9 ++++-----
+ include/linux/mod_devicetable.h |   20 ++++++++++++++++++++
+ scripts/mod/file2alias.c        |   19 +++++++++++++++++++
+ 4 files changed, 69 insertions(+), 11 deletions(-)
 
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 3ace747..268638a 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -320,48 +320,12 @@ arch_initcall(gfar_of_init);
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index b5e13e4..fce06fd 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -47,10 +47,25 @@ static DEFINE_IDR(i2c_adapter_idr);
  
- #ifdef CONFIG_I2C_BOARDINFO
- #include <linux/i2c.h>
--struct i2c_driver_device {
--	char	*of_device;
--	char	*i2c_driver;
--	char	*i2c_type;
--};
--
--static struct i2c_driver_device i2c_devices[] __initdata = {
--	{"ricoh,rs5c372a", "rtc-rs5c372", "rs5c372a",},
--	{"ricoh,rs5c372b", "rtc-rs5c372", "rs5c372b",},
--	{"ricoh,rv5c386",  "rtc-rs5c372", "rv5c386",},
--	{"ricoh,rv5c387a", "rtc-rs5c372", "rv5c387a",},
--	{"dallas,ds1307",  "rtc-ds1307",  "ds1307",},
--	{"dallas,ds1337",  "rtc-ds1307",  "ds1337",},
--	{"dallas,ds1338",  "rtc-ds1307",  "ds1338",},
--	{"dallas,ds1339",  "rtc-ds1307",  "ds1339",},
--	{"dallas,ds1340",  "rtc-ds1307",  "ds1340",},
--	{"stm,m41t00",     "rtc-ds1307",  "m41t00"},
--	{"dallas,ds1374",  "rtc-ds1374",  "rtc-ds1374",},
--};
--
--static int __init of_find_i2c_driver(struct device_node *node,
--				     struct i2c_board_info *info)
--{
--	int i;
--
--	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
--		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
--			continue;
--		if (strlcpy(info->driver_name, i2c_devices[i].i2c_driver,
--			    KOBJ_NAME_LEN) >= KOBJ_NAME_LEN ||
--		    strlcpy(info->type, i2c_devices[i].i2c_type,
--			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
--			return -ENOMEM;
--		return 0;
--	}
--	return -ENODEV;
--}
+ /* ------------------------------------------------------------------------- */
  
- static void __init of_register_i2c_devices(struct device_node *adap_node,
- 					   int bus_num)
- {
- 	struct device_node *node = NULL;
-+	const char *compatible;
- 
- 	while ((node = of_get_next_child(adap_node, node))) {
- 		struct i2c_board_info info = {};
-@@ -378,8 +342,12 @@ static void __init of_register_i2c_devices(struct device_node *adap_node,
- 		if (info.irq == NO_IRQ)
- 			info.irq = -1;
- 
--		if (of_find_i2c_driver(node, &info) < 0)
-+		compatible = of_get_property(node, "compatible", &len);
-+		if (!compatible) {
-+			printk(KERN_WARNING "i2c-mpc.c: invalid entry, missing compatible attribute\n");
- 			continue;
+-static int i2c_device_match(struct device *dev, struct device_driver *drv)
++static const struct i2c_device_id *i2c_device_match(const struct i2c_device_id *id, struct i2c_client *client)
++{
++	/* only powerpc drivers implement the id_table,
++	 * it is empty on other platforms */
++	if (id) {
++		while (id->name[0]) {
++			if (strcmp(client->driver_name, id->name) == 0)
++				return id;
++			id++;
 +		}
-+		strncpy(info.driver_name, compatible, sizeof(info.driver_name));
++	}
++	return NULL;
++}
++
++static int i2c_bus_match(struct device *dev, struct device_driver *drv)
+ {
+ 	struct i2c_client	*client = to_i2c_client(dev);
+ 	struct i2c_driver	*driver = to_i2c_driver(drv);
++	const struct i2c_device_id *found_id;
  
- 		info.addr = *addr;
+ 	/* make legacy i2c drivers bypass driver model probing entirely;
+ 	 * such drivers scan each i2c adapter/bus themselves.
+@@ -58,9 +73,11 @@ static int i2c_device_match(struct device *dev, struct device_driver *drv)
+ 	if (!is_newstyle_driver(driver))
+ 		return 0;
  
-diff --git a/drivers/rtc/rtc-ds1307.c b/drivers/rtc/rtc-ds1307.c
-index bc1c7fe..d4874ff 100644
---- a/drivers/rtc/rtc-ds1307.c
-+++ b/drivers/rtc/rtc-ds1307.c
-@@ -139,6 +139,17 @@ static inline const struct chip_desc *find_chip(const char *s)
- 	return NULL;
+-	/* new style drivers use the same kind of driver matching policy
+-	 * as platform devices or SPI:  compare device and driver IDs.
+-	 */
++	/* match on an id table if there is one */
++	found_id = i2c_device_match(driver->id_table, client);
++	if (found_id)
++		return 1;
++
+ 	return strcmp(client->driver_name, drv->name) == 0;
  }
  
-+static struct i2c_device_id ds1307_id[] = {
-+	OF_I2C_ID("dallas,ds1307", ds_1307)
-+	OF_I2C_ID("dallas,ds1337", ds_1337)
-+	OF_I2C_ID("dallas,ds1338", ds_1338)
-+	OF_I2C_ID("dallas,ds1339", ds_1339)
-+	OF_I2C_ID("dallas,ds1340", ds_1340)
-+	OF_I2C_ID("stm,m41t00", m41t00)
-+	{},
-+};
-+MODULE_DEVICE_TABLE(i2c, ds1307_id);
-+
- static int ds1307_get_time(struct device *dev, struct rtc_time *t)
+@@ -89,12 +106,15 @@ static int i2c_device_probe(struct device *dev)
  {
- 	struct ds1307	*ds1307 = dev_get_drvdata(dev);
-@@ -326,7 +337,7 @@ static struct bin_attribute nvram = {
+ 	struct i2c_client	*client = to_i2c_client(dev);
+ 	struct i2c_driver	*driver = to_i2c_driver(dev->driver);
++	const struct i2c_device_id *id;
  
- static struct i2c_driver ds1307_driver;
- 
--static int __devinit ds1307_probe(struct i2c_client *client)
-+static int __devinit ds1307_probe(struct i2c_client *client, const struct i2c_device_id *id)
- {
- 	struct ds1307		*ds1307;
- 	int			err = -ENODEV;
-@@ -334,7 +345,11 @@ static int __devinit ds1307_probe(struct i2c_client *client)
- 	const struct chip_desc	*chip;
- 	struct i2c_adapter	*adapter = to_i2c_adapter(client->dev.parent);
- 
--	chip = find_chip(client->name);
-+	if (id)
-+		chip = &chips[id->driver_data];
-+	else
-+		chip = find_chip(client->name);
+ 	if (!driver->probe)
+ 		return -ENODEV;
+ 	client->driver = driver;
+ 	dev_dbg(dev, "probe\n");
+-	return driver->probe(client);
 +
- 	if (!chip) {
- 		dev_err(&client->dev, "unknown chip type '%s'\n",
- 				client->name);
-@@ -537,6 +552,7 @@ static struct i2c_driver ds1307_driver = {
- 	},
- 	.probe		= ds1307_probe,
- 	.remove		= __devexit_p(ds1307_remove),
-+	.id_table	= ds1307_id,
++	id = i2c_device_match(driver->id_table, client);
++	return driver->probe(client, id);
+ }
+ 
+ static int i2c_device_remove(struct device *dev)
+@@ -189,7 +209,7 @@ static struct device_attribute i2c_dev_attrs[] = {
+ static struct bus_type i2c_bus_type = {
+ 	.name		= "i2c",
+ 	.dev_attrs	= i2c_dev_attrs,
+-	.match		= i2c_device_match,
++	.match		= i2c_bus_match,
+ 	.uevent		= i2c_device_uevent,
+ 	.probe		= i2c_device_probe,
+ 	.remove		= i2c_device_remove,
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index a100c9f..49fc682 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -126,7 +126,7 @@ struct i2c_driver {
+ 	 * With the driver model, device enumeration is NEVER done by drivers;
+ 	 * it's done by infrastructure.  (NEW STYLE DRIVERS ONLY)
+ 	 */
+-	int (*probe)(struct i2c_client *);
++	int (*probe)(struct i2c_client *, const struct i2c_device_id *id);
+ 	int (*remove)(struct i2c_client *);
+ 
+ 	/* driver model interfaces that don't relate to enumeration  */
+@@ -141,11 +141,10 @@ struct i2c_driver {
+ 
+ 	struct device_driver driver;
+ 	struct list_head list;
++	struct i2c_device_id *id_table;
  };
+ #define to_i2c_driver(d) container_of(d, struct i2c_driver, driver)
  
- static int __init ds1307_init(void)
-diff --git a/drivers/rtc/rtc-ds1374.c b/drivers/rtc/rtc-ds1374.c
-index 45bda18..6dc05c4 100644
---- a/drivers/rtc/rtc-ds1374.c
-+++ b/drivers/rtc/rtc-ds1374.c
-@@ -41,6 +41,12 @@
- #define DS1374_REG_SR_AF	0x01 /* Alarm Flag */
- #define DS1374_REG_TCR		0x09 /* Trickle Charge */
- 
-+static struct i2c_device_id ds1374_id[] = {
-+	OF_I2C_ID("dallas,ds1374", 0)
-+	{},
-+};
-+MODULE_DEVICE_TABLE(i2c, ds1374_id);
-+
- struct ds1374 {
- 	struct i2c_client *client;
- 	struct rtc_device *rtc;
-@@ -355,7 +361,7 @@ static const struct rtc_class_ops ds1374_rtc_ops = {
- 	.ioctl = ds1374_ioctl,
+-#define I2C_NAME_SIZE	20
+-
+ /**
+  * struct i2c_client - represent an I2C slave device
+  * @flags: I2C_CLIENT_TEN indicates the device uses a ten bit chip address;
+@@ -179,7 +178,7 @@ struct i2c_client {
+ 					/* to the client		*/
+ 	struct device dev;		/* the device structure		*/
+ 	int irq;			/* irq issued by device (or -1) */
+-	char driver_name[KOBJ_NAME_LEN];
++	char driver_name[I2C_NAME_SIZE];
+ 	struct list_head list;
+ 	struct completion released;
  };
- 
--static int ds1374_probe(struct i2c_client *client)
-+static int ds1374_probe(struct i2c_client *client, const struct i2c_device_id *id)
- {
- 	struct ds1374 *ds1374;
- 	int ret;
-@@ -429,6 +435,7 @@ static struct i2c_driver ds1374_driver = {
- 	},
- 	.probe = ds1374_probe,
- 	.remove = __devexit_p(ds1374_remove),
-+	.id_table = ds1374_id,
- };
- 
- static int __init ds1374_init(void)
-diff --git a/drivers/rtc/rtc-m41t80.c b/drivers/rtc/rtc-m41t80.c
-index 1cb33ca..fc33f77 100644
---- a/drivers/rtc/rtc-m41t80.c
-+++ b/drivers/rtc/rtc-m41t80.c
-@@ -100,8 +100,21 @@ static const struct m41t80_chip_info m41t80_chip_info_tbl[] = {
- 	},
- };
- 
-+static struct i2c_device_id m41t80_id[] = {
-+	OF_I2C_ID("stm,m41t80", 0)
-+	OF_I2C_ID("stm,m41t81", M41T80_FEATURE_HT)
-+	OF_I2C_ID("stm,m41t81s", M41T80_FEATURE_HT | M41T80_FEATURE_BL)
-+	OF_I2C_ID("stm,m41t82", M41T80_FEATURE_HT | M41T80_FEATURE_BL)
-+	OF_I2C_ID("stm,m41t83", M41T80_FEATURE_HT | M41T80_FEATURE_BL)
-+	OF_I2C_ID("stm,m41t84", M41T80_FEATURE_HT | M41T80_FEATURE_BL)
-+	OF_I2C_ID("stm,m41t85", M41T80_FEATURE_HT | M41T80_FEATURE_BL)
-+	OF_I2C_ID("stm,m41t87", M41T80_FEATURE_HT | M41T80_FEATURE_BL)
-+	{},
-+};
-+MODULE_DEVICE_TABLE(i2c, m41t80_id);
-+
- struct m41t80_data {
--	const struct m41t80_chip_info *chip;
-+	u8 features;
- 	struct rtc_device *rtc;
- };
- 
-@@ -208,7 +221,7 @@ static int m41t80_rtc_proc(struct device *dev, struct seq_file *seq)
- 	struct m41t80_data *clientdata = i2c_get_clientdata(client);
- 	u8 reg;
- 
--	if (clientdata->chip->features & M41T80_FEATURE_BL) {
-+	if (clientdata->features & M41T80_FEATURE_BL) {
- 		reg = i2c_smbus_read_byte_data(client, M41T80_REG_FLAGS);
- 		seq_printf(seq, "battery\t\t: %s\n",
- 			   (reg & M41T80_FLAGS_BATT_LOW) ? "exhausted" : "ok");
-@@ -756,12 +769,12 @@ static struct notifier_block wdt_notifier = {
-  *
-  *****************************************************************************
+@@ -223,7 +222,7 @@ static inline void i2c_set_clientdata (struct i2c_client *dev, void *data)
+  * with the adapter already known.
   */
--static int m41t80_probe(struct i2c_client *client)
-+static int m41t80_probe(struct i2c_client *client, const struct i2c_device_id *id)
- {
- 	int i, rc = 0;
- 	struct rtc_device *rtc = NULL;
- 	struct rtc_time tm;
--	const struct m41t80_chip_info *chip;
-+	u8 features;
- 	struct m41t80_data *clientdata = NULL;
+ struct i2c_board_info {
+-	char		driver_name[KOBJ_NAME_LEN];
++	char		driver_name[I2C_NAME_SIZE];
+ 	char		type[I2C_NAME_SIZE];
+ 	unsigned short	flags;
+ 	unsigned short	addr;
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index e9fddb4..d66038a 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -367,4 +367,24 @@ struct virtio_device_id {
+ };
+ #define VIRTIO_DEV_ANY_ID	0xffffffff
  
- 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C
-@@ -773,17 +786,24 @@ static int m41t80_probe(struct i2c_client *client)
- 	dev_info(&client->dev,
- 		 "chip found, driver version " DRV_VERSION "\n");
- 
--	chip = NULL;
--	for (i = 0; i < ARRAY_SIZE(m41t80_chip_info_tbl); i++) {
--		if (!strcmp(m41t80_chip_info_tbl[i].name, client->name)) {
--			chip = &m41t80_chip_info_tbl[i];
--			break;
-+	if (id)
-+		features = id->driver_data;
-+	else {
-+		const struct m41t80_chip_info *chip;
++/* i2c */
 +
-+		chip = NULL;
-+		for (i = 0; i < ARRAY_SIZE(m41t80_chip_info_tbl); i++) {
-+			if (!strcmp(m41t80_chip_info_tbl[i].name, client->name)) {
-+				chip = &m41t80_chip_info_tbl[i];
-+				break;
-+			}
- 		}
--	}
--	if (!chip) {
--		dev_err(&client->dev, "%s is not supported\n", client->name);
--		rc = -ENODEV;
--		goto exit;
-+		if (!chip) {
-+			dev_err(&client->dev, "%s is not supported\n", client->name);
-+			rc = -ENODEV;
-+			goto exit;
-+		}
-+		features = chip->features;
- 	}
- 
- 	clientdata = kzalloc(sizeof(*clientdata), GFP_KERNEL);
-@@ -801,7 +821,7 @@ static int m41t80_probe(struct i2c_client *client)
- 	}
- 
- 	clientdata->rtc = rtc;
--	clientdata->chip = chip;
-+	clientdata->features = features;
- 	i2c_set_clientdata(client, clientdata);
- 
- 	/* Make sure HT (Halt Update) bit is cleared */
-@@ -810,7 +830,7 @@ static int m41t80_probe(struct i2c_client *client)
- 		goto ht_err;
- 
- 	if (rc & M41T80_ALHOUR_HT) {
--		if (chip->features & M41T80_FEATURE_HT) {
-+		if (features & M41T80_FEATURE_HT) {
- 			m41t80_get_datetime(client, &tm);
- 			dev_info(&client->dev, "HT bit was set!\n");
- 			dev_info(&client->dev,
-@@ -842,7 +862,7 @@ static int m41t80_probe(struct i2c_client *client)
- 		goto exit;
- 
- #ifdef CONFIG_RTC_DRV_M41T80_WDT
--	if (chip->features & M41T80_FEATURE_HT) {
-+	if (features & M41T80_FEATURE_HT) {
- 		rc = misc_register(&wdt_dev);
- 		if (rc)
- 			goto exit;
-@@ -878,7 +898,7 @@ static int m41t80_remove(struct i2c_client *client)
- 	struct rtc_device *rtc = clientdata->rtc;
- 
- #ifdef CONFIG_RTC_DRV_M41T80_WDT
--	if (clientdata->chip->features & M41T80_FEATURE_HT) {
-+	if (clientdata->features & M41T80_FEATURE_HT) {
- 		misc_deregister(&wdt_dev);
- 		unregister_reboot_notifier(&wdt_notifier);
- 	}
-@@ -896,6 +916,7 @@ static struct i2c_driver m41t80_driver = {
- 	},
- 	.probe = m41t80_probe,
- 	.remove = m41t80_remove,
-+	.id_table = m41t80_id,
- };
- 
- static int __init m41t80_rtc_init(void)
-diff --git a/drivers/rtc/rtc-rs5c372.c b/drivers/rtc/rtc-rs5c372.c
-index 6b67b50..e2022c0 100644
---- a/drivers/rtc/rtc-rs5c372.c
-+++ b/drivers/rtc/rtc-rs5c372.c
-@@ -69,6 +69,15 @@ enum rtc_type {
- 	rtc_rv5c387a,
- };
- 
-+static struct i2c_device_id rs5c372_id[] = {
-+	OF_I2C_ID("ricoh,rs5c372a", rtc_rs5c372a)
-+	OF_I2C_ID("ricoh,rs5c372b", rtc_rs5c372b)
-+	OF_I2C_ID("ricoh,rv5c386", rtc_rv5c386)
-+	OF_I2C_ID("ricoh,rv5c387a", rtc_rv5c387a)
-+	{},
++/* These defines are used to separate PowerPC open firmware
++ * drivers into their own namespace */
++#define I2C_NAME_SIZE	(16*3)
++#define I2C_MODULE_PREFIX "i2c:N"
++#ifdef CONFIG_OF
++#define OF_I2C_PREFIX "OF,"
++#define I2C_OF_MODULE_PREFIX I2C_MODULE_PREFIX OF_I2C_PREFIX
++#define OF_I2C_ID(s,d) {OF_I2C_PREFIX s, (d) },
++#else
++#define OF_I2C_ID(s,d)
++#endif
++
++struct i2c_device_id {
++	char name[I2C_NAME_SIZE];
++	kernel_ulong_t driver_data;	/* Data private to the driver */
 +};
-+MODULE_DEVICE_TABLE(i2c, rs5c372_id);
 +
- /* REVISIT:  this assumes that:
-  *  - we're in the 21st century, so it's safe to ignore the century
-  *    bit for rv5c38[67] (REG_MONTH bit 7);
-@@ -494,7 +503,7 @@ static void rs5c_sysfs_unregister(struct device *dev)
++
+ #endif /* LINUX_MOD_DEVICETABLE_H */
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index d802b5a..da43742 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -539,6 +539,21 @@ static int do_virtio_entry(const char *filename, struct virtio_device_id *id,
+ 	return 1;
+ }
  
- static struct i2c_driver rs5c372_driver;
- 
--static int rs5c372_probe(struct i2c_client *client)
-+static int rs5c372_probe(struct i2c_client *client, const struct i2c_device_id *id)
++/* Looks like: i2c:Ns */
++static int do_i2c_entry(const char *filename, struct i2c_device_id *id,
++			   char *alias)
++{
++    char *tmp;
++    sprintf (alias, I2C_MODULE_PREFIX "%s", id->name);
++
++    /* Replace all whitespace with underscores */
++    for (tmp = alias; tmp && *tmp; tmp++)
++        if (isspace (*tmp))
++            *tmp = '_';
++
++    return 1;
++}
++
+ /* Ignore any prefix, eg. v850 prepends _ */
+ static inline int sym_is(const char *symbol, const char *name)
  {
- 	int err = 0;
- 	struct rs5c372 *rs5c372;
-@@ -522,7 +531,9 @@ static int rs5c372_probe(struct i2c_client *client)
- 	if (err < 0)
- 		goto exit_kfree;
+@@ -669,6 +684,10 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
+ 		do_table(symval, sym->st_size,
+ 			 sizeof(struct virtio_device_id), "virtio",
+ 			 do_virtio_entry, mod);
++	else if (sym_is(symname, "__mod_i2c_device_table"))
++		do_table(symval, sym->st_size,
++			 sizeof(struct i2c_device_id), "i2c",
++			 do_i2c_entry, mod);
+ 	free(zeros);
+ }
  
--	if (strcmp(client->name, "rs5c372a") == 0)
-+	if (id)
-+		rs5c372->type = id->driver_data;
-+	else if (strcmp(client->name, "rs5c372a") == 0)
- 		rs5c372->type = rtc_rs5c372a;
- 	else if (strcmp(client->name, "rs5c372b") == 0)
- 		rs5c372->type = rtc_rs5c372b;
-@@ -651,6 +662,7 @@ static struct i2c_driver rs5c372_driver = {
- 	},
- 	.probe		= rs5c372_probe,
- 	.remove		= rs5c372_remove,
-+	.id_table	= rs5c372_id,
- };
- 
- static __init int rs5c372_init(void)
 
