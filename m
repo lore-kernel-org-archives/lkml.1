@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763034AbXLTR1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763470AbXLTRck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763034AbXLTR1P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 12:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760105AbXLTR0z
+	id S1763470AbXLTRck (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 12:32:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbXLTRcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 12:26:55 -0500
-Received: from mga03.intel.com ([143.182.124.21]:9190 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759991AbXLTR0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 12:26:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,190,1196668800"; 
-   d="scan'208";a="346211771"
-Message-ID: <476AA0C3.2080503@intel.com>
-Date: Thu, 20 Dec 2007 09:05:07 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
-MIME-Version: 1.0
-To: parag.warudkar@gmail.com
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] e1000e: Use deferrable timer for watchdog
-References: <Pine.LNX.4.64.0712182046560.3616@mini.warudkars.net>
-In-Reply-To: <Pine.LNX.4.64.0712182046560.3616@mini.warudkars.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 20 Dec 2007 12:32:31 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48873 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751254AbXLTRca (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 12:32:30 -0500
+Date: Thu, 20 Dec 2007 09:32:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Lameter <clameter@sgi.com>,
+       Pavel Machek <pavel@suse.cz>, linux-pm@lists.linux-foundation.org
+Subject: Re: OOPS: 2.6.24-rc5-mm1 -- EIP is at r_show+0x2a/0x70  -- 
+ (triggered by "cat /proc/iomem" AFTER suspend-to-disk/resume)
+Message-Id: <20071220093206.22f319b0.akpm@linux-foundation.org>
+In-Reply-To: <476A703B.50804@gmail.com>
+References: <a44ae5cd0712192040k7480682eoa29f33d70a91c618@mail.gmail.com>
+	<4769F409.6030300@gmail.com>
+	<4769FF37.5060308@gmail.com>
+	<476A703B.50804@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Dec 2007 17:05:47.0705 (UTC) FILETIME=[90CC3A90:01C8432A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parag Warudkar wrote:
-> 
-> Reduce wakeups from idle per second.
-> 
-> Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
-> 
-> --- linux-2.6/drivers/net/e1000e/netdev.c    2007-12-07
-> 10:04:39.000000000 -0500
-> +++ linux-2.6-work/drivers/net/e1000e/netdev.c    2007-12-18
-> 20:45:59.000000000 -0500
-> @@ -3899,7 +3899,7 @@
->          goto err_eeprom;
->      }
-> 
-> -    init_timer(&adapter->watchdog_timer);
-> +    init_timer_deferrable(&adapter->watchdog_timer);
->      adapter->watchdog_timer.function = &e1000_watchdog;
->      adapter->watchdog_timer.data = (unsigned long) adapter;
+On Thu, 20 Dec 2007 08:38:03 -0500 Miles Lane <miles.lane@gmail.com> wrote:
 
+> On further investigation, "cat /proc/iomem" does not trigger the stack 
+> trace until after a suspend-to-disk/resume cycle has occurred.
 
-I can't even apply this patch and the e1000 one... not only is it whitespace
-damaged it is also not properly formatted as patch at all. If you want me to take
-these patches seriously, then please fix the formatting issues.
+I still can't reproduce this.
 
-Auke
+Could you please try this?
+
+- cat /proc/iomem
+- suspend/resume
+- do
+
+while read i
+do
+echo $i
+sleep 1
+done < /proc/iomem
+
+then, with luck, we'll be able to work out which /proc/iomem record
+immediately precedes the corrupted one.
