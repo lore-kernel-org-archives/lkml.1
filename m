@@ -1,48 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759419AbXLTTIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbXLTTKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759419AbXLTTIq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 14:08:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbXLTTIf
+	id S1759553AbXLTTKV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 14:10:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbXLTTKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 14:08:35 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:48068 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753472AbXLTTIf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 14:08:35 -0500
-Date: Thu, 20 Dec 2007 12:08:33 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Tony Camuso <tcamuso@redhat.com>
-Cc: Loic Prylli <loic@myri.com>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-Message-ID: <20071220190833.GH29690@parisc-linux.org>
-References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <20071220173528.GE29690@parisc-linux.org> <476AAE99.7090301@redhat.com> <20071220181603.GF29690@parisc-linux.org> <476AB920.7040604@myri.com> <476ABCBF.8090006@redhat.com>
+	Thu, 20 Dec 2007 14:10:04 -0500
+Received: from mga02.intel.com ([134.134.136.20]:1054 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752464AbXLTTKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 14:10:00 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,191,1196668800"; 
+   d="scan'208";a="243972863"
+Message-ID: <476ABDDF.8080607@intel.com>
+Date: Thu, 20 Dec 2007 11:09:19 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <476ABCBF.8090006@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: parag.warudkar@gmail.com, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH] sky2: Use deferrable timer for watchdog
+References: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>	<20071220091603.0d69b045@deepthought>	<823114761-1198171803-cardhu_decombobulator_blackberry.rim.net-937108990-@bxe019.bisx.prod.on.blackberry> <20071220095121.7859c023@deepthought>
+In-Reply-To: <20071220095121.7859c023@deepthought>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Dec 2007 19:09:57.0426 (UTC) FILETIME=[E92D7120:01C8433B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 02:04:31PM -0500, Tony Camuso wrote:
-> Also, this solution also would allow us to remove the unreachable_devices()
-> routine and bitmap.
+Stephen Hemminger wrote:
+> On Thu, 20 Dec 2007 17:29:23 +0000
+> 
+>> -----Original Message-----
+>> From: Stephen Hemminger <shemminger@linux-foundation.org>
+>>
+>> Date: Thu, 20 Dec 2007 09:16:03 
+>> To:parag.warudkar@gmail.com
+>> Cc:netdev@vger.kernel.org, akpm@linux-foundation.org,       linux-kernel@vger.kernel.org
+>> Subject: Re: [PATCH] sky2: Use deferrable timer for watchdog
+>>
+>>
+>> On Tue, 18 Dec 2007 20:13:28 -0500 (EST)
+>> Parag Warudkar <parag.warudkar@gmail.com> wrote:
+>>
+>>> sky2 can use deferrable timer for watchdog - reduces wakeups from idle per 
+>>> second.
+>>>
+>>> Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
+>>>
+>>> --- linux-2.6/drivers/net/sky2.c	2007-12-07 10:04:39.000000000 -0500
+>>> +++ linux-2.6-work/drivers/net/sky2.c	2007-12-18 20:07:58.000000000 -0500
+>>> @@ -4230,7 +4230,10 @@
+>>>   			sky2_show_addr(dev1);
+>>>   	}
+>>>
+>>> -	setup_timer(&hw->watchdog_timer, sky2_watchdog, (unsigned long) hw);
+>>> +	hw->watchdog_timer.function = sky2_watchdog;
+>>> +	hw->watchdog_timer.data = (unsigned long) hw;
+>>> +	init_timer_deferrable(&hw->watchdog_timer);
+>>> +
+>>>   	INIT_WORK(&hw->restart_work, sky2_restart);
+>>>
+>>>   	pci_set_drvdata(pdev, hw);
+>> Does it really reduce the wakeup's or only change who gets charged by powertop?
+>> The system is going to wakeup once a second anyway. Looks to me that if the
+>> timer is using round_jiffies(), that setting deferrable just changes the accounting.
+>>
+>> My interpretation of the api is:
+>>    * round_jiffies()  - timer wants to wakeup but isn't precise about when so schedule
+>>                         on next second when system will wake up anyway;
+>>                         e.g why meetings are usually scheduled on the hour
+>>
+>>    * deferrable       - timer doesn't have to really wakeup but wants to happen near
+>>                         a particular time. e.g. "I'll meet you at the pub around 8pm"
+>>
+>> Therefore doing deferrable is unnecessary for timers using round_jiffies unless system
+>> is so good at doing timers that it is going to skip doing timer once per second.
+>>
+> 
+> parag.warudkar@gmail.com wrote:
+> 
+>> NO_HZ kernels don't do timers every second - if you do round_jiffies() the kernel will wakeup and run the timer at that time no matter what. 
+>>
+>> The reason deferrable was introduced is to avoid waking up the kernel just for this one timer that can be called when the CPU is not idle for some reason other than this timer.
+>>
+>> In other words let's say there were two timers - one non-deferrable expiring in 3 seconds and other deferrable, expiring in 1.5 seconds. The kernel will not wake up twice - once for 1.5 second and other for 3 second - it will wake up once at expiry of 3 second timer and execute both the 1.5 second and 3 second timers.
+>>
+>> And this is not just powertop accounting thing - like I said the total num of wakeups per second go down with this patch.
+>>
+>> Parag
+>>
+>> Sent via BlackBerry from T-Mobile
+> 
+> 
+> Quit top-posting!
+> 
+> If this is the case then the whole usage of round_jiffies() is bogus. All users of round_jiffies()
+> should just be converted to deferrable??  I am a bit concerned that if deferrable gets used everywhere
+> then a strange situation would occur where all timers were waiting for some other timer to finally
+> happen, kind of a wierd timelock situation. Like the old chip/dale cartoon:
+>  "you first, no you first, after you mister chip, no after you mister dale,..."
 
-Not really ... we probe reading address 0x100 to see if the device
-supports extended config space or not.  So we need to make that fail
-gracefully for the amd7111 case.
 
-> Does anybody see a down side to this?
 
-It'll be slower than it would be if we used mmconfig directly.  Now yes,
-nobody should be using pci config space in performance critical paths
-... but see the tg3 driver.
+that's a dangerous situation indeed and I'd really like to know what the limits
+are for deferring deferrable timers.... Arjan, do you know? Anyone?
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+I don't see a danger just yet on normal systems - I get something like 10 wakeups
+per second from just the kernel (acpi, ahci, usb) on most my systems which
+guarantees that the watchdog runs often enough, but for embedded systems and
+critical timers in other drivers this may be an issue quickly
+
+
+Auke
