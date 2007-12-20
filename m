@@ -1,41 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbXLTHTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbXLTHYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757946AbXLTHTQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 02:19:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbXLTHTB
+	id S1758133AbXLTHYb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 02:24:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbXLTHYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 02:19:01 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:60209 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753797AbXLTHTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 02:19:00 -0500
-Date: Wed, 19 Dec 2007 23:19:00 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, lee.shermerhorn@hp.com,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: Re: [patch 17/20] non-reclaimable mlocked pages
-In-Reply-To: <200712191156.48507.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0712192317420.13118@schroedinger.engr.sgi.com>
-References: <20071218211539.250334036@redhat.com> <20071218211550.186819416@redhat.com>
- <200712191156.48507.nickpiggin@yahoo.com.au>
+	Thu, 20 Dec 2007 02:24:23 -0500
+Received: from mail.hevs.ch ([153.109.23.15]:34827 "EHLO mail.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751062AbXLTHYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 02:24:23 -0500
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: Re: [RFC, PATCH] sdio: move temporary buffer
+Date: Thu, 20 Dec 2007 08:24:15 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200712191155.26594.marc.pignat@hevs.ch> <20071219175708.46c781ac@poseidon.drzeus.cx>
+In-Reply-To: <20071219175708.46c781ac@poseidon.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712200824.16211.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Dec 2007, Nick Piggin wrote:
+On Wednesday 19 December 2007, Pierre Ossman wrote:
+> On Wed, 19 Dec 2007 11:55:25 +0100
+...
+> This is still voodoo to me, so I'll have to take your word for it. :)
+And almost voodoo to me... this is why I hope an ack from a DMA mentor!
 
-> These mlocked pages don't need to be on a non-reclaimable list,
-> because we can find them again via the ptes when they become
-> unlocked, and there is no point background scanning them, because
-> they're always going to be locked while they're mlocked.
-
-But there is something to be said for having a consistent scheme. Here we 
-already introduce address space flags for one kind of unreclaimability. 
-Isnt it possible to come up with a way to categorize pages that works 
-(mostly) the same way for all types of pages with reclaim issues?
-
+Marc
