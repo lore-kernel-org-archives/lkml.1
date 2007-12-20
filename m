@@ -1,74 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761959AbXLTBxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761763AbXLTBxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761959AbXLTBxg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 20:53:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757508AbXLTBeq
+	id S1761763AbXLTBxx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 20:53:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759043AbXLTBhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 20:34:46 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:11752 "EHLO
+	Wed, 19 Dec 2007 20:37:11 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:11733 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757503AbXLTBeO (ORCPT
+	with ESMTP id S1758868AbXLTBeq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 20:34:14 -0500
+	Wed, 19 Dec 2007 20:34:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=CRH9bxi/2xEP1i6fNCUmsdjbm6yg81fAREBF5bNGMaIWsYZTNs7YOM9zZNXtpvXuTK6S53H3haBOO7XCu0HryS1cX7U3tVt4wK5wDvKfR47n41Nj4VhpQPXCdgxHAQntexaE3r3CD3C1WsIej0s5QODFZmAxgRS7kYaetTHJ4qs=
+        b=tR8TREK2WIaScmdPfgotgfmxG01pVDoVmoXYbwyuPxK06il6zW4DLnqx5TzThll+cUXnBgbQqtD7Ym/btNMwe0q60YypadSFyaQ+YnEiW0HVa4hzQk6JGzBV0HRoPWSC8owAM0MOZuA5bib1k22mAX6mrUsHxh3ZHgEyeynkTig=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 13/63] ide-cd: fix DMA error handling in cdrom_newpc_intr()
-Date: Thu, 20 Dec 2007 02:02:06 +0100
+Subject: [PATCH 41/63] ide-cd: move lba_to_msf() and msf_to_lba() to <linux/cdrom.h>
+Date: Thu, 20 Dec 2007 02:24:16 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <axboe@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712200202.06988.bzolnier@gmail.com>
+Message-Id: <200712200224.16183.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Make cdrom_newpc_intr() match cdrom_{read,write}_intr() w.r.t.
-handling DMA errors:
+* Move lba_to_msf() and msf_to_lba() to <linux/cdrom.h>
+  (use 'u8' type instead of 'byte' while at it).
 
-* disable DMA before cdrom_decode_status() call
+* Remove msf_to_lba() copy from drivers/cdrom/cdrom.c.
 
-* log the device name and the type of the request (read/write)
-
+Cc: Jens Axboe <axboe@kernel.dk>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-cd.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ drivers/cdrom/cdrom.c |    6 ------
+ drivers/ide/ide-cd.c  |   18 ------------------
+ include/linux/cdrom.h |   14 ++++++++++++++
+ 3 files changed, 14 insertions(+), 24 deletions(-)
 
+Index: b/drivers/cdrom/cdrom.c
+===================================================================
+--- a/drivers/cdrom/cdrom.c
++++ b/drivers/cdrom/cdrom.c
+@@ -2787,12 +2787,6 @@ int cdrom_ioctl(struct file * file, stru
+ 	return -ENOSYS;
+ }
+ 
+-static inline
+-int msf_to_lba(char m, char s, char f)
+-{
+-	return (((m * CD_SECS) + s) * CD_FRAMES + f) - CD_MSF_OFFSET;
+-}
+-
+ /*
+  * Required when we need to use READ_10 to issue other than 2048 block
+  * reads
 Index: b/drivers/ide/ide-cd.c
 ===================================================================
 --- a/drivers/ide/ide-cd.c
 +++ b/drivers/ide/ide-cd.c
-@@ -1663,6 +1663,11 @@ static ide_startstop_t cdrom_newpc_intr(
- 	if (dma) {
- 		info->dma = 0;
- 		dma_error = HWIF(drive)->ide_dma_end(drive);
-+		if (dma_error) {
-+			printk(KERN_ERR "%s: DMA %s error\n", drive->name,
-+					rq_data_dir(rq) ? "write" : "read");
-+			ide_dma_off(drive);
-+		}
- 	}
+@@ -1643,24 +1643,6 @@ void msf_from_bcd (struct atapi_msf *msf
+ 	msf->frame  = BCD2BIN(msf->frame);
+ }
  
- 	if (cdrom_decode_status(drive, 0, &stat))
-@@ -1672,11 +1677,8 @@ static ide_startstop_t cdrom_newpc_intr(
- 	 * using dma, transfer is complete now
- 	 */
- 	if (dma) {
--		if (dma_error) {
--			printk(KERN_ERR "ide-cd: dma error\n");
--			ide_dma_off(drive);
-+		if (dma_error)
- 			return ide_error(drive, "dma error", stat);
--		}
+-static inline
+-void lba_to_msf (int lba, byte *m, byte *s, byte *f)
+-{
+-	lba += CD_MSF_OFFSET;
+-	lba &= 0xffffff;  /* negative lbas use only 24 bits */
+-	*m = lba / (CD_SECS * CD_FRAMES);
+-	lba %= (CD_SECS * CD_FRAMES);
+-	*s = lba / CD_FRAMES;
+-	*f = lba % CD_FRAMES;
+-}
+-
+-
+-static inline
+-int msf_to_lba (byte m, byte s, byte f)
+-{
+-	return (((m * CD_SECS) + s) * CD_FRAMES + f) - CD_MSF_OFFSET;
+-}
+-
+ static int cdrom_check_status(ide_drive_t *drive, struct request_sense *sense)
+ {
+ 	struct request req;
+Index: b/include/linux/cdrom.h
+===================================================================
+--- a/include/linux/cdrom.h
++++ b/include/linux/cdrom.h
+@@ -1184,6 +1184,20 @@ struct media_event_desc {
  
- 		end_that_request_chunk(rq, 1, rq->data_len);
- 		rq->data_len = 0;
+ extern int cdrom_get_media_event(struct cdrom_device_info *cdi, struct media_event_desc *med);
+ 
++static inline void lba_to_msf(int lba, u8 *m, u8 *s, u8 *f)
++{
++	lba += CD_MSF_OFFSET;
++	lba &= 0xffffff;  /* negative lbas use only 24 bits */
++	*m = lba / (CD_SECS * CD_FRAMES);
++	lba %= (CD_SECS * CD_FRAMES);
++	*s = lba / CD_FRAMES;
++	*f = lba % CD_FRAMES;
++}
++
++static inline int msf_to_lba(u8 m, u8 s, u8 f)
++{
++	return (((m * CD_SECS) + s) * CD_FRAMES + f) - CD_MSF_OFFSET;
++}
+ #endif  /* End of kernel only stuff */ 
+ 
+ #endif  /* _LINUX_CDROM_H */
