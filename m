@@ -1,161 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761705AbXLTORF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762323AbXLTORb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761705AbXLTORF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 09:17:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932790AbXLTOLa
+	id S1762323AbXLTORb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 09:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932887AbXLTOLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 09:11:30 -0500
-Received: from cantor.suse.de ([195.135.220.2]:40735 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932258AbXLTOL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 09:11:28 -0500
-X-Mailbox-Line: From jjohansen@suse.de Thu Dec 20 06:09:43 2007
-Message-Id: <20071220140943.294302058@suse.de>
-References: <20071220140910.934607826@suse.de>
-User-Agent: quilt/0.46-60
-Date: Thu, 20 Dec 2007 06:09:23 -0800
-From: John@suse.de, Johansen@suse.de
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 13/47] Pass the struct vfsmounts to the inode_link LSM hook
-Content-Disposition: inline; filename=security-link.diff
+	Thu, 20 Dec 2007 09:11:32 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:49480 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932336AbXLTOL3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 09:11:29 -0500
+Date: Thu, 20 Dec 2007 14:09:58 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>, riel <riel@redhat.com>,
+       Lennart Poettering <mztabzr@0pointer.de>
+Subject: Re: [rfc][patch] mm: madvise(WILLNEED) for anonymous memory
+In-Reply-To: <1198155938.6821.3.camel@twins>
+Message-ID: <Pine.LNX.4.64.0712201339010.18399@blonde.wat.veritas.com>
+References: <1198155938.6821.3.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+On Thu, 20 Dec 2007, Peter Zijlstra wrote:
+> 
+> Lennart asked for madvise(WILLNEED) to work on anonymous pages, he plans
+> to use this to pre-fault pages. He currently uses: mlock/munlock for
+> this purpose.
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: John Johansen <jjohansen@suse.de>
+I certainly agree with this in principle: it just seems an unnecessary
+and surprising restriction to refuse on anonymous vmas; I guess the only
+reason for not adding this was not having anyone asking for it until now.
+Though, does Lennart realize he could use MAP_POPULATE in the mmap?
 
----
- fs/namei.c               |    3 ++-
- include/linux/security.h |   16 +++++++++++-----
- security/dummy.c         |    6 ++++--
- security/security.c      |    8 +++++---
- security/selinux/hooks.c |    9 +++++++--
- 5 files changed, 29 insertions(+), 13 deletions(-)
+> 
+> [ compile tested only ]
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2486,7 +2486,8 @@ int vfs_link(struct dentry *old_dentry, 
- 	if (S_ISDIR(old_dentry->d_inode->i_mode))
- 		return -EPERM;
- 
--	error = security_inode_link(old_dentry, dir, new_dentry);
-+	error = security_inode_link(old_dentry, old_mnt, dir, new_dentry,
-+				    new_mnt);
- 	if (error)
- 		return error;
- 
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -320,8 +320,10 @@ struct request_sock;
-  * @inode_link:
-  *	Check permission before creating a new hard link to a file.
-  *	@old_dentry contains the dentry structure for an existing link to the file.
-+ *	@old_mnt is the vfsmount corresponding to @old_dentry (may be NULL).
-  *	@dir contains the inode structure of the parent directory of the new link.
-  *	@new_dentry contains the dentry structure for the new link.
-+ *	@new_mnt is the vfsmount corresponding to @new_dentry (may be NULL).
-  *	Return 0 if permission is granted.
-  * @inode_unlink:
-  *	Check the permission to remove a hard link to a file. 
-@@ -1280,8 +1282,9 @@ struct security_operations {
- 				    char **name, void **value, size_t *len);
- 	int (*inode_create) (struct inode *dir, struct dentry *dentry,
- 			     struct vfsmount *mnt, int mode);
--	int (*inode_link) (struct dentry *old_dentry,
--	                   struct inode *dir, struct dentry *new_dentry);
-+	int (*inode_link) (struct dentry *old_dentry, struct vfsmount *old_mnt,
-+	                   struct inode *dir, struct dentry *new_dentry,
-+			   struct vfsmount *new_mnt);
- 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
- 	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
- 			      struct vfsmount *mnt, const char *old_name);
-@@ -1546,8 +1549,9 @@ int security_inode_init_security(struct 
- 				  char **name, void **value, size_t *len);
- int security_inode_create(struct inode *dir, struct dentry *dentry,
- 			  struct vfsmount *mnt, int mode);
--int security_inode_link(struct dentry *old_dentry, struct inode *dir,
--			 struct dentry *new_dentry);
-+int security_inode_link(struct dentry *old_dentry, struct vfsmount *old_mnt,
-+			struct inode *dir, struct dentry *new_dentry,
-+			struct vfsmount *new_mnt);
- int security_inode_unlink(struct inode *dir, struct dentry *dentry);
- int security_inode_symlink(struct inode *dir, struct dentry *dentry,
- 			   struct vfsmount *mnt, const char *old_name);
-@@ -1866,8 +1870,10 @@ static inline int security_inode_create 
- }
- 
- static inline int security_inode_link (struct dentry *old_dentry,
-+				       struct vfsmount *old_mnt,
- 				       struct inode *dir,
--				       struct dentry *new_dentry)
-+				       struct dentry *new_dentry,
-+				       struct vfsmount *new_mnt)
- {
- 	return 0;
- }
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -295,8 +295,10 @@ static int dummy_inode_create (struct in
- 	return 0;
- }
- 
--static int dummy_inode_link (struct dentry *old_dentry, struct inode *inode,
--			     struct dentry *new_dentry)
-+static int dummy_inode_link (struct dentry *old_dentry,
-+			     struct vfsmount *old_mnt, struct inode *inode,
-+			     struct dentry *new_dentry,
-+			     struct vfsmount *new_mnt)
- {
- 	return 0;
- }
---- a/security/security.c
-+++ b/security/security.c
-@@ -356,12 +356,14 @@ int security_inode_create(struct inode *
- 	return security_ops->inode_create(dir, dentry, mnt, mode);
- }
- 
--int security_inode_link(struct dentry *old_dentry, struct inode *dir,
--			 struct dentry *new_dentry)
-+int security_inode_link(struct dentry *old_dentry, struct vfsmount *old_mnt,
-+			struct inode *dir, struct dentry *new_dentry,
-+			struct vfsmount *new_mnt)
- {
- 	if (unlikely(IS_PRIVATE(old_dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_link(old_dentry, dir, new_dentry);
-+	return security_ops->inode_link(old_dentry, old_mnt, dir,
-+					 new_dentry, new_mnt);
- }
- 
- int security_inode_unlink(struct inode *dir, struct dentry *dentry)
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2417,11 +2417,16 @@ static int selinux_inode_create(struct i
- 	return may_create(dir, dentry, SECCLASS_FILE);
- }
- 
--static int selinux_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
-+static int selinux_inode_link(struct dentry *old_dentry,
-+			      struct vfsmount *old_mnt,
-+			      struct inode *dir,
-+			      struct dentry *new_dentry,
-+			      struct vfsmount *new_mnt)
- {
- 	int rc;
- 
--	rc = secondary_ops->inode_link(old_dentry,dir,new_dentry);
-+	rc = secondary_ops->inode_link(old_dentry, old_mnt, dir, new_dentry,
-+				       new_mnt);
- 	if (rc)
- 		return rc;
- 	return may_link(dir, old_dentry, MAY_LINK);
+I haven't tried it either, but generally it looks plausible.
 
--- 
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+> diff --git a/mm/madvise.c b/mm/madvise.c
+> index 93ee375..eff60ce 100644
+> --- a/mm/madvise.c
+> +++ b/mm/madvise.c
+> @@ -100,6 +100,24 @@ out:
+>  	return error;
+>  }
+>  
+> +static long madvice_willneed_anon(struct vm_area_struct *vma,
+> +				  struct vm_area_struct **prev,
+> +				  unsigned long start, unsigned long end)
 
+mavise.c uses "madvise_" rather than " madvice_" throughout,
+so please go with the flow.
+
+> +{
+> +	int ret, len;
+> +
+> +	*prev = vma;
+> +	if (end > vma->vm_end)
+> +		end = vma->vm_end;
+
+Please check, but I think the upper level ensures end is within range.
+
+> +
+> +	len = end - start;
+> +	ret = get_user_pages(current, current->mm, start, len,
+> +			0, 0, NULL, NULL);
+> +	if (ret < 0)
+> +		return ret;
+> +	return ret == len ? 0 : -1;
+
+It's not good to return -1 as an alternative to a real errno:
+it'll look like -EPERM.  If you copied that from somewhere, better
+send a patch to fix the somewhere!  Ah, yes, make_pages_present: it
+happens that nobody is interested in its return value, so we could
+make it a void; but that'd just be a cleanup.  What to do here if
+non-negative ret less than len?  Oh, just return 0, that's good
+enough in this case (the file case always returns 0).
+
+Hmm, might it be better to use make_pages_present itself,
+fixing its retval, rather than using get_user_pages directly?
+(I'd hope the caching makes its repeat of find_vma not an overhead.)
+
+Interesting divergence: make_pages_present faults in writable pages
+in a writable vma, whereas the file case's force_page_cache_readahead
+doesn't even insert the pages into the mm.
+
+> +}
+> +
+>  /*
+>   * Schedule all required I/O operations.  Do not wait for completion.
+>   */
+> @@ -110,7 +128,7 @@ static long madvise_willneed(struct vm_area_struct * vma,
+>  	struct file *file = vma->vm_file;
+>  
+>  	if (!file)
+> -		return -EBADF;
+> +		return madvice_willneed_anon(vma, prev, start, end);
+>  
+>  	if (file->f_mapping->a_ops->get_xip_page) {
+>  		/* no bad return value, but ignore advice */
+
+And there's a correctly invisible hunk to the patch too: this
+extension of MADV_WILLNEED also does not require down_write of
+mmap_sem, so madvise_need_mmap_write can remain unchanged.
+
+Hugh
