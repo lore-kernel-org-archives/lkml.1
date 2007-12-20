@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757969AbXLTAdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbXLTAdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757969AbXLTAdX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 19:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756174AbXLTAcy
+	id S1758524AbXLTAdh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 19:33:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbXLTAc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 19:32:54 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42526 "EHLO
+	Wed, 19 Dec 2007 19:32:58 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42537 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753999AbXLTAcu (ORCPT
+	with ESMTP id S1755964AbXLTAcy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 19:32:50 -0500
-Date: Wed, 19 Dec 2007 16:31:08 -0800
+	Wed, 19 Dec 2007 19:32:54 -0500
+Date: Wed, 19 Dec 2007 16:31:35 -0800
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
 Cc: Kay Sievers <kay.sievers@vrfy.org>, Alan Stern <stern@rowland.harvard.edu>,
        Jonathan Corbet <corbet@lwn.net>,
        Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [RFC] sample kobject implementation code
-Message-ID: <20071220003108.GB15129@kroah.com>
+Subject: [RFC] sample kset/ktype/kobject implementation code
+Message-ID: <20071220003135.GC15129@kroah.com>
 References: <20071220003031.GA15129@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,9 +29,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 /*
- * Sample kobject implementation
+ * Sample kset and ktype implementation
  *
  * Copyright (C) 2004-2007 Greg Kroah-Hartman <greg@kroah.com>
  * Copyright (C) 2007 Novell Inc.
@@ -46,75 +45,157 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 #include <linux/init.h>
 
 /*
- * This module shows how to create a simple subdirectory in sysfs called
- * /sys/kernel/kobject-example  In that directory, 3 files are created:
- * "foo", "baz", and "bar".  If an integer is written to these files, it can be
- * later read out of it.
+ * This module shows how to create a kset in sysfs called
+ * /sys/kernel/kset-example
+ * Then tree kobjects are created and assigned to this kset, "foo", "baz",
+ * and "bar".  In those kobjects, attributes of the same name are also
+ * created and if an integer is written to these files, it can be later
+ * read out of it.
  */
 
-static int foo;
-static int baz;
-static int bar;
 
 /*
- * The "foo" file where a static variable is read from and written to.
+ * This is our "object" that we will create a few of and register them with
+ * sysfs.
  */
-static ssize_t foo_show(struct kobject *kobj, struct kobj_attribute *attr,
-			char *buf)
+struct foo_obj {
+	struct kobject kobj;
+	int foo;
+	int baz;
+	int bar;
+};
+#define to_foo_obj(x) container_of(x, struct foo_obj, kobj)
+
+/* a custom attribute that works just for a struct foo_obj. */
+struct foo_attribute {
+	struct attribute attr;
+	ssize_t (*show)(struct foo_obj *foo, struct foo_attribute *attr, char *buf);
+	ssize_t (*store)(struct foo_obj *foo, struct foo_attribute *attr, const char *buf, size_t count);
+};
+#define to_foo_attr(x) container_of(x, struct foo_attribute, attr)
+
+/*
+ * The default show function that must be passed to sysfs.  This will be
+ * called by sysfs for whenever a show function is called by the user on a
+ * sysfs file associated with the kobjects we have registered.  We need to
+ * transpose back from a "default" kobject to our custom struct foo_obj and
+ * then call the show function for that specific object.
+ */
+static ssize_t foo_attr_show(struct kobject *kobj,
+			     struct attribute *attr,
+			     char *buf)
 {
-	return sprintf(buf, "%d\n", foo);
+	struct foo_attribute *attribute;
+	struct foo_obj *foo;
+
+	attribute = to_foo_attr(attr);
+	foo = to_foo_obj(kobj);
+
+	if (!attribute->show)
+		return -EIO;
+
+	return attribute->show(foo, attribute, buf);
 }
 
-static ssize_t foo_store(struct kobject *kobj, struct kobj_attribute *attr,
+/*
+ * Just like the default show function above, but this one is for when the
+ * sysfs "store" is requested (when a value is written to a file.)
+ */
+static ssize_t foo_attr_store(struct kobject *kobj,
+			      struct attribute *attr,
+			      const char *buf, size_t len)
+{
+	struct foo_attribute *attribute;
+	struct foo_obj *foo;
+
+	attribute = to_foo_attr(attr);
+	foo = to_foo_obj(kobj);
+
+	if (!attribute->store)
+		return -EIO;
+
+	return attribute->store(foo, attribute, buf, len);
+}
+
+/* Our custom sysfs_ops that we will associate with our ktype later on */
+static struct sysfs_ops foo_sysfs_ops = {
+	.show = foo_attr_show,
+	.store = foo_attr_store,
+};
+
+/*
+ * The release function for our object.  This is REQUIRED by the kernel to
+ * have.  We free the memory held in our object here.
+ *
+ * NEVER try to get away with just a "blank" release function to try to be
+ * smarter than the kernel.  Turns out, no one ever is...
+ */
+static void foo_release(struct kobject *kobj)
+{
+	struct foo_obj *foo;
+
+	foo = to_foo_obj(kobj);
+	kfree(foo);
+}
+
+/*
+ * The "foo" file where the .foo variable is read from and written to.
+ */
+static ssize_t foo_show(struct foo_obj *foo_obj, struct foo_attribute *attr,
+			char *buf)
+{
+	return sprintf(buf, "%d\n", foo_obj->foo);
+}
+
+static ssize_t foo_store(struct foo_obj *foo_obj, struct foo_attribute *attr,
 			 const char *buf, size_t count)
 {
-	sscanf(buf, "%du", &foo);
+	sscanf(buf, "%du", &foo_obj->foo);
 	return count;
 }
 
-static struct kobj_attribute foo_attribute =
+static struct foo_attribute foo_attribute =
 	__ATTR(foo, 0666, foo_show, foo_store);
 
 /*
  * More complex function where we determine which varible is being accessed by
  * looking at the attribute for the "baz" and "bar" files.
  */
-static ssize_t b_show(struct kobject *kobj, struct kobj_attribute *attr,
+static ssize_t b_show(struct foo_obj *foo_obj, struct foo_attribute *attr,
 		      char *buf)
 {
 	int var;
 
 	if (strcmp(attr->attr.name, "baz") == 0)
-		var = baz;
+		var = foo_obj->baz;
 	else
-		var = bar;
+		var = foo_obj->bar;
 	return sprintf(buf, "%d\n", var);
 }
 
-static ssize_t b_store(struct kobject *kobj, struct kobj_attribute *attr,
+static ssize_t b_store(struct foo_obj *foo_obj, struct foo_attribute *attr,
 		       const char *buf, size_t count)
 {
 	int var;
 
 	sscanf(buf, "%du", &var);
 	if (strcmp(attr->attr.name, "baz") == 0)
-		baz = var;
+		foo_obj->baz = var;
 	else
-		bar = var;
+		foo_obj->bar = var;
 	return count;
 }
 
-static struct kobj_attribute baz_attribute =
+static struct foo_attribute baz_attribute =
 	__ATTR(baz, 0666, b_show, b_store);
-static struct kobj_attribute bar_attribute =
+static struct foo_attribute bar_attribute =
 	__ATTR(bar, 0666, b_show, b_store);
-
 
 /*
  * Create a group of attributes so that we can create and destory them all
  * at once.
  */
-static struct attribute *attrs[] = {
+static struct attribute *foo_default_attrs[] = {
 	&foo_attribute.attr,
 	&baz_attribute.attr,
 	&bar_attribute.attr,
@@ -122,45 +203,104 @@ static struct attribute *attrs[] = {
 };
 
 /*
- * An unnamed attribute group will put all of the attributes directly in
- * the kobject directory.  If we specify a name, a subdirectory will be
- * created for the attributes with the directory being the name of the
- * attribute group.
+ * Our own ktype for our kobjects.  Here we specify our sysfs ops, the
+ * release function, and the set of default attributes we want created
+ * whenever a kobject of this type is registered with the kernel.
  */
-static struct attribute_group attr_group = {
-	.attrs = attrs,
+static struct kobj_type foo_ktype = {
+	.sysfs_ops = &foo_sysfs_ops,
+	.release = foo_release,
+	.default_attrs = foo_default_attrs,
 };
 
-static struct kobject *example_kobj;
+static struct kset *example_kset;
+static struct foo_obj *foo_obj;
+static struct foo_obj *bar_obj;
+static struct foo_obj *baz_obj;
+
+static struct foo_obj *create_foo_obj(const char *name)
+{
+	struct foo_obj *foo;
+	int retval;
+
+	/* allocate the memory for the whole object */
+	foo = kzalloc(sizeof(*foo), GFP_KERNEL);
+	if (!foo)
+		return NULL;
+
+	/*
+	 * As we have a kset for this kobject, we need to set it before calling
+	 * the kobject core.
+	 */
+	foo->kobj.kset = example_kset;
+
+	/*
+	 * Initialize and add the kobject to the kernel.  All the default files
+	 * will be created here.  As we have already specified a kset for this
+	 * kobject, we don't have to set a parent for the kobject, the kobject
+	 * will be placed beneath that kset automatically.
+	 */
+	retval = kobject_init_and_add(&foo->kobj, &foo_ktype, NULL, "%s", name);
+	if (retval) {
+		kfree(foo);
+		return NULL;
+	}
+
+	/*
+	 * We are always responsible for sending the uevent that the kobject
+	 * was added to the system.
+	 */
+	kobject_uevent(&foo->kobj, KOBJ_ADD);
+
+	return foo;
+}
+
+static void destroy_foo_obj(struct foo_obj *foo)
+{
+	kobject_unregister(&foo->kobj);
+}
 
 static int example_init(void)
 {
-	int retval;
-
 	/*
-	 * Create a simple kobject with the name of "kobject_example",
+	 * Create a kset with the name of "kset_example",
 	 * located under /sys/kernel/
-	 *
-	 * As this is a simple directory, no uevent will be sent to
-	 * userspace.  That is why this function should not be used for
-	 * any type of dynamic kobjects, where the name and number are
-	 * not known ahead of time.
 	 */
-	example_kobj = kobject_create_and_add("kobject_example", kernel_kobj);
-	if (!example_kobj)
+	example_kset = kset_create_and_add("kset_example", NULL, kernel_kobj);
+	if (!example_kset)
 		return -ENOMEM;
 
-	/* Create the files associated with this kobject */
-	retval = sysfs_create_group(example_kobj, &attr_group);
-	if (retval)
-		kobject_unregister(example_kobj);
+	/*
+	 * Create three objects and register them with our kset
+	 */
+	foo_obj = create_foo_obj("foo");
+	if (!foo_obj)
+		goto foo_error;
 
-	return retval;
+	bar_obj = create_foo_obj("bar");
+	if (!bar_obj)
+		goto bar_error;
+
+	baz_obj = create_foo_obj("baz");
+	if (!baz_obj)
+		goto baz_error;
+
+	return 0;
+
+baz_error:
+	destroy_foo_obj(bar_obj);
+bar_error:
+	destroy_foo_obj(foo_obj);
+foo_error:
+	return -EINVAL;
 }
 
 static void example_exit(void)
 {
-	kobject_unregister(example_kobj);
+	destroy_foo_obj(baz_obj);
+	destroy_foo_obj(bar_obj);
+	destroy_foo_obj(foo_obj);
+	kset_unregister(example_kset);
 }
 
 module_init(example_init);
