@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbXLTDea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbXLTEM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755695AbXLTDea (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 22:34:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbXLTDeV
+	id S1756065AbXLTEM2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 23:12:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbXLTEMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 22:34:21 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:1343 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753688AbXLTDeV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 22:34:21 -0500
-Date: Wed, 19 Dec 2007 22:34:19 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Dave Young <hidave.darkstar@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <mdharm-usb@one-eyed-alien.net>, <gregkh@suse.de>,
-       <linux-usb@vger.kernel.org>, <usb-storage@lists.one-eyed-alien.net>
-Subject: Re: 2.6.24-rc5-mm1
-In-Reply-To: <a8e1da0712191643p74a88c35u45681b11b0492474@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0712192226220.15674-100000@netrider.rowland.org>
+	Wed, 19 Dec 2007 23:12:19 -0500
+Received: from namei.org ([69.55.235.186]:49299 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754034AbXLTEMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 23:12:18 -0500
+Date: Thu, 20 Dec 2007 15:11:40 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: David Chinner <dgc@sgi.com>
+cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, dhowells@redhat.com
+Subject: Re: [patch, rfc] mm.h, security.h, key.h and preventing namespace
+ poisoning
+In-Reply-To: <20071220014413.GK4612@sgi.com>
+Message-ID: <Xine.LNX.4.64.0712201506520.6851@us.intercode.com.au>
+References: <20071219093834.GW4396912@sgi.com> <Xine.LNX.4.64.0712201052110.1736@us.intercode.com.au>
+ <20071220014413.GK4612@sgi.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Note carefully.  This:
+On Thu, 20 Dec 2007, David Chinner wrote:
 
-> > > 2. on 2.6.24-rc5 kernel reports only the part 1, after try mount the
-> > > disk it reports the part 2 and mount the partition as rw
-
-contradicts this:
-
-> > > 3. on 2.6.24-rc5 kernel reports only the part 1, after try mount the
-> > > disk it just mount the partition as ro with nothing more messages.
-
-So which is correct?
-
-> Hi, Alan
+> > I'm not sure I understand your namespace pollution issue, either.
 > 
-> I'm sure about my post.
+> doing this globally:
+> 
+> #ifdef CONFIG_SOMETHING
+> extern int	some_common_name(int a, int b, int c);
+> #else
+> #define some_common_name(a,b,c)	0
+> #endif
 
-But your post contradicts itself.  It can't be correct.
+I suspect it may be useful ensure all global identifiers for the key 
+subsystem are prefixed with key_, as 'copy_keys' does seem a little 
+generic.
 
-> I'm not so famillar with usb.
-> It looks weird.  Seems that my device will be firstly recoganized as a
-> mp3 player and then a usb storage, so the system will report part 1 &
-> part 2 under previous  kernels.
+> > +#ifdef CONFIG_SECURITY
+> > +extern unsigned long mmap_min_addr;
+> > +#endif
+> > +
+> >  #include <asm/page.h>
+> >  #include <asm/pgtable.h>
+> >  #include <asm/processor.h>
+> 
+> Fine by me.
 
-I think those "part 2" messages aren't caused by the kernel at all, but
-instead by some program running on your computer.  You could try
-booting into single-user mode and see if the behavior changes.
+I'll queue it for -mm & 2.6.25.
 
-Also there's no question -- the device does behave strangely.  It
-shouldn't change the write-protect setting all by itself.
 
-Alan Stern
-
+- James
+-- 
+James Morris
+<jmorris@namei.org>
