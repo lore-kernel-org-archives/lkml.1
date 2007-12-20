@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbXLTUOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbXLTUP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756523AbXLTUOc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 15:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759025AbXLTUOJ
+	id S1760089AbXLTUP1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 15:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbXLTUPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 15:14:09 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:57583 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759180AbXLTUOI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 15:14:08 -0500
-Subject: Re: [PATCH 1/3] ps3: vuart: fix error path locking
-From: Daniel Walker <dwalker@mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>, matthias.kaehlcke@gmail.com,
-       linux-kernel@vger.kernel.org, linux@bohmer.net, linuxppc-dev@ozlabs.org,
-       mingo@elte.hu, kjwinchester@gmail.com
-In-Reply-To: <20071220120635.d66550bd.akpm@linux-foundation.org>
-References: <20071213003028.676998182@mvista.com>
-	 <4760922C.2060908@am.sony.com>
-	 <20071218171050.5bf220fa.akpm@linux-foundation.org>
-	 <47688A5A.1090902@am.sony.com> <1198179145.10713.9.camel@imap.mvista.com>
-	 <20071220120635.d66550bd.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 20 Dec 2007 12:13:49 -0800
-Message-Id: <1198181630.10713.11.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Thu, 20 Dec 2007 15:15:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38383 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754890AbXLTUPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 15:15:10 -0500
+Message-ID: <476ACD44.7050607@redhat.com>
+Date: Thu, 20 Dec 2007 15:15:00 -0500
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: tcamuso@redhat.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
+References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <20071220173528.GE29690@parisc-linux.org> <476AAE99.7090301@redhat.com> <20071220181603.GF29690@parisc-linux.org> <476AC48D.6000103@redhat.com> <20071220200413.GI29690@parisc-linux.org>
+In-Reply-To: <20071220200413.GI29690@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-12-20 at 12:06 -0800, Andrew Morton wrote:
-> On Thu, 20 Dec 2007 11:32:25 -0800 Daniel Walker <dwalker@mvista.com> wrote:
+Matthew Wilcox wrote:
+
+> Here's how BARs work ... when you write 0xffffffff to the BAR, it
+> ignores all the set bits that are less than the size of the BAR.  So,
+> assuming this is a 256MB BAR (like my G33 is), what ends up written to
+> this BAR is 0xf0000000.  Now, because this is graphics, apparently it's
+> special and embedded in the chipset, even though it looks like it's a
+> PCI device.  So it actually gets priority over MMCONFIG which is also
+> mapped to 0xf0000000.
 > 
-> > On Tue, 2007-12-18 at 19:04 -0800, Geoff Levand wrote:
-> > 
-> > > Unfortunately there wasn't enough context in the patch to see
-> > > that there is a down() earlier in the routine, and that the patch
-> > > does indeed remove an incorrectly placed down().  Here is the
-> > > entire routine, marked with what the patch removes.
-> > > 
-> > 
-> > Andrew have you had a chance to review this?
-> > 
+> For your case of a 64-bit BAR, you could write 0xffffffff to the high
+> 32-bits first, then write to the low 32-bits, then reset the low, then
+> high bits, and you'd avoid the problem.  But the G33 has a 32-bit BAR
+> with the same problem, so it won't work for that case.
 > 
-> Confused.  I did review it: http://lkml.org/lkml/2007/12/18/384
+> BARs that are behind bridges don't have this problem (they can't decode
+> memory accesses that aren't forwarded to them).  BARs on devices which
+> have memory IO disabled also don't have theis problem, but disabling
+> devices has its problems (as does probing BARs for active devices anyway
+> ...).
+>
+Thanks for the detailed explanation.
 
-Yeah, but Geoff countered http://lkml.org/lkml/2007/12/18/409
+ > The question is how large can 32-bit BARs get.  As we've seen, 256MB
+ > exist, and are causing pain.  I can't imagine any PCI device
+ > manufacturer thinks they can allocate 2GB of the low space, but we could
+ > potentially mis-size a large BAR by not using 0xffffffff.
+ >
 
-Do you still think the patch is wrong, given the whole function?
+Point well taken. Graphics devices understandably consume a lot of memory
+space, and are likely to consume even more in the not-too-distant future.
 
-Daniel
+> I'm really not clear on the purpose of your patchset.  Was it all to
+> address this one problem?
+> 
+
+No. My patch-set does not address this problem at all, but rather the
+larger problem of having mmconfig-unfriendly devices on buses that are
+out of reach of the unreachable_devices() routine and bitmap.
+
+This problem is one I encountered during my testing and mentioned in
+my preamble as not being fixable by my patch-set.
+
 
