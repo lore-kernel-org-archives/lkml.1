@@ -1,355 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763766AbXLTNlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763930AbXLTNlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763766AbXLTNlP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 08:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761860AbXLTNfv
+	id S1763930AbXLTNlf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 08:41:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763140AbXLTNiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 08:35:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59070 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762659AbXLTNft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 08:35:49 -0500
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: lguest@ozlabs.org
-Cc: glommer@gmail.com, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       rostedt@goodmis.org, Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 16/16] per-vcpu lguest pgdir management
-Date: Thu, 20 Dec 2007 11:33:56 -0200
-Message-Id: <11981577182753-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11981577132025-git-send-email-gcosta@redhat.com>
-References: <11981576363806-git-send-email-gcosta@redhat.com> <11981576442148-git-send-email-gcosta@redhat.com> <11981576492807-git-send-email-gcosta@redhat.com> <1198157654189-git-send-email-gcosta@redhat.com> <11981576581695-git-send-email-gcosta@redhat.com> <11981576632726-git-send-email-gcosta@redhat.com> <11981576671720-git-send-email-gcosta@redhat.com> <11981576731969-git-send-email-gcosta@redhat.com> <1198157678759-git-send-email-gcosta@redhat.com> <11981576833314-git-send-email-gcosta@redhat.com> <11981576884121-git-send-email-gcosta@redhat.com> <1198157692575-git-send-email-gcosta@redhat.com> <11981576972655-git-send-email-gcosta@redhat.com> <11981577021091-git-send-email-gcosta@redhat.com> <11981577083517-git-send-email-gcosta@redhat.com> <11981577132025-git-send-email-gcosta@redhat.com>
+	Thu, 20 Dec 2007 08:38:14 -0500
+Received: from ro-out-1112.google.com ([72.14.202.183]:51231 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762918AbXLTNiK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 08:38:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=G4dUINb0sw/+FjBVjxTuCvCCpHMv9SqXW9Ykd46nYswf661bBkBCf1c2E3nN9qrxhqIKGRaY0u1cmrMqb/z9jVZopJMSUxj4TylNmH70aXTglxo8dPvQ0rZBgMz2rqZGvoX1/PcvapXHGNkmHc9USczfyPUIBT+fWeLpwq1TWpM=
+Message-ID: <476A703B.50804@gmail.com>
+Date: Thu, 20 Dec 2007 08:38:03 -0500
+From: Miles Lane <miles.lane@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>, Pavel Machek <pavel@suse.cz>,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: OOPS: 2.6.24-rc5-mm1 -- EIP is at r_show+0x2a/0x70  --  (triggered
+ by "cat /proc/iomem" AFTER suspend-to-disk/resume)
+References: <a44ae5cd0712192040k7480682eoa29f33d70a91c618@mail.gmail.com> <4769F409.6030300@gmail.com> <4769FF37.5060308@gmail.com>
+In-Reply-To: <4769FF37.5060308@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this patch makes the pgdir management per-vcpu. The pgdirs pool
-is still guest-wide (although it'll probably need to grow when we
-are really executing more vcpus), but the pgdidx index is gone,
-since it makes no sense anymore. Instead, we use a per-vcpu
-index.
+On further investigation, "cat /proc/iomem" does not trigger the stack 
+trace until after a suspend-to-disk/resume cycle has occurred.
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
----
- drivers/lguest/hypercalls.c           |    2 +-
- drivers/lguest/interrupts_and_traps.c |    6 ++--
- drivers/lguest/lg.h                   |   12 +++---
- drivers/lguest/page_tables.c          |   60 +++++++++++++++++----------------
- drivers/lguest/x86/core.c             |    6 ++--
- 5 files changed, 44 insertions(+), 42 deletions(-)
+I am removing Ingo and Russell from the TO list (as they are apparently 
+the wrong people) and adding the suspend folks, as suspend is implicated.
+My .config file can be found here:  
+http://marc.info/?l=linux-kernel&m=119812903001296&w=2
 
-diff --git a/drivers/lguest/hypercalls.c b/drivers/lguest/hypercalls.c
-index 95e1062..f379475 100644
---- a/drivers/lguest/hypercalls.c
-+++ b/drivers/lguest/hypercalls.c
-@@ -60,7 +60,7 @@ static void do_hcall(struct lguest_vcpu *vcpu, struct hcall_args *args)
- 		if (args->arg1)
- 			guest_pagetable_clear_all(vcpu);
- 		else
--			guest_pagetable_flush_user(lg);
-+			guest_pagetable_flush_user(vcpu);
- 		break;
- 
- 	/* All these calls simply pass the arguments through to the right
-diff --git a/drivers/lguest/interrupts_and_traps.c b/drivers/lguest/interrupts_and_traps.c
-index 78f6210..a0ac77e 100644
---- a/drivers/lguest/interrupts_and_traps.c
-+++ b/drivers/lguest/interrupts_and_traps.c
-@@ -77,7 +77,7 @@ static void set_guest_interrupt(struct lguest_vcpu *vcpu, u32 lo, u32 hi,
- 		virtstack = vcpu->esp1;
- 		ss = vcpu->ss1;
- 
--		origstack = gstack = guest_pa(lg, virtstack);
-+		origstack = gstack = guest_pa(vcpu, virtstack);
- 		/* We push the old stack segment and pointer onto the new
- 		 * stack: when the Guest does an "iret" back from the interrupt
- 		 * handler the CPU will notice they're dropping privilege
-@@ -89,7 +89,7 @@ static void set_guest_interrupt(struct lguest_vcpu *vcpu, u32 lo, u32 hi,
- 		virtstack = vcpu->regs->esp;
- 		ss = vcpu->regs->ss;
- 
--		origstack = gstack = guest_pa(lg, virtstack);
-+		origstack = gstack = guest_pa(vcpu, virtstack);
- 	}
- 
- 	/* Remember that we never let the Guest actually disable interrupts, so
-@@ -325,7 +325,7 @@ void pin_stack_pages(struct lguest_vcpu *vcpu)
- 		 * start of the page after the kernel stack.  Subtract one to
- 		 * get back onto the first stack page, and keep subtracting to
- 		 * get to the rest of the stack pages. */
--		pin_page(lg, vcpu->esp1 - 1 - i * PAGE_SIZE);
-+		pin_page(vcpu, vcpu->esp1 - 1 - i * PAGE_SIZE);
- }
- 
- /* Direct traps also mean that we need to know whenever the Guest wants to use
-diff --git a/drivers/lguest/lg.h b/drivers/lguest/lg.h
-index 6faf90d..e700408 100644
---- a/drivers/lguest/lg.h
-+++ b/drivers/lguest/lg.h
-@@ -57,6 +57,8 @@ struct lguest_vcpu {
- 	unsigned long regs_page;
- 	struct lguest_regs *regs;
- 
-+	int vcpu_pgd; /* which pgd this vcpu is currently using */
-+
- 	/* If a hypercall was asked for, this points to the arguments. */
- 	struct hcall_args *hcall;
- 	u32 next_hcall;
-@@ -92,8 +94,6 @@ struct lguest
- 	int changed;
- 	struct lguest_pages *last_pages;
- 
--	/* We keep a small number of these. */
--	u32 pgdidx;
- 	struct pgdir pgdirs[4];
- 
- 	unsigned long noirq_start, noirq_end;
-@@ -175,14 +175,14 @@ void free_guest_pagetable(struct lguest *lg);
- void guest_new_pagetable(struct lguest_vcpu *vcpu, unsigned long pgtable);
- void guest_set_pmd(struct lguest *lg, unsigned long gpgdir, u32 i);
- void guest_pagetable_clear_all(struct lguest_vcpu *vcpu);
--void guest_pagetable_flush_user(struct lguest *lg);
-+void guest_pagetable_flush_user(struct lguest_vcpu *vcpu);
- void guest_set_pte(struct lguest *lg, unsigned long gpgdir,
- 		   unsigned long vaddr, pte_t val);
- void map_switcher_in_guest(struct lguest_vcpu *vcpu,
- 			   struct lguest_pages *pages);
--int demand_page(struct lguest *info, unsigned long cr2, int errcode);
--void pin_page(struct lguest *lg, unsigned long vaddr);
--unsigned long guest_pa(struct lguest *lg, unsigned long vaddr);
-+int demand_page(struct lguest_vcpu *vcpu, unsigned long cr2, int errcode);
-+void pin_page(struct lguest_vcpu *vcpu, unsigned long vaddr);
-+unsigned long guest_pa(struct lguest_vcpu *vcpu, unsigned long vaddr);
- void page_table_guest_data_init(struct lguest *lg);
- 
- /* <arch>/core.c: */
-diff --git a/drivers/lguest/page_tables.c b/drivers/lguest/page_tables.c
-index f0f271d..84c22d7 100644
---- a/drivers/lguest/page_tables.c
-+++ b/drivers/lguest/page_tables.c
-@@ -94,10 +94,10 @@ static pte_t *spte_addr(struct lguest *lg, pgd_t spgd, unsigned long vaddr)
- 
- /* These two functions just like the above two, except they access the Guest
-  * page tables.  Hence they return a Guest address. */
--static unsigned long gpgd_addr(struct lguest *lg, unsigned long vaddr)
-+static unsigned long gpgd_addr(struct lguest_vcpu *vcpu, unsigned long vaddr)
- {
- 	unsigned int index = vaddr >> (PGDIR_SHIFT);
--	return lg->pgdirs[lg->pgdidx].gpgdir + index * sizeof(pgd_t);
-+	return vcpu->lg->pgdirs[vcpu->vcpu_pgd].gpgdir + index * sizeof(pgd_t);
- }
- 
- static unsigned long gpte_addr(struct lguest *lg,
-@@ -200,22 +200,23 @@ static void check_gpgd(struct lguest *lg, pgd_t gpgd)
-  *
-  * If we fixed up the fault (ie. we mapped the address), this routine returns
-  * true.  Otherwise, it was a real fault and we need to tell the Guest. */
--int demand_page(struct lguest *lg, unsigned long vaddr, int errcode)
-+int demand_page(struct lguest_vcpu *vcpu, unsigned long vaddr, int errcode)
- {
- 	pgd_t gpgd;
- 	pgd_t *spgd;
- 	unsigned long gpte_ptr;
- 	pte_t gpte;
- 	pte_t *spte;
-+	struct lguest *lg = vcpu->lg;
- 
- 	/* First step: get the top-level Guest page table entry. */
--	gpgd = lgread(lg, gpgd_addr(lg, vaddr), pgd_t);
-+	gpgd = lgread(lg, gpgd_addr(vcpu, vaddr), pgd_t);
- 	/* Toplevel not present?  We can't map it in. */
- 	if (!(pgd_flags(gpgd) & _PAGE_PRESENT))
- 		return 0;
- 
- 	/* Now look at the matching shadow entry. */
--	spgd = spgd_addr(lg, lg->pgdidx, vaddr);
-+	spgd = spgd_addr(lg, vcpu->vcpu_pgd, vaddr);
- 	if (!(pgd_flags(*spgd) & _PAGE_PRESENT)) {
- 		/* No shadow entry: allocate a new shadow PTE page. */
- 		unsigned long ptepage = get_zeroed_page(GFP_KERNEL);
-@@ -297,19 +298,19 @@ int demand_page(struct lguest *lg, unsigned long vaddr, int errcode)
-  *
-  * This is a quick version which answers the question: is this virtual address
-  * mapped by the shadow page tables, and is it writable? */
--static int page_writable(struct lguest *lg, unsigned long vaddr)
-+static int page_writable(struct lguest_vcpu *vcpu, unsigned long vaddr)
- {
- 	pgd_t *spgd;
- 	unsigned long flags;
- 
- 	/* Look at the current top level entry: is it present? */
--	spgd = spgd_addr(lg, lg->pgdidx, vaddr);
-+	spgd = spgd_addr(vcpu->lg, vcpu->vcpu_pgd, vaddr);
- 	if (!(pgd_flags(*spgd) & _PAGE_PRESENT))
- 		return 0;
- 
- 	/* Check the flags on the pte entry itself: it must be present and
- 	 * writable. */
--	flags = pte_flags(*(spte_addr(lg, *spgd, vaddr)));
-+	flags = pte_flags(*(spte_addr(vcpu->lg, *spgd, vaddr)));
- 
- 	return (flags & (_PAGE_PRESENT|_PAGE_RW)) == (_PAGE_PRESENT|_PAGE_RW);
- }
-@@ -317,10 +318,10 @@ static int page_writable(struct lguest *lg, unsigned long vaddr)
- /* So, when pin_stack_pages() asks us to pin a page, we check if it's already
-  * in the page tables, and if not, we call demand_page() with error code 2
-  * (meaning "write"). */
--void pin_page(struct lguest *lg, unsigned long vaddr)
-+void pin_page(struct lguest_vcpu *vcpu, unsigned long vaddr)
- {
--	if (!page_writable(lg, vaddr) && !demand_page(lg, vaddr, 2))
--		kill_guest(lg, "bad stack page %#lx", vaddr);
-+	if (!page_writable(vcpu, vaddr) && !demand_page(vcpu, vaddr, 2))
-+		kill_guest(vcpu->lg, "bad stack page %#lx", vaddr);
- }
- 
- /*H:450 If we chase down the release_pgd() code, it looks like this: */
-@@ -358,28 +359,28 @@ static void flush_user_mappings(struct lguest *lg, int idx)
-  *
-  * The Guest has a hypercall to throw away the page tables: it's used when a
-  * large number of mappings have been changed. */
--void guest_pagetable_flush_user(struct lguest *lg)
-+void guest_pagetable_flush_user(struct lguest_vcpu *vcpu)
- {
- 	/* Drop the userspace part of the current page table. */
--	flush_user_mappings(lg, lg->pgdidx);
-+	flush_user_mappings(vcpu->lg, vcpu->vcpu_pgd);
- }
- /*:*/
- 
- /* We walk down the guest page tables to get a guest-physical address */
--unsigned long guest_pa(struct lguest *lg, unsigned long vaddr)
-+unsigned long guest_pa(struct lguest_vcpu *vcpu, unsigned long vaddr)
- {
- 	pgd_t gpgd;
- 	pte_t gpte;
- 
- 	/* First step: get the top-level Guest page table entry. */
--	gpgd = lgread(lg, gpgd_addr(lg, vaddr), pgd_t);
-+	gpgd = lgread(vcpu->lg, gpgd_addr(vcpu, vaddr), pgd_t);
- 	/* Toplevel not present?  We can't map it in. */
- 	if (!(pgd_flags(gpgd) & _PAGE_PRESENT))
--		kill_guest(lg, "Bad address %#lx", vaddr);
-+		kill_guest(vcpu->lg, "Bad address %#lx", vaddr);
- 
--	gpte = lgread(lg, gpte_addr(lg, gpgd, vaddr), pte_t);
-+	gpte = lgread(vcpu->lg, gpte_addr(vcpu->lg, gpgd, vaddr), pte_t);
- 	if (!(pte_flags(gpte) & _PAGE_PRESENT))
--		kill_guest(lg, "Bad address %#lx", vaddr);
-+		kill_guest(vcpu->lg, "Bad address %#lx", vaddr);
- 
- 	return pte_pfn(gpte) * PAGE_SIZE | (vaddr & ~PAGE_MASK);
- }
-@@ -399,11 +400,12 @@ static unsigned int find_pgdir(struct lguest *lg, unsigned long pgtable)
- /*H:435 And this is us, creating the new page directory.  If we really do
-  * allocate a new one (and so the kernel parts are not there), we set
-  * blank_pgdir. */
--static unsigned int new_pgdir(struct lguest *lg,
-+static unsigned int new_pgdir(struct lguest_vcpu *vcpu,
- 			      unsigned long gpgdir,
- 			      int *blank_pgdir)
- {
- 	unsigned int next;
-+	struct lguest *lg = vcpu->lg;
- 
- 	/* We pick one entry at random to throw out.  Choosing the Least
- 	 * Recently Used might be better, but this is easy. */
-@@ -413,7 +415,7 @@ static unsigned int new_pgdir(struct lguest *lg,
- 		lg->pgdirs[next].pgdir = (pgd_t *)get_zeroed_page(GFP_KERNEL);
- 		/* If the allocation fails, just keep using the one we have */
- 		if (!lg->pgdirs[next].pgdir)
--			next = lg->pgdidx;
-+			next = vcpu->vcpu_pgd;
- 		else
- 			/* This is a blank page, so there are no kernel
- 			 * mappings: caller must map the stack! */
-@@ -442,9 +444,9 @@ void guest_new_pagetable(struct lguest_vcpu *vcpu, unsigned long pgtable)
- 	/* If not, we allocate or mug an existing one: if it's a fresh one,
- 	 * repin gets set to 1. */
- 	if (newpgdir == ARRAY_SIZE(lg->pgdirs))
--		newpgdir = new_pgdir(lg, pgtable, &repin);
-+		newpgdir = new_pgdir(vcpu, pgtable, &repin);
- 	/* Change the current pgd index to the new one. */
--	lg->pgdidx = newpgdir;
-+	vcpu->vcpu_pgd = newpgdir;
- 	/* If it was completely blank, we map in the Guest kernel stack */
- 	if (repin)
- 		pin_stack_pages(vcpu);
-@@ -591,11 +593,11 @@ int init_guest_pagetable(struct lguest *lg, unsigned long pgtable)
- {
- 	/* We start on the first shadow page table, and give it a blank PGD
- 	 * page. */
--	lg->pgdidx = 0;
--	lg->pgdirs[lg->pgdidx].gpgdir = pgtable;
--	lg->pgdirs[lg->pgdidx].pgdir = (pgd_t*)get_zeroed_page(GFP_KERNEL);
--	if (!lg->pgdirs[lg->pgdidx].pgdir)
-+	lg->pgdirs[0].gpgdir = pgtable;
-+	lg->pgdirs[0].pgdir = (pgd_t *)get_zeroed_page(GFP_KERNEL);
-+	if (!lg->pgdirs[0].pgdir)
- 		return -ENOMEM;
-+	lg->vcpus[0].vcpu_pgd = 0;
- 	return 0;
- }
- 
-@@ -607,7 +609,7 @@ void page_table_guest_data_init(struct lguest *lg)
- 	    /* We tell the Guest that it can't use the top 4MB of virtual
- 	     * addresses used by the Switcher. */
- 	    || put_user(4U*1024*1024, &lg->lguest_data->reserve_mem)
--	    || put_user(lg->pgdirs[lg->pgdidx].gpgdir,&lg->lguest_data->pgdir))
-+	    || put_user(lg->pgdirs[0].gpgdir, &lg->lguest_data->pgdir))
- 		kill_guest(lg, "bad guest page %p", lg->lguest_data);
- 
- 	/* In flush_user_mappings() we loop from 0 to
-@@ -638,7 +640,6 @@ void free_guest_pagetable(struct lguest *lg)
- void map_switcher_in_guest(struct lguest_vcpu *vcpu,
- 			   struct lguest_pages *pages)
- {
--	struct lguest *lg = vcpu->lg;
- 	pte_t *switcher_pte_page = __get_cpu_var(switcher_pte_pages);
- 	pgd_t switcher_pgd;
- 	pte_t regs_pte;
-@@ -648,7 +649,8 @@ void map_switcher_in_guest(struct lguest_vcpu *vcpu,
- 	 * page for this CPU (with appropriate flags). */
- 	switcher_pgd = __pgd(__pa(switcher_pte_page) | _PAGE_KERNEL);
- 
--	lg->pgdirs[lg->pgdidx].pgdir[SWITCHER_PGD_INDEX] = switcher_pgd;
-+	vcpu->lg->pgdirs[vcpu->vcpu_pgd].pgdir[SWITCHER_PGD_INDEX] =
-+								switcher_pgd;
- 
- 	/* We also change the Switcher PTE page.  When we're running the Guest,
- 	 * we want the Guest's "regs" page to appear where the first Switcher
-diff --git a/drivers/lguest/x86/core.c b/drivers/lguest/x86/core.c
-index aec2527..582eaf0 100644
---- a/drivers/lguest/x86/core.c
-+++ b/drivers/lguest/x86/core.c
-@@ -147,7 +147,7 @@ static void run_guest_once(struct lguest_vcpu *vcpu,
- 		      * 0-th argument above, ie "a").  %ebx contains the
- 		      * physical address of the Guest's top-level page
- 		      * directory. */
--		     : "0"(pages), "1"(__pa(lg->pgdirs[lg->pgdidx].pgdir))
-+		     : "0"(pages), "1"(__pa(lg->pgdirs[vcpu->vcpu_pgd].pgdir))
- 		     /* We tell gcc that all these registers could change,
- 		      * which means we don't have to save and restore them in
- 		      * the Switcher. */
-@@ -225,7 +225,7 @@ static int emulate_insn(struct lguest_vcpu *vcpu)
- 	unsigned int insnlen = 0, in = 0, shift = 0;
- 	/* The eip contains the *virtual* address of the Guest's instruction:
- 	 * guest_pa just subtracts the Guest's page_offset. */
--	unsigned long physaddr = guest_pa(lg, vcpu->regs->eip);
-+	unsigned long physaddr = guest_pa(vcpu, vcpu->regs->eip);
- 
- 	/* This must be the Guest kernel trying to do something, not userspace!
- 	 * The bottom two bits of the CS segment register are the privilege
-@@ -307,7 +307,7 @@ void lguest_arch_handle_trap(struct lguest_vcpu *vcpu)
- 		 *
- 		 * The errcode tells whether this was a read or a write, and
- 		 * whether kernel or userspace code. */
--		if (demand_page(lg, vcpu->arch.last_pagefault,
-+		if (demand_page(vcpu, vcpu->arch.last_pagefault,
- 				vcpu->regs->errcode))
- 			return;
- 
--- 
-1.5.0.6
-
+Miles Lane wrote:
+> .config attached in order to not trip spam filters.
+>
+> Miles Lane wrote:
+>> [  252.868386] BUG: unable to handle kernel NULL pointer dereference 
+>> at virtual address 00000018
+>> [  252.868393] printing ip: c012d527 *pde = 00000000
+>> [  252.868399] Oops: 0000 [#1] SMP
+>> [  252.868403] last sysfs file: 
+>> /sys/devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda3/stat 
+>>
+>> [  252.868407] Modules linked in: aes_i586 aes_generic i915 drm 
+>> rfcomm l2cap bluetooth acpi_cpufreq cpufreq_stats 
+>> cpufreq_conservative sbs sbshc dm_crypt sbp2 parport_pc lp parport 
+>> arc4 ecb crypto_blkcipher cryptomgr crypto_algapi snd_hda_intel 
+>> snd_pcm_oss snd_mixer_oss pcmcia snd_pcm iTCO_wdt iTCO_vendor_support 
+>> snd_seq_dummy watchdog_core watchdog_dev snd_seq_oss snd_seq_midi 
+>> tifm_7xx1 snd_rawmidi iwl3945 snd_seq_midi_event rng_core tifm_core 
+>> mac80211 snd_seq snd_timer snd_seq_device cfg80211 sky2 battery 
+>> yenta_socket rsrc_nonstatic pcmcia_core ac snd soundcore 
+>> snd_page_alloc button shpchp pci_hotplug sr_mod cdrom pata_acpi piix 
+>> ide_core firewire_ohci firewire_core crc_itu_t thermal processor fan
+>> [  252.868469]
+>> [  252.868472] Pid: 7088, comm: head Not tainted (2.6.24-rc5-mm1 #9)
+>> [  252.868476] EIP: 0060:[<c012d527>] EFLAGS: 00010297 CPU: 0
+>> [  252.868481] EIP is at r_show+0x2a/0x70
+>> [  252.868483] EAX: 00000000 EBX: 00000001 ECX: c07e3224 EDX: c04bb034
+>> [  252.868486] ESI: 00000008 EDI: ed1f52c0 EBP: f5320f10 ESP: f5320f04
+>> [  252.868489]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+>> [  252.868493] Process head (pid: 7088, ti=f5320000 task=f532e000 
+>> task.ti=f5320000)
+>> [  252.868495] Stack: c03a6cac ed1f52c0 c07e3224 f5320f50 c0199a7e 
+>> 00002000 bf930807 e1007800
+>> [  252.868504]        ed1f52e0 00000000 00000000 000001d3 0000000e 
+>> 00000000 0000000d 00000000
+>> [  252.868512]        fffffffb f7d39370 c01998e4 f5320f74 c01af4f5 
+>> f5320f9c 00002000 bf930807
+>> [  252.868521] Call Trace:
+>> [  252.868523]  [<c0107d55>] show_trace_log_lvl+0x12/0x25
+>> [  252.868529]  [<c0107df2>] show_stack_log_lvl+0x8a/0x95
+>> [  252.868534]  [<c0107e89>] show_registers+0x8c/0x154
+>> [  252.868538]  [<c010805f>] die+0x10e/0x1d2
+>> [  252.868542]  [<c039c8c9>] do_page_fault+0x52b/0x600
+>> [  252.868547]  [<c039af9a>] error_code+0x72/0x78
+>> [  252.868552]  [<c0199a7e>] seq_read+0x19a/0x26c
+>> [  252.868557]  [<c01af4f5>] proc_reg_read+0x60/0x74
+>> [  252.868562]  [<c018390d>] vfs_read+0xa2/0x11e
+>> [  252.868567]  [<c0183d02>] sys_read+0x3b/0x60
+>> [  252.868571]  [<c0106bae>] sysenter_past_esp+0x6b/0xc1
+>> [  252.868575]  =======================
+>> [  252.868577] Code: c3 55 89 d1 89 e5 57 89 c7 56 53 8b 50 64 83 7a 
+>> 0c 00 77 0e 81 7a 08 ff ff 00 00 be 04 00 00 00 76 05 be 08 00 00 00 
+>> 89 c8 31 db <8b> 40 18 39 d0 74 06 43 83 fb 05 75 f3 8b 41 10 ba 2f 
+>> 1b 45 c0
+>> [  252.868623] EIP: [<c012d527>] r_show+0x2a/0x70 SS:ESP 0068:f5320f04
