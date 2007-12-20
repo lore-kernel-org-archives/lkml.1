@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761394AbXLTVjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762068AbXLTVku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761394AbXLTVjq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 16:39:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbXLTVji
+	id S1762068AbXLTVku (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 16:40:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbXLTVkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 16:39:38 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43992 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753289AbXLTVji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 16:39:38 -0500
-Date: Thu, 20 Dec 2007 22:39:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 0/5] x86: another attempt at x86 pagetable unification
-Message-ID: <20071220213906.GB11897@elte.hu>
-References: <20071219223534.129042140@goop.org> <20071220094940.GA14227@elte.hu> <20071220112022.GA15832@elte.hu> <476AD9EA.7010108@goop.org>
+	Thu, 20 Dec 2007 16:40:41 -0500
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:10952 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbXLTVkk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 16:40:40 -0500
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Cc: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: Trying to convert old modules to newer kernels
+X-Message-Flag: Warning: May contain useful information
+References: <Pine.LNX.4.61.0712191503370.4688@chaos.analogic.com>
+	<20071219202323.GH2310@csclub.uwaterloo.ca>
+	<Pine.LNX.4.61.0712191555150.4514@chaos.analogic.com>
+	<20071220150255.GE2308@csclub.uwaterloo.ca>
+	<Pine.LNX.4.61.0712201107300.8261@chaos.analogic.com>
+	<20071220162700.GF2308@csclub.uwaterloo.ca>
+	<Pine.LNX.4.61.0712201615580.9531@chaos.analogic.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 20 Dec 2007 13:40:36 -0800
+In-Reply-To: <Pine.LNX.4.61.0712201615580.9531@chaos.analogic.com> (linux-os@analogic.com's message of "Thu, 20 Dec 2007 16:23:12 -0500")
+Message-ID: <ada1w9hyrhn.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <476AD9EA.7010108@goop.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 20 Dec 2007 21:40:37.0095 (UTC) FILETIME=[F53D7770:01C84350]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > It doesn't seem to be something in .config. Do you know how to
+ > reconfigure to get parameter passing put back like it was? Our
+ > production applications have lots of assembly-language files
+ > and I'm sure we are not going to be able to change all those!
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+32-bit x86 uses regparm=3 by default now since commit a1a70c25 ("i386:
+always enable regparm"), which went in about a year ago.  To go back
+to the old way, you'll just have to edit arch/x86/Makefile_32 (and
+rebuild your whole kernel from a clean tree, obviously).
 
-> > found a couple of bugs.
-> >
-> > firstly, 64-bit wasnt so lucky, you broke 
-> > iounmap()/change_page_attr()
-> > :-)
-> 
-> Crap.  Worked for me.  I'll look into it.
-
-well, there's an easy solution for unification patches: the resulting 
-object files must have _exactly the same_ content as without the 
-unification patches. (Modulo strings as WARN_ON()s referring to 
-include-file names.)
-
-If they differ then the unification did something wrong. With your 
-patchset and the config i sent, the difference is visible in the image 
-size already:
-
-   text     data   bss     dec              hex    filename
-   7763766  967330 5812328 14543424         ddea40 vmlinux.after
-   7763811  967330 5812328 14543469         ddea6d vmlinux.before
-
-also, reducing the size and scope of changes helps as well - because 
-that way it can be bisected down to specific changes. Mistakes 
-inevitably happen, especially if you do not enforce a rigid 
-byte-for-byte correctness along the way. You did 5 rather large patches, 
-and it's not testable because your unification steps were too coarse.
-
-In other words: you were asking for trouble and you got it :-)
-
-	Ingo
+ - R.
