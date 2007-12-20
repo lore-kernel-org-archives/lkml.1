@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757778AbXLTVsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759617AbXLTVuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757778AbXLTVsj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 16:48:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbXLTVsc
+	id S1759617AbXLTVuJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 16:50:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbXLTVt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 16:48:32 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:32252 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752783AbXLTVsb (ORCPT
+	Thu, 20 Dec 2007 16:49:57 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:44463 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987AbXLTVt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 16:48:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=iXRZjrSYU4E12izsLfwTnXJjme8UtoOeEjvobOvYRhsQnG9Sd4VqAekcBU1K9XGTksvrL1JA0WF6ObG8DYwGt55K8Cs5ufMJ16WPiMUhzjM/lhk634hq8NC2pCJcyL0Cv8i7gsFcpIz07Ba/tgrlUknBZ4oUBEWXVYKwo62O72A=
-Message-ID: <84144f020712201348k117b7db5x6ab71de796bdee5b@mail.gmail.com>
-Date: Thu, 20 Dec 2007 23:48:29 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "David Newall" <david@davidnewall.com>
-Subject: Re: almost daily Kernel oops with 2.6.23.9 - and now 2.6.23.11 as well
-Cc: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>,
-       Scott <linux-kernel@bluecamel.eml.cc>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, hugh@veritas.com, stefanr@s5r6.in-berlin.de
-In-Reply-To: <476A7E7E.7030704@davidnewall.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 20 Dec 2007 16:49:56 -0500
+Subject: Re: iommu dma mapping alignment requirements
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: benh@ozlabs.au.ibm.com, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org,
+       OpenFabrics General <general@lists.openfabrics.org>,
+       Benjamin Herrenschmidt <bherren@au1.ibm.com>,
+       Wen Xiong <wenxiong@us.ibm.com>, Olof Johansson <olof@lixom.net>,
+       Paul Mackerras <pmac@au1.ibm.com>
+In-Reply-To: <476AD84E.4000507@opengridcomputing.com>
+References: <476AA2E2.5010007@opengridcomputing.com>
+	 <1198181862.6779.3.camel@pasglop>  <476AD84E.4000507@opengridcomputing.com>
+Content-Type: text/plain
+Organization: IBM Ozlabs
+Date: Fri, 21 Dec 2007 08:26:57 +1100
+Message-Id: <1198186017.6779.28.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200712160106.00464.volker.armin.hemmann@tu-clausthal.de>
-	 <200712200313.54425.volker.armin.hemmann@tu-clausthal.de>
-	 <1198122641.8341.1.camel@oasis.donpoo.home>
-	 <200712200653.28996.volker.armin.hemmann@tu-clausthal.de>
-	 <476A7E7E.7030704@davidnewall.com>
-X-Google-Sender-Auth: 6c4eff1a42cc0725
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Dec 20, 2007 4:38 PM, David Newall <david@davidnewall.com> wrote:
-> >>> and another one, this time tainted with the nvidia module:
-> >>> 5194.130985] Unable to handle kernel paging request at 0000030000000000
-> >>> RIP:
->
-> Numbers like that don't suggest hardware faults.  All those zeros: It's
-> far too round.  Sounds very like software.  In fact, it sounds like the
-> start of significant hardware region.
+On Thu, 2007-12-20 at 15:02 -0600, Steve Wise wrote:
+> Benjamin Herrenschmidt wrote:
+> > Adding A few more people to the discussion. You may well be right and we
+> > would have to provide the same alignment, though that sucks a bit as one
+> > of the reason we switched to 4K for the IOMMU is that the iommu space
+> > available on pSeries is very small and we were running out of it with
+> > 64K pages and lots of networking activity.
+> > 
+> 
+> But smarter NIC drivers can resolve this too, I think, but perhaps 
+> carving up full pages of mapped buffers instead of just assuming mapping 
+> is free...
 
-Nah, it's just that vma->anon_vma is probably supposed to be NULL here. And if
-you look at all the oopses, they do suggest one particular byte lane
-is dodgy (the
-corruption is in bits 41-43 and 45).
+True, but the problem still happenens today, if we switch back to 64K
+iommu page size (which should be possible, I need to fix that), we
+-will- run out of iommu space on typical workloads and that is not
+acceptable.
 
-The whole thing reminds me of another bug where memtest86 didn't find anything
-because it's doing cached memory accesses: http://lkml.org/lkml/2007/10/3/259
+So we need to find a compromise.
 
-                                Pekka
+What I might do is something around the lines of: If size >= PAGE_SIZE,
+and vaddr (page_address + offset) is PAGE_SIZE aligned, then I enforce
+alignment of the resulting mapping.
+
+That should fix your case. Anything requesting smaller than PAGE_SIZE
+mappings would lose that alignment but I -think- it should be safe, and
+you still always get 4K alignment anyway (+/- your offset) so at least
+small alignment restrictions are still enforced (such as cache line
+alignment etc...).
+
+I'll send you a test patch later today.
+
+Ben.
+
+
