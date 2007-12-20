@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932438AbXLTMv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932450AbXLTMyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932438AbXLTMv5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 07:51:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759624AbXLTMvs
+	id S932450AbXLTMyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 07:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbXLTMyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 07:51:48 -0500
-Received: from styx.suse.cz ([82.119.242.94]:54893 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754102AbXLTMvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 07:51:47 -0500
-Date: Thu, 20 Dec 2007 13:51:45 +0100
-From: Jan Kara <jack@suse.cz>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>
-Subject: Re: [PATCH 6/6] udf: fix sparse warnings (shadowing & mismatch
-	between declaration and definition)
-Message-ID: <20071220125145.GB9125@duck.suse.cz>
-References: <20071216021741.GG26986@joi> <20071217165017.GJ6979@atrey.karlin.mff.cuni.cz> <20071219183511.GC18104@joi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071219183511.GC18104@joi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 20 Dec 2007 07:54:06 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49924
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753585AbXLTMyE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 07:54:04 -0500
+Date: Thu, 20 Dec 2007 04:53:59 -0800 (PST)
+Message-Id: <20071220.045359.107684960.davem@davemloft.net>
+To: mpm@selenic.com
+Cc: akpm@linux-foundation.org, m.kozlowski@tuxland.pl,
+       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: 2.6.24-rc5-mm1: problems with cat /proc/kpageflags
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071217145554.GD19691@waste.org>
+References: <20071216.202611.226170474.davem@davemloft.net>
+	<20071216223917.873e34bf.akpm@linux-foundation.org>
+	<20071217145554.GD19691@waste.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 19-12-07 19:35:14, Marcin Slusarz wrote:
-> On Mon, Dec 17, 2007 at 05:50:17PM +0100, Jan Kara wrote:
-> > > fix warnings:
-> > > fs/udf/super.c:1320:24: warning: symbol 'bh' shadows an earlier one
-> > > fs/udf/super.c:1240:21: originally declared here
-> > > fs/udf/super.c:1583:4: warning: symbol 'i' shadows an earlier one
-> > > fs/udf/super.c:1418:6: originally declared here
-> > > fs/udf/super.c:1585:4: warning: symbol 'i' shadows an earlier one
-> > > fs/udf/super.c:1418:6: originally declared here
-> > > fs/udf/super.c:1658:4: warning: symbol 'i' shadows an earlier one
-> > > fs/udf/super.c:1648:6: originally declared here
-> > > fs/udf/super.c:1660:4: warning: symbol 'i' shadows an earlier one
-> > > fs/udf/super.c:1648:6: originally declared here
-> > > fs/udf/super.c:450:6: warning: symbol 'udf_write_super' was not declared. Should it be static?
-> > >
-> > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > > CC: Ben Fennema <bfennema@falcon.csc.calpoly.edu>
-> >   Thanks for the patch.  The 'bh' change is fine. The problems with 'i'
-> > should be solved differently I think. Those functions UDF_SB_FREE,
-> > UDF_SB_ALLOC_PARTMAPS should be functions and not macros. Please convert
-> > those to either inline functions if they are small or to regular
-> > functions if they are larger.  It won't be completely trivial because of
-> > the hackery e.g. in UDF_SB_ALLOC_BITMAP. It gets an argument meaning on
-> > which struct member something should be performed. But for example in
-> > the UDF_SB_ALLOC_BITMAP case you can simply make the function return the
-> > pointer to allocated and initialized space and the caller would assign
-> > it to a proper element of the superblock.
-> Ok, I'll try to do it.
-  Thanks.
+From: Matt Mackall <mpm@selenic.com>
+Date: Mon, 17 Dec 2007 08:55:54 -0600
 
-> > This would help the overall
-> > code quality of UDF (which is sadly quite poor).
-> If you have other suggestions how to clean up this code, let me know.
-> I'll see what I can do with them ;)
-  Hmm, it's hard to formulate precisely. It's nothing particular but all in
-all the code is simply hard to read - all those strange names of variables,
-unusual sideeffects of functions, ... But one specific problem I'm aware of
-is the lack of error handling so in case of IO error or filesystem
-corruption results are quite spectacular (kernel crash, etc.).
+> On Sun, Dec 16, 2007 at 10:39:17PM -0800, Andrew Morton wrote:
+> Actually, you may only need these two:
+> 
+> > maps4-add-proc-kpagecount-interface.patch
+> > maps4-add-proc-kpageflags-interface.patch
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Yes these two were enough, and exporting fs/proc/base.c's
+mem_lseek().
+
+As hard as I try, I can't reproduce this at all.  I tried
+both on my workstation and my niagara boxes.
+
+It must be other needle in the 30MB+ -mm haystack. :-(
+
