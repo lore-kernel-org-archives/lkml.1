@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762221AbXLTVeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761394AbXLTVjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762221AbXLTVeR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 16:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760354AbXLTVeA
+	id S1761394AbXLTVjq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 16:39:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbXLTVji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 16:34:00 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43579 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754653AbXLTVd7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 16:33:59 -0500
-Date: Thu, 20 Dec 2007 21:26:29 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: David Newall <david@davidnewall.com>,
-       Marcel Holtmann <marcel@holtmann.org>, linux-kernel@vger.kernel.org
-Subject: Re: Kernel bug: bluetooth meets TTY layer
-Message-ID: <20071220212629.46c0476a@the-village.bc.nu>
-In-Reply-To: <476ACDC6.8070904@linux.intel.com>
-References: <476A895C.7040903@linux.intel.com>
-	<476AC51F.70400@davidnewall.com>
-	<476ACDC6.8070904@linux.intel.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Dec 2007 16:39:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43992 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753289AbXLTVji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 16:39:38 -0500
+Date: Thu, 20 Dec 2007 22:39:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH 0/5] x86: another attempt at x86 pagetable unification
+Message-ID: <20071220213906.GB11897@elte.hu>
+References: <20071219223534.129042140@goop.org> <20071220094940.GA14227@elte.hu> <20071220112022.GA15832@elte.hu> <476AD9EA.7010108@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <476AD9EA.7010108@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Dec 2007 21:17:10 +0100
-Arjan van de Ven <arjan@linux.intel.com> wrote:
 
-> David Newall wrote:
-> > Hi Arjan,
-> > 
-> > I've not been able to find this file, "drivers/bluetooth/hci_tty.c", but 
-> > anyway, This seems to be what happens: Hci_uart_close() flushes using 
-> > hci_uart_flush().  Subsequently, in hci_dev_do_close(), (one step in 
-> > hci_unregister_dev()), hci_uart_flush() is called again.  The comment in 
-> > uart_flush_buffer(), relating to the WARN_ON(), indicates you can't 
-> > flush after the port is closed; which sounds reasonable.  I think 
-> > hci_uart_close() should set hdev->flush to NULL before returning.  
-> > Hci_dev_do_close() does check for this.  The code path is rather 
-> > involved and I'm not entirely clear of all steps, but I think that's 
-> > what should be done.
-> > 
-> > Patch for stupidly obsolete kernel attached.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> > found a couple of bugs.
+> >
+> > firstly, 64-bit wasnt so lucky, you broke 
+> > iounmap()/change_page_attr()
+> > :-)
 > 
-> looks reasonable; unfortunately I don't know the tty code well enough to judge this patch...
-> Alan?
+> Crap.  Worked for me.  I'll look into it.
 
-I don't know the bluetooth code well enough to even guess and I've not
-had time to study this one. 
+well, there's an easy solution for unification patches: the resulting 
+object files must have _exactly the same_ content as without the 
+unification patches. (Modulo strings as WARN_ON()s referring to 
+include-file names.)
 
-Alan
+If they differ then the unification did something wrong. With your 
+patchset and the config i sent, the difference is visible in the image 
+size already:
+
+   text     data   bss     dec              hex    filename
+   7763766  967330 5812328 14543424         ddea40 vmlinux.after
+   7763811  967330 5812328 14543469         ddea6d vmlinux.before
+
+also, reducing the size and scope of changes helps as well - because 
+that way it can be bisected down to specific changes. Mistakes 
+inevitably happen, especially if you do not enforce a rigid 
+byte-for-byte correctness along the way. You did 5 rather large patches, 
+and it's not testable because your unification steps were too coarse.
+
+In other words: you were asking for trouble and you got it :-)
+
+	Ingo
