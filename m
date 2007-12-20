@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759006AbXLTHyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbXLTHza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759006AbXLTHyv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 02:54:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbXLTHyn
+	id S1758850AbXLTHza (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 02:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbXLTHzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 02:54:43 -0500
-Received: from hs-out-0708.google.com ([64.233.178.248]:1149 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751959AbXLTHym (ORCPT
+	Thu, 20 Dec 2007 02:55:21 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33876 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754651AbXLTHzU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 02:54:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LdRPfGV1WGs4PN0uEZHZqISpZvxnxh+U7x4zKtCrkq5nrZ7d+BXo/eEuPt1iab70XvyZVnexafNrnZeoYGyiQ/pOZJmw2tm/N6ms8+3QsH/7ieW2gfl3KphdQHz7SdBv3aALp0GHUd90Km53bGrJfZLixQjuN3ByIuIOX6LEuXg=
-Message-ID: <a8e1da0712192354k3bce177fi3d30b5737c7d7a9e@mail.gmail.com>
-Date: Thu, 20 Dec 2007 15:54:40 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [RFC] kobject/kset/ktype documentation and example code updated
-Cc: linux-kernel@vger.kernel.org, "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       "Jonathan Corbet" <corbet@lwn.net>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>
-In-Reply-To: <20071220003031.GA15129@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 20 Dec 2007 02:55:20 -0500
+Date: Wed, 19 Dec 2007 23:53:57 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Voluntary leave_mm before entering ACPI C3
+Message-ID: <20071219235357.53157cea@laptopd505.fenrus.org>
+In-Reply-To: <4769757E.306@zytor.com>
+References: <20071219183443.GA547@linux-os.sc.intel.com>
+	<20071219193255.GA2158@elte.hu>
+	<476972A0.3050105@zytor.com>
+	<20071219194032.GA8849@elte.hu>
+	<4769757E.306@zytor.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071220003031.GA15129@kroah.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 20, 2007 8:30 AM, Greg KH <greg@kroah.com> wrote:
-> Thanks to everyone for your last round of review comments and changes to
-> the kobject documentation.
->
-> I now have over 130 patches reworking the kset/ktype and kobject apis in
-> the kernel tree, and here is the updated documentation and example code
-> that shows how things work now.
->
-> Things different from the last time around are the kobject_add() and
-> kobject_init() functions now take a bunch of required parameters, and
-> the kobject cleanup code is much more forgiving.
->
-> I want to drop kobject_unregister() but as this patch series is so big
-> already, I think it's time to let it bake in -mm and push into 2.6.25
-> before attempting it.
-[--snip--]
+On Wed, 19 Dec 2007 11:48:14 -0800
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-Hi, greg
+> 
+> I think C3 guarantees that the cache contents stay intact, and thus
+> it might make sense in some technology to preserve the TLB as well
+> (being a kind of cache.)
 
-How about add a kobject_remove function and temporarily keep the
-kobject_unregister as below until the 2.6.25:
+that sounds nice. It's fiction though ;-)
 
-kobject_unregister(...)
-{
-       ...
-        kobject_remove();
-        kobject_uevent();
-        ...
-}
+The thing to realize is that linux only sees "ACPI C3"; the BIOS maps that C3 to.. well any of the C states the processor in the system has. What you're saying is afaik correct for the *hardware* C3, not for the "C3" that Linux sees..
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
