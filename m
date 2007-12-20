@@ -1,79 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbXLTEcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbXLTEeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758137AbXLTEcv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 23:32:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbXLTEcn
+	id S1758598AbXLTEeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 23:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbXLTEeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 23:32:43 -0500
-Received: from hs-out-0708.google.com ([64.233.178.251]:40517 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754229AbXLTEcl (ORCPT
+	Wed, 19 Dec 2007 23:34:09 -0500
+Received: from ro-out-1112.google.com ([72.14.202.182]:12796 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753901AbXLTEeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 23:32:41 -0500
+	Wed, 19 Dec 2007 23:34:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=S+KLACRj8pfRwsCZhoCZZWAOXYgIVYQbIdA3wC5Wsr25lJ3FbWOoBJqSsWEDxI1XdyJEQncgP5MhI6oipkuZXjzGJ5xkqvm8FdSssgN/PyeBooqr3+XreDYqS9AE4dIIKQx8x8DN4KvsvmSRxB3+TCE1EZgIfAC128OTfgCCIWs=
-Message-ID: <a8e1da0712192032w5143f5cbs731a2f419812d2eb@mail.gmail.com>
-Date: Thu, 20 Dec 2007 12:32:40 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: 2.6.24-rc5-mm1
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mdharm-usb@one-eyed-alien.net, gregkh@suse.de,
-       linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net
-In-Reply-To: <Pine.LNX.4.44L0.0712192226220.15674-100000@netrider.rowland.org>
+        b=kuF5x3uDOgXZ9phBDFL8ADFkVGWK5xPP68tpXqqsgMBoTfLXWXMkVsjE32uZSK6Nqco1mF8D4qIuZvA8doH+UXQs0nWMzBUfj5CJfu2SnsS9FPwUKos4q9aTNaF+c1RYgTkpXuhXjHZ4qJ2KenZQmlYRAlDrk95Djr6EG0WQuto=
+Message-ID: <a44ae5cd0712192034m4745e78av9ebdc6da5cbfb60d@mail.gmail.com>
+Date: Wed, 19 Dec 2007 23:34:06 -0500
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.24-rc5-mm1 -- inconsistent {in-hardirq-W} -> {hardirq-on-W} usage -- pm-hibernate/9940 [HC0[0]:SC0[0]:HE1:SE1]
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       "Daniel Walker" <dwalker@mvista.com>, "Pavel Machek" <pavel@suse.cz>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <200712200231.56128.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a8e1da0712191643p74a88c35u45681b11b0492474@mail.gmail.com>
-	 <Pine.LNX.4.44L0.0712192226220.15674-100000@netrider.rowland.org>
+References: <a44ae5cd0712190517t7c80e15bv759fa5486dfca234@mail.gmail.com>
+	 <200712200109.20452.rjw@sisk.pl>
+	 <a44ae5cd0712191709y25a454bfq427e9bc3b644fcf3@mail.gmail.com>
+	 <200712200231.56128.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 20, 2007 11:34 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> Note carefully.  This:
+On Dec 19, 2007 8:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 >
-> > > > 2. on 2.6.24-rc5 kernel reports only the part 1, after try mount the
-> > > > disk it reports the part 2 and mount the partition as rw
->
-> contradicts this:
->
-> > > > 3. on 2.6.24-rc5 kernel reports only the part 1, after try mount the
-> > > > disk it just mount the partition as ro with nothing more messages.
-
-Oh, sorry. It's a typo. should be 2.6.24-rc5-mm1
-
->
-> So which is correct?
->
-> > Hi, Alan
+> On Thursday, 20 of December 2007, Miles Lane wrote:
+> > On Dec 19, 2007 7:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > >
-> > I'm sure about my post.
+> > > On Thursday, 20 of December 2007, Christoph Lameter wrote:
+> > > > On Thu, 20 Dec 2007, Rafael J. Wysocki wrote:
+> > > >
+> > > > > > We could reexport drain_local_pages() again but then I do not
+> > > understand
+> > > > > > why we would only drain the pages of this processor and not of all
+> > > other
+> > > > > > processors as well. It seems that software suspend intend was to
+> > > flush
+> > > > > > them all right?
+> > > > >
+> > > > > Well, not exactly.  We are on one CPU at this point, the others have
+> > > been
+> > > > > disabled.
+> > > >
+> > > > Ok so the others are flush. Here is a patch to re-export
+> > > > drain_local_pages() again and use it for software suspend:
+> > > >
+> > > > Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> > > >
+> > > > ---
+> > > >  include/linux/gfp.h     |    1 +
+> > > >  kernel/power/snapshot.c |    2 +-
+> > > >  mm/page_alloc.c         |    2 +-
+> > > >  3 files changed, 3 insertions(+), 2 deletions(-)
+> > > >
+> > > > Index: linux-2.6.24-rc5-mm1/kernel/power/snapshot.c
+> > > > ===================================================================
+> > > > --- linux-2.6.24-rc5-mm1.orig/kernel/power/snapshot.c 2007-12-19 11:59:
+> > > 25.233961700 -0800
+> > > > +++ linux-2.6.24-rc5-mm1/kernel/power/snapshot.c      2007-12-19 15:16:
+> > > 34.179661929 -0800
+> > > > @@ -1203,7 +1203,7 @@ asmlinkage int swsusp_save(void)
+> > > >
+> > > >       printk(KERN_INFO "PM: Creating hibernation image: \n");
+> > > >
+> > > > -     drain_all_pages();
+> > > > +     drain_local_pages(NULL);
+> > > >       nr_pages = count_data_pages();
+> > > >       nr_highmem = count_highmem_pages();
+> > > >       printk(KERN_INFO "PM: Need to copy %u pages\n", nr_pages +
+> > > nr_highmem);
+> > >
+> > > You've omitted the second instance, right before the copy_data_pages()
+> > > call.
+> > >
+> >
+> > I guess I will wait for a revised patch.
 >
-> But your post contradicts itself.  It can't be correct.
+> There's an Andrew's fix on top of this one in -mm:
+> http://marc.info/?l=linux-mm-commits&m=119810866812965&w=2
 >
-> > I'm not so famillar with usb.
-> > It looks weird.  Seems that my device will be firstly recoganized as a
-> > mp3 player and then a usb storage, so the system will report part 1 &
-> > part 2 under previous  kernels.
 >
-> I think those "part 2" messages aren't caused by the kernel at all, but
-> instead by some program running on your computer.  You could try
-> booting into single-user mode and see if the behavior changes.
+>
+> > > > Index: linux-2.6.24-rc5-mm1/mm/page_alloc.c
+> > > > ===================================================================
+> > > > --- linux-2.6.24-rc5-mm1.orig/mm/page_alloc.c 2007-12-19 12:01:
+> > > 00.630421258 -0800
+> > > > +++ linux-2.6.24-rc5-mm1/mm/page_alloc.c      2007-12-19 15:12:
+> > > 19.850545818 -0800
+> > > > @@ -930,7 +930,7 @@ static void drain_pages(unsigned int cpu
+> > > >  /*
+> > > >   * Spill all of this CPU's per-cpu pages back into the buddy allocator.
+> > > >   */
+> > > > -static void drain_local_pages(void *arg)
+> > > > +void drain_local_pages(void *arg)
+> > > >  {
+> > > >       drain_pages(smp_processor_id());
+> > > >  }
+> > > > Index: linux-2.6.24-rc5-mm1/include/linux/gfp.h
+> > > > ===================================================================
+> > > > --- linux-2.6.24-rc5-mm1.orig/include/linux/gfp.h     2007-12-19 15:13:
+> > > 51.926950065 -0800
+> > > > +++ linux-2.6.24-rc5-mm1/include/linux/gfp.h  2007-12-19 15:16:
+> > > 11.951564369 -0800
+> > > > @@ -229,5 +229,6 @@ extern void FASTCALL(free_cold_page(stru
+> > > >  void page_alloc_init(void);
+> > > >  void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp);
+> > > >  void drain_all_pages(void);
+> > > > +void drain_local_pages(void *dummy);
+> > > >
+> > > >  #endif /* __LINUX_GFP_H */
+> > >
+>
 
-No doubt for me. Under osx plugin this device will popup a dialog(I
-don't remember the content), after press ok then the disk icon go
-away, and then being remount again.
+I applied Christoph and Andrew's patches and recompiled.  I suspended
+to disk and to ram several times and all looks good.
 
->
-> Also there's no question -- the device does behave strangely.  It
-> shouldn't change the write-protect setting all by itself.
-
-Yes, I think so too.
->
-> Alan Stern
->
->
+       Miles
