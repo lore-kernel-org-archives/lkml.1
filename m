@@ -1,86 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934694AbXLTO0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934798AbXLTO0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934694AbXLTO0W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 09:26:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932218AbXLTOMj
+	id S934798AbXLTO0k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 09:26:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933107AbXLTOMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 09:12:39 -0500
-Received: from ns1.suse.de ([195.135.220.2]:40877 "EHLO mx1.suse.de"
+	Thu, 20 Dec 2007 09:12:46 -0500
+Received: from mx2.suse.de ([195.135.220.15]:56782 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932288AbXLTOMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 09:12:36 -0500
+	id S933093AbXLTOMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 09:12:40 -0500
 X-Mailbox-Line: From jjohansen@suse.de Thu Dec 20 06:09:46 2007
-Message-Id: <20071220140946.068298016@suse.de>
+Message-Id: <20071220140946.206811991@suse.de>
 References: <20071220140910.934607826@suse.de>
 User-Agent: quilt/0.46-60
-Date: Thu, 20 Dec 2007 06:09:40 -0800
+Date: Thu, 20 Dec 2007 06:09:41 -0800
 From: John@suse.de, Johansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 30/47] Make d_path() consistent across mount operations
-Content-Disposition: inline; filename=mount-consistent-__d_path.diff
+Subject: [AppArmor 31/47] Add d_namespace_path() to compute namespace relative pathnames
+Content-Disposition: inline; filename=d_namespace_path.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The path that __d_path() computes can become slightly inconsistent when it
-races with mount operations: it grabs the vfsmount_lock when traversing mount
-points but immediately drops it again, only to re-grab it when it reaches the
-next mount point.  The result is that the filename computed is not always
-consisent, and the file may never have had that name. (This is unlikely, but
-still possible.)
-
-Fix this by grabbing the vfsmount_lock when the first mount point is reached,
-and holding onto it until the d_cache lookup is completed.
+In AppArmor, we are interested in pathnames relative to the namespace root.
+This is the same as d_path() except for the root where the search ends. Add
+a function for computing the namespace-relative path.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/dcache.c |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ fs/dcache.c            |    4 ++--
+ fs/namespace.c         |   26 ++++++++++++++++++++++++++
+ include/linux/dcache.h |    1 +
+ include/linux/mount.h  |    3 +++
+ 4 files changed, 32 insertions(+), 2 deletions(-)
 
 --- a/fs/dcache.c
 +++ b/fs/dcache.c
-@@ -1766,7 +1766,7 @@ shouldnt_be_hashed:
- static char *__d_path(struct path *path, struct path *root,
-                      char *buffer, int buflen, int fail_deleted)
+@@ -1763,8 +1763,8 @@ shouldnt_be_hashed:
+  *
+  * Returns the buffer or an error code.
+  */
+-static char *__d_path(struct path *path, struct path *root,
+-                     char *buffer, int buflen, int fail_deleted)
++char *__d_path(struct path *path, struct path *root, char *buffer, int buflen,
++	       int fail_deleted)
  {
--	int namelen, is_slash;
-+    int namelen, is_slash, vfsmount_locked = 0;
+     int namelen, is_slash, vfsmount_locked = 0;
  	struct dentry *dentry = path->dentry;
- 	struct vfsmount *vfsmnt = path->mnt;
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -26,6 +26,7 @@
+ #include <linux/security.h>
+ #include <linux/mount.h>
+ #include <linux/ramfs.h>
++#include <linux/path.h>
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+ #include "pnode.h"
+@@ -2167,3 +2168,28 @@ void __put_mnt_ns(struct mnt_namespace *
+ 	release_mounts(&umount_list);
+ 	kfree(ns);
+ }
++
++char *d_namespace_path(struct path *path, char *buf, int buflen)
++{
++	struct path root = { NULL, NULL };
++	struct vfsmount *rootmnt;
++	char *res;
++
++	read_lock(&current->fs->lock);
++	rootmnt = mntget(current->fs->root.mnt);
++	read_unlock(&current->fs->lock);
++	spin_lock(&vfsmount_lock);
++	if (rootmnt->mnt_ns)
++		root.mnt = mntget(rootmnt->mnt_ns->root);
++	spin_unlock(&vfsmount_lock);
++	mntput(rootmnt);
++	if (root.mnt)
++		root.dentry = dget(root.mnt->mnt_root);
++	res = __d_path(path, &root, buf, buflen, 1);
++	path_put(&root);
++	/* Prevent empty path for lazily unmounted filesystems. */
++	if (!IS_ERR(res) && *res == '\0')
++		*--res = '.';
++	return res;
++}
++EXPORT_SYMBOL(d_namespace_path);
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -302,6 +302,7 @@ extern int d_validate(struct dentry *, s
+ extern char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
  
-@@ -1791,14 +1791,14 @@ static char *__d_path(struct path *path,
- 		struct dentry * parent;
+ extern char *d_path(struct path *, char *, int);
++extern char *__d_path(struct path *, struct path *, char *, int, int);
  
- 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
--			spin_lock(&vfsmount_lock);
--			if (vfsmnt->mnt_parent == vfsmnt) {
--				spin_unlock(&vfsmount_lock);
--				goto global_root;
-+			if (!vfsmount_locked) {
-+				spin_lock(&vfsmount_lock);
-+				vfsmount_locked = 1;
- 			}
-+			if (vfsmnt->mnt_parent == vfsmnt)
-+				goto global_root;
- 			dentry = vfsmnt->mnt_mountpoint;
- 			vfsmnt = vfsmnt->mnt_parent;
--			spin_unlock(&vfsmount_lock);
- 			continue;
- 		}
- 		parent = dentry->d_parent;
-@@ -1817,6 +1817,8 @@ static char *__d_path(struct path *path,
- 		*--buffer = '/';
+ /* Allocation counts.. */
  
- out:
-+	if (vfsmount_locked)
-+		spin_unlock(&vfsmount_lock);
- 	spin_unlock(&dcache_lock);
- 	return buffer;
+--- a/include/linux/mount.h
++++ b/include/linux/mount.h
+@@ -16,6 +16,7 @@
+ #include <linux/list.h>
+ #include <linux/nodemask.h>
+ #include <linux/spinlock.h>
++#include <linux/path.h>
+ #include <asm/atomic.h>
  
+ struct super_block;
+@@ -114,5 +115,7 @@ extern void shrink_submounts(struct vfsm
+ extern spinlock_t vfsmount_lock;
+ extern dev_t name_to_dev_t(char *name);
+ 
++extern char *d_namespace_path(struct path *, char *, int);
++
+ #endif
+ #endif /* _LINUX_MOUNT_H */
 
 -- 
 
