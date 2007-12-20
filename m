@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759033AbXLTCLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759826AbXLTCOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759033AbXLTCLV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 21:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbXLTCLN
+	id S1759826AbXLTCOI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 21:14:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbXLTCNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 21:11:13 -0500
-Received: from mga01.intel.com ([192.55.52.88]:61001 "EHLO mga01.intel.com"
+	Wed, 19 Dec 2007 21:13:54 -0500
+Received: from mail.prans.org ([64.79.206.200]:49178 "EHLO mail.prans.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753738AbXLTCLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 21:11:12 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,186,1196668800"; 
-   d="scan'208";a="450888996"
-Date: Wed, 19 Dec 2007 18:08:47 -0800
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Len Brown <lenb@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Voluntary leave_mm before entering ACPI C3
-Message-ID: <20071220020846.GA13464@linux-os.sc.intel.com>
-References: <20071219183443.GA547@linux-os.sc.intel.com> <20071219193255.GA2158@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753738AbXLTCNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 21:13:52 -0500
+From: Elvis Pranskevichus <el@prans.net>
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Subject: Re: [lm-sensors] 2.6.24-rc4 hwmon it87 probe fails
+Date: Wed, 19 Dec 2007 21:13:22 -0500
+User-Agent: KMail/1.9.7
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Jean Delvare <khali@linux-fr.org>,
+       Shaohua Li <shaohua.li@intel.com>, Mike Houston <mikeserv@bmts.com>,
+       Adrian Bunk <bunk@stusta.de>, mhoffman@lightlink.com,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+       Adam Belay <ambx1@neo.rr.com>, Zhao Yakui <yakui.zhao@intel.com>,
+       Thomas Renninger <trenn@suse.de>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org
+References: <20071204215154.7f26285e.mikeserv@bmts.com> <200712191720.23026.bjorn.helgaas@hp.com> <200712200045.16899.carlos@strangeworlds.co.uk>
+In-Reply-To: <200712200045.16899.carlos@strangeworlds.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071219193255.GA2158@elte.hu>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200712192113.22974.el@prans.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 19, 2007 at 08:32:55PM +0100, Ingo Molnar wrote:
-> 
-> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
-> 
-> > Aviod TLB flush IPIs during C3 states by voluntary leave_mm() before 
-> > entering C3.
-> > 
-> > The performance impact of TLB flush on C3 should not be significant 
-> > with respect to C3 wakeup latency. Also, CPUs tend to flush TLB in 
-> > hardware while in C3 anyways.
-> > 
-> > On a 8 logical CPU system, running make -j2, the number of tlbflush 
-> > IPIs goes down from 40 per second to ~ 0. Total number of interrupts 
-> > during the run of this workload was ~1200 per second, which makes it 
-> > ~3% savings in wakeups.
-> > 
-> > There was no measurable performance or power impact however.
-> 
-> thanks, applied to x86.git. Nice and elegant patch!
-> 
-> Btw., since the TLB flush state machine is really subtle and fragile, 
-> could you try to run the following mmap stresstest i wrote some time 
-> ago:
-> 
->    http://redhat.com/~mingo/threaded-mmap-stresstest/
-> 
-> for a couple of hours. It runs nr_cpus threads which then do a "random 
-> crazy mix" of mappings/unmappings/remappings of a 800 MB memory window. 
-> The more sockets/cores, the crazier the TLB races get ;-)
-> 
+On Wednesday December 19 2007 07:45:14 pm Carlos Corbacho wrote:
+> On Thursday 20 December 2007 00:20:21 Bjorn Helgaas wrote:
+> > I suspect the manufacturers would say "Oh, the sensors?  The BIOS
+> > isn't broken, you're just supposed to use WMI or some (undocumented)
+> > ACPI device to get at those."
+>
+> It's quite possible - can we have DSDTs for the boards in question so we
+> can quickly check if this is a possibility? (Basically, to see if they have
+> PNP0C14 devices - if they don't, then I'm afraid it's nothing to do with
+> WMI).
+>
+> -Carlos
 
-Ingo,
+Hi Carlos,
 
-I ran this stress test on two systems (8 cores and 2 cores) for over
-4 hours without any issues. There was more than 20% C3 time during the
-run. So, this C3 tlbflush path must have been stressed well during the run.
+I've attached the DSDT for Gigabyte GA-965G-DS3 (rev 1.0, bios rev. F9) to 
+bugzilla entry #9514:
 
-And sorry about the patch not working on UP config. That was a silly oversight
-on my part.
+http://bugzilla.kernel.org/attachment.cgi?id=14132
 
 Thanks,
-Venki
+-- 
+                Elvis
