@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758846AbXLTJC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbXLTJDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758846AbXLTJC3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 04:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbXLTJCK
+	id S1759247AbXLTJDe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 04:03:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370AbXLTJDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 04:02:10 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:57014 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754011AbXLTJCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 04:02:08 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Thu, 20 Dec 2007 14:31:52 +0530
-Message-Id: <20071220090152.19793.46738.sendpatchset@balbir-laptop>
-Subject: [PATCH] Memory controller use rcu_read_lock() in mem_cgroup_cache_charge()
+	Thu, 20 Dec 2007 04:03:22 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:56709 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754657AbXLTJDU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 04:03:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=vqkbmDgeC5+mnCxtPL/7DwfgxglZ6dY71PvKRFkkj0b5AzCaQOmMJM7Qs7qhcJkl6oJNC0dRk7sO8rdDLQxMr001R/Zy2fw07VMavsQtH6i9AAA9MLZmy6h6qC4GD4Rcrm5iPHVqEDUt0ngGKPAd9XtDtbdNHbjo9pR1v//FjXA=
+Date: Thu, 20 Dec 2007 17:07:32 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH -mm] kobject_add : kill unnecessary warning
+Message-ID: <20071220090732.GA3274@darkstar.te-china.tietoenator.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+I don't know whether you or others have this change or not, if not please consider apply.
 
+Kill the unnecessary warning in kobject_add if sysfs file EEXIST because of there's a similar one in sysfs_add_one
 
-Hugh Dickins noticed that we were using rcu_dereference() without
-rcu_read_lock() in the cache charging routine. The patch below fixes
-this problem
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 ---
+kobject.c |   13 ++-----------
+1 file changed, 2 insertions(+), 11 deletions(-)
 
- mm/memcontrol.c |   10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
-
-diff -puN mm/memcontrol.c~memory-controller-use-rcu-lead-lock mm/memcontrol.c
---- linux-2.6.24-rc5/mm/memcontrol.c~memory-controller-use-rcu-lead-lock	2007-12-19 11:52:44.000000000 +0530
-+++ linux-2.6.24-rc5-balbir/mm/memcontrol.c	2007-12-20 14:01:45.000000000 +0530
-@@ -717,16 +717,20 @@ int mem_cgroup_charge(struct page *page,
- int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
- 				gfp_t gfp_mask)
- {
-+	int ret = 0;
- 	struct mem_cgroup *mem;
- 	if (!mm)
- 		mm = &init_mm;
+diff -upr linux/lib/kobject.c linux.new/lib/kobject.c
+--- linux/lib/kobject.c	2007-12-20 09:02:49.000000000 +0800
++++ linux.new/lib/kobject.c	2007-12-20 17:00:09.000000000 +0800
+@@ -265,19 +265,10 @@ int kobject_add(struct kobject * kobj)
  
-+	rcu_read_lock();
- 	mem = rcu_dereference(mm->mem_cgroup);
-+	css_get(&mem->css);
-+	rcu_read_unlock();
- 	if (mem->control_type == MEM_CGROUP_TYPE_ALL)
--		return mem_cgroup_charge_common(page, mm, gfp_mask,
-+		ret = mem_cgroup_charge_common(page, mm, gfp_mask,
- 				MEM_CGROUP_CHARGE_TYPE_CACHE);
--	else
--		return 0;
-+	css_put(&mem->css);
-+	return ret;
- }
+ 	error = create_dir(kobj);
+ 	if (error) {
++		printk(KERN_ERR "kobject_add failed for %s (%d)\n",
++			       kobject_name(kobj), error);
+ 		/* unlink does the kobject_put() for us */
+ 		unlink(kobj);
+-
+-		/* be noisy on error issues */
+-		if (error == -EEXIST)
+-			printk(KERN_ERR "kobject_add failed for %s with "
+-			       "-EEXIST, don't try to register things with "
+-			       "the same name in the same directory.\n",
+-			       kobject_name(kobj));
+-		else
+-			printk(KERN_ERR "kobject_add failed for %s (%d)\n",
+-			       kobject_name(kobj), error);
+-		dump_stack();
+ 	}
  
- /*
-_
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+ 	return error;
