@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760810AbXLTN1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760649AbXLTNdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760810AbXLTN1f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 08:27:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758845AbXLTN11
+	id S1760649AbXLTNdR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 08:33:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbXLTNdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 08:27:27 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:52391 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758139AbXLTN10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 08:27:26 -0500
-Date: Thu, 20 Dec 2007 13:27:20 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: linux-kernel@vger.kernel.org, Bob Picco <bob.picco@hp.com>,
-       Dave Hansen <haveblue@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
-       Andi Kleen <ak@muc.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Keith Mannthey <kmannth@gmail.com>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@osdl.org>, ralf@linux-mips.org
-Subject: Re: [PATCH] Fix crash with FLAT_MEMORY and ARCH_PFN_OFFSET != 0
-Message-ID: <20071220132719.GA29857@csn.ul.ie>
-References: <20071218120300.7565AE3030@solo.franken.de> <20071218135828.GB24917@csn.ul.ie> <20071218160938.GA20688@alpha.franken.de> <20071220114405.GA9623@csn.ul.ie> <20071220124351.GA8880@alpha.franken.de>
+	Thu, 20 Dec 2007 08:33:08 -0500
+Received: from styx.suse.cz ([82.119.242.94]:39476 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753286AbXLTNdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 08:33:05 -0500
+Date: Thu, 20 Dec 2007 14:33:04 +0100
+From: Jan Kara <jack@suse.cz>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>
+Subject: Re: [PATCH 5/6] udf: fix signedness issue
+Message-ID: <20071220133304.GC9125@duck.suse.cz>
+References: <20071216021556.GF26986@joi> <20071217163216.GI6979@atrey.karlin.mff.cuni.cz> <20071219192707.GA18305@joi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071220124351.GA8880@alpha.franken.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071219192707.GA18305@joi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (20/12/07 13:43), Thomas Bogendoerfer didst pronounce:
-> On Thu, Dec 20, 2007 at 11:44:06AM +0000, Mel Gorman wrote:
-> > --- a/include/asm-mips/page.h
-> > +++ b/include/asm-mips/page.h
-> > @@ -37,13 +37,6 @@
-> >  #include <linux/pfn.h>
-> >  #include <asm/io.h>
-> >  
-> > -/*
-> > - * It's normally defined only for FLATMEM config but it's
-> > - * used in our early mem init code for all memory models.
-> > - * So always define it.
-> > - */
-> > -#define ARCH_PFN_OFFSET		PFN_UP(PHYS_OFFSET)
-> > -
-> 
-> hmm, doesn't this break what I've fixed ? Without this #define
-> ARCH_PFN_OFFSET gets defined to 0 and the bug is back. Or did
-> I miss anything ?
-> 
+On Wed 19-12-07 20:27:20, Marcin Slusarz wrote:
+> On Mon, Dec 17, 2007 at 05:32:17PM +0100, Jan Kara wrote:
+> > > sparse generated:
+> > > fs/udf/namei.c:896:15: originally declared here
+> > > fs/udf/namei.c:1147:41: warning: incorrect type in argument 3 (different signedness)
+> > > fs/udf/namei.c:1147:41:    expected int *offset
+> > > fs/udf/namei.c:1147:41:    got unsigned int *<noident>
+> > > fs/udf/namei.c:1152:78: warning: incorrect type in argument 3 (different signedness)
+> > > fs/udf/namei.c:1152:78:    expected int *offset
+> > > fs/udf/namei.c:1152:78:    got unsigned int *<noident>
+> > >
+> > > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> >   I don't think this is right. udf_get_fileident() should take "unsigned
+> > int *" as an offset, not just "int". This means changing struct
+> > udf_fileident_bh to use unsigned int too but that is better anyway.
+> >   And BTW the type shouldn't be uint32_t but really unsigned int in
+> > udf_rename (int needn't have 32 bits on all archs (although I think it
+> > has currently)).
+> That would be hard. Look what is happening with soffset and eoffset
+> eg in udf_fileident_read() - these fields are used as signed ints.
+  Doh, you're right. soffset can go below 0. OK, then your patch is fine.
+You can add there
+  Acked-by: Jan Kara <jack@suse.cz>
 
-ARCH_PFN_OFFSET goes to 0, so page_to_pfn() is no longer adjusting by
-PFN_UP(PHYS_OFFSET) like it was when your problem occured. I am guessing
-that the nature of the crash was that page_to_pfn() was returning bogus
-values early in boot and trying to initialise memmap that didn't exist.
+  BTW: If you haven't got an email from Andrew about accepting the patches
+we agreed upon, then please resend the patches to him (with additional
+Acked-by: Jan Kara <jack@suse.cz> and CC me) so that they don't get lost.
+Thanks.
 
+									Honza
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
