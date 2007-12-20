@@ -1,87 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbXLTCEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbXLTCGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759314AbXLTCEo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 21:04:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbXLTCEg
+	id S1759758AbXLTCGc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 21:06:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbXLTCGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 21:04:36 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38559 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752568AbXLTCEf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 21:04:35 -0500
-Date: Thu, 20 Dec 2007 11:04:21 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [patch 10/20] SEQ replacement for anonymous pages
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-In-Reply-To: <20071219084058.6ae3c531@bree.surriel.com>
-References: <20071219140904.9858.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20071219084058.6ae3c531@bree.surriel.com>
-Message-Id: <20071220082806.6F68.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 19 Dec 2007 21:06:24 -0500
+Received: from rtr.ca ([76.10.145.34]:1045 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752885AbXLTCGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 21:06:23 -0500
+Message-ID: <4769CE20.5090307@rtr.ca>
+Date: Wed, 19 Dec 2007 21:06:24 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: linux@horizon.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: RFC: permit link(2)  to work across --bind mounts ?
+References: <20071220013355.3900.qmail@science.horizon.com>
+In-Reply-To: <20071220013355.3900.qmail@science.horizon.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rik-san
-
-> > > To keep the maximum amount of necessary work reasonable, we scale the
-> > > active to inactive ratio with the size of memory, using the formula
-> > > active:inactive ratio = sqrt(memory in GB * 10).
+linux@horizon.com wrote:
+>> Why does link(2) not support hard-linking across bind mount points
+>> of the same underlying filesystem ?
 > 
-> > why do you think best formula is sqrt(GB*10)?
-> > please tell me if you don't mind.
-> 
-> On a 1GB system, this leads to a ratio of 3 active anon
-> pages to 1 inactive anon page, and a maximum inactive
-> anon list size of 250MB.
->  
-> On a 1TB system, this leads to a ratio of 100 active anon
-> pages to 1 inactive anon page, and a maximum inactive
-> anon list size of 10GB.
-> 
-> The numbers in-between looked reasonable :)
+> Whenever we get mount -r --bind working properly (which I use to place
+> copies of necessary shared libraries inside chroot jails while allowing
+> page cache sharing), this feature would break security.
+..
 
-thanks for your kind description.
-I think it make sense.
+No, that would still function exactly as it does today.
+The alternate behaviour that is desired for non-chroot purposes
+would be per-bind-mount, and would require a mount flag to activate.
 
-and, please add comment liked blow table if you don't mind.
-for take more intuitive description.
-
-total     return    max 
-memory    value     inactive anon
--------------------------------------
- 10MB       1         5MB
-100MB       1        50MB
-  1GB       3       250MB
- 10GB      10       0.9GB
-100GB      31         3GB
-  1TB     101        10GB
- 10TB     320        32GB
-
-
-> Basically the requirement is that the inactive anon list 
-> is large enough that pages get a chance to be referenced
-> again, but small enough that the maximum amount of work
-> the VM needs to do is bounded to something reasonable.
-> 
-> > and i have a bit worry to it works well or not on small systems.
-> > because it is indicate 1:1 ratio on less than 100MB memory system.
-> > Do you think this viewpoint?
-> 
-> A 1:1 ratio simply means that the inactive anon list is
-> the same size as the active anon list. Page replacement
-> should still work fine that way.
-
-I'm sold. thanks.
-
-
-/kosaki
-
-
-
+Cheers
