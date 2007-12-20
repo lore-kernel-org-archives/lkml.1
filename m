@@ -1,94 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbXLTXFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763536AbXLTXvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753768AbXLTXFa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 18:05:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbXLTXFW
+	id S1763536AbXLTXvK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 18:51:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761580AbXLTXud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 18:05:22 -0500
-Received: from pat.uio.no ([129.240.10.15]:37698 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751254AbXLTXFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 18:05:21 -0500
-Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20071220145415.f737e7f3.akpm@linux-foundation.org>
-References: <1198190447.29917.9.camel@heimdal.trondhjem.org>
-	 <20071220145415.f737e7f3.akpm@linux-foundation.org>
+	Thu, 20 Dec 2007 18:50:33 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:50122 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761416AbXLTXuc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 18:50:32 -0500
+Subject: Re: iommu dma mapping alignment requirements
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: benh@ozlabs.au.ibm.com, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org,
+       OpenFabrics General <general@lists.openfabrics.org>,
+       Benjamin Herrenschmidt <bherren@au1.ibm.com>,
+       Wen Xiong <wenxiong@us.ibm.com>, Olof Johansson <olof@lixom.net>,
+       Paul Mackerras <pmac@au1.ibm.com>
+In-Reply-To: <476AE8C9.9080601@opengridcomputing.com>
+References: <476AA2E2.5010007@opengridcomputing.com>
+	 <1198181862.6779.3.camel@pasglop> <476AD84E.4000507@opengridcomputing.com>
+	 <1198186017.6779.28.camel@pasglop> <476AE8C9.9080601@opengridcomputing.com>
 Content-Type: text/plain
-Date: Thu, 20 Dec 2007 18:04:23 -0500
-Message-Id: <1198191864.31865.1.camel@heimdal.trondhjem.org>
+Organization: IBM Ozlabs
+Date: Fri, 21 Dec 2007 10:49:45 +1100
+Message-Id: <1198194585.6779.31.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.3, required=5.0, autolearn=disabled, AWL=-0.260)
-X-UiO-Scanned: EABB6DBCA5111FFD5464E4E40E85E9FD9ABDA006
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -2 maxlevel 200 minaction 2 bait 0 mail/h: 39 total 5853128 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2007-12-20 at 14:54 -0800, Andrew Morton wrote:
-> On Thu, 20 Dec 2007 17:40:47 -0500
-> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> Sounds good.  Thanks!
 > 
-> > I just got the following interesting behaviour. Never mind why the
-> > original Oops (I was testing some experimental RPC patches), but there
-> > appears to be a BUG_ON() triggered inside the dump() call.
-> > 
-> > Oops occurred with a build based on this afternoon's git tree from Linus
-> > (v2.6.24-rc5-317-gfaa4877)...
-> > 
-> > Cheers
-> >   Trond
-> > ---------
-> > 
-> > BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
-> > printing eip: f8bcc8b3 *pde = 00000000 
-> > BUG: using smp_processor_id() in preemptible [00000001] code: mount.nfs4/2970
-> > caller is die+0x59/0x202
-> > Pid: 2970, comm: mount.nfs4 Not tainted 2.6.24-rc5-ga747a088 #1
-> >  [<c0405170>] show_trace_log_lvl+0x1a/0x2f
-> >  [<c0405a76>] show_trace+0x12/0x14
-> >  [<c0405dc6>] dump_stack+0x6c/0x72
-> >  [<c04e4cd8>] debug_smp_processor_id+0xa0/0xb4
-> >  [<c0405462>] die+0x59/0x202
-> >  [<c05b3e7d>] do_page_fault+0x557/0x63e
-> >  [<c05b252a>] error_code+0x72/0x78
-> >  [<f8bd821c>] rpcb_create+0x7c/0x84 [sunrpc]
-> >  [<f8bd8552>] rpcb_register+0x127/0x18c [sunrpc]
-> >  [<f8bd31d2>] svc_register+0xcf/0x14c [sunrpc]
-> >  [<f8bd399f>] __svc_create+0x19a/0x1b3 [sunrpc]
-> >  [<f8bd3b21>] svc_create+0x13/0x15 [sunrpc]
-> >  [<f8c74beb>] nfs_callback_up+0x71/0x126 [nfs]
-> >  [<f8c53cfe>] nfs_get_client+0x14e/0x3a2 [nfs]
-> >  [<f8c53f88>] nfs4_set_client+0x36/0x14f [nfs]
-> >  [<f8c54739>] nfs4_create_server+0x8e/0x36c [nfs]
-> >  [<f8c5c6f1>] nfs4_get_sb+0x2ef/0x3f3 [nfs]
-> >  [<c0477e40>] vfs_kern_mount+0x7d/0xf1
-> >  [<c0477f02>] do_kern_mount+0x37/0xbd
-> >  [<c048a6fb>] do_mount+0x5c3/0x61d
-> >  [<c048a7c4>] sys_mount+0x6f/0xa9
-> >  [<c04040b2>] sysenter_past_esp+0x5f/0xa5
-> >  =======================
-> 
-> Yes - I don't know why the smp_processor_id() test has suddenly started
-> triggering in there.
-> 
-> I have a sledgehammer fix (below) which Ingo went all complicated about and
-> I assumed he had it in hand, but I can't see any patches anywhere?
-> 
-> I'd expect the kernel to spit that warning and then proceed with the usual
-> oops report - that's what it did in Miles Lane's case.  But it seems in
-> your case that the whole oops report simply vanished?
+> Note, that these smaller sub-host-page-sized mappings might pollute the 
+> address space causing full aligned host-page-size maps to become 
+> scarce...  Maybe there's a clever way to keep those in their own segment 
+> of the address space?
 
-No. I found what I assume is the remainder of the original a couple of
-pages further down...
+We already have a large vs. small split in the iommu virtual space to
+alleviate this (though it's not a hard constraint, we can still get
+into the "other" side if the default one is full).
 
-Trond
+Try that patch and let me know:
+
+Index: linux-work/arch/powerpc/kernel/iommu.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/iommu.c	2007-12-21 10:39:39.000000000 +1100
++++ linux-work/arch/powerpc/kernel/iommu.c	2007-12-21 10:46:18.000000000 +1100
+@@ -278,6 +278,7 @@ int iommu_map_sg(struct iommu_table *tbl
+ 	unsigned long flags;
+ 	struct scatterlist *s, *outs, *segstart;
+ 	int outcount, incount, i;
++	unsigned int align;
+ 	unsigned long handle;
+ 
+ 	BUG_ON(direction == DMA_NONE);
+@@ -309,7 +310,11 @@ int iommu_map_sg(struct iommu_table *tbl
+ 		/* Allocate iommu entries for that segment */
+ 		vaddr = (unsigned long) sg_virt(s);
+ 		npages = iommu_num_pages(vaddr, slen);
+-		entry = iommu_range_alloc(tbl, npages, &handle, mask >> IOMMU_PAGE_SHIFT, 0);
++		align = 0;
++		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT && (vaddr & ~PAGE_MASK) == 0)
++			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
++		entry = iommu_range_alloc(tbl, npages, &handle,
++					  mask >> IOMMU_PAGE_SHIFT, align);
+ 
+ 		DBG("  - vaddr: %lx, size: %lx\n", vaddr, slen);
+ 
+@@ -572,7 +577,7 @@ dma_addr_t iommu_map_single(struct iommu
+ {
+ 	dma_addr_t dma_handle = DMA_ERROR_CODE;
+ 	unsigned long uaddr;
+-	unsigned int npages;
++	unsigned int npages, align;
+ 
+ 	BUG_ON(direction == DMA_NONE);
+ 
+@@ -580,8 +585,13 @@ dma_addr_t iommu_map_single(struct iommu
+ 	npages = iommu_num_pages(uaddr, size);
+ 
+ 	if (tbl) {
++		align = 0;
++		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT &&
++		    ((unsigned long)vaddr & ~PAGE_MASK) == 0)
++			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
++
+ 		dma_handle = iommu_alloc(tbl, vaddr, npages, direction,
+-					 mask >> IOMMU_PAGE_SHIFT, 0);
++					 mask >> IOMMU_PAGE_SHIFT, align);
+ 		if (dma_handle == DMA_ERROR_CODE) {
+ 			if (printk_ratelimit())  {
+ 				printk(KERN_INFO "iommu_alloc failed, "
+
 
