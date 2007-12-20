@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764006AbXLUABz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763586AbXLTW4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764006AbXLUABz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbXLUABo
+	id S1763586AbXLTW4p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:56:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbXLTW4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:01:44 -0500
-Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:45465 "EHLO
-	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbXLUABn (ORCPT
+	Thu, 20 Dec 2007 17:56:37 -0500
+Received: from odyssey.analogic.com ([204.178.40.5]:4921 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753814AbXLTW4g convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:01:43 -0500
-To: rusty@rustcorp.com.au
-Cc: davem@davemloft.net, fujita.tomonori@lab.ntt.co.jp,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH 2/5] dma_map_sg_ring() helper
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <200712210958.56994.rusty@rustcorp.com.au>
-References: <20071220160631S.fujita.tomonori@lab.ntt.co.jp>
-	<20071219.234244.148945256.davem@davemloft.net>
-	<200712210958.56994.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071221090027K.fujita.tomonori@lab.ntt.co.jp>
-Date: Fri, 21 Dec 2007 09:00:27 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Thu, 20 Dec 2007 17:56:36 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 20 Dec 2007 22:56:19.0856 (UTC) FILETIME=[88EFC900:01C8435B]
+Content-class: urn:content-classes:message
+Subject: Re: Trying to convert old modules to newer kernels
+Date: Thu, 20 Dec 2007 17:56:19 -0500
+Message-ID: <Pine.LNX.4.61.0712201755330.9907@chaos.analogic.com>
+in-reply-to: <ada1w9hyrhn.fsf@cisco.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Trying to convert old modules to newer kernels
+thread-index: AchDW4j7EBYVIZuqQl2cP84ApmAFQQ==
+References: <Pine.LNX.4.61.0712191503370.4688@chaos.analogic.com><20071219202323.GH2310@csclub.uwaterloo.ca><Pine.LNX.4.61.0712191555150.4514@chaos.analogic.com><20071220150255.GE2308@csclub.uwaterloo.ca><Pine.LNX.4.61.0712201107300.8261@chaos.analogic.com><20071220162700.GF2308@csclub.uwaterloo.ca><Pine.LNX.4.61.0712201615580.9531@chaos.analogic.com> <ada1w9hyrhn.fsf@cisco.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Cc: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Dec 2007 09:58:56 +1100
-Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> On Thursday 20 December 2007 18:42:44 David Miller wrote:
-> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Date: Thu, 20 Dec 2007 16:06:31 +0900
-> >
-> > > On Thu, 20 Dec 2007 16:49:30 +1100
-> > >
-> > > Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > > > +/**
-> > > > + * dma_map_sg_ring - Map an entire sg ring
-> > > > + * @dev: Device to free noncoherent memory for
-> > > > + * @sg: The sg_ring
-> > > > + * @direction: DMA_TO_DEVICE, DMA_FROM_DEVICE or DMA_BIDIRECTIONAL.
-> > > > + *
-> > > > + * This returns -ENOMEM if mapping fails.  It's not clear that telling
-> > > > you + * it failed is useful though.
-> > > > + */
-> > > > +int dma_map_sg_ring(struct device *dev, struct sg_ring *sg,
-> > > > +		     enum dma_data_direction direction)
-> > > > +{
-> > > > +	struct sg_ring *i;
-> > > > +	unsigned int num;
-> > > > +
-> > > > +	for (i = sg; i; i = sg_ring_next(i, sg)) {
-> > > > +		BUG_ON(i->num > i->max);
-> > > > +		num = dma_map_sg(dev, i->sg, i->num, direction);
-> > > > +		if (num == 0 && i->num != 0)
-> > > > +			goto unmap;
-> > > > +	}
-> > > > +	return 0;
-> > >
-> > > I don't think that this works for IOMMUs that could merge sg entries.
-> >
-> > Right, it won't work at all.
-> >
-> > The caller has to be told how many DMA entries it really did use to
-> > compose the mapping, and there has to be a way to properly iterate
-> > over them.  The assumption that the IOMMU will map the SG entries
-> > 1-to-1 is invalid.
-> 
-> Good catch.  Indeed, what's missing is one line:
-> 
-> 	i->num = num;
-> 
-> Of course, an arch-specific version of this could merge between sg_rings,
-> too, but that's an optimization.
+On Thu, 20 Dec 2007, Roland Dreier wrote:
 
-We need to pass the whole sg entries to the IOMMUs at a time.
+> > It doesn't seem to be something in .config. Do you know how to
+> > reconfigure to get parameter passing put back like it was? Our
+> > production applications have lots of assembly-language files
+> > and I'm sure we are not going to be able to change all those!
+>
+> 32-bit x86 uses regparm=3 by default now since commit a1a70c25 ("i386:
+> always enable regparm"), which went in about a year ago.  To go back
+> to the old way, you'll just have to edit arch/x86/Makefile_32 (and
+> rebuild your whole kernel from a clean tree, obviously).
+
+Okay. Thanks! I need to do that.
+
+>
+> - R.
+>
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
