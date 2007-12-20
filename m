@@ -1,60 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762168AbXLTV2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761350AbXLTVck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762168AbXLTV2X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 16:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757981AbXLTV2N
+	id S1761350AbXLTVck (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 16:32:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXLTVcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 16:28:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39598 "EHLO mx2.mail.elte.hu"
+	Thu, 20 Dec 2007 16:32:31 -0500
+Received: from mga01.intel.com ([192.55.52.88]:30748 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753917AbXLTV2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 16:28:12 -0500
-Date: Thu, 20 Dec 2007 22:26:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-Cc: Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       zach@vmware.com, roland@redhat.com
-Subject: Re: [PATCH 13/15] move patching code to arch-specific file.
-Message-ID: <20071220212651.GA11897@elte.hu>
-References: <11981812771615-git-send-email-gcosta@redhat.com> <1198181309285-git-send-email-gcosta@redhat.com> <11981813192341-git-send-email-gcosta@redhat.com> <11981813292926-git-send-email-gcosta@redhat.com> <11981813384090-git-send-email-gcosta@redhat.com> <1198181348746-git-send-email-gcosta@redhat.com> <11981813592589-git-send-email-gcosta@redhat.com> <20071220203148.GA20826@elte.hu> <20071220203312.GA21251@elte.hu> <5d6222a80712201322t46591ce2n5cf3248aa2e1dd26@mail.gmail.com>
+	id S1753529AbXLTVc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 16:32:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,191,1196668800"; 
+   d="scan'208";a="452213559"
+Message-ID: <476ADDA6.9070107@intel.com>
+Date: Thu, 20 Dec 2007 13:24:54 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5d6222a80712201322t46591ce2n5cf3248aa2e1dd26@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: Parag Warudkar <parag.warudkar@gmail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sky2: Use deferrable timer for watchdog
+References: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>	<20071220091603.0d69b045@deepthought>	<823114761-1198171803-cardhu_decombobulator_blackberry.rim.net-937108990-@bxe019.bisx.prod.on.blackberry>	<20071220095121.7859c023@deepthought>	<476ABDDF.8080607@intel.com>	<476ABE7D.60901@linux.intel.com>	<476AC105.9090206@intel.com>	<82e4877d0712201200h7b994175u841d1efa047cefff@mail.gmail.com>	<476ACABC.4010503@linux.intel.com>	<82e4877d0712201236l2962cc86y73f0be0d6e2ae4be@mail.gmail.com> <20071220130841.6d2801f2@deepthought>
+In-Reply-To: <20071220130841.6d2801f2@deepthought>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Dec 2007 21:25:29.0235 (UTC) FILETIME=[D81D0630:01C8434E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Glauber de Oliveira Costa <glommer@gmail.com> wrote:
-
-> > > make[1]: *** No rule to make target
-> > >  `arch/x86/kernel/paravirt_patch_32.o', needed by
-> > >  `arch/x86/kernel/built-in.o'.  Stop.
-> >
-> > if it's just that single missing file then please send me a patch that
-> > adds that file and i'll add it to this patch. (instead of resending the
-> > whole series)
+Stephen Hemminger wrote:
+> On Thu, 20 Dec 2007 15:36:13 -0500
+> "Parag Warudkar" <parag.warudkar@gmail.com> wrote:
 > 
-> Yeah, I must have forgotten to git-add it. It was building here fine, 
-> because I clearly have the file locally ;-)
+>> On Dec 20, 2007 3:04 PM, Arjan van de Ven <arjan@linux.intel.com> wrote:
+>>>> I think it is reasonable for Network driver watchdogs to use a
+>>>> deferrable timer - if the machine is 100% IDLE there is no one needing
+>>>> the network to be up. If there is something running even on the other
+>>>> CPU - that is going to cause an IPI, reschedule, TLB invalidation etc.
+>>>> which will make it very likely in practice that each CPU will be
+>>>> interrupted in reasonable amount of time.
+>>> this is not correct; many machines are idle waiting for network data. Think of webservers...
+>> Yes, I forgot the receive case. So if a server was 100% IDLE and a web
+>> server was listening for network data and we reach 0 wakeups per
+>> second on the CPU where the network watchdog timer is scheduled to run
+>> deferred _and_ the network link went down, it would cause the watchdog
+>> to not run and redo the link until some one else wakes up that CPU
+>> later.
+>> So as long as we make sure we don't convert every timer to deferrable
+>> we should be ok - may be this can be resolved easily by having a
+>> non-deferrable "dont-allow-deferring-for-too-long" timer on each CPU
+>> that just causes at least one wake up in some reasonable time delta
+>> from the previous wakeup (whoever caused that one.) It is still
+>> beneficial in that all deferrable timers would run at once without
+>> needing to have separate wakeup for each.
+>>
+>>>> Of course there are theoretical cases where we could land into a
+>>>> situation where a CPU in a multiprocessor machine is IDLE infinitely
+>>>> and that causes the watchdog that happens to be bound to run on the
+>>>> same CPU to not run. To take care of these unlikely cases I think the
+>>>> timer mechanism should have a reasonable limit on how long a CPU can
+>>>> go IDLE if there are deferrable timers.
+>>> how about something else instead: a timer mechanism that takes a range instead..
+>>> that at least has defined semantics; the deferrable semantics really are "indefinite".
+>>> Lets keep at least the semantics clear and clean.
+>>>
+>> Would not the simpler solution of installing a non-deferrable timer
+>> per cpu which will not allow the CPU to go IDLE for more than x units
+>> of time at once  (or something to that effect) work? Range would
+>> complicate the thing and I am not sure how many cases will know
+>> reasonably correct range for their normal operation. In this instance
+>> of the e1000 watchdog what range could it give and be successful at
+>> what it wants to do - bring up the link in reasonable amount of time,
+>> while also realizing the power savings?
+>>
+>> Perhaps depending on Server/Laptop/Desktop machine (may be based on
+>> Preemption) we could have normal or deferrable timers but that'll
+>> exclude Servers from power savings and I am not sure Data center folks
+>> will like that :) .
+>>
+>> Parag
 > 
-> I'm attaching a new patch that replaces just this one.
+> 
+> The problem is that on a server the receiver will go deaf if the chip
+> bug that the watchdog is looking for triggers.  Yes, no packets in
+> and it happily will just sit there.
+> 
+> So for now, I am not going to apply your simple patch and work on a 
+> two stage timer per arjan's suggestion for a later release.
 
-thanks, this did the trick, it builds fine now.
+I also think that's the right way to go for now. I'll ask jeff to hold off on the
+two patches for now.
 
-	Ingo
+Auke
+
