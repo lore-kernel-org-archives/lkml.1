@@ -1,371 +1,632 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762327AbXLTXLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764736AbXLTXOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762327AbXLTXLq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 18:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbXLTXLi
+	id S1764736AbXLTXOe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 18:14:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbXLTXOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 18:11:38 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33938 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752839AbXLTXLg (ORCPT
+	Thu, 20 Dec 2007 18:14:25 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33578 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754310AbXLTXOX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 18:11:36 -0500
-Date: Thu, 20 Dec 2007 15:11:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc5-mm1
-Message-Id: <20071220151103.a873e22d.akpm@linux-foundation.org>
-In-Reply-To: <476A9E97.4040105@windriver.com>
-References: <20071213024050.7d6e5f3e.akpm@linux-foundation.org>
-	<476A9E97.4040105@windriver.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Dec 2007 18:14:23 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Jan Beulich" <jbeulich@novell.com>, <linux-kernel@vger.kernel.org>
+Subject: [Jan Beulich] [PATCH] constify tables in kernel/sysctl_check.c
+Date: Thu, 20 Dec 2007 16:14:05 -0700
+Message-ID: <m1r6hh6jsy.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Dec 2007 10:55:51 -0600
-Jason Wessel <jason.wessel@windriver.com> wrote:
 
-> Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/
-> >
-> > - If something goes wrong with a PCI device's probing or initialisation, try
-> >   reverting pci-disable-decoding-during-sizing-of-bars.patch.
-> >
-> > - git-sched was dropped due to breaking suspend-to-RAM.
-> >
-> > - git-block has been restored after having had a few problems
-> >
-> > - git-newsetup.patch was dropped due to conflicts with git-x86
-> >
-> > - git-perfmon.patch is still dropped for the same reason
-> >
-> > - git-kgdb.patch is still dropped for the same reason
-> >
-> >   
-> Andrew,
-> 
-> I re-based the for_mm branch at:
-> http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=shortlog;h=for_mm
-> against the git-x86/mm branch from the x86-git tree. If there are other
-> patch trees I need to pull in and patch against to allow for kgdb to be
-> included into -mm please let me know.
+From: "Jan Beulich" <jbeulich@novell.com>
 
-The x86 merge worked OK.
+Remains the question whether it is intended that many, perhaps even
+large, tables are compiled in without ever having a chance to get used,
+i.e. whether there shouldn't #ifdef CONFIG_xxx get added.
 
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-Here's what it looks like:
+---
 
-patching file Documentation/DocBook/Makefile
-Hunk #1 FAILED at 11.
-1 out of 1 hunk FAILED -- saving rejects to file Documentation/DocBook/Makefile.rej
-patching file Documentation/DocBook/kgdb.tmpl
-patching file Documentation/kernel-parameters.txt
-Hunk #1 succeeded at 816 (offset 7 lines).
-patching file MAINTAINERS
-Hunk #1 succeeded at 2279 (offset 52 lines).
-patching file Makefile
-patching file arch/arm/kernel/Makefile
-patching file arch/arm/kernel/kgdb-jmp.S
-patching file arch/arm/kernel/kgdb.c
-patching file arch/arm/kernel/setup.c
-patching file arch/arm/kernel/traps.c
-patching file arch/arm/mach-ixp2000/core.c
-patching file arch/arm/mach-ixp2000/ixdp2x01.c
-patching file arch/arm/mach-ixp4xx/coyote-setup.c
-patching file arch/arm/mach-ixp4xx/ixdp425-setup.c
-patching file arch/arm/mach-omap1/serial.c
-patching file arch/arm/mach-omap2/serial.c
-patching file arch/arm/mach-pnx4008/core.c
-patching file arch/arm/mach-pxa/Makefile
-Hunk #1 FAILED at 43.
-1 out of 1 hunk FAILED -- saving rejects to file arch/arm/mach-pxa/Makefile.rej
-patching file arch/arm/mach-pxa/kgdb-serial.c
-patching file arch/arm/mach-versatile/core.c
-patching file arch/arm/mm/extable.c
-patching file arch/ia64/kernel/Makefile
-patching file arch/ia64/kernel/kgdb-jmp.S
-patching file arch/ia64/kernel/kgdb.c
-patching file arch/ia64/kernel/smp.c
-patching file arch/ia64/kernel/traps.c
-Hunk #1 FAILED at 155.
-1 out of 1 hunk FAILED -- saving rejects to file arch/ia64/kernel/traps.c.rej
-patching file arch/ia64/mm/extable.c
-patching file arch/ia64/mm/fault.c
-patching file arch/mips/Kconfig
-Hunk #2 succeeded at 323 (offset -6 lines).
-Hunk #4 succeeded at 419 (offset -7 lines).
-Hunk #5 succeeded at 531 (offset 21 lines).
-Hunk #6 succeeded at 608 (offset -21 lines).
-Hunk #7 succeeded at 670 (offset 21 lines).
-Hunk #8 succeeded at 914 (offset -24 lines).
-patching file arch/mips/Kconfig.debug
-patching file arch/mips/au1000/common/Makefile
-patching file arch/mips/au1000/common/dbg_io.c
-patching file arch/mips/basler/excite/Makefile
-patching file arch/mips/basler/excite/excite_dbg_io.c
-patching file arch/mips/basler/excite/excite_irq.c
-patching file arch/mips/basler/excite/excite_setup.c
-patching file arch/mips/jmr3927/rbhma3100/Makefile
-patching file arch/mips/jmr3927/rbhma3100/kgdb_io.c
-patching file arch/mips/kernel/Makefile
-patching file arch/mips/kernel/gdb-low.S
-patching file arch/mips/kernel/gdb-stub.c
-patching file arch/mips/kernel/irq.c
-patching file arch/mips/kernel/kgdb-jmp.c
-patching file arch/mips/kernel/kgdb-setjmp.S
-patching file arch/mips/kernel/kgdb.c
-patching file arch/mips/kernel/kgdb_handler.S
-patching file arch/mips/kernel/traps.c
-patching file arch/mips/mips-boards/atlas/Makefile
-patching file arch/mips/mips-boards/atlas/atlas_gdb.c
-patching file arch/mips/mips-boards/atlas/atlas_setup.c
-patching file arch/mips/mips-boards/generic/Makefile
-patching file arch/mips/mips-boards/generic/gdb_hook.c
-patching file arch/mips/mips-boards/generic/init.c
-patching file arch/mips/mips-boards/malta/malta_setup.c
-patching file arch/mips/mm/extable.c
-patching file arch/mips/pci/fixup-atlas.c
-patching file arch/mips/philips/pnx8550/common/Makefile
-patching file arch/mips/philips/pnx8550/common/gdb_hook.c
-patching file arch/mips/philips/pnx8550/common/setup.c
-patching file arch/mips/pmc-sierra/yosemite/Makefile
-patching file arch/mips/pmc-sierra/yosemite/dbg_io.c
-patching file arch/mips/pmc-sierra/yosemite/irq.c
-patching file arch/mips/sgi-ip22/ip22-setup.c
-patching file arch/mips/sgi-ip27/Makefile
-patching file arch/mips/sgi-ip27/ip27-dbgio.c
-patching file arch/mips/sibyte/bcm1480/irq.c
-patching file arch/mips/sibyte/cfe/setup.c
-Hunk #3 succeeded at 298 (offset -3 lines).
-patching file arch/mips/sibyte/sb1250/irq.c
-patching file arch/mips/sibyte/sb1250/kgdb_sibyte.c
-patching file arch/mips/sibyte/swarm/Makefile
-patching file arch/mips/sibyte/swarm/dbg_io.c
-patching file arch/mips/tx4927/common/Makefile
-Hunk #1 succeeded at 9 with fuzz 1.
-patching file arch/mips/tx4927/common/tx4927_dbgio.c
-patching file arch/mips/tx4927/toshiba_rbtx4927/toshiba_rbtx4927_setup.c
-Hunk #1 FAILED at 77.
-Hunk #2 succeeded at 863 (offset -29 lines).
-Hunk #4 succeeded at 891 (offset -29 lines).
-1 out of 4 hunks FAILED -- saving rejects to file arch/mips/tx4927/toshiba_rbtx4927/toshiba_rbtx4927_setup.c.rej
-patching file arch/mips/tx4938/common/Makefile
-Hunk #1 FAILED at 7.
-1 out of 1 hunk FAILED -- saving rejects to file arch/mips/tx4938/common/Makefile.rej
-patching file arch/mips/tx4938/common/dbgio.c
-patching file arch/mips/tx4938/toshiba_rbtx4938/setup.c
-Hunk #1 FAILED at 31.
-Hunk #2 succeeded at 871 (offset -2 lines).
-1 out of 3 hunks FAILED -- saving rejects to file arch/mips/tx4938/toshiba_rbtx4938/setup.c.rej
-patching file arch/powerpc/Kconfig.debug
-patching file arch/powerpc/kernel/Makefile
-patching file arch/powerpc/kernel/kgdb.c
-patching file arch/powerpc/kernel/kgdb_setjmp32.S
-patching file arch/powerpc/kernel/kgdb_setjmp64.S
-patching file arch/powerpc/kernel/legacy_serial.c
-patching file arch/powerpc/kernel/setup_32.c
-patching file arch/powerpc/mm/fault.c
-patching file arch/powerpc/platforms/powermac/setup.c
-Hunk #1 succeeded at 97 (offset -1 lines).
-patching file arch/powerpc/sysdev/mv64x60_dev.c
-patching file arch/ppc/Kconfig.debug
-patching file arch/ppc/kernel/Makefile
-patching file arch/ppc/kernel/kgdb.c
-patching file arch/ppc/kernel/kgdb_setjmp32.S
-patching file arch/ppc/kernel/ppc-stub.c
-patching file arch/ppc/kernel/setup.c
-Hunk #1 succeeded at 46 (offset -1 lines).
-patching file arch/ppc/mm/fault.c
-patching file arch/ppc/platforms/4xx/bamboo.c
-patching file arch/ppc/platforms/4xx/bubinga.c
-patching file arch/ppc/platforms/4xx/ebony.c
-patching file arch/ppc/platforms/4xx/luan.c
-patching file arch/ppc/platforms/4xx/ocotea.c
-patching file arch/ppc/platforms/4xx/taishan.c
-patching file arch/ppc/platforms/4xx/xilinx_ml300.c
-patching file arch/ppc/platforms/4xx/xilinx_ml403.c
-patching file arch/ppc/platforms/4xx/yucca.c
-patching file arch/ppc/platforms/83xx/mpc834x_sys.c
-Hunk #3 succeeded at 316 (offset -20 lines).
-patching file arch/ppc/platforms/85xx/mpc8540_ads.c
-patching file arch/ppc/platforms/85xx/mpc8560_ads.c
-patching file arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-patching file arch/ppc/platforms/85xx/sbc8560.c
-patching file arch/ppc/platforms/85xx/tqm85xx.c
-Hunk #4 succeeded at 379 (offset -21 lines).
-patching file arch/ppc/platforms/chestnut.c
-patching file arch/ppc/platforms/ev64260.c
-patching file arch/ppc/platforms/hdpu.c
-patching file arch/ppc/platforms/lopec.c
-patching file arch/ppc/platforms/pplus.c
-patching file arch/ppc/platforms/radstone_ppc7d.c
-patching file arch/ppc/platforms/sandpoint.c
-patching file arch/ppc/platforms/spruce.c
-patching file arch/ppc/syslib/Makefile
-patching file arch/ppc/syslib/gen550.h
-patching file arch/ppc/syslib/gen550_kgdb.c
-patching file arch/ppc/syslib/ibm44x_common.c
-patching file arch/ppc/syslib/mv64x60.c
-patching file arch/ppc/syslib/mv64x60_dbg.c
-patching file arch/ppc/syslib/ppc4xx_setup.c
-patching file arch/ppc/syslib/ppc83xx_setup.c
-Hunk #2 succeeded at 43 with fuzz 1 (offset -1 lines).
-Hunk #4 succeeded at 103 (offset -1 lines).
-patching file arch/ppc/syslib/ppc85xx_setup.c
-patching file arch/sh/Kconfig.debug
-Hunk #1 FAILED at 94.
-1 out of 1 hunk FAILED -- saving rejects to file arch/sh/Kconfig.debug.rej
-patching file arch/sh/kernel/Makefile
-Hunk #1 FAILED at 13.
-1 out of 1 hunk FAILED -- saving rejects to file arch/sh/kernel/Makefile.rej
-patching file arch/sh/kernel/kgdb-jmp.S
-patching file arch/sh/kernel/kgdb.c
-patching file arch/sh/kernel/kgdb_jmp.S
-patching file arch/sh/kernel/kgdb_stub.c
-can't find file to patch at input line 12787
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-|diff --git a/arch/sh/kernel/time.c b/arch/sh/kernel/time.c
-|index a3a67d1..484bd0b 100644
-|--- a/arch/sh/kernel/time.c
-|+++ b/arch/sh/kernel/time.c
---------------------------
-No file to patch.  Skipping patch.
-1 out of 1 hunk ignored
-patching file arch/sh/kernel/traps.c
-Hunk #1 FAILED at 25.
-Hunk #2 FAILED at 85.
-Hunk #3 FAILED at 697.
-Hunk #4 FAILED at 770.
-4 out of 4 hunks FAILED -- saving rejects to file arch/sh/kernel/traps.c.rej
-can't find file to patch at input line 12860
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-|diff --git a/arch/sh/mm/extable.c b/arch/sh/mm/extable.c
-|index c1cf446..88e34ff 100644
-|--- a/arch/sh/mm/extable.c
-|+++ b/arch/sh/mm/extable.c
---------------------------
-No file to patch.  Skipping patch.
-2 out of 2 hunks ignored
-can't find file to patch at input line 12885
-Perhaps you used the wrong -p or --strip option?
-The text leading up to this was:
---------------------------
-|diff --git a/arch/sh/mm/fault.c b/arch/sh/mm/fault.c
-|index 60d74f7..7619c01 100644
-|--- a/arch/sh/mm/fault.c
-|+++ b/arch/sh/mm/fault.c
---------------------------
-No file to patch.  Skipping patch.
-4 out of 4 hunks ignored
-patching file arch/x86/kernel/Makefile_32
-Hunk #1 succeeded at 48 (offset 7 lines).
-patching file arch/x86/kernel/Makefile_64
-Hunk #1 succeeded at 43 (offset 7 lines).
-patching file arch/x86/kernel/kgdb-jmp_32.S
-patching file arch/x86/kernel/kgdb-jmp_64.S
-patching file arch/x86/kernel/kgdb_32.c
-patching file arch/x86/kernel/kgdb_64.c
-patching file arch/x86/kernel/setup_32.c
-patching file arch/x86/kernel/traps_32.c
-Hunk #1 succeeded at 886 (offset 1 line).
-Hunk #3 succeeded at 1128 (offset 1 line).
-patching file arch/x86/kernel/traps_64.c
-Hunk #1 succeeded at 549 (offset 1 line).
-patching file arch/x86/mm/fault_32.c
-patching file arch/x86/mm/fault_64.c
-patching file drivers/char/keyboard.c
-patching file drivers/net/Makefile
-Hunk #1 succeeded at 244 (offset 3 lines).
-patching file drivers/net/kgdboe.c
-patching file drivers/serial/8250.c
-patching file drivers/serial/8250_kgdb.c
-patching file drivers/serial/Kconfig
-patching file drivers/serial/Makefile
-Hunk #2 succeeded at 53 (offset 1 line).
-patching file drivers/serial/amba-pl011.c
-patching file drivers/serial/cpm_uart/Makefile
-patching file drivers/serial/cpm_uart/cpm_uart.h
-patching file drivers/serial/cpm_uart/cpm_uart_core.c
-patching file drivers/serial/cpm_uart/cpm_uart_cpm1.c
-Hunk #1 succeeded at 60 (offset -4 lines).
-Hunk #3 succeeded at 222 (offset -4 lines).
-patching file drivers/serial/cpm_uart/cpm_uart_cpm2.c
-Hunk #1 succeeded at 298 (offset -6 lines).
-patching file drivers/serial/cpm_uart/cpm_uart_kgdb.c
-patching file drivers/serial/mpsc_kgdb.c
-patching file drivers/serial/pl011_kgdb.c
-patching file drivers/serial/pxa.c
-patching file drivers/serial/serial_core.c
-Hunk #5 succeeded at 2179 (offset 1 line).
-patching file drivers/serial/serial_txx9.c
-patching file drivers/serial/serial_txx9_kgdb.c
-patching file drivers/serial/sh-sci.c
-patching file include/asm-arm/kgdb.h
-patching file include/asm-generic/kgdb.h
-patching file include/asm-ia64/kdebug.h
-patching file include/asm-ia64/kgdb.h
-patching file include/asm-mips/asmmacro-32.h
-patching file include/asm-mips/asmmacro-64.h
-patching file include/asm-mips/kdebug.h
-patching file include/asm-mips/kgdb.h
-patching file include/asm-mips/ptrace.h
-patching file include/asm-powerpc/kgdb.h
-patching file include/asm-ppc/kgdb.h
-patching file include/asm-ppc/machdep.h
-patching file include/asm-ppc/mv64x60.h
-patching file include/asm-ppc/mv64x60_defs.h
-patching file include/asm-sh/kgdb.h
-patching file include/asm-x86/kdebug.h
-patching file include/asm-x86/kgdb.h
-patching file include/asm-x86/kgdb_32.h
-patching file include/asm-x86/kgdb_64.h
-patching file include/asm-x86/system.h
-patching file include/linux/clocksource.h
-patching file include/linux/kgdb.h
-patching file include/linux/module.h
-patching file include/linux/netpoll.h
-patching file include/linux/serial_8250.h
-patching file kernel/Makefile
-patching file kernel/kgdb.c
-patching file kernel/module.c
-Hunk #1 succeeded at 64 (offset -2 lines).
-Hunk #3 succeeded at 728 (offset -2 lines).
-Hunk #5 succeeded at 1313 (offset -8 lines).
-Hunk #7 succeeded at 2027 (offset -8 lines).
-Hunk #8 FAILED at 2098.
-Hunk #9 succeeded at 2185 (offset 3 lines).
-1 out of 9 hunks FAILED -- saving rejects to file kernel/module.c.rej
-patching file kernel/sched.c
-Hunk #1 succeeded at 61 (offset 2 lines).
-Hunk #2 succeeded at 6955 (offset 109 lines).
-patching file kernel/softlockup.c
-Hunk #1 succeeded at 15 (offset 1 line).
-Hunk #3 succeeded at 109 (offset -3 lines).
-patching file kernel/time/clocksource.c
-patching file lib/Kconfig.debug
-patching file lib/Kconfig.kgdb
-patching file net/core/netpoll.c
-Hunk #1 succeeded at 528 (offset -7 lines).
-Failed to apply git-kgdb
+ kernel/sysctl_check.c |  149 ++++++++++++++++++++++++--------------------------
+ 1 file changed, 74 insertions(+), 75 deletions(-)
 
-Conflicts with the arm, ia64, mips, sh and driver trees (at least).  I
-fixed most of them but gave up on sh, where there has been major code
-motion.
-
-> I would like to submit another review request for kgdb into the mainline
-> as well as resolve the issues with the -mm tree + kgdb.
-
-Please do - just email out the patches with carefully-chosen cc's.  It's
-not a hugely productive time of year and responses may be spotty and slow
-but you should just persist - send them every couple of weeks and let's
-drive this nail home.
-
+--- linux-2.6.24-postrc5/kernel/sysctl_check.c	2007-12-12 16:48:47.000000000 +0100
++++ 2.6.24-postrc5-const-sysctl-check/kernel/sysctl_check.c	2007-12-06 14:57:15.000000000 +0100
+@@ -9,10 +9,10 @@
+ struct trans_ctl_table {
+ 	int			ctl_name;
+ 	const char		*procname;
+-	struct trans_ctl_table	*child;
++	const struct trans_ctl_table *child;
+ };
+ 
+-static struct trans_ctl_table trans_random_table[] = {
++static const struct trans_ctl_table trans_random_table[] = {
+ 	{ RANDOM_POOLSIZE,	"poolsize" },
+ 	{ RANDOM_ENTROPY_COUNT,	"entropy_avail" },
+ 	{ RANDOM_READ_THRESH,	"read_wakeup_threshold" },
+@@ -22,13 +22,13 @@ static struct trans_ctl_table trans_rand
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_pty_table[] = {
++static const struct trans_ctl_table trans_pty_table[] = {
+ 	{ PTY_MAX,		"max" },
+ 	{ PTY_NR,		"nr" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_kern_table[] = {
++static const struct trans_ctl_table trans_kern_table[] = {
+ 	{ KERN_OSTYPE,			"ostype" },
+ 	{ KERN_OSRELEASE,		"osrelease" },
+ 	/* KERN_OSREV not used */
+@@ -112,7 +112,7 @@ static struct trans_ctl_table trans_kern
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_vm_table[] = {
++static const struct trans_ctl_table trans_vm_table[] = {
+ 	{ VM_OVERCOMMIT_MEMORY,		"overcommit_memory" },
+ 	{ VM_PAGE_CLUSTER,		"page-cluster" },
+ 	{ VM_DIRTY_BACKGROUND,		"dirty_background_ratio" },
+@@ -144,7 +144,7 @@ static struct trans_ctl_table trans_vm_t
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_core_table[] = {
++static const struct trans_ctl_table trans_net_core_table[] = {
+ 	{ NET_CORE_WMEM_MAX,		"wmem_max" },
+ 	{ NET_CORE_RMEM_MAX,		"rmem_max" },
+ 	{ NET_CORE_WMEM_DEFAULT,	"wmem_default" },
+@@ -170,14 +170,14 @@ static struct trans_ctl_table trans_net_
+ 	{},
+ };
+ 
+-static struct trans_ctl_table trans_net_unix_table[] = {
++static const struct trans_ctl_table trans_net_unix_table[] = {
+ 	/* NET_UNIX_DESTROY_DELAY unused */
+ 	/* NET_UNIX_DELETE_DELAY unused */
+ 	{ NET_UNIX_MAX_DGRAM_QLEN,	"max_dgram_qlen" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ipv4_route_table[] = {
++static const struct trans_ctl_table trans_net_ipv4_route_table[] = {
+ 	{ NET_IPV4_ROUTE_FLUSH,			"flush" },
+ 	{ NET_IPV4_ROUTE_MIN_DELAY,		"min_delay" },
+ 	{ NET_IPV4_ROUTE_MAX_DELAY,		"max_delay" },
+@@ -200,7 +200,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ipv4_conf_vars_table[] = {
++static const struct trans_ctl_table trans_net_ipv4_conf_vars_table[] = {
+ 	{ NET_IPV4_CONF_FORWARDING,		"forwarding" },
+ 	{ NET_IPV4_CONF_MC_FORWARDING,		"mc_forwarding" },
+ 
+@@ -227,14 +227,14 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ipv4_conf_table[] = {
++static const struct trans_ctl_table trans_net_ipv4_conf_table[] = {
+ 	{ NET_PROTO_CONF_ALL,		"all",		trans_net_ipv4_conf_vars_table },
+ 	{ NET_PROTO_CONF_DEFAULT,	"default",	trans_net_ipv4_conf_vars_table },
+ 	{ 0, NULL, trans_net_ipv4_conf_vars_table },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_neigh_vars_table[] = {
++static const struct trans_ctl_table trans_net_neigh_vars_table[] = {
+ 	{ NET_NEIGH_MCAST_SOLICIT,	"mcast_solicit" },
+ 	{ NET_NEIGH_UCAST_SOLICIT,	"ucast_solicit" },
+ 	{ NET_NEIGH_APP_SOLICIT,	"app_solicit" },
+@@ -256,13 +256,13 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_neigh_table[] = {
++static const struct trans_ctl_table trans_net_neigh_table[] = {
+ 	{ NET_PROTO_CONF_DEFAULT, "default", trans_net_neigh_vars_table },
+ 	{ 0, NULL, trans_net_neigh_vars_table },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ipv4_netfilter_table[] = {
++static const struct trans_ctl_table trans_net_ipv4_netfilter_table[] = {
+ 	{ NET_IPV4_NF_CONNTRACK_MAX,				"ip_conntrack_max" },
+ 
+ 	{ NET_IPV4_NF_CONNTRACK_TCP_TIMEOUT_SYN_SENT,		"ip_conntrack_tcp_timeout_syn_sent" },
+@@ -299,7 +299,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ipv4_table[] = {
++static const struct trans_ctl_table trans_net_ipv4_table[] = {
+ 	{ NET_IPV4_FORWARD,			"ip_forward" },
+ 	{ NET_IPV4_DYNADDR,			"ip_dynaddr" },
+ 
+@@ -398,13 +398,13 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ipx_table[] = {
++static const struct trans_ctl_table trans_net_ipx_table[] = {
+ 	{ NET_IPX_PPROP_BROADCASTING,	"ipx_pprop_broadcasting" },
+ 	/* NET_IPX_FORWARDING unused */
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_atalk_table[] = {
++static const struct trans_ctl_table trans_net_atalk_table[] = {
+ 	{ NET_ATALK_AARP_EXPIRY_TIME,		"aarp-expiry-time" },
+ 	{ NET_ATALK_AARP_TICK_TIME,		"aarp-tick-time" },
+ 	{ NET_ATALK_AARP_RETRANSMIT_LIMIT,	"aarp-retransmit-limit" },
+@@ -412,7 +412,7 @@ static struct trans_ctl_table trans_net_
+ 	{},
+ };
+ 
+-static struct trans_ctl_table trans_net_netrom_table[] = {
++static const struct trans_ctl_table trans_net_netrom_table[] = {
+ 	{ NET_NETROM_DEFAULT_PATH_QUALITY,		"default_path_quality" },
+ 	{ NET_NETROM_OBSOLESCENCE_COUNT_INITIALISER,	"obsolescence_count_initialiser" },
+ 	{ NET_NETROM_NETWORK_TTL_INITIALISER,		"network_ttl_initialiser" },
+@@ -428,7 +428,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ax25_param_table[] = {
++static const struct trans_ctl_table trans_net_ax25_table[] = {
+ 	{ NET_AX25_IP_DEFAULT_MODE,	"ip_default_mode" },
+ 	{ NET_AX25_DEFAULT_MODE,	"ax25_default_mode" },
+ 	{ NET_AX25_BACKOFF_TYPE,	"backoff_type" },
+@@ -446,7 +446,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ax25_table[] = {
++static const struct trans_ctl_table trans_net_ax25_table[] = {
+ 	{ 0, NULL, trans_net_ax25_param_table },
+ 	{}
+ };
+@@ -451,7 +451,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_bridge_table[] = {
++static const struct trans_ctl_table trans_net_bridge_table[] = {
+ 	{ NET_BRIDGE_NF_CALL_ARPTABLES,		"bridge-nf-call-arptables" },
+ 	{ NET_BRIDGE_NF_CALL_IPTABLES,		"bridge-nf-call-iptables" },
+ 	{ NET_BRIDGE_NF_CALL_IP6TABLES,		"bridge-nf-call-ip6tables" },
+@@ -455,7 +455,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_rose_table[] = {
++static const struct trans_ctl_table trans_net_rose_table[] = {
+ 	{ NET_ROSE_RESTART_REQUEST_TIMEOUT,	"restart_request_timeout" },
+ 	{ NET_ROSE_CALL_REQUEST_TIMEOUT,	"call_request_timeout" },
+ 	{ NET_ROSE_RESET_REQUEST_TIMEOUT,	"reset_request_timeout" },
+@@ -469,7 +469,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ipv6_conf_var_table[] = {
++static const struct trans_ctl_table trans_net_ipv6_conf_var_table[] = {
+ 	{ NET_IPV6_FORWARDING,			"forwarding" },
+ 	{ NET_IPV6_HOP_LIMIT,			"hop_limit" },
+ 	{ NET_IPV6_MTU,				"mtu" },
+@@ -497,14 +497,14 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ipv6_conf_table[] = {
++static const struct trans_ctl_table trans_net_ipv6_conf_table[] = {
+ 	{ NET_PROTO_CONF_ALL,		"all",	trans_net_ipv6_conf_var_table },
+ 	{ NET_PROTO_CONF_DEFAULT, 	"default", trans_net_ipv6_conf_var_table },
+ 	{ 0, NULL, trans_net_ipv6_conf_var_table },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ipv6_route_table[] = {
++static const struct trans_ctl_table trans_net_ipv6_route_table[] = {
+ 	{ NET_IPV6_ROUTE_FLUSH,			"flush" },
+ 	{ NET_IPV6_ROUTE_GC_THRESH,		"gc_thresh" },
+ 	{ NET_IPV6_ROUTE_MAX_SIZE,		"max_size" },
+@@ -518,12 +518,12 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ipv6_icmp_table[] = {
++static const struct trans_ctl_table trans_net_ipv6_icmp_table[] = {
+ 	{ NET_IPV6_ICMP_RATELIMIT,	"ratelimit" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_ipv6_table[] = {
++static const struct trans_ctl_table trans_net_ipv6_table[] = {
+ 	{ NET_IPV6_CONF,		"conf",		trans_net_ipv6_conf_table },
+ 	{ NET_IPV6_NEIGH,		"neigh",	trans_net_neigh_table },
+ 	{ NET_IPV6_ROUTE,		"route",	trans_net_ipv6_route_table },
+@@ -538,7 +538,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_x25_table[] = {
++static const struct trans_ctl_table trans_net_x25_table[] = {
+ 	{ NET_X25_RESTART_REQUEST_TIMEOUT,	"restart_request_timeout" },
+ 	{ NET_X25_CALL_REQUEST_TIMEOUT,		"call_request_timeout" },
+ 	{ NET_X25_RESET_REQUEST_TIMEOUT,	"reset_request_timeout" },
+@@ -548,13 +548,13 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_tr_table[] = {
++static const struct trans_ctl_table trans_net_tr_table[] = {
+ 	{ NET_TR_RIF_TIMEOUT,	"rif_timeout" },
+ 	{}
+ };
+ 
+ 
+-static struct trans_ctl_table trans_net_decnet_conf_vars[] = {
++static const struct trans_ctl_table trans_net_decnet_conf_vars[] = {
+ 	{ NET_DECNET_CONF_DEV_FORWARDING,	"forwarding" },
+ 	{ NET_DECNET_CONF_DEV_PRIORITY,		"priority" },
+ 	{ NET_DECNET_CONF_DEV_T2,		"t2" },
+@@ -562,12 +562,12 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_decnet_conf[] = {
++static const struct trans_ctl_table trans_net_decnet_conf[] = {
+ 	{ 0, NULL, trans_net_decnet_conf_vars },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_decnet_table[] = {
++static const struct trans_ctl_table trans_net_decnet_table[] = {
+ 	{ NET_DECNET_CONF,		"conf",	trans_net_decnet_conf },
+ 	{ NET_DECNET_NODE_ADDRESS,	"node_address" },
+ 	{ NET_DECNET_NODE_NAME,		"node_name" },
+@@ -585,7 +585,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_sctp_table[] = {
++static const struct trans_ctl_table trans_net_sctp_table[] = {
+ 	{ NET_SCTP_RTO_INITIAL,		"rto_initial" },
+ 	{ NET_SCTP_RTO_MIN,		"rto_min" },
+ 	{ NET_SCTP_RTO_MAX,		"rto_max" },
+@@ -606,7 +606,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_llc_llc2_timeout_table[] = {
++static const struct trans_ctl_table trans_net_llc_llc2_timeout_table[] = {
+ 	{ NET_LLC2_ACK_TIMEOUT,		"ack" },
+ 	{ NET_LLC2_P_TIMEOUT,		"p" },
+ 	{ NET_LLC2_REJ_TIMEOUT,		"rej" },
+@@ -614,23 +614,23 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_llc_station_table[] = {
++static const struct trans_ctl_table trans_net_llc_station_table[] = {
+ 	{ NET_LLC_STATION_ACK_TIMEOUT,	"ack_timeout" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_llc_llc2_table[] = {
++static const struct trans_ctl_table trans_net_llc_llc2_table[] = {
+ 	{ NET_LLC2,		"timeout",	trans_net_llc_llc2_timeout_table },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_llc_table[] = {
++static const struct trans_ctl_table trans_net_llc_table[] = {
+ 	{ NET_LLC2,		"llc2",		trans_net_llc_llc2_table },
+ 	{ NET_LLC_STATION,	"station",	trans_net_llc_station_table },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_netfilter_table[] = {
++static const struct trans_ctl_table trans_net_netfilter_table[] = {
+ 	{ NET_NF_CONNTRACK_MAX,				"nf_conntrack_max" },
+ 	{ NET_NF_CONNTRACK_TCP_TIMEOUT_SYN_SENT,	"nf_conntrack_tcp_timeout_syn_sent" },
+ 	{ NET_NF_CONNTRACK_TCP_TIMEOUT_SYN_RECV,	"nf_conntrack_tcp_timeout_syn_recv" },
+@@ -667,12 +667,12 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_dccp_table[] = {
++static const struct trans_ctl_table trans_net_dccp_table[] = {
+ 	{ NET_DCCP_DEFAULT,	"default" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_irda_table[] = {
++static const struct trans_ctl_table trans_net_irda_table[] = {
+ 	{ NET_IRDA_DISCOVERY,		"discovery" },
+ 	{ NET_IRDA_DEVNAME,		"devname" },
+ 	{ NET_IRDA_DEBUG,		"debug" },
+@@ -690,7 +690,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_net_table[] = {
++static const struct trans_ctl_table trans_net_table[] = {
+ 	{ NET_CORE,		"core",		trans_net_core_table },
+ 	/* NET_ETHER not used */
+ 	/* NET_802 not used */
+@@ -716,7 +716,7 @@ static struct trans_ctl_table trans_net_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_fs_quota_table[] = {
++static const struct trans_ctl_table trans_fs_quota_table[] = {
+ 	{ FS_DQ_LOOKUPS,	"lookups" },
+ 	{ FS_DQ_DROPS,		"drops" },
+ 	{ FS_DQ_READS,		"reads" },
+@@ -729,7 +729,7 @@ static struct trans_ctl_table trans_fs_q
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_fs_xfs_table[] = {
++static const struct trans_ctl_table trans_fs_xfs_table[] = {
+ 	{ XFS_RESTRICT_CHOWN,	"restrict_chown" },
+ 	{ XFS_SGID_INHERIT,	"irix_sgid_inherit" },
+ 	{ XFS_SYMLINK_MODE,	"irix_symlink_mode" },
+@@ -750,24 +750,24 @@ static struct trans_ctl_table trans_fs_x
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_fs_ocfs2_nm_table[] = {
++static const struct trans_ctl_table trans_fs_ocfs2_nm_table[] = {
+ 	{ 1, "hb_ctl_path" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_fs_ocfs2_table[] = {
++static const struct trans_ctl_table trans_fs_ocfs2_table[] = {
+ 	{ 1,	"nm",	trans_fs_ocfs2_nm_table },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_inotify_table[] = {
++static const struct trans_ctl_table trans_inotify_table[] = {
+ 	{ INOTIFY_MAX_USER_INSTANCES,	"max_user_instances" },
+ 	{ INOTIFY_MAX_USER_WATCHES,	"max_user_watches" },
+ 	{ INOTIFY_MAX_QUEUED_EVENTS,	"max_queued_events" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_fs_table[] = {
++static const struct trans_ctl_table trans_fs_table[] = {
+ 	{ FS_NRINODE,		"inode-nr" },
+ 	{ FS_STATINODE,		"inode-state" },
+ 	/* FS_MAXINODE unused */
+@@ -793,11 +793,11 @@ static struct trans_ctl_table trans_fs_t
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_debug_table[] = {
++static const struct trans_ctl_table trans_debug_table[] = {
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_cdrom_table[] = {
++static const struct trans_ctl_table trans_cdrom_table[] = {
+ 	{ DEV_CDROM_INFO,		"info" },
+ 	{ DEV_CDROM_AUTOCLOSE,		"autoclose" },
+ 	{ DEV_CDROM_AUTOEJECT,		"autoeject" },
+@@ -807,12 +807,12 @@ static struct trans_ctl_table trans_cdro
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_ipmi_table[] = {
++static const struct trans_ctl_table trans_ipmi_table[] = {
+ 	{ DEV_IPMI_POWEROFF_POWERCYCLE,	"poweroff_powercycle" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_mac_hid_files[] = {
++static const struct trans_ctl_table trans_mac_hid_files[] = {
+ 	/* DEV_MAC_HID_KEYBOARD_SENDS_LINUX_KEYCODES unused */
+ 	/* DEV_MAC_HID_KEYBOARD_LOCK_KEYCODES unused */
+ 	{ DEV_MAC_HID_MOUSE_BUTTON_EMULATION,	"mouse_button_emulation" },
+@@ -822,35 +822,35 @@ static struct trans_ctl_table trans_mac_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_raid_table[] = {
++static const struct trans_ctl_table trans_raid_table[] = {
+ 	{ DEV_RAID_SPEED_LIMIT_MIN,	"speed_limit_min" },
+ 	{ DEV_RAID_SPEED_LIMIT_MAX,	"speed_limit_max" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_scsi_table[] = {
++static const struct trans_ctl_table trans_scsi_table[] = {
+ 	{ DEV_SCSI_LOGGING_LEVEL, "logging_level" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_parport_default_table[] = {
++static const struct trans_ctl_table trans_parport_default_table[] = {
+ 	{ DEV_PARPORT_DEFAULT_TIMESLICE,	"timeslice" },
+ 	{ DEV_PARPORT_DEFAULT_SPINTIME,		"spintime" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_parport_device_table[] = {
++static const struct trans_ctl_table trans_parport_device_table[] = {
+ 	{ DEV_PARPORT_DEVICE_TIMESLICE,		"timeslice" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_parport_devices_table[] = {
++static const struct trans_ctl_table trans_parport_devices_table[] = {
+ 	{ DEV_PARPORT_DEVICES_ACTIVE,		"active" },
+ 	{ 0, NULL, trans_parport_device_table },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_parport_parport_table[] = {
++static const struct trans_ctl_table trans_parport_parport_table[] = {
+ 	{ DEV_PARPORT_SPINTIME,		"spintime" },
+ 	{ DEV_PARPORT_BASE_ADDR,	"base-addr" },
+ 	{ DEV_PARPORT_IRQ,		"irq" },
+@@ -864,13 +864,13 @@ static struct trans_ctl_table trans_parp
+ 	{ DEV_PARPORT_AUTOPROBE + 4,	"autoprobe3" },
+ 	{}
+ };
+-static struct trans_ctl_table trans_parport_table[] = {
++static const struct trans_ctl_table trans_parport_table[] = {
+ 	{ DEV_PARPORT_DEFAULT,	"default",	trans_parport_default_table },
+ 	{ 0, NULL, trans_parport_parport_table },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_dev_table[] = {
++static const struct trans_ctl_table trans_dev_table[] = {
+ 	{ DEV_CDROM,	"cdrom",	trans_cdrom_table },
+ 	/* DEV_HWMON unused */
+ 	{ DEV_PARPORT,	"parport",	trans_parport_table },
+@@ -881,19 +881,19 @@ static struct trans_ctl_table trans_dev_
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_bus_isa_table[] = {
++static const struct trans_ctl_table trans_bus_isa_table[] = {
+ 	{ BUS_ISA_MEM_BASE,	"membase" },
+ 	{ BUS_ISA_PORT_BASE,	"portbase" },
+ 	{ BUS_ISA_PORT_SHIFT,	"portshift" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_bus_table[] = {
++static const struct trans_ctl_table trans_bus_table[] = {
+ 	{ CTL_BUS_ISA,	"isa",	trans_bus_isa_table },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_arlan_conf_table0[] = {
++static const struct trans_ctl_table trans_arlan_conf_table0[] = {
+ 	{ 1,	"spreadingCode" },
+ 	{ 2,	"channelNumber" },
+ 	{ 3,	"scramblingDisable" },
+@@ -964,7 +964,7 @@ static struct trans_ctl_table trans_arla
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_arlan_conf_table1[] = {
++static const struct trans_ctl_table trans_arlan_conf_table1[] = {
+ 	{ 1,	"spreadingCode" },
+ 	{ 2,	"channelNumber" },
+ 	{ 3,	"scramblingDisable" },
+@@ -1035,7 +1035,7 @@ static struct trans_ctl_table trans_arla
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_arlan_conf_table2[] = {
++static const struct trans_ctl_table trans_arlan_conf_table2[] = {
+ 	{ 1,	"spreadingCode" },
+ 	{ 2,	"channelNumber" },
+ 	{ 3,	"scramblingDisable" },
+@@ -1106,7 +1106,7 @@ static struct trans_ctl_table trans_arla
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_arlan_conf_table3[] = {
++static const struct trans_ctl_table trans_arlan_conf_table3[] = {
+ 	{ 1,	"spreadingCode" },
+ 	{ 2,	"channelNumber" },
+ 	{ 3,	"scramblingDisable" },
+@@ -1177,7 +1177,7 @@ static struct trans_ctl_table trans_arla
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_arlan_table[] = {
++static const struct trans_ctl_table trans_arlan_table[] = {
+ 	{ 1,		"arlan0",	trans_arlan_conf_table0 },
+ 	{ 2,		"arlan1",	trans_arlan_conf_table1 },
+ 	{ 3,		"arlan2",	trans_arlan_conf_table2 },
+@@ -1185,13 +1185,13 @@ static struct trans_ctl_table trans_arla
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_s390dbf_table[] = {
++static const struct trans_ctl_table trans_s390dbf_table[] = {
+ 	{ 5678 /* CTL_S390DBF_STOPPABLE */,	"debug_stoppable" },
+ 	{ 5679 /* CTL_S390DBF_ACTIVE */,	"debug_active" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_sunrpc_table[] = {
++static const struct trans_ctl_table trans_sunrpc_table[] = {
+ 	{ CTL_RPCDEBUG,		"rpc_debug" },
+ 	{ CTL_NFSDEBUG,		"nfs_debug" },
+ 	{ CTL_NFSDDEBUG,	"nfsd_debug" },
+@@ -1203,7 +1203,7 @@ static struct trans_ctl_table trans_sunr
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_pm_table[] = {
++static const struct trans_ctl_table trans_pm_table[] = {
+ 	{ 1 /* CTL_PM_SUSPEND */,	"suspend" },
+ 	{ 2 /* CTL_PM_CMODE */,		"cmode" },
+ 	{ 3 /* CTL_PM_P0 */,		"p0" },
+@@ -1211,13 +1211,13 @@ static struct trans_ctl_table trans_pm_t
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_frv_table[] = {
++static const struct trans_ctl_table trans_frv_table[] = {
+ 	{ 1,	"cache-mode" },
+ 	{ 2,	"pin-cxnr" },
+ 	{}
+ };
+ 
+-static struct trans_ctl_table trans_root_table[] = {
++static const struct trans_ctl_table trans_root_table[] = {
+ 	{ CTL_KERN,	"kernel",	trans_kern_table },
+ 	{ CTL_VM,	"vm",		trans_vm_table },
+ 	{ CTL_NET,	"net",		trans_net_table },
+@@ -1261,15 +1261,14 @@ static struct ctl_table *sysctl_parent(s
+ 	return table;
+ }
+ 
+-static struct trans_ctl_table *sysctl_binary_lookup(struct ctl_table *table)
++static const struct trans_ctl_table *sysctl_binary_lookup(struct ctl_table *table)
+ {
+ 	struct ctl_table *test;
+-	struct trans_ctl_table *ref;
+-	int depth, cur_depth;
++	const struct trans_ctl_table *ref;
++	int cur_depth;
+ 
+-	depth = sysctl_depth(table);
++	cur_depth = sysctl_depth(table);
+ 
+-	cur_depth = depth;
+ 	ref = trans_root_table;
+ repeat:
+ 	test = sysctl_parent(table, cur_depth);
+@@ -1434,7 +1433,7 @@ static void sysctl_check_leaf(struct ctl
+ 
+ static void sysctl_check_bin_path(struct ctl_table *table, const char **fail)
+ {
+-	struct trans_ctl_table *ref;
++	const struct trans_ctl_table *ref;
+ 
+ 	ref = sysctl_binary_lookup(table);
+ 	if (table->ctl_name && !ref)
