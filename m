@@ -1,109 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbXLTHnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbXLTHyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754616AbXLTHnY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 02:43:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758222AbXLTHnF
+	id S1758644AbXLTHyN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 02:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbXLTHx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 02:43:05 -0500
-Received: from sacred.ru ([62.205.161.221]:45052 "EHLO sacred.ru"
+	Thu, 20 Dec 2007 02:53:57 -0500
+Received: from ozlabs.org ([203.10.76.45]:50549 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757604AbXLTHnC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 02:43:02 -0500
-Message-ID: <476A1CE0.30505@openvz.org>
-Date: Thu, 20 Dec 2007 10:42:24 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1752372AbXLTHx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 02:53:56 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 0/5] sg_ring for scsi
+Date: Thu, 20 Dec 2007 18:53:48 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, dougg@torque.net
+References: <200712201645.19035.rusty@rustcorp.com.au> <20071220160741K.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20071220160741K.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: Oren Laadan <orenl@cs.columbia.edu>, "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       linux-fsdevel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-References: <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <476724E3.6060901@cs.columbia.edu> <20071218020933.GA28745@sergelap.austin.ibm.com> <476738A0.9010601@cs.columbia.edu> <4768E7B2.40203@openvz.org> <20071219141004.GA31694@sergelap.austin.ibm.com> <4769B228.4030705@cs.columbia.edu>
-In-Reply-To: <4769B228.4030705@cs.columbia.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 20 Dec 2007 10:42:30 +0300 (MSK)
+Content-Disposition: inline
+Message-Id: <200712201853.48643.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oren Laadan wrote:
-> 
-> Serge E. Hallyn wrote:
->> Quoting Pavel Emelyanov (xemul@openvz.org):
->>> Oren Laadan wrote:
->>>> Serge E. Hallyn wrote:
->>>>> Quoting Oren Laadan (orenl@cs.columbia.edu):
->>>>>> I hate to bring this again, but what if the admin in the container
->>>>>> mounts an external file system (eg. nfs, usb, loop mount from a file,
->>>>>> or via fuse), and that file system already has a device that we would
->>>>>> like to ban inside that container ?
->>>>> Miklos' user mount patches enforced that if !capable(CAP_MKNOD),
->>>>> then mnt->mnt_flags |= MNT_NODEV.  So that's no problem.
->>>> Yes, that works to disallow all device files from a mounted file system.
->>>>
->>>> But it's a black and white thing: either they are all banned or allowed;
->>>> you can't have some devices allowed and others not, depending on type
->>>> A scenario where this may be useful is, for instance, if we some apps in
->>>> the container to execute withing a pre-made chroot (sub)tree within that
->>>> container.
->>>>
->>>>> But that's been pulled out of -mm! ?  Crap.
->>>>>
->>>>>> Since anyway we will have to keep a white- (or black-) list of devices
->>>>>> that are permitted in a container, and that list may change even change
->>>>>> per container -- why not enforce the access control at the VFS layer ?
->>>>>> It's safer in the long run.
->>>>> By that you mean more along the lines of Pavel's patch than my whitelist
->>>>> LSM, or you actually mean Tetsuo's filesystem (i assume you don't mean that
->>>>> by 'vfs layer' :), or something different entirely?
->>>> :)
->>>>
->>>> By 'vfs' I mean at open() time, and not at mount(), or mknod() time.
->>>> Either yours or Pavel's; I tend to prefer not to use LSM as it may
->>>> collide with future security modules.
->>> Oren, AFAIS you've seen my patches for device access controller, right?
-> 
-> If you mean this one:
-> http://openvz.org/pipermail/devel/2007-September/007647.html
-> then ack :)
+On Thursday 20 December 2007 18:07:41 FUJITA Tomonori wrote:
+> On Thu, 20 Dec 2007 16:45:18 +1100
+>
+> Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > OK, some fixes since last time, as I wade through more SCSI drivers. 
+> > Some drivers use "use_sg" as a flag to know whether the request_buffer is
+> > a scatterlist: I don't need the counter, but I still need the flag, so I
+> > fixed that in a more intuitive way (an explicit ->sg pointer in the cmd).
+>
+> use_sg and the request_buffer will be removed shortly.
+>
+> http://marc.info/?l=linux-scsi&m=119754650614813&w=2
 
-Great! Thanks.
+Thanks!  Is there a git tree somewhere with these changes?
 
->>> Maybe we can revisit the issue then and try to come to agreement on what
->>> kind of model and implementation we all want?
->> That would be great, Pavel.  I do prefer your solution over my LSM, so
->> if we can get an elegant block device control right in the vfs code that
->> would be my preference.
-> 
-> I concur.
-> 
-> So it seems to me that we are all in favor of the model where open()
-> of a device will consult a black/white-list. Also, we are all in favor
-> of a non-LSM implementation, Pavel's code being a good example.
+> I think that we tried the similar idea before, scsi_sgtable, but we
+> seem to settle in the current simple approach.
 
-Thank you, Oren and Serge! I will revisit this issue then, but
-I have a vacation the next week and, after this, we have a New
-Year and Christmas holidays in Russia. So I will be able to go
-on with it only after the 7th January :( Hope this is OK for you.
+Yes, a scsi-specific solution is a bad idea: other people use sg.  
+Manipulating the magic chains is horrible; it looks simple to the places 
+which simply want to iterate through it, but it's awful for code which wants 
+to create them.
 
-Besides, Andrew told that he would pay little attention to new
-features till the 2.6.24 release, so I'm afraid we won't have this 
-even in -mm in the nearest months :(
-
-Thanks,
-Pavel
-
-> Oren.
-> 
->> The only thing that makes me keep wanting to go back to an LSM is the
->> fact that the code defining the whitelist seems out of place in the vfs.
->> But I guess that's actually separated into a modular cgroup, with the
->> actual enforcement built in at the vfs.  So that's really the best
->> solution.
->>
->> -serge
-> 
-
+Cheers,
+Rusty.
