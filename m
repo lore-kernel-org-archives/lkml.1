@@ -1,36 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764315AbXLTW5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbXLTXFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764315AbXLTW5i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:57:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbXLTW53
+	id S1753768AbXLTXFa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 18:05:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbXLTXFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:57:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58395 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753895AbXLTW52 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:57:28 -0500
-Date: Thu, 20 Dec 2007 14:56:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: trond.myklebust@fys.uio.no, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Thu, 20 Dec 2007 18:05:22 -0500
+Received: from pat.uio.no ([129.240.10.15]:37698 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751254AbXLTXFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 18:05:21 -0500
 Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
-Message-Id: <20071220145621.90ffb08a.akpm@linux-foundation.org>
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
 In-Reply-To: <20071220145415.f737e7f3.akpm@linux-foundation.org>
 References: <1198190447.29917.9.camel@heimdal.trondhjem.org>
-	<20071220145415.f737e7f3.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	 <20071220145415.f737e7f3.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 20 Dec 2007 18:04:23 -0500
+Message-Id: <1198191864.31865.1.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.3, required=5.0, autolearn=disabled, AWL=-0.260)
+X-UiO-Scanned: EABB6DBCA5111FFD5464E4E40E85E9FD9ABDA006
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -2 maxlevel 200 minaction 2 bait 0 mail/h: 39 total 5853128 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Dec 2007 14:54:15 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
+On Thu, 2007-12-20 at 14:54 -0800, Andrew Morton wrote:
 > On Thu, 20 Dec 2007 17:40:47 -0500
 > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 > 
@@ -74,12 +77,18 @@ Andrew Morton <akpm@linux-foundation.org> wrote:
 > >  [<c04040b2>] sysenter_past_esp+0x5f/0xa5
 > >  =======================
 > 
+> Yes - I don't know why the smp_processor_id() test has suddenly started
+> triggering in there.
+> 
+> I have a sledgehammer fix (below) which Ingo went all complicated about and
+> I assumed he had it in hand, but I can't see any patches anywhere?
+> 
+> I'd expect the kernel to spit that warning and then proceed with the usual
+> oops report - that's what it did in Miles Lane's case.  But it seems in
+> your case that the whole oops report simply vanished?
 
-btw, I think we should track this as a regression, please.  It may not
-strictly be a regression: the same problem might happen under 2.6.23,
-although reports are only agaisnt 2.6.24-rc.
+No. I found what I assume is the remainder of the original a couple of
+pages further down...
 
-But things which impact our ability to get clean oops reports are critical
-problems.
-
+Trond
 
