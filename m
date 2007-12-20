@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762635AbXLTVyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbXLTVyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762635AbXLTVyQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 16:54:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbXLTVx5
+	id S1758065AbXLTVyc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 16:54:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762655AbXLTVyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 16:53:57 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:19905 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754557AbXLTVxz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 16:53:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=h/CJtRGrHlsuNJjW4FVMyJBHvocG7LlF/pIKUtIy1E7MHLnNYr9Tkfnqm4xOEjEK8y7q/sNcjmcHmRUyZuKtvORszn/zzuBavN+VJOA97ZDfn/6oAOf/6nzdZDId9bI4Dwq3vYj6bSPK+3OGP8jwpbzo6+3a+GbBTiQ+daCJ+yE=
-Message-ID: <8b67d60712201353y71a85498p9d77f1f21761856c@mail.gmail.com>
-Date: Thu, 20 Dec 2007 21:53:54 +0000
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>,
-       "Adrian McMenamin" <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-sh@vger.kernel.org, axboe@kernel.dk
-Subject: Re: [PATCH 2/3] Add GD-Rom support to the SEGA Dreamcast
-In-Reply-To: <20071216095019.GA12184@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Dec 2007 16:54:19 -0500
+Received: from are.twiddle.net ([64.81.246.98]:40746 "EHLO are.twiddle.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762631AbXLTVyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 16:54:15 -0500
+Date: Thu, 20 Dec 2007 13:52:04 -0800
+From: Richard Henderson <rth@twiddle.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
+       Keith Packard <keithp@keithp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: PCI resource problems caused by improper address rounding
+Message-ID: <20071220215204.GA5636@twiddle.net>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Chuck Ebbert <cebbert@redhat.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
+	Keith Packard <keithp@keithp.com>,
+	Bjorn Helgaas <bjorn.helgaas@hp.com>
+References: <47671377.6000405@redhat.com> <alpine.LFD.0.9999.0712171648150.21557@woody.linux-foundation.org> <47680489.6040809@redhat.com> <alpine.LFD.0.9999.0712180946030.21557@woody.linux-foundation.org> <20071218202234.GA24525@twiddle.net> <alpine.LFD.0.9999.0712181240280.21557@woody.linux-foundation.org> <20071218215143.GA24769@twiddle.net> <alpine.LFD.0.9999.0712181412530.21557@woody.linux-foundation.org> <alpine.LFD.0.9999.0712181722260.21557@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <8b67d60712151621j2101c411p19d75125c6d1c2f9@mail.gmail.com>
-	 <20071216095019.GA12184@linux-sh.org>
+In-Reply-To: <alpine.LFD.0.9999.0712181722260.21557@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/12/2007, Paul Mundt <lethal@linux-sh.org> wrote:
+On Tue, Dec 18, 2007 at 05:38:58PM -0800, Linus Torvalds wrote:
+> That
+> 
+> 	PCI: Cannot allocate resource region 9 of bridge 0000:00:01.0
+> 	PCI: Cannot allocate resource region 1 of device 0000:01:00.0
+> 
+> thing is really starting to bug me.
+> 
+> I bet that is the real problem here, but it's not printing out enough 
+> information about the resource to actually give us much of a clue about 
+> what is wrong.
+> 
+> I suspect that it had a bridge mapping (device 0:01.0) that included the 
+> range from 0xc0000000 to 0xcfffffff, but there was something stupid wrong 
+> with it (eg the BIOS had allocated overlapping regions), so we disabled 
+> it. That, in turn, then caused us to also refuse the existing 0xc0000000 
+> mapping for the graphics card (device 01:00.0), because now there was no 
+> valid resource for it.
 
->
-> Also, __devinit/__devexit annotations?
->
+That is exactly it.  The relevant section of the debug info is
 
-Is there any difference between __init and __devint? I am using
-__init/__exit already
+PCI: Bridge 0000:00:01.0
+PCI: Bridge resource 7 00008000-00008fff (%f=100)
+PCI: Bridge resource 8 f7d00000-fddfffff (%f=200)
+PCI: Bridge resource 9 bdf00000-ddefffff (%f=1201)
 
-> > +static struct platform_driver gdrom_driver = {
-> > +     .probe = probe_gdrom,
-> > +     .remove = remove_gdrom,
->
-> __devexit_p()?
->
-> > +static void __exit exit_gdrom(void)
-> > +{
-> > +     blk_cleanup_queue(gd.gdrom_rq);
-> > +     free_irq(HW_EVENT_GDROM_CMD, &gd);
-> > +     free_irq(HW_EVENT_GDROM_DMA, &gd);
-> > +     del_gendisk(gd.disk);
-> > +     if (gdrom_major)
-> > +             unregister_blkdev(gdrom_major, GDROM_DEV_NAME);
-> > +     platform_device_unregister(pd);
-> > +     platform_driver_unregister(&gdrom_driver);
-> > +     if (gd.toc)
-> > +             kfree(gd.toc);
-> > +}
-> > +
-> Ah, here's where you do the rest of the cleanup. This is non-intuitive,
-> remove should balance the work done by probe and exit the work done by
-> init.
->
+The bridge was assigned to a piece of the end of physical memory.  
+
+
+
+r~
