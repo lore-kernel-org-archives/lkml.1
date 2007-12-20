@@ -1,80 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765470AbXLTP4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbXLTQBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765470AbXLTP4w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 10:56:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbXLTP4o
+	id S932174AbXLTQBf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 11:01:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbXLTQB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 10:56:44 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:30768 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753286AbXLTP4m (ORCPT
+	Thu, 20 Dec 2007 11:01:26 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59703 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752980AbXLTQBY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 10:56:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CtItnnMe8GiQbbTUGtNHaTntJg87dPq+iM2fCUz0qX+tvGR9iMZj7bOZuRU49R8iv71dn3elz0EYQJmC9dgnmSFjyOPoG35hh6Wv9P4FvZHFarEk1CG384wz4GQOu3zxi4pB0c31c3zEQXNXfih1hy4ezWB7aBn3eOY/OPkkB1k=
-Message-ID: <9e4733910712200756s40fd5d1ax8f2ca2b903befed3@mail.gmail.com>
-Date: Thu, 20 Dec 2007 10:56:42 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Olof Johansson" <olof@lixom.net>
-Subject: Re: [PATCH 4/5] Convert PowerPC MPC i2c to of_platform_driver from platform_driver
-In-Reply-To: <20071220051618.GB29058@localhost.localdomain>
+	Thu, 20 Dec 2007 11:01:24 -0500
+Date: Thu, 20 Dec 2007 16:00:22 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] memcgroup: work better with tmpfs
+In-Reply-To: <20071219093840.7d466c2b.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0712201553010.6414@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0712182215460.29209@blonde.wat.veritas.com>
+ <20071219093840.7d466c2b.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071220044136.20091.70984.stgit@terra.home>
-	 <20071220044144.20091.35917.stgit@terra.home>
-	 <20071220051618.GB29058@localhost.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/20/07, David Gibson <david@gibson.dropbear.id.au> wrote:
-> On Wed, Dec 19, 2007 at 11:41:44PM -0500, Jon Smirl wrote:
-> > Convert MPC i2c driver from being a platform_driver to an open
-> > firmware version. Error returns were improved. Routine names were
-> > changed from fsl_ to mpc_ to make them match the file name.
->
-> In discussions BenH and I have had, we've actually concluded that
-> moving this from platform drivers to of_platform drives is not
-> actually a good idea.
->
-> In fact we're planning to move away from of_platform devices and
-> drivers and instead develop a framework for instantiating platform
-> devices or i2c devices or whatever devices from the device tree nodes.
+On Wed, 19 Dec 2007, KAMEZAWA Hiroyuki wrote:
+> On Tue, 18 Dec 2007 22:19:22 +0000 (GMT)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> > 1. Why is spin_lock_irqsave rather than spin_lock needed on mz->lru_lock?
+> > If it is needed, doesn't mem_cgroup_isolate_pages need to use it too?
+> > 
+> When I wrote a patch to treat lru_lock (it was not per-zone yet.), I got a
+> comment to use irqsafe version. So I wonder there is some plan which needs
+> irq safe locking.
 
-I have to work with what is in the kernel tree so this patch is based
-the current kernel. A lot of time and testing has going into all the
-revisions of this patch. It has been posted in various forms for the
-last month and a half.
+It might have come about because struct zone's lru_lock really does need
+the irq disabled (because of things that happen at I/O completion time).
+But I don't think struct mem_cgroup_per_zone's lru_lock needs it.
 
-As for platform vs of_platform, IMHO of_platform should have been
-derived from platform instead of being an unrelated structure. In the
-current scheme of unrelated structures it makes more sense to use one
-or the other and not mix them. I am in agreement with Olof that if and
-when a new scheme is adopted the drivers should be converted then.
+> About mem_cgroup_isolate_pages(), zone->lock is acquired with irq-disable 
+> before it is called. Then, it's not necesary there.
 
-In my local builds I have disabled platform and use only of_platform.
-An of_platform only system works fine and is capable of instantiating
-everything from the device tree as this patch illustrates. Once this
-patch goes in I'll post another series that shows how I went
-of_platform only on mpc5200.
+Ah, yes, I completely missed that, thank you.
 
-Everyone seems to be focusing on a small piece of driver
-initialization code and ignoring the much more complicated part which
-implements dynamic i2c driver loading. It's the complicated part of
-the code that needs review.
+> 
+> But as you say, it looks we can do it without irq-disable, now.
+> 
+> 
+> > 2. There's mem_cgroup_charge and mem_cgroup_cache_charge (wouldn't the
+> > former be better called mem_cgroup_charge_mapped? why does the latter
+> > test MEM_CGROUP_TYPE_ALL instead of MEM_CGROUP_TYPE_CACHED? I still don't
+> > understand your enums there).  But there's only mem_cgroup_uncharge.
+> > So when, for example, an add_to_page_cache fails, the uncharge may not
+> > balance the charge?
+> >
+> Ah...it seems bug. We should add type handling in uncharge. 
+> Then, changing control_type after start using mem_cgroup seems dangerous.
+> (Default is ALL now.)
+> 
+> Maybe following will be fix.
+> 
+> - allow changing contorl_type only when there is no task.
+> - run force_empty when control_type is changed. and drop all charges.
+> 
+> This will change current behavior but I think it's reasonable.
+> How do you think ?
 
-Ben, I know we talked about not putting the alias names into their own
-namespace. But the i2c people don't want to move onto the standard
-kernel aliasing scheme for other platforms and asked for #ifdef
-powerpc. In version 15 I removed the cross platform support and made
-everything powerpc specific. .
+Perhaps... my grasp on this is much too weak to be sure:
+I'm pretty sceptical about changing control_type altogether.
+Let me reply to Balbir, who still sees no issue there.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Hugh
