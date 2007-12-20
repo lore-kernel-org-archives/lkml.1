@@ -1,80 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762068AbXLTWhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbXLTWhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762068AbXLTWhA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:37:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbXLTWgw
+	id S1764248AbXLTWhq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbXLTWhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:36:52 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34446 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752225AbXLTWgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:36:51 -0500
-Message-ID: <476AEE7B.6050708@redhat.com>
-Date: Thu, 20 Dec 2007 17:36:43 -0500
-From: Tony Camuso <tcamuso@redhat.com>
-Reply-To: tcamuso@redhat.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 20 Dec 2007 17:37:31 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:53986 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753265AbXLTWha (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 17:37:30 -0500
+Date: Thu, 20 Dec 2007 15:37:28 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Mark Lord <liml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
+       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
+       lkml@rtr.ca, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] fix page_alloc for larger I/O segments (improved)
+Message-ID: <20071220223728.GM29690@parisc-linux.org>
+References: <20071213142935.47ff19d9.akpm@linux-foundation.org> <4761B32A.3070201@rtr.ca> <4761BCB4.1060601@rtr.ca> <4761C8E4.2010900@rtr.ca> <4761CE88.9070406@rtr.ca> <20071213163726.3bb601fa.akpm@linux-foundation.org> <4761D160.7060603@rtr.ca> <4761D279.6050500@rtr.ca> <20071214174236.GA28613@csn.ul.ie> <20071214181339.GW26334@parisc-linux.org>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <476AB3B5.9080808@redhat.com> <20071220215719.GA8528@suse.de>
-In-Reply-To: <20071220215719.GA8528@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071214181339.GW26334@parisc-linux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Dec 20, 2007 at 01:25:57PM -0500, Tony Camuso wrote:
-> Any reason why these changes were never submitted to the upstream kernel
-> versions?  Or do you all just want to keep patching your newer releases
-> with this information forever?  :)
-> 
+On Fri, Dec 14, 2007 at 11:13:40AM -0700, Matthew Wilcox wrote:
+> I'll send it to our DB team to see if this improves our numbers at all.
 
-I really don't know why these changes were never submitted to the
-upstream kernel versions".
+It does, by approximately 0.67%.  This is about double the margin of
+error, and a significant improvement.  Thanks!
 
-I was brought on the scene about six months ago as HP's on-site engineer
-at RH, and this was one of the things they wanted me to do.
-
-We wanted a solution that was more generic and could manage this
-problem preemptively, rather than using blacklists. Maintenance of
-blacklists is a bother and almost always done after a new system
-with this problem is discovered.
-
-Furthermore, blacklisting whole platforms to use legacy pci config
-penalizes any mmconfig-friendly buses in those platforms, particularly
-the pci express buses, and causes such platforms to be non-compliant
-with the pci expres spec.
-
- > Please send these kinds of changes upstream...
- >
-As you wish.
-:)
-
->> I have talked to intel about this, but they haven't gotten back to me.
-> 
-> Try poking them harder, they are usually very responsive to Linux kernel
-> issues.
-> 
-> thanks,
-> 
-> greg k-h
-
-Matthew Wilcox explained the problem to me. The hang that cannot be fixed
-by my patch isn't the chipset's fault. The graphics device has a 64-bit
-BAR asking for 256 MB of IO.
-
-If I understand his explanation correctly, when the bus sizing code
-writes the low dword of this BAR with 0xffffffff, the chip is then
-programmed to claim every MMIO reference betweeen 0x00000000.f0000000 and
-0x00000001.00000000
-
-It just so happens that MMCONFIG space for the dc5700 (awa some others) is
-mapped by its BIOS into that very region, so all MMCONFIG references are now
-swallowed up by the graphics chip. At that point, no further boot progress can
-be made.
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
