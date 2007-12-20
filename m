@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760736AbXLTUPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbXLTURV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760736AbXLTUPn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 15:15:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760096AbXLTUPb
+	id S1758922AbXLTURV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 15:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbXLTURM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 15:15:31 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:45556 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760231AbXLTUPa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 15:15:30 -0500
-Date: Thu, 20 Dec 2007 13:15:29 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Loic Prylli <loic@myri.com>
-Cc: Tony Camuso <tcamuso@redhat.com>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-Message-ID: <20071220201529.GJ29690@parisc-linux.org>
-References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <20071220173528.GE29690@parisc-linux.org> <476AAE99.7090301@redhat.com> <20071220181603.GF29690@parisc-linux.org> <476AB920.7040604@myri.com> <476ABCBF.8090006@redhat.com> <20071220190833.GH29690@parisc-linux.org> <476ACB20.6030803@myri.com>
+	Thu, 20 Dec 2007 15:17:12 -0500
+Received: from iriserv.iradimed.com ([72.242.190.170]:16943 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753342AbXLTURL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 15:17:11 -0500
+Message-ID: <476ACDBE.2070600@cfl.rr.com>
+Date: Thu, 20 Dec 2007 15:17:02 -0500
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <476ACB20.6030803@myri.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Lutomirski <luto@myrealbox.com>
+CC: Theodore Tso <tytso@mit.edu>, David Newall <david@davidnewall.com>,
+       John Reiser <jreiser@bitwagon.com>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, security@kernel.org
+Subject: Re: /dev/urandom uses uninit bytes, leaks user data
+References: <20071214201305.GL19691@waste.org>  <20071214232322.GE17344@thunk.org> <47632010.6030709@BitWagon.com>  <20071215043208.GF17344@thunk.org> <4766A40D.4080804@BitWagon.com>  <20071217173623.GC7070@thunk.org> <476719E5.1010505@myrealbox.com>  <2007121803053 <cb0375e10712192018l66671b34r1680077765e89fb0@mail.gmail.com>
+In-Reply-To: <cb0375e10712192018l66671b34r1680077765e89fb0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Dec 2007 20:17:19.0797 (UTC) FILETIME=[529E4E50:01C84345]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1023-15618.001
+X-TM-AS-Result: No--12.240700-5.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 03:05:52PM -0500, Loic Prylli wrote:
-> I am not familiar with the tg3 driver, just trying to give a 5 minutes
-> look, it seems the typical cases where the pci-conf-space is used
-> intensively are with some rev in combination with the 82801
-> (TG3_FLG2_ICH_WORKAROUND) which I don't think support mmconfig anyway,
-> as well as some very specific PCI-X combinations
-> (TG3_FLAG_PCIX_TARGET_HWBUG) which are also very unlikely to support
-> mmconfig.
+Andrew Lutomirski wrote:
+> I understand that there's no way that /dev/random can provide good
+> output if there's insufficient entropy.  But it still shouldn't leak
+> arbitrary bits of user data that were never meant to be put into the
+> pool at all.
 
-It's not a question of whether the card supports mmconfig or not -- the
-card can't tell whether a first-256-byte pci config transaction was
-initiated through mmconfig, type1, type2, or even a bios call.
+It doesn't leak it though, it consumes it, and it then vanishes into the 
+entropy pool, never to be seen again.
 
-I'm just hacking together an implementation based on Ivan's suggestion
-to always use type 1 for the first 64 bytes.
+> Step 1: Boot a system without a usable entropy source.
+> Step 2: add some (predictable) "entropy" from userspace which isn't a
+> multiple of 4, so up to three extra bytes get added.
+> Step 3: Read a few bytes of /dev/random and send them over the network.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Only root can do 1 and 2, at which point, it's already game over.
+
