@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760667AbXLTNwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932625AbXLTN50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760667AbXLTNwA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 08:52:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760079AbXLTNvx
+	id S932625AbXLTN50 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 08:57:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbXLTN5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 08:51:53 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39968 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759940AbXLTNvw (ORCPT
+	Thu, 20 Dec 2007 08:57:12 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:34273 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752510AbXLTN5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 08:51:52 -0500
-Subject: Re: [PATCH] Move page_assign_page_cgroup to VM_BUG_ON in
-	free_hot_cold_page
-From: Peter Zijlstra <peterz@infradead.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Dave Hansen <haveblue@us.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
+	Thu, 20 Dec 2007 08:57:10 -0500
+Message-ID: <476A743D.2080506@panasas.com>
+Date: Thu, 20 Dec 2007 15:55:09 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>, Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
        Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0712201312490.17015@blonde.wat.veritas.com>
-References: <20071219061834.8461.3974.sendpatchset@balbir-laptop>
-	 <1198084473.15321.48.camel@localhost>
-	 <Pine.LNX.4.64.0712201312490.17015@blonde.wat.veritas.com>
-Content-Type: text/plain
-Date: Thu, 20 Dec 2007 14:51:42 +0100
-Message-Id: <1198158702.6821.8.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dougg@torque.net
+Subject: Re: [PATCH 0/5] sg_ring for scsi
+References: <200712201645.19035.rusty@rustcorp.com.au> <20071220160741K.fujita.tomonori@lab.ntt.co.jp> <200712201853.48643.rusty@rustcorp.com.au> <20071220075814.GH13958@kernel.dk>
+In-Reply-To: <20071220075814.GH13958@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2007-12-20 at 13:14 +0000, Hugh Dickins wrote:
-> On Wed, 19 Dec 2007, Dave Hansen wrote:
-> > > --- linux-2.6.24-rc5/mm/page_alloc.c~memory-controller-move-to-bug-on-in-free_hot_cold_page     2007-12-19 11:31:46.000000000 +0530
-> > > +++ linux-2.6.24-rc5-balbir/mm/page_alloc.c     2007-12-19 11:33:45.000000000 +0530
-> > > @@ -995,7 +995,7 @@ static void fastcall free_hot_cold_page(
-> > >  
-> > >         if (!PageHighMem(page))
-> > >                 debug_check_no_locks_freed(page_address(page), PAGE_SIZE);
-> > > -       page_assign_page_cgroup(page, NULL);
-> > > +       VM_BUG_ON(page_get_page_cgroup(page));
-> > >         arch_free_page(page, 0);
-> > >         kernel_map_pages(page, 1, 0); 
-> > 
-> > Hi Balbir,
-> > 
-> > You generally want to do these like:
-> > 
-> > 	foo = page_assign_page_cgroup(page, NULL);
-> > 	VM_BUG_ON(foo);
-> > 
-> > Some embedded people have been known to optimize kernel size like this:
-> > 
-> > 	#define VM_BUG_ON(x) do{}while(0)
+On Thu, Dec 20 2007 at 9:58 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Thu, Dec 20 2007, Rusty Russell wrote:
+>> On Thursday 20 December 2007 18:07:41 FUJITA Tomonori wrote:
+>>> On Thu, 20 Dec 2007 16:45:18 +1100
+>>>
+>>> Rusty Russell <rusty@rustcorp.com.au> wrote:
+>>>> OK, some fixes since last time, as I wade through more SCSI drivers. 
+>>>> Some drivers use "use_sg" as a flag to know whether the request_buffer is
+>>>> a scatterlist: I don't need the counter, but I still need the flag, so I
+>>>> fixed that in a more intuitive way (an explicit ->sg pointer in the cmd).
+>>> use_sg and the request_buffer will be removed shortly.
+>>>
+>>> http://marc.info/?l=linux-scsi&m=119754650614813&w=2
+>> Thanks!  Is there a git tree somewhere with these changes?
+>>
+>>> I think that we tried the similar idea before, scsi_sgtable, but we
+>>> seem to settle in the current simple approach.
+>> Yes, a scsi-specific solution is a bad idea: other people use sg.  
+>> Manipulating the magic chains is horrible; it looks simple to the places 
+>> which simply want to iterate through it, but it's awful for code which wants 
+>> to create them.
 > 
-> Balbir's patch looks fine to me: I don't get your point there, Dave.
+> The current code looks like that to minimize impact on 2.6.24, see this
+> branch:
+> 
+> http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=sg
+> 
+> for how it folds into lib/sg.c and the magic disappears from SCSI.
+> Rusty, nobody claimed the sg code in 2.6.24 is perfect. I like to get
+> things incrementally there.
+> 
+Dear Jens.
 
-There was a lengthy discussion here:
-  http://lkml.org/lkml/2007/12/14/131
+Is this code scheduled for 2.6.25? I cannot find it in mm tree.
 
-on the merit of debug statements with side effects. But looking at our
-definition:
+Because above code conflicts with the scsi_data_buffer patch,
+that is in mm tree and I hope will get accepted into 2.6.25.
+Now the concepts are not at all conflicting, only that they
+both bang in the same places.
+(And by the way it does not apply on scsi-misc either.
+And it did not compile in your tree, a missing bit in 
+ide-scsi.c)
 
-#ifdef CONFIG_DEBUG_VM
-#define VM_BUG_ON(cond) BUG_ON(cond)
-#else
-#define VM_BUG_ON(condition) do { } while(0)
-#endif
+I have rebase and fixed your code on top of scsi_data_buffer patchset.
+Please review. (Patchset posted as reply to this mail)
 
-disabling CONFIG_DEBUG_VM breaks the code as proposed by Balbir in that
-it will no longer acquire the reference.
+They are totaly untested, based on -mm tree.
+We should decide the order of these patches and rebase
+accordingly.
 
+AND ...
+Please send, to-be-included-in-next-kernel patches to Morton. 
+This way we can account for them. Also I do not see Ack-by: 
+of the scsi maintainer in the scsi bits of your patches.
+Is it not a costume to Ack-on bits that belong to other maintainers, 
+even for maintainers?
+
+Boaz
