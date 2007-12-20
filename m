@@ -1,123 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765990AbXLTRLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933396AbXLTRNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765990AbXLTRLz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 12:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXLTRLp
+	id S933396AbXLTRNU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 12:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761550AbXLTRNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 12:11:45 -0500
-Received: from 1002-12.lowesthosting.com ([207.44.144.97]:36683 "HELO
-	1002-12.Lowesthosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754319AbXLTRLp (ORCPT
+	Thu, 20 Dec 2007 12:13:10 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50824 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755361AbXLTRNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 12:11:45 -0500
-X-Greylist: delayed 476 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Dec 2007 12:11:44 EST
-Message-ID: <476A9FEB.2090508@iitiantech.com>
-Date: Thu, 20 Dec 2007 09:01:31 -0800
-From: Siva Prasad <siva@iitiantech.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: matthew@bytemark.co.uk
-CC: linux-kernel@vger.kernel.org
-Subject: Testing RAM from userspace / question about memmap= arguments
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 20 Dec 2007 12:13:08 -0500
+Date: Thu, 20 Dec 2007 09:12:15 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: balbir@linux.vnet.ibm.com
+Cc: Peter Zijlstra <peterz@infradead.org>, Hugh Dickins <hugh@veritas.com>,
+       Dave Hansen <haveblue@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Move page_assign_page_cgroup to VM_BUG_ON in
+ free_hot_cold_page
+Message-Id: <20071220091215.a87d2588.akpm@linux-foundation.org>
+In-Reply-To: <476A972F.6050904@linux.vnet.ibm.com>
+References: <20071219061834.8461.3974.sendpatchset@balbir-laptop>
+	<1198084473.15321.48.camel@localhost>
+	<Pine.LNX.4.64.0712201312490.17015@blonde.wat.veritas.com>
+	<1198158702.6821.8.camel@twins>
+	<Pine.LNX.4.64.0712201411510.22773@blonde.wat.veritas.com>
+	<1198160410.6821.13.camel@twins>
+	<476A972F.6050904@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matthew,
+On Thu, 20 Dec 2007 21:54:15 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-I worked on some thing similar. For one of our customer product that 
-goes to defense and security markets, we had to support maximum possible 
-memory test. We implemented a mechanism of pre-test to test the memory 
-with walking 1's and 0's just before Linux kernel starts allocating 
-serious memory for its use. That way, coverage was almost 99%. Once 
-Linux boots, we do a very through test using various algorithms, however 
-as you said coverage of memory is little less when we test the system 
-after Linux boots up completely.
+> >> struct page_cgroup *page_get_page_cgroup(struct page *page)
+> >> {
+> >> 	return (struct page_cgroup *)
+> >> 		(page->page_cgroup & ~PAGE_CGROUP_LOCK);
+> >> }
+> >>
+> >> I guess the issue is that often a "get" function has a complementary
+> >> "put" function, but this isn't one of them.  Would page_page_cgroup
+> >> be a better name, perhaps?  I don't know.
+> > 
+> > Ah, yes, I mistakenly assumed it was a reference get. In that case I
+> > stand corrected and do not have any objections.
+> > 
+> 
+> I was going to say the same thing, page_get_page_cgroup() does not hold
+> any references. May be _get_ in the name is confusing.
 
-memtest86+ started as a very good alternative, until customer's customer 
-started complaining about memory issues. Then we had no choice but to 
-take this route and implement it ourselves from the scratch.
-
-If you want 100% coverage, it may not be possible unless you do it in 
-BIOS early on. If you take the route of implementing some simple memory 
-test in Linux kernel before it starts allocating memory, you get very 
-good % of coverage. Good Luck.
-
-- Siva
-
-
-Date: Thu, 20 Dec 2007 14:17:10 +0000
-
-From: Matthew Bloch <matthew@bytemark.co.uk>
-
-Subject: Re: Testing RAM from userspace / question about memmap=
-
-      arguments
-
-To: linux-kernel@vger.kernel.org
-
-Message-ID: <fkdth6$d7g$1@ger.gmane.org>
-
-Content-Type: text/plain; charset=ISO-8859-1
-
- 
-
-Jon Masters wrote:
-
- > On Tue, 2007-12-18 at 17:06 +0000, Matthew Bloch wrote:
-
- >
-
- >> I can see a few potential problems, but since my understanding of the
-
- >> low-level memory mapping is muddy at best, I won't speculate; I'd just
-
- >> appreciate any more expert views on whether this does work, or could be
-
- >> made to work.
-
- >
-
- > Yo,
-
- >
-
- > I don't think your testing approach is thorough enough. Clearly (knowing
-
- > your line of business - as a virtual machine provider), you want to do
-
- > pre-production testing as part of your provisioning. I would suggest
-
- > instead of using mlock() from userspace of simply writing a kernel
-
- > module that does this for every page of available memory.
-
- 
-
-Yes this is to improve the efficiency of server burn-ins.  I would
-
-consider a kernel module, but I still wouldn't be able to test the
-
-memory in which the kernel is sitting, which is my problem.  I'm not
-
-sure even a kernel module could reliably test the memory in which it is
-
-residing (memtest86+ relocates itself to do this).  Also I don't see how
-
-  userspace testing is any less thorough than doing it in the kernel; I
-
-just need a creative way of accessing every single page of memory.
-
- 
-
-I may do some experiments with the memmap args, some bad RAM and
-
-shuffling it between DIMM sockets when I have the time :)
-
- 
-
--- 
-
-Matthew
+It is a bit unconventional.  page_cgroup()?
