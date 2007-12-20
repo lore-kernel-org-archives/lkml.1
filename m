@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbXLTCGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759033AbXLTCLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759758AbXLTCGc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 21:06:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbXLTCGY
+	id S1759033AbXLTCLV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 21:11:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbXLTCLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 21:06:24 -0500
-Received: from rtr.ca ([76.10.145.34]:1045 "EHLO mail.rtr.ca"
+	Wed, 19 Dec 2007 21:11:13 -0500
+Received: from mga01.intel.com ([192.55.52.88]:61001 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752885AbXLTCGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 21:06:23 -0500
-Message-ID: <4769CE20.5090307@rtr.ca>
-Date: Wed, 19 Dec 2007 21:06:24 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: linux@horizon.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RFC: permit link(2)  to work across --bind mounts ?
-References: <20071220013355.3900.qmail@science.horizon.com>
-In-Reply-To: <20071220013355.3900.qmail@science.horizon.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753738AbXLTCLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 21:11:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,186,1196668800"; 
+   d="scan'208";a="450888996"
+Date: Wed, 19 Dec 2007 18:08:47 -0800
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Len Brown <lenb@kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Voluntary leave_mm before entering ACPI C3
+Message-ID: <20071220020846.GA13464@linux-os.sc.intel.com>
+References: <20071219183443.GA547@linux-os.sc.intel.com> <20071219193255.GA2158@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071219193255.GA2158@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux@horizon.com wrote:
->> Why does link(2) not support hard-linking across bind mount points
->> of the same underlying filesystem ?
+On Wed, Dec 19, 2007 at 08:32:55PM +0100, Ingo Molnar wrote:
 > 
-> Whenever we get mount -r --bind working properly (which I use to place
-> copies of necessary shared libraries inside chroot jails while allowing
-> page cache sharing), this feature would break security.
-..
+> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+> 
+> > Aviod TLB flush IPIs during C3 states by voluntary leave_mm() before 
+> > entering C3.
+> > 
+> > The performance impact of TLB flush on C3 should not be significant 
+> > with respect to C3 wakeup latency. Also, CPUs tend to flush TLB in 
+> > hardware while in C3 anyways.
+> > 
+> > On a 8 logical CPU system, running make -j2, the number of tlbflush 
+> > IPIs goes down from 40 per second to ~ 0. Total number of interrupts 
+> > during the run of this workload was ~1200 per second, which makes it 
+> > ~3% savings in wakeups.
+> > 
+> > There was no measurable performance or power impact however.
+> 
+> thanks, applied to x86.git. Nice and elegant patch!
+> 
+> Btw., since the TLB flush state machine is really subtle and fragile, 
+> could you try to run the following mmap stresstest i wrote some time 
+> ago:
+> 
+>    http://redhat.com/~mingo/threaded-mmap-stresstest/
+> 
+> for a couple of hours. It runs nr_cpus threads which then do a "random 
+> crazy mix" of mappings/unmappings/remappings of a 800 MB memory window. 
+> The more sockets/cores, the crazier the TLB races get ;-)
+> 
 
-No, that would still function exactly as it does today.
-The alternate behaviour that is desired for non-chroot purposes
-would be per-bind-mount, and would require a mount flag to activate.
+Ingo,
 
-Cheers
+I ran this stress test on two systems (8 cores and 2 cores) for over
+4 hours without any issues. There was more than 20% C3 time during the
+run. So, this C3 tlbflush path must have been stressed well during the run.
+
+And sorry about the patch not working on UP config. That was a silly oversight
+on my part.
+
+Thanks,
+Venki
