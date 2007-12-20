@@ -1,318 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932692AbXLTOI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932761AbXLTOJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932692AbXLTOI4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 09:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759624AbXLTOIq
+	id S932761AbXLTOJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 09:09:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758316AbXLTOJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 09:08:46 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:56947 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759452AbXLTOIo (ORCPT
+	Thu, 20 Dec 2007 09:09:47 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:57470 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757393AbXLTOJp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 09:08:44 -0500
-Message-ID: <476A7700.6080008@panasas.com>
-Date: Thu, 20 Dec 2007 16:06:56 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 20 Dec 2007 09:09:45 -0500
+Date: Thu, 20 Dec 2007 08:09:42 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       linux-fsdevel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+Message-ID: <20071220140942.GA2096@sergelap.austin.ibm.com>
+References: <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <476724E3.6060901@cs.columbia.edu> <20071218020933.GA28745@sergelap.austin.ibm.com> <476738A0.9010601@cs.columbia.edu> <4768E7B2.40203@openvz.org> <20071219141004.GA31694@sergelap.austin.ibm.com> <4769B228.4030705@cs.columbia.edu> <476A1CE0.30505@openvz.org>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dougg@torque.net
-Subject: [PATCH 3/3] SG: Update ide/ to use sg_table
-References: <200712201645.19035.rusty@rustcorp.com.au> <20071220160741K.fujita.tomonori@lab.ntt.co.jp> <200712201853.48643.rusty@rustcorp.com.au> <20071220075814.GH13958@kernel.dk> <476A743D.2080506@panasas.com>
-In-Reply-To: <476A743D.2080506@panasas.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <476A1CE0.30505@openvz.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Axboe <jens.axboe@oracle.com>
+Quoting Pavel Emelyanov (xemul@openvz.org):
+> Oren Laadan wrote:
+> > 
+> > Serge E. Hallyn wrote:
+> >> Quoting Pavel Emelyanov (xemul@openvz.org):
+> >>> Oren Laadan wrote:
+> >>>> Serge E. Hallyn wrote:
+> >>>>> Quoting Oren Laadan (orenl@cs.columbia.edu):
+> >>>>>> I hate to bring this again, but what if the admin in the container
+> >>>>>> mounts an external file system (eg. nfs, usb, loop mount from a file,
+> >>>>>> or via fuse), and that file system already has a device that we would
+> >>>>>> like to ban inside that container ?
+> >>>>> Miklos' user mount patches enforced that if !capable(CAP_MKNOD),
+> >>>>> then mnt->mnt_flags |= MNT_NODEV.  So that's no problem.
+> >>>> Yes, that works to disallow all device files from a mounted file system.
+> >>>>
+> >>>> But it's a black and white thing: either they are all banned or allowed;
+> >>>> you can't have some devices allowed and others not, depending on type
+> >>>> A scenario where this may be useful is, for instance, if we some apps in
+> >>>> the container to execute withing a pre-made chroot (sub)tree within that
+> >>>> container.
+> >>>>
+> >>>>> But that's been pulled out of -mm! ?  Crap.
+> >>>>>
+> >>>>>> Since anyway we will have to keep a white- (or black-) list of devices
+> >>>>>> that are permitted in a container, and that list may change even change
+> >>>>>> per container -- why not enforce the access control at the VFS layer ?
+> >>>>>> It's safer in the long run.
+> >>>>> By that you mean more along the lines of Pavel's patch than my whitelist
+> >>>>> LSM, or you actually mean Tetsuo's filesystem (i assume you don't mean that
+> >>>>> by 'vfs layer' :), or something different entirely?
+> >>>> :)
+> >>>>
+> >>>> By 'vfs' I mean at open() time, and not at mount(), or mknod() time.
+> >>>> Either yours or Pavel's; I tend to prefer not to use LSM as it may
+> >>>> collide with future security modules.
+> >>> Oren, AFAIS you've seen my patches for device access controller, right?
+> > 
+> > If you mean this one:
+> > http://openvz.org/pipermail/devel/2007-September/007647.html
+> > then ack :)
+> 
+> Great! Thanks.
+> 
+> >>> Maybe we can revisit the issue then and try to come to agreement on what
+> >>> kind of model and implementation we all want?
+> >> That would be great, Pavel.  I do prefer your solution over my LSM, so
+> >> if we can get an elegant block device control right in the vfs code that
+> >> would be my preference.
+> > 
+> > I concur.
+> > 
+> > So it seems to me that we are all in favor of the model where open()
+> > of a device will consult a black/white-list. Also, we are all in favor
+> > of a non-LSM implementation, Pavel's code being a good example.
+> 
+> Thank you, Oren and Serge! I will revisit this issue then, but
+> I have a vacation the next week and, after this, we have a New
+> Year and Christmas holidays in Russia. So I will be able to go
+> on with it only after the 7th January :( Hope this is OK for you.
+> 
+> Besides, Andrew told that he would pay little attention to new
+> features till the 2.6.24 release, so I'm afraid we won't have this 
+> even in -mm in the nearest months :(
+> 
+> Thanks,
+> Pavel
 
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
----
- drivers/ide/arm/icside.c      |    6 +++---
- drivers/ide/cris/ide-cris.c   |    2 +-
- drivers/ide/ide-dma.c         |    8 ++++----
- drivers/ide/ide-io.c          |    2 +-
- drivers/ide/ide-probe.c       |    6 +-----
- drivers/ide/ide-taskfile.c    |    2 +-
- drivers/ide/ide.c             |    2 +-
- drivers/ide/mips/au1xxx-ide.c |    8 ++++----
- drivers/ide/pci/sgiioc4.c     |    4 ++--
- drivers/ide/ppc/pmac.c        |    6 +++---
- drivers/scsi/ide-scsi.c       |    2 +-
- include/linux/ide.h           |    2 +-
- 12 files changed, 23 insertions(+), 27 deletions(-)
+Cool, let me know any way I can help when you get started.
 
-diff --git a/drivers/ide/arm/icside.c b/drivers/ide/arm/icside.c
-index 93f71fc..a48a6bd 100644
---- a/drivers/ide/arm/icside.c
-+++ b/drivers/ide/arm/icside.c
-@@ -210,7 +210,7 @@ static void icside_build_sglist(ide_drive_t *drive, struct request *rq)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct icside_state *state = hwif->hwif_data;
--	struct scatterlist *sg = hwif->sg_table;
-+	struct scatterlist *sg = hwif->sg_table.sgl;
- 
- 	ide_map_sg(drive, rq);
- 
-@@ -319,7 +319,7 @@ static int icside_dma_end(ide_drive_t *drive)
- 	disable_dma(ECARD_DEV(state->dev)->dma);
- 
- 	/* Teardown mappings after DMA has completed. */
--	dma_unmap_sg(state->dev, hwif->sg_table, hwif->sg_nents,
-+	dma_unmap_sg(state->dev, hwif->sg_table.sgl, hwif->sg_nents,
- 		     hwif->sg_dma_direction);
- 
- 	return get_dma_residue(ECARD_DEV(state->dev)->dma) != 0;
-@@ -373,7 +373,7 @@ static int icside_dma_setup(ide_drive_t *drive)
- 	 * Tell the DMA engine about the SG table and
- 	 * data direction.
- 	 */
--	set_dma_sg(ECARD_DEV(state->dev)->dma, hwif->sg_table, hwif->sg_nents);
-+	set_dma_sg(ECARD_DEV(state->dev)->dma, hwif->sg_table.sgl, hwif->sg_nents);
- 	set_dma_mode(ECARD_DEV(state->dev)->dma, dma_mode);
- 
- 	drive->waiting_for_dma = 1;
-diff --git a/drivers/ide/cris/ide-cris.c b/drivers/ide/cris/ide-cris.c
-index 476e0d6..3701aca 100644
---- a/drivers/ide/cris/ide-cris.c
-+++ b/drivers/ide/cris/ide-cris.c
-@@ -919,7 +919,7 @@ static int cris_ide_build_dmatable (ide_drive_t *drive)
- 	unsigned int count = 0;
- 	int i = 0;
- 
--	sg = hwif->sg_table;
-+	sg = hwif->sg_table.sgl;
- 
- 	ata_tot_size = 0;
- 
-diff --git a/drivers/ide/ide-dma.c b/drivers/ide/ide-dma.c
-index 4703837..33a2f56 100644
---- a/drivers/ide/ide-dma.c
-+++ b/drivers/ide/ide-dma.c
-@@ -190,7 +190,7 @@ static int ide_dma_good_drive(ide_drive_t *drive)
- int ide_build_sglist(ide_drive_t *drive, struct request *rq)
- {
- 	ide_hwif_t *hwif = HWIF(drive);
--	struct scatterlist *sg = hwif->sg_table;
-+	struct scatterlist *sg = hwif->sg_table.sgl;
- 
- 	BUG_ON((rq->cmd_type == REQ_TYPE_ATA_TASKFILE) && rq->nr_sectors > 256);
- 
-@@ -234,7 +234,7 @@ int ide_build_dmatable (ide_drive_t *drive, struct request *rq)
- 	if (!i)
- 		return 0;
- 
--	sg = hwif->sg_table;
-+	sg = hwif->sg_table.sgl;
- 	while (i) {
- 		u32 cur_addr;
- 		u32 cur_len;
-@@ -293,7 +293,7 @@ int ide_build_dmatable (ide_drive_t *drive, struct request *rq)
- 	printk(KERN_ERR "%s: empty DMA table?\n", drive->name);
- use_pio_instead:
- 	pci_unmap_sg(hwif->pci_dev,
--		     hwif->sg_table,
-+		     hwif->sg_table.sgl,
- 		     hwif->sg_nents,
- 		     hwif->sg_dma_direction);
- 	return 0; /* revert to PIO for this request */
-@@ -315,7 +315,7 @@ EXPORT_SYMBOL_GPL(ide_build_dmatable);
- void ide_destroy_dmatable (ide_drive_t *drive)
- {
- 	struct pci_dev *dev = HWIF(drive)->pci_dev;
--	struct scatterlist *sg = HWIF(drive)->sg_table;
-+	struct scatterlist *sg = HWIF(drive)->sg_table.sgl;
- 	int nents = HWIF(drive)->sg_nents;
- 
- 	pci_unmap_sg(dev, sg, nents, HWIF(drive)->sg_dma_direction);
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index bef781f..638e2db 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -819,7 +819,7 @@ static ide_startstop_t do_special (ide_drive_t *drive)
- void ide_map_sg(ide_drive_t *drive, struct request *rq)
- {
- 	ide_hwif_t *hwif = drive->hwif;
--	struct scatterlist *sg = hwif->sg_table;
-+	struct scatterlist *sg = hwif->sg_table.sgl;
- 
- 	if (hwif->sg_mapped)	/* needed by ide-scsi */
- 		return;
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index 2994523..770f8cf 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1312,15 +1312,11 @@ static int hwif_init(ide_hwif_t *hwif)
- 	if (!hwif->sg_max_nents)
- 		hwif->sg_max_nents = PRD_ENTRIES;
- 
--	hwif->sg_table = kmalloc(sizeof(struct scatterlist)*hwif->sg_max_nents,
--				 GFP_KERNEL);
--	if (!hwif->sg_table) {
-+	if (sg_alloc_table(&hwif->sg_table, hwif->sg_max_nents, GFP_KERNEL)) {
- 		printk(KERN_ERR "%s: unable to allocate SG table.\n", hwif->name);
- 		goto out;
- 	}
- 
--	sg_init_table(hwif->sg_table, hwif->sg_max_nents);
--	
- 	if (init_irq(hwif) == 0)
- 		goto done;
- 
-diff --git a/drivers/ide/ide-taskfile.c b/drivers/ide/ide-taskfile.c
-index 2b60f1b..0a898d9 100644
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -246,7 +246,7 @@ static u8 wait_drive_not_busy(ide_drive_t *drive)
- static void ide_pio_sector(ide_drive_t *drive, unsigned int write)
- {
- 	ide_hwif_t *hwif = drive->hwif;
--	struct scatterlist *sg = hwif->sg_table;
-+	struct scatterlist *sg = hwif->sg_table.sgl;
- 	struct scatterlist *cursg = hwif->cursg;
- 	struct page *page;
- #ifdef CONFIG_HIGHMEM
-diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
-index 54943da..a2ad85a 100644
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -594,7 +594,7 @@ void ide_unregister(unsigned int index)
- 	 * Remove us from the kernel's knowledge
- 	 */
- 	blk_unregister_region(MKDEV(hwif->major, 0), MAX_DRIVES<<PARTN_BITS);
--	kfree(hwif->sg_table);
-+	sg_free_table(&hwif->sg_table);
- 	unregister_blkdev(hwif->major, hwif->name);
- 	spin_lock_irq(&ide_lock);
- 
-diff --git a/drivers/ide/mips/au1xxx-ide.c b/drivers/ide/mips/au1xxx-ide.c
-index a4ce3ba..bccf3c0 100644
---- a/drivers/ide/mips/au1xxx-ide.c
-+++ b/drivers/ide/mips/au1xxx-ide.c
-@@ -216,7 +216,7 @@ static int auide_build_sglist(ide_drive_t *drive,  struct request *rq)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	_auide_hwif *ahwif = (_auide_hwif*)hwif->hwif_data;
--	struct scatterlist *sg = hwif->sg_table;
-+	struct scatterlist *sg = hwif->sg_table.sgl;
- 
- 	ide_map_sg(drive, rq);
- 
-@@ -250,7 +250,7 @@ static int auide_build_dmatable(ide_drive_t *drive)
- 		return 0;
- 
- 	/* fill the descriptors */
--	sg = hwif->sg_table;
-+	sg = hwif->sg_table.sgl;
- 	while (i && sg_dma_len(sg)) {
- 		u32 cur_addr;
- 		u32 cur_len;
-@@ -303,7 +303,7 @@ static int auide_build_dmatable(ide_drive_t *drive)
- 
-  use_pio_instead:
- 	dma_unmap_sg(ahwif->dev,
--		     hwif->sg_table,
-+		     hwif->sg_table.sgl,
- 		     hwif->sg_nents,
- 		     hwif->sg_dma_direction);
- 
-@@ -316,7 +316,7 @@ static int auide_dma_end(ide_drive_t *drive)
- 	_auide_hwif *ahwif = (_auide_hwif*)hwif->hwif_data;
- 
- 	if (hwif->sg_nents) {
--		dma_unmap_sg(ahwif->dev, hwif->sg_table, hwif->sg_nents,
-+		dma_unmap_sg(ahwif->dev, hwif->sg_table.sgl, hwif->sg_nents,
- 			     hwif->sg_dma_direction);
- 		hwif->sg_nents = 0;
- 	}
-diff --git a/drivers/ide/pci/sgiioc4.c b/drivers/ide/pci/sgiioc4.c
-index de820aa..3ad9e4b 100644
---- a/drivers/ide/pci/sgiioc4.c
-+++ b/drivers/ide/pci/sgiioc4.c
-@@ -487,7 +487,7 @@ sgiioc4_build_dma_table(ide_drive_t * drive, struct request *rq, int ddir)
- 	if (!i)
- 		return 0;	/* sglist of length Zero */
- 
--	sg = hwif->sg_table;
-+	sg = hwif->sg_table.sgl;
- 	while (i && sg_dma_len(sg)) {
- 		dma_addr_t cur_addr;
- 		int cur_len;
-@@ -535,7 +535,7 @@ sgiioc4_build_dma_table(ide_drive_t * drive, struct request *rq, int ddir)
- 	}
- 
- use_pio_instead:
--	pci_unmap_sg(hwif->pci_dev, hwif->sg_table, hwif->sg_nents,
-+	pci_unmap_sg(hwif->pci_dev, hwif->sg_table.sgl, hwif->sg_nents,
- 		     hwif->sg_dma_direction);
- 
- 	return 0;		/* revert to PIO for this request */
-diff --git a/drivers/ide/ppc/pmac.c b/drivers/ide/ppc/pmac.c
-index 7f7a598..b982180 100644
---- a/drivers/ide/ppc/pmac.c
-+++ b/drivers/ide/ppc/pmac.c
-@@ -1503,7 +1503,7 @@ pmac_ide_build_dmatable(ide_drive_t *drive, struct request *rq)
- 		return 0;
- 
- 	/* Build DBDMA commands list */
--	sg = hwif->sg_table;
-+	sg = hwif->sg_table.sgl;
- 	while (i && sg_dma_len(sg)) {
- 		u32 cur_addr;
- 		u32 cur_len;
-@@ -1555,7 +1555,7 @@ pmac_ide_build_dmatable(ide_drive_t *drive, struct request *rq)
- 	printk(KERN_DEBUG "%s: empty DMA table?\n", drive->name);
-  use_pio_instead:
- 	pci_unmap_sg(hwif->pci_dev,
--		     hwif->sg_table,
-+		     hwif->sg_table.sgl,
- 		     hwif->sg_nents,
- 		     hwif->sg_dma_direction);
- 	return 0; /* revert to PIO for this request */
-@@ -1567,7 +1567,7 @@ pmac_ide_destroy_dmatable (ide_drive_t *drive)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct pci_dev *dev = HWIF(drive)->pci_dev;
--	struct scatterlist *sg = hwif->sg_table;
-+	struct scatterlist *sg = hwif->sg_table.sgl;
- 	int nents = hwif->sg_nents;
- 
- 	if (nents) {
-diff --git a/drivers/scsi/ide-scsi.c b/drivers/scsi/ide-scsi.c
-index 9706de9..762bd93 100644
---- a/drivers/scsi/ide-scsi.c
-+++ b/drivers/scsi/ide-scsi.c
-@@ -553,7 +553,7 @@ static int idescsi_map_sg(ide_drive_t *drive, idescsi_pc_t *pc)
- 	if (idescsi_set_direction(pc))
- 		return 1;
- 
--	sg = hwif->sg_table;
-+	sg = hwif->sg_table.sgl;
- 	scsi_sg = scsi_sglist(pc->scsi_cmd);
- 	segments = scsi_sg_count(pc->scsi_cmd);
- 
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 9a6a41e..80ff2ee 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -750,7 +750,7 @@ typedef struct hwif_s {
- 	/* dma physical region descriptor table (dma view) */
- 	dma_addr_t	dmatable_dma;
- 	/* Scatter-gather list used to build the above */
--	struct scatterlist *sg_table;
-+	struct sg_table sg_table;
- 	int sg_max_nents;		/* Maximum number of entries in it */
- 	int sg_nents;			/* Current number of entries in it */
- 	int sg_dma_direction;		/* dma transfer direction */
--- 
-1.5.3.3
-
-
+thanks,
+-serge
