@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765085AbXLTWSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765139AbXLTWSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765085AbXLTWSG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:18:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764823AbXLTWQO
+	id S1765139AbXLTWSh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:18:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762618AbXLTWQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:16:14 -0500
-Received: from baron.coile-labs.com ([65.14.39.133]:28908 "EHLO coraid.com"
+	Thu, 20 Dec 2007 17:16:22 -0500
+Received: from www2.coile-labs.com ([65.14.39.133]:28910 "EHLO coraid.com"
 	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762248AbXLTWQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:16:12 -0500
+	id S1762411AbXLTWQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 17:16:19 -0500
 From: "Ed L. Cashin" <ecashin@coraid.com>
 To: linux-kernel@vger.kernel.org
 Cc: "Ed L. Cashin" <ecashin@coraid.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 06/13] user can ask driver to forget previously detected devices
-Date: Thu, 20 Dec 2007 17:15:54 -0500
-Message-Id: <1198188961-25147-6-git-send-email-ecashin@coraid.com>
+Subject: [PATCH 07/13] dynamically allocate a capped number of skbs when necessary
+Date: Thu, 20 Dec 2007 17:15:55 -0500
+Message-Id: <1198188961-25147-7-git-send-email-ecashin@coraid.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1198188961-25147-1-git-send-email-ecashin@coraid.com>
 References: <1198188961-25147-1-git-send-email-ecashin@coraid.com>
@@ -23,204 +23,374 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When an AoE device is detected, the kernel is informed, and a new
-block device is created.  If the device is unused, the block device
-corresponding to remote device that is no longer available may be
-removed from the system by telling the aoe driver to "flush" its list
-of devices.
+What this Patch Does
 
-Without this patch, software like GPFS and LVM may attempt to read
-from AoE devices that were discovered earlier but are no longer
-present, blocking until the I/O attempt times out.
+  Even before this recent series of 12 patches to 2.6.22-rc4, the aoe
+  driver was reusing a small set of skbs that were allocated once and
+  were only used for outbound AoE commands.
+
+  The network layer cannot be allowed to put_page on the data that is
+  still associated with a bio we haven't returned to the block layer,
+  so the aoe driver (even before the patch under discussion) is still
+  the owner of skbs that have been handed to the network layer for
+  transmission.  We need to keep track of these skbs so that we can
+  free them, but by tracking them, we can also easily re-use them.
+
+  The new patch was a response to the behavior of certain network
+  drivers.  We cannot reuse an skb that the network driver still has
+  in its transmit ring.  Network drivers can defer transmit ring
+  cleanup and then use the state in the skb to determine how many data
+  segments to clean up in its transmit ring.  The tg3 driver is one
+  driver that behaves in this way.
+
+  When the network driver defers cleanup of its transmit ring, the aoe
+  driver can find itself in a situation where it would like to send an
+  AoE command, and the AoE target is ready for more work, but the
+  network driver still has all of the pre-allocated skbs.  In that
+  case, the new patch just calls alloc_skb, as you'd expect.
+
+  We don't want to get carried away, though.  We try not to do
+  excessive allocation in the write path, so we cap the number of skbs
+  we dynamically allocate.
+
+  Probably calling it a "dynamic pool" is misleading.  We were already
+  trying to use a small fixed-size set of pre-allocated skbs before
+  this patch, and this patch just provides a little headroom (with a
+  ceiling, though) to accomodate network drivers that hang onto skbs,
+  by allocating when needed.  The d->skbpool_hd list of allocated skbs
+  is necessary so that we can free them later.
+
+  We didn't notice the need for this headroom until AoE targets got
+  fast enough.
+
+Alternatives
+
+  If the network layer never did a put_page on the pages in the bio's
+  we get from the block layer, then it would be possible for us to
+  hand skbs to the network layer and forget about them, allowing the
+  network layer to free skbs itself (and thereby calling our own
+  skb->destructor callback function if we needed that).  In that case
+  we could get rid of the pre-allocated skbs and also the
+  d->skbpool_hd, instead just calling alloc_skb every time we wanted
+  to transmit a packet.  The slab allocator would effectively maintain
+  the list of skbs.
+
+  Besides a loss of CPU cache locality, the main concern with that
+  approach the danger that it would increase the likelihood of
+  deadlock when VM is trying to free pages by writing dirty data from
+  the page cache through the aoe driver out to persistent storage on
+  an AoE device.  Right now we have a situation where we have
+  pre-allocation that corresponds to how much we use, which seems
+  ideal.
+
+  Of course, there's still the separate issue of receiving the packets
+  that tell us that a write has successfully completed on the AoE
+  target.  When memory is low and VM is using AoE to flush dirty data
+  to free up pages, it would be perfect if there were a way for us to
+  register a fast callback that could recognize write command
+  completion responses.  But I don't think the current problems with
+  the receive side of the situation are a justification for
+  exacerbating the problem on the transmit side.
 
 Signed-off-by: Ed L. Cashin <ecashin@coraid.com>
 ---
- Documentation/aoe/mkdevs.sh |    2 +
- Documentation/aoe/udev.txt  |    1 +
- drivers/block/aoe/aoe.h     |    1 +
- drivers/block/aoe/aoechr.c  |    5 ++
- drivers/block/aoe/aoedev.c  |   87 +++++++++++++++++++++++++++++++++---------
- 5 files changed, 77 insertions(+), 19 deletions(-)
+ drivers/block/aoe/aoe.h    |    5 ++
+ drivers/block/aoe/aoecmd.c |  117 +++++++++++++++++++++++++++++++-------------
+ drivers/block/aoe/aoedev.c |   52 +++++++++++++++++---
+ 3 files changed, 133 insertions(+), 41 deletions(-)
 
-diff --git a/Documentation/aoe/mkdevs.sh b/Documentation/aoe/mkdevs.sh
-index 97374aa..44c0ab7 100644
---- a/Documentation/aoe/mkdevs.sh
-+++ b/Documentation/aoe/mkdevs.sh
-@@ -29,6 +29,8 @@ rm -f $dir/interfaces
- mknod -m 0200 $dir/interfaces c $MAJOR 4
- rm -f $dir/revalidate
- mknod -m 0200 $dir/revalidate c $MAJOR 5
-+rm -f $dir/flush
-+mknod -m 0200 $dir/flush c $MAJOR 6
- 
- export n_partitions
- mkshelf=`echo $0 | sed 's!mkdevs!mkshelf!'`
-diff --git a/Documentation/aoe/udev.txt b/Documentation/aoe/udev.txt
-index 17e76c4..8686e78 100644
---- a/Documentation/aoe/udev.txt
-+++ b/Documentation/aoe/udev.txt
-@@ -20,6 +20,7 @@ SUBSYSTEM=="aoe", KERNEL=="discover",	NAME="etherd/%k", GROUP="disk", MODE="0220
- SUBSYSTEM=="aoe", KERNEL=="err",	NAME="etherd/%k", GROUP="disk", MODE="0440"
- SUBSYSTEM=="aoe", KERNEL=="interfaces",	NAME="etherd/%k", GROUP="disk", MODE="0220"
- SUBSYSTEM=="aoe", KERNEL=="revalidate",	NAME="etherd/%k", GROUP="disk", MODE="0220"
-+SUBSYSTEM=="aoe", KERNEL=="flush",	NAME="etherd/%k", GROUP="disk", MODE="0220"
- 
- # aoe block devices     
- KERNEL=="etherd*",       NAME="%k", GROUP="disk"
 diff --git a/drivers/block/aoe/aoe.h b/drivers/block/aoe/aoe.h
-index aecaac3..2248ab2 100644
+index 2248ab2..67ef4d7 100644
 --- a/drivers/block/aoe/aoe.h
 +++ b/drivers/block/aoe/aoe.h
-@@ -191,6 +191,7 @@ struct aoedev *aoedev_by_aoeaddr(int maj, int min);
- struct aoedev *aoedev_by_sysminor_m(ulong sysminor);
- void aoedev_downdev(struct aoedev *d);
- int aoedev_isbusy(struct aoedev *d);
-+int aoedev_flush(const char __user *str, size_t size);
+@@ -89,6 +89,7 @@ enum {
+ 	MIN_BUFS = 16,
+ 	NTARGETS = 8,
+ 	NAOEIFS = 8,
++	NSKBPOOLMAX = 128,
  
- int aoenet_init(void);
- void aoenet_exit(void);
-diff --git a/drivers/block/aoe/aoechr.c b/drivers/block/aoe/aoechr.c
-index f112466..1bc85aa 100644
---- a/drivers/block/aoe/aoechr.c
-+++ b/drivers/block/aoe/aoechr.c
-@@ -15,6 +15,7 @@ enum {
- 	MINOR_DISCOVER,
- 	MINOR_INTERFACES,
- 	MINOR_REVALIDATE,
-+	MINOR_FLUSH,
- 	MSGSZ = 2048,
- 	NMSG = 100,		/* message backlog to retain */
- };
-@@ -43,6 +44,7 @@ static struct aoe_chardev chardevs[] = {
- 	{ MINOR_DISCOVER, "discover" },
- 	{ MINOR_INTERFACES, "interfaces" },
- 	{ MINOR_REVALIDATE, "revalidate" },
-+	{ MINOR_FLUSH, "flush" },
+ 	TIMERTICK = HZ / 10,
+ 	MINTIMER = HZ >> 2,
+@@ -138,6 +139,7 @@ struct aoetgt {
+ 	u16 useme;
+ 	ulong lastwadj;		/* last window adjustment */
+ 	int wpkts, rpkts;
++	int dataref;
  };
  
- static int
-@@ -158,6 +160,9 @@ aoechr_write(struct file *filp, const char __user *buf, size_t cnt, loff_t *offp
- 		break;
- 	case MINOR_REVALIDATE:
- 		ret = revalidate(buf, cnt);
-+		break;
-+	case MINOR_FLUSH:
-+		ret = aoedev_flush(buf, cnt);
+ struct aoedev {
+@@ -159,6 +161,9 @@ struct aoedev {
+ 	spinlock_t lock;
+ 	struct sk_buff *sendq_hd; /* packets needing to be sent, list head */
+ 	struct sk_buff *sendq_tl;
++	struct sk_buff *skbpool_hd;
++	struct sk_buff *skbpool_tl;
++	int nskbpool;
+ 	mempool_t *bufpool;	/* for deadlock-free Buf allocation */
+ 	struct list_head bufq;	/* queue of bios to work on */
+ 	struct buf *inprocess;	/* the one we're currently working on */
+diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
+index 1be5150..b49e06e 100644
+--- a/drivers/block/aoe/aoecmd.c
++++ b/drivers/block/aoe/aoecmd.c
+@@ -106,45 +106,104 @@ ifrotate(struct aoetgt *t)
  	}
- 	if (ret == 0)
- 		ret = cnt;
-diff --git a/drivers/block/aoe/aoedev.c b/drivers/block/aoe/aoedev.c
-index a4d625a..e26f6f4 100644
---- a/drivers/block/aoe/aoedev.c
-+++ b/drivers/block/aoe/aoedev.c
-@@ -9,6 +9,10 @@
- #include <linux/netdevice.h>
- #include "aoe.h"
- 
-+static void dummy_timer(ulong);
-+static void aoedev_freedev(struct aoedev *);
-+static void freetgt(struct aoetgt *t);
-+
- static struct aoedev *devlist;
- static spinlock_t devlist_lock;
- 
-@@ -108,6 +112,70 @@ aoedev_downdev(struct aoedev *d)
- 	d->flags &= ~DEVFL_UP;
  }
  
 +static void
-+aoedev_freedev(struct aoedev *d)
++skb_pool_put(struct aoedev *d, struct sk_buff *skb)
 +{
-+	struct aoetgt **t, **e;
-+
-+	if (d->gd) {
-+		aoedisk_rm_sysfs(d);
-+		del_gendisk(d->gd);
-+		put_disk(d->gd);
-+	}
-+	t = d->targets;
-+	e = t + NTARGETS;
-+	for (; t < e && *t; t++)
-+		freetgt(*t);
-+	if (d->bufpool)
-+		mempool_destroy(d->bufpool);
-+	kfree(d);
++	if (!d->skbpool_hd)
++		d->skbpool_hd = skb;
++	else
++		d->skbpool_tl->next = skb;
++	d->skbpool_tl = skb;
 +}
 +
-+int
-+aoedev_flush(const char __user *str, size_t cnt)
++static struct sk_buff *
++skb_pool_get(struct aoedev *d)
 +{
-+	ulong flags;
-+	struct aoedev *d, **dd;
-+	struct aoedev *rmd = NULL;
-+	char buf[16];
-+	int all = 0;
++	struct sk_buff *skb;
 +
-+	if (cnt >= 3) {
-+		if (cnt > sizeof buf)
-+			cnt = sizeof buf;
-+		if (copy_from_user(buf, str, cnt))
-+			return -EFAULT;
-+		all = !strncmp(buf, "all", 3);
++	skb = d->skbpool_hd;
++	if (skb && atomic_read(&skb_shinfo(skb)->dataref) == 1) {
++		d->skbpool_hd = skb->next;
++		skb->next = NULL;
++		return skb;
++	}
++	if (d->nskbpool < NSKBPOOLMAX
++	&& (skb = new_skb(ETH_ZLEN))) {
++		d->nskbpool++;
++		return skb;
++	}
++	return NULL;
++}
++
++/* freeframe is where we do our load balancing so it's a little hairy. */
+ static struct frame *
+ freeframe(struct aoedev *d)
+ {
+-	struct frame *f, *e;
++	struct frame *f, *e, *rf;
+ 	struct aoetgt **t;
+-	ulong n;
++	struct sk_buff *skb;
+ 
+ 	if (d->targets[0] == NULL) {	/* shouldn't happen, but I'm paranoid */
+ 		printk(KERN_ERR "aoe: NULL TARGETS!\n");
+ 		return NULL;
+ 	}
+-	t = d->targets;
+-	do {
+-		if (t != d->htgt
+-		&& (*t)->ifp->nd
+-		&& (*t)->nout < (*t)->maxout) {
+-			n = (*t)->nframes;
++	t = d->tgt;
++	t++;
++	if (t >= &d->targets[NTARGETS] || !*t)
++		t = d->targets;
++	for (;;) {
++		if ((*t)->nout < (*t)->maxout
++		&& t != d->htgt
++		&& (*t)->ifp->nd) {
++			rf = NULL;
+ 			f = (*t)->frames;
+-			e = f + n;
++			e = f + (*t)->nframes;
+ 			for (; f < e; f++) {
+ 				if (f->tag != FREETAG)
+ 					continue;
+-				if (atomic_read(&skb_shinfo(f->skb)->dataref)
++				skb = f->skb;
++				if (!skb
++				&& !(f->skb = skb = new_skb(ETH_ZLEN)))
++					continue;
++				if (atomic_read(&skb_shinfo(skb)->dataref)
+ 					!= 1) {
+-					n--;
++					if (!rf)
++						rf = f;
+ 					continue;
+ 				}
+-				skb_shinfo(f->skb)->nr_frags = 0;
+-				f->skb->data_len = 0;
+-				skb_trim(f->skb, 0);
++gotone:				skb_shinfo(skb)->nr_frags = skb->data_len = 0;
++				skb_trim(skb, 0);
+ 				d->tgt = t;
+ 				ifrotate(*t);
+ 				return f;
+ 			}
+-			if (n == 0)	/* slow polling network card */
++			/* Work can be done, but the network layer is
++			   holding our precious packets.  Try to grab
++			   one from the pool. */
++			f = rf;
++			if (f == NULL) {	/* more paranoia */
++				printk(KERN_ERR
++					"aoe: freeframe: %s.\n",
++					"unexpected null rf");
++				d->flags |= DEVFL_KICKME;
++				return NULL;
++			}
++			skb = skb_pool_get(d);
++			if (skb) {
++				skb_pool_put(d, f->skb);
++				f->skb = skb;
++				goto gotone;
++			}
++			(*t)->dataref++;
++			if ((*t)->nout == 0)
+ 				d->flags |= DEVFL_KICKME;
+ 		}
++		if (t == d->tgt)	/* we've looped and found nada */
++			break;
+ 		t++;
+-	} while (t < &d->targets[NTARGETS] && *t);
++		if (t >= &d->targets[NTARGETS] || !*t)
++			t = d->targets;
++	}
+ 	return NULL;
+ }
+ 
+@@ -894,33 +953,23 @@ addtgt(struct aoedev *d, char *addr, ulong nframes)
+ 		return NULL;
+ 
+ 	t = kcalloc(1, sizeof *t, GFP_ATOMIC);
++	if (!t)
++		return NULL;
+ 	f = kcalloc(nframes, sizeof *f, GFP_ATOMIC);
+-	if (!t || !f)
+-		goto bail;
++	if (!f) {
++		kfree(t);
++		return NULL;
 +	}
 +
-+	flush_scheduled_work();
-+	spin_lock_irqsave(&devlist_lock, flags);
-+	dd = &devlist;
-+	while ((d = *dd)) {
-+		spin_lock(&d->lock);
-+		if ((!all && (d->flags & DEVFL_UP))
-+		|| (d->flags & (DEVFL_GDALLOC|DEVFL_NEWSIZE))
-+		|| d->nopen) {
-+			spin_unlock(&d->lock);
-+			dd = &d->next;
-+			continue;
-+		}
-+		*dd = d->next;
-+		aoedev_downdev(d);
-+		d->flags |= DEVFL_TKILL;
-+		spin_unlock(&d->lock);
-+		d->next = rmd;
-+		rmd = d;
+ 	t->nframes = nframes;
+ 	t->frames = f;
+ 	e = f + nframes;
+-	for (; f < e; f++) {
++	for (; f < e; f++)
+ 		f->tag = FREETAG;
+-		f->skb = new_skb(ETH_ZLEN);
+-		if (!f->skb)
+-			break;
+-	}
+-	if (f != e) {
+-		while (f > t->frames) {
+-			f--;
+-			dev_kfree_skb(f->skb);
+-		}
+-		goto bail;
+-	}
+ 	memcpy(t->addr, addr, sizeof t->addr);
+ 	t->ifp = t->ifs;
+ 	t->maxout = t->nframes;
+ 	return *tt = t;
+-bail:
+-	kfree(t);
+-	kfree(f);
+-	return NULL;
+ }
+ 
+ void
+diff --git a/drivers/block/aoe/aoedev.c b/drivers/block/aoe/aoedev.c
+index e26f6f4..839a964 100644
+--- a/drivers/block/aoe/aoedev.c
++++ b/drivers/block/aoe/aoedev.c
+@@ -7,11 +7,13 @@
+ #include <linux/hdreg.h>
+ #include <linux/blkdev.h>
+ #include <linux/netdevice.h>
++#include <linux/delay.h>
+ #include "aoe.h"
+ 
+ static void dummy_timer(ulong);
+ static void aoedev_freedev(struct aoedev *);
+-static void freetgt(struct aoetgt *t);
++static void freetgt(struct aoedev *d, struct aoetgt *t);
++static void skbpoolfree(struct aoedev *d);
+ 
+ static struct aoedev *devlist;
+ static spinlock_t devlist_lock;
+@@ -125,9 +127,10 @@ aoedev_freedev(struct aoedev *d)
+ 	t = d->targets;
+ 	e = t + NTARGETS;
+ 	for (; t < e && *t; t++)
+-		freetgt(*t);
++		freetgt(d, *t);
+ 	if (d->bufpool)
+ 		mempool_destroy(d->bufpool);
++	skbpoolfree(d);
+ 	kfree(d);
+ }
+ 
+@@ -176,6 +179,43 @@ aoedev_flush(const char __user *str, size_t cnt)
+ 	return 0;
+ }
+ 
++/* I'm not really sure that this is a realistic problem, but if the
++network driver goes gonzo let's just leak memory after complaining. */
++static void
++skbfree(struct sk_buff *skb)
++{
++	enum { Sms = 100, Tms = 3*1000};
++	int i = Tms / Sms;
++
++	if (skb == NULL)
++		return;
++	while (atomic_read(&skb_shinfo(skb)->dataref) != 1 && i-- > 0)
++		msleep(Sms);
++	if (i <= 0) {
++		printk(KERN_ERR
++			"aoe: %s holds ref: %s\n",
++			skb->dev ? skb->dev->name : "netif",
++			"cannot free skb -- memory leaked.");
++		return;
 +	}
-+	spin_unlock_irqrestore(&devlist_lock, flags);
-+	while ((d = rmd)) {
-+		rmd = d->next;
-+		del_timer_sync(&d->timer);
-+		aoedev_freedev(d);	/* must be able to sleep */
++	skb_shinfo(skb)->nr_frags = skb->data_len = 0;
++	skb_trim(skb, 0);
++	dev_kfree_skb(skb);
++}
++
++static void
++skbpoolfree(struct aoedev *d)
++{
++	struct sk_buff *skb;
++
++	while ((skb = d->skbpool_hd)) {
++		d->skbpool_hd = skb->next;
++		skb->next = NULL;
++		skbfree(skb);
 +	}
-+	return 0;
++	d->skbpool_tl = NULL;
 +}
 +
  /* find it or malloc it */
  struct aoedev *
  aoedev_by_sysminor_m(ulong sysminor)
-@@ -161,25 +229,6 @@ freetgt(struct aoetgt *t)
- 	kfree(t);
+@@ -215,16 +255,14 @@ aoedev_by_sysminor_m(ulong sysminor)
  }
  
--static void
--aoedev_freedev(struct aoedev *d)
--{
--	struct aoetgt **t, **e;
--
--	if (d->gd) {
--		aoedisk_rm_sysfs(d);
--		del_gendisk(d->gd);
--		put_disk(d->gd);
--	}
--	t = d->targets;
--	e = t + NTARGETS;
--	for (; t < e && *t; t++)
--		freetgt(*t);
--	if (d->bufpool)
--		mempool_destroy(d->bufpool);
--	kfree(d);
--}
--
- void
- aoedev_exit(void)
+ static void
+-freetgt(struct aoetgt *t)
++freetgt(struct aoedev *d, struct aoetgt *t)
  {
+ 	struct frame *f, *e;
+ 
+ 	f = t->frames;
+ 	e = f + t->nframes;
+-	for (; f < e; f++) {
+-		skb_shinfo(f->skb)->nr_frags = 0;
+-		dev_kfree_skb(f->skb);
+-	}
++	for (; f < e; f++)
++		skbfree(f->skb);
+ 	kfree(t->frames);
+ 	kfree(t);
+ }
 -- 
 1.5.3.4
 
