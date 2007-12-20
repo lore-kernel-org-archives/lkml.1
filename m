@@ -1,72 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXLTCAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbXLTCAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762650AbXLTCAY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 21:00:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758752AbXLTBiE
+	id S1760601AbXLTCAq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 21:00:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760707AbXLTBo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 20:38:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:11604 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758407AbXLTBe1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 20:34:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=QNwaZtJ2Uy7jWS98V/RC5aC2pFrJL0ZPEMy4Bj9GVaxNt5qdfXS0k2eqEuTiy6BJQHjuSTE3gph5Ec3wHtR65LITetCnuP0mUpM7zTWpsdQ78BVABQhlv40isJ0hAecfAR6FsE8l9/jjGeBB5JT8UQhLngY7S8/1JE5Tafc9Hl8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 23/63] ide-cd: cleanup ide_cdrom_update_speed()
-Date: Thu, 20 Dec 2007 02:10:11 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Dec 2007 20:44:28 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:46889 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760698AbXLTBo0 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 20:44:26 -0500
+Date: Thu, 20 Dec 2007 12:44:13 +1100
+From: David Chinner <dgc@sgi.com>
+To: James Morris <jmorris@namei.org>
+Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>
+Subject: Re: [patch, rfc] mm.h, security.h, key.h and preventing namespace poisoning
+Message-ID: <20071220014413.GK4612@sgi.com>
+References: <20071219093834.GW4396912@sgi.com> <Xine.LNX.4.64.0712201052110.1736@us.intercode.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712200210.11607.bzolnier@gmail.com>
+In-Reply-To: <Xine.LNX.4.64.0712201052110.1736@us.intercode.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Dec 20, 2007 at 11:07:01AM +1100, James Morris wrote:
+> On Wed, 19 Dec 2007, David Chinner wrote:
+> 
+> > Folks,
+> > 
+> > I just updated a git tree and started getting errors on a
+> > "copy_keys" macro warning.
+> > 
+> > The code I've been working on uses a ->copy_keys() method for
+> > copying the keys in a btree block from one place to another. I've
+> > been working on this code for a while
+> > (http://oss.sgi.com/archives/xfs/2007-11/msg00046.html) and keep the
+> > tree I'm working in reletively up to date (lags linus by a couple of
+> > weeks at most). The update I did this afternoon gave a conflict
+> > warning with the macro in include/linux/key.h.
+> > 
+> > Given that I'm not directly including key.h anywhere in the XFS
+> > code, I'm getting the namespace polluted indirectly from some other
+> > include that is necessary.
+> > 
+> > As it turns out, this commit from 13 days ago:
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7cd94146cd504016315608e297219f9fb7b1413b
+> > 
+> > included security.h in mm.h and that is how I'm seeing the namespace
+> > poisoning coming from key.h when !CONFIG_KEY.
+> > 
+> > Including security.h in mm.h means much wider includes for pretty
+> > much the entire kernel, and it opens up namespace issues like this
+> > that never previously existed.
+> > 
+> > The patch below (only tested for !CONFIG_KEYS && !CONFIG_SECURITY)
+> > moves security.h into the mmap.c and nommu.c files that need it so
+> > it doesn't end up with kernel wide scope.
+> > 
+> > Comments?
+> 
+> The idea with this placement was to keep memory management code with other 
+> similar code, rather than pushing it into security.h, where it does not 
+> functionally belong.
+> 
+> Something to not also is that you can't "depend" on security.h not being 
+> included all over the place, as LSM does touch a lot of the kernel.  
+> Unecessarily including it is bad, of course.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
--39 bytes
- drivers/ide/ide-cd.c |   17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+Which is what including it in mm.h does. It also pull sin a lot of
+other headers files as has already been noted.
 
-Index: b/drivers/ide/ide-cd.c
-===================================================================
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -2395,19 +2395,20 @@ int ide_cdrom_get_capabilities(ide_drive
- static
- void ide_cdrom_update_speed (ide_drive_t *drive, struct atapi_capabilities_page *cap)
- {
-+	u16 curspeed, maxspeed;
-+
- 	/* The ACER/AOpen 24X cdrom has the speed fields byte-swapped */
- 	if (!drive->id->model[0] &&
- 	    !strncmp(drive->id->fw_rev, "241N", 4)) {
--		CDROM_STATE_FLAGS(drive)->current_speed  =
--			(le16_to_cpu(cap->curspeed) + (176/2)) / 176;
--		CDROM_CONFIG_FLAGS(drive)->max_speed =
--			(le16_to_cpu(cap->maxspeed) + (176/2)) / 176;
-+		curspeed = le16_to_cpu(cap->curspeed);
-+		maxspeed = le16_to_cpu(cap->maxspeed);
- 	} else {
--		CDROM_STATE_FLAGS(drive)->current_speed  =
--			(be16_to_cpu(cap->curspeed) + (176/2)) / 176;
--		CDROM_CONFIG_FLAGS(drive)->max_speed =
--			(be16_to_cpu(cap->maxspeed) + (176/2)) / 176;
-+		curspeed = be16_to_cpu(cap->curspeed);
-+		maxspeed = be16_to_cpu(cap->maxspeed);
- 	}
-+
-+	CDROM_STATE_FLAGS(drive)->current_speed = (curspeed + (176/2)) / 176;
-+	CDROM_CONFIG_FLAGS(drive)->max_speed = (maxspeed + (176/2)) / 176;
- }
- 
- static
+> I'm not sure I understand your namespace pollution issue, either.
+
+doing this globally:
+
+#ifdef CONFIG_SOMETHING
+extern int	some_common_name(int a, int b, int c);
+#else
+#define some_common_name(a,b,c)	0
+#endif
+
+means that no-one can use some_common_name *anywhere* in the kernel.
+In this case, i have a completely *private* use of some_common_name
+and now I can't use that because the wonderful define above that
+now has effectively global scope because it gets included from key.h
+via security.h via mm.h.
+
+> In any case, I think the right solution is not to include security.h at 
+> all in mm.h, as it is only being done to get a declaration for 
+> mmap_min_addr.
+> 
+> How about this, instead ?
+> 
+> Signed-off-by: James Morris <jmorris@namei.org>
+> ---
+> 
+>  mm.h |    5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 1b7b95c..02fbac7 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -12,7 +12,6 @@
+>  #include <linux/prio_tree.h>
+>  #include <linux/debug_locks.h>
+>  #include <linux/mm_types.h>
+> -#include <linux/security.h>
+>  
+>  struct mempolicy;
+>  struct anon_vma;
+> @@ -34,6 +33,10 @@ extern int sysctl_legacy_va_layout;
+>  #define sysctl_legacy_va_layout 0
+>  #endif
+>  
+> +#ifdef CONFIG_SECURITY
+> +extern unsigned long mmap_min_addr;
+> +#endif
+> +
+>  #include <asm/page.h>
+>  #include <asm/pgtable.h>
+>  #include <asm/processor.h>
+
+Fine by me.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
