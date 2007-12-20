@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765987AbXLTOlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764397AbXLTOps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765987AbXLTOlh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 09:41:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765232AbXLTOi1
+	id S1764397AbXLTOps (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 09:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756138AbXLTOpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 09:38:27 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:38654 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765214AbXLTOiZ (ORCPT
+	Thu, 20 Dec 2007 09:45:39 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2859 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758075AbXLTOpj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 09:38:25 -0500
-Message-ID: <476A7E7E.7030704@davidnewall.com>
-Date: Fri, 21 Dec 2007 01:08:54 +1030
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Thu, 20 Dec 2007 09:45:39 -0500
+Date: Thu, 20 Dec 2007 14:45:32 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       sr@denx.de, monstr@monstr.eu, jwilliams@itee.uq.edu.au,
+       stephen.neuendorffer@xilinx.com
+Subject: Re: [PATCH] [RFC] Xilinx SystemACE: Add media hotplug support
+Message-ID: <20071220144532.GA27885@shadowen.org>
+References: <20071220062348.16448.24575.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-To: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>
-CC: Scott <linux-kernel@bluecamel.eml.cc>, linux-kernel@vger.kernel.org
-Subject: Re: almost daily Kernel oops with 2.6.23.9 - and now 2.6.23.11 as
- well
-References: <200712160106.00464.volker.armin.hemmann@tu-clausthal.de> <200712200313.54425.volker.armin.hemmann@tu-clausthal.de> <1198122641.8341.1.camel@oasis.donpoo.home> <200712200653.28996.volker.armin.hemmann@tu-clausthal.de>
-In-Reply-To: <200712200653.28996.volker.armin.hemmann@tu-clausthal.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071220062348.16448.24575.stgit@trillian.secretlab.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Dec 19, 2007 at 11:23:48PM -0700, Grant Likely wrote:
 
->>> On Montag, 17. Dezember 2007, you wrote:
->>>
->>> and another one, this time tainted with the nvidia module:
->>> 5194.130985] Unable to handle kernel paging request at 0000030000000000
->>> RIP:
+> +		/* Make the sysace device 'live' */
+> +		if (ace->fsm_state != ACE_FSM_STATE_INVALIDATE_MEDIA);
+> +			add_disk(ace->gd);
 
-Numbers like that don't suggest hardware faults.  All those zeros: It's 
-far too round.  Sounds very like software.  In fact, it sounds like the 
-start of significant hardware region.   And lo! there's a closed-source, 
-possibly buggy nvidia module.  Try another; older or newer are equally good.
+checkpatch.pl reports the above if as suspect due to the trailing ;.
+Looks wrong to me too.
+
+WARNING: Trailing semicolon indicates no statements, indent implies
+otherwise
+#296: FILE: drivers/block/xsysace.c:835:
++               if (ace->fsm_state != ACE_FSM_STATE_INVALIDATE_MEDIA);
++                       add_disk(ace->gd);
+
+-apw
