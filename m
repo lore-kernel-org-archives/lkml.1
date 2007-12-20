@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbXLTTq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbXLTTuD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755264AbXLTTq6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 14:46:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbXLTTqr
+	id S1755762AbXLTTuD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 14:50:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbXLTTty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 14:46:47 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:34745 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbXLTTqq (ORCPT
+	Thu, 20 Dec 2007 14:49:54 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:47187 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753529AbXLTTty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 14:46:46 -0500
-Date: Thu, 20 Dec 2007 13:41:01 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: Re: [RFC] [PATCH 1/3] Merge mkimage tool for building uImages
-Message-ID: <20071220134101.679d90cd@zod.rchland.ibm.com>
-In-Reply-To: <476AB640.4040005@zytor.com>
-References: <20071220101643.48b427ef@zod.rchland.ibm.com>
-	<20071220101739.45b28d26@zod.rchland.ibm.com>
-	<476AB640.4040005@zytor.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Dec 2007 14:49:54 -0500
+Date: Thu, 20 Dec 2007 22:50:21 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Tony Camuso <tcamuso@redhat.com>, Loic Prylli <loic@myri.com>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
+Message-ID: <20071220195021.GA427@jurassic.park.msu.ru>
+References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <20071220173528.GE29690@parisc-linux.org> <476AAE99.7090301@redhat.com> <20071220181603.GF29690@parisc-linux.org> <476AB920.7040604@myri.com> <476ABCBF.8090006@redhat.com> <20071220190833.GH29690@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071220190833.GH29690@parisc-linux.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Dec 2007 10:36:48 -0800
-"H. Peter Anvin" <hpa@zytor.com> wrote:
-
-> Josh Boyer wrote:
-> > Several platforms require the mkimage tool to generate a uImage file
-> > that is used with U-Boot.  This brings the mkimage tool in-kernel to
-> > enable building those platforms without having mkimage internally
-> > provided.
-> > 
-> > This is currently based off of the version found in U-Boot 1.3.1.
-> > 
+On Thu, Dec 20, 2007 at 12:08:33PM -0700, Matthew Wilcox wrote:
+> On Thu, Dec 20, 2007 at 02:04:31PM -0500, Tony Camuso wrote:
+> > Does anybody see a down side to this?
 > 
-> Can we rename it either "ubootimage" or "mkuboot" or something else that 
-> tells the user what kind of image it is?  (It is, in particular, not 
-> bzImage, which is probably the first thing that someone who sees "image" 
-> in a arch-generic part of the Linux kernel tree will think.)
+> It'll be slower than it would be if we used mmconfig directly.  Now yes,
+> nobody should be using pci config space in performance critical paths
+> ... but see the tg3 driver.
 
-We can, yes.  I have no particular objection to that and I've often
-found mkimage to be too generic of a name myself.  For the initial
-round of patches, I just wanted to keep things as similar to what is
-in U-Boot as possible.
+Use type 1 just for the first 64 bytes and tg3 will be happy. All we need
+is to avoid touching BARs with mmconfig.
 
-josh
+Ivan.
