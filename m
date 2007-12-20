@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbXLTHaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751062AbXLTHnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757909AbXLTHaJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 02:30:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbXLTH35
+	id S1751062AbXLTHnB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 02:43:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbXLTHmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 02:29:57 -0500
-Received: from moutng.kundenserver.de ([212.227.126.183]:56497 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751119AbXLTH35 (ORCPT
+	Thu, 20 Dec 2007 02:42:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50843
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751451AbXLTHmt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 02:29:57 -0500
-Subject: Re: [RFC] kobject/kset/ktype documentation and example code updated
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-In-Reply-To: <Pine.LNX.4.44L0.0712192237140.15674-100000@netrider.rowland.org>
-References: <Pine.LNX.4.44L0.0712192237140.15674-100000@netrider.rowland.org>
-Content-Type: text/plain
-Date: Thu, 20 Dec 2007 08:27:19 +0100
-Message-Id: <1198135639.2662.54.camel@lov.site>
+	Thu, 20 Dec 2007 02:42:49 -0500
+Date: Wed, 19 Dec 2007 23:42:44 -0800 (PST)
+Message-Id: <20071219.234244.148945256.davem@davemloft.net>
+To: fujita.tomonori@lab.ntt.co.jp
+Cc: rusty@rustcorp.com.au, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH 2/5] dma_map_sg_ring() helper
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20071220160631S.fujita.tomonori@lab.ntt.co.jp>
+References: <200712201648.58480.rusty@rustcorp.com.au>
+	<200712201649.31254.rusty@rustcorp.com.au>
+	<20071220160631S.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+8IF+zzxVEeENBrGQ6arjq5t1Oo6CnlmytqtA
- 6wrM5SIQIoi6F1FN6Urb2Pfl4/5Ek2Noh3Fz5o9H79+ahpk+0z
- Q1oMQ1Se0TnYhrMfd/aoTNNo8crX2es
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-12-19 at 23:26 -0500, Alan Stern wrote:
-> On Wed, 19 Dec 2007, Greg KH wrote:
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 20 Dec 2007 16:06:31 +0900
 
-> > associated with a kobject, then the parent for the kobject can be set to
-> > NULL in the call to kobject_add() and then the kobject will be placed under
-> > the kset itself.
+> On Thu, 20 Dec 2007 16:49:30 +1100
+> Rusty Russell <rusty@rustcorp.com.au> wrote:
 > 
-> "and then the kobject's parent will be set to the kset itself."
+> > +/**
+> > + * dma_map_sg_ring - Map an entire sg ring
+> > + * @dev: Device to free noncoherent memory for
+> > + * @sg: The sg_ring
+> > + * @direction: DMA_TO_DEVICE, DMA_FROM_DEVICE or DMA_BIDIRECTIONAL.
+> > + *
+> > + * This returns -ENOMEM if mapping fails.  It's not clear that telling you
+> > + * it failed is useful though.
+> > + */
+> > +int dma_map_sg_ring(struct device *dev, struct sg_ring *sg,
+> > +		     enum dma_data_direction direction)
+> > +{
+> > +	struct sg_ring *i;
+> > +	unsigned int num;
+> > +
+> > +	for (i = sg; i; i = sg_ring_next(i, sg)) {
+> > +		BUG_ON(i->num > i->max);
+> > +		num = dma_map_sg(dev, i->sg, i->num, direction);
+> > +		if (num == 0 && i->num != 0)
+> > +			goto unmap;
+> > +	}
+> > +	return 0;
 > 
-> Kay, in my version of kobject_add() it says:
-> 
-> 	if (kobj->kset) {
-> 		kobj->kset = kset_get(kobj->kset);
-> 
-> 		if (!parent) {
-> 			parent = kobject_get(&kobj->kset->kobj);
-> 			/*
-> 			 * If the kset is our parent, get a second
-> 			 * reference, we drop both the kset and the
-> 			 * parent ref on cleanup
-> 			 */
-> 			kobject_get(parent);
-> 		}
-> 
-> That last call to kobject_get(parent) doesn't make sense.  The code has
-> already taken two references to the kset: one in the assignment of
-> kobj->kset and the other in the assignment of parent.  The final
-> kobject_get() then acquires a third reference, which will never be
-> dropped.
+> I don't think that this works for IOMMUs that could merge sg entries.
 
-Yeah, that's wrong, and caused by two patches trying to solve the same
-problem. We had users assigning the kset before kobject_init() and users
-doing that after it. We moved the kset referencing from kobiect_init to
-kobject_add, which introduced the third reference, while we already
-added the second one to fix the issues. We could drop one of the patches
-in the series, but this is all already gone with the latest changes in
-Greg's tree.
+Right, it won't work at all.
 
-Thanks,
-Kay
+The caller has to be told how many DMA entries it really did use to
+compose the mapping, and there has to be a way to properly iterate
+over them.  The assumption that the IOMMU will map the SG entries
+1-to-1 is invalid.
 
+The IOMMU code can and will map thousands of pages all to one linear
+DMA address+length pair of all the segments start and end on page
+boundaries, since it can virtually remap those pages however it
+chooses.
