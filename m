@@ -1,69 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761188AbXLTNTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbXLTNUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761188AbXLTNTu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 08:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbXLTNTl
+	id S1761974AbXLTNUi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 08:20:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbXLTNUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 08:19:41 -0500
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:56740 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754155AbXLTNTk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 08:19:40 -0500
-From: Juergen Beisert <jbe@pengutronix.de>
-Organization: Pengutronix - Linux Solutions for Science and Industry
-To: linux-rt-users@vger.kernel.org
-Date: Thu, 20 Dec 2007 14:18:16 +0100
-User-Agent: KMail/1.9.4
-Cc: "Jaswinder Singh" <jaswinderlinuxrt@gmail.com>,
-       "Remy Bohmer" <linux@bohmer.net>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
-       "Ingo Molnar" <mingo@elte.hu>, "Darren Hart" <dvhltc@us.ibm.com>,
-       "Sven-Thorsten Dietrich" <sdietrich@novell.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20071219194551.315868746@bohmer.net> <3efb10970712200425x4b0ffadcpd2ffa3223eda7b3d@mail.gmail.com> <1985e0f60712200445o4f854cdep6eebf1726737229b@mail.gmail.com>
-In-Reply-To: <1985e0f60712200445o4f854cdep6eebf1726737229b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Thu, 20 Dec 2007 08:20:30 -0500
+Received: from mga02.intel.com ([134.134.136.20]:29115 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753959AbXLTNU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 08:20:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,189,1196668800"; 
+   d="scan'208";a="301620504"
+Date: Thu, 20 Dec 2007 14:20:10 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com,
+       suresh.b.siddha@intel.com, roland@redhat.com, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com
+Subject: [patch 3/5] x86, ptrace: add buffer size checks
+Message-ID: <20071220142010.A29729@sedona.ch.intel.com>
+Mime-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200712201418.17378.jbe@pengutronix.de>
-X-SA-Exim-Connect-IP: 83.236.181.29
-X-SA-Exim-Mail-From: jbe@pengutronix.de
-Subject: Re: [patch 3/3] Enable setting of IRQ-thread priorities from kernel cmdline. (repost:CC to LKML)
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.extern.pengutronix.de)
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 December 2007 13:45, Jaswinder Singh wrote:
-> On 12/20/07, Remy Bohmer <linux@bohmer.net> wrote:
-> > So, Is this a serious requirement? Should this be possible?
->
-> I have noticed this problem:
-> root@192.168.1.253:~# cat /proc/loadavgrt
-> 1.00 1.00 1.00 0/52 1158
-> root@192.168.1.253:~# cat /proc/loadavg
-> 0.00 0.00 0.02 1/52 1159
-> root@192.168.1.253:~#
->
-> So I am curious, if possible, user can switch softirq-threads or IRQs
-> RT tasks to non-RT tasks for slow hardware or least important hardware
-> for NON-RT tasks. So this will improve RT behaviour.
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Why?
+Pass the buffer size for (most) ptrace commands that pass user-allocated buffers and check that size before accessing the buffer. Unfortunately, PTRACE_BTS_GET already uses all 4 parameters.
+Commands that access user buffers return the number of bytes or records read or written.
 
-IMHO: Simply decrease the RT priority of less important IRQs or increase all 
-other more important IRQs. IRQs are always more important than other 
-processes in a system, also in non RT systems.
 
-Juergen
--- 
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-    Handelsregister: Amtsgericht Hildesheim, HRA 2686
-         Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
+
+Index: linux-2.6-x86/arch/x86/kernel/ptrace.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/ptrace.c	2007-12-20 13:52:01.%N +0100
++++ linux-2.6-x86/arch/x86/kernel/ptrace.c	2007-12-20 13:52:09.%N +0100
+@@ -591,6 +591,7 @@
+ }
+ 
+ static int ptrace_bts_drain(struct task_struct *child,
++			    long size,
+ 			    struct bts_struct __user *out)
+ {
+ 	int end, i;
+@@ -603,6 +604,9 @@
+ 	if (end <= 0)
+ 		return end;
+ 
++	if (size < (end * sizeof(struct bts_struct)))
++		return -EIO;
++
+ 	for (i = 0; i < end; i++, out++) {
+ 		struct bts_struct ret;
+ 		int retval;
+@@ -617,7 +621,7 @@
+ 
+ 	ds_clear(ds);
+ 
+-	return i;
++	return end;
+ }
+ 
+ static int ptrace_bts_realloc(struct task_struct *child,
+@@ -690,15 +694,22 @@
+ }
+ 
+ static int ptrace_bts_config(struct task_struct *child,
++			     long cfg_size,
+ 			     const struct ptrace_bts_config __user *ucfg)
+ {
+ 	struct ptrace_bts_config cfg;
+ 	int bts_size, ret = 0;
+ 	void *ds;
+ 
++	if (cfg_size < sizeof(cfg))
++		return -EIO;
++
+ 	if (copy_from_user(&cfg, ucfg, sizeof(cfg)))
+ 		return -EFAULT;
+ 
++	if ((int)cfg.size < 0)
++		return -EINVAL;
++
+ 	bts_size = 0;
+ 	ds = (void *)child->thread.ds_area_msr;
+ 	if (ds) {
+@@ -734,6 +745,8 @@
+ 	else
+ 		clear_tsk_thread_flag(child, TIF_BTS_TRACE_TS);
+ 
++	ret = sizeof(cfg);
++
+ out:
+ 	if (child->thread.debugctlmsr)
+ 		set_tsk_thread_flag(child, TIF_DEBUGCTLMSR);
+@@ -749,11 +762,15 @@
+ }
+ 
+ static int ptrace_bts_status(struct task_struct *child,
++			     long cfg_size,
+ 			     struct ptrace_bts_config __user *ucfg)
+ {
+ 	void *ds = (void *)child->thread.ds_area_msr;
+ 	struct ptrace_bts_config cfg;
+ 
++	if (cfg_size < sizeof(cfg))
++		return -EIO;
++
+ 	memset(&cfg, 0, sizeof(cfg));
+ 
+ 	if (ds) {
+@@ -935,12 +952,12 @@
+ 
+ 	case PTRACE_BTS_CONFIG:
+ 		ret = ptrace_bts_config
+-			(child, (struct ptrace_bts_config __user *)addr);
++			(child, data, (struct ptrace_bts_config __user *)addr);
+ 		break;
+ 
+ 	case PTRACE_BTS_STATUS:
+ 		ret = ptrace_bts_status
+-			(child, (struct ptrace_bts_config __user *)addr);
++			(child, data, (struct ptrace_bts_config __user *)addr);
+ 		break;
+ 
+ 	case PTRACE_BTS_SIZE:
+@@ -958,7 +975,7 @@
+ 
+ 	case PTRACE_BTS_DRAIN:
+ 		ret = ptrace_bts_drain
+-			(child, (struct bts_struct __user *) addr);
++			(child, data, (struct bts_struct __user *) addr);
+ 		break;
+ 
+ 	default:
+Index: linux-2.6-x86/include/asm-x86/ptrace-abi.h
+===================================================================
+--- linux-2.6-x86.orig/include/asm-x86/ptrace-abi.h	2007-12-20 13:52:01.%N +0100
++++ linux-2.6-x86/include/asm-x86/ptrace-abi.h	2007-12-20 13:52:09.%N +0100
+@@ -99,13 +99,15 @@
+ 
+ #define PTRACE_BTS_CONFIG	40
+ /* Configure branch trace recording.
+-   DATA is ignored, ADDR points to a struct ptrace_bts_config.
++   ADDR points to a struct ptrace_bts_config.
++   DATA gives the size of that buffer.
+    A new buffer is allocated, iff the size changes.
++   Returns the number of bytes read.
+ */
+ #define PTRACE_BTS_STATUS	41
+-/* Return the current configuration.
+-   DATA is ignored, ADDR points to a struct ptrace_bts_config
+-   that will contain the result.
++/* Return the current configuration in a struct ptrace_bts_config
++   pointed to by ADDR; DATA gives the size of that buffer.
++   Returns the number of bytes written.
+ */
+ #define PTRACE_BTS_SIZE		42
+ /* Return the number of available BTS records.
+@@ -123,8 +125,8 @@
+ */
+ #define PTRACE_BTS_DRAIN	45
+ /* Read all available BTS records and clear the buffer.
+-   DATA is ignored. ADDR points to an array of struct bts_struct of
+-   suitable size.
++   ADDR points to an array of struct bts_struct.
++   DATA gives the size of that buffer.
+    BTS records are read from oldest to newest.
+    Returns number of BTS records drained.
+ */
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
