@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762836AbXLTXur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760392AbXLTXmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762836AbXLTXur (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 18:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760937AbXLTXu2
+	id S1760392AbXLTXmB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 18:42:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756312AbXLTXlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 18:50:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48066 "EHLO mx3.mail.elte.hu"
+	Thu, 20 Dec 2007 18:41:45 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:60290 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760770AbXLTXu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 18:50:27 -0500
-Date: Fri, 21 Dec 2007 00:47:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
-Message-ID: <20071220234759.GA29776@elte.hu>
-References: <1198190447.29917.9.camel@heimdal.trondhjem.org> <20071220145415.f737e7f3.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071220145415.f737e7f3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1755965AbXLTXlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 18:41:44 -0500
+Subject: patch pci-fix-warning-in-setup-res.c-on-32-bit-platforms-with-64-bit-resources.patch added to gregkh-2.6 tree
+To: benh@kernel.crashing.org, greg@kroah.com, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+From: <gregkh@suse.de>
+Date: Thu, 20 Dec 2007 15:37:17 -0800
+In-Reply-To: <20071210063217.292B5DDE27@ozlabs.org>
+Message-ID: <11981938373542@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+This is a note to let you know that I've just added the patch titled
 
-> Yes - I don't know why the smp_processor_id() test has suddenly 
-> started triggering in there.
+     Subject: PCI: Fix warning in setup-res.c on 32-bit platforms with 64-bit resources
 
-it's a "must not happen".
+to my gregkh-2.6 tree.  Its filename is
 
-here:
+     pci-fix-warning-in-setup-res.c-on-32-bit-platforms-with-64-bit-resources.patch
 
->  		__raw_spin_lock(&die.lock);
->  		raw_local_save_flags(flags);
-> -		die.lock_owner = smp_processor_id();
-> +		die.lock_owner = raw_smp_processor_id();
-
-we just disabled irqs with raw_local_save_flags().
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
-here:
-
->  mem_parity_error(unsigned char reason, struct pt_regs * regs)
->  {
->  	printk(KERN_EMERG "Uhhuh. NMI received for unknown reason %02x on "
-> -		"CPU %d.\n", reason, smp_processor_id());
-> +		"CPU %d.\n", reason, raw_smp_processor_id());
->  	printk(KERN_EMERG "You have some hardware problem, likely on the PCI bus.\n");
-
-we are straight into an NMI which has hardirqs disabled.
+>From benh@ozlabs.org Sun Dec  9 22:32:23 2007
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 10 Dec 2007 17:32:16 +1100
+Subject: PCI: Fix warning in setup-res.c on 32-bit platforms with 64-bit resources
+To: Greg Kroah-Hartman <greg@kroah.com>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
+Message-ID: <20071210063217.292B5DDE27@ozlabs.org>
 
 
->  	printk(KERN_EMERG "Uhhuh. NMI received for unknown reason %02x on "
-> -		"CPU %d.\n", reason, smp_processor_id());
-> +		"CPU %d.\n", reason, raw_smp_processor_id());
+This adds appropriate casts to avoid a warning and print the correct
+values in pr_debug.
 
-ditto.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-> @@ -708,7 +708,7 @@ void __kprobes die_nmi(struct pt_regs *r
->  	bust_spinlocks(1);
->  	printk(KERN_EMERG "%s", msg);
->  	printk(" on CPU%d, ip %08lx, registers:\n",
-> -		smp_processor_id(), regs->ip);
-> +		raw_smp_processor_id(), regs->ip);
+---
+ drivers/pci/setup-res.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-same.
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -51,10 +51,12 @@ pci_update_resource(struct pci_dev *dev,
+ 
+ 	pcibios_resource_to_bus(dev, &region, res);
+ 
+-	pr_debug("  got res [%llx:%llx] bus [%lx:%lx] flags %lx for "
++	pr_debug("  got res [%llx:%llx] bus [%llx:%llx] flags %lx for "
+ 		 "BAR %d of %s\n", (unsigned long long)res->start,
+ 		 (unsigned long long)res->end,
+-		 region.start, region.end, res->flags, resno, pci_name(dev));
++		 (unsigned long long)region.start,
++		 (unsigned long long)region.end,
++		 (unsigned long)res->flags, resno, pci_name(dev));
+ 
+ 	new = region.start | (res->flags & PCI_REGION_FLAG_MASK);
+ 	if (res->flags & IORESOURCE_IO)
 
-it needs to be found out why the preempt_count suddenly went to zero. Is 
-task struct corruption out of question?
 
-	Ingo
+Patches currently in gregkh-2.6 which might be from benh@kernel.crashing.org are
+
+bad/battery-class-driver.patch
+driver/adb-convert-from-class_device-to-device.patch
+driver/kobject-convert-hvc_console-to-use-kref-not-kobject.patch
+driver/kobject-convert-hvcs-to-use-kref-not-kobject.patch
+driver/kobject-convert-icom-to-use-kref-not-kobject.patch
+pci/pci-fix-bus-resource-assignment-on-32-bits-with-64b-resources.patch
+pci/pci-fix-warning-in-setup-res.c-on-32-bit-platforms-with-64-bit-resources.patch
+usb/usb-remove-ohci-useless-masking-unmasking-of-wdh-interrupt.patch
