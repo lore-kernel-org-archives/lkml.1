@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759540AbXLTIDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759712AbXLTIEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759540AbXLTIDo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 03:03:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757152AbXLTIDe
+	id S1759712AbXLTIEV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 03:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbXLTIEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 03:03:34 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:15426 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755805AbXLTIDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 03:03:33 -0500
-Date: Thu, 20 Dec 2007 08:58:53 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: David Miller <davem@davemloft.net>
-Cc: rusty@rustcorp.com.au, fujita.tomonori@lab.ntt.co.jp,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dougg@torque.net
-Subject: Re: [PATCH 0/5] sg_ring for scsi
-Message-ID: <20071220075852.GI13958@kernel.dk>
-References: <200712201645.19035.rusty@rustcorp.com.au> <20071220160741K.fujita.tomonori@lab.ntt.co.jp> <200712201853.48643.rusty@rustcorp.com.au> <20071219.235807.173273479.davem@davemloft.net>
+	Thu, 20 Dec 2007 03:04:11 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46213 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbXLTIEK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 03:04:10 -0500
+Date: Thu, 20 Dec 2007 00:02:59 -0800
+From: Greg KH <greg@kroah.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC] kobject/kset/ktype documentation and example code updated
+Message-ID: <20071220080259.GA30416@kroah.com>
+References: <20071220003031.GA15129@kroah.com> <a8e1da0712192354k3bce177fi3d30b5737c7d7a9e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071219.235807.173273479.davem@davemloft.net>
+In-Reply-To: <a8e1da0712192354k3bce177fi3d30b5737c7d7a9e@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 19 2007, David Miller wrote:
-> From: Rusty Russell <rusty@rustcorp.com.au>
-> Date: Thu, 20 Dec 2007 18:53:48 +1100
+On Thu, Dec 20, 2007 at 03:54:40PM +0800, Dave Young wrote:
+> On Dec 20, 2007 8:30 AM, Greg KH <greg@kroah.com> wrote:
+> > Thanks to everyone for your last round of review comments and changes to
+> > the kobject documentation.
+> >
+> > I now have over 130 patches reworking the kset/ktype and kobject apis in
+> > the kernel tree, and here is the updated documentation and example code
+> > that shows how things work now.
+> >
+> > Things different from the last time around are the kobject_add() and
+> > kobject_init() functions now take a bunch of required parameters, and
+> > the kobject cleanup code is much more forgiving.
+> >
+> > I want to drop kobject_unregister() but as this patch series is so big
+> > already, I think it's time to let it bake in -mm and push into 2.6.25
+> > before attempting it.
+> [--snip--]
 > 
-> > Manipulating the magic chains is horrible; it looks simple to the
-> > places which simply want to iterate through it, but it's awful for
-> > code which wants to create them.
+> Hi, greg
 > 
-> I'm not saying complexity is inherent in this stuff, but
-> assuming that it is the complexity should live as far away
-> from the minions (the iterators in this case).  Therefore,
-> the creators is the right spot for the hard stuff.
+> How about add a kobject_remove function and temporarily keep the
+> kobject_unregister as below until the 2.6.25:
+> 
+> kobject_unregister(...)
+> {
+>        ...
+>         kobject_remove();
+>         kobject_uevent();
+>         ...
+> }
 
-Agree, and the missing bit is just moving the creators out of the driver
-parts and into a core helper. See the previous post on the 'sg' branch
-for 2.6.25.
+Actually, it's not needed at all.  Thanks to Kay's recent changes in the
+tree, a simple kobject_put() is all that is needed.  The proper sysfs
+cleanup and uevent will happen if necessary, no housekeeping by the
+caller required.
 
--- 
-Jens Axboe
+So I'll just nuke kobject_unregister() as it's a simple replacement with
+kobject_put() which will clean up the api even more :)
 
+And I'll go update the documentation...
+
+thanks,
+
+greg k-h
