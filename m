@@ -1,87 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936835AbXLTRZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937138AbXLTR0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936835AbXLTRZl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 12:25:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936291AbXLTRZP
+	id S937138AbXLTR0H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 12:26:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932188AbXLTRZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 12:25:15 -0500
-Received: from ns2.suse.de ([195.135.220.15]:38563 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936238AbXLTRZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 12:25:13 -0500
-Date: Thu, 20 Dec 2007 09:22:05 -0800
-From: Greg KH <gregkh@suse.de>
-To: Tony Camuso <tcamuso@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-Message-ID: <20071220172205.GB5636@suse.de>
-References: <476A5FD0.4010804@redhat.com>
+	Thu, 20 Dec 2007 12:25:54 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:45229 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932098AbXLTRZx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 12:25:53 -0500
+Date: Thu, 20 Dec 2007 18:25:51 +0100
+From: Jan Kara <jack@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bj?rn Steinbrink <B.Steinbrink@gmx.de>, Krzysztof Oledzki <olel@ans.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Osterried <osterried@jesse.de>, protasnb@gmail.com,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 9182] Critical memory leak (dirty pages)
+Message-ID: <20071220172551.GE764@atrey.karlin.mff.cuni.cz>
+References: <20071215221935.306A5108068@picon.linux-foundation.org> <Pine.LNX.4.64.0712152358240.14491@bizon.gios.gov.pl> <20071215203539.d6f71e96.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161016290.25065@bizon.gios.gov.pl> <20071216015112.d0ab08a1.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161440030.25065@bizon.gios.gov.pl> <alpine.LFD.0.9999.0712190903350.21557@woody.linux-foundation.org> <20071220141217.GA4745@atjola.homenet> <alpine.LFD.0.9999.0712200753040.21557@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <476A5FD0.4010804@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.0.9999.0712200753040.21557@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 07:28:00AM -0500, Tony Camuso wrote:
->
->
-> -------- Original Message --------
-> Subject: Re: [PATCH 0/5]PCI: x86 MMCONFIG
-> Date: Wed, 19 Dec 2007 19:33:45 -0500
-> From: Tony Camuso <tcamuso@redhat.com>
-> Reply-To: tcamuso@redhat.com
-> To: Greg KH <gregkh@suse.de>
-> References: 
-> <20071219221746.20362.39243.sendpatchset@dhcp83-188.boston.redhat.com> 
-> <20071219231609.GE24219@suse.de>
->
-> Greg KH wrote:
->> On Wed, Dec 19, 2007 at 05:17:46PM -0500, tcamuso@redhat.com wrote:
->>> There exist devices that do not respond correctly to PCI
->>> MMCONFIG accesses in x86 platforms.
->> What devices are these?  Do you have reports of them somewhere?
-> There are the AMD 8131 and 8132, the Serverworks HT1000 bridge chips
-> and the 830M/MG graphics. Not all versions of these chips present
-> this pathology, but there are perhaps tens of thousands of systems
-> out there that have the broken versions of these chipsets.
+> On Thu, 20 Dec 2007, Bj?rn Steinbrink wrote:
+> > 
+> > OK, so I looked for PG_dirty anyway.
+> > 
+> > In 46d2277c796f9f4937bfa668c40b2e3f43e93dd0 you made try_to_free_buffers
+> > bail out if the page is dirty.
+> > 
+> > Then in 3e67c0987d7567ad666641164a153dca9a43b11d, Andrew fixed
+> > truncate_complete_page, because it called cancel_dirty_page (and thus
+> > cleared PG_dirty) after try_to_free_buffers was called via
+> > do_invalidatepage.
+> > 
+> > Now, if I'm not mistaken, we can end up as follows.
+> > 
+> > truncate_complete_page()
+> >   cancel_dirty_page() // PG_dirty cleared, decr. dirty pages
+> >   do_invalidatepage()
+> >     ext3_invalidatepage()
+> >       journal_invalidatepage()
+> >         journal_unmap_buffer()
+> >           __dispose_buffer()
+> >             __journal_unfile_buffer()
+> >               __journal_temp_unlink_buffer()
+> >                 mark_buffer_dirty(); // PG_dirty set, incr. dirty pages
+> 
+> Good, this seems to be the exact path that actually triggers it. I got to 
+> journal_unmap_buffer(), but was too lazy to actually then bother to follow 
+> it all the way down - I decided that I didn't actually really even care 
+> what the low-level FS layer did, I had already convinced myself that it 
+> obviously must be dirtying the page some way, since that matched the 
+> symptoms exactly (ie only the journaling case was impacted, and this was 
+> all about the journal).
+> 
+> But perhaps more importantly: regardless of what the low-level filesystem 
+> did at that point, the VM accounting shouldn't care, and should be robust 
+> in the face of a low-level filesystem doing strange and wonderful things. 
+> But thanks for bothering to go through the whole history and figure out 
+> what exactly is up.
+  As I wrote in my previous email, this solution works but hides the
+fact that the page really *has* dirty data in it and *is* pinned in memory
+until the commit code gets to writing it. So in theory it could disturb
+the writeout logic by having more dirty data in memory than vm thinks it
+has. Not that I'd have a better fix now but I wanted to point out this
+problem.
 
-Why haven't we gotten reports about this before if this is a common
-problem?
-
-And why hasn't the vendor fixed the bios on these to work properly?
-
-> RedHat have been maintaining a blacklist of systems having these
-> devices. Systems in the blacklist are confined to legacy PCI
-> access.
-
-Do you have a pointer to this blacklist anywhere so that everyone can
-benifit from this knowledge?
-
->> That sounds like this patchset can cause bad side affects on hardware
->> that currently works just fine.  That is not a good thing to be adding
->> to the kernel, right?
-> No, the patch set tries to obviate this without requiring endusers to
-> write customized scripts with "pci=nommconf" and without requiring the
-> RH folks to add another platform (usually belatedly) to the blacklist.
->
-> If a device is going to machine check when you touch it with an mmconfig
-> access, it will happen with or without this patch-set.
->
-> However, the patch-set does cover most of the devices that don't respond
-> well to mmconfig access. Such devices almost alway7s return garbage when
-> you read from them.
->
-> The one device we know about that throws exceptions is the 830M/MG
-> graphics chip. This chip passes the read-compare test, so the code
-> merrily advances to bus sizing. When the bus sizing code writes the
-> BAR at offset 0x18 in this device, the system hangs.
-
-So it doesn't work at all, with or without this patch?  Does the vendor
-know about this?
-
-thanks,
-
-greg k-h
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
