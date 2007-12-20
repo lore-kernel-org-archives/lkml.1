@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbXLTTaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbXLTTc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754410AbXLTTaZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 14:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbXLTTaG
+	id S1754761AbXLTTc6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 14:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXLTTct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 14:30:06 -0500
-Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:50562 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753814AbXLTTaE (ORCPT
+	Thu, 20 Dec 2007 14:32:49 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:35179 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbXLTTct (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 14:30:04 -0500
-Message-ID: <476AC2A5.8060200@opengridcomputing.com>
-Date: Thu, 20 Dec 2007 13:29:41 -0600
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Benjamin Herrenschmidt <bherren@au1.ibm.com>, linux-kernel@vger.kernel.org,
-       OpenFabrics General <general@lists.openfabrics.org>,
-       Wen Xiong <wenxiong@us.ibm.com>
-Subject: Re: [ofa-general] iommu dma mapping alignment requirements
-References: <476AA2E2.5010007@opengridcomputing.com> <adalk7pz1ck.fsf@cisco.com> <476ABE60.9030805@opengridcomputing.com>
-In-Reply-To: <476ABE60.9030805@opengridcomputing.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 20 Dec 2007 14:32:49 -0500
+Subject: Re: [PATCH 1/3] ps3: vuart: fix error path locking
+From: Daniel Walker <dwalker@mvista.com>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, matthias.kaehlcke@gmail.com,
+       linux-kernel@vger.kernel.org, linux@bohmer.net, linuxppc-dev@ozlabs.org,
+       mingo@elte.hu, kjwinchester@gmail.com
+In-Reply-To: <47688A5A.1090902@am.sony.com>
+References: <20071213003028.676998182@mvista.com>
+	 <4760922C.2060908@am.sony.com>
+	 <20071218171050.5bf220fa.akpm@linux-foundation.org>
+	 <47688A5A.1090902@am.sony.com>
+Content-Type: text/plain
+Date: Thu, 20 Dec 2007 11:32:25 -0800
+Message-Id: <1198179145.10713.9.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve Wise wrote:
-> Roland Dreier wrote:
->>  > It appears that my problem boils down to a single host page of memory
->>  > that is mapped for dma, and the dma address returned by dma_map_sg()
->>  > is _not_ 64KB aligned.  Here is an example:
->>
->>  > My first question is: Is there an assumption or requirement in linux
->>  > that dma_addressess should have the same alignment as the host address
->>  > they are mapped to?  IE the rdma core is mapping the entire 64KB page,
->>  > but the mapping doesn't begin on a 64KB page boundary.
->>
->> I don't think this is explicitly documented anywhere, but it certainly
->> seems that we want the bus address to be page-aligned in this case.
->> For mthca/mlx4 at least, we tell the adapter what the host page size
->> is (so that it knows how to align doorbell pages etc) and I think this
->> sort of thing would confuse the HW.
->>
->>  - R.
-> 
-> 
-> In arch/powerpc/kernel/iommu.c:iommu_map_sg() I see that it calls 
-> iommu_range_alloc() with a alignment_order of 0:
-> 
->>                 vaddr = (unsigned long)page_address(s->page) + s->offset;
->>                 npages = iommu_num_pages(vaddr, slen);
->>                 entry = iommu_range_alloc(tbl, npages, &handle, mask 
->> >> IOMMU_PAGE_SHIFT, 0);
-> 
-> But perhaps the alignment order needs to be based on the host page size?
+On Tue, 2007-12-18 at 19:04 -0800, Geoff Levand wrote:
+
+> Unfortunately there wasn't enough context in the patch to see
+> that there is a down() earlier in the routine, and that the patch
+> does indeed remove an incorrectly placed down().  Here is the
+> entire routine, marked with what the patch removes.
 > 
 
-Or based on the alignment of vaddr actually...
+Andrew have you had a chance to review this?
+
+Daniel
 
