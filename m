@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756979AbXLTUI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbXLTUIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756979AbXLTUI2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 15:08:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbXLTUIS
+	id S1757415AbXLTUIn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 15:08:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757022AbXLTUIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 15:08:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39945 "EHLO mx1.redhat.com"
+	Thu, 20 Dec 2007 15:08:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39967 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753968AbXLTUIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 15:08:17 -0500
+	id S1756924AbXLTUI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 15:08:27 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
@@ -17,202 +17,995 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
        rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
        rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 02/15] adjust PVOP_CALL/VCALL macros for x86_64
-Date: Thu, 20 Dec 2007 18:03:57 -0200
-Message-Id: <11981811852758-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 01/15] change paravirt_32.c name
+Date: Thu, 20 Dec 2007 18:03:56 -0200
+Message-Id: <11981811293763-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11981811293763-git-send-email-gcosta@redhat.com>
-References: <11981810504172-git-send-email-gcosta@redhat.com> <11981811293763-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11981810504172-git-send-email-gcosta@redhat.com>
+References: <11981810504172-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adjust the PVOP_VCALL and PVOP_CALL macros to
-work with x86_64. It has a different calling convention, and
-we use auxiliary macros to account for both calling conventions
-as cleanly as possible
-
-Comments are adjusted accordingly.
+This patch changes paravirt_32.c to paravirt.c. The goal
+is to have paravirt support in x86_64, so we do it in a common file
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 ---
- include/asm-x86/paravirt.h |   87 +++++++++++++++++++++++++++++++++-----------
- 1 files changed, 65 insertions(+), 22 deletions(-)
+ arch/x86/kernel/Makefile_32   |    2 +-
+ arch/x86/kernel/paravirt.c    |  475 +++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/paravirt_32.c |  472 ----------------------------------------
+ 3 files changed, 476 insertions(+), 473 deletions(-)
+ create mode 100644 arch/x86/kernel/paravirt.c
+ delete mode 100644 arch/x86/kernel/paravirt_32.c
 
-Index: linux-2.6-x86/include/asm-x86/paravirt.h
+Index: linux-2.6-x86/arch/x86/kernel/Makefile_32
 ===================================================================
---- linux-2.6-x86.orig/include/asm-x86/paravirt.h	2007-12-20 19:07:07.000000000 -0800
-+++ linux-2.6-x86/include/asm-x86/paravirt.h	2007-12-20 19:07:17.000000000 -0800
-@@ -320,7 +320,7 @@
-  * runtime.
-  *
-  * Normally, a call to a pv_op function is a simple indirect call:
-- * (paravirt_ops.operations)(args...).
-+ * (pv_op_struct.operations)(args...).
-  *
-  * Unfortunately, this is a relatively slow operation for modern CPUs,
-  * because it cannot necessarily determine what the destination
-@@ -330,11 +330,17 @@
-  * calls are essentially free, because the call and return addresses
-  * are completely predictable.)
-  *
-- * These macros rely on the standard gcc "regparm(3)" calling
-+ * For i386, these macros rely on the standard gcc "regparm(3)" calling
-  * convention, in which the first three arguments are placed in %eax,
-  * %edx, %ecx (in that order), and the remaining arguments are placed
-  * on the stack.  All caller-save registers (eax,edx,ecx) are expected
-  * to be modified (either clobbered or used for return values).
-+ * X86_64, on the other hand, already specifies a register-based calling
-+ * conventions, returning at %rax, with parameteres going on %rdi, %rsi,
-+ * %rdx, and %rcx. Note that for this reason, x86_64 does not need any
-+ * special handling for dealing with 4 arguments, unlike i386.
-+ * However, x86_64 also have to clobber all caller saved registers, which
-+ * unfortunately, are quite a bit (r8 - r11)
-  *
-  * The call instruction itself is marked by placing its start address
-  * and size into the .parainstructions section, so that
-@@ -357,10 +363,12 @@
-  * the return type.  The macro then uses sizeof() on that type to
-  * determine whether its a 32 or 64 bit value, and places the return
-  * in the right register(s) (just %eax for 32-bit, and %edx:%eax for
-- * 64-bit).
-+ * 64-bit). For x86_64 machines, it just returns at %rax regardless of
-+ * the return value size.
-  *
-  * 64-bit arguments are passed as a pair of adjacent 32-bit arguments
-- * in low,high order.
-+ * i386 also passes 64-bit arguments as a pair of adjacent 32-bit arguments
-+ * in low,high order
-  *
-  * Small structures are passed and returned in registers.  The macro
-  * calling convention can't directly deal with this, so the wrapper
-@@ -370,46 +378,67 @@
-  * means that all uses must be wrapped in inline functions.  This also
-  * makes sure the incoming and outgoing types are always correct.
-  */
-+#ifdef CONFIG_X86_32
-+#define PVOP_VCALL_ARGS			unsigned long __eax, __edx, __ecx
-+#define PVOP_CALL_ARGS			PVOP_VCALL_ARGS
-+#define PVOP_VCALL_CLOBBERS		"=a" (__eax), "=d" (__edx),	\
-+					"=c" (__ecx)
-+#define PVOP_CALL_CLOBBERS		PVOP_VCALL_CLOBBERS
-+#define EXTRA_CLOBBERS
-+#define VEXTRA_CLOBBERS
-+#else
-+#define PVOP_VCALL_ARGS		unsigned long __edi, __esi, __edx, __ecx
-+#define PVOP_CALL_ARGS		PVOP_VCALL_ARGS, __eax
-+#define PVOP_VCALL_CLOBBERS	"=D" (__edi),				\
-+				"=S" (__esi), "=d" (__edx),		\
-+				"=c" (__ecx)
+--- linux-2.6-x86.orig/arch/x86/kernel/Makefile_32	2007-12-20 19:07:08.000000000 -0800
++++ linux-2.6-x86/arch/x86/kernel/Makefile_32	2007-12-20 19:07:15.000000000 -0800
+@@ -48,7 +48,7 @@
+ obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
+ 
+ obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
+-obj-$(CONFIG_PARAVIRT)		+= paravirt_32.o
++obj-$(CONFIG_PARAVIRT)		+= paravirt.o
+ obj-y				+= pcspeaker.o
+ 
+ obj-$(CONFIG_SCx200)		+= scx200_32.o
+Index: linux-2.6-x86/arch/x86/kernel/paravirt.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-x86/arch/x86/kernel/paravirt.c	2007-12-20 19:07:15.000000000 -0800
+@@ -0,0 +1,475 @@
++/*  Paravirtualization interfaces
++    Copyright (C) 2006 Rusty Russell IBM Corporation
 +
-+#define PVOP_CALL_CLOBBERS	PVOP_VCALL_CLOBBERS, "=a" (__eax)
++    This program is free software; you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation; either version 2 of the License, or
++    (at your option) any later version.
 +
-+#define EXTRA_CLOBBERS	 , "r8", "r9", "r10", "r11"
-+#define VEXTRA_CLOBBERS	 , "rax", "r8", "r9", "r10", "r11"
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++
++    2007 - x86_64 support added by Glauber de Oliveira Costa, Red Hat Inc
++*/
++
++#include <linux/errno.h>
++#include <linux/module.h>
++#include <linux/efi.h>
++#include <linux/bcd.h>
++#include <linux/highmem.h>
++
++#include <asm/bug.h>
++#include <asm/paravirt.h>
++#include <asm/desc.h>
++#include <asm/setup.h>
++#include <asm/arch_hooks.h>
++#include <asm/time.h>
++#include <asm/irq.h>
++#include <asm/delay.h>
++#include <asm/fixmap.h>
++#include <asm/apic.h>
++#include <asm/tlbflush.h>
++#include <asm/timer.h>
++
++/* nop stub */
++void _paravirt_nop(void)
++{
++}
++
++static void __init default_banner(void)
++{
++	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
++	       pv_info.name);
++}
++
++char *memory_setup(void)
++{
++	return pv_init_ops.memory_setup();
++}
++
++/* Simple instruction patching code. */
++#define DEF_NATIVE(ops, name, code)					\
++	extern const char start_##ops##_##name[], end_##ops##_##name[];	\
++	asm("start_" #ops "_" #name ": " code "; end_" #ops "_" #name ":")
++
++DEF_NATIVE(pv_irq_ops, irq_disable, "cli");
++DEF_NATIVE(pv_irq_ops, irq_enable, "sti");
++DEF_NATIVE(pv_irq_ops, restore_fl, "push %eax; popf");
++DEF_NATIVE(pv_irq_ops, save_fl, "pushf; pop %eax");
++DEF_NATIVE(pv_cpu_ops, iret, "iret");
++DEF_NATIVE(pv_cpu_ops, irq_enable_syscall_ret, "sti; sysexit");
++DEF_NATIVE(pv_mmu_ops, read_cr2, "mov %cr2, %eax");
++DEF_NATIVE(pv_mmu_ops, write_cr3, "mov %eax, %cr3");
++DEF_NATIVE(pv_mmu_ops, read_cr3, "mov %cr3, %eax");
++DEF_NATIVE(pv_cpu_ops, clts, "clts");
++DEF_NATIVE(pv_cpu_ops, read_tsc, "rdtsc");
++
++/* Undefined instruction for dealing with missing ops pointers. */
++static const unsigned char ud2a[] = { 0x0f, 0x0b };
++
++static unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
++			     unsigned long addr, unsigned len)
++{
++	const unsigned char *start, *end;
++	unsigned ret;
++
++	switch(type) {
++#define SITE(ops, x)						\
++	case PARAVIRT_PATCH(ops.x):				\
++		start = start_##ops##_##x;			\
++		end = end_##ops##_##x;				\
++		goto patch_site
++
++	SITE(pv_irq_ops, irq_disable);
++	SITE(pv_irq_ops, irq_enable);
++	SITE(pv_irq_ops, restore_fl);
++	SITE(pv_irq_ops, save_fl);
++	SITE(pv_cpu_ops, iret);
++	SITE(pv_cpu_ops, irq_enable_syscall_ret);
++	SITE(pv_mmu_ops, read_cr2);
++	SITE(pv_mmu_ops, read_cr3);
++	SITE(pv_mmu_ops, write_cr3);
++	SITE(pv_cpu_ops, clts);
++	SITE(pv_cpu_ops, read_tsc);
++#undef SITE
++
++	patch_site:
++		ret = paravirt_patch_insns(ibuf, len, start, end);
++		break;
++
++	default:
++		ret = paravirt_patch_default(type, clobbers, ibuf, addr, len);
++		break;
++	}
++
++	return ret;
++}
++
++unsigned paravirt_patch_nop(void)
++{
++	return 0;
++}
++
++unsigned paravirt_patch_ignore(unsigned len)
++{
++	return len;
++}
++
++struct branch {
++	unsigned char opcode;
++	u32 delta;
++} __attribute__((packed));
++
++unsigned paravirt_patch_call(void *insnbuf,
++			     const void *target, u16 tgt_clobbers,
++			     unsigned long addr, u16 site_clobbers,
++			     unsigned len)
++{
++	struct branch *b = insnbuf;
++	unsigned long delta = (unsigned long)target - (addr+5);
++
++	if (tgt_clobbers & ~site_clobbers)
++		return len;	/* target would clobber too much for this site */
++	if (len < 5)
++		return len;	/* call too long for patch site */
++
++	b->opcode = 0xe8; /* call */
++	b->delta = delta;
++	BUILD_BUG_ON(sizeof(*b) != 5);
++
++	return 5;
++}
++
++unsigned paravirt_patch_jmp(void *insnbuf, const void *target,
++			    unsigned long addr, unsigned len)
++{
++	struct branch *b = insnbuf;
++	unsigned long delta = (unsigned long)target - (addr+5);
++
++	if (len < 5)
++		return len;	/* call too long for patch site */
++
++	b->opcode = 0xe9;	/* jmp */
++	b->delta = delta;
++
++	return 5;
++}
++
++/* Neat trick to map patch type back to the call within the
++ * corresponding structure. */
++static void *get_call_destination(u8 type)
++{
++	struct paravirt_patch_template tmpl = {
++		.pv_init_ops = pv_init_ops,
++		.pv_time_ops = pv_time_ops,
++		.pv_cpu_ops = pv_cpu_ops,
++		.pv_irq_ops = pv_irq_ops,
++		.pv_apic_ops = pv_apic_ops,
++		.pv_mmu_ops = pv_mmu_ops,
++	};
++	return *((void **)&tmpl + type);
++}
++
++unsigned paravirt_patch_default(u8 type, u16 clobbers, void *insnbuf,
++				unsigned long addr, unsigned len)
++{
++	void *opfunc = get_call_destination(type);
++	unsigned ret;
++
++	if (opfunc == NULL)
++		/* If there's no function, patch it with a ud2a (BUG) */
++		ret = paravirt_patch_insns(insnbuf, len, ud2a, ud2a+sizeof(ud2a));
++	else if (opfunc == paravirt_nop)
++		/* If the operation is a nop, then nop the callsite */
++		ret = paravirt_patch_nop();
++	else if (type == PARAVIRT_PATCH(pv_cpu_ops.iret) ||
++		 type == PARAVIRT_PATCH(pv_cpu_ops.irq_enable_syscall_ret))
++		/* If operation requires a jmp, then jmp */
++		ret = paravirt_patch_jmp(insnbuf, opfunc, addr, len);
++	else
++		/* Otherwise call the function; assume target could
++		   clobber any caller-save reg */
++		ret = paravirt_patch_call(insnbuf, opfunc, CLBR_ANY,
++					  addr, clobbers, len);
++
++	return ret;
++}
++
++unsigned paravirt_patch_insns(void *insnbuf, unsigned len,
++			      const char *start, const char *end)
++{
++	unsigned insn_len = end - start;
++
++	if (insn_len > len || start == NULL)
++		insn_len = len;
++	else
++		memcpy(insnbuf, start, insn_len);
++
++	return insn_len;
++}
++
++void init_IRQ(void)
++{
++	pv_irq_ops.init_IRQ();
++}
++
++static void native_flush_tlb(void)
++{
++	__native_flush_tlb();
++}
++
++/*
++ * Global pages have to be flushed a bit differently. Not a real
++ * performance problem because this does not happen often.
++ */
++static void native_flush_tlb_global(void)
++{
++	__native_flush_tlb_global();
++}
++
++static void native_flush_tlb_single(unsigned long addr)
++{
++	__native_flush_tlb_single(addr);
++}
++
++/* These are in entry.S */
++extern void native_iret(void);
++extern void native_irq_enable_syscall_ret(void);
++
++static int __init print_banner(void)
++{
++	pv_init_ops.banner();
++	return 0;
++}
++core_initcall(print_banner);
++
++static struct resource reserve_ioports = {
++	.start = 0,
++	.end = IO_SPACE_LIMIT,
++	.name = "paravirt-ioport",
++	.flags = IORESOURCE_IO | IORESOURCE_BUSY,
++};
++
++static struct resource reserve_iomem = {
++	.start = 0,
++	.end = -1,
++	.name = "paravirt-iomem",
++	.flags = IORESOURCE_MEM | IORESOURCE_BUSY,
++};
++
++/*
++ * Reserve the whole legacy IO space to prevent any legacy drivers
++ * from wasting time probing for their hardware.  This is a fairly
++ * brute-force approach to disabling all non-virtual drivers.
++ *
++ * Note that this must be called very early to have any effect.
++ */
++int paravirt_disable_iospace(void)
++{
++	int ret;
++
++	ret = request_resource(&ioport_resource, &reserve_ioports);
++	if (ret == 0) {
++		ret = request_resource(&iomem_resource, &reserve_iomem);
++		if (ret)
++			release_resource(&reserve_ioports);
++	}
++
++	return ret;
++}
++
++static DEFINE_PER_CPU(enum paravirt_lazy_mode, paravirt_lazy_mode) = PARAVIRT_LAZY_NONE;
++
++static inline void enter_lazy(enum paravirt_lazy_mode mode)
++{
++	BUG_ON(x86_read_percpu(paravirt_lazy_mode) != PARAVIRT_LAZY_NONE);
++	BUG_ON(preemptible());
++
++	x86_write_percpu(paravirt_lazy_mode, mode);
++}
++
++void paravirt_leave_lazy(enum paravirt_lazy_mode mode)
++{
++	BUG_ON(x86_read_percpu(paravirt_lazy_mode) != mode);
++	BUG_ON(preemptible());
++
++	x86_write_percpu(paravirt_lazy_mode, PARAVIRT_LAZY_NONE);
++}
++
++void paravirt_enter_lazy_mmu(void)
++{
++	enter_lazy(PARAVIRT_LAZY_MMU);
++}
++
++void paravirt_leave_lazy_mmu(void)
++{
++	paravirt_leave_lazy(PARAVIRT_LAZY_MMU);
++}
++
++void paravirt_enter_lazy_cpu(void)
++{
++	enter_lazy(PARAVIRT_LAZY_CPU);
++}
++
++void paravirt_leave_lazy_cpu(void)
++{
++	paravirt_leave_lazy(PARAVIRT_LAZY_CPU);
++}
++
++enum paravirt_lazy_mode paravirt_get_lazy_mode(void)
++{
++	return x86_read_percpu(paravirt_lazy_mode);
++}
++
++struct pv_info pv_info = {
++	.name = "bare hardware",
++	.paravirt_enabled = 0,
++	.kernel_rpl = 0,
++	.shared_kernel_pmd = 1,	/* Only used when CONFIG_X86_PAE is set */
++};
++
++struct pv_init_ops pv_init_ops = {
++	.patch = native_patch,
++	.banner = default_banner,
++	.arch_setup = paravirt_nop,
++	.memory_setup = machine_specific_memory_setup,
++};
++
++struct pv_time_ops pv_time_ops = {
++	.time_init = hpet_time_init,
++	.get_wallclock = native_get_wallclock,
++	.set_wallclock = native_set_wallclock,
++	.sched_clock = native_sched_clock,
++	.get_cpu_khz = native_calculate_cpu_khz,
++};
++
++struct pv_irq_ops pv_irq_ops = {
++	.init_IRQ = native_init_IRQ,
++	.save_fl = native_save_fl,
++	.restore_fl = native_restore_fl,
++	.irq_disable = native_irq_disable,
++	.irq_enable = native_irq_enable,
++	.safe_halt = native_safe_halt,
++	.halt = native_halt,
++};
++
++struct pv_cpu_ops pv_cpu_ops = {
++	.cpuid = native_cpuid,
++	.get_debugreg = native_get_debugreg,
++	.set_debugreg = native_set_debugreg,
++	.clts = native_clts,
++	.read_cr0 = native_read_cr0,
++	.write_cr0 = native_write_cr0,
++	.read_cr4 = native_read_cr4,
++	.read_cr4_safe = native_read_cr4_safe,
++	.write_cr4 = native_write_cr4,
++	.wbinvd = native_wbinvd,
++	.read_msr = native_read_msr_safe,
++	.write_msr = native_write_msr_safe,
++	.read_tsc = native_read_tsc,
++	.read_pmc = native_read_pmc,
++	.load_tr_desc = native_load_tr_desc,
++	.set_ldt = native_set_ldt,
++	.load_gdt = native_load_gdt,
++	.load_idt = native_load_idt,
++	.store_gdt = native_store_gdt,
++	.store_idt = native_store_idt,
++	.store_tr = native_store_tr,
++	.load_tls = native_load_tls,
++	.write_ldt_entry = native_write_ldt_entry,
++	.write_gdt_entry = native_write_gdt_entry,
++	.write_idt_entry = native_write_idt_entry,
++	.load_sp0 = native_load_sp0,
++
++	.irq_enable_syscall_ret = native_irq_enable_syscall_ret,
++	.iret = native_iret,
++
++	.set_iopl_mask = native_set_iopl_mask,
++	.io_delay = native_io_delay,
++
++	.lazy_mode = {
++		.enter = paravirt_nop,
++		.leave = paravirt_nop,
++	},
++};
++
++struct pv_apic_ops pv_apic_ops = {
++#ifdef CONFIG_X86_LOCAL_APIC
++	.apic_write = native_apic_write,
++	.apic_write_atomic = native_apic_write_atomic,
++	.apic_read = native_apic_read,
++	.setup_boot_clock = setup_boot_APIC_clock,
++	.setup_secondary_clock = setup_secondary_APIC_clock,
++	.startup_ipi_hook = paravirt_nop,
++#endif
++};
++
++struct pv_mmu_ops pv_mmu_ops = {
++	.pagetable_setup_start = native_pagetable_setup_start,
++	.pagetable_setup_done = native_pagetable_setup_done,
++
++	.read_cr2 = native_read_cr2,
++	.write_cr2 = native_write_cr2,
++	.read_cr3 = native_read_cr3,
++	.write_cr3 = native_write_cr3,
++
++	.flush_tlb_user = native_flush_tlb,
++	.flush_tlb_kernel = native_flush_tlb_global,
++	.flush_tlb_single = native_flush_tlb_single,
++	.flush_tlb_others = native_flush_tlb_others,
++
++	.alloc_pt = paravirt_nop,
++	.alloc_pd = paravirt_nop,
++	.alloc_pd_clone = paravirt_nop,
++	.release_pt = paravirt_nop,
++	.release_pd = paravirt_nop,
++
++	.set_pte = native_set_pte,
++	.set_pte_at = native_set_pte_at,
++	.set_pmd = native_set_pmd,
++	.pte_update = paravirt_nop,
++	.pte_update_defer = paravirt_nop,
++
++#ifdef CONFIG_HIGHPTE
++	.kmap_atomic_pte = kmap_atomic,
 +#endif
 +
- #define __PVOP_CALL(rettype, op, pre, post, ...)			\
- 	({								\
- 		rettype __ret;						\
--		unsigned long __eax, __edx, __ecx;			\
-+		PVOP_CALL_ARGS;					\
-+		/* This is 32-bit specific, but is okay in 64-bit */	\
-+		/* since this condition will never hold */		\
- 		if (sizeof(rettype) > sizeof(unsigned long)) {		\
- 			asm volatile(pre				\
- 				     paravirt_alt(PARAVIRT_CALL)	\
- 				     post				\
--				     : "=a" (__eax), "=d" (__edx),	\
--				       "=c" (__ecx)			\
-+				     : PVOP_CALL_CLOBBERS		\
- 				     : paravirt_type(op),		\
- 				       paravirt_clobber(CLBR_ANY),	\
- 				       ##__VA_ARGS__			\
--				     : "memory", "cc");			\
-+				     : "memory", "cc" EXTRA_CLOBBERS);	\
- 			__ret = (rettype)((((u64)__edx) << 32) | __eax); \
- 		} else {						\
- 			asm volatile(pre				\
- 				     paravirt_alt(PARAVIRT_CALL)	\
- 				     post				\
--				     : "=a" (__eax), "=d" (__edx),	\
--				       "=c" (__ecx)			\
-+				     : PVOP_CALL_CLOBBERS		\
- 				     : paravirt_type(op),		\
- 				       paravirt_clobber(CLBR_ANY),	\
- 				       ##__VA_ARGS__			\
--				     : "memory", "cc");			\
-+				     : "memory", "cc" EXTRA_CLOBBERS);	\
- 			__ret = (rettype)__eax;				\
- 		}							\
- 		__ret;							\
- 	})
- #define __PVOP_VCALL(op, pre, post, ...)				\
- 	({								\
--		unsigned long __eax, __edx, __ecx;			\
-+		PVOP_VCALL_ARGS;					\
- 		asm volatile(pre					\
- 			     paravirt_alt(PARAVIRT_CALL)		\
- 			     post					\
--			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
-+			     : PVOP_VCALL_CLOBBERS			\
- 			     : paravirt_type(op),			\
- 			       paravirt_clobber(CLBR_ANY),		\
- 			       ##__VA_ARGS__				\
--			     : "memory", "cc");				\
-+			     : "memory", "cc" VEXTRA_CLOBBERS);		\
- 	})
- 
- #define PVOP_CALL0(rettype, op)						\
-@@ -418,22 +447,26 @@
- 	__PVOP_VCALL(op, "", "")
- 
- #define PVOP_CALL1(rettype, op, arg1)					\
--	__PVOP_CALL(rettype, op, "", "", "0" ((u32)(arg1)))
-+	__PVOP_CALL(rettype, op, "", "", "0" ((unsigned long)(arg1)))
- #define PVOP_VCALL1(op, arg1)						\
--	__PVOP_VCALL(op, "", "", "0" ((u32)(arg1)))
-+	__PVOP_VCALL(op, "", "", "0" ((unsigned long)(arg1)))
- 
- #define PVOP_CALL2(rettype, op, arg1, arg2)				\
--	__PVOP_CALL(rettype, op, "", "", "0" ((u32)(arg1)), "1" ((u32)(arg2)))
-+	__PVOP_CALL(rettype, op, "", "", "0" ((unsigned long)(arg1)), 	\
-+	"1" ((unsigned long)(arg2)))
- #define PVOP_VCALL2(op, arg1, arg2)					\
--	__PVOP_VCALL(op, "", "", "0" ((u32)(arg1)), "1" ((u32)(arg2)))
-+	__PVOP_VCALL(op, "", "", "0" ((unsigned long)(arg1)), 		\
-+	"1" ((unsigned long)(arg2)))
- 
- #define PVOP_CALL3(rettype, op, arg1, arg2, arg3)			\
--	__PVOP_CALL(rettype, op, "", "", "0" ((u32)(arg1)),		\
--		    "1"((u32)(arg2)), "2"((u32)(arg3)))
-+	__PVOP_CALL(rettype, op, "", "", "0" ((unsigned long)(arg1)),	\
-+	"1"((unsigned long)(arg2)), "2"((unsigned long)(arg3)))
- #define PVOP_VCALL3(op, arg1, arg2, arg3)				\
--	__PVOP_VCALL(op, "", "", "0" ((u32)(arg1)), "1"((u32)(arg2)),	\
--		     "2"((u32)(arg3)))
-+	__PVOP_VCALL(op, "", "", "0" ((unsigned long)(arg1)),		\
-+	"1"((unsigned long)(arg2)), "2"((unsigned long)(arg3)))
- 
-+/* This is the only difference in x86_64. We can make it much simpler */
-+#ifdef CONFIG_X86_32
- #define PVOP_CALL4(rettype, op, arg1, arg2, arg3, arg4)			\
- 	__PVOP_CALL(rettype, op,					\
- 		    "push %[_arg4];", "lea 4(%%esp),%%esp;",		\
-@@ -444,6 +477,16 @@
- 		    "push %[_arg4];", "lea 4(%%esp),%%esp;",		\
- 		    "0" ((u32)(arg1)), "1" ((u32)(arg2)),		\
- 		    "2" ((u32)(arg3)), [_arg4] "mr" ((u32)(arg4)))
-+#else
-+#define PVOP_CALL4(rettype, op, arg1, arg2, arg3, arg4)			\
-+	__PVOP_CALL(rettype, op, "", "", "0" ((unsigned long)(arg1)),	\
-+	"1"((unsigned long)(arg2)), "2"((unsigned long)(arg3)),		\
-+	"3"((unsigned long)(arg4)))
-+#define PVOP_VCALL4(op, arg1, arg2, arg3, arg4)				\
-+	__PVOP_VCALL(op, "", "", "0" ((unsigned long)(arg1)),		\
-+	"1"((unsigned long)(arg2)), "2"((unsigned long)(arg3)),		\
-+	"3"((unsigned long)(arg4)))
++#ifdef CONFIG_X86_PAE
++	.set_pte_atomic = native_set_pte_atomic,
++	.set_pte_present = native_set_pte_present,
++	.set_pud = native_set_pud,
++	.pte_clear = native_pte_clear,
++	.pmd_clear = native_pmd_clear,
++
++	.pmd_val = native_pmd_val,
++	.make_pmd = native_make_pmd,
 +#endif
- 
- static inline int paravirt_enabled(void)
- {
++
++	.pte_val = native_pte_val,
++	.pgd_val = native_pgd_val,
++
++	.make_pte = native_make_pte,
++	.make_pgd = native_make_pgd,
++
++	.dup_mmap = paravirt_nop,
++	.exit_mmap = paravirt_nop,
++	.activate_mm = paravirt_nop,
++
++	.lazy_mode = {
++		.enter = paravirt_nop,
++		.leave = paravirt_nop,
++	},
++};
++
++EXPORT_SYMBOL_GPL(pv_time_ops);
++EXPORT_SYMBOL    (pv_cpu_ops);
++EXPORT_SYMBOL    (pv_mmu_ops);
++EXPORT_SYMBOL_GPL(pv_apic_ops);
++EXPORT_SYMBOL_GPL(pv_info);
++EXPORT_SYMBOL    (pv_irq_ops);
+Index: linux-2.6-x86/arch/x86/kernel/paravirt_32.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/paravirt_32.c	2007-12-20 19:07:08.000000000 -0800
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,472 +0,0 @@
+-/*  Paravirtualization interfaces
+-    Copyright (C) 2006 Rusty Russell IBM Corporation
+-
+-    This program is free software; you can redistribute it and/or modify
+-    it under the terms of the GNU General Public License as published by
+-    the Free Software Foundation; either version 2 of the License, or
+-    (at your option) any later version.
+-
+-    This program is distributed in the hope that it will be useful,
+-    but WITHOUT ANY WARRANTY; without even the implied warranty of
+-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-    GNU General Public License for more details.
+-
+-    You should have received a copy of the GNU General Public License
+-    along with this program; if not, write to the Free Software
+-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-*/
+-#include <linux/errno.h>
+-#include <linux/module.h>
+-#include <linux/efi.h>
+-#include <linux/bcd.h>
+-#include <linux/highmem.h>
+-
+-#include <asm/bug.h>
+-#include <asm/paravirt.h>
+-#include <asm/desc.h>
+-#include <asm/setup.h>
+-#include <asm/arch_hooks.h>
+-#include <asm/time.h>
+-#include <asm/irq.h>
+-#include <asm/delay.h>
+-#include <asm/fixmap.h>
+-#include <asm/apic.h>
+-#include <asm/tlbflush.h>
+-#include <asm/timer.h>
+-
+-/* nop stub */
+-void _paravirt_nop(void)
+-{
+-}
+-
+-static void __init default_banner(void)
+-{
+-	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
+-	       pv_info.name);
+-}
+-
+-char *memory_setup(void)
+-{
+-	return pv_init_ops.memory_setup();
+-}
+-
+-/* Simple instruction patching code. */
+-#define DEF_NATIVE(ops, name, code)					\
+-	extern const char start_##ops##_##name[], end_##ops##_##name[];	\
+-	asm("start_" #ops "_" #name ": " code "; end_" #ops "_" #name ":")
+-
+-DEF_NATIVE(pv_irq_ops, irq_disable, "cli");
+-DEF_NATIVE(pv_irq_ops, irq_enable, "sti");
+-DEF_NATIVE(pv_irq_ops, restore_fl, "push %eax; popf");
+-DEF_NATIVE(pv_irq_ops, save_fl, "pushf; pop %eax");
+-DEF_NATIVE(pv_cpu_ops, iret, "iret");
+-DEF_NATIVE(pv_cpu_ops, irq_enable_syscall_ret, "sti; sysexit");
+-DEF_NATIVE(pv_mmu_ops, read_cr2, "mov %cr2, %eax");
+-DEF_NATIVE(pv_mmu_ops, write_cr3, "mov %eax, %cr3");
+-DEF_NATIVE(pv_mmu_ops, read_cr3, "mov %cr3, %eax");
+-DEF_NATIVE(pv_cpu_ops, clts, "clts");
+-DEF_NATIVE(pv_cpu_ops, read_tsc, "rdtsc");
+-
+-/* Undefined instruction for dealing with missing ops pointers. */
+-static const unsigned char ud2a[] = { 0x0f, 0x0b };
+-
+-static unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
+-			     unsigned long addr, unsigned len)
+-{
+-	const unsigned char *start, *end;
+-	unsigned ret;
+-
+-	switch(type) {
+-#define SITE(ops, x)						\
+-	case PARAVIRT_PATCH(ops.x):				\
+-		start = start_##ops##_##x;			\
+-		end = end_##ops##_##x;				\
+-		goto patch_site
+-
+-	SITE(pv_irq_ops, irq_disable);
+-	SITE(pv_irq_ops, irq_enable);
+-	SITE(pv_irq_ops, restore_fl);
+-	SITE(pv_irq_ops, save_fl);
+-	SITE(pv_cpu_ops, iret);
+-	SITE(pv_cpu_ops, irq_enable_syscall_ret);
+-	SITE(pv_mmu_ops, read_cr2);
+-	SITE(pv_mmu_ops, read_cr3);
+-	SITE(pv_mmu_ops, write_cr3);
+-	SITE(pv_cpu_ops, clts);
+-	SITE(pv_cpu_ops, read_tsc);
+-#undef SITE
+-
+-	patch_site:
+-		ret = paravirt_patch_insns(ibuf, len, start, end);
+-		break;
+-
+-	default:
+-		ret = paravirt_patch_default(type, clobbers, ibuf, addr, len);
+-		break;
+-	}
+-
+-	return ret;
+-}
+-
+-unsigned paravirt_patch_nop(void)
+-{
+-	return 0;
+-}
+-
+-unsigned paravirt_patch_ignore(unsigned len)
+-{
+-	return len;
+-}
+-
+-struct branch {
+-	unsigned char opcode;
+-	u32 delta;
+-} __attribute__((packed));
+-
+-unsigned paravirt_patch_call(void *insnbuf,
+-			     const void *target, u16 tgt_clobbers,
+-			     unsigned long addr, u16 site_clobbers,
+-			     unsigned len)
+-{
+-	struct branch *b = insnbuf;
+-	unsigned long delta = (unsigned long)target - (addr+5);
+-
+-	if (tgt_clobbers & ~site_clobbers)
+-		return len;	/* target would clobber too much for this site */
+-	if (len < 5)
+-		return len;	/* call too long for patch site */
+-
+-	b->opcode = 0xe8; /* call */
+-	b->delta = delta;
+-	BUILD_BUG_ON(sizeof(*b) != 5);
+-
+-	return 5;
+-}
+-
+-unsigned paravirt_patch_jmp(void *insnbuf, const void *target,
+-			    unsigned long addr, unsigned len)
+-{
+-	struct branch *b = insnbuf;
+-	unsigned long delta = (unsigned long)target - (addr+5);
+-
+-	if (len < 5)
+-		return len;	/* call too long for patch site */
+-
+-	b->opcode = 0xe9;	/* jmp */
+-	b->delta = delta;
+-
+-	return 5;
+-}
+-
+-/* Neat trick to map patch type back to the call within the
+- * corresponding structure. */
+-static void *get_call_destination(u8 type)
+-{
+-	struct paravirt_patch_template tmpl = {
+-		.pv_init_ops = pv_init_ops,
+-		.pv_time_ops = pv_time_ops,
+-		.pv_cpu_ops = pv_cpu_ops,
+-		.pv_irq_ops = pv_irq_ops,
+-		.pv_apic_ops = pv_apic_ops,
+-		.pv_mmu_ops = pv_mmu_ops,
+-	};
+-	return *((void **)&tmpl + type);
+-}
+-
+-unsigned paravirt_patch_default(u8 type, u16 clobbers, void *insnbuf,
+-				unsigned long addr, unsigned len)
+-{
+-	void *opfunc = get_call_destination(type);
+-	unsigned ret;
+-
+-	if (opfunc == NULL)
+-		/* If there's no function, patch it with a ud2a (BUG) */
+-		ret = paravirt_patch_insns(insnbuf, len, ud2a, ud2a+sizeof(ud2a));
+-	else if (opfunc == paravirt_nop)
+-		/* If the operation is a nop, then nop the callsite */
+-		ret = paravirt_patch_nop();
+-	else if (type == PARAVIRT_PATCH(pv_cpu_ops.iret) ||
+-		 type == PARAVIRT_PATCH(pv_cpu_ops.irq_enable_syscall_ret))
+-		/* If operation requires a jmp, then jmp */
+-		ret = paravirt_patch_jmp(insnbuf, opfunc, addr, len);
+-	else
+-		/* Otherwise call the function; assume target could
+-		   clobber any caller-save reg */
+-		ret = paravirt_patch_call(insnbuf, opfunc, CLBR_ANY,
+-					  addr, clobbers, len);
+-
+-	return ret;
+-}
+-
+-unsigned paravirt_patch_insns(void *insnbuf, unsigned len,
+-			      const char *start, const char *end)
+-{
+-	unsigned insn_len = end - start;
+-
+-	if (insn_len > len || start == NULL)
+-		insn_len = len;
+-	else
+-		memcpy(insnbuf, start, insn_len);
+-
+-	return insn_len;
+-}
+-
+-void init_IRQ(void)
+-{
+-	pv_irq_ops.init_IRQ();
+-}
+-
+-static void native_flush_tlb(void)
+-{
+-	__native_flush_tlb();
+-}
+-
+-/*
+- * Global pages have to be flushed a bit differently. Not a real
+- * performance problem because this does not happen often.
+- */
+-static void native_flush_tlb_global(void)
+-{
+-	__native_flush_tlb_global();
+-}
+-
+-static void native_flush_tlb_single(unsigned long addr)
+-{
+-	__native_flush_tlb_single(addr);
+-}
+-
+-/* These are in entry.S */
+-extern void native_iret(void);
+-extern void native_irq_enable_syscall_ret(void);
+-
+-static int __init print_banner(void)
+-{
+-	pv_init_ops.banner();
+-	return 0;
+-}
+-core_initcall(print_banner);
+-
+-static struct resource reserve_ioports = {
+-	.start = 0,
+-	.end = IO_SPACE_LIMIT,
+-	.name = "paravirt-ioport",
+-	.flags = IORESOURCE_IO | IORESOURCE_BUSY,
+-};
+-
+-static struct resource reserve_iomem = {
+-	.start = 0,
+-	.end = -1,
+-	.name = "paravirt-iomem",
+-	.flags = IORESOURCE_MEM | IORESOURCE_BUSY,
+-};
+-
+-/*
+- * Reserve the whole legacy IO space to prevent any legacy drivers
+- * from wasting time probing for their hardware.  This is a fairly
+- * brute-force approach to disabling all non-virtual drivers.
+- *
+- * Note that this must be called very early to have any effect.
+- */
+-int paravirt_disable_iospace(void)
+-{
+-	int ret;
+-
+-	ret = request_resource(&ioport_resource, &reserve_ioports);
+-	if (ret == 0) {
+-		ret = request_resource(&iomem_resource, &reserve_iomem);
+-		if (ret)
+-			release_resource(&reserve_ioports);
+-	}
+-
+-	return ret;
+-}
+-
+-static DEFINE_PER_CPU(enum paravirt_lazy_mode, paravirt_lazy_mode) = PARAVIRT_LAZY_NONE;
+-
+-static inline void enter_lazy(enum paravirt_lazy_mode mode)
+-{
+-	BUG_ON(x86_read_percpu(paravirt_lazy_mode) != PARAVIRT_LAZY_NONE);
+-	BUG_ON(preemptible());
+-
+-	x86_write_percpu(paravirt_lazy_mode, mode);
+-}
+-
+-void paravirt_leave_lazy(enum paravirt_lazy_mode mode)
+-{
+-	BUG_ON(x86_read_percpu(paravirt_lazy_mode) != mode);
+-	BUG_ON(preemptible());
+-
+-	x86_write_percpu(paravirt_lazy_mode, PARAVIRT_LAZY_NONE);
+-}
+-
+-void paravirt_enter_lazy_mmu(void)
+-{
+-	enter_lazy(PARAVIRT_LAZY_MMU);
+-}
+-
+-void paravirt_leave_lazy_mmu(void)
+-{
+-	paravirt_leave_lazy(PARAVIRT_LAZY_MMU);
+-}
+-
+-void paravirt_enter_lazy_cpu(void)
+-{
+-	enter_lazy(PARAVIRT_LAZY_CPU);
+-}
+-
+-void paravirt_leave_lazy_cpu(void)
+-{
+-	paravirt_leave_lazy(PARAVIRT_LAZY_CPU);
+-}
+-
+-enum paravirt_lazy_mode paravirt_get_lazy_mode(void)
+-{
+-	return x86_read_percpu(paravirt_lazy_mode);
+-}
+-
+-struct pv_info pv_info = {
+-	.name = "bare hardware",
+-	.paravirt_enabled = 0,
+-	.kernel_rpl = 0,
+-	.shared_kernel_pmd = 1,	/* Only used when CONFIG_X86_PAE is set */
+-};
+-
+-struct pv_init_ops pv_init_ops = {
+-	.patch = native_patch,
+-	.banner = default_banner,
+-	.arch_setup = paravirt_nop,
+-	.memory_setup = machine_specific_memory_setup,
+-};
+-
+-struct pv_time_ops pv_time_ops = {
+-	.time_init = hpet_time_init,
+-	.get_wallclock = native_get_wallclock,
+-	.set_wallclock = native_set_wallclock,
+-	.sched_clock = native_sched_clock,
+-	.get_cpu_khz = native_calculate_cpu_khz,
+-};
+-
+-struct pv_irq_ops pv_irq_ops = {
+-	.init_IRQ = native_init_IRQ,
+-	.save_fl = native_save_fl,
+-	.restore_fl = native_restore_fl,
+-	.irq_disable = native_irq_disable,
+-	.irq_enable = native_irq_enable,
+-	.safe_halt = native_safe_halt,
+-	.halt = native_halt,
+-};
+-
+-struct pv_cpu_ops pv_cpu_ops = {
+-	.cpuid = native_cpuid,
+-	.get_debugreg = native_get_debugreg,
+-	.set_debugreg = native_set_debugreg,
+-	.clts = native_clts,
+-	.read_cr0 = native_read_cr0,
+-	.write_cr0 = native_write_cr0,
+-	.read_cr4 = native_read_cr4,
+-	.read_cr4_safe = native_read_cr4_safe,
+-	.write_cr4 = native_write_cr4,
+-	.wbinvd = native_wbinvd,
+-	.read_msr = native_read_msr_safe,
+-	.write_msr = native_write_msr_safe,
+-	.read_tsc = native_read_tsc,
+-	.read_pmc = native_read_pmc,
+-	.load_tr_desc = native_load_tr_desc,
+-	.set_ldt = native_set_ldt,
+-	.load_gdt = native_load_gdt,
+-	.load_idt = native_load_idt,
+-	.store_gdt = native_store_gdt,
+-	.store_idt = native_store_idt,
+-	.store_tr = native_store_tr,
+-	.load_tls = native_load_tls,
+-	.write_ldt_entry = native_write_ldt_entry,
+-	.write_gdt_entry = native_write_gdt_entry,
+-	.write_idt_entry = native_write_idt_entry,
+-	.load_sp0 = native_load_sp0,
+-
+-	.irq_enable_syscall_ret = native_irq_enable_syscall_ret,
+-	.iret = native_iret,
+-
+-	.set_iopl_mask = native_set_iopl_mask,
+-	.io_delay = native_io_delay,
+-
+-	.lazy_mode = {
+-		.enter = paravirt_nop,
+-		.leave = paravirt_nop,
+-	},
+-};
+-
+-struct pv_apic_ops pv_apic_ops = {
+-#ifdef CONFIG_X86_LOCAL_APIC
+-	.apic_write = native_apic_write,
+-	.apic_write_atomic = native_apic_write_atomic,
+-	.apic_read = native_apic_read,
+-	.setup_boot_clock = setup_boot_APIC_clock,
+-	.setup_secondary_clock = setup_secondary_APIC_clock,
+-	.startup_ipi_hook = paravirt_nop,
+-#endif
+-};
+-
+-struct pv_mmu_ops pv_mmu_ops = {
+-	.pagetable_setup_start = native_pagetable_setup_start,
+-	.pagetable_setup_done = native_pagetable_setup_done,
+-
+-	.read_cr2 = native_read_cr2,
+-	.write_cr2 = native_write_cr2,
+-	.read_cr3 = native_read_cr3,
+-	.write_cr3 = native_write_cr3,
+-
+-	.flush_tlb_user = native_flush_tlb,
+-	.flush_tlb_kernel = native_flush_tlb_global,
+-	.flush_tlb_single = native_flush_tlb_single,
+-	.flush_tlb_others = native_flush_tlb_others,
+-
+-	.alloc_pt = paravirt_nop,
+-	.alloc_pd = paravirt_nop,
+-	.alloc_pd_clone = paravirt_nop,
+-	.release_pt = paravirt_nop,
+-	.release_pd = paravirt_nop,
+-
+-	.set_pte = native_set_pte,
+-	.set_pte_at = native_set_pte_at,
+-	.set_pmd = native_set_pmd,
+-	.pte_update = paravirt_nop,
+-	.pte_update_defer = paravirt_nop,
+-
+-#ifdef CONFIG_HIGHPTE
+-	.kmap_atomic_pte = kmap_atomic,
+-#endif
+-
+-#ifdef CONFIG_X86_PAE
+-	.set_pte_atomic = native_set_pte_atomic,
+-	.set_pte_present = native_set_pte_present,
+-	.set_pud = native_set_pud,
+-	.pte_clear = native_pte_clear,
+-	.pmd_clear = native_pmd_clear,
+-
+-	.pmd_val = native_pmd_val,
+-	.make_pmd = native_make_pmd,
+-#endif
+-
+-	.pte_val = native_pte_val,
+-	.pgd_val = native_pgd_val,
+-
+-	.make_pte = native_make_pte,
+-	.make_pgd = native_make_pgd,
+-
+-	.dup_mmap = paravirt_nop,
+-	.exit_mmap = paravirt_nop,
+-	.activate_mm = paravirt_nop,
+-
+-	.lazy_mode = {
+-		.enter = paravirt_nop,
+-		.leave = paravirt_nop,
+-	},
+-};
+-
+-EXPORT_SYMBOL_GPL(pv_time_ops);
+-EXPORT_SYMBOL    (pv_cpu_ops);
+-EXPORT_SYMBOL    (pv_mmu_ops);
+-EXPORT_SYMBOL_GPL(pv_apic_ops);
+-EXPORT_SYMBOL_GPL(pv_info);
+-EXPORT_SYMBOL    (pv_irq_ops);
