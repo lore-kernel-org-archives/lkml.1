@@ -1,122 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932877AbXLTPSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933291AbXLTPTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932877AbXLTPSl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 10:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbXLTPSc
+	id S933291AbXLTPTj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 10:19:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757528AbXLTPT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 10:18:32 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40959 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751028AbXLTPSc (ORCPT
+	Thu, 20 Dec 2007 10:19:28 -0500
+Received: from [76.243.235.52] ([76.243.235.52]:57462 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753990AbXLTPT1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 10:18:32 -0500
-Subject: Re: [rfc][patch] mm: madvise(WILLNEED) for anonymous memory
-From: Peter Zijlstra <peterz@infradead.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>, riel <riel@redhat.com>,
-       Lennart Poettering <mztabzr@0pointer.de>
-In-Reply-To: <1198162560.6821.30.camel@twins>
-References: <1198155938.6821.3.camel@twins>
-	 <Pine.LNX.4.64.0712201339010.18399@blonde.wat.veritas.com>
-	 <1198162078.6821.27.camel@twins>  <1198162560.6821.30.camel@twins>
+	Thu, 20 Dec 2007 10:19:27 -0500
+X-Greylist: delayed 673 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Dec 2007 10:19:27 EST
+Subject: Re: INITIO scsi driver fails to work properly
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Natalie Protasevich <protasnb@gmail.com>
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Filippos Papadopoulos <psybases@gmail.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <32209efe0712200132k68ba2b40gf6e3a103c216e57@mail.gmail.com>
+References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
+	 <20071217031841.f483e5ac.akpm@linux-foundation.org>
+	 <9f00bd9d0712170341u7fef1fc9pc9986dda1a0475cb@mail.gmail.com>
+	 <47666904.8060605@panasas.com>
+	 <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
+	 <20071219132918.GB26272@parisc-linux.org>
+	 <1198083040.5487.14.camel@localhost.localdomain>
+	 <20071219170542.GC26272@parisc-linux.org>
+	 <32209efe0712200132k68ba2b40gf6e3a103c216e57@mail.gmail.com>
 Content-Type: text/plain
-Date: Thu, 20 Dec 2007 16:18:28 +0100
-Message-Id: <1198163908.6821.33.camel@twins>
+Date: Thu, 20 Dec 2007 09:08:07 -0600
+Message-Id: <1198163287.3074.8.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2007-12-20 at 15:56 +0100, Peter Zijlstra wrote:
-> On Thu, 2007-12-20 at 15:47 +0100, Peter Zijlstra wrote:
-> > On Thu, 2007-12-20 at 14:09 +0000, Hugh Dickins wrote:
+On Thu, 2007-12-20 at 01:32 -0800, Natalie Protasevich wrote:
+> On Dec 19, 2007 9:05 AM, Matthew Wilcox <matthew@wil.cx> wrote:
+> > On Wed, Dec 19, 2007 at 10:50:40AM -0600, James Bottomley wrote:
+> > > So, to get the best of both worlds, file a bugzilla and note the bugid.
+> > > Then email a complete report to the relevant list, but add [BUG <bugid>]
+> > > to the subject line and cc bugme-daemon@bugzilla.kernel.org  If you do
+> > > this, bugzilla will keep track of the entire discussion as it progresses
+> > > and allow those who track bugs through bugzilla to get a pretty accurate
+> > > idea of the status.  You should never need to touch bugzilla again once
+> > > the initial bug report is filed: all future information flow is via the
+> > > mailing lists.
+> >
+> > The problem is that it appears to the casual observer as if they can
+> > then add information to the bug through the web interface.  But that
+> > information will never be forwarded to the mailing list.  Unless there's
+> > a way of marking bugs as 'unchangable through the web interface' or 'all
+> > messages appended to this bug need to be forwarded', Bugzilla just
+> > doesn't fit our needs.
+> >
+> > The Debian BTS fits our way of working much better.  Perhaps somebody
+> > should investigate a migration.
 > 
-> > > Interesting divergence: make_pages_present faults in writable pages
-> > > in a writable vma, whereas the file case's force_page_cache_readahead
-> > > doesn't even insert the pages into the mm.
-> > 
-> > Yeah, the find_vma and write fault thing are the reason I didn't use
-> > make_pages_present.
-> > 
-> > I had noticed the difference in pte population between
-> > force_page_cache_readahead and make_pages_present, but it seemed to me
-> > that writing a function to walk the page tables and populate the
-> > swapcache but not populate the ptes wasn't worth the effort.
-> 
-> Ah, another, more important difference:
-> 
-> force_page_cache_readahead will not wait for the read to complete,
-> whereas get_user_pages() will be fully synchronous.
-> 
-> I think I'd better come up with something else then,..
+> This is excellent observation by Matthew and James. There is no magic
+> in bugzilla not being loved, it is just "not the right set of features
+> for effective work on a problem". It doesn't support multiple
+> developer' collaboration well.
+> This distaste is not universal, since some people don't have a problem
+> with bugzilla as is, maybe those who tend to work on problems
+> "alone"...
+> But making it to be a workable tool for everyone is definitely worth it.
+> Any other favorite bugzillas that are nice to work with and that have
+> the advantage above?
 
-Depending on the page table walk from -mm
+We have actually been trying for over two years to get bugzilla fixed so
+that it suits our email and list publishing workflow for fixing bugs.  I
+surmise that 90% of our problems with bugzilla could be solved if it
+simply tipped a SCSI bug report onto the SCSI list when it was created
+in such a way that all replies were gathered back into bugzilla.
+Unfortunately, no-one who maintains our bugzilla has actually been able
+to make this happen.  The other 10% of the problem is that bugzilla
+doesn't seem to have a way properly to integrate people who insist on
+using its web interface to reply into the email flow.
 
----
-A best effort implementation of madvise(WILLNEED) for anonymous pages.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/mm/madvise.c b/mm/madvise.c
-index 93ee375..e6f772a 100644
---- a/mm/madvise.c
-+++ b/mm/madvise.c
-@@ -11,6 +11,8 @@
- #include <linux/mempolicy.h>
- #include <linux/hugetlb.h>
- #include <linux/sched.h>
-+#include <linux/swap.h>
-+#include <linux/swapops.h>
- 
- /*
-  * Any behaviour which results in changes to the vma->vm_flags needs to
-@@ -100,6 +102,34 @@ out:
- 	return error;
- }
- 
-+static int madvise_willneed_anon_pte(pte_t *ptep,
-+		unsigned long start, unsigned long end, void *arg)
-+{
-+	struct vm_area_struct *vma = arg;
-+	struct page *page;
-+
-+	page = read_swap_cache_async(pte_to_swp_entry(*ptep), GFP_KERNEL,
-+			vma, start);
-+	if (page)
-+		page_cache_release(page);
-+
-+	return 0;
-+}
-+
-+static long madvise_willneed_anon(struct vm_area_struct * vma,
-+				  struct vm_area_struct ** prev,
-+				  unsigned long start, unsigned long end)
-+{
-+	struct mm_walk walk = {
-+		.pte_entry = madvise_willneed_anon_pte,
-+	};
-+
-+	*prev = vma;
-+	walk_page_range(vma->vm_mm, start, end, &walk, vma);
-+
-+	return 0;
-+}
-+
- /*
-  * Schedule all required I/O operations.  Do not wait for completion.
-  */
-@@ -110,7 +140,7 @@ static long madvise_willneed(struct vm_area_struct * vma,
- 	struct file *file = vma->vm_file;
- 
- 	if (!file)
--		return -EBADF;
-+		return madvise_willneed_anon(vma, prev, start, end);
- 
- 	if (file->f_mapping->a_ops->get_xip_page) {
- 		/* no bad return value, but ignore advice */
+James
 
 
