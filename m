@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759374AbXLTJ5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759640AbXLTJ6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759374AbXLTJ5T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 04:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXLTJ5D
+	id S1759640AbXLTJ6T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 04:58:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbXLTJ6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 04:57:03 -0500
-Received: from miranda.se.axis.com ([193.13.178.8]:42807 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753185AbXLTJ5C (ORCPT
+	Thu, 20 Dec 2007 04:58:12 -0500
+Received: from smtp-104-thursday.nerim.net ([62.4.16.104]:58073 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755000AbXLTJ6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 04:57:02 -0500
-Date: Thu, 20 Dec 2007 10:56:56 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Clemens Koller <clemens.koller@anagramm.de>
-Cc: LKML List <linux-kernel@vger.kernel.org>, jesper.nilsson@axis.com
-Subject: Re: What's this __dummy in asm-cris/bitops.h?
-Message-ID: <20071220095656.GF10888@axis.com>
-References: <47697761.1090702@anagramm.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47697761.1090702@anagramm.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 20 Dec 2007 04:58:11 -0500
+Date: Thu, 20 Dec 2007 10:58:08 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: lm-sensors <lm-sensors@lm-sensors.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] adt7470: Support per-sensor alarm files
+Message-ID: <20071220105808.1d9a044b@hyperion.delvare>
+In-Reply-To: <20071219221124.GP6870@tree.beaverton.ibm.com>
+References: <20071219040123.GN6870@tree.beaverton.ibm.com>
+	<20071219154012.18302de5@hyperion.delvare>
+	<20071219221124.GP6870@tree.beaverton.ibm.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 19, 2007 at 08:56:17PM +0100, Clemens Koller wrote:
-> Hello,
+Hi Darrick,
+
+On Wed, 19 Dec 2007 14:11:25 -0800, Darrick J. Wong wrote:
+> On Wed, Dec 19, 2007 at 03:40:12PM +0100, Jean Delvare wrote:
+> > In general we keep the all-in-one alarms file for compatibility, but
+> > given that this driver is fairly new and libsensors never had specific
+> > support for it anyway, it's probably OK to drop it this time.
 > 
-> while looking for some assembly out of order / optimization stuff
-> for something else, I found some strange code in
-> .../linux/include/asm-cris/bitops.h:22
+> Thanks for the code review.  I've made the changes you asked for and
+> here's a new patch to supersede yesterday's.
+> ---
+> Remove the old alarms hack and replace it with per-sensor alarm files.
 > 
-> /*
-> * Some hacks to defeat gcc over-optimizations..
-> */
-> struct __dummy { unsigned long a[100]; };
-> #define ADDR (*(struct __dummy *) addr)
-> #define CONST_ADDR (*(const struct __dummy *) addr)
-> 
-> CONST_ADDR is never used in the kernel.
-> Maybe some -cris people could have a look.
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
 
-Hmm... This is very old code, it hasn't changed since 2001 and
-it is not used anywhere.
+Looks alright to me this time.
 
-I'll send a patch to remove it, thanks for noticing!
+Acked-by: Jean Delvare <khali@linux-fr.org>
 
-> Thanks,
-> Clemens Koller
+BTW, did you try your driver with lm-sensors 3.0.0?
 
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Thanks,
+-- 
+Jean Delvare
