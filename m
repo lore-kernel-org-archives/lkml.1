@@ -1,42 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbXLTWhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762349AbXLTWjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764248AbXLTWhq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:37:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbXLTWhb
+	id S1762349AbXLTWjr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:39:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbXLTWjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:37:31 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:53986 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753265AbXLTWha (ORCPT
+	Thu, 20 Dec 2007 17:39:37 -0500
+Received: from outlb3.dejazzd.com ([66.109.229.70]:21173 "EHLO
+	smtp.dejazzd.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752821AbXLTWjg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:37:30 -0500
-Date: Thu, 20 Dec 2007 15:37:28 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Mark Lord <liml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
-       lkml@rtr.ca, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] fix page_alloc for larger I/O segments (improved)
-Message-ID: <20071220223728.GM29690@parisc-linux.org>
-References: <20071213142935.47ff19d9.akpm@linux-foundation.org> <4761B32A.3070201@rtr.ca> <4761BCB4.1060601@rtr.ca> <4761C8E4.2010900@rtr.ca> <4761CE88.9070406@rtr.ca> <20071213163726.3bb601fa.akpm@linux-foundation.org> <4761D160.7060603@rtr.ca> <4761D279.6050500@rtr.ca> <20071214174236.GA28613@csn.ul.ie> <20071214181339.GW26334@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071214181339.GW26334@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 20 Dec 2007 17:39:36 -0500
+X-Greylist: delayed 3600 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Dec 2007 17:39:36 EST
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=UTF-8
+Message-id: <476AE109.5070005@videon-central.com>
+Date: Thu, 20 Dec 2007 16:39:21 -0500
+From: "Cory T. Tusar" <ctusar@videon-central.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071219)
+To: linux-kernel@vger.kernel.org
+Cc: jirislaby@gmail.com, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: [PATCH] tty: Fix logic change introduced by
+ wait_event_interruptible_timeout()
+X-Enigmail-Version: 0.95.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 14, 2007 at 11:13:40AM -0700, Matthew Wilcox wrote:
-> I'll send it to our DB team to see if this improves our numbers at all.
+tty: Fix logic change introduced by wait_event_interruptible_timeout()
 
-It does, by approximately 0.67%.  This is about double the margin of
-error, and a significant improvement.  Thanks!
+Commit 5a52bd4a2dcb570333ce6fe2e16cd311650dbdc8 introduced a subtle logic
+change in tty_wait_until_sent().  The original version would only error
+out of the 'do { ... } while (timeout)' loop if signal_pending() evaluated
+to true; a timeout or break due to an empty buffer would fall out of the
+loop and into the tty->driver->wait_until_sent handling.  The current
+implementation will error out on either a pending signal or an empty
+buffer, falling through to the tty->driver->wait_until_sent handling
+only on a timeout.
+
+This change reverts the logic flow in tty_wait_until_sent() to match that
+prior to the aforementioned commit.
+
+Signed-off-by: Cory T. Tusar <ctusar@videon-central.com>
+
+---
+Please CC me on any replies; I'm not subscribed to lkml.  Thanks.
+
+ drivers/char/tty_ioctl.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
+index 1bdd2bf..e02d592 100644
+--- a/drivers/char/tty_ioctl.c
++++ b/drivers/char/tty_ioctl.c
+@@ -62,7 +62,7 @@ void tty_wait_until_sent(struct tty_struct * tty, long timeout)
+ 	if (!timeout)
+ 		timeout = MAX_SCHEDULE_TIMEOUT;
+ 	if (wait_event_interruptible_timeout(tty->write_wait,
+-			!tty->driver->chars_in_buffer(tty), timeout))
++			!tty->driver->chars_in_buffer(tty), timeout) < 0)
+ 		return;
+ 	if (tty->driver->wait_until_sent)
+ 		tty->driver->wait_until_sent(tty, timeout);
+
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Cory T. Tusar
+Embedded Systems Engineer
+Videon Central, Inc.
+2171 Sandy Drive
+State College, PA 16803
+(814) 235-1111 x316
+(814) 235-1118 fax
+
+
+"There are two ways of constructing a software design.  One way is to
+ make it so simple that there are obviously no deficiencies, and the
+ other way is to make it so complicated that there are no obvious
+ deficiencies."  --Sir Charles Anthony Richard Hoare
+
+
+
