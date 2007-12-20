@@ -1,176 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938348AbXLTPvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765470AbXLTP4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938348AbXLTPvs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 10:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938090AbXLTPud
+	id S1765470AbXLTP4w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 10:56:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbXLTP4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 10:50:33 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48356 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938082AbXLTPua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 10:50:30 -0500
-Message-ID: <476A8F36.2050007@redhat.com>
-Date: Thu, 20 Dec 2007 09:50:14 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Thu, 20 Dec 2007 10:56:44 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:30768 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753286AbXLTP4m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 10:56:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CtItnnMe8GiQbbTUGtNHaTntJg87dPq+iM2fCUz0qX+tvGR9iMZj7bOZuRU49R8iv71dn3elz0EYQJmC9dgnmSFjyOPoG35hh6Wv9P4FvZHFarEk1CG384wz4GQOu3zxi4pB0c31c3zEQXNXfih1hy4ezWB7aBn3eOY/OPkkB1k=
+Message-ID: <9e4733910712200756s40fd5d1ax8f2ca2b903befed3@mail.gmail.com>
+Date: Thu, 20 Dec 2007 10:56:42 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Olof Johansson" <olof@lixom.net>
+Subject: Re: [PATCH 4/5] Convert PowerPC MPC i2c to of_platform_driver from platform_driver
+In-Reply-To: <20071220051618.GB29058@localhost.localdomain>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Roman Zippel <zippel@linux-m68k.org>
-Subject: [PATCH] UPDATED: hfs: handle more on-disk corruptions without oopsing
-References: <47699C29.4010706@redhat.com>
-In-Reply-To: <47699C29.4010706@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071220044136.20091.70984.stgit@terra.home>
+	 <20071220044144.20091.35917.stgit@terra.home>
+	 <20071220051618.GB29058@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, I double-issued warnings in some cases.  Mind replacing
-with this one?
+On 12/20/07, David Gibson <david@gibson.dropbear.id.au> wrote:
+> On Wed, Dec 19, 2007 at 11:41:44PM -0500, Jon Smirl wrote:
+> > Convert MPC i2c driver from being a platform_driver to an open
+> > firmware version. Error returns were improved. Routine names were
+> > changed from fsl_ to mpc_ to make them match the file name.
+>
+> In discussions BenH and I have had, we've actually concluded that
+> moving this from platform drivers to of_platform drives is not
+> actually a good idea.
+>
+> In fact we're planning to move away from of_platform devices and
+> drivers and instead develop a framework for instantiating platform
+> devices or i2c devices or whatever devices from the device tree nodes.
 
-Thanks,
--Eric
+I have to work with what is in the kernel tree so this patch is based
+the current kernel. A lot of time and testing has going into all the
+revisions of this patch. It has been posted in various forms for the
+last month and a half.
 
-hfs seems prone to bad things when it encounters on disk corruption.
-Many values are read from disk, and used as lengths to memcpy, as an
-example.  This patch fixes up several of these problematic cases.
+As for platform vs of_platform, IMHO of_platform should have been
+derived from platform instead of being an unrelated structure. In the
+current scheme of unrelated structures it makes more sense to use one
+or the other and not mix them. I am in agreement with Olof that if and
+when a new scheme is adopted the drivers should be converted then.
 
-o sanity check the on-disk maximum key lengths on mount
-  (these are set to a defined value at mkfs time and shouldn't differ)
-o check on-disk node keylens against the maximum key length for each tree
-o fix hfs_btree_open so that going out via free_tree: doesn't wind
-  up in hfs_releasepage, which wants to follow the very pointer
-  we were trying to set up:
-	HFS_SB(sb)->cat_tree = hfs_btree_open()
-		...
-		failure gets to hfs_releasepage and tries
-		to follow HFS_SB(sb)->cat_tree
+In my local builds I have disabled platform and use only of_platform.
+An of_platform only system works fine and is capable of instantiating
+everything from the device tree as this patch illustrates. Once this
+patch goes in I'll post another series that shows how I went
+of_platform only on mpc5200.
 
-Tested with the fsfuzzer; it survives more than it used to.
+Everyone seems to be focusing on a small piece of driver
+initialization code and ignoring the much more complicated part which
+implements dynamic i2c driver loading. It's the complicated part of
+the code that needs review.
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
----
+Ben, I know we talked about not putting the alias names into their own
+namespace. But the i2c people don't want to move onto the standard
+kernel aliasing scheme for other platforms and asked for #ifdef
+powerpc. In version 15 I removed the cross platform support and made
+everything powerpc specific. .
 
-Index: linux-2.6.24-rc3/fs/hfs/brec.c
-===================================================================
---- linux-2.6.24-rc3.orig/fs/hfs/brec.c
-+++ linux-2.6.24-rc3/fs/hfs/brec.c
-@@ -44,10 +44,21 @@ u16 hfs_brec_keylen(struct hfs_bnode *no
- 		recoff = hfs_bnode_read_u16(node, node->tree->node_size - (rec + 1) * 2);
- 		if (!recoff)
- 			return 0;
--		if (node->tree->attributes & HFS_TREE_BIGKEYS)
-+		if (node->tree->attributes & HFS_TREE_BIGKEYS) {
- 			retval = hfs_bnode_read_u16(node, recoff) + 2;
--		else
-+			if (retval > node->tree->max_key_len + 2) {
-+				printk(KERN_ERR "hfs: keylen %d too large\n",
-+					retval);
-+				retval = HFS_BAD_KEYLEN;
-+			}
-+		} else {
- 			retval = (hfs_bnode_read_u8(node, recoff) | 1) + 1;
-+			if (retval > node->tree->max_key_len + 1) {
-+				printk(KERN_ERR "hfs: keylen %d too large\n",
-+					retval);
-+				retval = HFS_BAD_KEYLEN;
-+			}
-+		}
- 	}
- 	return retval;
- }
-Index: linux-2.6.24-rc3/fs/hfs/bfind.c
-===================================================================
---- linux-2.6.24-rc3.orig/fs/hfs/bfind.c
-+++ linux-2.6.24-rc3/fs/hfs/bfind.c
-@@ -52,6 +52,10 @@ int __hfs_brec_find(struct hfs_bnode *bn
- 		rec = (e + b) / 2;
- 		len = hfs_brec_lenoff(bnode, rec, &off);
- 		keylen = hfs_brec_keylen(bnode, rec);
-+		if (keylen == HFS_BAD_KEYLEN) {
-+			res = -EINVAL;
-+			goto done;
-+		}
- 		hfs_bnode_read(bnode, fd->key, off, keylen);
- 		cmpval = bnode->tree->keycmp(fd->key, fd->search_key);
- 		if (!cmpval) {
-@@ -67,6 +71,10 @@ int __hfs_brec_find(struct hfs_bnode *bn
- 	if (rec != e && e >= 0) {
- 		len = hfs_brec_lenoff(bnode, e, &off);
- 		keylen = hfs_brec_keylen(bnode, e);
-+		if (keylen == HFS_BAD_KEYLEN) {
-+			res = -EINVAL;
-+			goto done;
-+		}
- 		hfs_bnode_read(bnode, fd->key, off, keylen);
- 	}
- done:
-@@ -198,6 +206,10 @@ int hfs_brec_goto(struct hfs_find_data *
- 
- 	len = hfs_brec_lenoff(bnode, fd->record, &off);
- 	keylen = hfs_brec_keylen(bnode, fd->record);
-+	if (keylen == HFS_BAD_KEYLEN) {
-+		res = -EINVAL;
-+		goto out;
-+	}
- 	fd->keyoffset = off;
- 	fd->keylength = keylen;
- 	fd->entryoffset = off + keylen;
-Index: linux-2.6.24-rc3/fs/hfs/hfs.h
-===================================================================
---- linux-2.6.24-rc3.orig/fs/hfs/hfs.h
-+++ linux-2.6.24-rc3/fs/hfs/hfs.h
-@@ -28,6 +28,8 @@
- #define HFS_MAX_NAMELEN		128
- #define HFS_MAX_VALENCE		32767U
- 
-+#define HFS_BAD_KEYLEN		0xFF
-+
- /* Meanings of the drAtrb field of the MDB,
-  * Reference: _Inside Macintosh: Files_ p. 2-61
-  */
-@@ -167,6 +169,9 @@ typedef union hfs_btree_key {
- 	struct hfs_ext_key ext;
- } hfs_btree_key;
- 
-+#define HFS_MAX_CAT_KEYLEN	(sizeof(struct hfs_cat_key) - sizeof(u8))
-+#define HFS_MAX_EXT_KEYLEN	(sizeof(struct hfs_ext_key) - sizeof(u8))
-+
- typedef union hfs_btree_key btree_key;
- 
- struct hfs_extent {
-Index: linux-2.6.24-rc3/fs/hfs/btree.c
-===================================================================
---- linux-2.6.24-rc3.orig/fs/hfs/btree.c
-+++ linux-2.6.24-rc3/fs/hfs/btree.c
-@@ -81,6 +81,17 @@ struct hfs_btree *hfs_btree_open(struct 
- 		goto fail_page;
- 	if (!tree->node_count)
- 		goto fail_page;
-+	if ((id == HFS_EXT_CNID) && (tree->max_key_len != HFS_MAX_EXT_KEYLEN)) {
-+		printk(KERN_ERR "hfs: invalid extent max_key_len %d\n",
-+			tree->max_key_len);
-+		goto fail_page;
-+	}
-+	if ((id == HFS_CAT_CNID) && (tree->max_key_len != HFS_MAX_CAT_KEYLEN)) {
-+		printk(KERN_ERR "hfs: invalid catalog max_key_len %d\n",
-+			tree->max_key_len);
-+		goto fail_page;
-+	}
-+
- 	tree->node_size_shift = ffs(size) - 1;
- 	tree->pages_per_bnode = (tree->node_size + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
- 
-@@ -89,9 +100,9 @@ struct hfs_btree *hfs_btree_open(struct 
- 	return tree;
- 
-  fail_page:
--	tree->inode->i_mapping->a_ops = &hfs_aops;
- 	page_cache_release(page);
-  free_tree:
-+	tree->inode->i_mapping->a_ops = &hfs_aops;
- 	iput(tree->inode);
- 	kfree(tree);
- 	return NULL;
-
+-- 
+Jon Smirl
+jonsmirl@gmail.com
