@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763646AbXLTMQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763505AbXLTMQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763646AbXLTMQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 07:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761992AbXLTMHv
+	id S1763505AbXLTMQo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 07:16:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763164AbXLTMMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 07:07:51 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57118
+	Thu, 20 Dec 2007 07:12:10 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57175
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1762295AbXLTMHt (ORCPT
+	by vger.kernel.org with ESMTP id S1763147AbXLTMMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 07:07:49 -0500
-Date: Thu, 20 Dec 2007 04:07:48 -0800 (PST)
-Message-Id: <20071220.040748.77317931.davem@davemloft.net>
-To: joe@perches.com
-Cc: linux-kernel@vger.kernel.org, jgarzik@pobox.com, netdev@vger.kernel.org
-Subject: Re: [PATCH 05/11] drivers/net/niu.c: Use print_mac
+	Thu, 20 Dec 2007 07:12:08 -0500
+Date: Thu, 20 Dec 2007 04:12:07 -0800 (PST)
+Message-Id: <20071220.041207.64671626.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: kuznet@ms2.inr.ac.ru, wangchen@cn.fujitsu.com, gerrit@erg.abdn.ac.uk,
+       andi@firstfloor.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, clameter@sgi.com, mingo@elte.hu
+Subject: Re: [PATCH 3/3] [UDP6]: Counter increment on BH mode
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1197671652-32492-5-git-send-email-joe@perches.com>
-References: <1197671652-32492-4-git-send-email-joe@perches.com>
-	<9fc484fc034428ab68ecb2711c8456df9e98d56d.1197671367.git.joe@perches.com>
-	<1197671652-32492-5-git-send-email-joe@perches.com>
+In-Reply-To: <20071215135851.GA29063@gondor.apana.org.au>
+References: <20071203115435.GA4202@gondor.apana.org.au>
+	<20071203131723.GA30312@gondor.apana.org.au>
+	<20071215135851.GA29063@gondor.apana.org.au>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,9 +30,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joe Perches <joe@perches.com>
-Date: Fri, 14 Dec 2007 14:34:06 -0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Sat, 15 Dec 2007 21:58:52 +0800
 
-> Signed-off-by: Joe Perches <joe@perches.com>
+> [SNMP]: Fix SNMP counters with PREEMPT
+> 
+> The SNMP macros use raw_smp_processor_id() in process context
+> which is illegal because the process may be preempted and then
+> migrated to another CPU.
+> 
+> This patch makes it use get_cpu/put_cpu to disable preemption.
+> 
+> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-Applied to net-2.6.25
+Applied to net-2.6.25, thanks.
