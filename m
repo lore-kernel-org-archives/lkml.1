@@ -1,98 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbXLTAGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758151AbXLTAHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbXLTAGT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Dec 2007 19:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbXLTAGG
+	id S1758151AbXLTAHz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Dec 2007 19:07:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbXLTAHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Dec 2007 19:06:06 -0500
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:57691 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752993AbXLTAGE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Dec 2007 19:06:04 -0500
-Message-ID: <4769B228.4030705@cs.columbia.edu>
-Date: Wed, 19 Dec 2007 19:07:04 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 19 Dec 2007 19:07:47 -0500
+Received: from namei.org ([69.55.235.186]:38144 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753819AbXLTAHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Dec 2007 19:07:46 -0500
+Date: Thu, 20 Dec 2007 11:07:01 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: David Chinner <dgc@sgi.com>
+cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: [patch, rfc] mm.h, security.h, key.h and preventing namespace
+ poisoning
+In-Reply-To: <20071219093834.GW4396912@sgi.com>
+Message-ID: <Xine.LNX.4.64.0712201052110.1736@us.intercode.com.au>
+References: <20071219093834.GW4396912@sgi.com>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Pavel Emelyanov <xemul@openvz.org>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       linux-fsdevel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
-References: <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <476724E3.6060901@cs.columbia.edu> <20071218020933.GA28745@sergelap.austin.ibm.com> <476738A0.9010601@cs.columbia.edu> <4768E7B2.40203@openvz.org> <20071219141004.GA31694@sergelap.austin.ibm.com>
-In-Reply-To: <20071219141004.GA31694@sergelap.austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 19 Dec 2007, David Chinner wrote:
 
-
-Serge E. Hallyn wrote:
-> Quoting Pavel Emelyanov (xemul@openvz.org):
->> Oren Laadan wrote:
->>> Serge E. Hallyn wrote:
->>>> Quoting Oren Laadan (orenl@cs.columbia.edu):
->>>>> I hate to bring this again, but what if the admin in the container
->>>>> mounts an external file system (eg. nfs, usb, loop mount from a file,
->>>>> or via fuse), and that file system already has a device that we would
->>>>> like to ban inside that container ?
->>>> Miklos' user mount patches enforced that if !capable(CAP_MKNOD),
->>>> then mnt->mnt_flags |= MNT_NODEV.  So that's no problem.
->>> Yes, that works to disallow all device files from a mounted file system.
->>>
->>> But it's a black and white thing: either they are all banned or allowed;
->>> you can't have some devices allowed and others not, depending on type
->>> A scenario where this may be useful is, for instance, if we some apps in
->>> the container to execute withing a pre-made chroot (sub)tree within that
->>> container.
->>>
->>>> But that's been pulled out of -mm! ?  Crap.
->>>>
->>>>> Since anyway we will have to keep a white- (or black-) list of devices
->>>>> that are permitted in a container, and that list may change even change
->>>>> per container -- why not enforce the access control at the VFS layer ?
->>>>> It's safer in the long run.
->>>> By that you mean more along the lines of Pavel's patch than my whitelist
->>>> LSM, or you actually mean Tetsuo's filesystem (i assume you don't mean that
->>>> by 'vfs layer' :), or something different entirely?
->>> :)
->>>
->>> By 'vfs' I mean at open() time, and not at mount(), or mknod() time.
->>> Either yours or Pavel's; I tend to prefer not to use LSM as it may
->>> collide with future security modules.
->> Oren, AFAIS you've seen my patches for device access controller, right?
-
-If you mean this one:
-http://openvz.org/pipermail/devel/2007-September/007647.html
-then ack :)
-
->>
->> Maybe we can revisit the issue then and try to come to agreement on what
->> kind of model and implementation we all want?
+> Folks,
 > 
-> That would be great, Pavel.  I do prefer your solution over my LSM, so
-> if we can get an elegant block device control right in the vfs code that
-> would be my preference.
-
-I concur.
-
-So it seems to me that we are all in favor of the model where open()
-of a device will consult a black/white-list. Also, we are all in favor
-of a non-LSM implementation, Pavel's code being a good example.
-
-Oren.
-
-> The only thing that makes me keep wanting to go back to an LSM is the
-> fact that the code defining the whitelist seems out of place in the vfs.
-> But I guess that's actually separated into a modular cgroup, with the
-> actual enforcement built in at the vfs.  So that's really the best
-> solution.
+> I just updated a git tree and started getting errors on a
+> "copy_keys" macro warning.
 > 
-> -serge
+> The code I've been working on uses a ->copy_keys() method for
+> copying the keys in a btree block from one place to another. I've
+> been working on this code for a while
+> (http://oss.sgi.com/archives/xfs/2007-11/msg00046.html) and keep the
+> tree I'm working in reletively up to date (lags linus by a couple of
+> weeks at most). The update I did this afternoon gave a conflict
+> warning with the macro in include/linux/key.h.
+> 
+> Given that I'm not directly including key.h anywhere in the XFS
+> code, I'm getting the namespace polluted indirectly from some other
+> include that is necessary.
+> 
+> As it turns out, this commit from 13 days ago:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7cd94146cd504016315608e297219f9fb7b1413b
+> 
+> included security.h in mm.h and that is how I'm seeing the namespace
+> poisoning coming from key.h when !CONFIG_KEY.
+> 
+> Including security.h in mm.h means much wider includes for pretty
+> much the entire kernel, and it opens up namespace issues like this
+> that never previously existed.
+> 
+> The patch below (only tested for !CONFIG_KEYS && !CONFIG_SECURITY)
+> moves security.h into the mmap.c and nommu.c files that need it so
+> it doesn't end up with kernel wide scope.
+> 
+> Comments?
+
+The idea with this placement was to keep memory management code with other 
+similar code, rather than pushing it into security.h, where it does not 
+functionally belong.
+
+Something to not also is that you can't "depend" on security.h not being 
+included all over the place, as LSM does touch a lot of the kernel.  
+Unecessarily including it is bad, of course.
+
+I'm not sure I understand your namespace pollution issue, either.
+
+In any case, I think the right solution is not to include security.h at 
+all in mm.h, as it is only being done to get a declaration for 
+mmap_min_addr.
+
+How about this, instead ?
+
+Signed-off-by: James Morris <jmorris@namei.org>
+---
+
+ mm.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 1b7b95c..02fbac7 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -12,7 +12,6 @@
+ #include <linux/prio_tree.h>
+ #include <linux/debug_locks.h>
+ #include <linux/mm_types.h>
+-#include <linux/security.h>
+ 
+ struct mempolicy;
+ struct anon_vma;
+@@ -34,6 +33,10 @@ extern int sysctl_legacy_va_layout;
+ #define sysctl_legacy_va_layout 0
+ #endif
+ 
++#ifdef CONFIG_SECURITY
++extern unsigned long mmap_min_addr;
++#endif
++
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/processor.h>
+
+
+-- 
+James Morris
+<jmorris@namei.org>
