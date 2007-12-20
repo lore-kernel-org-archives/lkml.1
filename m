@@ -1,107 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761673AbXLTVKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761612AbXLTVL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761673AbXLTVKE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 16:10:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbXLTVJw
+	id S1761612AbXLTVL5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 16:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbXLTVLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 16:09:52 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41338 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754170AbXLTVJv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 16:09:51 -0500
-Date: Thu, 20 Dec 2007 13:08:41 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: "Parag Warudkar" <parag.warudkar@gmail.com>
-Cc: "Arjan van de Ven" <arjan@linux.intel.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sky2: Use deferrable timer for watchdog
-Message-ID: <20071220130841.6d2801f2@deepthought>
-In-Reply-To: <82e4877d0712201236l2962cc86y73f0be0d6e2ae4be@mail.gmail.com>
-References: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>
-	<20071220091603.0d69b045@deepthought>
-	<823114761-1198171803-cardhu_decombobulator_blackberry.rim.net-937108990-@bxe019.bisx.prod.on.blackberry>
-	<20071220095121.7859c023@deepthought>
-	<476ABDDF.8080607@intel.com>
-	<476ABE7D.60901@linux.intel.com>
-	<476AC105.9090206@intel.com>
-	<82e4877d0712201200h7b994175u841d1efa047cefff@mail.gmail.com>
-	<476ACABC.4010503@linux.intel.com>
-	<82e4877d0712201236l2962cc86y73f0be0d6e2ae4be@mail.gmail.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+	Thu, 20 Dec 2007 16:11:49 -0500
+Received: from gate.crashing.org ([63.228.1.57]:54895 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754579AbXLTVLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 16:11:48 -0500
+Subject: Re: PCI resource problems caused by improper address rounding
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Richard Henderson <rth@twiddle.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>
+In-Reply-To: <20071218202234.GA24525@twiddle.net>
+References: <47671377.6000405@redhat.com>
+	 <alpine.LFD.0.9999.0712171648150.21557@woody.linux-foundation.org>
+	 <47680489.6040809@redhat.com>
+	 <alpine.LFD.0.9999.0712180946030.21557@woody.linux-foundation.org>
+	 <20071218202234.GA24525@twiddle.net>
+Content-Type: text/plain
+Date: Fri, 21 Dec 2007 08:10:42 +1100
+Message-Id: <1198185042.6779.21.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Dec 2007 15:36:13 -0500
-"Parag Warudkar" <parag.warudkar@gmail.com> wrote:
 
-> On Dec 20, 2007 3:04 PM, Arjan van de Ven <arjan@linux.intel.com> wrote:
-> > > I think it is reasonable for Network driver watchdogs to use a
-> > > deferrable timer - if the machine is 100% IDLE there is no one needing
-> > > the network to be up. If there is something running even on the other
-> > > CPU - that is going to cause an IPI, reschedule, TLB invalidation etc.
-> > > which will make it very likely in practice that each CPU will be
-> > > interrupted in reasonable amount of time.
-> >
-> > this is not correct; many machines are idle waiting for network data. Think of webservers...
+> That won't work, because PCI_BASE_ADDRESS_MEM_TYPE_64 controls how
+> many bits need to be written back to the BAR.  If we changed that
+> to PCI_BASE_ADDRESS_MEM_TYPE_32, we wouldn't clear the high 32-bits
+> of the BAR.
 > 
-> Yes, I forgot the receive case. So if a server was 100% IDLE and a web
-> server was listening for network data and we reach 0 wakeups per
-> second on the CPU where the network watchdog timer is scheduled to run
-> deferred _and_ the network link went down, it would cause the watchdog
-> to not run and redo the link until some one else wakes up that CPU
-> later.
-> So as long as we make sure we don't convert every timer to deferrable
-> we should be ok - may be this can be resolved easily by having a
-> non-deferrable "dont-allow-deferring-for-too-long" timer on each CPU
-> that just causes at least one wake up in some reasonable time delta
-> from the previous wakeup (whoever caused that one.) It is still
-> beneficial in that all deferrable timers would run at once without
-> needing to have separate wakeup for each.
+> > ... and that would be an X server issue!).
 > 
-> >
-> > >
-> > > Of course there are theoretical cases where we could land into a
-> > > situation where a CPU in a multiprocessor machine is IDLE infinitely
-> > > and that causes the watchdog that happens to be bound to run on the
-> > > same CPU to not run. To take care of these unlikely cases I think the
-> > > timer mechanism should have a reasonable limit on how long a CPU can
-> > > go IDLE if there are deferrable timers.
-> >
-> > how about something else instead: a timer mechanism that takes a range instead..
-> > that at least has defined semantics; the deferrable semantics really are "indefinite".
-> > Lets keep at least the semantics clear and clean.
-> >
-> 
-> Would not the simpler solution of installing a non-deferrable timer
-> per cpu which will not allow the CPU to go IDLE for more than x units
-> of time at once  (or something to that effect) work? Range would
-> complicate the thing and I am not sure how many cases will know
-> reasonably correct range for their normal operation. In this instance
-> of the e1000 watchdog what range could it give and be successful at
-> what it wants to do - bring up the link in reasonable amount of time,
-> while also realizing the power savings?
-> 
-> Perhaps depending on Server/Laptop/Desktop machine (may be based on
-> Preemption) we could have normal or deferrable timers but that'll
-> exclude Servers from power savings and I am not sure Data center folks
-> will like that :) .
-> 
-> Parag
+> Of course, fixing the X server to *handle* 64-bit BARs is the correct
+> solution.  I've no idea how involved that is, but I have a sneeking
+> suspicion that it uses that damned CARD32 datatype for everything.
 
+A lot more than X needs to be fixed to handle 64-bit BARs btw. There's a
+whole load of places in drivers/pci/* where we just puke if we see a
+value >4G being assigned.
 
-The problem is that on a server the receiver will go deaf if the chip
-bug that the watchdog is looking for triggers.  Yes, no packets in
-and it happily will just sit there.
+Now, there is some hope that the new X with libpciaccess can cope with
+that, and even if it is broken, it would be much easier to fix, as X in
+that case is no longer trying to bypass the kernel, but instead uses
+proper kernel interfaces to map device resources.
 
-So for now, I am not going to apply your simple patch and work on a 
-two stage timer per arjan's suggestion for a later release.
+That used to be Xorg pci-rework branch, though it might have been merged
+in the  trunk by now.
+ 
+Ben.
 
--- 
-Stephen Hemminger <stephen.hemminger@vyatta.com>
