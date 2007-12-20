@@ -1,75 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759712AbXLTIEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758681AbXLTIcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759712AbXLTIEV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 03:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbXLTIEL
+	id S1758681AbXLTIcG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 03:32:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbXLTIbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 03:04:11 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46213 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751510AbXLTIEK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 03:04:10 -0500
-Date: Thu, 20 Dec 2007 00:02:59 -0800
-From: Greg KH <greg@kroah.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [RFC] kobject/kset/ktype documentation and example code updated
-Message-ID: <20071220080259.GA30416@kroah.com>
-References: <20071220003031.GA15129@kroah.com> <a8e1da0712192354k3bce177fi3d30b5737c7d7a9e@mail.gmail.com>
+	Thu, 20 Dec 2007 03:31:53 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:13331 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754745AbXLTIbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 03:31:52 -0500
+Date: Thu, 20 Dec 2007 09:27:10 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 41/63] ide-cd: move lba_to_msf() and msf_to_lba() to
+	<linux/cdrom.h>
+Message-ID: <20071220082710.GJ13958@kernel.dk>
+References: <200712200224.16183.bzolnier@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a8e1da0712192354k3bce177fi3d30b5737c7d7a9e@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <200712200224.16183.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 03:54:40PM +0800, Dave Young wrote:
-> On Dec 20, 2007 8:30 AM, Greg KH <greg@kroah.com> wrote:
-> > Thanks to everyone for your last round of review comments and changes to
-> > the kobject documentation.
-> >
-> > I now have over 130 patches reworking the kset/ktype and kobject apis in
-> > the kernel tree, and here is the updated documentation and example code
-> > that shows how things work now.
-> >
-> > Things different from the last time around are the kobject_add() and
-> > kobject_init() functions now take a bunch of required parameters, and
-> > the kobject cleanup code is much more forgiving.
-> >
-> > I want to drop kobject_unregister() but as this patch series is so big
-> > already, I think it's time to let it bake in -mm and push into 2.6.25
-> > before attempting it.
-> [--snip--]
+On Thu, Dec 20 2007, Bartlomiej Zolnierkiewicz wrote:
 > 
-> Hi, greg
+> * Move lba_to_msf() and msf_to_lba() to <linux/cdrom.h>
+>   (use 'u8' type instead of 'byte' while at it).
 > 
-> How about add a kobject_remove function and temporarily keep the
-> kobject_unregister as below until the 2.6.25:
+> * Remove msf_to_lba() copy from drivers/cdrom/cdrom.c.
 > 
-> kobject_unregister(...)
-> {
->        ...
->         kobject_remove();
->         kobject_uevent();
->         ...
-> }
+> Cc: Jens Axboe <axboe@kernel.dk>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Actually, it's not needed at all.  Thanks to Kay's recent changes in the
-tree, a simple kobject_put() is all that is needed.  The proper sysfs
-cleanup and uevent will happen if necessary, no housekeeping by the
-caller required.
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
 
-So I'll just nuke kobject_unregister() as it's a simple replacement with
-kobject_put() which will clean up the api even more :)
+> ---
+>  drivers/cdrom/cdrom.c |    6 ------
+>  drivers/ide/ide-cd.c  |   18 ------------------
+>  include/linux/cdrom.h |   14 ++++++++++++++
+>  3 files changed, 14 insertions(+), 24 deletions(-)
+> 
+> Index: b/drivers/cdrom/cdrom.c
+> ===================================================================
+> --- a/drivers/cdrom/cdrom.c
+> +++ b/drivers/cdrom/cdrom.c
+> @@ -2787,12 +2787,6 @@ int cdrom_ioctl(struct file * file, stru
+>  	return -ENOSYS;
+>  }
+>  
+> -static inline
+> -int msf_to_lba(char m, char s, char f)
+> -{
+> -	return (((m * CD_SECS) + s) * CD_FRAMES + f) - CD_MSF_OFFSET;
+> -}
+> -
+>  /*
+>   * Required when we need to use READ_10 to issue other than 2048 block
+>   * reads
+> Index: b/drivers/ide/ide-cd.c
+> ===================================================================
+> --- a/drivers/ide/ide-cd.c
+> +++ b/drivers/ide/ide-cd.c
+> @@ -1643,24 +1643,6 @@ void msf_from_bcd (struct atapi_msf *msf
+>  	msf->frame  = BCD2BIN(msf->frame);
+>  }
+>  
+> -static inline
+> -void lba_to_msf (int lba, byte *m, byte *s, byte *f)
+> -{
+> -	lba += CD_MSF_OFFSET;
+> -	lba &= 0xffffff;  /* negative lbas use only 24 bits */
+> -	*m = lba / (CD_SECS * CD_FRAMES);
+> -	lba %= (CD_SECS * CD_FRAMES);
+> -	*s = lba / CD_FRAMES;
+> -	*f = lba % CD_FRAMES;
+> -}
+> -
+> -
+> -static inline
+> -int msf_to_lba (byte m, byte s, byte f)
+> -{
+> -	return (((m * CD_SECS) + s) * CD_FRAMES + f) - CD_MSF_OFFSET;
+> -}
+> -
+>  static int cdrom_check_status(ide_drive_t *drive, struct request_sense *sense)
+>  {
+>  	struct request req;
+> Index: b/include/linux/cdrom.h
+> ===================================================================
+> --- a/include/linux/cdrom.h
+> +++ b/include/linux/cdrom.h
+> @@ -1184,6 +1184,20 @@ struct media_event_desc {
+>  
+>  extern int cdrom_get_media_event(struct cdrom_device_info *cdi, struct media_event_desc *med);
+>  
+> +static inline void lba_to_msf(int lba, u8 *m, u8 *s, u8 *f)
+> +{
+> +	lba += CD_MSF_OFFSET;
+> +	lba &= 0xffffff;  /* negative lbas use only 24 bits */
+> +	*m = lba / (CD_SECS * CD_FRAMES);
+> +	lba %= (CD_SECS * CD_FRAMES);
+> +	*s = lba / CD_FRAMES;
+> +	*f = lba % CD_FRAMES;
+> +}
+> +
+> +static inline int msf_to_lba(u8 m, u8 s, u8 f)
+> +{
+> +	return (((m * CD_SECS) + s) * CD_FRAMES + f) - CD_MSF_OFFSET;
+> +}
+>  #endif  /* End of kernel only stuff */ 
+>  
+>  #endif  /* _LINUX_CDROM_H */
 
-And I'll go update the documentation...
+-- 
+Jens Axboe
 
-thanks,
-
-greg k-h
