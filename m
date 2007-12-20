@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763635AbXLTWY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763340AbXLTW0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763635AbXLTWY7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbXLTWYt
+	id S1763340AbXLTW0Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbXLTWZ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:24:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44161 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753161AbXLTWYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:24:48 -0500
-Date: Thu, 20 Dec 2007 23:24:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH 0/5] x86: another attempt at x86 pagetable unification
-Message-ID: <20071220222429.GA28029@elte.hu>
-References: <20071219223534.129042140@goop.org> <20071220094940.GA14227@elte.hu> <20071220112022.GA15832@elte.hu> <476AD9EA.7010108@goop.org> <20071220213906.GB11897@elte.hu> <476AE7D6.9000600@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <476AE7D6.9000600@goop.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 20 Dec 2007 17:25:59 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46080 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752316AbXLTWZ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 17:25:58 -0500
+Date: Thu, 20 Dec 2007 14:19:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: joe@perches.com, apw@shadowen.org, lizf@cn.fujitsu.com, elendil@planet.nl,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, trivial@kernel.org,
+       rdunlap@xenotime.net, jschopp@austin.ibm.com
+Subject: Re: Trailing periods in kernel messages
+Message-Id: <20071220141928.a49eba7b.akpm@linux-foundation.org>
+In-Reply-To: <20071220215411.183d03c0@the-village.bc.nu>
+References: <474E6BD0.20103@cn.fujitsu.com>
+	<E1IxfE8-0000Sr-9w@faramir.fjphome.nl>
+	<474E8669.6060409@cn.fujitsu.com>
+	<200711291120.19595.elendil@planet.nl>
+	<20071129032036.4c021617.akpm@linux-foundation.org>
+	<474F6372.70705@cn.fujitsu.com>
+	<1196386259.22120.101.camel@localhost>
+	<474F6D4D.9010006@cn.fujitsu.com>
+	<1196390128.22120.118.camel@localhost>
+	<20071220162923.GB27885@shadowen.org>
+	<20071220210741.6dc3caf5@the-village.bc.nu>
+	<1198186984.6183.72.camel@localhost>
+	<20071220215411.183d03c0@the-village.bc.nu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 20 Dec 2007 21:54:11 +0000
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> > Documentation/Coding Style
+> > 
+> > 		Chapter 13: Printing kernel messages
+> > 
+> > Kernel messages do not have to be terminated with a period.
+> 
+> 
+> This piece of the document is wrong. It should also be changed. I've no
+> idea how such a ludicrous statement ever got into the Coding Style but I
+> have never seen it discussed and an archive search suggests it just
+> sneaked in without any kind of approval and discussion the list.
+> 
+> Kernel messages are in English. Let us keep it that way. Missing
+> punctuation is equated by many parts of the English speaking world with
+> poor quality, sloppy products and low levels of education. These are not
+> things with which we wish to be associated IMHO.
+> 
+> NAK to the patch.
 
-> But byte-for-byte identity isn't (necessarily) possible when actually 
-> unifying. If the same function exists in different forms on 32- and 
-> 64-bit, then unifying requires I pick one of them (or perhaps a new 
-> superset) to use in the unified form. That function may generate 
-> different code compared to the one that it replaced...
+akpm:/usr/src/linux-2.6.24-rc5> grep -r '[^\.]\\n"' . | wc -l   
+105297
+akpm:/usr/src/linux-2.6.24-rc5> grep -r '[\.]\\n"' . | wc -l  
+12743
 
-it's still possible: you can do preparatory patches that bring one 
-architecture in sync with the other one, in small, per function steps. 
-Then the actual unification is still an identity transformation. (and 
-all the preparatory patches are small and bisectable)
+For the record, I won't be taking any "add period to printk" patches.
 
-it's also a lot less frustrating and a lot more enjoyable that way IMO. 
-If it's 50 small patches, then so be it ... 50 patches only take ~2 
-seconds more for me to apply to x86.git (which time is immediately saved 
-by the vastly improved reviewability and testability of a 50 patches 
-set), so dont worry about any overhead on the maintainers side. And 
-you'll end up moving up on the v2.6.25 contributors top-list on LWN as 
-well ;-) The worst aspect of it is writing up the 50 changelogs (i use 
-pre-created templates for that) and figuring out how to script a 
-patch-bomb to lkml. In every other aspect it's a win-win scenario for 
-everyone involved.
+akpm:/usr/src/linux-2.6.24-rc5> grep -r '[^\.]\\n"' net | wc -l
+4978
+akpm:/usr/src/linux-2.6.24-rc5> grep -r '[\.]\\n"' net | wc -l 
+493
 
-	Ingo
+Send 'em to Dave!
