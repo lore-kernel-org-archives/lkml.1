@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbXLTTL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760514AbXLTTOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760214AbXLTTL5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 14:11:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXLTTLt
+	id S1760514AbXLTTOF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 14:14:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbXLTTNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 14:11:49 -0500
-Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:48175 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753362AbXLTTLs (ORCPT
+	Thu, 20 Dec 2007 14:13:51 -0500
+Received: from mga10.intel.com ([192.55.52.92]:4225 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754276AbXLTTNu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 14:11:48 -0500
-Message-ID: <476ABE60.9030805@opengridcomputing.com>
-Date: Thu, 20 Dec 2007 13:11:28 -0600
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 20 Dec 2007 14:13:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,191,1196668800"; 
+   d="scan'208";a="247942571"
+Message-ID: <476ABE7D.60901@linux.intel.com>
+Date: Thu, 20 Dec 2007 20:11:57 +0100
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Benjamin Herrenschmidt <bherren@au1.ibm.com>, linux-kernel@vger.kernel.org,
-       OpenFabrics General <general@lists.openfabrics.org>,
-       Wen Xiong <wenxiong@us.ibm.com>
-Subject: Re: [ofa-general] iommu dma mapping alignment requirements
-References: <476AA2E2.5010007@opengridcomputing.com> <adalk7pz1ck.fsf@cisco.com>
-In-Reply-To: <adalk7pz1ck.fsf@cisco.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+CC: Stephen Hemminger <shemminger@linux-foundation.org>,
+       parag.warudkar@gmail.com, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sky2: Use deferrable timer for watchdog
+References: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>	<20071220091603.0d69b045@deepthought>	<823114761-1198171803-cardhu_decombobulator_blackberry.rim.net-937108990-@bxe019.bisx.prod.on.blackberry> <20071220095121.7859c023@deepthought> <476ABDDF.8080607@intel.com>
+In-Reply-To: <476ABDDF.8080607@intel.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > It appears that my problem boils down to a single host page of memory
->  > that is mapped for dma, and the dma address returned by dma_map_sg()
->  > is _not_ 64KB aligned.  Here is an example:
+
+>>> My interpretation of the api is:
+>>>    * round_jiffies()  - timer wants to wakeup but isn't precise about when so schedule
+>>>                         on next second when system will wake up anyway;
+>>>                         e.g why meetings are usually scheduled on the hour
+>>>
+>>>    * deferrable       - timer doesn't have to really wakeup but wants to happen near
+>>>                         a particular time. e.g. "I'll meet you at the pub around 8pm"
+
+this is not correct.
+
+deferrable means "if you're busy wake me up at this time. But if not, don't bother waking up for me, get to it
+later".
+
+The "later" can be a LONG time later, several seconds easily, if not more.
+(timers are on a per cpu bases, and you may end up with a several-core system where the common timers are all on another cpu
+than this one)
+
+
+
+>> If this is the case then the whole usage of round_jiffies() is bogus. All users of round_jiffies()
+>> should just be converted to deferrable??  I am a bit concerned that if deferrable gets used everywhere
+>> then a strange situation would occur where all timers were waiting for some other timer to finally
+>> happen, kind of a wierd timelock situation. Like the old chip/dale cartoon:
+>>  "you first, no you first, after you mister chip, no after you mister dale,..."
 > 
->  > My first question is: Is there an assumption or requirement in linux
->  > that dma_addressess should have the same alignment as the host address
->  > they are mapped to?  IE the rdma core is mapping the entire 64KB page,
->  > but the mapping doesn't begin on a 64KB page boundary.
 > 
-> I don't think this is explicitly documented anywhere, but it certainly
-> seems that we want the bus address to be page-aligned in this case.
-> For mthca/mlx4 at least, we tell the adapter what the host page size
-> is (so that it knows how to align doorbell pages etc) and I think this
-> sort of thing would confuse the HW.
 > 
->  - R.
+> that's a dangerous situation indeed and I'd really like to know what the limits
+> are for deferring deferrable timers.... Arjan, do you know? Anyone?
+
+there is NO limit to deferring a timer. Do NOT use a deferrable timer if you can't afford the timer to not happen
+within.. 10 to 100 seconds! (or more)
+They are really meant for things where you CAN afford for it to not happen when you're idle....
 
 
-In arch/powerpc/kernel/iommu.c:iommu_map_sg() I see that it calls 
-iommu_range_alloc() with a alignment_order of 0:
+> 
+> I don't see a danger just yet on normal systems - I get something like 10 wakeups
+> per second from just the kernel (acpi, ahci, usb) on most my systems which
+> guarantees that the watchdog runs often enough, but for embedded systems and
+> critical timers in other drivers this may be an issue quickly
 
->                 vaddr = (unsigned long)page_address(s->page) + s->offset;
->                 npages = iommu_num_pages(vaddr, slen);
->                 entry = iommu_range_alloc(tbl, npages, &handle, mask >> IOMMU_PAGE_SHIFT, 0);
-
-But perhaps the alignment order needs to be based on the host page size?
+on my work desktop test box the average time between cpu wakeups is 1.4 seconds
+(and that's single core). It would be higher if it wasn't for some hpet limit issues.
 
 
-Steve.
