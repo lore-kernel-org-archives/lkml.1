@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765877AbXLTWXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763635AbXLTWY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765877AbXLTWXl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:23:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758912AbXLTWX0
+	id S1763635AbXLTWY7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:24:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbXLTWYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:23:26 -0500
-Received: from THUNK.ORG ([69.25.196.29]:42282 "EHLO thunker.thunk.org"
+	Thu, 20 Dec 2007 17:24:49 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44161 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754560AbXLTWXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:23:24 -0500
-Date: Thu, 20 Dec 2007 17:22:50 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Joe Perches <joe@perches.com>, Andy Whitcroft <apw@shadowen.org>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, trivial@kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>
-Subject: Re: Trailing periods in kernel messages
-Message-ID: <20071220222250.GJ27081@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Joe Perches <joe@perches.com>,
-	Andy Whitcroft <apw@shadowen.org>, Li Zefan <lizf@cn.fujitsu.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-	tglx@linutronix.de, trivial@kernel.org,
-	Randy Dunlap <rdunlap@xenotime.net>,
-	Joel Schopp <jschopp@austin.ibm.com>
-References: <200711291120.19595.elendil@planet.nl> <20071129032036.4c021617.akpm@linux-foundation.org> <474F6372.70705@cn.fujitsu.com> <1196386259.22120.101.camel@localhost> <474F6D4D.9010006@cn.fujitsu.com> <1196390128.22120.118.camel@localhost> <20071220162923.GB27885@shadowen.org> <20071220210741.6dc3caf5@the-village.bc.nu> <1198186984.6183.72.camel@localhost> <20071220215411.183d03c0@the-village.bc.nu>
+	id S1753161AbXLTWYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 17:24:48 -0500
+Date: Thu, 20 Dec 2007 23:24:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH 0/5] x86: another attempt at x86 pagetable unification
+Message-ID: <20071220222429.GA28029@elte.hu>
+References: <20071219223534.129042140@goop.org> <20071220094940.GA14227@elte.hu> <20071220112022.GA15832@elte.hu> <476AD9EA.7010108@goop.org> <20071220213906.GB11897@elte.hu> <476AE7D6.9000600@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071220215411.183d03c0@the-village.bc.nu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <476AE7D6.9000600@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 09:54:11PM +0000, Alan Cox wrote:
-> > Kernel messages do not have to be terminated with a period.
-> 
-> This piece of the document is wrong. It should also be changed. I've no
-> idea how such a ludicrous statement ever got into the Coding Style but I
-> have never seen it discussed and an archive search suggests it just
-> sneaked in without any kind of approval and discussion the list.
-> 
-> Kernel messages are in English. Let us keep it that way. Missing
-> punctuation is equated by many parts of the English speaking world with
-> poor quality, sloppy products and low levels of education. These are not
-> things with which we wish to be associated IMHO.
 
-Um, what?  Kernel messages are *not* in English.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Take a look at a machine after it is freshly booted.  The following
-messages are *not* English:
+> But byte-for-byte identity isn't (necessarily) possible when actually 
+> unifying. If the same function exists in different forms on 32- and 
+> 64-bit, then unifying requires I pick one of them (or perhaps a new 
+> superset) to use in the unified form. That function may generate 
+> different code compared to the one that it replaced...
 
-[    0.000000] BIOS-provided physical RAM map:
-[    0.000000]  BIOS-e820: 0000000000000000 - 0000000000099800 (usable)
-[    0.000000]  BIOS-e820: 0000000000099800 - 00000000000a0000 (reserved)
-[    0.000000]  BIOS-e820: 00000000000d6000 - 00000000000d8000 (reserved)
-[    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 00000000bf6b0000 (usable)
-[    0.000000]  BIOS-e820: 00000000bf6b0000 - 00000000bf6cc000 (ACPI data)
-[    0.000000]  BIOS-e820: 00000000bf6cc000 - 00000000bf700000 (ACPI NVS)
-[    0.000000]  BIOS-e820: 00000000bf700000 - 00000000c0000000 (reserved)
-[    0.000000]  BIOS-e820: 00000000f0000000 - 00000000f4000000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
+it's still possible: you can do preparatory patches that bring one 
+architecture in sync with the other one, in small, per function steps. 
+Then the actual unification is still an identity transformation. (and 
+all the preparatory patches are small and bisectable)
 
-Do you really want to turn that into complete English sentences?
+it's also a lot less frustrating and a lot more enjoyable that way IMO. 
+If it's 50 small patches, then so be it ... 50 patches only take ~2 
+seconds more for me to apply to x86.git (which time is immediately saved 
+by the vastly improved reviewability and testability of a 50 patches 
+set), so dont worry about any overhead on the maintainers side. And 
+you'll end up moving up on the v2.6.25 contributors top-list on LWN as 
+well ;-) The worst aspect of it is writing up the 50 changelogs (i use 
+pre-created templates for that) and figuring out how to script a 
+patch-bomb to lkml. In every other aspect it's a win-win scenario for 
+everyone involved.
 
-Or how about these?
-
-[   15.069322] IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
-[   15.069830] TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
-[   15.070448] TCP bind hash table entries: 65536 (order: 9, 2359296 bytes)
-[   15.077264] TCP: Hash tables configured (established 131072 bind 65536)
-[   15.077278] TCP reno registered
-[   15.086122] checking if image is initramfs... it is
-[   15.846658] Freeing initrd memory: 7114k freed
-
-Again, not sentences, and I don't think making every single printk a
-gramatically valid sentence is a good thing.  Or even necessary.  And
-in some cases, it would make the kernel messages harder to parse by an
-automated log parser.
-
-					- Ted
+	Ingo
