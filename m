@@ -1,38 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbXLTKP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759535AbXLTKTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759810AbXLTKP7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 05:15:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbXLTKPw
+	id S1759535AbXLTKTQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 05:19:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbXLTKTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 05:15:52 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:44379 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752510AbXLTKPv (ORCPT
+	Thu, 20 Dec 2007 05:19:04 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45592 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbXLTKTD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 05:15:51 -0500
-Date: Thu, 20 Dec 2007 10:15:33 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Pierre Savary <pierre.savary@kerlink.fr>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: syscall in a module
-Message-ID: <20071220101532.GA31128@flint.arm.linux.org.uk>
-References: <20071220091605.GC7921@flint.arm.linux.org.uk> <000401c842ea$5aef1ea0$10cd5be0$@savary@kerlink.fr>
+	Thu, 20 Dec 2007 05:19:03 -0500
+Date: Thu, 20 Dec 2007 19:21:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Hugh Dickins <hugh@veritas.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Memory controller use rcu_read_lock() in
+ mem_cgroup_cache_charge()
+Message-Id: <20071220192119.0e0472b0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071220090152.19793.46738.sendpatchset@balbir-laptop>
+References: <20071220090152.19793.46738.sendpatchset@balbir-laptop>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <000401c842ea$5aef1ea0$10cd5be0$@savary@kerlink.fr>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 10:26:08AM +0100, Pierre Savary wrote:
-> In fact I have a part (/dev/mmcblk0p5) that I want share with USB gadget
-> (g_file_storage). But if USB is not connect to a PC, I want that this part
-> was mounted on my board. An I want unmount this part when the board is
-> plugged on a PC.
-> So I need to mount and unmount partition in this module.
+On Thu, 20 Dec 2007 14:31:52 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Arrange for the USB subsystem to send a uevent, which can then be picked
-up by userspace to issue the correct command to mount or unmount the
-partition.
+> 
+> 
+> Hugh Dickins noticed that we were using rcu_dereference() without
+> rcu_read_lock() in the cache charging routine. The patch below fixes
+> this problem
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+>  mm/memcontrol.c |   10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
+> 
+> diff -puN mm/memcontrol.c~memory-controller-use-rcu-lead-lock mm/memcontrol.c
+> --- linux-2.6.24-rc5/mm/memcontrol.c~memory-controller-use-rcu-lead-lock	2007-12-19 11:52:44.000000000 +0530
+> +++ linux-2.6.24-rc5-balbir/mm/memcontrol.c	2007-12-20 14:01:45.000000000 +0530
+> @@ -717,16 +717,20 @@ int mem_cgroup_charge(struct page *page,
+>  int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
+>  				gfp_t gfp_mask)
+>  {
+> +	int ret = 0;
+>  	struct mem_cgroup *mem;
+>  	if (!mm)
+>  		mm = &init_mm;
+>  
+> +	rcu_read_lock();
+>  	mem = rcu_dereference(mm->mem_cgroup);
+> +	css_get(&mem->css);
+> +	rcu_read_unlock();
+>  	if (mem->control_type == MEM_CGROUP_TYPE_ALL)
+> -		return mem_cgroup_charge_common(page, mm, gfp_mask,
+> +		ret = mem_cgroup_charge_common(page, mm, gfp_mask,
+>  				MEM_CGROUP_CHARGE_TYPE_CACHE);
+> -	else
+> -		return 0;
+> +	css_put(&mem->css);
+> +	return ret;
+>  }
+>  
+>  /*
+> _
+Seems reasonable to me.
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+Thanks,
+-Kame
+
