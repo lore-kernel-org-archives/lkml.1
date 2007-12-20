@@ -1,89 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765448AbXLTRHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765990AbXLTRLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765448AbXLTRHz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 12:07:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbXLTRHp
+	id S1765990AbXLTRLz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 12:11:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXLTRLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 12:07:45 -0500
-Received: from mx7.mail.ru ([194.67.23.27]:6898 "EHLO mx7.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757508AbXLTRHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 12:07:45 -0500
-Date: Thu, 20 Dec 2007 20:09:49 +0300
-From: Anton Vorontsov <cbou@mail.ru>
-To: Andres Salomon <dilinger@queued.net>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 1/5] power: RFC: introduce a new power API
-Message-ID: <20071220170949.GA1337@localhost.localdomain>
-Reply-To: cbou@mail.ru
-References: <20071217055123.GA2274@zarina> <20071217024139.2f81e36d@ephemeral> <20071217112416.GA25948@localhost.localdomain> <20071218021001.46783004@ephemeral> <20071219123546.GA6277@localhost.localdomain> <20071219130241.21f0b416@ephemeral> <20071219185050.GA1570@localhost.localdomain> <20071219181304.48609ecb@ephemeral> <20071220150716.GA31896@localhost.localdomain> <20071220110030.1e20ad51@ephemeral>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20071220110030.1e20ad51@ephemeral>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 20 Dec 2007 12:11:45 -0500
+Received: from 1002-12.lowesthosting.com ([207.44.144.97]:36683 "HELO
+	1002-12.Lowesthosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754319AbXLTRLp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 12:11:45 -0500
+X-Greylist: delayed 476 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Dec 2007 12:11:44 EST
+Message-ID: <476A9FEB.2090508@iitiantech.com>
+Date: Thu, 20 Dec 2007 09:01:31 -0800
+From: Siva Prasad <siva@iitiantech.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: matthew@bytemark.co.uk
+CC: linux-kernel@vger.kernel.org
+Subject: Testing RAM from userspace / question about memmap= arguments
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 11:00:30AM -0500, Andres Salomon wrote:
-> On Thu, 20 Dec 2007 18:07:16 +0300
-> Anton Vorontsov <cbou@mail.ru> wrote:
-> 
-> > Hi Andres,
-> > 
-> [...]
-> > 
-> > Then, what the power supply subsystem is for? Just place all the
-> > drivers together in driver/power/, and let them create sysfs
-> > attributes by their own. You'll get a medley, not the subsystem.
-> > 
-> > Good luck,
-> > 
-> 
-> 
-> Ok, I'm really tired of arguing about this.
+Hi Matthew,
 
-Me either, you wouldn't believe.
+I worked on some thing similar. For one of our customer product that 
+goes to defense and security markets, we had to support maximum possible 
+memory test. We implemented a mechanism of pre-test to test the memory 
+with walking 1's and 0's just before Linux kernel starts allocating 
+serious memory for its use. That way, coverage was almost 99%. Once 
+Linux boots, we do a very through test using various algorithms, however 
+as you said coverage of memory is little less when we test the system 
+after Linux boots up completely.
 
-> I've pointed out why
-> the current API is inadequate, but you seem to be resisting
-> changing it.
+memtest86+ started as a very good alternative, until customer's customer 
+started complaining about memory issues. Then we had no choice but to 
+take this route and implement it ourselves from the scratch.
 
-No, you didn't point out anything. You didn't describe _why_ you
-want to change the subsystem. No single reason except "flexibility"
-that _no one_ is using.
+If you want 100% coverage, it may not be possible unless you do it in 
+BIOS early on. If you take the route of implementing some simple memory 
+test in Linux kernel before it starts allocating memory, you get very 
+good % of coverage. Good Luck.
 
-> It's your subsystem, do what you like.
-
-No, this isn't mine subsystem. I've written most of it, probably.
-But now I'm just volunteering to co-maintain it (that is, the person
-whom to blame if something goes wrong in power/). I'm also directly
-interested in this subsystem, because I have the hardware on which
-I'm using it.
-
-But I'm not the last person you can ask to merge your changes. Whole
-LKML is hearing us, and if you want to--ask David to push your
-changes over me. Or Andrew. Or ask Linus at the last. They're are
-much better programmers than I am, so whatever they'll do would be
-the right thing. I'll just swallow it.
-
-Though, on the current patches, please stamp my:
-
-Nacked-by: Anton Vorontsov <cbou@mail.ru>
-
-so the history will have written evidence that I did not agree on
-the changes, so years later I could reply to the complaints: "Look,
-I nacked this code, it wasn't me who checked this in!"
+- Siva
 
 
-You have another option though: finally show up the user of the
-purposed changes. Without single "flexible" word, please. Real,
-existent user.
+Date: Thu, 20 Dec 2007 14:17:10 +0000
+
+From: Matthew Bloch <matthew@bytemark.co.uk>
+
+Subject: Re: Testing RAM from userspace / question about memmap=
+
+      arguments
+
+To: linux-kernel@vger.kernel.org
+
+Message-ID: <fkdth6$d7g$1@ger.gmane.org>
+
+Content-Type: text/plain; charset=ISO-8859-1
+
+ 
+
+Jon Masters wrote:
+
+ > On Tue, 2007-12-18 at 17:06 +0000, Matthew Bloch wrote:
+
+ >
+
+ >> I can see a few potential problems, but since my understanding of the
+
+ >> low-level memory mapping is muddy at best, I won't speculate; I'd just
+
+ >> appreciate any more expert views on whether this does work, or could be
+
+ >> made to work.
+
+ >
+
+ > Yo,
+
+ >
+
+ > I don't think your testing approach is thorough enough. Clearly (knowing
+
+ > your line of business - as a virtual machine provider), you want to do
+
+ > pre-production testing as part of your provisioning. I would suggest
+
+ > instead of using mlock() from userspace of simply writing a kernel
+
+ > module that does this for every page of available memory.
+
+ 
+
+Yes this is to improve the efficiency of server burn-ins.  I would
+
+consider a kernel module, but I still wouldn't be able to test the
+
+memory in which the kernel is sitting, which is my problem.  I'm not
+
+sure even a kernel module could reliably test the memory in which it is
+
+residing (memtest86+ relocates itself to do this).  Also I don't see how
+
+  userspace testing is any less thorough than doing it in the kernel; I
+
+just need a creative way of accessing every single page of memory.
+
+ 
+
+I may do some experiments with the memmap args, some bad RAM and
+
+shuffling it between DIMM sockets when I have the time :)
+
+ 
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+
+Matthew
