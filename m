@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759752AbXLTUMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbXLTUM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759752AbXLTUMl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 15:12:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758095AbXLTULF
+	id S1758848AbXLTUM7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 15:12:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758990AbXLTULk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 15:11:05 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45324 "EHLO mx1.redhat.com"
+	Thu, 20 Dec 2007 15:11:40 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45378 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758797AbXLTULD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 15:11:03 -0500
+	id S1758697AbXLTULj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 15:11:39 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
@@ -17,57 +17,126 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
        rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
        rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
        Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 12/15] add CLBR_ defines for x86_64.
-Date: Thu, 20 Dec 2007 18:04:07 -0200
-Message-Id: <1198181348746-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 13/15] move patching code to arch-specific file.
+Date: Thu, 20 Dec 2007 18:04:08 -0200
+Message-Id: <11981813592589-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <11981813384090-git-send-email-gcosta@redhat.com>
-References: <11981810504172-git-send-email-gcosta@redhat.com> <11981811293763-git-send-email-gcosta@redhat.com> <11981811852758-git-send-email-gcosta@redhat.com> <11981812041672-git-send-email-gcosta@redhat.com> <1198181215625-git-send-email-gcosta@redhat.com> <1198181224677-git-send-email-gcosta@redhat.com> <11981812412879-git-send-email-gcosta@redhat.com> <11981812771615-git-send-email-gcosta@redhat.com> <1198181309285-git-send-email-gcosta@redhat.com> <11981813192341-git-send-email-gcosta@redhat.com> <11981813292926-git-send-email-gcosta@redhat.com> <11981813384090-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1198181348746-git-send-email-gcosta@redhat.com>
+References: <11981810504172-git-send-email-gcosta@redhat.com> <11981811293763-git-send-email-gcosta@redhat.com> <11981811852758-git-send-email-gcosta@redhat.com> <11981812041672-git-send-email-gcosta@redhat.com> <1198181215625-git-send-email-gcosta@redhat.com> <1198181224677-git-send-email-gcosta@redhat.com> <11981812412879-git-send-email-gcosta@redhat.com> <11981812771615-git-send-email-gcosta@redhat.com> <1198181309285-git-send-email-gcosta@redhat.com> <11981813192341-git-send-email-gcosta@redhat.com> <11981813292926-git-send-email-gcosta@redhat.com> <11981813384090-git-send-email-gcosta@redhat.com> <1198181348746-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86_64 needs a potentially larger clobber list than i386, due to its calling
-convention. So we add more CLBR_ defines for it.
-Note that CLBR_ANY is different for each of the architectures, since it comprises
-the notion of "All call clobbers in this architecture"
+The core patching code for paravirt is sufficiently different
+among i386 and x86_64, and we move them to specific files.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 ---
- include/asm-x86/paravirt.h |   23 ++++++++++++++++++-----
- 1 files changed, 18 insertions(+), 5 deletions(-)
+ arch/x86/kernel/Makefile_32 |    2 +-
+ arch/x86/kernel/paravirt.c  |   50 -------------------------------------------
+ include/asm-x86/paravirt.h  |    8 +++++++
+ 3 files changed, 9 insertions(+), 51 deletions(-)
 
+Index: linux-2.6-x86/arch/x86/kernel/Makefile_32
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/Makefile_32	2007-12-20 19:07:15.000000000 -0800
++++ linux-2.6-x86/arch/x86/kernel/Makefile_32	2007-12-20 19:08:11.000000000 -0800
+@@ -48,7 +48,7 @@
+ obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
+ 
+ obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
+-obj-$(CONFIG_PARAVIRT)		+= paravirt.o
++obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_32.o
+ obj-y				+= pcspeaker.o
+ 
+ obj-$(CONFIG_SCx200)		+= scx200_32.o
+Index: linux-2.6-x86/arch/x86/kernel/paravirt.c
+===================================================================
+--- linux-2.6-x86.orig/arch/x86/kernel/paravirt.c	2007-12-20 19:08:06.000000000 -0800
++++ linux-2.6-x86/arch/x86/kernel/paravirt.c	2007-12-20 19:08:11.000000000 -0800
+@@ -58,59 +58,9 @@
+ 	extern const char start_##ops##_##name[], end_##ops##_##name[];	\
+ 	asm("start_" #ops "_" #name ": " code "; end_" #ops "_" #name ":")
+ 
+-DEF_NATIVE(pv_irq_ops, irq_disable, "cli");
+-DEF_NATIVE(pv_irq_ops, irq_enable, "sti");
+-DEF_NATIVE(pv_irq_ops, restore_fl, "push %eax; popf");
+-DEF_NATIVE(pv_irq_ops, save_fl, "pushf; pop %eax");
+-DEF_NATIVE(pv_cpu_ops, iret, "iret");
+-DEF_NATIVE(pv_cpu_ops, irq_enable_syscall_ret, "sti; sysexit");
+-DEF_NATIVE(pv_mmu_ops, read_cr2, "mov %cr2, %eax");
+-DEF_NATIVE(pv_mmu_ops, write_cr3, "mov %eax, %cr3");
+-DEF_NATIVE(pv_mmu_ops, read_cr3, "mov %cr3, %eax");
+-DEF_NATIVE(pv_cpu_ops, clts, "clts");
+-DEF_NATIVE(pv_cpu_ops, read_tsc, "rdtsc");
+-
+ /* Undefined instruction for dealing with missing ops pointers. */
+ static const unsigned char ud2a[] = { 0x0f, 0x0b };
+ 
+-static unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
+-			     unsigned long addr, unsigned len)
+-{
+-	const unsigned char *start, *end;
+-	unsigned ret;
+-
+-	switch(type) {
+-#define SITE(ops, x)						\
+-	case PARAVIRT_PATCH(ops.x):				\
+-		start = start_##ops##_##x;			\
+-		end = end_##ops##_##x;				\
+-		goto patch_site
+-
+-	SITE(pv_irq_ops, irq_disable);
+-	SITE(pv_irq_ops, irq_enable);
+-	SITE(pv_irq_ops, restore_fl);
+-	SITE(pv_irq_ops, save_fl);
+-	SITE(pv_cpu_ops, iret);
+-	SITE(pv_cpu_ops, irq_enable_syscall_ret);
+-	SITE(pv_mmu_ops, read_cr2);
+-	SITE(pv_mmu_ops, read_cr3);
+-	SITE(pv_mmu_ops, write_cr3);
+-	SITE(pv_cpu_ops, clts);
+-	SITE(pv_cpu_ops, read_tsc);
+-#undef SITE
+-
+-	patch_site:
+-		ret = paravirt_patch_insns(ibuf, len, start, end);
+-		break;
+-
+-	default:
+-		ret = paravirt_patch_default(type, clobbers, ibuf, addr, len);
+-		break;
+-	}
+-
+-	return ret;
+-}
+-
+ unsigned paravirt_patch_nop(void)
+ {
+ 	return 0;
 Index: linux-2.6-x86/include/asm-x86/paravirt.h
 ===================================================================
---- linux-2.6-x86.orig/include/asm-x86/paravirt.h	2007-12-20 19:08:06.000000000 -0800
-+++ linux-2.6-x86/include/asm-x86/paravirt.h	2007-12-20 19:08:10.000000000 -0800
-@@ -8,11 +8,24 @@
- #include <asm/asm.h>
+--- linux-2.6-x86.orig/include/asm-x86/paravirt.h	2007-12-20 19:08:10.000000000 -0800
++++ linux-2.6-x86/include/asm-x86/paravirt.h	2007-12-20 19:08:11.000000000 -0800
+@@ -308,6 +308,11 @@
+ #define paravirt_alt(insn_string)					\
+ 	_paravirt_alt(insn_string, "%c[paravirt_typenum]", "%c[paravirt_clobber]")
  
- /* Bitmask of what can be clobbered: usually at least eax. */
--#define CLBR_NONE 0x0
--#define CLBR_EAX 0x1
--#define CLBR_ECX 0x2
--#define CLBR_EDX 0x4
--#define CLBR_ANY 0x7
-+#define CLBR_NONE 0
-+#define CLBR_EAX  (1 << 0)
-+#define CLBR_ECX  (1 << 1)
-+#define CLBR_EDX  (1 << 2)
++/* Simple instruction patching code. */
++#define DEF_NATIVE(ops, name, code) 					\
++	extern const char start_##ops##_##name[], end_##ops##_##name[];	\
++	asm("start_" #ops "_" #name ": " code "; end_" #ops "_" #name ":")
 +
-+#ifdef CONFIG_X86_64
-+#define CLBR_RSI  (1 << 3)
-+#define CLBR_RDI  (1 << 4)
-+#define CLBR_R8   (1 << 5)
-+#define CLBR_R9   (1 << 6)
-+#define CLBR_R10  (1 << 7)
-+#define CLBR_R11  (1 << 8)
-+#define CLBR_ANY  ((1 << 9) - 1)
-+#include <asm/desc_defs.h>
-+#else
-+/* CLBR_ANY should match all regs platform has. For i386, that's just it */
-+#define CLBR_ANY  ((1 << 3) - 1)
-+#endif /* X86_64 */
+ unsigned paravirt_patch_nop(void);
+ unsigned paravirt_patch_ignore(unsigned len);
+ unsigned paravirt_patch_call(void *insnbuf,
+@@ -322,6 +327,9 @@
+ unsigned paravirt_patch_insns(void *insnbuf, unsigned len,
+ 			      const char *start, const char *end);
  
- #ifndef __ASSEMBLY__
- #include <linux/types.h>
++unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
++		      unsigned long addr, unsigned len);
++
+ int paravirt_disable_iospace(void);
+ 
+ /*
