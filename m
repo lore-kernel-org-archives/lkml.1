@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765443AbXLUAGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763459AbXLTXH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765443AbXLUAGg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:06:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760791AbXLUAGG
+	id S1763459AbXLTXH1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 18:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbXLTXHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:06:06 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37360 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759864AbXLUAGE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:06:04 -0500
-Date: Thu, 20 Dec 2007 16:05:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: gallatin@myri.com, jeff@garzik.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][NETDEV]: remove netif_running() check from
- myri10ge_poll()
-Message-Id: <20071220160518.fa65ac90.akpm@linux-foundation.org>
-In-Reply-To: <20071212.110243.202840959.davem@davemloft.net>
-References: <47602AAA.8060204@myri.com>
-	<20071212.110243.202840959.davem@davemloft.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 20 Dec 2007 18:07:16 -0500
+Received: from pat.uio.no ([129.240.10.15]:40740 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753005AbXLTXHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 18:07:14 -0500
+Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20071220145621.90ffb08a.akpm@linux-foundation.org>
+References: <1198190447.29917.9.camel@heimdal.trondhjem.org>
+	 <20071220145415.f737e7f3.akpm@linux-foundation.org>
+	 <20071220145621.90ffb08a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 20 Dec 2007 18:06:24 -0500
+Message-Id: <1198191984.31865.3.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.3, required=5.0, autolearn=disabled, AWL=-0.344)
+X-UiO-Scanned: 60135CFE0CCDA24AD31FE87A7E3FCFA78F41C013
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -2 maxlevel 200 minaction 2 bait 0 mail/h: 55 total 5853144 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Dec 2007 11:02:43 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
 
-> From: Andrew Gallatin <gallatin@myri.com>
-> Date: Wed, 12 Dec 2007 13:38:34 -0500
+On Thu, 2007-12-20 at 14:56 -0800, Andrew Morton wrote:
+> btw, I think we should track this as a regression, please.  It may not
+> strictly be a regression: the same problem might happen under 2.6.23,
+> although reports are only agaisnt 2.6.24-rc.
 > 
-> > Remove the bogus netif_running() check from myri10ge_poll().
-> > 
-> > This eliminates any chance that myri10ge_poll() can trigger
-> > an oops by calling netif_rx_complete() and returning
-> > with work_done == budget.
-> > 
-> > Signed-off-by: Andrew Gallatin <gallatin@myri.com>
-> 
-> Acked-by: David S. Miller <davem@davemloft.net>
+> But things which impact our ability to get clean oops reports are critical
+> problems.
 
-hm, eight days old, fixes a possible oops and hasn't been merged anywhere
-yet?
+I second that opinion...
 
-I'll put it in my for-2.6.24-via-other-subsystem queue.
+Trond
+
