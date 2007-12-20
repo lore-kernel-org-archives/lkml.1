@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765665AbXLTWWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765797AbXLTWWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765665AbXLTWWR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765528AbXLTWVX
+	id S1765797AbXLTWWj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765597AbXLTWVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:21:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:32829 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763198AbXLTWVV (ORCPT
+	Thu, 20 Dec 2007 17:21:50 -0500
+Received: from smtprelay03.ispgateway.de ([80.67.18.15]:57138 "EHLO
+	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765433AbXLTWVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:21:21 -0500
-Date: Thu, 20 Dec 2007 14:20:04 -0800
-From: Greg KH <greg@kroah.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [RFC] kobject/kset/ktype documentation and example code updated
-Message-ID: <20071220222004.GB16431@kroah.com>
-References: <20071220003031.GA15129@kroah.com> <20071219223206.ada18362.randy.dunlap@oracle.com> <20071220212700.GB5808@kroah.com> <alpine.LFD.0.9999.0712201659360.10061@localhost.localdomain>
+	Thu, 20 Dec 2007 17:21:49 -0500
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [PATCH 0/4] add task handling notifier
+Date: Thu, 20 Dec 2007 23:25:14 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org
+References: <476A780C.76E4.0078.0@novell.com>
+In-Reply-To: <476A780C.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0712201659360.10061@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200712202325.14922.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 05:03:35PM -0500, Robert P. J. Day wrote:
-> On Thu, 20 Dec 2007, Greg KH wrote:
-> 
-> > How about:
-> > 	- A ktype is the type of object that embeds a kobject.
-> 
-> if i were reading the above for the first time, i would have no idea
-> what was being embedded where.  "embeds a kobject" where?  what's
-> being embedded in what?  that sentence doesn't make it clear.  what's
-> the current definition for a "struct kobject"?
+Hi Jan,
 
-Read on and hopefully you will learn more.  As the beginning of the
-article states, you have to start somewhere, it's all a circular
-reference in the end :)
+I like and support your idea!
 
-> >         Every structure that embeds a kobject needs a corresponding ktype.
-> 
-> and if it does, whose responsibility is it to provide one?  mine?
-> that's not clear.
+On Thursday 20 December 2007, Jan Beulich wrote:
+> With more and more sub-systems/sub-components leaving their footprint
+> in task handling functions, it seems reasonable to add notifiers that
+> these components can use instead of having them all patch themselves
+> directly into core files.
 
-Well, someone has to provide it, the code will not compile without
-one...
+Yes, but why export variables? Wouldn't it be better to export 
+an API? 
 
-> > 	  The ktype controls what happens to the kobject when it is
-> > 	  created and destroyed.
-> 
-> i doubt that.   i wouldn't say that the ktype "controls" what happens,
-> i would say that it "defines" what happens.  to control suggests
-> active participation.
+That simplifies the callers (they all pass "current" as task 
+and "task_notifier_list" as arguments).
 
-Well, it controls how it is destroyed, and it controls how the uevents
-happen when it is created.  It is quite active :)
+It also prevents exposing internal variables (notifier lists 
+ARE internal variables) to modules.
 
-thanks,
+What do you think?
 
-greg k-h
+
+Best Regards
+
+Ingo Oeser
