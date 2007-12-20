@@ -1,105 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764212AbXLTPFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765210AbXLTPFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764212AbXLTPFZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 10:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbXLTPFL
+	id S1765210AbXLTPFo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 10:05:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762700AbXLTPFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 20 Dec 2007 10:05:14 -0500
+Received: from mx30.mail.ru ([194.67.23.238]:32167 "EHLO mx30.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756276AbXLTPFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 20 Dec 2007 10:05:11 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:50513 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756134AbXLTPFJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 10:05:09 -0500
-Date: Thu, 20 Dec 2007 16:04:53 +0100
-From: Jan Kara <jack@suse.cz>
-To: Bj?rn Steinbrink <B.Steinbrink@gmx.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Krzysztof Oledzki <olel@ans.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Osterried <osterried@jesse.de>, protasnb@gmail.com,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bug 9182] Critical memory leak (dirty pages)
-Message-ID: <20071220150453.GB764@atrey.karlin.mff.cuni.cz>
-References: <20071215221935.306A5108068@picon.linux-foundation.org> <Pine.LNX.4.64.0712152358240.14491@bizon.gios.gov.pl> <20071215203539.d6f71e96.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161016290.25065@bizon.gios.gov.pl> <20071216015112.d0ab08a1.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161440030.25065@bizon.gios.gov.pl> <alpine.LFD.0.9999.0712190903350.21557@woody.linux-foundation.org> <20071220141217.GA4745@atjola.homenet>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 20 Dec 2007 18:07:16 +0300
+From: Anton Vorontsov <cbou@mail.ru>
+To: Andres Salomon <dilinger@queued.net>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 1/5] power: RFC: introduce a new power API
+Message-ID: <20071220150716.GA31896@localhost.localdomain>
+Reply-To: cbou@mail.ru
+References: <20071216212443.4a1fff3d@ephemeral> <1197858984.3798.201.camel@shinybook.infradead.org> <20071217055123.GA2274@zarina> <20071217024139.2f81e36d@ephemeral> <20071217112416.GA25948@localhost.localdomain> <20071218021001.46783004@ephemeral> <20071219123546.GA6277@localhost.localdomain> <20071219130241.21f0b416@ephemeral> <20071219185050.GA1570@localhost.localdomain> <20071219181304.48609ecb@ephemeral>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <20071220141217.GA4745@atjola.homenet>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20071219181304.48609ecb@ephemeral>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On 2007.12.19 09:44:50 -0800, Linus Torvalds wrote:
-> > 
-> > 
-> > On Sun, 16 Dec 2007, Krzysztof Oledzki wrote:
-> > > 
-> > > I'll confirm this tomorrow but it seems that even switching to data=ordered
-> > > (AFAIK default o ext3) is indeed enough to cure this problem.
-> > 
-> > Ok, do we actually have any ext3 expert following this? I have no idea 
-> > about what the journalling code does, but I have painful memories of ext3 
-> > doing really odd buffer-head-based IO and totally bypassing all the normal 
-> > page dirty logic.
-> > 
-> > Judging by the symptoms (sorry for not following this well, it came up 
-> > while I was mostly away travelling), something probably *does* clear the 
-> > dirty bit on the pages, but the dirty *accounting* is not done properly, 
-> > so the kernel keeps thinking it has dirty pages.
-> > 
-> > Now, a simple "grep" shows that ext3 does not actually do any 
-> > ClearPageDirty() or similar on its own, although maybe I missed some other 
-> > subtle way this can happen. And the *normal* VFS routines that do 
-> > ClearPageDirty should all be doing the proper accounting.
-> > 
-> > So I see a couple of possible cases:
-> > 
-> >  - actually clearing the PG_dirty bit somehow, without doing the 
-> >    accounting.
-> > 
-> >    This looks very unlikely. PG_dirty is always cleared by some variant of 
-> >    "*ClearPageDirty()", and that bit definition isn't used for anything 
-> >    else in the whole kernel judging by "grep" (the page allocator tests 
-> >    the bit, that's it).
-> 
-> OK, so I looked for PG_dirty anyway.
-> 
-> In 46d2277c796f9f4937bfa668c40b2e3f43e93dd0 you made try_to_free_buffers
-> bail out if the page is dirty.
-> 
-> Then in 3e67c0987d7567ad666641164a153dca9a43b11d, Andrew fixed
-> truncate_complete_page, because it called cancel_dirty_page (and thus
-> cleared PG_dirty) after try_to_free_buffers was called via
-> do_invalidatepage.
-> 
-> Now, if I'm not mistaken, we can end up as follows.
-> 
-> truncate_complete_page()
->   cancel_dirty_page() // PG_dirty cleared, decr. dirty pages
->   do_invalidatepage()
->     ext3_invalidatepage()
->       journal_invalidatepage()
->         journal_unmap_buffer()
->           __dispose_buffer()
->             __journal_unfile_buffer()
->               __journal_temp_unlink_buffer()
->                 mark_buffer_dirty(); // PG_dirty set, incr. dirty pages
-> 
-> If journal_unmap_buffer then returns 0, try_to_free_buffers is not
-> called and neither is cancel_dirty_page, so the dirty pages accounting
-> is not decreased again.
-  Yes, this can happen. The call to mark_buffer_dirty() is a fallout
-from journal_unfile_buffer() trying to sychronise JBD private dirty bit
-(jbddirty) with the standard dirty bit. We could actually clear the
-jbddirty bit before calling journal_unfile_buffer() so that this doesn't
-happen but since Linus changed remove_from_pagecache() to not care about
-redirtying the page I guess it's not needed any more...
+Hi Andres,
 
-								Honza
+On Wed, Dec 19, 2007 at 06:13:04PM -0500, Andres Salomon wrote:
+> On Wed, 19 Dec 2007 21:50:50 +0300
+> Anton Vorontsov <cbou@mail.ru> wrote:
+> 
+> > On Wed, Dec 19, 2007 at 01:02:41PM -0500, Andres Salomon wrote:
+> > [...]
+> > > > > Hm.  It occurs to me that there's nothing keeping us from having a
+> > > > > single callback for the driver properties.  Keeping the other patches
+> > > > > the same, do you prefer the following approach versus what was originally
+> > > > > in patch#3?
+> > > > 
+> > > > Why so difficult? Maybe like this:
+> > > > 
+> > > 
+> > > The point is to get rid of 'propval', and having the core driver define
+> > > formats.  That's one of the places where we ran into problems with the
+> > > current API; by having the core driver define what type a property should
+> > > be returning, we limit battery drivers to what they can display, as well
+> > 
+> > Limiting is:
+> > - I want to do A.
+> > - I won't let you do that.
+> > 
+> > But you don't want convert and write integer attributes directly to
+> > sysfs.
+> > 
+> > If you do so, class will end up converting everything back from
+> > strings to integers (as in _leds case. And another example, though
+> > bad one, is drivers/power/apm_power.c).
+> 
+> Yeah, I thought the _leds str_to_int stuff was ugly, but I didn't see
+> a way around it without sacrificing flexibility.
+
+Please, stop saying "flexibility". ;-) Better "I needed this, that's
+why I've done that".
+
+You needed S/N property, I've gave you the solution without any
+drastic or conceptual change to the whole subsystem.
+
+Not that I don't want conceptual changes, I just don't see any need
+for them. And no, I don't think that purposed changes are any
+better then existing properties.
+
+> > > as encourage a lot of non-shared code to end up in the core driver.  That's
+> > > the reason why we strcpy into 'buf', rather than val->strval.
+> > 
+> > When properties are pure integers why you so eager to fill sysfs by
+> > yourself?
+> > 
+> 
+> The issue is more about forcing power_supply users to return an integer.
+
+This isn't the issue. This is what userspace expects. And no, we don't
+want to some driver return "too much" from the "current_now" property.
+This isn't legitimate value for that property!
+
+> By passing them 'buf', they are allowed to fill it with whatever they
+> want.
+
+Why do they want silly things in the first place?
+
+> OTOH, if we force (for example) CHARGE_FULL to return an integer,
+> then a driver that wants to format something differently doesn't have
+> the opportunity to do that.
+
+This is _good_. And we've done it expressly:
+
+- - - Documentation/power_supply_class.txt
+So, userspace gets predictable set of attributes and their units for any
+kind of power supply, and can process/present them to a user in
+consistent manner. Results for different power supplies and machines are
+also directly comparable.
+- - - -
+
+> I can't think of a case w/ CHARGE_FULL where we'd want to do that, but
+> the point is more that we shouldn't assume we'll always know better
+> than someone who's writing a driver for their particular hardware.
+
+See the quote above. If driver implements something special, it must
+create its own attribute. Via device_create_file. So far none driver
+(including OLPC) needed any special attribute that we wouldn't add
+to the "core set".
+
+> Maybe we want to return a really large number?
+
+Did you reach int limit already? I can change the int to long long
+in a jiffy. Or add new member to the union, with "bigint" name.
+I don't see any problem if one day we will face int limit.
+
+> Maybe we want to return a hex number?
+
+No way. What is that for? Name the property.
+
+> Perhaps we want to pad the number with 0s?  etc..
+
+For what kind of property? Does it exist?
+
+> > You don't want to pad "voltage" property with zeroes. Probably you
+> > want free-form S/N property. Ok, it fits quite well in the purposed
+> > scheme: fill strval.
+> > 
+> > Can you imagine an use case when this approach doesn't work?
+> 
+> Sure, using a strval is fine *as long* as there's a way to say "this
+> attribute should be passed a buf".  By having this code in
+> power_supply_{sysfs,core}.c, we're ensuring that users do not have the
+> flexibility to define such things.
+  ^^^^^^^^^^^
+s/flexibility/anarchy/
+
+Yes, we're disciplining drivers, so they will look uniform outside of
+the kernel. If driver needs not to be uniform, it's free to define its
+own internal attributes in _addition_ to uniform ones. And again,
+no single driver ever implemented this yet, and no one ever asked to
+add new attribute to the "core set". And obviously no one got a refuse
+to add one.
+
+If you want to add S/N attribute to the core set -- go ahead, this
+is long awaited addition. S/N is okay to be a free-form, thus
+strval is a correct choice for that property.
+
+> > > For transitioning, we could certainly just use val->strval all of the time,
+> > > but there's not much point in doing that in the long term; we might as well
+> > > just pass around 'buf'.
+> > 
+> > No, we don't need strval for every property. Most of them are integers,
+> > and power_supply_sysfs.c doing its small job: representing internal
+> > structure to sysfs, through strings. Strings aren't there in the
+> > first place.
+> 
+> 
+> Yes, most are integers, but we could certainly end up with others.
+
+When we'll end up with "others", we'll implement another attribute.
+
+If it needs to be free-form, it will use strval. If it will need
+to be a hex number, it will be 'int' and _sysfs will represent it
+as hex, for _all_ drivers.
+
+> I've already pointed out how the API falls down because it attempts
+> to be too restrictive.
+
+You didn't point how that api falls down, really. You're talking
+about maybes and what-ifs.
+
+> One of the reasons I proposed this API is because it has sysfs call
+> the power supply attributes directly.  If we attempt to have a wrapper
+> for struct device_attribute in power_supply_sysfs.c, we either
+
+> a) force power_supply core to determine what type/format each property,
+> and don't allow power_supply drivers to override that/specify their own
+> types, or
+
+Correct.
+
+> b) include a lot of complexity to allow power_supply drivers
+> to specify what properties are returning.
+
+Then, what the power supply subsystem is for? Just place all the
+drivers together in driver/power/, and let them create sysfs
+attributes by their own. You'll get a medley, not the subsystem.
+
+Good luck,
+
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
