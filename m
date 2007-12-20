@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbXLTMe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761877AbXLTMeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760867AbXLTMe1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 07:34:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758421AbXLTMeQ
+	id S1761877AbXLTMeo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 07:34:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760409AbXLTMeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 07:34:16 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:56284 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758024AbXLTMeQ (ORCPT
+	Thu, 20 Dec 2007 07:34:21 -0500
+Received: from mu-out-0910.google.com ([209.85.134.188]:58138 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760201AbXLTMeU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 07:34:16 -0500
-Subject: Re: Testing RAM from userspace / question about memmap= arguments
-From: Jon Masters <jonathan@jonmasters.org>
-To: Matthew Bloch <matthew@bytemark.co.uk>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <fk8umh$n7o$1@ger.gmane.org>
-References: <fk8umh$n7o$1@ger.gmane.org>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Thu, 20 Dec 2007 07:33:32 -0500
-Message-Id: <1198154013.3205.124.camel@perihelion>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+	Thu, 20 Dec 2007 07:34:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=TitwwgBlVTlGGOAsWNM58NosF4xRKYYKe2CvwXEy2+B5TEl+lxOtbPV1GUJ3IWYThYYsjHvuGTtp0sbt/VCovA7rw/oOu9OQTZrHK9AhHQ+TZ0P4FcqwygSqEH22b0EnHOEdZ9B68ZoWg1/AUjwdHve1OPsGhatv94s5newgKNo=
+Message-ID: <476A6147.3020302@gmail.com>
+Date: Thu, 20 Dec 2007 13:34:15 +0100
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-2.74 is released
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-12-18 at 17:06 +0000, Matthew Bloch wrote:
+Gidday
 
-> I can see a few potential problems, but since my understanding of the
-> low-level memory mapping is muddy at best, I won't speculate; I'd just
-> appreciate any more expert views on whether this does work, or could be
-> made to work.
+I've released man-pages-2.74.
 
-Yo,
+This release is now available for download at:
 
-I don't think your testing approach is thorough enough. Clearly (knowing
-your line of business - as a virtual machine provider), you want to do
-pre-production testing as part of your provisioning. I would suggest
-instead of using mlock() from userspace of simply writing a kernel
-module that does this for every page of available memory.
+    http://www.kernel.org/pub/linux/docs/man-pages
+    or ftp://ftp.kernel.org/pub/linux/docs/man-pages
 
-You could script it via a minimal userland, containing only busybox,
-some form of SSH implementation, whatever.
+Changes in this release can be seen at
+http://www.kernel.org/doc/man-pages/changelog.html#release_2.74
+A summary of the changes in this release that may be of interest to readers
+of this list is provided below.
 
-Jon.
+Cheers,
 
-P.S. With the above, you could also know which pages were faulty, an
-consequently play with some of the bad RAM patches to exclude faulty
-pages from the virtual machines running on a given host... ;-)
+Michael
 
 
+
+Changes to individual pages
+---------------------------
+
+mount.2
+    mtk, after a note by Sam Morris
+        Clarify that MS_NODIRATIME provides a subset of the
+        functionality provided by MS_NOATIME.
+
+spu_create.2
+    Jeremy Kerr
+        We can use context FDs for the dirfd argument to the *at()
+        syscalls.
+
+times.2
+    mtk, after a note from David Brown and Andrew Morton
+        http://marc.info/?l=linux-kernel&m=119447727031225&w=2
+        Rework the text describing the return value to be closer
+        to the requirements of POSIX.1; move Linux details
+        to NOTES and add a warning not to rely on those details.
+        Add a warning about the -1 to -4095 bug which results
+        in a 41 second window where the glibc wrapper will wrongly
+        return -1 indicating an error.
+
+vcs.4
+    Samuel Thibault
+        Document VT_GETHIFONTMASK (new in 2.6.18) and add to example
+        program;
+spufs.7
+    Jeremy Kerr
+        Add a little information about the differences to mbox.
