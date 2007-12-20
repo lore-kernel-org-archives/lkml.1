@@ -1,102 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763536AbXLTXvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764972AbXLTXGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763536AbXLTXvK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 18:51:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761580AbXLTXud
+	id S1764972AbXLTXGZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 18:06:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbXLTXGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 18:50:33 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:50122 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761416AbXLTXuc (ORCPT
+	Thu, 20 Dec 2007 18:06:11 -0500
+Received: from spirit.analogic.com ([204.178.40.4]:3890 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752489AbXLTXGJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 18:50:32 -0500
-Subject: Re: iommu dma mapping alignment requirements
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: benh@ozlabs.au.ibm.com, Roland Dreier <rdreier@cisco.com>,
-       linux-kernel@vger.kernel.org,
-       OpenFabrics General <general@lists.openfabrics.org>,
-       Benjamin Herrenschmidt <bherren@au1.ibm.com>,
-       Wen Xiong <wenxiong@us.ibm.com>, Olof Johansson <olof@lixom.net>,
-       Paul Mackerras <pmac@au1.ibm.com>
-In-Reply-To: <476AE8C9.9080601@opengridcomputing.com>
-References: <476AA2E2.5010007@opengridcomputing.com>
-	 <1198181862.6779.3.camel@pasglop> <476AD84E.4000507@opengridcomputing.com>
-	 <1198186017.6779.28.camel@pasglop> <476AE8C9.9080601@opengridcomputing.com>
-Content-Type: text/plain
-Organization: IBM Ozlabs
-Date: Fri, 21 Dec 2007 10:49:45 +1100
-Message-Id: <1198194585.6779.31.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Dec 2007 18:06:09 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 20 Dec 2007 23:05:49.0242 (UTC) FILETIME=[DC5131A0:01C8435C]
+Content-class: urn:content-classes:message
+Subject: Re: Trying to convert old modules to newer kernels
+Date: Thu, 20 Dec 2007 18:05:48 -0500
+Message-ID: <Pine.LNX.4.61.0712201757410.9907@chaos.analogic.com>
+in-reply-to: <20071220220547.GA5641@uranus.ravnborg.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Trying to convert old modules to newer kernels
+thread-index: AchDXNxa0dewTCSNRWa8hIdSstpVQA==
+References: <Pine.LNX.4.61.0712191503370.4688@chaos.analogic.com> <20071219202323.GH2310@csclub.uwaterloo.ca> <Pine.LNX.4.61.0712191555150.4514@chaos.analogic.com> <20071220150255.GE2308@csclub.uwaterloo.ca> <Pine.LNX.4.61.0712201107300.8261@chaos.analogic.com> <20071220182815.GA5438@uranus.ravnborg.org> <Pine.LNX.4.61.0712201623500.9531@chaos.analogic.com> <20071220220547.GA5641@uranus.ravnborg.org>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Cc: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> Sounds good.  Thanks!
-> 
-> Note, that these smaller sub-host-page-sized mappings might pollute the 
-> address space causing full aligned host-page-size maps to become 
-> scarce...  Maybe there's a clever way to keep those in their own segment 
-> of the address space?
+On Thu, 20 Dec 2007, Sam Ravnborg wrote:
 
-We already have a large vs. small split in the iommu virtual space to
-alleviate this (though it's not a hard constraint, we can still get
-into the "other" side if the default one is full).
+> On Thu, Dec 20, 2007 at 04:27:37PM -0500, linux-os (Dick Johnson) wrote:
+>>
+>> On Thu, 20 Dec 2007, Sam Ravnborg wrote:
+>>
+>>>>
+>>>> It never gets to the printk(). You were right about the
+>>>> compilation. Somebody changed the kernel to compile with
+>>>> parameter passing in REGISTERS! This means that EVERYTHING
+>>>> needs to be compiled the same way, 'C' calling conventions
+>>>> were not good enough!
+>>>
+>>> How did you build the module. It reads like you failed to use
+>>> kbuild to build your module which is why you did not pass
+>>> correct options to gcc - correct?
+>>>
+>>> If you did not use kbuild - why not?
+>>> Is there anything missing you need?
+>>>
+>>> 	Sam
+>>>
+>>
+>> I need to get rid of -mregparm=3 on gcc's command line. It
+>> is completely incompatible with the standard calling conventions
+>> used in all our assembly-language files in our drivers. We make
+>> very high-speed number-crunching drivers that munge high-speed
+>> data into images. We need to do that in assembly as we have
+>> always done.
+> That I understand. So you need a CONFIG_ option to switch off
+> -regparm=3 and pray that the kernel assembly supports it.
+>
+> And then I assume you avoided kbuild because it added -regparm=3
+> which is why your simple module broke.
+>
+> As you are well aware there is not any testing of a kernel without
+> -regparm=3 these days so you should strongly consider making your
+> assembly module comply with -regparm=3.
+>
+> And no - I dunno how much work that is and what impact it has
+> on your number chrunching stuff.
+> But it looks like the only sane long-term solution to me.
+>
+> 	Sam
+>
 
-Try that patch and let me know:
-
-Index: linux-work/arch/powerpc/kernel/iommu.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/iommu.c	2007-12-21 10:39:39.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/iommu.c	2007-12-21 10:46:18.000000000 +1100
-@@ -278,6 +278,7 @@ int iommu_map_sg(struct iommu_table *tbl
- 	unsigned long flags;
- 	struct scatterlist *s, *outs, *segstart;
- 	int outcount, incount, i;
-+	unsigned int align;
- 	unsigned long handle;
- 
- 	BUG_ON(direction == DMA_NONE);
-@@ -309,7 +310,11 @@ int iommu_map_sg(struct iommu_table *tbl
- 		/* Allocate iommu entries for that segment */
- 		vaddr = (unsigned long) sg_virt(s);
- 		npages = iommu_num_pages(vaddr, slen);
--		entry = iommu_range_alloc(tbl, npages, &handle, mask >> IOMMU_PAGE_SHIFT, 0);
-+		align = 0;
-+		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT && (vaddr & ~PAGE_MASK) == 0)
-+			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
-+		entry = iommu_range_alloc(tbl, npages, &handle,
-+					  mask >> IOMMU_PAGE_SHIFT, align);
- 
- 		DBG("  - vaddr: %lx, size: %lx\n", vaddr, slen);
- 
-@@ -572,7 +577,7 @@ dma_addr_t iommu_map_single(struct iommu
- {
- 	dma_addr_t dma_handle = DMA_ERROR_CODE;
- 	unsigned long uaddr;
--	unsigned int npages;
-+	unsigned int npages, align;
- 
- 	BUG_ON(direction == DMA_NONE);
- 
-@@ -580,8 +585,13 @@ dma_addr_t iommu_map_single(struct iommu
- 	npages = iommu_num_pages(uaddr, size);
- 
- 	if (tbl) {
-+		align = 0;
-+		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT &&
-+		    ((unsigned long)vaddr & ~PAGE_MASK) == 0)
-+			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
-+
- 		dma_handle = iommu_alloc(tbl, vaddr, npages, direction,
--					 mask >> IOMMU_PAGE_SHIFT, 0);
-+					 mask >> IOMMU_PAGE_SHIFT, align);
- 		if (dma_handle == DMA_ERROR_CODE) {
- 			if (printk_ratelimit())  {
- 				printk(KERN_INFO "iommu_alloc failed, "
+I may be able to make a file full of "adapters" if I
+can figure out how to have a procedure that gets
+called with parameters in registers, with it calling
+conventional stuff. There used to be a macro, "asmlinkage"
+that corrected the calling conventions for assembly-language
+procedures. I will try to see what it did in some
+older kernels. It got taken out of newer ones.
 
 
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
