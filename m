@@ -1,48 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764595AbXLTWKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763631AbXLTWMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764595AbXLTWKb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:10:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbXLTWKN
+	id S1763631AbXLTWMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 17:12:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbXLTWMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:10:13 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:49503 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756896AbXLTWKL (ORCPT
+	Thu, 20 Dec 2007 17:12:47 -0500
+Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:36702 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753074AbXLTWMq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:10:11 -0500
-To: David Miller <davem@davemloft.net>
-Cc: alan@lxorguk.ukuu.org.uk, apw@shadowen.org, joe@perches.com,
-       lizf@cn.fujitsu.com, akpm@linux-foundation.org, elendil@planet.nl,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, trivial@kernel.org,
-       rdunlap@xenotime.net, jschopp@austin.ibm.com
-Subject: Re: Trailing periods in kernel messages
-X-Message-Flag: Warning: May contain useful information
-References: <1196390128.22120.118.camel@localhost>
-	<20071220162923.GB27885@shadowen.org>
-	<20071220210741.6dc3caf5@the-village.bc.nu>
-	<20071220.135133.262055434.davem@davemloft.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 20 Dec 2007 14:09:50 -0800
-In-Reply-To: <20071220.135133.262055434.davem@davemloft.net> (David Miller's message of "Thu, 20 Dec 2007 13:51:33 -0800 (PST)")
-Message-ID: <adawsr9xbkh.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Thu, 20 Dec 2007 17:12:46 -0500
+Message-ID: <476AE8C9.9080601@opengridcomputing.com>
+Date: Thu, 20 Dec 2007 16:12:25 -0600
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Dec 2007 22:09:50.0758 (UTC) FILETIME=[0A813460:01C84355]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+To: benh@au1.ibm.com
+CC: benh@ozlabs.au.ibm.com, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org,
+       OpenFabrics General <general@lists.openfabrics.org>,
+       Benjamin Herrenschmidt <bherren@au1.ibm.com>,
+       Wen Xiong <wenxiong@us.ibm.com>, Olof Johansson <olof@lixom.net>,
+       Paul Mackerras <pmac@au1.ibm.com>
+Subject: Re: iommu dma mapping alignment requirements
+References: <476AA2E2.5010007@opengridcomputing.com>	 <1198181862.6779.3.camel@pasglop>  <476AD84E.4000507@opengridcomputing.com> <1198186017.6779.28.camel@pasglop>
+In-Reply-To: <1198186017.6779.28.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I think the incorrect grammar and lack of proper capitalization and
- > puntuation in the kernel messages and our changelog entries is totally
- > embarassing for a professional software project.
+Benjamin Herrenschmidt wrote:
+> On Thu, 2007-12-20 at 15:02 -0600, Steve Wise wrote:
+>> Benjamin Herrenschmidt wrote:
+>>> Adding A few more people to the discussion. You may well be right and we
+>>> would have to provide the same alignment, though that sucks a bit as one
+>>> of the reason we switched to 4K for the IOMMU is that the iommu space
+>>> available on pSeries is very small and we were running out of it with
+>>> 64K pages and lots of networking activity.
+>>>
+>> But smarter NIC drivers can resolve this too, I think, but perhaps 
+>> carving up full pages of mapped buffers instead of just assuming mapping 
+>> is free...
+> 
+> True, but the problem still happenens today, if we switch back to 64K
+> iommu page size (which should be possible, I need to fix that), we
+> -will- run out of iommu space on typical workloads and that is not
+> acceptable.
+> 
+> So we need to find a compromise.
+> 
+> What I might do is something around the lines of: If size >= PAGE_SIZE,
+> and vaddr (page_address + offset) is PAGE_SIZE aligned, then I enforce
+> alignment of the resulting mapping.
+> 
+> That should fix your case. Anything requesting smaller than PAGE_SIZE
+> mappings would lose that alignment but I -think- it should be safe, and
+> you still always get 4K alignment anyway (+/- your offset) so at least
+> small alignment restrictions are still enforced (such as cache line
+> alignment etc...).
+> 
+> I'll send you a test patch later today.
+> 
+> Ben.
+> 
 
-But I guess correct grammar and spelling in our mailing list
-communication is not important to you ;)
+Sounds good.  Thanks!
 
- - R.
+Note, that these smaller sub-host-page-sized mappings might pollute the 
+address space causing full aligned host-page-size maps to become 
+scarce...  Maybe there's a clever way to keep those in their own segment 
+of the address space?
 
-(In case it's not clear: in standard English, "punctuation" has a 'c',
-and "X and Y *are* Z" is strongly preferred to "X and Y is Z")
+
