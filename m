@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbXLTSgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbXLTShs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755082AbXLTSgw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 13:36:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbXLTSgn
+	id S1755564AbXLTShs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 13:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbXLTShk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 13:36:43 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:43703 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753271AbXLTSgm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 13:36:42 -0500
-Date: Thu, 20 Dec 2007 11:36:41 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Tony Camuso <tcamuso@redhat.com>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-Message-ID: <20071220183641.GG29690@parisc-linux.org>
-References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <20071220173528.GE29690@parisc-linux.org> <476AAE99.7090301@redhat.com> <20071220181603.GF29690@parisc-linux.org> <476AB4B8.90307@redhat.com>
+	Thu, 20 Dec 2007 13:37:40 -0500
+Received: from poseidon.rz.tu-clausthal.de ([139.174.2.21]:64001 "EHLO
+	poseidon.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753936AbXLTShj convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 13:37:39 -0500
+From: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>
+To: David Newall <david@davidnewall.com>
+Subject: Re: almost daily Kernel oops with 2.6.23.9 - and now 2.6.23.11 as well
+Date: Thu, 20 Dec 2007 19:37:34 +0100
+User-Agent: KMail/1.9.7
+Cc: Scott <linux-kernel@bluecamel.eml.cc>, linux-kernel@vger.kernel.org
+References: <200712160106.00464.volker.armin.hemmann@tu-clausthal.de> <200712200653.28996.volker.armin.hemmann@tu-clausthal.de> <476A7E7E.7030704@davidnewall.com>
+In-Reply-To: <476A7E7E.7030704@davidnewall.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <476AB4B8.90307@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200712201937.34536.volker.armin.hemmann@tu-clausthal.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 01:30:16PM -0500, Tony Camuso wrote:
-> Matthew Wilcox wrote:
-> 
-> >Bad deduction.  What's happening is that the write to the BAR is causing
-> >it to overlap the decode for mmconfig space.  So the mmconfig write to
-> >set the BAR back never gets through.
-> >
-> >I have a different idea to fix this problem.  Instead of writing
-> >0xffffffff, we could look for an unused bit of space in the E820 map and
-> >write, say, 0xdfffffff to the low 32-bits of a BAR.  Then it wouldn't
-> >overlap, and we could find its size using MMCONFIG.
-> >
-> The BAR claims to be a 64-bit BAR.
+On Donnerstag, 20. Dezember 2007, David Newall wrote:
+> >>> On Montag, 17. Dezember 2007, you wrote:
+> >>>
+> >>> and another one, this time tainted with the nvidia module:
+> >>> 5194.130985] Unable to handle kernel paging request at 0000030000000000
+> >>> RIP:
+>
+> Numbers like that don't suggest hardware faults.  All those zeros: It's
+> far too round.  Sounds very like software.  In fact, it sounds like the
+> start of significant hardware region.   And lo! there's a closed-source,
+> possibly buggy nvidia module.  Try another; older or newer are equally
+> good.
 
-And what's in the upper 32 bits by default?  I'm guessing all zeroes.
-We size 64-bit BARs by writing to each half individually.  So I bet this
-one still overlaps the MMCONFIG space at 0xf0000000.
+and this one was without the nvidia module:
+http://marc.info/?l=linux-kernel&m=119790371708690&w=2
 
-> As far as I know, Windows has a blacklist that limits systems with these
-> devices to legacy PCI config access.
+and the first one I reported, was without nvidia and not-tainted too:
+http://marc.info/?l=linux-kernel&m=119776365425514&w=2
 
-I don't think that's true.  If the people designing these machines had
-noticed Windows failing to boot on them, they'd've fixed the BIOS to put
-the MMCONFIG region elsewhere, not hacked Windows until it worked.
+I am not a complete idiot. If I have a problem, I try to reproduce without 
+nvidia first (after a clean shutdown and boot, with the module not even on 
+harddisk). And I reproduced it without the module. The last oops with the 
+module was just an example that it does not matter if the module is loaded or 
+not and to (maybe) give some additional information.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Glück Auf,
+Volker
