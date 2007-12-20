@@ -1,69 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933878AbXLTOdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763529AbXLTOeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933878AbXLTOdw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 09:33:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932388AbXLTONG
+	id S1763529AbXLTOeW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 09:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933245AbXLTONx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 09:13:06 -0500
-Received: from cantor.suse.de ([195.135.220.2]:40986 "EHLO mx1.suse.de"
+	Thu, 20 Dec 2007 09:13:53 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:56915 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932969AbXLTOND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 09:13:03 -0500
-X-Mailbox-Line: From jjohansen@suse.de Thu Dec 20 06:09:47 2007
-Message-Id: <20071220140947.033155999@suse.de>
+	id S933208AbXLTONq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 09:13:46 -0500
+X-Mailbox-Line: From jjohansen@suse.de Thu Dec 20 06:09:48 2007
+Message-Id: <20071220140948.816638552@suse.de>
 References: <20071220140910.934607826@suse.de>
 User-Agent: quilt/0.46-60
-Date: Thu, 20 Dec 2007 06:09:47 -0800
+Date: Thu, 20 Dec 2007 06:09:57 -0800
 From: John@suse.de, Johansen@suse.de
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 37/47] Switch to vfs_permission() in do_path_lookup()
-Content-Disposition: inline; filename=do_path_lookup-nameidata.diff
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: [AppArmor 47/47] --- Documentation/lsm/AppArmor-Security-Goal.txt | 134 +++++++++++++++++++++++++++ 1 file changed, 134 insertions(+)
+Content-Disposition: inline; filename=apparmor-security-goal.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Switch from file_permission() to vfs_permission() in do_path_lookup():
-this avoids calling permission() with a NULL nameidata here.
-
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: John Johansen <jjohansen@suse.de>
-
----
- fs/namei.c |    9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
-
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1150,24 +1150,21 @@ static int fastcall do_path_lookup(int d
- 		path_get(&fs->pwd);
- 		read_unlock(&fs->lock);
- 	} else {
--		struct dentry *dentry;
--
- 		file = fget_light(dfd, &fput_needed);
- 		retval = -EBADF;
- 		if (!file)
- 			goto out_fail;
- 
--		dentry = file->f_path.dentry;
-+		nd->path = file->f_path;
- 
- 		retval = -ENOTDIR;
--		if (!S_ISDIR(dentry->d_inode->i_mode))
-+		if (!S_ISDIR(nd->path.dentry->d_inode->i_mode))
- 			goto fput_fail;
- 
--		retval = file_permission(file, MAY_EXEC);
-+		retval = vfs_permission(nd, MAY_EXEC);
- 		if (retval)
- 			goto fput_fail;
- 
--		nd->path = file->f_path;
- 		path_get(&file->f_path);
- 
- 		fput_light(file, fput_needed);
+--- /dev/null
++++ b/Documentation/lsm/AppArmor-Security-Goal.txt
+@@ -0,0 +1,134 @@
++AppArmor Security Goal
++Crispin Cowan, PhD
++MercenaryLinux.com
++
++This document specifies the security goal that AppArmor is intended to
++achieve, so that users can evaluate whether AppArmor will meet their
++needs, and kernel developers can evaluate whether AppArmor is living up
++to its claims. This document is *not* a general purpose explanation of
++how AppArmor works, nor is it an explanation for why one might want to
++use AppArmor rather than some other system.
++
++AppArmor is intended to limit system damage from attackers exploiting
++vulnerabilities in applications that the system hosts. The threat is
++that an attacker can cause a vulnerable application to do something
++unexpected and undesirable. AppArmor addresses this threat by confining
++the application to access only the resources it needs to access to
++execute properly, effectively imposing "least privilege" execution on
++the application.
++
++Applications interact with the rest of the system via resources
++including files, interprocess communication, networking, capabilities,
++and execution of other applications. The purpose of least privilege is
++to bound the damage that a malicious user or code can do by removing
++access to resources that the application does not need for its intended
++function. This is true for all access control systems, including AppArmor.
++
++The "attacker" is someone trying to gain the privileges of a process for
++themselves. For instance, a policy for a web server might grant read
++only access to most web documents, preventing an attacker who can
++corrupt the web server from defacing the web pages. A web server has
++access to the web server's local file system, and a network attacker
++trying to hack the web server does not have such file access. An e-mail
++attacker attempting to infect the recipient of the e-mail does not have
++access to the files that the victim user's mail client does. By limiting
++the scope of access for an application, AppArmor can limit the damage an
++attacker can do by exploiting vulnerabilities in applications.
++
++An "application" is one or more related processes performing a function,
++e.g. the gang of processes that constitute an Apache web server, or a
++Postfix mail server. AppArmor *only* confines processes that the
++AppArmor policy says it should confine, and other processes are
++permitted to do anything that DAC permits. This is sometimes known as a
++targeted security policy.
++
++AppArmor does not provide a "default" policy that applies to all
++processes. So to defend an entire host, you have to piece-wise confine
++each process that is exposed to potential attack. For instance, to
++defend a system against network attack, place AppArmor profiles around
++every application that accesses the network. This limits the damage a
++network attacker can do to the file system to only those files granted
++by the profiles for the network-available applications. Similarly, to
++defend a system against attack from the console, place AppArmor profiles
++around every application that accessed the keyboard and mouse. The
++system is "defended" in that the worst the attacker can do to corrupt
++the system is limited to the transitive closure of what the confined
++processes are allowed to access.
++
++AppArmor currently mediates access to files, ability to use POSIX.1e
++Capabilities, and coarse-grained control on network access. This is
++sufficient to prevent a confined process from *directly* corrupting the
++file system. It is not sufficient to prevent a confined process from
++*indirectly* corrupting the system by influencing some other process to
++do the dirty deed. But to do so requires a complicit process that can be
++manipulated through another channel such as IPC. A "complicit" process
++is either a malicious process the attacker somehow got control of, or is
++a process that is actively listening to IPC of some kind and can be
++corrupted via IPC.
++
++The only IPC that AppArmor mediates is access to named sockets, FIFOs,
++etc. that appear in the file system name space, a side effect of
++AppArmor's file access mediation. Future versions of AppArmor will
++mediate more resources, including finer grained network access controls,
++and controls on various forms of IPC.
++
++AppArmor specifies the programs to be confined and the resources they
++can access in a syntax similar to how users are accustomed to accessing
++those resources. So file access controls are specified using absolute
++paths with respect to the name space the process is in. POSIX.1e
++capabilities are specified by name. Network access controls currently
++are specified by simply naming the protocol that can be used e.g. tcp,
++udp, and in the future will be more general, resembling firewall rules.
++
++Thus the AppArmor security goal should be considered piecewise from the
++point of view of a single confined process: that process should only be
++able to access the resources specified in its profile:
++
++    * can only access files that are reachable in its name space by path
++      names matching its profile, and only with the permitted modes:
++      read, append, write, memory map, execute, and link
++    * can only use the POSIX.1e capabilities listed in the profile
++    * can only perform the network operations listed in the profile
++
++Security issues that AppArmor explicitly does *not* address:
++
++    * Processes that are not confined by AppArmor are not restricted in
++      any way by AppArmor. If an unconfined process is considered an
++      unacceptable threat, then confine additional applications until
++      adequate security is achieved.
++    * A process that is not permitted to directly access a resource can
++      influence some other process that does have access to the resource
++      may do so, if the "influence" is a permitted action.
++    * A confined process may only access a file if it has at least one
++      of the files aliases specified in its profile.  If a file alias is
++      not specified in the profile then it can not be accessed by that
++      path.  The creation of aliases needs to be tightly controlled in
++      confined applications, hard links creation should be limited to
++      provide adequate security.
++    * A confined process can operate on a file descriptor passed to it
++      by an unconfined process, even if it manipulates a file not in the
++      confined process's profile. To block this attack, confine the
++      process that passed the file descriptor.
++    * Process activities not currently mediated by AppArmor are
++      permitted, e.g. confined processes can perform any IPC that DAC
++      permits, other than signals as mediated by CAP_KILL.
++    * Manipulating AppArmor policy requires being both root privileged
++      and not being confined by AppArmor, thus there is explicitly no
++      capability for non-privileged users to change AppArmor policy.
++    * AppArmor confines processes if they are children of a confined
++      process, or if the name of the exec'd child matches the name of an
++      AppArmor profile. Another process could copy a program to a
++      different path name and then execute it without confinement, but
++      the other process would have to have permission to do so in the
++      first place. To prevent this, confine the other process and
++      additional applications until adequate security is achieved.
++    * Mount and namespace manipulations can be used to arbitrarily
++      change the pathnames that files appear at, and thus completely
++      bypass AppArmor policy. To prevent this, processes confined by
++      AppArmor are currently not permitted to call mount or manipulate
++      name spaces at all. A future development may provide more granular
++      controls on mount and namespace manipulations.
++    * AppArmor does not slice bread, cure cancer, bring world peace, or
++      provide perfect security. This list may be expanded :-)
++
++
 
 -- 
 
