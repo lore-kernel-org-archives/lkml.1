@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758421AbXLTLPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758777AbXLTLWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758421AbXLTLPd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 06:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbXLTLPZ
+	id S1758777AbXLTLWj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 06:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXLTLWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 06:15:25 -0500
-Received: from wombat.diezmil.com ([209.190.27.106]:44554 "EHLO
-	wombat.diezmil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752484AbXLTLPY (ORCPT
+	Thu, 20 Dec 2007 06:22:30 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47471
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754402AbXLTLW3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 06:15:24 -0500
-Date: Thu, 20 Dec 2007 06:15:23 -0500
-Message-ID: <20591791.1198149323148.JavaMail.root@wombat.diezmil.com>
-From: shyam_iyer@dell.com
-Reply-To: shyam_iyer@dell.com
-To: linux-kernel@vger.kernel.org
-Subject: RE: [PATCH] sata_nv: fix ADMA ATAPI issues with memory over 4GB (v3)
-In-Reply-To: <46A00B48CC54E4468EF6911F877AC4CAE2AB34@blrx3m10.blr.amer.dell.com>
+	Thu, 20 Dec 2007 06:22:29 -0500
+Date: Thu, 20 Dec 2007 03:22:28 -0800 (PST)
+Message-Id: <20071220.032228.186653113.davem@davemloft.net>
+To: Robert.Olsson@data.slu.se
+Cc: gallatin@myri.com, joonwpark81@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       shemminger@linux-foundation.org
+Subject: Re: [RFC] net: napi fix
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18282.15185.592112.550961@robur.slu.se>
+References: <47601A73.5010804@myri.com>
+	<20071212.093819.205755031.davem@davemloft.net>
+	<18282.15185.592112.550961@robur.slu.se>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
->@@ -1153,6 +1164,15 @@
-> 	pp->notifier_clear_block = pp->gen_block +
-> 	       NV_ADMA_NOTIFIER_CLEAR + (4 * ap->port_no);
-> 
->+	/* Now that the legacy PRD and padding buffer are allocated we can
->+	   safely raise the DMA mask to allocate the CPB/APRD table.
->+	   These are allowed to fail since we store the value that ends up
->+	   being used to set as the bounce limit in slave_config later if
->+	   needed. */
->+	pci_set_dma_mask(pdev, DMA_BIT_MASK(64));
->+	pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64));
->+	pp->adma_dma_mask = *dev->dma_mask;
->+
-> 	mem = dmam_alloc_coherent(dev, NV_ADMA_PORT_PRIV_DMA_SZ,
->				  &mem_dma, GFP_KERNEL);
+From: Robert Olsson <Robert.Olsson@data.slu.se>
+Date: Thu, 20 Dec 2007 10:52:17 +0100
 
+>  Yes but the reason was not to wait for all pending polls to
+>  complete so a server/router could be rebooted even under high-
+>  load and DOS. We've experienced some nasty problems with this.
 
-This causes my DMA memory to always be above 4GB no matter how much I delay the setting of the 64bit DMA mask. I find that if I set the DMA mask as 32bit and not increase it to 64 bit at all then all my I/O to the DVD rom are fine. 
+I know, see the rest of the thread where I agree that
+we need to deal with this somehow.
 
-Jeff Garzik wrote:
->I would consider setting the consistent DMA mask to 32-bit, and setting 
->the overall mask to 64-bit.
-
->Seems like that would solve the problem?
-
-I agree and I have tested that it is working.
-
--Shyam Iyer
-
---
-This message was sent on behalf of shyam_iyer@dell.com at openSubscriber.com
-http://www.opensubscriber.com/message/linux-kernel@vger.kernel.org/8218887.html
+The device is marked down first, and somehow we need to
+tip off of that to break out of the NAPI loop.  This
+"how" is what hasn't been resolved yet.
