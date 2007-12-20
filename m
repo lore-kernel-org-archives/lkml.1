@@ -1,132 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764574AbXLTOX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934216AbXLTOYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764574AbXLTOX5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 09:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932945AbXLTOMY
+	id S934216AbXLTOYc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 09:24:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932934AbXLTOM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 09:12:24 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56757 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933025AbXLTOMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 09:12:21 -0500
-X-Mailbox-Line: From jjohansen@suse.de Thu Dec 20 06:09:45 2007
-Message-Id: <20071220140945.332961472@suse.de>
-References: <20071220140910.934607826@suse.de>
-User-Agent: quilt/0.46-60
-Date: Thu, 20 Dec 2007 06:09:36 -0800
-From: John@suse.de, Johansen@suse.de
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 26/47] Pass struct vfsmount to the inode_listxattr LSM hook
-Content-Disposition: inline; filename=security-listxattr.diff
+	Thu, 20 Dec 2007 09:12:26 -0500
+Received: from mail.gmx.net ([213.165.64.20]:43862 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932891AbXLTOMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 09:12:23 -0500
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX19TFr18PmNTjlmbErLaOWPSZ3oskGAbzkLhFQUFfd
+	HyW8OX9fFK5m4H
+Date: Thu, 20 Dec 2007 15:12:17 +0100
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Krzysztof Oledzki <olel@ans.pl>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Osterried <osterried@jesse.de>, protasnb@gmail.com,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 9182] Critical memory leak (dirty pages)
+Message-ID: <20071220141217.GA4745@atjola.homenet>
+References: <20071215221935.306A5108068@picon.linux-foundation.org> <Pine.LNX.4.64.0712152358240.14491@bizon.gios.gov.pl> <20071215203539.d6f71e96.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161016290.25065@bizon.gios.gov.pl> <20071216015112.d0ab08a1.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161440030.25065@bizon.gios.gov.pl> <alpine.LFD.0.9999.0712190903350.21557@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.0.9999.0712190903350.21557@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+On 2007.12.19 09:44:50 -0800, Linus Torvalds wrote:
+> 
+> 
+> On Sun, 16 Dec 2007, Krzysztof Oledzki wrote:
+> > 
+> > I'll confirm this tomorrow but it seems that even switching to data=ordered
+> > (AFAIK default o ext3) is indeed enough to cure this problem.
+> 
+> Ok, do we actually have any ext3 expert following this? I have no idea 
+> about what the journalling code does, but I have painful memories of ext3 
+> doing really odd buffer-head-based IO and totally bypassing all the normal 
+> page dirty logic.
+> 
+> Judging by the symptoms (sorry for not following this well, it came up 
+> while I was mostly away travelling), something probably *does* clear the 
+> dirty bit on the pages, but the dirty *accounting* is not done properly, 
+> so the kernel keeps thinking it has dirty pages.
+> 
+> Now, a simple "grep" shows that ext3 does not actually do any 
+> ClearPageDirty() or similar on its own, although maybe I missed some other 
+> subtle way this can happen. And the *normal* VFS routines that do 
+> ClearPageDirty should all be doing the proper accounting.
+> 
+> So I see a couple of possible cases:
+> 
+>  - actually clearing the PG_dirty bit somehow, without doing the 
+>    accounting.
+> 
+>    This looks very unlikely. PG_dirty is always cleared by some variant of 
+>    "*ClearPageDirty()", and that bit definition isn't used for anything 
+>    else in the whole kernel judging by "grep" (the page allocator tests 
+>    the bit, that's it).
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: John Johansen <jjohansen@suse.de>
+OK, so I looked for PG_dirty anyway.
 
----
- fs/xattr.c               |    2 +-
- include/linux/security.h |    9 +++++----
- security/dummy.c         |    2 +-
- security/security.c      |    4 ++--
- security/selinux/hooks.c |    2 +-
- 5 files changed, 10 insertions(+), 9 deletions(-)
+In 46d2277c796f9f4937bfa668c40b2e3f43e93dd0 you made try_to_free_buffers
+bail out if the page is dirty.
 
---- a/fs/xattr.c
-+++ b/fs/xattr.c
-@@ -174,7 +174,7 @@ vfs_listxattr(struct dentry *dentry, str
- 	struct inode *inode = dentry->d_inode;
- 	ssize_t error;
- 
--	error = security_inode_listxattr(dentry);
-+	error = security_inode_listxattr(dentry, mnt);
- 	if (error)
- 		return error;
- 	error = -EOPNOTSUPP;
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -426,7 +426,7 @@ struct request_sock;
-  * 	Return 0 if permission is granted.
-  * @inode_listxattr:
-  * 	Check permission before obtaining the list of extended attribute 
-- * 	names for @dentry.
-+ * 	names for @dentry and @mnt.
-  * 	Return 0 if permission is granted.
-  * @inode_removexattr:
-  * 	Check permission before removing the extended attribute
-@@ -1318,7 +1318,7 @@ struct security_operations {
- 				     size_t size, int flags);
- 	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
- 			       char *name);
--	int (*inode_listxattr) (struct dentry *dentry);
-+	int (*inode_listxattr) (struct dentry *dentry, struct vfsmount *mnt);
- 	int (*inode_removexattr) (struct dentry *dentry, char *name);
- 	int (*inode_need_killpriv) (struct dentry *dentry);
- 	int (*inode_killpriv) (struct dentry *dentry);
-@@ -1590,7 +1590,7 @@ void security_inode_post_setxattr(struct
- 				  int flags);
- int security_inode_getxattr(struct dentry *dentry, struct vfsmount *mnt,
- 			    char *name);
--int security_inode_listxattr(struct dentry *dentry);
-+int security_inode_listxattr(struct dentry *dentry, struct vfsmount *mnt);
- int security_inode_removexattr(struct dentry *dentry, char *name);
- int security_inode_need_killpriv(struct dentry *dentry);
- int security_inode_killpriv(struct dentry *dentry);
-@@ -1996,7 +1996,8 @@ static inline int security_inode_getxatt
- 	return 0;
- }
- 
--static inline int security_inode_listxattr (struct dentry *dentry)
-+static inline int security_inode_listxattr (struct dentry *dentry,
-+					    struct vfsmount *mnt)
- {
- 	return 0;
- }
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -399,7 +399,7 @@ static int dummy_inode_getxattr (struct 
- 	return 0;
- }
- 
--static int dummy_inode_listxattr (struct dentry *dentry)
-+static int dummy_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt)
- {
- 	return 0;
- }
---- a/security/security.c
-+++ b/security/security.c
-@@ -486,11 +486,11 @@ int security_inode_getxattr(struct dentr
- 	return security_ops->inode_getxattr(dentry, mnt, name);
- }
- 
--int security_inode_listxattr(struct dentry *dentry)
-+int security_inode_listxattr(struct dentry *dentry, struct vfsmount *mnt)
- {
- 	if (unlikely(IS_PRIVATE(dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_listxattr(dentry);
-+	return security_ops->inode_listxattr(dentry, mnt);
- }
- 
- int security_inode_removexattr(struct dentry *dentry, char *name)
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2642,7 +2642,7 @@ static int selinux_inode_getxattr (struc
- 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
- }
- 
--static int selinux_inode_listxattr (struct dentry *dentry)
-+static int selinux_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt)
- {
- 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
- }
+Then in 3e67c0987d7567ad666641164a153dca9a43b11d, Andrew fixed
+truncate_complete_page, because it called cancel_dirty_page (and thus
+cleared PG_dirty) after try_to_free_buffers was called via
+do_invalidatepage.
 
--- 
+Now, if I'm not mistaken, we can end up as follows.
 
+truncate_complete_page()
+  cancel_dirty_page() // PG_dirty cleared, decr. dirty pages
+  do_invalidatepage()
+    ext3_invalidatepage()
+      journal_invalidatepage()
+        journal_unmap_buffer()
+          __dispose_buffer()
+            __journal_unfile_buffer()
+              __journal_temp_unlink_buffer()
+                mark_buffer_dirty(); // PG_dirty set, incr. dirty pages
+
+If journal_unmap_buffer then returns 0, try_to_free_buffers is not
+called and neither is cancel_dirty_page, so the dirty pages accounting
+is not decreased again.
+
+As try_to_free_buffers got its ext3 hack back in
+ecdfc9787fe527491baefc22dce8b2dbd5b2908d, maybe
+3e67c0987d7567ad666641164a153dca9a43b11d should be reverted? (Except for
+the accounting fix in cancel_dirty_page, of course).
+
+
+On a side note, before 8368e328dfe1c534957051333a87b3210a12743b the task
+io accounting for cancelled writes happened always happened if the page
+was dirty, regardless of page->mapping. This was also already true for
+the old test_clear_page_dirty code, and the commit log for
+8368e328dfe1c534957051333a87b3210a12743b doesn't mention that semantic
+change either, so maybe the "if (account_size)" block should be moved
+out of the if "(mapping && ...)" block?
+
+Björn - not sending patches because he needs sleep and wouldn't have a
+        damn clue about what to write as a commit message anyway
