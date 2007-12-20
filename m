@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760070AbXLTUN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbXLTUOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760070AbXLTUN4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 15:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759833AbXLTUMq
+	id S1756523AbXLTUOc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 15:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759025AbXLTUOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 15:12:46 -0500
-Received: from mga06.intel.com ([134.134.136.21]:47276 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759798AbXLTUMo (ORCPT
+	Thu, 20 Dec 2007 15:14:09 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:57583 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759180AbXLTUOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 15:12:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,191,1196668800"; 
-   d="scan'208";a="301985351"
-Message-ID: <476ACABC.4010503@linux.intel.com>
-Date: Thu, 20 Dec 2007 21:04:12 +0100
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
-To: Parag Warudkar <parag.warudkar@gmail.com>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       netdev@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sky2: Use deferrable timer for watchdog
-References: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>	 <20071220091603.0d69b045@deepthought>	 <823114761-1198171803-cardhu_decombobulator_blackberry.rim.net-937108990-@bxe019.bisx.prod.on.blackberry>	 <20071220095121.7859c023@deepthought> <476ABDDF.8080607@intel.com>	 <476ABE7D.60901@linux.intel.com> <476AC105.9090206@intel.com> <82e4877d0712201200h7b994175u841d1efa047cefff@mail.gmail.com>
-In-Reply-To: <82e4877d0712201200h7b994175u841d1efa047cefff@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 20 Dec 2007 15:14:08 -0500
+Subject: Re: [PATCH 1/3] ps3: vuart: fix error path locking
+From: Daniel Walker <dwalker@mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Geoff Levand <geoffrey.levand@am.sony.com>, matthias.kaehlcke@gmail.com,
+       linux-kernel@vger.kernel.org, linux@bohmer.net, linuxppc-dev@ozlabs.org,
+       mingo@elte.hu, kjwinchester@gmail.com
+In-Reply-To: <20071220120635.d66550bd.akpm@linux-foundation.org>
+References: <20071213003028.676998182@mvista.com>
+	 <4760922C.2060908@am.sony.com>
+	 <20071218171050.5bf220fa.akpm@linux-foundation.org>
+	 <47688A5A.1090902@am.sony.com> <1198179145.10713.9.camel@imap.mvista.com>
+	 <20071220120635.d66550bd.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 20 Dec 2007 12:13:49 -0800
+Message-Id: <1198181630.10713.11.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parag Warudkar wrote:
-> On Dec 20, 2007 2:22 PM, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
->> ok, that's just bad and if there's no user-defineable limit to the deferral I
->> definately don't like this change.
->>
->> Can I safely assume that any irq will cause all deferred timers to run?
+On Thu, 2007-12-20 at 12:06 -0800, Andrew Morton wrote:
+> On Thu, 20 Dec 2007 11:32:25 -0800 Daniel Walker <dwalker@mvista.com> wrote:
 > 
-> I think even other causes for wakeup like process related ones will
-> cause the CPU to go busy and run the timers.
-> This, coupled with the fact that no one is yet able to reach 0 wakeups
-> per second makes it pretty unlikely that deferrable timers will be
-> deferred indefinitely.
-
-0.8 is easy on single core today.
-multicore just increases how idle you can be for a given core.
-
+> > On Tue, 2007-12-18 at 19:04 -0800, Geoff Levand wrote:
+> > 
+> > > Unfortunately there wasn't enough context in the patch to see
+> > > that there is a down() earlier in the routine, and that the patch
+> > > does indeed remove an incorrectly placed down().  Here is the
+> > > entire routine, marked with what the patch removes.
+> > > 
+> > 
+> > Andrew have you had a chance to review this?
+> > 
 > 
->> If this is the case then for e1000 this patch is still OK since the watchdog needs
->> to run (1) after a link up/down interrupt or (2) to update statistics. Those
->> statistics won't increase if there is no traffic of course...
->>
-> 
-> I think it is reasonable for Network driver watchdogs to use a
-> deferrable timer - if the machine is 100% IDLE there is no one needing
-> the network to be up. If there is something running even on the other
-> CPU - that is going to cause an IPI, reschedule, TLB invalidation etc.
-> which will make it very likely in practice that each CPU will be
-> interrupted in reasonable amount of time.
+> Confused.  I did review it: http://lkml.org/lkml/2007/12/18/384
 
-this is not correct; many machines are idle waiting for network data. Think of webservers...
+Yeah, but Geoff countered http://lkml.org/lkml/2007/12/18/409
 
-> 
-> Of course there are theoretical cases where we could land into a
-> situation where a CPU in a multiprocessor machine is IDLE infinitely
-> and that causes the watchdog that happens to be bound to run on the
-> same CPU to not run. To take care of these unlikely cases I think the
-> timer mechanism should have a reasonable limit on how long a CPU can
-> go IDLE if there are deferrable timers.
+Do you still think the patch is wrong, given the whole function?
 
-how about something else instead: a timer mechanism that takes a range instead..
-that at least has defined semantics; the deferrable semantics really are "indefinite".
-Lets keep at least the semantics clear and clean.
+Daniel
 
