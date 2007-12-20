@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933562AbXLTRNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935010AbXLTRQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933562AbXLTRNj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 12:13:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932475AbXLTRNL
+	id S935010AbXLTRQq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 12:16:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760157AbXLTRQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 12:13:11 -0500
-Received: from waste.org ([66.93.16.53]:33647 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754338AbXLTRNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 12:13:10 -0500
-Date: Thu, 20 Dec 2007 11:11:43 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Nick Piggin <npiggin@suse.de>,
-       riel <riel@redhat.com>, Lennart Poettering <mztabzr@0pointer.de>
-Subject: Re: [rfc][patch] mm: madvise(WILLNEED) for anonymous memory
-Message-ID: <20071220171143.GV19691@waste.org>
-References: <1198155938.6821.3.camel@twins> <Pine.LNX.4.64.0712201339010.18399@blonde.wat.veritas.com> <1198162078.6821.27.camel@twins> <Pine.LNX.4.64.0712201508290.857@blonde.wat.veritas.com> <1198169621.6821.44.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1198169621.6821.44.camel@twins>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 20 Dec 2007 12:16:33 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34405 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759966AbXLTRQc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 12:16:32 -0500
+Date: Thu, 20 Dec 2007 09:16:03 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: parag.warudkar@gmail.com
+Cc: netdev@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sky2: Use deferrable timer for watchdog
+Message-ID: <20071220091603.0d69b045@deepthought>
+In-Reply-To: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>
+References: <Pine.LNX.4.64.0712182008160.3616@mini.warudkars.net>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 05:53:41PM +0100, Peter Zijlstra wrote:
-> 
-> On Thu, 2007-12-20 at 15:26 +0000, Hugh Dickins wrote:
-> 
-> > The asynch code: perhaps not worth doing for MADV_WILLNEED alone,
-> > but might prove useful for more general use when swapping in.
-> > Not really the same as Con's swap prefetch, but worth looking
-> > at that for reference.  But I guess this becomes a much bigger
-> > issue than you were intending to get into here.
-> 
-> heh, yeah, got somewhat more complex that I'd hoped for.
-> 
-> last patch for today (not even compile tested), will do a proper patch
-> and test it tomorrow.
-> 
-> ---
-> A best effort MADV_WILLNEED implementation for anonymous memory.
-> 
-> It adds a batch method to the page table walk routines so we can
-> copy a few ptes while holding the kmap, which makes it possible to
-> allocate the backing pages using GFP_KERNEL.
+On Tue, 18 Dec 2007 20:13:28 -0500 (EST)
+Parag Warudkar <parag.warudkar@gmail.com> wrote:
 
-Yuck. We actually need to just fix the atomic kmap issue in the
-existing pagemap code rather than add a new method, I think.
+> 
+> sky2 can use deferrable timer for watchdog - reduces wakeups from idle per 
+> second.
+> 
+> Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
+> 
+> --- linux-2.6/drivers/net/sky2.c	2007-12-07 10:04:39.000000000 -0500
+> +++ linux-2.6-work/drivers/net/sky2.c	2007-12-18 20:07:58.000000000 -0500
+> @@ -4230,7 +4230,10 @@
+>   			sky2_show_addr(dev1);
+>   	}
+> 
+> -	setup_timer(&hw->watchdog_timer, sky2_watchdog, (unsigned long) hw);
+> +	hw->watchdog_timer.function = sky2_watchdog;
+> +	hw->watchdog_timer.data = (unsigned long) hw;
+> +	init_timer_deferrable(&hw->watchdog_timer);
+> +
+>   	INIT_WORK(&hw->restart_work, sky2_restart);
+> 
+>   	pci_set_drvdata(pdev, hw);
 
-If performance of map/unmap is too slow at a granularity of 1, we can
-add some internal batching in the CONFIG_HIGHPTE case.
+Does it really reduce the wakeup's or only change who gets charged by powertop?
+The system is going to wakeup once a second anyway. Looks to me that if the
+timer is using round_jiffies(), that setting deferrable just changes the accounting.
+
+My interpretation of the api is:
+   * round_jiffies()  - timer wants to wakeup but isn't precise about when so schedule
+                        on next second when system will wake up anyway;
+                        e.g why meetings are usually scheduled on the hour
+
+   * deferrable       - timer doesn't have to really wakeup but wants to happen near
+                        a particular time. e.g. "I'll meet you at the pub around 8pm"
+
+Therefore doing deferrable is unnecessary for timers using round_jiffies unless system
+is so good at doing timers that it is going to skip doing timer once per second.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Stephen Hemminger <stephen.hemminger@vyatta.com>
