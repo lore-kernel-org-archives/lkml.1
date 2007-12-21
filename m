@@ -1,44 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbXLUMlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbXLUMmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757794AbXLUMlq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 07:41:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbXLUMlh
+	id S1760112AbXLUMmY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 07:42:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbXLUMmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 07:41:37 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:30765 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750723AbXLUMlg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 07:41:36 -0500
-Message-ID: <476BB495.5050809@ru.mvista.com>
-Date: Fri, 21 Dec 2007 15:41:57 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 21 Dec 2007 07:42:16 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48069 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751046AbXLUMmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 07:42:15 -0500
+Date: Fri, 21 Dec 2007 14:42:13 +0200
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] w1-gpio: Add GPIO w1 bus master driver
+Message-ID: <20071221124213.GG15861@sci.fi>
+References: <1198222441690-git-send-email-syrjala@sci.fi> <20071221104127.GA28474@2ka.mipt.ru>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 20/63] ide-cd: remove needless zeroing of 'info' fields
- from ide_cdrom_setup()
-References: <200712200208.20568.bzolnier@gmail.com>
-In-Reply-To: <200712200208.20568.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071221104127.GA28474@2ka.mipt.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Fri, Dec 21, 2007 at 01:41:28PM +0300, Evgeniy Polyakov wrote:
+> Hi Ville.
+> 
+> On Fri, Dec 21, 2007 at 09:34:01AM +0200, Ville Syrjala (syrjala@sci.fi) wrote:
+> > Add a GPIO 1-wire bus master driver. The driver used the GPIO API to
+> > control the wire and the GPIO pin can be specified using platform data
+> > similar to i2c-gpio. The driver was tested with AT91SAM9260 + DS2401.
+> 
+> This looks ok, only a minor nit about codying style below.
+> 
+> > Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+> 
+> ACK.
+> 
+> > +static int __init w1_gpio_probe(struct platform_device *pdev)
+> > +{
+> > +	struct w1_bus_master *master;
+> > +	struct w1_gpio_platform_data *pdata;
+> > +	int err;
+> > +
+> > +	pdata = pdev->dev.platform_data;
+> > +	if (!pdata)
+> > +		return -ENXIO;
+> > +
+> > +	master = kzalloc(sizeof *master, GFP_KERNEL);
+> > +	if (!master)
+> > +		return -ENOMEM;
+> 
+> I think sizeof(struct w1_bus_master) is a better way.
 
-> ide_cd_probe() zeroes 'info' prior to calling ide_cdrom_setup() so there
-> is no need to explicitly zero 'info' fields in the latter function.
+Will change.
 
-> Ditto for fields of CDROM_STATE_FLAGS(), CDROM_CONFIG_FLAGS() and 'cdi'
-> (all are embedded in 'info').
+> > new file mode 100644
+> > index 0000000..3b80bb2
+> > --- /dev/null
+> > +++ b/include/linux/w1-gpio.h
+> 
+> Does anyone use this file except driver itself?
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+It's supposed to be used by the code that registers the platform device
+(see the example in the documentation). No in-tree users since the board
+I'm using is not supported by the kernel.
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+I just had a better look at i2c-gpio and noticed that I missed
+gpio_request()/gpio_free() calls from the driver. Also the open-drain
+requirement could be removed like i2c-gpio does. I'll send a new patch
+ASAP.
 
-MBR, Sergei
+-- 
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
