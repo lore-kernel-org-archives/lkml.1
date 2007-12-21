@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765997AbXLUApH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765953AbXLUAqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765997AbXLUApH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:45:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765713AbXLUAos
+	id S1765953AbXLUAqx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 19:46:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbXLUAqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:44:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58635 "EHLO mx2.mail.elte.hu"
+	Thu, 20 Dec 2007 19:46:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49910 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765702AbXLUAor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:44:47 -0500
-Date: Fri, 21 Dec 2007 01:44:16 +0100
+	id S1755035AbXLUAqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 19:46:45 -0500
+Date: Fri, 21 Dec 2007 01:46:25 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: trond.myklebust@fys.uio.no, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
-Message-ID: <20071221004416.GA15922@elte.hu>
-References: <1198190447.29917.9.camel@heimdal.trondhjem.org> <20071220145415.f737e7f3.akpm@linux-foundation.org> <20071220234759.GA29776@elte.hu> <20071220161934.0f55029a.akpm@linux-foundation.org> <20071221003035.GA10123@elte.hu> <20071220164000.58c43b42.akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [git pull] x86 fixes
+Message-ID: <20071221004625.GA14220@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071220164000.58c43b42.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,45 +33,57 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Linus, please pull the latest x86 git tree from:
 
-> > +		raw_local_irq_save(flags);
-> >  		__raw_spin_lock(&die.lock);
-> > -		raw_local_save_flags(flags);
-> >  		die.lock_owner = smp_processor_id();
-> >  		die.lock_owner_depth = 0;
-> >  		bust_spinlocks(1);
-> > -	}
-> > -	else
-> > -		raw_local_save_flags(flags);
-> > +	} else
-> > +		raw_local_irq_save(flags);
-> >  
-> >  	if (++die.lock_owner_depth < 3) {
-> >  		unsigned long esp;
-> 
-> Looks sane.
-> 
-> I suppose there's some reason why we can't just use 
-> spin_lock_irqsave(). But that reason was either so obvious or so 
-> unimportant that a comment was not needed.  Sigh.
+   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-bug was introduced via:
-
-  commit 39743c9ef717fd4f2b5583f010115c5f2482b8ae
-  Author: Andi Kleen <ak@suse.de>
-  Date:   Fri Oct 19 20:35:03 2007 +0200
-
-      x86: use raw locks during oopses
-
--               spin_lock_irqsave(&die.lock, flags);
-+               __raw_spin_lock(&die.lock);
-+               raw_local_save_flags(flags);
-
-that is not a correct open-coding of spin_lock_irqsave(): both the 
-ordering is wrong (irqs should be disabled _first_), and the wrong 
-flags-saving API was used.
-
-so this is a post-2.6.23 regression and the fix is (now) obvious.
+it includes a late-breaking regression fix for die() - caught by Andrew. 
+Thanks!
 
 	Ingo
+
+------------------>
+Ingo Molnar (1):
+      x86: fix die() to not be preemptible
+
+Jason Gaston (1):
+      x86: intel_cacheinfo.c: cpu cache info entry for Intel Tolapai
+
+ cpu/intel_cacheinfo.c |    1 +
+ traps_32.c            |    7 +++----
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 606fe4d..9f530ff 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -49,6 +49,7 @@ static struct _cache_table cache_table[] __cpuinitdata =
+ 	{ 0x3c, LVL_2,      256 },	/* 4-way set assoc, sectored cache, 64 byte line size */
+ 	{ 0x3d, LVL_2,      384 },	/* 6-way set assoc, sectored cache, 64 byte line size */
+ 	{ 0x3e, LVL_2,      512 },	/* 4-way set assoc, sectored cache, 64 byte line size */
++	{ 0x3f, LVL_2,      256 },	/* 2-way set assoc, 64 byte line size */
+ 	{ 0x41, LVL_2,      128 },	/* 4-way set assoc, 32 byte line size */
+ 	{ 0x42, LVL_2,      256 },	/* 4-way set assoc, 32 byte line size */
+ 	{ 0x43, LVL_2,      512 },	/* 4-way set assoc, 32 byte line size */
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index ef60102..c88bbff 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -373,14 +373,13 @@ void die(const char * str, struct pt_regs * regs, long err)
+ 
+ 	if (die.lock_owner != raw_smp_processor_id()) {
+ 		console_verbose();
++		raw_local_irq_save(flags);
+ 		__raw_spin_lock(&die.lock);
+-		raw_local_save_flags(flags);
+ 		die.lock_owner = smp_processor_id();
+ 		die.lock_owner_depth = 0;
+ 		bust_spinlocks(1);
+-	}
+-	else
+-		raw_local_save_flags(flags);
++	} else
++		raw_local_irq_save(flags);
+ 
+ 	if (++die.lock_owner_depth < 3) {
+ 		unsigned long esp;
