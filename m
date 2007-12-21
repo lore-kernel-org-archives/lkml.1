@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763014AbXLUDNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764220AbXLUDPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763014AbXLUDNK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 22:13:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXLUDM5
+	id S1764220AbXLUDPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 22:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbXLUDPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 22:12:57 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37128
+	Thu, 20 Dec 2007 22:15:09 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37139
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753264AbXLUDM4 (ORCPT
+	by vger.kernel.org with ESMTP id S1753324AbXLUDPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 22:12:56 -0500
-Date: Thu, 20 Dec 2007 19:12:55 -0800 (PST)
-Message-Id: <20071220.191255.265293332.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: elendil@planet.nl, alan@lxorguk.ukuu.org.uk, apw@shadowen.org,
-       joe@perches.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, trivial@kernel.org, rdunlap@xenotime.net,
-       jschopp@austin.ibm.com
-Subject: Re: Trailing periods in kernel messages
+	Thu, 20 Dec 2007 22:15:06 -0500
+Date: Thu, 20 Dec 2007 19:15:05 -0800 (PST)
+Message-Id: <20071220.191505.122863242.davem@davemloft.net>
+To: mpm@selenic.com
+Cc: m.kozlowski@tuxland.pl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: 2.6.24-rc5-mm1: problems with cat /proc/kpageflags
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071220181532.f31cdcaa.akpm@linux-foundation.org>
-References: <20071220210741.6dc3caf5@the-village.bc.nu>
-	<200712210243.35240.elendil@planet.nl>
-	<20071220181532.f31cdcaa.akpm@linux-foundation.org>
+In-Reply-To: <20071221010653.GA19691@waste.org>
+References: <200712202047.56745.m.kozlowski@tuxland.pl>
+	<20071220.161726.68534356.davem@davemloft.net>
+	<20071221010653.GA19691@waste.org>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -31,12 +29,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 20 Dec 2007 18:15:32 -0800
+From: Matt Mackall <mpm@selenic.com>
+Date: Thu, 20 Dec 2007 19:06:55 -0600
 
-> No-period is a kernel idiom, produces perfectly readable output, I have
-> never ever heard of anyone expressing the least concern over a lack of dots
-> at the end of their printks and 91% of kernel code agrees.
+> @@ -707,7 +707,10 @@ static ssize_t kpagecount_read(struct fi
+>  		return -EIO;
+>  
+>  	while (count > 0) {
+> -		ppage = pfn_to_page(pfn++);
+> +		ppage = 0;
+> +		if (pfn_valid(pfn))
+> +			ppage = pfn_to_page(pfn);
+> +		pfn++;
+>  		if (!ppage)
+>  			pcount = 0;
+>  		else
 
-I have never heard of a compiler expressing the least concern over
-whitespace and other aspects of coding style.
+Yes that should work, please use "NULL" in the final
+version of the patch instead of "0" so that sparse is
+happy.
+
+Thanks.
