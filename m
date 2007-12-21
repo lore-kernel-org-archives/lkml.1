@@ -1,95 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbXLUUma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbXLUU5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707AbXLUUma (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 15:42:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbXLUUmU
+	id S1756877AbXLUU5g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 15:57:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbXLUU52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 15:42:20 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39682 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752399AbXLUUmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 15:42:19 -0500
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX19LhuMUJ81LtoypRPrE1RspotJ06Su+j4mbA2CdUQ
-	YNWYwuDo2dMLZe
-Date: Fri, 21 Dec 2007 21:42:13 +0100
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Krzysztof Oledzki <olel@ans.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Osterried <osterried@jesse.de>, protasnb@gmail.com,
-       bugme-daemon@bugzilla.kernel.org, sct@redhat.com, adilget@clusterfs.com,
-       linux-ext4@vger.kernel.org
-Subject: [PATCH] Fix dirty page accounting leak with ext3 data=journal
-Message-ID: <20071221204213.GA32138@atjola.homenet>
-References: <Pine.LNX.4.64.0712152358240.14491@bizon.gios.gov.pl> <20071215203539.d6f71e96.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161016290.25065@bizon.gios.gov.pl> <20071216015112.d0ab08a1.akpm@linux-foundation.org> <Pine.LNX.4.64.0712161440030.25065@bizon.gios.gov.pl> <alpine.LFD.0.9999.0712190903350.21557@woody.linux-foundation.org> <20071220141217.GA4745@atjola.homenet> <alpine.LFD.0.9999.0712200753040.21557@woody.linux-foundation.org> <20071220222816.GB4745@atjola.homenet> <Pine.LNX.4.64.0712212049001.24477@bizon.gios.gov.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0712212049001.24477@bizon.gios.gov.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Y-GMX-Trusted: 0
+	Fri, 21 Dec 2007 15:57:28 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55750 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754200AbXLUU51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 15:57:27 -0500
+Date: Fri, 21 Dec 2007 15:57:14 -0500 (EST)
+Message-Id: <20071221.155714.71084400.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com
+Cc: grant.likely@secretlab.ca, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: [PATCH] (linux-2.6-block.git) xsysace: fix size misconversion of
+ blk_end_request
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In 46d2277c796f9f4937bfa668c40b2e3f43e93dd0, try_to_free_buffers was
-changed to bail out if the page was dirty. That caused
-truncate_complete_page to leak massive amounts of memory, because the
-dirty bit was only cleared after the call to try_to_free_buffers. So the
-call to cancel_dirty_page was moved up to have the dirty bit cleared
-early in 3e67c0987d7567ad666641164a153dca9a43b11d.
+Hi Jens,
 
-The problem with that fix is, that the page can be redirtied after
-cancel_dirty_page was called, eg. like this:
+I found this change is not yet included in your linux-2.6-block.git tree:
+    http://marc.info/?l=linux-kernel&m=119747954926232&w=2
 
-truncate_complete_page()
-  cancel_dirty_page() // PG_dirty cleared, decr. dirty pages
-  do_invalidatepage()
-    ext3_invalidatepage()
-      journal_invalidatepage()
-        journal_unmap_buffer()
-          __dispose_buffer()
-            __journal_unfile_buffer()
-              __journal_temp_unlink_buffer()
-                mark_buffer_dirty(); // PG_dirty set, incr. dirty pages
+Please apply this patch (just a rebased version of the above)
+to your for-akpm branch before Andrew pulls.
+Otherwise, xsysace driver will not work correctly.
 
-And then we end up with dirty pages being wrongly accounted.
 
-In ecdfc9787fe527491baefc22dce8b2dbd5b2908d the changes to
-try_to_free_buffers were reverted, so the original reason for the
-massive memory leak is gone, so we can also revert the move of
-the call to cancel_dirty_page from truncate_complete_page and get the
-accounting right again.
+This patch fixes the misconversion from sector to byte
+in the blk_end_request patch-set.
 
-Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
-Tested-by: Krzysztof Piotr Oledzki <ole@ans.pl>
+In ace_fsm_dostate(), the variable 'i' was used only for passing
+sector size of the request to __end_end_request().
+So I removed it and changed the code to pass the size in bytes
+directly to __blk_end_request().
 
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 ---
-I'm not sure if it matters, but opposed to the final check in
-__remove_from_page_cache, this one also cares about the task io
-accounting, so maybe we want to use this instead, although it's not
-quite the clean fix either.
+ drivers/block/xsysace.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/mm/truncate.c b/mm/truncate.c
-index cadc156..2974903 100644
---- a/mm/truncate.c
-+++ b/mm/truncate.c
-@@ -98,11 +98,11 @@ truncate_complete_page(struct address_space *mapping, struct page *page)
- 	if (page->mapping != mapping)
- 		return;
+--- a/drivers/block/xsysace.c
++++ b/drivers/block/xsysace.c
+@@ -483,7 +483,6 @@ static void ace_fsm_dostate(struct ace_d
+ 	u32 status;
+ 	u16 val;
+ 	int count;
+-	int i;
  
--	cancel_dirty_page(page, PAGE_CACHE_SIZE);
--
- 	if (PagePrivate(page))
- 		do_invalidatepage(page, 0);
+ #if defined(DEBUG)
+ 	dev_dbg(ace->dev, "fsm_state=%i, id_req_count=%i\n",
+@@ -688,7 +687,6 @@ static void ace_fsm_dostate(struct ace_d
+ 		}
  
-+	cancel_dirty_page(page, PAGE_CACHE_SIZE);
-+
- 	remove_from_page_cache(page);
- 	ClearPageUptodate(page);
- 	ClearPageMappedToDisk(page);
+ 		/* Transfer the next buffer */
+-		i = 16;
+ 		if (ace->fsm_task == ACE_TASK_WRITE)
+ 			ace->reg_ops->dataout(ace);
+ 		else
+@@ -702,8 +700,8 @@ static void ace_fsm_dostate(struct ace_d
+ 		}
+ 
+ 		/* bio finished; is there another one? */
+-		i = ace->req->current_nr_sectors;
+-		if (__blk_end_request(ace->req, 0, i)) {
++		if (__blk_end_request(ace->req, 0,
++				      blk_rq_cur_bytes(ace->req))) {
+ 			/* dev_dbg(ace->dev, "next block; h=%li c=%i\n",
+ 			 *      ace->req->hard_nr_sectors,
+ 			 *      ace->req->current_nr_sectors);
+
+Thanks,
+Kiyoshi Ueda
