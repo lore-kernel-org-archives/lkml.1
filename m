@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbXLULl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbXLULon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbXLULl5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 06:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbXLULlu
+	id S1758263AbXLULon (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 06:44:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXLULof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 06:41:50 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:4202 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750720AbXLULlt (ORCPT
+	Fri, 21 Dec 2007 06:44:35 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:30115 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751585AbXLULoe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 06:41:49 -0500
-Date: Fri, 21 Dec 2007 19:41:03 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, joe@perches.com, davem@davemloft.net,
-       apw@shadowen.org, lizf@cn.fujitsu.com, akpm@linux-foundation.org,
-       elendil@planet.nl, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       trivial@kernel.org, rdunlap@xenotime.net, jschopp@austin.ibm.com
-Subject: Re: Trailing periods in kernel messages
-Message-ID: <20071221114103.GA801@gondor.apana.org.au>
-References: <E1J5ecS-0008UX-00@gondolin.me.apana.org.au> <Pine.LNX.4.64.0712211104080.21721@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712211104080.21721@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.9i
+	Fri, 21 Dec 2007 06:44:34 -0500
+Message-ID: <476BA737.3060305@ru.mvista.com>
+Date: Fri, 21 Dec 2007 14:44:55 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/63] ide-cd: fix ACER/AOpen 24X CDROM speed reporting
+ on big-endian machines
+References: <200712200151.39973.bzolnier@gmail.com>
+In-Reply-To: <200712200151.39973.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21, 2007 at 11:10:38AM +0100, Jan Engelhardt wrote:
->
-> >	[XFS] Initialise current offset in xfs_file_readdir correctly
-> >
-> >The reason is that it lacks a subject.
-> 
-> "current offset" is your subject.
+Bartlomiej Zolnierkiewicz wrote:
 
-In my school we were taught that "current offset" is part of the
-predicate as opposed to the subject.  This can be seen from the
-fact that "offset" is singular while "initialise" did not take
-on its third-person singular form of "initialises".
+> * Fix ACER/AOpen 24X CDROM speed reporting on big-endian machines
+>   by adding missing le16_to_cpu() calls.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> While at it:
+> * Replace ntohs() by be16_to_cpu().
+
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
