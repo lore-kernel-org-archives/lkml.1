@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbXLUOcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758639AbXLUOkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760601AbXLUOcu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 09:32:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbXLUOci
+	id S1758639AbXLUOkN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 09:40:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbXLUOkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 09:32:38 -0500
-Received: from mga05.intel.com ([192.55.52.89]:37554 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750920AbXLUOch (ORCPT
+	Fri, 21 Dec 2007 09:40:00 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:58922 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750736AbXLUOkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 09:32:37 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,194,1196668800"; 
-   d="scan'208";a="453573560"
-Message-ID: <476BCE15.6090902@linux.intel.com>
-Date: Fri, 21 Dec 2007 15:30:45 +0100
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
+	Fri, 21 Dec 2007 09:40:00 -0500
+Date: Fri, 21 Dec 2007 09:39:59 -0500
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Cc: Roland Dreier <rdreier@cisco.com>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Trying to convert old modules to newer kernels
+Message-ID: <20071221143959.GG2308@csclub.uwaterloo.ca>
+References: <ada1w9hyrhn.fsf@cisco.com> <Pine.LNX.4.61.0712201755330.9907@chaos.analogic.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       Marcel Holtmann <marcel@holtmann.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: Top 10 kernel oopses/warnings for the week of December 21st 2007
-References: <476BA8AF.4060201@linux.intel.com> <p73ejdgf8vj.fsf@bingen.suse.de>
-In-Reply-To: <p73ejdgf8vj.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0712201755330.9907@chaos.analogic.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Arjan van de Ven <arjan@linux.intel.com> writes:
-> 
->> 	
->> Rank 8: __change_page_attr
->> 	BUG at arch/x86/mm/pageattr_64.c:176
->> 	Reported 2 times
->> 	Reported this week for 2.6.24-rc5; history goes back to 2.6.15
-> 
-> There is no BUG on this line on 2.6.24-rc5.   Since there are many
-> BUG_ONs in this file it is unclear which you mean.
-> 
-> Could you always include the version of the kernel where the actual
-> oops in the line came from?
+On Thu, Dec 20, 2007 at 05:56:19PM -0500, linux-os (Dick Johnson) wrote:
+> Okay. Thanks! I need to do that.
 
-in this case this is really all the version information available ;(
-it seems to be a patched kernel without patched EXTRAVERSION.
-But in the future if I have more specific information (eg it's only 1 kernel version) I'll mention it in more detail.
-It gets unwieldy if there's 500 reports for an oops of course ;)
+On the (now somewhat old) 2.6.18 kernel I use it is an option under
+"Processor type and features" called "Use register arguments", but yeah
+it isn't an option anymore in new kernels.
 
-> 
-> Anyways there are a lot of third party modules who do strange 
-> things with c_p_a(), not always legal, so you might look up out for that 
-> pattern too. Perhaps report the out of tree modules loaded in the 
-> summary too?
+As for your argument that it isn't a good idea, well most of the time
+the arguments you want to pass to a function are already values you were
+just working with to get them ready for the function, so quite likely
+they are already in the registers you are worried about having to clear
+first.  Add to that the ability of modern x86 CPUs to use rename
+registers to fake stack accesses in some cases and the clearing of the
+registers become pretty much a non issue, at least that's my
+understanding of how things work.
 
-I already always will mention if the oops is tainted or not (that I track specifically);
-I'll keep an eye out for other non-tainting out of tree modules as well.
-
-Thanks for the suggestions.
-
+--
+Len Sorensen
