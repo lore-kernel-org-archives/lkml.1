@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762766AbXLUOAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763205AbXLUOBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762766AbXLUOAg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 09:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbXLUOA2
+	id S1763205AbXLUOBR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 09:01:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbXLUOBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 09:00:28 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:60746 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752539AbXLUOA0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 09:00:26 -0500
-Date: Fri, 21 Dec 2007 07:00:25 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       rdreier@cisco.com, linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk,
-       davem@davemloft.net, james.bottomley@steeleye.com, ralf@linux-mips.org
-Subject: Re: [PATCH 2/2] scsi: Use new __dma_buffer to align sense buffer in scsi_cmnd
-Message-ID: <20071221140024.GO29690@parisc-linux.org>
-References: <20071221023011.4C4BADDDFA@ozlabs.org> <20071221103326.7ce1bc4f@the-village.bc.nu> <20071221131640.GN29690@parisc-linux.org> <20071221133027.GA11495@alpha.franken.de>
+	Fri, 21 Dec 2007 09:01:07 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:21741 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751575AbXLUOBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 09:01:06 -0500
+Message-ID: <476BC71A.40806@msgid.tls.msk.ru>
+Date: Fri, 21 Dec 2007 17:00:58 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071221133027.GA11495@alpha.franken.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Johannes Weiner <hannes@saeurebad.de>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: 2.6.24-rc5-git7: Reported regressions from 2.6.23
+References: <200712210212.02666.rjw@sisk.pl> <87d4t05f5a.fsf@saeurebad.de>
+In-Reply-To: <87d4t05f5a.fsf@saeurebad.de>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21, 2007 at 02:30:28PM +0100, Thomas Bogendoerfer wrote:
-> there are SCSI host drivers, which also DMA to the sense buffer like
-> sgiwd93.c for example.
+Johannes Weiner wrote:
+[]
+> I still have a bug with cpufreq when using ondemand governor as default.
+> 
+> The performance governor, which has been the essential default until
+> 1c2562459faedc35927546cfa5273ec6c2884cce,  was initialized with
+> fs_initcall() instead of module_init() to make sure the driver is up and
+> running when the bootcode (speedstep_init in my case) calls into it.
+> 
+> Since the above mentioned commit, other governors can also be chosen to
+> be the default but they are not correctly initialized before first use
+> then.
 
-Yes ... and there are others which don't, for example qla2xxx and
-sym53c8xx.
+By the way, is there any real need to specify default governor at
+a compile time in the first place?  Performance governor (which was
+the only default so far) is a very simple one (not large to consider
+its size effects for embedded systems for example), and switching
+governors at run time is trivial as well.  What's the motivation
+behind this new config option?
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+[]
+> This migrates all governors from module_init() to fs_initcall() when
+> being the default, as was already done in cpufreq_performance when it
+> was the only possible choice.
+
+Oh well.  Which leads to more surprises in the future, I think...
+
+Thanks.
+
+/mjt
