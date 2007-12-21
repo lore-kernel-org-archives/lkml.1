@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbXLUV2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758364AbXLUV3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757591AbXLUV2t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 16:28:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbXLUV2k
+	id S1758364AbXLUV3x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 16:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbXLUV3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 16:28:40 -0500
-Received: from gate.crashing.org ([63.228.1.57]:55446 "EHLO gate.crashing.org"
+	Fri, 21 Dec 2007 16:29:44 -0500
+Received: from gate.crashing.org ([63.228.1.57]:55465 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753421AbXLUV2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 16:28:39 -0500
-Subject: Re: [PATCH 1/2] DMA buffer alignment annotations
+	id S1751412AbXLUV3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 16:29:43 -0500
+Subject: Re: [PATCH 2/2] scsi: Use new __dma_buffer to align sense buffer
+	in scsi_cmnd
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Reply-To: benh@kernel.crashing.org
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       rdreier@cisco.com, linux-scsi@vger.kernel.org, davem@davemloft.net,
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, rdreier@cisco.com,
+       linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk, davem@davemloft.net,
        james.bottomley@steeleye.com, ralf@linux-mips.org
-In-Reply-To: <20071221093905.GB31115@flint.arm.linux.org.uk>
-References: <20071221023010.C56B7DDDF3@ozlabs.org>
-	 <20071221093905.GB31115@flint.arm.linux.org.uk>
+In-Reply-To: <20071221131640.GN29690@parisc-linux.org>
+References: <20071221023011.4C4BADDDFA@ozlabs.org>
+	 <20071221103326.7ce1bc4f@the-village.bc.nu>
+	 <20071221131640.GN29690@parisc-linux.org>
 Content-Type: text/plain
-Date: Sat, 22 Dec 2007 08:25:41 +1100
-Message-Id: <1198272341.6737.12.camel@pasglop>
+Date: Sat, 22 Dec 2007 08:29:07 +1100
+Message-Id: <1198272547.6737.18.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -30,37 +33,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2007-12-21 at 09:39 +0000, Russell King wrote:
-
-> > +#ifndef ARCH_MIN_DMA_ALIGNMENT
-> > +#define __dma_aligned
-> > +#define __dma_buffer
-> > +#else
-> > +#define __dma_aligned	  	__attribute__((aligned(ARCH_MIN_DMA_ALIGNMENT)))
-> > +#define __dma_buffer		__dma_buffer_line(__LINE__)
-> > +#define __dma_buffer_line(line)	__dma_aligned;\
-> > +				char __dma_pad_##line[0] __dma_aligned
+On Fri, 2007-12-21 at 06:16 -0700, Matthew Wilcox wrote:
+> On Fri, Dec 21, 2007 at 10:33:26AM +0000, Alan Cox wrote:
+> > On Fri, 21 Dec 2007 13:30:08 +1100
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > 
+> > > The sense buffer ins scsi_cmnd can nowadays be DMA'ed into directly
+> > > by some low level drivers (that typically happens with USB mass
+> > > storage).
+> > 
+> > Should that not be fixed in USB storage by using pci_alloc_coherent on the
+> > PCI device of the hub not peeing directly into kernel space ?
 > 
-> You introduce __dma_buffer_line() if ARCH_MIN_DMA_ALIGNMENT is set but
-> not if it isn't...
+> That's what I said, but Ben seems fixated on this particular fix.
 
-Yup, it's not meant to be used outside of __dma_buffer...
+That means more understanding of the SCSI code than I have right now
+and a _lot_ more time than I have right now. It's not only USB storage,
+it's anything that does DMA and uses the generic error handling.
 
- .../...
-
-> > +then dev->buffer will be safe for DMA on all architectures.  On a
-> > +cache-coherent architecture the members of dev will be aligned exactly
-> > +as they would have been without __dma_buffer; on a non-cache-coherent
-> > +architecture buffer and field2 will be aligned so that buffer does not
-> > +share a cache line with any other data.
-> > +
-> 
-> ... but it's not described.  What's the purpose of it, and why would it
-> only be used on CPUs with ARCH_MIN_DMA_ALIGNMENT set?
-
-Hrm, I'm not the best at writing exlanations, care to send a patch ? :-)
-
-Cheers,
-Ben
+Ben.
 
 
