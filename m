@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbXLUW1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758844AbXLUWbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758629AbXLUW1S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 17:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbXLUW1L
+	id S1758844AbXLUWbW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 17:31:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbXLUWbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 17:27:11 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53947 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753254AbXLUW1K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 17:27:10 -0500
-Date: Fri, 21 Dec 2007 14:27:09 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-In-Reply-To: <1198275453.30889.4.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com>
-References: <1197049846.1645.68.camel@localhost.localdomain> 
- <20071211143336.GA17866@elte.hu>  <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com>
-  <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com> 
- <20071221120908.GA15926@elte.hu>  <Pine.LNX.4.64.0712210750510.29372@schroedinger.engr.sgi.com>
-  <alpine.LFD.0.9999.0712210835440.21557@woody.linux-foundation.org> 
- <Pine.LNX.4.64.0712211356220.3795@schroedinger.engr.sgi.com> 
- <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy>
+	Fri, 21 Dec 2007 17:31:15 -0500
+Received: from mail.suse.de ([195.135.220.2]:47815 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753515AbXLUWbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 17:31:13 -0500
+Date: Fri, 21 Dec 2007 14:29:56 -0800
+From: Greg KH <gregkh@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, bjorn.helgaas@hp.com, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, dbrownell@users.sourceforge.net,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [patch 3/3] PCI: use dev_printk in x86 quirk messages
+Message-ID: <20071221222956.GB24478@suse.de>
+References: <20071217210937.103111394@ldl.fc.hp.com> <20071217211337.545932066@ldl.fc.hp.com> <20071218135801.GB17470@elte.hu> <20071221134735.1e0066c9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071221134735.1e0066c9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Dec 2007, Peter Zijlstra wrote:
+On Fri, Dec 21, 2007 at 01:47:35PM -0800, Andrew Morton wrote:
+> On Tue, 18 Dec 2007 14:58:01 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * bjorn.helgaas@hp.com <bjorn.helgaas@hp.com> wrote:
+> > 
+> > > Convert quirk printks to dev_printk().
+> > 
+> > thanks, applied the x86 bits.
+> > 
+> 
+> Greg applied it too.  Could you guys please sort out some sort of
+> who-owns-what protocol?
+> 
+> Thanks.
+> 
+> > arch/x86/kernel/quirks.c |   42 ++++++++++++++++++++++--------------------
+> > arch/x86/pci/fixup.c     |   22 +++++++++++-----------
+> 
+> That made it hard.  Arguably one file is PCI tree and the other is x86
+> tree.
 
-> BTW, does /proc/slabinfo exist again? I thought we set that as a
-> requirement for SLUB to be the default and a full replacement for SLAB.
+Hm, as traditionally we haven't had such an active x86 maintainer, I've
+handled most of the pci quirk type stuff that people have sent to me in
+the past :)
 
-Well the information that would be exposed in /proc/slabinfo would only be 
-faked up stuff from SLUB. The queues that are described in /proc/slabinfo do not 
-exist f.e. (tunables do not make sense) and there are more details available via /sys/kernel/slab.
+But, now that we have more enthusiastic developers, I can change this.
+If you want me to cut portions of the patch up, I'll be glad to do so,
+just let me know.
 
-There is a discussion on linux-mm with some of the people working on tools 
-to make these to use the information that SLUB provides.
+It's easy for me when merging, as our tools can handle it just fine, but
+Andrew is the one with the big problems, so we should probably shake it
+out on our end first...
 
+Ingo, what is easiest for you to do?  As I use quilt, I can very simply
+cut a portion of the patch up, or drop it entirely.
 
+thanks,
 
+greg k-h
