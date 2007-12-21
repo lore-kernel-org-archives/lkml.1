@@ -1,92 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbXLUElm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760567AbXLUEpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759416AbXLUElm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 23:41:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbXLUElb
+	id S1760567AbXLUEpu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 23:45:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbXLUEpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 23:41:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53969 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751190AbXLUEla (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 23:41:30 -0500
-Date: Thu, 20 Dec 2007 20:40:54 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Kyle McMartin <kyle@mcmartin.ca>, Junio C Hamano <gitster@pobox.com>,
-       Git Mailing List <git@vger.kernel.org>, Raphael Assenat <raph@8d.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.24-rc6
-In-Reply-To: <alpine.LFD.0.9999.0712202009290.21557@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.9999.0712202026040.21557@woody.linux-foundation.org>
-References: <alpine.LFD.0.9999.0712201731010.21557@woody.linux-foundation.org> <20071221024805.GB8535@fattire.cabal.ca> <20071221030152.GC8535@fattire.cabal.ca> <alpine.LFD.0.9999.0712201937470.21557@woody.linux-foundation.org>
- <alpine.LFD.0.9999.0712202009290.21557@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 20 Dec 2007 23:45:43 -0500
+Received: from gate.crashing.org ([63.228.1.57]:48844 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755193AbXLUEpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 23:45:42 -0500
+Subject: Re: [PATCH 3/3] pci: Remove pci_enable_device_bars()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Greg KH <greg@kroah.com>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       ink@jurassic.park.msu.ru, Alan Cox <alan@redhat.com>,
+       james.smart@emulex.com, linux-driver@qlogic.com,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <20071221042855.GF25341@kroah.com>
+References: <20071220042812.706D0DDEE7@ozlabs.org>
+	 <20071221042855.GF25341@kroah.com>
+Content-Type: text/plain
+Date: Fri, 21 Dec 2007 15:44:56 +1100
+Message-Id: <1198212296.6779.42.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Thu, 20 Dec 2007, Linus Torvalds wrote:
+On Thu, 2007-12-20 at 20:28 -0800, Greg KH wrote:
+> On Thu, Dec 20, 2007 at 03:28:10PM +1100, Benjamin Herrenschmidt wrote:
+> > Now that all in-tree users are gone, this removes pci_enable_device_bars()
+> > completely.
 > 
-> It only happened for a few files that had lots of repeated lines - so that 
-> the diff could literally be done multiple different ways - and in fact, 
-> the file that caused the problems really had a bogus commit that 
-> duplicated *way* too much data, and caused lots of #define's to exist 
-> twice.
+> Hm, looks like you missed drivers/scsi/qla2xxx/qla_os.c
+> 
+> Quick, before akpm gets mad at you for breaking the build, send me a
+> patch!  :)
 
-Here's the example of this kind of behaviour: in the 2.6.26-rc5 tree the 
-file drivers/video/mbx/reg_bits.h has the #defines for 
+Argh... there was 2 users in that file and I fixed only one...
 
-	/* DINTRS - Display Interrupt Status Register */
-	/* DINTRE - Display Interrupt Enable Register */
+Followup patch in a blink.
 
-duplicated twice due to commit ba282daa919f89c871780f344a71e5403a70b634 
-("mbxfb: Improvements and new features") by Raphael Assenat mistakenly 
-adding another copy of the same old set of defines that we already got 
-added once before by commit fb137d5b7f2301f2717944322bba38039083c431 
-("mbxfb: Add more registers bits access macros").
+Cheers,
+Ben.
 
-Now, that was a mistake - and one that probably happened because Rafael or 
-more likely Andrew Morton used GNU patch with its insane defaults (which 
-is to happily apply the same patch that adds things twice, because it 
-doesn't really care if the context matches or not).
 
-But what that kind of thing causes is that when you create a patch of the 
-end result, it can show the now new duplicate lines two different (but 
-equally valid) ways: it can show it as an addition of the _first_ set of 
-lines, or it can show it as an addition of the _second_ set of lines. They 
-are the same, after all.
-
-Now, it doesn't really matter which way you choose to show it, although 
-because of how "git diff" finds similarities, it tends to prefer to show 
-the second set of identical lines as the "new" ones. Which is generally 
-reasonable.
-
-However, that interacted really badly with the new git logic that said 
-that "if the two files end in the same sequence, just ignore the common 
-tail of the file", because the latter copy of the identical lines would 
-now show up as _part_ of that common tail, so the lines that the git diff 
-machinery would normally like to show up as "new" did in fact end up being 
-considered uninteresting, because they were part of an idential tail. 
-
-So now "git diff" would happily pick _earlier_ lines as the new ones, and 
-it would still be a conceptually valid diff, but because we had trimmed 
-the tail of the file, that conceptually valid diff no longer had the 
-expected shared context at the end.
-
-And while it's a bit embarrassing, I'm really rather happy that both GNU 
-patch and "git apply" actually refused to apply the patch. It may have 
-been "conceptually correct" (ie it did really contain all of the changes!) 
-but because it lacked the expected context it really wasn't a good patch. 
-
-That was a rather long-winded explanation of what happened, mainly because 
-it was all very unexpected to me, and I had personally mistakenly thought 
-the git optimization was perfectly valid and actually had to go through 
-the end result to see what was going on.
-
-Anyway, the diff on kernel.org should be all ok now, and mirrored out too.
-
-			Linus
