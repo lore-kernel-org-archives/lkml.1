@@ -1,86 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbXLUVOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758269AbXLUVOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754642AbXLUVOW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 16:14:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbXLUVNw
+	id S1758269AbXLUVOd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 16:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757722AbXLUVOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 16:13:52 -0500
-Received: from homer.mvista.com ([63.81.120.158]:45106 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753421AbXLUVNv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 16:13:51 -0500
-Message-Id: <20071221205858.857235223@mvista.com>
-References: <20071221205854.408865412@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 21 Dec 2007 00:00:02 -0800
-Subject: [PATCH 2/4] prism54: remove questionable down_interruptible usage
-References: <20071221205848.989157559@mvista.com>
-User-Agent: quilt/0.46-1
-From: Daniel Walker <dwalker@mvista.com>
-To: akpm@linux-foundation.org
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, linux@bohmer.net,
-       jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
-       kjwinchester@gmail.com
-Content-Disposition: inline; filename=wireless-prism54-fix-down_interruptible-usage.patch
+	Fri, 21 Dec 2007 16:14:10 -0500
+Received: from gate.crashing.org ([63.228.1.57]:48221 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757624AbXLUVOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 16:14:08 -0500
+Date: Sat, 22 Dec 2007 00:11:12 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Jochen Friedrich <jochen@scram.de>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, i2c@lm-sensors.org, khali@linux-fr.org
+Subject: Re: [PATCH POWERPC] i2c: adds support for i2c bus on Frescale
+ CPM1/CPM2 controllers
+Message-ID: <20071222001112.691b80c8@kernel.crashing.org>
+In-Reply-To: <476C15BC.3090807@scram.de>
+References: <476C15BC.3090807@scram.de>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reviewing the semaphore usage I noticed these down_interruptible
-calls. Most of these aren't returning anything, so a caller can't
-tell if the operation completed or not. prism54_wpa_bss_ie_get()
-returns zero, but it's treated as the function failing which doesn't
-seem correct.
+On Fri, 21 Dec 2007 20:36:28 +0100
+Jochen Friedrich wrote:
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
----
- drivers/net/wireless/prism54/isl_ioctl.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+> Using the port of 2.4 code from Vitaly Bordug
+> <vitb@kernel.crashing.org> and the actual algorithm used by the i2c
+> driver of the DBox code on cvs.tuxboc.org from Tmbinc, Gillem
+> (htoa@gmx.net). Renamed i2c-rpx.c and i2c-algo-8xx.c to i2c-cpm.c and
+> converted the driver to an of_platform_driver.
+> 
 
-Index: linux-2.6.23/drivers/net/wireless/prism54/isl_ioctl.c
-===================================================================
---- linux-2.6.23.orig/drivers/net/wireless/prism54/isl_ioctl.c
-+++ linux-2.6.23/drivers/net/wireless/prism54/isl_ioctl.c
-@@ -165,8 +165,7 @@ prism54_update_stats(struct work_struct 
- 	struct obj_bss bss, *bss2;
- 	union oid_res_t r;
- 
--	if (down_interruptible(&priv->stats_sem))
--		return;
-+	down(&priv->stats_sem);
- 
- /* Noise floor.
-  * I'm not sure if the unit is dBm.
-@@ -1793,8 +1792,7 @@ prism54_clear_mac(struct islpci_acl *acl
- 	struct list_head *ptr, *next;
- 	struct mac_entry *entry;
- 
--	if (down_interruptible(&acl->sem))
--		return;
-+	down(&acl->sem);
- 
- 	if (acl->size == 0) {
- 		up(&acl->sem);
-@@ -2116,8 +2114,7 @@ prism54_wpa_bss_ie_add(islpci_private *p
- 	if (wpa_ie_len > MAX_WPA_IE_LEN)
- 		wpa_ie_len = MAX_WPA_IE_LEN;
- 
--	if (down_interruptible(&priv->wpa_sem))
--		return;
-+	down(&priv->wpa_sem);
- 
- 	/* try to use existing entry */
- 	list_for_each(ptr, &priv->bss_wpa_list) {
-@@ -2178,8 +2175,7 @@ prism54_wpa_bss_ie_get(islpci_private *p
- 	struct islpci_bss_wpa_ie *bss = NULL;
- 	size_t len = 0;
- 
--	if (down_interruptible(&priv->wpa_sem))
--		return 0;
-+	down(&priv->wpa_sem);
- 
- 	list_for_each(ptr, &priv->bss_wpa_list) {
- 		bss = list_entry(ptr, struct islpci_bss_wpa_ie, list);
+I had an attempt a while ago to do this but haven't had enough time to get it completed, so
+I am glad to see it finally picked up. There was some sort of discussion that time, you seem to have some of those points
+addressed but  something not, please
+check: http://lkml.org/lkml/2007/5/8/45
+
+(for instance, cpm_i2c_shutdown() and i2c_cpm_del_bus() are void because they cant' fail) 
+
+Also, why this was directed to Scott? This is lm-sensors stuff and is
+Jean Delvare <khali@linux-fr.org> material...
 
 -- 
+Sincerely, Vitaly
