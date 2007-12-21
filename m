@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933001AbXLUCJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763565AbXLUCKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933001AbXLUCJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 21:09:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932693AbXLUCIO
+	id S1763565AbXLUCKp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 21:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762168AbXLUCJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 21:08:14 -0500
-Received: from mailbox2.myri.com ([64.172.73.26]:1909 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932399AbXLUCIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 21:08:12 -0500
-Message-ID: <476B1FD8.4030306@myri.com>
-Date: Thu, 20 Dec 2007 21:07:20 -0500
-From: Loic Prylli <loic@myri.com>
-User-Agent: Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
+	Thu, 20 Dec 2007 21:09:09 -0500
+Received: from hades.rz.tu-clausthal.de ([139.174.2.20]:62240 "EHLO
+	hades.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932812AbXLUCJH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 21:09:07 -0500
+From: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: almost daily Kernel oops with 2.6.23.9 - and now 2.6.23.11 as well
+Date: Fri, 21 Dec 2007 03:09:02 +0100
+User-Agent: KMail/1.9.7
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
+References: <200712160106.00464.volker.armin.hemmann@tu-clausthal.de> <200712201912.37416.volker.armin.hemmann@tu-clausthal.de> <20071220190419.GA23620@elte.hu>
+In-Reply-To: <20071220190419.GA23620@elte.hu>
 MIME-Version: 1.0
-To: tcamuso@redhat.com
-CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <476AB3B5.9080808@redhat.com> <20071220215719.GA8528@suse.de> <476AEE7B.6050708@redhat.com> <20071220224006.GA16855@suse.de> <476AF8EF.3060407@redhat.com>
-In-Reply-To: <476AF8EF.3060407@redhat.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200712210309.02865.volker.armin.hemmann@tu-clausthal.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ok, so after the holidays I will do the following:
 
-On 12/20/2007 6:21 PM, Tony Camuso wrote:
->
-> And the MMCONFIG problem with enterprise systems and workstations, where
-> we do control the BIOS (for the most part), is due to known bugs in
-> certain versions of certain chipsets, HT1000, AMD8132, among them, not
-> the BIOS.
+let memtest86+ run several hours.
+do a full backup&restore to switch to r3 and build an unpatched kernel.
+see if I can reproduce the oops with .21 and .22 (because AFAIR no oops with 
+21.. but I might be wrong).
 
+Not exactly in that order.
 
-
-The lack of MMCONFIG support is indeed because some hypertransport
-chipsets lack that support. But there are some BIOSes out there that are
-advertising support for all busses in their MCFG acpi attribute (even
-the busses managed by some amd8131 in a mixed nvidia-ck804/amd8131
-motherboard), and the BIOS seems at least faulty for advertising a
-capability that does not exist.
+Glück Auf
+Volker
 
 
-Loic
-
+ps: please cc me. I am not subscribed to lkml.
