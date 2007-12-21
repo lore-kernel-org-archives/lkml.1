@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759777AbXLUKoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbXLUKwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759777AbXLUKoV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 05:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbXLUKoF
+	id S1758510AbXLUKwk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 05:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbXLUKwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 05:44:05 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42533 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752879AbXLUKoE (ORCPT
+	Fri, 21 Dec 2007 05:52:32 -0500
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:28930 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750818AbXLUKwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 05:44:04 -0500
-Date: Fri, 21 Dec 2007 02:42:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: trond.myklebust@fys.uio.no, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
-Message-Id: <20071221024211.f4207136.akpm@linux-foundation.org>
-In-Reply-To: <20071221102727.GB22452@elte.hu>
-References: <1198190447.29917.9.camel@heimdal.trondhjem.org>
-	<20071220145415.f737e7f3.akpm@linux-foundation.org>
-	<20071220234759.GA29776@elte.hu>
-	<20071220161934.0f55029a.akpm@linux-foundation.org>
-	<20071221003035.GA10123@elte.hu>
-	<20071220164000.58c43b42.akpm@linux-foundation.org>
-	<20071221102727.GB22452@elte.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 21 Dec 2007 05:52:31 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=aa2odPgRORY/mlAPxMO+z3VdNEraXj+Nguorf7TcLBx5yMJpLc5b8yCDCMJd1jwttWb9xm5cRIMgAiVlN+LwI0LxzWEoEx0CBNlw3t+BSey7fSKckMSotYqA3Jb69gfwo1MWQTrRH9rv9rSZANHmnJ0Bf3r7RKQhzkXvGPXb5JA=  ;
+X-YMail-OSG: wp6JpYcVM1kWoS__ojEAhvNp7DRBRUK8s.jzen2gxGlHBu6IV7wOpJuJqCV1CAy1VkS1977LDA--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: [patch 17/20] non-reclaimable mlocked pages
+Date: Fri, 21 Dec 2007 21:52:19 +1100
+User-Agent: KMail/1.9.5
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+References: <20071218211539.250334036@redhat.com> <1198080267.5333.22.camel@localhost> <20071220155627.6872b0e6@bree.surriel.com>
+In-Reply-To: <20071220155627.6872b0e6@bree.surriel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712212152.19260.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Dec 2007 11:27:27 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+On Friday 21 December 2007 07:56, Rik van Riel wrote:
+> On Wed, 19 Dec 2007 11:04:26 -0500
+>
+> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> > On Wed, 2007-12-19 at 08:45 -0500, Rik van Riel wrote:
+> > > On Wed, 19 Dec 2007 11:56:48 +1100
+> > >
+> > > Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > > > Hmm, I still don't know (or forgot) why you don't just use the
+> > > > old scheme of having an mlock count in the LRU bit, and removing
+> > > > the mlocked page from the LRU completely.
+> > >
+> > > How do we detect those pages reliably in the lumpy reclaim code?
+> >
+> > I wanted to try to treat nonreclaimable pages, whatever the reason,
+> > uniformly.  Lumpy reclaim wasn't there when I started on this, but we've
+> > been able to handle them.  I was more interested in page migration.  The
+> > act of isolating the page from the LRU [under zone lru_lock] arbitrates
+> > between racing tasks attempting to migrate the same page.  That and we
+> > keep the isolated pages on a list using the LRU links.  We can't migrate
+> > pages that we can't successfully isolate from the LRU list.
+>
+> Good point.
 
-> > local_read_flags().
-> > 
-> > > that should have been raw_local_irq_save(flags)!
-> > 
-> > So raw_local_save_flags() and raw_local_irq_save() have different semantics.
-> > 
-> > omigawd, what have we done?
-> 
-> i really tried to get this fixed years ago - but did not think of 
-> local_read_flags as a solution. The patch below fixes this.
-> 
-> (if it's too burdensome to carry right now then i can regenerate this 
-> patch in 30 seconds in the 2.6.25 merge window - but please remind me 
-> then. Perhaps put in a patch into your queue that adds a comment to 
-> remind me :-) )
+Ah: that's what it was. The migration code got harder with my mlock
+code (although I did have something that should have worked in theory,
+it involved a few steps).
 
-I'd suggest that we add a local_read_flags() along with local_save_flags().
-Then I can merge the parts of the patch which don't get destroyed by ongoing
-churn and then we can come in and clean up the stragglers later.
+I don't have a particular problem with putting mlock pages on the slow
+scan lists, although if you have huge mlocked data sets, you could
+effectively speed up slow scan list scanning by orders of magnitude by
+avoiding the mlocked pages.
 
-box:/usr/src/25> grep -l local_save_flags patches/*.patch 
-patches/git-perfmon.patch
-patches/git-sh.patch
-patches/git-x86.patch
-patches/i386-use-raw_smp_processor_id-in-die.patch
-patches/mn10300-add-the-mn10300-am33-architecture-to-the-kernel.patch
-patches/origin.patch
+I won't push it now, but I might see if I can rewrite it one day :)
 
-
+BTW. if you have any workloads that are limited by page reclaim,
+especially unmapped file backed pagecache reclaim, then I have some
+stright-line-speedup patches which you might find interesting (I can
+send them if you'd like to test).
