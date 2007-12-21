@@ -1,58 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765912AbXLUCE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbXLUCF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765912AbXLUCE4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 21:04:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762771AbXLUB7G
+	id S932469AbXLUCF3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 21:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762917AbXLUB7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 20:59:06 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:53330 "EHLO smtp.polymtl.ca"
+	Thu, 20 Dec 2007 20:59:11 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:53351 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762649AbXLUB7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 20:59:04 -0500
-Message-Id: <20071221015723.345522409@polymtl.ca>
+	id S1762525AbXLUB7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 20:59:06 -0500
+Message-Id: <20071221015727.640689028@polymtl.ca>
 References: <20071221015438.433195466@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 20 Dec 2007 20:54:41 -0500
+Date: Thu, 20 Dec 2007 20:54:54 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
-       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net
-Subject: [patch 03/24] Kprobes - declare kprobe_mutex static
-Content-Disposition: inline; filename=kprobes-declare-kprobes-mutex-static.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 21 Dec 2007 01:57:28 +0000
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [patch 16/24] Immediate Values - Powerpc Optimization
+Content-Disposition: inline; filename=immediate-values-powerpc-optimization.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 21 Dec 2007 01:57:32 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since it will not be used by other kernel objects, it makes sense to declare it
-static.
+PowerPC optimization of the immediate values which uses a li instruction,
+patched with an immediate value.
+
+Changelog:
+- Put imv_set and _imv_set in the architecture independent header.
+- Pack the __imv section. Use smallest types required for size (char).
+- Remove architecture specific update code : now handled by architecture
+  agnostic code.
+- Use imv_* instead of immediate_*.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: hch@infradead.org
-CC: prasanna@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
+CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: Paul Mackerras <paulus@samba.org>
 ---
- kernel/kprobes.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/Kconfig            |    1 
+ include/asm-powerpc/immediate.h |   55 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 56 insertions(+)
 
-Index: linux-2.6-lttng/kernel/kprobes.c
+Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
 ===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-19 09:09:15.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2007-08-19 17:18:07.000000000 -0400
-@@ -68,7 +68,7 @@ static struct hlist_head kretprobe_inst_
- /* NOTE: change this value only with kprobe_mutex held */
- static bool kprobe_enabled;
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-powerpc/immediate.h	2007-11-19 12:26:16.000000000 -0500
+@@ -0,0 +1,55 @@
++#ifndef _ASM_POWERPC_IMMEDIATE_H
++#define _ASM_POWERPC_IMMEDIATE_H
++
++/*
++ * Immediate values. PowerPC architecture optimizations.
++ *
++ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <asm/asm-compat.h>
++
++/**
++ * imv_read - read immediate variable
++ * @name: immediate value name
++ *
++ * Reads the value of @name.
++ * Optimized version of the immediate.
++ * Do not use in __init and __exit functions. Use _imv_read() instead.
++ */
++#define imv_read(name)							\
++	({								\
++		__typeof__(name##__imv) value;				\
++		BUILD_BUG_ON(sizeof(value) > 8);			\
++		switch (sizeof(value)) {				\
++		case 1:							\
++			asm(".section __imv,\"a\",@progbits\n\t"	\
++					PPC_LONG "%c1, ((1f)-1)\n\t"	\
++					".byte 1\n\t"			\
++					".previous\n\t"			\
++					"li %0,0\n\t"			\
++					"1:\n\t"			\
++				: "=r" (value)				\
++				: "i" (&name##__imv));			\
++			break;						\
++		case 2:							\
++			asm(".section __imv,\"a\",@progbits\n\t"	\
++					PPC_LONG "%c1, ((1f)-2)\n\t"	\
++					".byte 2\n\t"			\
++					".previous\n\t"			\
++					"li %0,0\n\t"			\
++					"1:\n\t"			\
++				: "=r" (value)				\
++				: "i" (&name##__imv));			\
++			break;						\
++		case 4:							\
++		case 8:	value = name##__imv;				\
++			break;						\
++		};							\
++		value;							\
++	})
++
++#endif /* _ASM_POWERPC_IMMEDIATE_H */
+Index: linux-2.6-lttng/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/powerpc/Kconfig	2007-11-19 12:25:21.000000000 -0500
++++ linux-2.6-lttng/arch/powerpc/Kconfig	2007-11-19 12:26:01.000000000 -0500
+@@ -81,6 +81,7 @@ config PPC
+ 	default y
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
++	select HAVE_IMMEDIATE
  
--DEFINE_MUTEX(kprobe_mutex);		/* Protects kprobe_table */
-+static DEFINE_MUTEX(kprobe_mutex);	/* Protects kprobe_table */
- DEFINE_SPINLOCK(kretprobe_lock);	/* Protects kretprobe_inst_table */
- static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
- 
+ config EARLY_PRINTK
+ 	bool
 
 -- 
 Mathieu Desnoyers
