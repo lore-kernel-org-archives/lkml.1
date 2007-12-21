@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762521AbXLUOoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759410AbXLUOqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762521AbXLUOoZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 09:44:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbXLUOoS
+	id S1759410AbXLUOqV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 09:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbXLUOqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 09:44:18 -0500
-Received: from amber.ccs.neu.edu ([129.10.116.51]:54035 "EHLO
-	amber.ccs.neu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbXLUOoR (ORCPT
+	Fri, 21 Dec 2007 09:46:14 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:57335 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753254AbXLUOqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 09:44:17 -0500
-Date: Fri, 21 Dec 2007 09:44:15 -0500 (EST)
-From: Jim Faulkner <jfaulkne@ccs.neu.edu>
-To: Brian <bcearl@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: sb live (emu10k1) stops working between 2.6.23.1 and 2.6.23.7
-In-Reply-To: <1a8e6a68-053a-4148-83b9-417bcd19b732@e4g2000hsg.googlegroups.com>
-Message-ID: <Pine.GSO.4.58.0712210925050.17976@denali.ccs.neu.edu>
-References: <9qhy2-5v-13@gated-at.bofh.it> <9qzv5-36l-21@gated-at.bofh.it>
- <1a8e6a68-053a-4148-83b9-417bcd19b732@e4g2000hsg.googlegroups.com>
+	Fri, 21 Dec 2007 09:46:14 -0500
+Date: Fri, 21 Dec 2007 08:46:06 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrew Morgan <morgan@kernel.org>, serue@us.ibm.com,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       minslinux-mm@kvack.org
+Subject: Re: [RFC] [PATCH -mm] oom_kill: remove uid==0 checks
+Message-ID: <20071221144606.GC27197@sergelap.austin.ibm.com>
+References: <20071212211835.GA24943@sergelap.austin.ibm.com> <47606969.6060808@kernel.org> <20071220163442.d93210ea.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071220163442.d93210ea.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Wed, 12 Dec 2007 15:06:17 -0800
+> Andrew Morgan <morgan@kernel.org> wrote:
+> 
+> > Serge E. Hallyn wrote:
+> > > Andrew, I've cc:d you here bc in doing this patch I noticed that your
+> > > 64-bit capabilities patch switched this code from an explicit check
+> > > of cap_t(p->cap_effective) to using __capable().  That means that
+> > > now being glossed over by the oom killer means PF_SUPERPRIV will
+> > > be set.  Is that intentional?
+> > 
+> > Yes, I switched the check because the old one didn't work with the new
+> > capability representation.
+> > 
+> > However, I had not thought this aspect of this replacement through. At
+> > the time, it seemed obvious but in this case it actually depends on
+> > whether you think using privilege (PF_SUPERPRIV) means "benefited from
+> > privilege", or "successfully completed a privileged operation".
+> > 
+> > I suspect, in this case, the correct thing to do is add the equivalent of:
+> > 
+> > #define CAPABLE_PROBE_ONLY(a,b)   (!security_capable(a,b))
+> > 
+> > and use that in the code in question. That is, return to the old
+> > behavior in a way that will not break if we ever need to add more bits.
 
-Hi Brian,
+Oh, I'm sorry - Andrew Morgan, I somehow read that email to say you were
+going to post such a patch, and let it fall off my todo list.  Should I
+go ahead and post a patch or do you have one ready?
 
-The solution is here:
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-11/msg06482.html
+> I'm struggling to understand whether the above was an ack, a nack or a
+> quack.
+> 
+> > Thanks for finding this.
+> 
+> >From that I'll assume ack ;)
 
-You just need to run "alsactl -F restore" to force restoration of your
-previous settings.  This needs to be done while /etc/asound.state consists
-of your settings that work correctly under your previous kernel.
-Hopefully Fedora hasn't already overwritten /etc/asound.state, I actually
-manually run alsactl from /etc/rc.local and disable the alsa service just
-to prevent my settings from being overwritten.
+It actually wasn't an ack of my patch.  But I'm not sure where to look
+for that.
 
-If your settings have already been overwritten, you may need to boot into
-the old kernel, get it working, save the alsamixer settings (alsactl
-store), reboot to the new kernel, then run "alsactl -F restore".  A
-hassle, I know.
-
-You might want to report this bug to the Fedora bug tracking system -- in
-my opinion these kind of changes should not be made just for a minor
-kernel update.
-
-I also wonder if it is even possible to get digital output working under
-newer kernels without an existing asound.state -- I tried in vain for
-hours to get it working again by just using alsamixer, and I wasn't
-getting anywhere.  asound.state consists of 225 controls for my SB Live,
-and only 40 or so are exposed in alsamixer.  I wonder if alsamixer isn't
-exposing the necessary control to enable digital output under newer
-kernels.
-
-Jim
-
-
-On Thu, 20 Dec 2007, Brian wrote:
-
-> Hi Jim,
->
-> I've come across the exact same issue with my Creative Audigy ZS 2 and
-> its digital output...  the sound no longer works after I upgraded my
-> kernel to 2.6.23.8-34.fc7 (I'm running Fedora 7).  Same error message
-> when using alsactl, etc.  I'm trying to fix this, and I'm not quite
-> sure exactly what you mean by "Simply replacing the 2.6.23.7
-> emumixer.c with the version included in 2.6.23.1 I was able to get
-> digital output working again under 2.6.23.7".  Could you explain in
-> further detail how I would go about doing this to fix this problem?
-> Would this require the kernel to be recompiled with the different
-> emumixer.c file?
->
-> I'm starting to wonder if I should just wait it out for another kernel
-> update that will hopefully have this issue fixed rather than spending
-> so much time on it trying to fix it now.
->
-> Any help you can provide is very much appreciated.
->
-> Thanks in advance.
->
-> Brian
->
+thanks,
+-serge
