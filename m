@@ -1,57 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbXLUPhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbXLUPxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbXLUPhV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 10:37:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbXLUPhH
+	id S1753340AbXLUPxm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 10:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXLUPxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 10:37:07 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:38892 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752562AbXLUPhG (ORCPT
+	Fri, 21 Dec 2007 10:53:31 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:28524 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751321AbXLUPxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 10:37:06 -0500
-Message-ID: <476BDDA1.4040302@davidnewall.com>
-Date: Sat, 22 Dec 2007 02:07:05 +1030
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Fri, 21 Dec 2007 10:53:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=iLXANQiDhXIxrKLBduZe6UtgeSQhK3RDOIXIHW3eGLjWQJ2JXZvonoQyXq80AoYvDiuaWzzGijU88Fzwqcr5iVUbRpXhYra49y7QmSiKsxTyXTmN4BiZiZoUE9alrSU29e9/lng9/zfMgf/3oVsUUF7Mu56riA7N964vAtvCmts=
+Date: Fri, 21 Dec 2007 16:55:03 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>
+Subject: [PATCH 1/5] udf: remove wrong prototype of udf_readdir
+Message-ID: <20071221155453.GA8575@joi>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: jengelh@computergmbh.de, herbert@gondor.apana.org.au,
-       alan@lxorguk.ukuu.org.uk, joe@perches.com, apw@shadowen.org,
-       lizf@cn.fujitsu.com, akpm@linux-foundation.org, elendil@planet.nl,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, trivial@kernel.org,
-       rdunlap@xenotime.net, jschopp@austin.ibm.com
-Subject: Re: Trailing periods in kernel messages
-References: <Pine.LNX.4.64.0712211104080.21721@fbirervta.pbzchgretzou.qr>	<20071221.021236.267832858.davem@davemloft.net>	<476BC2EB.3060000@davidnewall.com> <20071221.060125.165132180.davem@davemloft.net>
-In-Reply-To: <20071221.060125.165132180.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: David Newall <david@davidnewall.com>
-> Date: Sat, 22 Dec 2007 00:13:07 +1030
->> David Miller wrote:
->>     
->>> From: Jan Engelhardt <jengelh@computergmbh.de>
->>> Date: Fri, 21 Dec 2007 11:10:38 +0100 (CET)
->>>   
->>>       
->>>> Can we get back to programming?
->>>>         
->> With respect to the vast majority of log messages, nobody confounded by 
->> punctuation is truly trying to analyze a problem!
->>     
->
-> And nobody confounded by whitespace and coding style is truly
-> interesting in writing properly functioning code!
->   
+sparse generated:
+fs/udf/dir.c:78:5: warning: symbol 'udf_readdir' was not declared. Should it be static?
+there are 2 different prototypes of udf_readdir - remove them and move
+code around to make it still compile
 
-I supposed you meant "interested."  Proper coding style doesn't make for 
-proper code.  Arguably, it aids when reading code, and that's why we 
-mostly stick to agreed standards; but it's hard to get worked up over a 
-dot at the end of a log message.  In cases where it really does matter, 
-we make sure it's right; but demanding that every message meets some 
-unilateral idea of what is right is zealotry.
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Acked-by: Jan Kara <jack@suse.cz>
+---
+ fs/udf/dir.c |  118 +++++++++++++++++++++++++++------------------------------
+ 1 files changed, 56 insertions(+), 62 deletions(-)
+
+diff --git a/fs/udf/dir.c b/fs/udf/dir.c
+index 9e3b9f9..174d2fc 100644
+--- a/fs/udf/dir.c
++++ b/fs/udf/dir.c
+@@ -36,68 +36,8 @@
+ #include "udf_i.h"
+ #include "udf_sb.h"
+
+-/* Prototypes for file operations */
+-static int udf_readdir(struct file *, void *, filldir_t);
+-static int do_udf_readdir(struct inode *, struct file *, filldir_t, void *);
+-
+-/* readdir and lookup functions */
+-
+-const struct file_operations udf_dir_operations = {
+-	.read			= generic_read_dir,
+-	.readdir		= udf_readdir,
+-	.ioctl			= udf_ioctl,
+-	.fsync			= udf_fsync_file,
+-};
+-
+-/*
+- * udf_readdir
+- *
+- * PURPOSE
+- *	Read a directory entry.
+- *
+- * DESCRIPTION
+- *	Optional - sys_getdents() will return -ENOTDIR if this routine is not
+- *	available.
+- *
+- *	Refer to sys_getdents() in fs/readdir.c
+- *	sys_getdents() -> .
+- *
+- * PRE-CONDITIONS
+- *	filp			Pointer to directory file.
+- *	buf			Pointer to directory entry buffer.
+- *	filldir			Pointer to filldir function.
+- *
+- * POST-CONDITIONS
+- *	<return>		>=0 on success.
+- *
+- * HISTORY
+- *	July 1, 1997 - Andrew E. Mileski
+- *	Written, tested, and released.
+- */
+-
+-int udf_readdir(struct file *filp, void *dirent, filldir_t filldir)
+-{
+-	struct inode *dir = filp->f_path.dentry->d_inode;
+-	int result;
+-
+-	lock_kernel();
+-
+-	if (filp->f_pos == 0) {
+-		if (filldir(dirent, ".", 1, filp->f_pos, dir->i_ino, DT_DIR) < 0) {
+-			unlock_kernel();
+-			return 0;
+-		}
+-		filp->f_pos++;
+-	}
+-
+-	result = do_udf_readdir(dir, filp, filldir, dirent);
+-	unlock_kernel();
+- 	return result;
+-}
+-
+-static int
+-do_udf_readdir(struct inode *dir, struct file *filp, filldir_t filldir,
+-	       void *dirent)
++static int do_udf_readdir(struct inode *dir, struct file *filp,
++			  filldir_t filldir, void *dirent)
+ {
+ 	struct udf_fileident_bh fibh;
+ 	struct fileIdentDesc *fi = NULL;
+@@ -244,3 +184,57 @@ do_udf_readdir(struct inode *dir, struct file *filp, filldir_t filldir,
+
+ 	return 0;
+ }
++
++/*
++ * udf_readdir
++ *
++ * PURPOSE
++ *	Read a directory entry.
++ *
++ * DESCRIPTION
++ *	Optional - sys_getdents() will return -ENOTDIR if this routine is not
++ *	available.
++ *
++ *	Refer to sys_getdents() in fs/readdir.c
++ *	sys_getdents() -> .
++ *
++ * PRE-CONDITIONS
++ *	filp			Pointer to directory file.
++ *	buf			Pointer to directory entry buffer.
++ *	filldir			Pointer to filldir function.
++ *
++ * POST-CONDITIONS
++ *	<return>		>=0 on success.
++ *
++ * HISTORY
++ *	July 1, 1997 - Andrew E. Mileski
++ *	Written, tested, and released.
++ */
++
++static int udf_readdir(struct file *filp, void *dirent, filldir_t filldir)
++{
++	struct inode *dir = filp->f_path.dentry->d_inode;
++	int result;
++
++	lock_kernel();
++
++	if (filp->f_pos == 0) {
++		if (filldir(dirent, ".", 1, filp->f_pos, dir->i_ino, DT_DIR) < 0) {
++			unlock_kernel();
++			return 0;
++		}
++		filp->f_pos++;
++	}
++
++	result = do_udf_readdir(dir, filp, filldir, dirent);
++	unlock_kernel();
++ 	return result;
++}
++
++/* readdir and lookup functions */
++const struct file_operations udf_dir_operations = {
++	.read			= generic_read_dir,
++	.readdir		= udf_readdir,
++	.ioctl			= udf_ioctl,
++	.fsync			= udf_fsync_file,
++};
+--
+1.5.3.4
+
