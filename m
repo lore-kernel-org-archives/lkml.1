@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbXLUUHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbXLUUZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756939AbXLUUHE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 15:07:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbXLUUGy
+	id S1755918AbXLUUZS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 15:25:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbXLUUZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 15:06:54 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36893 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753216AbXLUUGx (ORCPT
+	Fri, 21 Dec 2007 15:25:06 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41177 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752870AbXLUUZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 15:06:53 -0500
-Date: Fri, 21 Dec 2007 12:05:29 -0800
-From: Greg KH <greg@kroah.com>
-To: Konrad Rzeszutek <konrad@darnok.org>
-Cc: Doug Maxey <dwm@enoyolf.org>, darnok@68k.org, linux-kernel@vger.kernel.org,
-       pjones@redhat.com, konradr@redhat.com, konradr@linux.vnet.ibm.com,
-       randy.dunlap@oracle.com, hpa@zytor.com, lenb@kernel.org,
-       mike.anderson@us.ibm.com, dwm@austin.ibm.com,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] Add iSCSI IBFT support (v0.4.2)
-Message-ID: <20071221200529.GA22989@kroah.com>
-References: <20071128233422.GD6736@andromeda.dapyr.net> <20071205004418.GH6736@andromeda.dapyr.net> <22081.1196824331@bebe.enoyolf.org> <20071205194708.GB1801@andromeda.dapyr.net>
+	Fri, 21 Dec 2007 15:25:04 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <476C20F9.1@s5r6.in-berlin.de>
+Date: Fri, 21 Dec 2007 21:24:25 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071205194708.GB1801@andromeda.dapyr.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: akepner@sgi.com
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, grundler@parisc-linux.org,
+       jbarnes@virtuousgeek.org, jes@sgi.com, randy.dunlap@oracle.com,
+       rdreier@cisco.com, James.Bottomley@steeleye.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] dma: passing "attributes" to dma_map_* routines
+References: <20071218001758.GO21916@sgi.com> <4767FA62.9060002@s5r6.in-berlin.de> <20071218200759.GE412@sgi.com> <1198184185.6779.16.camel@pasglop> <20071221180022.GW412@sgi.com>
+In-Reply-To: <20071221180022.GW412@sgi.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 05, 2007 at 03:47:08PM -0400, Konrad Rzeszutek wrote:
-> On Tue, Dec 04, 2007 at 09:12:11PM -0600, Doug Maxey wrote:
-> > Overall, looks nice.  Good work.
+akepner@sgi.com wrote:
+> On Fri, Dec 21, 2007 at 07:56:25AM +1100, Benjamin Herrenschmidt wrote:
+>> ...
+>> Can't you just have a primitive to sync things up that you call
+>> explicitely from your driver after fetching a new status entry ?
 > 
-> Thank you.
-> 
-> > 
-> > comments inline below...
-> > 
-> > On Tue, 04 Dec 2007 20:44:19 -0400, darnok@68k.org wrote:
-> > > On Wed, Nov 28, 2007 at 07:34:22PM -0400, Konrad Rzeszutek wrote:
-> > > >
-> > > > This patch adds /sysfs/firmware/ibft/[initiator|targetX|ethernetX]
-> > > > directories along with text properties which export the the iSCSI Boot
-> > > > Firmware Table (iBFT) structure.
-> > > >
-> > > > What is iSCSI Boot Firmware Table? It is a mechanism for the iSCSI
-> > > > tools to extract from the machine NICs the iSCSI connection information
-> > > > so that they can automagically mount the iSCSI share/target. Currently
-> > > > the iSCSI information is hard-coded in the initrd.
-> > > >
-> > > > For full details of the IBFT structure please take a look at:
-> > > > ftp://ftp.software.ibm.com/systems/support/system_x_pdf/ibm_iscsi_boot_firmware_table_v1.02.pdf
-> > >
-> > > Here is an updated version which provides an attribute symlink (in the
-> > > ethernetX directory) called 'device' to the NIC device, instead of
-> > > exporting a 'pci_bdf' file which had the "bus:slot:func" values.
-> > >
-> > > Review would be much appreciated.
-> 
-> This next version (0.4.2) includes: much better error unrolling
-> when kobject registration fails, fixes from Doug's review, and uses the
-> 'kset_create_and_add' API that Greg KH posted. It has been tested on
-> todays 2.6.24-rc4-gkh tree.
+> Well, the only mechanisms I know to get things synced are the ones 
+> I mentioned before: 1) generate an interrupt, 2) write to memory 
+> which has the "barrier" attribute. Obviously 1 is out - giving  
+> the memory used for status indications the barrier attribute is 
+> the most primitive means I'm aware of.
 
-Looks much nicer, good job.
+I don't know what it is in detail what Arthur et al are facing, but this
+is how it looks to me:
 
-However I changed the kobject api again, so some minor changes will need
-to happen (kobject_init() and kobject_add() parameters have changed),
-and you don't need to call kobject_del() right before kobject_put().
-Hm, that last one was always true, so that wasn't needed before...
+A sync call like Benjamin suggests has two preconditions.
 
-Do you want me to add this to my driver/ tree and fix up the kobject
-issues there so it all builds properly, and it gets sent to Linus for
-2.6.25?
+  1. The interconnect hardware actually offers such a functionality.
+I.e. there is a way for the CPU to request flushing of pending DMAs, and
+the interconnect is able to generate an interrupt to signal when it is done.
 
-thanks,
+  2. The protocols which the devices use are suitable for this.  I.e.
+ there are no race conditions during the window between when the DMAs
+were flushed and when the CPU has finished reading the status memory area.
 
-greg k-h
+Even _if_ both is true, a regime with such a call would obviously be
+more complex and might be harder to get to perform well, compared to the
+regime where the interconnect hardware is told beforehand that some
+particular DMA writes must never be reordered relative to earlier and
+later DMA writes.
+-- 
+Stefan Richter
+-=====-=-=== ==-- =-=-=
+http://arcgraph.de/sr/
