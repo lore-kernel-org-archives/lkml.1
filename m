@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbXLUTgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbXLUTsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753990AbXLUTgu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 14:36:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbXLUTgl
+	id S1755476AbXLUTsI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 14:48:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbXLUTrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 14:36:41 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:63523 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752627AbXLUTgk convert rfc822-to-8bit (ORCPT
+	Fri, 21 Dec 2007 14:47:55 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:23049 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752889AbXLUTrx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 14:36:40 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH -mm 18/43] powerpc compat_binfmt_elf
-Date: Fri, 21 Dec 2007 20:36:27 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Kyle McMartin <kyle@mcmartin.ca>, Roland McGrath <roland@redhat.com>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20071220115200.C767E26F98A@magilla.localdomain> <20071221085609.4D53B26F98A@magilla.localdomain> <20071221175106.GB17656@fattire.cabal.ca>
-In-Reply-To: <20071221175106.GB17656@fattire.cabal.ca>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 21 Dec 2007 14:47:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=euWnE+CDN4ka9o/XRUwqWjGaUOhlVNSA5LcULSXOF/i91ctjaxGLFuomuzUcY1AVYHA1Czq17R298G6SGZtGECKV1NujQl6bgVwp6y/F4LYcgkVcfLY6sfUK32RdH+8lzPPyrBknlN6gWLIbmG9GZPbvAhrEgZwyzN/vPO9WXRU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: bbpetkov@yahoo.de
+Subject: Re: [PATCH 00/63] ide-cd: redux
+Date: Fri, 21 Dec 2007 20:57:49 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200712200148.49690.bzolnier@gmail.com> <20071220121157.GA7162@gollum.tnic>
+In-Reply-To: <20071220121157.GA7162@gollum.tnic>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200712212057.49502.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200712212036.29098.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/8re1n586XgTlDBXGj5296Su3b+vJm/81hxhY
- z4H/9jMWhBNXV8zwOdxyQeh75BBZguszx1u2NTZHr88W2IqAHL
- qWBQRuZm6KauoEtF1RY4Q==
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 December 2007, Kyle McMartin wrote:
-> Just taking a stab that hch means,
+On Thursday 20 December 2007, Borislav Petkov wrote:
+> On Thu, Dec 20, 2007 at 01:48:49AM +0100, Bartlomiej Zolnierkiewicz wrote:
+> Hi Bart,
+> Hi all,
 > 
-> config BINFMT_COMPAT_ELF
->         def_bool n
->         depends on 64BIT
-> 
+> > PS ide-cd Maintainer position is still open...
+> i'd like to take that position if nobody objects. I've done some work around the
+> kernel here and there and i think its time for me to get serious.
 
-I'd call it COMPAT_BINFMT_ELF, for consistency with the file name.
-Also, the definition and the depends are redundant if you expect the
-option to be autoselected. You can do either of
+Great!
 
-config COMPAT_BINFMT_ELF
-	bool
+Please send me a patch for MAINTAINERS file updating ide-cd entry.
 
-or 
-
-config COMPAT_BINFMT_ELF
-	def_bool y
-	depends on COMPAT
-
-The second option makes sense at the point where all architectures with
-compat code are using the same compat_binfmt_elf code.
-
-	Arnd <><
+Thanks,
+Bart
