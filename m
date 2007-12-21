@@ -1,159 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbXLUP77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbXLUQBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbXLUP77 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 10:59:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbXLUP7w
+	id S1753932AbXLUQBd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 11:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbXLUQB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 10:59:52 -0500
-Received: from fk-out-0910.google.com ([209.85.128.191]:46600 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbXLUP7v (ORCPT
+	Fri, 21 Dec 2007 11:01:26 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:49214 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750763AbXLUQBZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 10:59:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=LTNnAw8P3NXZx6gD5FobWymQ3LPAP/VY6l8wvjx6mte0IPHvTVDqlnbT0eheiblsqeRUS9tOzm729RBhrdMxClW26aXnsfJb/sJnF/5AVPF3qvzhbPhJcUghcMVFPW+3JKJqaoAywTRjkR+w9vfVHBuiG3m4Pv3Wu2Qy0V5uQHQ=
-Date: Fri, 21 Dec 2007 17:01:22 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>
-Subject: [PATCH 3/5] udf: fix coding style of dir.c
-Message-ID: <20071221160117.GC8575@joi>
+	Fri, 21 Dec 2007 11:01:25 -0500
+Date: Fri, 21 Dec 2007 11:01:25 -0500
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, joe@perches.com,
+       davem@davemloft.net, apw@shadowen.org, lizf@cn.fujitsu.com,
+       akpm@linux-foundation.org, elendil@planet.nl,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, trivial@kernel.org,
+       rdunlap@xenotime.net, jschopp@austin.ibm.com
+Subject: Re: Trailing periods in kernel messages
+Message-ID: <20071221160125.GJ2310@csclub.uwaterloo.ca>
+References: <E1J5ecS-0008UX-00@gondolin.me.apana.org.au> <Pine.LNX.4.64.0712211104080.21721@fbirervta.pbzchgretzou.qr> <20071221114103.GA801@gondor.apana.org.au> <Pine.LNX.4.64.0712211254160.21721@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <Pine.LNX.4.64.0712211254160.21721@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fix coding style, checkpatch warned about:
-- "braces {} are not necessary for single statement blocks"
-- "line over 80 characters"
-- "do not use assignment in if condition"
-- "use tabs not spaces"
+On Fri, Dec 21, 2007 at 12:55:16PM +0100, Jan Engelhardt wrote:
+> o_O  I better continue believing it is the subject. Because with
+> one extra word at the front, you can make this a "complete sentence":
+> 
+> 	Please initialize [the] current offset in xfs_file_readdir.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-CC: Ben Fennema <bfennema@falcon.csc.calpoly.edu>
-Acked-by: Jan Kara <jack@suse.cz>
----
- fs/udf/dir.c |   46 +++++++++++++++++++++++++++-------------------
- 1 files changed, 27 insertions(+), 19 deletions(-)
+That still looks like an incomplete sentence, although orders are often
+given in that form.  Something like these seem more like complete
+sentences:
 
-diff --git a/fs/udf/dir.c b/fs/udf/dir.c
-index c26e281..c5e38d6 100644
---- a/fs/udf/dir.c
-+++ b/fs/udf/dir.c
-@@ -65,24 +65,26 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 	if (nf_pos == 0)
- 		nf_pos = (udf_ext0_offset(dir) >> 2);
+You should initialize the current offset in xfs_file_readdir.
+The driver will now initialize the current offset in xfs_file_readdir.
 
--	fibh.soffset = fibh.eoffset = (nf_pos & ((dir->i_sb->s_blocksize - 1) >> 2)) << 2;
-+	fibh.soffset = fibh.eoffset =
-+		(nf_pos & ((dir->i_sb->s_blocksize - 1) >> 2)) << 2;
- 	bits = dir->i_sb->s_blocksize_bits;
+Where you or the driver is the subject.  Then it makes sense.  Of course
+one would tend to assume the driver is just giving status reports so it
+implicitly is the subject doing the things, even though there is no
+actual sentence saying so.
 
--	if (UDF_I_ALLOCTYPE(dir) == ICBTAG_FLAG_AD_IN_ICB) {
-+	if (UDF_I_ALLOCTYPE(dir) == ICBTAG_FLAG_AD_IN_ICB)
- 		fibh.sbh = fibh.ebh = NULL;
--	} else if (inode_bmap(dir, nf_pos >> (bits - 2),
--			      &epos, &eloc, &elen, &offset) == (EXT_RECORDED_ALLOCATED >> 30)) {
-+	else if (inode_bmap(dir, nf_pos >> (bits - 2),
-+			    &epos, &eloc, &elen, &offset) ==
-+			(EXT_RECORDED_ALLOCATED >> 30)) {
- 		block = udf_get_lb_pblock(dir->i_sb, eloc, offset);
- 		if ((++offset << bits) < elen) {
- 			if (UDF_I_ALLOCTYPE(dir) == ICBTAG_FLAG_AD_SHORT)
- 				epos.offset -= sizeof(short_ad);
- 			else if (UDF_I_ALLOCTYPE(dir) == ICBTAG_FLAG_AD_LONG)
- 				epos.offset -= sizeof(long_ad);
--		} else {
-+		} else
- 			offset = 0;
--		}
+It is more of the driver saying:
 
--		if (!(fibh.sbh = fibh.ebh = udf_tread(dir->i_sb, block))) {
-+		fibh.sbh = fibh.ebh = udf_tread(dir->i_sb, block);
-+		if (!fibh.sbh) {
- 			brelse(epos.bh);
- 			return -EIO;
- 		}
-@@ -92,9 +94,11 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 			if (i + offset > (elen >> bits))
- 				i = (elen >> bits) - offset;
- 			for (num = 0; i > 0; i--) {
--				block = udf_get_lb_pblock(dir->i_sb, eloc, offset + i);
-+				block = udf_get_lb_pblock(dir->i_sb, eloc,
-+							  offset + i);
- 				tmp = udf_tgetblk(dir->i_sb, block);
--				if (tmp && !buffer_uptodate(tmp) && !buffer_locked(tmp))
-+				if (tmp && !buffer_uptodate(tmp) &&
-+					!buffer_locked(tmp))
- 					bha[num++] = tmp;
- 				else
- 					brelse(tmp);
-@@ -126,16 +130,18 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 		liu = le16_to_cpu(cfi.lengthOfImpUse);
- 		lfi = cfi.lengthFileIdent;
+this driver is:
+initializing the current offset in xfs_file_readdir
+doing some other stuff
+then doing some different stuff
+etc
 
--		if (fibh.sbh == fibh.ebh) {
-+		if (fibh.sbh == fibh.ebh)
- 			nameptr = fi->fileIdent + liu;
--		} else {
-+		else {
- 			int poffset;	/* Unpaded ending offset */
-
--			poffset = fibh.soffset + sizeof(struct fileIdentDesc) + liu + lfi;
-+			poffset = fibh.soffset + sizeof(struct fileIdentDesc) +
-+					liu + lfi;
-
--			if (poffset >= lfi) {
--				nameptr = (char *)(fibh.ebh->b_data + poffset - lfi);
--			} else {
-+			if (poffset >= lfi)
-+				nameptr = (char *)(fibh.ebh->b_data +
-+						   poffset - lfi);
-+			else {
- 				nameptr = fname;
- 				memcpy(nameptr, fi->fileIdent + liu,
- 				       lfi - poffset);
-@@ -168,12 +174,13 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 		}
-
- 		if (flen) {
--			if (filldir(dirent, fname, flen, filp->f_pos, iblock, dt_type) < 0) {
-+			if (filldir(dirent, fname, flen, filp->f_pos, iblock,
-+				    dt_type) < 0) {
- 				if (fibh.sbh != fibh.ebh)
- 					brelse(fibh.ebh);
- 				brelse(fibh.sbh);
- 				brelse(epos.bh);
--	 			return 0;
-+				return 0;
- 			}
- 		}
- 	} /* end while */
-@@ -222,7 +229,8 @@ static int udf_readdir(struct file *filp, void *dirent, filldir_t filldir)
- 	lock_kernel();
-
- 	if (filp->f_pos == 0) {
--		if (filldir(dirent, ".", 1, filp->f_pos, dir->i_ino, DT_DIR) < 0) {
-+		if (filldir(dirent, ".", 1, filp->f_pos, dir->i_ino,
-+			    DT_DIR) < 0) {
- 			unlock_kernel();
- 			return 0;
- 		}
-@@ -231,7 +239,7 @@ static int udf_readdir(struct file *filp, void *dirent, filldir_t filldir)
-
- 	result = do_udf_readdir(dir, filp, filldir, dirent);
- 	unlock_kernel();
-- 	return result;
-+	return result;
- }
-
- /* readdir and lookup functions */
 --
-1.5.3.4
-
+Len Sorensen
