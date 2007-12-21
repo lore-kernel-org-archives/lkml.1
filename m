@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758269AbXLUVOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758579AbXLUVOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758269AbXLUVOd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 16:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757722AbXLUVOK
+	id S1758579AbXLUVOt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 16:14:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbXLUVOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 16:14:10 -0500
-Received: from gate.crashing.org ([63.228.1.57]:48221 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757624AbXLUVOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 16:14:08 -0500
-Date: Sat, 22 Dec 2007 00:11:12 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, i2c@lm-sensors.org, khali@linux-fr.org
-Subject: Re: [PATCH POWERPC] i2c: adds support for i2c bus on Frescale
- CPM1/CPM2 controllers
-Message-ID: <20071222001112.691b80c8@kernel.crashing.org>
-In-Reply-To: <476C15BC.3090807@scram.de>
-References: <476C15BC.3090807@scram.de>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Dec 2007 16:14:20 -0500
+Received: from homer.mvista.com ([63.81.120.158]:45285 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754492AbXLUVOS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 16:14:18 -0500
+Message-Id: <20071221205854.408865412@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 21 Dec 2007 00:00:01 -0800
+Subject: [PATCH 1/4] usb microtek: remove unused semaphore
+Message-Id: <20071221205848.989157559@mvista.com>
+User-Agent: quilt/0.46-1
+From: Daniel Walker <dwalker@mvista.com>
+To: akpm@linux-foundation.org
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, linux@bohmer.net,
+       jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
+       kjwinchester@gmail.com
+Content-Disposition: inline; filename=usb-microtek-remove-unused-semaphore.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Dec 2007 20:36:28 +0100
-Jochen Friedrich wrote:
+No current references, so removing it.
 
-> Using the port of 2.4 code from Vitaly Bordug
-> <vitb@kernel.crashing.org> and the actual algorithm used by the i2c
-> driver of the DBox code on cvs.tuxboc.org from Tmbinc, Gillem
-> (htoa@gmx.net). Renamed i2c-rpx.c and i2c-algo-8xx.c to i2c-cpm.c and
-> converted the driver to an of_platform_driver.
-> 
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-I had an attempt a while ago to do this but haven't had enough time to get it completed, so
-I am glad to see it finally picked up. There was some sort of discussion that time, you seem to have some of those points
-addressed but  something not, please
-check: http://lkml.org/lkml/2007/5/8/45
+---
+ drivers/usb/image/microtek.c |    1 -
+ drivers/usb/image/microtek.h |    1 -
+ 2 files changed, 2 deletions(-)
 
-(for instance, cpm_i2c_shutdown() and i2c_cpm_del_bus() are void because they cant' fail) 
-
-Also, why this was directed to Scott? This is lm-sensors stuff and is
-Jean Delvare <khali@linux-fr.org> material...
+Index: linux-2.6.23/drivers/usb/image/microtek.c
+===================================================================
+--- linux-2.6.23.orig/drivers/usb/image/microtek.c
++++ linux-2.6.23/drivers/usb/image/microtek.c
+@@ -794,7 +794,6 @@ static int mts_usb_probe(struct usb_inte
+ 
+ 	new_desc->usb_dev = dev;
+ 	new_desc->usb_intf = intf;
+-	init_MUTEX(&new_desc->lock);
+ 
+ 	/* endpoints */
+ 	new_desc->ep_out = ep_out;
+Index: linux-2.6.23/drivers/usb/image/microtek.h
+===================================================================
+--- linux-2.6.23.orig/drivers/usb/image/microtek.h
++++ linux-2.6.23/drivers/usb/image/microtek.h
+@@ -39,7 +39,6 @@ struct mts_desc {
+ 	u8 ep_image;
+ 
+ 	struct Scsi_Host * host;
+-	struct semaphore lock;
+ 
+ 	struct urb *urb;
+ 	struct mts_transfer_context context;
 
 -- 
-Sincerely, Vitaly
