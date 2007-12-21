@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbXLUNHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761317AbXLUNI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760260AbXLUNHW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 08:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbXLUNHH
+	id S1761317AbXLUNI5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 08:08:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbXLUNIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 08:07:07 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:32831 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753089AbXLUNHF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 08:07:05 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <greg@kroah.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/10] sysfs network namespace support
-In-Reply-To: <20071221030732.GA16122@kroah.com> (Greg KH's message of "Thu, 20
-	Dec 2007 19:07:32 -0800")
-References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
-	<20071221030732.GA16122@kroah.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-Date: Fri, 21 Dec 2007 06:04:43 -0700
-Message-ID: <m1hcic6vx0.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
+	Fri, 21 Dec 2007 08:08:51 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:44412 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754435AbXLUNIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 08:08:50 -0500
+Date: Fri, 21 Dec 2007 16:08:25 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ville Syrjala <syrjala@sci.fi>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] w1-gpio: Add GPIO w1 bus master driver (v2)
+Message-ID: <20071221130825.GA18569@2ka.mipt.ru>
+References: <11982411462688-git-send-email-syrjala@sci.fi>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11982411462688-git-send-email-syrjala@sci.fi>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
+On Fri, Dec 21, 2007 at 02:45:46PM +0200, Ville Syrjala (syrjala@sci.fi) wrote:
+> Add a GPIO 1-wire bus master driver. The driver used the GPIO API to
+> control the wire and the GPIO pin can be specified using platform data
+> similar to i2c-gpio. The driver was tested with AT91SAM9260 + DS2401.
+> 
+> Signed-off-by: Ville Syrjala <syrjala@sci.fi>
 
-> On Sat, Dec 01, 2007 at 02:06:58AM -0700, Eric W. Biederman wrote:
->> 
->> Now that we have network namespace support merged it is time to
->> revisit the sysfs support so we can remove the dependency on !SYSFS.
->
-> <snip>
->
-> Oops, I forgot to apply this to my tree.  Eric, you still want this
-> submitted, right?
+This looks ok, thank you!
+Feel free to add my ack or signed-off.
 
-Yes.
+Andrew, please apply.
 
-I'm am just about to head out of town to visit my parents over Christmas.
-So I'm not going to be very responsive until I after the New Year.
-
-Eric
+-- 
+	Evgeniy Polyakov
