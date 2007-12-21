@@ -1,52 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbXLUBns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbXLUBqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757343AbXLUBns (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 20:43:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbXLUBnk
+	id S1758049AbXLUBqi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 20:46:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbXLUBq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 20:43:40 -0500
-Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:58712 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752078AbXLUBnj (ORCPT
+	Thu, 20 Dec 2007 20:46:28 -0500
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:51221 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752352AbXLUBq1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 20:43:39 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Trailing periods in kernel messages
-Date: Fri, 21 Dec 2007 02:43:33 +0100
-User-Agent: KMail/1.9.7
-Cc: Andy Whitcroft <apw@shadowen.org>, Joe Perches <joe@perches.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, trivial@kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>
-References: <474E6BD0.20103@cn.fujitsu.com> <20071220162923.GB27885@shadowen.org> <20071220210741.6dc3caf5@the-village.bc.nu>
-In-Reply-To: <20071220210741.6dc3caf5@the-village.bc.nu>
+	Thu, 20 Dec 2007 20:46:27 -0500
+Message-ID: <476B1B14.3060404@cs.columbia.edu>
+Date: Thu, 20 Dec 2007 20:47:00 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Pavel Emelyanov <xemul@openvz.org>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       linux-fsdevel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] [RFC] Simple tamper-proof device filesystem.
+References: <20071216080628.061470932@I-love.SAKURA.ne.jp> <200712161944.HEI26071.MOtOFLVHFSQFOJ@I-love.SAKURA.ne.jp> <200712161956.BJE32406.FOOHtQJLMFOSVF@I-love.SAKURA.ne.jp> <20071217194802.GA14156@sergelap.austin.ibm.com> <200712180003.lBI03N7F092396@www262.sakura.ne.jp> <20071218003955.GA27048@sergelap.austin.ibm.com> <476724E3.6060901@cs.columbia.edu> <20071218020933.GA28745@sergelap.austin.ibm.com> <476738A0.9010601@cs.columbia.edu> <4768E7B2.40203@openvz.org> <20071219141004.GA31694@sergelap.austin.ibm.com> <4769B228.4030705@cs.columbia.edu> <476A1CE0.30505@openvz.org>
+In-Reply-To: <476A1CE0.30505@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712210243.35240.elendil@planet.nl>
-X-OriginalArrivalTime: 21 Dec 2007 01:43:36.0060 (UTC) FILETIME=[E6FAFBC0:01C84372]
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 December 2007, Alan Cox wrote:
-> The kernel printk messages are sentences.
 
-I'm afraid that I completely and utterly disagree. Kernel messages are _not_ 
-sentences. The vast majority is not well-formed and does not contain any of 
-the elements that are required for a proper sentence.
 
-The most kernel messages can be compared to is a rather diverse and sloppy 
-enumeration. And enumerations follow completely different rules than 
-sentences. It can better be characterized as a "semi-random sequence of 
-context-sensitive technical messages".
+Pavel Emelyanov wrote:
+> Oren Laadan wrote:
+>> Serge E. Hallyn wrote:
+>>> Quoting Pavel Emelyanov (xemul@openvz.org):
+>>>> Oren Laadan wrote:
+>>>>> Serge E. Hallyn wrote:
+>>>>>> Quoting Oren Laadan (orenl@cs.columbia.edu):
+>>>>>>> I hate to bring this again, but what if the admin in the container
+>>>>>>> mounts an external file system (eg. nfs, usb, loop mount from a file,
+>>>>>>> or via fuse), and that file system already has a device that we would
+>>>>>>> like to ban inside that container ?
+>>>>>> Miklos' user mount patches enforced that if !capable(CAP_MKNOD),
+>>>>>> then mnt->mnt_flags |= MNT_NODEV.  So that's no problem.
+>>>>> Yes, that works to disallow all device files from a mounted file system.
+>>>>>
+>>>>> But it's a black and white thing: either they are all banned or allowed;
+>>>>> you can't have some devices allowed and others not, depending on type
+>>>>> A scenario where this may be useful is, for instance, if we some apps in
+>>>>> the container to execute withing a pre-made chroot (sub)tree within that
+>>>>> container.
+>>>>>
+>>>>>> But that's been pulled out of -mm! ?  Crap.
+>>>>>>
+>>>>>>> Since anyway we will have to keep a white- (or black-) list of devices
+>>>>>>> that are permitted in a container, and that list may change even change
+>>>>>>> per container -- why not enforce the access control at the VFS layer ?
+>>>>>>> It's safer in the long run.
+>>>>>> By that you mean more along the lines of Pavel's patch than my whitelist
+>>>>>> LSM, or you actually mean Tetsuo's filesystem (i assume you don't mean that
+>>>>>> by 'vfs layer' :), or something different entirely?
+>>>>> :)
+>>>>>
+>>>>> By 'vfs' I mean at open() time, and not at mount(), or mknod() time.
+>>>>> Either yours or Pavel's; I tend to prefer not to use LSM as it may
+>>>>> collide with future security modules.
+>>>> Oren, AFAIS you've seen my patches for device access controller, right?
+>> If you mean this one:
+>> http://openvz.org/pipermail/devel/2007-September/007647.html
+>> then ack :)
+> 
+> Great! Thanks.
+> 
+>>>> Maybe we can revisit the issue then and try to come to agreement on what
+>>>> kind of model and implementation we all want?
+>>> That would be great, Pavel.  I do prefer your solution over my LSM, so
+>>> if we can get an elegant block device control right in the vfs code that
+>>> would be my preference.
+>> I concur.
+>>
+>> So it seems to me that we are all in favor of the model where open()
+>> of a device will consult a black/white-list. Also, we are all in favor
+>> of a non-LSM implementation, Pavel's code being a good example.
+> 
+> Thank you, Oren and Serge! I will revisit this issue then, but
+> I have a vacation the next week and, after this, we have a New
+> Year and Christmas holidays in Russia. So I will be able to go
+> on with it only after the 7th January :( Hope this is OK for you.
+> 
+> Besides, Andrew told that he would pay little attention to new
+> features till the 2.6.24 release, so I'm afraid we won't have this 
+> even in -mm in the nearest months :(
 
-IMHO the existing rule that "Kernel messages do not have to be terminated 
-with a period." is completely justified, though it does need some minor 
-clarification on the cases in which proper punctuation _should_ be 
-followed.
+Sounds great !  (as for the delay, it wasn't the highest priority issue
+to begin with, so no worries).
+
+Ah.. coincidentally they are celebrated here, too, on the same time :D
+Merry Christmas and Happy New Year !
+
+Oren.
+
+> 
+> Thanks,
+> Pavel
+> 
+>> Oren.
+>>
+>>> The only thing that makes me keep wanting to go back to an LSM is the
+>>> fact that the code defining the whitelist seems out of place in the vfs.
+>>> But I guess that's actually separated into a modular cgroup, with the
+>>> actual enforcement built in at the vfs.  So that's really the best
+>>> solution.
+>>>
+>>> -serge
+> 
