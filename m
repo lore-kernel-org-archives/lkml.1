@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbXLUWgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbXLUWhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759994AbXLUWgn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 17:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756564AbXLUWgf
+	id S1760096AbXLUWhq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 17:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756544AbXLUWhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 17:36:35 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57390 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756344AbXLUWge (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 17:36:34 -0500
-Date: Fri, 21 Dec 2007 14:35:26 -0800
-From: Greg KH <greg@kroah.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Willy Tarreau <w@1wt.eu>, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org, jmorris@namei.org, alan@redhat.com,
-       chrisw@redhat.com, akpm@linux-foundation.org,
-       linux-security-module@vger.kernel.org, solar@openwall.com,
-       wtarreau@hera.kernel.org
-Subject: Re: [PATCH] Allow Kconfig to set default mmap_min_addr protection
-Message-ID: <20071221223526.GC24780@kroah.com>
-References: <1198101545.6197.52.camel@localhost.localdomain> <Pine.LNX.4.64.0712200027230.5524@fbirervta.pbzchgretzou.qr> <1198269079.3732.3.camel@localhost.localdomain> <Pine.LNX.4.64.0712212209240.11671@fbirervta.pbzchgretzou.qr> <20071221211602.GA14811@1wt.eu> <Pine.LNX.4.64.0712212303410.18570@fbirervta.pbzchgretzou.qr>
+	Fri, 21 Dec 2007 17:37:39 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:52852 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754174AbXLUWhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 17:37:38 -0500
+Date: Fri, 21 Dec 2007 14:37:37 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+In-Reply-To: <Pine.LNX.4.64.0712211412040.3795@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0712211435250.3795@schroedinger.engr.sgi.com>
+References: <1197049846.1645.68.camel@localhost.localdomain> 
+ <20071211143336.GA17866@elte.hu>  <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com>
+  <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com> 
+ <20071221120908.GA15926@elte.hu> <84144f020712210944q3e0539f8vd8a249f69d456dc7@mail.gmail.com>
+ <Pine.LNX.4.64.0712211412040.3795@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712212303410.18570@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21, 2007 at 11:04:19PM +0100, Jan Engelhardt wrote:
-> 
-> On Dec 21 2007 22:16, Willy Tarreau wrote:
-> >Hi Jan,
-> >
-> >> >> >+config SECURITY_DEFAULT_MMAP_MIN_ADDR
-> >> >> >+        int "Low address space to protect from user allocation"
-> >> >> 
-> >> >> Hm, should not this be 'hex'?
-> >> >
-> >> >I guess it could be, but the input for /proc/sys/vm/mmap_min_addr is
-> >> >base 10 as well
-> >> 
-> >> sysfs is autobase, i.e. echo "0xb000" >/sys/foo will Do The Right Thing.
-> >
-> >yes but if you cat  /proc/sys/vm/mmap_min_addr, it returns in base 10.
-> 
-> sysfs should probably be tuned to output it in a preferred base.
+Actually thanks for pointing that out Pekka.... Here is a patch that takes 
+the regression almost completely away (Too much jetlag combined with flu 
+seems to have impaired my thinking I should have seen this earlier). I 
+still need to run my slab performance tests on this. But hackbench 
+improves.
 
-Again, this is sysctl, not sysfs.  two very different things...
+
+SLUB: Improve hackbench speed
+
+Increase the mininum number of partial slabs to keep around and put
+partial slabs to the end of the partial queue so that they can add
+more objects.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ mm/slub.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-12-21 14:30:11.096324462 -0800
++++ linux-2.6/mm/slub.c	2007-12-21 14:30:33.656441994 -0800
+@@ -172,7 +172,7 @@ static inline void ClearSlabDebug(struct
+  * Mininum number of partial slabs. These will be left on the partial
+  * lists even if they are empty. kmem_cache_shrink may reclaim them.
+  */
+-#define MIN_PARTIAL 2
++#define MIN_PARTIAL 5
+ 
+ /*
+  * Maximum number of desirable partial slabs.
+@@ -1616,7 +1616,7 @@ checks_ok:
+ 	 * then add it.
+ 	 */
+ 	if (unlikely(!prior))
+-		add_partial(get_node(s, page_to_nid(page)), page);
++		add_partial_tail(get_node(s, page_to_nid(page)), page);
+ 
+ out_unlock:
+ 	slab_unlock(page);
