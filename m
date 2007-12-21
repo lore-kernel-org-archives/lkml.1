@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762006AbXLUNeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759197AbXLUNlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762006AbXLUNeU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 08:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbXLUNeJ
+	id S1759197AbXLUNlW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 08:41:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbXLUNlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 08:34:09 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40908 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755317AbXLUNeH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 08:34:07 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Jan Beulich" <jbeulich@novell.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] constify tables in kernel/sysctl_check.c
-References: <476A73A3.76E4.0078.0@novell.com>
-	<476A73A3.76E4.0078.0@novell.com>
-	<m1y7bp6k7b.fsf@ebiederm.dsl.xmission.com>
-	<476B7DBB.76E4.0078.0@novell.com>
-Date: Fri, 21 Dec 2007 06:33:46 -0700
-In-Reply-To: <476B7DBB.76E4.0078.0@novell.com> (Jan Beulich's message of "Fri,
-	21 Dec 2007 07:47:55 +0000")
-Message-ID: <m1zlw45g05.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 21 Dec 2007 08:41:14 -0500
+Received: from mx2.suse.de ([195.135.220.15]:37156 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750918AbXLUNlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 08:41:14 -0500
+Date: Fri, 21 Dec 2007 14:41:12 +0100
+From: Andi Kleen <ak@suse.de>
+To: Parag Warudkar <parag.warudkar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, ak@suse.de
+Subject: Re: [PATCH] x86: Fix DMI out of memory problems
+Message-ID: <20071221134111.GB8222@bingen.suse.de>
+References: <Pine.LNX.4.64.0712181848430.3663@mini.warudkars.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0712181848430.3663@mini.warudkars.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jan Beulich" <jbeulich@novell.com> writes:
-
->>>> Eric W. Biederman <ebiederm@xmission.com> 21.12.07 00:05 >>>
->>"Jan Beulich" <jbeulich@novell.com> writes:
->>
->>> Remains the question whether it is intended that many, perhaps even
->>> large, tables are compiled in without ever having a chance to get used,
->>> i.e. whether there shouldn't #ifdef CONFIG_xxx get added.
->>
->>
->>The constification looks good.  The file should be compiled only when
->>we have sysctl support.  We use those tables when we call 
->>register_sysctl_table.  Which we do a lot.
+On Tue, Dec 18, 2007 at 07:33:00PM -0500, Parag Warudkar wrote:
 >
-> I understand this. Nevertheless, the tables take 23k on 64-bits, and many
-> of them are unused when certain subsystems aren't being built (and some
-> are even architecture specific). The arlan tables are a particularly good
-> example, but the netfilter ones are pretty big and probably not always
-> used, too.
+> People with HP Desktops (including me) encounter couple of DMI errors 
+> during boot - dmi_save_oem_strings_devices: out of memory and dmi_string: 
+> out of memory.
+>
+> On some HP desktops the DMI data include OEM strings (type 11) out of which 
+> only few are meaningful and most other are empty. DMI code religiously 
+> creates copies of these 27 strings (65ytes each in my case) and goes OOM 
+> in dmi_string().
+>
+> If DMI_MAX_DATA is bumped up a little then it goes and fails in 
+> dmi_save_oem_strings while allocating dmi_devices of sizeof(struct 
+> dmi_device) corresponding to these strings.
+>
+> On x86_64 since we cannot use alloc_bootmem this early, the code uses a 
 
-The size isn't my favorite thing.  But given how much of a mess sysctl_check.c
-has allowed me to clean up and get a handle on I'm not inclined to do
-anything that would compromise the checking.
+FWIW the ff tree has patches to allow "really early allocation" now.
+They could be used for this. I didn't implement that for i386 though,
+so that would still need some variant of your patch.
 
-Probably the sanest way to remove table entries is to individually remove and
-deprecate parts of the binary sys_sysctl interface so that we don't need the
-table entries.
+Disadvantage right now: e820 memory allocation currently rounds to pages
+always. I intend to fix that though because it also wastes memory
+with the memnodemap for once.
 
-Maybe we could through in a few #ifdefs and #defines so we can reduce
-the set of allowed sysctl entries even more base on config options.
+The forced page rounding was recently added as another bugfix, but that needs
+to be reworked.
 
-I'm not volunteering to do more then is absolutely necessary to keep
-sys_sysctl working and correct until we reach a point where everyone
-can agree that users of the interface truly have had fair warning and
-then I intend to delete all of the code that deals with the binary
-sysctl interface.
+-Andi
 
-Eric
+ftp://ftp.firstfloor.org/pub/ak/quilt/patches/early-reserve
+ftp://ftp.firstfloor.org/pub/ak/quilt/patches/early-alloc
+
