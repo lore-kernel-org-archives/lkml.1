@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757719AbXLUJ5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbXLUKKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757719AbXLUJ5h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 04:57:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbXLUJ5a
+	id S1753277AbXLUKKt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 05:10:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbXLUKKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 04:57:30 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:3312 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753102AbXLUJ53 (ORCPT
+	Fri, 21 Dec 2007 05:10:40 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:59681 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbXLUKKk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 04:57:29 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: alan@lxorguk.ukuu.org.uk (Alan Cox)
+	Fri, 21 Dec 2007 05:10:40 -0500
+Date: Fri, 21 Dec 2007 11:10:38 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, joe@perches.com, davem@davemloft.net,
+       apw@shadowen.org, lizf@cn.fujitsu.com, akpm@linux-foundation.org,
+       elendil@planet.nl, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       trivial@kernel.org, rdunlap@xenotime.net, jschopp@austin.ibm.com
 Subject: Re: Trailing periods in kernel messages
-Cc: joe@perches.com, davem@davemloft.net, apw@shadowen.org,
-       lizf@cn.fujitsu.com, akpm@linux-foundation.org, elendil@planet.nl,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, trivial@kernel.org,
-       rdunlap@xenotime.net, jschopp@austin.ibm.com
-Organization: Core
-In-Reply-To: <20071220220853.4f7c639c@the-village.bc.nu>
-X-Newsgroups: apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1J5ecS-0008UX-00@gondolin.me.apana.org.au>
-Date: Fri, 21 Dec 2007 17:56:40 +0800
+In-Reply-To: <E1J5ecS-0008UX-00@gondolin.me.apana.org.au>
+Message-ID: <Pine.LNX.4.64.0712211104080.21721@fbirervta.pbzchgretzou.qr>
+References: <E1J5ecS-0008UX-00@gondolin.me.apana.org.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> 
-> I do not believe "opinions" are relevant here. Relevant would be cites
-> from respected style guides (Fowlers, Oxford Guide To Style et al.) to
-> show they do not need a full stop. 
-> 
-> I've not found one, but I am open to references.
 
-Well from where I come from, full stops are only used for complete
-sentences.  For example,
+On Dec 21 2007 17:56, Herbert Xu wrote:
+>> 
+>> I do not believe "opinions" are relevant here. Relevant would be cites
+>> from respected style guides (Fowlers, Oxford Guide To Style et al.) to
+>> show they do not need a full stop. 
+>> 
+>> I've not found one, but I am open to references.
+>
+>Well from where I come from, full stops are only used for complete
+>sentences.
+>[...]
+>As to what is a complete sentence, that is debatable.  However,
+>typically it would include a subject and a predicate.  By this
+>rule the following line is not a complete sentence:
+>
+>	[XFS] Initialise current offset in xfs_file_readdir correctly
+>
+>The reason is that it lacks a subject.
 
-http://www.ballarat.edu.au/aasp/student/learning_support/generalguide/ch01s05s02.shtml
+"current offset" is your subject.
 
-As to what is a complete sentence, that is debatable.  However,
-typically it would include a subject and a predicate.  By this
-rule the following line is not a complete sentence:
+But I would tend to agree to "(most) kernel messages are not sentences."
 
-	[XFS] Initialise current offset in xfs_file_readdir correctly
+Actually, I see it a bit different: (most) kernel messages are more like an
+itemized list of what has been done/is going to be done. A *list*!
 
-The reason is that it lacks a subject.
+ * water
+ * flour
+ * salt
+ * yeast or baking powder
+ * dough (obviously)
 
-Of course I would completely agree that some kernel messages
-are complete sentences and should have a full stop.  However,
-it is not clear to me that this is the case for all or even
-most kernel printk messages.
+(I'm a programmer, not a cook.) Would you really add a fullstop?
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+>Of course I would completely agree that some kernel messages
+>are complete sentences and should have a full stop.
+
++1. Those kernel messages which clearly have two or more sentences
+obviously have sentences. ("If a device doesn't work, try "pci=routeirq".)
+
+Can we get back to programming?
