@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbXLUQWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbXLUQ04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756391AbXLUQWD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 11:22:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXLUQVw
+	id S1754888AbXLUQ04 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 11:26:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbXLUQ0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 11:21:52 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:54827 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751204AbXLUQVv (ORCPT
+	Fri, 21 Dec 2007 11:26:49 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40971 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750763AbXLUQ0s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 11:21:51 -0500
-Date: Fri, 21 Dec 2007 17:22:42 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: Top 10 kernel oopses/warnings for the week of December 21st 2007
-Message-ID: <20071221162242.GA29959@one.firstfloor.org>
-References: <476BA8AF.4060201@linux.intel.com> <p73ejdgf8vj.fsf@bingen.suse.de> <476BCE15.6090902@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <476BCE15.6090902@linux.intel.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 21 Dec 2007 11:26:48 -0500
+Date: Fri, 21 Dec 2007 08:26:47 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+In-Reply-To: <20071221122628.GA18002@elte.hu>
+Message-ID: <Pine.LNX.4.64.0712210818360.29372@schroedinger.engr.sgi.com>
+References: <1197049846.1645.68.camel@localhost.localdomain>
+ <20071211143336.GA17866@elte.hu> <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com>
+ <20071221120908.GA15926@elte.hu> <20071221122628.GA18002@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> in this case this is really all the version information available ;(
-> it seems to be a patched kernel without patched EXTRAVERSION.
-> But in the future if I have more specific information (eg it's only 1 
-> kernel version) I'll mention it in more detail.
-> It gets unwieldy if there's 500 reports for an oops of course ;)
+On Fri, 21 Dec 2007, Ingo Molnar wrote:
 
-Hmm would there be an automatic way to check out the file of the 
-kernel version and then check if the BUG_ON/WARN_ON is on that line?
-Maybe it could be done using git.
-
+> and this is not the only regression:
 > 
-> >
-> >Anyways there are a lot of third party modules who do strange 
-> >things with c_p_a(), not always legal, so you might look up out for that 
-> >pattern too. Perhaps report the out of tree modules loaded in the 
-> >summary too?
+>     http://lkml.org/lkml/2007/10/4/290
 > 
-> I already always will mention if the oops is tainted or not (that I track 
-> specifically);
+> _6%_ TPC-C regression. That's _a lot_ in TPC-C terms.
+> 
+> and just like in this case there were very clear profiles posted. I 
+> proffer, reading back the whole thread, that if you fix hackbench you 
+> have fixed TPC-C as well.
 
-I don't necessarily mean tainted, just out of tree modules in general.
-There are some GPL modules who do strange things too. Not saying
-that these oopses should be all ignored -- they might be legitimate
-kernel bugs that they just trigger -- just it should be visible somehow
-in the summary in case there is a pattern. 
+There are patches pending to address these issues. AFAICT Intel is 
+testing if the regression is still there. There is no way for me to verify what 
+is going  on there and there is the constant difficulty of getting 
+detailed information about what is going on at Intel. Every couple of 
+month I get a result from that test. Its a really crappy situation where a 
+lot of confusing information is passed around.
 
-Especially for c_p_a() i'm quite suspicious
-because it depends a lot on what the caller did.
+> So i believe you should either send some sensible fixes _NOW_, or admit 
+> that the "no queues" NIH nonsense of SLUB doesnt work and do an edible, 
+> incremental patchset against SLAB to bring in the debuggability features 
+> of SLUB without killing SLAB's performance. (And fix the NUMA alien 
+> cache problem along the lines suggested before - perhaps initially by 
+> making 'noaliencache' the default bootup option.) And we obviously must 
+> revert the default in 2.6.24 to SLAB as well.
 
-One way perhaps would be also to check if there is an out of tree
-module inside the backtrace. I suppose you could keep a list 
-of in tree modules and do this automatically. Of course there could
-be false positives too with the standard inexact backtrace.
+The fixes to the alien that you proposed do not work since we would still 
+have to check for the need to put the object into alien cache. The checks 
+for the locality of each object are the main cause of trouble when freeing 
+in SLAB.
 
--Andi
+SLUB is generally performance wise superior to SLAB as demonstrated by my 
+measurements that you reviewed too. In addition SLUB has many improvements 
+over SLAB. Its not only the runtime debuggability which would be difficult 
+to add since there would be numerous runtime checks in critical code paths 
+that would cause regressions.
 
