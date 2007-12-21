@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765307AbXLUAkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765574AbXLUAlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765307AbXLUAkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758498AbXLUAkE
+	id S1765574AbXLUAlI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 19:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759140AbXLUAky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:40:04 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59751
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755963AbXLUAkB (ORCPT
+	Thu, 20 Dec 2007 19:40:54 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58090 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758498AbXLUAky (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:40:01 -0500
-Date: Thu, 20 Dec 2007 16:40:00 -0800 (PST)
-Message-Id: <20071220.164000.210277365.davem@davemloft.net>
-To: rusty@rustcorp.com.au
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH 2/5] dma_map_sg_ring() helper
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200712211135.13150.rusty@rustcorp.com.au>
-References: <200712210958.56994.rusty@rustcorp.com.au>
-	<20071221090027K.fujita.tomonori@lab.ntt.co.jp>
-	<200712211135.13150.rusty@rustcorp.com.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 20 Dec 2007 19:40:54 -0500
+Date: Thu, 20 Dec 2007 16:34:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Morgan <morgan@kernel.org>
+Cc: serue@us.ibm.com, containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       minslinux-mm@kvack.org
+Subject: Re: [RFC] [PATCH -mm] oom_kill: remove uid==0 checks
+Message-Id: <20071220163442.d93210ea.akpm@linux-foundation.org>
+In-Reply-To: <47606969.6060808@kernel.org>
+References: <20071212211835.GA24943@sergelap.austin.ibm.com>
+	<47606969.6060808@kernel.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Fri, 21 Dec 2007 11:35:12 +1100
+On Wed, 12 Dec 2007 15:06:17 -0800
+Andrew Morgan <morgan@kernel.org> wrote:
 
-> On Friday 21 December 2007 11:00:27 FUJITA Tomonori wrote:
-> > We need to pass the whole sg entries to the IOMMUs at a time.
+> Serge E. Hallyn wrote:
+> > Andrew, I've cc:d you here bc in doing this patch I noticed that your
+> > 64-bit capabilities patch switched this code from an explicit check
+> > of cap_t(p->cap_effective) to using __capable().  That means that
+> > now being glossed over by the oom killer means PF_SUPERPRIV will
+> > be set.  Is that intentional?
 > 
-> Hi Fujita,
+> Yes, I switched the check because the old one didn't work with the new
+> capability representation.
 > 
->     OK, it's certainly possible to have an arch override.  For which 
-> architecture is this BTW?
+> However, I had not thought this aspect of this replacement through. At
+> the time, it seemed obvious but in this case it actually depends on
+> whether you think using privilege (PF_SUPERPRIV) means "benefited from
+> privilege", or "successfully completed a privileged operation".
+> 
+> I suspect, in this case, the correct thing to do is add the equivalent of:
+> 
+> #define CAPABLE_PROBE_ONLY(a,b)   (!security_capable(a,b))
+> 
+> and use that in the code in question. That is, return to the old
+> behavior in a way that will not break if we ever need to add more bits.
 
-SPARC64, POWERPC, maybe IA-64 etc.
+I'm struggling to understand whether the above was an ack, a nack or a
+quack.
 
-Basically any platform that potentially does virtual
-remamping and thus linearization.
+> Thanks for finding this.
 
-I think it should always be provided, the new APIs give
-less information to the implementation and that's a step
-backwards.
+>From that I'll assume ack ;)
