@@ -1,98 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765327AbXLUCBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765610AbXLUCBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765327AbXLUCBU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 21:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762137AbXLUB6r
+	id S1765610AbXLUCBo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 21:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762444AbXLUB6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 20:58:47 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:35598 "EHLO smtp.polymtl.ca"
+	Thu, 20 Dec 2007 20:58:52 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:53259 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762066AbXLUB6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 20:58:45 -0500
-Message-Id: <20071221015726.600973456@polymtl.ca>
+	id S1762269AbXLUB6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 20:58:51 -0500
+Message-Id: <20071221015725.907218510@polymtl.ca>
 References: <20071221015438.433195466@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 20 Dec 2007 20:54:51 -0500
+Date: Thu, 20 Dec 2007 20:54:49 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Rusty Russell <rusty@rustcorp.com.au>, Adrian Bunk <bunk@stusta.de>,
-       Andi Kleen <andi@firstfloor.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: [patch 13/24] Immediate Values - Kconfig menu in EMBEDDED
-Content-Disposition: inline; filename=immediate-values-kconfig-embedded.patch
+       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 11/24] Text Edit Lock - x86_64 standardize debug rodata
+Content-Disposition: inline; filename=text-edit-lock-x86_64-standardize-debug-rodata.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 21 Dec 2007 01:57:31 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Immediate values provide a way to use dynamic code patching to update variables
-sitting within the instruction stream. It saves caches lines normally used by
-static read mostly variables. Enable it by default, but let users disable it
-through the EMBEDDED menu with the "Disable immediate values" submenu entry.
-
-Note: Since I think that I really should let embedded systems developers using
-RO memory the option to disable the immediate values, I choose to leave this
-menu option there, in the EMBEDDED menu. Also, the "CONFIG_IMMEDIATE" makes
-sense because we want to compile out all the immediate code when we decide not
-to use optimized immediate values at all (it removes otherwise unused code).
-
-Changelog:
-- Change ARCH_SUPPORTS_IMMEDIATE for ARCH_HAS_IMMEDIATE
+Standardize DEBUG_RODATA, removing special cases for hotplug and kprobes.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: Adrian Bunk <bunk@stusta.de>
 CC: Andi Kleen <andi@firstfloor.org>
-CC: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Christoph Hellwig <hch@infradead.org>
+CC: pageexec@freemail.hu
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: H. Peter Anvin <hpa@zytor.com>
 ---
- init/Kconfig |   24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ arch/x86_64/mm/init.c |   23 +++++------------------
+ 1 file changed, 5 insertions(+), 18 deletions(-)
 
-Index: linux-2.6-lttng/init/Kconfig
+Index: linux-2.6-lttng/arch/x86/mm/init_64.c
 ===================================================================
---- linux-2.6-lttng.orig/init/Kconfig	2007-12-05 20:53:19.000000000 -0500
-+++ linux-2.6-lttng/init/Kconfig	2007-12-05 20:53:35.000000000 -0500
-@@ -435,6 +435,20 @@ config CC_OPTIMIZE_FOR_SIZE
- config SYSCTL
- 	bool
+--- linux-2.6-lttng.orig/arch/x86/mm/init_64.c	2007-09-24 11:00:01.000000000 -0400
++++ linux-2.6-lttng/arch/x86/mm/init_64.c	2007-09-24 11:00:02.000000000 -0400
+@@ -592,25 +592,11 @@ void free_initmem(void)
  
-+config IMMEDIATE
-+	default y if !DISABLE_IMMEDIATE
-+	depends on HAVE_IMMEDIATE
-+	bool
-+	help
-+	  Immediate values are used as read-mostly variables that are rarely
-+	  updated. They use code patching to modify the values inscribed in the
-+	  instruction stream. It provides a way to save precious cache lines
-+	  that would otherwise have to be used by these variables. They can be
-+	  disabled through the EMBEDDED menu.
+ void mark_rodata_ro(void)
+ {
+-	unsigned long start = (unsigned long)_stext, end;
++	unsigned long start = PFN_ALIGN(_stext);
++	unsigned long end = PFN_ALIGN(__end_rodata);
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-	/* It must still be possible to apply SMP alternatives. */
+-	if (num_possible_cpus() > 1)
+-		start = (unsigned long)_etext;
+-#endif
+-
+-#ifdef CONFIG_KPROBES
+-	start = (unsigned long)__start_rodata;
+-#endif
+-	
+-	end = (unsigned long)__end_rodata;
+-	start = (start + PAGE_SIZE - 1) & PAGE_MASK;
+-	end &= PAGE_MASK;
+-	if (end <= start)
+-		return;
+-
+-	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT, PAGE_KERNEL_RO);
++	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT,
++				PAGE_KERNEL_RO);
+ 
+ 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
+ 	       (end - start) >> 10);
+@@ -623,6 +609,7 @@ void mark_rodata_ro(void)
+ 	 */
+ 	global_flush_tlb();
+ }
 +
-+config HAVE_IMMEDIATE
-+	def_bool n
-+
- menuconfig EMBEDDED
- 	bool "Configure standard kernel features (for small systems)"
- 	help
-@@ -670,6 +684,16 @@ config MARKERS
+ #endif
  
- source "arch/Kconfig"
- 
-+config DISABLE_IMMEDIATE
-+	default y if EMBEDDED
-+	bool "Disable immediate values" if EMBEDDED
-+	depends on HAVE_IMMEDIATE
-+	help
-+	  Disable code patching based immediate values for embedded systems. It
-+	  consumes slightly more memory and requires to modify the instruction
-+	  stream each time a variable is updated. Should really be disabled for
-+	  embedded systems with read-only text.
-+
- endmenu		# General setup
- 
- config RT_MUTEXES
+ #ifdef CONFIG_BLK_DEV_INITRD
 
 -- 
 Mathieu Desnoyers
