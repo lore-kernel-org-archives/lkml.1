@@ -1,80 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbXLUMmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760907AbXLUMnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760112AbXLUMmY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 07:42:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbXLUMmQ
+	id S1760907AbXLUMnn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 07:43:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbXLUMng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 07:42:16 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:48069 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751046AbXLUMmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 07:42:15 -0500
-Date: Fri, 21 Dec 2007 14:42:13 +0200
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] w1-gpio: Add GPIO w1 bus master driver
-Message-ID: <20071221124213.GG15861@sci.fi>
-References: <1198222441690-git-send-email-syrjala@sci.fi> <20071221104127.GA28474@2ka.mipt.ru>
+	Fri, 21 Dec 2007 07:43:36 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:35285 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750723AbXLUMnf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 07:43:35 -0500
+Date: Fri, 21 Dec 2007 13:43:34 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: James Courtier-Dutton <James@superbug.co.uk>
+cc: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>,
+       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Trying to convert old modules to newer kernels
+In-Reply-To: <476BACD6.5060900@superbug.co.uk>
+Message-ID: <Pine.LNX.4.64.0712211340210.21721@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.61.0712191503370.4688@chaos.analogic.com>
+ <20071219202323.GH2310@csclub.uwaterloo.ca> <Pine.LNX.4.61.0712191555150.4514@chaos.analogic.com>
+ <20071220150255.GE2308@csclub.uwaterloo.ca> <Pine.LNX.4.61.0712201107300.8261@chaos.analogic.com>
+ <20071220182815.GA5438@uranus.ravnborg.org> <Pine.LNX.4.61.0712201623500.9531@chaos.analogic.com>
+ <20071220220547.GA5641@uranus.ravnborg.org> <Pine.LNX.4.61.0712201757410.9907@chaos.analogic.com>
+ <20071221005303.771032f3@werewolf> <476BACD6.5060900@superbug.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071221104127.GA28474@2ka.mipt.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21, 2007 at 01:41:28PM +0300, Evgeniy Polyakov wrote:
-> Hi Ville.
-> 
-> On Fri, Dec 21, 2007 at 09:34:01AM +0200, Ville Syrjala (syrjala@sci.fi) wrote:
-> > Add a GPIO 1-wire bus master driver. The driver used the GPIO API to
-> > control the wire and the GPIO pin can be specified using platform data
-> > similar to i2c-gpio. The driver was tested with AT91SAM9260 + DS2401.
-> 
-> This looks ok, only a minor nit about codying style below.
-> 
-> > Signed-off-by: Ville Syrjala <syrjala@sci.fi>
-> 
-> ACK.
-> 
-> > +static int __init w1_gpio_probe(struct platform_device *pdev)
-> > +{
-> > +	struct w1_bus_master *master;
-> > +	struct w1_gpio_platform_data *pdata;
-> > +	int err;
-> > +
-> > +	pdata = pdev->dev.platform_data;
-> > +	if (!pdata)
-> > +		return -ENXIO;
-> > +
-> > +	master = kzalloc(sizeof *master, GFP_KERNEL);
-> > +	if (!master)
-> > +		return -ENOMEM;
-> 
-> I think sizeof(struct w1_bus_master) is a better way.
 
-Will change.
+On Dec 21 2007 12:08, James Courtier-Dutton wrote:
 
-> > new file mode 100644
-> > index 0000000..3b80bb2
-> > --- /dev/null
-> > +++ b/include/linux/w1-gpio.h
-> 
-> Does anyone use this file except driver itself?
+> That being said, I don't think sse and mmx are available in kernel
+> space, so I would have suggested doing all the grunt work in
+> userspace would be better for this persons application so that he
+> could use sse and mmx etc.
+>
+They are available, you just need to pay attention not to trash
+a process's context.
 
-It's supposed to be used by the code that registers the platform device
-(see the example in the documentation). No in-tree users since the board
-I'm using is not supported by the kernel.
-
-I just had a better look at i2c-gpio and noticed that I missed
-gpio_request()/gpio_free() calls from the driver. Also the open-drain
-requirement could be removed like i2c-gpio does. I'll send a new patch
-ASAP.
-
--- 
-Ville Syrjälä
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+IIRC this has been done for 387 FPUting. (The 'trigger' thing in
+save_i387() in arch/x86/i387_32.c probably.) Probably not for SSE.
