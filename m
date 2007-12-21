@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759995AbXLUAPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763940AbXLUAbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759995AbXLUAPo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:15:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbXLUAPe
+	id S1763940AbXLUAbS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 19:31:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbXLUAbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:15:34 -0500
-Received: from ns2.suse.de ([195.135.220.15]:36582 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752451AbXLUAPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:15:34 -0500
-Date: Thu, 20 Dec 2007 16:14:25 -0800
-From: Greg KH <gregkh@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: patch
-	pci-fix-bus-resource-assignment-on-32-bits-with-64b-resources.patch
-	added to gregkh-2.6 tree
-Message-ID: <20071221001425.GB23322@suse.de>
-References: <11981938363358@kroah.org> <1198194973.6779.35.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1198194973.6779.35.camel@pasglop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 20 Dec 2007 19:31:00 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42611
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755232AbXLUAa7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 19:30:59 -0500
+Date: Thu, 20 Dec 2007 16:30:58 -0800 (PST)
+Message-Id: <20071220.163058.185565456.davem@davemloft.net>
+To: rusty@rustcorp.com.au
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com, dougg@torque.net
+Subject: Re: [PATCH 0/5] sg_ring for scsi
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200712211013.38511.rusty@rustcorp.com.au>
+References: <200712201853.48643.rusty@rustcorp.com.au>
+	<20071219.235807.173273479.davem@davemloft.net>
+	<200712211013.38511.rusty@rustcorp.com.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21, 2007 at 10:56:13AM +1100, Benjamin Herrenschmidt wrote:
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Fri, 21 Dec 2007 10:13:38 +1100
+
+> But, as demonstrated, there are real benefits of having an explicit header:
 > 
-> > The current pci_assign_unassigned_resources() code doesn't work properly
-> > on 32 bits platforms with 64 bits resources. The main reason is the use
-> > of unsigned long in various places instead of resource_size_t.
-> > 
-> > This fixes it, along with some tricks to avoid casting to 64 bits on
-> > platforms that don't need it in every printk around.
+> 1) It removes the chain-end/explicit count ambiguity (see 
+> http://lkml.org/lkml/2007/10/25/209 & thread)
+> 2) It allows others to manipulate sg chains, which couldn't be done before
+>    (eg. the ATA code which wants to append a padding element).
+> 3) I can now hand you an sg ring for you to fill: sg chains can't do that.
 > 
-> Can you still edit the changelog ?
+> In short, sg_ring is generally useful primitive.  sg chains are a clever hack 
+> for scsi_lib to create, and everyone else to read.
 
-Yes I can.
-
-> If yes, please remove that sentence
-> since the latest version (which you put in your tree) doesn't actually
-> have those tricks anymore as per discussion on the list...
-
-Ok, now done, thanks.
-
-greg k-h
+I do not refute any of this :-)
