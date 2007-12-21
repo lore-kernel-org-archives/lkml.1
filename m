@@ -1,77 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765833AbXLUAnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765376AbXLUAoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765833AbXLUAnW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:43:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759079AbXLUAnK
+	id S1765376AbXLUAoo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 19:44:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758243AbXLUAog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:43:10 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45539 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756606AbXLUAnJ (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:43:09 -0500
-Date: Fri, 21 Dec 2007 11:42:59 +1100
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.24-rc6
-User-Agent: nail 11.25 7/29/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071221004259.8C12858C4C0F@chook.melbourne.sgi.com>
-From: lachlan@sgi.com (Lachlan McIlroy)
+	Thu, 20 Dec 2007 19:44:36 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:29652 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754995AbXLUAof (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 19:44:35 -0500
+Date: Thu, 20 Dec 2007 18:44:08 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
+In-reply-to: <fa.d8kGTkzOZH22bXRIRiakqgOPBM4@ifi.uio.no>
+To: tcamuso@redhat.com
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>
+Message-id: <476B0C58.4030703@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.HvUNJ45qy60H427u0v9fNt3Gc7E@ifi.uio.no>
+ <fa.uuzqvr64HFsgxfiWwhEmE16Di6c@ifi.uio.no>
+ <fa.zhxdNN/1rfQhfJLVmdGBjvKYrCM@ifi.uio.no>
+ <fa.z1qlON6DA9ubBPFdrEcaFTMgYOY@ifi.uio.no>
+ <fa.U/SCC1Gvd3nSOpkMu5vcsSPYyPE@ifi.uio.no>
+ <fa.d8kGTkzOZH22bXRIRiakqgOPBM4@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from the for-linus branch:
-    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
+Tony Camuso wrote:
+> Greg KH wrote:
+>>
+>> Sure, I realize this, but it solves the problem in one way for broken
+>> hardware, such that it at least allows it to work, right?  It also
+>> provides a better incentive for the manufacturer to fix their bios,
+>> which as you are on-site at HP, it would seem odd that they would just
+>> not do that instead of trying to work around this in the kernel...
+>>
+>> thanks,
+>>
+>> greg k-h
+> 
+> I don't think that many OEMs have that much control over the BIOS in
+> their "value lines".
+> :)
+> 
+> And the MMCONFIG problem with enterprise systems and workstations, where
+> we do control the BIOS (for the most part), is due to known bugs in
+> certain versions of certain chipsets, HT1000, AMD8132, among them, not
+> the BIOS.
+> 
+> Anyway, we are devising better ways to deal with these anomalies
+> than blacklists and telling customers to use "pci=nommconf"
+> 
+> And we're bringing them to the community for discussion, improvement,
+> and, we hope, acceptance.
 
-This will update the following files:
+First off, I would like to see confirmation from the horses's mouths 
+here (namely AMD, ServerWorks/Broadcom, and whoever else) that there is 
+no other way to get around this problem than disabling MMCONFIG for 
+accesses behind those chips.
 
- fs/xfs/linux-2.6/xfs_file.c |    1 +
- fs/xfs/linux-2.6/xfs_iops.c |    4 +---
- 2 files changed, 2 insertions(+), 3 deletions(-)
+The case of the device built into the K8 northbridge that's unreachable 
+by MMCONFIG kind of makes sense, since the northbridge is what's 
+translating the MMCONFIG memory access into config accesses. It seems 
+bizarre to me that a bridge chip could possibly have such a problem. The 
+MMCONFIG access should get translated into a configuration space access 
+in the northbridge and from that point on there's no difference between 
+an MMCONFIG and type1 access.
 
-through these commits:
+Look at MSI for another example, we recently had a patch from NVIDIA 
+posted to enable Hypertransport MSI mapping bits on some chipsets so 
+that MSI would function, because the BIOS failed to set them up 
+properly. Are we sure there's not a similar BIOS configuration issue 
+that could ideally be fixed in the BIOS, or else fixed up in the kernel?
 
-commit 4743e0ec1217fd00f57461ebdd7979d31af18700
-Author: Lachlan McIlroy <lachlan@redback.melbourne.sgi.com>
-Date:   Fri Dec 21 11:00:23 2007 +1100
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-    [XFS] Initialise current offset in xfs_file_readdir correctly
-    
-    After reading the directory contents into the temporary buffer, we grab
-    each dirent and pass it to filldir witht eh current offset of the dirent.
-    The current offset was not being set for the first dirent in the temporary
-    buffer, which coul dresult in bad offsets being set in the f_pos field
-    result in looping and duplicate entries being returned from readdir.
-    
-    SGI-PV: 974905
-    SGI-Modid: xfs-linux-melb:xfs-kern:30282a
-    
-    Signed-off-by: David Chinner <dgc@sgi.com>
-    Signed-off-by: Tim Shimmin <tes@sgi.com>
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
-
-commit bad60fdd14df32459e31cc75ab681e4458bf25cf
-Author: Christoph Hellwig <hch@infradead.org>
-Date:   Fri Dec 21 10:58:56 2007 +1100
-
-    [XFS] Fix mknod regression
-    
-    This was broken by my '[XFS] simplify xfs_create/mknod/symlink prototype',
-    which assigned the re-shuffled ondisk dev_t back to the rdev variable in
-    xfs_vn_mknod. Because of that i_rdev is set to the ondisk dev_t instead of
-    the linux dev_t later down the function.
-    
-    Fortunately the fix for it is trivial: we can just remove the assignment
-    because xfs_revalidate_inode has done the proper job before unlocking the
-    inode.
-    
-    SGI-PV: 974873
-    SGI-Modid: xfs-linux-melb:xfs-kern:30273a
-    
-    Signed-off-by: Christoph Hellwig <hch@infradead.org>
-    Signed-off-by: David Chinner <dgc@sgi.com>
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
