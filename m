@@ -1,66 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763586AbXLTW4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764933AbXLUAbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763586AbXLTW4p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 17:56:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbXLTW4h
+	id S1764933AbXLUAbe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 19:31:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbXLUAbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 17:56:37 -0500
-Received: from odyssey.analogic.com ([204.178.40.5]:4921 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753814AbXLTW4g convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 17:56:36 -0500
+	Thu, 20 Dec 2007 19:31:08 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51539 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756119AbXLUAbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 19:31:06 -0500
+Date: Fri, 21 Dec 2007 01:30:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: trond.myklebust@fys.uio.no, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
+Message-ID: <20071221003035.GA10123@elte.hu>
+References: <1198190447.29917.9.camel@heimdal.trondhjem.org> <20071220145415.f737e7f3.akpm@linux-foundation.org> <20071220234759.GA29776@elte.hu> <20071220161934.0f55029a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 20 Dec 2007 22:56:19.0856 (UTC) FILETIME=[88EFC900:01C8435B]
-Content-class: urn:content-classes:message
-Subject: Re: Trying to convert old modules to newer kernels
-Date: Thu, 20 Dec 2007 17:56:19 -0500
-Message-ID: <Pine.LNX.4.61.0712201755330.9907@chaos.analogic.com>
-in-reply-to: <ada1w9hyrhn.fsf@cisco.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Trying to convert old modules to newer kernels
-thread-index: AchDW4j7EBYVIZuqQl2cP84ApmAFQQ==
-References: <Pine.LNX.4.61.0712191503370.4688@chaos.analogic.com><20071219202323.GH2310@csclub.uwaterloo.ca><Pine.LNX.4.61.0712191555150.4514@chaos.analogic.com><20071220150255.GE2308@csclub.uwaterloo.ca><Pine.LNX.4.61.0712201107300.8261@chaos.analogic.com><20071220162700.GF2308@csclub.uwaterloo.ca><Pine.LNX.4.61.0712201615580.9531@chaos.analogic.com> <ada1w9hyrhn.fsf@cisco.com>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Cc: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
-       "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071220161934.0f55029a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 20 Dec 2007, Roland Dreier wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> > It doesn't seem to be something in .config. Do you know how to
-> > reconfigure to get parameter passing put back like it was? Our
-> > production applications have lots of assembly-language files
-> > and I'm sure we are not going to be able to change all those!
->
-> 32-bit x86 uses regparm=3 by default now since commit a1a70c25 ("i386:
-> always enable regparm"), which went in about a year ago.  To go back
-> to the old way, you'll just have to edit arch/x86/Makefile_32 (and
-> rebuild your whole kernel from a clean tree, obviously).
+> On Fri, 21 Dec 2007 00:47:59 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > >  		__raw_spin_lock(&die.lock);
+> > >  		raw_local_save_flags(flags);
+> > > -		die.lock_owner = smp_processor_id();
+> > > +		die.lock_owner = raw_smp_processor_id();
+> > 
+> > we just disabled irqs with raw_local_save_flags().
+> 
+> <chases x86 spaghetti for a while>
+> 
+> raw_local_save_flags() doesn't disable interrupts?
 
-Okay. Thanks! I need to do that.
+argh. Indeed! (I wanted us to fix that misleading name eons ago, to 
+*_save_flags_only(), but some stupid bikeshed painting discussion 
+prevented it from ever happening.)
 
->
-> - R.
->
+that should have been raw_local_irq_save(flags)!
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+but ... why is it done like that? Why do we first take the die.lock and 
+disable interrupts afterwards? It's highly weird. 64-bit does it all 
+correctly in traps_64.c, so unification will help us out - but so far 
+perhaps the patch below we should do in 2.6.24?
 
+	Ingo
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+------------>
+Subject: x86: fix die() to not be preemptible
+From: Ingo Molnar <mingo@elte.hu>
 
-Thank you.
+Andrew "Eagle Eye" Morton noticed that we use raw_local_save_flags()
+instead of raw_local_irq_save(flags) in die().
+
+do it correctly - and first disable interrupts, then take the spinlock.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/traps_32.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+Index: linux-x86.q/arch/x86/kernel/traps_32.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/kernel/traps_32.c
++++ linux-x86.q/arch/x86/kernel/traps_32.c
+@@ -373,14 +373,13 @@ void die(const char * str, struct pt_reg
+ 
+ 	if (die.lock_owner != raw_smp_processor_id()) {
+ 		console_verbose();
++		raw_local_irq_save(flags);
+ 		__raw_spin_lock(&die.lock);
+-		raw_local_save_flags(flags);
+ 		die.lock_owner = smp_processor_id();
+ 		die.lock_owner_depth = 0;
+ 		bust_spinlocks(1);
+-	}
+-	else
+-		raw_local_save_flags(flags);
++	} else
++		raw_local_irq_save(flags);
+ 
+ 	if (++die.lock_owner_depth < 3) {
+ 		unsigned long esp;
