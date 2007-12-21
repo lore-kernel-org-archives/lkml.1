@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbXLUWVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759672AbXLUWWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759477AbXLUWVT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 17:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbXLUWVM
+	id S1759672AbXLUWWV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 17:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbXLUWWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 17:21:12 -0500
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:5110 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753278AbXLUWVL (ORCPT
+	Fri, 21 Dec 2007 17:22:14 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53795 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754563AbXLUWWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 17:21:11 -0500
-X-IronPort-AV: E=Sophos;i="4.24,196,1196668800"; 
-   d="scan'208";a="14031074"
-To: David Dillow <dillowda@ornl.gov>
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] list corruption on ib_srp load in v2.6.24-rc5
-X-Message-Flag: Warning: May contain useful information
-References: <1198273973.9979.34.camel@lap75545.ornl.gov>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 21 Dec 2007 14:21:09 -0800
-In-Reply-To: <1198273973.9979.34.camel@lap75545.ornl.gov> (David Dillow's message of "Fri, 21 Dec 2007 16:52:53 -0500")
-Message-ID: <adabq8jy9ii.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Fri, 21 Dec 2007 17:22:13 -0500
+Date: Fri, 21 Dec 2007 14:22:10 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+In-Reply-To: <84144f020712210944q3e0539f8vd8a249f69d456dc7@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0712211412040.3795@schroedinger.engr.sgi.com>
+References: <1197049846.1645.68.camel@localhost.localdomain> 
+ <20071211143336.GA17866@elte.hu>  <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com>
+  <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com> 
+ <20071221120908.GA15926@elte.hu> <84144f020712210944q3e0539f8vd8a249f69d456dc7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 21 Dec 2007 22:21:09.0825 (UTC) FILETIME=[C9AC5B10:01C8441F]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I'm getting the following oops when doing the following commands:
- > 
- > modprobe ib_srp
- > <add targets(s) to ib_srp using sysfs>
- > rmmod ib_srp
- > modprobe ib_srp
- > <OOPS>
- > 
- > I'm going to try and track down how the list is getting corrupted; it
- > looks like attribute_container_list in
- > drivers/base/attribute_container.c is the one getting corrupted.
- > 
- > Before I get too far into this, has anyone seen this one before? I
- > looked at 'git diff v2.6.24-rc4..' and didn't see any changes that would
- > stand out as fixing it.
+On Fri, 21 Dec 2007, Pekka Enberg wrote:
 
-I haven't seen this, but I actually haven't done much srp testing with
-post-2.6.23 kernels.  From a quick skim through the code, I would
-guess that one of the calls to transport_container_unregister() in
-srp_release_transport() (which is called one module unload) is
-failing and leaving something bogus on the attribute_container_list.
+> Christoph, did you see Steven's oprofile results for the hackbench
+> runs (http://lkml.org/lkml/2007/12/8/198)? Any ideas why we're hitting
+> add_partial like crazy?
 
-This could because the underlying call to attribute_container_unregister()
-fails because the k_list is not empty.  I don't know if this is some
-sort of leak in the ib_srp driver, or something broken elsewhere...
+Hmmm... SLUB is cycling through partial slabs. If it gets fed objects with 
+a single free object from the free list again and again then this is the 
+behavior that one would see.
 
- - R.
+The worst case scenario would be.
+
+1. Processor 0 gets slab with one free entry from the partial list. 
+
+2. Processor 0 allocates object and deactivates the slab since it is full.
+
+3. Processor 1 frees the object and finds that it was not on the partial
+   list since there were no free objects. Call put_partial()
+
+4. processor 0 gets slab with one free entry from the partial list.
+
+If we would make the partial list a mininum size (which is already done 
+through MIN_PARTIAL maybe just increase it) then we may be able to avoid 
+this particular case. Also we could make sure that the slab is not put at 
+the beginning  of the partial list on free in order to increase the time 
+that the slab spends on the partial list. That way it will gather more 
+objects before it is picked up.
+
+Hmmmm... This is a bit different from what I got to here.
+
+
+
+
+
+
