@@ -1,125 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbXLUPzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbXLUPzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755230AbXLUPzP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 10:55:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbXLUPy6
+	id S1752627AbXLUPzg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 10:55:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbXLUPzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 10:54:58 -0500
-Received: from krynn.se.axis.com ([193.13.178.10]:57394 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbXLUPy5 (ORCPT
+	Fri, 21 Dec 2007 10:55:09 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:30474 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754912AbXLUPzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 10:54:57 -0500
-Date: Fri, 21 Dec 2007 16:54:46 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Yuusei KUWANA <kuwana@nyanyan.to>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, mikael.starvik@axis.com
-Subject: Re: [PATCH] arch/cris/arch-v10/vmlinux.lds.S fix boot problem
-Message-ID: <20071221155446.GN10888@axis.com>
-References: <47636D45.6010006@nyanyan.to> <20071221151404.GM10888@axis.com>
+	Fri, 21 Dec 2007 10:55:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=cH5DF8EAqLWPSPtQeJ1csojaAhJY71F7SOc1/rqeRdQZ5UYqkMM39+XoOrxPeOFEOu6UlZcy3DWziTIAbkmSc8pW/D2WqsAbOorerYLgsQvUbZp//IReGJurqrlQQR02sK2hxRIguNItDDxWsQ54JJn14ZUBm1ZunQVZ39y6sqc=
+Date: Fri, 21 Dec 2007 16:56:43 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>
+Subject: [PATCH 2/5] udf: improve readability of do_udf_readdir
+Message-ID: <20071221155639.GB8575@joi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20071221151404.GM10888@axis.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-...and of course I got a spurious "_" pasted into INITCALLS. Argh.
-Corrected patch below.
+make reading do_udf_readdir easier by adding new variable
 
-diff --git a/arch/cris/arch-v10/vmlinux.lds.S b/arch/cris/arch-v10/vmlinux.lds.S
-index 9859d49..ac98b2a 100644
---- a/arch/cris/arch-v10/vmlinux.lds.S
-+++ b/arch/cris/arch-v10/vmlinux.lds.S
-@@ -23,7 +23,7 @@ SECTIONS
- 	_stext = .;
- 	__stext = .;
- 	.text : {
--		*(.text)
-+		TEXT_TEXT
- 		SCHED_TEXT
- 		LOCK_TEXT
- 		*(.fixup)
-@@ -66,13 +66,7 @@ SECTIONS
-   	__setup_end = .;
-   	.initcall.init : {
- 		__initcall_start = .;
--		*(.initcall1.init);
--		*(.initcall2.init);
--		*(.initcall3.init);
--		*(.initcall4.init);
--		*(.initcall5.init);
--		*(.initcall6.init);
--		*(.initcall7.init);
-+		INITCALLS
- 		__initcall_end = .;	
- 	}
- 
-@@ -88,11 +82,16 @@ SECTIONS
- 		__initramfs_start = .;
- 		*(.init.ramfs)
- 		__initramfs_end = .;
--		/* We fill to the next page, so we can discard all init
--		   pages without needing to consider what payload might be
--		   appended to the kernel image.  */
--		FILL (0); 
--		. = ALIGN (8192);
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+CC: Ben Fennema <bfennema@falcon.csc.calpoly.edu>
+Acked-by: Jan Kara <jack@suse.cz>
+---
+ fs/udf/dir.c |   15 +++++++++------
+ 1 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/fs/udf/dir.c b/fs/udf/dir.c
+index 174d2fc..c26e281 100644
+--- a/fs/udf/dir.c
++++ b/fs/udf/dir.c
+@@ -57,6 +57,7 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
+ 	int i, num;
+ 	unsigned int dt_type;
+ 	struct extent_position epos = { NULL, 0, {0, 0} };
++	unsigned char bits;
+
+ 	if (nf_pos >= size)
+ 		return 0;
+@@ -65,12 +66,14 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
+ 		nf_pos = (udf_ext0_offset(dir) >> 2);
+
+ 	fibh.soffset = fibh.eoffset = (nf_pos & ((dir->i_sb->s_blocksize - 1) >> 2)) << 2;
++	bits = dir->i_sb->s_blocksize_bits;
 +
-+		/*
-+		 * We fill to the next page, so we can discard all init
-+		 * pages without needing to consider what payload might be
-+		 * appended to the kernel image.
-+		 */
-+		.init.fill : {
-+			FILL (0);
-+			. = ALIGN (8192);
-+		}
- 	}
- #endif
- 	
+ 	if (UDF_I_ALLOCTYPE(dir) == ICBTAG_FLAG_AD_IN_ICB) {
+ 		fibh.sbh = fibh.ebh = NULL;
+-	} else if (inode_bmap(dir, nf_pos >> (dir->i_sb->s_blocksize_bits - 2),
++	} else if (inode_bmap(dir, nf_pos >> (bits - 2),
+ 			      &epos, &eloc, &elen, &offset) == (EXT_RECORDED_ALLOCATED >> 30)) {
+ 		block = udf_get_lb_pblock(dir->i_sb, eloc, offset);
+-		if ((++offset << dir->i_sb->s_blocksize_bits) < elen) {
++		if ((++offset << bits) < elen) {
+ 			if (UDF_I_ALLOCTYPE(dir) == ICBTAG_FLAG_AD_SHORT)
+ 				epos.offset -= sizeof(short_ad);
+ 			else if (UDF_I_ALLOCTYPE(dir) == ICBTAG_FLAG_AD_LONG)
+@@ -84,10 +87,10 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
+ 			return -EIO;
+ 		}
 
-
-On Fri, Dec 21, 2007 at 04:14:04PM +0100, Jesper Nilsson wrote:
-> 
-> On Sat, Dec 15, 2007 at 02:59:33PM +0900, Yuusei KUWANA wrote:
-> > arch/cris/arch-v10/vmlinux.lds.S
-> >  fix boot problem
-> > * too old initcall style. replace INITCALLS macro
-> > * __init_begin, __init_end move for free_initmem()
-> 
-> Hi,
-> 
-> The conversion to INITCALLS is ok (I have the same change here),
-> but I'm curious what problem you are solving with moving __init_begin and
-> __init_end to only include the .init.data.
-> 
-> If there is use of initcalls/data outside init then that is a bug and
-> should be fixed, not worked around.
-> 
-> There might however be another problem that Mikael Starvik told me about,
-> the padding between initdata and the next section had gone AWOL,
-> which made the free_initmem() destroy useful data.
-> 
-> With the attached patch (and a lot of other patches) I am successful in
-> booting an Axis Devboard82+.
-> Could you please try the included patch and see if that solves your problem?
-> 
-> > Note: with this patch kernel boot and mount root,
-> > but after init done,  kernel panic at do_signal() ...
-> 
-> I have a patch in the pipe that should fix this, will send it in just
-> a small while.
-> 
-> > ryu
-> 
-> Thank you for your help!
-> 
-> Best regards,
-> 
-> /Jesper
-
-/^JN - Jesper Nilsson
+-		if (!(offset & ((16 >> (dir->i_sb->s_blocksize_bits - 9)) - 1))) {
+-			i = 16 >> (dir->i_sb->s_blocksize_bits - 9);
+-			if (i + offset > (elen >> dir->i_sb->s_blocksize_bits))
+-				i = (elen >> dir->i_sb->s_blocksize_bits) - offset;
++		if (!(offset & ((16 >> (bits - 9)) - 1))) {
++			i = 16 >> (bits - 9);
++			if (i + offset > (elen >> bits))
++				i = (elen >> bits) - offset;
+ 			for (num = 0; i > 0; i--) {
+ 				block = udf_get_lb_pblock(dir->i_sb, eloc, offset + i);
+ 				tmp = udf_tgetblk(dir->i_sb, block);
 --
-               Jesper Nilsson -- jesper.nilsson@axis.com
+1.5.3.4
+
