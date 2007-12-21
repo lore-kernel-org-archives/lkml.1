@@ -1,69 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762398AbXLUDTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760070AbXLUDYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762398AbXLUDTT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 22:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbXLUDTJ
+	id S1760070AbXLUDYP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 22:24:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbXLUDYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 22:19:09 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:50556 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754371AbXLUDTH (ORCPT
+	Thu, 20 Dec 2007 22:24:00 -0500
+Received: from there.is.no.cabal.ca ([134.117.69.58]:54279 "EHLO
+	fattire.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752839AbXLUDX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 22:19:07 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HAPq+akdMROHU/2dsb2JhbACBV6cC
-Date: Thu, 20 Dec 2007 22:19:01 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@muc.de>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 14/24] Immediate Values - x86 Optimization
-Message-ID: <20071221031900.GA2414@Krystal>
-References: <20071221015438.433195466@polymtl.ca> <20071221015726.909058404@polymtl.ca> <476B2B5E.5060204@zytor.com>
-Mime-Version: 1.0
+	Thu, 20 Dec 2007 22:23:59 -0500
+Date: Thu, 20 Dec 2007 22:23:58 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mbx: Fix up duplicate defines in reg_bits.h
+Message-ID: <20071221032358.GD8535@fattire.cabal.ca>
+References: <alpine.LFD.0.9999.0712201731010.21557@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <476B2B5E.5060204@zytor.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 22:11:15 up 47 days,  8:16,  3 users,  load average: 0.67, 0.89,
-	0.76
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <alpine.LFD.0.9999.0712201731010.21557@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@zytor.com) wrote:
-> This patch is modified by another patch in the sequence.  This feels 
-> needlessly confusing when reviewing (especially since the comment doesn't 
-> look to match the code, e.g. w.r.t to "Q" and "R" constraints); can you 
-> reorder the patchset to avoid that?
->
+Otherwise patch gets horribly confused and falls over applying
+the diff. Not sure why these were being defined twice.
 
-Argh.. Rusty asked to have a simplified version first, and then to
-implement the "more complex" one on top of it. However, in order to get
-the reentrancy I need for the markers, I need the complex version of the
-immediate values. Therefore, you find, in this patchset, the simple
-version first, and then, the more complex one implemented on top.
+Signed-off-by: Kyle McMartin <kmcmartin@redhat.com>
+---
+Well, we can get it fixed for -git1, I respun the patch-2.6.24-rc6 diff
+with git diff -p v2.6.23..HEAD and applied it to a pristine linux-2.6.23
+tree without issue.
 
-About this patch header, the initial idea was to use the "Q" and "R"
-constraints, but, as stated just below, the "q" and "r" constraints are
-used instead to make sure the REX prefixed opcodes for 1, 2, and 4 bytes
-immediate values are never used. So the complete header follows the
-source code, it's just that this paragraph could be clearer.
+cheers,
+	Kyle
 
-Mathieu
+ drivers/video/mbx/reg_bits.h |   24 ------------------------
+ 1 files changed, 0 insertions(+), 24 deletions(-)
 
-> 	-hpa
-
+diff --git a/drivers/video/mbx/reg_bits.h b/drivers/video/mbx/reg_bits.h
+index 5f14b4b..8dc4283 100644
+--- a/drivers/video/mbx/reg_bits.h
++++ b/drivers/video/mbx/reg_bits.h
+@@ -540,30 +540,6 @@
+ #define DINTRE_HBLNK1_EN	(1 << 1)
+ #define DINTRE_HBLNK0_EN	(1 << 0)
+ 
+-/* DINTRS - Display Interrupt Status Register */
+-#define DINTRS_CUR_OR_S		(1 << 18)
+-#define DINTRS_STR2_OR_S	(1 << 17)
+-#define DINTRS_STR1_OR_S	(1 << 16)
+-#define DINTRS_CUR_UR_S		(1 << 6)
+-#define DINTRS_STR2_UR_S	(1 << 5)
+-#define DINTRS_STR1_UR_S	(1 << 4)
+-#define DINTRS_VEVENT1_S	(1 << 3)
+-#define DINTRS_VEVENT0_S	(1 << 2)
+-#define DINTRS_HBLNK1_S		(1 << 1)
+-#define DINTRS_HBLNK0_S		(1 << 0)
+-
+-/* DINTRE - Display Interrupt Enable Register */
+-#define DINTRE_CUR_OR_EN	(1 << 18)
+-#define DINTRE_STR2_OR_EN	(1 << 17)
+-#define DINTRE_STR1_OR_EN	(1 << 16)
+-#define DINTRE_CUR_UR_EN	(1 << 6)
+-#define DINTRE_STR2_UR_EN	(1 << 5)
+-#define DINTRE_STR1_UR_EN	(1 << 4)
+-#define DINTRE_VEVENT1_EN	(1 << 3)
+-#define DINTRE_VEVENT0_EN	(1 << 2)
+-#define DINTRE_HBLNK1_EN	(1 << 1)
+-#define DINTRE_HBLNK0_EN	(1 << 0)
+-
+ 
+ /* DLSTS - display load status register */
+ #define DLSTS_RLD_ADONE	(1 << 23)
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+1.5.3.6
+
