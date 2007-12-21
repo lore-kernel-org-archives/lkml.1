@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbXLUB0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbXLUBcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758254AbXLUB0h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 20:26:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbXLUB01
+	id S1759307AbXLUBcX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 20:32:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbXLUBcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 20:26:27 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:57916 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752669AbXLUB00 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 20:26:26 -0500
-Date: Thu, 20 Dec 2007 19:20:47 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: Re: [RFC] [PATCH 2/3] Rework arch specific Makefiles to use mkimage
-Message-ID: <20071220192047.5c58f739@zod.rchland.ibm.com>
-In-Reply-To: <8bd0f97a0712201702y3621f60cvf165e41f61ed913c@mail.gmail.com>
-References: <20071220101643.48b427ef@zod.rchland.ibm.com>
-	<20071220101829.44ca59da@zod.rchland.ibm.com>
-	<8bd0f97a0712201702y3621f60cvf165e41f61ed913c@mail.gmail.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Dec 2007 20:32:12 -0500
+Received: from koto.vergenet.net ([210.128.90.7]:47364 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751521AbXLUBcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 20:32:10 -0500
+Date: Fri, 21 Dec 2007 10:32:08 +0900
+From: Simon Horman <horms@verge.net.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, apw@us.ibm.com
+Subject: Re: Update ip command line processing
+Message-ID: <20071221013206.GB21843@verge.net.au>
+References: <20071218085730.GA10765@verge.net.au> <20071220.152121.188610437.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071220.152121.188610437.davem@davemloft.net>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Dec 2007 20:02:30 -0500
-"Mike Frysinger" <vapier.adi@gmail.com> wrote:
-
-> On Dec 20, 2007 11:18 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> > Rework the architecture specific Makefiles to use the in-kernel version
-> > of the mkimage tool.
-> >
-> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> >
-> >  arch/blackfin/boot/Makefile     |    4 ++--
+On Thu, Dec 20, 2007 at 03:21:21PM -0800, David Miller wrote:
+> From: Simon Horman <horms@verge.net.au>
+> Date: Tue, 18 Dec 2007 17:57:32 +0900
 > 
-> we dont particularlly care one way or the other as it really makes no
-> difference to us :)
+> > @@ -1414,9 +1414,16 @@ late_initcall(ip_auto_config);
+> >   */
+> >  static int __init ic_proto_name(char *name)
+> >  {
+> > +	if (!name) {
+> > +		return 1;
+> > +	}
+> 
+> I do not see any circumstance under which this pointer can
+> be NULL.  Judging by your other changes, I think you mean
+> to use "!*name" here.
+> 
+> Maybe:
+> 
+> 	if (*name == '\0')
+> 
+> would make it clearer what you're checking for, an
+> empty string.
+> 
+> Otherwise I'm fine with your change.
 
-Ok, good to know.  Thanks :)
+Sorry, I meant if (*name == '\0') as you suggest to replace the first
+portion of:
 
-josh
+-	ic_enable = (*addrs &&
+-		(strcmp(addrs, "off") != 0) &&
+-		(strcmp(addrs, "none") != 0));
+
+I'll send an updated patch shortly.
+
+-- 
+Horms
+
