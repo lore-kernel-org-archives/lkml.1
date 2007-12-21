@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbXLUPAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbXLUPBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbXLUPAO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 10:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbXLUPAA
+	id S1757730AbXLUPBo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 10:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbXLUPBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 10:00:00 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44706 "EHLO mx1.redhat.com"
+	Fri, 21 Dec 2007 10:01:37 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:17209 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751133AbXLUO77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 09:59:59 -0500
-Message-ID: <476BD4E2.6080903@redhat.com>
-Date: Fri, 21 Dec 2007 09:59:46 -0500
-From: Bhavana Nagendra <bnagendr@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1751133AbXLUPBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 10:01:36 -0500
+Date: Fri, 21 Dec 2007 16:01:39 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: Adrian McMenamin <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH - SH/Dreamcast] Add support for GD-Rom device
+Message-ID: <20071221150139.GH11583@kernel.dk>
+References: <8b67d60712201559h5dbb2a17q8f16223b26b88006@mail.gmail.com> <8b67d60712201607k66d67fa2la8b21fc698fdb3ab@mail.gmail.com> <20071221121441.GB11583@kernel.dk> <8b67d60712210611j6169e262vd761b1d1aca75eb4@mail.gmail.com> <20071221142222.GG11583@kernel.dk> <22602.85.118.17.158.1198248180.squirrel@newgolddream.dyndns.info>
 MIME-Version: 1.0
-To: tcamuso@redhat.com
-CC: Robert Hancock <hancockr@shaw.ca>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
-       Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-References: <fa.HvUNJ45qy60H427u0v9fNt3Gc7E@ifi.uio.no> <fa.uuzqvr64HFsgxfiWwhEmE16Di6c@ifi.uio.no> <fa.zhxdNN/1rfQhfJLVmdGBjvKYrCM@ifi.uio.no> <fa.z1qlON6DA9ubBPFdrEcaFTMgYOY@ifi.uio.no> <fa.U/SCC1Gvd3nSOpkMu5vcsSPYyPE@ifi.uio.no> <fa.d8kGTkzOZH22bXRIRiakqgOPBM4@ifi.uio.no> <476B0C58.4030703@shaw.ca> <476B185D.3000409@redhat.com> <476B19FD.7090504@redhat.com>
-In-Reply-To: <476B19FD.7090504@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <22602.85.118.17.158.1198248180.squirrel@newgolddream.dyndns.info>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tony Camuso wrote:
->> Robert Hancock wrote:
->>
->> First off, I would like to see confirmation from the horses's mouths 
->> here (namely AMD, ServerWorks/Broadcom, and whoever else) that there 
->> is no other way to get around this problem than disabling MMCONFIG 
->> for accesses behind those chips.
->>
->>
->
-> And here are the excerpts from that page of the spec which are salient
-> to the present discussion:
->
-> ----------------------------------------------------------------------
->
-> The base configuration space of the AMD-8132 and PCI(-X) devices 
-> attached to it are accessible using only
-> the mechanism defined in PCI 2.3. Registers of PCI-X Mode 2 devices 
-> attached to the AMD-8132 in the
-> extended configuration space are not accessible. The AMD-8132 has no 
-> registers in the extended
-> configuration space.
->
-> Fix Planned
-> No
->
->
-Prarit, Tony et al, this is as official as it gets.   It's pretty 
-clearly stated.
+On Fri, Dec 21 2007, Adrian McMenamin wrote:
+> On Fri, December 21, 2007 2:22 pm, Jens Axboe wrote:
+> > On Fri, Dec 21 2007, Adrian McMenamin wrote:
+> >> On 21/12/2007, Jens Axboe <jens.axboe@oracle.com> wrote:
+> >> >
+> >> > Your design is also heavily geared towards there just being a single
+> >> > CDROM, I'm assuming this wont be a problem given your hw (it sets a
+> >> bad
+> >> > example for others to follow though, lots of violations against normal
+> >> > programming practice for multiple devices and smp).
+> >>
+> >>
+> >> Yes, because is there only one device and there will only ever be one
+> >> device (unless you know of somebody doing Dreamcast hardware
+> >> development).
+> >>
+> >> I understand the point you are making but adding in additional code
+> >> would only diminish resource availability or slow performance on a
+> >> small machine without actually delivering any better outcomes for
+> >> kernel users..
+> >>
+> >> Is it reaslly necessary?
+> >
+> > No it's not necessary, it was just a general reflection on how it could
+> > have been done more in style with "regular" drivers.
+> >
+> 
+> 
+> I have another look at the code, though i am anxious not to add to the
+> driver's footprint if it is not bring any real benefit. Let me see if
+> there is a way round that.
 
-Bhavana
+Don't break your neck over it, it was nothing more than an observation
+:-)
+
+BTW, I saw something else - you should always use sector_div() to do
+divisions on a sector_t type.
+
+-- 
+Jens Axboe
+
