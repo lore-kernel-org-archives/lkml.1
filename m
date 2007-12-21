@@ -1,80 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbXLUMu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbXLUMyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761147AbXLUMu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 07:50:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbXLUMuV
+	id S1759152AbXLUMyr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 07:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbXLUMyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 07:50:21 -0500
-Received: from an-out-0708.google.com ([209.85.132.248]:62341 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750720AbXLUMuU (ORCPT
+	Fri, 21 Dec 2007 07:54:40 -0500
+Received: from hades.rz.tu-clausthal.de ([139.174.2.20]:55230 "EHLO
+	hades.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbXLUMyk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 07:50:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DE1vhwlf3/WCNziXMp0vY/9YUp4zwB9j7712hUb9Xm+cgeDAI0GA+5Vk5+vlJ6nANc9NmOgnDM4jCEO0GrLPj959Z0XEOjNdstDHH1wKHVT9HmsgiR0m9xkBixg3+/8so+ha1f6ad9Yzr5d1of48wMWfPAr0SFxQIv6+u1rqFPQ=
-Message-ID: <851fc09e0712210450i1c39a37fxe716ffcd5de59850@mail.gmail.com>
-Date: Fri, 21 Dec 2007 20:50:19 +0800
-From: "huang ying" <huang.ying.caritas@gmail.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: [PATCH 2/3 -mm] kexec jump -v8 : add write support to oldmem device
-Cc: "Huang, Ying" <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       "Kexec Mailing List" <kexec@lists.infradead.org>
-In-Reply-To: <20071221101710.GB10573@elf.ucw.cz>
+	Fri, 21 Dec 2007 07:54:40 -0500
+From: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: almost daily Kernel oops with 2.6.23.9 - and now 2.6.23.11 as well
+Date: Fri, 21 Dec 2007 13:54:36 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200712160106.00464.volker.armin.hemmann@tu-clausthal.de> <200712201914.01103.volker.armin.hemmann@tu-clausthal.de> <1198223236.3797.108.camel@homer.simson.net>
+In-Reply-To: <1198223236.3797.108.camel@homer.simson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <1198222420.1965.21.camel@caritas-dev.intel.com>
-	 <20071221101710.GB10573@elf.ucw.cz>
+Message-Id: <200712211354.36460.volker.armin.hemmann@tu-clausthal.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 21, 2007 6:17 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
+On Freitag, 21. Dezember 2007, Mike Galbraith wrote:
+> On Thu, 2007-12-20 at 19:14 +0100, Hemmann, Volker Armin wrote:
+> > It is just.. I could be the hardware - but I should have seen the
+> > same 'problem' with earlier kernels - and the 'almost daily oops' only
+> > started with 2.6.23.
 >
-> > This patch adds writing support for /dev/oldmem. This can be used to
-> >
-> > - Communicate between original kernel and kexeced kernel through write
-> >   to some pages in original kernel.
-> >
-> > - Restore the memory contents of hibernated system in kexec based
-> >   hibernation.
-> >
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> >
-> > --- a/arch/x86/kernel/crash_dump_32.c
-> > +++ b/arch/x86/kernel/crash_dump_32.c
-> > +ssize_t write_oldmem_page(unsigned long pfn, const char *buf,
-> > +                       size_t csize, unsigned long offset, int
-> > userbuf)
+> Nonetheless, the oopsen _suggest_ hardware.  If it were my box, I'd move
+> ram modules as a first step.  It costs about two minutes to eliminate
+> that possibility, but you seem reluctant to take that step.  Heck, I'd
+> _hope_ it's something as simple bad ram, because otherwise, quest for
+> stability could become a time consuming and/or expensive undertaking...
 >
-> > --- a/drivers/char/mem.c
-> > +++ b/drivers/char/mem.c
-> > @@ -348,6 +348,37 @@ static ssize_t read_oldmem(struct file *
-> >       }
-> >       return read;
-> >  }
-> > +
-> > +/*
-> > + * Write memory corresponding to the old kernel.
-> > + */
-> > +static ssize_t write_oldmem(struct file *file, const char __user *buf,
-> > +                         size_t count, loff_t *ppos)
-> > +{
-> ...
-> > +             rc = write_oldmem_page(pfn, buf, csize, offset, 1);
->
-> I believe this is going to break compilation on non-32bit
-> machines.
 
-Yes, I will fix this.
+It costs a little bit more, but it will be part of the 'past holiday special'. 
+As an intermediate step I incresed the voltages of the ram - looks good so 
+far.
 
-Best Regards,
-Huang Ying
+> If that didn't change anything, I'd go back and stress test a previously
+> stable configuration to gain confidence in my hardware. 
+
+you mean like playing ut2004 with reduced fans or several instances of 
+cpuburn, or compiling something big like kdepim with kdeenablefinal? Done all 
+that ...
+
+> If 'uhoh, not 
+> as stable as I thought' happened, and nothing is getting obviously hot
+> [1], I'd pray that it's an electrically noisy power supply, because
+> that's also easy and cheap. 
+
+yeah, it would be the least annoying variant. After one PSU ate two computers, 
+this one is just two and a half month old  -  I had my share of bad PSUs. 
+That is why I increased the voltages. Maybe it helps.
+
+> In any case, once I was very very confident 
+> that my hardware was indeed sound, I'd move on to an agonizingly tedious
+> bisection, with no out of tree modules ever loaded, to narrow down when
+> this memory corruption that nobody else appears to be hitting appeared.
+>
+> 	-Mike
+>
+> 1.  Crappy heatsink compound can dry out and fracture, leaving hot chip
+> under a relatively cool heatsink.  This is exactly what I found when I
+> disassembled my suddenly unstable under heavy load P4 box a while back.
+
+still this would show up with the temps. And the temps are ok.
+
+Glück Auf,
+Volker
