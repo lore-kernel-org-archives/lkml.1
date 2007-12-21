@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765574AbXLUAlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765564AbXLUAlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765574AbXLUAlI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:41:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759140AbXLUAky
+	id S1765564AbXLUAlv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 19:41:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbXLUAlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:40:54 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58090 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758498AbXLUAky (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:40:54 -0500
-Date: Thu, 20 Dec 2007 16:34:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andrew Morgan <morgan@kernel.org>
-Cc: serue@us.ibm.com, containers@lists.osdl.org, linux-kernel@vger.kernel.org,
-       minslinux-mm@kvack.org
-Subject: Re: [RFC] [PATCH -mm] oom_kill: remove uid==0 checks
-Message-Id: <20071220163442.d93210ea.akpm@linux-foundation.org>
-In-Reply-To: <47606969.6060808@kernel.org>
-References: <20071212211835.GA24943@sergelap.austin.ibm.com>
-	<47606969.6060808@kernel.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 20 Dec 2007 19:41:42 -0500
+Received: from are.twiddle.net ([64.81.246.98]:40834 "EHLO are.twiddle.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753733AbXLUAll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 19:41:41 -0500
+Date: Thu, 20 Dec 2007 16:39:13 -0800
+From: Richard Henderson <rth@twiddle.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
+       Keith Packard <keithp@keithp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: PCI resource problems caused by improper address rounding
+Message-ID: <20071221003913.GA6220@twiddle.net>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Chuck Ebbert <cebbert@redhat.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
+	Keith Packard <keithp@keithp.com>,
+	Bjorn Helgaas <bjorn.helgaas@hp.com>
+References: <alpine.LFD.0.9999.0712171648150.21557@woody.linux-foundation.org> <47680489.6040809@redhat.com> <alpine.LFD.0.9999.0712180946030.21557@woody.linux-foundation.org> <20071218202234.GA24525@twiddle.net> <alpine.LFD.0.9999.0712181240280.21557@woody.linux-foundation.org> <20071218215143.GA24769@twiddle.net> <alpine.LFD.0.9999.0712181412530.21557@woody.linux-foundation.org> <alpine.LFD.0.9999.0712181722260.21557@woody.linux-foundation.org> <20071220215204.GA5636@twiddle.net> <alpine.LFD.0.9999.0712201406190.21557@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.9999.0712201406190.21557@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Dec 2007 15:06:17 -0800
-Andrew Morgan <morgan@kernel.org> wrote:
+On Thu, Dec 20, 2007 at 02:24:48PM -0800, Linus Torvalds wrote:
+> I'm not exactly 100% happy with it, but it does mean that if we need a big 
+> area, we'll relax the suggested starting point by that amount. It's not 
+> wonderful, but it essentially admits that the minimum for the allocations 
+> is really just a hint, and if we need lots of space for a resource, we'll 
+> relax the minimum point appropriately.
 
-> Serge E. Hallyn wrote:
-> > Andrew, I've cc:d you here bc in doing this patch I noticed that your
-> > 64-bit capabilities patch switched this code from an explicit check
-> > of cap_t(p->cap_effective) to using __capable().  That means that
-> > now being glossed over by the oom killer means PF_SUPERPRIV will
-> > be set.  Is that intentional?
-> 
-> Yes, I switched the check because the old one didn't work with the new
-> capability representation.
-> 
-> However, I had not thought this aspect of this replacement through. At
-> the time, it seemed obvious but in this case it actually depends on
-> whether you think using privilege (PF_SUPERPRIV) means "benefited from
-> privilege", or "successfully completed a privileged operation".
-> 
-> I suspect, in this case, the correct thing to do is add the equivalent of:
-> 
-> #define CAPABLE_PROBE_ONLY(a,b)   (!security_capable(a,b))
-> 
-> and use that in the code in question. That is, return to the old
-> behavior in a way that will not break if we ever need to add more bits.
+This breaks in odd cases where the amount of memory in the system
+is not a nice round number.  Like throwing two 128MB sticks into
+a system that already has 2gb.  A 512MB allocation will get placed
+back at 2gb, on top of the end of ram.  In order to get this kind
+of thing to work, you'd have to have a hard and a soft minimum.
 
-I'm struggling to understand whether the above was an ack, a nack or a
-quack.
+Even then, any random large allocation is going to ignore that
+buffer that you added.  It'd be better if we could still tie this
+ignoring of the buffer to whether the bios placed the resource
+there in the first place.
 
-> Thanks for finding this.
+Perhaps this is one of those things that just aren't going to be
+solved properly without an xserver upgrade...
 
->From that I'll assume ack ;)
+
+r~
