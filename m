@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbXLURvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbXLURy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754851AbXLURvT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 12:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbXLURvJ
+	id S1756033AbXLURy1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 12:54:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbXLURyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 12:51:09 -0500
-Received: from there.is.no.cabal.ca ([134.117.69.58]:55906 "EHLO
-	fattire.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752352AbXLURvI (ORCPT
+	Fri, 21 Dec 2007 12:54:20 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58997 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751672AbXLURyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 12:51:08 -0500
-Date: Fri, 21 Dec 2007 12:51:06 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Roland McGrath <roland@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -mm 18/43] powerpc compat_binfmt_elf
-Message-ID: <20071221175106.GB17656@fattire.cabal.ca>
-References: <20071220115200.C767E26F98A@magilla.localdomain> <20071220115816.504CC26F98E@magilla.localdomain> <20071221071229.GC4345@infradead.org> <20071221085609.4D53B26F98A@magilla.localdomain>
+	Fri, 21 Dec 2007 12:54:19 -0500
+Date: Fri, 21 Dec 2007 09:40:46 -0800
+From: Greg KH <greg@kroah.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       ink@jurassic.park.msu.ru, Alan Cox <alan@redhat.com>,
+       james.smart@emulex.com, linux-driver@qlogic.com,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH 3/3] pci: Remove pci_enable_device_bars()
+Message-ID: <20071221174046.GA26965@kroah.com>
+References: <20071220042812.706D0DDEE7@ozlabs.org> <20071221042855.GF25341@kroah.com> <1198212448.6779.45.camel@pasglop> <20071221051139.GA23507@kroah.com> <1198215131.6779.49.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071221085609.4D53B26F98A@magilla.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1198215131.6779.49.camel@pasglop>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21, 2007 at 12:56:09AM -0800, Roland McGrath wrote:
-> > On Thu, Dec 20, 2007 at 03:58:16AM -0800, Roland McGrath wrote:
-> > > +obj-$(CONFIG_PPC64)		+= ../../../fs/compat_binfmt_elf.o
+On Fri, Dec 21, 2007 at 04:32:11PM +1100, Benjamin Herrenschmidt wrote:
+> 
+> On Thu, 2007-12-20 at 21:11 -0800, Greg KH wrote:
+> > On Fri, Dec 21, 2007 at 03:47:28PM +1100, Benjamin Herrenschmidt wrote:
+> > > pci: Remove pci_enable_device_bars() fix for qla
+> > > 
+> > > The previous patch missed one occurence of pci_enable_device_bars()
+> > > in the qla2xxx driver. This fixes it.
 > > 
-> > Building files from another directory is nasty.  Please add a
-> > CONFIG_BINFMT_COMPAT_ELF so we can simply build it in fs/
+> > Should I just merge this with your 2/3 patch so everything is sane?
 > 
-> If that's better, please post the precise Kconfig magic you have in mind to
-> have it set when it should be.
-> 
+> Sure.
 
-Just taking a stab that hch means,
+Ok, now merged and pushed out, thanks.
 
-config BINFMT_COMPAT_ELF
-	def_bool n
-	depends on 64BIT
-
-and then in arch/powerpc/Kconfig
-
-config COMPAT
-	bool
-	default y if PPC64
-	select BINFMT_COMPAT_ELF
-
-or somesuch.
-
-Regards, Kyle
+greg k-h
