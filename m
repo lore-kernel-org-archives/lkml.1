@@ -1,178 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbXLUPxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbXLUPyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340AbXLUPxm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 10:53:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXLUPxb
+	id S1754300AbXLUPyn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 10:54:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbXLUPyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 10:53:31 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:28524 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751321AbXLUPxa (ORCPT
+	Fri, 21 Dec 2007 10:54:35 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:39040 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751807AbXLUPyf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 10:53:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=iLXANQiDhXIxrKLBduZe6UtgeSQhK3RDOIXIHW3eGLjWQJ2JXZvonoQyXq80AoYvDiuaWzzGijU88Fzwqcr5iVUbRpXhYra49y7QmSiKsxTyXTmN4BiZiZoUE9alrSU29e9/lng9/zfMgf/3oVsUUF7Mu56riA7N964vAtvCmts=
-Date: Fri, 21 Dec 2007 16:55:03 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>
-Subject: [PATCH 1/5] udf: remove wrong prototype of udf_readdir
-Message-ID: <20071221155453.GA8575@joi>
+	Fri, 21 Dec 2007 10:54:35 -0500
+Date: Fri, 21 Dec 2007 10:54:34 -0500
+To: Joe Perches <joe@perches.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andy Whitcroft <apw@shadowen.org>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, trivial@kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: Trailing periods in kernel messages
+Message-ID: <20071221155434.GI2310@csclub.uwaterloo.ca>
+References: <474E8669.6060409@cn.fujitsu.com> <200711291120.19595.elendil@planet.nl> <20071129032036.4c021617.akpm@linux-foundation.org> <474F6372.70705@cn.fujitsu.com> <1196386259.22120.101.camel@localhost> <474F6D4D.9010006@cn.fujitsu.com> <1196390128.22120.118.camel@localhost> <20071220162923.GB27885@shadowen.org> <20071220210741.6dc3caf5@the-village.bc.nu> <1198186984.6183.72.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1198186984.6183.72.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sparse generated:
-fs/udf/dir.c:78:5: warning: symbol 'udf_readdir' was not declared. Should it be static?
-there are 2 different prototypes of udf_readdir - remove them and move
-code around to make it still compile
+On Thu, Dec 20, 2007 at 01:43:04PM -0800, Joe Perches wrote:
+> Documentation/Coding Style
+> 
+> 		Chapter 13: Printing kernel messages
+> 
+> Kernel messages do not have to be terminated with a period.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Acked-by: Jan Kara <jack@suse.cz>
----
- fs/udf/dir.c |  118 +++++++++++++++++++++++++++------------------------------
- 1 files changed, 56 insertions(+), 62 deletions(-)
+'do not have to' does not mean 'should not'.  So the suggested patch
+is wrong no matter what.
 
-diff --git a/fs/udf/dir.c b/fs/udf/dir.c
-index 9e3b9f9..174d2fc 100644
---- a/fs/udf/dir.c
-+++ b/fs/udf/dir.c
-@@ -36,68 +36,8 @@
- #include "udf_i.h"
- #include "udf_sb.h"
+Prints of data and various tables would look silly with a period, but
+sentences look better with it.
 
--/* Prototypes for file operations */
--static int udf_readdir(struct file *, void *, filldir_t);
--static int do_udf_readdir(struct inode *, struct file *, filldir_t, void *);
--
--/* readdir and lookup functions */
--
--const struct file_operations udf_dir_operations = {
--	.read			= generic_read_dir,
--	.readdir		= udf_readdir,
--	.ioctl			= udf_ioctl,
--	.fsync			= udf_fsync_file,
--};
--
--/*
-- * udf_readdir
-- *
-- * PURPOSE
-- *	Read a directory entry.
-- *
-- * DESCRIPTION
-- *	Optional - sys_getdents() will return -ENOTDIR if this routine is not
-- *	available.
-- *
-- *	Refer to sys_getdents() in fs/readdir.c
-- *	sys_getdents() -> .
-- *
-- * PRE-CONDITIONS
-- *	filp			Pointer to directory file.
-- *	buf			Pointer to directory entry buffer.
-- *	filldir			Pointer to filldir function.
-- *
-- * POST-CONDITIONS
-- *	<return>		>=0 on success.
-- *
-- * HISTORY
-- *	July 1, 1997 - Andrew E. Mileski
-- *	Written, tested, and released.
-- */
--
--int udf_readdir(struct file *filp, void *dirent, filldir_t filldir)
--{
--	struct inode *dir = filp->f_path.dentry->d_inode;
--	int result;
--
--	lock_kernel();
--
--	if (filp->f_pos == 0) {
--		if (filldir(dirent, ".", 1, filp->f_pos, dir->i_ino, DT_DIR) < 0) {
--			unlock_kernel();
--			return 0;
--		}
--		filp->f_pos++;
--	}
--
--	result = do_udf_readdir(dir, filp, filldir, dirent);
--	unlock_kernel();
-- 	return result;
--}
--
--static int
--do_udf_readdir(struct inode *dir, struct file *filp, filldir_t filldir,
--	       void *dirent)
-+static int do_udf_readdir(struct inode *dir, struct file *filp,
-+			  filldir_t filldir, void *dirent)
- {
- 	struct udf_fileident_bh fibh;
- 	struct fileIdentDesc *fi = NULL;
-@@ -244,3 +184,57 @@ do_udf_readdir(struct inode *dir, struct file *filp, filldir_t filldir,
-
- 	return 0;
- }
-+
-+/*
-+ * udf_readdir
-+ *
-+ * PURPOSE
-+ *	Read a directory entry.
-+ *
-+ * DESCRIPTION
-+ *	Optional - sys_getdents() will return -ENOTDIR if this routine is not
-+ *	available.
-+ *
-+ *	Refer to sys_getdents() in fs/readdir.c
-+ *	sys_getdents() -> .
-+ *
-+ * PRE-CONDITIONS
-+ *	filp			Pointer to directory file.
-+ *	buf			Pointer to directory entry buffer.
-+ *	filldir			Pointer to filldir function.
-+ *
-+ * POST-CONDITIONS
-+ *	<return>		>=0 on success.
-+ *
-+ * HISTORY
-+ *	July 1, 1997 - Andrew E. Mileski
-+ *	Written, tested, and released.
-+ */
-+
-+static int udf_readdir(struct file *filp, void *dirent, filldir_t filldir)
-+{
-+	struct inode *dir = filp->f_path.dentry->d_inode;
-+	int result;
-+
-+	lock_kernel();
-+
-+	if (filp->f_pos == 0) {
-+		if (filldir(dirent, ".", 1, filp->f_pos, dir->i_ino, DT_DIR) < 0) {
-+			unlock_kernel();
-+			return 0;
-+		}
-+		filp->f_pos++;
-+	}
-+
-+	result = do_udf_readdir(dir, filp, filldir, dirent);
-+	unlock_kernel();
-+ 	return result;
-+}
-+
-+/* readdir and lookup functions */
-+const struct file_operations udf_dir_operations = {
-+	.read			= generic_read_dir,
-+	.readdir		= udf_readdir,
-+	.ioctl			= udf_ioctl,
-+	.fsync			= udf_fsync_file,
-+};
 --
-1.5.3.4
-
+Len Sorensen
