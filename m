@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbXLURgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbXLURo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbXLURgW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 12:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbXLURgP
+	id S1755567AbXLURo2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 12:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbXLURoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 12:36:15 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1865 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751321AbXLURgO (ORCPT
+	Fri, 21 Dec 2007 12:44:20 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:24145 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751402AbXLURoT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 12:36:14 -0500
-Date: Fri, 21 Dec 2007 17:36:01 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] SC26XX: New serial driver for SC2681 uarts
-Message-ID: <20071221173601.GR13186@shadowen.org>
-References: <20071202194346.36E3FDE4C4@solo.franken.de> <20071203155317.772231f9.akpm@linux-foundation.org>
+	Fri, 21 Dec 2007 12:44:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=A6CebSz7l3sRF08OwcyGxsDSW5PfxUfTyICyyljd2Fed27oPJUa0/T0ltU4zVzPMgVBZqYXq5cFK6UP8tGFDM8bL1EfViqqWDSUk/941ZXH+0STf0ZD5PB85QR5lE8YPppf1EUFnQRpUcbMc891NP+x1qPob1VRxYTE42BIFWZI=
+Message-ID: <84144f020712210944q3e0539f8vd8a249f69d456dc7@mail.gmail.com>
+Date: Fri, 21 Dec 2007 19:44:12 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20071221120908.GA15926@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071203155317.772231f9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1197049846.1645.68.camel@localhost.localdomain>
+	 <20071211143336.GA17866@elte.hu>
+	 <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com>
+	 <20071221120908.GA15926@elte.hu>
+X-Google-Sender-Auth: 0235951824e0345b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 03, 2007 at 03:53:17PM -0800, Andrew Morton wrote:
-> > +#define READ_SC(p, r)        readb ((p)->membase + RD_##r)
-> > +#define WRITE_SC(p, r, v)    writeb ((v), (p)->membase + WR_##r)
-> 
-> No space before the (.  checkpatch misses this.
+Hi,
 
-Yep, over careful in the special case for the parameters for #define
-macros, which have different spacing rules.  This will be fixed in 0.13:
+Christoph Lameter <clameter@sgi.com> wrote:
+> > In an extreme case (boot with slub_min_order=9 to get huge page sized
+> > slabs) SLUB can win against SLAB:
+> >
+> > N=10 Time: 0.338      Minimally faster
+> > N=20 Time: 0.560      10% faster
+> > N=50 Time: 1.353      15% faster
 
-WARNING: no space between function name and open parenthesis '('
-#1: FILE: Z45.c:1:
-+#define WRITE_SC(p, r, v)    writeb ((v), (p)->membase + WR_##r)
+On Dec 21, 2007 2:09 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> what's up with this regression? There's been absolutely no activity
+> about it in the last 8 days: upstream still regresses, -mm still
+> regresses and there are no patches posted for testing.
 
--apw
+Christoph, did you see Steven's oprofile results for the hackbench
+runs (http://lkml.org/lkml/2007/12/8/198)? Any ideas why we're hitting
+add_partial like crazy?
+
+                                Pekka
