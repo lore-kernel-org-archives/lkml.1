@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbXLUTsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbXLUTud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbXLUTsa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 14:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbXLUTr6
+	id S1756392AbXLUTud (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 14:50:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753758AbXLUTuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 14:47:58 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:22974 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753462AbXLUTrz (ORCPT
+	Fri, 21 Dec 2007 14:50:25 -0500
+Received: from tomts52-srv.bellnexxia.net ([209.226.175.177]:55699 "EHLO
+	tomts52-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753497AbXLUTuY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 14:47:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=ZbP0IvNU6nAPFCSFs/sv+ydw1QmLvKjlEI/VhVrrOuQzdzidJKlXbh2OAzDKtJu0YCb8EY1286yUGLQMCP/ocGeySflwJMvdV0XHUSyillFv1Bw8YzjG/M/j3mzioPiENigxa5BXY1YgarYqkiJxGKSGVt1MLdapoO5Xo97AM3A=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Phillip Susi <psusi@cfl.rr.com>
-Subject: Re: [PATCH 00/63] ide-cd: redux
-Date: Fri, 21 Dec 2007 20:57:56 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200712200148.49690.bzolnier@gmail.com> <476ACFE5.2060800@cfl.rr.com>
-In-Reply-To: <476ACFE5.2060800@cfl.rr.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200712212057.56942.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 21 Dec 2007 14:50:24 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAC+oa0dFn+Sr/2dsb2JhbACRVZg6Aw
+Date: Fri, 21 Dec 2007 14:50:19 -0500
+From: Mike Houston <mikeserv@bmts.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Jean Delvare <khali@linux-fr.org>, Shaohua Li <shaohua.li@intel.com>,
+       Mike Houston <mikeserv@bmts.com>, Adrian Bunk <bunk@stusta.de>,
+       Elvis Pranskevichus <el@prans.net>, mhoffman@lightlink.com,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+       Adam Belay <ambx1@neo.rr.com>, Zhao Yakui <yakui.zhao@intel.com>,
+       Thomas Renninger <trenn@suse.de>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [lm-sensors] 2.6.24-rc4 hwmon it87 probe fails
+Message-Id: <20071221145019.b853c67e.mikeserv@bmts.com>
+In-Reply-To: <200712211200.30947.bjorn.helgaas@hp.com>
+References: <20071204215154.7f26285e.mikeserv@bmts.com>
+	<200712171014.44360.bjorn.helgaas@hp.com>
+	<20071218185918.5d2d4c7d@hyperion.delvare>
+	<200712211200.30947.bjorn.helgaas@hp.com>
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.10.14; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 December 2007, Phillip Susi wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> > Hi,
-> > 
-> > This patch series is a major rework of the ide-cd driver.
+On Fri, 21 Dec 2007 12:00:30 -0700
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+
+> What do you think of something like the following patch?  If we do
+> this, I don't think we'd need to force pnpacpi=off or change the
+> way PNP reserves resources.
 > 
-> Hi, in the future could you please post big patchbombs like this as 
-> replies to the first one so they fold nicely into one thread?  IIRC, 
-> git-send-email does this by default now.
+> I'll be on vacation until about January 2, so I won't be able to
+> do much with this until then.
+> 
+> 
+> 
+> [patch] it87: request only Environment Controller ports
 
-Sure, sorry for forgetting about it this time.
+I'm not qualified to give an opinion on what's proper for the
+kernel, so all I can say is that I've applied it (to fresh 2.6.24-rc6
+source without Shaohua's pnpacpi patch) and it works nicely for me.
 
-Bart
+>From /proc/ioports:
+
+0290-029f : pnp 00:01
+  0290-0294 : pnp 00:01
+  0295-0296 : it87
+    0295-0296 : it87
+
+>From dmesg:
+
+system 00:01: ioport range 0x290-0x29f has been reserved
+...
+system 00:01: ioport range 0x290-0x294 has been reserved
+
+My sensors work.
+
+Thanks for this patch,
+
+Mike Houston
