@@ -1,54 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbXLULU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbXLULfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760006AbXLULU4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 06:20:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbXLULUt
+	id S1756366AbXLULfA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 06:35:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXLULew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 06:20:49 -0500
-Received: from sender-01.it.helsinki.fi ([128.214.205.139]:48108 "EHLO
-	sender-01.it.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750876AbXLULUs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 06:20:48 -0500
-X-Greylist: delayed 1181 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Dec 2007 06:20:48 EST
-Message-Id: <200712211101.lBLB15Wk015090@ruuvi.it.helsinki.fi>
-Subject: ncpfs unlink() handling question
-To: linux-kernel@vger.kernel.org
-Date: Fri, 21 Dec 2007 13:01:05 +0200 (EET)
-From: Atro Tossavainen <atro.tossavainen@helsinki.fi>
-X-Mailer: ELM [version 2.4ME+ PL123]
-MIME-Version: 1.0
+	Fri, 21 Dec 2007 06:34:52 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:50809 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750970AbXLULev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 06:34:51 -0500
+Date: Fri, 21 Dec 2007 12:34:46 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] Use ilog2() in fs/namespace.c
+Message-Id: <20071221123446.7a479700.dada1@cosmosbay.com>
+In-Reply-To: <20071221022912.72b6274e.akpm@linux-foundation.org>
+References: <4762C28A.4040002@cosmosbay.com>
+	<20071221022912.72b6274e.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Fri, 21 Dec 2007 02:29:12 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-I've just noticed that ncpfs (or rather, NetWare) doesn't implement
-POSIX semantics w.r.t. unlink().  Specifically, any operation that
-expects, according to POSIX, that the contents of an open but unlink()ed
-file should remain available to the application that has it open, such
-as
+> On Fri, 14 Dec 2007 18:51:06 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
+> 
+> > We can use ilog2() in fs/namespace.c to compute hash_bits and hash_mask at
+> > compile time, not runtime.
+> 
+> Well noted.
+> 
+> > [namespace.patch  text/plain (1.4KB)]
+> 
+> argh. (save-as, read, copy-paste, s/^/> /g)
+> 
+> > --- a/fs/namespace.c
+> > +++ b/fs/namespace.c
+> > @@ -25,6 +25,7 @@
+> >  #include <linux/security.h>
+> >  #include <linux/mount.h>
+> >  #include <linux/ramfs.h>
+> > +#include <linux/log2.h>
+> >  #include <asm/uaccess.h>
+> >  #include <asm/unistd.h>
+> >  #include "pnode.h"
+> > @@ -36,7 +37,8 @@ __cacheline_aligned_in_smp DEFINE_SPINLOCK(vfsmount_lock);
+> >  static int event;
+> >  
+> >  static struct list_head *mount_hashtable __read_mostly;
+> > -static int hash_mask __read_mostly, hash_bits __read_mostly;
+> > +#define hash_bits ilog2(PAGE_SIZE / sizeof(struct list_head))
+> > +#define hash_mask ((1UL << hash_bits) - 1)
+> >  static struct kmem_cache *mnt_cache __read_mostly;
+> >  static struct rw_semaphore namespace_sem;
+> >  
+> > @@ -1828,24 +1830,7 @@ void __init mnt_init(void)
+> >  	if (!mount_hashtable)
+> >  		panic("Failed to allocate mount hash table\n");
+> >  
+> > -	/*
+> > -	 * Find the power-of-two list-heads that can fit into the allocation..
+> > -	 * We don't guarantee that "sizeof(struct list_head)" is necessarily
+> > -	 * a power-of-two.
+> > -	 */
+> > -	nr_hash = PAGE_SIZE / sizeof(struct list_head);
+> > -	hash_bits = 0;
+> > -	do {
+> > -		hash_bits++;
+> > -	} while ((nr_hash >> hash_bits) != 0);
+> > -	hash_bits--;
+> > -
+> > -	/*
+> > -	 * Re-calculate the actual number of entries and the mask
+> > -	 * from the number of bits we can fit.
+> > -	 */
+> >  	nr_hash = 1UL << hash_bits;
+> > -	hash_mask = nr_hash - 1;
+> >  
+> >  	printk("Mount-cache hash table entries: %d\n", nr_hash);
+> 
+> Those #defines you now have there are foul.  Please, when there's a choice
+> between doing it minimally and doing it right, let's do it right?
+>
 
-perl -pi -e 's/a/b/;' a_file
+Indeed !
 
-on a ncpfs mounted volume causes the contents of the file to be lost,
-as unlink() on ncpfs disposes of the file properly right away and the
-new file that is written is a 's/a/b/;' of an empty file, hence another
-empty file.
+Thanks Andrew for taking the time and fixing my lazyness :(
+Your version is much cleaner of course.
 
-I don't know whether there is any (sensible) way to fix this, but I
-would like to initiate a discussion on what would be the correct way
-for ncpfs to deal with this.  I just emptied a whole bunch of files
-on our web server this way and was rather surprised about it.  Nothing
-was lost as the NetWare salvaging mechanism allowed us to rescue every-
-thing with a bit of manual labour, and if that hadn't been the case,
-we did have it all on tape, but it did catch me off guard... :-)
-
--- 
-Atro Tossavainen (Mr.)               / The Institute of Biotechnology at
-Systems Analyst, Techno-Amish &     / the University of Helsinki, Finland,
-+358-9-19158939  UNIX Dinosaur     / employs me, but my opinions are my own.
-< URL : http : / / www . helsinki . fi / %7E atossava / > NO FILE ATTACHMENTS
+ 
+> Look what we can now do:
+> 
+> 
+> --- a/fs/namespace.c~use-ilog2-in-fs-namespacec-fix
+> +++ a/fs/namespace.c
+> @@ -31,14 +31,15 @@
+>  #include "pnode.h"
+>  #include "internal.h"
+>  
+> +#define HASH_SHIFT ilog2(PAGE_SIZE / sizeof(struct list_head))
+> +#define HASH_SIZE (1UL << HASH_SHIFT)
+> +
+>  /* spinlock for vfsmount related operations, inplace of dcache_lock */
+>  __cacheline_aligned_in_smp DEFINE_SPINLOCK(vfsmount_lock);
+>  
+>  static int event;
+>  
+>  static struct list_head *mount_hashtable __read_mostly;
+> -#define hash_bits ilog2(PAGE_SIZE / sizeof(struct list_head))
+> -#define hash_mask ((1UL << hash_bits) - 1)
+>  static struct kmem_cache *mnt_cache __read_mostly;
+>  static struct rw_semaphore namespace_sem;
+>  
+> @@ -50,8 +51,8 @@ static inline unsigned long hash(struct 
+>  {
+>  	unsigned long tmp = ((unsigned long)mnt / L1_CACHE_BYTES);
+>  	tmp += ((unsigned long)dentry / L1_CACHE_BYTES);
+> -	tmp = tmp + (tmp >> hash_bits);
+> -	return tmp & hash_mask;
+> +	tmp = tmp + (tmp >> HASH_SHIFT);
+> +	return tmp & (HASH_SIZE - 1);
+>  }
+>  
+>  struct vfsmount *alloc_vfsmnt(const char *name)
+> @@ -1815,9 +1816,7 @@ static void __init init_mount_tree(void)
+>  
+>  void __init mnt_init(void)
+>  {
+> -	struct list_head *d;
+> -	unsigned int nr_hash;
+> -	int i;
+> +	unsigned u;
+>  	int err;
+>  
+>  	init_rwsem(&namespace_sem);
+> @@ -1830,18 +1829,11 @@ void __init mnt_init(void)
+>  	if (!mount_hashtable)
+>  		panic("Failed to allocate mount hash table\n");
+>  
+> -	nr_hash = 1UL << hash_bits;
+> +	printk("Mount-cache hash table entries: %lu\n", HASH_SIZE);
+>  
+> -	printk("Mount-cache hash table entries: %d\n", nr_hash);
+> +	for (u = 0; u < HASH_SIZE; u++)
+> +		INIT_LIST_HEAD(&mount_hashtable[u]);
+>  
+> -	/* And initialize the newly allocated array */
+> -	d = mount_hashtable;
+> -	i = nr_hash;
+> -	do {
+> -		INIT_LIST_HEAD(d);
+> -		d++;
+> -		i--;
+> -	} while (i);
+>  	err = sysfs_init();
+>  	if (err)
+>  		printk(KERN_WARNING "%s: sysfs_init error: %d\n",
+> _
+> 
