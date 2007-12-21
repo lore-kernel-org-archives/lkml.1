@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbXLUEaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbXLUEjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757725AbXLUEaT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 23:30:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbXLUEaG
+	id S1756938AbXLUEjU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 23:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbXLUEjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 23:30:06 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38268 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751160AbXLUEaF (ORCPT
+	Thu, 20 Dec 2007 23:39:08 -0500
+Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:50855 "EHLO
+	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161AbXLUEjH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 23:30:05 -0500
-Date: Thu, 20 Dec 2007 20:28:55 -0800
-From: Greg KH <greg@kroah.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       ink@jurassic.park.msu.ru, Alan Cox <alan@redhat.com>,
-       james.smart@emulex.com, linux-driver@qlogic.com,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH 3/3] pci: Remove pci_enable_device_bars()
-Message-ID: <20071221042855.GF25341@kroah.com>
-References: <20071220042812.706D0DDEE7@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071220042812.706D0DDEE7@ozlabs.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 20 Dec 2007 23:39:07 -0500
+To: rusty@rustcorp.com.au
+Cc: fujita.tomonori@lab.ntt.co.jp, davem@davemloft.net,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, dougg@torque.net
+Subject: Re: [PATCH 0/5] sg_ring for scsi
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200712211426.47896.rusty@rustcorp.com.au>
+References: <200712211013.38511.rusty@rustcorp.com.au>
+	<20071221112834X.fujita.tomonori@lab.ntt.co.jp>
+	<200712211426.47896.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20071221133746B.fujita.tomonori@lab.ntt.co.jp>
+Date: Fri, 21 Dec 2007 13:37:46 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 03:28:10PM +1100, Benjamin Herrenschmidt wrote:
-> Now that all in-tree users are gone, this removes pci_enable_device_bars()
-> completely.
+On Fri, 21 Dec 2007 14:26:47 +1100
+Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-Hm, looks like you missed drivers/scsi/qla2xxx/qla_os.c
+> On Friday 21 December 2007 13:28:34 FUJITA Tomonori wrote:
+> > I'm not sure about chaining the headers (as your sg_ring and
+> > scsi_sgtable do) would simplify LLDs. Have you looked at ips or
+> > qla1280?
+> 
+> Not yet, am working my way through the drivers, but I don't expect it will be 
+> a simplification to the normal SCSI LLDs.  Most of them are mere consumers of
+> sgs...
 
-Quick, before akpm gets mad at you for breaking the build, send me a
-patch!  :)
+Some scsi drivers like ips access to sglist in a tricky way. I feel
+that they don't work with the sg_ring interface well. So if you
+convert scsi_lib.c to use sg_ring, please see how it works with the
+tricky drivers before that.
 
-thanks,
 
-greg k-h
+> I'm not a SCSI person: I'm patching SCSI because I have to to get my
+> own sg-using code clean :)
+
+I'm SCSI-biased. If you don't convert scsi to use sg_ring, I don't
+complain. :) Though it would be better to have only one mechanism to
+handle large sglist in kernel.
