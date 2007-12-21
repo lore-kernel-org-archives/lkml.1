@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765049AbXLTXVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760838AbXLUAaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765049AbXLTXVw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 18:21:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759471AbXLTXVb
+	id S1760838AbXLUAaa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 19:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbXLUAaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 18:21:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45065 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758652AbXLTXVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 18:21:30 -0500
-Message-ID: <476AF8EF.3060407@redhat.com>
-Date: Thu, 20 Dec 2007 18:21:19 -0500
-From: Tony Camuso <tcamuso@redhat.com>
-Reply-To: tcamuso@redhat.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <476AB3B5.9080808@redhat.com> <20071220215719.GA8528@suse.de> <476AEE7B.6050708@redhat.com> <20071220224006.GA16855@suse.de>
-In-Reply-To: <20071220224006.GA16855@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 20 Dec 2007 19:30:22 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55441 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754244AbXLUAaV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 19:30:21 -0500
+Date: Fri, 21 Dec 2007 09:30:57 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Hugh Dickins <hugh@veritas.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] [PATCH] Memory controller remove control_type feature
+Message-Id: <20071221093057.c2a40c9d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071220185358.3248.25416.sendpatchset@balbir-laptop>
+References: <20071220185358.3248.25416.sendpatchset@balbir-laptop>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
+On Fri, 21 Dec 2007 00:23:58 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
 > 
-> Sure, I realize this, but it solves the problem in one way for broken
-> hardware, such that it at least allows it to work, right?  It also
-> provides a better incentive for the manufacturer to fix their bios,
-> which as you are on-site at HP, it would seem odd that they would just
-> not do that instead of trying to work around this in the kernel...
 > 
-> thanks,
+> Based on the discussion at http://lkml.org/lkml/2007/12/20/383, it was
+> felt that control_type might not be a good thing to implement right away.
+> We can add this flexibility at a later point when required.
 > 
-> greg k-h
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+I agree with this direction.
 
-I don't think that many OEMs have that much control over the BIOS in
-their "value lines".
-:)
-
-And the MMCONFIG problem with enterprise systems and workstations, where
-we do control the BIOS (for the most part), is due to known bugs in
-certain versions of certain chipsets, HT1000, AMD8132, among them, not
-the BIOS.
-
-Anyway, we are devising better ways to deal with these anomalies
-than blacklists and telling customers to use "pci=nommconf"
-
-And we're bringing them to the community for discussion, improvement,
-and, we hope, acceptance.
+Thanks,
+-Kame
 
