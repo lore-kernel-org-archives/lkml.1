@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbXLTXsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764288AbXLUAFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759546AbXLTXsG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 18:48:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbXLTXrs
+	id S1764288AbXLUAFE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 19:05:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbXLUAEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 18:47:48 -0500
-Received: from mga02.intel.com ([134.134.136.20]:53926 "EHLO mga02.intel.com"
+	Thu, 20 Dec 2007 19:04:54 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:1980 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755424AbXLTXrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 18:47:43 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,191,1196668800"; 
-   d="scan'208";a="302140799"
-From: Jason Gaston <jason.d.gaston@intel.com>
-To: jason.d.gaston@intel.com, linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: [PATCH 2.6.24-rc5] x86 intel_cacheinfo.c: cpu cache info entry for Intel Tolapai
-Date: Thu, 20 Dec 2007 16:50:53 -0800
-User-Agent: KMail/1.9.1
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	id S1754694AbXLUAEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 19:04:53 -0500
+Subject: Re: Trailing periods in kernel messages
+From: Joe Perches <joe@perches.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Miller <davem@davemloft.net>, apw@shadowen.org, lizf@cn.fujitsu.com,
+       akpm@linux-foundation.org, elendil@planet.nl,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, trivial@kernel.org,
+       rdunlap@xenotime.net, jschopp@austin.ibm.com
+In-Reply-To: <20071220220853.4f7c639c@the-village.bc.nu>
+References: <1196390128.22120.118.camel@localhost>
+	 <20071220162923.GB27885@shadowen.org>
+	 <20071220210741.6dc3caf5@the-village.bc.nu>
+	 <20071220.135133.262055434.davem@davemloft.net>
+	 <1198188468.6183.80.camel@localhost>
+	 <20071220220853.4f7c639c@the-village.bc.nu>
+Content-Type: text/plain
+Date: Thu, 20 Dec 2007 16:04:10 -0800
+Message-Id: <1198195451.6183.100.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712201650.53893.jason.d.gaston@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a cpu cache info entry for the Intel Tolapai cpu.
+On Thu, 2007-12-20 at 22:08 +0000, Alan Cox wrote:
+> I do not believe "opinions" are relevant here. Relevant would be cites
+> from respected style guides (Fowlers, Oxford Guide To Style et al.) to
+> show they do not need a full stop. 
+> I've not found one, but I am open to references.
 
-Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+What exactly is a guide other than an opinion?
+I believe log entries are not exactly literature.
+How does Fowler's applies to logs?
 
---- linux-2.6.24-rc5/arch/x86/kernel/cpu/intel_cacheinfo.c.orig	2007-12-20 16:33:33.000000000 -0800
-+++ linux-2.6.24-rc5/arch/x86/kernel/cpu/intel_cacheinfo.c	2007-12-20 16:34:22.000000000 -0800
-@@ -49,6 +49,7 @@
- 	{ 0x3c, LVL_2,      256 },	/* 4-way set assoc, sectored cache, 64 byte line size */
- 	{ 0x3d, LVL_2,      384 },	/* 6-way set assoc, sectored cache, 64 byte line size */
- 	{ 0x3e, LVL_2,      512 },	/* 4-way set assoc, sectored cache, 64 byte line size */
-+	{ 0x3f, LVL_2,      256 },	/* 2-way set assoc, 64 byte line size */
- 	{ 0x41, LVL_2,      128 },	/* 4-way set assoc, 32 byte line size */
- 	{ 0x42, LVL_2,      256 },	/* 4-way set assoc, 32 byte line size */
- 	{ 0x43, LVL_2,      512 },	/* 4-way set assoc, 32 byte line size */
+Other opinions/guides:
+
+For:
+http://nedbatchelder.com/text/log-style-guide.html
+(though note the use of "good examples" without periods)
+
+Against: (in lists)
+http://home.comcast.net/~garbl/stylemanual/kthrul.htm
+
+cheers, Joe
+
