@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbXLUKmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbXLUKng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbXLUKmX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 05:42:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbXLUKmQ
+	id S1759426AbXLUKng (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 05:43:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbXLUKn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 05:42:16 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:46031 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752847AbXLUKmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 05:42:15 -0500
-Date: Fri, 21 Dec 2007 13:41:28 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ville Syrjala <syrjala@sci.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] w1-gpio: Add GPIO w1 bus master driver
-Message-ID: <20071221104127.GA28474@2ka.mipt.ru>
-References: <1198222441690-git-send-email-syrjala@sci.fi>
+	Fri, 21 Dec 2007 05:43:28 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49641 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751393AbXLUKn1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 05:43:27 -0500
+Date: Fri, 21 Dec 2007 10:33:26 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       <rdreier@cisco.com>, <linux-scsi@vger.kernel.org>,
+       <rmk@arm.linux.org.uk>, <davem@davemloft.net>,
+       <james.bottomley@steeleye.com>, <ralf@linux-mips.org>
+Subject: Re: [PATCH 2/2] scsi: Use new __dma_buffer to align sense buffer in
+ scsi_cmnd
+Message-ID: <20071221103326.7ce1bc4f@the-village.bc.nu>
+In-Reply-To: <20071221023011.4C4BADDDFA@ozlabs.org>
+References: <20071221023011.4C4BADDDFA@ozlabs.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1198222441690-git-send-email-syrjala@sci.fi>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ville.
+On Fri, 21 Dec 2007 13:30:08 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Fri, Dec 21, 2007 at 09:34:01AM +0200, Ville Syrjala (syrjala@sci.fi) wrote:
-> Add a GPIO 1-wire bus master driver. The driver used the GPIO API to
-> control the wire and the GPIO pin can be specified using platform data
-> similar to i2c-gpio. The driver was tested with AT91SAM9260 + DS2401.
+> The sense buffer ins scsi_cmnd can nowadays be DMA'ed into directly
+> by some low level drivers (that typically happens with USB mass
+> storage).
 
-This looks ok, only a minor nit about codying style below.
+Should that not be fixed in USB storage by using pci_alloc_coherent on the
+PCI device of the hub not peeing directly into kernel space ?
 
-> Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+It's also incomplete as a fix because I don't see what guarantees the
+buffer size will always exceed cache line size
 
-ACK.
-
-> +static int __init w1_gpio_probe(struct platform_device *pdev)
-> +{
-> +	struct w1_bus_master *master;
-> +	struct w1_gpio_platform_data *pdata;
-> +	int err;
-> +
-> +	pdata = pdev->dev.platform_data;
-> +	if (!pdata)
-> +		return -ENXIO;
-> +
-> +	master = kzalloc(sizeof *master, GFP_KERNEL);
-> +	if (!master)
-> +		return -ENOMEM;
-
-I think sizeof(struct w1_bus_master) is a better way.
-
-> new file mode 100644
-> index 0000000..3b80bb2
-> --- /dev/null
-> +++ b/include/linux/w1-gpio.h
-
-Does anyone use this file except driver itself?
-
--- 
-	Evgeniy Polyakov
+Alan
