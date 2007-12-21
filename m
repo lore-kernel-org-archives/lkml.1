@@ -1,95 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbXLUQpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbXLUQ6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbXLUQpg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 11:45:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbXLUQp3
+	id S1754613AbXLUQ6B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 11:58:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbXLUQ5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 11:45:29 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33886 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751133AbXLUQp2 (ORCPT
+	Fri, 21 Dec 2007 11:57:53 -0500
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:44893 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234AbXLUQ5w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 11:45:28 -0500
-Date: Fri, 21 Dec 2007 08:44:42 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-In-Reply-To: <Pine.LNX.4.64.0712210750510.29372@schroedinger.engr.sgi.com>
-Message-ID: <alpine.LFD.0.9999.0712210835440.21557@woody.linux-foundation.org>
-References: <1197049846.1645.68.camel@localhost.localdomain> <20071211143336.GA17866@elte.hu> <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com> <20071221120908.GA15926@elte.hu>
- <Pine.LNX.4.64.0712210750510.29372@schroedinger.engr.sgi.com>
+	Fri, 21 Dec 2007 11:57:52 -0500
+X-IronPort-AV: E=Sophos;i="4.24,194,1196668800"; 
+   d="scan'208";a="2099635"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, <linux-scsi@vger.kernel.org>,
+       <rmk@arm.linux.org.uk>, <davem@davemloft.net>,
+       <james.bottomley@steeleye.com>, <ralf@linux-mips.org>
+Subject: Re: [PATCH 2/2] scsi: Use new __dma_buffer to align sense buffer in scsi_cmnd
+X-Message-Flag: Warning: May contain useful information
+References: <20071221023011.4C4BADDDFA@ozlabs.org>
+	<20071221103326.7ce1bc4f@the-village.bc.nu>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 21 Dec 2007 08:57:47 -0800
+In-Reply-To: <20071221103326.7ce1bc4f@the-village.bc.nu> (Alan Cox's message of "Fri, 21 Dec 2007 10:33:26 +0000")
+Message-ID: <adak5n8x9x0.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 21 Dec 2007 16:57:47.0983 (UTC) FILETIME=[9D4635F0:01C843F2]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > It's also incomplete as a fix because I don't see what guarantees the
+ > buffer size will always exceed cache line size
 
+There's a macro trick that adds a pad member after the buffer too, so
+that it gets rounded up to the cacheline size:
 
-On Fri, 21 Dec 2007, Christoph Lameter wrote:
-> 
-> So we have 3 different regimes here (order 0):
-[ ... ]
-> The regression is contained because:
-[ ... ]
+ > +#define __dma_aligned	  	__attribute__((aligned(ARCH_MIN_DMA_ALIGNMENT)))
+ > +#define __dma_buffer		__dma_buffer_line(__LINE__)
+ > +#define __dma_buffer_line(line)	__dma_aligned;\
+ > +				char __dma_pad_##line[0] __dma_aligned
 
-Christoph, *NONE* of these arguments matter at all.
+So that part is OK at least.
 
-The only thing that matters is the simple fact that real-life benchmarks 
-show that SLUB is worse. It doesn't matter one whit that you can say that 
-it's better under some circumstance that either isn't triggered, or when 
-setting unrealistic and unusable parameters (ie big internal slab orders).
-
-> We could address this issue by:
-[...]
-> But given all the boundaries for the contention I would think that it is 
-> not worth addressing. 
-
-.. and this seems to be the single biggest reason to just say "revert SLUB 
-entirely".
-
-If you aren't even motivated to fix the problems that have been reported, 
-then SLUB isn't even a _potential_ solution, it's purely a problem, and 
-since I am not IN THE LEAST interested in having three different 
-allocators around, SLUB is going to get axed.
-
-In other words, here's the low-down:
-
- a) either SLUB can replace SLAB, or SLUB is going away
-
-    This isn't open for discussion, Christoph. This was the rule back when 
-    it got merged in the first place.
-
- b) if SLUB performs worse than SLAB on real loads (TPC-C certainly being 
-    one, and while hackbench may be borderline, it's certainly less 
-    borderline than others), then SLUB cannot replace SLAB.
-
-    See (a)
-
- c) If you aren't even interested in trying to fix it and are ignoring 
-    the reports, there is not even a _potential_ for SLUB for getting over 
-    these problems, and I should disable it and we should get over it as 
-    soon as possible, and this whole discussion is pretty much ended.
-
-See? It really is that simple. Either you say "Hell yes, I'll fix it", or 
-SLUB goes away. There simply is no orther choice.
-
-When you say "not worth addressing", that to me is a clear an unambiguous 
-"let's remove SLUB".
-
-The main reason for SLUB in the first place was SGI concerns. You seem to 
-think that _only_ SGI concerns matter. Wrong. If SLUB remains a SGI-only 
-thing and you don't fix it for other users, then SLUB gets reverted from 
-the standard kernel.
-
-That's all. And it's not really worth discussing. 
-
-			Linus
-
-
+ - R.
