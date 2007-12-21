@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763565AbXLUCKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933205AbXLUCLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763565AbXLUCKp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 21:10:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762168AbXLUCJJ
+	id S933205AbXLUCLU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 21:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932595AbXLUCKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 21:09:09 -0500
-Received: from hades.rz.tu-clausthal.de ([139.174.2.20]:62240 "EHLO
-	hades.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932812AbXLUCJH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 21:09:07 -0500
-From: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: almost daily Kernel oops with 2.6.23.9 - and now 2.6.23.11 as well
-Date: Fri, 21 Dec 2007 03:09:02 +0100
-User-Agent: KMail/1.9.7
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
-References: <200712160106.00464.volker.armin.hemmann@tu-clausthal.de> <200712201912.37416.volker.armin.hemmann@tu-clausthal.de> <20071220190419.GA23620@elte.hu>
-In-Reply-To: <20071220190419.GA23620@elte.hu>
+	Thu, 20 Dec 2007 21:10:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53705 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932394AbXLUCKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 21:10:07 -0500
+Message-ID: <476B2070.7020004@redhat.com>
+Date: Thu, 20 Dec 2007 21:09:52 -0500
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: tcamuso@redhat.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200712210309.02865.volker.armin.hemmann@tu-clausthal.de>
+To: Robert Hancock <hancockr@shaw.ca>
+CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>
+Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
+References: <fa.HvUNJ45qy60H427u0v9fNt3Gc7E@ifi.uio.no> <fa.uuzqvr64HFsgxfiWwhEmE16Di6c@ifi.uio.no> <fa.zhxdNN/1rfQhfJLVmdGBjvKYrCM@ifi.uio.no> <fa.z1qlON6DA9ubBPFdrEcaFTMgYOY@ifi.uio.no> <fa.U/SCC1Gvd3nSOpkMu5vcsSPYyPE@ifi.uio.no> <fa.d8kGTkzOZH22bXRIRiakqgOPBM4@ifi.uio.no> <476B0C58.4030703@shaw.ca>
+In-Reply-To: <476B0C58.4030703@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, so after the holidays I will do the following:
+Robert Hancock wrote:
 
-let memtest86+ run several hours.
-do a full backup&restore to switch to r3 and build an unpatched kernel.
-see if I can reproduce the oops with .21 and .22 (because AFAIR no oops with 
-21.. but I might be wrong).
+> The case of the device built into the K8 northbridge that's unreachable 
+> by MMCONFIG kind of makes sense, since the northbridge is what's 
+> translating the MMCONFIG memory access into config accesses. It seems 
+> bizarre to me that a bridge chip could possibly have such a problem. The 
+> MMCONFIG access should get translated into a configuration space access 
+> in the northbridge and from that point on there's no difference between 
+> an MMCONFIG and type1 access.
+> 
+Robert's point is well taken.
 
-Not exactly in that order.
+Only northbridge chips can give us this kind of trouble, and the only
+chips mentioned in the present discussion as not being mmconf-compliant
+are northbridges (8132, ht1000).
 
-Glück Auf
-Volker
+The patch is aware of this, so once a root bus has been programmed for
+legacy pci config access, all descendent buses automatically inherit
+this access mechanism and are therefore not probed by the patch.
 
 
-ps: please cc me. I am not subscribed to lkml.
