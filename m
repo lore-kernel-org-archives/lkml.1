@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbXLUKbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759126AbXLUKbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752817AbXLUKbM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 05:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758272AbXLUKaz
+	id S1759126AbXLUKbs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 05:31:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbXLUKbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 05:30:55 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:32997 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758155AbXLUKax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 05:30:53 -0500
-Subject: Re: [PATCH -mm 01/43] user_regset header
-From: Peter Zijlstra <pzijlstr@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-In-Reply-To: <20071221084400.690CE26F98A@magilla.localdomain>
-References: <20071220115200.C767E26F98A@magilla.localdomain>
-	 <20071220115357.D1E1326F98A@magilla.localdomain>
-	 <20071221070650.GA4345@infradead.org>
-	 <20071221084400.690CE26F98A@magilla.localdomain>
-Content-Type: text/plain
-Date: Fri, 21 Dec 2007 11:26:01 +0100
-Message-Id: <1198232761.14461.29.camel@taijtu>
+	Fri, 21 Dec 2007 05:31:39 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48233 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750740AbXLUKbi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 05:31:38 -0500
+Date: Fri, 21 Dec 2007 10:21:22 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Frans Pop <elendil@planet.nl>
+Cc: Andy Whitcroft <apw@shadowen.org>, Joe Perches <joe@perches.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, trivial@kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: Trailing periods in kernel messages
+Message-ID: <20071221102122.1e5f7d60@the-village.bc.nu>
+In-Reply-To: <200712210243.35240.elendil@planet.nl>
+References: <474E6BD0.20103@cn.fujitsu.com>
+	<20071220162923.GB27885@shadowen.org>
+	<20071220210741.6dc3caf5@the-village.bc.nu>
+	<200712210243.35240.elendil@planet.nl>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I'm afraid that I completely and utterly disagree. Kernel messages are _not_ 
+> sentences. The vast majority is not well-formed and does not contain any of 
+> the elements that are required for a proper sentence.
 
-On Fri, 2007-12-21 at 00:44 -0800, Roland McGrath wrote:
-> > What's a Red Hat Author?  Sorry for the nitpicking, but why don't you
-> > just use Author like everyone else?
-> 
-> This text is the standard that my employer specifies.
+This wants fixing.
 
-I can't remember seeing anyone else doing this, and there are plenty of
-us around.
+> The most kernel messages can be compared to is a rather diverse and sloppy 
+> enumeration.
 
-I usually use:
-
- *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-
-
+We fix sloppy things outside quotes we should fix them within quotes. A
+lot of stuff is sentences or fully formed clauses that deserve
+punctuating. I agree entirely that this is not always the case.
 
