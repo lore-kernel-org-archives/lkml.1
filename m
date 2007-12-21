@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbXLUWrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760178AbXLUWu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756544AbXLUWrP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 17:47:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbXLUWrB
+	id S1760178AbXLUWu3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 17:50:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755720AbXLUWuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 17:47:01 -0500
-Received: from ironport1.lbl.gov ([128.3.41.47]:7671 "EHLO ironport1.lbl.gov"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752429AbXLUWrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 17:47:00 -0500
-X-Greylist: delayed 618 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Dec 2007 17:47:00 EST
-X-Ironport-SBRS: 3.5
-X-Brightmail-Tracker: AAAAAA==
-X-BrightmailFiltered: true
-X-IronPort-AV: E=Sophos;i="4.24,196,1196668800"; 
-   d="scan'208";a="77502299"
-Date: Fri, 21 Dec 2007 14:36:38 -0800 (PST)
-From: Andrei Gaponenko <andrei.gaponenko@cern.ch>
-X-X-Sender: andr@0-11-d8-ea-8d-5b.dhcp.lbl.gov
-To: linux-kernel@vger.kernel.org
-cc: rui.zhang@intel.com, corentincj@iksaif.net, sziwan@users.sourceforge.net
-Subject: video breaks asus-laptop display switching
-Message-ID: <Pine.LNX.4.64.0712211433030.3239@0-11-d8-ea-8d-5b.dhcp.lbl.gov>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Dec 2007 17:50:20 -0500
+Received: from [76.243.235.52] ([76.243.235.52]:35223 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754386AbXLUWuT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 17:50:19 -0500
+Subject: Re: INITIO scsi driver fails to work properly
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Filippos Papadopoulos <psybases@gmail.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <476C4177.3030902@redhat.com>
+References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
+	 <20071217031841.f483e5ac.akpm@linux-foundation.org>
+	 <9f00bd9d0712170341u7fef1fc9pc9986dda1a0475cb@mail.gmail.com>
+	 <47666904.8060605@panasas.com>
+	 <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
+	 <476C1472.1040103@redhat.com>
+	 <1198271036.3130.60.camel@localhost.localdomain>
+	 <476C4177.3030902@redhat.com>
+Content-Type: text/plain
+Date: Fri, 21 Dec 2007 16:49:51 -0600
+Message-Id: <1198277391.3130.73.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi,
+On Fri, 2007-12-21 at 17:43 -0500, Chuck Ebbert wrote:
+> On 12/21/2007 04:03 PM, James Bottomley wrote:
+> > On Fri, 2007-12-21 at 14:30 -0500, Chuck Ebbert wrote:
+> >> On 12/19/2007 03:48 AM, Filippos Papadopoulos wrote:
+> >>> On Dec 17, 2007 2:18 PM, Boaz Harrosh <bharrosh@panasas.com> wrote:
+> >>>> I have found one problem. Please try patch [2] below and report.
+> >>>> If it still fails try to enable debugging by setting with patch [1]
+> >>>> these values at top of drivers/scsi/initio.c. And send dmsgs.
+> >>>>
+> >>>> Boaz
+> >>>>
+> >>>
+> >>> I tried patch[2] (addition of   sg++)  at 2.6.24-rc5-mm1 but the
+> >>> system hangs after some seconds when the initio driver loads.
+> >>> I will try patch[1] next week to see what happens.
+> >>>
+> >>> Would it be better to open a bug report at bugzilla?
+> >>>
+> >> There is also a Fedora bug report against 2.6.23. The user has
+> >> applied commit e9e42faf47255274a1ed0b9bf1c46118023ec5fa from
+> >> 2.6.24-rc plus the two additional fixes under discussion and it
+> >> hangs for him too.
+> >>
+> >> https://bugzilla.redhat.com/show_bug.cgi?id=390531
+> > 
+> > It really sounds like there's some problem applying the patches.  The
+> > consistent report throughout is this one:
+> > 
+> > initio: I/O port range 0x0 is busy.
+> > 
+> > Which should be fixed by 99f1f534922a2f2251ba05b14657a1c62882a80e.  I
+> > didn't actually find that in the bug thread anywhere, but maybe I missed
+> > it?
+> > 
+> 
+> The "I/O port 0" bug just prints the message and the system continues
+> to run. It's only after that is fixed that the system just hangs on
+> boot shortly after loading the driver.
 
-With 2.6.23 or newer (including 2.6.24-rc6) kernels, writing to the
-/sys/devices/platform/asus-laptop/display file does not do anything:
+That should happen unless the PCI BAR is genuinely misconfigured; it's
+saying we got zero when we requested the starting address of BAR0.  What
+does lspci -vv show for this device?
 
-Cold boot to single user, then connect an external monitor
+James
 
-# cat  /sys/devices/platform/asus-laptop/display
-1
-
-OK, only the built in LCD is enabled. Try to enable
-the external monitor as well:
-
-# echo 3 > /sys/devices/platform/asus-laptop/display
-
-still no image on the external.
-
-# cat  /sys/devices/platform/asus-laptop/display
-1
-
-Still "1", not the "3" we wrote. On the other hand if I boot with an
-external monitor attached, the "display" file always contains 3, even
-after writing 1 there, and there is image on both monitors.
-
-In 2.6.22 I had to load asus-laptop by hand, but then display
-switching worked nicely.  
-
-I've noticed that if I do 
-
-# rmmod video
-
-display switching starts working again with the newer kernels.
-The "video" module was auto-loaded on my system in 2.6.22, but
-did not cause the conflict.
-
-This is an ASUS Z71V based notebook (detected as M7V).
-
-Regards,
-Andrei
 
