@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760509AbXLUHto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759007AbXLUH6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760509AbXLUHto (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 02:49:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbXLUHth
+	id S1759007AbXLUH6a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 02:58:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbXLUH6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 02:49:37 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:14254 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbXLUHtg (ORCPT
+	Fri, 21 Dec 2007 02:58:24 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:42721 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938AbXLUH6X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 02:49:36 -0500
+	Fri, 21 Dec 2007 02:58:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Jj+eTQ7YmEbixaIVy/B+T/1KKiLMn5/GQQIcDZKWGCYBupgjYJk4VnXdAcaZzS+/fIeMHT3StqhIiuRsllaZzx0TcbPllQxqvylsM9U4lOTeZdObkiFUloBeHb/5UTmQq+3hspSAWA9o4hMZ7/ewIrBORJWe5922YUI3Hwejhe4=
-Message-ID: <2e84de770712202349t5ab514a2w2c0f12b212e426dd@mail.gmail.com>
-Date: Fri, 21 Dec 2007 00:49:36 -0700
-From: "Michael Heath" <mike.thomas.heath@gmail.com>
+        b=rFciBn68GlvkTGvOJEvwYkquA6cBJPLQCHYjI9fJBf//m/l2qZqvl45CzzfWuXPXk/vyYKOWCUqAuprmMUJujRYhx/TYEIhTgRvhH45RqitKrTNFHImbYOqtgAuEdjcQ+gaNbDQn2sNwRK5/x/Fc9VXsCQb2u/rxdfHHOhyT6UM=
+Message-ID: <a5ed8fe60712202358o7afc0bddhe77447d0d77631d8@mail.gmail.com>
+Date: Fri, 21 Dec 2007 13:28:22 +0530
+From: "Sourav Chakraborty" <sourav1877@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: Some Serial Wacom Tablet devices failing to return from Hibernate/Suspend
+Subject: Increasing initial cwnd size
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A lot of Ubuntu users have noticed troubles with Wacom Serial Tablet
-devices (mainly builtin units in Toshiba tablet PCs) refusing to
-properly return from ACPI Suspend or Hibernate. See the bug report at:
-https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.22/+bug/152187
+Hello,
 
-Tom Jaeger there noted that this bug seems to reside in some ACPI
-related IRQ handling code for such devices introduced in 2.6.21-rc4,
-via a patch to fix Parallel Port IRQs on resumes. You can see his
-whole bug report on the issue (including some tentative
-shot-in-the-dark patches) at
-http://bugzilla.kernel.org/show_bug.cgi?id=9487
+We are trying to test with kernel version 2.6.20,the RFC 3390
+implementation of increased initial congestion window size(~4 when
+MSS=1460 bytes).We are not getting consistent results
+meaning,sometimes we see 4 data pkts sent without an ACK received and
+sometimes we see 3.Also we would like to test by setting the initial
+cwnd to a value more than 4.Can you guys advise us on how to do
+that(where in the code should we change and what)?Also mention if
+using linux 2.6.23 kernel instead of  the one we are using,would help
+in this work.
 
-This seems to be affecting a fair amount of users, and all of us
-active on the bug in the Ubuntu tracker aren't familiar enough with
-the ACPI subsystem to create a correct patch for this issue. Is anyone
-familiar enough with this area that they can provide some guidance on
-the correct way to fix this issue, beyond the quick fix Tom Jaeger
-posted?
-
-Michael Heath
+Thanks and Regards
+Sourav
