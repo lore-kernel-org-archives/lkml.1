@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbXLUQHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbXLUQKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757251AbXLUQHt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 11:07:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbXLUQHg
+	id S1755773AbXLUQKp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 11:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbXLUQKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 11:07:36 -0500
-Received: from mail3b.westend.com ([212.117.79.78]:45224 "EHLO
-	mail3b1.westend.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756593AbXLUQHf (ORCPT
+	Fri, 21 Dec 2007 11:10:38 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:21944 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752627AbXLUQKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 11:07:35 -0500
-X-Greylist: delayed 1726 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Dec 2007 11:07:35 EST
-Date: Fri, 21 Dec 2007 16:38:45 +0100
-From: Christian Hammers <ch@lathspell.de>
-To: <linux-kernel@vger.kernel.org>
-Subject: Debugging process hanging in D status and not responding to SIGKILL
-Message-ID: <20071221163845.6fa3f2a9@sys-251.netcologne.de>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 21 Dec 2007 11:10:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=TK5KYqaJzY9nLmNWgx6vUNMNvz//TBrL3/v1mA87QBtqYkgt98q0vktqk8f+90p+tK5VxVBK7vQcAUq+gI8l85gTcXME2oj6IIuw8BVfj+ZreVhLDjS6KUYItk9YYC5CGrpazoUePJjIpK5H4+6tv3RSPifrP9nTj0s8SfF1n9I=
+Message-ID: <cb0375e10712210810p36fc9995s345d23b7dff5a3b3@mail.gmail.com>
+Date: Fri, 21 Dec 2007 11:10:36 -0500
+From: "Andrew Lutomirski" <luto@myrealbox.com>
+To: "Phillip Susi" <psusi@cfl.rr.com>
+Subject: Re: /dev/urandom uses uninit bytes, leaks user data
+Cc: "Theodore Tso" <tytso@mit.edu>, "David Newall" <david@davidnewall.com>,
+       "John Reiser" <jreiser@bitwagon.com>, "Matt Mackall" <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, security@kernel.org
+In-Reply-To: <476ACDBE.2070600@cfl.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071214201305.GL19691@waste.org>
+	 <20071214232322.GE17344@thunk.org> <47632010.6030709@BitWagon.com>
+	 <20071215043208.GF17344@thunk.org> <4766A40D.4080804@BitWagon.com>
+	 <20071217173623.GC7070@thunk.org> <476719E5.1010505@myrealbox.com>
+	 <cb0375e10712192018l66671b34r1680077765e89fb0@mail.gmail.com>
+	 <476ACDBE.2070600@cfl.rr.com>
+X-Google-Sender-Auth: 55b040aa56907753
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+On Dec 20, 2007 3:17 PM, Phillip Susi <psusi@cfl.rr.com> wrote:
+> Andrew Lutomirski wrote:
+> > I understand that there's no way that /dev/random can provide good
+> > output if there's insufficient entropy.  But it still shouldn't leak
+> > arbitrary bits of user data that were never meant to be put into the
+> > pool at all.
+>
+> It doesn't leak it though, it consumes it, and it then vanishes into the
+> entropy pool, never to be seen again.
 
-Occasionally all my apache2 processes hang in "D" process status where they are
-no longer responsible to SIGKILL which makes the server almost un-rebootable.
-The processes usually vanish after about 15-30min.
+No, it's there, and if there's little enough entropy around it can be
+recovered by brute force.
 
-I know that this usually means "I/O wait" somewhere deep inside a kernel 
-function where signals are not handled.
+>
+> > Step 1: Boot a system without a usable entropy source.
+> > Step 2: add some (predictable) "entropy" from userspace which isn't a
+> > multiple of 4, so up to three extra bytes get added.
+> > Step 3: Read a few bytes of /dev/random and send them over the network.
+>
+> Only root can do 1 and 2, at which point, it's already game over.
 
-But using "strace -p <pid>" I can only see that the last called function is
-flock() (according to /proc/<pid>/fd somebody produced a deadlock when using 
-PHP sessions). But flock() normally terminates on SIGTERM and SIGKILL.
+Again, no.  Root could do this accidentally.  Step 1 happens all the
+time (see the comments on non-unique UUIDs).  Step 2 just requires a
+program to put data which it things is OK to go into the pool next to
+data that shouldn't be there in memory.  I'm OK with the entropy pool
+being insecure in cases where it cannot possibly be secure.  But it
+should not leak information that never belonged in it in the first
+place.
 
-Could it be a problem with my SCSI driver who's involed in the flock process?
-The problem usually occurs on two other webserver at the same time, one using
-the same hardware and one being a Dell 6850 with Dell PERC RAID, though.
+(Remember, the entire justification for Linux's model of the entropy
+pool seems to be that it should be as secure as possible even against
+computationally unbounded attackers or attackers who can find SHA
+preimages.  A brute force attack that works sometimes and only
+requires 2^24 brute force iterations certainly fits into this threat
+model.)
 
-How can I get further debugging information that could give me a hint?
-
-The system:
-	Kernel: 2.6.22-3-amd64 (modified by Debian distribution)
-	CPU: Quad Dualcore Intel(R) Xeon(R) E5310  @ 1.60GHz, 8GB RAM
-	M/B: Transtec Server with Intel 5000 Series Chipset
-	SCSI: 3ware Inc 9550SX SATA-RAID with firmware FE9X 3.08.00.016
-
-bye,
-
--christian-
+--Andy
