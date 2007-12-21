@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbXLUBmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbXLUBns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbXLUBmv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 20:42:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbXLUBmn
+	id S1757343AbXLUBns (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 20:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbXLUBnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 20:42:43 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54666 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752078AbXLUBmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 20:42:42 -0500
-Message-ID: <476B19FD.7090504@redhat.com>
-Date: Thu, 20 Dec 2007 20:42:21 -0500
-From: Tony Camuso <tcamuso@redhat.com>
-Reply-To: tcamuso@redhat.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 20 Dec 2007 20:43:40 -0500
+Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:58712 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752078AbXLUBnj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 20:43:39 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Trailing periods in kernel messages
+Date: Fri, 21 Dec 2007 02:43:33 +0100
+User-Agent: KMail/1.9.7
+Cc: Andy Whitcroft <apw@shadowen.org>, Joe Perches <joe@perches.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, trivial@kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>
+References: <474E6BD0.20103@cn.fujitsu.com> <20071220162923.GB27885@shadowen.org> <20071220210741.6dc3caf5@the-village.bc.nu>
+In-Reply-To: <20071220210741.6dc3caf5@the-village.bc.nu>
 MIME-Version: 1.0
-To: tcamuso@redhat.com
-CC: Robert Hancock <hancockr@shaw.ca>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
-       Prarit Bhargava <prarit@redhat.com>, bnagendr@redhat.com
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-References: <fa.HvUNJ45qy60H427u0v9fNt3Gc7E@ifi.uio.no> <fa.uuzqvr64HFsgxfiWwhEmE16Di6c@ifi.uio.no> <fa.zhxdNN/1rfQhfJLVmdGBjvKYrCM@ifi.uio.no> <fa.z1qlON6DA9ubBPFdrEcaFTMgYOY@ifi.uio.no> <fa.U/SCC1Gvd3nSOpkMu5vcsSPYyPE@ifi.uio.no> <fa.d8kGTkzOZH22bXRIRiakqgOPBM4@ifi.uio.no> <476B0C58.4030703@shaw.ca> <476B185D.3000409@redhat.com>
-In-Reply-To: <476B185D.3000409@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712210243.35240.elendil@planet.nl>
+X-OriginalArrivalTime: 21 Dec 2007 01:43:36.0060 (UTC) FILETIME=[E6FAFBC0:01C84372]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Robert Hancock wrote:
-> 
-> First off, I would like to see confirmation from the horses's mouths 
-> here (namely AMD, ServerWorks/Broadcom, and whoever else) that there 
-> is no other way to get around this problem than disabling MMCONFIG for 
-> accesses behind those chips.
->
-> 
+On Thursday 20 December 2007, Alan Cox wrote:
+> The kernel printk messages are sentences.
 
-And here are the excerpts from that page of the spec which are salient
-to the present discussion:
+I'm afraid that I completely and utterly disagree. Kernel messages are _not_ 
+sentences. The vast majority is not well-formed and does not contain any of 
+the elements that are required for a proper sentence.
 
-----------------------------------------------------------------------
+The most kernel messages can be compared to is a rather diverse and sloppy 
+enumeration. And enumerations follow completely different rules than 
+sentences. It can better be characterized as a "semi-random sequence of 
+context-sensitive technical messages".
 
-The base configuration space of the AMD-8132 and PCI(-X) devices attached to it are accessible using only
-the mechanism defined in PCI 2.3. Registers of PCI-X Mode 2 devices attached to the AMD-8132 in the
-extended configuration space are not accessible. The AMD-8132 has no registers in the extended
-configuration space.
-
-Fix Planned
-No
-
-
+IMHO the existing rule that "Kernel messages do not have to be terminated 
+with a period." is completely justified, though it does need some minor 
+clarification on the cases in which proper punctuation _should_ be 
+followed.
