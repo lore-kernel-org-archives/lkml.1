@@ -1,57 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbXLUKXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbXLUKaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbXLUKXf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 05:23:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbXLUKX2
+	id S1756509AbXLUKaI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 05:30:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbXLUK34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 05:23:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51463 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750740AbXLUKX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 05:23:27 -0500
-Date: Fri, 21 Dec 2007 11:19:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, trond.myklebust@fys.uio.no,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
-Message-ID: <20071221101911.GA22452@elte.hu>
-References: <1198190447.29917.9.camel@heimdal.trondhjem.org> <20071220145415.f737e7f3.akpm@linux-foundation.org> <20071220145621.90ffb08a.akpm@linux-foundation.org> <200712210155.18527.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712210155.18527.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 21 Dec 2007 05:29:56 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33608 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751091AbXLUK3z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 05:29:55 -0500
+Date: Fri, 21 Dec 2007 02:29:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] Use ilog2() in fs/namespace.c
+Message-Id: <20071221022912.72b6274e.akpm@linux-foundation.org>
+In-Reply-To: <4762C28A.4040002@cosmosbay.com>
+References: <4762C28A.4040002@cosmosbay.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 14 Dec 2007 18:51:06 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> We can use ilog2() in fs/namespace.c to compute hash_bits and hash_mask at
+> compile time, not runtime.
 
-> > btw, I think we should track this as a regression, please.
-> 
-> Added, http://bugzilla.kernel.org/show_bug.cgi?id=9610, thanks.
+Well noted.
 
-fixed by:
+> [namespace.patch  text/plain (1.4KB)]
 
- commit c0a698b7443a9fce76b0a849f06c45ac78f3b0a0
- Author: Ingo Molnar <mingo@elte.hu>
- Date:   Fri Dec 21 01:27:19 2007 +0100
+argh. (save-as, read, copy-paste, s/^/> /g)
 
-    x86: fix die() to not be preemptible
+> --- a/fs/namespace.c
+> +++ b/fs/namespace.c
+> @@ -25,6 +25,7 @@
+>  #include <linux/security.h>
+>  #include <linux/mount.h>
+>  #include <linux/ramfs.h>
+> +#include <linux/log2.h>
+>  #include <asm/uaccess.h>
+>  #include <asm/unistd.h>
+>  #include "pnode.h"
+> @@ -36,7 +37,8 @@ __cacheline_aligned_in_smp DEFINE_SPINLOCK(vfsmount_lock);
+>  static int event;
+>  
+>  static struct list_head *mount_hashtable __read_mostly;
+> -static int hash_mask __read_mostly, hash_bits __read_mostly;
+> +#define hash_bits ilog2(PAGE_SIZE / sizeof(struct list_head))
+> +#define hash_mask ((1UL << hash_bits) - 1)
+>  static struct kmem_cache *mnt_cache __read_mostly;
+>  static struct rw_semaphore namespace_sem;
+>  
+> @@ -1828,24 +1830,7 @@ void __init mnt_init(void)
+>  	if (!mount_hashtable)
+>  		panic("Failed to allocate mount hash table\n");
+>  
+> -	/*
+> -	 * Find the power-of-two list-heads that can fit into the allocation..
+> -	 * We don't guarantee that "sizeof(struct list_head)" is necessarily
+> -	 * a power-of-two.
+> -	 */
+> -	nr_hash = PAGE_SIZE / sizeof(struct list_head);
+> -	hash_bits = 0;
+> -	do {
+> -		hash_bits++;
+> -	} while ((nr_hash >> hash_bits) != 0);
+> -	hash_bits--;
+> -
+> -	/*
+> -	 * Re-calculate the actual number of entries and the mask
+> -	 * from the number of bits we can fit.
+> -	 */
+>  	nr_hash = 1UL << hash_bits;
+> -	hash_mask = nr_hash - 1;
+>  
+>  	printk("Mount-cache hash table entries: %d\n", nr_hash);
 
-    Andrew "Eagle Eye" Morton noticed that we use raw_local_save_flags()
-    instead of raw_local_irq_save(flags) in die(). This allows the
-    preemption of oopsing contexts - which is highly undesirable. It also
-    causes CONFIG_DEBUG_PREEMPT to complain, as reported by Miles Lane.
+Those #defines you now have there are foul.  Please, when there's a choice
+between doing it minimally and doing it right, let's do it right?
+
+Look what we can now do:
+
+
+--- a/fs/namespace.c~use-ilog2-in-fs-namespacec-fix
++++ a/fs/namespace.c
+@@ -31,14 +31,15 @@
+ #include "pnode.h"
+ #include "internal.h"
+ 
++#define HASH_SHIFT ilog2(PAGE_SIZE / sizeof(struct list_head))
++#define HASH_SIZE (1UL << HASH_SHIFT)
++
+ /* spinlock for vfsmount related operations, inplace of dcache_lock */
+ __cacheline_aligned_in_smp DEFINE_SPINLOCK(vfsmount_lock);
+ 
+ static int event;
+ 
+ static struct list_head *mount_hashtable __read_mostly;
+-#define hash_bits ilog2(PAGE_SIZE / sizeof(struct list_head))
+-#define hash_mask ((1UL << hash_bits) - 1)
+ static struct kmem_cache *mnt_cache __read_mostly;
+ static struct rw_semaphore namespace_sem;
+ 
+@@ -50,8 +51,8 @@ static inline unsigned long hash(struct 
+ {
+ 	unsigned long tmp = ((unsigned long)mnt / L1_CACHE_BYTES);
+ 	tmp += ((unsigned long)dentry / L1_CACHE_BYTES);
+-	tmp = tmp + (tmp >> hash_bits);
+-	return tmp & hash_mask;
++	tmp = tmp + (tmp >> HASH_SHIFT);
++	return tmp & (HASH_SIZE - 1);
+ }
+ 
+ struct vfsmount *alloc_vfsmnt(const char *name)
+@@ -1815,9 +1816,7 @@ static void __init init_mount_tree(void)
+ 
+ void __init mnt_init(void)
+ {
+-	struct list_head *d;
+-	unsigned int nr_hash;
+-	int i;
++	unsigned u;
+ 	int err;
+ 
+ 	init_rwsem(&namespace_sem);
+@@ -1830,18 +1829,11 @@ void __init mnt_init(void)
+ 	if (!mount_hashtable)
+ 		panic("Failed to allocate mount hash table\n");
+ 
+-	nr_hash = 1UL << hash_bits;
++	printk("Mount-cache hash table entries: %lu\n", HASH_SIZE);
+ 
+-	printk("Mount-cache hash table entries: %d\n", nr_hash);
++	for (u = 0; u < HASH_SIZE; u++)
++		INIT_LIST_HEAD(&mount_hashtable[u]);
+ 
+-	/* And initialize the newly allocated array */
+-	d = mount_hashtable;
+-	i = nr_hash;
+-	do {
+-		INIT_LIST_HEAD(d);
+-		d++;
+-		i--;
+-	} while (i);
+ 	err = sysfs_init();
+ 	if (err)
+ 		printk(KERN_WARNING "%s: sysfs_init error: %d\n",
+_
 
