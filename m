@@ -1,113 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760196AbXLUMN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761421AbXLUMNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760196AbXLUMN1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 07:13:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbXLUMNR
+	id S1761421AbXLUMNl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 07:13:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbXLUMNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 07:13:17 -0500
-Received: from puffyports.org ([213.61.174.206]:39754 "EHLO puffyports.org"
+	Fri, 21 Dec 2007 07:13:20 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45856 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754657AbXLUMNQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 07:13:16 -0500
-X-Greylist: delayed 1363 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Dec 2007 07:13:15 EST
-Subject: drive appears confused; hda lost interrupt; IRQ169: nobody cared
-From: Michael Schmitt <mschmitt@unixkiste.org>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 21 Dec 2007 12:50:20 +0100
-Message-Id: <1198237821.4577.63.camel@elara.tcw.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	id S1755376AbXLUMNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 07:13:18 -0500
+Date: Fri, 21 Dec 2007 13:09:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+Message-ID: <20071221120908.GA15926@elte.hu>
+References: <1197049846.1645.68.camel@localhost.localdomain> <20071211143336.GA17866@elte.hu> <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
 
-I have some major or at least annoying issues with a Asus P4P800-SE
-mainboard. It has 2 pATA connectors (so 4 drives) and 2 sATA connectors.
-In addition I plugged in another sATA controller too (to isolate
-problems with the mainboard chipset more easily) with two sATA
-connectors. All together 4 pATA drives and 4 sATA drives possible.
-I changed the mainboard of this computer recently to this P4P800-SE from
-a rubish oem SIS chipset board and I had the problems right away,
-starting with kernel 2.6.18 but problems persist even with 2.6.23
-(Debian kernels).
+* Christoph Lameter <clameter@sgi.com> wrote:
 
-In the BIOS of the mainboard I can set the IDE operations to be
-"native" (it says enhanced) or "not native" (it says compatible there)
-which means in compatible mode I can choose between just pATA or two
-pATA drives and 2 sATA drives, with enhanced I could use all.
+> Hmmmm... Some tests here on an 8p 8G machine:
 
-Now the problems, I try to collect every information I am able to, but
-please don't hesitate to ask if I missed something!
+> In an extreme case (boot with slub_min_order=9 to get huge page sized 
+> slabs) SLUB can win against SLAB:
+> 
+> N=10 Time: 0.338	Minimally faster
+> N=20 Time: 0.560	10% faster
+> N=50 Time: 1.353	15% faster
 
-2.6.18; no kernel cmdline additions >
-	irq 169: nobody cared (try booting with the "irqpoll" option)
-Some data containing a stack trace (just made a photo) and after that
-	Disabling IRQ 169
-	hda: dma_timer_expiry: dma status == 0x24
-	hda: DMA interrupt recovery
-	hda: lost interrupt
-	hda: dma_timer_expiry: dma status == 0x24
-	[...]
-I did hit the reset button at this stage, now booting 2.6.18 with
-"irqpoll" option. The system boots up, apart from some errors in the log
-(and again the hint to use irqpoll even if I did it already) I can use
-the system nevertheless. See the file kern.log-2.6.18-irqpoll. hdc drive
-appears confused, IRQ 169: nobody cared... but I can log in, read from
-all disks / dvd drive, even burn a cd and I don't notice _any_ serious
-problem during operation... just the log files make my head ache. There
-is only one thing that does not work anymore, which maks be believe it
-may be a hal / dbus issue. Normally I think gnome should ask me when I
-insert a blank cd if I want to burn a cd. During my tests it does it not
-anymore but burning itself works flawlessly. I just get every once in a
-while this:
-Dec 21 11:17:48 elara kernel: hdc: cdrom_pc_intr: The drive appears
-confused (ireason = 0x01). Trying to recover by ending request.
-Dec 21 11:23:28 elara kernel: hdc: cdrom_pc_intr: The drive appears
-confused (ireason = 0x01). Trying to recover by ending request.
-Dec 21 11:31:22 elara kernel: hdc: cdrom_pc_intr: The drive appears
-confused (ireason = 0x01). Trying to recover by ending request.
-Dec 21 11:33:26 elara kernel: hdc: cdrom_pc_intr: The drive appears
-confused (ireason = 0x01). Trying to recover by ending request.
-Dec 21 11:44:02 elara kernel: hdc: cdrom_pc_intr: The drive appears
-confused (ireason = 0x01). Trying to recover by ending request.
+what's up with this regression? There's been absolutely no activity 
+about it in the last 8 days: upstream still regresses, -mm still 
+regresses and there are no patches posted for testing.
 
-On IRQ 169 seems to be the internal IDE controller but as said all
-drives work, despite
+being able to utilize order-0 pages was supposed to be one of the big 
+plusses of SLUB, so booting with _2MB_ sized slabs cannot be seriously 
+the "fix", right?
 
-mschmitt@elara:~$ dmesg |grep 169
-irq 169: nobody cared (try booting with the "irqpoll" option)
-Disabling IRQ #169
-ACPI: PCI Interrupt 0000:00:1d.2[C] -> GSI 18 (level, low) -> IRQ 169
-uhci_hcd 0000:00:1d.2: irq 169, io base 0x0000ef20
-ACPI: PCI Interrupt 0000:00:1f.2[A] -> GSI 18 (level, low) -> IRQ 169
-ata3: SATA max UDMA/133 cmd 0xEFA0 ctl 0xEF8E bmdma 0xEF60 irq 169
-ata4: SATA max UDMA/133 cmd 0xEF80 ctl 0xEF8A bmdma 0xEF68 irq 169
-mschmitt@elara:~$ 
-
-As I watch /proc/interrupts I see that IRQ 169 does not change, as there
-would be no interrupt requests and just to make it clear
-
-169:     200116   IO-APIC-level  ide0, ide1, uhci_hcd:usb3, libata
-
-rather busy interrupt but no real problems with ide0 (hda), ide1 (hdc)
-and libata (in this case sdc, sda and sdb are on the PCI sATA controller
-which is on IRQ 209). With "busy" I mean many devices on that IRQ but
-the value "200116" stays forever.
-With 2.6.23 it is more or less the same if you want I can provide you
-with the same information for this kernel nevertheless. As a side note,
-if I plug in another DVD drive (due to cableing issues hdc would become
-hdd and hdc would be the new drive) I get those "drive appears confused"
-messages for both optical drives but reading / burning no problem there
-too, despite that the performance with slave / master sucks when both
-drives are used at the same time.
-So, my main concern is that there may be some sort of data corruption
-even if I don't see them right now but as the messages seem to be very
-serious... dunno. Any thoughts?
-
-kind regards
-Michael Schmitt
-
+	Ingo
