@@ -1,61 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765564AbXLUAlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765530AbXLUAmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765564AbXLUAlv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:41:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbXLUAlm
+	id S1765530AbXLUAmv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 19:42:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbXLUAmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:41:42 -0500
-Received: from are.twiddle.net ([64.81.246.98]:40834 "EHLO are.twiddle.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753733AbXLUAll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:41:41 -0500
-Date: Thu, 20 Dec 2007 16:39:13 -0800
-From: Richard Henderson <rth@twiddle.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
-       Keith Packard <keithp@keithp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: PCI resource problems caused by improper address rounding
-Message-ID: <20071221003913.GA6220@twiddle.net>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Chuck Ebbert <cebbert@redhat.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
-	Keith Packard <keithp@keithp.com>,
-	Bjorn Helgaas <bjorn.helgaas@hp.com>
-References: <alpine.LFD.0.9999.0712171648150.21557@woody.linux-foundation.org> <47680489.6040809@redhat.com> <alpine.LFD.0.9999.0712180946030.21557@woody.linux-foundation.org> <20071218202234.GA24525@twiddle.net> <alpine.LFD.0.9999.0712181240280.21557@woody.linux-foundation.org> <20071218215143.GA24769@twiddle.net> <alpine.LFD.0.9999.0712181412530.21557@woody.linux-foundation.org> <alpine.LFD.0.9999.0712181722260.21557@woody.linux-foundation.org> <20071220215204.GA5636@twiddle.net> <alpine.LFD.0.9999.0712201406190.21557@woody.linux-foundation.org>
+	Thu, 20 Dec 2007 19:42:43 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40954 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756603AbXLUAmm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 19:42:42 -0500
+Date: Thu, 20 Dec 2007 16:40:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: trond.myklebust@fys.uio.no, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
+Message-Id: <20071220164000.58c43b42.akpm@linux-foundation.org>
+In-Reply-To: <20071221003035.GA10123@elte.hu>
+References: <1198190447.29917.9.camel@heimdal.trondhjem.org>
+	<20071220145415.f737e7f3.akpm@linux-foundation.org>
+	<20071220234759.GA29776@elte.hu>
+	<20071220161934.0f55029a.akpm@linux-foundation.org>
+	<20071221003035.GA10123@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0712201406190.21557@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 02:24:48PM -0800, Linus Torvalds wrote:
-> I'm not exactly 100% happy with it, but it does mean that if we need a big 
-> area, we'll relax the suggested starting point by that amount. It's not 
-> wonderful, but it essentially admits that the minimum for the allocations 
-> is really just a hint, and if we need lots of space for a resource, we'll 
-> relax the minimum point appropriately.
+On Fri, 21 Dec 2007 01:30:35 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-This breaks in odd cases where the amount of memory in the system
-is not a nice round number.  Like throwing two 128MB sticks into
-a system that already has 2gb.  A 512MB allocation will get placed
-back at 2gb, on top of the end of ram.  In order to get this kind
-of thing to work, you'd have to have a hard and a soft minimum.
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Fri, 21 Dec 2007 00:47:59 +0100
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > >  		__raw_spin_lock(&die.lock);
+> > > >  		raw_local_save_flags(flags);
+> > > > -		die.lock_owner = smp_processor_id();
+> > > > +		die.lock_owner = raw_smp_processor_id();
+> > > 
+> > > we just disabled irqs with raw_local_save_flags().
+> > 
+> > <chases x86 spaghetti for a while>
+> > 
+> > raw_local_save_flags() doesn't disable interrupts?
+> 
+> argh. Indeed! (I wanted us to fix that misleading name eons ago, to 
 
-Even then, any random large allocation is going to ignore that
-buffer that you added.  It'd be better if we could still tie this
-ignoring of the buffer to whether the bios placed the resource
-there in the first place.
+The naming of those functions is truly awful and it goes back to year 0.
 
-Perhaps this is one of those things that just aren't going to be
-solved properly without an xserver upgrade...
+> *_save_flags_only(), but some stupid bikeshed painting discussion 
+> prevented it from ever happening.)
 
+local_read_flags().
 
-r~
+> that should have been raw_local_irq_save(flags)!
+
+So raw_local_save_flags() and raw_local_irq_save() have different semantics.
+
+omigawd, what have we done?
+
+> but ... why is it done like that? Why do we first take the die.lock and 
+> disable interrupts afterwards? It's highly weird. 64-bit does it all 
+> correctly in traps_64.c, so unification will help us out - but so far 
+> perhaps the patch below we should do in 2.6.24?
+> 
+> 	Ingo
+> 
+> ------------>
+> Subject: x86: fix die() to not be preemptible
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> Andrew "Eagle Eye" Morton noticed that we use raw_local_save_flags()
+> instead of raw_local_irq_save(flags) in die().
+> 
+> do it correctly - and first disable interrupts, then take the spinlock.
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/kernel/traps_32.c |    7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
+> 
+> Index: linux-x86.q/arch/x86/kernel/traps_32.c
+> ===================================================================
+> --- linux-x86.q.orig/arch/x86/kernel/traps_32.c
+> +++ linux-x86.q/arch/x86/kernel/traps_32.c
+> @@ -373,14 +373,13 @@ void die(const char * str, struct pt_reg
+>  
+>  	if (die.lock_owner != raw_smp_processor_id()) {
+>  		console_verbose();
+> +		raw_local_irq_save(flags);
+>  		__raw_spin_lock(&die.lock);
+> -		raw_local_save_flags(flags);
+>  		die.lock_owner = smp_processor_id();
+>  		die.lock_owner_depth = 0;
+>  		bust_spinlocks(1);
+> -	}
+> -	else
+> -		raw_local_save_flags(flags);
+> +	} else
+> +		raw_local_irq_save(flags);
+>  
+>  	if (++die.lock_owner_depth < 3) {
+>  		unsigned long esp;
+
+Looks sane.
+
+I suppose there's some reason why we can't just use spin_lock_irqsave(). 
+But that reason was either so obvious or so unimportant that a comment was
+not needed.  Sigh.
