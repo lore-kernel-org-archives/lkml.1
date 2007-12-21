@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763205AbXLUOBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763434AbXLUOBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763205AbXLUOBR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 09:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbXLUOBH
+	id S1763434AbXLUOBh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 09:01:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbXLUOB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 09:01:07 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:21741 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751575AbXLUOBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 09:01:06 -0500
-Message-ID: <476BC71A.40806@msgid.tls.msk.ru>
-Date: Fri, 21 Dec 2007 17:00:58 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
-MIME-Version: 1.0
-To: Johannes Weiner <hannes@saeurebad.de>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: 2.6.24-rc5-git7: Reported regressions from 2.6.23
-References: <200712210212.02666.rjw@sisk.pl> <87d4t05f5a.fsf@saeurebad.de>
-In-Reply-To: <87d4t05f5a.fsf@saeurebad.de>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 21 Dec 2007 09:01:27 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38966
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754947AbXLUOB0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 09:01:26 -0500
+Date: Fri, 21 Dec 2007 06:01:25 -0800 (PST)
+Message-Id: <20071221.060125.165132180.davem@davemloft.net>
+To: david@davidnewall.com
+Cc: jengelh@computergmbh.de, herbert@gondor.apana.org.au,
+       alan@lxorguk.ukuu.org.uk, joe@perches.com, apw@shadowen.org,
+       lizf@cn.fujitsu.com, akpm@linux-foundation.org, elendil@planet.nl,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, trivial@kernel.org,
+       rdunlap@xenotime.net, jschopp@austin.ibm.com
+Subject: Re: Trailing periods in kernel messages
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <476BC2EB.3060000@davidnewall.com>
+References: <Pine.LNX.4.64.0712211104080.21721@fbirervta.pbzchgretzou.qr>
+	<20071221.021236.267832858.davem@davemloft.net>
+	<476BC2EB.3060000@davidnewall.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Weiner wrote:
-[]
-> I still have a bug with cpufreq when using ondemand governor as default.
+From: David Newall <david@davidnewall.com>
+Date: Sat, 22 Dec 2007 00:13:07 +1030
+
+> David Miller wrote:
+> > From: Jan Engelhardt <jengelh@computergmbh.de>
+> > Date: Fri, 21 Dec 2007 11:10:38 +0100 (CET)
+> >   
+> >> Can we get back to programming?
 > 
-> The performance governor, which has been the essential default until
-> 1c2562459faedc35927546cfa5273ec6c2884cce,  was initialized with
-> fs_initcall() instead of module_init() to make sure the driver is up and
-> running when the bootcode (speedstep_init in my case) calls into it.
-> 
-> Since the above mentioned commit, other governors can also be chosen to
-> be the default but they are not correctly initialized before first use
-> then.
+> With respect to the vast majority of log messages, nobody confounded by 
+> punctuation is truly trying to analyze a problem!
 
-By the way, is there any real need to specify default governor at
-a compile time in the first place?  Performance governor (which was
-the only default so far) is a very simple one (not large to consider
-its size effects for embedded systems for example), and switching
-governors at run time is trivial as well.  What's the motivation
-behind this new config option?
+And nobody confounded by whitespace and coding style is truly
+interesting in writing properly functioning code!
 
-[]
-> This migrates all governors from module_init() to fs_initcall() when
-> being the default, as was already done in cpufreq_performance when it
-> was the only possible choice.
+I'm going to say it over and over again, everybody who thinks
+this issue is different from coding style totally misses the
+point.
 
-Oh well.  Which leads to more surprises in the future, I think...
-
-Thanks.
-
-/mjt
+And everyone who thinks this logging message issue stuff is a
+non-issue yet will bash people over the head about coding style in
+patch submissions is a hypocrite.
