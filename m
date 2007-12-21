@@ -1,63 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759693AbXLUXvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760225AbXLUXyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759693AbXLUXvf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 18:51:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbXLUXv1
+	id S1760225AbXLUXyn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 18:54:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbXLUXyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 18:51:27 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:48778 "EHLO relay.sgi.com"
+	Fri, 21 Dec 2007 18:54:36 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:47620 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752429AbXLUXv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 18:51:27 -0500
-Date: Fri, 21 Dec 2007 15:51:25 -0800 (PST)
+	id S1755112AbXLUXyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 18:54:36 -0500
+Date: Fri, 21 Dec 2007 15:54:32 -0800 (PST)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
 To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
        Steven Rostedt <rostedt@goodmis.org>,
        LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Christoph Hellwig <hch@infradead.org>,
        "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Major regression on hackbench with SLUB (more numbers)
-In-Reply-To: <20071221225413.GA26189@elte.hu>
-Message-ID: <Pine.LNX.4.64.0712211548380.27290@schroedinger.engr.sgi.com>
-References: <20071211143336.GA17866@elte.hu>
- <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com>
+In-Reply-To: <20071221231728.GA28008@elte.hu>
+Message-ID: <Pine.LNX.4.64.0712211552180.27290@schroedinger.engr.sgi.com>
+References: <1197049846.1645.68.camel@localhost.localdomain>
+ <20071211143336.GA17866@elte.hu> <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com>
  <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com>
- <20071221120908.GA15926@elte.hu> <Pine.LNX.4.64.0712210750510.29372@schroedinger.engr.sgi.com>
- <alpine.LFD.0.9999.0712210835440.21557@woody.linux-foundation.org>
- <Pine.LNX.4.64.0712211356220.3795@schroedinger.engr.sgi.com>
- <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy>
- <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com>
- <20071221225413.GA26189@elte.hu>
+ <20071221120908.GA15926@elte.hu> <84144f020712210944q3e0539f8vd8a249f69d456dc7@mail.gmail.com>
+ <Pine.LNX.4.64.0712211412040.3795@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0712211435250.3795@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.9999.0712211449320.21557@woody.linux-foundation.org>
+ <20071221231728.GA28008@elte.hu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Dec 2007, Ingo Molnar wrote:
+On Sat, 22 Dec 2007, Ingo Molnar wrote:
 
-> I'm really getting worried that you are apparently incapable of grasping 
-> such _SIMPLE_ concepts. Who the heck cares whether you put in zeros or 
-> whatever else in some of the fields? People use it to know how many 
-> objects are allocated and sure SLUB knows that count, sheesh. How on 
-> earth can you come up with a lame excuse like that? You dont like the 
-> 'SLAB' portion of the name perhaps? Is it NIH again?
+> and the regression seems to be largely fixed! Not only is the hackbench 
+> one fixed, but mmap shows an above-noise improvement as well.
+> 
+> Acked-by: Ingo Molnar <mingo@elte.hu>
 
-NIH? I wrote major portions of SLAB. I would be hating my own product.
-Could you get the facts straight at some point? This is getting weird.
+Well lets use the version attached to this patch. It turns out that it is 
+not important to increase the number of partial slabs. Just putting the 
+slab onto the tail of the list does it.
+ 
+> And i hereby nominate Pekka as SLUB/SLAB co-maintainer and spokesperson 
+> ;-)
 
-> Really, if your behavior is representative of how our SLAB allocator 
-> will be maintained in the future then i'm very, very worried :-( You 
-> ignore and downplay clear-cut regressions, you insult and attack 
-> testers, you are incredibly stupid about user ABIs (or pretend to be so) 
-> and you distort and mislead all the way. What will you be able to do in 
-> the much less clear-cut cases??
+He is already the co-maintainer of the slab allocators. See the 
+MAINTAINERS file.
 
-I analyzed the issue and argued that the issues that one test showed in 
-SLUB is a really special case and then you conclude that I ignore all 
-regressions? I have addressed and responded to all reports of regressions 
-that came to me.
+
+
+SLUB: Improve hackbench speed
+
+Increase the mininum number of partial slabs to keep around and put
+partial slabs to the end of the partial queue so that they can add
+more objects.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ mm/slub.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-12-21 14:30:11.096324462 -0800
++++ linux-2.6/mm/slub.c	2007-12-21 15:10:17.611022381 -0800
+@@ -1611,12 +1611,12 @@ checks_ok:
+ 		goto slab_empty;
+ 
+ 	/*
+-	 * Objects left in the slab. If it
+-	 * was not on the partial list before
+-	 * then add it.
++	 * Objects left in the slab. If it was not on the partial list before
++	 * then add it. Add it to the end since there is only a single object
++	 * which would make slab_alloc inefficient.
+ 	 */
+ 	if (unlikely(!prior))
+-		add_partial(get_node(s, page_to_nid(page)), page);
++		add_partial_tail(get_node(s, page_to_nid(page)), page);
+ 
+ out_unlock:
+ 	slab_unlock(page);
