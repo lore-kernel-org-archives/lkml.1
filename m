@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760225AbXLUXyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760285AbXLUX7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760225AbXLUXyn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 18:54:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbXLUXyg
+	id S1760285AbXLUX7M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 18:59:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757717AbXLUX66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 18:54:36 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:47620 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755112AbXLUXyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 18:54:36 -0500
-Date: Fri, 21 Dec 2007 15:54:32 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-In-Reply-To: <20071221231728.GA28008@elte.hu>
-Message-ID: <Pine.LNX.4.64.0712211552180.27290@schroedinger.engr.sgi.com>
-References: <1197049846.1645.68.camel@localhost.localdomain>
- <20071211143336.GA17866@elte.hu> <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com>
- <20071221120908.GA15926@elte.hu> <84144f020712210944q3e0539f8vd8a249f69d456dc7@mail.gmail.com>
- <Pine.LNX.4.64.0712211412040.3795@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0712211435250.3795@schroedinger.engr.sgi.com>
- <alpine.LFD.0.9999.0712211449320.21557@woody.linux-foundation.org>
- <20071221231728.GA28008@elte.hu>
+	Fri, 21 Dec 2007 18:58:58 -0500
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:37067 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757536AbXLUX64 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 18:58:56 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=zDbUTw7EGXeLc2p7VN483GyHD+zvaqYR/qT6fg1stuZY5XT4jwXYswvIZnhtV6T+QughZNpJToVplHCsm5SoEh+u/z/xkVzQWRT4kVqvL82l74Bz0V1+lOe0Qv8amvdPm8c86KX1ft5um7Qy5S9JjVFmepsI24hDpUjFJTZTytk=  ;
+X-YMail-OSG: Xy15p2sVM1kwb55vsvy9k5MUAoUTEJ2FpwdYggdxsT_hCu4pD_E0JA1h1HW0g9XTQZ9fJ6M3kw--
+Date: Fri, 21 Dec 2007 15:58:54 -0800
+From: David Brownell <david-b@pacbell.net>
+To: jengelh@computergmbh.de, a1426z@gawab.com
+Subject: Re: [RFC] USB Kconfig: Declutter USB Kconfig Menu
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, greg@kroah.com
+References: <200712211630.03426.a1426z@gawab.com>
+ <Pine.LNX.4.64.0712212211420.11671@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0712212211420.11671@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <20071221235854.DF7931915EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Dec 2007, Ingo Molnar wrote:
+> >Propose new layout as follows:
+>
+> Yes, this has been done before in a lot of places, and attempts to
+> clean up more menus is always welcome.
+>
+> Try to use 'menuconfig' objects so people can disable a whole menu
+> at once without having to enter it, e.g. that USB Gadget thing down
+> there.
 
-> and the regression seems to be largely fixed! Not only is the hackbench 
-> one fixed, but mmap shows an above-noise improvement as well.
-> 
-> Acked-by: Ingo Molnar <mingo@elte.hu>
+Notice that this whole menu is for "Host-side USB", except for that
+gadget stuff.  That might usefully be labeled as "Peripheral-side USB".
 
-Well lets use the version attached to this patch. It turns out that it is 
-not important to increase the number of partial slabs. Just putting the 
-slab onto the tail of the list does it.
- 
-> And i hereby nominate Pekka as SLUB/SLAB co-maintainer and spokesperson 
-> ;-)
+For that matter, it could be moved up a level in the menu, so the top
+level driver menu has two USB entries:  Host side, and Peripheral side.
 
-He is already the co-maintainer of the slab allocators. See the 
-MAINTAINERS file.
+The driver stacks are independent of each other, except for common data
+structures like what's in the <linux/usb/ch9.h> header file.  I think
+there's no real point, other than history, to having both sides share
+the same menu.
+
+- Dave
 
 
-
-SLUB: Improve hackbench speed
-
-Increase the mininum number of partial slabs to keep around and put
-partial slabs to the end of the partial queue so that they can add
-more objects.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- mm/slub.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c	2007-12-21 14:30:11.096324462 -0800
-+++ linux-2.6/mm/slub.c	2007-12-21 15:10:17.611022381 -0800
-@@ -1611,12 +1611,12 @@ checks_ok:
- 		goto slab_empty;
- 
- 	/*
--	 * Objects left in the slab. If it
--	 * was not on the partial list before
--	 * then add it.
-+	 * Objects left in the slab. If it was not on the partial list before
-+	 * then add it. Add it to the end since there is only a single object
-+	 * which would make slab_alloc inefficient.
- 	 */
- 	if (unlikely(!prior))
--		add_partial(get_node(s, page_to_nid(page)), page);
-+		add_partial_tail(get_node(s, page_to_nid(page)), page);
- 
- out_unlock:
- 	slab_unlock(page);
+> > ┌─────────────────────────────────────────────────────────────────┐
+> > │ --- USB support                                                 │
+> > │ <*>   Support for Host-side USB  --->                           │
+> > │       USB Host Controller Drivers  --->                         │
+> > │       USB Device Class drivers  --->                            │
+> > │ ---   NOTE: USB_STORAGE needs SCSI, and 'SCSI disk support' may │
+> > │ ---   also be needed; see USB_STORAGE Help for more information │
+> > │ <*>   USB Mass Storage support  --->                            │
+> > │ [ ]   The shared table of common (or usual) storage devices     │
+> > │ [ ]   USB Monitor                                               │
+> > │       USB Serial Converter support  --->                        │
+> > │       USB DSL modem support  --->                               │
+> > │       USB Imaging devices  --->                                 │
+> > │       USB Miscellaneous drivers  --->                           │
+> > │       USB Gadget Support  --->                                  │
+> > │                                                                 │
