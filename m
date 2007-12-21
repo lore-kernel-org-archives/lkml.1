@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759628AbXLUXHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759367AbXLUXPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759628AbXLUXHi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 18:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757441AbXLUXHa
+	id S1759367AbXLUXPx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 18:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbXLUXPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 18:07:30 -0500
-Received: from ns.suse.de ([195.135.220.2]:51285 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756544AbXLUXHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 18:07:30 -0500
-Date: Fri, 21 Dec 2007 15:06:18 -0800
-From: Greg KH <gregkh@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, bjorn.helgaas@hp.com,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [patch 3/3] PCI: use dev_printk in x86 quirk messages
-Message-ID: <20071221230618.GA16365@suse.de>
-References: <20071217210937.103111394@ldl.fc.hp.com> <20071217211337.545932066@ldl.fc.hp.com> <20071218135801.GB17470@elte.hu> <20071221134735.1e0066c9.akpm@linux-foundation.org> <20071221222956.GB24478@suse.de> <20071221224053.GA23289@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071221224053.GA23289@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 21 Dec 2007 18:15:43 -0500
+Received: from lap75545.ornl.gov ([160.91.210.54]:42806 "EHLO
+	lap75545.ornl.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752055AbXLUXPn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 18:15:43 -0500
+X-Greylist: delayed 3399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Dec 2007 18:15:42 EST
+Subject: Re: list corruption on ib_srp load in v2.6.24-rc5
+From: David Dillow <dave@thedillows.org>
+To: linux-kernel@vger.kernel.org
+Cc: general@lists.openfabrics.org
+In-Reply-To: <1198273973.9979.34.camel@lap75545.ornl.gov>
+References: <1198273973.9979.34.camel@lap75545.ornl.gov>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 21 Dec 2007 17:18:52 -0500
+Message-Id: <1198275532.9979.43.camel@lap75545.ornl.gov>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21, 2007 at 11:40:53PM +0100, Ingo Molnar wrote:
+
+On Fri, 2007-12-21 at 16:52 -0500, David Dillow wrote:
+> I'm getting the following oops when doing the following commands:
 > 
-> * Greg KH <gregkh@suse.de> wrote:
+> modprobe ib_srp
+> <add targets(s) to ib_srp using sysfs>
+> rmmod ib_srp
+> modprobe ib_srp
+> <OOPS>
 > 
-> > > > arch/x86/kernel/quirks.c |   42 ++++++++++++++++++++++--------------------
-> > > > arch/x86/pci/fixup.c     |   22 +++++++++++-----------
-> > > 
-> > > That made it hard.  Arguably one file is PCI tree and the other is 
-> > > x86 tree.
-> > 
-> > Hm, as traditionally we haven't had such an active x86 maintainer, 
-> > I've handled most of the pci quirk type stuff that people have sent to 
-> > me in the past :)
-> > 
-> > But, now that we have more enthusiastic developers, I can change this. 
-> > If you want me to cut portions of the patch up, I'll be glad to do so, 
-> > just let me know.
-> > 
-> > It's easy for me when merging, as our tools can handle it just fine, 
-> > but Andrew is the one with the big problems, so we should probably 
-> > shake it out on our end first...
-> > 
-> > Ingo, what is easiest for you to do?  As I use quilt, I can very 
-> > simply cut a portion of the patch up, or drop it entirely.
-> 
-> There's one patch right now in x86.git that affects 
-> arch/x86/kernel/quirks.c and arch/x86/pci/fixup.c - the one from Bjorn. 
-> (find below)
+> I'm going to try and track down how the list is getting corrupted; it
+> looks like attribute_container_list in
+> drivers/base/attribute_container.c is the one getting corrupted.
 
-That's the same one I have :)
+Ok, found the culprit, now to figure out the motive and fix it.
 
-> Are your quirks (and other arch/x86) patches nicely standalone? If yes 
-> then we could pick them up just fine - patch-bomb me or send a tarball 
-> or mbox of the patches - whichever is the most convenient for you. (we 
-> too use quilt as the main repository)
+ib_srp's srp_cleanup_module calls srp_release_transport(), which calls
+transport_container_unregister() for the rport_attr_cont member of
+struct srp_internal.
 
-They are usually mixed up with the other pci patches in my pci tree:
-	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-02-pci/
+That last unregister call is returning -EBUSY, but it gets ignored, and
+the list node gets erased (or just reused) when the module's text/memory
+is free'd.
 
-> but if there's some dependency on continuing pci/driver infrastructure 
-> you might be working on then it would be better for you to carry them. 
-> Or if you'd just like to have Bjorn's patch in one piece. Tell me and 
-> i'll drop the changes below from x86.git.
-> 
-> In any case, both variants would be fine for us - the important thing is 
-> to not drop any of the patches on the floor :)
+Now, to see if ib_srp should be waiting for everything to be destroyed
+before calling srp_release_transport(), or if it is just not removing
+some attributes properly.
 
-How about you drop this one patch, and I'll keep it, as it goes along
-with the other 2 patches in his series, and I'll make sure to check if I
-have future pci quirk patches that affect the x86/ directory.
-
-Sound reasonable?
-
-thanks,
-
-greg k-h
+That's a next week thing if no one beats me to it.
