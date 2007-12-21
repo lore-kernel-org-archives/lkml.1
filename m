@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760907AbXLUMnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761207AbXLUMph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760907AbXLUMnn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 07:43:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbXLUMng
+	id S1761207AbXLUMph (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 07:45:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbXLUMp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 07:43:36 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:35285 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750723AbXLUMnf (ORCPT
+	Fri, 21 Dec 2007 07:45:29 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:30796 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750723AbXLUMp2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 07:43:35 -0500
-Date: Fri, 21 Dec 2007 13:43:34 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: James Courtier-Dutton <James@superbug.co.uk>
-cc: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Trying to convert old modules to newer kernels
-In-Reply-To: <476BACD6.5060900@superbug.co.uk>
-Message-ID: <Pine.LNX.4.64.0712211340210.21721@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.61.0712191503370.4688@chaos.analogic.com>
- <20071219202323.GH2310@csclub.uwaterloo.ca> <Pine.LNX.4.61.0712191555150.4514@chaos.analogic.com>
- <20071220150255.GE2308@csclub.uwaterloo.ca> <Pine.LNX.4.61.0712201107300.8261@chaos.analogic.com>
- <20071220182815.GA5438@uranus.ravnborg.org> <Pine.LNX.4.61.0712201623500.9531@chaos.analogic.com>
- <20071220220547.GA5641@uranus.ravnborg.org> <Pine.LNX.4.61.0712201757410.9907@chaos.analogic.com>
- <20071221005303.771032f3@werewolf> <476BACD6.5060900@superbug.co.uk>
+	Fri, 21 Dec 2007 07:45:28 -0500
+Message-ID: <476BB57D.3050306@ru.mvista.com>
+Date: Fri, 21 Dec 2007 15:45:49 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 21/63] ide-cd: remove unused and write-only struct ide_cd_config_flags
+ fields
+References: <200712200208.43246.bzolnier@gmail.com>
+In-Reply-To: <200712200208.43246.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bartlomiej Zolnierkiewicz wrote:
 
-On Dec 21 2007 12:08, James Courtier-Dutton wrote:
+> unused fields:
+> * ->writing
+> * ->reserved
 
-> That being said, I don't think sse and mmx are available in kernel
-> space, so I would have suggested doing all the grunt work in
-> userspace would be better for this persons application so that he
-> could use sse and mmx etc.
->
-They are available, you just need to pay attention not to trash
-a process's context.
+> write-only fields:
+> * ->playmsf_as_bcd
+> * ->subchan_as_bcd
+> * ->test_write
+> * ->supp_disc_present
 
-IIRC this has been done for 387 FPUting. (The 'trigger' thing in
-save_i387() in arch/x86/i387_32.c probably.) Probably not for SSE.
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
+
