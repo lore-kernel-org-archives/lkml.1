@@ -1,82 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759577AbXLUEsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760072AbXLUEtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759577AbXLUEsX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 23:48:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbXLUEsQ
+	id S1760072AbXLUEtz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 23:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755076AbXLUEts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 23:48:16 -0500
-Received: from gate.crashing.org ([63.228.1.57]:48876 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753539AbXLUEsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 23:48:15 -0500
-Subject: Re: [PATCH 3/3] pci: Remove pci_enable_device_bars()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Greg KH <greg@kroah.com>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       ink@jurassic.park.msu.ru, Alan Cox <alan@redhat.com>,
-       james.smart@emulex.com, linux-driver@qlogic.com,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-In-Reply-To: <20071221042855.GF25341@kroah.com>
-References: <20071220042812.706D0DDEE7@ozlabs.org>
-	 <20071221042855.GF25341@kroah.com>
-Content-Type: text/plain
-Date: Fri, 21 Dec 2007 15:47:28 +1100
-Message-Id: <1198212448.6779.45.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Thu, 20 Dec 2007 23:49:48 -0500
+Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:53071 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755059AbXLUEtr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 23:49:47 -0500
+Message-ID: <476B45E9.1040909@opengridcomputing.com>
+Date: Thu, 20 Dec 2007 22:49:45 -0600
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: benh@au1.ibm.com
+CC: benh@ozlabs.au.ibm.com, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org,
+       OpenFabrics General <general@lists.openfabrics.org>,
+       Benjamin Herrenschmidt <bherren@au1.ibm.com>,
+       Wen Xiong <wenxiong@us.ibm.com>, Olof Johansson <olof@lixom.net>,
+       Paul Mackerras <pmac@au1.ibm.com>
+Subject: Re: iommu dma mapping alignment requirements
+References: <476AA2E2.5010007@opengridcomputing.com>	 <1198181862.6779.3.camel@pasglop> <476AD84E.4000507@opengridcomputing.com>	 <1198186017.6779.28.camel@pasglop> <476AE8C9.9080601@opengridcomputing.com> <1198194585.6779.31.camel@pasglop>
+In-Reply-To: <1198194585.6779.31.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pci: Remove pci_enable_device_bars() fix for qla
-
-The previous patch missed one occurence of pci_enable_device_bars()
-in the qla2xxx driver. This fixes it.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-Index: linux-merge/drivers/scsi/qla2xxx/qla_def.h
-===================================================================
---- linux-merge.orig/drivers/scsi/qla2xxx/qla_def.h	2007-12-21 15:45:41.000000000 +1100
-+++ linux-merge/drivers/scsi/qla2xxx/qla_def.h	2007-12-21 15:46:12.000000000 +1100
-@@ -2272,6 +2272,7 @@ typedef struct scsi_qla_host {
- 	spinlock_t		hardware_lock ____cacheline_aligned;
- 
- 	int		bars;
-+	int		mem_only;
- 	device_reg_t __iomem *iobase;		/* Base I/O address */
- 	unsigned long	pio_address;
- 	unsigned long	pio_length;
-Index: linux-merge/drivers/scsi/qla2xxx/qla_os.c
-===================================================================
---- linux-merge.orig/drivers/scsi/qla2xxx/qla_os.c	2007-12-21 15:46:10.000000000 +1100
-+++ linux-merge/drivers/scsi/qla2xxx/qla_os.c	2007-12-21 15:46:12.000000000 +1100
-@@ -1626,6 +1626,7 @@ qla2x00_probe_one(struct pci_dev *pdev, 
- 	sprintf(ha->host_str, "%s_%ld", QLA2XXX_DRIVER_NAME, ha->host_no);
- 	ha->parent = NULL;
- 	ha->bars = bars;
-+	ha->mem_only = mem_only;
- 
- 	/* Set ISP-type information. */
- 	qla2x00_set_isp_flags(ha);
-@@ -2905,8 +2906,14 @@ qla2xxx_pci_slot_reset(struct pci_dev *p
- {
- 	pci_ers_result_t ret = PCI_ERS_RESULT_DISCONNECT;
- 	scsi_qla_host_t *ha = pci_get_drvdata(pdev);
-+	int rc;
- 
--	if (pci_enable_device_bars(pdev, ha->bars)) {
-+	if (ha->mem_only)
-+		rc = pci_enable_device_mem(pdev);
-+	else
-+		rc = pci_enable_device(pdev);
-+
-+	if (rc) {
- 		qla_printk(KERN_WARNING, ha,
- 		    "Can't re-enable PCI device after reset.\n");
- 
 
 
+Benjamin Herrenschmidt wrote:
+>> Sounds good.  Thanks!
+>>
+>> Note, that these smaller sub-host-page-sized mappings might pollute the 
+>> address space causing full aligned host-page-size maps to become 
+>> scarce...  Maybe there's a clever way to keep those in their own segment 
+>> of the address space?
+> 
+> We already have a large vs. small split in the iommu virtual space to
+> alleviate this (though it's not a hard constraint, we can still get
+> into the "other" side if the default one is full).
+> 
+> Try that patch and let me know:
+
+Seems to be working!
+
+:)
+
+
+> 
+> Index: linux-work/arch/powerpc/kernel/iommu.c
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/kernel/iommu.c	2007-12-21 10:39:39.000000000 +1100
+> +++ linux-work/arch/powerpc/kernel/iommu.c	2007-12-21 10:46:18.000000000 +1100
+> @@ -278,6 +278,7 @@ int iommu_map_sg(struct iommu_table *tbl
+>  	unsigned long flags;
+>  	struct scatterlist *s, *outs, *segstart;
+>  	int outcount, incount, i;
+> +	unsigned int align;
+>  	unsigned long handle;
+>  
+>  	BUG_ON(direction == DMA_NONE);
+> @@ -309,7 +310,11 @@ int iommu_map_sg(struct iommu_table *tbl
+>  		/* Allocate iommu entries for that segment */
+>  		vaddr = (unsigned long) sg_virt(s);
+>  		npages = iommu_num_pages(vaddr, slen);
+> -		entry = iommu_range_alloc(tbl, npages, &handle, mask >> IOMMU_PAGE_SHIFT, 0);
+> +		align = 0;
+> +		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT && (vaddr & ~PAGE_MASK) == 0)
+> +			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
+> +		entry = iommu_range_alloc(tbl, npages, &handle,
+> +					  mask >> IOMMU_PAGE_SHIFT, align);
+>  
+>  		DBG("  - vaddr: %lx, size: %lx\n", vaddr, slen);
+>  
+> @@ -572,7 +577,7 @@ dma_addr_t iommu_map_single(struct iommu
+>  {
+>  	dma_addr_t dma_handle = DMA_ERROR_CODE;
+>  	unsigned long uaddr;
+> -	unsigned int npages;
+> +	unsigned int npages, align;
+>  
+>  	BUG_ON(direction == DMA_NONE);
+>  
+> @@ -580,8 +585,13 @@ dma_addr_t iommu_map_single(struct iommu
+>  	npages = iommu_num_pages(uaddr, size);
+>  
+>  	if (tbl) {
+> +		align = 0;
+> +		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT &&
+> +		    ((unsigned long)vaddr & ~PAGE_MASK) == 0)
+> +			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
+> +
+>  		dma_handle = iommu_alloc(tbl, vaddr, npages, direction,
+> -					 mask >> IOMMU_PAGE_SHIFT, 0);
+> +					 mask >> IOMMU_PAGE_SHIFT, align);
+>  		if (dma_handle == DMA_ERROR_CODE) {
+>  			if (printk_ratelimit())  {
+>  				printk(KERN_INFO "iommu_alloc failed, "
+> 
