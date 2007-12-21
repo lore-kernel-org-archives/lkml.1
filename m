@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759073AbXLUMYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759558AbXLUM0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759073AbXLUMYj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 07:24:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbXLUMYb
+	id S1759558AbXLUM0X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 07:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbXLUM0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 07:24:31 -0500
-Received: from anchor-post-36.mail.demon.net ([194.217.242.86]:1392 "EHLO
-	anchor-post-36.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750918AbXLUMYa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 07:24:30 -0500
-X-Greylist: delayed 933 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Dec 2007 07:24:30 EST
-Message-ID: <476BACD6.5060900@superbug.co.uk>
-Date: Fri, 21 Dec 2007 12:08:54 +0000
-From: James Courtier-Dutton <James@superbug.co.uk>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 21 Dec 2007 07:26:16 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:7434 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751091AbXLUM0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 07:26:16 -0500
+Date: Fri, 21 Dec 2007 13:26:19 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Adrian McMenamin <lkmladrian@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH - SH/Dreamcast] Add support for GD-Rom device
+Message-ID: <20071221122619.GC11583@kernel.dk>
+References: <8b67d60712201559h5dbb2a17q8f16223b26b88006@mail.gmail.com> <8b67d60712201607k66d67fa2la8b21fc698fdb3ab@mail.gmail.com> <20071221121441.GB11583@kernel.dk>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>
-CC: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Trying to convert old modules to newer kernels
-References: <Pine.LNX.4.61.0712191503370.4688@chaos.analogic.com>	<20071219202323.GH2310@csclub.uwaterloo.ca>	<Pine.LNX.4.61.0712191555150.4514@chaos.analogic.com>	<20071220150255.GE2308@csclub.uwaterloo.ca>	<Pine.LNX.4.61.0712201107300.8261@chaos.analogic.com>	<20071220182815.GA5438@uranus.ravnborg.org>	<Pine.LNX.4.61.0712201623500.9531@chaos.analogic.com>	<20071220220547.GA5641@uranus.ravnborg.org>	<Pine.LNX.4.61.0712201757410.9907@chaos.analogic.com> <20071221005303.771032f3@werewolf>
-In-Reply-To: <20071221005303.771032f3@werewolf>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071221121441.GB11583@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J.A. Magallón wrote:
->>>>
->>>> I need to get rid of -mregparm=3 on gcc's command line. It
->>>> is completely incompatible with the standard calling conventions
->>>> used in all our assembly-language files in our drivers. We make
->>>> very high-speed number-crunching drivers that munge high-speed
->>>> data into images. We need to do that in assembly as we have
->>>> always done.
->>>>         
->
-> Just for curiosity... yep, I understand now you have everything written
-> in assembler, but why not consider start writing it in C and stop
-> doing the compiler work (such as pipelining, out of order reordering,
-> loop unrolling for specific processor, and so on...)
->
-> That's what everyone taught me, nowadays you won't be better than the
-> compiler in anything longer than three lines...
->
->   
+On Fri, Dec 21 2007, Jens Axboe wrote:
+> static void gdrom_readdisk_dma(struct work_struct *work)
+> {
+>         ...
+> 
+>         read_command = kzalloc(sizeof(struct packet_command), GFP_KERNEL);
+>         if (!read_command)
+>                 probably just defer the work to some time later
+> 
+>         spin_lock(&gdrom_lock);
+>         while (!list_empty(&gdrom_deferred)) {
+>                 req = list_entry(gdrom_deferred.next, struct request, queuelist);
+>                 list_del_init(&req->queuelist);
+>                 spin_unlock(&gdrom_lock);
+> 
+>                 ...
+> 
+>                 spin_lock(&gdrom_lock);
+>         };
+> 
++         spin_unlock(&gdrom_lock);
+>         kfree(read_command);
+> }
 
-Not true for image processing. compilers are not too good with 
-optimizing mmx and sse algorithms. This is why user space libraries like 
-ffmpeg still use assembly code.
-That being said, I don't think sse and mmx are available in kernel 
-space, so I would have suggested doing all the grunt work in userspace 
-would be better for this persons application so that he could use sse 
-and mmx etc.
+is missing, of course.
 
-James
+-- 
+Jens Axboe
 
