@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758844AbXLUWbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759318AbXLUWds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758844AbXLUWbW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 17:31:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbXLUWbP
+	id S1759318AbXLUWds (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 17:33:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756071AbXLUWdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 17:31:15 -0500
-Received: from mail.suse.de ([195.135.220.2]:47815 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753515AbXLUWbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 17:31:13 -0500
-Date: Fri, 21 Dec 2007 14:29:56 -0800
-From: Greg KH <gregkh@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, bjorn.helgaas@hp.com, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, dbrownell@users.sourceforge.net,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [patch 3/3] PCI: use dev_printk in x86 quirk messages
-Message-ID: <20071221222956.GB24478@suse.de>
-References: <20071217210937.103111394@ldl.fc.hp.com> <20071217211337.545932066@ldl.fc.hp.com> <20071218135801.GB17470@elte.hu> <20071221134735.1e0066c9.akpm@linux-foundation.org>
+	Fri, 21 Dec 2007 17:33:40 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58446 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755112AbXLUWdk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 17:33:40 -0500
+Date: Fri, 21 Dec 2007 14:32:09 -0800
+From: Greg KH <greg@kroah.com>
+To: David Hilvert <dhilvert@gmail.com>
+Cc: linux-kernel@vger.kernel.org, dmitri@users.sourceforge.net,
+       linux-usb@vger.kernel.org
+Message-ID: <20071221223209.GA24780@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071221134735.1e0066c9.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21, 2007 at 01:47:35PM -0800, Andrew Morton wrote:
-> On Tue, 18 Dec 2007 14:58:01 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * bjorn.helgaas@hp.com <bjorn.helgaas@hp.com> wrote:
-> > 
-> > > Convert quirk printks to dev_printk().
-> > 
-> > thanks, applied the x86 bits.
-> > 
-> 
-> Greg applied it too.  Could you guys please sort out some sort of
-> who-owns-what protocol?
-> 
-> Thanks.
-> 
-> > arch/x86/kernel/quirks.c |   42 ++++++++++++++++++++++--------------------
-> > arch/x86/pci/fixup.c     |   22 +++++++++++-----------
-> 
-> That made it hard.  Arguably one file is PCI tree and the other is x86
-> tree.
+linux-usb@vger.kernel.org
+Bcc: 
+Subject: Re: Regarding request for IBM camera patch to be applied to the
+	main tree
+Reply-To: 
+In-Reply-To: <20071221152130.bf2d745d.dhilvert@gmail.com>
 
-Hm, as traditionally we haven't had such an active x86 maintainer, I've
-handled most of the pci quirk type stuff that people have sent to me in
-the past :)
+On Fri, Dec 21, 2007 at 03:21:30PM -0600, David Hilvert wrote:
+> > > http://www.linux-usb.org/ibmcam/
+> 
+> > > http://auricle.dyndns.org/xvp610/
+> 
+> [Remainder of private e-mail context snipped; message has been blind-CC'ed to
+> the original recipients.  Please CC any replies intended for me.]
+> 
+> As the author of the second patch noted, I had avoided sending it to lkml due
+> to the difficulty of determining whether the patch is correct (e.g., having no
+> ill effect on other cameras), due, in turn, to lack of documentation for this
+> series of cameras.  Perhaps dmitri could comment further on this, if he has
+> time and access to test on any other cameras that might fall under the 'model
+> 3' designation (whatever this designation might mean).  The (rather old, now)
+> patch in question (against 2.6.1 or so, and perhaps other versions) follows; if
+> I recall correctly, it was designed to minimize change lines rather than
+> provide for overall clarity, so that a clearer final implementation is probably
+> possible.
+> 
+> 
+> diff -urN linux-2.6.1/drivers/usb/media/ibmcam.c linux-2.6.1-patched/drivers/usb/media/ibmcam.c
+> --- linux-2.6.1/drivers/usb/media/ibmcam.c	Fri Jan  9 00:59:19 2004
+> +++ linux-2.6.1-patched/drivers/usb/media/ibmcam.c	Fri Feb  6 14:54:33 2004
 
-But, now that we have more enthusiastic developers, I can change this.
-If you want me to cut portions of the patch up, I'll be glad to do so,
-just let me know.
-
-It's easy for me when merging, as our tools can handle it just fine, but
-Andrew is the one with the big problems, so we should probably shake it
-out on our end first...
-
-Ingo, what is easiest for you to do?  As I use quilt, I can very simply
-cut a portion of the patch up, or drop it entirely.
+I suggest forward porting it to the latest tree and submit it to the usb
+video maintainers for inclusion.
 
 thanks,
 
