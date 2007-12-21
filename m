@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765066AbXLUDFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763270AbXLUDJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765066AbXLUDFF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 22:05:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXLUDEz
+	id S1763270AbXLUDJI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 22:09:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbXLUDIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 22:04:55 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46631 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753161AbXLUDEy (ORCPT
+	Thu, 20 Dec 2007 22:08:54 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:59909 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754064AbXLUDIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 22:04:54 -0500
-Message-ID: <476B2B5E.5060204@zytor.com>
-Date: Thu, 20 Dec 2007 18:56:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 20 Dec 2007 22:08:53 -0500
+Date: Thu, 20 Dec 2007 19:07:32 -0800
+From: Greg KH <greg@kroah.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 0/10] sysfs network namespace support
+Message-ID: <20071221030732.GA16122@kroah.com>
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@muc.de>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 14/24] Immediate Values - x86 Optimization
-References: <20071221015438.433195466@polymtl.ca> <20071221015726.909058404@polymtl.ca>
-In-Reply-To: <20071221015726.909058404@polymtl.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is modified by another patch in the sequence.  This feels 
-needlessly confusing when reviewing (especially since the comment 
-doesn't look to match the code, e.g. w.r.t to "Q" and "R" constraints); 
-can you reorder the patchset to avoid that?
+On Sat, Dec 01, 2007 at 02:06:58AM -0700, Eric W. Biederman wrote:
+> 
+> Now that we have network namespace support merged it is time to
+> revisit the sysfs support so we can remove the dependency on !SYSFS.
 
-	-hpa
+<snip>
+
+Oops, I forgot to apply this to my tree.  Eric, you still want this
+submitted, right?
+
+thanks,
+
+greg k-h
