@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbXLUU5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbXLUVE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756877AbXLUU5g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 15:57:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbXLUU52
+	id S1755941AbXLUVE2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 16:04:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbXLUVES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 15:57:28 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55750 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754200AbXLUU51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 15:57:27 -0500
-Date: Fri, 21 Dec 2007 15:57:14 -0500 (EST)
-Message-Id: <20071221.155714.71084400.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com
-Cc: grant.likely@secretlab.ca, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: [PATCH] (linux-2.6-block.git) xsysace: fix size misconversion of
- blk_end_request
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
- =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+	Fri, 21 Dec 2007 16:04:18 -0500
+Received: from [76.243.235.52] ([76.243.235.52]:48731 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753476AbXLUVER (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 16:04:17 -0500
+Subject: Re: INITIO scsi driver fails to work properly
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Filippos Papadopoulos <psybases@gmail.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <476C1472.1040103@redhat.com>
+References: <9f00bd9d0712170139q1397af5fp3c855a2b94726227@mail.gmail.com>
+	 <20071217031841.f483e5ac.akpm@linux-foundation.org>
+	 <9f00bd9d0712170341u7fef1fc9pc9986dda1a0475cb@mail.gmail.com>
+	 <47666904.8060605@panasas.com>
+	 <9f00bd9d0712190048g60d79ma067ba85b5553459@mail.gmail.com>
+	 <476C1472.1040103@redhat.com>
+Content-Type: text/plain
+Date: Fri, 21 Dec 2007 15:03:56 -0600
+Message-Id: <1198271036.3130.60.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
 
-I found this change is not yet included in your linux-2.6-block.git tree:
-    http://marc.info/?l=linux-kernel&m=119747954926232&w=2
+On Fri, 2007-12-21 at 14:30 -0500, Chuck Ebbert wrote:
+> On 12/19/2007 03:48 AM, Filippos Papadopoulos wrote:
+> > On Dec 17, 2007 2:18 PM, Boaz Harrosh <bharrosh@panasas.com> wrote:
+> >> I have found one problem. Please try patch [2] below and report.
+> >> If it still fails try to enable debugging by setting with patch [1]
+> >> these values at top of drivers/scsi/initio.c. And send dmsgs.
+> >>
+> >> Boaz
+> >>
+> > 
+> > 
+> > I tried patch[2] (addition of   sg++)  at 2.6.24-rc5-mm1 but the
+> > system hangs after some seconds when the initio driver loads.
+> > I will try patch[1] next week to see what happens.
+> > 
+> > Would it be better to open a bug report at bugzilla?
+> > 
+> 
+> There is also a Fedora bug report against 2.6.23. The user has
+> applied commit e9e42faf47255274a1ed0b9bf1c46118023ec5fa from
+> 2.6.24-rc plus the two additional fixes under discussion and it
+> hangs for him too.
+> 
+> https://bugzilla.redhat.com/show_bug.cgi?id=390531
 
-Please apply this patch (just a rebased version of the above)
-to your for-akpm branch before Andrew pulls.
-Otherwise, xsysace driver will not work correctly.
+It really sounds like there's some problem applying the patches.  The
+consistent report throughout is this one:
+
+initio: I/O port range 0x0 is busy.
+
+Which should be fixed by 99f1f534922a2f2251ba05b14657a1c62882a80e.  I
+didn't actually find that in the bug thread anywhere, but maybe I missed
+it?
+
+James
 
 
-This patch fixes the misconversion from sector to byte
-in the blk_end_request patch-set.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-In ace_fsm_dostate(), the variable 'i' was used only for passing
-sector size of the request to __end_end_request().
-So I removed it and changed the code to pass the size in bytes
-directly to __blk_end_request().
-
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
----
- drivers/block/xsysace.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
---- a/drivers/block/xsysace.c
-+++ b/drivers/block/xsysace.c
-@@ -483,7 +483,6 @@ static void ace_fsm_dostate(struct ace_d
- 	u32 status;
- 	u16 val;
- 	int count;
--	int i;
- 
- #if defined(DEBUG)
- 	dev_dbg(ace->dev, "fsm_state=%i, id_req_count=%i\n",
-@@ -688,7 +687,6 @@ static void ace_fsm_dostate(struct ace_d
- 		}
- 
- 		/* Transfer the next buffer */
--		i = 16;
- 		if (ace->fsm_task == ACE_TASK_WRITE)
- 			ace->reg_ops->dataout(ace);
- 		else
-@@ -702,8 +700,8 @@ static void ace_fsm_dostate(struct ace_d
- 		}
- 
- 		/* bio finished; is there another one? */
--		i = ace->req->current_nr_sectors;
--		if (__blk_end_request(ace->req, 0, i)) {
-+		if (__blk_end_request(ace->req, 0,
-+				      blk_rq_cur_bytes(ace->req))) {
- 			/* dev_dbg(ace->dev, "next block; h=%li c=%i\n",
- 			 *      ace->req->hard_nr_sectors,
- 			 *      ace->req->current_nr_sectors);
-
-Thanks,
-Kiyoshi Ueda
