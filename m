@@ -1,117 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765530AbXLUAmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765833AbXLUAnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765530AbXLUAmv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 19:42:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbXLUAmn
+	id S1765833AbXLUAnW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 19:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759079AbXLUAnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 19:42:43 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40954 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756603AbXLUAmm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 19:42:42 -0500
-Date: Thu, 20 Dec 2007 16:40:00 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: trond.myklebust@fys.uio.no, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.24-rc5 x86 architecture no longer Oopses...
-Message-Id: <20071220164000.58c43b42.akpm@linux-foundation.org>
-In-Reply-To: <20071221003035.GA10123@elte.hu>
-References: <1198190447.29917.9.camel@heimdal.trondhjem.org>
-	<20071220145415.f737e7f3.akpm@linux-foundation.org>
-	<20071220234759.GA29776@elte.hu>
-	<20071220161934.0f55029a.akpm@linux-foundation.org>
-	<20071221003035.GA10123@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Dec 2007 19:43:10 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45539 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756606AbXLUAnJ (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 19:43:09 -0500
+Date: Fri, 21 Dec 2007 11:42:59 +1100
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.24-rc6
+User-Agent: nail 11.25 7/29/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071221004259.8C12858C4C0F@chook.melbourne.sgi.com>
+From: lachlan@sgi.com (Lachlan McIlroy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Dec 2007 01:30:35 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Please pull from the for-linus branch:
+    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Fri, 21 Dec 2007 00:47:59 +0100
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > >  		__raw_spin_lock(&die.lock);
-> > > >  		raw_local_save_flags(flags);
-> > > > -		die.lock_owner = smp_processor_id();
-> > > > +		die.lock_owner = raw_smp_processor_id();
-> > > 
-> > > we just disabled irqs with raw_local_save_flags().
-> > 
-> > <chases x86 spaghetti for a while>
-> > 
-> > raw_local_save_flags() doesn't disable interrupts?
-> 
-> argh. Indeed! (I wanted us to fix that misleading name eons ago, to 
+This will update the following files:
 
-The naming of those functions is truly awful and it goes back to year 0.
+ fs/xfs/linux-2.6/xfs_file.c |    1 +
+ fs/xfs/linux-2.6/xfs_iops.c |    4 +---
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-> *_save_flags_only(), but some stupid bikeshed painting discussion 
-> prevented it from ever happening.)
+through these commits:
 
-local_read_flags().
+commit 4743e0ec1217fd00f57461ebdd7979d31af18700
+Author: Lachlan McIlroy <lachlan@redback.melbourne.sgi.com>
+Date:   Fri Dec 21 11:00:23 2007 +1100
 
-> that should have been raw_local_irq_save(flags)!
+    [XFS] Initialise current offset in xfs_file_readdir correctly
+    
+    After reading the directory contents into the temporary buffer, we grab
+    each dirent and pass it to filldir witht eh current offset of the dirent.
+    The current offset was not being set for the first dirent in the temporary
+    buffer, which coul dresult in bad offsets being set in the f_pos field
+    result in looping and duplicate entries being returned from readdir.
+    
+    SGI-PV: 974905
+    SGI-Modid: xfs-linux-melb:xfs-kern:30282a
+    
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Tim Shimmin <tes@sgi.com>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
 
-So raw_local_save_flags() and raw_local_irq_save() have different semantics.
+commit bad60fdd14df32459e31cc75ab681e4458bf25cf
+Author: Christoph Hellwig <hch@infradead.org>
+Date:   Fri Dec 21 10:58:56 2007 +1100
 
-omigawd, what have we done?
-
-> but ... why is it done like that? Why do we first take the die.lock and 
-> disable interrupts afterwards? It's highly weird. 64-bit does it all 
-> correctly in traps_64.c, so unification will help us out - but so far 
-> perhaps the patch below we should do in 2.6.24?
-> 
-> 	Ingo
-> 
-> ------------>
-> Subject: x86: fix die() to not be preemptible
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> Andrew "Eagle Eye" Morton noticed that we use raw_local_save_flags()
-> instead of raw_local_irq_save(flags) in die().
-> 
-> do it correctly - and first disable interrupts, then take the spinlock.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/traps_32.c |    7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
-> 
-> Index: linux-x86.q/arch/x86/kernel/traps_32.c
-> ===================================================================
-> --- linux-x86.q.orig/arch/x86/kernel/traps_32.c
-> +++ linux-x86.q/arch/x86/kernel/traps_32.c
-> @@ -373,14 +373,13 @@ void die(const char * str, struct pt_reg
->  
->  	if (die.lock_owner != raw_smp_processor_id()) {
->  		console_verbose();
-> +		raw_local_irq_save(flags);
->  		__raw_spin_lock(&die.lock);
-> -		raw_local_save_flags(flags);
->  		die.lock_owner = smp_processor_id();
->  		die.lock_owner_depth = 0;
->  		bust_spinlocks(1);
-> -	}
-> -	else
-> -		raw_local_save_flags(flags);
-> +	} else
-> +		raw_local_irq_save(flags);
->  
->  	if (++die.lock_owner_depth < 3) {
->  		unsigned long esp;
-
-Looks sane.
-
-I suppose there's some reason why we can't just use spin_lock_irqsave(). 
-But that reason was either so obvious or so unimportant that a comment was
-not needed.  Sigh.
+    [XFS] Fix mknod regression
+    
+    This was broken by my '[XFS] simplify xfs_create/mknod/symlink prototype',
+    which assigned the re-shuffled ondisk dev_t back to the rdev variable in
+    xfs_vn_mknod. Because of that i_rdev is set to the ondisk dev_t instead of
+    the linux dev_t later down the function.
+    
+    Fortunately the fix for it is trivial: we can just remove the assignment
+    because xfs_revalidate_inode has done the proper job before unlocking the
+    inode.
+    
+    SGI-PV: 974873
+    SGI-Modid: xfs-linux-melb:xfs-kern:30273a
+    
+    Signed-off-by: Christoph Hellwig <hch@infradead.org>
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
