@@ -1,37 +1,36 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757905AbXLUDYe (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 20 Dec 2007 22:24:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbXLUDYV
+	id S1754702AbXLUPij (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 21 Dec 2007 10:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbXLUPi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 22:24:21 -0500
-Received: from smtp-out2.libero.it ([212.52.84.42]:48861 "EHLO
-	smtp-out2.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762311AbXLUDYT convert rfc822-to-8bit (ORCPT
+	Fri, 21 Dec 2007 10:38:28 -0500
+Received: from qb-out-0506.google.com ([72.14.204.238]:21492 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752711AbXLUPi1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 22:24:19 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAABbBakfEAbO+/2dsb2JhbAAIgWGmbYJF
-Date: Fri, 21 Dec 2007 04:23:58 +0100
-Message-Id: <JTDQRY$6E93EB0AF2DA10C8E145A5153D3A0FF2@libero.it>
-Subject: AWARD !
+	Fri, 21 Dec 2007 10:38:27 -0500
+Message-ID: <b5b108580712210738n50798765ha7ba2b4b3b2bb235@mail.gmail.com>
+Date: Fri, 21 Dec 2007 23:38:26 +0800
+From: "fdgv fg" <meihaolixiang@gmail.com>
+To: chexum@shadow.banki.hu, linux-kernel@vger.kernel.org
+Subject: Hello
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-From: "MICROSOFT PROMO " <promo_microsoft5@libero.it>
-X-XaM3-API-Version: 4.3 (R1) (B3pl19)
-X-SenderIP: 196.1.179.190
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757905AbXLUDYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754702AbXLUPij@vger.kernel.org>
 
-You have been awarded the sum of 250,000GBP by the microsoft word
-promotions. contact 
-mikenoel_fudiciaryagent77@yahoo.de
-
-Thank you
-
-
-
+Dear Sir / Madam:
+   Nice to meet you.Here is a more useful information if you are
+searching any high-quality digital products with a lower price.We have
+a massive stock where you nearly can find what you want.We strive to
+offer you best sevice! With the advanced transportation,we assure you
+a safe and fast shippment! please contact me.
+my website: www.elec-offer.com
+MSN: elec-offer@hotmail.com
+Best regards
+Sincerely yours
+Li
