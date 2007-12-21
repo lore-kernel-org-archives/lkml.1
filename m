@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbXLUQTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbXLUQWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbXLUQTH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 11:19:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbXLUQSy
+	id S1756391AbXLUQWD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 11:22:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXLUQVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 11:18:54 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:2956 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751579AbXLUQSx (ORCPT
+	Fri, 21 Dec 2007 11:21:52 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:54827 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751204AbXLUQVv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 11:18:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=X4A2GHBjYlmBv8CTYtlIYfWMqcSddwNYnkii0QG5LSfwYTOmAUmKxiOgYY4Gia9oFuNekhCbbPCCOm+n7voG28UIQslWNlYYFTkcuTKNwT12osHgEoWFs6QZP2Qo2gOp1M1RBYlDRIXkTm0oYXuwTb89tt07Zu+sbEN0EF0JDSk=
-Message-ID: <2c0942db0712210818q1a16291au3b3ddf395867542a@mail.gmail.com>
-Date: Fri, 21 Dec 2007 08:18:50 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Christian Hammers" <ch@lathspell.de>
-Subject: Re: Debugging process hanging in D status and not responding to SIGKILL
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20071221163845.6fa3f2a9@sys-251.netcologne.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Dec 2007 11:21:51 -0500
+Date: Fri, 21 Dec 2007 17:22:42 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: Top 10 kernel oopses/warnings for the week of December 21st 2007
+Message-ID: <20071221162242.GA29959@one.firstfloor.org>
+References: <476BA8AF.4060201@linux.intel.com> <p73ejdgf8vj.fsf@bingen.suse.de> <476BCE15.6090902@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071221163845.6fa3f2a9@sys-251.netcologne.de>
-X-Google-Sender-Auth: 62129dcdf4d28e07
+In-Reply-To: <476BCE15.6090902@linux.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 21, 2007 7:38 AM, Christian Hammers <ch@lathspell.de> wrote:
-> Hello
->
-> Occasionally all my apache2 processes hang in "D" process status where they are
-> no longer responsible to SIGKILL which makes the server almost un-rebootable.
-> The processes usually vanish after about 15-30min.
->
-> I know that this usually means "I/O wait" somewhere deep inside a kernel
-> function where signals are not handled.
->
-> But using "strace -p <pid>" I can only see that the last called function is
-> flock() (according to /proc/<pid>/fd somebody produced a deadlock when using
-> PHP sessions). But flock() normally terminates on SIGTERM and SIGKILL.
->
-> Could it be a problem with my SCSI driver who's involed in the flock process?
-> The problem usually occurs on two other webserver at the same time, one using
-> the same hardware and one being a Dell 6850 with Dell PERC RAID, though.
->
-> How can I get further debugging information that could give me a hint?
+> in this case this is really all the version information available ;(
+> it seems to be a patched kernel without patched EXTRAVERSION.
+> But in the future if I have more specific information (eg it's only 1 
+> kernel version) I'll mention it in more detail.
+> It gets unwieldy if there's 500 reports for an oops of course ;)
 
-Do an
+Hmm would there be an automatic way to check out the file of the 
+kernel version and then check if the BUG_ON/WARN_ON is on that line?
+Maybe it could be done using git.
 
-   echo t >/proc/sysrq-trigger
+> 
+> >
+> >Anyways there are a lot of third party modules who do strange 
+> >things with c_p_a(), not always legal, so you might look up out for that 
+> >pattern too. Perhaps report the out of tree modules loaded in the 
+> >summary too?
+> 
+> I already always will mention if the oops is tainted or not (that I track 
+> specifically);
 
-and see what it shows.
+I don't necessarily mean tainted, just out of tree modules in general.
+There are some GPL modules who do strange things too. Not saying
+that these oopses should be all ignored -- they might be legitimate
+kernel bugs that they just trigger -- just it should be visible somehow
+in the summary in case there is a pattern. 
+
+Especially for c_p_a() i'm quite suspicious
+because it depends a lot on what the caller did.
+
+One way perhaps would be also to check if there is an out of tree
+module inside the backtrace. I suppose you could keep a list 
+of in tree modules and do this automatically. Of course there could
+be false positives too with the standard inexact backtrace.
+
+-Andi
+
