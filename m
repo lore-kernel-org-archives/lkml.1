@@ -1,37 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762653AbXLUNEC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbXLUNHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762653AbXLUNEC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 08:04:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbXLUNDx
+	id S1760260AbXLUNHW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 08:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbXLUNHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 08:03:53 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:31021 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753468AbXLUNDw (ORCPT
+	Fri, 21 Dec 2007 08:07:07 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:32831 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753089AbXLUNHF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 08:03:52 -0500
-Message-ID: <476BB9CD.1050902@ru.mvista.com>
-Date: Fri, 21 Dec 2007 16:04:13 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 21 Dec 2007 08:07:05 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <greg@kroah.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 0/10] sysfs network namespace support
+In-Reply-To: <20071221030732.GA16122@kroah.com> (Greg KH's message of "Thu, 20
+	Dec 2007 19:07:32 -0800")
+References: <m163zi9425.fsf@ebiederm.dsl.xmission.com>
+	<20071221030732.GA16122@kroah.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Date: Fri, 21 Dec 2007 06:04:43 -0700
+Message-ID: <m1hcic6vx0.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 07/63] ide-cd: add error message for DMA error to cdrom_read_intr()
-References: <200712200157.04907.bzolnier@gmail.com>
-In-Reply-To: <200712200157.04907.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+Greg KH <greg@kroah.com> writes:
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> On Sat, Dec 01, 2007 at 02:06:58AM -0700, Eric W. Biederman wrote:
+>> 
+>> Now that we have network namespace support merged it is time to
+>> revisit the sysfs support so we can remove the dependency on !SYSFS.
+>
+> <snip>
+>
+> Oops, I forgot to apply this to my tree.  Eric, you still want this
+> submitted, right?
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Yes.
 
-MBR, Sergei
+I'm am just about to head out of town to visit my parents over Christmas.
+So I'm not going to be very responsive until I after the New Year.
+
+Eric
