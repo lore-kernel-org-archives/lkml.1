@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760294AbXLUBHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760092AbXLUBJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760294AbXLUBHa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 20:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbXLUBHS
+	id S1760092AbXLUBJg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 20:09:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbXLUBJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 20:07:18 -0500
-Received: from waste.org ([66.93.16.53]:33143 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753124AbXLUBHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 20:07:17 -0500
-Date: Thu, 20 Dec 2007 19:06:55 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: David Miller <davem@davemloft.net>
-Cc: m.kozlowski@tuxland.pl, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: 2.6.24-rc5-mm1: problems with cat /proc/kpageflags
-Message-ID: <20071221010653.GA19691@waste.org>
-References: <20071220.045359.107684960.davem@davemloft.net> <20071220174540.GW19691@waste.org> <200712202047.56745.m.kozlowski@tuxland.pl> <20071220.161726.68534356.davem@davemloft.net>
+	Thu, 20 Dec 2007 20:09:26 -0500
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:45683 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753490AbXLUBJZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Dec 2007 20:09:25 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=O3n798pwUsWBzgCyFr2vQUH0GpMK2vDdu/625fxU5HyycOG1fpV+vpn3Lbqhm3eE0dVo8jNW7TMJtRz49pnofk3PbY7FgC4TiRtw9Z34F5s+EE3Nry7s/Pb65vGKrVOrEFQh73y51HWyTQMSEOVUkuve9AUYMdfoWQpdDtXom4A=  ;
+X-YMail-OSG: UzdadgkVM1mXuUaGuuU.FnyuXfkEydwTUHodKgs3QmEF7u29lFoo6374JF.SsXWBYMNzO2C5iA--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 10/28] FS-Cache: Recruit a couple of page flags for cache management [try #2]
+Date: Fri, 21 Dec 2007 12:08:23 +1100
+User-Agent: KMail/1.9.5
+Cc: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       sds@tycho.nsa.gov, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+References: <200712181800.23578.nickpiggin@yahoo.com.au> <643.1197930966@redhat.com> <6481.1198175619@redhat.com>
+In-Reply-To: <6481.1198175619@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071220.161726.68534356.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200712211208.24026.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 04:17:26PM -0800, David Miller wrote:
-> From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> Date: Thu, 20 Dec 2007 20:47:55 +0100
-> 
-> > [  145.128915] TSTATE: 0000004411009603 TPC: 00000000005119ac TNPC: 00000000005119b0 Y: 00000000    Not tainted
-> > [  145.128940] TPC: <kpagecount_read+0x94/0xe0>
-> 
-> My suspicion at this point is that with certain RAM layouts, simply
-> iterating over PFN's is simply not working out.
+On Friday 21 December 2007 05:33, David Howells wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > > > I'd much prefer if you would handle this in the filesystem, and have
+> > > > it set PG_private whenever fscache needs to receive a callback, and
+> > > > DTRT depending on whether PG_fscache etc. is set or not.
+> > >
+> > > That's tricky and slower[*].  One of the things I want to do is to
+> > > modify iso9660 to do be able to do caching, but PG_private is 'owned'
+> > > by the generic buffer cache code.
+> >
+> > Maybe it is harder, but it is the right way to do it.
+>
+> You're wrong.  It would mean that PG_private is the logical disjunction of
+> PG_fscache and some condition not otherwise explicitly stored.  I tried
+> that with NFS and it was nasty.
+>
+> As you can no doubt see, it means that you can't distinguish all the states
+> you used to be able to.
+>
+> > So you should modify the filesystems rather than core code.
+>
+> I think you missed what I said:
+>
+> 	but PG_private is 'owned' by the generic buffer cache code.
+>
+> That means more of the core code would have to change - or, at least,
+> change more.
 
-That was my original suspicion, which is why I asked Mariusz to
-effectively comment out the actual PFN lookup up-thread. I didn't send
-him a patch to do that, so I guess my instructions on how to hack it
-may have been misunderstood.
- 
-> pfn_to_page() seems to be doing no range checking, and with sparsemem
-> vmemmap, which sparc64 always uses, this can be problematic.
-> 
-> It just blindly goes "vmemmap + pfn" which is asking for trouble, in
-> particular when the physical RAM layout really is sparse.
-> 
-> Maybe it's enough to add a pfn_valid() check here?  If pfn_valid()
-> means there is a vmemmap translation setup for that page struct too,
-> it would work.
+Then make a PG_private2 bit and use that.
 
-Here's a test patch:
-
-Index: mm/fs/proc/proc_misc.c
-===================================================================
---- mm.orig/fs/proc/proc_misc.c	2007-12-20 19:04:35.000000000 -0600
-+++ mm/fs/proc/proc_misc.c	2007-12-20 19:06:01.000000000 -0600
-@@ -707,7 +707,10 @@ static ssize_t kpagecount_read(struct fi
- 		return -EIO;
- 
- 	while (count > 0) {
--		ppage = pfn_to_page(pfn++);
-+		ppage = 0;
-+		if (pfn_valid(pfn))
-+			ppage = pfn_to_page(pfn);
-+		pfn++;
- 		if (!ppage)
- 			pcount = 0;
- 		else
-@@ -773,7 +776,10 @@ static ssize_t kpageflags_read(struct fi
- 		return -EIO;
- 
- 	while (count > 0) {
--		ppage = pfn_to_page(pfn++);
-+		ppage = 0;
-+		if (pfn_valid(pfn))
-+			ppage = pfn_to_page(pfn);
-+		pfn++;
- 		if (!ppage)
- 			kflags = 0;
- 		else
-
-
--- 
-Mathematics is the supreme nostalgia of our time.
