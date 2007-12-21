@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762930AbXLUOS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761712AbXLUOW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762930AbXLUOS1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 09:18:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbXLUOSQ
+	id S1761712AbXLUOW3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 09:22:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbXLUOWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 09:18:16 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:60853 "EHLO mx1.redhat.com"
+	Fri, 21 Dec 2007 09:22:21 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:25294 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753936AbXLUOSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 09:18:15 -0500
-Date: Fri, 21 Dec 2007 09:17:53 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 17/20] non-reclaimable mlocked pages
-Message-ID: <20071221091753.15a18935@bree.surriel.com>
-In-Reply-To: <200712212152.19260.nickpiggin@yahoo.com.au>
-References: <20071218211539.250334036@redhat.com>
-	<1198080267.5333.22.camel@localhost>
-	<20071220155627.6872b0e6@bree.surriel.com>
-	<200712212152.19260.nickpiggin@yahoo.com.au>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751651AbXLUOWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 09:22:20 -0500
+Date: Fri, 21 Dec 2007 15:22:22 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Adrian McMenamin <lkmladrian@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH - SH/Dreamcast] Add support for GD-Rom device
+Message-ID: <20071221142222.GG11583@kernel.dk>
+References: <8b67d60712201559h5dbb2a17q8f16223b26b88006@mail.gmail.com> <8b67d60712201607k66d67fa2la8b21fc698fdb3ab@mail.gmail.com> <20071221121441.GB11583@kernel.dk> <8b67d60712210611j6169e262vd761b1d1aca75eb4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8b67d60712210611j6169e262vd761b1d1aca75eb4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Dec 2007 21:52:19 +1100
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Fri, Dec 21 2007, Adrian McMenamin wrote:
+> On 21/12/2007, Jens Axboe <jens.axboe@oracle.com> wrote:
+> >
+> > Your design is also heavily geared towards there just being a single
+> > CDROM, I'm assuming this wont be a problem given your hw (it sets a bad
+> > example for others to follow though, lots of violations against normal
+> > programming practice for multiple devices and smp).
+> 
+> 
+> Yes, because is there only one device and there will only ever be one
+> device (unless you know of somebody doing Dreamcast hardware
+> development).
+> 
+> I understand the point you are making but adding in additional code
+> would only diminish resource availability or slow performance on a
+> small machine without actually delivering any better outcomes for
+> kernel users..
+> 
+> Is it reaslly necessary?
 
-> BTW. if you have any workloads that are limited by page reclaim,
-> especially unmapped file backed pagecache reclaim, then I have some
-> stright-line-speedup patches which you might find interesting (I can
-> send them if you'd like to test).
+No it's not necessary, it was just a general reflection on how it could
+have been done more in style with "regular" drivers.
 
-I am definately interested in those.
+-- 
+Jens Axboe
 
-The current upstream VM seems to be fairly good in steady state,
-with the largest problems happening when the system switches states
-(eg. from reclaiming page cache to swapping), but any speedups in
-the steady state are good too.
