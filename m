@@ -1,101 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764220AbXLUCR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762556AbXLUCRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764220AbXLUCR1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Dec 2007 21:17:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbXLUCRR
+	id S1762556AbXLUCRt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Dec 2007 21:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762481AbXLUCRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Dec 2007 21:17:17 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:32556 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbXLUCRQ (ORCPT
+	Thu, 20 Dec 2007 21:17:21 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54646 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761554AbXLUCRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Dec 2007 21:17:16 -0500
-Date: Thu, 20 Dec 2007 20:15:52 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-In-reply-to: <476B185D.3000409@redhat.com>
-To: tcamuso@redhat.com
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>,
-       Prarit Bhargava <prarit@redhat.com>, bnagendr@redhat.com
-Message-id: <476B21D8.2030602@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 8BIT
-References: <fa.HvUNJ45qy60H427u0v9fNt3Gc7E@ifi.uio.no>
- <fa.uuzqvr64HFsgxfiWwhEmE16Di6c@ifi.uio.no>
- <fa.zhxdNN/1rfQhfJLVmdGBjvKYrCM@ifi.uio.no>
- <fa.z1qlON6DA9ubBPFdrEcaFTMgYOY@ifi.uio.no>
- <fa.U/SCC1Gvd3nSOpkMu5vcsSPYyPE@ifi.uio.no>
- <fa.d8kGTkzOZH22bXRIRiakqgOPBM4@ifi.uio.no> <476B0C58.4030703@shaw.ca>
- <476B185D.3000409@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Thu, 20 Dec 2007 21:17:20 -0500
+Date: Thu, 20 Dec 2007 18:15:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andy Whitcroft <apw@shadowen.org>,
+       Joe Perches <joe@perches.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, trivial@kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: Trailing periods in kernel messages
+Message-Id: <20071220181532.f31cdcaa.akpm@linux-foundation.org>
+In-Reply-To: <200712210243.35240.elendil@planet.nl>
+References: <474E6BD0.20103@cn.fujitsu.com>
+	<20071220162923.GB27885@shadowen.org>
+	<20071220210741.6dc3caf5@the-village.bc.nu>
+	<200712210243.35240.elendil@planet.nl>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tony Camuso wrote:
-> Robert Hancock wrote:
-> 
->> First off, I would like to see confirmation from the horses's mouths 
->> here (namely AMD, ServerWorks/Broadcom, and whoever else) that there 
->> is no other way to get around this problem than disabling MMCONFIG for 
->> accesses behind those chips.
->>
-> 
-> I happen to have this one stored in my desktop.
-> 
->  From AMD-8132TM HyperTransportTM
->      PCI-X®2.0 Tunnel
->       Revision Guide
-> 
-> http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/30801.pdf 
-> 
-> 
-> 79 AMD-8132TM Tunnel Lacks Extended Configuration
->         Space Memory-Mapped I/O Base Address Register
-> 
-> Description
-> 
-> Current AMD processors do not natively support PCI-defined extended 
-> configuration space. A memory
-> mapped I/O base address register (MMIO BAR) is required in chipset 
-> devices to support extended
-> configuration space. The AMD-8132 does not have this MMIO BAR.
-> Potential Effect On System
-> 
-> The AMD-8132 is a PCI-X® Mode 2 capable device and requires the MMIO BAR 
-> to support extended
-> configuration space. Using a device which does have this MMIO BAR and an 
-> AMD-8132 on the same
-> HyperTransportTM link of the processor may cause firmware/software 
-> problems.
-> 
-> The base configuration space of the AMD-8132 and PCI(-X) devices 
-> attached to it are accessible using only
-> the mechanism defined in PCI 2.3. Registers of PCI-X Mode 2 devices 
-> attached to the AMD-8132 in the
-> extended configuration space are not accessible. The AMD-8132 has no 
-> registers in the extended
-> configuration space.
-> 
-> Suggested Workaround
-> 
-> It is strongly recommended that system designers do not connect the 
-> AMD-8132 and devices that use extended
-> configuration space MMIO BARs (ex: HyperTransport-to-PCI Express® 
-> bridges) to the same processor
-> HyperTransport link.
-> 
-> Fix Planned
-> No
+On Fri, 21 Dec 2007 02:43:33 +0100 Frans Pop <elendil@planet.nl> wrote:
 
-That does sound fairly definitive. I have to wonder why certain system 
-designers then didn't follow their strong recommendation..
+> On Thursday 20 December 2007, Alan Cox wrote:
+> > The kernel printk messages are sentences.
+> 
+> I'm afraid that I completely and utterly disagree. Kernel messages are _not_ 
+> sentences. The vast majority is not well-formed and does not contain any of 
+> the elements that are required for a proper sentence.
+> 
+> The most kernel messages can be compared to is a rather diverse and sloppy 
+> enumeration. And enumerations follow completely different rules than 
+> sentences. It can better be characterized as a "semi-random sequence of 
+> context-sensitive technical messages".
+> 
+> IMHO the existing rule that "Kernel messages do not have to be terminated 
+> with a period." is completely justified, though it does need some minor 
+> clarification on the cases in which proper punctuation _should_ be 
+> followed.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+No-period is a kernel idiom, produces perfectly readable output, I have
+never ever heard of anyone expressing the least concern over a lack of dots
+at the end of their printks and 91% of kernel code agrees.
 
+otoh the place where no-dots comes horridly unstuck is if a single printk
+contains two sentences:
+
+	printk("My computer caught on fire.  I hope yours does too\n");
+
+that's really daft.  It's very rare though.
+
+
+Of course one could always patch syslogd to add the dots, or change printk
+and add an i_am_anal=1 kernel boot option.
+
+
+Andy, please have an accident with that checkpatch change and let's hope
+like hell that nobody starts trying to "fix" any of this.
