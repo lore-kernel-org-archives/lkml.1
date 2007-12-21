@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761570AbXLUM4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbXLUM63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761570AbXLUM4S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 07:56:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbXLUM4H
+	id S1761346AbXLUM63 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 07:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756045AbXLUM6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 07:56:07 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:55195 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753968AbXLUM4F convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 07:56:05 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH -mm 05/43] compat_binfmt_elf
-Date: Fri, 21 Dec 2007 13:55:04 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <20071220115200.C767E26F98A@magilla.localdomain> <20071220115447.4F8E326F98A@magilla.localdomain>
-In-Reply-To: <20071220115447.4F8E326F98A@magilla.localdomain>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Fri, 21 Dec 2007 07:58:23 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4521 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756004AbXLUM6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 07:58:22 -0500
+Date: Fri, 21 Dec 2007 12:58:12 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Matthew Bloch <matthew@bytemark.co.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Testing RAM from userspace / question about memmap= arguments
+Message-ID: <20071221125812.GA4052@ucw.cz>
+References: <fk8umh$n7o$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712211355.05173.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+cMwPCkNTjoLCuwnXocncXUosEHwM3xFHs1Zh
- SdtHbOuxvNRShvkCHMT/373c4Sb2pFE8nsoLuuVAHlX7S+wphi
- SoBMTrrykBvPdCXmNVEhw==
+In-Reply-To: <fk8umh$n7o$1@ger.gmane.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 December 2007, Roland McGrath wrote:
-> This adds fs/compat_binfmt_elf.c, a wrapper around fs/binfmt_elf.c for
-> 32-bit ELF support on 64-bit kernels.  It can replace all the hand-rolled
-> versions of this that each 32/64 arch has, which are all about the same.
+On Tue 2007-12-18 17:06:24, Matthew Bloch wrote:
+> Hi - I'm trying to come up with a way of thoroughly testing every byte
+> of RAM from within Linux on amd64 (so that it can be automated better
+> than using memtest86+), and came up with an idea which I'm not sure is
+> supported or practical.
+> 
+> The obvious problem with testing memory from user space is that you
+> can't mlock all of it, so the best you can do is about three quarters,
+> and hope that the rest of the memory is okay.
+> 
+> In order to test all of the memory, I'd like to run the user-space
+> memtester over two boots of the kernel.
+> 
+> Say we have a 1024MB machine, the first boot I'd not specify any
+> arguments and assume the kernel would start at the bottom of physical
+> memory and work its way up, so that the kernel & working userspace would
+> live at the bottom, and the rest would be testable from space.
+> 
+> On the second boot, could I then specify:
+> 
+> memmap=exact memmap=512M@512M memmap=512M@0
 
-Great stuff! I've attempted to do this a few times over the past years,
-but could never get my head around it. One more bit of broken compat
-code gone from the architectures!
+Actually, with kexec, you can probably doing without reboot.
 
-	Arnd <><
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
