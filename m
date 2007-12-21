@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbXLUQhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757853AbXLUQhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756923AbXLUQhi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 11:37:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbXLUQhb
+	id S1757853AbXLUQhw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 11:37:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbXLUQhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 11:37:31 -0500
-Received: from spirit.analogic.com ([204.178.40.4]:2031 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753274AbXLUQha convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 11:37:30 -0500
+	Fri, 21 Dec 2007 11:37:43 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34702 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753261AbXLUQhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 11:37:42 -0500
+Date: Fri, 21 Dec 2007 17:33:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+Message-ID: <20071221163337.GA8660@elte.hu>
+References: <1197049846.1645.68.camel@localhost.localdomain> <20071211143336.GA17866@elte.hu> <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com> <20071221120908.GA15926@elte.hu> <20071221122628.GA18002@elte.hu> <Pine.LNX.4.64.0712210818360.29372@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 21 Dec 2007 16:37:27.0057 (UTC) FILETIME=[C58BB010:01C843EF]
-Content-class: urn:content-classes:message
-Subject: Re: Trying to convert old modules to newer kernels
-Date: Fri, 21 Dec 2007 11:37:21 -0500
-Message-ID: <Pine.LNX.4.61.0712211136180.13826@chaos.analogic.com>
-in-reply-to: <20071221143959.GG2308@csclub.uwaterloo.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Trying to convert old modules to newer kernels
-thread-index: AchD78WqGC0JbZDlSQO1pEkfdadLiA==
-References: <ada1w9hyrhn.fsf@cisco.com> <Pine.LNX.4.61.0712201755330.9907@chaos.analogic.com> <20071221143959.GG2308@csclub.uwaterloo.ca>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
-Cc: "Roland Dreier" <rdreier@cisco.com>,
-       "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0712210818360.29372@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 21 Dec 2007, Lennart Sorensen wrote:
+* Christoph Lameter <clameter@sgi.com> wrote:
 
-> On Thu, Dec 20, 2007 at 05:56:19PM -0500, linux-os (Dick Johnson) wrote:
->> Okay. Thanks! I need to do that.
->
-> On the (now somewhat old) 2.6.18 kernel I use it is an option under
-> "Processor type and features" called "Use register arguments", but yeah
-> it isn't an option anymore in new kernels.
->
-> As for your argument that it isn't a good idea, well most of the time
-> the arguments you want to pass to a function are already values you were
-> just working with to get them ready for the function, so quite likely
-> they are already in the registers you are worried about having to clear
-> first.  Add to that the ability of modern x86 CPUs to use rename
-> registers to fake stack accesses in some cases and the clearing of the
-> registers become pretty much a non issue, at least that's my
-> understanding of how things work.
->
-> --
-> Len Sorensen
->
+> On Fri, 21 Dec 2007, Ingo Molnar wrote:
+> 
+> > and this is not the only regression:
+> > 
+> >     http://lkml.org/lkml/2007/10/4/290
+> > 
+> > _6%_ TPC-C regression. That's _a lot_ in TPC-C terms.
+> > 
+> > and just like in this case there were very clear profiles posted. I 
+> > proffer, reading back the whole thread, that if you fix hackbench 
+                                                 ^^^^^^^^^^^^^^^^^^^^
+> > you have fixed TPC-C as well.
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 
+> There are patches pending to address these issues. AFAICT Intel is 
+> testing if the regression is still there. There is no way for me to 
+> verify what is going on there and there is the constant difficulty of 
+> getting detailed information about what is going on at Intel. Every 
+> couple of month I get a result from that test. Its a really crappy 
+> situation where a lot of confusing information is passed around.
 
-If the procedures in different files or are in libraries, there
-is no way for the compiler to "know."
+of course there is a way to find out, and that's why i mailed you: fix 
+the hackbench regression and i'm quite sure you'll improve the TPC-C 
+numbers as well. It shows the same kind of overhead in the profile and 
+takes just a few seconds to run. Are your pending SLUB patches in 
+2.6.24-rc5-mm1 already?
 
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+	Ingo
