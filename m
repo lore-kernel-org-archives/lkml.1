@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbXLUHHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbXLUHKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523AbXLUHHK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 02:07:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbXLUHG5
+	id S1756459AbXLUHKS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 02:10:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbXLUHKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 02:06:57 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46458 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750977AbXLUHG4 (ORCPT
+	Fri, 21 Dec 2007 02:10:06 -0500
+Received: from ams-iport-1.cisco.com ([144.254.224.140]:11519 "EHLO
+	ams-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbXLUHKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 02:06:56 -0500
-Date: Fri, 21 Dec 2007 07:06:50 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH -mm 01/43] user_regset header
-Message-ID: <20071221070650.GA4345@infradead.org>
-References: <20071220115200.C767E26F98A@magilla.localdomain> <20071220115357.D1E1326F98A@magilla.localdomain>
+	Fri, 21 Dec 2007 02:10:05 -0500
+X-Greylist: delayed 595 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Dec 2007 02:10:04 EST
+X-IronPort-AV: E=Sophos;i="4.24,192,1196636400"; 
+   d="scan'208";a="1479047"
+Message-ID: <476B6448.7090805@hotmail.com>
+Date: Thu, 20 Dec 2007 22:59:20 -0800
+From: Srinivas Kommu <kommu@hotmail.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071220115357.D1E1326F98A@magilla.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+To: linux-kernel@vger.kernel.org
+CC: Srinivas Kommu <kommu@hotmail.com>
+Subject: driver spin lock and files_lock deadlock question
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Dec 2007 07:00:06.0588 (UTC) FILETIME=[1E3797C0:01C8439F]
+Authentication-Results: ams-dkim-2; header.From=kommu@hotmail.com; dkim=neutral
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 20, 2007 at 03:53:57AM -0800, Roland McGrath wrote:
-> +/*
-> + * User-mode machine state access
-> + *
-> + * Copyright (C) 2007 Red Hat, Inc.  All rights reserved.
-> + *
-> + * This copyrighted material is made available to anyone wishing to use,
-> + * modify, copy, or redistribute it subject to the terms and conditions
-> + * of the GNU General Public License v.2.
-> + *
-> + * Red Hat Author: Roland McGrath.
+I have a driver that needs to be SMP-safe. It also has some code hooking 
+into the net_rx_action softirq. So it takes a spinlock and disables the 
+local bottom-half around its critical sections: 
+spin_lock_bh(&driver_lock). Now, I'm facing a deadlock under a 
+particular sequence involving the files_lock:
 
-What's a Red Hat Author?  Sorry for the nitpicking, but why don't you
-just use Author like everyone else?
+1. CPU 0 takes driver_lock and then calls remove_proc_entry() which is 
+hanging at spin_lock(&files_lock).
 
+2. CPU 1 was in fput() which took files_lock; the softirq comes in at 
+this point and attempts to take driver_lock and hangs forever.
+
+It seems this kind of a deadlock can happen with any kernel lock, not 
+just files_lock. What's the driver's mistake here? Is it wrong to call 
+remove_proc_entry() while holding another lock? What is the right thing 
+to do?
+
+This is with the 2.4 kernel, BTW.
+
+
+thanks
+srini
