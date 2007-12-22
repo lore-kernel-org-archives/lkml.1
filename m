@@ -1,143 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbXLVWSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbXLVWYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbXLVWSc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 17:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbXLVWSZ
+	id S1755111AbXLVWYW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 17:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbXLVWYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 17:18:25 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:39916 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752868AbXLVWSY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 17:18:24 -0500
-Message-ID: <fa686aa40712221418m601d3ffrd5b9158104712078@mail.gmail.com>
-Date: Sat, 22 Dec 2007 15:18:23 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Steven Cavanagh" <steven.cavanagh@secretlab.ca>
-Subject: Re: [PATCH] fat: Editions to support fat_fallocate()
-Cc: hirofumi@mail.parknet.co.jp, linux-kernel@vger.kernel.org
-In-Reply-To: <20071222210958.9351.35913.stgit@jpe-laptop>
+	Sat, 22 Dec 2007 17:24:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53311 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753502AbXLVWYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 17:24:12 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+Subject: Re: [2.6.24-rc6] pdflush still stuck in D state regression
+Date: Sat, 22 Dec 2007 23:43:35 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+References: <200712221404.24117.tvrtko@ursulin.net>
+In-Reply-To: <200712221404.24117.tvrtko@ursulin.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20071222210958.9351.35913.stgit@jpe-laptop>
-X-Google-Sender-Auth: 17694bee5d1ab3a6
+Message-Id: <200712222343.35670.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Steve, comments below.
+On Saturday, 22 of December 2007, Tvrtko A. Ursulin wrote:
+> 
+> Hi,
 
-On 12/22/07, Steven Cavanagh <steven.cavanagh@secretlab.ca> wrote:
-> From: Steven Cavanagh <steven.cavanagh@secretlab.ca>
->
-> Added support for fallocate for a msdos fat driver. This allows
-> preallocation of clusters to an inode before writes to reduce
-> file fragmentation
+Hi,
 
-Not technically true.  This doesn't make any guarantees about
-fragmentation (even if in general it works pretty well).  To really
-reduce fragmentation, then cluster allocation needs to be made smarter
-so it goes looking for contiguous clusters when allocating, but that's
-a task for a separate patch.  Please adjust your description.
+> As it was in this bug report: http://bugzilla.kernel.org/show_bug.cgi?id=9441
 
-Also, please briefly describe the testing that you've performed.
+I have reopened http://bugzilla.kernel.org/show_bug.cgi?id=9291 .  Please
+update add the new information in there.
+ 
+> I am still not sure it is a duplicate because it has nothing to do with reiserfs on 
+> my systems. Here is the latest trace:
+> 
+> pdflush       S 00000000     0   139      2
+>        00000000 00000046 eba01fc4 00000000 b0155a80 00000000 b0155b2c eb820000 
+>        eaab6fc0 00000000 b02aa388 b034d9b0 b034d9b0 fffb6e4a fffffffc b012f0d2 
+>        b012f090 00000000 00000000 b0104b6f eb817f44 00000000 00000000 00000000 
+> Call Trace:
+>  [<b0155a80>] pdflush+0x0/0x210
+>  [<b0155b2c>] pdflush+0xac/0x210
+>  [<b02aa388>] schedule+0x168/0x2e0
+>  [<b012f0d2>] kthread+0x42/0x70
+>  [<b012f090>] kthread+0x0/0x70
+>  [<b0104b6f>] kernel_thread_helper+0x7/0x18
+>  =======================
+> pdflush       D 00140f4c     0   140      2
+>        b02af660 00000046 eba03f10 00140f4c 0000444d 000f22fd b02aa9a9 eb5e092c 
+>        eba03f74 b03cbfe8 b03cbfe8 00140f4c b0124700 eaab7500 b03cbd80 b02aa9a4 
+>        6c666470 00687375 00000000 00000000 0000008c 00000064 b034da20 b02aa20b 
+> Call Trace:
+>  [<b02aa9a9>] schedule_timeout+0x49/0xc0
+>  [<b0124700>] process_timeout+0x0/0x10
+>  [<b02aa9a4>] schedule_timeout+0x44/0xc0
+>  [<b02aa20b>] __sched_text_start+0xb/0x20
+>  [<b015a273>] congestion_wait+0x73/0x90
+>  [<b012f3f0>] autoremove_wake_function+0x0/0x50
+>  [<b0155625>] wb_kupdate+0x95/0xe0
+>  [<b0155a80>] pdflush+0x0/0x210
+>  [<b0155b8a>] pdflush+0x10a/0x210
+>  [<b0155590>] wb_kupdate+0x0/0xe0
+>  [<b012f0d2>] kthread+0x42/0x70
+>  [<b012f090>] kthread+0x0/0x70
+>  [<b0104b6f>] kernel_thread_helper+0x7/0x18
+>  =======================
 
-More comments below.
-
-> Signed-off-by: Steven.Cavanagh <steven.cavanagh@secretlab.ca>
-> ---
->
->  fs/fat/file.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 45 insertions(+), 0 deletions(-)
->
-> diff --git a/fs/fat/file.c b/fs/fat/file.c
-> index 69a83b5..f753c6a 100644
-> --- a/fs/fat/file.c
-> +++ b/fs/fat/file.c
-> @@ -15,6 +15,7 @@ #include <linux/buffer_head.h>
->  #include <linux/writeback.h>
->  #include <linux/backing-dev.h>
->  #include <linux/blkdev.h>
-> +#include <linux/falloc.h>
->
->  int fat_generic_ioctl(struct inode *inode, struct file *filp,
->                       unsigned int cmd, unsigned long arg)
-> @@ -312,8 +313,52 @@ int fat_getattr(struct vfsmount *mnt, st
->  }
->  EXPORT_SYMBOL_GPL(fat_getattr);
->
-> +/*
-> + * preallocate space for a file. This implements fat fallocate inode
-> + * operation, which gets called from sys_fallocate system call. User
-> + * space requests len bytes at offset.
-> + */
-> +long fat_fallocate(struct inode *inode, int mode, loff_t offset, loff_t len)
-> +{
-> +       int ret = 0;
-> +       loff_t filesize = inode->i_size;
-> +
-> +       /* preallocation to directories is currently not supported */
-> +       if (S_ISDIR(inode->i_mode)) {
-> +               printk(KERN_ERR
-> +               "fat_fallocate(): Directory prealloc not supported\n");
-
-This printk is probably not needed, or at least make it a pr_debug()
-
-> +               return -ENODEV;
-> +       }
-> +
-> +       if ((offset + len) <= MSDOS_I(inode)->mmu_private) {
-> +               printk(KERN_INFO
-> +                       "fat_fallocate():Blocks already allocated\n");
-
-Drop the printk() here.  It will cause a write to the system log
-everytime userspace does an unnecessary fat_fallocate().  That becomes
-a performance hit which I don't think we want.
-
-> +                       return 0;
-> +       }
-> +
-> +       if ((offset + len) > MSDOS_I(inode)->mmu_private) {
-> +
-> +               mutex_lock(&inode->i_mutex);
-> +               ret = fat_cont_expand(inode, (offset + len));
-> +               if (ret) {
-> +                       printk(KERN_ERR
-> +                               "fat_fallocate():fat_cont_expand() error\n");
-> +                       mutex_unlock(&inode->i_mutex);
-> +                       return ret;
-> +               }
-> +               mutex_unlock(&inode->i_mutex);
-> +       }
-> +       if (mode & FALLOC_FL_KEEP_SIZE) {
-> +               mutex_lock(&inode->i_mutex);
-> +               i_size_write(inode, filesize);
-> +               mutex_unlock(&inode->i_mutex);
-> +       }
-
-Race condition.  The file is increased in size and then returned to
-the original size if FALLOC_FL_KEEP_SIZE is set, but the lock is
-dropped then reobtained between increasing the size and restoring to
-the original.  Another file operation can occur between the two
-operations.  Badness!
-
-However, digging further, when FALLOC_FL_KEEP_SIZE is set, I don't
-think fat_cont_expand() has the behaviour that we want to implement.
-When that flag is set, I think we simply want to add clusters
-associated with the file to the FAT.  We don't want to clear them or
-map them into the page cache yet (that should be done when the
-filesize is increased for real).
-
-I believe a call to fat_allocate_clusters() is all that is needed in
-this case.  Hirofumi, please correct me if I'm wrong.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Thanks,
+Rafael
