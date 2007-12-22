@@ -1,155 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbXLVT0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbXLVT2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbXLVT0T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 14:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbXLVT0L
+	id S1754459AbXLVT2a (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 14:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbXLVT2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 14:26:11 -0500
-Received: from thunk.org ([69.25.196.29]:49885 "EHLO thunker.thunk.org"
+	Sat, 22 Dec 2007 14:28:23 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:3456 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbXLVT0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 14:26:10 -0500
-Date: Sat, 22 Dec 2007 14:25:50 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-Message-ID: <20071222192550.GD28891@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-	Christoph Lameter <clameter@sgi.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Hellwig <hch@infradead.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>
-References: <Pine.LNX.4.64.0712210750510.29372@schroedinger.engr.sgi.com> <alpine.LFD.0.9999.0712210835440.21557@woody.linux-foundation.org> <Pine.LNX.4.64.0712211356220.3795@schroedinger.engr.sgi.com> <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy> <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com> <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de> <20071222100326.GF26157@elte.hu> <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1752098AbXLVT2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 14:28:22 -0500
+Subject: Re: [PATCH 1/3] Remove unused dependency
+From: Joe Perches <joe@perches.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       trivial@kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Richard Henderson <rth@twiddle.net>
+In-Reply-To: <20071222143128.GA24659@uranus.ravnborg.org>
+References: <1198306931-5258-1-git-send-email-joe@perches.com>
+	 <1198306931-5258-2-git-send-email-joe@perches.com>
+	 <20071222083323.GA22653@uranus.ravnborg.org>
+	 <1198313412.4895.24.camel@localhost>
+	 <20071222143128.GA24659@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Sat, 22 Dec 2007 11:28:11 -0800
+Message-Id: <1198351691.4895.42.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 22, 2007 at 10:01:37AM -0800, Linus Torvalds wrote:
-> Well, I do have to admit that I'm not a huge fan of /proc/slabinfo, and 
-> the fact that there hasn't been a lot of complaints about it going away 
-> does seem to imply that it wasn't a very important ABI.
-> 
-> I'm the first to stand up for backwards compatibility, but I also try to 
-> be realistic, and so far nobody has really complained about the fact that 
-> /proc/slabinfo went away on any grounds but on the general principle of 
-> "it was a user-visible ABI".
+On Sat, 2007-12-22 at 15:31 +0100, Sam Ravnborg wrote:
+> I looked at how inflate was used:
+>  
+> $ grep inflate */boot/Makefile
+> alpha/boot/Makefile:$(obj)/misc.o: lib/inflate.c
+> => redundandt dependency, can be deleted
+> A cleanup of all this is needed.
 
-That's probably because the people who are most likely to be using
-/proc/slabinfo tend to people people using kernels in production
-environments, and they probably haven't started playing with SLUB yet.
-So the fact we haven't heard the yelling doesn't necessarily mean that
-people won't notice.
+Perhaps it's better to move lib/inflate.c to the
+include path (include/lib ?) and convert the files that
+#include "(../)*lib/inflate.c" to
+#include <lib/inflate.c>?
 
-I know of a number of debugging scripts that periodically poll
-/proc/slabinfo to find out what is using memory and to track trends
-and predict potential problems with memory usage and balance.  Indeed,
-I've left several such scripts behind at various customer
-installations after debugging memory usage problems, and some system
-administrators very much like being able to collect that information
-easily.  So I can say for sure there at there are scripts out there
-that depend on /proc/slabinfo, but they generally tend to be at sites
-where people won't be running bleeding edge kernels.
 
-> That said, I'm not a *huge* fan of /sys/slab/ either. I can get the info I 
-> as a developer tend to want from there, but it's really rather less 
-> convenient than I'd like. It is really quite hard, for example, to get any 
-> kind of "who actually uses the most *memory*" information out of there. 
+ arch/alpha/boot/Makefile                  |    2 --
+ arch/alpha/boot/misc.c                    |    2 +-
+ arch/arm/boot/compressed/Makefile         |    2 +-
+ arch/arm/boot/compressed/misc.c           |    2 +-
+ arch/cris/arch-v10/boot/compressed/misc.c |    2 +-
+ arch/cris/arch-v32/boot/compressed/misc.c |    2 +-
+ arch/h8300/boot/compressed/misc.c         |    2 +-
+ arch/m32r/boot/compressed/misc.c          |    2 +-
+ arch/sh/boot/compressed/misc.c            |    2 +-
+ arch/sh64/boot/compressed/misc.c          |    2 +-
+ arch/x86/boot/compressed/misc_32.c        |    2 +-
+ arch/x86/boot/compressed/misc_64.c        |    2 +-
+ {lib => include/lib}/inflate.c            |    0 
+ init/do_mounts_rd.c                       |    2 +-
+ init/initramfs.c                          |    2 +-
+ 15 files changed, 13 insertions(+), 15 deletions(-)
 
-I have a general problem with things in /sys/slab, and that's just
-because they are *ugly*.  So yes, you can write ugly shell scripts
-like this to get out information:
+diff --git a/arch/alpha/boot/Makefile b/arch/alpha/boot/Makefile
+index cd14388..c53169c 100644
+--- a/arch/alpha/boot/Makefile
++++ b/arch/alpha/boot/Makefile
+@@ -112,5 +112,3 @@ $(obj)/bootpheader: $(obj)/bootloader.lds $(OBJ_bootph) $(LIBS_Y) FORCE
+ 
+ $(obj)/bootpzheader: $(obj)/bootloader.lds $(OBJ_bootpzh) $(LIBS_Y) FORCE
+ 	$(call if_changed,ld)
+-
+-$(obj)/misc.o: lib/inflate.c
+diff --git a/arch/alpha/boot/misc.c b/arch/alpha/boot/misc.c
+index c00646b..c132505 100644
+--- a/arch/alpha/boot/misc.c
++++ b/arch/alpha/boot/misc.c
+@@ -100,7 +100,7 @@ static ulg free_mem_ptr_end;
+ 
+ #define HEAP_SIZE 0x3000
+ 
+-#include "../../../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ static void *malloc(int size)
+ {
+diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
+index 5fde99f..563cfc2 100644
+--- a/arch/arm/boot/compressed/Makefile
++++ b/arch/arm/boot/compressed/Makefile
+@@ -111,5 +111,5 @@ $(obj)/font.c: $(FONTC)
+ $(obj)/vmlinux.lds: $(obj)/vmlinux.lds.in arch/arm/boot/Makefile .config
+ 	@sed "$(SEDFLAGS)" < $< > $@
+ 
+-$(obj)/misc.o: $(obj)/misc.c include/asm/arch/uncompress.h lib/inflate.c
++$(obj)/misc.o: $(obj)/misc.c include/asm/arch/uncompress.h
+ 
+diff --git a/arch/arm/boot/compressed/misc.c b/arch/arm/boot/compressed/misc.c
+index 9b44402..7c3850d 100644
+--- a/arch/arm/boot/compressed/misc.c
++++ b/arch/arm/boot/compressed/misc.c
+@@ -241,7 +241,7 @@ static ulg free_mem_ptr_end;
+ 
+ #define HEAP_SIZE 0x3000
+ 
+-#include "../../../../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ #ifndef STANDALONE_DEBUG
+ static void *malloc(int size)
+diff --git a/arch/cris/arch-v10/boot/compressed/misc.c b/arch/cris/arch-v10/boot/compressed/misc.c
+index e205d2e..3298a66 100644
+--- a/arch/cris/arch-v10/boot/compressed/misc.c
++++ b/arch/cris/arch-v10/boot/compressed/misc.c
+@@ -108,7 +108,7 @@ static void puts(const char *);
+ extern int end;
+ static long free_mem_ptr = (long)&end;
+  
+-#include "../../../../../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ static void *malloc(int size)
+ {
+diff --git a/arch/cris/arch-v32/boot/compressed/misc.c b/arch/cris/arch-v32/boot/compressed/misc.c
+index 0169ba1..dc5a119 100644
+--- a/arch/cris/arch-v32/boot/compressed/misc.c
++++ b/arch/cris/arch-v32/boot/compressed/misc.c
+@@ -110,7 +110,7 @@ static void puts(const char *);
+ extern int _end;
+ static long free_mem_ptr = (long)&_end;
+ 
+-#include "../../../../../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ static void *malloc(int size)
+ {
+diff --git a/arch/h8300/boot/compressed/misc.c b/arch/h8300/boot/compressed/misc.c
+index 8450745..863d794 100644
+--- a/arch/h8300/boot/compressed/misc.c
++++ b/arch/h8300/boot/compressed/misc.c
+@@ -92,7 +92,7 @@ static unsigned long free_mem_end_ptr;
+ 
+ #define HEAP_SIZE             0x10000
+ 
+-#include "../../../../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ #define SCR *((volatile unsigned char *)0xffff8a)
+ #define TDR *((volatile unsigned char *)0xffff8b)
+diff --git a/arch/m32r/boot/compressed/misc.c b/arch/m32r/boot/compressed/misc.c
+index 600d40e..dac3a0b 100644
+--- a/arch/m32r/boot/compressed/misc.c
++++ b/arch/m32r/boot/compressed/misc.c
+@@ -90,7 +90,7 @@ static unsigned long free_mem_end_ptr;
+ 
+ #define HEAP_SIZE             0x10000
+ 
+-#include "../../../../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ static void *malloc(int size)
+ {
+diff --git a/arch/sh/boot/compressed/misc.c b/arch/sh/boot/compressed/misc.c
+index df65e30..a00dd7e 100644
+--- a/arch/sh/boot/compressed/misc.c
++++ b/arch/sh/boot/compressed/misc.c
+@@ -99,7 +99,7 @@ static unsigned long free_mem_end_ptr;
+ 
+ #define HEAP_SIZE             0x10000
+ 
+-#include "../../../../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ static void *malloc(int size)
+ {
+diff --git a/arch/sh64/boot/compressed/misc.c b/arch/sh64/boot/compressed/misc.c
+index aea00c5..3b151f4 100644
+--- a/arch/sh64/boot/compressed/misc.c
++++ b/arch/sh64/boot/compressed/misc.c
+@@ -97,7 +97,7 @@ static unsigned long free_mem_end_ptr;
+ 
+ #define HEAP_SIZE             0x10000
+ 
+-#include "../../../../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ static void *malloc(int size)
+ {
+diff --git a/arch/x86/boot/compressed/misc_32.c b/arch/x86/boot/compressed/misc_32.c
+index b74d60d..fd8674e 100644
+--- a/arch/x86/boot/compressed/misc_32.c
++++ b/arch/x86/boot/compressed/misc_32.c
+@@ -199,7 +199,7 @@ static int lines, cols;
+ void *xquad_portio;
+ #endif
+ 
+-#include "../../../../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ static void *malloc(int size)
+ {
+diff --git a/arch/x86/boot/compressed/misc_64.c b/arch/x86/boot/compressed/misc_64.c
+index 6ea015a..315e667 100644
+--- a/arch/x86/boot/compressed/misc_64.c
++++ b/arch/x86/boot/compressed/misc_64.c
+@@ -195,7 +195,7 @@ static char *vidmem = (char *)0xb8000;
+ static int vidport;
+ static int lines, cols;
+ 
+-#include "../../../../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ static void *malloc(int size)
+ {
+diff --git a/lib/inflate.c b/include/lib/inflate.c
+similarity index 100%
+rename from lib/inflate.c
+rename to include/lib/inflate.c
+diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
+index 3ac5904..cf364f6 100644
+--- a/init/do_mounts_rd.c
++++ b/init/do_mounts_rd.c
+@@ -319,7 +319,7 @@ static void __init error(char *m);
+ static void __init gzip_mark(void **);
+ static void __init gzip_release(void **);
+ 
+-#include "../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ static void __init *malloc(size_t size)
+ {
+diff --git a/init/initramfs.c b/init/initramfs.c
+index 1db02a0..23c588b 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -410,7 +410,7 @@ static void __init error(char *m);
+ static void __init gzip_mark(void **);
+ static void __init gzip_release(void **);
+ 
+-#include "../lib/inflate.c"
++#include <lib/inflate.c>
+ 
+ static void __init gzip_mark(void **ptr)
+ {
 
-> You have to use something like this:
-> 
-> 	for i in *
-> 	do
-> 		order=$(cat "$i/order")
-> 		slabs=$(cat "$i/slabs")
-> 		object_size=$(cat "$i/object_size")
-> 		objects=$(cat "$i/objects")
-> 		truesize=$(( $slabs<<($order+12) ))
-> 		size=$(( $object_size*$objects ))
-> 		percent=$(( $truesize/100 ))
-> 		if [ $percent -gt 0 ]; then
-> 			percent=$(( $size / $percent ))
-> 		fi
-> 		mb=$(( $size >> 10 ))
-> 		printf "%10d MB %3d %s\n" $mb $percent $i
-> 	done | sort -n | tail
 
-But sometimes when trying to eyeball what is going on, it's a lot
-nicer just to use "cat /proc/slabinfo".  
-
-Another problem with using /sys/slab is that it is downright *ugly*.
-Why is it for example, that /sys/slab/dentry is a symlink to
-../slab/:a-0000160?  Because of this, Linus's script reports dentry twice:
-
-     10942 MB  86 buffer_head
-     10942 MB  86 journal_head
-     10943 MB  86 :a-0000056
-     21923 MB  86 dentry
-     21924 MB  86 :a-0000160
-     78437 MB  94 ext3_inode_cache
-
-Once as "dentry" and once as ":a-0000160".  A similar situation
-happens with journal_head and ":a-0000056".  I'm sure this could be
-filtered out with the right shell or perl script, but now we're
-getting even farther from /proc/slabinfo.  
-
-Further, if you look at Documentation/sysfs-rules.txt (does anyone
-ever read it or bother to update it?), /sys/slab isn't documented so
-it falls in the category of "everything else is a kernel-level
-implementation detail which is not guaranteed to be stable".  Nice....
-
-Also, looking at sysfs-rules.txt, it talks an awful lot about reading
-symlinks, and implying that actually trying to *dereference* the
-symlinks might not actually work.  So I'm pretty sure linus's "cd
-/sys/slab; for i in *" violates the Documentation/sysfs-rules.txt
-guidelines even if /sys/slab were documented.
-
-In general, /sys has some real issues that need some careful scrutiny.
-Documentation/sysfs-rules.txt is *not* enough.  For example, various
-official websites are telling people that the way to enable or disable
-power-saving is:
-
-	echo 5 > /sys/bus/pci/drivers/iwl4965/*/power_level
-
-(Reference: http://www.lesswatts.org/tips/wireless.php)
-
-Aside from the fact that "iwconfig wlan0 power on" is easier to type
-and simpler to undrestand, I'm pretty sure that the above violates
-sysfs-rules.txt.  From looking at sysfs-rules.txt, the fact that you
-have to read symlinks as the only valid and guaranteed way for things
-to work means that you have to write a perl script to safely
-manipulate things in /sys.  People are ignoring sysfs-rules.txt, and
-giving advice in websites contrary to sysfs-rules.txt because it's too
-hard to follow.
-
-> I worry about the lack of atomicity in getting the statistics.
-
-And that's another problem with trying to use /sys when trying to get
-statistics in bulk...  Very often the tables in /proc/* were not only
-more convenient, but allowed for atomic access.
-
-						- Ted
