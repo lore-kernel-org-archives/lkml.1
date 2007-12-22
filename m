@@ -1,89 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbXLVWPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbXLVWSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbXLVWPZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 17:15:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbXLVWPL
+	id S1755141AbXLVWSc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 17:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbXLVWSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 17:15:11 -0500
-Received: from 1wt.eu ([62.212.114.60]:1063 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752759AbXLVWPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 17:15:10 -0500
-Date: Sat, 22 Dec 2007 23:10:50 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>, Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-Message-ID: <20071222221050.GA20753@1wt.eu>
-References: <Pine.LNX.4.64.0712211356220.3795@schroedinger.engr.sgi.com> <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy> <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com> <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de> <20071222100326.GF26157@elte.hu> <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org> <20071222192550.GD28891@thunk.org> <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 22 Dec 2007 17:18:25 -0500
+Received: from an-out-0708.google.com ([209.85.132.246]:39916 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752868AbXLVWSY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 17:18:24 -0500
+Message-ID: <fa686aa40712221418m601d3ffrd5b9158104712078@mail.gmail.com>
+Date: Sat, 22 Dec 2007 15:18:23 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Steven Cavanagh" <steven.cavanagh@secretlab.ca>
+Subject: Re: [PATCH] fat: Editions to support fat_fallocate()
+Cc: hirofumi@mail.parknet.co.jp, linux-kernel@vger.kernel.org
+In-Reply-To: <20071222210958.9351.35913.stgit@jpe-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+References: <20071222210958.9351.35913.stgit@jpe-laptop>
+X-Google-Sender-Auth: 17694bee5d1ab3a6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 22, 2007 at 01:00:09PM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Sat, 22 Dec 2007, Theodore Tso wrote:
-> > 
-> > I have a general problem with things in /sys/slab, and that's just
-> > because they are *ugly*.  So yes, you can write ugly shell scripts
-> > like this to get out information:
-> 
-> [ script deleted ]
-> 
-> > But sometimes when trying to eyeball what is going on, it's a lot
-> > nicer just to use "cat /proc/slabinfo".  
-> 
-> .. and I call BS on this claim.
-> 
-> /proc/slabinfo was (and is) totally pointless for "trying to eyeball 
-> what's going on". The output is totally unreadable, and useless. You end 
-> up with exactly the same script as above, except it reads as
-> 
-> 	cat /proc/slabinfo | (read headerline
-> 		while read name active num objsize objsperslab pagesperslab rest
-> 		do
-> 			realsize=$(( nul * objsize ))
-> 			size=$(( active * objsize ))
-> 			.. exact same rest of loop ..
-> 		done | sort -n | ..
-> 
-> so no, "cat /proc/slabinfo" was almost never practical on its own.
-> 
-> The *one* advantage it does have is that you can forward it to others. 
-> That's a big advantage. But no, it wasn't ever readable for eyeballing, 
-> because it doesn't even give you a memory usage thing (just "number of 
-> objects and object size" as separate numbers).
+Thanks Steve, comments below.
 
-I don't agree with you Linus. I'm one of those used to quickly take a
-look at its contents when I don't know where all my memory has gone.
-I know by experience that if I find 6-digit values in dentry_cache or
-inode_cache, all I was looking for is there, and that's enough for a
-quick diag. It doesn't give anything accurate, but it's very useful
-to quickly diag out some problems on production systems.
+On 12/22/07, Steven Cavanagh <steven.cavanagh@secretlab.ca> wrote:
+> From: Steven Cavanagh <steven.cavanagh@secretlab.ca>
+>
+> Added support for fallocate for a msdos fat driver. This allows
+> preallocation of clusters to an inode before writes to reduce
+> file fragmentation
 
-It was this week that I noticed for the first time that slabinfo did
-not exist anymore, and did not know what replaced it. Lacking time,
-I finally gave up and *supposed* that the memory was eaten by the
-usual suspects.
+Not technically true.  This doesn't make any guarantees about
+fragmentation (even if in general it works pretty well).  To really
+reduce fragmentation, then cluster allocation needs to be made smarter
+so it goes looking for contiguous clusters when allocating, but that's
+a task for a separate patch.  Please adjust your description.
 
-I can understand that it has to go away for technical reasons, but Ted
-is right, please don't believe that nobody uses it just because you got
-no complaint. While people are not likely to perform all computations
-in scripts, at least they're used to find some quickly identifiable
-patterns there.
+Also, please briefly describe the testing that you've performed.
 
-Willy
+More comments below.
 
+> Signed-off-by: Steven.Cavanagh <steven.cavanagh@secretlab.ca>
+> ---
+>
+>  fs/fat/file.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 45 insertions(+), 0 deletions(-)
+>
+> diff --git a/fs/fat/file.c b/fs/fat/file.c
+> index 69a83b5..f753c6a 100644
+> --- a/fs/fat/file.c
+> +++ b/fs/fat/file.c
+> @@ -15,6 +15,7 @@ #include <linux/buffer_head.h>
+>  #include <linux/writeback.h>
+>  #include <linux/backing-dev.h>
+>  #include <linux/blkdev.h>
+> +#include <linux/falloc.h>
+>
+>  int fat_generic_ioctl(struct inode *inode, struct file *filp,
+>                       unsigned int cmd, unsigned long arg)
+> @@ -312,8 +313,52 @@ int fat_getattr(struct vfsmount *mnt, st
+>  }
+>  EXPORT_SYMBOL_GPL(fat_getattr);
+>
+> +/*
+> + * preallocate space for a file. This implements fat fallocate inode
+> + * operation, which gets called from sys_fallocate system call. User
+> + * space requests len bytes at offset.
+> + */
+> +long fat_fallocate(struct inode *inode, int mode, loff_t offset, loff_t len)
+> +{
+> +       int ret = 0;
+> +       loff_t filesize = inode->i_size;
+> +
+> +       /* preallocation to directories is currently not supported */
+> +       if (S_ISDIR(inode->i_mode)) {
+> +               printk(KERN_ERR
+> +               "fat_fallocate(): Directory prealloc not supported\n");
+
+This printk is probably not needed, or at least make it a pr_debug()
+
+> +               return -ENODEV;
+> +       }
+> +
+> +       if ((offset + len) <= MSDOS_I(inode)->mmu_private) {
+> +               printk(KERN_INFO
+> +                       "fat_fallocate():Blocks already allocated\n");
+
+Drop the printk() here.  It will cause a write to the system log
+everytime userspace does an unnecessary fat_fallocate().  That becomes
+a performance hit which I don't think we want.
+
+> +                       return 0;
+> +       }
+> +
+> +       if ((offset + len) > MSDOS_I(inode)->mmu_private) {
+> +
+> +               mutex_lock(&inode->i_mutex);
+> +               ret = fat_cont_expand(inode, (offset + len));
+> +               if (ret) {
+> +                       printk(KERN_ERR
+> +                               "fat_fallocate():fat_cont_expand() error\n");
+> +                       mutex_unlock(&inode->i_mutex);
+> +                       return ret;
+> +               }
+> +               mutex_unlock(&inode->i_mutex);
+> +       }
+> +       if (mode & FALLOC_FL_KEEP_SIZE) {
+> +               mutex_lock(&inode->i_mutex);
+> +               i_size_write(inode, filesize);
+> +               mutex_unlock(&inode->i_mutex);
+> +       }
+
+Race condition.  The file is increased in size and then returned to
+the original size if FALLOC_FL_KEEP_SIZE is set, but the lock is
+dropped then reobtained between increasing the size and restoring to
+the original.  Another file operation can occur between the two
+operations.  Badness!
+
+However, digging further, when FALLOC_FL_KEEP_SIZE is set, I don't
+think fat_cont_expand() has the behaviour that we want to implement.
+When that flag is set, I think we simply want to add clusters
+associated with the file to the FAT.  We don't want to clear them or
+map them into the page cache yet (that should be done when the
+filesize is increased for real).
+
+I believe a call to fat_allocate_clusters() is all that is needed in
+this case.  Hirofumi, please correct me if I'm wrong.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
