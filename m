@@ -1,80 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbXLVL7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbXLVMHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752131AbXLVL7Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 06:59:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbXLVL7B
+	id S1753989AbXLVMHh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 07:07:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbXLVMH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 06:59:01 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:50487 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752301AbXLVL6y (ORCPT
+	Sat, 22 Dec 2007 07:07:29 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:56265 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750903AbXLVMH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 06:58:54 -0500
-Date: Sat, 22 Dec 2007 11:52:17 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC] [PATCH] Memory controller remove control_type feature
-In-Reply-To: <476CBD9B.9070203@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0712221140330.7460@blonde.wat.veritas.com>
-References: <20071220185358.3248.25416.sendpatchset@balbir-laptop>
- <20071221225941.98b7362d.akpm@linux-foundation.org> <476CBD9B.9070203@linux.vnet.ibm.com>
+	Sat, 22 Dec 2007 07:07:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=rYDUxSCJtWnsXN4sBK+AK9pPc/OUbRNxISIvAFfKAOls0TBBslurZUVWhouaRd9nO+Tvqwbz6UMl9RhSiIaVivsSK3cp4uRgZnhlhxpxvxanyKB0lBKHE5jVh21OabG1lB+HKpi0b5Qp1J+tq8lUuO+PGb/t/g7DT9Qk5SM9Ww0=
+Date: Sat, 22 Dec 2007 15:07:21 +0300
+To: Greg KH <gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       Alexey Dobriyan <adobriyan@sw.ru>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: kobject ->k_name memory leak
+Message-ID: <20071222120721.GA1738@martell.zuzino.mipt.ru>
+References: <20071203092607.GA22477@localhost.sw.ru> <20071203204716.GA9734@suse.de> <20071203210959.GA1725@martell.zuzino.mipt.ru> <20071203212551.GA11962@suse.de> <20071214214823.GA10305@kroah.com> <20071215133428.GA1732@martell.zuzino.mipt.ru> <1197731956.19869.22.camel@lov.site> <20071220220456.GA16307@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071220220456.GA16307@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Dec 2007, Balbir Singh wrote:
-> Andrew Morton wrote:
-> > On Fri, 21 Dec 2007 00:23:58 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Thu, Dec 20, 2007 at 02:04:56PM -0800, Greg KH wrote:
+> On Sat, Dec 15, 2007 at 04:19:16PM +0100, Kay Sievers wrote:
+> > On Sat, 2007-12-15 at 16:34 +0300, Alexey Dobriyan wrote:
+> > > On Fri, Dec 14, 2007 at 01:48:23PM -0800, Greg KH wrote:
+> > > > On Mon, Dec 03, 2007 at 01:25:51PM -0800, Greg KH wrote:
+> > > > > On Tue, Dec 04, 2007 at 12:09:59AM +0300, Alexey Dobriyan wrote:
+> > > > > > On Mon, Dec 03, 2007 at 12:47:16PM -0800, Greg KH wrote:
+> > > > > > > On Mon, Dec 03, 2007 at 12:26:07PM +0300, Alexey Dobriyan wrote:
+> > > > > > > > Hi, Greg!
+> > > > > > > > 
+> > > > > > > > Commit ce2c9cb0259acd2aed184499ebe41ab00da13b25 aka
+> > > > > > > > "kobject: remove the static array for the name" introduced memory leak
+> > > > > > > > of a module name after modprobe/rmmod. Apparently for modules ->release
+> > > > > > > > callback is NULL.
+> > > > > > > > 
+> > > > > > > > kobject_cleanup: ->release = 00000000, name = 'foo_sysctl'
+> > > > > > > > Pid: 1927, comm: rmmod Not tainted 2.6.24-rc3-e1cca7e8d484390169777b423a7fe46c7021fec1 #5
+> > > > > > > >  [<c10d4a58>] kobject_cleanup+0xb8/0xc0
+> > > > > > > >  [<c10d4a60>] kobject_release+0x0/0x10
+> > > > > > > >  [<c10d587b>] kref_put+0x2b/0xa0
+> > > > > > > >  [<c11dbe85>] _spin_unlock+0x25/0x40
+> > > > > > > >  [<c1045b78>] free_module+0x78/0xd0
+> > > > > > > >  [<c104773f>] sys_delete_module+0x12f/0x1a0
+> > > > > > > 
+> > > > > > > Hm, _which_ kobject associated with a module, there are 3 of them I
+> > > > > > > think :)
+> > > > > > 
+> > > > > > Ouch!
+> > > > > > 
+> > > > > > > They should all have a release function, and if they do not, we think
+> > > > > > > it's a "static" kobject and it is not safe to free that name.
+> > > > > > > 
+> > > > > > > I've been working on cleaning this up a lot in the -mm tree with over 80
+> > > > > > > patches for the kset/kobject apis and interfaces.
+> > > > > > > 
+> > > > > > > But if we have a dynamic kobject, and we aren't freeing it properly,
+> > > > > > > please let me know which one it is and I'll work to fix it for 2.6.24.
+> > > > > > 
+> > > > > > The one which is passed to kobject_set_name() in mod_sysfs_init()..
+> > > > > 
+> > > > > That one should be set to the module_ktype, which is in kernel/params.c,
+> > > > > so the release function there should... oh crap, there is no release
+> > > > > function.  That's a bug.  After I get out of meetings tonight I'll write
+> > > > > up a patch for that, unless someone beats me to it :)
+> > > > 
+> > > > Ok, this is a mess.  We can't really have a release function for this
+> > > > kobject, as the structure it is embedded it has it's own memory
+> > > > management issues.
+> > > > 
+> > > > To fix this properly is going to take some major kobject/module surgery,
+> > > > it's not a simple fix at all.  I'll tackle it for 2.6.25, as it fits in
+> > > > nicely with the other kobject rework that I've already done in the -mm
+> > > > tree.
+> > > > 
+> > > > So, for now, can we just live with this tiny memory leak on module
+> > > > unload?
+> > > 
+> > > For the record, this leak screws any testing one can do wrt module
+> > > unload races. You can't really leave box overnight running
+> > > modprobe/rmmod in a loop, because OOM killer will finally kick in.
+> > > Hey, this is exactly how it was noticed at all.
+> > > 
+> > > > Or is the above trace something that users will see when unloading
+> > > > modules?
+> > > 
+> > > No, it's added debugging.
 > > 
-> >> Based on the discussion at http://lkml.org/lkml/2007/12/20/383, it was
-> >> felt that control_type might not be a good thing to implement right away.
-> >> We can add this flexibility at a later point when required.
-
-Not studied closely, but your patch looks both too much and too
-little to me, Balbir.
-
-Too much in that it appears to bundle in some significant little
-locking changes without any mention in the commment.
-
-Too little in that it leaves behind lots of junk relating to the
-different control_types: the enums, the different kinds of call
-that needn't now be different, no change to the various callsites.
-Needs more cleanup, I'd say.  Of course, that could be yet another
-separate patch.
-
-> > Gee the memory controller patchset is turning into a mess.
-
-A mess indeed.
-
-> Yes, the patchset has expanded and we have several useful bug fixes and
-> cleanups and some new features.
-
-Hah, a career in politics beckons ;)
-
-> > Hopefully it'll look a bit better once I do a big patch-folding but we
-> > still have patches interesecting everywhere and now we have patches which
-> > add a feature and later ones which take it away again.
-> > 
+> > Can't we add an empty release function? It would free the name with the
+> > current logic, right?
 > 
-> I think folding will help. I understand your concern w.r.t getting the
-> correct set of patches with a good changelog.
+> Doh, that should be easy.
 > 
-> > But I don't think it's worth the time and risk of a huge
-> > rip-up-and-refactor.
-> > 
-> 
-> I agree, given the proximity of the new merge window for 2.6.25.  We
-> could review the patches after folding them and see how to consolidate
-> further in case the patches continue to look messy.
+> Alexey, can you see if the patch below fixes this issue for you?
 
-Personally, I think it could benefit a lot from a rip-up-and-refactor.
-But if we're rushing headlong for 2.6.25, yes, I agree it's too late.
-And I'm afraid it's not something I can volunteer for at this time.
+Yep, it helps!
 
-Hugh
+> --- a/kernel/params.c
+> +++ b/kernel/params.c
+> @@ -697,8 +697,18 @@ static struct kset_uevent_ops module_uev
+>  decl_subsys(module, &module_ktype, &module_uevent_ops);
+>  int module_sysfs_initialized;
+>  
+> +static void module_release(struct kobject *kobj)
+> +{
+> +	/*
+> +	 * Stupid empty release function to allow the memory for the kobject to
+> +	 * be properly cleaned up.  This will not need to be present for 2.6.25
+> +	 * with the upcoming kobject core rework.
+> +	 */
+> +}
+> +
+>  static struct kobj_type module_ktype = {
+>  	.sysfs_ops =	&module_sysfs_ops,
+> +	.release = module_release,
+>  };
+>  
+>  /*
