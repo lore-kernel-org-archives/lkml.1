@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbXLVCF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751631AbXLVCFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752826AbXLVCF1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 21:05:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXLVCFU
+	id S1751631AbXLVCFm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 21:05:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXLVCFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 21:05:20 -0500
+	Fri, 21 Dec 2007 21:05:22 -0500
 Received: from an-out-0708.google.com ([209.85.132.241]:13510 "EHLO
 	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbXLVCFS (ORCPT
+	with ESMTP id S1750940AbXLVCFU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 21:05:18 -0500
+	Fri, 21 Dec 2007 21:05:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:to:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding:from;
-        b=eJXdeMcFDziTQIf7uruGxvp5gJc3OWlnWkAIE3n3NScu/07oyonF5OrD+zd9Jg6n3MzB5QmERqesTwOHMAZTOnrHjNSqTakhS+t13WQje/5Lyn11hPjjAsR1N/EvOwvQ/RwL0KzG/qMXMdKmHinwp2di9uEslJEEJYa+2PawAP4=
-Subject: [PATCH] eCryptfs: Change the type of cipher_code from u16 to u8
+        b=GhaHqGQxdtFu2Pj1nzmHVWE3I9O0K175bP4kCbOAClrkTvoWd/0h2Q17Bw1OohhMl02cUNBjNuUB/5U7KJM+pQYb1HByU4H8H27SylO+ERxs8qlsdEzzygbaFT3uVoJVsggWmm9mwy2aIJcwJD8YAJM7RG7mwoUDf29h+wdZjV8=
+Subject: [PATCH] eCryptfs: Load each file decryption key only once
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        ecryptfs-devel@lists.sourceforge.net, mhalcrow@us.ibm.com
 Content-Type: text/plain
-Date: Fri, 21 Dec 2007 20:05:28 -0600
-Message-Id: <1198289128.8560.13.camel@buster2>
+Date: Fri, 21 Dec 2007 20:05:30 -0600
+Message-Id: <1198289130.8560.14.camel@buster2>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -28,108 +28,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-eCryptfs: Change the type of cipher_code from u16 to u8.
+eCryptfs: Load each file decryption key only once
 
-Only the lower byte of cipher_code is ever used, so it makes sense
-for its type to be u8.
+There is no need to keep re-setting the same key for any given
+eCryptfs inode. This patch optimizes the use of the crypto API and
+helps performance a bit.
 
 Signed-off-by: Trevor Highland <trevor.highland@gmail.com>
 ---
- fs/ecryptfs/crypto.c          |    8 ++++----
- fs/ecryptfs/ecryptfs_kernel.h |    4 ++--
- fs/ecryptfs/keystore.c        |    8 ++++----
- 3 files changed, 10 insertions(+), 10 deletions(-)
+ fs/ecryptfs/crypto.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
-index 949fe44..5804400 100644
+index 70f7aab..949fe44 100644
 --- a/fs/ecryptfs/crypto.c
 +++ b/fs/ecryptfs/crypto.c
-@@ -1129,7 +1129,7 @@ write_ecryptfs_flags(char *page_virt, struct ecryptfs_crypt_stat *crypt_stat,
- 
- struct ecryptfs_cipher_code_str_map_elem {
- 	char cipher_str[16];
--	u16 cipher_code;
-+	u8 cipher_code;
- };
- 
- /* Add support for additional ciphers by adding elements here. The
-@@ -1153,10 +1153,10 @@ ecryptfs_cipher_code_str_map[] = {
-  *
-  * Returns zero on no match, or the cipher code on match
-  */
--u16 ecryptfs_code_for_cipher_string(struct ecryptfs_crypt_stat *crypt_stat)
-+u8 ecryptfs_code_for_cipher_string(struct ecryptfs_crypt_stat *crypt_stat)
- {
- 	int i;
--	u16 code = 0;
-+	u8 code = 0;
- 	struct ecryptfs_cipher_code_str_map_elem *map =
- 		ecryptfs_cipher_code_str_map;
- 
-@@ -1188,7 +1188,7 @@ u16 ecryptfs_code_for_cipher_string(struct ecryptfs_crypt_stat *crypt_stat)
-  *
-  * Returns zero on success
-  */
--int ecryptfs_cipher_code_to_string(char *str, u16 cipher_code)
-+int ecryptfs_cipher_code_to_string(char *str, u8 cipher_code)
- {
+@@ -353,7 +353,6 @@ static int encrypt_scatterlist(struct ecryptfs_crypt_stat *crypt_stat,
+ 		ecryptfs_dump_hex(crypt_stat->key,
+ 				  crypt_stat->key_size);
+ 	}
+-	/* Consider doing this once, when the file is opened */
+ 	mutex_lock(&crypt_stat->cs_tfm_mutex);
+ 	if (!(crypt_stat->flags & ECRYPTFS_KEY_SET)) {
+ 		rc = crypto_blkcipher_setkey(crypt_stat->tfm, crypt_stat->key,
+@@ -687,10 +686,12 @@ static int decrypt_scatterlist(struct ecryptfs_crypt_stat *crypt_stat,
+ 	};
  	int rc = 0;
- 	int i;
-diff --git a/fs/ecryptfs/ecryptfs_kernel.h b/fs/ecryptfs/ecryptfs_kernel.h
-index 114cb86..a991b4e 100644
---- a/fs/ecryptfs/ecryptfs_kernel.h
-+++ b/fs/ecryptfs/ecryptfs_kernel.h
-@@ -562,8 +562,8 @@ int ecryptfs_read_and_validate_header_region(char *data,
- 					     struct inode *ecryptfs_inode);
- int ecryptfs_read_and_validate_xattr_region(char *page_virt,
- 					    struct dentry *ecryptfs_dentry);
--u16 ecryptfs_code_for_cipher_string(struct ecryptfs_crypt_stat *crypt_stat);
--int ecryptfs_cipher_code_to_string(char *str, u16 cipher_code);
-+u8 ecryptfs_code_for_cipher_string(struct ecryptfs_crypt_stat *crypt_stat);
-+int ecryptfs_cipher_code_to_string(char *str, u8 cipher_code);
- void ecryptfs_set_default_sizes(struct ecryptfs_crypt_stat *crypt_stat);
- int ecryptfs_generate_key_packet_set(char *dest_base,
- 				     struct ecryptfs_crypt_stat *crypt_stat,
-diff --git a/fs/ecryptfs/keystore.c b/fs/ecryptfs/keystore.c
-index 263fed8..0fe7c13 100644
---- a/fs/ecryptfs/keystore.c
-+++ b/fs/ecryptfs/keystore.c
-@@ -189,7 +189,7 @@ out:
- }
  
- static int
--parse_tag_65_packet(struct ecryptfs_session_key *session_key, u16 *cipher_code,
-+parse_tag_65_packet(struct ecryptfs_session_key *session_key, u8 *cipher_code,
- 		    struct ecryptfs_message *msg)
- {
- 	size_t i = 0;
-@@ -275,7 +275,7 @@ out:
- 
- 
- static int
--write_tag_66_packet(char *signature, size_t cipher_code,
-+write_tag_66_packet(char *signature, u8 cipher_code,
- 		    struct ecryptfs_crypt_stat *crypt_stat, char **packet,
- 		    size_t *packet_len)
- {
-@@ -428,7 +428,7 @@ static int
- decrypt_pki_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
- 				  struct ecryptfs_crypt_stat *crypt_stat)
- {
--	u16 cipher_code = 0;
-+	u8 cipher_code = 0;
- 	struct ecryptfs_msg_ctx *msg_ctx;
- 	struct ecryptfs_message *msg = NULL;
- 	char *auth_tok_sig;
-@@ -1537,7 +1537,7 @@ write_tag_3_packet(char *dest, size_t *remaining_bytes,
- 	struct scatterlist dst_sg;
- 	struct scatterlist src_sg;
- 	struct mutex *tfm_mutex = NULL;
--	size_t cipher_code;
-+	u8 cipher_code;
- 	size_t packet_size_length;
- 	size_t max_packet_size;
- 	struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
+-	/* Consider doing this once, when the file is opened */
+ 	mutex_lock(&crypt_stat->cs_tfm_mutex);
+-	rc = crypto_blkcipher_setkey(crypt_stat->tfm, crypt_stat->key,
+-				     crypt_stat->key_size);
++	if (!(crypt_stat->flags & ECRYPTFS_KEY_SET)) {
++		rc = crypto_blkcipher_setkey(crypt_stat->tfm, crypt_stat->key,
++					     crypt_stat->key_size);
++		crypt_stat->flags |= ECRYPTFS_KEY_SET;
++	}
+ 	if (rc) {
+ 		ecryptfs_printk(KERN_ERR, "Error setting key; rc = [%d]\n",
+ 				rc);
 -- 
 1.5.2.5
 
