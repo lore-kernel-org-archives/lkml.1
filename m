@@ -1,67 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbXLVNoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbXLVNqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755278AbXLVNoK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 08:44:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbXLVNn5
+	id S1755261AbXLVNqc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 08:46:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbXLVNqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 08:43:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60465 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751659AbXLVNn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 08:43:56 -0500
-Date: Sat, 22 Dec 2007 14:40:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, clameter@sgi.com, a.p.zijlstra@chello.nl
-Subject: Re: [PATCH] slub: /proc/slabinfo ABI compatibility
-Message-ID: <20071222134010.GA12294@elte.hu>
-References: <Pine.LNX.4.64.0712221446280.24655@sbz-30.cs.Helsinki.FI> <20071222131456.GA32558@elte.hu> <84144f020712220531x238da99bi19ff06aaddfc5fc3@mail.gmail.com>
-MIME-Version: 1.0
+	Sat, 22 Dec 2007 08:46:25 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4776 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751435AbXLVNqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 08:46:24 -0500
+Date: Sat, 22 Dec 2007 13:46:12 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Richard D <richard@embunus.com>
+Cc: "'Matthew Bloch'" <matthew@bytemark.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Testing RAM from userspace / question about memmap= arguments
+Message-ID: <20071222134612.GA4098@ucw.cz>
+References: <fk8umh$n7o$1@ger.gmane.org> <20071221125812.GA4052@ucw.cz> <000001c84472$74b245e0$5e16d1a0$@com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020712220531x238da99bi19ff06aaddfc5fc3@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <000001c84472$74b245e0$5e16d1a0$@com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat 2007-12-22 13:42:47, Richard D wrote:
+> Cant you, modify bootmem allocator to test with memtest patterns and then
+> use kexec (as Pavel suggested) to test the one where kernel was sitting
+> earlier?
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-> Hi Ingo,
-> 
-> On Dec 22, 2007 3:14 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > Also please apply the cleanup patch below, it fixes 34 checkpatch errors
-> > and warnings in mm/slub.c.
-> 
-> Those are already fixed in -mm:
-> 
-> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/broken-out/slub-fix-coding-style-violations.patch
-> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc5/2.6.24-rc5-mm1/broken-out/slub-fix-coding-style-violations-checkpatch-fixes.patch
-
-ah, didnt see that. Could you pick up bits of my patch because it seems 
-to do a better job, such as proper c99 initializer:
-
-+static struct notifier_block __cpuinitdata slab_notifier = {
-+       .notifier_call = slab_cpuup_callback
-+};
-
-instead of your:
-
-+static struct notifier_block __cpuinitdata slab_notifier = {
-+       &slab_cpuup_callback, NULL, 0
-+};
-
-also, my patch fixes all the warnings as well, not just the errors. So 
-please give it a second look ;-)
-
-	Ingo
+I do not think you need to modify anything in kernel. Just use
+/dev/mem to test areas that kernel doesn't see, then kexec into place
+you already tested, and test the rest.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
