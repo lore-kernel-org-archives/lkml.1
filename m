@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbXLVX2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbXLVX3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbXLVX2n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 18:28:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbXLVX2h
+	id S1755754AbXLVX3q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 18:29:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbXLVX3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 18:28:37 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:8270 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754219AbXLVX2f (ORCPT
+	Sat, 22 Dec 2007 18:29:39 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49008 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752472AbXLVX3i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 18:28:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gBIQyearK6aWdH3mtv2sbE74F7wkELqCODRs8JMFafrAhCGM/Gd13xCzT/7A1e9NRJXkN23gobUYiB1J/lLLpR6Ngu0vONm2zd2ZBWkRHMb2fOE29PzGZe3pAOwx4iTn8UPDqNeOzgfUA+mI/x/Q/YQcpyRwTKyb6Li7cMUKI2I=
-Message-ID: <ea9232d10712221528v30f1bdf1sc6820678670555ec@mail.gmail.com>
-Date: Sun, 23 Dec 2007 00:28:34 +0100
-From: "Karol Swietlicki" <magotari@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: slabtop replacement was Re: Major regression on hackbench with SLUB (more numbers)
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
+	Sat, 22 Dec 2007 18:29:38 -0500
+Date: Sat, 22 Dec 2007 23:29:22 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>, Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
        "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20071222194620.GA19350@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+Message-ID: <20071222232922.GO8181@ftp.linux.org.uk>
+References: <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy> <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com> <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de> <20071222100326.GF26157@elte.hu> <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org> <20071222192550.GD28891@thunk.org> <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org> <20071222215009.GN8181@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0712210750510.29372@schroedinger.engr.sgi.com>
-	 <Pine.LNX.4.64.0712211356220.3795@schroedinger.engr.sgi.com>
-	 <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy>
-	 <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com>
-	 <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de>
-	 <20071222100326.GF26157@elte.hu>
-	 <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org>
-	 <20071222194620.GA19350@one.firstfloor.org>
+In-Reply-To: <20071222215009.GN8181@ftp.linux.org.uk>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22/12/2007, Andi Kleen <andi@firstfloor.org> wrote:
-> A manpage for slabinfo would be useful though. Anybody
-> volunteering to write one?
->
-> -Andi
+On Sat, Dec 22, 2007 at 09:50:09PM +0000, Al Viro wrote:
+> On Sat, Dec 22, 2007 at 01:00:09PM -0800, Linus Torvalds wrote:
+> 
+> > > Another problem with using /sys/slab is that it is downright *ugly*.
+> > > Why is it for example, that /sys/slab/dentry is a symlink to
+> > > ../slab/:a-0000160?
+> > 
+> > That's the only really ugly thing there. Otherwise, it's pretty nice, but 
+> > having a million files makes for problems when trying to send somebody 
+> > else the full info. 
+> 
+> *raised brows*
+> 
+> I would say that there's that really ugly thing with embedding kobject
+> into a struct with the lifetime rules of its own and then having that
+> struct kfree()d while kobject might still have references, but hey,
+> maybe it's just me and my lack of appreciation of the glory that is
+> sysfs.
+> 
+> 	Al, too tired of ranting about sysfs being a major architecture
+> mistake and a recurring source of turds like that one...
 
-That would be me.
-I'm a newbie and never wrote a man page before, so it will take a few
-days, but I'm bored and out of ideas for any new code for the moment
-being. Should be fun.
+BTW, the fact that presence of that kobject is conditional makes life even
+uglier - we have to either kfree() or drop a reference to kobject leaving
+actual kfree() to its ->release().   While we are at it, when do we remove
+the symlinks?  That got to add even more fun for the lifetime rules...
 
-Karol Swietlicki
+Sigh...  How does one set a script that would mail a warning upon git pull
+that introduces any instances of keyword from given set?  I hadn't noticed
+that slub was using sysfs when it went into the tree back in May ;-/
