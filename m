@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbXLVIbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbXLVIfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756069AbXLVIbk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 03:31:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbXLVIbd
+	id S1755708AbXLVIfb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 03:35:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbXLVIfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 03:31:33 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:44762 "EHLO pasmtpA.tele.dk"
+	Sat, 22 Dec 2007 03:35:25 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:45633 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751198AbXLVIbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 03:31:33 -0500
-Date: Sat, 22 Dec 2007 09:33:23 +0100
+	id S1750922AbXLVIfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 03:35:24 -0500
+Date: Sat, 22 Dec 2007 09:37:17 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       trivial@kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Richard Henderson <rth@twiddle.net>
-Subject: Re: [PATCH 1/3] Remove unused dependency
-Message-ID: <20071222083323.GA22653@uranus.ravnborg.org>
-References: <1198306931-5258-1-git-send-email-joe@perches.com> <1198306931-5258-2-git-send-email-joe@perches.com>
+To: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: Yuusei KUWANA <kuwana@nyanyan.to>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       mikael.starvik@axis.com
+Subject: Re: [PATCH] arch/cris/arch-v10/vmlinux.lds.S fix boot problem
+Message-ID: <20071222083717.GB22653@uranus.ravnborg.org>
+References: <47636D45.6010006@nyanyan.to> <20071221151404.GM10888@axis.com> <20071221155446.GN10888@axis.com> <20071221160718.GO10888@axis.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1198306931-5258-2-git-send-email-joe@perches.com>
+In-Reply-To: <20071221160718.GO10888@axis.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21, 2007 at 11:02:09PM -0800, Joe Perches wrote:
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/alpha/boot/Makefile |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/alpha/boot/Makefile b/arch/alpha/boot/Makefile
-> index cd14388..c53169c 100644
-> --- a/arch/alpha/boot/Makefile
-> +++ b/arch/alpha/boot/Makefile
-> @@ -112,5 +112,3 @@ $(obj)/bootpheader: $(obj)/bootloader.lds $(OBJ_bootph) $(LIBS_Y) FORCE
->  
->  $(obj)/bootpzheader: $(obj)/bootloader.lds $(OBJ_bootpzh) $(LIBS_Y) FORCE
->  	$(call if_changed,ld)
-> -
-> -$(obj)/misc.o: lib/inflate.c
+Hi Jesper.
 
-But arch/alpha/boot/mixc.c have:
-#include "../../../lib/inflate.c"
+>  		__initramfs_end = .;
+> -		/* We fill to the next page, so we can discard all init
+> -		   pages without needing to consider what payload might be
+> -		   appended to the kernel image.  */
+> -		FILL (0); 
+> -		. = ALIGN (8192);
+>  	}
+>  #endif
+> -	
+>  	__vmlinux_end = .;            /* last address of the physical file */
+> -  	__init_end = .;
+> +
+> +	/*
+> +	 * We fill to the next page, so we can discard all init
+> +	 * pages without needing to consider what payload might be
+> +	 * appended to the kernel image.
+> +	 */
+> +	.init.fill : {
+> +		FILL (0);
+> +		. = ALIGN (8192);
+> +	}
+> +
+> +	__init_end = .;
 
-So this is wrong.
+Can we please have the hardcoded 8192 replaced with a proper constant.
+I assume this is PAGESIZE?
+See hwat other archs does to make PAGESIZE available for assembly
+files and ldscripts. The macro AC is the key point here.
+
+And then please explain why it make a diffrence to put the
+alignment in a section like you do.
+I do not see it used in the other archs.
 
 	Sam
