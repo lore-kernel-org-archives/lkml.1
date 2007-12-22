@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbXLVBHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751043AbXLVBHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751823AbXLVBHZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 20:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbXLVBHL
+	id S1751043AbXLVBHn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 20:07:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbXLVBHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 20:07:11 -0500
-Received: from mga09.intel.com ([134.134.136.24]:57552 "EHLO mga09.intel.com"
+	Fri, 21 Dec 2007 20:07:23 -0500
+Received: from mga02.intel.com ([134.134.136.20]:31049 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750756AbXLVBHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 20:07:08 -0500
+	id S1751302AbXLVBHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 20:07:18 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.24,197,1196668800"; 
-   d="scan'208";a="249997694"
+   d="scan'208";a="244394873"
 From: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 3/4] async_tx: replace 'int_en' with operation preparation
-	flags
+Subject: [PATCH 1/4] async_tx: kill ASYNC_TX_ASSUME_COHERENT
 To: linux-kernel@vger.kernel.org
 Cc: shannon.nelson@intel.com, yur@emcraft.com, hskinnemoen@atmel.com,
        olof@lixom.net, wei.zhang@freescale.com
-Date: Fri, 21 Dec 2007 18:06:53 -0700
-Message-ID: <20071222010653.15576.69686.stgit@dwillia2-linux.ch.intel.com>
+Date: Fri, 21 Dec 2007 18:06:43 -0700
+Message-ID: <20071222010643.15576.82689.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20071222010537.15576.31788.stgit@dwillia2-linux.ch.intel.com>
 References: <20071222010537.15576.31788.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGIT/0.13
@@ -30,448 +29,172 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass a full set of flags to drivers' per-operation 'prep' routines.
-Currently the only flag passed is DMA_PREP_INTERRUPT.  The expectation is
-that arch-specific async_tx_find_channel() implementations can exploit this
-capability to find the best channel for an operation.
+Remove the unused ASYNC_TX_ASSUME_COHERENT flag.  Async_tx is
+meant to hide the difference between asynchronous hardware and synchronous
+software operations, this flag requires clients to understand cache
+coherency consequences of the async path.
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
 
- crypto/async_tx/async_memcpy.c         |    3 ++-
- crypto/async_tx/async_memset.c         |    3 ++-
- crypto/async_tx/async_xor.c            |   10 ++++++----
- drivers/dma/ioat_dma.c                 |    4 ++--
- drivers/dma/iop-adma.c                 |   20 ++++++++++----------
- include/asm-arm/arch-iop13xx/adma.h    |   18 ++++++++++--------
- include/asm-arm/hardware/iop3xx-adma.h |   30 +++++++++++++++++-------------
- include/linux/dmaengine.h              |   17 +++++++++++++----
- 8 files changed, 62 insertions(+), 43 deletions(-)
+ crypto/async_tx/async_memcpy.c |   15 +++++----------
+ crypto/async_tx/async_memset.c |    8 +++-----
+ crypto/async_tx/async_xor.c    |   22 ++++++----------------
+ include/linux/async_tx.h       |    2 --
+ 4 files changed, 14 insertions(+), 33 deletions(-)
 
 diff --git a/crypto/async_tx/async_memcpy.c b/crypto/async_tx/async_memcpy.c
-index faca0bc..25dcf33 100644
+index 047e533..e8c8956 100644
 --- a/crypto/async_tx/async_memcpy.c
 +++ b/crypto/async_tx/async_memcpy.c
-@@ -52,6 +52,7 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
+@@ -35,7 +35,7 @@
+  * @src: src page
+  * @offset: offset in pages to start transaction
+  * @len: length in bytes
+- * @flags: ASYNC_TX_ASSUME_COHERENT, ASYNC_TX_ACK, ASYNC_TX_DEP_ACK,
++ * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK,
+  * @depend_tx: memcpy depends on the result of this transaction
+  * @cb_fn: function to call when the memcpy completes
+  * @cb_param: parameter to pass to the callback routine
+@@ -55,20 +55,15 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
  
- 	if (device) {
- 		dma_addr_t dma_dest, dma_src;
-+		unsigned long dma_prep_flags = cb_fn ? DMA_PREP_INTERRUPT : 0;
+ 	if (tx) { /* run the memcpy asynchronously */
+ 		dma_addr_t addr;
+-		enum dma_data_direction dir;
  
- 		dma_dest = dma_map_page(device->dev, dest, dest_offset, len,
- 					DMA_FROM_DEVICE);
-@@ -60,7 +61,7 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
- 				       DMA_TO_DEVICE);
+ 		pr_debug("%s: (async) len: %zu\n", __FUNCTION__, len);
  
- 		tx = device->device_prep_dma_memcpy(chan, dma_dest, dma_src,
--						    len, cb_fn != NULL);
-+						    len, dma_prep_flags);
- 	}
+-		dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-			DMA_NONE : DMA_FROM_DEVICE;
+-
+-		addr = dma_map_page(device->dev, dest, dest_offset, len, dir);
++		addr = dma_map_page(device->dev, dest, dest_offset, len,
++				    DMA_FROM_DEVICE);
+ 		tx->tx_set_dest(addr, tx, 0);
  
- 	if (tx) {
+-		dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-			DMA_NONE : DMA_TO_DEVICE;
+-
+-		addr = dma_map_page(device->dev, src, src_offset, len, dir);
++		addr = dma_map_page(device->dev, src, src_offset, len,
++				    DMA_TO_DEVICE);
+ 		tx->tx_set_src(addr, tx, 0);
+ 
+ 		async_tx_submit(chan, tx, flags, depend_tx, cb_fn, cb_param);
 diff --git a/crypto/async_tx/async_memset.c b/crypto/async_tx/async_memset.c
-index 0c94851..8e98ab0 100644
+index 66ef635..7609728 100644
 --- a/crypto/async_tx/async_memset.c
 +++ b/crypto/async_tx/async_memset.c
-@@ -52,12 +52,13 @@ async_memset(struct page *dest, int val, unsigned int offset,
+@@ -35,7 +35,7 @@
+  * @val: fill value
+  * @offset: offset in pages to start transaction
+  * @len: length in bytes
+- * @flags: ASYNC_TX_ASSUME_COHERENT, ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
++ * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
+  * @depend_tx: memset depends on the result of this transaction
+  * @cb_fn: function to call when the memcpy completes
+  * @cb_param: parameter to pass to the callback routine
+@@ -55,13 +55,11 @@ async_memset(struct page *dest, int val, unsigned int offset,
  
- 	if (device) {
- 		dma_addr_t dma_dest;
-+		unsigned long dma_prep_flags = cb_fn ? DMA_PREP_INTERRUPT : 0;
+ 	if (tx) { /* run the memset asynchronously */
+ 		dma_addr_t dma_addr;
+-		enum dma_data_direction dir;
  
- 		dma_dest = dma_map_page(device->dev, dest, offset, len,
- 					DMA_FROM_DEVICE);
+ 		pr_debug("%s: (async) len: %zu\n", __FUNCTION__, len);
+-		dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-			DMA_NONE : DMA_FROM_DEVICE;
  
- 		tx = device->device_prep_dma_memset(chan, dma_dest, val, len,
--						    cb_fn != NULL);
-+						    dma_prep_flags);
- 	}
+-		dma_addr = dma_map_page(device->dev, dest, offset, len, dir);
++		dma_addr = dma_map_page(device->dev, dest, offset, len,
++					DMA_FROM_DEVICE);
+ 		tx->tx_set_dest(dma_addr, tx, 0);
  
- 	if (tx) {
+ 		async_tx_submit(chan, tx, flags, depend_tx, cb_fn, cb_param);
 diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index fbf113a..80f30bc 100644
+index 2575f67..f332ddc 100644
 --- a/crypto/async_tx/async_xor.c
 +++ b/crypto/async_tx/async_xor.c
-@@ -41,6 +41,7 @@ do_async_xor(struct dma_device *device,
- 	dma_addr_t *dma_src = (dma_addr_t *) src_list;
- 	struct dma_async_tx_descriptor *tx;
+@@ -38,23 +38,17 @@ do_async_xor(struct dma_async_tx_descriptor *tx, struct dma_device *device,
+ 	dma_async_tx_callback cb_fn, void *cb_param)
+ {
+ 	dma_addr_t dma_addr;
+-	enum dma_data_direction dir;
  	int i;
-+	unsigned long dma_prep_flags = cb_fn ? DMA_PREP_INTERRUPT : 0;
  
  	pr_debug("%s: len: %zu\n", __FUNCTION__, len);
  
-@@ -56,7 +57,7 @@ do_async_xor(struct dma_device *device,
- 	 * in case they can not provide a descriptor
- 	 */
- 	tx = device->device_prep_dma_xor(chan, dma_dest, dma_src, src_cnt, len,
--					 cb_fn != NULL);
-+					 dma_prep_flags);
- 	if (!tx) {
- 		if (depend_tx)
- 			dma_wait_for_async_tx(depend_tx);
-@@ -64,7 +65,7 @@ do_async_xor(struct dma_device *device,
- 		while (!tx)
- 			tx = device->device_prep_dma_xor(chan, dma_dest,
- 							 dma_src, src_cnt, len,
--							 cb_fn != NULL);
-+							 dma_prep_flags);
+-	dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-		DMA_NONE : DMA_FROM_DEVICE;
+-
+-	dma_addr = dma_map_page(device->dev, dest, offset, len, dir);
++	dma_addr = dma_map_page(device->dev, dest, offset, len,
++				DMA_FROM_DEVICE);
+ 	tx->tx_set_dest(dma_addr, tx, 0);
+ 
+-	dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-		DMA_NONE : DMA_TO_DEVICE;
+-
+ 	for (i = 0; i < src_cnt; i++) {
+ 		dma_addr = dma_map_page(device->dev, src_list[i],
+-			offset, len, dir);
++			offset, len, DMA_TO_DEVICE);
+ 		tx->tx_set_src(dma_addr, tx, i);
  	}
  
- 	async_tx_submit(chan, tx, flags, depend_tx, cb_fn, cb_param);
-@@ -264,6 +265,7 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
+@@ -102,7 +96,7 @@ do_sync_xor(struct page *dest, struct page **src_list, unsigned int offset,
+  * @src_cnt: number of source pages
+  * @len: length in bytes
+  * @flags: ASYNC_TX_XOR_ZERO_DST, ASYNC_TX_XOR_DROP_DEST,
+- *	ASYNC_TX_ASSUME_COHERENT, ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
++ *	ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
+  * @depend_tx: xor depends on the result of this transaction.
+  * @cb_fn: function to call when the xor completes
+  * @cb_param: parameter to pass to the callback routine
+@@ -242,7 +236,7 @@ static int page_is_zero(struct page *p, unsigned int offset, size_t len)
+  * @src_cnt: number of source pages
+  * @len: length in bytes
+  * @result: 0 if sum == 0 else non-zero
+- * @flags: ASYNC_TX_ASSUME_COHERENT, ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
++ * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
+  * @depend_tx: xor depends on the result of this transaction.
+  * @cb_fn: function to call when the xor completes
+  * @cb_param: parameter to pass to the callback routine
+@@ -266,16 +260,12 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
  
- 	if (device) {
- 		dma_addr_t *dma_src = (dma_addr_t *) src_list;
-+		unsigned long dma_prep_flags = cb_fn ? DMA_PREP_INTERRUPT : 0;
- 		int i;
+ 	if (tx) {
+ 		dma_addr_t dma_addr;
+-		enum dma_data_direction dir;
  
  		pr_debug("%s: (async) len: %zu\n", __FUNCTION__, len);
-@@ -274,7 +276,7 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
  
- 		tx = device->device_prep_dma_zero_sum(chan, dma_src, src_cnt,
- 						      len, result,
--						      cb_fn != NULL);
-+						      dma_prep_flags);
- 		if (!tx) {
- 			if (depend_tx)
- 				dma_wait_for_async_tx(depend_tx);
-@@ -282,7 +284,7 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
- 			while (!tx)
- 				tx = device->device_prep_dma_zero_sum(chan,
- 					dma_src, src_cnt, len, result,
--					cb_fn != NULL);
-+					dma_prep_flags);
+-		dir = (flags & ASYNC_TX_ASSUME_COHERENT) ?
+-			DMA_NONE : DMA_TO_DEVICE;
+-
+ 		for (i = 0; i < src_cnt; i++) {
+ 			dma_addr = dma_map_page(device->dev, src_list[i],
+-				offset, len, dir);
++				offset, len, DMA_TO_DEVICE);
+ 			tx->tx_set_src(dma_addr, tx, i);
  		}
  
- 		async_tx_submit(chan, tx, flags, depend_tx, cb_fn, cb_param);
-diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
-index 5bcfc55..dff38ac 100644
---- a/drivers/dma/ioat_dma.c
-+++ b/drivers/dma/ioat_dma.c
-@@ -701,7 +701,7 @@ static struct dma_async_tx_descriptor *ioat1_dma_prep_memcpy(
- 						dma_addr_t dma_dest,
- 						dma_addr_t dma_src,
- 						size_t len,
--						int int_en)
-+						unsigned long flags)
- {
- 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
- 	struct ioat_desc_sw *new;
-@@ -724,7 +724,7 @@ static struct dma_async_tx_descriptor *ioat2_dma_prep_memcpy(
- 						dma_addr_t dma_dest,
- 						dma_addr_t dma_src,
- 						size_t len,
--						int int_en)
-+						unsigned long flags)
- {
- 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
- 	struct ioat_desc_sw *new;
-diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
-index eda841c..3986d54 100644
---- a/drivers/dma/iop-adma.c
-+++ b/drivers/dma/iop-adma.c
-@@ -537,7 +537,7 @@ iop_adma_prep_dma_interrupt(struct dma_chan *chan)
- 
- static struct dma_async_tx_descriptor *
- iop_adma_prep_dma_memcpy(struct dma_chan *chan, dma_addr_t dma_dest,
--			 dma_addr_t dma_src, size_t len, int int_en)
-+			 dma_addr_t dma_src, size_t len, unsigned long flags)
- {
- 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
- 	struct iop_adma_desc_slot *sw_desc, *grp_start;
-@@ -555,7 +555,7 @@ iop_adma_prep_dma_memcpy(struct dma_chan *chan, dma_addr_t dma_dest,
- 	sw_desc = iop_adma_alloc_slots(iop_chan, slot_cnt, slots_per_op);
- 	if (sw_desc) {
- 		grp_start = sw_desc->group_head;
--		iop_desc_init_memcpy(grp_start, int_en);
-+		iop_desc_init_memcpy(grp_start, flags);
- 		iop_desc_set_byte_count(grp_start, iop_chan, len);
- 		iop_desc_set_dest_addr(grp_start, iop_chan, dma_dest);
- 		iop_desc_set_memcpy_src_addr(grp_start, dma_src);
-@@ -569,7 +569,7 @@ iop_adma_prep_dma_memcpy(struct dma_chan *chan, dma_addr_t dma_dest,
- 
- static struct dma_async_tx_descriptor *
- iop_adma_prep_dma_memset(struct dma_chan *chan, dma_addr_t dma_dest,
--			 int value, size_t len, int int_en)
-+			 int value, size_t len, unsigned long flags)
- {
- 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
- 	struct iop_adma_desc_slot *sw_desc, *grp_start;
-@@ -587,7 +587,7 @@ iop_adma_prep_dma_memset(struct dma_chan *chan, dma_addr_t dma_dest,
- 	sw_desc = iop_adma_alloc_slots(iop_chan, slot_cnt, slots_per_op);
- 	if (sw_desc) {
- 		grp_start = sw_desc->group_head;
--		iop_desc_init_memset(grp_start, int_en);
-+		iop_desc_init_memset(grp_start, flags);
- 		iop_desc_set_byte_count(grp_start, iop_chan, len);
- 		iop_desc_set_block_fill_val(grp_start, value);
- 		iop_desc_set_dest_addr(grp_start, iop_chan, dma_dest);
-@@ -602,7 +602,7 @@ iop_adma_prep_dma_memset(struct dma_chan *chan, dma_addr_t dma_dest,
- static struct dma_async_tx_descriptor *
- iop_adma_prep_dma_xor(struct dma_chan *chan, dma_addr_t dma_dest,
- 		      dma_addr_t *dma_src, unsigned int src_cnt, size_t len,
--		      int int_en)
-+		      unsigned long flags)
- {
- 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
- 	struct iop_adma_desc_slot *sw_desc, *grp_start;
-@@ -613,15 +613,15 @@ iop_adma_prep_dma_xor(struct dma_chan *chan, dma_addr_t dma_dest,
- 	BUG_ON(unlikely(len > IOP_ADMA_XOR_MAX_BYTE_COUNT));
- 
- 	dev_dbg(iop_chan->device->common.dev,
--		"%s src_cnt: %d len: %u int_en: %d\n",
--		__FUNCTION__, src_cnt, len, int_en);
-+		"%s src_cnt: %d len: %u flags: %lx\n",
-+		__FUNCTION__, src_cnt, len, flags);
- 
- 	spin_lock_bh(&iop_chan->lock);
- 	slot_cnt = iop_chan_xor_slot_count(len, src_cnt, &slots_per_op);
- 	sw_desc = iop_adma_alloc_slots(iop_chan, slot_cnt, slots_per_op);
- 	if (sw_desc) {
- 		grp_start = sw_desc->group_head;
--		iop_desc_init_xor(grp_start, src_cnt, int_en);
-+		iop_desc_init_xor(grp_start, src_cnt, flags);
- 		iop_desc_set_byte_count(grp_start, iop_chan, len);
- 		iop_desc_set_dest_addr(grp_start, iop_chan, dma_dest);
- 		sw_desc->unmap_src_cnt = src_cnt;
-@@ -638,7 +638,7 @@ iop_adma_prep_dma_xor(struct dma_chan *chan, dma_addr_t dma_dest,
- static struct dma_async_tx_descriptor *
- iop_adma_prep_dma_zero_sum(struct dma_chan *chan, dma_addr_t *dma_src,
- 			   unsigned int src_cnt, size_t len, u32 *result,
--			   int int_en)
-+			   unsigned long flags)
- {
- 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
- 	struct iop_adma_desc_slot *sw_desc, *grp_start;
-@@ -655,7 +655,7 @@ iop_adma_prep_dma_zero_sum(struct dma_chan *chan, dma_addr_t *dma_src,
- 	sw_desc = iop_adma_alloc_slots(iop_chan, slot_cnt, slots_per_op);
- 	if (sw_desc) {
- 		grp_start = sw_desc->group_head;
--		iop_desc_init_zero_sum(grp_start, src_cnt, int_en);
-+		iop_desc_init_zero_sum(grp_start, src_cnt, flags);
- 		iop_desc_set_zero_sum_byte_count(grp_start, len);
- 		grp_start->xor_check_result = result;
- 		pr_debug("\t%s: grp_start->xor_check_result: %p\n",
-diff --git a/include/asm-arm/arch-iop13xx/adma.h b/include/asm-arm/arch-iop13xx/adma.h
-index 04006c1..efd9a5e 100644
---- a/include/asm-arm/arch-iop13xx/adma.h
-+++ b/include/asm-arm/arch-iop13xx/adma.h
-@@ -247,7 +247,7 @@ static inline u32 iop_desc_get_src_count(struct iop_adma_desc_slot *desc,
- }
- 
- static inline void
--iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, int int_en)
-+iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, unsigned long flags)
- {
- 	struct iop13xx_adma_desc_hw *hw_desc = desc->hw_desc;
- 	union {
-@@ -257,13 +257,13 @@ iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, int int_en)
- 
- 	u_desc_ctrl.value = 0;
- 	u_desc_ctrl.field.xfer_dir = 3; /* local to internal bus */
--	u_desc_ctrl.field.int_en = int_en;
-+	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
- 	hw_desc->desc_ctrl = u_desc_ctrl.value;
- 	hw_desc->crc_addr = 0;
- }
- 
- static inline void
--iop_desc_init_memset(struct iop_adma_desc_slot *desc, int int_en)
-+iop_desc_init_memset(struct iop_adma_desc_slot *desc, unsigned long flags)
- {
- 	struct iop13xx_adma_desc_hw *hw_desc = desc->hw_desc;
- 	union {
-@@ -274,14 +274,15 @@ iop_desc_init_memset(struct iop_adma_desc_slot *desc, int int_en)
- 	u_desc_ctrl.value = 0;
- 	u_desc_ctrl.field.xfer_dir = 3; /* local to internal bus */
- 	u_desc_ctrl.field.block_fill_en = 1;
--	u_desc_ctrl.field.int_en = int_en;
-+	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
- 	hw_desc->desc_ctrl = u_desc_ctrl.value;
- 	hw_desc->crc_addr = 0;
- }
- 
- /* to do: support buffers larger than ADMA_MAX_BYTE_COUNT */
- static inline void
--iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
-+iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt,
-+		  unsigned long flags)
- {
- 	struct iop13xx_adma_desc_hw *hw_desc = desc->hw_desc;
- 	union {
-@@ -292,7 +293,7 @@ iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
- 	u_desc_ctrl.value = 0;
- 	u_desc_ctrl.field.src_select = src_cnt - 1;
- 	u_desc_ctrl.field.xfer_dir = 3; /* local to internal bus */
--	u_desc_ctrl.field.int_en = int_en;
-+	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
- 	hw_desc->desc_ctrl = u_desc_ctrl.value;
- 	hw_desc->crc_addr = 0;
- 
-@@ -301,7 +302,8 @@ iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
- 
- /* to do: support buffers larger than ADMA_MAX_BYTE_COUNT */
- static inline int
--iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
-+iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt,
-+		       unsigned long flags)
- {
- 	struct iop13xx_adma_desc_hw *hw_desc = desc->hw_desc;
- 	union {
-@@ -314,7 +316,7 @@ iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
- 	u_desc_ctrl.field.xfer_dir = 3; /* local to internal bus */
- 	u_desc_ctrl.field.zero_result = 1;
- 	u_desc_ctrl.field.status_write_back_en = 1;
--	u_desc_ctrl.field.int_en = int_en;
-+	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
- 	hw_desc->desc_ctrl = u_desc_ctrl.value;
- 	hw_desc->crc_addr = 0;
- 
-diff --git a/include/asm-arm/hardware/iop3xx-adma.h b/include/asm-arm/hardware/iop3xx-adma.h
-index 10834b5..5c529e6 100644
---- a/include/asm-arm/hardware/iop3xx-adma.h
-+++ b/include/asm-arm/hardware/iop3xx-adma.h
-@@ -414,7 +414,7 @@ static inline void iop3xx_aau_desc_set_src_addr(struct iop3xx_desc_aau *hw_desc,
- }
- 
- static inline void
--iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, int int_en)
-+iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, unsigned long flags)
- {
- 	struct iop3xx_desc_dma *hw_desc = desc->hw_desc;
- 	union {
-@@ -425,14 +425,14 @@ iop_desc_init_memcpy(struct iop_adma_desc_slot *desc, int int_en)
- 	u_desc_ctrl.value = 0;
- 	u_desc_ctrl.field.mem_to_mem_en = 1;
- 	u_desc_ctrl.field.pci_transaction = 0xe; /* memory read block */
--	u_desc_ctrl.field.int_en = int_en;
-+	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
- 	hw_desc->desc_ctrl = u_desc_ctrl.value;
- 	hw_desc->upper_pci_src_addr = 0;
- 	hw_desc->crc_addr = 0;
- }
- 
- static inline void
--iop_desc_init_memset(struct iop_adma_desc_slot *desc, int int_en)
-+iop_desc_init_memset(struct iop_adma_desc_slot *desc, unsigned long flags)
- {
- 	struct iop3xx_desc_aau *hw_desc = desc->hw_desc;
- 	union {
-@@ -443,12 +443,13 @@ iop_desc_init_memset(struct iop_adma_desc_slot *desc, int int_en)
- 	u_desc_ctrl.value = 0;
- 	u_desc_ctrl.field.blk1_cmd_ctrl = 0x2; /* memory block fill */
- 	u_desc_ctrl.field.dest_write_en = 1;
--	u_desc_ctrl.field.int_en = int_en;
-+	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
- 	hw_desc->desc_ctrl = u_desc_ctrl.value;
- }
- 
- static inline u32
--iop3xx_desc_init_xor(struct iop3xx_desc_aau *hw_desc, int src_cnt, int int_en)
-+iop3xx_desc_init_xor(struct iop3xx_desc_aau *hw_desc, int src_cnt,
-+		     unsigned long flags)
- {
- 	int i, shift;
- 	u32 edcr;
-@@ -509,21 +510,23 @@ iop3xx_desc_init_xor(struct iop3xx_desc_aau *hw_desc, int src_cnt, int int_en)
- 
- 	u_desc_ctrl.field.dest_write_en = 1;
- 	u_desc_ctrl.field.blk1_cmd_ctrl = 0x7; /* direct fill */
--	u_desc_ctrl.field.int_en = int_en;
-+	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
- 	hw_desc->desc_ctrl = u_desc_ctrl.value;
- 
- 	return u_desc_ctrl.value;
- }
- 
- static inline void
--iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
-+iop_desc_init_xor(struct iop_adma_desc_slot *desc, int src_cnt,
-+		  unsigned long flags)
- {
--	iop3xx_desc_init_xor(desc->hw_desc, src_cnt, int_en);
-+	iop3xx_desc_init_xor(desc->hw_desc, src_cnt, flags);
- }
- 
- /* return the number of operations */
- static inline int
--iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
-+iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt,
-+		       unsigned long flags)
- {
- 	int slot_cnt = desc->slot_cnt, slots_per_op = desc->slots_per_op;
- 	struct iop3xx_desc_aau *hw_desc, *prev_hw_desc, *iter;
-@@ -538,10 +541,10 @@ iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
- 	for (i = 0, j = 0; (slot_cnt -= slots_per_op) >= 0;
- 		i += slots_per_op, j++) {
- 		iter = iop_hw_desc_slot_idx(hw_desc, i);
--		u_desc_ctrl.value = iop3xx_desc_init_xor(iter, src_cnt, int_en);
-+		u_desc_ctrl.value = iop3xx_desc_init_xor(iter, src_cnt, flags);
- 		u_desc_ctrl.field.dest_write_en = 0;
- 		u_desc_ctrl.field.zero_result_en = 1;
--		u_desc_ctrl.field.int_en = int_en;
-+		u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
- 		iter->desc_ctrl = u_desc_ctrl.value;
- 
- 		/* for the subsequent descriptors preserve the store queue
-@@ -559,7 +562,8 @@ iop_desc_init_zero_sum(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
- }
- 
- static inline void
--iop_desc_init_null_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
-+iop_desc_init_null_xor(struct iop_adma_desc_slot *desc, int src_cnt,
-+		       unsigned long flags)
- {
- 	struct iop3xx_desc_aau *hw_desc = desc->hw_desc;
- 	union {
-@@ -591,7 +595,7 @@ iop_desc_init_null_xor(struct iop_adma_desc_slot *desc, int src_cnt, int int_en)
- 	}
- 
- 	u_desc_ctrl.field.dest_write_en = 0;
--	u_desc_ctrl.field.int_en = int_en;
-+	u_desc_ctrl.field.int_en = flags & DMA_PREP_INTERRUPT;
- 	hw_desc->desc_ctrl = u_desc_ctrl.value;
- }
- 
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index e38af8b..586ea37 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -95,6 +95,15 @@ enum dma_transaction_type {
- #define DMA_TX_TYPE_END (DMA_INTERRUPT + 1)
- 
- /**
-+ * enum dma_prep_flags - DMA flags to augment operation preparation
-+ * @DMA_PREP_INTERRUPT - trigger an interrupt (callback) upon completion of
-+ * 	this transaction
-+ */
-+enum dma_prep_flags {
-+	DMA_PREP_INTERRUPT = (1 << 0),
-+};
-+
-+/**
-  * dma_cap_mask_t - capabilities bitmap modeled after cpumask_t.
-  * See linux/cpumask.h
-  */
-@@ -274,16 +283,16 @@ struct dma_device {
- 
- 	struct dma_async_tx_descriptor *(*device_prep_dma_memcpy)(
- 		struct dma_chan *chan, dma_addr_t dest, dma_addr_t src,
--		size_t len, int int_en);
-+		size_t len, unsigned long flags);
- 	struct dma_async_tx_descriptor *(*device_prep_dma_xor)(
- 		struct dma_chan *chan, dma_addr_t dest, dma_addr_t *src,
--		unsigned int src_cnt, size_t len, int int_en);
-+		unsigned int src_cnt, size_t len, unsigned long flags);
- 	struct dma_async_tx_descriptor *(*device_prep_dma_zero_sum)(
- 		struct dma_chan *chan, dma_addr_t *src,	unsigned int src_cnt,
--		size_t len, u32 *result, int int_en);
-+		size_t len, u32 *result, unsigned long flags);
- 	struct dma_async_tx_descriptor *(*device_prep_dma_memset)(
- 		struct dma_chan *chan, dma_addr_t dest, int value, size_t len,
--		int int_en);
-+		unsigned long flags);
- 	struct dma_async_tx_descriptor *(*device_prep_dma_interrupt)(
- 		struct dma_chan *chan);
- 
+diff --git a/include/linux/async_tx.h b/include/linux/async_tx.h
+index bdca3f1..3d59d37 100644
+--- a/include/linux/async_tx.h
++++ b/include/linux/async_tx.h
+@@ -47,7 +47,6 @@ struct dma_chan_ref {
+  * address is an implied source, whereas the asynchronous case it must be listed
+  * as a source.  The destination address must be the first address in the source
+  * array.
+- * @ASYNC_TX_ASSUME_COHERENT: skip cache maintenance operations
+  * @ASYNC_TX_ACK: immediately ack the descriptor, precludes setting up a
+  * dependency chain
+  * @ASYNC_TX_DEP_ACK: ack the dependency descriptor.  Useful for chaining.
+@@ -55,7 +54,6 @@ struct dma_chan_ref {
+ enum async_tx_flags {
+ 	ASYNC_TX_XOR_ZERO_DST	 = (1 << 0),
+ 	ASYNC_TX_XOR_DROP_DST	 = (1 << 1),
+-	ASYNC_TX_ASSUME_COHERENT = (1 << 2),
+ 	ASYNC_TX_ACK		 = (1 << 3),
+ 	ASYNC_TX_DEP_ACK	 = (1 << 4),
+ };
 
