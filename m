@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXLVIan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbXLVIbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbXLVIan (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 03:30:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXLVIaf
+	id S1756069AbXLVIbk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 03:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbXLVIbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 03:30:35 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47173 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750859AbXLVIae (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 03:30:34 -0500
-Date: Sat, 22 Dec 2007 00:30:25 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Clemens Koller <clemens.koller@anagramm.de>,
-       Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove unused __dummy, CONST_ADDR and ADDR from CRIS
- bitops.h
-Message-Id: <20071222003025.148ea0ad.akpm@linux-foundation.org>
-In-Reply-To: <20071220100944.GG10888@axis.com>
-References: <20071220100944.GG10888@axis.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 22 Dec 2007 03:31:33 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:44762 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751198AbXLVIbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 03:31:33 -0500
+Date: Sat, 22 Dec 2007 09:33:23 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       trivial@kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Richard Henderson <rth@twiddle.net>
+Subject: Re: [PATCH 1/3] Remove unused dependency
+Message-ID: <20071222083323.GA22653@uranus.ravnborg.org>
+References: <1198306931-5258-1-git-send-email-joe@perches.com> <1198306931-5258-2-git-send-email-joe@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1198306931-5258-2-git-send-email-joe@perches.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Dec 2007 11:09:44 +0100 Jesper Nilsson <jesper.nilsson@axis.com> wrote:
+On Fri, Dec 21, 2007 at 11:02:09PM -0800, Joe Perches wrote:
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  arch/alpha/boot/Makefile |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/alpha/boot/Makefile b/arch/alpha/boot/Makefile
+> index cd14388..c53169c 100644
+> --- a/arch/alpha/boot/Makefile
+> +++ b/arch/alpha/boot/Makefile
+> @@ -112,5 +112,3 @@ $(obj)/bootpheader: $(obj)/bootloader.lds $(OBJ_bootph) $(LIBS_Y) FORCE
+>  
+>  $(obj)/bootpzheader: $(obj)/bootloader.lds $(OBJ_bootpzh) $(LIBS_Y) FORCE
+>  	$(call if_changed,ld)
+> -
+> -$(obj)/misc.o: lib/inflate.c
 
-> Subject: [PATCH] Remove unused __dummy, CONST_ADDR and ADDR from CRIS bitops.h
+But arch/alpha/boot/mixc.c have:
+#include "../../../lib/inflate.c"
 
-It's nice (and conventional) to prefix the patch title with the subsystem
-name.  So this one would become
+So this is wrong.
 
-
-Subject: [PATCH] cris: remove unused __dummy, CONST_ADDR and ADDR from bitops.h
-
-Thanks.
+	Sam
