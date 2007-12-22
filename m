@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbXLVU0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbXLVU1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbXLVU0G (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 15:26:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbXLVUZz
+	id S1755155AbXLVU1u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 15:27:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbXLVU1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 15:25:55 -0500
-Received: from host-89-228-135-37.gorzow.mm.pl ([89.228.135.37]:63731 "EHLO
-	astralstorm.puszkin.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752572AbXLVUZy (ORCPT
+	Sat, 22 Dec 2007 15:27:42 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:38579 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753029AbXLVU1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 15:25:54 -0500
-X-Greylist: delayed 308 seconds by postgrey-1.27 at vger.kernel.org; Sat, 22 Dec 2007 15:25:54 EST
-Date: Sat, 22 Dec 2007 21:20:35 +0100
-From: Radoslaw Szkodzinski (AstralStorm) <lkml@astralstorm.puszkin.org>
-To: Benny Amorsen <benny+usenet@amorsen.dk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Trailing periods in kernel messages
-Message-ID: <20071222212035.5c942b62@astralstorm.puszkin.org>
-In-Reply-To: <m33atu25cv.fsf@ursa.amorsen.dk>
-References: <E1J5ecS-0008UX-00@gondolin.me.apana.org.au>
-	<Pine.LNX.4.64.0712211104080.21721@fbirervta.pbzchgretzou.qr>
-	<20071221114103.GA801@gondor.apana.org.au>
-	<Pine.LNX.4.64.0712211254160.21721@fbirervta.pbzchgretzou.qr>
-	<20071221160125.GJ2310@csclub.uwaterloo.ca>
-	<m33atu25cv.fsf@ursa.amorsen.dk>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/0SWFxXnpKm8FO/rzTJpq_N1";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Sat, 22 Dec 2007 15:27:42 -0500
+Message-ID: <476D7334.4010301@linux.vnet.ibm.com>
+Date: Sun, 23 Dec 2007 01:57:32 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org, lee.shermerhorn@hp.com
+Subject: Re: [patch 00/20] VM pageout scalability improvements
+References: <20071218211539.250334036@redhat.com>
+In-Reply-To: <20071218211539.250334036@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/0SWFxXnpKm8FO/rzTJpq_N1
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Rik van Riel wrote:
+> On large memory systems, the VM can spend way too much time scanning
+> through pages that it cannot (or should not) evict from memory. Not
+> only does it use up CPU time, but it also provokes lock contention
+> and can leave large systems under memory presure in a catatonic state.
+> 
 
-On Sat, 22 Dec 2007 15:04:16 +0100
-Benny Amorsen <benny+usenet@amorsen.dk> wrote:
-> It is a bit of a mystery why the kernel is ordering me to initialize
-> the current offset of xfs_file_readdir though. I don't know how to do
-> that, so I guess it's lucky that I don't use XFS. Who knows what would
-> happen if I didn't correctly initialize xfs_file_readdir.
+Hi, Rik,
 
-I thinks it's not the kernel ordering you, it's the developer ordering
-the kernel to initialize that variable - presumably, because when it
-didn't do that, things broke.
+I remember you mentioning that by large memory systems you mean systems
+with at-least 128GB, does this definition still hold?
 
---Sig_/0SWFxXnpKm8FO/rzTJpq_N1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+> This patch series improves VM scalability by:
+> 
+> 1) making the locking a little more scalable
+> 
+> 2) putting filesystem backed, swap backed and non-reclaimable pages
+>    onto their own LRUs, so the system only scans the pages that it
+>    can/should evict from memory
+> 
+> 3) switching to SEQ replacement for the anonymous LRUs, so the
+>    number of pages that need to be scanned when the system
+>    starts swapping is bound to a reasonable number
+> 
+> The noreclaim patches come verbatim from Lee Schermerhorn and
+> Nick Piggin.  I have not taken a detailed look at them yet and
+> all I have done is fix the rejects against the latest -mm kernel.
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
+Is there a consolidate patch available, it makes it easier to test.
 
-iD8DBQFHbXGaBlhXA0ALOYMRAqljAJ4qxAxAeNZcPfk/H+QUDGxmpxKopgCgvexJ
-ekO+9xK2F2/x4eyqZbK9Nwg=
-=QHqM
------END PGP SIGNATURE-----
+> I am posting this series now because I would like to get more
+> feedback, while I am studying and improving the noreclaim patches
+> myself.
+> 
 
---Sig_/0SWFxXnpKm8FO/rzTJpq_N1--
+What kind of tests show the problem? I'll try and review and test the code.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
