@@ -1,23 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbXLVULR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbXLVUQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754487AbXLVULR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 15:11:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbXLVULG
+	id S1754703AbXLVUQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 15:16:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbXLVUQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 15:11:06 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:49559 "EHLO
+	Sat, 22 Dec 2007 15:16:20 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:45243 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752896AbXLVULF (ORCPT
+	with ESMTP id S1751918AbXLVUQT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 15:11:05 -0500
-Date: Sat, 22 Dec 2007 12:09:59 -0800
+	Sat, 22 Dec 2007 15:16:19 -0500
+Date: Sat, 22 Dec 2007 12:15:03 -0800
 From: Arjan van de Ven <arjan@infradead.org>
-To: Matthew Bloch <matthew@bytemark.co.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Testing RAM from userspace / question about memmap= arguments
-Message-ID: <20071222120959.475ebced@laptopd505.fenrus.org>
-In-Reply-To: <fk8umh$n7o$1@ger.gmane.org>
-References: <fk8umh$n7o$1@ger.gmane.org>
+To: Martin Mares <mj@ucw.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a
+ driver opt-in issue
+Message-ID: <20071222121503.3502382a@laptopd505.fenrus.org>
+In-Reply-To: <mj+md-20071222.192526.25019.nikam@ucw.cz>
+References: <20071222043139.0cd59804@laptopd505.fenrus.org>
+	<476D1D16.5090703@garzik.org>
+	<20071222064719.73fdd9a4@laptopd505.fenrus.org>
+	<alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org>
+	<mj+md-20071222.192526.25019.nikam@ucw.cz>
 Organization: Intel
 X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -29,19 +36,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Dec 2007 17:06:24 +0000
-Matthew Bloch <matthew@bytemark.co.uk> wrote:
+On Sat, 22 Dec 2007 20:30:58 +0100
+Martin Mares <mj@ucw.cz> wrote:
 
-> Hi - I'm trying to come up with a way of thoroughly testing every byte
-> of RAM from within Linux on amd64 (so that it can be automated better
-> than using memtest86+), and came up with an idea which I'm not sure is
-> supported or practical.
+> Hello!
 > 
-> The obvious problem with testing memory from user space is that you
-> can't mlock all of it, so the best you can do is about three quarters,
-> and hope that the rest of the memory is okay.
+> > Just make it so. The name is fine, the concept is unavoidable. The
+> > people who complain are whiners that haven't ever had to deal with
+> > the fact that there are broken machines around. 
+> 
+> I complain as well as the maintainer of the pciutils. Breaking all
+> userspace accesses to extended configuration space just because there
+> is a couple of chipsets
 
-well... to be honest the more obvious problem will be that you won't be testing the RAM, you'll be testing the CPU's cache.. over and over again.
+it's not "just a couple of chipsets", it's actually
+* a whole lot of bioses
+* at least one whole CPU generation
+* ..
+* ..
 
-memtest86+ does various magic to basically bypass the caches (by disabling them ;-)...
-Doing that in a live kernel situation, and from userspace to boot...... that's... and issue.
+Do you really want to code all of that into your userspace access code as well?
