@@ -1,96 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbXLVTPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbXLVTXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753612AbXLVTPa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 14:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbXLVTPU
+	id S1753996AbXLVTXR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 14:23:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbXLVTXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 14:15:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59174 "EHLO mx3.mail.elte.hu"
+	Sat, 22 Dec 2007 14:23:04 -0500
+Received: from ns2.suse.de ([195.135.220.15]:33603 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752098AbXLVTPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 14:15:18 -0500
-Date: Sat, 22 Dec 2007 20:09:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-Message-ID: <20071222190933.GA2958@elte.hu>
-References: <Pine.LNX.4.64.0712210750510.29372@schroedinger.engr.sgi.com> <alpine.LFD.0.9999.0712210835440.21557@woody.linux-foundation.org> <Pine.LNX.4.64.0712211356220.3795@schroedinger.engr.sgi.com> <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy> <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com> <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de> <20071222100326.GF26157@elte.hu> <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org>
+	id S1751918AbXLVTXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 14:23:03 -0500
+Date: Sat, 22 Dec 2007 11:25:32 -0800
+From: Greg KH <gregkh@suse.de>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a
+	driver opt-in issue
+Message-ID: <20071222192532.GA5282@suse.de>
+References: <fa.pFsY/52FEkQYqrDPnPMxmcUOsRY@ifi.uio.no> <476D39C5.9080409@shaw.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <476D39C5.9080409@shaw.ca>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Dec 22, 2007 at 10:22:29AM -0600, Robert Hancock wrote:
+> Arjan van de Ven wrote:
+>> Hi,
+>> Linus really wants the extended (4Kb) PCI configuration space (using MCFG 
+>> acpi table etc) to be opt-in, since there's many issues with it and most 
+>> drivers don't even use/need it. The idea behind opt-in is that if you 
+>> don't use it, you don't get to suffer the bugs...
+>> Booted on my 64 bit test machine; sadly it has a defunct BIOS that doesn't 
+>> have a working MCFG.
+>> From: Arjan van de Ven <arjan@linux.intel.com>
+>> Subject: Make MMCONFIG space a driver opt-in
+>> There are many issues with using the extended PCI configuration space 
+>> (CPU, Chipset and most of all BIOS bugs). This while the vast majority of 
+>> drivers
+>> and devices don't even use/need to use the memory mapped access methods 
+>> since they
+>> don't use the config space beyond the traditional 256 bytes.
+>> This patch makes accessing the extended config space a driver choice, via 
+>> the
+>> pci_enable_ext_config(pdev)
+>> API function; drivers that want/need the extended configuration space 
+>> should call this.
+>> (a separate patch will be posted to add this function call to the driver 
+>> that uses this)
+>
+> I don't really like this approach. Whether MMCONFIG works or not has 
+> nothing to do with the device itself, it's an attribute of the machine, and 
+> possibly the bus it's been plugged into. This patch might prevent problems 
+> in some cases, but it's equally likely to just delay problems until 
+> somebody plugs in a device that tries to use extended config space.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+But it is that device, and the driver that controls this device that
+cares about the extended config space.  So it's fair to push this onto
+the driver if needed, instead of forcing the pci core to just blindly
+guess for all devices, and getting it wrong...
 
-> > > It's definitely not a stable ABI. slabtop tends to exit without 
-> > > any error message on any slabinfo version number increase and I've 
-> > > seen that happen several times in not so old kernels.
-> > 
-> > so because we sucked in the past we can continue to suck? ;)
-> 
-> Well, I do have to admit that I'm not a huge fan of /proc/slabinfo, 
-> and the fact that there hasn't been a lot of complaints about it going 
-> away does seem to imply that it wasn't a very important ABI.
-> 
-> I'm the first to stand up for backwards compatibility, but I also try 
-> to be realistic, and so far nobody has really complained about the 
-> fact that /proc/slabinfo went away on any grounds but on the general 
-> principle of "it was a user-visible ABI".
-> 
-> We've changed user-visible ABI's in the past in the hope that they 
-> weren't actually used. Sometimes it worked, sometimes it didn't. In 
-> this case, I think it still has the potential of working.
-> 
-> That said, I'm not a *huge* fan of /sys/slab/ either. I can get the 
-> info I as a developer tend to want from there, but it's really rather 
-> less convenient than I'd like. It is really quite hard, for example, 
-> to get any kind of "who actually uses the most *memory*" information 
-> out of there.
+thanks,
 
-Yes, i agree that me calling it an 'ABI' stretches the term - we dont 
-want to put ourselves into a forced compatibility corner in every case 
-where /proc does something really stupid. But /proc/slabinfo is being 
-used, slabtop is installed and deployed, so why break it unnecessarily? 
-It's not like we couldnt remove /proc/slabinfo later on, via the normal 
-route of feature removal. I think Pekka's patch that adds /proc/slabinfo 
-is simple and reasonable enough for 2.6.24.
-
-We can get rid of /proc/slabinfo but then it should i think be done via 
-the normal route of Documentation/feature-removal-schedule.txt. Was 
-there any particular problem with /proc/slabinfo, at least as far as the 
-read-only access that slabtop does goes? I dont think there was. So why 
-should we go out on a limb _not_ providing it when there's a patch 
-available, etc. I just googled a bit and people _have_ asked about 
-slabtop availability, and the impression was that it would be offered by 
-the time SLUB becomes the default. (and this was mentioned by others in 
-this discussion)
-
-I'd also not rely on the fact that only a few people are complaining. 
-Most people, even 2.6.24-rc early adopters, still use SLAB because early 
-adopters typically use their .23 .config and do a 'make oldconfig' - 
-which picks up SLAB. So SLUB use will become more widespread only once 
-2.6.24 is out and is packaged in distros. Distros will likely pick SLUB 
-if there's no performance worries and if it's the default. Fedora 
-rawhide already uses SLUB.
-
-	Ingo
+greg k-h
