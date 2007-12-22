@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbXLVKxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306AbXLVLL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbXLVKxa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 05:53:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbXLVKxV
+	id S1753306AbXLVLL5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 06:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbXLVLLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 05:53:21 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39098 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750869AbXLVKxU (ORCPT
+	Sat, 22 Dec 2007 06:11:48 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:30552 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750920AbXLVLLr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 05:53:20 -0500
-Date: Sat, 22 Dec 2007 02:52:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Jon Masters <jcm@redhat.com>, Michal Schmidt <mschmidt@redhat.com>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Subject: Re: [PATCH] kthread: run kthreadd with max priority SCHED_FIFO
-Message-Id: <20071222025228.02905a01.akpm@linux-foundation.org>
-In-Reply-To: <1198319970.5509.10.camel@homer.simson.net>
-References: <20071217234314.540b59bd@hammerfall>
-	<20071222013021.db2528cb.akpm@linux-foundation.org>
-	<1198317171.24423.47.camel@perihelion>
-	<1198319970.5509.10.camel@homer.simson.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Dec 2007 06:11:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:x-mailer:x-operating-system:user-agent;
+        b=DWpyZoTCa2QrQs0/OwD1ChBHTSap8nCTJawxSx32gLuSSDgkLJR4B7W8eN8499ez3r65AbhqKAhvQm2IBzYz37SHJmduOS0Kml96ZH/xDcFts8Gt0vmD3COOrfKMopTXeIgtY+Wh+bkZ5JA0hGGUDFd5NH+jOB4t8sIBzoOLk9A=
+Date: Sun, 23 Dec 2007 03:15:42 +0800
+From: Zhenyu Wang <zhen78@gmail.com>
+To: Harald Welte <laforge@gnumonks.org>
+Cc: linux-kernel@vger.kernel.org, xorg@lists.freedesktop.org
+Subject: Re: linux-2.6.24-rcX regression / xserver-xorg-video-intel / Q35
+Message-ID: <20071222191542.GA17055@localdomain>
+References: <20071222002516.GR6625@prithivi.gnumonks.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071222002516.GR6625@prithivi.gnumonks.org>
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.24-rc3 unknown
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Dec 2007 11:39:30 +0100 Mike Galbraith <efault@gmx.de> wrote:
+On 2007.12.22 01:25:16 +0100, Harald Welte wrote:
+> 
+> I'm running an Intel DQ35JO mainboard (Q35 chipset, Q6600 CPU) and I am
+> observing a regression with linux-2.6.24-rc1 through -rc6 (linux-2.6.git as
+> of today, ea67db4cdbbf7f4e74150e71da0984e25121f500).
+> 
+> The last working version is 2.6.24-rc1.
+> 
+> The system is running debian unstable (current) using
+> xserver-xorg-video-intel 2.2.0-1
+> 
+> So what is the actual problem:
+> It seems to be related to the way how the iommu/gart is used for memory
+> allocation of the framebuffer memory.
+
+There's no behavior change in intel agp module between .24-rc1 to rc6.
+IOMMU shouldn't matter here, if you build x86_64 system and with
+CONFIG_DMAR on, you should be already having CONFIG_DMAR_GFX_WA for you.
 
 > 
-> On Sat, 2007-12-22 at 04:52 -0500, Jon Masters wrote:
-> 
-> > So, user tasks running with SCHED_FIFO should be able to lock a system?
-> > I guess I see both sides of this argument - yes, it's userspace at
-> > fault, but in other cases when userspace is at fault, we take action
-> > (OOM, segfault, others). Isn't this situation just another case where
-> > the kernel needs to avoid the evils of userland going awry?
-> 
-> FYI, Ingo queued the below.
-> 
-> http://lkml.org/lkml/2007/10/31/344
-> 
+> Xorg starts just as it should, but the lower part of the screen is
+> completely gobbled.  I suppose the lower part of the screen is actually
+> showing off-screen memory at some completely differnt location.
 
-That's pretty different of course, but rlimit might be a suitable interface
-for implementing RLIMIT_MAX_CONTINUOUS_RT_MILLISECONDS.
+Do you have other changes except kernel? like other xorg packages, bios?
+
+> 
+> Interestingly, the mouse cursor is superimposed on top of the garbage
+> (and it is not distorted).
+
+yeah, hardware cursor uses another plane than scan buffer, it's
+seperate.
+
+Could you fire a bug to https://bugs.freedesktop.org with versions and
+logs? Thanks.
 
