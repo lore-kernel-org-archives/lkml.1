@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbXLVQGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbXLVQWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241AbXLVQGb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 11:06:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbXLVQGZ
+	id S1754506AbXLVQWu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 11:22:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbXLVQWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 11:06:25 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:39083 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302AbXLVQGY (ORCPT
+	Sat, 22 Dec 2007 11:22:39 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:28177 "EHLO
+	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbXLVQWi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 11:06:24 -0500
-Message-ID: <476D35F6.90900@davidnewall.com>
-Date: Sun, 23 Dec 2007 02:36:14 +1030
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Richard D <richard@embunus.com>,
-       "'Matthew Bloch'" <matthew@bytemark.co.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Testing RAM from userspace / question about memmap= arguments
-References: <fk8umh$n7o$1@ger.gmane.org> <20071221125812.GA4052@ucw.cz> <000001c84472$74b245e0$5e16d1a0$@com> <20071222134612.GA4098@ucw.cz>
-In-Reply-To: <20071222134612.GA4098@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Dec 2007 11:22:38 -0500
+Date: Sat, 22 Dec 2007 10:22:29 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a driver
+ opt-in issue
+In-reply-to: <fa.pFsY/52FEkQYqrDPnPMxmcUOsRY@ifi.uio.no>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Message-id: <476D39C5.9080409@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.pFsY/52FEkQYqrDPnPMxmcUOsRY@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Sat 2007-12-22 13:42:47, Richard D wrote:
->   
->> Cant you, modify bootmem allocator to test with memtest patterns and then
->> use kexec (as Pavel suggested) to test the one where kernel was sitting
->> earlier?
->>     
->
->
-> I do not think you need to modify anything in kernel. Just use
-> /dev/mem to test areas that kernel doesn't see, then kexec into place
-> you already tested, and test the rest.
->   
+Arjan van de Ven wrote:
+> Hi,
+> 
+> Linus really wants the extended (4Kb) PCI configuration space (using MCFG acpi table etc) to be opt-in, since there's many issues with it and most drivers don't even use/need it. The idea behind opt-in is that if you don't use it, you don't get to suffer the bugs...
+> 
+> Booted on my 64 bit test machine; sadly it has a defunct BIOS that doesn't have a working MCFG.
+> 
+> 
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Subject: Make MMCONFIG space a driver opt-in
+> 
+> There are many issues with using the extended PCI configuration space 
+> (CPU, Chipset and most of all BIOS bugs). This while the vast majority of drivers
+> and devices don't even use/need to use the memory mapped access methods since they
+> don't use the config space beyond the traditional 256 bytes.
+> 
+> This patch makes accessing the extended config space a driver choice, via the
+> 
+> pci_enable_ext_config(pdev)
+> 
+> API function; drivers that want/need the extended configuration space should call this.
+> (a separate patch will be posted to add this function call to the driver that uses this)
 
-That's still an insufficient test.  One failure mode is writes at one 
-location corrupting cells at another.
+I don't really like this approach. Whether MMCONFIG works or not has 
+nothing to do with the device itself, it's an attribute of the machine, 
+and possibly the bus it's been plugged into. This patch might prevent 
+problems in some cases, but it's equally likely to just delay problems 
+until somebody plugs in a device that tries to use extended config 
+space. Neither do I really like the approach of limiting MMCONFIG 
+accesses to ones beyond a certain address in the config space, for a 
+similar reason.
 
-The idea of wanting to do comprehensive and robust memory testing from 
-within the operating system seems dubious at best, to me.  If there is 
-something wrong with memtest86, doing the tests from within Linux is not 
-the answer.  The answer is to fix memtest86.  If the problem is that you 
-automation, e.g. switching a server from production to memory test mode 
-at midnight and back again at 6am, the answer is still to "fix" 
-memtest86.  Writing something that grabs some physical RAM from Linux's 
-control, tests it, and then moves the kernel itself so that it can test 
-the rest, is adding a whole extra layer of complexity to an already 
-challenging (I assume, based on errors that dedicated software-based 
-testers miss) problem.
+The detection of whether MMCONFIG works or not has to work properly (and 
+I think we're pretty close, or at least we know what we need to do to 
+get there, like fixing the stupid MMCONFIG/PCI bar sizing overlap 
+problem, and likely Tony Camuso's patch or something like it, to disable 
+MMCONFIG accesses to devices behind certain broken host bridges). Once 
+that works, then this patch really serves no purpose.
 
-Give up on this misguided idea and build on the best tools that are 
-already available.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
