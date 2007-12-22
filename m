@@ -1,125 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbXLVL66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbXLVL7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbXLVL66 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 06:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbXLVL6s
+	id S1752131AbXLVL7Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 06:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbXLVL7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 06:58:48 -0500
-Received: from crazy.xmat.net ([91.121.11.163]:56308 "EHLO
-	tchaikovsky.artsenscene.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750860AbXLVL6q convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 06:58:46 -0500
-X-Greylist: delayed 2196 seconds by postgrey-1.27 at vger.kernel.org; Sat, 22 Dec 2007 06:58:46 EST
-To: bjorn.helgaas@hp.com
-Subject: Re: [lm-sensors] 2.6.24-rc4 hwmon it87 probe fails
-X-IlohaMail-Blah: khali@gcu-squad.org
-X-IlohaMail-Method: mail() [mem]
-X-IlohaMail-Dummy: moo
-X-Mailer: IlohaMail/0.8.14 (On: mail.gcu-squad.org)
-Message-ID: <w9NvZsoO.1198322501.4301280.khali@gcu-squad.org>
-In-Reply-To: <200712211200.30947.bjorn.helgaas@hp.com>
-From: "Jean Delvare" <khali@linux-fr.org>
-Bounce-To: "Jean Delvare" <khali@linux-fr.org>
-CC: "Shaohua Li" <shaohua.li@intel.com>, "Mike Houston" <mikeserv@bmts.com>,
-       "Adrian Bunk" <bunk@stusta.de>, "Elvis Pranskevichus" <el@prans.net>,
-       mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org, "Adam Belay" <ambx1@neo.rr.com>,
-       "Zhao Yakui" <yakui.zhao@intel.com>, "Thomas Renninger" <trenn@suse.de>,
-       lenb@kernel.org, linux-acpi@vger.kernel.org
+	Sat, 22 Dec 2007 06:59:01 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:50487 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752301AbXLVL6y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 06:58:54 -0500
+Date: Sat, 22 Dec 2007 11:52:17 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC] [PATCH] Memory controller remove control_type feature
+In-Reply-To: <476CBD9B.9070203@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0712221140330.7460@blonde.wat.veritas.com>
+References: <20071220185358.3248.25416.sendpatchset@balbir-laptop>
+ <20071221225941.98b7362d.akpm@linux-foundation.org> <476CBD9B.9070203@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Date: Sat, 22 Dec 2007 12:21:41 +0100
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 22 Dec 2007, Balbir Singh wrote:
+> Andrew Morton wrote:
+> > On Fri, 21 Dec 2007 00:23:58 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> >> Based on the discussion at http://lkml.org/lkml/2007/12/20/383, it was
+> >> felt that control_type might not be a good thing to implement right away.
+> >> We can add this flexibility at a later point when required.
 
-Hi Bjorn,
+Not studied closely, but your patch looks both too much and too
+little to me, Balbir.
 
-Le 21/12/2007, "Bjorn Helgaas" <bjorn.helgaas@hp.com> a écrit:
+Too much in that it appears to bundle in some significant little
+locking changes without any mention in the commment.
 
->On Tuesday 18 December 2007 10:59:18 am Jean Delvare wrote:
->> My initial idea was to identify the faulty motherboard using DMI and to
->> force pnpacpi=off on the faulty motherboards. If this is considered too
->> aggressive, maybe we can just reject resource declarations that
->> intersect (but don't match) 0x290-0x297 for these motherboards. Either
->> way, we have to do something, and we have to do it quickly. 2.6.24
->> final isn't too far away, and more importantly, the patch that revealed
->> the problem has been backported to 2.6.23.10 so people are experiencing
->> regressions already.
->
->What do you think of something like the following patch?  If we do
->this, I don't think we'd need to force pnpacpi=off or change the
->way PNP reserves resources.
->
->I'll be on vacation until about January 2, so I won't be able to
->do much with this until then.
->
->
->
->[patch] it87: request only Environment Controller ports
->
->The IT8705F and related parts are Super I/O controllers that contain
->many separate devices.
->
->Some BIOSes describe IT8705F I/O port usage under a motherboard device
->(PNP0C02) with overlapping regions, e.g., 0x290-0x29f and 0x290-0x294.
->
->The it87 driver supports only the Environment Controller, which requires
->only two ISA ports, but it used to request an eight-port range.  If that
->range exceeds a range reported by the BIOS, as 0x290-0x297 would, the
->request fails, and the it87 driver cannot claim the device.
->
->This patch makes the it87 driver request only the two ports used for the
->Environment Controller device.
+Too little in that it leaves behind lots of junk relating to the
+different control_types: the enums, the different kinds of call
+that needn't now be different, no change to the various callsites.
+Needs more cleanup, I'd say.  Of course, that could be yet another
+separate patch.
 
-The problem is that the IT87xxF chips do decode 4 ports (recent chips,
-0x294-0x297) or 8 ports (older chips, 0x290-0x297), not 2 as the
-datasheets say. The ITE Super-I/O chips differ from the Winbond
-Super-I/O chips in this respect. The it87 driver only needs to access
-ports 0x295 and 0x296, true, but the device itself decodes more
-addresses than that. So, with this proposed patch, ports which are busy
-will be shown as being free. This pretty much voids the point of
-resource declarations, doesn't it? This might not cause too much
-trouble in practice, but to me this still looks like the wrong way to go.
+> > Gee the memory controller patchset is turning into a mess.
 
-The resource declarations made by these motherboard BIOSes are totally
-bogus. 0x290-0x29f is much larger than what the chip decodes.
-0x290-0x294 is a subset that doesn't make any sense. The GA-K8N Ultra 9
-is even funnier with 0x295-0x314, which again doesn't correspond to
-anything real. All these happen to not intersect with 0x295-0x296 but I
-wouldn't count on it. If Gigabyte (and possibly others) care that
-little about these declarations, pretty much anything could be seen. So
-while your proposed workaround happens to fix the problem at hand, it is
-not really correct technically, and could break again soon.
+A mess indeed.
 
-I'd rather fix the problem at its source, or, as fixing it as the source
-isn't very realistic in this case, as near of the source as possible.
-That would mean DMI-based quirks for the affected motherboards, that
-would discard or adjust the bogus resource declarations. I have not yet
-looked at what the code would look like, as I am not familiar with the
-pnp system driver, I don't know what it would take to implement my
-proposal.
+> Yes, the patchset has expanded and we have several useful bug fixes and
+> cleanups and some new features.
 
-I also don't fully understand what pnpacpi is useful for. I have heard
-about PCI drivers that might request resources that the motherboard
-doesn't want them to touch, but I don't know the details, I also
-don't know if it is a theoretical issue or if it really happens on some
-systems, and I don't know if there are other uses for pnpacpi. I'm
-asking because I want to know if forcing pnpacpi=off on the faulty
-motherboards would be good enough or if we really need finer-grained
-quirks (assuming that we go the DMI-based quirks route at all.) The
-former would obviously be easier.
+Hah, a career in politics beckons ;)
 
->
->Systems where this problem has been reported:
->    Gigabyte GA-K8N Ultra 9
->    Gigabyte M56S-S3
->    Gigabyte GA-965G-DS3
-> (...)
+> > Hopefully it'll look a bit better once I do a big patch-folding but we
+> > still have patches interesecting everywhere and now we have patches which
+> > add a feature and later ones which take it away again.
+> > 
+> 
+> I think folding will help. I understand your concern w.r.t getting the
+> correct set of patches with a good changelog.
+> 
+> > But I don't think it's worth the time and risk of a huge
+> > rip-up-and-refactor.
+> > 
+> 
+> I agree, given the proximity of the new merge window for 2.6.25.  We
+> could review the patches after folding them and see how to consolidate
+> further in case the patches continue to look messy.
 
-Thanks,
---
-Jean Delvare
+Personally, I think it could benefit a lot from a rip-up-and-refactor.
+But if we're rushing headlong for 2.6.25, yes, I agree it's too late.
+And I'm afraid it's not something I can volunteer for at this time.
+
+Hugh
