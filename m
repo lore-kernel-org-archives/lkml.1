@@ -1,247 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbXLVT2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbXLVTag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754459AbXLVT2a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 14:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbXLVT2X
+	id S1754650AbXLVTag (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 14:30:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbXLVTa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 14:28:23 -0500
-Received: from DSL022.labridge.com ([206.117.136.22]:3456 "EHLO perches.com"
+	Sat, 22 Dec 2007 14:30:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36989 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752098AbXLVT2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 14:28:22 -0500
-Subject: Re: [PATCH 1/3] Remove unused dependency
-From: Joe Perches <joe@perches.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       trivial@kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Richard Henderson <rth@twiddle.net>
-In-Reply-To: <20071222143128.GA24659@uranus.ravnborg.org>
-References: <1198306931-5258-1-git-send-email-joe@perches.com>
-	 <1198306931-5258-2-git-send-email-joe@perches.com>
-	 <20071222083323.GA22653@uranus.ravnborg.org>
-	 <1198313412.4895.24.camel@localhost>
-	 <20071222143128.GA24659@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 22 Dec 2007 11:28:11 -0800
-Message-Id: <1198351691.4895.42.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	id S1752785AbXLVTa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 14:30:28 -0500
+Date: Sat, 22 Dec 2007 20:29:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+Message-ID: <20071222192957.GA6646@elte.hu>
+References: <alpine.LFD.0.9999.0712210835440.21557@woody.linux-foundation.org> <Pine.LNX.4.64.0712211356220.3795@schroedinger.engr.sgi.com> <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy> <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com> <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de> <20071222100326.GF26157@elte.hu> <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org> <20071222190933.GA2958@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071222190933.GA2958@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-12-22 at 15:31 +0100, Sam Ravnborg wrote:
-> I looked at how inflate was used:
->  
-> $ grep inflate */boot/Makefile
-> alpha/boot/Makefile:$(obj)/misc.o: lib/inflate.c
-> => redundandt dependency, can be deleted
-> A cleanup of all this is needed.
 
-Perhaps it's better to move lib/inflate.c to the
-include path (include/lib ?) and convert the files that
-#include "(../)*lib/inflate.c" to
-#include <lib/inflate.c>?
+* Ingo Molnar <mingo@elte.hu> wrote:
 
+> I'd also not rely on the fact that only a few people are complaining. 
+> Most people, even 2.6.24-rc early adopters, still use SLAB because 
+> early adopters typically use their .23 .config and do a 'make 
+> oldconfig' - which picks up SLAB. So SLUB use will become more 
+> widespread only once 2.6.24 is out and is packaged in distros. Distros 
+> will likely pick SLUB if there's no performance worries and if it's 
+> the default. Fedora rawhide already uses SLUB.
 
- arch/alpha/boot/Makefile                  |    2 --
- arch/alpha/boot/misc.c                    |    2 +-
- arch/arm/boot/compressed/Makefile         |    2 +-
- arch/arm/boot/compressed/misc.c           |    2 +-
- arch/cris/arch-v10/boot/compressed/misc.c |    2 +-
- arch/cris/arch-v32/boot/compressed/misc.c |    2 +-
- arch/h8300/boot/compressed/misc.c         |    2 +-
- arch/m32r/boot/compressed/misc.c          |    2 +-
- arch/sh/boot/compressed/misc.c            |    2 +-
- arch/sh64/boot/compressed/misc.c          |    2 +-
- arch/x86/boot/compressed/misc_32.c        |    2 +-
- arch/x86/boot/compressed/misc_64.c        |    2 +-
- {lib => include/lib}/inflate.c            |    0 
- init/do_mounts_rd.c                       |    2 +-
- init/initramfs.c                          |    2 +-
- 15 files changed, 13 insertions(+), 15 deletions(-)
+here's some silly statistics about allocator coverage on lkml, based on 
+configs reported to lkml in the past 4 months:
 
-diff --git a/arch/alpha/boot/Makefile b/arch/alpha/boot/Makefile
-index cd14388..c53169c 100644
---- a/arch/alpha/boot/Makefile
-+++ b/arch/alpha/boot/Makefile
-@@ -112,5 +112,3 @@ $(obj)/bootpheader: $(obj)/bootloader.lds $(OBJ_bootph) $(LIBS_Y) FORCE
- 
- $(obj)/bootpzheader: $(obj)/bootloader.lds $(OBJ_bootpzh) $(LIBS_Y) FORCE
- 	$(call if_changed,ld)
--
--$(obj)/misc.o: lib/inflate.c
-diff --git a/arch/alpha/boot/misc.c b/arch/alpha/boot/misc.c
-index c00646b..c132505 100644
---- a/arch/alpha/boot/misc.c
-+++ b/arch/alpha/boot/misc.c
-@@ -100,7 +100,7 @@ static ulg free_mem_ptr_end;
- 
- #define HEAP_SIZE 0x3000
- 
--#include "../../../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- static void *malloc(int size)
- {
-diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
-index 5fde99f..563cfc2 100644
---- a/arch/arm/boot/compressed/Makefile
-+++ b/arch/arm/boot/compressed/Makefile
-@@ -111,5 +111,5 @@ $(obj)/font.c: $(FONTC)
- $(obj)/vmlinux.lds: $(obj)/vmlinux.lds.in arch/arm/boot/Makefile .config
- 	@sed "$(SEDFLAGS)" < $< > $@
- 
--$(obj)/misc.o: $(obj)/misc.c include/asm/arch/uncompress.h lib/inflate.c
-+$(obj)/misc.o: $(obj)/misc.c include/asm/arch/uncompress.h
- 
-diff --git a/arch/arm/boot/compressed/misc.c b/arch/arm/boot/compressed/misc.c
-index 9b44402..7c3850d 100644
---- a/arch/arm/boot/compressed/misc.c
-+++ b/arch/arm/boot/compressed/misc.c
-@@ -241,7 +241,7 @@ static ulg free_mem_ptr_end;
- 
- #define HEAP_SIZE 0x3000
- 
--#include "../../../../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- #ifndef STANDALONE_DEBUG
- static void *malloc(int size)
-diff --git a/arch/cris/arch-v10/boot/compressed/misc.c b/arch/cris/arch-v10/boot/compressed/misc.c
-index e205d2e..3298a66 100644
---- a/arch/cris/arch-v10/boot/compressed/misc.c
-+++ b/arch/cris/arch-v10/boot/compressed/misc.c
-@@ -108,7 +108,7 @@ static void puts(const char *);
- extern int end;
- static long free_mem_ptr = (long)&end;
-  
--#include "../../../../../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- static void *malloc(int size)
- {
-diff --git a/arch/cris/arch-v32/boot/compressed/misc.c b/arch/cris/arch-v32/boot/compressed/misc.c
-index 0169ba1..dc5a119 100644
---- a/arch/cris/arch-v32/boot/compressed/misc.c
-+++ b/arch/cris/arch-v32/boot/compressed/misc.c
-@@ -110,7 +110,7 @@ static void puts(const char *);
- extern int _end;
- static long free_mem_ptr = (long)&_end;
- 
--#include "../../../../../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- static void *malloc(int size)
- {
-diff --git a/arch/h8300/boot/compressed/misc.c b/arch/h8300/boot/compressed/misc.c
-index 8450745..863d794 100644
---- a/arch/h8300/boot/compressed/misc.c
-+++ b/arch/h8300/boot/compressed/misc.c
-@@ -92,7 +92,7 @@ static unsigned long free_mem_end_ptr;
- 
- #define HEAP_SIZE             0x10000
- 
--#include "../../../../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- #define SCR *((volatile unsigned char *)0xffff8a)
- #define TDR *((volatile unsigned char *)0xffff8b)
-diff --git a/arch/m32r/boot/compressed/misc.c b/arch/m32r/boot/compressed/misc.c
-index 600d40e..dac3a0b 100644
---- a/arch/m32r/boot/compressed/misc.c
-+++ b/arch/m32r/boot/compressed/misc.c
-@@ -90,7 +90,7 @@ static unsigned long free_mem_end_ptr;
- 
- #define HEAP_SIZE             0x10000
- 
--#include "../../../../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- static void *malloc(int size)
- {
-diff --git a/arch/sh/boot/compressed/misc.c b/arch/sh/boot/compressed/misc.c
-index df65e30..a00dd7e 100644
---- a/arch/sh/boot/compressed/misc.c
-+++ b/arch/sh/boot/compressed/misc.c
-@@ -99,7 +99,7 @@ static unsigned long free_mem_end_ptr;
- 
- #define HEAP_SIZE             0x10000
- 
--#include "../../../../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- static void *malloc(int size)
- {
-diff --git a/arch/sh64/boot/compressed/misc.c b/arch/sh64/boot/compressed/misc.c
-index aea00c5..3b151f4 100644
---- a/arch/sh64/boot/compressed/misc.c
-+++ b/arch/sh64/boot/compressed/misc.c
-@@ -97,7 +97,7 @@ static unsigned long free_mem_end_ptr;
- 
- #define HEAP_SIZE             0x10000
- 
--#include "../../../../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- static void *malloc(int size)
- {
-diff --git a/arch/x86/boot/compressed/misc_32.c b/arch/x86/boot/compressed/misc_32.c
-index b74d60d..fd8674e 100644
---- a/arch/x86/boot/compressed/misc_32.c
-+++ b/arch/x86/boot/compressed/misc_32.c
-@@ -199,7 +199,7 @@ static int lines, cols;
- void *xquad_portio;
- #endif
- 
--#include "../../../../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- static void *malloc(int size)
- {
-diff --git a/arch/x86/boot/compressed/misc_64.c b/arch/x86/boot/compressed/misc_64.c
-index 6ea015a..315e667 100644
---- a/arch/x86/boot/compressed/misc_64.c
-+++ b/arch/x86/boot/compressed/misc_64.c
-@@ -195,7 +195,7 @@ static char *vidmem = (char *)0xb8000;
- static int vidport;
- static int lines, cols;
- 
--#include "../../../../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- static void *malloc(int size)
- {
-diff --git a/lib/inflate.c b/include/lib/inflate.c
-similarity index 100%
-rename from lib/inflate.c
-rename to include/lib/inflate.c
-diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
-index 3ac5904..cf364f6 100644
---- a/init/do_mounts_rd.c
-+++ b/init/do_mounts_rd.c
-@@ -319,7 +319,7 @@ static void __init error(char *m);
- static void __init gzip_mark(void **);
- static void __init gzip_release(void **);
- 
--#include "../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- static void __init *malloc(size_t size)
- {
-diff --git a/init/initramfs.c b/init/initramfs.c
-index 1db02a0..23c588b 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -410,7 +410,7 @@ static void __init error(char *m);
- static void __init gzip_mark(void **);
- static void __init gzip_release(void **);
- 
--#include "../lib/inflate.c"
-+#include <lib/inflate.c>
- 
- static void __init gzip_mark(void **ptr)
- {
+  $ for N in SLAB SLUB SLOB; do printf "%s: " $N; grep ^CONFIG_$N=y linux-kernel | wc -l; done
+  SLAB: 70
+  SLUB: 77
+  SLOB: 4
 
+so SLUB and SLAB is utilized about equally amongst people who reported 
+configs to lkml.
 
+But people who use SLUB enabled it intentionally - and they are thus 
+much less likely to complain about this choice of them.
+
+Reporting:
+
+ "I just enabled SLUB instead of SLAB, and hey guys, it does not have 
+  SLABinfo"
+
+has a foolish ring to it, doesnt it? I'd rather ask carefully, like this 
+person did:
+
+  http://kerneltrap.org/mailarchive/linux-kernel/2007/10/12/335765
+
+This is one of the reasons why i think the whole SLAB->SLUB renaming was 
+bad - we should have done SLAB2 or SLAB^2 instead, so that people expect 
+_at least as good_ behavior (performance, features, etc.) from SLUB as 
+from SLAB. Instead of "something different".
+
+anyway ... i think we still generally suck _alot_ at providing 
+near-transparent kernel upgrades to users. (kernel upgrades are still a 
+pain and risk, and often just due to poor developer choices on our 
+side.)
+
+It's nowhere near as bad as the 2.4->2.6 transition was (in fact it 
+shouldnt even be mentioned in the same sentence), and it's getting 
+better gradually, but i think we should just by default be 10 times more 
+careful about these things - whenever it is borderline technically sane 
+to do so. We induce enough unintentional breakage of user-space, we 
+shouldnt compound it with intentional breakages. The kernel community 
+still has _a lot_ of user and distro trust to win back. So being seen as 
+over-cautious wont harm.
+
+	Ingo
