@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbXLVVKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbXLVVuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754777AbXLVVKi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 16:10:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbXLVVK2
+	id S1754710AbXLVVuu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 16:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbXLVVul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 16:10:28 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:58916 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752712AbXLVVK2 (ORCPT
+	Sat, 22 Dec 2007 16:50:41 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43801 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752868AbXLVVuk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 16:10:28 -0500
-Date: Sat, 22 Dec 2007 14:10:26 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
-       torvalds@linux-foundation.org
-Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a driver opt-in issue
-Message-ID: <20071222211026.GT29690@parisc-linux.org>
-References: <20071222043139.0cd59804@laptopd505.fenrus.org> <476D1D16.5090703@garzik.org> <20071222064719.73fdd9a4@laptopd505.fenrus.org> <20071222155436.GS29690@parisc-linux.org> <20071222080249.482fab0b@laptopd505.fenrus.org>
-MIME-Version: 1.0
+	Sat, 22 Dec 2007 16:50:40 -0500
+Date: Sat, 22 Dec 2007 21:50:09 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>, Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+Message-ID: <20071222215009.GN8181@ftp.linux.org.uk>
+References: <Pine.LNX.4.64.0712211356220.3795@schroedinger.engr.sgi.com> <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy> <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com> <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de> <20071222100326.GF26157@elte.hu> <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org> <20071222192550.GD28891@thunk.org> <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071222080249.482fab0b@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 22, 2007 at 08:02:49AM -0800, Arjan van de Ven wrote:
-> even then.. it's technically not correct; you're not supposed to mix access types for the same device..
-> Just doing opt-in also allows us to do quirks (forbid access) as well.
+On Sat, Dec 22, 2007 at 01:00:09PM -0800, Linus Torvalds wrote:
 
-I think what this specification means is that you can't mix both _at the
-same time_.  ie, doing a type 1 cycle, then before it returns, do an
-mmconfig cycle.  We never try to do that because there's a spinlock to
-prevent more than one config space access at a time.  It *has* to work
-to do them sequentially -- for example, the BIOS may do type1 config
-accesses, then the OS may do mmconfig.
+> > Another problem with using /sys/slab is that it is downright *ugly*.
+> > Why is it for example, that /sys/slab/dentry is a symlink to
+> > ../slab/:a-0000160?
+> 
+> That's the only really ugly thing there. Otherwise, it's pretty nice, but 
+> having a million files makes for problems when trying to send somebody 
+> else the full info. 
 
-I've occasionally wondered if that spinlock needs to get split up, but
-for the amount of pain that could ensue, I can't imagine it ever being
-worthwhile.
+*raised brows*
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+I would say that there's that really ugly thing with embedding kobject
+into a struct with the lifetime rules of its own and then having that
+struct kfree()d while kobject might still have references, but hey,
+maybe it's just me and my lack of appreciation of the glory that is
+sysfs.
+
+	Al, too tired of ranting about sysfs being a major architecture
+mistake and a recurring source of turds like that one...
