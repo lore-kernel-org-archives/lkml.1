@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760285AbXLUX7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbXLVADh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760285AbXLUX7M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 18:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757717AbXLUX66
+	id S1760286AbXLVADh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 19:03:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757018AbXLVADa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 18:58:58 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:37067 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757536AbXLUX64 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 18:58:56 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=zDbUTw7EGXeLc2p7VN483GyHD+zvaqYR/qT6fg1stuZY5XT4jwXYswvIZnhtV6T+QughZNpJToVplHCsm5SoEh+u/z/xkVzQWRT4kVqvL82l74Bz0V1+lOe0Qv8amvdPm8c86KX1ft5um7Qy5S9JjVFmepsI24hDpUjFJTZTytk=  ;
-X-YMail-OSG: Xy15p2sVM1kwb55vsvy9k5MUAoUTEJ2FpwdYggdxsT_hCu4pD_E0JA1h1HW0g9XTQZ9fJ6M3kw--
-Date: Fri, 21 Dec 2007 15:58:54 -0800
-From: David Brownell <david-b@pacbell.net>
-To: jengelh@computergmbh.de, a1426z@gawab.com
-Subject: Re: [RFC] USB Kconfig: Declutter USB Kconfig Menu
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, greg@kroah.com
-References: <200712211630.03426.a1426z@gawab.com>
- <Pine.LNX.4.64.0712212211420.11671@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0712212211420.11671@fbirervta.pbzchgretzou.qr>
+	Fri, 21 Dec 2007 19:03:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33005 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755720AbXLVAD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 19:03:29 -0500
+Message-ID: <476C541C.7090507@redhat.com>
+Date: Fri, 21 Dec 2007 19:02:36 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Message-Id: <20071221235854.DF7931915EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+To: Christoph Lameter <clameter@sgi.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+References: <1197049846.1645.68.camel@localhost.localdomain> <20071211143336.GA17866@elte.hu> <Pine.LNX.4.64.0712131416280.25120@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712132010470.30903@schroedinger.engr.sgi.com> <20071221120908.GA15926@elte.hu> <84144f020712210944q3e0539f8vd8a249f69d456dc7@mail.gmail.com> <Pine.LNX.4.64.0712211412040.3795@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712211435250.3795@schroedinger.engr.sgi.com> <alpine.LFD.0.9999.0712211449320.21557@woody.linux-foundation.org> <20071221231728.GA28008@elte.hu> <Pine.LNX.4.64.0712211552180.27290@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0712211552180.27290@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >Propose new layout as follows:
->
-> Yes, this has been done before in a lot of places, and attempts to
-> clean up more menus is always welcome.
->
-> Try to use 'menuconfig' objects so people can disable a whole menu
-> at once without having to enter it, e.g. that USB Gadget thing down
-> there.
-
-Notice that this whole menu is for "Host-side USB", except for that
-gadget stuff.  That might usefully be labeled as "Peripheral-side USB".
-
-For that matter, it could be moved up a level in the menu, so the top
-level driver menu has two USB entries:  Host side, and Peripheral side.
-
-The driver stacks are independent of each other, except for common data
-structures like what's in the <linux/usb/ch9.h> header file.  I think
-there's no real point, other than history, to having both sides share
-the same menu.
-
-- Dave
+On 12/21/2007 06:54 PM, Christoph Lameter wrote:
+> 
+> SLUB: Improve hackbench speed
+> 
+> Increase the mininum number of partial slabs to keep around and put
+> partial slabs to the end of the partial queue so that they can add
+> more objects.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
 
 
-> > ┌─────────────────────────────────────────────────────────────────┐
-> > │ --- USB support                                                 │
-> > │ <*>   Support for Host-side USB  --->                           │
-> > │       USB Host Controller Drivers  --->                         │
-> > │       USB Device Class drivers  --->                            │
-> > │ ---   NOTE: USB_STORAGE needs SCSI, and 'SCSI disk support' may │
-> > │ ---   also be needed; see USB_STORAGE Help for more information │
-> > │ <*>   USB Mass Storage support  --->                            │
-> > │ [ ]   The shared table of common (or usual) storage devices     │
-> > │ [ ]   USB Monitor                                               │
-> > │       USB Serial Converter support  --->                        │
-> > │       USB DSL modem support  --->                               │
-> > │       USB Imaging devices  --->                                 │
-> > │       USB Miscellaneous drivers  --->                           │
-> > │       USB Gadget Support  --->                                  │
-> > │                                                                 │
+You forgot to update the commit message.
+
+Should be:
+
+
+Put partial slabs to the end of the partial queue so that they can add
+more objects.
