@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbXLVIfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbXLVIq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755708AbXLVIfb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 03:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbXLVIfZ
+	id S1754082AbXLVIq4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 03:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbXLVIqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 03:35:25 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:45633 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750922AbXLVIfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 03:35:24 -0500
-Date: Sat, 22 Dec 2007 09:37:17 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Yuusei KUWANA <kuwana@nyanyan.to>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       mikael.starvik@axis.com
-Subject: Re: [PATCH] arch/cris/arch-v10/vmlinux.lds.S fix boot problem
-Message-ID: <20071222083717.GB22653@uranus.ravnborg.org>
-References: <47636D45.6010006@nyanyan.to> <20071221151404.GM10888@axis.com> <20071221155446.GN10888@axis.com> <20071221160718.GO10888@axis.com>
+	Sat, 22 Dec 2007 03:46:45 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46899 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750825AbXLVIqm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 03:46:42 -0500
+Date: Sat, 22 Dec 2007 00:44:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Adam Fritzler <mid@zigamorph.net>,
+       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+       Jeff Garzik <jgarzik@pobox.com>, Mike Phillips <mikep@linuxtr.net>,
+       Philip Blundell <philb@gnu.org>, linux-scsi@vger.kernel.org,
+       netdev@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
+Subject: Re: [PATCH] MAINTAINERS: remove Adam Fritzler, update his email
+ address in other sources
+Message-Id: <20071222004448.36c95d98.akpm@linux-foundation.org>
+In-Reply-To: <1197953283.4891.24.camel@localhost>
+References: <1197951126.4891.13.camel@localhost>
+	<20071217202800.1c898441.akpm@linux-foundation.org>
+	<1197953283.4891.24.camel@localhost>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071221160718.GO10888@axis.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesper.
+On Mon, 17 Dec 2007 20:48:03 -0800 Joe Perches <joe@perches.com> wrote:
 
->  		__initramfs_end = .;
-> -		/* We fill to the next page, so we can discard all init
-> -		   pages without needing to consider what payload might be
-> -		   appended to the kernel image.  */
-> -		FILL (0); 
-> -		. = ALIGN (8192);
->  	}
->  #endif
-> -	
->  	__vmlinux_end = .;            /* last address of the physical file */
-> -  	__init_end = .;
+> Back to Adam Fritzler...
+> 
+> ...
+> 
+> diff --git a/CREDITS b/CREDITS
+> index ee909f2..449ec7f 100644
+> --- a/CREDITS
+> +++ b/CREDITS
+> @@ -1124,6 +1124,9 @@ S: 1150 Ringwood Court
+>  S: San Jose, California 95131
+>  S: USA
+>  
+> +N: Adam Fritzler
+> +E: mid@zigamorph.net
 > +
-> +	/*
-> +	 * We fill to the next page, so we can discard all init
-> +	 * pages without needing to consider what payload might be
-> +	 * appended to the kernel image.
-> +	 */
-> +	.init.fill : {
-> +		FILL (0);
-> +		. = ALIGN (8192);
-> +	}
-> +
-> +	__init_end = .;
+>  N: Fernando Fuganti
+>  E: fuganti@conectiva.com.br
+>  E: fuganti@netbank.com.br
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 9507b42..690f172 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3758,13 +3758,6 @@ W:	http://www.kernel.org/pub/linux/kernel/people/bunk/trivial/
+>  T:	git kernel.org:/pub/scm/linux/kernel/git/bunk/trivial.git
+>  S:	Maintained
+>  
+> -TMS380 TOKEN-RING NETWORK DRIVER
+> -P:	Adam Fritzler
+> -M:	mid@auk.cx
+> -L:	linux-tr@linuxtr.net
+> -W:	http://www.auk.cx/tms380tr/
+> -S:	Maintained
 
-Can we please have the hardcoded 8192 replaced with a proper constant.
-I assume this is PAGESIZE?
-See hwat other archs does to make PAGESIZE available for assembly
-files and ldscripts. The macro AC is the key point here.
+What was the rationale for removing Adam from MAINTAINERS?
 
-And then please explain why it make a diffrence to put the
-alignment in a section like you do.
-I do not see it used in the other archs.
+That should have been in the non-existent changelog.  Please always reissue
+a complete changelog when resending any patch.
 
-	Sam
+hm, linux-tr.net seems to be defunct.  So I guess that orphaning TMS380 is
+appropriate, if Adam has left us.  Has he?
+
