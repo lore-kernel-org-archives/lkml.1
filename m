@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbXLVJbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753029AbXLVJrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756400AbXLVJbS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 04:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbXLVJbG
+	id S1753029AbXLVJrY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 04:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbXLVJrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 04:31:06 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41506 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750750AbXLVJbD (ORCPT
+	Sat, 22 Dec 2007 04:47:16 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:56766 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750825AbXLVJrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 04:31:03 -0500
-Date: Sat, 22 Dec 2007 01:30:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michal Schmidt <mschmidt@redhat.com>
-Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jon Masters <jcm@redhat.com>,
-       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Subject: Re: [PATCH] kthread: run kthreadd with max priority SCHED_FIFO
-Message-Id: <20071222013021.db2528cb.akpm@linux-foundation.org>
-In-Reply-To: <20071217234314.540b59bd@hammerfall>
-References: <20071217234314.540b59bd@hammerfall>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 22 Dec 2007 04:47:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=hKWRhs5yKCPQqaE6ps1/bkV3cTWfC4Du8VFMRG1sme0oYWEBuRX/L5JgMxO5YCqbN1ViOYWX23BZWn3V8rpOrg88x3V5ETULkBhYf3sDLuzKnsHqlrj9k26G8OmXHTnta3UZcQqgSApCG7rXFceSfgfl+MIvt0tzrVnzZp+/5OM=
+Message-ID: <84144f020712220147q2e291fa1t4ee03e4d64be95b@mail.gmail.com>
+Date: Sat, 22 Dec 2007 11:47:14 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>
+Subject: Re: [PATCH] SC26XX: New serial driver for SC2681 uarts
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, "Andy Whitcroft" <apw@shadowen.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20071205092506.GA6691@alpha.franken.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071202194346.36E3FDE4C4@solo.franken.de>
+	 <20071203155317.772231f9.akpm@linux-foundation.org>
+	 <20071204234112.GA12352@alpha.franken.de>
+	 <20071204192738.54e79a97.akpm@linux-foundation.org>
+	 <20071205092506.GA6691@alpha.franken.de>
+X-Google-Sender-Auth: 2a0b04f06c6c25f0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Dec 2007 23:43:14 +0100 Michal Schmidt <mschmidt@redhat.com> wrote:
+Hi Thomas,
 
-> kthreadd, the creator of other kernel threads, runs as a normal
-> priority task. This is a potential for priority inversion when a task
-> wants to spawn a high-priority kernel thread. A middle priority
-> SCHED_FIFO task can block kthreadd's execution indefinitely and thus
-> prevent the timely creation of the high-priority kernel thread.
->     
-> This causes a practical problem. When a runaway real-time task is
-> eating 100% CPU and we attempt to put the CPU offline, sometimes we
-> block while waiting for the creation of the highest-priority
-> "kstopmachine" thread. 
-> 
-> The fix is to run kthreadd with the highest possible SCHED_FIFO
-> priority. Its children must still run as slightly negatively reniced
-> SCHED_NORMAL tasks.
+On Dec 5, 2007 11:25 AM, Thomas Bogendoerfer <tsbogend@alpha.franken.de> wrote:
+> > These:
+> >
+> > > +#define READ_SC(p, r)        readb((p)->membase + RD_##r)
+> > > +#define WRITE_SC(p, r, v)    writeb((v), (p)->membase + WR_##r)
+> >
+> > and these:
+> >
+> > > +#define READ_SC_PORT(p, r)     read_sc_port(p, RD_PORT_##r)
+> > > +#define WRITE_SC_PORT(p, r, v) write_sc_port(p, WR_PORT_##r, v)
+> >
+> > really don't need to exist.  All they do is make the code harder to read.
+>
+> but they make the code safer. The chip has common register and port
+> registers, which are randomly splattered over the address range. And
+> some of them are read only, some write only. Read only and Write
+> only register live at the same register offset and their function
+> usually doesn't have anything in common. By using these macros I'll
+> get compile errors when doing a READ_SC from a write only register
+> and vice versa. I will also get compile errors, if I try to access a
+> common register via READ_SC_PORT/WRITE_SC_PORT.
 
-Did you hit this problem with the stock kernel, or have you been working on
-other stuff?
-
-A locked-up SCHED_FIFO process will cause kernel threads all sorts of
-problems.  You've hit one instance, but there will be others.  (pdflush
-stops working, for one).
-
-The general approach we've taken to this is "don't do that".  Yes, we could
-boost lots of kernel threads in the way which this patch does but this
-actually takes control *away* from userspace.  Userspace no longer has the
-ability to guarantee itself minimum possible latency without getting
-preempted by kernel threads.
-
-And yes, giving userspace this minimum-latency capability does imply that
-userspace has a responsibility to not 100% starve kernel threads.  It's a
-reasonable compromise, I think?
-
+You can use grep to make sure there are no reads to a write-only
+register. What you have there is not safety but macro obfuscation at
+its best. It makes the code harder to read for anyone not intimately
+familiar with the driver.
