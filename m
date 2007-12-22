@@ -1,76 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbXLVN7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbXLVOAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754407AbXLVN7H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 08:59:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbXLVN6z
+	id S1755459AbXLVOAR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 09:00:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751044AbXLVOAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 08:58:55 -0500
-Received: from langos.euedge.com ([209.190.22.130]:42195 "EHLO
-	langos.euedge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbXLVN6y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 08:58:54 -0500
-X-Greylist: delayed 633 seconds by postgrey-1.27 at vger.kernel.org; Sat, 22 Dec 2007 08:58:54 EST
-Message-ID: <476D15EC.8010309@tyrell.hu>
-Date: Sat, 22 Dec 2007 14:49:32 +0100
-From: =?UTF-8?B?w4Frb3MgTWFyw7N5?= <darkeye@tyrell.hu>
-Organization: Tyrell Corp.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071205)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: patch for using joysticks in 32 bit applications on 64 bit systems
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
+	Sat, 22 Dec 2007 09:00:05 -0500
+Received: from puffyports.org ([213.61.174.206]:50124 "EHLO puffyports.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751138AbXLVOAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 09:00:04 -0500
+Subject: Re: drive appears confused; hda lost interrupt; IRQ169: nobody
+	cared
+From: Michael Schmitt <mschmitt@unixkiste.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071221131812.7d362e7e@the-village.bc.nu>
+References: <1198237821.4577.63.camel@elara.tcw.local>
+	 <20071221131812.7d362e7e@the-village.bc.nu>
+Content-Type: text/plain
+Date: Sat, 22 Dec 2007 14:59:54 +0100
+Message-Id: <1198331994.5964.12.camel@elara.tcw.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-unfortunately 32 bit apps don't see the joysticks on a 64 bit system.
-this prevents one playing X-Plane (http://www.x-plane.com/) or other
-32-bit games with joysticks.
+Hi Alan
 
-this is a known issue, and already raised several times:
+thanks for the input! This BIOS seems to be current, there are just two
+beta BIOS available and as in the changelog there is nothing IRQ related
+written (there is almost nothing in it) I don't think I want to flash
+one of them, but here are the various options I tried:
 
-http://readlist.com/lists/vger.kernel.org/linux-kernel/28/144411.html
+noapic > the one and the same thing, but this time (as classic PIC is
+used) nobody cared about IRQ 11.
 
-http://www.brettcsmith.org/wiki/wiki.cgi?action=browse&diff=1&id=OzyComputer/Joystick
+acpi=noirq > the same, this time IRQ 185
 
-unfortunately this is still not fixed in the mainline kernel.
+pci=routeirq > the same as right above
 
-it would be nice to have this fixed, so that people can play these games
-without having to patch their kernel.
+pci=nobios > without irqpoll hda DMA expire, IRQ lost, with irqpoll IRQ
+169 again
 
-the following patch solves the problem on 2.6.22:
+pci=noacpi > the same as two and three above
 
+irqfixup (instead of irqpoll) > hda DMA timer expire, IRQ lost
 
-diff -Naur linux-2.6.22-suspend2-r2/fs/compat_ioctl.c
-linux-2.6.22-suspend2-r2-joystick/fs/compat_ioctl.c
---- linux-2.6.22-suspend2-r2/fs/compat_ioctl.c  2007-12-22
-14:08:14.000000000
-+0100
-+++ linux-2.6.22-suspend2-r2-joystick/fs/compat_ioctl.c 2007-12-22
-14:07:54.000000000 +0100
-@@ -10,6 +10,8 @@
-  * ioctls.
-  */
+I may have missed some options to try out, do you suggest some else?
+I've read kernel-parameters.txt and tried to find reasonable options...
+But what I don't get... how tragic are those "irq N nobody cared" and
+"drive appears confused" messages as I don't see a negative impact? And
+at the end, what do they mean? If an IRQ is disabled I thought the
+device behind it would not work anymore... but...
+Maybe I will give the two beta BIOS a try nevertheless.
 
-+#include <linux/joystick.h>
-+
- #include <linux/types.h>
- #include <linux/compat.h>
- #include <linux/kernel.h>
-@@ -3259,6 +3261,12 @@
- COMPATIBLE_IOCTL(VIDEO_GET_SIZE)
- COMPATIBLE_IOCTL(VIDEO_GET_FRAME_RATE)
+greetings
+Michael
 
-+/* joystick */
-+COMPATIBLE_IOCTL(JSIOCGVERSION)
-+COMPATIBLE_IOCTL(JSIOCGAXES)
-+COMPATIBLE_IOCTL(JSIOCGBUTTONS)
-+COMPATIBLE_IOCTL(JSIOCGNAME(0x200)) /* for X-Plane 8.03 */
-+
- /* now things that need handlers */
- HANDLE_IOCTL(MEMREADOOB32, mtd_rw_oob)
- HANDLE_IOCTL(MEMWRITEOOB32, mtd_rw_oob)
+Am Freitag, den 21.12.2007, 13:18 +0000 schrieb Alan Cox: 
+> > I changed the mainboard of this computer recently to this P4P800-SE from
+> > a rubish oem SIS chipset board and I had the problems right away,
+> > starting with kernel 2.6.18 but problems persist even with 2.6.23
+> > (Debian kernels).
+> 
+> Your IRQ routing appears broken. That is usually a BIOS problem.
+> 
+> > So, my main concern is that there may be some sort of data corruption
+> > even if I don't see them right now but as the messages seem to be very
+> > serious... dunno. Any thoughts?
+> 
+> Check for BIOS uupdates also try playing with the various pci irq
+> routing, APIC and acpi options. 
+> 
+> Alan
 
