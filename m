@@ -1,116 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418AbXLVDtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbXLVEYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752418AbXLVDtl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 22:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbXLVDtc
+	id S1753199AbXLVEYx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 23:24:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXLVEYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 22:49:32 -0500
-Received: from outbound-mail-38.bluehost.com ([69.89.20.192]:39139 "HELO
-	outbound-mail-38.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751003AbXLVDtb convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 22:49:31 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Dec 2007 22:49:31 EST
-From: "Richard D" <richard@embunus.com>
-To: "'Siva Prasad'" <sprasad@bivio.net>,
-       "'Clemens Koller'" <clemens.koller@anagramm.de>,
-       "'David Newall'" <david@davidnewall.com>
-Cc: <linux-kernel@vger.kernel.org>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D7011A8217@corpexc01.corp.networkrobots.com> <4761E289.9070007@davidnewall.com> <4762AC35.3010706@anagramm.de> <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF540@corpexc01.corp.networkrobots.com>
-In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF540@corpexc01.corp.networkrobots.com>
-Subject: RE: printf internals
-Date: Sat, 22 Dec 2007 09:12:43 +0530
-Message-ID: <009201c8444c$ba0d82b0$2e288810$@com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acg+bB2ZyI+LjZ4IQKaXKiKorA2z3gEIdW2QAG+sKOA=
-Content-Language: en-us
-X-Identified-User: {2260:host187.hostmonster.com:embunusc:embunus.com} {sentby:bopbeforesmtp 121.247.188.187 authed with embunus.com}
+	Fri, 21 Dec 2007 23:24:44 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40866 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751167AbXLVEYo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 23:24:44 -0500
+Date: Fri, 21 Dec 2007 20:22:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, linux@bohmer.net,
+       jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
+       kjwinchester@gmail.com, Pete Zaitcev <zaitcev@redhat.com>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [PATCH 4/4] usb: libusual: locking cleanup
+Message-Id: <20071221202223.37b3c41c.akpm@linux-foundation.org>
+In-Reply-To: <20071221205859.316759032@mvista.com>
+References: <20071221205854.408865412@mvista.com>
+	<20071221205859.316759032@mvista.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Most likely your device nodes are missing in /dev. 
+On Fri, 21 Dec 2007 00:00:04 -0800 Daniel Walker <dwalker@mvista.com> wrote:
 
------Original Message-----
-From: linux-kernel-owner@vger.kernel.org
-[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Siva Prasad
-Sent: Thursday, December 20, 2007 4:03 AM
-To: Clemens Koller; David Newall
-Cc: linux-kernel@vger.kernel.org
-Subject: RE: printf internals
+> I converted the usu_init_notify semaphore to normal mutex usage, and it 
+> should still prevent the request_module before the init routine is
+> complete. Before it acted more like a complete, now the mutex protects
+> two distinct section from running at the same time..
+> 
+> Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> 
+> ---
+>  drivers/usb/storage/libusual.c |   14 ++++++--------
+>  1 file changed, 6 insertions(+), 8 deletions(-)
+> 
+> Index: linux-2.6.23/drivers/usb/storage/libusual.c
+> ===================================================================
+> --- linux-2.6.23.orig/drivers/usb/storage/libusual.c
+> +++ linux-2.6.23/drivers/usb/storage/libusual.c
+> @@ -9,6 +9,7 @@
+>  #include <linux/usb_usual.h>
+>  #include <linux/vmalloc.h>
+>  #include <linux/kthread.h>
+> +#include <linux/mutex.h>
+>  
+>  /*
+>   */
+> @@ -30,7 +31,7 @@ static atomic_t usu_bias = ATOMIC_INIT(U
+>  #define BIAS_NAME_SIZE  (sizeof("usb-storage"))
+>  static const char *bias_names[3] = { "none", "usb-storage", "ub" };
+>  
+> -static struct semaphore usu_init_notify;
+> +static DEFINE_MUTEX(usu_probe_mutex);
+>  static DECLARE_COMPLETION(usu_end_notify);
+>  static atomic_t total_threads = ATOMIC_INIT(0);
+>  
+> @@ -178,10 +179,7 @@ static int usu_probe_thread(void *arg)
+>  	int rc;
+>  	unsigned long flags;
+>  
+> -	/* A completion does not work here because it's counted. */
+> -	down(&usu_init_notify);
+> -	up(&usu_init_notify);
+> -
+> +	mutex_lock(&usu_probe_mutex);
+>  	rc = request_module(bias_names[type]);
+>  	spin_lock_irqsave(&usu_lock, flags);
+>  	if (rc == 0 && (st->fls & USU_MOD_FL_PRESENT) == 0) {
+> @@ -194,6 +192,7 @@ static int usu_probe_thread(void *arg)
+>  	}
+>  	st->fls &= ~USU_MOD_FL_THREAD;
+>  	spin_unlock_irqrestore(&usu_lock, flags);
+> +	mutex_unlock(&usu_probe_mutex);
+>  
+>  	complete_and_exit(&usu_end_notify, 0);
+>  }
+> @@ -204,10 +203,9 @@ static int __init usb_usual_init(void)
+>  {
+>  	int rc;
+>  
+> -	sema_init(&usu_init_notify, 0);
+> -
+> +	mutex_lock(&usu_probe_mutex);
+>  	rc = usb_register(&usu_driver);
+> -	up(&usu_init_notify);
+> +	mutex_unlock(&usu_probe_mutex);
+>  	return rc;
+>  }
 
-Thank you very much for your response Clemens.
-
-I tried strace on a regular system. It does not show which tty, etc., as it
-uses the stdout (fd = 1) and write(1, ...) to it.
-
-This is not a student project. I am trying to build my own kernel and
-ramdisk. Kernel boots fine to a point where it starts accessing ramdisk and
-executes init scripts. From there on nothing gets printed. I did some
-debugging and found that prints of user land programs are not coming to the
-serial console, while kernel prints are working fine. I found all the
-programs getting executed, by placing a printk in execve routine and
-printing the arguments.
-
-So, I wanted to trace down the path from user program to the kernel and see
-why it is not printing messages from user program. I placed a printk in
-drivers/char/tty_io.c:tty_write() and it is not getting called from my file
-system. I tried the same thing on my good system (say regular PC) and it
-works as expected.
-
-Any clues that can help debug this issue is highly appreciated.
-How can I get access to the same printf string inside kernel.
-
-Thanks
-Siva
-
-
-
------Original Message-----
-From: Clemens Koller [mailto:clemens.koller@anagramm.de] 
-Sent: Friday, December 14, 2007 8:16 AM
-To: David Newall
-Cc: Siva Prasad; linux-kernel@vger.kernel.org
-Subject: Re: printf internals
-
-David Newall schrieb:
- > Siva Prasad wrote:
- >> I am looking at how exactly does the printf in user programs succeeds in
- >> displaying characters to the serial console.
- >
- > Is it a student assignment?  This is so not the right mailing list.
-
-Come on, are we playing hide and seek here?
-
-You can use strace to follow a typical hello world example and
-see what device it opens to feed the hello out.
-I.e. it can be to the current /dev/ttyX and not to /dev/console
-or if you are logged in via SSH to a machine, the device
-is again different... or if you use screen, ...
-
-Work your way from there and then use a Linux Source code
-Cross Reference (lxr, ask Google for one) and follow the code.
-
-Regards,
--- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+That's some pretty hairy-looking code you're playing with there.  Has this
+been runtime tested?
 
