@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbXLVINL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbXLVIWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755879AbXLVINL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 03:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbXLVIM5
+	id S1754527AbXLVIWQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 03:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbXLVIWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 03:12:57 -0500
-Received: from outbound-mail-40.bluehost.com ([69.89.20.194]:34927 "HELO
-	outbound-mail-40.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751059AbXLVIM4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 03:12:56 -0500
-From: "Richard D" <richard@embunus.com>
-To: "'Pavel Machek'" <pavel@ucw.cz>,
-       "'Matthew Bloch'" <matthew@bytemark.co.uk>
-Cc: <linux-kernel@vger.kernel.org>
-References: <fk8umh$n7o$1@ger.gmane.org> <20071221125812.GA4052@ucw.cz>
-In-Reply-To: <20071221125812.GA4052@ucw.cz>
-Subject: RE: Testing RAM from userspace / question about memmap= arguments
-Date: Sat, 22 Dec 2007 13:42:47 +0530
-Message-ID: <000001c84472$74b245e0$5e16d1a0$@com>
+	Sat, 22 Dec 2007 03:22:00 -0500
+Received: from ironport1.lbl.gov ([128.3.41.47]:30892 "EHLO ironport1.lbl.gov"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751314AbXLVIV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 03:21:59 -0500
+X-Ironport-SBRS: 3.5
+X-Brightmail-Tracker: AAAAAA==
+X-BrightmailFiltered: true
+X-IronPort-AV: E=Sophos;i="4.24,198,1196668800"; 
+   d="scan'208";a="77590026"
+Date: Sat, 22 Dec 2007 00:21:57 -0800 (PST)
+From: Andrei Gaponenko <andrei.gaponenko@cern.ch>
+X-X-Sender: andr@roof
+To: Zhang Rui <rui.zhang@intel.com>
+cc: linux-kernel@vger.kernel.org, corentincj@iksaif.net,
+       sziwan@users.sourceforge.net
+Subject: Re: video breaks asus-laptop display switching
+In-Reply-To: <1198309997.9550.2.camel@acpi-sony>
+Message-ID: <Pine.LNX.4.64.0712220013030.31611@roof>
+References: <Pine.LNX.4.64.0712211433030.3239@0-11-d8-ea-8d-5b.dhcp.lbl.gov>
+ <1198309997.9550.2.camel@acpi-sony>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AchD0XMyyCvsAu6QRgCpY1nxpTPfUQAoMWZg
-Content-Language: en-us
-X-Identified-User: {2260:host187.hostmonster.com:embunusc:embunus.com} {sentby:bopbeforesmtp 121.247.188.187 authed with embunus.com}
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cant you, modify bootmem allocator to test with memtest patterns and then
-use kexec (as Pavel suggested) to test the one where kernel was sitting
-earlier?
 
------Original Message-----
-From: linux-kernel-owner@vger.kernel.org
-[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Pavel Machek
-Sent: Friday, December 21, 2007 6:28 PM
-To: Matthew Bloch
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Testing RAM from userspace / question about memmap= arguments
+On Sat, 22 Dec 2007, Zhang Rui wrote:
 
-On Tue 2007-12-18 17:06:24, Matthew Bloch wrote:
-> Hi - I'm trying to come up with a way of thoroughly testing every byte
-> of RAM from within Linux on amd64 (so that it can be automated better
-> than using memtest86+), and came up with an idea which I'm not sure is
-> supported or practical.
-> 
-> The obvious problem with testing memory from user space is that you
-> can't mlock all of it, so the best you can do is about three quarters,
-> and hope that the rest of the memory is okay.
-> 
-> In order to test all of the memory, I'd like to run the user-space
-> memtester over two boots of the kernel.
-> 
-> Say we have a 1024MB machine, the first boot I'd not specify any
-> arguments and assume the kernel would start at the bottom of physical
-> memory and work its way up, so that the kernel & working userspace would
-> live at the bottom, and the rest would be testable from space.
-> 
-> On the second boot, could I then specify:
-> 
-> memmap=exact memmap=512M@512M memmap=512M@0
+> On Sat, 2007-12-22 at 06:36 +0800, Andrei Gaponenko wrote:
+>>
+>> With 2.6.23 or newer (including 2.6.24-rc6) kernels, writing to the
+>> /sys/devices/platform/asus-laptop/display file does not do anything:
+>> ...
+>>
+> hmm, please "echo 1 > /proc/acpi/video/xxx/DOS" in 2.6.23 and see
+> if there is any difference.
 
-Actually, with kexec, you can probably doing without reboot.
+ls /proc/acpi/video/
+shows two identically named directories "VGA" - is this normal??
 
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures)
-http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Anyway,
 
+# cat VGA/DOS
+DOS setting: <1>
+
+# echo 3 > VGA/DOS
+# cat VGA/DOS
+DOS setting: <3>
+
+but no image on external.  Now
+
+# rmmod video
+# echo 3 > /sys/devices/platform/asus-laptop/display
+
+Got image on external
+
+# modprobe video
+# cat VGA/DOS
+DOS setting: <0>
+
+I can write 1 or 3 to DOS and read it back, but it has no effect (image on 
+external turned on while video module was removed does not go away).
+
+Please Cc: me on replies - forgot to mention this in the initial posting.
+
+Thanks!
+Andrei
