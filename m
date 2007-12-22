@@ -1,45 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbXLVQ72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbXLVRCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754565AbXLVQ72 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 11:59:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbXLVQ7T
+	id S1754929AbXLVRCn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 12:02:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbXLVRCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 11:59:19 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34688 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752221AbXLVQ7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 11:59:18 -0500
-Message-ID: <476D4259.9020009@redhat.com>
-Date: Sat, 22 Dec 2007 11:59:05 -0500
-From: Tony Camuso <tcamuso@redhat.com>
-Reply-To: tcamuso@redhat.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: Loic Prylli <loic@myri.com>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>
-Subject: Re: [Fwd: Re: [PATCH 4/5]PCI: x86 MMCONFIG] introduce pcibios_fix_bus_scan_quirk()
-References: <fa.HvUNJ45qy60H427u0v9fNt3Gc7E@ifi.uio.no> <fa.zhxdNN/1rfQhfJLVmdGBjvKYrCM@ifi.uio.no> <fa.z1qlON6DA9ubBPFdrEcaFTMgYOY@ifi.uio.no> <fa.U/SCC1Gvd3nSOpkMu5vcsSPYyPE@ifi.uio.no> <fa.d8kGTkzOZH22bXRIRiakqgOPBM4@ifi.uio.no> <fa.pdOcVPk2gFn5iK76ExRH6Ow+NPw@ifi.uio.no> <476D3E3D.80005@shaw.ca>
-In-Reply-To: <476D3E3D.80005@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 22 Dec 2007 12:02:36 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:30863 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260AbXLVRCf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 12:02:35 -0500
+Subject: Re: [PATCH 4/4] usb: libusual: locking cleanup
+From: Daniel Walker <dwalker@mvista.com>
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: akpm@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
+       kjwinchester@gmail.com
+In-Reply-To: <20071221222428.a75a5a34.zaitcev@redhat.com>
+References: <20071221205854.408865412@mvista.com>
+	 <20071221205859.316759032@mvista.com>
+	 <20071221222428.a75a5a34.zaitcev@redhat.com>
+Content-Type: text/plain
+Date: Sat, 22 Dec 2007 09:01:50 -0800
+Message-Id: <1198342910.2742.14.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I need to resubmit this patch.
+On Fri, 2007-12-21 at 22:24 -0800, Pete Zaitcev wrote:
 
-Resubmission will be in my next email.
+> When I tried it, usb-storage would not load with unresolved symbols.
+> It happens if child (usu_probe_thread) runs ahead of its parent
+> (usb_usual_init -> usb_register -> usu_probe). It's entirely possible,
+> depending on your scheduler.
+> 
+> I hate this down-up trick too, so if you have a better idea, I'm all ears.
 
-It was a minor problem whereby the patch would advise the user
+This is what you originally had,
 
-	If a device isn't working, try "pci=nommconf".
+static int usu_probe_thread(void *arg)
+{
 
-even when "pci=mmconf" was used at the command line.
+        /* A completion does not work here because it's counted. */
+        down(&usu_init_notify);
+        up(&usu_init_notify);
+...
+}
 
-One additional line of logic fixed it, but I would like to resubmit
-the patch rather than patch the patch.
+static int __init usb_usual_init(void)
+{
+        sema_init(&usu_init_notify, 0); <-- Locked init
 
+        rc = usb_register(&usu_driver);
+        up(&usu_init_notify);
+        return rc;
+}
 
+The locked init can easily be an unlocked init combined with a down() ..
+So your protecting usb_register() from something else. 
+
+Then in usu_probe_thread() your basically stopping it at the start of
+the function with a down(), and the up() is just ancillary .. So you
+could easily move the up() further down in the function and still have
+the same level of exclusion.. 
+
+static int usu_probe_thread(void *arg)
+{
+
+        down(&usu_init_notify);
+...
+        up(&usu_init_notify);
+}
+
+static int __init usb_usual_init(void)
+{
+        sema_init(&usu_init_notify, 1); <-- Unlocked init
+
+	down(&usu_init_notify);
+        rc = usb_register(&usu_driver);
+        up(&usu_init_notify);
+        return rc;
+}
+
+The above protects the same way that your original code did, with the
+added benefit of conforming to mutex style usage. The next step is to
+convert to the mutex API..
+
+What I've done is all suppose to be mathematical translations, I wasn't
+trying to improve the code just make it use a different API..
+
+Daniel
 
