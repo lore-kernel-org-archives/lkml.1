@@ -1,34 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbXLVJVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbXLVJYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755777AbXLVJVT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 04:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbXLVJVG
+	id S1756849AbXLVJYs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 04:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbXLVJYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 04:21:06 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38271 "EHLO
+	Sat, 22 Dec 2007 04:24:41 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47818 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750922AbXLVJVD (ORCPT
+	by vger.kernel.org with ESMTP id S1751314AbXLVJYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 04:21:03 -0500
-Date: Sat, 22 Dec 2007 01:20:06 -0800
+	Sat, 22 Dec 2007 04:24:40 -0500
+Date: Sat, 22 Dec 2007 01:22:05 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Richard Henderson <rth@twiddle.net>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>
+       Daniel Ritz <daniel.ritz@gmx.ch>, Greg KH <greg@kroah.com>,
+       Richard Henderson <rth@twiddle.net>, Ingo Molnar <mingo@elte.hu>
 Subject: Re: PCI resource problems caused by improper address rounding
-Message-Id: <20071222012006.39249396.akpm@linux-foundation.org>
-In-Reply-To: <20071222011218.0a5cfa42.akpm@linux-foundation.org>
+Message-Id: <20071222012205.231f23d6.akpm@linux-foundation.org>
+In-Reply-To: <47671377.6000405@redhat.com>
 References: <47671377.6000405@redhat.com>
-	<alpine.LFD.0.9999.0712171648150.21557@woody.linux-foundation.org>
-	<47680489.6040809@redhat.com>
-	<alpine.LFD.0.9999.0712180946030.21557@woody.linux-foundation.org>
-	<20071218202234.GA24525@twiddle.net>
-	<20071219002349.A12278@jurassic.park.msu.ru>
-	<alpine.LFD.0.9999.0712181338150.21557@woody.linux-foundation.org>
-	<20071220084616.GA28578@jurassic.park.msu.ru>
-	<20071222011218.0a5cfa42.akpm@linux-foundation.org>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -37,52 +30,125 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Dec 2007 01:12:18 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+On Mon, 17 Dec 2007 19:25:27 -0500 Chuck Ebbert <cebbert@redhat.com> wrote:
 
-> On Thu, 20 Dec 2007 11:46:16 +0300 Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
+> Looks like a commit that I can't find in git due to the arch merge
+> has broken PCI address assignment. This patch by Richard Henderson
+> against 2.6.23 fixes it for x86_64:
 > 
-> > PCI: do respect full 64-bit address for bridge prefetch window
-> > 
-> > Prevent the prefetch window from being programmed with a bogus address
-> > when its respective resource gets allocated above the 4G mark.
-> > 
-> > Note that we cannot yet guarantee correct resource allocations
-> > above 4G, though it might work in some simple cases.
-> > 
+> --- linux-2.6.23.x86_64/arch/x86_64/kernel/e820.c	2007-10-09 13:31:38.000000000 -0700
+> +++ linux-2.6.23.x86_64-rth/arch/x86_64/kernel/e820.c	2007-12-15 12:37:44.000000000 -0800
+> @@ -718,8 +718,8 @@ __init void e820_setup_gap(void)
+>  	while ((gapsize >> 4) > round)
+>  		round += round;
+>  	/* Fun with two's complement */
+> -	pci_mem_start = (gapstart + round) & -round;
+> +	pci_mem_start = (gapstart + round - 1) & -round;
+>  
+>  	printk(KERN_INFO "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
+>  		pci_mem_start, gapstart, gapsize);
 > 
-> So.. did we agree that this patch is good to go?
-
-Oh, I see Greg merged a differnet patch.
-
-> > --- a/drivers/pci/setup-bus.c
-> > +++ b/drivers/pci/setup-bus.c
-> > @@ -208,8 +208,11 @@ pci_setup_bridge(struct pci_bus *bus)
-> >  	}
-> >  	pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE, l);
-> >  
-> > -	/* Clear out the upper 32 bits of PREF base. */
-> > -	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, 0);
-> > +	/* Set up the upper 32 bits of PREF base/limit. */
-> > +	l = region.start >> 16 >> 16;
 > 
-> We have the little upper_32_bits() helper for this.
+> Here is the original changeset, taken from the Mercurial repo. It was
+> merged in 2.6.14:
 > 
-
-Which could use this.
-
---- a/drivers/pci/setup-bus.c~gregkh-pci-pci-fix-bus-resource-assignment-on-32-bits-with-64b-resources-cleanup
-+++ a/drivers/pci/setup-bus.c
-@@ -206,10 +206,8 @@ pci_setup_bridge(struct pci_bus *bus)
- 	if (bus->resource[2]->flags & IORESOURCE_PREFETCH) {
- 		l = (region.start >> 16) & 0xfff0;
- 		l |= region.end & 0xfff00000;
--#ifdef CONFIG_RESOURCES_64BIT
--		bu = region.start >> 32;
--		lu = region.end >> 32;
--#endif
-+		bu = upper_32_bits(region.start);
-+		lu = upper_32_bits(region.end);
- 		DBG(KERN_INFO "  PREFETCH window: 0x%016llx-0x%016llx\n",
- 		    (unsigned long long)region.start,
- 		    (unsigned long long)region.end);
-
+> # HG changeset patch
+> # User Daniel Ritz <daniel.ritz@gmx.ch>
+> # Date 1126304746 -700
+> # Node ID 51367d6e0b839be0b425a8f67c29f625b670f126
+> # Parent f4852c862b04efc9f8e2c7913191f5f7d140d895
+> [PATCH] Update PCI IOMEM allocation start
+> 
+> This fixes the problem with "Averatec 6240 pcmcia_socket0: unable to
+> apply power", which was due to the CardBus IOMEM register region being
+> allocated at an address that was actually inside the RAM window that had
+> been reserved for video frame-buffers in an UMA setup.
+> 
+> The BIOS _should_ have marked that region reserved in the e820 memory
+> descriptor tables, but did not.
+> 
+> It is fixed by rounding up the default starting address of PCI memory
+> allocations, so that we leave a bigger gap after the final known memory
+> location.  The amount of rounding depends on how big the unused memory
+> gap is that we can allocate IOMEM from.
+> 
+> Based on example code by Linus.
+> 
+> Acked-by: Greg KH <greg@kroah.com>
+> Acked-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+> Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+> 
+> committer: Linus Torvalds <torvalds@g5.osdl.org> 1126304746 -0700
+> 
+> 
+> --- a/arch/i386/kernel/setup.c	Fri Sep 09 22:28:40 2005 +0011
+> +++ b/arch/i386/kernel/setup.c	Fri Sep 09 22:37:26 2005 +0011
+> @@ -1300,7 +1300,7 @@ legacy_init_iomem_resources(struct resou
+>   */
+>  static void __init register_memory(void)
+>  {
+> -	unsigned long gapstart, gapsize;
+> +	unsigned long gapstart, gapsize, round;
+>  	unsigned long long last;
+>  	int	      i;
+>  
+> @@ -1345,14 +1345,14 @@ static void __init register_memory(void)
+>  	}
+>  
+>  	/*
+> -	 * Start allocating dynamic PCI memory a bit into the gap,
+> -	 * aligned up to the nearest megabyte.
+> -	 *
+> -	 * Question: should we try to pad it up a bit (do something
+> -	 * like " + (gapsize >> 3)" in there too?). We now have the
+> -	 * technology.
+> +	 * See how much we want to round up: start off with
+> +	 * rounding to the next 1MB area.
+>  	 */
+> -	pci_mem_start = (gapstart + 0xfffff) & ~0xfffff;
+> +	round = 0x100000;
+> +	while ((gapsize >> 4) > round)
+> +		round += round;
+> +	/* Fun with two's complement */
+> +	pci_mem_start = (gapstart + round) & -round;
+>  
+>  	printk("Allocating PCI resources starting at %08lx (gap: %08lx:%08lx)\n",
+>  		pci_mem_start, gapstart, gapsize);
+> --- a/arch/x86_64/kernel/e820.c	Fri Sep 09 22:28:40 2005 +0011
+> +++ b/arch/x86_64/kernel/e820.c	Fri Sep 09 22:37:26 2005 +0011
+> @@ -567,7 +567,7 @@ unsigned long pci_mem_start = 0xaeedbabe
+>   */
+>  __init void e820_setup_gap(void)
+>  {
+> -	unsigned long gapstart, gapsize;
+> +	unsigned long gapstart, gapsize, round;
+>  	unsigned long last;
+>  	int i;
+>  	int found = 0;
+> @@ -604,14 +604,14 @@ __init void e820_setup_gap(void)
+>  	}
+>  
+>  	/*
+> -	 * Start allocating dynamic PCI memory a bit into the gap,
+> -	 * aligned up to the nearest megabyte.
+> -	 *
+> -	 * Question: should we try to pad it up a bit (do something
+> -	 * like " + (gapsize >> 3)" in there too?). We now have the
+> -	 * technology.
+> +	 * See how much we want to round up: start off with
+> +	 * rounding to the next 1MB area.
+>  	 */
+> -	pci_mem_start = (gapstart + 0xfffff) & ~0xfffff;
+> +	round = 0x100000;
+> +	while ((gapsize >> 4) > round)
+> +		round += round;
+> +	/* Fun with two's complement */
+> +	pci_mem_start = (gapstart + round) & -round;
+>  
+>  	printk(KERN_INFO "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
+>  		pci_mem_start, gapstart, gapsize);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
