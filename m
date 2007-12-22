@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752334AbXLVBOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbXLVBPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752334AbXLVBOh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 20:14:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbXLVBOa
+	id S1753177AbXLVBPc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 20:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbXLVBPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 20:14:30 -0500
-Received: from thunk.org ([69.25.196.29]:60271 "EHLO thunker.thunk.org"
+	Fri, 21 Dec 2007 20:15:25 -0500
+Received: from ns.suse.de ([195.135.220.2]:38771 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750724AbXLVBO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 20:14:29 -0500
-Date: Fri, 21 Dec 2007 20:14:00 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Andrew Lutomirski <luto@myrealbox.com>
-Cc: Phillip Susi <psusi@cfl.rr.com>, David Newall <david@davidnewall.com>,
-       John Reiser <jreiser@bitwagon.com>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org, security@kernel.org
-Subject: Re: /dev/urandom uses uninit bytes, leaks user data
-Message-ID: <20071222011400.GE8601@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andrew Lutomirski <luto@myrealbox.com>,
-	Phillip Susi <psusi@cfl.rr.com>,
-	David Newall <david@davidnewall.com>,
-	John Reiser <jreiser@bitwagon.com>, Matt Mackall <mpm@selenic.com>,
-	linux-kernel@vger.kernel.org, security@kernel.org
-References: <20071214201305.GL19691@waste.org> <20071214232322.GE17344@thunk.org> <47632010.6030709@BitWagon.com> <20071215043208.GF17344@thunk.org> <4766A40D.4080804@BitWagon.com> <20071217173623.GC7070@thunk.org> <476719E5.1010505@myrealbox.com> <cb0375e10712192018l66671b34r1680077765e89fb0@mail.gmail.com> <476ACDBE.2070600@cfl.rr.com> <cb0375e10712210810p36fc9995s345d23b7dff5a3b3@mail.gmail.com>
+	id S1751112AbXLVBPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 20:15:25 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: devzero@web.de, linux-kernel@vger.kernel.org, Matt.Domsch@dell.com
+Subject: Re: [PATCH] [RFC] be more verbose when probing EDD
+From: Andi Kleen <andi@firstfloor.org>
+References: <49015158@web.de> <47656B9E.3040405@zytor.com>
+Date: Sat, 22 Dec 2007 02:15:23 +0100
+In-Reply-To: <47656B9E.3040405@zytor.com> (H. Peter Anvin's message of "Sun\, 16 Dec 2007 10\:17\:02 -0800")
+Message-ID: <p73sl1vedhw.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cb0375e10712210810p36fc9995s345d23b7dff5a3b3@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21, 2007 at 11:10:36AM -0500, Andrew Lutomirski wrote:
-> > > Step 1: Boot a system without a usable entropy source.
-> > > Step 2: add some (predictable) "entropy" from userspace which isn't a
-> > > multiple of 4, so up to three extra bytes get added.
-> > > Step 3: Read a few bytes of /dev/random and send them over the network.
-> >
-> > Only root can do 1 and 2, at which point, it's already game over.
-> 
-> Again, no.  Root could do this accidentally.  Step 1 happens all the
-> time (see the comments on non-unique UUIDs).  
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-Actually, it doesn't happen *all* the time.  That was a situation of
-an rpm post-install script trying to use a random UUID generation
-facility from a kick-start install where there was no keyboard
-activity and apparently no other entropy added.  (Note that in such an
-environment, generation of host ssh keys at install time without any
-entropy is an even bigger problem, and that *is* something that people
-should be thinking about.)
+> devzero@web.de wrote:
+>>         /* Query EDD information */
+>>  #if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
+>> -       query_edd();
+>> +        printf("Probing EDD (query Bios for boot-device information)\n");
+>> +        printf("If boot hangs here, you may have a buggy Bios. Try edd=skipmbr or edd=off");
+>> +        query_edd();
+>> +        printf("\rOK                                                                       \n");
+>>  #endif
+>
+> This is awfully verbose.
 
-> Step 2 just requires a
-> program to put data which it things is OK to go into the pool next to
-> data that shouldn't be there in memory.  
+But useful. On the other hand we have lots of IMNSHO
+quite useless printks in early bootup that could be removed
+to make up for that
 
-Um, no, that's incorrect.  Simply putting data which is OK to put into
-the pool next to data that shouldn't isn't enough.  First of all, the
-issue is using unitialized kernel stack garbage.  Read that again,
-slowly --- kernel stack.  How you arrange your data in user memory
-doesn't matter.  Secondly, as I've said earlier, I'm not aware of any
-program that actually tries to write into the entropy pool on most
-modern Linux systems other than dd in /etc/init.d/random which
-initializes the random pool from pre-seeded entropy on disk. 
+(e.g. candidates would be the 
+"CPU: After/before generic identify"
+or 
+Entering add_active_range....) 
 
-    	       	    	 	    	    - Ted
+printks and you can easily make up for the added verbosity.
+
+-Andi
+
+
