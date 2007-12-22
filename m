@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbXLVUhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbXLVUhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbXLVUhJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 15:37:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbXLVUg5
+	id S1755492AbXLVUhc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 15:37:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbXLVUhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 15:36:57 -0500
-Received: from nikam-dmz.ms.mff.cuni.cz ([195.113.20.16]:38863 "EHLO
-	nikam.ms.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753233AbXLVUg5 (ORCPT
+	Sat, 22 Dec 2007 15:37:03 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:39110 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753996AbXLVUhB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 15:36:57 -0500
-Date: Sat, 22 Dec 2007 21:36:55 +0100
-From: Martin Mares <mj@ucw.cz>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a driver opt-in issue
-Message-ID: <mj+md-20071222.203331.9078.nikam@ucw.cz>
-References: <20071222043139.0cd59804@laptopd505.fenrus.org> <476D1D16.5090703@garzik.org> <20071222064719.73fdd9a4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org> <mj+md-20071222.192526.25019.nikam@ucw.cz> <20071222121503.3502382a@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071222121503.3502382a@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.9i
+	Sat, 22 Dec 2007 15:37:01 -0500
+Message-ID: <476D756A.6060507@davidnewall.com>
+Date: Sun, 23 Dec 2007 07:06:58 +1030
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Richard D <richard@embunus.com>,
+       "'Matthew Bloch'" <matthew@bytemark.co.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Testing RAM from userspace / question about memmap= arguments
+References: <fk8umh$n7o$1@ger.gmane.org> <20071221125812.GA4052@ucw.cz> <000001c84472$74b245e0$5e16d1a0$@com> <20071222134612.GA4098@ucw.cz> <476D35F6.90900@davidnewall.com> <20071222184759.GB31809@elf.ucw.cz>
+In-Reply-To: <20071222184759.GB31809@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Pavel Machek wrote:
+> memtest has following problems:
+>
+> 	0) it is kind of hard to run memtest over ssh
+>   
 
-> it's not "just a couple of chipsets", it's actually
-> * a whole lot of bioses
-> * at least one whole CPU generation
-> * ..
-> * ..
-> 
-> Do you really want to code all of that into your userspace access code as well?
+It's kind of hard to run anything over SSH if it has to be run before 
+userspace is up.  But the kernel can collect results from a modified 
+memtest, after it chains back.
 
-No, I certainly don't. But I expect this to be handled reasonably in the
-kernel.
+> 	1) if linux fixes some problem with PCI quirk or microcode
+> 	upload, memtest will not see the fix
+>   
 
-If I understand the proposed patch correctly, it's only swepping the problem
-under the carpet -- if you have one of the malfunctioning systems and
-you happen to load a driver which wants to use the extended config
-space, it crashes anyway.
+What are you saying?  Linux is going to fix faulty RAM?  The point with 
+testing RAM is you *want* to see it fail; you don't want Linux to fix it.
 
-				Have a nice fortnight
--- 
-Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
-Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
-It said, "Insert disk #3," but only two will fit!
+> 	2) if memory only fails while something else happens (DMA to
+> 	other piece of memory? Hard disk load glitching powre
+> 	supply?), memtest will not see the problem.
+
+These are not RAM faults.  The very last thing you want is evidence that 
+you've got a faulty piece of RAM when the fault is actually a hard disk 
+glitch!
