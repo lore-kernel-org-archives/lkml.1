@@ -1,74 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752911AbXLVGqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbXLVGxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752911AbXLVGqj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 01:46:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXLVGqb
+	id S1754106AbXLVGxZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 01:53:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbXLVGxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 01:46:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45545 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750885AbXLVGqa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 01:46:30 -0500
-Date: Fri, 21 Dec 2007 22:45:47 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Cory T. Tusar" <ctusar@videon-central.com>
-Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org
-Subject: Re: [PATCH] tty: Fix logic change introduced by
- wait_event_interruptible_timeout()
-Message-Id: <20071221224547.34066a6a.akpm@linux-foundation.org>
-In-Reply-To: <476AE109.5070005@videon-central.com>
-References: <476AE109.5070005@videon-central.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 22 Dec 2007 01:53:16 -0500
+Received: from [212.12.190.44] ([212.12.190.44]:44976 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751012AbXLVGxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 01:53:15 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: David Brownell <david-b@pacbell.net>, jengelh@computergmbh.de
+Subject: Re: [RFC] USB Kconfig: Declutter USB Kconfig Menu
+Date: Sat, 22 Dec 2007 09:51:57 +0300
+User-Agent: KMail/1.5
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, greg@kroah.com
+References: <200712211630.03426.a1426z@gawab.com> <200712220806.24730.a1426z@gawab.com> <20071222061919.A5B1D1915EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+In-Reply-To: <20071222061919.A5B1D1915EF@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712220951.57634.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Dec 2007 16:39:21 -0500 "Cory T. Tusar" <ctusar@videon-central.com> wrote:
+David Brownell wrote:
+> > > The driver stacks are independent of each other, except for common
+> > > data structures like what's in the <linux/usb/ch9.h> header file.  I
+> > > think there's no real point, other than history, to having both sides
+> > > share the same menu.
+> >
+> > They aren't.
+>
+> How can you say that, when you showed (right above!!) that they are???
+> Sure, there are submenus too.  But they're clearly in the same menu.
 
-> tty: Fix logic change introduced by wait_event_interruptible_timeout()
-> 
-> Commit 5a52bd4a2dcb570333ce6fe2e16cd311650dbdc8 introduced a subtle logic
-> change in tty_wait_until_sent().  The original version would only error
-> out of the 'do { ... } while (timeout)' loop if signal_pending() evaluated
-> to true; a timeout or break due to an empty buffer would fall out of the
-> loop and into the tty->driver->wait_until_sent handling.  The current
-> implementation will error out on either a pending signal or an empty
-> buffer, falling through to the tty->driver->wait_until_sent handling
-> only on a timeout.
-> 
-> This change reverts the logic flow in tty_wait_until_sent() to match that
-> prior to the aforementioned commit.
-> 
-> Signed-off-by: Cory T. Tusar <ctusar@videon-central.com>
-> 
-> ---
-> Please CC me on any replies; I'm not subscribed to lkml.  Thanks.
-> 
->  drivers/char/tty_ioctl.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
-> index 1bdd2bf..e02d592 100644
-> --- a/drivers/char/tty_ioctl.c
-> +++ b/drivers/char/tty_ioctl.c
-> @@ -62,7 +62,7 @@ void tty_wait_until_sent(struct tty_struct * tty, long timeout)
->  	if (!timeout)
->  		timeout = MAX_SCHEDULE_TIMEOUT;
->  	if (wait_event_interruptible_timeout(tty->write_wait,
-> -			!tty->driver->chars_in_buffer(tty), timeout))
-> +			!tty->driver->chars_in_buffer(tty), timeout) < 0)
->  		return;
->  	if (tty->driver->wait_until_sent)
->  		tty->driver->wait_until_sent(tty, timeout);
-> 
-> 
+Well, in that case even if you moved them to the upper level, then they would 
+still be in the same menu, if that's what you mean.
 
-OK...  So what are the user-visible effects of this regression?  The caller
-will run ->wait_until_sent() even after being signalled?  So the signal is
-not promptly responded to?
+> >	USB Gadget Support is in its own sub-menu.  And strictly
+> > speaking, Host-side USB should be too, but some people may feel that
+> > this would be nesting it too deep, and so it unfolds in the same menu.
+>
+> Which is why my suggestion was to have them both move up a level, with
+> host and peripheral side menus nested normally:
+>
+> 	Device Drivers:
+> 		...
+> 		[ ] HID devices
+> 		< > Host side USB
+> 		< > Peripheral side USB
+> 		< > MMC/SD/SDIO card support
+> 		[ ] LED support
+> 		...
+>
+> That way both host and peripheral side support would have their own
+> menu, and that pointless nesting would be reduced.
+
+You mean:
+ 		[ ] Host side USB
+ 		[ ] Peripheral side USB
+
+Right?
+
+All this does is loose the USB menu, which was used to group them and to 
+un-clutter the Device Drivers menu.  Note:  They would still be sharing the 
+same menu, only this time it's the Device Drivers menu.
+
+I guess it's a judgment call.  Let's see what others think.
+
+
+Thanks!
+
+--
+Al
 
