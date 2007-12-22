@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbXLVNtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbXLVNvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbXLVNtc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 08:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbXLVNtZ
+	id S1755479AbXLVNvY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 08:51:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXLVNvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 08:49:25 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:10614 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbXLVNtY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 08:49:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=JlM+2zrkCpOXNTezspWEmk2q2xjHF82Fo7/EG8xVYzKFgy5ity6ShJpEgkvNZ/WUKp75FE+PpY2F/4KRsbTBabc0KoHVbL8O78aDXFjmDnIqTTu7b4+rZVaMzKfQOkwltYKs73iugLYMis3VHkq/ci+z84iyk5mH8MRqlbLZqhY=
-Message-ID: <84144f020712220549x52bbfff3jc86c643718676629@mail.gmail.com>
-Date: Sat, 22 Dec 2007 15:49:23 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] slub: /proc/slabinfo ABI compatibility
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, clameter@sgi.com, a.p.zijlstra@chello.nl
-In-Reply-To: <20071222134010.GA12294@elte.hu>
+	Sat, 22 Dec 2007 08:51:16 -0500
+Received: from [212.12.190.74] ([212.12.190.74]:59609 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750959AbXLVNvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 08:51:15 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: David Brownell <david-b@pacbell.net>, jengelh@computergmbh.de
+Subject: Re: [RFC] USB Kconfig: Declutter USB Kconfig Menu
+Date: Sat, 22 Dec 2007 16:49:55 +0300
+User-Agent: KMail/1.5
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, greg@kroah.com
+References: <200712211630.03426.a1426z@gawab.com> <200712220951.57634.a1426z@gawab.com> <20071222072208.A0960230DE8@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+In-Reply-To: <20071222072208.A0960230DE8@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0712221446280.24655@sbz-30.cs.Helsinki.FI>
-	 <20071222131456.GA32558@elte.hu>
-	 <84144f020712220531x238da99bi19ff06aaddfc5fc3@mail.gmail.com>
-	 <20071222134010.GA12294@elte.hu>
-X-Google-Sender-Auth: 0827acd573fd4bf8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200712221649.55831.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+David Brownell wrote:
+> > > Which is why my suggestion was to have them both move up a level, with
+> > > host and peripheral side menus nested normally:
+> > >
+> > > 	Device Drivers:
+> > > 		...
+> > > 		[ ] HID devices
+> > > 		< > Host side USB
+> > > 		< > Peripheral side USB
+> > > 		< > MMC/SD/SDIO card support
+> > > 		[ ] LED support
+> > > 		...
+> > >
+> > > That way both host and peripheral side support would have their own
+> > > menu, and that pointless nesting would be reduced.
+> >
+> > You mean:
+> >  		[ ] Host side USB
+> >  		[ ] Peripheral side USB
+> >
+> > Right?
+>
+> Both of those subsystems are already set up with the main choice
+> as tristate "< >/<M>/<*>".  If we're simplifying the navigation,
+> I can't see a point to requiring *two* menu actions not one.
 
-On Dec 22, 2007 3:40 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> ah, didnt see that. Could you pick up bits of my patch because it seems
-> to do a better job, such as proper c99 initializer:
+There is a point, but it's a weak one: you want it to unfold in the same menu 
+as you select the option.  So, if you unfold the sub-options in a separate 
+sub-menu, you better use [ ] (or just blank), as this will allow you to 
+enter the sub-menu, and see the unfold take place inside the same menu.
 
-[snip]
+IMHO, I prefer < >, but newbies probably prefer [ ], as it is less abstract.
 
-> also, my patch fixes all the warnings as well, not just the errors. So
-> please give it a second look ;-)
+Provided there is agreement, and we go with < >, it would mean a slight 
+change to Host side USB, like this (note new USB Core Config sub-menu):
 
-Sure, I'm fine with that. Can you Andrew please drop mine and use
-Ingo's instead?
+      --- Support for Host-side USB                                      
+      [ ]   USB Core Config  --->                                       
+      [ ]   USB Host Controller Drivers  --->                        
+      ---   NOTE: USB_STORAGE needs SCSI, and 'SCSI disk support' may
+      ---   also be needed; see USB_STORAGE Help for more information
+      < >   USB Mass Storage support  --->                          
+      [ ]   The shared table of common (or usual) storage devices    
+      [ ]   USB Monitor                                               
+      < >   USS720 parport driver                               
+      < >   USB Serial Converter support  --->                        
+      < >   USB DSL modem support  --->                                
+      [ ]   USB Device Class drivers  --->                            
+      [ ]   USB Imaging devices  --->                                 
+      [ ]   USB Miscellaneous drivers  --->                                         
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+Thanks!
+
+--
+Al
+
