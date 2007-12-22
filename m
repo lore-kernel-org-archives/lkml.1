@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbXLVUhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbXLVUmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755492AbXLVUhc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 15:37:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbXLVUhD
+	id S1755081AbXLVUmQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 15:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbXLVUmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 15:37:03 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:39110 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753996AbXLVUhB (ORCPT
+	Sat, 22 Dec 2007 15:42:01 -0500
+Received: from slackadelic.com ([65.196.224.53]:38047 "EHLO
+	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752900AbXLVUmA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 15:37:01 -0500
-Message-ID: <476D756A.6060507@davidnewall.com>
-Date: Sun, 23 Dec 2007 07:06:58 +1030
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Sat, 22 Dec 2007 15:42:00 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: =?iso-8859-1?q?R=E9mi_H=E9rilier?= <rherilier@yahoo.fr>
+Subject: Re: PATCH] adding wistron_btns support for X86_64 systems.
+Date: Sat, 22 Dec 2007 20:40:13 +0000
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, dtor@mail.ru, linux-input@vger.kernel.org
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Richard D <richard@embunus.com>,
-       "'Matthew Bloch'" <matthew@bytemark.co.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Testing RAM from userspace / question about memmap= arguments
-References: <fk8umh$n7o$1@ger.gmane.org> <20071221125812.GA4052@ucw.cz> <000001c84472$74b245e0$5e16d1a0$@com> <20071222134612.GA4098@ucw.cz> <476D35F6.90900@davidnewall.com> <20071222184759.GB31809@elf.ucw.cz>
-In-Reply-To: <20071222184759.GB31809@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Message-Id: <200712222040.14422.carlos@strangeworlds.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> memtest has following problems:
->
-> 	0) it is kind of hard to run memtest over ssh
->   
+(CC'ing linux-input, as that is the relevant subsystem list for wistron-btns).
 
-It's kind of hard to run anything over SSH if it has to be run before 
-userspace is up.  But the kernel can collect results from a modified 
-memtest, after it chains back.
+Rémi Hérilier wrote:
+> To use my previous patch (wistron_btns support for fujitsu-siemens amilo
+> pro edition v3505) with my laptop, I need to make the wistron module
+> compile for x86_64. It is based on Linux 2.4.24-rc4 too.
 
-> 	1) if linux fixes some problem with PCI quirk or microcode
-> 	upload, memtest will not see the fix
->   
+NAK.
 
-What are you saying?  Linux is going to fix faulty RAM?  The point with 
-testing RAM is you *want* to see it fail; you don't want Linux to fix it.
+You cannot make 32 bit BIOS calls in a 64 bit OS.
 
-> 	2) if memory only fails while something else happens (DMA to
-> 	other piece of memory? Hard disk load glitching powre
-> 	supply?), memtest will not see the problem.
+This will (and does) segfault on x86-64 (tested on my Aspire 5020, where  
+call_bios wistron-btns just segfaults on x86-64 with this patch).
 
-These are not RAM faults.  The very last thing you want is evidence that 
-you've got a faulty piece of RAM when the fault is actually a hard disk 
-glitch!
+This is a known issue, and the reason why wistron-btns (and the out-of-tree 
+acerhk) have not been ported to x86-64.
+
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
