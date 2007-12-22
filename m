@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbXLVBtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbXLVBwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756312AbXLVBtU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 20:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbXLVBtI
+	id S1754256AbXLVBwY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 20:52:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbXLVBwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 20:49:08 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54564 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750830AbXLVBtG (ORCPT
+	Fri, 21 Dec 2007 20:52:18 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:47507 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbXLVBwR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 20:49:06 -0500
-Message-ID: <476C6D06.2070301@zytor.com>
-Date: Fri, 21 Dec 2007 17:48:54 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: devzero@web.de, linux-kernel@vger.kernel.org, Matt.Domsch@dell.com
-Subject: Re: [PATCH] [RFC] be more verbose when probing EDD
-References: <49015158@web.de> <47656B9E.3040405@zytor.com> <p73sl1vedhw.fsf@bingen.suse.de>
-In-Reply-To: <p73sl1vedhw.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Dec 2007 20:52:17 -0500
+Date: Sat, 22 Dec 2007 02:53:11 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: David Miller <davem@davemloft.net>
+Cc: andi@firstfloor.org, mtk.manpages@googlemail.com,
+       akpm@linux-foundation.org, lkml@davidb.org, paulus@samba.org,
+       drepper@redhat.com, cfriesen@nortel.com, schwab@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: compat_sys_times() bogus until jiffies >= 0.
+Message-ID: <20071222015311.GB4477@one.firstfloor.org>
+References: <20071220.035104.240386115.davem@davemloft.net> <p73wsr7ef1h.fsf@bingen.suse.de> <20071221.174124.208826257.davem@davemloft.net> <20071221.174547.136433173.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071221.174547.136433173.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
-> 
->> devzero@web.de wrote:
->>>         /* Query EDD information */
->>>  #if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
->>> -       query_edd();
->>> +        printf("Probing EDD (query Bios for boot-device information)\n");
->>> +        printf("If boot hangs here, you may have a buggy Bios. Try edd=skipmbr or edd=off");
->>> +        query_edd();
->>> +        printf("\rOK                                                                       \n");
->>>  #endif
->> This is awfully verbose.
-> 
-> But useful. On the other hand we have lots of IMNSHO
-> quite useless printks in early bootup that could be removed
-> to make up for that
-> 
-> (e.g. candidates would be the 
-> "CPU: After/before generic identify"
-> or 
-> Entering add_active_range....) 
-> 
-> printks and you can easily make up for the added verbosity.
-> 
+> And to handle potentially ambiguous cases we, for a long time, have
+> the force_successful_syscall_return() arch hook. 
 
-Those don't live in an area of memory which is hard-limited to 32K.
+Ah I see what you mean now.
 
-	-hpa
+Thanks for the clarification.
+
+Ok that could be in theory made to work yes. The migration would
+probably be ugly though (how would glibc figure out if the kernel
+does that or not?)
+
+-Andi
