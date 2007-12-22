@@ -1,138 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbXLVHdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbXLVHsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbXLVHdA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 02:33:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbXLVHcv
+	id S1754788AbXLVHsj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 02:48:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbXLVHsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 02:32:51 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:45893 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbXLVHcu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 02:32:50 -0500
-Message-ID: <476CBD9B.9070203@linux.vnet.ibm.com>
-Date: Sat, 22 Dec 2007 13:02:43 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Hugh Dickins <hugh@veritas.com>, LKML <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC] [PATCH] Memory controller remove control_type feature
-References: <20071220185358.3248.25416.sendpatchset@balbir-laptop> <20071221225941.98b7362d.akpm@linux-foundation.org>
-In-Reply-To: <20071221225941.98b7362d.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 22 Dec 2007 02:48:30 -0500
+Received: from mga09.intel.com ([134.134.136.24]:6932 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750922AbXLVHs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 02:48:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,198,1196668800"; 
+   d="scan'208";a="250500461"
+Subject: Re: video breaks asus-laptop display switching
+From: Zhang Rui <rui.zhang@intel.com>
+To: Andrei Gaponenko <andrei.gaponenko@cern.ch>
+Cc: linux-kernel@vger.kernel.org, corentincj@iksaif.net,
+       sziwan@users.sourceforge.net
+In-Reply-To: <Pine.LNX.4.64.0712211433030.3239@0-11-d8-ea-8d-5b.dhcp.lbl.gov>
+References: <Pine.LNX.4.64.0712211433030.3239@0-11-d8-ea-8d-5b.dhcp.lbl.gov>
+Content-Type: text/plain
+Date: Sat, 22 Dec 2007 15:53:17 +0800
+Message-Id: <1198309997.9550.2.camel@acpi-sony>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 21 Dec 2007 00:23:58 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> Based on the discussion at http://lkml.org/lkml/2007/12/20/383, it was
->> felt that control_type might not be a good thing to implement right away.
->> We can add this flexibility at a later point when required.
-> 
-> Gee the memory controller patchset is turning into a mess.
-> 
 
-Yes, the patchset has expanded and we have several useful bug fixes and
-cleanups and some new features.
-
-> memory-controller-add-documentation.patch
-> memcgroup-temporarily-revert-swapoff-mod.patch
-> memory-controller-resource-counters-v7.patch
-> memory-controller-containers-setup-v7.patch
-> memory-controller-accounting-setup-v7.patch
-> memory-controller-memory-accounting-v7.patch
-> memory-controller-memory-accounting-v7-move-page_assign_page_cgroup-to-vm_bug_on-in-free_hot_cold_page.patch
-> memory-controller-task-migration-v7.patch
-> memory-controller-add-per-container-lru-and-reclaim-v7.patch
-> memory-controller-add-per-container-lru-and-reclaim-v7-memcgroup-fix-try_to_free-order.patch
-> memory-controller-improve-user-interface.patch
-> memory-controller-improve-user-interface-memory-controller-enhancements-for-reclaiming-take2-possible-race-fix-in-res_counter.patch
-> memory-controller-oom-handling-v7.patch
-> memory-controller-add-switch-to-control-what-type-of-pages-to-limit-v7.patch
-> memory-controller-make-page_referenced-container-aware-v7.patch
-> memory-controller-make-charging-gfp-mask-aware.patch
-> memory-controller-make-charging-gfp-mask-aware-fix.patch
-> memcgroup-reinstate-swapoff-mod.patch
-> memory-controller-bug_on.patch
-> mem-controller-gfp-mask-fix.patch
-> memcontrol-move-mm_cgroup-to-header-file.patch
-> memcontrol-move-oom-task-exclusion-to-tasklist.patch
-> oom-add-sysctl-to-enable-task-memory-dump.patch
-> kswapd-should-only-wait-on-io-if-there-is-io.patch
-> bugfix-for-memory-cgroup-controller-charge-refcnt-race-fix.patch
-> bugfix-for-memory-cgroup-controller-fix-error-handling-path-in-mem_charge_cgroup.patch
-> bugfix-for-memory-controller-add-helper-function-for-assigning-cgroup-to-page.patch
-> bugfix-for-memory-cgroup-controller-avoid-pagelru-page-in-mem_cgroup_isolate_pages.patch
-> bugfix-for-memory-cgroup-controller-avoid-pagelru-page-in-mem_cgroup_isolate_pages-fix.patch
-> memcgroup-fix-zone-isolation-oom.patch
-> memcgroup-revert-swap_state-mods.patch
-> bugfix-for-memory-cgroup-controller-migration-under-memory-controller-fix.patch
-> #
-> memory-cgroup-enhancements-fix-zone-handling-in-try_to_free_mem_cgroup_page.patch
-> memory-cgroup-enhancements-fix-zone-handling-in-try_to_free_mem_cgroup_page-warning-fix.patch
-> memory-cgroup-enhancements-force_empty-interface-for-dropping-all-account-in-empty-cgroup.patch
-> memory-cgroup-enhancements-remember-a-page-is-charged-as-page-cache.patch
-> memory-controller-use-rcu_read_lock-in-mem_cgroup_cache_charge.patch
-> memcgroup-tidy-up-mem_cgroup_charge_common.patch
-> memcgroup-fix-hang-with-shmem-tmpfs.patch
-> memory-cgroup-enhancements-remember-a-page-is-on-active-list-of-cgroup-or-not.patch
-> memory-cgroup-enhancements-add-status-accounting-function-for-memory-cgroup.patch
-> memory-cgroup-enhancements-add-status-accounting-function-for-memory-cgroup-checkpatch-fixes.patch
-> memory-cgroup-enhancements-add-status-accounting-function-for-memory-cgroup-fix-1.patch
-> memory-cgroup-enhancements-add-status-accounting-function-for-memory-cgroup-uninlining.patch
-> memory-cgroup-enhancements-add-status-accounting-function-for-memory-cgroup-fix-2.patch
-> memory-cgroup-enhancements-add-memorystat-file.patch
-> memory-cgroup-enhancements-add-memorystat-file-checkpatch-fixes.patch
-> memory-cgroup-enhancements-add-memorystat-file-printk-fix.patch
-> memory-cgroup-enhancements-add-pre_destroy-handler.patch
-> memory-cgroup-enhancements-implicit-force_empty-at-rmdir.patch
-> #
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-add-scan_global_lru-macro.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-nid-zid-helper-function-for-cgroup.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-per-zone-active-inactive-counter.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-per-zone-active-inactive-counter-memory-controller-enhancements-for-reclaiming-take2-clean-up-remove-unused-variable.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-per-zone-active-inactive-counter-memory-controller-enhancements-for-reclaiming-take2-add-bug_on-in-mem_cgroup_zoneinfo.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-calculate-mapper_ratio-per-cgroup.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-calculate-active-inactive-imbalance-per-cgroup.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-remember-reclaim-priority-in-memory-cgroup.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-remember-reclaim-priority-in-memory-cgroup-fix.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-remember-reclaim-priority-in-memory-cgroup-fix-2.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-calculate-the-number-of-pages-to-be-scanned-per-cgroup.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-modifies-vmscanc-for-isolate-globa-cgroup-lru-activity.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-modifies-vmscanc-for-isolate-globa-cgroup-lru-activity-fix.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-modifies-vmscanc-for-isolate-globa-cgroup-lru-activity-fix-accounting-in-vmscanc-for-memory-controller.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-per-zone-lru-for-cgroup.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-per-zone-lru-for-cgroup-bugfix-for-memory-cgroup-per-zone-struct-allocation.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-per-zone-lru-for-cgroup-memory-controller-enhancements-for-reclaiming-take2-define-free_mem_cgroup_per_zone_info.patch
-> per-zone-and-reclaim-enhancements-for-memory-controller-take-3-per-zone-lock-for-cgroup.patch
-> memory-controller-remove-control_type-feature.patch
-> update-documentation-controller-memorytxt.patch
+On Sat, 2007-12-22 at 06:36 +0800, Andrei Gaponenko wrote:
 > 
-> Hopefully it'll look a bit better once I do a big patch-folding but we
-> still have patches interesecting everywhere and now we have patches which
-> add a feature and later ones which take it away again.
+> Hi,
 > 
-
-I think folding will help. I understand your concern w.r.t getting the
-correct set of patches with a good changelog.
-
-> But I don't think it's worth the time and risk of a huge
-> rip-up-and-refactor.
+> With 2.6.23 or newer (including 2.6.24-rc6) kernels, writing to the
+> /sys/devices/platform/asus-laptop/display file does not do anything:
 > 
+> Cold boot to single user, then connect an external monitor
+> 
+> # cat  /sys/devices/platform/asus-laptop/display
+> 1
+> 
+> OK, only the built in LCD is enabled. Try to enable
+> the external monitor as well:
+> 
+> # echo 3 > /sys/devices/platform/asus-laptop/display
+> 
+> still no image on the external.
+> 
+> # cat  /sys/devices/platform/asus-laptop/display
+> 1
+> 
+> Still "1", not the "3" we wrote. On the other hand if I boot with an
+> external monitor attached, the "display" file always contains 3, even
+> after writing 1 there, and there is image on both monitors.
+> 
+> In 2.6.22 I had to load asus-laptop by hand, but then display
+> switching worked nicely. 
+> 
+> I've noticed that if I do
+> 
+> # rmmod video
+> 
+> display switching starts working again with the newer kernels.
+> The "video" module was auto-loaded on my system in 2.6.22, but
+> did not cause the conflict.
+hmm, please "echo 1 > /proc/acpi/video/xxx/DOS" in 2.6.23 and see
+if there is any difference.
 
-I agree, given the proximity of the new merge window for 2.6.25.  We
-could review the patches after folding them and see how to consolidate
-further in case the patches continue to look messy.
+Thansk,
+Rui
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+
