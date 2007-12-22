@@ -1,82 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbXLVJxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbXLVJ6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753615AbXLVJxS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 04:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbXLVJxG
+	id S1753812AbXLVJ6i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 04:58:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbXLVJ63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 04:53:06 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38005 "EHLO mx1.redhat.com"
+	Sat, 22 Dec 2007 04:58:29 -0500
+Received: from mail0.scram.de ([78.47.204.202]:56137 "EHLO mail0.scram.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750700AbXLVJxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 04:53:04 -0500
-Subject: Re: [PATCH] kthread: run kthreadd with max priority SCHED_FIFO
-From: Jon Masters <jcm@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Schmidt <mschmidt@redhat.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-In-Reply-To: <20071222013021.db2528cb.akpm@linux-foundation.org>
-References: <20071217234314.540b59bd@hammerfall>
-	 <20071222013021.db2528cb.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: Red Hat, Inc.
-Date: Sat, 22 Dec 2007 04:52:50 -0500
-Message-Id: <1198317171.24423.47.camel@perihelion>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+	id S1750750AbXLVJ62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 04:58:28 -0500
+X-Spam-Score: -3.944
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.5 AWL AWL: From: address is in the auto white-list
+Message-ID: <476CDFEC.1070506@scram.de>
+Date: Sat, 22 Dec 2007 10:59:08 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+MIME-Version: 1.0
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+CC: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, i2c@lm-sensors.org, khali@linux-fr.org
+Subject: Re: [PATCH POWERPC] i2c: adds support for i2c bus on Frescale CPM1/CPM2
+ controllers
+References: <476C15BC.3090807@scram.de> <20071222001112.691b80c8@kernel.crashing.org>
+In-Reply-To: <20071222001112.691b80c8@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Vitaly,
 
-On Sat, 2007-12-22 at 01:30 -0800, Andrew Morton wrote:
-> On Mon, 17 Dec 2007 23:43:14 +0100 Michal Schmidt <mschmidt@redhat.com> wrote:
-> 
-> > kthreadd, the creator of other kernel threads, runs as a normal
-> > priority task. This is a potential for priority inversion when a task
-> > wants to spawn a high-priority kernel thread. A middle priority
-> > SCHED_FIFO task can block kthreadd's execution indefinitely and thus
-> > prevent the timely creation of the high-priority kernel thread.
-> >     
-> > This causes a practical problem. When a runaway real-time task is
-> > eating 100% CPU and we attempt to put the CPU offline, sometimes we
-> > block while waiting for the creation of the highest-priority
-> > "kstopmachine" thread. 
-> > 
-> > The fix is to run kthreadd with the highest possible SCHED_FIFO
-> > priority. Its children must still run as slightly negatively reniced
-> > SCHED_NORMAL tasks.
-> 
-> Did you hit this problem with the stock kernel, or have you been working on
-> other stuff?
+> I had an attempt a while ago to do this but haven't had enough time to get it completed, so
+> I am glad to see it finally picked up. There was some sort of discussion that time, you seem to have some of those points
+> addressed but  something not, please
+> check: http://lkml.org/lkml/2007/5/8/45
+>
+> (for instance, cpm_i2c_shutdown() and i2c_cpm_del_bus() are void because they cant' fail)
+>   
 
-This kind of problem is *far* more likely to happen on the -RT kernel
-(more example cases), but it's also a general problem too.
+I'll resend a fixed patch.
 
-> A locked-up SCHED_FIFO process will cause kernel threads all sorts of
-> problems.  You've hit one instance, but there will be others.  (pdflush
-> stops working, for one).
+> Also, why this was directed to Scott? This is lm-sensors stuff and is
+> Jean Delvare <khali@linux-fr.org> material..
 
-Right. Agreed that this is just one "fix" out of many possibly needed,
-if upstream wants to address this kind of problem.
+Scott reviewed this driver last time and i hope to get some further 
+comments from him. But thanks for adding
+Jean as well.
 
-> The general approach we've taken to this is "don't do that".  Yes, we could
-> boost lots of kernel threads in the way which this patch does but this
-> actually takes control *away* from userspace.  Userspace no longer has the
-> ability to guarantee itself minimum possible latency without getting
-> preempted by kernel threads.
-> 
-> And yes, giving userspace this minimum-latency capability does imply that
-> userspace has a responsibility to not 100% starve kernel threads.  It's a
-> reasonable compromise, I think?
-
-So, user tasks running with SCHED_FIFO should be able to lock a system?
-I guess I see both sides of this argument - yes, it's userspace at
-fault, but in other cases when userspace is at fault, we take action
-(OOM, segfault, others). Isn't this situation just another case where
-the kernel needs to avoid the evils of userland going awry?
-
-Jon.
-
+Thanks,
+Jochen
 
