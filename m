@@ -1,42 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbXLVAVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbXLVAZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759042AbXLVAVj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 19:21:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbXLVAVb
+	id S1760133AbXLVAZk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 19:25:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbXLVAZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 19:21:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58071 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753216AbXLVAVa (ORCPT
+	Fri, 21 Dec 2007 19:25:34 -0500
+Received: from ganesha.gnumonks.org ([213.95.27.120]:49090 "EHLO
+	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754642AbXLVAZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 19:21:30 -0500
-Date: Fri, 21 Dec 2007 16:21:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: linux-kernel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
-       jack@suse.cz
-Subject: Re: [PATCH 1/5] udf: remove wrong prototype of udf_readdir
-Message-Id: <20071221162117.faa3d16d.akpm@linux-foundation.org>
-In-Reply-To: <20071221155453.GA8575@joi>
-References: <20071221155453.GA8575@joi>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Dec 2007 19:25:33 -0500
+Date: Sat, 22 Dec 2007 01:25:16 +0100
+From: Harald Welte <laforge@gnumonks.org>
+To: linux-kernel@vger.kernel.org
+Cc: xorg@lists.freedesktop.org
+Subject: linux-2.6.24-rcX regression / xserver-xorg-video-intel / Q35
+Message-ID: <20071222002516.GR6625@prithivi.gnumonks.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Dec 2007 16:55:03 +0100
-Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+Hi!
 
-> sparse generated:
-> fs/udf/dir.c:78:5: warning: symbol 'udf_readdir' was not declared. Should it be static?
-> there are 2 different prototypes of udf_readdir - remove them and move
-> code around to make it still compile
+I'm running an Intel DQ35JO mainboard (Q35 chipset, Q6600 CPU) and I am
+observing a regression with linux-2.6.24-rc1 through -rc6 (linux-2.6.git as
+of today, ea67db4cdbbf7f4e74150e71da0984e25121f500).
 
-Drat.  I just applied six udf patches from you and now we have a new patch
-series of only five with no indication what changed.
+The last working version is 2.6.24-rc1.
 
-I guess I really do need to apply my backlog in reverse time order.
+The system is running debian unstable (current) using
+xserver-xorg-video-intel 2.2.0-1
 
+So what is the actual problem:
+It seems to be related to the way how the iommu/gart is used for memory
+allocation of the framebuffer memory.
+
+Xorg starts just as it should, but the lower part of the screen is
+completely gobbled.  I suppose the lower part of the screen is actually
+showing off-screen memory at some completely differnt location.
+
+Interestingly, the mouse cursor is superimposed on top of the garbage
+(and it is not distorted).
+
+The visible effect can be observed at the following screenshot:
+http://ganesha.gnumonks.org/~laforge/tmp/2624rc_xorg_intel.jpg
+
+lspci:
+00:00.0 Host bridge: Intel Corporation Unknown device 29b0 (rev 02)
+00:02.0 VGA compatible controller: Intel Corporation Unknown device 29b2 (rev 02)
+00:02.1 Display controller: Intel Corporation Unknown device 29b3 (rev 02)
+
+00:02.0 VGA compatible controller: Intel Corporation Unknown device 29b2 (rev 02) (prog-if 00 [VGA])
+        Subsystem: Intel Corporation Unknown device 4f4a
+        Flags: bus master, fast devsel, latency 0, IRQ 11
+        Memory at e0380000 (32-bit, non-prefetchable) [size=512K]
+        I/O ports at 2430 [size=8]
+        Memory at d0000000 (32-bit, prefetchable) [size=256M]
+        Memory at e0200000 (32-bit, non-prefetchable) [size=1M]
+        Capabilities: [90] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
+        Capabilities: [d0] Power Management version 2
+
+00:02.1 Display controller: Intel Corporation Unknown device 29b3 (rev 02)
+        Subsystem: Intel Corporation Unknown device 4f4a
+        Flags: bus master, fast devsel, latency 0
+        Memory at e0300000 (32-bit, non-prefetchable) [size=512K]
+        Capabilities: [d0] Power Management version 2
+
+Please let me know if I should provide more details.  I'm also happy to
+test any patches :)
+
+Cheers,
+-- 
+- Harald Welte <laforge@gnumonks.org>          	        http://gnumonks.org/
+============================================================================
+"Privacy in residential applications is a desirable marketing option."
+                                                  (ETSI EN 300 175-7 Ch. A6)
