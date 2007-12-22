@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbXLVGdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752911AbXLVGqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbXLVGdz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 01:33:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbXLVGdq
+	id S1752911AbXLVGqj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 01:46:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXLVGqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 01:33:46 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56210 "EHLO
+	Sat, 22 Dec 2007 01:46:31 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45545 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750885AbXLVGdp (ORCPT
+	by vger.kernel.org with ESMTP id S1750885AbXLVGqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 01:33:45 -0500
-Date: Fri, 21 Dec 2007 22:31:34 -0800
+	Sat, 22 Dec 2007 01:46:30 -0500
+Date: Fri, 21 Dec 2007 22:45:47 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Daniel Walker <dwalker@mvista.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux@bohmer.net, jonathan@jonmasters.org,
-       matthias.kaehlcke@gmail.com, kjwinchester@gmail.com
-Subject: Re: [PATCH 4/4] usb: libusual: locking cleanup
-Message-Id: <20071221223134.1567b755.akpm@linux-foundation.org>
-In-Reply-To: <20071221222428.a75a5a34.zaitcev@redhat.com>
-References: <20071221205854.408865412@mvista.com>
-	<20071221205859.316759032@mvista.com>
-	<20071221222428.a75a5a34.zaitcev@redhat.com>
+To: "Cory T. Tusar" <ctusar@videon-central.com>
+Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org
+Subject: Re: [PATCH] tty: Fix logic change introduced by
+ wait_event_interruptible_timeout()
+Message-Id: <20071221224547.34066a6a.akpm@linux-foundation.org>
+In-Reply-To: <476AE109.5070005@videon-central.com>
+References: <476AE109.5070005@videon-central.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,41 +28,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Dec 2007 22:24:28 -0800 Pete Zaitcev <zaitcev@redhat.com> wrote:
+On Thu, 20 Dec 2007 16:39:21 -0500 "Cory T. Tusar" <ctusar@videon-central.com> wrote:
 
-> On Fri, 21 Dec 2007 00:00:04 -0800, Daniel Walker <dwalker@mvista.com> wrote:
+> tty: Fix logic change introduced by wait_event_interruptible_timeout()
 > 
-> > I converted the usu_init_notify semaphore to normal mutex usage, and it 
-> > should still prevent the request_module before the init routine is
-> > complete. Before it acted more like a complete, now the mutex protects
-> > two distinct section from running at the same time..
+> Commit 5a52bd4a2dcb570333ce6fe2e16cd311650dbdc8 introduced a subtle logic
+> change in tty_wait_until_sent().  The original version would only error
+> out of the 'do { ... } while (timeout)' loop if signal_pending() evaluated
+> to true; a timeout or break due to an empty buffer would fall out of the
+> loop and into the tty->driver->wait_until_sent handling.  The current
+> implementation will error out on either a pending signal or an empty
+> buffer, falling through to the tty->driver->wait_until_sent handling
+> only on a timeout.
 > 
-> Let's see.
+> This change reverts the logic flow in tty_wait_until_sent() to match that
+> prior to the aforementioned commit.
 > 
-> > @@ -178,10 +179,7 @@ static int usu_probe_thread(void *arg)
-> >  	int rc;
-> >  	unsigned long flags;
-> >  
-> > -	/* A completion does not work here because it's counted. */
-> > -	down(&usu_init_notify);
-> > -	up(&usu_init_notify);
-> > -
-> > +	mutex_lock(&usu_probe_mutex);
-> >  	rc = request_module(bias_names[type]);
+> Signed-off-by: Cory T. Tusar <ctusar@videon-central.com>
 > 
-> When I tried it, usb-storage would not load with unresolved symbols.
-> It happens if child (usu_probe_thread) runs ahead of its parent
-> (usb_usual_init -> usb_register -> usu_probe). It's entirely possible,
-> depending on your scheduler.
+> ---
+> Please CC me on any replies; I'm not subscribed to lkml.  Thanks.
+> 
+>  drivers/char/tty_ioctl.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
+> index 1bdd2bf..e02d592 100644
+> --- a/drivers/char/tty_ioctl.c
+> +++ b/drivers/char/tty_ioctl.c
+> @@ -62,7 +62,7 @@ void tty_wait_until_sent(struct tty_struct * tty, long timeout)
+>  	if (!timeout)
+>  		timeout = MAX_SCHEDULE_TIMEOUT;
+>  	if (wait_event_interruptible_timeout(tty->write_wait,
+> -			!tty->driver->chars_in_buffer(tty), timeout))
+> +			!tty->driver->chars_in_buffer(tty), timeout) < 0)
+>  		return;
+>  	if (tty->driver->wait_until_sent)
+>  		tty->driver->wait_until_sent(tty, timeout);
+> 
+> 
 
-afaict Daniel's change will fix that?
-
-He releases usu_probe_mutex once the usb_register() has completed and this
-then allows the usb_probe_thread() to start working.
-
-I'm still wondering if that theory has been tested though.
-
-> I hate this down-up trick too
-
-I'd be worried if you were proud of it ;)
+OK...  So what are the user-visible effects of this regression?  The caller
+will run ->wait_until_sent() even after being signalled?  So the signal is
+not promptly responded to?
 
