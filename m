@@ -1,75 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbXLVIWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXLVIan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbXLVIWQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 03:22:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbXLVIWA
+	id S1753289AbXLVIan (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 03:30:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXLVIaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 03:22:00 -0500
-Received: from ironport1.lbl.gov ([128.3.41.47]:30892 "EHLO ironport1.lbl.gov"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751314AbXLVIV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 03:21:59 -0500
-X-Ironport-SBRS: 3.5
-X-Brightmail-Tracker: AAAAAA==
-X-BrightmailFiltered: true
-X-IronPort-AV: E=Sophos;i="4.24,198,1196668800"; 
-   d="scan'208";a="77590026"
-Date: Sat, 22 Dec 2007 00:21:57 -0800 (PST)
-From: Andrei Gaponenko <andrei.gaponenko@cern.ch>
-X-X-Sender: andr@roof
-To: Zhang Rui <rui.zhang@intel.com>
-cc: linux-kernel@vger.kernel.org, corentincj@iksaif.net,
-       sziwan@users.sourceforge.net
-Subject: Re: video breaks asus-laptop display switching
-In-Reply-To: <1198309997.9550.2.camel@acpi-sony>
-Message-ID: <Pine.LNX.4.64.0712220013030.31611@roof>
-References: <Pine.LNX.4.64.0712211433030.3239@0-11-d8-ea-8d-5b.dhcp.lbl.gov>
- <1198309997.9550.2.camel@acpi-sony>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 22 Dec 2007 03:30:35 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47173 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750859AbXLVIae (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 03:30:34 -0500
+Date: Sat, 22 Dec 2007 00:30:25 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: Clemens Koller <clemens.koller@anagramm.de>,
+       Mikael Starvik <mikael.starvik@axis.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Remove unused __dummy, CONST_ADDR and ADDR from CRIS
+ bitops.h
+Message-Id: <20071222003025.148ea0ad.akpm@linux-foundation.org>
+In-Reply-To: <20071220100944.GG10888@axis.com>
+References: <20071220100944.GG10888@axis.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 20 Dec 2007 11:09:44 +0100 Jesper Nilsson <jesper.nilsson@axis.com> wrote:
 
-On Sat, 22 Dec 2007, Zhang Rui wrote:
+> Subject: [PATCH] Remove unused __dummy, CONST_ADDR and ADDR from CRIS bitops.h
 
-> On Sat, 2007-12-22 at 06:36 +0800, Andrei Gaponenko wrote:
->>
->> With 2.6.23 or newer (including 2.6.24-rc6) kernels, writing to the
->> /sys/devices/platform/asus-laptop/display file does not do anything:
->> ...
->>
-> hmm, please "echo 1 > /proc/acpi/video/xxx/DOS" in 2.6.23 and see
-> if there is any difference.
+It's nice (and conventional) to prefix the patch title with the subsystem
+name.  So this one would become
 
-ls /proc/acpi/video/
-shows two identically named directories "VGA" - is this normal??
 
-Anyway,
+Subject: [PATCH] cris: remove unused __dummy, CONST_ADDR and ADDR from bitops.h
 
-# cat VGA/DOS
-DOS setting: <1>
-
-# echo 3 > VGA/DOS
-# cat VGA/DOS
-DOS setting: <3>
-
-but no image on external.  Now
-
-# rmmod video
-# echo 3 > /sys/devices/platform/asus-laptop/display
-
-Got image on external
-
-# modprobe video
-# cat VGA/DOS
-DOS setting: <0>
-
-I can write 1 or 3 to DOS and read it back, but it has no effect (image on 
-external turned on while video module was removed does not go away).
-
-Please Cc: me on replies - forgot to mention this in the initial posting.
-
-Thanks!
-Andrei
+Thanks.
