@@ -1,86 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbXLVNvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbXLVN7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755479AbXLVNvY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 08:51:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXLVNvQ
+	id S1754407AbXLVN7H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 08:59:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbXLVN6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 08:51:16 -0500
-Received: from [212.12.190.74] ([212.12.190.74]:59609 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750959AbXLVNvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 08:51:15 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: David Brownell <david-b@pacbell.net>, jengelh@computergmbh.de
-Subject: Re: [RFC] USB Kconfig: Declutter USB Kconfig Menu
-Date: Sat, 22 Dec 2007 16:49:55 +0300
-User-Agent: KMail/1.5
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, greg@kroah.com
-References: <200712211630.03426.a1426z@gawab.com> <200712220951.57634.a1426z@gawab.com> <20071222072208.A0960230DE8@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-In-Reply-To: <20071222072208.A0960230DE8@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	Sat, 22 Dec 2007 08:58:55 -0500
+Received: from langos.euedge.com ([209.190.22.130]:42195 "EHLO
+	langos.euedge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780AbXLVN6y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 08:58:54 -0500
+X-Greylist: delayed 633 seconds by postgrey-1.27 at vger.kernel.org; Sat, 22 Dec 2007 08:58:54 EST
+Message-ID: <476D15EC.8010309@tyrell.hu>
+Date: Sat, 22 Dec 2007 14:49:32 +0100
+From: =?UTF-8?B?w4Frb3MgTWFyw7N5?= <darkeye@tyrell.hu>
+Organization: Tyrell Corp.
+User-Agent: Thunderbird 2.0.0.9 (X11/20071205)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Subject: patch for using joysticks in 32 bit applications on 64 bit systems
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200712221649.55831.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell wrote:
-> > > Which is why my suggestion was to have them both move up a level, with
-> > > host and peripheral side menus nested normally:
-> > >
-> > > 	Device Drivers:
-> > > 		...
-> > > 		[ ] HID devices
-> > > 		< > Host side USB
-> > > 		< > Peripheral side USB
-> > > 		< > MMC/SD/SDIO card support
-> > > 		[ ] LED support
-> > > 		...
-> > >
-> > > That way both host and peripheral side support would have their own
-> > > menu, and that pointless nesting would be reduced.
-> >
-> > You mean:
-> >  		[ ] Host side USB
-> >  		[ ] Peripheral side USB
-> >
-> > Right?
->
-> Both of those subsystems are already set up with the main choice
-> as tristate "< >/<M>/<*>".  If we're simplifying the navigation,
-> I can't see a point to requiring *two* menu actions not one.
+unfortunately 32 bit apps don't see the joysticks on a 64 bit system.
+this prevents one playing X-Plane (http://www.x-plane.com/) or other
+32-bit games with joysticks.
 
-There is a point, but it's a weak one: you want it to unfold in the same menu 
-as you select the option.  So, if you unfold the sub-options in a separate 
-sub-menu, you better use [ ] (or just blank), as this will allow you to 
-enter the sub-menu, and see the unfold take place inside the same menu.
+this is a known issue, and already raised several times:
 
-IMHO, I prefer < >, but newbies probably prefer [ ], as it is less abstract.
+http://readlist.com/lists/vger.kernel.org/linux-kernel/28/144411.html
 
-Provided there is agreement, and we go with < >, it would mean a slight 
-change to Host side USB, like this (note new USB Core Config sub-menu):
+http://www.brettcsmith.org/wiki/wiki.cgi?action=browse&diff=1&id=OzyComputer/Joystick
 
-      --- Support for Host-side USB                                      
-      [ ]   USB Core Config  --->                                       
-      [ ]   USB Host Controller Drivers  --->                        
-      ---   NOTE: USB_STORAGE needs SCSI, and 'SCSI disk support' may
-      ---   also be needed; see USB_STORAGE Help for more information
-      < >   USB Mass Storage support  --->                          
-      [ ]   The shared table of common (or usual) storage devices    
-      [ ]   USB Monitor                                               
-      < >   USS720 parport driver                               
-      < >   USB Serial Converter support  --->                        
-      < >   USB DSL modem support  --->                                
-      [ ]   USB Device Class drivers  --->                            
-      [ ]   USB Imaging devices  --->                                 
-      [ ]   USB Miscellaneous drivers  --->                                         
+unfortunately this is still not fixed in the mainline kernel.
+
+it would be nice to have this fixed, so that people can play these games
+without having to patch their kernel.
+
+the following patch solves the problem on 2.6.22:
 
 
-Thanks!
+diff -Naur linux-2.6.22-suspend2-r2/fs/compat_ioctl.c
+linux-2.6.22-suspend2-r2-joystick/fs/compat_ioctl.c
+--- linux-2.6.22-suspend2-r2/fs/compat_ioctl.c  2007-12-22
+14:08:14.000000000
++0100
++++ linux-2.6.22-suspend2-r2-joystick/fs/compat_ioctl.c 2007-12-22
+14:07:54.000000000 +0100
+@@ -10,6 +10,8 @@
+  * ioctls.
+  */
 
---
-Al
++#include <linux/joystick.h>
++
+ #include <linux/types.h>
+ #include <linux/compat.h>
+ #include <linux/kernel.h>
+@@ -3259,6 +3261,12 @@
+ COMPATIBLE_IOCTL(VIDEO_GET_SIZE)
+ COMPATIBLE_IOCTL(VIDEO_GET_FRAME_RATE)
+
++/* joystick */
++COMPATIBLE_IOCTL(JSIOCGVERSION)
++COMPATIBLE_IOCTL(JSIOCGAXES)
++COMPATIBLE_IOCTL(JSIOCGBUTTONS)
++COMPATIBLE_IOCTL(JSIOCGNAME(0x200)) /* for X-Plane 8.03 */
++
+ /* now things that need handlers */
+ HANDLE_IOCTL(MEMREADOOB32, mtd_rw_oob)
+ HANDLE_IOCTL(MEMWRITEOOB32, mtd_rw_oob)
 
