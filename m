@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbXLVCW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbXLVCk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756544AbXLVCW6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 21:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbXLVCWu
+	id S1753199AbXLVCk7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 21:40:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbXLVCkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 21:22:50 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57710 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbXLVCWt (ORCPT
+	Fri, 21 Dec 2007 21:40:51 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:55365 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751518AbXLVCkv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 21:22:49 -0500
-Message-ID: <476C74F1.2070407@zytor.com>
-Date: Fri, 21 Dec 2007 18:22:41 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: devzero@web.de, linux-kernel@vger.kernel.org, Matt.Domsch@dell.com
+	Fri, 21 Dec 2007 21:40:51 -0500
+Date: Sat, 22 Dec 2007 03:41:45 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, devzero@web.de,
+       linux-kernel@vger.kernel.org, Matt.Domsch@dell.com
 Subject: Re: [PATCH] [RFC] be more verbose when probing EDD
-References: <49015158@web.de> <47656B9E.3040405@zytor.com> <p73sl1vedhw.fsf@bingen.suse.de> <476C6D06.2070301@zytor.com> <20071222015758.GC4477@one.firstfloor.org>
-In-Reply-To: <20071222015758.GC4477@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20071222024145.GA6062@one.firstfloor.org>
+References: <49015158@web.de> <47656B9E.3040405@zytor.com> <p73sl1vedhw.fsf@bingen.suse.de> <476C6D06.2070301@zytor.com> <20071222015758.GC4477@one.firstfloor.org> <476C74F1.2070407@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <476C74F1.2070407@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> Those don't live in an area of memory which is hard-limited to 32K.
+On Fri, Dec 21, 2007 at 06:22:41PM -0800, H. Peter Anvin wrote:
+> >Ok, that's a different argument than before. Ok. Although it's
+> >only a few bytes. 
+> >
+> >I would lobby for any message at least contain the suggestion to try
+> >edd=off. That could save users a lot of time.
 > 
-> Why not 64k?
-> 
+> The important thing is that there is a message before and after.  The 
+> rest can be dealt with by Google on in documentation.  That's what the 
 
-Because the bootloader needs some memory in the same segment that it 
-controls.  Furthermore, since there were some residual uses of the 
-0x9000 segment (now removed, but not all bootloaders could be easily 
-fixed), we were limited to about 40K for everything.
+That means every user needs to waste at least 5 minutes to google/read
+docs and be annoyed by someone's ads. Collective waste.
 
-Unfortunately we already have the problem that some bootloaders (notably 
-LOADLIN and mknbi) hardcoded an arbitrary limit which was even smaller 
-than that (about 16K, which we're already pushing up against.)
+Just adding "Try edd=off if this hangs"  is ~23 bytes  and adding
+that should be hardly a problem even in your 32k. Or perhaps if you're more
+worried about code size than grammer "edd=off when hang" @)
 
-> Ok, that's a different argument than before. Ok. Although it's
-> only a few bytes. 
-> 
-> I would lobby for any message at least contain the suggestion to try
-> edd=off. That could save users a lot of time.
+-Andi
 
-The important thing is that there is a message before and after.  The 
-rest can be dealt with by Google on in documentation.  That's what the 
-patch currently in x86setup.git does.
 
-	-hpa
