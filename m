@@ -1,63 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbXLVCnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418AbXLVDtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbXLVCnr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Dec 2007 21:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXLVCnk
+	id S1752418AbXLVDtl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Dec 2007 22:49:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbXLVDtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Dec 2007 21:43:40 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:41603 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbXLVCnk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Dec 2007 21:43:40 -0500
-Date: Sat, 22 Dec 2007 03:44:34 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-Message-ID: <20071222024434.GB6062@one.firstfloor.org>
-References: <20071221120908.GA15926@elte.hu> <Pine.LNX.4.64.0712210750510.29372@schroedinger.engr.sgi.com> <alpine.LFD.0.9999.0712210835440.21557@woody.linux-foundation.org> <Pine.LNX.4.64.0712211356220.3795@schroedinger.engr.sgi.com> <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy> <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com> <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de> <1198289982.4411.2.camel@cinder.waste.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1198289982.4411.2.camel@cinder.waste.org>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 21 Dec 2007 22:49:32 -0500
+Received: from outbound-mail-38.bluehost.com ([69.89.20.192]:39139 "HELO
+	outbound-mail-38.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751003AbXLVDtb convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Dec 2007 22:49:31 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Dec 2007 22:49:31 EST
+From: "Richard D" <richard@embunus.com>
+To: "'Siva Prasad'" <sprasad@bivio.net>,
+       "'Clemens Koller'" <clemens.koller@anagramm.de>,
+       "'David Newall'" <david@davidnewall.com>
+Cc: <linux-kernel@vger.kernel.org>
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D7011A8217@corpexc01.corp.networkrobots.com> <4761E289.9070007@davidnewall.com> <4762AC35.3010706@anagramm.de> <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF540@corpexc01.corp.networkrobots.com>
+In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF540@corpexc01.corp.networkrobots.com>
+Subject: RE: printf internals
+Date: Sat, 22 Dec 2007 09:12:43 +0530
+Message-ID: <009201c8444c$ba0d82b0$2e288810$@com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: Acg+bB2ZyI+LjZ4IQKaXKiKorA2z3gEIdW2QAG+sKOA=
+Content-Language: en-us
+X-Identified-User: {2260:host187.hostmonster.com:embunusc:embunus.com} {sentby:bopbeforesmtp 121.247.188.187 authed with embunus.com}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21, 2007 at 08:19:42PM -0600, Matt Mackall wrote:
-> 
-> On Sat, 2007-12-22 at 01:28 +0100, Andi Kleen wrote:
-> > Ingo Molnar <mingo@elte.hu> writes:
-> > 
-> > > Christoph, /proc/slabinfo is an _ABI_. You HAVE to provide it. slabtop 
-> > > relies on it, people use it every day to monitor memory consumption.
-> > 
-> > It's definitely not a stable ABI. slabtop tends to exit without any
-> > error message on any slabinfo version number increase and I've seen
-> > that happen several times in not so old kernels.
-> > 
-> > Requiring just another slabtop update isn't really a big deal.
-> 
-> Might as well mention that SLOB also doesn't provide this functionality,
-> nor would it make any sense for it to try (because there are no
-> slab-like objects to report about).
+Most likely your device nodes are missing in /dev. 
 
-% slabinfo
-Name                   Objects Objsize    Space Slabs/Part/Cpu  O/S O %Fr %Ef Flg
-...
-anon_vma                  1551      24    81.9K        20/18/2  128 0  90  45
+-----Original Message-----
+From: linux-kernel-owner@vger.kernel.org
+[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Siva Prasad
+Sent: Thursday, December 20, 2007 4:03 AM
+To: Clemens Koller; David Newall
+Cc: linux-kernel@vger.kernel.org
+Subject: RE: printf internals
 
-Seems certainly like information that slabtop could report, even if it's
-not exactly the same.
+Thank you very much for your response Clemens.
 
--Andi
+I tried strace on a regular system. It does not show which tty, etc., as it
+uses the stdout (fd = 1) and write(1, ...) to it.
+
+This is not a student project. I am trying to build my own kernel and
+ramdisk. Kernel boots fine to a point where it starts accessing ramdisk and
+executes init scripts. From there on nothing gets printed. I did some
+debugging and found that prints of user land programs are not coming to the
+serial console, while kernel prints are working fine. I found all the
+programs getting executed, by placing a printk in execve routine and
+printing the arguments.
+
+So, I wanted to trace down the path from user program to the kernel and see
+why it is not printing messages from user program. I placed a printk in
+drivers/char/tty_io.c:tty_write() and it is not getting called from my file
+system. I tried the same thing on my good system (say regular PC) and it
+works as expected.
+
+Any clues that can help debug this issue is highly appreciated.
+How can I get access to the same printf string inside kernel.
+
+Thanks
+Siva
+
+
+
+-----Original Message-----
+From: Clemens Koller [mailto:clemens.koller@anagramm.de] 
+Sent: Friday, December 14, 2007 8:16 AM
+To: David Newall
+Cc: Siva Prasad; linux-kernel@vger.kernel.org
+Subject: Re: printf internals
+
+David Newall schrieb:
+ > Siva Prasad wrote:
+ >> I am looking at how exactly does the printf in user programs succeeds in
+ >> displaying characters to the serial console.
+ >
+ > Is it a student assignment?  This is so not the right mailing list.
+
+Come on, are we playing hide and seek here?
+
+You can use strace to follow a typical hello world example and
+see what device it opens to feed the hello out.
+I.e. it can be to the current /dev/ttyX and not to /dev/console
+or if you are logged in via SSH to a machine, the device
+is again different... or if you use screen, ...
+
+Work your way from there and then use a Linux Source code
+Cross Reference (lxr, ask Google for one) and follow the code.
+
+Regards,
+-- 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
