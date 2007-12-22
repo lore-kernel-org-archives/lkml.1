@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbXLVOsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbXLVPZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266AbXLVOsa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 09:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbXLVOsV
+	id S1753225AbXLVPZQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 10:25:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbXLVPZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 09:48:21 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36092 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbXLVOsV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 09:48:21 -0500
-Date: Sat, 22 Dec 2007 06:47:19 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, torvalds@linux-foundation.org
-Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a
- driver opt-in issue
-Message-ID: <20071222064719.73fdd9a4@laptopd505.fenrus.org>
-In-Reply-To: <476D1D16.5090703@garzik.org>
-References: <20071222043139.0cd59804@laptopd505.fenrus.org>
-	<476D1D16.5090703@garzik.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 22 Dec 2007 10:25:04 -0500
+Received: from marge.padd.com ([66.127.62.138]:55616 "EHLO marge.padd.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751233AbXLVPZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 10:25:03 -0500
+X-Greylist: delayed 540 seconds by postgrey-1.27 at vger.kernel.org; Sat, 22 Dec 2007 10:25:03 EST
+Date: Sat, 22 Dec 2007 10:15:59 -0500
+From: Pete Wyckoff <pw@osc.edu>
+To: David Dillow <dave@thedillows.org>
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: list corruption on ib_srp load in v2.6.24-rc5
+Message-ID: <20071222151559.GB10085@osc.edu>
+References: <1198273973.9979.34.camel@lap75545.ornl.gov> <1198275532.9979.43.camel@lap75545.ornl.gov>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1198275532.9979.43.camel@lap75545.ornl.gov>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Dec 2007 09:20:06 -0500
-Jeff Garzik <jeff@garzik.org> wrote:
-
-> Arjan van de Ven wrote:
-> > Hi,
+dave@thedillows.org wrote on Fri, 21 Dec 2007 17:18 -0500:
+> On Fri, 2007-12-21 at 16:52 -0500, David Dillow wrote:
+> > I'm getting the following oops when doing the following commands:
 > > 
-> > Linus really wants the extended (4Kb) PCI configuration space
-> > (using MCFG acpi table etc) to be opt-in, since there's many issues
-> > with it and most drivers don't even use/need it. The idea behind
-> > opt-in is that if you don't use it, you don't get to suffer the
-> > bugs...
+> > modprobe ib_srp
+> > <add targets(s) to ib_srp using sysfs>
+> > rmmod ib_srp
+> > modprobe ib_srp
+> > <OOPS>
 > > 
-> > Booted on my 64 bit test machine; sadly it has a defunct BIOS that
-> > doesn't have a working MCFG.
-> > 
-> > 
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > Subject: Make MMCONFIG space a driver opt-in
-> > 
-> > There are many issues with using the extended PCI configuration
-> > space (CPU, Chipset and most of all BIOS bugs). This while the vast
-> > majority of drivers and devices don't even use/need to use the
-> > memory mapped access methods since they don't use the config space
-> > beyond the traditional 256 bytes.
-> > 
-> > This patch makes accessing the extended config space a driver
-> > choice, via the
-> > 
-> > pci_enable_ext_config(pdev)
+> > I'm going to try and track down how the list is getting corrupted; it
+> > looks like attribute_container_list in
+> > drivers/base/attribute_container.c is the one getting corrupted.
 > 
-> Yuck.  And, Linus is just being silly.  Wait a year then turn on 
-> MMCONFIG :)  It took PCI MSI a while to mature, but is finally
-> getting there.
+> Ok, found the culprit, now to figure out the motive and fix it.
 > 
+> ib_srp's srp_cleanup_module calls srp_release_transport(), which calls
+> transport_container_unregister() for the rport_attr_cont member of
+> struct srp_internal.
+> 
+> That last unregister call is returning -EBUSY, but it gets ignored, and
+> the list node gets erased (or just reused) when the module's text/memory
+> is free'd.
+> 
+> Now, to see if ib_srp should be waiting for everything to be destroyed
+> before calling srp_release_transport(), or if it is just not removing
+> some attributes properly.
 
-Do you hate the name or the concept? I'm certainly open for a better name.... 
+I don't see where srp_cleanup_module() is calling srp_remove_host().
+That is the likely way that transport devices should be made to go
+away.  Something on the order of srp_remove_work().
+
+Or srp_remove_one() except with a call to srp_remove_host() may be
+necessary.  In fact, maybe just adding that call will fix it, as
+ib_unregister_client should drive the remove function.  Guesses, all
+this.
+
+		-- Pete
