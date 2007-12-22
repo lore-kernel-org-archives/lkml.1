@@ -1,98 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbXLVXQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbXLVX2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbXLVXQv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 18:16:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbXLVXQn
+	id S1755428AbXLVX2n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 18:28:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbXLVX2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 18:16:43 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42280 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754166AbXLVXQm (ORCPT
+	Sat, 22 Dec 2007 18:28:37 -0500
+Received: from an-out-0708.google.com ([209.85.132.246]:8270 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754219AbXLVX2f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 18:16:42 -0500
-Subject: Re: Mysterious lockdep warning from the SCSI workqueue code
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: James Bottomley <James.Bottomley@steeleye.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200712222356.27311.rjw@sisk.pl>
-References: <1198344452.3478.9.camel@localhost.localdomain>
-	 <200712222356.27311.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sun, 23 Dec 2007 00:16:45 +0100
-Message-Id: <1198365406.30889.14.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sat, 22 Dec 2007 18:28:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gBIQyearK6aWdH3mtv2sbE74F7wkELqCODRs8JMFafrAhCGM/Gd13xCzT/7A1e9NRJXkN23gobUYiB1J/lLLpR6Ngu0vONm2zd2ZBWkRHMb2fOE29PzGZe3pAOwx4iTn8UPDqNeOzgfUA+mI/x/Q/YQcpyRwTKyb6Li7cMUKI2I=
+Message-ID: <ea9232d10712221528v30f1bdf1sc6820678670555ec@mail.gmail.com>
+Date: Sun, 23 Dec 2007 00:28:34 +0100
+From: "Karol Swietlicki" <magotari@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: slabtop replacement was Re: Major regression on hackbench with SLUB (more numbers)
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20071222194620.GA19350@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0712210750510.29372@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0712211356220.3795@schroedinger.engr.sgi.com>
+	 <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy>
+	 <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com>
+	 <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de>
+	 <20071222100326.GF26157@elte.hu>
+	 <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org>
+	 <20071222194620.GA19350@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 22/12/2007, Andi Kleen <andi@firstfloor.org> wrote:
+> A manpage for slabinfo would be useful though. Anybody
+> volunteering to write one?
+>
+> -Andi
 
-On Sat, 2007-12-22 at 23:56 +0100, Rafael J. Wysocki wrote:
-> On Saturday, 22 of December 2007, James Bottomley wrote:
-> > I've no idea why this is occurring:
-> > 
-> > WARNING: at kernel/lockdep.c:700 look_up_lock_class()
-> > Pid: 2068, comm: scsi_wq_3 Not tainted 2.6.24-rc6 #38
-> >  [<c010535a>] show_trace_log_lvl+0x1a/0x30
-> >  [<c0105ce2>] show_trace+0x12/0x20
-> >  [<c010601c>] dump_stack+0x6c/0x80
-> >  [<c014696d>] __lock_acquire+0x46d/0x10b0
-> >  [<c0147628>] lock_acquire+0x78/0xa0
-> >  [<c0136d18>] run_workqueue+0x128/0x1d0
-> >  [<c013795c>] worker_thread+0x8c/0xf0
-> >  [<c013ab32>] kthread+0x42/0x70
-> >  [<c0104f47>] kernel_thread_helper+0x7/0x10
-> >  =======================
-> > 
-> > it looks to be happening on the initial workqueue.c:run_workqueue()
-> > 
-> > 	spin_lock_irq(&cwq->lock);
-> > 
-> > It's caused by lockdep.c:look_up_lock_class()
-> > 
-> > 	WARN_ON_ONCE(class->name != lock->name);
-> > 
-> > but I'm not entirely sure what this actually means, not fully
-> > understanding lockdep classes and how we acquire them in scsi.
-> 
-> I guess Ingo and/or Peter should have a look at this.
+That would be me.
+I'm a newbie and never wrote a man page before, so it will take a few
+days, but I'm bored and out of ideas for any new code for the moment
+being. Should be fun.
 
-This makes me think of an invalid use of lockdep_set_class(). The
-typical way to trigger this is:
-
-struct lock_class_key my_keys[10];
-
-struct my_obj *create_my_obj1()
-{
-	...
-	spin_lock_init(&my_obj.lock);
-	lockdep_set_class(&my_obj.lock, my_keys + foo);
-	...
-}
-
-struct my_obj *create_my_obj2()
-{
-	...
-	spin_lock_init(&my_obj.lock);
-	lockdep_set_class(&my_obj.lock, my_keys + bar);
-	...
-}
-
-This initializes &my_obj.lock to the same class (provides foo and bar
-evaluate to the same), but give it a different name.
-
-#define lockdep_set_class(lock, key) \
-                lockdep_init_map(&(lock)->dep_map, #key, key, 0)
-
-The name is #key, so: "my_keys + foo" vs "my_keys + bar"
-
-The possible fixes are:
-  - make key identical by changing the expression
-  - use lockdep_set_class_and_name() and specify a
-    consistent name by hand.
-
-
-
+Karol Swietlicki
