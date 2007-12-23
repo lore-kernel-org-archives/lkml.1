@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbXLWP1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbXLWPeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbXLWP1a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 10:27:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbXLWP1W
+	id S1755218AbXLWPeR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 10:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbXLWPeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 10:27:22 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:47537 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752566AbXLWP1V (ORCPT
+	Sun, 23 Dec 2007 10:34:00 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:11033 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752387AbXLWPeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 10:27:21 -0500
-Date: Sun, 23 Dec 2007 16:27:20 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Al Boldi <a1426z@gawab.com>
-cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] USB Kconfig: Reorganize USB Kconfig Menu
-In-Reply-To: <Pine.LNX.4.64.0712231623060.21470@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0712231626580.21470@fbirervta.pbzchgretzou.qr>
-References: <200712231449.00862.a1426z@gawab.com>
- <Pine.LNX.4.64.0712231331270.21470@fbirervta.pbzchgretzou.qr>
- <200712231615.21003.a1426z@gawab.com> <Pine.LNX.4.64.0712231623060.21470@fbirervta.pbzchgretzou.qr>
+	Sun, 23 Dec 2007 10:34:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=iyWso7E2Zd91rHU5FEqHyqRTTmNbo37IUbqKKuNkAB7DYrE6itIOhqEQXXCuhcvU5LHKhmhmNEXDFzdVukwTO72fTRahp+HrqNrsdem9pmErqHVvOvpRTNqXYzL2Mg7Fl78tU1suwfIykcdE8wev/S65By+KQ2MLJnw3eBllFbY=
+Message-ID: <9e0cf0bf0712230733o3dfd54fcp4962ebf3f84cdff@mail.gmail.com>
+Date: Sun, 23 Dec 2007 17:33:58 +0200
+From: "Alon Bar-Lev" <alon.barlev@gmail.com>
+To: linux-mips@ftp.linux-mips.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [MIPS] MEM_SDREFCFG is not defined for Alchemy DB1550 (compile fail)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On Dec 23 2007 16:25, Jan Engelhardt wrote:
->On Dec 23 2007 16:15, Al Boldi wrote:
->>> >-menuconfig USB_SUPPORT
->>> >-	bool "USB support"
->>> >+config USB_SUPPORT
->>> >+	bool
->>> > 	depends on HAS_IOMEM
->>> > 	default y
->>> > 	---help---
->>>
->>> With this patch, is USB_SUPPORT still needed? It is not visible (anymore),
->>> always is y and no other options select/depend on it (according to
->>> Kconfig '/' function).
->>
->>Well, I left it in, because of defconfig dependencies, and HAS_IOMEM is 
->>needed for a few archs.
->>
->But I do not see any config option that depends on USB_SUPPORT.
->
-Nevermind, I just grepped for 'depends on.*USB_SUPPORT' rather than 'if
-USB_SUPPORT'.
+When I have:
+CONFIG_MIPS_DB1550
+CONFIG_SOC_AU1550
+CONFIG_SOC_AU1X00
+CONFIG_PM
+
+MEM_SDREFCFG is used at:
+arch/mips/au1000/common/power.c::pm_do_freq()
+
+While the MEM_SDREFCFG constant is declare only for CONFIG_SOC_AU1000,
+CONFIG_SOC_AU1500, CONFIG_SOC_AU1100 at:
+include/asm-mips/mach-au1x00/au1000.h
+
+Maybe MEM_SDREFCFG should be defined for CONFIG_SOC_AU1X00?
+Or there should be #ifdef for its usage in power.c?
+
+Best Regards,
+Alon Bar-Lev.
