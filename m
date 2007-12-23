@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbXLWGEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbXLWGHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbXLWGEt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 01:04:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbXLWGEm
+	id S1755679AbXLWGHy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 01:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbXLWGHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 01:04:42 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54091 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751200AbXLWGEl (ORCPT
+	Sun, 23 Dec 2007 01:07:46 -0500
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:32955 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750850AbXLWGHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 01:04:41 -0500
-Message-ID: <476DF8B2.2060608@zytor.com>
-Date: Sat, 22 Dec 2007 21:57:06 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 23 Dec 2007 01:07:45 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=eMy1iY8l+4oWAaaUoF7ZSwu3LhhiXytooYXBZAcG1FXSFf2Z97GwVZZruq90+bUXsp6forbskXrLlFHhXw4gEOk9eMu68ckBjlcP4MZA9sJIFsAeSqYAokc0BAb1XcrinrE9qhAXhkFSjtEybByV5jcYCQfvGtbQonIjOPjshuI=  ;
+X-YMail-OSG: BbRDrJsVM1nR4Oyz9dt3Wu6.vSbmVjXrs56P.._GLsMnO.hAbo1FVS_CA.q2UCLbDcrTvtqGng--
+From: David Brownell <david-b@pacbell.net>
+To: Al Boldi <a1426z@gawab.com>
+Subject: Re: [RFC] USB Kconfig: Declutter USB Kconfig Menu
+Date: Sat, 22 Dec 2007 22:07:43 -0800
+User-Agent: KMail/1.9.6
+Cc: jengelh@computergmbh.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, greg@kroah.com
+References: <200712211630.03426.a1426z@gawab.com> <20071222072208.A0960230DE8@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200712221649.55831.a1426z@gawab.com>
+In-Reply-To: <200712221649.55831.a1426z@gawab.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a driver
- opt-in issue
-References: <20071222043139.0cd59804@laptopd505.fenrus.org> <476D1D16.5090703@garzik.org> <20071222064719.73fdd9a4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org> <476DB95F.3090801@garzik.org> <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org> <476DE07A.4000204@garzik.org>
-In-Reply-To: <476DE07A.4000204@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200712222207.43483.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
+On Saturday 22 December 2007, Al Boldi wrote:
+> Provided there is agreement, and we go with < >, it would mean a slight 
+> change to Host side USB, like this (note new USB Core Config sub-menu):
 > 
-> 2) It is legal for PCI-Express to put capabilities anywhere in PCI 
-> config space, including extended config space.  (I hope our PCI cap 
-> walking code checks for overruns...)
+>       --- Support for Host-side USB
+>       [ ]   USB Core Config  --->
+
+Maybe.  Let's see what you turn up.
+
+>       [ ]   USB Host Controller Drivers  --->
+
+Having at least one HCD is *NOT* optional.  ;)
+
+And for that matter, I sometimes look at HCDs as part of the core.
+The layering there is fuzzier than usual, though it's getting better
+now that we've started to phase out the old Linux 2.2-ish interface.
+
+
+>       ---   NOTE: USB_STORAGE needs SCSI, and 'SCSI disk support' may
+>       ---   also be needed; see USB_STORAGE Help for more information
+>       < >   USB Mass Storage support  --->
+>       [ ]   The shared table of common (or usual) storage devices
+>       [ ]   USB Monitor
+>       < >   USS720 parport driver
+>       < >   USB Serial Converter support  --->
+>       < >   USB DSL modem support  --->
+>       [ ]   USB Device Class drivers  --->
+>       [ ]   USB Imaging devices  --->
+>       [ ]   USB Miscellaneous drivers  --->
 > 
 
-Uh, not really.  The classical capability format only has 8-bit 
-addresses, and the spec requires that all extended config space that is 
-used be claimed by extended capabilities -- a different format chain.
 
-	-hpa
