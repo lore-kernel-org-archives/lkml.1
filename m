@@ -1,117 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbXLWLOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbXLWLTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884AbXLWLOy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 06:14:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbXLWLOp
+	id S1755378AbXLWLTS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 06:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXLWLTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 06:14:45 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:18034 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750850AbXLWLOn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 06:14:43 -0500
-Message-ID: <476E41D1.50606@panasas.com>
-Date: Sun, 23 Dec 2007 13:09:05 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 23 Dec 2007 06:19:09 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51400 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751355AbXLWLTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 06:19:08 -0500
+Date: Sun, 23 Dec 2007 12:17:52 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: David Newall <david@davidnewall.com>
+Cc: Richard D <richard@embunus.com>,
+       "'Matthew Bloch'" <matthew@bytemark.co.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Testing RAM from userspace / question about memmap= arguments
+Message-ID: <20071223111752.GA2340@elf.ucw.cz>
+References: <fk8umh$n7o$1@ger.gmane.org> <20071221125812.GA4052@ucw.cz> <000001c84472$74b245e0$5e16d1a0$@com> <20071222134612.GA4098@ucw.cz> <476D35F6.90900@davidnewall.com> <20071222184759.GB31809@elf.ucw.cz> <476D756A.6060507@davidnewall.com> <20071222205432.GA2221@elf.ucw.cz> <476E0FDF.9030407@davidnewall.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       james.bottomley@steeleye.com
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       rdreier@cisco.com, linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk,
-       davem@davemloft.net, ralf@linux-mips.org,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 2/2] scsi: Use new __dma_buffer to align sense buffer
- in scsi_cmnd
-References: <20071221023011.4C4BADDDFA@ozlabs.org>
-In-Reply-To: <20071221023011.4C4BADDDFA@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Dec 2007 11:09:09.0285 (UTC) FILETIME=[3D95B550:01C84554]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <476E0FDF.9030407@davidnewall.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 21 2007 at 4:30 +0200, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> The sense buffer ins scsi_cmnd can nowadays be DMA'ed into directly
-> by some low level drivers (that typically happens with USB mass
-> storage).
-> 
-> This is a problem on non cache coherent architectures such as
-> embedded PowerPCs where the sense buffer can share cache lines with
-> other structure members, which leads to various forms of corruption.
-> 
-> This uses the newly defined __dma_buffer annotation to enforce that
-> on such platforms, the sense_buffer is contained within its own
-> cache line. This has no effect on cache coherent architectures.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
->  include/scsi/scsi_cmnd.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-merge.orig/include/scsi/scsi_cmnd.h	2007-12-21 13:07:14.000000000 +1100
-> +++ linux-merge/include/scsi/scsi_cmnd.h	2007-12-21 13:07:29.000000000 +1100
-> @@ -88,7 +88,7 @@ struct scsi_cmnd {
->  				   	   working on */
->  
->  #define SCSI_SENSE_BUFFERSIZE 	96
-> -	unsigned char sense_buffer[SCSI_SENSE_BUFFERSIZE];
-> +	unsigned char sense_buffer[SCSI_SENSE_BUFFERSIZE] __dma_buffer;
->  				/* obtained by REQUEST SENSE when
->  				 * CHECK CONDITION is received on original
->  				 * command (auto-sense) */
+On Sun 2007-12-23 18:05:59, David Newall wrote:
+> Pavel Machek wrote:
+>> On Sun 2007-12-23 07:06:58, David Newall wrote:
+>>   
+>>> It's kind of hard to run anything over SSH if it has to be run before 
+>>> userspace is up.  But the kernel can collect results from a modified 
+>>> memtest, after it chains back.
+>>>     
+>>
+>> memtest can be ran from userspace, that's the point.
+>>   
+>
+> I'm not sure I believe that.  You need to tinker with hardware tables 
+> before you know what physical RAM is being used.  Sequential virtual
 
-This has the potential of leaving a big fat ugly hole in the middle of 
-scsi_cmnd. I would suggest of *just* moving the sense_buffer array to be
-the *first member* of struct scsi_cmnd. The command itself is already cache
-aligned, allocated by the proper flags to it's slab. And put a fat comment
-near it's definition.
+No, I can just use /dev/mem. (After passing mem=XXX exactmap to kernel
+so that I know what I may play with).
 
-This is until a proper fix is sent. I have in my Q a proposition for a 
-more prominent solution, which I will send next month. Do to short comings
-in the sense handling and optimizations, but should definitely cover this
-problem.
+>> Yes, that's what CPU microcode update is for. And I want to test my
+>> RAM with up-to-date microcode.
+>>   
+>
+> Don't microcode updates fix CPU bugs?  That's not fixing faulty RAM.
 
-The code should have time to be discussed and tested, so it is only 2.6.26
-material. For the duration of the 2.6.25 kernel we can live with a reorder
-of scsi_cmnd members, if it solves such a grave bug for some ARCHs.
+L1/L2 cache is part of memory subsystem.
 
-Boaz
-----
-[RFD below]
-My proposed solution will be has follows:
+> I suppose a CPU retains microcode updates, once loaded, until power-down or 
+> some hard reboot that you surely can avoid.  If it does happen that
+> you
 
- 1. Since the scsi protocol mandates an immediate REQUEST_SENSE after an error
-    in effect the Q is frozen until the REQUEST_SENSE command returns.
-
- 2. The scsi-ml needs the sense buffer for its normal operation, independent 
-    from the ULD's request of the sence_buffer or not at request->sense. But
-    in effect, 90% of all scsi-requests come with ULD's allocated buffer for
-    sense, that is copied to, on command completion.
-
- 3. 99% of all commands complete successfully, so if an optimization is 
-    proposed for the successful case, sacrificing a few cycles for the error
-    case than thats a good thing.
-
- My suggestion is to have a per Q, driver-overridable, sense buffer that is 
- DMAed/written to by drivers. At the end of the REQUEST_SENSE command one
- of 2 things will be done. Either copy the sense to the ULD's supplied buffer,
- or if not available, allocate one from a dedicated mem_cache pool.
- 
- So we are completely saving 92 bytes from scsi_cmnd by replacing the buffer
- with a pointer. We can always read the sense into a per Q buffer. And 10% of
- %1 of the times we will need to allocate a sense buffer from a dedicated mem_cache
- I would say thats a nice optimization.
-
- The changes to scsi_error/scsi_cmnd and friends, is pretty strait forward. But
- it depends on a conversion of 4/5 drivers to the new scsi_eh API for 
- REQUEST_SENSE. I have only converted these drivers that interfered with the accessors
- effort + 1 other places. But there are a few more places that are not converted.
- Once done. The implementation can easily change with no affect on drivers.
-
- The reason I've started with this work is because the SCSI standard permits up
- to 260 bytes of sense, which you guest right, is needed by the OSD command set.
-
-Boaz
+If CPU retains microcode after reset, then you are right. I'm not
+sure.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
