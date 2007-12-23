@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbXLWUOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbXLWURV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757325AbXLWUOg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 15:14:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbXLWUO0
+	id S1757395AbXLWURV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 15:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbXLWURO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 15:14:26 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44220 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751544AbXLWUOZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 15:14:25 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <476EC18B.6080808@s5r6.in-berlin.de>
-Date: Sun, 23 Dec 2007 21:14:03 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
+	Sun, 23 Dec 2007 15:17:14 -0500
+Received: from mailbox2.myri.com ([64.172.73.26]:1943 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754919AbXLWURN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 15:17:13 -0500
+Message-ID: <476EC218.6030000@myri.com>
+Date: Sun, 23 Dec 2007 15:16:24 -0500
+From: Loic Prylli <loic@myri.com>
+User-Agent: Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Dieter Ries <clip3@gmx.de>
-CC: "Robert P. J. Day" <rpjday@crashcourse.ca>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Git Mailing List <git@vger.kernel.org>
-Subject: Re: Updated Kernel Hacker's guide to git
-References: <200612241807.kBOI746w008739@laptop13.inf.utfsm.cl> <476E42BF.1010300@garzik.org> <alpine.LFD.0.9999.0712230701520.14863@localhost.localdomain> <476E50DC.1040701@garzik.org> <alpine.LFD.0.9999.0712230715490.15596@localhost.localdomain> <476E5CFC.5070301@gmx.de>
-In-Reply-To: <476E5CFC.5070301@gmx.de>
-X-Enigmail-Version: 0.95.3
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Tony Camuso <tcamuso@redhat.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
+References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <20071220173528.GE29690@parisc-linux.org> <476AAE99.7090301@redhat.com> <20071220181603.GF29690@parisc-linux.org>
+In-Reply-To: <20071220181603.GF29690@parisc-linux.org>
+X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dieter Ries wrote:
-> Robert P. J. Day schrieb:
->> when i got started with git, what i really wanted
->> was a list of what i (as a simple, non-developer user) could do once i
->> cloned a repository.
+
+
+On 12/20/2007 1:16 PM, Matthew Wilcox wrote:
+> Oh, that's the same bug others (including me) have been complaining
+> about.
+>
+> http://marc.info/?l=linux-kernel&m=118809338631160&w=2
+>
+>   
+>> It hangs in exactly the same place every time.
 >>
->> to that end, i put together my own little reference list of git
->> commands.  for example, i collected ways to examine my repository --
->> git commands like branch, tag, log/shortlog, what-changed, show, grep,
->> blame, that sort of thing.  exactly the kind of stuff a new user might
->> want to know about, even without the ability to change anything.
-> 
-> Could you perhaps publish your reference list as kind of a christmas
-> gift to all basic users like me?
+>> I am surmising that the write to that BAR is causing a MCE.
+>>     
+>
+> Bad deduction.  What's happening is that the write to the BAR is causing
+> it to overlap the decode for mmconfig space.  So the mmconfig write to
+> set the BAR back never gets through.
+>
+> I have a different idea to fix this problem.  Instead of writing
+> 0xffffffff, we could look for an unused bit of space in the E820 map and
+> write, say, 0xdfffffff to the low 32-bits of a BAR.  Then it wouldn't
+> overlap, and we could find its size using MMCONFIG.
+>
+> Does anyone know how Windows handles these machines? 
 
-Here are three out of four things which I do frequently with git repos:
-I look at
 
-  - commits and blobs in other people's trees with gitweb,
 
-  - commits in a local tree with gitk,
+I just realized one thing: the bar sizing code in pci_read_bases() (that
+writes 0xffffffff in the bars) does not seem to disable the
+PCI_COMMAND_MEM/PCI_COMMAND_IO bits in the cmd register before
+manipulating the BARs. And it seems nobody else ensures they are
+disabled at this point either (or am I missing something?).
 
-  - specific changes to source code with qgit, using it as "git blame"
-    GUI.
 
-(The fourth thing is feeding a driver subsystem git tree at kernel.org
-using a minimum number of git commands.  Everything else which I do with
-git I do so infrequently that I have to reread manuals all the time.)
--- 
-Stefan Richter
--=====-=-=== ==-- =-===
-http://arcgraph.de/sr/
+Touching the bars while they are enabled would be buggy behaviour from
+our part, and something trivial to fix. And it might well fix that
+particular problem (it's fair play from the machine to crash if we
+create a decoding conflict, simply disabling the cmd bits in
+pci_read_bases() should remove that conflict).
+
+FWIW, to partially answer your last question, Windows does disable
+mem-space and/or IO-space when sizing the bars of a device (I have some
+traces of configuration-space-access taken on a window machine for one
+of the PCI busses).
+
+
+
+Loic
+
+
+
+
+
+
