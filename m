@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbXLWQcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbXLWQru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755527AbXLWQcj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 11:32:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbXLWQca
+	id S1755416AbXLWQru (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 11:47:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXLWQrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 11:32:30 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:3925 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752864AbXLWQca (ORCPT
+	Sun, 23 Dec 2007 11:47:42 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:24389 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752615AbXLWQrl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 11:32:30 -0500
-Date: Sun, 23 Dec 2007 11:32:28 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Markus Rechberger <mrechberger@gmail.com>
-cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: [GIT PATCH] USB fixes for 2.6.24-rc5
-In-Reply-To: <d9def9db0712230150h8d16888g9f36d4731ef8b192@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0712231132020.20892-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 23 Dec 2007 11:47:41 -0500
+Subject: Re: [PATCH 4/4] usb: libusual: locking cleanup
+From: Daniel Walker <dwalker@mvista.com>
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: akpm@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       linux@bohmer.net, jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
+       kjwinchester@gmail.com
+In-Reply-To: <20071222233733.3a4e94b0.zaitcev@redhat.com>
+References: <20071221205854.408865412@mvista.com>
+	 <20071221205859.316759032@mvista.com>
+	 <20071221222428.a75a5a34.zaitcev@redhat.com>
+	 <1198342910.2742.14.camel@imap.mvista.com>
+	 <20071222233733.3a4e94b0.zaitcev@redhat.com>
+Content-Type: text/plain
+Date: Sun, 23 Dec 2007 08:46:37 -0800
+Message-Id: <1198428397.2742.20.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Dec 2007, Markus Rechberger wrote:
-
-> Hi,
+On Sat, 2007-12-22 at 23:37 -0800, Pete Zaitcev wrote:
+> On Sat, 22 Dec 2007 09:01:50 -0800, Daniel Walker <dwalker@mvista.com> wrote:
 > 
-> did anyone already take care about:
-> http://www.mail-archive.com/linux-usb-devel@lists.sourceforge.net/msg55641.html
+> > Then in usu_probe_thread() your basically stopping it at the start of
+> > the function with a down(), and the up() is just ancillary .. So you
+> > could easily move the up() further down in the function and still have
+> > the same level of exclusion.. 
 > 
-> the fix seems to paper the issue although it happened with other
-> people too now, so I wonder if there's any progress in that area?
+> The unfortunate complication here is request_module. I didn't want to
+> keep a semaphore locked across it, in case child waits for something.
+> I wonder if there may be some deadlock that we cannot foresee.
+> But I guess it won't hurt to try.
 
-http://marc.info/?l=linux-usb&m=119819422730408&w=2
+I noticed you also have a spinlock held in usu_probe_thread(), the
+usu_lock.. That spinlock would preclude anything inside request_module()
+from sleeping..
 
-Alan Stern
+One thing that has bothered me is that I don't see a reason why this
+couldn't become a complete, yet you have a comment which says that it
+can't be a complete.. I honestly didn't understand the comment.. I would
+imagine that you tried a complete , and it didn't work?
+
+> I tested the patch and it seems to work ok.
+
+Great, thanks ..
+
+Daniel
 
