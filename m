@@ -1,101 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbXLWNzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbXLWOOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753530AbXLWNzc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 08:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbXLWNzY
+	id S1753879AbXLWOOO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 09:14:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbXLWON7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 08:55:24 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:40483 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbXLWNzX (ORCPT
+	Sun, 23 Dec 2007 09:13:59 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:42744 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbXLWON6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 08:55:23 -0500
-Message-ID: <476E68C7.6090901@linux.vnet.ibm.com>
-Date: Sun, 23 Dec 2007 19:25:19 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
+	Sun, 23 Dec 2007 09:13:58 -0500
+Date: Sun, 23 Dec 2007 15:15:00 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>, Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        LKML <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC] [PATCH] Memory controller remove control_type feature
-References: <20071220185358.3248.25416.sendpatchset@balbir-laptop> <20071221225941.98b7362d.akpm@linux-foundation.org> <476CBD9B.9070203@linux.vnet.ibm.com> <Pine.LNX.4.64.0712221140330.7460@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0712221140330.7460@blonde.wat.veritas.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+Message-ID: <20071223141500.GB6430@one.firstfloor.org>
+References: <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com> <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de> <20071222100326.GF26157@elte.hu> <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org> <20071222192550.GD28891@thunk.org> <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org> <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com> <20071223051241.GA4449@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071223051241.GA4449@1wt.eu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Sat, 22 Dec 2007, Balbir Singh wrote:
->> Andrew Morton wrote:
->>> On Fri, 21 Dec 2007 00:23:58 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>>
->>>> Based on the discussion at http://lkml.org/lkml/2007/12/20/383, it was
->>>> felt that control_type might not be a good thing to implement right away.
->>>> We can add this flexibility at a later point when required.
-> 
-> Not studied closely, but your patch looks both too much and too
-> little to me, Balbir.
-> 
-> Too much in that it appears to bundle in some significant little
-> locking changes without any mention in the commment.
-> 
+> Same here. In fact, I've always considered that procfs was for
+> humans while sysfs was for tools. sysfs reminds me too much the
+> unexploitable /devices in Solaris. With the proper tools, I think
+> we can do a lot with it, but it's not as intuitive to find the
+> proper tools as it was to do "ls" followed by "cat" in /proc.
 
-I can create and send across a new changelog, but what it does is make
-the check for !pc under the page_group lock (lock_page_group()). I sent
-out a pointer to the URL of our discussion. Yes, I should have been more
-willing to write a more detailed changelog.
+find /sys/... -type f | while read i ; do echo "$i: $(<$i)" ; done
 
-> Too little in that it leaves behind lots of junk relating to the
-> different control_types: the enums, the different kinds of call
-> that needn't now be different, no change to the various callsites.
-> Needs more cleanup, I'd say.  Of course, that could be yet another
-> separate patch.
-> 
+tends to work reasonably well for a quick overview, but yes
+cat was nicer for humans.
 
-Yes, my dilemma, that still remains (Andrew very aptly noted) is that we
-have a bunch of patches adding in the feature and then a patch removing
-it. I have noted your point, which is correct about cleaning up unused
-parameters.
-
->>> Gee the memory controller patchset is turning into a mess.
-> 
-> A mess indeed.
-> 
->> Yes, the patchset has expanded and we have several useful bug fixes and
->> cleanups and some new features.
-> 
-> Hah, a career in politics beckons ;)
-> 
->>> Hopefully it'll look a bit better once I do a big patch-folding but we
->>> still have patches interesecting everywhere and now we have patches which
->>> add a feature and later ones which take it away again.
->>>
->> I think folding will help. I understand your concern w.r.t getting the
->> correct set of patches with a good changelog.
->>
->>> But I don't think it's worth the time and risk of a huge
->>> rip-up-and-refactor.
->>>
->> I agree, given the proximity of the new merge window for 2.6.25.  We
->> could review the patches after folding them and see how to consolidate
->> further in case the patches continue to look messy.
-> 
-> Personally, I think it could benefit a lot from a rip-up-and-refactor.
-> But if we're rushing headlong for 2.6.25, yes, I agree it's too late.
-> And I'm afraid it's not something I can volunteer for at this time.
-> 
-> Hugh
-
-I want to spend as much time as possible testing the memory controller.
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+-Andi
