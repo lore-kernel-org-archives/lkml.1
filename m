@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbXLWPJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbXLWPRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759997AbXLWPJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 10:09:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbXLWOwh
+	id S1756832AbXLWPRV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 10:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbXLWPRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 09:52:37 -0500
-Received: from il.qumranet.com ([82.166.9.18]:35915 "EHLO il.qumranet.com"
+	Sun, 23 Dec 2007 10:17:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34841 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754620AbXLWOvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 09:51:46 -0500
-From: Avi Kivity <avi@qumranet.com>
-To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Cc: Laurent Vivier <Laurent.Vivier@bull.net>
-Subject: [PATCH 16/50] KVM: Purify x86_decode_insn() error case management
-Date: Sun, 23 Dec 2007 16:51:01 +0200
-Message-Id: <1198421495-31481-17-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1198421495-31481-1-git-send-email-avi@qumranet.com>
-References: <1198421495-31481-1-git-send-email-avi@qumranet.com>
+	id S1751843AbXLWPRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 10:17:10 -0500
+Date: Sun, 23 Dec 2007 16:16:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [BUG 2.6.24-rc6-mm1] BUG() at check_irqs_on() in fs/buffer.c .
+Message-ID: <20071223151656.GA18738@elte.hu>
+References: <200712232212.GII90159.tFFVSOLFJHQOOM@I-love.SAKURA.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712232212.GII90159.tFFVSOLFJHQOOM@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Laurent Vivier <Laurent.Vivier@bull.net>
 
-The only valid case is on protected page access, other cases are errors.
+* Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> wrote:
 
-Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
+> Hello.
+> 
+> I encountered a BUG().
+> I didn't encounter this bug for 2.6.24-rc5-mm1 .
+> I guess this bug was introduced between 2.6.24-rc5-mm1 and 2.6.24-rc6-mm1 .
+
+does the patch below help?
+
+	Ingo
+
 ---
- drivers/kvm/kvm_main.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
+ include/asm-x86/desc.h |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index b10fd7e..f7566b9 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -1251,7 +1251,7 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
- 			u16 error_code,
- 			int no_decode)
+Index: linux/include/asm-x86/desc.h
+===================================================================
+--- linux.orig/include/asm-x86/desc.h
++++ linux/include/asm-x86/desc.h
+@@ -328,7 +328,11 @@ static inline void set_trap_gate(unsigne
+ static inline void set_system_gate(unsigned int n, void *addr)
  {
--	int r = 0;
-+	int r;
+ 	BUG_ON((unsigned)n > 0xFF);
++#ifdef CONFIG_X86_32
++	_set_gate(n, GATE_TRAP, addr, 0x3, 0, __KERNEL_CS);
++#else
+ 	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS);
++#endif
+ }
  
- 	vcpu->mmio_fault_cr2 = cr2;
- 	kvm_x86_ops->cache_regs(vcpu);
-@@ -1294,10 +1294,14 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
- 					get_segment_base(vcpu, VCPU_SREG_FS);
- 
- 		r = x86_decode_insn(&vcpu->emulate_ctxt, &emulate_ops);
-+		if (r)  {
-+			if (kvm_mmu_unprotect_page_virt(vcpu, cr2))
-+				return EMULATE_DONE;
-+			return EMULATE_FAIL;
-+		}
- 	}
- 
--	if (r == 0)
--		r = x86_emulate_insn(&vcpu->emulate_ctxt, &emulate_ops);
-+	r = x86_emulate_insn(&vcpu->emulate_ctxt, &emulate_ops);
- 
- 	if (vcpu->pio.string)
- 		return EMULATE_DO_MMIO;
--- 
-1.5.3.7
-
+ static inline void set_task_gate(unsigned int n, unsigned int gdt_entry)
