@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbXLWWcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbXLWWfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbXLWWcF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 17:32:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbXLWWbz
+	id S1756012AbXLWWfT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 17:35:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbXLWWfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 17:31:55 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:52432 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbXLWWby (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 17:31:54 -0500
-Date: Mon, 24 Dec 2007 01:32:27 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Martin Mares <mj@ucw.cz>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a
-	driver opt-in issue
-Message-ID: <20071223223227.GA30643@jurassic.park.msu.ru>
-References: <20071222064719.73fdd9a4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org> <476DB95F.3090801@garzik.org> <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org> <476DDFEE.3010009@garzik.org> <alpine.LFD.0.9999.0712222034150.21557@woody.linux-foundation.org> <476DE98F.2010009@garzik.org> <alpine.LFD.0.9999.0712222058160.21557@woody.linux-foundation.org> <1198444150.6686.17.camel@pasglop> <mj+md-20071223.211353.32429.nikam@ucw.cz>
+	Sun, 23 Dec 2007 17:35:08 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56785 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751843AbXLWWfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 17:35:05 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc6-mm1: suspend broken on HP nx6325 due to cpufreq changes
+Date: Sun, 23 Dec 2007 23:54:40 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>
+References: <20071222233056.d652743e.akpm@linux-foundation.org>
+In-Reply-To: <20071222233056.d652743e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <mj+md-20071223.211353.32429.nikam@ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200712232354.40814.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 23, 2007 at 10:15:10PM +0100, Martin Mares wrote:
-> >  - During that probe, you set a flag if any device has capabilities that
-> > extend beyond 0xff.
+On Sunday, 23 of December 2007, Andrew Morton wrote:
 > 
-> Can this work?  The extended capabilities are not linked to the normal
-> ones in any way.
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/
+> 
+> - This kernel doesn't work on i386!
+> 
+>   It oopses late in boot due to an unrevertable change (e3c1b141) in git-x86
+>   which I stared at for a while then I ran out of time and gave up.
+> 
+>   I would have just abandoned this release until it was fixed but I'll be
+>   largely offline for ten days starting tomorrow.
+> 
+>   The culprits have been notified and hopefully we'll have a patch for
+>   hot-fixes/ tomorrow.
+> 
+>   x86_64 and powerpc work OK though.
+> 
+> - git-block is dropped due to more conflicts that I'm prepared to repair
+>   with git-scsi-misc
+> 
+> - git-perfmon is dropped due to conflicts with git-x86
+> 
+> - git-kgdb is dropped due to conflicts with git-x86
+> 
+> - git-newsetup is dropped due to conflicts with git-x86
+> 
+> - Andi's x86 quilt tree is dropped due to conflicts with git-x86
+> 
+> - Someone broke suspend-to-RAM on the t61p again.  It just instantly resumes
+>   itself.
 
-Good point.
+Suspend is also broken on my HP nx6325 (hangs hard in the last phase of
+suspend) and git-cpufreq.patch is responsible for that (as shown by bisection).
 
-OTOH, we *do* have a flag for the extended capabilities - dev->cfg_size.
-Obviously, the pci probe *without* mmconfig will set it to 256 for *all*
-devices.
-So Linus' idea of enabling mmconfig per-device makes a lot of sense in the
-end - if mmconfig works, it just sets dev->cfg_size to 4096.
-Without bloating the struct pci_dev or screwing up innocent arches...
+Reverting git-cpufreq.patch makes suspend work again, although it still is a
+bit flaky (it takes well more than 5 seconds to suspend and the sound adapter
+doesn't work right after the resume, but it starts to work again about 10s
+later).
 
-Ivan.
+Thanks,
+Rafael
