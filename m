@@ -1,51 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbXLWNA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbXLWNFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753468AbXLWNA6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 08:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbXLWNAt
+	id S1754006AbXLWNFW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 08:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXLWNFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 08:00:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45998 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750850AbXLWNAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 08:00:48 -0500
-Date: Sun, 23 Dec 2007 14:00:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc6-mm1
-Message-ID: <20071223130029.GA6815@elte.hu>
-References: <20071222233056.d652743e.akpm@linux-foundation.org> <200712231335.58939.rjw@sisk.pl>
+	Sun, 23 Dec 2007 08:05:07 -0500
+Received: from mail.gmx.net ([213.165.64.20]:55324 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752067AbXLWNFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 08:05:04 -0500
+X-Authenticated: #40245974
+X-Provags-ID: V01U2FsdGVkX19cNHNMdW9cnFiSsQ8pSoSn8SX4lrl+qgLc9K7uA2
+	4mXmm+12cg49ew
+Message-ID: <476E5CFC.5070301@gmx.de>
+Date: Sun, 23 Dec 2007 14:05:00 +0100
+From: Dieter Ries <clip3@gmx.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071126)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200712231335.58939.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+CC: Jeff Garzik <jeff@garzik.org>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Git Mailing List <git@vger.kernel.org>
+Subject: Re: Updated Kernel Hacker's guide to git
+References: <200612241807.kBOI746w008739@laptop13.inf.utfsm.cl> <476E42BF.1010300@garzik.org> <alpine.LFD.0.9999.0712230701520.14863@localhost.localdomain> <476E50DC.1040701@garzik.org> <alpine.LFD.0.9999.0712230715490.15596@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0712230715490.15596@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> Well it doesn't build on x86-64 for me:
+Robert P. J. Day schrieb:
+> On Sun, 23 Dec 2007, Jeff Garzik wrote:
 > 
->   CHK     include/linux/compile.h
->   CC      arch/x86/ia32/../../../fs/compat_binfmt_elf.o
-> Assembler messages:
-> Fatal error: can't create arch/x86/ia32/../../../fs/.tmp_compat_binfmt_elf.o: No such file or directory
-> make[2]: *** [arch/x86/ia32/../../../fs/compat_binfmt_elf.o] Error 2
+>> Robert P. J. Day wrote:
+>>> On Sun, 23 Dec 2007, Jeff Garzik wrote:
+>>>
+>>>> Another year, another update!  :)
+>>>>
+>>>> The kernel hacker's guide to git has received some updates:
+>>>>
+>>>> 	http://linux.yyz.us/git-howto.html
+>>>>
+>>>> This includes all the input sent to me in the past several months,
+>>>> as well as a few new tips and tricks I use on a regular basis.
+>>>>
+>>>> In general, this document is designed to be a quick-start cookbook,
+>>>> and not a comprehensive introduction.
+>>> there's one issue i have with this document, and that's that i wish it
+>>> more carefully distinguished between regular git "user" tasks, and git
+>>> "developer" tasks.
+>>>
+>>> i may be mistaken, but it would seem that a lot of folks are going to
+>>> be what i call basic users, who only want to update their git tree,
+>>> check the logs, check the status and so on.  and if they start to get
+>>> ambitious, they might make some changes to the tree, do a diff, and
+>>> submit a patch.  but in the beginning, they won't be making commits or
+>>> switching branches, etc.
+>>>
+>>> in short, i can see the value of something like a "getting started
+>>> with git as a basic user" tutorial.  does such a thing exist?
+>> hmmm.  There's the tutorial linked at the bottom of the page, which
+>> in turn links to
+>> http://www.kernel.org/pub/software/scm/git/docs/everyday.html
+>>
+>> git is a developer's tool, so I sorta targetted that audience.  I
+>> definitely agree that is not only git audience...
 > 
-> I will post the .config if anyone is interested.
+> just to be clear, i'm not complaining about the quality of the
+> document above, but when i got started with git, what i really wanted
+> was a list of what i (as a simple, non-developer user) could do once i
+> cloned a repository.
+> 
+> to that end, i put together my own little reference list of git
+> commands.  for example, i collected ways to examine my repository --
+> git commands like branch, tag, log/shortlog, what-changed, show, grep,
+> blame, that sort of thing.  exactly the kind of stuff a new user might
+> want to know about, even without the ability to change anything.
 
-yes, please send the .config.
+Could you perhaps publish your reference list as kind of a christmas
+gift to all basic users like me?
 
-	Ingo
+
+cu
+Dieter
+
+ps.: sorry for sending this twice, messed up recipients.
+> 
+> just my $0.02.
+> 
+> rday
+> --
+> 
+> ========================================================================
+> Robert P. J. Day
+> Linux Consulting, Training and Annoying Kernel Pedantry
+> Waterloo, Ontario, CANADA
+> 
+> http://crashcourse.ca
+> ========================================================================
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
