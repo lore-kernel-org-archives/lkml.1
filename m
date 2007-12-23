@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbXLWPIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760202AbXLWPJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756735AbXLWPIr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 10:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbXLWOwf
+	id S1760202AbXLWPJI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 10:09:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbXLWOwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 09:52:35 -0500
-Received: from il.qumranet.com ([82.166.9.18]:35898 "EHLO il.qumranet.com"
+	Sun, 23 Dec 2007 09:52:36 -0500
+Received: from il.qumranet.com ([82.166.9.18]:35901 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754431AbXLWOvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754602AbXLWOvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 23 Dec 2007 09:51:46 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Cc: Laurent Vivier <Laurent.Vivier@bull.net>
-Subject: [PATCH 39/50] KVM: Add some \n in ioapic_debug()
-Date: Sun, 23 Dec 2007 16:51:24 +0200
-Message-Id: <1198421495-31481-40-git-send-email-avi@qumranet.com>
+Subject: [PATCH 40/50] KVM: Move apic timer interrupt backlog processing to common code
+Date: Sun, 23 Dec 2007 16:51:25 +0200
+Message-Id: <1198421495-31481-41-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1198421495-31481-1-git-send-email-avi@qumranet.com>
 References: <1198421495-31481-1-git-send-email-avi@qumranet.com>
@@ -22,113 +21,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Laurent Vivier <Laurent.Vivier@bull.net>
+Beside the obvious goodness of making code more common, this prevents
+a livelock with the next patch which moves interrupt injection out of the
+critical section.
 
-Add new-line at end of debug strings.
-
-Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/ioapic.c |   25 ++++++++++++++-----------
- 1 files changed, 14 insertions(+), 11 deletions(-)
+ drivers/kvm/kvm_main.c |    2 ++
+ drivers/kvm/svm.c      |    1 -
+ drivers/kvm/vmx.c      |    1 -
+ 3 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/kvm/ioapic.c b/drivers/kvm/ioapic.c
-index c7992e6..8503d99 100644
---- a/drivers/kvm/ioapic.c
-+++ b/drivers/kvm/ioapic.c
-@@ -40,8 +40,11 @@
- #include <asm/apicdef.h>
- #include <asm/io_apic.h>
- #include "irq.h"
--/* #define ioapic_debug(fmt,arg...) printk(KERN_WARNING fmt,##arg) */
-+#if 0
-+#define ioapic_debug(fmt,arg...) printk(KERN_WARNING fmt,##arg)
-+#else
- #define ioapic_debug(fmt, arg...)
-+#endif
- static void ioapic_deliver(struct kvm_ioapic *vioapic, int irq);
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index 03d6069..c94d4df 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -2144,6 +2144,8 @@ again:
+ 	if (unlikely(r))
+ 		goto out;
  
- static unsigned long ioapic_read_indirect(struct kvm_ioapic *ioapic,
-@@ -113,7 +116,7 @@ static void ioapic_write_indirect(struct kvm_ioapic *ioapic, u32 val)
- 	default:
- 		index = (ioapic->ioregsel - 0x10) >> 1;
++	kvm_inject_pending_timer_irqs(vcpu);
++
+ 	preempt_disable();
  
--		ioapic_debug("change redir index %x val %x", index, val);
-+		ioapic_debug("change redir index %x val %x\n", index, val);
- 		if (index >= IOAPIC_NUM_PINS)
- 			return;
- 		if (ioapic->ioregsel & 1) {
-@@ -134,7 +137,7 @@ static void ioapic_inj_irq(struct kvm_ioapic *ioapic,
- 			   struct kvm_lapic *target,
- 			   u8 vector, u8 trig_mode, u8 delivery_mode)
- {
--	ioapic_debug("irq %d trig %d deliv %d", vector, trig_mode,
-+	ioapic_debug("irq %d trig %d deliv %d\n", vector, trig_mode,
- 		     delivery_mode);
+ 	kvm_x86_ops->prepare_guest_switch(vcpu);
+diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
+index 746a377..4ff2922 100644
+--- a/drivers/kvm/svm.c
++++ b/drivers/kvm/svm.c
+@@ -1355,7 +1355,6 @@ static void svm_intr_assist(struct kvm_vcpu *vcpu)
+ 	struct vmcb *vmcb = svm->vmcb;
+ 	int intr_vector = -1;
  
- 	ASSERT((delivery_mode == dest_Fixed) ||
-@@ -151,7 +154,7 @@ static u32 ioapic_get_delivery_bitmask(struct kvm_ioapic *ioapic, u8 dest,
- 	struct kvm *kvm = ioapic->kvm;
- 	struct kvm_vcpu *vcpu;
+-	kvm_inject_pending_timer_irqs(vcpu);
+ 	if ((vmcb->control.exit_int_info & SVM_EVTINJ_VALID) &&
+ 	    ((vmcb->control.exit_int_info & SVM_EVTINJ_TYPE_MASK) == 0)) {
+ 		intr_vector = vmcb->control.exit_int_info &
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index 1336174..be6846d 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -2191,7 +2191,6 @@ static void vmx_intr_assist(struct kvm_vcpu *vcpu)
+ 	int has_ext_irq, interrupt_window_open;
+ 	int vector;
  
--	ioapic_debug("dest %d dest_mode %d", dest, dest_mode);
-+	ioapic_debug("dest %d dest_mode %d\n", dest, dest_mode);
+-	kvm_inject_pending_timer_irqs(vcpu);
+ 	update_tpr_threshold(vcpu);
  
- 	if (dest_mode == 0) {	/* Physical mode. */
- 		if (dest == 0xFF) {	/* Broadcast. */
-@@ -179,7 +182,7 @@ static u32 ioapic_get_delivery_bitmask(struct kvm_ioapic *ioapic, u8 dest,
- 			    kvm_apic_match_logical_addr(vcpu->apic, dest))
- 				mask |= 1 << vcpu->vcpu_id;
- 		}
--	ioapic_debug("mask %x", mask);
-+	ioapic_debug("mask %x\n", mask);
- 	return mask;
- }
- 
-@@ -196,12 +199,12 @@ static void ioapic_deliver(struct kvm_ioapic *ioapic, int irq)
- 	int vcpu_id;
- 
- 	ioapic_debug("dest=%x dest_mode=%x delivery_mode=%x "
--		     "vector=%x trig_mode=%x",
-+		     "vector=%x trig_mode=%x\n",
- 		     dest, dest_mode, delivery_mode, vector, trig_mode);
- 
- 	deliver_bitmask = ioapic_get_delivery_bitmask(ioapic, dest, dest_mode);
- 	if (!deliver_bitmask) {
--		ioapic_debug("no target on destination");
-+		ioapic_debug("no target on destination\n");
- 		return;
- 	}
- 
-@@ -214,7 +217,7 @@ static void ioapic_deliver(struct kvm_ioapic *ioapic, int irq)
- 				       trig_mode, delivery_mode);
- 		else
- 			ioapic_debug("null round robin: "
--				     "mask=%x vector=%x delivery_mode=%x",
-+				     "mask=%x vector=%x delivery_mode=%x\n",
- 				     deliver_bitmask, vector, dest_LowestPrio);
- 		break;
- 	case dest_Fixed:
-@@ -304,7 +307,7 @@ static void ioapic_mmio_read(struct kvm_io_device *this, gpa_t addr, int len,
- 	struct kvm_ioapic *ioapic = (struct kvm_ioapic *)this->private;
- 	u32 result;
- 
--	ioapic_debug("addr %lx", (unsigned long)addr);
-+	ioapic_debug("addr %lx\n", (unsigned long)addr);
- 	ASSERT(!(addr & 0xf));	/* check alignment */
- 
- 	addr &= 0xff;
-@@ -341,8 +344,8 @@ static void ioapic_mmio_write(struct kvm_io_device *this, gpa_t addr, int len,
- 	struct kvm_ioapic *ioapic = (struct kvm_ioapic *)this->private;
- 	u32 data;
- 
--	ioapic_debug("ioapic_mmio_write addr=%lx len=%d val=%p\n",
--		     addr, len, val);
-+	ioapic_debug("ioapic_mmio_write addr=%p len=%d val=%p\n",
-+		     (void*)addr, len, val);
- 	ASSERT(!(addr & 0xf));	/* check alignment */
- 	if (len == 4 || len == 8)
- 		data = *(u32 *) val;
+ 	has_ext_irq = kvm_cpu_has_interrupt(vcpu);
 -- 
 1.5.3.7
 
