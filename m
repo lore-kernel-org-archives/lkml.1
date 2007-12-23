@@ -1,353 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbXLWW3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbXLWWcF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbXLWW3W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 17:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbXLWW3P
+	id S1755416AbXLWWcF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 17:32:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbXLWWbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 17:29:15 -0500
-Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:43134 "HELO
-	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751360AbXLWW3O (ORCPT
+	Sun, 23 Dec 2007 17:31:55 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:52432 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797AbXLWWby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 17:29:14 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4lCFPO/JxDeEuueFztjwsakPN7o/RhREla4Xbvw1LadBJpxII1kQU+tFhCcut0pQe1wliRR5lpkxjTYizygv0baJ1TYqCtYgh2XJyBQLmFHi+joaokylT7olZU4w1WPjXVsRYrvdefbsupcB7/qRj0LhYQ246500cBREaj2R/VM=  ;
-X-YMail-OSG: f1w6gi8VM1my3H.s8xSf1kL_phEgmMDQcWlBh.mDiRmRonrtrTzv6cCK3DTuoEeLmmDKspGZHw--
-From: David Brownell <david-b@pacbell.net>
-To: "eric miao" <eric.y.miao@gmail.com>
-Subject: Re: [PATCH 2.6.24-rc5-mm 2/3] gpiolib: add Generic IRQ support for 16-bit PCA9539 GPIO expander
-Date: Sun, 23 Dec 2007 14:29:09 -0800
-User-Agent: KMail/1.9.6
-Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org,
-       "Jean Delvare" <khali@linux-fr.org>,
-       "Ben Gardner" <bgardner@wabtec.com>
-References: <f17812d70712142015t1dedf9ecq33a4d45a0c5f033c@mail.gmail.com> <f17812d70712162232t4ff0164exccd47c4fe0c700af@mail.gmail.com>
-In-Reply-To: <f17812d70712162232t4ff0164exccd47c4fe0c700af@mail.gmail.com>
+	Sun, 23 Dec 2007 17:31:54 -0500
+Date: Mon, 24 Dec 2007 01:32:27 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Martin Mares <mj@ucw.cz>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a
+	driver opt-in issue
+Message-ID: <20071223223227.GA30643@jurassic.park.msu.ru>
+References: <20071222064719.73fdd9a4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org> <476DB95F.3090801@garzik.org> <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org> <476DDFEE.3010009@garzik.org> <alpine.LFD.0.9999.0712222034150.21557@woody.linux-foundation.org> <476DE98F.2010009@garzik.org> <alpine.LFD.0.9999.0712222058160.21557@woody.linux-foundation.org> <1198444150.6686.17.camel@pasglop> <mj+md-20071223.211353.32429.nikam@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712231429.10395.david-b@pacbell.net>
+In-Reply-To: <mj+md-20071223.211353.32429.nikam@ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: eric miao <eric.miao@marvell.com>
+On Sun, Dec 23, 2007 at 10:15:10PM +0100, Martin Mares wrote:
+> >  - During that probe, you set a flag if any device has capabilities that
+> > extend beyond 0xff.
 > 
-> This patch adds the generic IRQ support for the PCA9539 on-chip GPIOs.
+> Can this work?  The extended capabilities are not linked to the normal
+> ones in any way.
 
-This one bothers me a bit on some technical grounds.  One problem is
-that these chips are not designed for reliable IRQ management, so no
-matter what a driver does it can't deliver that.  The other is with
-respect to what this code does.
+Good point.
 
+OTOH, we *do* have a flag for the extended capabilities - dev->cfg_size.
+Obviously, the pci probe *without* mmconfig will set it to 256 for *all*
+devices.
+So Linus' idea of enabling mmconfig per-device makes a lot of sense in the
+end - if mmconfig works, it just sets dev->cfg_size to 4096.
+Without bloating the struct pci_dev or screwing up innocent arches...
 
-As background, here's what the TI docs say about IRQ support on this
-chip.  In this area the pca953x parts closely resemble pcf857x ones,
-which I've looked at.  I can say that I haven't (yet?) happened
-across boards that use the IRQ mechanism on those '857x parts ...
-
-| Interrupt (INT) Output
-|
-| An interrupt is generated by any rising or falling edge of the port
-| inputs in the input mode.
-
-That's an issue.  Your code is trying to emulate all three edge trigger
-modes instead of just "both edges".  I've come to believe such emulation
-is not a good thing, since it necessarily loses in some cases.
-
-
-|                           After time, T(iv), the signal INT is valid. 
-| Resetting the interrupt circuit is achieved when data on the port is
-| changed to the original setting,
-
-Another issue.  The IRQ will effectively clear by itself, leaving
-no record of exactly what triggered the IRQ. 
-
-So IRQs on this chip are problematic at the hardware level, except
-as a lossy "something changed" notification to help avoid polling
-the chip for the current status of input pins.
-
-
-|                                    data is read from the port that
-| generated the interrupt, or in a Stop event. 
-
-Another issue.  IRQ pulses can be arbitrarily short -- maybe too short
-to register at the host, given glitch removal circuitry! -- when a
-host is performing I/O to the chip while the signal is being raised.
-
-
-|                                               Resetting occurs in the 
-| read mode at the acknowledge (ACK) bit or not acknowledge (NACK) bit
-| after the falling edge of the SCL signal. In a Stop event, INT is cleared
-| after the rising edge of SDA. Interrupts that occur during the ACK or
-| NACK clock pulse can be lost (or be very short) due to the resetting
-| of the interrupt during this pulse. Each change of the I/Os after
-| resetting is detected and is transmitted as INT.
-|
-| Reading from or writing to another device does not affect the interrupt
-| circuit, and a pin configured as an output cannot cause an interrupt.
-| Changing an I/O from an output to an input may cause a false interrupt
-| to occur if the state of the pin does not match the contents of the
-| Input Port register. Because each 8-bit port is read independently, the
-| interrupt caused by port 0 is not cleared by a read of port 1, or vice versa.
-|
-| INT has an open-drain structure and requires a pullup resistor to VCC.
-
-Now, there *are* I2C GPIO expanders that have non-lossy IRQ support,
-but these '857x and '953x parts don't seem to be in that category.
-
-
-> ---
->  drivers/gpio/Kconfig   |   11 +++-
->  drivers/gpio/pca9539.c |  185 ++++++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 195 insertions(+), 1 deletions(-)
-> 
-> 	...
->
-> --- a/drivers/gpio/pca9539.c
-> +++ b/drivers/gpio/pca9539.c
-
-As to what this code does:
-
-
-> @@ -155,6 +174,158 @@ static int pca9539_init_gpio(struct pca9539_chip *chip)
->  	return gpiochip_add(gc);
->  }
-> 
-> +#ifdef CONFIG_GPIO_PCA9539_GENERIC_IRQ
-> +/* FIXME: change to schedule_delayed_work() here if reading out of
-> + * registers does not reflect the actual pin levels
-> + */
-
-Docs say reading the input registers does reflect current signal
-levels -- no IRQ latches involved.  So that FIXME should go.
-
-
-> +
-> +static void pca9539_irq_work(struct work_struct *work)
-> +{
-> +	struct pca9539_chip *chip;
-> +	uint16_t input, mask, rising, falling;
-> +	int ret, i;
-> +
-> +	chip = container_of(work, struct pca9539_chip, irq_work);
-> +
-> +	ret = pca9539_read_reg(chip, PCA9539_INPUT, &input);
-> +	if (ret < 0)
-> +		return;
-> +
-> +	mask = (input ^ chip->last_input) & chip->irq_mask;
-> +	rising = (input & mask) & chip->irq_rising_edge;
-> +	falling = (~input & mask) & chip->irq_falling_edge;
-
-As noted above, this stuff is all lossy.  You won't be able to
-issue some IRQs that should be issued.
-
-> +
-> +	irq_enter();
-
-I thought irq_enter/irq_exit were intended to bracket hardirq
-contexts?  This isn't a hardirq context... it's a task.
-
-
-> +
-> +	for (i = 0; i < NR_PCA9539_GPIOS; i++) {
-> +		if ((rising | falling) & (1u << i)) {
-> +			int irq = chip->irq_start + i;
-> +			struct irq_desc *desc;
-> +
-> +			desc = irq_desc + irq;
-> +			desc_handle_irq(irq, desc);
-
-But desc_handle_irq() is an obsolete ARM-only call.  Instead,
-generic_handle_irq() would be better. 
-
-And I'm sure the loop itself can be streamlined ... calculate
-the mask of which GPIOs you'll issue IRQs for, then ffs() to
-quickly find the bits set in that mask.  Call that IRQ, clear
-that bit in the mask ... loop "while pending" not "for each IRQ".
-
-
-> +		}
-> +	}
-> +
-> +	irq_exit();
-> +
-> +	chip->last_input = input;
-
-There's no locking, so this could clobber a more-current value.
-Plus, the "last input" value doesn't get updated outside of
-this IRQ handling logic...
-
-
-> +}
-> +
-> +static void fastcall
-> +pca9539_irq_demux(unsigned int irq, struct irq_desc *desc)
-> +{
-> +	struct pca9539_chip *chip = desc->handler_data;
-> +
-> +	desc->chip->mask(chip->irq);
-> +	desc->chip->ack(chip->irq);
-> +	schedule_work(&chip->irq_work);
-> +	desc->chip->unmask(chip->irq);
-
-I've never seen a chained IRQ handler that tries to work like that!
-Or for that matter, an IRQ handler for an I2C chip that doing that.
-
-Wouldn't it be simpler to not try using the "chained" mechanism, and
-instead just have an IRQ handler that disables the (parameter) IRQ
-and schedules the work?  The IRQ could be re-enabled as soon as the
-work task reads the GPIO input values.
-
-
-> +}
-> +
-> +static void pca9539_irq_mask(unsigned int irq)
-> +{
-> +	struct irq_desc *desc = irq_desc + irq;
-> +	struct pca9539_chip *chip = desc->chip_data;
-> +
-> +	chip->irq_mask &= ~(1u << (irq - chip->irq_start));
-> +}
-> +
-> +static void pca9539_irq_unmask(unsigned int irq)
-> +{
-> +	struct irq_desc *desc = irq_desc + irq;
-> +	struct pca9539_chip *chip = desc->chip_data;
-> +
-> +	chip->irq_mask |= 1u << (irq - chip->irq_start);
-> +}
-
-So the IRQ masking is done purely on the host side ... which is fine,
-except that I don't see a way to disable those pin-changed IRQs when
-none of them are used (all are masked).
-
-
-> +static void pca9539_irq_ack(unsigned int irq)
-> +{
-> +	/* unfortunately, we have to provide an empty irq_chip.ack even
-> +	 * if we do nothing here, Generic IRQ will complain otherwise
-> +	 */
-> +}
-
-I'm pretty sure I've seen paths through genirq that don't require
-use of such NOPs.  :)
-
-
-> +static int pca9539_irq_set_type(unsigned int irq, unsigned int type)
-> +{
-> +	struct irq_desc *desc = irq_desc + irq;
-> +	struct pca9539_chip *chip = desc->chip_data;
-> +	uint16_t mask = 1u << (irq - chip->irq_start);
-> +
-> +	if (type == IRQT_PROBE) {
-
-Do you really need to support IRQT_PROBE?  I've never had occasion
-to use that, and couldn't swear it's implemented right here.
-
-
-> +		if ((mask & chip->irq_rising_edge) ||
-> +		    (mask & chip->irq_falling_edge) ||
-> +		    (mask & ~chip->reg_direction))
-> +			return 0;
-> +
-> +		type = __IRQT_RISEDGE | __IRQT_FALEDGE;
-> +	}
-> +
-> +	gpio_direction_input(irq_to_gpio(irq));
-
-Hmm, I'd rather see this be "if it's not an input, fail".
-
-
-> +
-> +	if (type & __IRQT_RISEDGE)
-> +		chip->irq_rising_edge |= mask;
-> +	else
-> +		chip->irq_rising_edge &= ~mask;
-> +
-> +	if (type & __IRQT_FALEDGE)
-> +		chip->irq_falling_edge |= mask;
-> +	else
-> +		chip->irq_falling_edge &= ~mask;
-
-And I'd rather see this be "if it's not BOTHEDGES or NONE, fail".
-
-At least with BOTHEDGES, the irq handlers must be prepared to
-cope with some cases of seemingly-lost IRQs, but with single
-edge triggering they generally expect the hardware to latch
-things as usual.
-
-
-> +
-> +	return 0;
-> +}
-> +
-> +static int pca9539_init_irq(struct pca9539_chip *chip)
-> +{
-> +	struct irq_chip *ic = &chip->irq_chip;
-> +	int ret, irq, irq_start;
-> +
-> +	/* initial input register value for IRQ level change detection */
-> +	ret = pca9539_read_reg(chip, PCA9539_INPUT, &chip->last_input);
-
-... which isn't updated on most read-input-pins codepaths ...
-
-> +	if (ret)
-> +		return -EIO;
-
-"return ret"
-
-
-> +
-> +	chip->irq = chip->client->irq;
-> +	chip->irq_start = irq_start = gpio_to_irq(chip->gpio_start);
-> +
-> +	/* do not install GPIO interrupts for the chip if
-> +	 * 1. the PCA9539 interrupt line is not used
-> +	 * 2. or the GPIO interrupt number exceeds NR_IRQS
-> +	 */
-> +	if (chip->irq <= 0 || irq_start + NR_PCA9539_GPIOS >= NR_IRQS)
-
-Also, if irq_start < 0 ...
-
-
-> +		return -EINVAL;
-> +
-> +	chip->irq_mask	= 0;
-> +	chip->irq_rising_edge  = 0;
-> +	chip->irq_falling_edge = 0;
-> +
-> +	ic->ack = pca9539_irq_ack;
-> +	ic->mask = pca9539_irq_mask;
-> +	ic->unmask = pca9539_irq_unmask;
-> +	ic->set_type = pca9539_irq_set_type;
-> +
-> +	for (irq = irq_start; irq < irq_start + NR_PCA9539_GPIOS; irq++) {
-> +		set_irq_chip(irq, ic);
-> +		set_irq_chip_data(irq, chip);
-> +		set_irq_handler(irq, handle_edge_irq);
-> +		set_irq_flags(irq, IRQF_VALID | IRQF_PROBE);
-> +	}
-> +
-> +	set_irq_type(chip->irq, IRQT_FALLING);
-> +	set_irq_data(chip->irq, chip);
-> +	set_irq_chained_handler(chip->irq, pca9539_irq_demux);
-> +
-> +	INIT_WORK(&chip->irq_work, pca9539_irq_work);
-> +	return 0;
-> +}
-> +#else
-> +static inline int pca9539_init_irq(struct pca9539_chip *chip)
-> +{
-> +	return 0;
-> +}
-> +#endif /* CONFIG_GPIO_PCA9539_GENERIC_IRQ */
-> +
->  static int __devinit pca9539_probe(struct i2c_client *client)
->  {
->  	struct pca9539_platform_data *pdata;
+Ivan.
