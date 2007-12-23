@@ -1,29 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbXLWXHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbXLWXHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756315AbXLWXHV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 18:07:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbXLWXHH
+	id S1757449AbXLWXHo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 18:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbXLWXHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 18:07:07 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37680 "EHLO gate.crashing.org"
+	Sun, 23 Dec 2007 18:07:33 -0500
+Received: from gate.crashing.org ([63.228.1.57]:37688 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbXLWXHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 18:07:05 -0500
-Subject: Re: [PATCH 2/2] scsi: Use new __dma_buffer to align sense buffer
-	in scsi_cmnd
+	id S1756868AbXLWXHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 18:07:32 -0500
+Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a
+	driver opt-in issue
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Reply-To: benh@kernel.crashing.org
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: james.bottomley@steeleye.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, rdreier@cisco.com,
-       linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk, davem@davemloft.net,
-       ralf@linux-mips.org, Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <476E41D1.50606@panasas.com>
-References: <20071221023011.4C4BADDDFA@ozlabs.org>
-	 <476E41D1.50606@panasas.com>
+To: Martin Mares <mj@ucw.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz
+In-Reply-To: <mj+md-20071223.211353.32429.nikam@ucw.cz>
+References: <476D1D16.5090703@garzik.org>
+	 <20071222064719.73fdd9a4@laptopd505.fenrus.org>
+	 <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org>
+	 <476DB95F.3090801@garzik.org>
+	 <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org>
+	 <476DDFEE.3010009@garzik.org>
+	 <alpine.LFD.0.9999.0712222034150.21557@woody.linux-foundation.org>
+	 <476DE98F.2010009@garzik.org>
+	 <alpine.LFD.0.9999.0712222058160.21557@woody.linux-foundation.org>
+	 <1198444150.6686.17.camel@pasglop>
+	 <mj+md-20071223.211353.32429.nikam@ucw.cz>
 Content-Type: text/plain
-Date: Mon, 24 Dec 2007 10:04:52 +1100
-Message-Id: <1198451092.6686.26.camel@pasglop>
+Date: Mon, 24 Dec 2007 10:06:42 +1100
+Message-Id: <1198451202.6686.28.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -32,78 +41,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> This has the potential of leaving a big fat ugly hole in the middle of 
-> scsi_cmnd. I would suggest of *just* moving the sense_buffer array to be
-> the *first member* of struct scsi_cmnd. The command itself is already cache
-> aligned, allocated by the proper flags to it's slab. And put a fat comment
-> near it's definition.
-
-The hole would only be present on non coherent architectures though. We
-also still need the padding after the sense_buffer. But yeah, moving the
-sense buffer to first position would diminish the size of the hole I
-suppose.
-
-> This is until a proper fix is sent. I have in my Q a proposition for a 
-> more prominent solution, which I will send next month. Do to short comings
-> in the sense handling and optimizations, but should definitely cover this
-> problem.
+On Sun, 2007-12-23 at 22:15 +0100, Martin Mares wrote:
+> Hello!
 > 
-> The code should have time to be discussed and tested, so it is only 2.6.26
-> material. For the duration of the 2.6.25 kernel we can live with a reorder
-> of scsi_cmnd members, if it solves such a grave bug for some ARCHs.
+> >  - During that probe, you set a flag if any device has capabilities that
+> > extend beyond 0xff.
+> 
+> Can this work?  The extended capabilities are not linked to the normal
+> ones in any way.
 
-Re-oreder isn't enough. We need both re-order and the __dma_buffer
-annotation to ensure proper padding. Some archs have 64 or even 128
-bytes cache line size.
-
-I agree that in the long run, a better solution should be done involving
-reworking the way the sense buffer is allocated. I started modifying the
-EH code to kmalloc it, but it gets very messy with the current interface
-between drivers and EH. I still have some patches around I can send,
-though some drivers need fixing (error handling on kmalloc failure).
-James seem to have a better idea of pre-allocating sense buffers per
-host based on how many they can have in flight which I haven't looked
-at.
+Yeah, well, you set a flag if you have extended capabilities. I don't
+have my spec at hand (or the code) but can't we know if there are any
+based on some non-ext field ?
 
 Ben.
 
-> Boaz
-> ----
-> [RFD below]
-> My proposed solution will be has follows:
-> 
->  1. Since the scsi protocol mandates an immediate REQUEST_SENSE after an error
->     in effect the Q is frozen until the REQUEST_SENSE command returns.
-> 
->  2. The scsi-ml needs the sense buffer for its normal operation, independent 
->     from the ULD's request of the sence_buffer or not at request->sense. But
->     in effect, 90% of all scsi-requests come with ULD's allocated buffer for
->     sense, that is copied to, on command completion.
-> 
->  3. 99% of all commands complete successfully, so if an optimization is 
->     proposed for the successful case, sacrificing a few cycles for the error
->     case than thats a good thing.
-> 
->  My suggestion is to have a per Q, driver-overridable, sense buffer that is 
->  DMAed/written to by drivers. At the end of the REQUEST_SENSE command one
->  of 2 things will be done. Either copy the sense to the ULD's supplied buffer,
->  or if not available, allocate one from a dedicated mem_cache pool.
-
-I think that's pretty much was James was proposing indeed.
-
->  So we are completely saving 92 bytes from scsi_cmnd by replacing the buffer
->  with a pointer. We can always read the sense into a per Q buffer. And 10% of
->  %1 of the times we will need to allocate a sense buffer from a dedicated mem_cache
->  I would say thats a nice optimization.
-> 
->  The changes to scsi_error/scsi_cmnd and friends, is pretty strait forward. But
->  it depends on a conversion of 4/5 drivers to the new scsi_eh API for 
->  REQUEST_SENSE. I have only converted these drivers that interfered with the accessors
->  effort + 1 other places. But there are a few more places that are not converted.
->  Once done. The implementation can easily change with no affect on drivers.
-> 
->  The reason I've started with this work is because the SCSI standard permits up
->  to 260 bytes of sense, which you guest right, is needed by the OSD command set.
-> 
-> Boaz
 
