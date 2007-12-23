@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758568AbXLWB6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbXLWDBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758568AbXLWB6f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 20:58:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758234AbXLWB54
+	id S1755933AbXLWDBi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 22:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbXLWDB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 20:57:56 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:51028 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757229AbXLWB5z (ORCPT
+	Sat, 22 Dec 2007 22:01:28 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56689 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752309AbXLWDB0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 20:57:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=sXIAnYGSe1Q+pu3ETO7NxCq82blzgURm0IGVXlBEc5Z/5D9JefKzHTdtV4cliMf8LqSRdCAlUmQmUfI63zeolrBu9PlCT3nj29sr/UcU94WIuE7UoLuCVA8pgNgJqYy44SmMw9Bqml2toueQRT03sqqCYkB0aRWJgqKqQzwzp2g=
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH 24/24] udf: fix sparse warnings (shadowing & mismatch between declaration and definition)
-Date: Sun, 23 Dec 2007 02:51:14 +0100
-Message-Id: <1198374674-12128-25-git-send-email-marcin.slusarz@gmail.com>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1198374674-12128-1-git-send-email-marcin.slusarz@gmail.com>
-References: <1198374674-12128-1-git-send-email-marcin.slusarz@gmail.com>
-From: marcin.slusarz@gmail.com
+	Sat, 22 Dec 2007 22:01:26 -0500
+Date: Sat, 22 Dec 2007 18:58:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
+       Ralf Baechle <ralf@linux-mips.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Paul Mundt <lethal@linux-sh.org>, Richard Henderson <rth@twiddle.net>,
+       Michael Starvik <starvik@axis.com>, David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       "William L. Irwin" <sparclinux@vger.kernel.org>,
+       Chris Zankel <chris@zankel.net>,
+       Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: [PATCH] Avoid overflows in kernel/time.c (version 5)
+Message-Id: <20071222185822.80bd4540.akpm@linux-foundation.org>
+In-Reply-To: <200712180541.lBI5fnqB028037@tazenda.hos.anvin.org>
+References: <20071218053729.GA13238@uranus.ravnborg.org>
+	<200712180541.lBI5fnqB028037@tazenda.hos.anvin.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fix warnings:
-fs/udf/super.c:1370:24: warning: symbol 'bh' shadows an earlier one
-fs/udf/super.c:1288:21: originally declared here
-fs/udf/super.c:450:6: warning: symbol 'udf_write_super' was not declared. Should it be static?
+On Mon, 17 Dec 2007 13:53:23 -0800 "H. Peter Anvin" <hpa@zytor.com> wrote:
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-CC: Ben Fennema <bfennema@falcon.csc.calpoly.edu>
-CC: Jan Kara <jack@suse.cz>
----
- fs/udf/super.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+> When the conversion factor between jiffies and milli- or microseconds
+> is not a single multiply or divide, as for the case of HZ == 300, we
+> currently do a multiply followed by a divide.  The intervening
+> result, however, is subject to overflows, especially since the
+> fraction is not simplified (for HZ == 300, we multiply by 300 and
+> divide by 1000).
+> 
+> This is exposed to the user when passing a large timeout to poll(),
+> for example.
+> 
+> This patch replaces the multiply-divide with a reciprocal
+> multiplication on 32-bit platforms.  When the input is an unsigned
+> long, there is no portable way to do this on 64-bit platforms there is
+> no portable way to do this since it requires a 128-bit intermediate
+> result (which gcc does support on 64-bit platforms but may generate
+> libgcc calls, e.g. on 64-bit s390), but since the output is a 32-bit
+> integer in the cases affected, just simplify the multiply-divide
+> (*3/10 instead of *300/1000).
 
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index f6c911b..da68130 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -447,7 +447,7 @@ static int udf_parse_options(char *options, struct udf_options *uopt)
- 	return 1;
- }
- 
--void udf_write_super(struct super_block *sb)
-+static void udf_write_super(struct super_block *sb)
- {
- 	lock_kernel();
- 
-@@ -1367,7 +1367,6 @@ static int udf_load_partition(struct super_block *sb, kernel_lb_addr *fileset)
- 				map->s_type_specific.s_virtual.s_num_entries =
- 					(udf_sb_vat_inode(sb)->i_size - 36) >> 2;
- 			} else if (map->s_partition_type == UDF_VIRTUAL_MAP20) {
--				struct buffer_head *bh = NULL;
- 				uint32_t pos;
- 
- 				pos = udf_block_map(udf_sb_vat_inode(sb), 0);
--- 
-1.5.3.4
+
+alpha allmodconfig:
+
+kernel/time.c: In function 'jiffies_to_msecs':
+kernel/time.c:248: error: 'HZ_TO_MSEC_NUM' undeclared (first use in this function)
+kernel/time.c:248: error: (Each undeclared identifier is reported only once
+kernel/time.c:248: error: for each function it appears in.)
+kernel/time.c:248: error: 'HZ_TO_MSEC_DEN' undeclared (first use in this function)
+kernel/time.c: In function 'jiffies_to_usecs':
+kernel/time.c:264: error: 'HZ_TO_USEC_NUM' undeclared (first use in this function)
+kernel/time.c:264: error: 'HZ_TO_USEC_DEN' undeclared (first use in this function)
+kernel/time.c: In function 'usecs_to_jiffies':
+kernel/time.c:486: error: 'm' undeclared (first use in this function)
+kernel/time.c:489: warning: control reaches end of non-void function
+kernel/time.c: In function 'jiffies_to_usecs':
+kernel/time.c:267: warning: control reaches end of non-void function
+kernel/time.c: In function 'jiffies_to_msecs':
+kernel/time.c:251: warning: control reaches end of non-void function
 
