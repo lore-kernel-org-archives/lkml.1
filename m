@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbXLWFKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbXLWFKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbXLWFKK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 00:10:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbXLWFJ6
+	id S1756202AbXLWFKm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 00:10:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbXLWFKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 00:09:58 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:47846 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750777AbXLWFJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 00:09:57 -0500
-Message-ID: <476DED9D.7070604@garzik.org>
-Date: Sun, 23 Dec 2007 00:09:49 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 23 Dec 2007 00:10:34 -0500
+Received: from mailbox2.myri.com ([64.172.73.26]:1805 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750815AbXLWFKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 00:10:33 -0500
+Message-ID: <476DED90.4040402@myri.com>
+Date: Sun, 23 Dec 2007 00:09:36 -0500
+From: Loic Prylli <loic@myri.com>
+User-Agent: Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+To: Jeff Garzik <jeff@garzik.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
        gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a driver
  opt-in issue
-References: <20071222043139.0cd59804@laptopd505.fenrus.org> <476D1D16.5090703@garzik.org> <20071222064719.73fdd9a4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org> <476DB95F.3090801@garzik.org> <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org> <476DDFEE.3010009@garzik.org> <alpine.LFD.0.9999.0712222034150.21557@woody.linux-foundation.org> <476DE98F.2010009@garzik.org> <alpine.LFD.0.9999.0712222058160.21557@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0712222058160.21557@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20071222043139.0cd59804@laptopd505.fenrus.org> <476D1D16.5090703@garzik.org> <20071222064719.73fdd9a4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org> <476DB95F.3090801@garzik.org> <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org> <476DE07A.4000204@garzik.org>
+In-Reply-To: <476DE07A.4000204@garzik.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Sat, 22 Dec 2007, Jeff Garzik wrote:
->> But regardless of problems, enabling should be done globally, not per
->> device...
-> 
-> I'm ok with trying the "globally" idea, but it has to be "globally but 
-> only if absolutely required".
-> 
-> And quite frankly, how do you tell whether it's absolutely required or 
-> not?
-> 
-> I have an idea: the drivers that really need it will do a "please enable 
-> MMCONFIG, because I will need it" thing?
-> 
-> Ok?
-> 
-> And then, since we *need* such a "pci_enable_mmconfig()" call anyway, why 
-> not let the driver give which device it controls too, so that we can print 
-> out the information (in case the machine then hangs immediately 
-> afterwards), and perhaps - if it is shown to help - only do the MMCONFIG 
-> cycles for that particular device?
-> 
-> Sounds like a plan?
-
-As long as pci_enable_ext_cfg_space(pdev) enables extended accesses for 
--all- devices, the plan is mostly sound.
-
-That largely eliminates the inconsistency issue.
-
-The only thing I would worry about is whether "config space suddenly 
-grew larger" condition will confuse userspace -- but that is NOT an 
-objection, just a worry.
-
-	Jeff
+On 12/22/2007 11:13 PM, Jeff Garzik wrote:
+>
+> The facts as they exist today:
+>
+> 1) Existing 256-byte config space devices have been known put
+> capabilities in the high end (>= 0xc8) of config space.
+>
+> 2) It is legal for PCI-Express to put capabilities anywhere in PCI
+> config space, including extended config space.  (I hope our PCI cap
+> walking code checks for overruns...)
 
 
+
+
+
+You make it sound almost as if the capability list that starts in
+regular conf-space could cross into extended conf-space >= 256). That's
+not true, the capability lists in the regular conf-space and the
+extended conf-space are really separate, they use a different structure
+for linking (different number of bits to define the capability IDs), a
+different starting point, different capability IDs definition tables.
+The regular conf-space and the extended conf-space are really independant.
+
+
+
+
+>
+> 3) Most new machines ship with PCI-Express devices with extended
+> config space.
+>
+> Therefore it is provable /possible/, and is indeed logical to conclude
+> that capabilities in extended config space will follow the same
+> pattern that existing hw designers have been following...  but only
+> once the current OS's have stable extended-config-space support.
+>
+> Maybe that day will never come, but it is nonetheless quite possible
+> within today's PCI Express spec for this to happen.
+
+
+
+I agree with that statement. In fact it is already quite useful today. I
+am doing a lot of support activities where extended-conf-space is a must
+for troubleshooting. It was important enough for us that we have
+user-tools that allows us to access mmconfig-space for pci-express even
+on systems that don't advertise a MCFG attribute (as long as the chipset
+supports it, we have reverse-engineered the location of the "mmconfig
+bar" for a few chipsets including nvidia chipsets, for Intel it is well
+documented, and there are couple others).
+
+
+
+Loic
 
