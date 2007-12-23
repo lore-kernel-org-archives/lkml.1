@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbXLWG1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbXLWGma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbXLWG1u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 01:27:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXLWG1k
+	id S1754681AbXLWGma (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 01:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbXLWGmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 01:27:40 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:50159 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbXLWG1j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 01:27:39 -0500
-Date: Sun, 23 Dec 2007 06:27:31 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Sun, 23 Dec 2007 01:42:20 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:41687 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750709AbXLWGmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 01:42:19 -0500
+Message-ID: <476E0346.1030902@garzik.org>
+Date: Sun, 23 Dec 2007 01:42:14 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [git patches] net driver fixes
-Message-ID: <20071223062731.GP8181@ftp.linux.org.uk>
-References: <20071223053314.GA31966@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071223053314.GA31966@havoc.gtf.org>
-User-Agent: Mutt/1.4.1i
+References: <20071223053314.GA31966@havoc.gtf.org> <20071223062731.GP8181@ftp.linux.org.uk>
+In-Reply-To: <20071223062731.GP8181@ftp.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 23, 2007 at 12:33:14AM -0500, Jeff Garzik wrote:
+Al Viro wrote:
+> On Sun, Dec 23, 2007 at 12:33:14AM -0500, Jeff Garzik wrote:
+>> A couple [minorly] notable wireless bug fixes, and plenty of viro fixes
+>> for obscure issues :)
 > 
-> A couple [minorly] notable wireless bug fixes, and plenty of viro fixes
-> for obscure issues :)
+> Heh...  FWIW, forcedeth patch (sent your way about two weeks ago) also
+> belongs in the same set.  If you need a resend - tell...
 
-Heh...  FWIW, forcedeth patch (sent your way about two weeks ago) also
-belongs in the same set.  If you need a resend - tell...
+I applied it to #upstream (2.6.25) since forcedeth is not on any 
+big-endian platforms AFAIK.
 
-There's another pile in drivers/net/wireless, but that's for linville to
-forward when he gets around to it.  Pure annotation patches belong to
-past-2.6.24 merge.
+Is it .24 material for some obvious reason, which I missed?  :)
 
-I also have starfire and epic100 fixes, but that'll have to wait until
-I get around to putting the cards into sparc box (mcast breakage for
-starfire and full-driver one for epic100; since nobody had cared for
-the latter since 2.3.late, well...)
 
-I think I'll have an ipg fix for you tomorrow, but I want to RTFM first
-to make sure that it makes sense.  And there are several interesting
-issues in atl1, netxen and cxgb3, but those will have to wait for when
-I get around to asking maintainers just what the hell did they mean those
-to do.
+> There's another pile in drivers/net/wireless, but that's for linville to
+> forward when he gets around to it.  Pure annotation patches belong to
+> past-2.6.24 merge.
+> 
+> I also have starfire and epic100 fixes, but that'll have to wait until
+> I get around to putting the cards into sparc box (mcast breakage for
+> starfire and full-driver one for epic100; since nobody had cared for
+> the latter since 2.3.late, well...)
 
-FWIW, drivers/net is fairly noise-free wrt sparse endianness warnings
-in my tree; the main exceptions are prism54 (oid_mgt.c and the nightmares
-it pulls) and skfp (AIX-shared vendor driver; 'nuff said, IMO).
+I have an epic100 card too if you need it (though it sounds like you 
+have something testable).
 
-BTW, if you still have any documentation for xircom_cb from your fighting
-tulip-related stuff, it would be welcome - there are some oddities with
-rx ring handling (assuming that we care about that driver at all and it's
-not on the way out, that is).
+
+> I think I'll have an ipg fix for you tomorrow, but I want to RTFM first
+> to make sure that it makes sense.  And there are several interesting
+> issues in atl1, netxen and cxgb3, but those will have to wait for when
+> I get around to asking maintainers just what the hell did they mean those
+> to do.
+> 
+> FWIW, drivers/net is fairly noise-free wrt sparse endianness warnings
+> in my tree; the main exceptions are prism54 (oid_mgt.c and the nightmares
+> it pulls) and skfp (AIX-shared vendor driver; 'nuff said, IMO).
+
+Awesome :)
+
+
+> BTW, if you still have any documentation for xircom_cb from your fighting
+> tulip-related stuff, it would be welcome - there are some oddities with
+> rx ring handling (assuming that we care about that driver at all and it's
+> not on the way out, that is).
+
+xircom_tulip_cb should probably be deleted, since it is the crappier of 
+the two drivers for the same hardware (xircom_cb being the other one).
+
+xircom_cb _the driver_ is pretty odd.  It is less like tulip than it 
+should be, actually.  There are several things that could have been done 
+to improve the throughput/etc. of the driver, but it was more important 
+at the time to simply find a driver that always worked.  IIRC its RX 
+filtering was broken, implying the need to enable promisc mode just to 
+receive packets normally.
+
+	Jeff
+
+
+
