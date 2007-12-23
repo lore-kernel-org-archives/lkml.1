@@ -1,67 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbXLWRdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbXLWR40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbXLWRdT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 12:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbXLWRdH
+	id S1755452AbXLWR40 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 12:56:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbXLWR4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 12:33:07 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50332 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752852AbXLWRdF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 12:33:05 -0500
-Date: Sun, 23 Dec 2007 09:32:28 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-cc: Jeff Garzik <jeff@garzik.org>, Loic Prylli <loic@myri.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a driver
- opt-in issue
-In-Reply-To: <20071223110337.GA25441@jurassic.park.msu.ru>
-Message-ID: <alpine.LFD.0.9999.0712230925240.21557@woody.linux-foundation.org>
-References: <476D1D16.5090703@garzik.org> <20071222064719.73fdd9a4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org> <476DB95F.3090801@garzik.org> <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org>
- <476DDFEE.3010009@garzik.org> <alpine.LFD.0.9999.0712222034150.21557@woody.linux-foundation.org> <476DE98F.2010009@garzik.org> <476DF1A6.3060900@myri.com> <476DF5BE.5030004@garzik.org> <20071223110337.GA25441@jurassic.park.msu.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 23 Dec 2007 12:56:16 -0500
+Received: from mx1.ukfsn.org ([77.75.108.10]:33752 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752387AbXLWR4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 12:56:15 -0500
+X-Greylist: delayed 1512 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Dec 2007 12:56:15 EST
+Date: Sun, 23 Dec 2007 17:30:55 +0000
+From: Nick Warne <nick@ukfsn.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Mark Lord <lkml@rtr.ca>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Peculiar out-of-sync boot log lines
+Message-ID: <20071223173055.5ffa711f@linuxamd.linicks.net>
+In-Reply-To: <200712021930.34413.bzolnier@gmail.com>
+References: <20071129193728.2f1c237e@linuxamd.linicks.net>
+	<200712012259.35152.bzolnier@gmail.com>
+	<20071201151419.39a169f1.randy.dunlap@oracle.com>
+	<200712021930.34413.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.14; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2 Dec 2007 19:30:34 +0100
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+
+Hi Bart,
+
+Top posting! grrrr.
+
+This patch works fine on my system with this peculiar DVD drive, and
+log reports are perfect.
+
+Updated to Linus' git today - 2.6.24-rc6-g5b825ed2
+
+/var/log/messages:
+
+Dec 23 09:36:04 linuxamd kernel:     ide0: BM-DMA at 0xd000-0xd007, BIOS settings: hda:DMA, hdb:DMA
+Dec 23 09:36:04 linuxamd kernel:     ide1: BM-DMA at 0xd008-0xd00f, BIOS settings: hdc:DMA, hdd:DMA
+Dec 23 09:36:04 linuxamd kernel: hda: UDMA/66 mode selected
+Dec 23 09:36:04 linuxamd kernel: hdb: UDMA/66 mode selected
+Dec 23 09:36:04 linuxamd kernel: hdc: UDMA/66 mode selected
+Dec 23 09:36:04 linuxamd kernel: hdd: UDMA/66 mode selected
+Dec 23 09:36:04 linuxamd kernel: hda: max request size: 128KiB
+Dec 23 09:36:04 linuxamd kernel: hda: 160086528 sectors (81964 MB) w/2048KiB Cache, CHS=65535/16/63
+Dec 23 09:36:04 linuxamd kernel: hda: cache flushes supported
+Dec 23 09:36:04 linuxamd kernel:  hda: hda1 hda2 hda3 hda4
+Dec 23 09:36:04 linuxamd kernel: hdb: max request size: 128KiB
+Dec 23 09:36:04 linuxamd kernel: hdb: 30015216 sectors (15367 MB) w/2048KiB Cache, CHS=29777/16/63
+Dec 23 09:36:04 linuxamd kernel: hdb: cache flushes not supported
+Dec 23 09:36:04 linuxamd kernel:  hdb: hdb1
+Dec 23 09:36:04 linuxamd kernel: hdc: max request size: 128KiB
+Dec 23 09:36:04 linuxamd kernel: hdc: 39876480 sectors (20416 MB) w/2048KiB Cache, CHS=39560/16/63
+Dec 23 09:36:04 linuxamd kernel: hdc: cache flushes not supported
+Dec 23 09:36:04 linuxamd kernel:  hdc: hdc1
+Dec 23 09:36:04 linuxamd kernel: hdd: ATAPI 48X DVD-ROM DVD-R-RAM
+CD-R/RW drive, 2048kB Cache
+
+and
+
+/var/log/syslog
+
+Dec 23 09:36:04 linuxamd kernel: hdb: Maxtor 51536H2, ATA DISK drive
+Dec 23 09:36:04 linuxamd kernel: hda: Maxtor 6Y080L0, ATA DISK drive
+Dec 23 09:36:04 linuxamd kernel: hdd: TSSTcorp CDDVDW SH-S202J, ATAPI CD/DVD-ROM drive
+Dec 23 09:36:04 linuxamd kernel: hdc: Maxtor 52049H3, ATA DISK drive
 
 
-On Sun, 23 Dec 2007, Ivan Kokshaysky wrote:
-> 
-> This is a result of all-or-none approach, as mmconfig is fundamentally
-> unsafe until after PCI init is done.
+> On Sunday 02 December 2007, Randy Dunlap wrote:
+> > On Sat, 1 Dec 2007 22:59:35 +0100 Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > > Thanks for reporting/debugging it guys!
+> > > 
+> > > > Something in there needs to insert a '\n' before the "skipping
+> > > > word" message. Since it doesn't do that right now, the
+> > > > KERN_DEBUG string appears as "<7>"
+> > > 
+> > > This seems like a good occasion to fix ide_dma_verbose() for good
+> > > so... :)
+> > > 
+> > > [ patch is against current Linus tree so might not apply to
+> > > 2.6.23.9 ]
+> > > 
+> > > [PATCH] ide: DMA reporting and validity checking fixes
+> > > 
+> > > * ide_xfer_verbose() fixups:
+> > >   - beautify returned mode names
+> > >   - fix PIO5 reporting
+> > >   - make it return 'const char *'
+> > > 
+> > > * Change printk() level from KERN_DEBUG to KERN_INFO in
+> > > ide_find_dma_mode().
+> > > 
+> > > * Add ide_id_dma_bug() helper based on ide_dma_verbose() to check
+> > > for invalid DMA info in identify block.
+> > > 
+> > > * Use ide_id_dma_bug() in ide_tune_dma() and ide_driveid_update().
+> > > 
+> > >   As a result DMA won't be tuned or will be disabled after tuning
+> > > if device reports inconsistent info about enabled DMA mode
+> > > (ide_dma_verbose() does the same checks while the IDE device is
+> > > probed by ide-{cd,disk} device driver).
+> > > 
+> > > * Since (id->capability & 1) && id->tDMA is a valid configuration
+> > > handle it correctly in ide_id_dma_bug().
+> > > 
+> > > * Remove no longer needed ide_dma_verbose().
+> > > 
+> > > This patch should fix the following problem with out-of-sync IDE
+> > > messages reported by Nick Warned:
+> > > 
+> > >        hdd: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB
+> > > Cache<7>hdd: skipping word 93 validity check
+> > >         , UDMA(66)
+> > > 
+> > > and later debugged by Mark Lord to be caused by:
+> > > 
+> > >         ide_dma_verbose()
+> > >                 printk( ... "2048kB Cache");
+> > >         eighty_ninty_three()
+> > >                 printk(KERN_DEBUG "%s: skipping word 93 validity
+> > > check\n"); ide_dma_verbose()
+> > >                 printk(", UDMA(66)"
+> > > 
+> > > Please note that as a result ide-{cd,disk} device drivers won't
+> > > report the DMA speed used but this is intended since now DMA mode
+> > > being used is always reported by IDE core code.
+> > > 
+> > > Cc: Nick Warne <nick@ukfsn.org>
+> > > Cc: Mark Lord <lkml@rtr.ca>
+> > > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Yes. One of the things I want to have happen (and which 
-"pci_enable_mmconf()" would do automatically) is that we always probe 
-using conf1 cycles in any machine where conf1 works at all. 
+~ skip
 
-Then, some late PCI quirk or some per-device quirk (or driver) can decide 
-to enable mmconf later, and that avoids the current nightmare with the 
-whole resource ordering. 
-
-Of course, if there really are machines that have somehow disabled conf1 
-accesses, we'd have to use mmconfig early, but that should automatically 
-be handled by the PCI config probing stuff (ie we already test whether 
-conf1 accesses seem to work, and would fall back on alternate config 
-cycle accesses if conf1 looks broken).
-
-Right now, the check that MMCONF space has to be in e820-reserved memory 
-space protects us from *most* of the probe-time problems, but that's also 
-obviously the check that actually means that MMCONF isn't actually used on 
-the vast majority of machines out there.
-
-(For example: I have three machines that I know have working MMCONF. On 
-only one of theose does Linux actually even enable MMCONF accesses, 
-because on the two other ones the BIOSes do the crazy "put it in some 
-space that is reserved by PnP crap later", so we actually refuse to touch 
-it. So at least in my limited environment, we hardly get any MMCONFIG test 
-coverage, exactly because we have to be so totally anal about not enabling 
-it early, because we cannot guarantee that it's not clashing with anything 
-else).
-
-			Linus
+Nick
+-- 
+Free Software Foundation Associate Member 5508
