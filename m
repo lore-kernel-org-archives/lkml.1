@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbXLWSWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbXLWScS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756383AbXLWSWY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 13:22:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbXLWSWP
+	id S1756062AbXLWScS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 13:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbXLWScF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 13:22:15 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:65370 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753684AbXLWSWO (ORCPT
+	Sun, 23 Dec 2007 13:32:05 -0500
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:38684 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753081AbXLWScE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 13:22:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CLo4Ki64M1JomDp8m4J4hUji2rmcGAXyDJtzk/FK/wlsqHbuwMTdcykhaSLTKGKWKE3pLUNa0+DmvFe+wagYlTjVCCh0CThbY9YreGd/TSUpCtRsIO7wF96YE8OOXPwb1vlLblD3Z+PsfY1/YcRyvIYCYoephekDdGYCc8GVylQ=
-Message-ID: <9e0cf0bf0712231022o4a282e70i8cecd70ecc452505@mail.gmail.com>
-Date: Sun, 23 Dec 2007 20:22:13 +0200
-From: "Alon Bar-Lev" <alon.barlev@gmail.com>
-To: linux-mips@ftp.linux-mips.org, LKML <linux-kernel@vger.kernel.org>,
-       ppopov@mvista.com
-Subject: Re: [MIPS] MEM_SDREFCFG is not defined for Alchemy DB1550 (compile fail)
-In-Reply-To: <9e0cf0bf0712230733o3dfd54fcp4962ebf3f84cdff@mail.gmail.com>
+	Sun, 23 Dec 2007 13:32:04 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ZW5LZsoSS3uSi+NnnO0r0Y0dK7DiLieYO7lj9sYt6cCDmI91tS7ZKIH8SCgh65ysZI6hZU5Cteqx6ULLpWK3I4OnTLvMfkI59s9Ot04mKhZR8lHWv2am1xStYCn6n01DIJ4RsYZUZHXZopZISu+2WJLjcX+AoLe/MMgUS8dW4ro=  ;
+X-YMail-OSG: I5AX_LwVM1meNJp5TxNfL.a6ejYmDnP4m2l0hBeApmIdnzOWo312uNGxcrEhC3Mb_hp9A6Ur_g--
+From: David Brownell <david-b@pacbell.net>
+To: "eric miao" <eric.y.miao@gmail.com>
+Subject: Re: [PATCH 2.6.24-rc5-mm 3/3] gpiolib: obsolete drivers/i2c/chips/pca9539.c
+Date: Sun, 23 Dec 2007 10:32:02 -0800
+User-Agent: KMail/1.9.6
+Cc: "Jean Delvare" <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
+       i2c@lm-sensors.org, bgardner@wabtec.com
+References: <f17812d70712142016q73abffc2w99174c40f847152c@mail.gmail.com> <20071219100101.26e10ab3@hyperion.delvare> <f17812d70712190132j31d22070rae986f2ed31d3634@mail.gmail.com>
+In-Reply-To: <f17812d70712190132j31d22070rae986f2ed31d3634@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <9e0cf0bf0712230733o3dfd54fcp4962ebf3f84cdff@mail.gmail.com>
+Message-Id: <200712231032.02438.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Forgot to write that I checked mips & linus gits, and the problem still exists.
+> From: eric miao <eric.miao@marvell.com>
+> Date: Wed, 19 Dec 2007 16:40:04 +0800
+> Subject: [PATCH] gpiolib: mark drivers/i2c/chips/pca9539.c as deprecated
+> 
+> use drivers/gpio/pca9539.c instead.
+> 
+> Signed-off-by: eric miao <eric.miao@marvell.com>
+> Acked-by: Ben Gardner <bgardner@wabtec.com>
+> Acked-by: Jean Delvare <khali@linux-fr.org>
+> ---
+>  Documentation/i2c/chips/pca9539 |    3 +++
+>  drivers/i2c/chips/Kconfig       |    7 +++++--
+>  2 files changed, 8 insertions(+), 2 deletions(-)
 
-Best Regards,
-Alon Bar-Lev.
+Yeah, this version looks unlikely to break anyone's systems.
 
-On 12/23/07, Alon Bar-Lev <alon.barlev@gmail.com> wrote:
-> Hello,
+
+> @@ -75,6 +75,9 @@ config SENSORS_PCA9539
+>  	  This driver can also be built as a module.  If so, the module
+>  	  will be called pca9539.
+> 
+> +	  This driver is deprecated and will be dropped soon. Use
+> +	  drivers/gpio/pca9539.c instead.
+> +
+>  config SENSORS_PCF8591
+>  	tristate "Philips PCF8591"
+>  	depends on EXPERIMENTAL
 >
-> When I have:
-> CONFIG_MIPS_DB1550
-> CONFIG_SOC_AU1550
-> CONFIG_SOC_AU1X00
-> CONFIG_PM
->
-> MEM_SDREFCFG is used at:
-> arch/mips/au1000/common/power.c::pm_do_freq()
->
-> While the MEM_SDREFCFG constant is declare only for CONFIG_SOC_AU1000,
-> CONFIG_SOC_AU1500, CONFIG_SOC_AU1100 at:
-> include/asm-mips/mach-au1x00/au1000.h
->
-> Maybe MEM_SDREFCFG should be defined for CONFIG_SOC_AU1X00?
-> Or there should be #ifdef for its usage in power.c?
->
-> Best Regards,
-> Alon Bar-Lev.
->
+
+I suggest defining a date, such as "will be removed in the 2.6.26
+kernel", and adding it to Documentation/feature-removal-schedule.txt ...
