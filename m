@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbXLWXIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbXLWXLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbXLWXIn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 18:08:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbXLWXH4
+	id S1757597AbXLWXLx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 18:11:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbXLWXLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 18:07:56 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:6767 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756780AbXLWXHw (ORCPT
+	Sun, 23 Dec 2007 18:11:46 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35182 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751556AbXLWXLp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 18:07:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=N9/qjWfYggpcgNcpBWKjJCS8Seh7jO1+Eau+UV+twa6GkCAGT/fMpurgVyqezgcNjgf32jbegt3o7SrBjD3A7XEtjkP+tLpV0F6nDuhq490VR/XFHuHkWag23c8JF+ue6TKQZEBeMxD3n/FUAl+KQafEPuuFoL5iI9IKqPL6lk0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: bbpetkov@yahoo.de
-Subject: Re: [PATCH 00/63] ide-cd: redux
-Date: Sun, 23 Dec 2007 22:39:31 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200712200148.49690.bzolnier@gmail.com> <200712212057.49502.bzolnier@gmail.com> <20071223065525.GA5003@gollum.tnic>
-In-Reply-To: <20071223065525.GA5003@gollum.tnic>
+	Sun, 23 Dec 2007 18:11:45 -0500
+Message-ID: <476EEAAA.2050804@zytor.com>
+Date: Sun, 23 Dec 2007 15:09:30 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.24-rc6-mm1
+References: <20071222233056.d652743e.akpm@linux-foundation.org> <200712231335.58939.rjw@sisk.pl>
+In-Reply-To: <200712231335.58939.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712232239.31798.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 23 December 2007, Borislav Petkov wrote:
-> On Fri, Dec 21, 2007 at 08:57:49PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > On Thursday 20 December 2007, Borislav Petkov wrote:
-> > > On Thu, Dec 20, 2007 at 01:48:49AM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > Hi Bart,
-> > > Hi all,
-> > > 
-> > > > PS ide-cd Maintainer position is still open...
-> > > i'd like to take that position if nobody objects. I've done some work around the
-> > > kernel here and there and i think its time for me to get serious.
-> > 
-> > Great!
-> > 
-> > Please send me a patch for MAINTAINERS file updating ide-cd entry.
+Rafael J. Wysocki wrote:
+> On Sunday, 23 of December 2007, Andrew Morton wrote:
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/
+>>
+>> - This kernel doesn't work on i386!
+>>
+>>   It oopses late in boot due to an unrevertable change (e3c1b141) in git-x86
+>>   which I stared at for a while then I ran out of time and gave up.
+>>
+>>   I would have just abandoned this release until it was fixed but I'll be
+>>   largely offline for ten days starting tomorrow.
+>>
+>>   The culprits have been notified and hopefully we'll have a patch for
+>>   hot-fixes/ tomorrow.
+>>
+>>   x86_64 and powerpc work OK though.
 > 
-> Sure, there it is:
+> Well it doesn't build on x86-64 for me:
 > 
-> ---
+>   CHK     include/linux/compile.h
+>   CC      arch/x86/ia32/../../../fs/compat_binfmt_elf.o
+> Assembler messages:
+> Fatal error: can't create arch/x86/ia32/../../../fs/.tmp_compat_binfmt_elf.o: No such file or directory
+> make[2]: *** [arch/x86/ia32/../../../fs/compat_binfmt_elf.o] Error 2
 > 
-> Reopen ide-cd for maintainership.
+> I will post the .config if anyone is interested.
 > 
-> Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
 
-applied, thanks
+It's a Kbuild race -- if you keep re-building it will eventually build 
+the right file.
+
+Not excusable, but that's what's going on.
+
+	-hpa
