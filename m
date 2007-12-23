@@ -1,58 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbXLWMRE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbXLWMVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbXLWMRE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 07:17:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbXLWMQy
+	id S1754650AbXLWMVJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 07:21:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXLWMUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 07:16:54 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55119 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752054AbXLWMQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 07:16:53 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc6-mm1
-Date: Sun, 23 Dec 2007 13:35:58 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-References: <20071222233056.d652743e.akpm@linux-foundation.org>
-In-Reply-To: <20071222233056.d652743e.akpm@linux-foundation.org>
+	Sun, 23 Dec 2007 07:20:55 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:32808 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751273AbXLWMUy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 07:20:54 -0500
+Date: Sun, 23 Dec 2007 07:20:51 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jeff Garzik <jeff@garzik.org>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Git Mailing List <git@vger.kernel.org>
+Subject: Re: Updated Kernel Hacker's guide to git
+In-Reply-To: <476E50DC.1040701@garzik.org>
+Message-ID: <alpine.LFD.0.9999.0712230715490.15596@localhost.localdomain>
+References: <200612241807.kBOI746w008739@laptop13.inf.utfsm.cl> <476E42BF.1010300@garzik.org> <alpine.LFD.0.9999.0712230701520.14863@localhost.localdomain> <476E50DC.1040701@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712231335.58939.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 23 of December 2007, Andrew Morton wrote:
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/
-> 
-> - This kernel doesn't work on i386!
-> 
->   It oopses late in boot due to an unrevertable change (e3c1b141) in git-x86
->   which I stared at for a while then I ran out of time and gave up.
-> 
->   I would have just abandoned this release until it was fixed but I'll be
->   largely offline for ten days starting tomorrow.
-> 
->   The culprits have been notified and hopefully we'll have a patch for
->   hot-fixes/ tomorrow.
-> 
->   x86_64 and powerpc work OK though.
+On Sun, 23 Dec 2007, Jeff Garzik wrote:
 
-Well it doesn't build on x86-64 for me:
+> Robert P. J. Day wrote:
+> > On Sun, 23 Dec 2007, Jeff Garzik wrote:
+> >
+> > > Another year, another update!  :)
+> > >
+> > > The kernel hacker's guide to git has received some updates:
+> > >
+> > > 	http://linux.yyz.us/git-howto.html
+> > >
+> > > This includes all the input sent to me in the past several months,
+> > > as well as a few new tips and tricks I use on a regular basis.
+> > >
+> > > In general, this document is designed to be a quick-start cookbook,
+> > > and not a comprehensive introduction.
+> >
+> > there's one issue i have with this document, and that's that i wish it
+> > more carefully distinguished between regular git "user" tasks, and git
+> > "developer" tasks.
+> >
+> > i may be mistaken, but it would seem that a lot of folks are going to
+> > be what i call basic users, who only want to update their git tree,
+> > check the logs, check the status and so on.  and if they start to get
+> > ambitious, they might make some changes to the tree, do a diff, and
+> > submit a patch.  but in the beginning, they won't be making commits or
+> > switching branches, etc.
+> >
+> > in short, i can see the value of something like a "getting started
+> > with git as a basic user" tutorial.  does such a thing exist?
+>
+> hmmm.  There's the tutorial linked at the bottom of the page, which
+> in turn links to
+> http://www.kernel.org/pub/software/scm/git/docs/everyday.html
+>
+> git is a developer's tool, so I sorta targetted that audience.  I
+> definitely agree that is not only git audience...
 
-  CHK     include/linux/compile.h
-  CC      arch/x86/ia32/../../../fs/compat_binfmt_elf.o
-Assembler messages:
-Fatal error: can't create arch/x86/ia32/../../../fs/.tmp_compat_binfmt_elf.o: No such file or directory
-make[2]: *** [arch/x86/ia32/../../../fs/compat_binfmt_elf.o] Error 2
+just to be clear, i'm not complaining about the quality of the
+document above, but when i got started with git, what i really wanted
+was a list of what i (as a simple, non-developer user) could do once i
+cloned a repository.
 
-I will post the .config if anyone is interested.
+to that end, i put together my own little reference list of git
+commands.  for example, i collected ways to examine my repository --
+git commands like branch, tag, log/shortlog, what-changed, show, grep,
+blame, that sort of thing.  exactly the kind of stuff a new user might
+want to know about, even without the ability to change anything.
 
-Thanks,
-Rafael
+just my $0.02.
+
+rday
+--
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
