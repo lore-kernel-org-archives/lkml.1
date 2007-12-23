@@ -1,164 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbXLWLgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbXLWLhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbXLWLgH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 06:36:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXLWLf4
+	id S1754593AbXLWLhZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 06:37:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbXLWLhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 06:35:56 -0500
-Received: from ns4.abinetworks.biz ([216.218.212.66]:33851 "EHLO
-	ns4.abinetworks.biz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbXLWLfy (ORCPT
+	Sun, 23 Dec 2007 06:37:14 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55419 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751052AbXLWLhM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 06:35:54 -0500
-Message-ID: <476E47F5.4090807@abinetworks.biz>
-Date: Sun, 23 Dec 2007 12:35:17 +0100
-From: Gianluca Alberici <gianluca@abinetworks.biz>
-User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Scott <linux-kernel@bluecamel.eml.cc>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: NFS EINVAL on open(... | O_TRUNC) on 2.6.23.9
-References: <476CEC5E.9070002@abinetworks.biz> <838DE9A2-59B2-49FA-B3E8-89B26368B1CF@bluecamel.eml.cc>
-In-Reply-To: <838DE9A2-59B2-49FA-B3E8-89B26368B1CF@bluecamel.eml.cc>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	Sun, 23 Dec 2007 06:37:12 -0500
+Date: Sun, 23 Dec 2007 03:34:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: Re: 2.6.24-rc6-mm1
+Message-Id: <20071223033424.01dab700.akpm@linux-foundation.org>
+In-Reply-To: <20071223111004.GA2259@elte.hu>
+References: <20071222233056.d652743e.akpm@linux-foundation.org>
+	<20071223110456.GB10818@elte.hu>
+	<20071223111004.GA2259@elte.hu>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sun, 23 Dec 2007 12:10:04 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-I can do better. I have investigated a bit the problem:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/
+> > > 
+> > > - This kernel doesn't work on i386!
+> > > 
+> > >   It oopses late in boot due to an unrevertable change (e3c1b141) in 
+> > >   git-x86 which I stared at for a while then I ran out of time and 
+> > >   gave up.
+> > 
+> > hm, the fix for that is in x86.git already - perhaps you got an older 
+> > copy?
+> 
+> hm, e3c1b141 is already the latest one.
 
-1) The problem arises only with the userspace nfsd (Universal nfsd 2.2). 
-I have realized that the latest patches introduced in 2.6.22 have 
-changed a lot of things into NFS.
-
-2) The following code has been debugged with sunrpc.rpc_debug and 
-sunrpc.nfs_debug
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdio.h>
-
-int main(int argc, char *argv[]) {
-        int fp;
-        if ((fp=open("/mnt/tmp/test",O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU )) == -1) printf("ERR: %d\n",errno);
-        else {
-                write(fp, argv[1], strlen(argv[1]));
-                printf("OK\n");
-                close(fp);
-        };
-}
+"already in", I assume.
 
 
-2b) The output
+You can always tell what I have by looking at the patch:
 
-[...]
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/broken-out/git-x86.patch
 
-<8>NFS call  setattr
-<8>RPC:       new task initialized, procpid 18656
-<8>RPC:       allocated task f7bec500
-<8>RPC:     0 looking up UNIX cred
-<8>RPC:   740 __rpc_execute flags=0x480
-<8>RPC:   740 call_start nfs2 proc 2 (sync)
-<8>RPC:   740 call_reserve (status 0)
-<8>RPC:   740 reserved req f1416000 xid 643f3c42
-<8>RPC:   740 call_reserveresult (status 0)
-<8>RPC:   740 call_allocate (status 0)
-<8>RPC:   740 allocated buffer of size 528 at e627b800
-<8>RPC:   740 call_bind (status 0)
-<8>RPC:   740 call_connect xprt f70d4000 is connected
-<8>RPC:   740 call_transmit (status 0)
-<8>RPC:   740 xprt_prepare_transmit
-<8>RPC:   740 xprt_cwnd_limited cong = 0 cwnd = 512
-<8>RPC:   740 call_encode (status 0)
-<8>RPC:   740 marshaling UNIX cred f4efcb40
-<8>RPC:   740 using AUTH_UNIX cred f4efcb40 to wrap rpc data
-<8>RPC:   740 xprt_transmit(148)
-<8>RPC:       xs_udp_data_ready...
-<8>RPC:       cong 256, cwnd was 512, now 512
-<8>RPC:   740 xid 643f3c42 complete (28 bytes received)
-<8>RPC:       xs_udp_send_request(148) = 148
-<8>RPC:   740 xmit complete
-<8>RPC:       wake_up_next(f70d4114 "xprt_resend")
-<8>RPC:       wake_up_next(f70d40e4 "xprt_sending")
-<8>RPC:   740 call_status (status 28)
-<8>RPC:   740 call_decode (status 28)
-<8>RPC:   740 validating UNIX cred f4efcb40
-<8>RPC:   740 using AUTH_UNIX cred f4efcb40 to unwrap rpc data
-<8>RPC:   740 call_decode result -22
-<8>RPC:   740 return 0, status -22
-<8>RPC:   740 release task
-<8>RPC:       freeing buffer of size 528 at e627b800
-<8>RPC:   740 release request f1416000
-<8>RPC:       wake_up_next(f70d4174 "xprt_backlog")
-<8>RPC:   740 releasing UNIX cred f4efcb40
-<8>RPC:       rpc_release_client(f6f1f880)
-<8>NFS reply setattr: -22
+It includes the head commit ID at the first line (it's in a
+machine-readable form - Matthias's scripts which prepare the mm git tree
+actually get the git-foo.patch info direct from the original repo rather
+than by applying the diff from broken-out/)
 
-[...]
+Still.  The crash is 100% repeatable and is the same every time.  Happens
+on both my i386 test boxes.
 
-3) It turns out the following:
+http://userweb.kernel.org/~akpm/config-sony.txt
+http://userweb.kernel.org/~akpm/config-vmm.txt
 
-- setattr returns EINVAL due to...
-- RPC call_decode returns status 22
-
-4) In conclusion in my understanding:
-
-- At present linux nfs filesystem support is not anymore compatible with 
-old userspace servers like universal nfsd and crypto filesystems as cfsd 
-(which is an nfs server pretty old fashioned).
-- This problem makes UNFSD and CFSD unusable on 2.6.22 and up (this 
-doesnt sound good to me)
-
-The question are:
-
-- Is this wanted or is a bug ?
-- Can this be solved with some backwards compat stuff into the kernel or 
-all the old packages as UNFSD have to be
-bugfixed/upgraded
-- I have found other strange behaviors of the new NFS filesystem support 
-that i am investigating. All are bound to the user of
-old userspace servers onto the new NFS (since 2.6.22). What to do ?
-
-Thanks
-
-Gianluca
-
-
-
-
-Scott wrote:
-
->
-> On Dec 22, 2007, at 5:52 AM, Gianluca Alberici wrote:
->
->> I've run into this problem 2.6.23.9. The open syscall will return
->> "Invalid argument" when O_TRUNC is set on existing files.
->>
->> The same file can be opened for append or removed.
->>
->> The evidence is for example:
->>
->> mars:~# mount localhost:/opt/nfs/ /mnt/tmp
->> mars:~# echo "Hello" > /mnt/tmp/test-file
->> mars:~# echo "Hello" > /mnt/tmp/test-file
->> bash: /mnt/tmp/test-file: Invalid argument
->
->
-> Can you show an strace of this please? Also, might suggest "rpcdebug - 
-> m nfsd -s all"
->
-> -- 
-> Scott --
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at http://www.tux.org/lkml/
-
-
+and I bisected it down to e3c1b141.
