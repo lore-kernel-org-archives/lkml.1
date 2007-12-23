@@ -1,85 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbXLWFKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbXLWFQD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbXLWFKm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 00:10:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbXLWFKe
+	id S1755915AbXLWFQD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 00:16:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbXLWFPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 00:10:34 -0500
-Received: from mailbox2.myri.com ([64.172.73.26]:1805 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750815AbXLWFKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 00:10:33 -0500
-Message-ID: <476DED90.4040402@myri.com>
-Date: Sun, 23 Dec 2007 00:09:36 -0500
-From: Loic Prylli <loic@myri.com>
-User-Agent: Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a driver
- opt-in issue
-References: <20071222043139.0cd59804@laptopd505.fenrus.org> <476D1D16.5090703@garzik.org> <20071222064719.73fdd9a4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org> <476DB95F.3090801@garzik.org> <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org> <476DE07A.4000204@garzik.org>
-In-Reply-To: <476DE07A.4000204@garzik.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Dec 2007 00:15:55 -0500
+Received: from 1wt.eu ([62.212.114.60]:1073 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750944AbXLWFPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 00:15:54 -0500
+Date: Sun, 23 Dec 2007 06:12:41 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>, Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+Message-ID: <20071223051241.GA4449@1wt.eu>
+References: <1198275453.30889.4.camel@lappy> <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com> <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de> <20071222100326.GF26157@elte.hu> <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org> <20071222192550.GD28891@thunk.org> <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org> <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/22/2007 11:13 PM, Jeff Garzik wrote:
->
-> The facts as they exist today:
->
-> 1) Existing 256-byte config space devices have been known put
-> capabilities in the high end (>= 0xc8) of config space.
->
-> 2) It is legal for PCI-Express to put capabilities anywhere in PCI
-> config space, including extended config space.  (I hope our PCI cap
-> walking code checks for overruns...)
+On Sat, Dec 22, 2007 at 07:59:47PM -0500, Steven Rostedt wrote:
+[...]
+> But I still scratch my head when ever I need to touch sysfs.
 
+Same here. In fact, I've always considered that procfs was for
+humans while sysfs was for tools. sysfs reminds me too much the
+unexploitable /devices in Solaris. With the proper tools, I think
+we can do a lot with it, but it's not as intuitive to find the
+proper tools as it was to do "ls" followed by "cat" in /proc.
 
-
-
-
-You make it sound almost as if the capability list that starts in
-regular conf-space could cross into extended conf-space >= 256). That's
-not true, the capability lists in the regular conf-space and the
-extended conf-space are really separate, they use a different structure
-for linking (different number of bits to define the capability IDs), a
-different starting point, different capability IDs definition tables.
-The regular conf-space and the extended conf-space are really independant.
-
-
-
-
->
-> 3) Most new machines ship with PCI-Express devices with extended
-> config space.
->
-> Therefore it is provable /possible/, and is indeed logical to conclude
-> that capabilities in extended config space will follow the same
-> pattern that existing hw designers have been following...  but only
-> once the current OS's have stable extended-config-space support.
->
-> Maybe that day will never come, but it is nonetheless quite possible
-> within today's PCI Express spec for this to happen.
-
-
-
-I agree with that statement. In fact it is already quite useful today. I
-am doing a lot of support activities where extended-conf-space is a must
-for troubleshooting. It was important enough for us that we have
-user-tools that allows us to access mmconfig-space for pci-express even
-on systems that don't advertise a MCFG attribute (as long as the chipset
-supports it, we have reverse-engineered the location of the "mmconfig
-bar" for a few chipsets including nvidia chipsets, for Intel it is well
-documented, and there are couple others).
-
-
-
-Loic
+Willy
 
