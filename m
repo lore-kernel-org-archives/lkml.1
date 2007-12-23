@@ -1,115 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbXLWXAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbXLWXBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbXLWXAK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 18:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbXLWW7y
+	id S1757330AbXLWXBl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 18:01:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXLWXBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 17:59:54 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:60429 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753087AbXLWW7x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 17:59:53 -0500
-Message-ID: <476EE858.202@linux.vnet.ibm.com>
-Date: Mon, 24 Dec 2007 04:29:36 +0530
+	Sun, 23 Dec 2007 18:01:34 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:56071 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752253AbXLWXBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 18:01:33 -0500
+Date: Mon, 24 Dec 2007 04:11:58 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: Build breakage on powerpc with 2.6.24-rc6-mm1
+Message-ID: <20071223224158.GA7975@linux.vnet.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com
-Subject: Re: [patch 00/20] VM pageout scalability improvements
-References: <20071218211539.250334036@redhat.com> <476D7334.4010301@linux.vnet.ibm.com> <20071222192119.030f32d5@bree.surriel.com>
-In-Reply-To: <20071222192119.030f32d5@bree.surriel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> On Sun, 23 Dec 2007 01:57:32 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->> Rik van Riel wrote:
->>> On large memory systems, the VM can spend way too much time scanning
->>> through pages that it cannot (or should not) evict from memory. Not
->>> only does it use up CPU time, but it also provokes lock contention
->>> and can leave large systems under memory presure in a catatonic state.
->> I remember you mentioning that by large memory systems you mean systems
->> with at-least 128GB, does this definition still hold?
-> 
-> It depends on the workload.  Certain test cases can wedge the
-> VM with as little as 16GB of RAM.  Other workloads cause trouble
-> at 32 or 64GB, with the system sometimes hanging for several
-> minutes, all the CPUs in the pageout code and no actual swap IO.
-> 
+Hi,
 
-Interesting, I have not run into it so far. But I have smaller machines,
-typically 4-8GB.
+I see the following error with the iseries_veth driver in 2.6.24-rc6-mm1
 
-> On systems of 128GB and more, we have seen systems hang in the
-> pageout code overnight, without deciding what to swap out.
-> 
->>> This patch series improves VM scalability by:
->>>
->>> 1) making the locking a little more scalable
->>>
->>> 2) putting filesystem backed, swap backed and non-reclaimable pages
->>>    onto their own LRUs, so the system only scans the pages that it
->>>    can/should evict from memory
->>>
->>> 3) switching to SEQ replacement for the anonymous LRUs, so the
->>>    number of pages that need to be scanned when the system
->>>    starts swapping is bound to a reasonable number
->>>
->>> The noreclaim patches come verbatim from Lee Schermerhorn and
->>> Nick Piggin.  I have not taken a detailed look at them yet and
->>> all I have done is fix the rejects against the latest -mm kernel.
->> Is there a consolidate patch available, it makes it easier to test.
-> 
-> I will make a big patch available with the next version.  I have
-> to upgrade my patch set to newer noreclaim patches from Lee and
-> add a few small cleanups elsewhere.
-> 
+drivers/net/iseries_veth.c: In function ‘veth_init_connection’:
+drivers/net/iseries_veth.c:818: warning: unused variable ‘rc’
+drivers/net/iseries_veth.c: In function ‘veth_probe_one’:
+drivers/net/iseries_veth.c:1086: error: ‘veth_port_ktypeq’ undeclared
+(first use in this function)
+drivers/net/iseries_veth.c:1086: error: (Each undeclared identifier is
+reported only once
+drivers/net/iseries_veth.c:1086: error: for each function it appears
+in.)
+make[2]: *** [drivers/net/iseries_veth.o] Error 1
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
 
-That would be nice. I'll try and help out by testing the patches and
-running them
-
->>> I am posting this series now because I would like to get more
->>> feedback, while I am studying and improving the noreclaim patches
->>> myself.
->> What kind of tests show the problem? I'll try and review and test the code.
-> 
-> The easiest test possible simply allocates a ton of memory and
-> then touches it all.  Enough memory that the system needs to go
-> into swap.
-> 
-> Once memory is full, you will see the VM scan like mad, with a
-> big CPU spike (clearing the referenced bits off all pages) before
-> it starts swapping out anything.  That big CPU spike should be
-> gone or greatly reduced with my patches.
-> 
-> On really huge systems, that big CPU spike can be enough for one
-> CPU to spend so much time in the VM that all the other CPUs join
-> it, and the system goes under in a big lock contention fest.
-> 
-> Besides, even single threadedly clearing the referenced bits on
-> 1TB worth of memory can't result in acceptable latencies :)
-> 
-> In the real world, users with large JVMs on their servers, which
-> sometimes go a little into swap, can trigger this system.  All of
-> the CPUs end up scanning the active list, and all pages have the
-> referenced bit set.  Even if the system eventually recovers, it
-> might as well have been dead.
-> 
-> Going into swap a little should only take a little bit of time.
-> 
-
-Very fascinating, so we need to scale better with larger memory.
-I suspect part of the answer will lie with using large/huge pages.
+Here's a patch, compile tested to fix the compilation problem
 
 
+Remove unused variable rc and fix a typo, veth_port_type was called
+veth_port_typeq
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ drivers/net/iseries_veth.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -puN drivers/net/iseries_veth.c~fix-iseries-veth-driver drivers/net/iseries_veth.c
+--- linux-2.6.24-rc6/drivers/net/iseries_veth.c~fix-iseries-veth-driver	2007-12-24 03:59:35.000000000 +0530
++++ linux-2.6.24-rc6-balbir/drivers/net/iseries_veth.c	2007-12-24 04:02:31.000000000 +0530
+@@ -815,7 +815,7 @@ static int veth_init_connection(u8 rlp)
+ {
+ 	struct veth_lpar_connection *cnx;
+ 	struct veth_msg *msgs;
+-	int i, rc;
++	int i;
+ 
+ 	if ( (rlp == this_lp)
+ 	     || ! HvLpConfig_doLpsCommunicateOnVirtualLan(this_lp, rlp) )
+@@ -1083,7 +1083,7 @@ static struct net_device * __init veth_p
+ 		return NULL;
+ 	}
+ 
+-	kobject_init(&port->kobject, &veth_port_ktypeq);
++	kobject_init(&port->kobject, &veth_port_ktype);
+ 	if (0 != kobject_add(&port->kobject, &dev->dev.kobj, "veth_port"))
+ 		veth_error("Failed adding port for %s to sysfs.\n", dev->name);
+ 
+_
 
 -- 
 	Warm Regards,
