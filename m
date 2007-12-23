@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbXLWWBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbXLWWZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945AbXLWWBX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 17:01:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbXLWWBO
+	id S1753772AbXLWWZf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 17:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXLWWZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 17:01:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56662 "EHLO ogre.sisk.pl"
+	Sun, 23 Dec 2007 17:25:26 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56743 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750709AbXLWWBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 17:01:13 -0500
+	id S1751302AbXLWWZZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 17:25:25 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4 suspend-to-RAM
-Date: Sun, 23 Dec 2007 23:20:20 +0100
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: 2.6.24-rc6-mm1
+Date: Sun, 23 Dec 2007 23:44:38 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>, linux-kernel@vger.kernel.org,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200712231419.40207.carlos@strangeworlds.co.uk> <200712231730.34935.rjw@sisk.pl> <alpine.LFD.0.9999.0712230959140.21557@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0712230959140.21557@woody.linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <20071222233056.d652743e.akpm@linux-foundation.org> <200712231453.35497.rjw@sisk.pl> <20071223200946.GA21826@uranus.ravnborg.org>
+In-Reply-To: <20071223200946.GA21826@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712232320.21182.rjw@sisk.pl>
+Message-Id: <200712232344.39302.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 23 of December 2007, Linus Torvalds wrote:
-> 
-> On Sun, 23 Dec 2007, Rafael J. Wysocki wrote:
+On Sunday, 23 of December 2007, Sam Ravnborg wrote:
+> On Sun, Dec 23, 2007 at 02:53:34PM +0100, Rafael J. Wysocki wrote:
+> > On Sunday, 23 of December 2007, Rafael J. Wysocki wrote:
+> > > On Sunday, 23 of December 2007, Ingo Molnar wrote:
+> > > > 
+> > > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > > 
+> > > > > Well it doesn't build on x86-64 for me:
+> > > > > 
+> > > > >   CHK     include/linux/compile.h
+> > > > >   CC      arch/x86/ia32/../../../fs/compat_binfmt_elf.o
+> > > > > Assembler messages:
+> > > > > Fatal error: can't create arch/x86/ia32/../../../fs/.tmp_compat_binfmt_elf.o: No such file or directory
+> > > > > make[2]: *** [arch/x86/ia32/../../../fs/compat_binfmt_elf.o] Error 2
+> > > > > 
+> > > > > I will post the .config if anyone is interested.
+> > > > 
+> > > > yes, please send the .config.
+> > > 
+> > > Attached.
+> > > 
+> > > It also may be relevant that I compile the kernel with "make O=../build".
 > > 
-> > The patch is fine by me, so if anyone has objections, please speak up.
-> 
-> There is absolutely *no* way I will apply this in an -rc6 release.
-> 
-> The number of machines this will break is totally unknown. It might be 
-> zero. It might be hundreds.  We just don't know. We might hit another 
-> unlucky allocation that we just happened to avoid before.
+> > I ran the compilation once again and it worked.  Strange.
+> Try to delete your fs/ directory in your output dir.
+> Then I expect the same bug to surface again.
 
-I was rather thinking of putting it into -mm for some time and target for
-2.6.25 if possible.
+It does surface indeed.
 
-If it breaks systems, we can always revert before 2.6.25 final.
+> I guess it is because arch/x86/ia32/ is built before fs/ and
+> gcc cannot create directories for the output files and
+> it is the dependency files that triggers the error as this
+> is the first file to be generated.
 
-Thanks,
+I think you are right.
+
+Greetings,
 Rafael
