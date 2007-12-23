@@ -1,87 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbXLWJuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbXLWKSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754922AbXLWJuf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 04:50:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbXLWJu0
+	id S1755083AbXLWKSS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 05:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbXLWKSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 04:50:26 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:17096 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbXLWJuY (ORCPT
+	Sun, 23 Dec 2007 05:18:07 -0500
+Received: from nikam-dmz.ms.mff.cuni.cz ([195.113.20.16]:40668 "EHLO
+	nikam.ms.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752374AbXLWKSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 04:50:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AYDifLNaBd5zGDV0MHKDBNJZzAqV/YbpNMusvv3L3NOVq61+iAKCpuOCrnv0BXeW9M1SLKClDWw/F+VG8e1/qeKL8JR8NxhbaSL+M8MGqsoOTiM5vOeGRDizTySZl8tsMULl3pIHa6Xyy3WREMq2wF7dIWFKnvrNb6rGINWxlyw=
-Message-ID: <d9def9db0712230150h8d16888g9f36d4731ef8b192@mail.gmail.com>
-Date: Sun, 23 Dec 2007 10:50:23 +0100
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: [GIT PATCH] USB fixes for 2.6.24-rc5
-Cc: "Linus Torvalds" <torvalds@osdl.org>, "Andrew Morton" <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-In-Reply-To: <20071223072418.GA8764@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Dec 2007 05:18:06 -0500
+Date: Sun, 23 Dec 2007 11:18:02 +0100
+From: Martin Mares <mj@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a driver opt-in issue
+Message-ID: <mj+md-20071223.101546.31941.nikam@ucw.cz>
+References: <20071222043139.0cd59804@laptopd505.fenrus.org> <476D1D16.5090703@garzik.org> <20071222064719.73fdd9a4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org> <476DB95F.3090801@garzik.org> <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org> <476DE07A.4000204@garzik.org> <alpine.LFD.0.9999.0712222036010.21557@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071223072418.GA8764@kroah.com>
+In-Reply-To: <alpine.LFD.0.9999.0712222036010.21557@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi!
 
-did anyone already take care about:
-http://www.mail-archive.com/linux-usb-devel@lists.sourceforge.net/msg55641.html
+> The fact is, 99% of the hardware you buy *today* has absolutely zero need 
+> for extended PCI config access. In fact, I would not be surprised at all 
+> if most hardware sold today generally doesn't have *any* devices that even 
+> have config registers in the 0x100+ range.
 
-the fix seems to paper the issue although it happened with other
-people too now, so I wonder if there's any progress in that area?
+Most PCI Express bridges have root complex control block capabilities
+which have to reside in the extended range.
 
-thanks & have a nice Christmas,
-Markus
+However I agree that hardware _requiring_ extended config register access
+is rare.
 
-On Dec 23, 2007 8:24 AM, Greg KH <gregkh@suse.de> wrote:
-> Here are some USB fixes and new device ids against your 2.6.24-rc6 git
-> tree.
->
-> Please pull from:
->         master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
->
-> The full patches will be sent to the linux-usb mailing list (note the
-> address change), if anyone wants to see them.
->
-> thanks,
->
-> greg k-h
->
-> ------------
->
->  drivers/usb/gadget/fsl_usb2_udc.c |    2 +-
->  drivers/usb/serial/cp2101.c       |    1 +
->  drivers/usb/serial/sierra.c       |    2 ++
->  3 files changed, 4 insertions(+), 1 deletions(-)
->
-> ---------------
->
-> Kevin R Page (1):
->       USB: VID/PID update for sierra
->
-> Martin Kusserow (1):
->       USB: New device ID for the CP2101 driver
->
-> Peter Korsgaard (1):
->       USB: Unbreak fsl_usb2_udc
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
-
+				Have a nice fortnight
 -- 
-http://www.couchsurfing.com/people/mrec
+Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
+Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
+"Dijkstra probably hates me." -- /usr/src/linux/kernel/sched.c
