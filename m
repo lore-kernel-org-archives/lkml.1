@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbXLWXHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbXLWXIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757449AbXLWXHo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 18:07:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbXLWXHd
+	id S1756921AbXLWXIL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 18:08:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbXLWXHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 18:07:33 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37688 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756868AbXLWXHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 18:07:32 -0500
-Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a
-	driver opt-in issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Martin Mares <mj@ucw.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz
-In-Reply-To: <mj+md-20071223.211353.32429.nikam@ucw.cz>
-References: <476D1D16.5090703@garzik.org>
-	 <20071222064719.73fdd9a4@laptopd505.fenrus.org>
-	 <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org>
-	 <476DB95F.3090801@garzik.org>
-	 <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org>
-	 <476DDFEE.3010009@garzik.org>
-	 <alpine.LFD.0.9999.0712222034150.21557@woody.linux-foundation.org>
-	 <476DE98F.2010009@garzik.org>
-	 <alpine.LFD.0.9999.0712222058160.21557@woody.linux-foundation.org>
-	 <1198444150.6686.17.camel@pasglop>
-	 <mj+md-20071223.211353.32429.nikam@ucw.cz>
-Content-Type: text/plain
-Date: Mon, 24 Dec 2007 10:06:42 +1100
-Message-Id: <1198451202.6686.28.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Sun, 23 Dec 2007 18:07:51 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:6824 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757517AbXLWXHt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 18:07:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=P4wlRGLlFSEyXvloQ4imJd08KUpEMN+h3xgwkrEj/FadBkbJ5349/OdsawcK7rFn3ayFFwb90wyLvUQeGCrSzKyuxQj+LyXcP/ywbjfoD8CXL9c0zYaPx3PhgvxqkocFez268Z5s8e0yP7L6+gjfgV86DpZqPo1P9Gv5ai+dG5Y=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 1/2] ide: add ide_dump_identify() debug helper
+Date: Sun, 23 Dec 2007 22:43:36 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712232243.36838.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sun, 2007-12-23 at 22:15 +0100, Martin Mares wrote:
-> Hello!
-> 
-> >  - During that probe, you set a flag if any device has capabilities that
-> > extend beyond 0xff.
-> 
-> Can this work?  The extended capabilities are not linked to the normal
-> ones in any way.
+* Add ide_dump_identify() debug helper for dumping raw identify data in
+  the hdparm friendly format (== the identify data can be extracted from
+  dmesg output and passed to hdparm --Istdin).
 
-Yeah, well, you set a flag if you have extended capabilities. I don't
-have my spec at hand (or the code) but can't we know if there are any
-based on some non-ext field ?
+* Dump identify data in ide-probe.c::do_identify() if DEBUG is enabled.
 
-Ben.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-probe.c |    4 ++++
+ include/linux/ide.h     |    5 +++++
+ 2 files changed, 9 insertions(+)
 
-
+Index: b/drivers/ide/ide-probe.c
+===================================================================
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -129,6 +129,10 @@ static inline void do_identify (ide_driv
+ 
+ 	drive->id_read = 1;
+ 	local_irq_enable();
++#ifdef DEBUG
++	printk(KERN_INFO "%s: dumping identify data\n", drive->name);
++	ide_dump_identify((u8 *)id);
++#endif
+ 	ide_fix_driveid(id);
+ 
+ #if defined (CONFIG_SCSI_EATA_PIO) || defined (CONFIG_SCSI_EATA)
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1291,6 +1291,11 @@ extern struct bus_type ide_bus_type;
+ #define ide_id_has_flush_cache_ext(id)	\
+ 	(((id)->cfs_enable_2 & 0x2400) == 0x2400)
+ 
++static inline void ide_dump_identify(u8 *id)
++{
++	print_hex_dump(KERN_INFO, "", DUMP_PREFIX_NONE, 16, 2, id, 512, 0);
++}
++
+ static inline int hwif_to_node(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev = hwif->pci_dev;
