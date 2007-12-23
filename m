@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbXLWURV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbXLWUXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757395AbXLWURV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 15:17:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbXLWURO
+	id S1756861AbXLWUXd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 15:23:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbXLWUXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 15:17:14 -0500
-Received: from mailbox2.myri.com ([64.172.73.26]:1943 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754919AbXLWURN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 15:17:13 -0500
-Message-ID: <476EC218.6030000@myri.com>
-Date: Sun, 23 Dec 2007 15:16:24 -0500
-From: Loic Prylli <loic@myri.com>
-User-Agent: Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
+	Sun, 23 Dec 2007 15:23:24 -0500
+Received: from an-out-0708.google.com ([209.85.132.251]:63664 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752920AbXLWUXX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 15:23:23 -0500
+Message-ID: <fa686aa40712231223j18b83ff6ne5ade95a88ebbc79@mail.gmail.com>
+Date: Sun, 23 Dec 2007 13:23:22 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "OGAWA Hirofumi" <hirofumi@mail.parknet.co.jp>
+Subject: Re: [PATCH] fat: Editions to support fat_fallocate()
+Cc: "Steven Cavanagh" <steven.cavanagh@secretlab.ca>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <87tzm91u98.fsf@duaron.myhome.or.jp>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Tony Camuso <tcamuso@redhat.com>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [Fwd: Re: [PATCH 0/5]PCI: x86 MMCONFIG]
-References: <476A5FD0.4010804@redhat.com> <20071220172205.GB5636@suse.de> <20071220173528.GE29690@parisc-linux.org> <476AAE99.7090301@redhat.com> <20071220181603.GF29690@parisc-linux.org>
-In-Reply-To: <20071220181603.GF29690@parisc-linux.org>
-X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071222210958.9351.35913.stgit@jpe-laptop>
+	 <fa686aa40712221418m601d3ffrd5b9158104712078@mail.gmail.com>
+	 <87tzm91u98.fsf@duaron.myhome.or.jp>
+X-Google-Sender-Auth: eb0621839f7b91ee
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On 12/20/2007 1:16 PM, Matthew Wilcox wrote:
-> Oh, that's the same bug others (including me) have been complaining
-> about.
+On 12/23/07, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+> "Grant Likely" <grant.likely@secretlab.ca> writes:
+> >
+> > However, digging further, when FALLOC_FL_KEEP_SIZE is set, I don't
+> > think fat_cont_expand() has the behaviour that we want to implement.
+> > When that flag is set, I think we simply want to add clusters
+> > associated with the file to the FAT.  We don't want to clear them or
+> > map them into the page cache yet (that should be done when the
+> > filesize is increased for real).
+> >
+> > I believe a call to fat_allocate_clusters() is all that is needed in
+> > this case.  Hirofumi, please correct me if I'm wrong.
 >
-> http://marc.info/?l=linux-kernel&m=118809338631160&w=2
->
->   
->> It hangs in exactly the same place every time.
->>
->> I am surmising that the write to that BAR is causing a MCE.
->>     
->
-> Bad deduction.  What's happening is that the write to the BAR is causing
-> it to overlap the decode for mmconfig space.  So the mmconfig write to
-> set the BAR back never gets through.
->
-> I have a different idea to fix this problem.  Instead of writing
-> 0xffffffff, we could look for an unused bit of space in the E820 map and
-> write, say, 0xdfffffff to the low 32-bits of a BAR.  Then it wouldn't
-> overlap, and we could find its size using MMCONFIG.
->
-> Does anyone know how Windows handles these machines? 
+> Right. And we need to care the limitation on FAT specification (compatibility).
 
+I not sure I fully understand what you mean.  Can you please
+elaborate?  Are you referring to whether on not it will break other
+FAT implementations if a file has more clusters allocated than it
+needs?  If so, how do we decide whether or not it is acceptable?
 
+Thanks,
+g.
 
-I just realized one thing: the bar sizing code in pci_read_bases() (that
-writes 0xffffffff in the bars) does not seem to disable the
-PCI_COMMAND_MEM/PCI_COMMAND_IO bits in the cmd register before
-manipulating the BARs. And it seems nobody else ensures they are
-disabled at this point either (or am I missing something?).
-
-
-Touching the bars while they are enabled would be buggy behaviour from
-our part, and something trivial to fix. And it might well fix that
-particular problem (it's fair play from the machine to crash if we
-create a decoding conflict, simply disabling the cmd bits in
-pci_read_bases() should remove that conflict).
-
-FWIW, to partially answer your last question, Windows does disable
-mem-space and/or IO-space when sizing the bars of a device (I have some
-traces of configuration-space-access taken on a window machine for one
-of the PCI busses).
-
-
-
-Loic
-
-
-
-
-
-
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
