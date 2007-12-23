@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbXLWUXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbXLWUYD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756861AbXLWUXd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 15:23:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbXLWUXY
+	id S1757527AbXLWUYD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 15:24:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbXLWUXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 15:23:24 -0500
-Received: from an-out-0708.google.com ([209.85.132.251]:63664 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752920AbXLWUXX (ORCPT
+	Sun, 23 Dec 2007 15:23:52 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:38053 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753561AbXLWUXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 15:23:23 -0500
-Message-ID: <fa686aa40712231223j18b83ff6ne5ade95a88ebbc79@mail.gmail.com>
-Date: Sun, 23 Dec 2007 13:23:22 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "OGAWA Hirofumi" <hirofumi@mail.parknet.co.jp>
-Subject: Re: [PATCH] fat: Editions to support fat_fallocate()
-Cc: "Steven Cavanagh" <steven.cavanagh@secretlab.ca>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <87tzm91u98.fsf@duaron.myhome.or.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071222210958.9351.35913.stgit@jpe-laptop>
-	 <fa686aa40712221418m601d3ffrd5b9158104712078@mail.gmail.com>
-	 <87tzm91u98.fsf@duaron.myhome.or.jp>
-X-Google-Sender-Auth: eb0621839f7b91ee
+	Sun, 23 Dec 2007 15:23:51 -0500
+Date: Sun, 23 Dec 2007 15:23:28 -0500
+Message-Id: <200712232023.lBNKNST6011525@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: hch@infradead.org, viro@ftp.linux.org.uk
+Subject: vfs_rmdir "bug"?
+Cc: linux-kernel@vger.kernel.org
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/23/07, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
-> "Grant Likely" <grant.likely@secretlab.ca> writes:
-> >
-> > However, digging further, when FALLOC_FL_KEEP_SIZE is set, I don't
-> > think fat_cont_expand() has the behaviour that we want to implement.
-> > When that flag is set, I think we simply want to add clusters
-> > associated with the file to the FAT.  We don't want to clear them or
-> > map them into the page cache yet (that should be done when the
-> > filesize is increased for real).
-> >
-> > I believe a call to fat_allocate_clusters() is all that is needed in
-> > this case.  Hirofumi, please correct me if I'm wrong.
->
-> Right. And we need to care the limitation on FAT specification (compatibility).
+Al, Christoph,
 
-I not sure I fully understand what you mean.  Can you please
-elaborate?  Are you referring to whether on not it will break other
-FAT implementations if a file has more clusters allocated than it
-needs?  If so, how do we decide whether or not it is acceptable?
+vfs_rmdir is called from do_rmdir and does essentially this:
+
+	dentry_unhash(dentry);
+	error = dir->i_op->rmdir(dir, dentry);
+	if (!error)
+		d_delete(dentry);
+	dput(dentry);
+
+
+do_rmdir grabs a ref on the dentry to be rmdir'ed, and also dput's it (so
+it's nice and symmetric).  But vfs_rmdir seems asymmetric esp. when ->rmdir
+returns and error (e.g., -ENOTEMPTY):
+
+1. on error, the dentry will remain unhashed: shouldn't it be re-hashed (the
+   way vfs_rename_dir does)?
+
+2. vfs_rmdir unconditionally dput's the dentry, but it never grabbed that
+   ref in the first place.  Is this really necessary.  We had a good dentry
+   in the dcache before the call to rmdir(2), but after this unconditional
+   dput(), it'll be removed from the dcache.  This would cause the vfs to
+   have to re-issue a lookup on it next time someone tries to do anything
+   with that directory.
+
+I discovered this while trying to figure out why an expected-to-fail rmdir
+on unionfs (one of the ltp tests tests for -ENOTEMPTY) left a lower inode
+behind until umount(2) was called.  I fixed it by implementing
+unionfs_d_iput, but still, it seems odd that we'll have dropped/unhashed a
+possibly good dentry b/c ->rmdir failed.
 
 Thanks,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Erez.
