@@ -1,84 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbXLWXBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbXLWXHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbXLWXBl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 18:01:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXLWXBe
+	id S1756315AbXLWXHV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 18:07:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbXLWXHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 18:01:34 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:56071 "EHLO e3.ny.us.ibm.com"
+	Sun, 23 Dec 2007 18:07:07 -0500
+Received: from gate.crashing.org ([63.228.1.57]:37680 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752253AbXLWXBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 18:01:33 -0500
-Date: Mon, 24 Dec 2007 04:11:58 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Build breakage on powerpc with 2.6.24-rc6-mm1
-Message-ID: <20071223224158.GA7975@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1750811AbXLWXHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 18:07:05 -0500
+Subject: Re: [PATCH 2/2] scsi: Use new __dma_buffer to align sense buffer
+	in scsi_cmnd
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: james.bottomley@steeleye.com, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, rdreier@cisco.com,
+       linux-scsi@vger.kernel.org, rmk@arm.linux.org.uk, davem@davemloft.net,
+       ralf@linux-mips.org, Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <476E41D1.50606@panasas.com>
+References: <20071221023011.4C4BADDDFA@ozlabs.org>
+	 <476E41D1.50606@panasas.com>
+Content-Type: text/plain
+Date: Mon, 24 Dec 2007 10:04:52 +1100
+Message-Id: <1198451092.6686.26.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I see the following error with the iseries_veth driver in 2.6.24-rc6-mm1
+> This has the potential of leaving a big fat ugly hole in the middle of 
+> scsi_cmnd. I would suggest of *just* moving the sense_buffer array to be
+> the *first member* of struct scsi_cmnd. The command itself is already cache
+> aligned, allocated by the proper flags to it's slab. And put a fat comment
+> near it's definition.
 
-drivers/net/iseries_veth.c: In function ‘veth_init_connection’:
-drivers/net/iseries_veth.c:818: warning: unused variable ‘rc’
-drivers/net/iseries_veth.c: In function ‘veth_probe_one’:
-drivers/net/iseries_veth.c:1086: error: ‘veth_port_ktypeq’ undeclared
-(first use in this function)
-drivers/net/iseries_veth.c:1086: error: (Each undeclared identifier is
-reported only once
-drivers/net/iseries_veth.c:1086: error: for each function it appears
-in.)
-make[2]: *** [drivers/net/iseries_veth.o] Error 1
-make[1]: *** [drivers/net] Error 2
-make: *** [drivers] Error 2
+The hole would only be present on non coherent architectures though. We
+also still need the padding after the sense_buffer. But yeah, moving the
+sense buffer to first position would diminish the size of the hole I
+suppose.
 
-Here's a patch, compile tested to fix the compilation problem
+> This is until a proper fix is sent. I have in my Q a proposition for a 
+> more prominent solution, which I will send next month. Do to short comings
+> in the sense handling and optimizations, but should definitely cover this
+> problem.
+> 
+> The code should have time to be discussed and tested, so it is only 2.6.26
+> material. For the duration of the 2.6.25 kernel we can live with a reorder
+> of scsi_cmnd members, if it solves such a grave bug for some ARCHs.
 
+Re-oreder isn't enough. We need both re-order and the __dma_buffer
+annotation to ensure proper padding. Some archs have 64 or even 128
+bytes cache line size.
 
-Remove unused variable rc and fix a typo, veth_port_type was called
-veth_port_typeq
+I agree that in the long run, a better solution should be done involving
+reworking the way the sense buffer is allocated. I started modifying the
+EH code to kmalloc it, but it gets very messy with the current interface
+between drivers and EH. I still have some patches around I can send,
+though some drivers need fixing (error handling on kmalloc failure).
+James seem to have a better idea of pre-allocating sense buffers per
+host based on how many they can have in flight which I haven't looked
+at.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+Ben.
 
- drivers/net/iseries_veth.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> Boaz
+> ----
+> [RFD below]
+> My proposed solution will be has follows:
+> 
+>  1. Since the scsi protocol mandates an immediate REQUEST_SENSE after an error
+>     in effect the Q is frozen until the REQUEST_SENSE command returns.
+> 
+>  2. The scsi-ml needs the sense buffer for its normal operation, independent 
+>     from the ULD's request of the sence_buffer or not at request->sense. But
+>     in effect, 90% of all scsi-requests come with ULD's allocated buffer for
+>     sense, that is copied to, on command completion.
+> 
+>  3. 99% of all commands complete successfully, so if an optimization is 
+>     proposed for the successful case, sacrificing a few cycles for the error
+>     case than thats a good thing.
+> 
+>  My suggestion is to have a per Q, driver-overridable, sense buffer that is 
+>  DMAed/written to by drivers. At the end of the REQUEST_SENSE command one
+>  of 2 things will be done. Either copy the sense to the ULD's supplied buffer,
+>  or if not available, allocate one from a dedicated mem_cache pool.
 
-diff -puN drivers/net/iseries_veth.c~fix-iseries-veth-driver drivers/net/iseries_veth.c
---- linux-2.6.24-rc6/drivers/net/iseries_veth.c~fix-iseries-veth-driver	2007-12-24 03:59:35.000000000 +0530
-+++ linux-2.6.24-rc6-balbir/drivers/net/iseries_veth.c	2007-12-24 04:02:31.000000000 +0530
-@@ -815,7 +815,7 @@ static int veth_init_connection(u8 rlp)
- {
- 	struct veth_lpar_connection *cnx;
- 	struct veth_msg *msgs;
--	int i, rc;
-+	int i;
- 
- 	if ( (rlp == this_lp)
- 	     || ! HvLpConfig_doLpsCommunicateOnVirtualLan(this_lp, rlp) )
-@@ -1083,7 +1083,7 @@ static struct net_device * __init veth_p
- 		return NULL;
- 	}
- 
--	kobject_init(&port->kobject, &veth_port_ktypeq);
-+	kobject_init(&port->kobject, &veth_port_ktype);
- 	if (0 != kobject_add(&port->kobject, &dev->dev.kobj, "veth_port"))
- 		veth_error("Failed adding port for %s to sysfs.\n", dev->name);
- 
-_
+I think that's pretty much was James was proposing indeed.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+>  So we are completely saving 92 bytes from scsi_cmnd by replacing the buffer
+>  with a pointer. We can always read the sense into a per Q buffer. And 10% of
+>  %1 of the times we will need to allocate a sense buffer from a dedicated mem_cache
+>  I would say thats a nice optimization.
+> 
+>  The changes to scsi_error/scsi_cmnd and friends, is pretty strait forward. But
+>  it depends on a conversion of 4/5 drivers to the new scsi_eh API for 
+>  REQUEST_SENSE. I have only converted these drivers that interfered with the accessors
+>  effort + 1 other places. But there are a few more places that are not converted.
+>  Once done. The implementation can easily change with no affect on drivers.
+> 
+>  The reason I've started with this work is because the SCSI standard permits up
+>  to 260 bytes of sense, which you guest right, is needed by the OSD command set.
+> 
+> Boaz
+
