@@ -1,70 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbXLWMNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbXLWMQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbXLWMNc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 07:13:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbXLWMNW
+	id S1755128AbXLWMQe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 07:16:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbXLWMQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 07:13:22 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:37047 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751248AbXLWMNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 07:13:21 -0500
-Message-ID: <476E50DC.1040701@garzik.org>
-Date: Sun, 23 Dec 2007 07:13:16 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 23 Dec 2007 07:16:26 -0500
+Received: from mail.parknet.ad.jp ([210.171.162.6]:40603 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751279AbXLWMQZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 07:16:25 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: "Steven Cavanagh" <steven.cavanagh@secretlab.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fat: Editions to support fat_fallocate()
+References: <20071222210958.9351.35913.stgit@jpe-laptop>
+	<fa686aa40712221418m601d3ffrd5b9158104712078@mail.gmail.com>
+Date: Sun, 23 Dec 2007 21:16:19 +0900
+In-Reply-To: <fa686aa40712221418m601d3ffrd5b9158104712078@mail.gmail.com>
+	(Grant Likely's message of "Sat, 22 Dec 2007 15:18:23 -0700")
+Message-ID: <87tzm91u98.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Git Mailing List <git@vger.kernel.org>
-Subject: Re: Updated Kernel Hacker's guide to git
-References: <200612241807.kBOI746w008739@laptop13.inf.utfsm.cl> <476E42BF.1010300@garzik.org> <alpine.LFD.0.9999.0712230701520.14863@localhost.localdomain>
-In-Reply-To: <alpine.LFD.0.9999.0712230701520.14863@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Sun, 23 Dec 2007, Jeff Garzik wrote:
-> 
->> Another year, another update!  :)
->>
->> The kernel hacker's guide to git has received some updates:
->>
->> 	http://linux.yyz.us/git-howto.html
->>
->> This includes all the input sent to me in the past several months,
->> as well as a few new tips and tricks I use on a regular basis.
->>
->> In general, this document is designed to be a quick-start cookbook,
->> and not a comprehensive introduction.
-> 
-> there's one issue i have with this document, and that's that i wish it
-> more carefully distinguished between regular git "user" tasks, and git
-> "developer" tasks.
-> 
-> i may be mistaken, but it would seem that a lot of folks are going to
-> be what i call basic users, who only want to update their git tree,
-> check the logs, check the status and so on.  and if they start to get
-> ambitious, they might make some changes to the tree, do a diff, and
-> submit a patch.  but in the beginning, they won't be making commits or
-> switching branches, etc.
-> 
-> in short, i can see the value of something like a "getting started
-> with git as a basic user" tutorial.  does such a thing exist?
+"Grant Likely" <grant.likely@secretlab.ca> writes:
 
+>> +/*
+>> + * preallocate space for a file. This implements fat fallocate inode
+>> + * operation, which gets called from sys_fallocate system call. User
+>> + * space requests len bytes at offset.
+>> + */
+>> +long fat_fallocate(struct inode *inode, int mode, loff_t offset, loff_t len)
 
-hmmm.  There's the tutorial linked at the bottom of the page, which in 
-turn links to http://www.kernel.org/pub/software/scm/git/docs/everyday.html
+This should be "static".
 
-git is a developer's tool, so I sorta targetted that audience.  I 
-definitely agree that is not only git audience...
+>> +{
+>> +       int ret = 0;
+>> +       loff_t filesize = inode->i_size;
+>> +
+>> +       /* preallocation to directories is currently not supported */
+>> +       if (S_ISDIR(inode->i_mode)) {
+>> +               printk(KERN_ERR
+>> +               "fat_fallocate(): Directory prealloc not supported\n");
+>
+> This printk is probably not needed, or at least make it a pr_debug()
 
-	Jeff
+Yes. Please remove printk().
 
+>> +               return -ENODEV;
+>> +       }
+>> +
+>> +       if ((offset + len) <= MSDOS_I(inode)->mmu_private) {
+>> +               printk(KERN_INFO
+>> +                       "fat_fallocate():Blocks already allocated\n");
+>
+> Drop the printk() here.  It will cause a write to the system log
+> everytime userspace does an unnecessary fat_fallocate().  That becomes
+> a performance hit which I don't think we want.
 
+Yes. And it should be ->i_size, not ->mmu_private.
+
+>> +       if ((offset + len) > MSDOS_I(inode)->mmu_private) {
+
+Ditto. This should also be ->i_size. Furthermore, this check should be
+under ->i_mutex, otherwise others may expand ->i_size before this already.
+
+>> +               mutex_lock(&inode->i_mutex);
+>> +               ret = fat_cont_expand(inode, (offset + len));
+>> +               if (ret) {
+>> +                       printk(KERN_ERR
+>> +                               "fat_fallocate():fat_cont_expand() error\n");
+>> +                       mutex_unlock(&inode->i_mutex);
+>> +                       return ret;
+>> +               }
+>> +               mutex_unlock(&inode->i_mutex);
+>> +       }
+>> +       if (mode & FALLOC_FL_KEEP_SIZE) {
+>> +               mutex_lock(&inode->i_mutex);
+>> +               i_size_write(inode, filesize);
+>> +               mutex_unlock(&inode->i_mutex);
+>> +       }
+>
+> Race condition.  The file is increased in size and then returned to
+> the original size if FALLOC_FL_KEEP_SIZE is set, but the lock is
+> dropped then reobtained between increasing the size and restoring to
+> the original.  Another file operation can occur between the two
+> operations.  Badness!
+>
+> However, digging further, when FALLOC_FL_KEEP_SIZE is set, I don't
+> think fat_cont_expand() has the behaviour that we want to implement.
+> When that flag is set, I think we simply want to add clusters
+> associated with the file to the FAT.  We don't want to clear them or
+> map them into the page cache yet (that should be done when the
+> filesize is increased for real).
+>
+> I believe a call to fat_allocate_clusters() is all that is needed in
+> this case.  Hirofumi, please correct me if I'm wrong.
+
+Right. And we need to care the limitation on FAT specification (compatibility).
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
