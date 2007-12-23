@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbXLWELl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbXLWEN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974AbXLWELl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Dec 2007 23:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbXLWELc
+	id S1756131AbXLWEN6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Dec 2007 23:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbXLWENv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Dec 2007 23:11:32 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:51354 "EHLO mail.dvmed.net"
+	Sat, 22 Dec 2007 23:13:51 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:51375 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754016AbXLWELc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Dec 2007 23:11:32 -0500
-Message-ID: <476DDFEE.3010009@garzik.org>
-Date: Sat, 22 Dec 2007 23:11:26 -0500
+	id S1754157AbXLWENu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Dec 2007 23:13:50 -0500
+Message-ID: <476DE07A.4000204@garzik.org>
+Date: Sat, 22 Dec 2007 23:13:46 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
@@ -32,43 +32,56 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus Torvalds wrote:
-> The problem is that it isn't enough that it works on common machines with 
-> good hardware. The problem is that we end up chasing insane bugs, wasting 
-> peoples valuable time and effort, on those *few* - out of *millions* - of 
-> machines that then surprisingly don't work.
+> On Sat, 22 Dec 2007, Jeff Garzik wrote:
+>> Regardless of whether a driver is loaded or not, you may NEED to see extended
+>> capabilities.  The system may NEED to see those capabilities just to parse
+>> them for sane operation.
 > 
-> And "surprisingly" is definitely the watch-word. That includes silently 
-> just not booting (because the first time anybody tries to do a PCI config 
-> cycle access, the machine just locks up) to some really *odd* behaviour 
-> (ie everything works fine *except* that reading the PCI card ID from a 
-> few cards returns a value of 0x0001 rather than the correct one).
+> And that's just not true.
+> 
+> I don't know why you even claim so. There is absolutely *zero* need for 
+> MMCONFIG for 100% of old hardware, and old hardware is exactly the 
+> problem. The hardware that people will run next year isn't the issue.
 
-> The fact is, we're currently turning off MMCONFIG very aggressively, 
-> exactly because it has caused problems. So most people never even use 
-> MMCONFIG when it's enabled, because all of our sanity checks that turn it 
-> off again. And it still has caused odd problems.
+I'm not claiming anything about old hardware.
 
-Yes, I know all this.  I am quite aware of the situation.
+It should be self-evident that mmconfig doesn't work on old hardware, is 
+not needed on old hardware, should not be turned on for old hardware, 
+and in general should never disturb old hardware.
 
-My core assertion:  the present situation -- turning off MMCONFIG 
-aggressively -- is greatly preferable to adding 
-pci_enable_mmconfig_accesses(pdev).
 
-IOW, don't add a new API.  Keep doing what we're doing today.
+> There may be an absolute need for MMCONFIG for future machines and future 
+> drivers, but there is not a single machine in existence today that really 
+> depends on it. You're just making things up. At worst, you lose some 
+> not-so-important error reporting, no more.
+> 
+> So don't go spreading obvious untruths,
 
-Today, we have a consistent "all or none" model for mmconfig.  Any 
-per-device mmconfig enabling introduces pain and inconsistency, in both 
-the kernel and userland.
 
-Users with devices that REQUIRE extended config accesses should buy 
-machines with known good mmconfig.  The situation will sort itself out 
-from there.  We don't need ugly hacks like 
-pci_enable_mmconfig_for_this_device().
+The facts as they exist today:
+
+1) Existing 256-byte config space devices have been known put 
+capabilities in the high end (>= 0xc8) of config space.
+
+2) It is legal for PCI-Express to put capabilities anywhere in PCI 
+config space, including extended config space.  (I hope our PCI cap 
+walking code checks for overruns...)
+
+3) Most new machines ship with PCI-Express devices with extended config 
+space.
+
+Therefore it is provable /possible/, and is indeed logical to conclude 
+that capabilities in extended config space will follow the same pattern 
+that existing hw designers have been following...  but only once the 
+current OS's have stable extended-config-space support.
+
+Maybe that day will never come, but it is nonetheless quite possible 
+without today's PCI Express spec for this to happen.
+
+We must handle this case, even if mmconfig is COMPLETELY DISABLED (i.e. 
+normal mode today).
 
 	Jeff
 
-
-(second response, for other paragraphs, following in separate email.  I 
-wanted to underscore the core API issue...)
 
 
