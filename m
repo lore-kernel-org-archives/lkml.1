@@ -1,66 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbXLWLTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbXLWLgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbXLWLTS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 06:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXLWLTJ
+	id S1753984AbXLWLgH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 06:36:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXLWLf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 06:19:09 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51400 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751355AbXLWLTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 06:19:08 -0500
-Date: Sun, 23 Dec 2007 12:17:52 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: David Newall <david@davidnewall.com>
-Cc: Richard D <richard@embunus.com>,
-       "'Matthew Bloch'" <matthew@bytemark.co.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Testing RAM from userspace / question about memmap= arguments
-Message-ID: <20071223111752.GA2340@elf.ucw.cz>
-References: <fk8umh$n7o$1@ger.gmane.org> <20071221125812.GA4052@ucw.cz> <000001c84472$74b245e0$5e16d1a0$@com> <20071222134612.GA4098@ucw.cz> <476D35F6.90900@davidnewall.com> <20071222184759.GB31809@elf.ucw.cz> <476D756A.6060507@davidnewall.com> <20071222205432.GA2221@elf.ucw.cz> <476E0FDF.9030407@davidnewall.com>
+	Sun, 23 Dec 2007 06:35:56 -0500
+Received: from ns4.abinetworks.biz ([216.218.212.66]:33851 "EHLO
+	ns4.abinetworks.biz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751309AbXLWLfy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 06:35:54 -0500
+Message-ID: <476E47F5.4090807@abinetworks.biz>
+Date: Sun, 23 Dec 2007 12:35:17 +0100
+From: Gianluca Alberici <gianluca@abinetworks.biz>
+User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <476E0FDF.9030407@davidnewall.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Scott <linux-kernel@bluecamel.eml.cc>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: NFS EINVAL on open(... | O_TRUNC) on 2.6.23.9
+References: <476CEC5E.9070002@abinetworks.biz> <838DE9A2-59B2-49FA-B3E8-89B26368B1CF@bluecamel.eml.cc>
+In-Reply-To: <838DE9A2-59B2-49FA-B3E8-89B26368B1CF@bluecamel.eml.cc>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2007-12-23 18:05:59, David Newall wrote:
-> Pavel Machek wrote:
->> On Sun 2007-12-23 07:06:58, David Newall wrote:
->>   
->>> It's kind of hard to run anything over SSH if it has to be run before 
->>> userspace is up.  But the kernel can collect results from a modified 
->>> memtest, after it chains back.
->>>     
+Hello,
+
+I can do better. I have investigated a bit the problem:
+
+1) The problem arises only with the userspace nfsd (Universal nfsd 2.2). 
+I have realized that the latest patches introduced in 2.6.22 have 
+changed a lot of things into NFS.
+
+2) The following code has been debugged with sunrpc.rpc_debug and 
+sunrpc.nfs_debug
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <stdio.h>
+
+int main(int argc, char *argv[]) {
+        int fp;
+        if ((fp=open("/mnt/tmp/test",O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU )) == -1) printf("ERR: %d\n",errno);
+        else {
+                write(fp, argv[1], strlen(argv[1]));
+                printf("OK\n");
+                close(fp);
+        };
+}
+
+
+2b) The output
+
+[...]
+
+<8>NFS call  setattr
+<8>RPC:       new task initialized, procpid 18656
+<8>RPC:       allocated task f7bec500
+<8>RPC:     0 looking up UNIX cred
+<8>RPC:   740 __rpc_execute flags=0x480
+<8>RPC:   740 call_start nfs2 proc 2 (sync)
+<8>RPC:   740 call_reserve (status 0)
+<8>RPC:   740 reserved req f1416000 xid 643f3c42
+<8>RPC:   740 call_reserveresult (status 0)
+<8>RPC:   740 call_allocate (status 0)
+<8>RPC:   740 allocated buffer of size 528 at e627b800
+<8>RPC:   740 call_bind (status 0)
+<8>RPC:   740 call_connect xprt f70d4000 is connected
+<8>RPC:   740 call_transmit (status 0)
+<8>RPC:   740 xprt_prepare_transmit
+<8>RPC:   740 xprt_cwnd_limited cong = 0 cwnd = 512
+<8>RPC:   740 call_encode (status 0)
+<8>RPC:   740 marshaling UNIX cred f4efcb40
+<8>RPC:   740 using AUTH_UNIX cred f4efcb40 to wrap rpc data
+<8>RPC:   740 xprt_transmit(148)
+<8>RPC:       xs_udp_data_ready...
+<8>RPC:       cong 256, cwnd was 512, now 512
+<8>RPC:   740 xid 643f3c42 complete (28 bytes received)
+<8>RPC:       xs_udp_send_request(148) = 148
+<8>RPC:   740 xmit complete
+<8>RPC:       wake_up_next(f70d4114 "xprt_resend")
+<8>RPC:       wake_up_next(f70d40e4 "xprt_sending")
+<8>RPC:   740 call_status (status 28)
+<8>RPC:   740 call_decode (status 28)
+<8>RPC:   740 validating UNIX cred f4efcb40
+<8>RPC:   740 using AUTH_UNIX cred f4efcb40 to unwrap rpc data
+<8>RPC:   740 call_decode result -22
+<8>RPC:   740 return 0, status -22
+<8>RPC:   740 release task
+<8>RPC:       freeing buffer of size 528 at e627b800
+<8>RPC:   740 release request f1416000
+<8>RPC:       wake_up_next(f70d4174 "xprt_backlog")
+<8>RPC:   740 releasing UNIX cred f4efcb40
+<8>RPC:       rpc_release_client(f6f1f880)
+<8>NFS reply setattr: -22
+
+[...]
+
+3) It turns out the following:
+
+- setattr returns EINVAL due to...
+- RPC call_decode returns status 22
+
+4) In conclusion in my understanding:
+
+- At present linux nfs filesystem support is not anymore compatible with 
+old userspace servers like universal nfsd and crypto filesystems as cfsd 
+(which is an nfs server pretty old fashioned).
+- This problem makes UNFSD and CFSD unusable on 2.6.22 and up (this 
+doesnt sound good to me)
+
+The question are:
+
+- Is this wanted or is a bug ?
+- Can this be solved with some backwards compat stuff into the kernel or 
+all the old packages as UNFSD have to be
+bugfixed/upgraded
+- I have found other strange behaviors of the new NFS filesystem support 
+that i am investigating. All are bound to the user of
+old userspace servers onto the new NFS (since 2.6.22). What to do ?
+
+Thanks
+
+Gianluca
+
+
+
+
+Scott wrote:
+
+>
+> On Dec 22, 2007, at 5:52 AM, Gianluca Alberici wrote:
+>
+>> I've run into this problem 2.6.23.9. The open syscall will return
+>> "Invalid argument" when O_TRUNC is set on existing files.
 >>
->> memtest can be ran from userspace, that's the point.
->>   
+>> The same file can be opened for append or removed.
+>>
+>> The evidence is for example:
+>>
+>> mars:~# mount localhost:/opt/nfs/ /mnt/tmp
+>> mars:~# echo "Hello" > /mnt/tmp/test-file
+>> mars:~# echo "Hello" > /mnt/tmp/test-file
+>> bash: /mnt/tmp/test-file: Invalid argument
 >
-> I'm not sure I believe that.  You need to tinker with hardware tables 
-> before you know what physical RAM is being used.  Sequential virtual
-
-No, I can just use /dev/mem. (After passing mem=XXX exactmap to kernel
-so that I know what I may play with).
-
->> Yes, that's what CPU microcode update is for. And I want to test my
->> RAM with up-to-date microcode.
->>   
 >
-> Don't microcode updates fix CPU bugs?  That's not fixing faulty RAM.
+> Can you show an strace of this please? Also, might suggest "rpcdebug - 
+> m nfsd -s all"
+>
+> -- 
+> Scott --
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at http://www.tux.org/lkml/
 
-L1/L2 cache is part of memory subsystem.
 
-> I suppose a CPU retains microcode updates, once loaded, until power-down or 
-> some hard reboot that you surely can avoid.  If it does happen that
-> you
-
-If CPU retains microcode after reset, then you are right. I'm not
-sure.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
