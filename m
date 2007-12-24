@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757798AbXLXOak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbXLXOjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757798AbXLXOak (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 09:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbXLXOaa
+	id S1755080AbXLXOjj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 09:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbXLXOj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 09:30:30 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:33792 "EHLO mgw1.diku.dk"
+	Mon, 24 Dec 2007 09:39:28 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:58425 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754522AbXLXOa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 09:30:29 -0500
-Date: Mon, 24 Dec 2007 15:30:11 +0100 (CET)
+	id S1752318AbXLXOj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 09:39:27 -0500
+Date: Mon, 24 Dec 2007 15:39:00 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org,
+To: mchehab@infradead.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 17/38] drivers/media/dvb: Use time_before, time_before_eq,
+Subject: [PATCH 18/38] drivers/media/video: Use time_before, time_before_eq,
  etc.
-Message-ID: <Pine.LNX.4.64.0712241529400.23999@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0712241538290.23999@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -64,36 +64,103 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -r -u -p a/drivers/media/dvb/frontends/stv0299.c b/drivers/media/dvb/frontends/stv0299.c
---- a/drivers/media/dvb/frontends/stv0299.c	2007-10-22 11:25:10.000000000 +0200
-+++ b/drivers/media/dvb/frontends/stv0299.c	2007-12-23 20:30:39.000000000 +0100
-@@ -192,7 +192,7 @@ static int stv0299_wait_diseqc_fifo (str
- 	dprintk ("%s\n", __FUNCTION__);
+diff -r -u -p a/drivers/media/video/c-qcam.c b/drivers/media/video/c-qcam.c
+--- a/drivers/media/video/c-qcam.c	2007-11-01 10:30:39.000000000 +0100
++++ b/drivers/media/video/c-qcam.c	2007-12-23 20:36:52.000000000 +0100
+@@ -36,6 +36,7 @@
+ #include <linux/videodev.h>
+ #include <media/v4l2-common.h>
+ #include <linux/mutex.h>
++#include <linux/jiffies.h>
  
- 	while (stv0299_readreg(state, 0x0a) & 1) {
--		if (jiffies - start > timeout) {
-+		if (time_after(jiffies, start + timeout)) {
- 			dprintk ("%s: timeout!!\n", __FUNCTION__);
- 			return -ETIMEDOUT;
+ #include <asm/uaccess.h>
+ 
+@@ -95,7 +96,8 @@ static unsigned int qcam_await_ready1(st
+ 	unsigned long oldjiffies = jiffies;
+ 	unsigned int i;
+ 
+-	for (oldjiffies = jiffies; (jiffies - oldjiffies) < msecs_to_jiffies(40); )
++	for (oldjiffies = jiffies;
++	     time_before(jiffies, oldjiffies + msecs_to_jiffies(40)); )
+ 		if (qcam_ready1(qcam) == value)
+ 			return 0;
+ 
+@@ -120,7 +122,8 @@ static unsigned int qcam_await_ready2(st
+ 	unsigned long oldjiffies = jiffies;
+ 	unsigned int i;
+ 
+-	for (oldjiffies = jiffies; (jiffies - oldjiffies) < msecs_to_jiffies(40); )
++	for (oldjiffies = jiffies;
++	     time_before(jiffies, oldjiffies + msecs_to_jiffies(40)); )
+ 		if (qcam_ready2(qcam) == value)
+ 			return 0;
+ 
+diff -r -u -p a/drivers/media/video/ivtv/ivtv-fileops.c b/drivers/media/video/ivtv/ivtv-fileops.c
+--- a/drivers/media/video/ivtv/ivtv-fileops.c	2007-11-01 10:30:39.000000000 +0100
++++ b/drivers/media/video/ivtv/ivtv-fileops.c	2007-12-23 20:37:15.000000000 +0100
+@@ -219,7 +219,9 @@ static struct ivtv_buffer *ivtv_get_buff
+ 			/* Process pending program info updates and pending VBI data */
+ 			ivtv_update_pgm_info(itv);
+ 
+-			if (jiffies - itv->dualwatch_jiffies > msecs_to_jiffies(1000)) {
++			if (time_after(jiffies,
++				       itv->dualwatch_jiffies +
++				       msecs_to_jiffies(1000))) {
+ 				itv->dualwatch_jiffies = jiffies;
+ 				ivtv_dualwatch(itv);
+ 			}
+diff -r -u -p a/drivers/media/video/ivtv/ivtv-mailbox.c b/drivers/media/video/ivtv/ivtv-mailbox.c
+--- a/drivers/media/video/ivtv/ivtv-mailbox.c	2007-10-22 11:25:10.000000000 +0200
++++ b/drivers/media/video/ivtv/ivtv-mailbox.c	2007-12-23 20:37:40.000000000 +0100
+@@ -177,7 +177,8 @@ static int get_mailbox(struct ivtv *itv,
+ 
+ 		/* Sleep before a retry, if not atomic */
+ 		if (!(flags & API_NO_WAIT_MB)) {
+-			if (jiffies - then > msecs_to_jiffies(10*retries))
++			if (time_after(jiffies,
++				       then + msecs_to_jiffies(10*retries)))
+ 			       break;
+ 			ivtv_msleep_timeout(10, 0);
  		}
-@@ -209,7 +209,7 @@ static int stv0299_wait_diseqc_idle (str
- 	dprintk ("%s\n", __FUNCTION__);
- 
- 	while ((stv0299_readreg(state, 0x0a) & 3) != 2 ) {
--		if (jiffies - start > timeout) {
-+		if (time_after(jiffies, start + timeout)) {
- 			dprintk ("%s: timeout!!\n", __FUNCTION__);
- 			return -ETIMEDOUT;
+@@ -244,7 +245,9 @@ static int ivtv_api_call(struct ivtv *it
+ 	   data, then just return 0 as there is no need to issue this command again.
+ 	   Just an optimization to prevent unnecessary use of mailboxes. */
+ 	if (itv->api_cache[cmd].last_jiffies &&
+-	    jiffies - itv->api_cache[cmd].last_jiffies < msecs_to_jiffies(1800000) &&
++	    time_before(jiffies,
++			itv->api_cache[cmd].last_jiffies +
++			msecs_to_jiffies(1800000)) &&
+ 	    !memcmp(data, itv->api_cache[cmd].data, sizeof(itv->api_cache[cmd].data))) {
+ 		itv->api_cache[cmd].last_jiffies = jiffies;
+ 		return 0;
+@@ -299,7 +302,7 @@ static int ivtv_api_call(struct ivtv *it
  		}
-diff -r -u -p a/drivers/media/dvb/frontends/tda8083.c b/drivers/media/dvb/frontends/tda8083.c
---- a/drivers/media/dvb/frontends/tda8083.c	2007-10-22 11:25:10.000000000 +0200
-+++ b/drivers/media/dvb/frontends/tda8083.c	2007-12-23 20:30:39.000000000 +0100
-@@ -171,7 +171,7 @@ static void tda8083_wait_diseqc_fifo (st
- {
- 	unsigned long start = jiffies;
+ 	}
+ 	while (!(readl(&mbox->flags) & IVTV_MBOX_FIRMWARE_DONE)) {
+-		if (jiffies - then > api_timeout) {
++		if (time_after(jiffies, then + api_timeout)) {
+ 			IVTV_DEBUG_WARN("Could not get result (%s)\n", api_info[cmd].name);
+ 			/* reset the mailbox, but it is likely too late already */
+ 			write_sync(0, &mbox->flags);
+@@ -311,7 +314,7 @@ static int ivtv_api_call(struct ivtv *it
+ 		else
+ 			ivtv_msleep_timeout(1, 0);
+ 	}
+-	if (jiffies - then > msecs_to_jiffies(100))
++	if (time_after(jiffies, then + msecs_to_jiffies(100)))
+ 		IVTV_DEBUG_WARN("%s took %u jiffies\n",
+ 				api_info[cmd].name,
+ 				jiffies_to_msecs(jiffies - then));
+diff -r -u -p a/drivers/media/video/ivtv/ivtv-streams.c b/drivers/media/video/ivtv/ivtv-streams.c
+--- a/drivers/media/video/ivtv/ivtv-streams.c	2007-12-13 20:41:15.000000000 +0100
++++ b/drivers/media/video/ivtv/ivtv-streams.c	2007-12-23 20:37:55.000000000 +0100
+@@ -783,7 +783,8 @@ int ivtv_stop_v4l2_encode_stream(struct 
  
--	while (jiffies - start < timeout &&
-+	while (time_before(jiffies, start + timeout) &&
- 	       !(tda8083_readreg(state, 0x02) & 0x80))
- 	{
- 		msleep(50);
+ 			/* wait 2s for EOS interrupt */
+ 			while (!test_bit(IVTV_F_I_EOS, &itv->i_flags) &&
+-				jiffies < then + msecs_to_jiffies (2000)) {
++				time_before(jiffies,
++					    then + msecs_to_jiffies(2000))) {
+ 				schedule_timeout(msecs_to_jiffies(10));
+ 			}
+ 
