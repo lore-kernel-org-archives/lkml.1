@@ -1,91 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbXLXFBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbXLXFHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbXLXFBV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 00:01:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbXLXFBH
+	id S1752776AbXLXFHk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 00:07:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbXLXFHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 00:01:07 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52857 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbXLXFBG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 00:01:06 -0500
-Date: Sun, 23 Dec 2007 21:01:13 -0800
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
-       "Kyle A. Lucke" <klucke@us.ibm.com>, paulus@samba.org,
-       linux-kernel@vger.kernel.org, David Gibson <dwg@au1.ibm.com>
-Subject: Re: drivers/net/iseries_veth.c dubious sysfs usage
-Message-ID: <20071224050113.GA10835@kroah.com>
-References: <20071205093054.GA23229@kroah.com> <1196853031.6759.7.camel@concordia> <20071205214103.GA7074@kroah.com> <1196912898.14754.13.camel@concordia> <20071213070829.GA13764@kroah.com> <20071224135208.2a29ffc0.sfr@canb.auug.org.au>
+	Mon, 24 Dec 2007 00:07:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60844 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751363AbXLXFHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 00:07:31 -0500
+Message-ID: <476F3E89.4070208@redhat.com>
+Date: Sun, 23 Dec 2007 23:07:21 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071224135208.2a29ffc0.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Roman Zippel <zippel@linux-m68k.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] UPDATED: hfs: handle more on-disk corruptions without
+ oopsing
+References: <47699C29.4010706@redhat.com> <476A8F36.2050007@redhat.com> <200712240316.43308.zippel@linux-m68k.org>
+In-Reply-To: <200712240316.43308.zippel@linux-m68k.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 24, 2007 at 01:52:08PM +1100, Stephen Rothwell wrote:
-> Hi Greg,
+Roman Zippel wrote:
+> Hi,
 > 
-> On Wed, 12 Dec 2007 23:08:29 -0800 Greg KH <greg@kroah.com> wrote:
-> >
-> > Hm, ok, it's odd as you are the only driver in the whole tree doing
-> > something like this, but it seems semi-resonable, so I can't complain :)
-> > 
-> > I'll fix the core up to allow you to do this, thanks for the
-> > explanation.
+> On Thursday 20 December 2007, Eric Sandeen wrote:
 > 
-> So if this "seems semi-reasonable", why was the result
-> gregkh-driver-driver-add-driver_add_kobj-for-looney-iseries_veth-driver
-> containing "Hopefully no one uses this function in the future and the
-> iseries_veth driver authors come to their senses so I can remove this
-> hack..." as part of its comment.  If you expect respect, you need to
-> treat others the same way ...
+>> Index: linux-2.6.24-rc3/fs/hfs/brec.c
+>> ===================================================================
+>> --- linux-2.6.24-rc3.orig/fs/hfs/brec.c
+>> +++ linux-2.6.24-rc3/fs/hfs/brec.c
+>> @@ -44,10 +44,21 @@ u16 hfs_brec_keylen(struct hfs_bnode *no
+>>  		recoff = hfs_bnode_read_u16(node, node->tree->node_size - (rec + 1) *
+>> 2); if (!recoff)
+>>  			return 0;
+>> -		if (node->tree->attributes & HFS_TREE_BIGKEYS)
+>> +		if (node->tree->attributes & HFS_TREE_BIGKEYS) {
+>>  			retval = hfs_bnode_read_u16(node, recoff) + 2;
+>> -		else
+>> +			if (retval > node->tree->max_key_len + 2) {
+>> +				printk(KERN_ERR "hfs: keylen %d too large\n",
+>> +					retval);
+>> +				retval = HFS_BAD_KEYLEN;
+>> +			}
+>> +		} else {
+>>  			retval = (hfs_bnode_read_u8(node, recoff) | 1) + 1;
+>> +			if (retval > node->tree->max_key_len + 1) {
+>> +				printk(KERN_ERR "hfs: keylen %d too large\n",
+>> +					retval);
+>> +				retval = HFS_BAD_KEYLEN;
+>> +			}
+>> +		}
+>>  	}
+>>  	return retval;
+>>  }
+> 
+> You can reuse 0 as failure value, a key has to be of nonzero size.
 
-Well, sarcasm doesn't come accross very easily in changelog comments it
-seems :)
+Ok.  Based on the other 0 returns I wasn't sure if they were considered
+real errors or not... but also ISTR I ran into problems with a simple 0
+return; I probably just to be sure need the callers check for it.
 
-> If what the driver writers are doing is "looney" (in your opinion), then
-> please describe a better way of doing what they are trying to do.
-> Sometimes, if people have to abuse the infrastructure, it is possible that
-> the infrastructure is lacking?
+>> Index: linux-2.6.24-rc3/fs/hfs/btree.c
+>> ===================================================================
+>> --- linux-2.6.24-rc3.orig/fs/hfs/btree.c
+>> +++ linux-2.6.24-rc3/fs/hfs/btree.c
+>> @@ -81,6 +81,17 @@ struct hfs_btree *hfs_btree_open(struct
+>>  		goto fail_page;
+>>  	if (!tree->node_count)
+>>  		goto fail_page;
+>> +	if ((id == HFS_EXT_CNID) && (tree->max_key_len != HFS_MAX_EXT_KEYLEN)) {
+>> +		printk(KERN_ERR "hfs: invalid extent max_key_len %d\n",
+>> +			tree->max_key_len);
+>> +		goto fail_page;
+>> +	}
+>> +	if ((id == HFS_CAT_CNID) && (tree->max_key_len != HFS_MAX_CAT_KEYLEN)) {
+>> +		printk(KERN_ERR "hfs: invalid catalog max_key_len %d\n",
+>> +			tree->max_key_len);
+>> +		goto fail_page;
+>> +	}
+>> +
+>>  	tree->node_size_shift = ffs(size) - 1;
+>>  	tree->pages_per_bnode = (tree->node_size + PAGE_CACHE_SIZE - 1) >>
+>> PAGE_CACHE_SHIFT;
+>>
+> 
+> I'd prefer a switch statement here.
 
-In thinking about this some more, no, I think you all are abusing the
-infrastructure here.  This is the ONLY driver in the entire kernel tree
-that thinks it is acceptable to hang kobjects off of the driver
-structure.  For some reason, no one else does this either because they
-never would think of doing such a thing, or that they are not as unique
-as this driver.
+Ok, I'd thought about doing it that way... :)
 
-So I take back the "semi-resonable" statement above.  Please prove to me
-that:
-	- it is ok to hang kobjects off of a driver when:
-		- no userspace tool will ever be notified that they have
-		  been created
-		- no known userspace library knows how to find such
-		  attributes (libsysfs can't do that last I looked, and
-		  it's no longer maintained.)
-		- there is no documentation in the Documentation/ABI/
-		  explaining this usage.
-	- this can not be just a easily expressed in debugfs, or some
-	  other representation (netlink for configuration, configfs,
-	  some other location in sysfs, a driver-specific filesystem,
-	  etc.)
-	- that there is a tool out there using this current interface.
+> It would be nice if you could do the same changes for hfsplus, so both stay in 
+> sync.
 
-I don't like this usage of sysfs as it is very abnormal, and we are
-trying very hard to fix up the rough edges here, to:
-	- make it easier to program to and not get things incorrect
-	  within the kernel
-	- present a unified, semi-sane interface that is documented well
-	  to userspace so users don't get even madder then they
-	  currently are.
+Yep, wanted to first see if it'd fly for HFS...
 
+Thanks for the feedback,
+-Eric
 
-thanks,
+> Thanks.
+> 
+> bye, Roman
 
-greg k-h
