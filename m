@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbXLXOTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbXLXOU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755234AbXLXOTp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 09:19:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbXLXOTf
+	id S1752776AbXLXOU1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 09:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbXLXOUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 09:19:35 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:58152 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752904AbXLXOTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 09:19:34 -0500
-Date: Mon, 24 Dec 2007 15:19:29 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: matthew@wil.cx, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/38] arch/parisc: Use time_before, time_before_eq, etc.
-Message-ID: <Pine.LNX.4.64.0712241518580.23999@ask.diku.dk>
+	Mon, 24 Dec 2007 09:20:09 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:56226 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751997AbXLXOUG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 09:20:06 -0500
+Date: Mon, 24 Dec 2007 09:19:57 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Dieter Ries <clip3@gmx.de>
+cc: Jeff Garzik <jeff@garzik.org>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Git Mailing List <git@vger.kernel.org>
+Subject: Re: Updated Kernel Hacker's guide to git
+In-Reply-To: <476E5CFC.5070301@gmx.de>
+Message-ID: <alpine.LFD.0.9999.0712240918440.17591@localhost.localdomain>
+References: <200612241807.kBOI746w008739@laptop13.inf.utfsm.cl> <476E42BF.1010300@garzik.org> <alpine.LFD.0.9999.0712230701520.14863@localhost.localdomain> <476E50DC.1040701@garzik.org> <alpine.LFD.0.9999.0712230715490.15596@localhost.localdomain>
+ <476E5CFC.5070301@gmx.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Sun, 23 Dec 2007, Dieter Ries wrote:
 
-The functions time_before, time_before_eq, time_after, and time_after_eq
-are more robust for comparing jiffies against other values.
+> Could you perhaps publish your reference list as kind of a christmas
+> gift to all basic users like me?
 
-A simplified version of the semantic patch making this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+FYI, i'm typing in my own reference list as we speak here:
 
-// <smpl>
-@ change_compare_np @
-expression E;
-@@
+  http://www.crashcourse.ca/wiki/index.php/Git
 
-(
-- jiffies <= E
-+ time_before_eq(jiffies,E)
-|
-- jiffies >= E
-+ time_after_eq(jiffies,E)
-|
-- jiffies < E
-+ time_before(jiffies,E)
-|
-- jiffies > E
-+ time_after(jiffies,E)
-)
+still quite a bit to go, but you can get the overall idea.  new
+sections should be appearing there as the morning progresses.
 
-@ include depends on change_compare_np @
-@@
+rday
 
-#include <linux/jiffies.h>
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-@ no_include depends on !include && change_compare_np @
-@@
-
-  #include <linux/...>
-+ #include <linux/jiffies.h>
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
-
-diff -r -u -p a/arch/parisc/kernel/unaligned.c b/arch/parisc/kernel/unaligned.c
---- a/arch/parisc/kernel/unaligned.c	2007-10-22 11:24:58.000000000 +0200
-+++ b/arch/parisc/kernel/unaligned.c	2007-12-23 20:33:36.000000000 +0100
-@@ -460,7 +460,8 @@ void handle_unaligned(struct pt_regs *re
- 			goto force_sigbus;
- 		}
- 
--		if (unaligned_count > 5 && jiffies - last_time > 5*HZ) {
-+		if (unaligned_count > 5 &&
-+		    time_after(jiffies, last_time + 5*HZ)) {
- 			unaligned_count = 0;
- 			last_time = jiffies;
- 		}
+http://crashcourse.ca
+========================================================================
