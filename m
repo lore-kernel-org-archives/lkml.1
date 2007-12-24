@@ -1,72 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbXLXTZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbXLXUUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753408AbXLXTZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 14:25:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbXLXTZm
+	id S1752647AbXLXUUW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 15:20:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbXLXUUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 14:25:42 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37563 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751082AbXLXTZl (ORCPT
+	Mon, 24 Dec 2007 15:20:10 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:15078 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbXLXUUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 14:25:41 -0500
-Date: Mon, 24 Dec 2007 11:25:41 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: tlb_finish_mmu() bogisity
-In-Reply-To: <alpine.LFD.0.9999.0712231311530.21557@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0712241054210.8299@schroedinger.engr.sgi.com>
-References: <20071223093241.GR8181@ftp.linux.org.uk>
- <alpine.LFD.0.9999.0712231311530.21557@woody.linux-foundation.org>
+	Mon, 24 Dec 2007 15:20:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=XBhohfOcP4h+HBstGvZpEUDBcmbXCwlmHGFpHllXWQp93Tq4h0XQIQGZzvBG8v5rFSIvoeIuNVDz0VuBxcVxeAz4FOUMCfehO4xlNFI7uBsr7U7P8P+HneX+aFaZlDm4nBWvMNt1kOCC9nvyeqtdqcYPlwI6aItCaMUZMNexO+k=
+Message-ID: <47701542.9010806@gmail.com>
+Date: Mon, 24 Dec 2007 21:23:30 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Icedove 1.5.0.14pre (X11/20071020)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: slavon@bigtelecom.ru
+CC: netdev@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: Strange Panic (Deadlock)
+References: <476FCC41.8070202@bigtelecom.ru> <20071224211819.e1ebeicf0ggoo08s@mail.bigtelecom.ru>
+In-Reply-To: <20071224211819.e1ebeicf0ggoo08s@mail.bigtelecom.ru>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Dec 2007, Linus Torvalds wrote:
+slavon@bigtelecom.ru wrote, On 12/24/2007 07:18 PM:
 
-> > What did you intend here?  s/&//, perhaps?
+> Hello again.
+> Its bug depend to
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4aae07025265151e3f7041dfbf0f529e122de1d8
+> ?
+
+
+Hello Vyacheslav!
+
+I wonder why do you think there is such a dependency, and why do you report
+timer.c bug to netdev after all? I added some CCs here, but IMHO you would
+better open a new bug at bugzilla.kernel.org, adding some more details like
+.config, and reply back to this thread with the bug's number. BTW, if it's
+patched by Gentoo or otherwise, you should try and report on 'vanilla' one
+only.
+
+Regards,
+Jarek P.
+
+> Its very critical bug to us. This PC must be HA. Server place so far  
+> for me to go and reboot server. I go to it 1-3 times in week =(
+> Please help to fix it =)
 > 
-> I think that thing is bogus in other ways. It plays games with 
-> "needs_flush", just because it seems to want the generic code to then call 
-> "check_pgt_cache()", not because it actually wants any flushing to take 
-> place.
+>> Hello all. Some time machine freeze. No information on monitor. No
+>> rebooting on sysctl "kernel.panic".
+>> Any idea?
+>>
+>> Catched by netconsole:
+>> [91922.085864] ------------[ cut here ]------------
+>> [91922.085975] kernel BUG at kernel/timer.c:606!
+>> [91922.086058] invalid opcode: 0000 [#1]
+>> [91922.086127] SMP
+>> [91922.086201] Modules linked in: netconsole cls_u32 sch_sfq sch_htb
+>> xt_tcpudp iptable_filter ip_tables x_tables i2c_i801 i2c_core
+>> [91922.086386] CPU:    1
+>> [91922.086387] EIP:    0060:[<c0127387>]    Not tainted VLI
+>> [91922.086389] EFLAGS: 00010087   (2.6.23-gentoo-r4-fw #4)
+>> [91922.086600] EIP is at cascade+0x34/0x4f
+>> [91922.086669] eax: c0452200   ebx: f450408c   ecx: 00000022   edx: f3c6e08c
+>> [91922.086740] esi: 00000022   edi: c21ce000   ebp: 00000001   esp: c21c3ef8
+>> [91922.086815] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+>> [91922.086885] Process swapper (pid: 0, ti=c21c2000 task=c21af000
+>> task.ti=c21c2000)
+>> [91922.086954] Stack: f3c6e08c c21bfb74 00000000 c21ce000 0000000a
+>> c012767a c21af000 00000001
+>> [91922.087119]        c21c3f18 c0106963 c21c3f68 00000001 00000021
+>> c03c0b08 0000000a c0124556
+>> [91922.087285]        00000046 00000000 c21c2008 00000000 c01245ec
+>> c2015120 c0114a11 00000046
+>> [91922.087451] Call Trace:
+>> [91922.087586]  [<c012767a>] run_timer_softirq+0x51/0x154
+>> [91922.087669]  [<c0106963>] profile_pc+0x21/0x46
+>> [91922.087752]  [<c0124556>] __do_softirq+0x5d/0xc1
+>> [91922.087833]  [<c01245ec>] do_softirq+0x32/0x36
+>> [91922.087915]  [<c0114a11>] smp_apic_timer_interrupt+0x74/0x80
+>> [91922.087997]  [<c010484c>] apic_timer_interrupt+0x28/0x30
+>> [91922.088076]  [<c0102255>] mwait_idle_with_hints+0x3b/0x3f
+>> [91922.088162]  [<c0102259>] mwait_idle+0x0/0xa
+>> [91922.088237]  [<c0102398>] cpu_idle+0x91/0xaa
+>> [91922.088319]  =======================
+>> [91922.088390] Code: 08 8d 04 ca 8b 10 89 62 04 89 14 24 8b 50 04 89 22
+>> 89 00 89 54 24 04 8b 14 24 89 40 04 8b 1a eb 19 8b 42 14 83 e0 fe 39 f8
+>> 74 04 <0f> 0b eb fe 89 f8 e8 d8 fe ff ff 89 da 8b 1b 39 e2 75 e3 59 89
+>> [91922.088864] EIP: [<c0127387>] cascade+0x34/0x4f SS:ESP 0068:c21c3ef8
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe netdev" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>>
+> 
+> 
+> 
+> ----------------------------------------------------------------
+> This message was sent using IMP, the Internet Messaging Program.
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-It can only free the pages on the quicklist after the flush. So it needs 
-to set need_flush to trigger the flush before check_pgt_cache can trim the 
-quicklist. If need_flush is not set then pages are freed in 
-check_pgt_cache before their TLBs have been flushed.
 
-> Or is there any other reason going on here? That quicklist stuff has been 
-> totally broken, it's done too many totally invalid things to really be 
-> worth even keeping. We should get rid of that unmaintainable hack, and if 
-> it has a real performance upside, we should make it part of the *native* 
-> mmu-gather infrastructure, instead of maintaining it as some separate and 
-> buggy/unmaintainable piece-of-sh*t code.
-
-Yup as we agreed before it would be best to make the TLB pieces part of 
-the native mmu gather infrastructure. But then they vary quite a lot 
-between arches.
-
-
-
-Quicklist: Remove bogus &
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Index: linux-2.6/include/asm-generic/tlb.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/tlb.h	2007-12-24 10:53:52.000000000 -0800
-+++ linux-2.6/include/asm-generic/tlb.h	2007-12-24 10:54:01.000000000 -0800
-@@ -87,7 +87,7 @@ static inline void
- tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
- {
- #ifdef CONFIG_QUICKLIST
--	tlb->need_flush += &__get_cpu_var(quicklist)[0].nr_pages != 0;
-+	tlb->need_flush += __get_cpu_var(quicklist)[0].nr_pages != 0;
- #endif
- 	tlb_flush_mmu(tlb, start, end);
- 
