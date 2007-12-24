@@ -1,48 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbXLXNx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbXLXN7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753837AbXLXNx6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 08:53:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbXLXNxu
+	id S1754006AbXLXN7o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 08:59:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbXLXN7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 08:53:50 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59115 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751760AbXLXNxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 08:53:49 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: 2.6.24-rc6-mm1: suspend broken on HP nx6325 due to cpufreq changes
-Date: Mon, 24 Dec 2007 15:13:03 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@codemonkey.org.uk>, Jaroslav Kysela <perex@suse.cz>
-References: <20071222233056.d652743e.akpm@linux-foundation.org> <20071223145003.5c36a40a.akpm@linux-foundation.org> <s5hbq8g1goz.wl%tiwai@suse.de>
-In-Reply-To: <s5hbq8g1goz.wl%tiwai@suse.de>
+	Mon, 24 Dec 2007 08:59:36 -0500
+Received: from websiteout12.httpserveur.net ([67.15.80.77]:37008 "HELO
+	websiteout12.httpserveur.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751325AbXLXN7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 08:59:36 -0500
+X-Greylist: delayed 441 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Dec 2007 08:59:36 EST
+X-Abuse: Please report all abuse immediately to abuse@httpserveur.net
+Message-ID: <476FB973.5060108@clownix.net>
+Date: Mon, 24 Dec 2007 14:51:47 +0100
+From: clowncoder <clowncoder@clownix.net>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070429)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Subject: New UML-Based Virtual Network
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712241513.04072.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 24 of December 2007, Takashi Iwai wrote:
-> At Sun, 23 Dec 2007 14:50:03 -0800,
-> Andrew Morton wrote:
-> > 
-> > > although it still is a
-> > > bit flaky (it takes well more than 5 seconds to suspend and the sound adapter
-> > > doesn't work right after the resume, but it starts to work again about 10s
-> > > later).
-> > 
-> > hm.  There have been some suspend changes in the alsa tree.
-> 
-> Not really.  The usb-audio suspend support is the only addition on
-> mm.  It should be irrelevant with on-board HD-audio...
-
-Well, I'm suspecting some ACPI changes, but will be only able to debug it
-further in a couple of days.
-
-Rafael
+Hello,
+If you need a little network to test some of the kernel's
+networking functions, there is a simple virtual network
+available at http://clownix.net (uml_clownix_net).
+Vincent Perrier
+Regards
