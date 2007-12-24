@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbXLXOnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbXLXOoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754292AbXLXOnp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 09:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbXLXOnf
+	id S1758063AbXLXOoX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 09:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbXLXOoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 09:43:35 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:58961 "EHLO mgw1.diku.dk"
+	Mon, 24 Dec 2007 09:44:07 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:36871 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754498AbXLXOnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 09:43:33 -0500
-Date: Mon, 24 Dec 2007 15:43:26 +0100 (CET)
+	id S1754580AbXLXOoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 09:44:06 -0500
+Date: Mon, 24 Dec 2007 15:43:59 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
 To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 26/38] init: Use time_before, time_before_eq, etc.
-Message-ID: <Pine.LNX.4.64.0712241542530.23999@ask.diku.dk>
+Subject: [PATCH 27/38] kernel: Use time_before, time_before_eq, etc.
+Message-ID: <Pine.LNX.4.64.0712241543320.23999@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -62,27 +62,35 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -r -u -p a/init/calibrate.c b/init/calibrate.c
---- a/init/calibrate.c	2007-10-22 11:25:44.000000000 +0200
-+++ b/init/calibrate.c	2007-12-23 20:44:00.000000000 +0100
-@@ -65,7 +65,7 @@ static unsigned long __devinit calibrate
- 		pre_start = 0;
- 		read_current_timer(&start);
- 		start_jiffies = jiffies;
--		while (jiffies <= (start_jiffies + 1)) {
-+		while (time_after_eq(jiffies, start_jiffies + 1)) {
- 			pre_start = start;
- 			read_current_timer(&start);
- 		}
-@@ -73,8 +73,9 @@ static unsigned long __devinit calibrate
+diff -r -u -p a/kernel/irq/spurious.c b/kernel/irq/spurious.c
+--- a/kernel/irq/spurious.c	2007-07-20 17:46:05.000000000 +0200
++++ b/kernel/irq/spurious.c	2007-12-23 20:30:40.000000000 +0100
+@@ -10,6 +10,7 @@
+ #include <linux/module.h>
+ #include <linux/kallsyms.h>
+ #include <linux/interrupt.h>
++#include <linux/jiffies.h>
  
- 		pre_end = 0;
- 		end = post_start;
--		while (jiffies <=
--		       (start_jiffies + 1 + DELAY_CALIBRATION_TICKS)) {
-+		while (time_after_eq(jiffies,
-+				     start_jiffies +
-+				     1 + DELAY_CALIBRATION_TICKS)) {
- 			pre_end = end;
- 			read_current_timer(&end);
- 		}
+ static int irqfixup __read_mostly;
+ 
+@@ -178,7 +179,7 @@ void note_interrupt(unsigned int irq, st
+ 		 * otherwise the couter becomes a doomsday timer for otherwise
+ 		 * working systems
+ 		 */
+-		if (jiffies - desc->last_unhandled > HZ/10)
++		if (time_after(jiffies, desc->last_unhandled + HZ/10))
+ 			desc->irqs_unhandled = 1;
+ 		else
+ 			desc->irqs_unhandled++;
+diff -r -u -p a/kernel/timer.c b/kernel/timer.c
+--- a/kernel/timer.c	2007-12-21 06:57:20.000000000 +0100
++++ b/kernel/timer.c	2007-12-23 20:30:40.000000000 +0100
+@@ -165,7 +165,7 @@ unsigned long __round_jiffies(unsigned l
+ 	/* now that we have rounded, subtract the extra skew again */
+ 	j -= cpu * 3;
+ 
+-	if (j <= jiffies) /* rounding ate our timeout entirely; */
++	if (time_before_eq(jiffies, j))/* rounding ate our timeout entirely; */
+ 		return original;
+ 	return j;
+ }
