@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbXLXCwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbXLXDFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757607AbXLXCwY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 21:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXLXCwQ
+	id S1754802AbXLXDFn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 22:05:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbXLXDFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 21:52:16 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51095 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752002AbXLXCwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 21:52:16 -0500
-Date: Mon, 24 Dec 2007 13:52:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
-       "Kyle A. Lucke" <klucke@us.ibm.com>, paulus@samba.org,
-       linux-kernel@vger.kernel.org, David Gibson <dwg@au1.ibm.com>
-Subject: Re: drivers/net/iseries_veth.c dubious sysfs usage
-Message-Id: <20071224135208.2a29ffc0.sfr@canb.auug.org.au>
-In-Reply-To: <20071213070829.GA13764@kroah.com>
-References: <20071205093054.GA23229@kroah.com>
-	<1196853031.6759.7.camel@concordia>
-	<20071205214103.GA7074@kroah.com>
-	<1196912898.14754.13.camel@concordia>
-	<20071213070829.GA13764@kroah.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK"
+	Sun, 23 Dec 2007 22:05:35 -0500
+Received: from slackadelic.com ([65.196.224.53]:49913 "EHLO
+	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751459AbXLXDFe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 22:05:34 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4 suspend-to-RAM
+Date: Mon, 24 Dec 2007 03:05:16 +0000
+User-Agent: KMail/1.9.7
+Cc: "H. Peter Anvin" <hpa@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux PM List <linux-pm@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+References: <200712231419.40207.carlos@strangeworlds.co.uk> <alpine.LFD.0.9999.0712231621340.21557@woody.linux-foundation.org> <alpine.LFD.0.9999.0712231703390.21557@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.9999.0712231703390.21557@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712240305.18080.carlos@strangeworlds.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Monday 24 December 2007 01:14:34 Linus Torvalds wrote:
+> Side note: we could obviously undo the commit that triggered this for you
+> [..]
+> In other words, we'd have to go back to our original ordering, which Len
+> said was fundamentally wrong. I don't think anybody really wants that.
 
-Hi Greg,
+Nor would I argue to do so.
 
-On Wed, 12 Dec 2007 23:08:29 -0800 Greg KH <greg@kroah.com> wrote:
->
-> Hm, ok, it's odd as you are the only driver in the whole tree doing
-> something like this, but it seems semi-resonable, so I can't complain :)
->=20
-> I'll fix the core up to allow you to do this, thanks for the
-> explanation.
+> It would be better to figure out why "device_suspend()" apparently causes
+> problems for your AML crud.
 
-So if this "seems semi-reasonable", why was the result
-gregkh-driver-driver-add-driver_add_kobj-for-looney-iseries_veth-driver
-containing "Hopefully no one uses this function in the future and the
-iseries_veth driver authors come to their senses so I can remove this
-hack..." as part of its comment.  If you expect respect, you need to
-treat others the same way ...
+Will do - thanks for the pointer.
 
-If what the driver writers are doing is "looney" (in your opinion), then
-please describe a better way of doing what they are trying to do.
-Sometimes, if people have to abuse the infrastructure, it is possible that
-the infrastructure is lacking?
+> Oh, and why is linux-kernel cc'd, but not linux-pm?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Because I like to compound my errors (I mean, if you're going to screw up, you 
+might as well _really_ go for it).
 
---Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHbx7dTgG2atn1QN8RAhWEAJ4ymGNuhmuHByAVk/VK3jh+K6UBYQCglLBB
-WQQ4PCkw2he5ftxow1xrR2s=
-=nkiS
------END PGP SIGNATURE-----
-
---Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK--
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
