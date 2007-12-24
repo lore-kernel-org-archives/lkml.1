@@ -1,92 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbXLXD2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbXLXD52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbXLXD2k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 22:28:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXLXD2d
+	id S1754274AbXLXD52 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 22:57:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbXLXD5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 22:28:33 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:13327 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbXLXD2c (ORCPT
+	Sun, 23 Dec 2007 22:57:19 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60818 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751349AbXLXD5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 22:28:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=aPTv9NYzcBOMPhrVeAs7GEBwKWuUGb2ld4B0q3rjnhwLAQJs8HlZb82s81RuP+sW+1uxdlzLCH8PCMLu4Cz6kHyQF7aYjwFhVcopx6kPFr18/44qTTHwjocvph+Lt60gFRfZy4/qSQTcZj8B6JZF8JCOudBWvlOlWD0mihrlIRI=
-Subject: [PATCH] x86: kprobes remove fix_riprel #ifdef
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Sun, 23 Dec 2007 19:28:37 -0800
-Message-Id: <1198466917.6323.15.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Dec 2007 22:57:18 -0500
+X-Greylist: delayed 545 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Dec 2007 22:57:17 EST
+Date: Sun, 23 Dec 2007 22:45:30 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Willy Tarreau <w@1wt.eu>, Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+Message-ID: <20071224034530.GB16658@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andi Kleen <andi@firstfloor.org>, Willy Tarreau <w@1wt.eu>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>
+References: <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de> <20071222100326.GF26157@elte.hu> <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org> <20071222192550.GD28891@thunk.org> <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org> <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com> <20071223051241.GA4449@1wt.eu> <20071223141500.GB6430@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071223141500.GB6430@one.firstfloor.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move #ifdef around function definiton into the function and
-unconditionally return on X86_32.  Saves an ifdef from the
-one callsite.
+On Sun, Dec 23, 2007 at 03:15:00PM +0100, Andi Kleen wrote:
+> > Same here. In fact, I've always considered that procfs was for
+> > humans while sysfs was for tools. sysfs reminds me too much the
+> > unexploitable /devices in Solaris. With the proper tools, I think
+> > we can do a lot with it, but it's not as intuitive to find the
+> > proper tools as it was to do "ls" followed by "cat" in /proc.
+> 
+> find /sys/... -type f | while read i ; do echo "$i: $(<$i)" ; done
+> 
+> tends to work reasonably well for a quick overview, but yes
+> cat was nicer for humans.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Ingo, Masami, final leftovers from some unsent kprobes unification work.
+Until you start to wonder what the heck :a-0000136 is:
 
-Net reduction of one #ifdef section.
+/sys/slab/:a-0000136/objs_per_slab: 30
 
- arch/x86/kernel/kprobes.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+Sigh...
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index b1804e4..1ac532e 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -263,15 +263,16 @@ static int __kprobes is_IF_modifier(kprobe_opcode_t *insn)
- 	return 0;
- }
- 
--#ifdef CONFIG_X86_64
- /*
-  * Adjust the displacement if the instruction uses the %rip-relative
-  * addressing mode.
-  * If it does, Return the address of the 32-bit displacement word.
-  * If not, return null.
-+ * Only applicable to X86_64
-  */
- static void __kprobes fix_riprel(struct kprobe *p)
- {
-+#ifdef CONFIG_X86_64
- 	u8 *insn = p->ainsn.insn;
- 	s64 disp;
- 	int need_modrm;
-@@ -335,15 +336,17 @@ static void __kprobes fix_riprel(struct kprobe *p)
- 			*(s32 *)insn = (s32) disp;
- 		}
- 	}
--}
-+#else
-+	return;
- #endif
-+}
- 
- static void __kprobes arch_copy_kprobe(struct kprobe *p)
- {
- 	memcpy(p->ainsn.insn, p->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
--#ifdef CONFIG_X86_64
-+
- 	fix_riprel(p);
--#endif
-+
- 	if (can_boost(p->addr))
- 		p->ainsn.boostable = 0;
- 	else
--- 
-1.5.4.rc0.1143.g1a8a
-
-
+					- Ted
 
