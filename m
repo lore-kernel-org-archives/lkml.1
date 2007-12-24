@@ -1,112 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbXLXHFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbXLXHJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752599AbXLXHFE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 02:05:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbXLXHEx
+	id S1753152AbXLXHJV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 02:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbXLXHJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 02:04:53 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:60747 "EHLO mail.dvmed.net"
+	Mon, 24 Dec 2007 02:09:14 -0500
+Received: from colo.lackof.org ([198.49.126.79]:54062 "EHLO colo.lackof.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbXLXHEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 02:04:52 -0500
-Message-ID: <476F5A09.5010201@garzik.org>
-Date: Mon, 24 Dec 2007 02:04:41 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1750778AbXLXHJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 02:09:13 -0500
+Date: Mon, 24 Dec 2007 00:08:51 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, Alan Cox <alan@redhat.com>,
+       Greg Kroah-Hartman <greg@kroah.com>, jgarzik@pobox.com,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, wingel@nano-system.com,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, james.smart@emulex.com,
+       linux-driver@qlogic.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 3/4] pci: Remove pci_enable_device_bars()
+Message-ID: <20071224070850.GB3758@colo.lackof.org>
+References: <1197932473.576079.142524077033.qpush@grosgo> <20071217230126.B2D71DDE36@ozlabs.org>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a driver
- opt-in issue
-References: <20071222043139.0cd59804@laptopd505.fenrus.org> <476D1D16.5090703@garzik.org> <20071222064719.73fdd9a4@laptopd505.fenrus.org> <alpine.LFD.0.9999.0712221003000.21557@woody.linux-foundation.org> <476DB95F.3090801@garzik.org> <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org> <476DDFEE.3010009@garzik.org> <alpine.LFD.0.9999.0712222034150.21557@woody.linux-foundation.org> <476DE98F.2010009@garzik.org> <20071223023348.348608a8@laptopd505.fenrus.org>
-In-Reply-To: <20071223023348.348608a8@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071217230126.B2D71DDE36@ozlabs.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
->> 3) mmconfig might or might not be enabled, depending on which driver
->> is loaded, whether it called an API or not.
->>
->> 	Even LESS testing by hw vendors than #2.  Maybe even "never"
->>
->> 	Inconsistent (config access depends on device)
-> 
-> the "depends on device" is even true for Linux today. For us today, MMCONFIG isn't always used, it's used on a per device basis already; except that the per-device is both defined by the bios and our quirks....
-> (the mmconfig code already falls back to conf1 cycles in various cases)
-> 
-> So I'm not entirely buying your argument. IN fact I'm not buying your "mixed is not tested at all" argument; while the statement may be true, it's not different than it is from Linux today... which is mixed. Just differently mixed I suppose.
+On Tue, Dec 18, 2007 at 10:01:14AM +1100, Benjamin Herrenschmidt wrote:
+> Now that all in-tree users are gone, this removes pci_enable_device_bars()
+> completely.
 
-/If/ mixed use is truly well tested, then that eliminates one of my two 
-objections.
+Almost completely.
+Patch below removes pci_enable_device_bars() from Documentation/pci.txt .
 
-But I don't see that in the code now...  I see we choose [get_virt() in 
-mmconfig_{32,6 4}.c} strictly on a per-bus basis, based on the allowed 
-bus list provided by the BIOS.
+(And I'd be happy to review patches to pci.txt that add
+  pci_enable_device_io() and _mmio() as well. )
 
-In other words, if the BIOS says "use this segment/bus range for 
-mmconfig", the code does that.  There is no mixing of accesses on a 
-per-device basis AFAICS in the current code.  (feel free to prove me 
-wrong! :))  It looks like per-bus/domain to me, which is a more 
-reasonable and expected arrangement than per-device mmconfig|typeN conf 
-accesses.
-
-At boot time, we use type1 accesses until a "flag day", at which time an 
-entire bus is switched to mmconfig all at once.  After that point there 
-is no mixing of accesses on that bus -- and nor were there mixed 
-accesses on that bus /before/ that point.
-
-And -- please forgive me, I mean no offense here -- we have to make sure 
-whatever rule we come up with makes AMD and other non-Intel folks happy. 
-  Like with PCI MSI, mmconfig (+ its Linux support) has a history of 
-being written first for Intel, working great on select Intel platforms, 
-and not working so great initially for other vendors even when said 
-technology is supposedly compatible.  So having AMD sign-off on such an 
-approach would greatly increase comfort level.
+Signed-off-by: Grant Grundler <grundler@parisc-linux.org>
 
 
-
-The second objection was regarding the inconsistencies introduced to 
-userland (and the kernel?) whereby the existing states:
-
-	* 256b config space
-	* on per-bus basis, ext cfg space is available
-	  if device provides && mmconfig active
-
-were joined by the additional state
-
-	* on a per-bus basis, ext cfg space is available
-	  if device provides && mmconfig active
-
-which has the potential to confuse the codebase that makes assumptions 
-based upon whole system (mmconfig or not) and per-bus (ext cfg space 
-capable or not) basis.
-
-So, if my two worries here are needless, then those objections are 
-eliminated.
-
-
-
-
-Finally, I wonder if anything can be done about the diagnostic angle: 
-it is not __only__ the driver that may want extended config space access.
-
-It is quite reasonable and logical for an admin or developer to want to 
-_view_ the entire extended cfg space (with lspci -vvvxxx) of a device, 
-even if the device has not called pci_enable_ext_cfg_space(); indeed, 
-even if a driver is not loaded at all.
-
-How to address that need?
-
-	Jeff
-
-
-
+diff --git a/Documentation/pci.txt b/Documentation/pci.txt
+index 7754f5a..72b20c6 100644
+--- a/Documentation/pci.txt
++++ b/Documentation/pci.txt
+@@ -274,8 +274,6 @@ the PCI device by calling pci_enable_device(). This will:
+ 	o allocate an IRQ (if BIOS did not).
+ 
+ NOTE: pci_enable_device() can fail! Check the return value.
+-NOTE2: Also see pci_enable_device_bars() below. Drivers can
+-    attempt to enable only a subset of BARs they need.
+ 
+ [ OS BUG: we don't check resource allocations before enabling those
+   resources. The sequence would make more sense if we called
+@@ -605,40 +603,7 @@ device lists. This is still possible but discouraged.
+ 
+ 
+ 
+-10. pci_enable_device_bars() and Legacy I/O Port space
+-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-
+-Large servers may not be able to provide I/O port resources to all PCI
+-devices. I/O Port space is only 64KB on Intel Architecture[1] and is
+-likely also fragmented since the I/O base register of PCI-to-PCI
+-bridge will usually be aligned to a 4KB boundary[2]. On such systems,
+-pci_enable_device() and pci_request_region() will fail when
+-attempting to enable I/O Port regions that don't have I/O Port
+-resources assigned.
+-
+-Fortunately, many PCI devices which request I/O Port resources also
+-provide access to the same registers via MMIO BARs. These devices can
+-be handled without using I/O port space and the drivers typically
+-offer a CONFIG_ option to only use MMIO regions
+-(e.g. CONFIG_TULIP_MMIO). PCI devices typically provide I/O port
+-interface for legacy OSes and will work when I/O port resources are not
+-assigned. The "PCI Local Bus Specification Revision 3.0" discusses
+-this on p.44, "IMPLEMENTATION NOTE".
+-
+-If your PCI device driver doesn't need I/O port resources assigned to
+-I/O Port BARs, you should use pci_enable_device_bars() instead of
+-pci_enable_device() in order not to enable I/O port regions for the
+-corresponding devices. In addition, you should use
+-pci_request_selected_regions() and pci_release_selected_regions()
+-instead of pci_request_regions()/pci_release_regions() in order not to
+-request/release I/O port regions for the corresponding devices.
+-
+-[1] Some systems support 64KB I/O port space per PCI segment.
+-[2] Some PCI-to-PCI bridges support optional 1KB aligned I/O base.
+-
+-
+-
+-11. MMIO Space and "Write Posting"
++10. MMIO Space and "Write Posting"
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+ Converting a driver from using I/O Port space to using MMIO space
