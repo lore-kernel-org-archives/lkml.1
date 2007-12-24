@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbXLXOmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbXLXOmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757644AbXLXOmI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 09:42:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbXLXOly
+	id S1757913AbXLXOmj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 09:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbXLXOm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 09:41:54 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:50127 "EHLO mgw2.diku.dk"
+	Mon, 24 Dec 2007 09:42:28 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:58821 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753167AbXLXOlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 09:41:53 -0500
-Date: Mon, 24 Dec 2007 15:41:42 +0100 (CET)
+	id S1751325AbXLXOm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 09:42:27 -0500
+Date: Mon, 24 Dec 2007 15:42:24 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org,
+To: hpa@zytor.com, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 23/38] usb/serial: Use time_before, time_before_eq, etc.
-Message-ID: <Pine.LNX.4.64.0712241541170.23999@ask.diku.dk>
+Subject: [PATCH 24/38] fs/autofs: Use time_before, time_before_eq, etc.
+Message-ID: <Pine.LNX.4.64.0712241542010.23999@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -63,35 +63,15 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -r -u -p a/drivers/usb/serial/io_ti.c b/drivers/usb/serial/io_ti.c
---- a/drivers/usb/serial/io_ti.c	2007-07-23 11:27:17.000000000 +0200
-+++ b/drivers/usb/serial/io_ti.c	2007-12-23 20:30:39.000000000 +0100
-@@ -639,7 +639,7 @@ static void TIChasePort(struct edgeport_
- 
- 	/* wait for data to drain from the device */
- 	timeout += jiffies;
--	while ((long)(jiffies - timeout) < 0 && !signal_pending(current)
-+	while (time_before(jiffies, timeout) && !signal_pending(current)
- 	&& usb_get_intfdata(port->port->serial->interface)) {  /* not disconnected */
- 		if (!TIIsTxActive(port))
+diff -r -u -p a/fs/autofs/dirhash.c b/fs/autofs/dirhash.c
+--- a/fs/autofs/dirhash.c	2006-11-30 19:05:26.000000000 +0100
++++ b/fs/autofs/dirhash.c	2007-12-23 20:30:39.000000000 +0100
+@@ -47,7 +47,7 @@ struct autofs_dir_ent *autofs_expire(str
+ 			return NULL;	/* No entries */
+ 		/* We keep the list sorted by last_usage and want old stuff */
+ 		ent = list_entry(dh->expiry_head.next, struct autofs_dir_ent, exp);
+-		if (jiffies - ent->last_usage < timeout)
++		if (time_before(jiffies, ent->last_usage + timeout))
  			break;
-diff -r -u -p a/drivers/usb/serial/ti_usb_3410_5052.c b/drivers/usb/serial/ti_usb_3410_5052.c
---- a/drivers/usb/serial/ti_usb_3410_5052.c	2007-10-22 11:25:25.000000000 +0200
-+++ b/drivers/usb/serial/ti_usb_3410_5052.c	2007-12-23 20:30:39.000000000 +0100
-@@ -84,6 +84,7 @@
- #include <asm/semaphore.h>
- #include <linux/usb.h>
- #include <linux/usb/serial.h>
-+#include <linux/jiffies.h>
- 
- #include "ti_usb_3410_5052.h"
- #include "ti_fw_3410.h"		/* firmware image for 3410 */
-@@ -1531,7 +1532,7 @@ static void ti_drain(struct ti_port *tpo
- 	/* wait for empty tx register, plus 20 ms */
- 	timeout += jiffies;
- 	tport->tp_lsr &= ~TI_LSR_TX_EMPTY;
--	while ((long)(jiffies - timeout) < 0 && !signal_pending(current)
-+	while (time_before(jiffies, timeout) && !signal_pending(current)
- 	&& !(tport->tp_lsr&TI_LSR_TX_EMPTY) && !tdev->td_urb_error
- 	&& usb_get_intfdata(port->serial->interface)) {  /* not disconnected */
- 		if (ti_get_lsr(tport))
+ 		/* Move to end of list in case expiry isn't desirable */
+ 		autofs_update_usage(dh, ent);
