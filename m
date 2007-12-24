@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbXLXEyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbXLXFAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756431AbXLXEyR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 23:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbXLXEyD
+	id S1752444AbXLXFAx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 00:00:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbXLXFAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 23:54:03 -0500
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:50516 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751173AbXLXEyC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 23:54:02 -0500
-Message-ID: <476F3B68.9040702@lwfinger.net>
-Date: Sun, 23 Dec 2007 20:54:00 -0800
-From: Larry Finger <larry.finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Mon, 24 Dec 2007 00:00:43 -0500
+Received: from ns2.suse.de ([195.135.220.15]:56849 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750778AbXLXFAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 00:00:42 -0500
+Date: Sun, 23 Dec 2007 20:49:12 -0800
+From: Greg KH <gregkh@suse.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: balbir@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: Build breakage on powerpc with 2.6.24-rc6-mm1
+Message-ID: <20071224044912.GA10690@suse.de>
+References: <20071223224158.GA7975@linux.vnet.ibm.com> <20071224134353.c00fc231.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: sarcarsh@gmail.com
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>, bcm43xx-dev@lists.berlios.de
-Subject: Re: Boot time module loading problem
-References: <476D38F9.4090802@gmail.com> <476D567D.3020401@lwfinger.net>	 <476DE108.6030306@gmail.com> <476DFC95.9010904@lwfinger.net>	 <476E2A19.1080205@gmail.com>	 (sfid-20071223_092840_824491_0691F36B)  <1198402827.4058.0.camel@johannes.berg>	 (sfid-20071223_094140_414357_81B4D191) <1198404567.4058.2.camel@johannes.berg> <476E3D6D.1010203@gmail.com> <476EB966.1020304@lwfinger.net> <476F11EE.7070204@gmail.com>
-In-Reply-To: <476F11EE.7070204@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20071224134353.c00fc231.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shourya Sarcar wrote:
-> Larry Finger wrote:
->> With 2.6.24-rc5, a b43 user reports a problem at bootup. The b43
->> module, which should be loaded by the ssb module, fails with the
->> following type of message:
->>
->> ssb: Sonics Silicon Backplane found on PCI device 0000:0c:00.0 b43:
->> disagrees about version of symbol ssb_device_is_enabled b43: Unknown
->> symbol ssb_device_is_enabled b43: disagrees about version of symbol
->> ssb_pcicore_dev_irqvecs_enable b43: Unknown symbol
->> ssb_pcicore_dev_irqvecs_enable b43: disagrees about version of symbol
->> ssb_bus_may_powerdown b43: Unknown symbol ssb_bus_may_powerdown
->>
->> < and more similar lines....>
->>
->> If the user issues the commands
->>
->> rmmod ssb; modprobe b43
->>
->> then the modules are loaded correctly and the wireless device works.
->>
->> What could be causing such a problem?
->>
->> Larry
->>
+On Mon, Dec 24, 2007 at 01:43:53PM +1100, Stephen Rothwell wrote:
+> Hi Balbir,
 > 
-> Larry, thanks for pursuing this. I upgraded to 2.6.24-rc6 last night and
-> I don't see this issue anymore. One might think that the clean remake
-> solved the problem (which I am pretty sure I did with rc5 as well); but
-> still does not explain with 2.6.24-rc5, the module would not load on
-> first attempt but then load after the manual:
+> Thanks for the report.
 > 
-> # rmmod ssb;modprobe b43
+> On Mon, 24 Dec 2007 04:11:58 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >
+> > I see the following error with the iseries_veth driver in 2.6.24-rc6-mm1
+> > 
+> > drivers/net/iseries_veth.c: In function ‘veth_init_connection’:
+> > drivers/net/iseries_veth.c:818: warning: unused variable ‘rc’
+> > drivers/net/iseries_veth.c: In function ‘veth_probe_one’:
+> > drivers/net/iseries_veth.c:1086: error: ‘veth_port_ktypeq’ undeclared
+> > (first use in this function)
+> > drivers/net/iseries_veth.c:1086: error: (Each undeclared identifier is
+> > reported only once
+> > drivers/net/iseries_veth.c:1086: error: for each function it appears
+> > in.)
+> > make[2]: *** [drivers/net/iseries_veth.o] Error 1
+> > make[1]: *** [drivers/net] Error 2
+> > make: *** [drivers] Error 2
 
-Johannes may have been right and that you had a stale initrd. I was going to have you try a 'sudo
-mkinitrd', but it is now fixed.
+Thanks for the report, sorry for the typos, I'll fix up my patch.
 
-Larry
+> Yeah, that would be
+> gregkh-driver-kobject-convert-drivers-net-iseries_vethc-to-use-kobject_init-add_ng.
+> 
+> Hi Greg, do you even build with your patches applied?
+
+For the power architecture, no, I do not.  I used to, but my cross-build
+box died and I haven't taken the time to set it all up again.  For i386
+and x86-64 I do build everything, and as that's 99% of the users, it's
+usually fine :)
+
+I did start to try to get a s390 cross-build working, but ran out of
+time a week or so ago...
+
+> > Here's a patch, compile tested to fix the compilation problem
+> 
+> Hopefully Greg will fix his original patch before it reaches Linus.
+
+I will do that.
+
+thanks,
+
+greg k-h
