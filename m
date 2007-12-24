@@ -1,64 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757800AbXLXBP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbXLXBZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757800AbXLXBP3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 20:15:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXLXBPW
+	id S1754575AbXLXBZw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 20:25:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbXLXBZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 20:15:22 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42044 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751302AbXLXBPW (ORCPT
+	Sun, 23 Dec 2007 20:25:43 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:1171 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751388AbXLXBZn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 20:15:22 -0500
-Date: Sun, 23 Dec 2007 17:14:34 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-cc: "H. Peter Anvin" <hpa@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux PM List <linux-pm@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4
- suspend-to-RAM
-In-Reply-To: <alpine.LFD.0.9999.0712231621340.21557@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.9999.0712231703390.21557@woody.linux-foundation.org>
-References: <200712231419.40207.carlos@strangeworlds.co.uk> <200712232320.21182.rjw@sisk.pl> <476EEB6F.7080909@kernel.org> <200712240009.41764.carlos@strangeworlds.co.uk> <alpine.LFD.0.9999.0712231621340.21557@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 23 Dec 2007 20:25:43 -0500
+Date: Mon, 24 Dec 2007 09:25:24 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: trem <tremyfr@yahoo.fr>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc6-mm1
+Message-ID: <20071224012524.GA21843@gondor.apana.org.au>
+References: <9DtBq-2jD-3@gated-at.bofh.it> <476EAF98.6040004@yahoo.fr> <20071223121410.0d572e03.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071223121410.0d572e03.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Dec 23, 2007 at 12:14:10PM -0800, Andrew Morton wrote:
+>
+> No, the problem is that include/crypto/scatterwalk.h doesn't include enough
+> header files to support its inlining fetish.  It needs sched.h.
 
+I'll get it fixed in cryptodev.
 
-On Sun, 23 Dec 2007, Linus Torvalds wrote:
-> 
-> IOW, it looks like the normal kind of ACPI mess. Color me not in the least 
-> surprised, and it needs somebody who understands AML and what the heck is 
-> supposed to happen to figure out.
+> Ingo, it's not good that we have cond_resched() definitions conditionally
+> duplicated in kernel.h - that's increasing the risk of bugs like this one.
 
-Side note: we could obviously undo the commit that triggered this for you 
-(ie 52ade9b3b97fd3bea42842a056fe0786c28d0555), but then we have to undo 
-also the commit that caused us to do that commit in the first place, and 
-change the ordering on resume too (that would be commit 
-e3c7db621bed4afb8e231cb005057f2feb5db557 - the commit that moved the 
-"pm_ops->finish()" call to before the call to device_resume())
+Actually, why do we even have cond_resched when real preemption
+is on? It seems to be a waste of space and time.
 
-In other words, we'd have to go back to our original ordering, which Len 
-said was fundamentally wrong. I don't think anybody really wants that.
+Any objections to something like this to remove cond_resched with
+CONFIG_PREEMPT on (apart from the potential to uncover more bugs
+like this one)?
 
-It would be better to figure out why "device_suspend()" apparently causes 
-problems for your AML crud.
-
-Oh, and why is linux-kernel cc'd, but not linux-pm? Are all the relevant 
-people from linux-pm cc'd, or should somebody who is on that list please 
-try to condense this down?
-
-(For linux-pm: see 
-
-        http://bugzilla.kernel.org/show_bug.cgi?id=9528
-
-for some more details, including a few red herrings like the whole subject 
-line of this email thread which turned out to not be valid after all).
-
-		Linus
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 94bc996..a7283c9 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -105,8 +105,8 @@ struct user;
+  * supposed to.
+  */
+ #ifdef CONFIG_PREEMPT_VOLUNTARY
+-extern int cond_resched(void);
+-# define might_resched() cond_resched()
++extern int _cond_resched(void);
++# define might_resched() _cond_resched()
+ #else
+ # define might_resched() do { } while (0)
+ #endif
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index ac3d496..ae8e9bd 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1863,7 +1863,18 @@ static inline int need_resched(void)
+  * cond_resched_lock() will drop the spinlock before scheduling,
+  * cond_resched_softirq() will enable bhs before scheduling.
+  */
+-extern int cond_resched(void);
++#ifdef CONFIG_PREEMPT
++static inline int cond_resched(void)
++{
++	return 0;
++}
++#else
++extern int _cond_resched(void);
++static inline int cond_resched(void)
++{
++	return _cond_resched();
++}
++#endif
+ extern int cond_resched_lock(spinlock_t * lock);
+ extern int cond_resched_softirq(void);
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3df84ea..2dc2bbf 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4683,7 +4683,8 @@ static void __cond_resched(void)
+ 	} while (need_resched());
+ }
+ 
+-int __sched cond_resched(void)
++#if !defined(CONFIG_PREEMPT) || defined(CONFIG_PREEMPT_VOLUNTARY)
++int __sched _cond_resched(void)
+ {
+ 	if (need_resched() && !(preempt_count() & PREEMPT_ACTIVE) &&
+ 					system_state == SYSTEM_RUNNING) {
+@@ -4692,7 +4693,8 @@ int __sched cond_resched(void)
+ 	}
+ 	return 0;
+ }
+-EXPORT_SYMBOL(cond_resched);
++EXPORT_SYMBOL(_cond_resched);
++#endif
+ 
+ /*
+  * cond_resched_lock() - if a reschedule is pending, drop the given lock,
