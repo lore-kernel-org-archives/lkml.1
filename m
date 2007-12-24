@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbXLXDFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbXLXDXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802AbXLXDFn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 22:05:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbXLXDFf
+	id S1754307AbXLXDXm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 22:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXLXDXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 22:05:35 -0500
-Received: from slackadelic.com ([65.196.224.53]:49913 "EHLO
-	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751459AbXLXDFe (ORCPT
+	Sun, 23 Dec 2007 22:23:31 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:30383 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbXLXDXa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 22:05:34 -0500
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4 suspend-to-RAM
-Date: Mon, 24 Dec 2007 03:05:16 +0000
-User-Agent: KMail/1.9.7
-Cc: "H. Peter Anvin" <hpa@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Sun, 23 Dec 2007 22:23:30 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Stephane Ascoet <stephaneascoet@free.fr>
+Subject: Re: do not stop/start devices in suspend/resume path: the SCSI case
+Date: Sun, 23 Dec 2007 20:21:35 -0700
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, matthew@wil.cx,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux PM List <linux-pm@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-References: <200712231419.40207.carlos@strangeworlds.co.uk> <alpine.LFD.0.9999.0712231621340.21557@woody.linux-foundation.org> <alpine.LFD.0.9999.0712231703390.21557@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0712231703390.21557@woody.linux-foundation.org>
+       linux-pm@lists.linux-foundation.org, drzeus@drzeus.cx,
+       linux-acpi@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Li Shaohua <shaohua.li@intel.com>, Len Brown <lenb@kernel.org>
+References: <4745F77C.7040402@gmail.com> <200712051124.18852.bjorn.helgaas@hp.com> <476F0ED5.3090609@free.fr>
+In-Reply-To: <476F0ED5.3090609@free.fr>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200712240305.18080.carlos@strangeworlds.co.uk>
+Message-Id: <200712232021.36835.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 24 December 2007 01:14:34 Linus Torvalds wrote:
-> Side note: we could obviously undo the commit that triggered this for you
-> [..]
-> In other words, we'd have to go back to our original ordering, which Len
-> said was fundamentally wrong. I don't think anybody really wants that.
+On Sunday 23 December 2007 6:43:49 pm Stephane Ascoet wrote:
+> Bjorn Helgaas a écrit :
+> > Good.  It's not clear to me whether it is safe to leave devices
+> > enabled while we sleep.  I don't see an actual problem, but there
+> > might be something related to hotplug while we're asleep or something.
+> > So I'll cc: some additional people who might have some insight.
+>
+> Hi, is there a chance for SCSI sleeping being managed by ACPI(it seems
+> to be the case for IDE)?
 
-Nor would I argue to do so.
+I'm sorry, I don't know the answer to this.
 
-> It would be better to figure out why "device_suspend()" apparently causes
-> problems for your AML crud.
+Bjorn
 
-Will do - thanks for the pointer.
-
-> Oh, and why is linux-kernel cc'd, but not linux-pm?
-
-Because I like to compound my errors (I mean, if you're going to screw up, you 
-might as well _really_ go for it).
-
--Carlos
--- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
