@@ -1,200 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997AbXLXRsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbXLXSf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751997AbXLXRsB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 12:48:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbXLXRrv
+	id S1752525AbXLXSf2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 13:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbXLXSfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 12:47:51 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:56406 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750939AbXLXRru (ORCPT
+	Mon, 24 Dec 2007 13:35:17 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58290 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751077AbXLXSfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 12:47:50 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCHv2] powerpc: DBox2 Board Support
-Date: Mon, 24 Dec 2007 13:18:01 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Jochen Friedrich <jochen@scram.de>, linuxppc-dev@ozlabs.org,
-       Scott Wood <scottwood@freescale.com>, linux-kernel@vger.kernel.org
-References: <476E9930.6000205@scram.de>
-In-Reply-To: <476E9930.6000205@scram.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 24 Dec 2007 13:35:16 -0500
+Date: Mon, 24 Dec 2007 10:34:21 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       "H. Peter Anvin" <hpa@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4
+ suspend-to-RAM
+In-Reply-To: <200712241444.24031.rjw@sisk.pl>
+Message-ID: <alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org>
+References: <200712231419.40207.carlos@strangeworlds.co.uk> <alpine.LFD.0.9999.0712231703390.21557@woody.linux-foundation.org> <200712240305.18080.carlos@strangeworlds.co.uk> <200712241444.24031.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712241318.02299.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+8VLeikuIU/ibE1YpdSI3Ar9yr1WB8wgjK1EO
- KMnYvyQAMlTsEsknVbI4n649gQg9OtZKeL7U+ss/ogbua/4rTb
- ufidXJh/EKfl6kjYho41g==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 23 December 2007, Jochen Friedrich wrote:
-> This patch adds device tree source, default config and setup code for
-> DBox2 devices.
 
-Cool stuff. I used to have one of these boxes myself, maybe I should
-get one again when it's hitting mainline.
 
-Is this already a complete port, or do you also need some device
-drivers or boot wrapper code to go along with it?
+On Mon, 24 Dec 2007, Rafael J. Wysocki wrote:
+> 
+> Well, having considered that for a longer while, I think the AML code is
+> referring to a device that we have suspended already, and since it's in a low
+> power state, it just can't handle the reference.
+> 
+> If that is the case, we'll have to find the device (that should be possible
+> using some code instrumentation) and move the suspending of it into the late
+> stage.
 
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <0 2000000>;
-> +	};
+Yes. 
 
-I thought there are both models with 32MB and 16MB available.
-If that's true, shouldn't this be filled out by the boot loader?
+In general, I'm personally of the opinion that drivers should *not* 
+actually go into D3 at all in the regular "->suspend()" phase. It should 
+be done in ->suspend_late. The early suspend is for saving state and 
+returning errors.
 
-> +#
-> +# Frame buffer hardware drivers
-> +#
-> +# CONFIG_FB_OF is not set
-> +# CONFIG_FB_VGA16 is not set
-> +# CONFIG_FB_S1D13XXX is not set
-> +# CONFIG_FB_IBM_GXT4500 is not set
-> +# CONFIG_FB_VIRTUAL is not set
-> +# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+Sadly, we've made it a bit too inconvenient to actually do that. Almost 
+all drivers only do the "->suspend" thing, and the default PCI behaviour 
+doesn't help us in any way either.
 
-No hardware framebuffer driver? Can't you use
-the FB_OF driver by default? I'd guess that a
-set-top box without output is rather pointless ;-)
+Anyway, I wonder if a patch like this could make it easier for driver 
+writers to handle things. It basically does:
 
-> +# DOS/FAT/NT Filesystems
-> +#
-> +CONFIG_FAT_FS=y
-> +CONFIG_MSDOS_FS=y
-> +CONFIG_VFAT_FS=y
-> +CONFIG_FAT_DEFAULT_CODEPAGE=437
-> +CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-> +# CONFIG_NTFS_FS is not set
+ - if you don't have a regular "suspend()" function, we'll just save state 
+   at suspend time.
 
-What media can you connect that use the FAT file system?
+ - if you don't have a "suspend_late()" function, we'll look at the 
+   current state, and if it's still in PCI_D0, we'll suspend to PCI_D3hot 
+   if it's a regular PCI device (ie not a bridge or something else odd).
 
-I'd guess that if you can get rid of these, you can also
-disable the entire block layer, which should free up
-some kernel memory.
+ - then, at resume time, by default we don't do anything in the early 
+   resume, but in the late resume we'll undo everything, of course.
 
-> @@ -0,0 +1,30 @@
-> +/*
-> + * A collection of structures, addresses, and values associated with
-> + * the DBox2.
-> + *
-> + * Author: (c) 2007 Jochen Friedrich
-> + *
-> + * This file is licensed under the
-> + * terms of the GNU General Public License version 2.  This program is licensed
-> + * "as is" without any warranty of any kind, whether express or implied.
-> + */
-> +
-> +#ifdef __KERNEL__
-> +#ifndef __ASM_DBOX2_H__
-> +#define __ASM_DBOX2_H__
+Anyway, with this, most drivers could just remove the 
+"pci_set_power_state()" call *entirely*, and let the default 
+suspend_late action power the device down. But if you want to override 
+that default action, you can either:
 
-You don't need the #ifdef __KERNEL__ any more if you don't have
-any user-visible parts in the header. Just leave it out of the
-list of exported header files (as you already do).
+ - set the power state in your own ->suspend() routine (either by using 
+   pci_set_power_state(), or by just explicitly setting the state to 
+   unknown with "dev->current_state =  PCI_UNKNOWN"
 
-> +
-> +/* Vendor information in BR Bootloader
-> + */
-> +
-> +#define DBOX2_VENDOR_OFFSET	(0x1ffe0)
-> +
-> +enum dbox2_mid {
-> +	DBOX2_MID_NOKIA       = 1,
-> +	DBOX2_MID_PHILIPS     = 2,
-> +	DBOX2_MID_SAGEM       = 3,
-> +};
-> +
-> +enum dbox2_mid dbox2_get_mid(void);
+ - have a "late_suspend()" action, which obviously will override the 
+   default action entirely.
 
-Can you move this functionality from the kernel to the boot wrapper?
-It looks like this is something that really belongs into the device
-tree.
+Hmm?
 
-> +static void __init dbox2_setup_arch(void)
-> +{
-> +	struct device_node *np;
-> +	static u8 __iomem *config;
-> +
-> +	cpm_reset();
-> +	init_ioports();
-> +
-> +	/* Enable external IRQs for AVIA chips */
-> +	clrbits32(&mpc8xx_immr->im_siu_conf.sc_siumcr, 0x00000c00);
+In the case of the NVidia issue, one thing to try migh be to remove the 
+current call to "pci_set_power_state(pdev, 3);" in agp_nvidia_suspend() in 
+drivers/char/agp/nvidia-agp.c. That sounds like the most likely culprit 
+for something that ACPI might want to shut down.
 
-This smells like a hack. What are AVIA chips, and shouldn't
-their driver enable the IRQs?
+NOTE! This following patch is just for discussion, and while I think it's 
+conceptually a good thing to try, I don't think it will help Carlos' 
+problem. But removing the "pci_set_power_state()" in agp_nvidia_suspend() 
+might.
 
-> +	if (dbox2_manuf_id == DBOX2_MID_NOKIA)
-> +		np = of_find_node_by_path("/localbus@8000000/enx@0");
-> +	else
-> +		np = of_find_node_by_path("/localbus@8000000/gtx@0");
-> +
-> +	if (np) {
-> +		of_detach_node(np);
-> +		of_node_put(np);
-> +	}
-> +
-> +	if (dbox2_manuf_id == DBOX2_MID_PHILIPS)
-> +		np = of_find_node_by_path("/localbus@8000000/cam@4000000");
-> +	else
-> +		np = of_find_node_by_path("/localbus@8000000/cam@4040000");
-> +
-> +	if (np) {
-> +		of_detach_node(np);
-> +		of_node_put(np);
-> +	}
-> +}
+			Linus
 
-What is this code for? Why do you want to detach nodes from the device
-tree that have been put in there by the boot loader?
+---
+ drivers/pci/pci-driver.c |   32 +++++++++++++++++++++++++-------
+ 1 files changed, 25 insertions(+), 7 deletions(-)
 
-> +static struct of_device_id __initdata of_bus_ids[] = {
-> +	{ .name = "soc", },
-> +	{ .name = "cpm", },
-> +	{ .name = "localbus", },
-> +	{},
-> +};
-
-Shouldn't this check for 'compatible' properties instead of 'name'?
-
-> +static int __init declare_of_platform_devices(void)
-> +{
-> +	/* Publish the QE devices */
-> +	if (machine_is(dbox2))
-> +		of_platform_bus_probe(NULL, of_bus_ids, NULL);
-> +
-> +	return 0;
-> +}
-> +device_initcall(declare_of_platform_devices);
-
-This is a candidate for the new platform_initcall stuff.
-
-I also once did a patch that let you have a default 'of_bus_ids'
-member in the ppc_md. I never got around to submitting that, but
-if there is interest, I can dig it out again.
-
-> --- a/include/asm-powerpc/mpc8xx.h
-> +++ b/include/asm-powerpc/mpc8xx.h
-> @@ -23,6 +23,10 @@
->  #include <platforms/8xx/mpc885ads.h>
->  #endif
->  
-> +#if defined(CONFIG_DBOX2)
-> +#include <platforms/8xx/dbox2.h>
-> +#endif
-> +
-
-Don't hide #includes or platform specific #defines in #ifdef.
-
-	Arnd <><
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index 6d1a216..6992f73 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -264,6 +264,28 @@ static int pci_device_remove(struct device * dev)
+ 	return 0;
+ }
+ 
++static void pci_default_suspend(struct pci_dev *dev, pm_message_t state)
++{
++	pci_save_state(dev);
++}
++
++static void pci_default_suspend_late(struct pci_dev *dev, pm_message_t state)
++{
++	/* Something has already suspended it? Never mind then.. */
++	if (dev->current_state != PCI_D0)
++		return;
++
++	/* We avoid powering down bridges by default.. */
++	if (dev->hdr_type == PCI_HEADER_TYPE_NORMAL)
++		pci_set_power_state(dev, PCI_D3hot);
++
++	/*
++	 * mark its power state as "unknown", since we don't know if
++	 * e.g. the BIOS will change its device state when we suspend.
++	 */
++	dev->current_state = PCI_UNKNOWN;
++}
++
+ static int pci_device_suspend(struct device * dev, pm_message_t state)
+ {
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+@@ -274,13 +296,7 @@ static int pci_device_suspend(struct device * dev, pm_message_t state)
+ 		i = drv->suspend(pci_dev, state);
+ 		suspend_report_result(drv->suspend, i);
+ 	} else {
+-		pci_save_state(pci_dev);
+-		/*
+-		 * mark its power state as "unknown", since we don't know if
+-		 * e.g. the BIOS will change its device state when we suspend.
+-		 */
+-		if (pci_dev->current_state == PCI_D0)
+-			pci_dev->current_state = PCI_UNKNOWN;
++		pci_default_suspend(pci_dev, state);
+ 	}
+ 	return i;
+ }
+@@ -294,6 +310,8 @@ static int pci_device_suspend_late(struct device * dev, pm_message_t state)
+ 	if (drv && drv->suspend_late) {
+ 		i = drv->suspend_late(pci_dev, state);
+ 		suspend_report_result(drv->suspend_late, i);
++	} else {
++		pci_default_suspend_late(pci_dev, state);
+ 	}
+ 	return i;
+ }
