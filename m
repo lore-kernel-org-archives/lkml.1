@@ -1,159 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758351AbXLXOvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbXLXPHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758351AbXLXOvx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 09:51:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbXLXOvl
+	id S1751690AbXLXPHc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 10:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbXLXPHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 09:51:41 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:46905 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753584AbXLXOvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 09:51:40 -0500
-Date: Mon, 24 Dec 2007 15:51:28 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: perex@suse.cz, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 38/38] sound: Use time_before, time_before_eq, etc.
-Message-ID: <Pine.LNX.4.64.0712241551060.23999@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 24 Dec 2007 10:07:21 -0500
+Received: from yue.linux-ipv6.org ([203.178.140.15]:44337 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750703AbXLXPHT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 10:07:19 -0500
+Date: Tue, 25 Dec 2007 00:07:58 +0900 (JST)
+Message-Id: <20071225.000758.105456929.yoshfuji@linux-ipv6.org>
+To: julia@diku.dk
+Cc: patrick@tykepenguin.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH 31/38] net/decnet: Use time_before, time_before_eq, etc.
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <Pine.LNX.4.64.0712241547080.23999@ask.diku.dk>
+References: <Pine.LNX.4.64.0712241547080.23999@ask.diku.dk>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+In article <Pine.LNX.4.64.0712241547080.23999@ask.diku.dk> (at Mon, 24 Dec 2007 15:47:32 +0100 (CET)), Julia Lawall <julia@diku.dk> says:
 
-The functions time_before, time_before_eq, time_after, and time_after_eq
-are more robust for comparing jiffies against other values.
+> From: Julia Lawall <julia@diku.dk>
+> 
+> The functions time_before, time_before_eq, time_after, and time_after_eq
+> are more robust for comparing jiffies against other values.
 
-A simplified version of the semantic patch making this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
 
-// <smpl>
-@ change_compare_np @
-expression E;
-@@
+> - jiffies >= E
+> + time_after_eq(jiffies,E)
 
-(
-- jiffies <= E
-+ time_before_eq(jiffies,E)
-|
-- jiffies >= E
-+ time_after_eq(jiffies,E)
-|
-- jiffies < E
-+ time_before(jiffies,E)
-|
-- jiffies > E
-+ time_after(jiffies,E)
-)
 
-@ include depends on change_compare_np @
-@@
+> diff -r -u -p a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
+> --- a/net/decnet/af_decnet.c	2007-11-08 08:00:53.000000000 +0100
+> +++ b/net/decnet/af_decnet.c	2007-12-23 20:30:40.000000000 +0100
+:
+> @@ -601,7 +602,7 @@ int dn_destroy_timer(struct sock *sk)
+>  	if (sk->sk_socket)
+>  		return 0;
+>  
+> -	if ((jiffies - scp->stamp) >= (HZ * decnet_time_wait)) {
+> +	if (time_before_eq(jiffies, scp->stamp + HZ * decnet_time_wait)) {
+>  		dn_unhash_sock(sk);
+>  		sock_put(sk);
+>  		return 1;
 
-#include <linux/jiffies.h>
+ugh?
 
-@ no_include depends on !include && change_compare_np @
-@@
+> --- a/net/decnet/dn_timer.c	2006-11-30 19:05:46.000000000 +0100
+> +++ b/net/decnet/dn_timer.c	2007-12-23 20:30:40.000000000 +0100
+> @@ -21,6 +21,7 @@
+>  #include <linux/netdevice.h>
+>  #include <linux/timer.h>
+>  #include <linux/spinlock.h>
+> +#include <linux/jiffies.h>
+>  #include <net/sock.h>
+>  #include <asm/atomic.h>
+>  #include <net/flow.h>
+> @@ -96,7 +97,7 @@ static void dn_slow_timer(unsigned long 
+>  	 * since the last successful transmission.
+>  	 */
+>  	if (scp->keepalive && scp->keepalive_fxn && (scp->state == DN_RUN)) {
+> -		if ((jiffies - scp->stamp) >= scp->keepalive)
+> +		if (time_before_eq(jiffies, scp->stamp + scp->keepalive))
+>  			scp->keepalive_fxn(sk);
+>  	}
+>  
 
-  #include <linux/...>
-+ #include <linux/jiffies.h>
-// </smpl>
+ugh?
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
-
-diff -r -u -p a/sound/drivers/serial-u16550.c b/sound/drivers/serial-u16550.c
---- a/sound/drivers/serial-u16550.c	2007-10-22 11:25:52.000000000 +0200
-+++ b/sound/drivers/serial-u16550.c	2007-12-23 20:30:40.000000000 +0100
-@@ -43,6 +43,7 @@
- #include <sound/initval.h>
- 
- #include <linux/serial_reg.h>
-+#include <linux/jiffies.h>
- 
- #include <asm/io.h>
- 
-@@ -694,7 +695,7 @@ static void snd_uart16550_output_write(s
- 			    (uart->adaptor == SNDRV_SERIAL_SOUNDCANVAS ||
- 			     uart->adaptor == SNDRV_SERIAL_GENERIC) &&
- 			    (uart->prev_out != substream->number ||
--			     jiffies-lasttime > 3*HZ)) {
-+			     time_after(jiffies, lasttime + 3*HZ))) {
- 
- 				if (snd_uart16550_buffer_can_write(uart, 3)) {
- 					/* Roland Soundcanvas part selection */
-diff -r -u -p a/sound/oss/pss.c b/sound/oss/pss.c
---- a/sound/oss/pss.c	2006-11-30 19:05:48.000000000 +0100
-+++ b/sound/oss/pss.c	2007-12-23 20:30:40.000000000 +0100
-@@ -60,6 +60,7 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/spinlock.h>
-+#include <linux/jiffies.h>
- 
- #include "sound_config.h"
- #include "sound_firmware.h"
-@@ -271,7 +272,7 @@ static int pss_reset_dsp(pss_confdata * 
- 	unsigned long   i, limit = jiffies + HZ/10;
- 
- 	outw(0x2000, REG(PSS_CONTROL));
--	for (i = 0; i < 32768 && (limit-jiffies >= 0); i++)
-+	for (i = 0; i < 32768 && (time_after_eq(jiffies, limit)); i++)
- 		inw(REG(PSS_CONTROL));
- 	outw(0x0000, REG(PSS_CONTROL));
- 	return 1;
-@@ -371,11 +372,11 @@ static int pss_download_boot(pss_confdat
- 		outw(0, REG(PSS_DATA));
- 
- 		limit = jiffies + HZ/10;
--		for (i = 0; i < 32768 && (limit - jiffies >= 0); i++)
-+		for (i = 0; i < 32768 && (time_after_eq(jiffies, limit)); i++)
- 			val = inw(REG(PSS_STATUS));
- 
- 		limit = jiffies + HZ/10;
--		for (i = 0; i < 32768 && (limit-jiffies >= 0); i++)
-+		for (i = 0; i < 32768 && (time_after_eq(jiffies, limit)); i++)
- 		{
- 			val = inw(REG(PSS_STATUS));
- 			if (val & 0x4000)
-diff -r -u -p a/sound/oss/sb_common.c b/sound/oss/sb_common.c
---- a/sound/oss/sb_common.c	2007-02-09 17:34:30.000000000 +0100
-+++ b/sound/oss/sb_common.c	2007-12-23 20:30:40.000000000 +0100
-@@ -31,6 +31,7 @@
- #include <linux/module.h>
- #include <linux/delay.h>
- #include <linux/spinlock.h>
-+#include <linux/jiffies.h>
- 
- #include "sound_config.h"
- #include "sound_firmware.h"
-@@ -97,7 +98,7 @@ int sb_dsp_command(sb_devc * devc, unsig
- 	 * loops.
- 	 */
- 
--	for (i = 0; i < 500000 && (limit-jiffies)>0; i++)
-+	for (i = 0; i < 500000 && time_before(jiffies, limit); i++)
- 	{
- 		if ((inb(DSP_STATUS) & 0x80) == 0)
- 		{
-diff -r -u -p a/sound/soc/s3c24xx/s3c24xx-i2s.c b/sound/soc/s3c24xx/s3c24xx-i2s.c
---- a/sound/soc/s3c24xx/s3c24xx-i2s.c	2007-10-22 11:25:53.000000000 +0200
-+++ b/sound/soc/s3c24xx/s3c24xx-i2s.c	2007-12-23 20:30:40.000000000 +0100
-@@ -24,6 +24,7 @@
- #include <linux/device.h>
- #include <linux/delay.h>
- #include <linux/clk.h>
-+#include <linux/jiffies.h>
- #include <sound/driver.h>
- #include <sound/core.h>
- #include <sound/pcm.h>
-@@ -184,7 +185,7 @@ static int s3c24xx_snd_lrsync(void)
- 		if (iiscon & S3C2410_IISCON_LRINDEX)
- 			break;
- 
--		if (timeout < jiffies)
-+		if (time_after(jiffies, timeout))
- 			return -ETIMEDOUT;
- 	}
- 
+--yoshfuji
