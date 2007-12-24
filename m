@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbXLXBA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbXLXBNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757497AbXLXBA1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 20:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbXLXBAQ
+	id S1755387AbXLXBNv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 20:13:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXLXBNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 20:00:16 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55516 "EHLO mx1.redhat.com"
+	Sun, 23 Dec 2007 20:13:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50062 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751020AbXLXBAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 20:00:15 -0500
-Date: Sun, 23 Dec 2007 20:00:03 -0500
+	id S1751010AbXLXBNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 20:13:41 -0500
+Date: Sun, 23 Dec 2007 20:11:49 -0500
 From: Rik van Riel <riel@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 17/20] non-reclaimable mlocked pages
-Message-ID: <20071223200003.4540b4ad@bree.surriel.com>
-In-Reply-To: <200712232322.08946.nickpiggin@yahoo.com.au>
+To: balbir@linux.vnet.ibm.com
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com
+Subject: Re: [patch 00/20] VM pageout scalability improvements
+Message-ID: <20071223201149.7b88888f@bree.surriel.com>
+In-Reply-To: <476EE858.202@linux.vnet.ibm.com>
 References: <20071218211539.250334036@redhat.com>
-	<200712212152.19260.nickpiggin@yahoo.com.au>
-	<20071221091753.15a18935@bree.surriel.com>
-	<200712232322.08946.nickpiggin@yahoo.com.au>
+	<476D7334.4010301@linux.vnet.ibm.com>
+	<20071222192119.030f32d5@bree.surriel.com>
+	<476EE858.202@linux.vnet.ibm.com>
 Organization: Red Hat, Inc.
 X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -30,17 +29,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Dec 2007 23:22:08 +1100
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Mon, 24 Dec 2007 04:29:36 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> Rik van Riel wrote:
 
-> Not sure how well that translates to real world workloads, but it
-> might help somewhere. Admittedly some of the patches are pretty
-> complex...
+> > In the real world, users with large JVMs on their servers, which
+> > sometimes go a little into swap, can trigger this system.  All of
+> > the CPUs end up scanning the active list, and all pages have the
+> > referenced bit set.  Even if the system eventually recovers, it
+> > might as well have been dead.
+> > 
+> > Going into swap a little should only take a little bit of time.
+> 
+> Very fascinating, so we need to scale better with larger memory.
+> I suspect part of the answer will lie with using large/huge pages.
 
-I like your patch series.
+Linus vetoed going to a larger soft page size, with good reason.
 
-They are completely orthogonal to my patches though, so I
-won't tie them together by merging your series into mine :)
-
-It looks like the majority of your patches could go into
--mm right away.
+Just look at how much the 64kB page size on PPC64 sucks for most
+workloads - it works for PPC64 because people buy PPC64 monster
+systems for the kinds of monster workloads that work well with a
+large page size, but it definately isn't general purpose.
