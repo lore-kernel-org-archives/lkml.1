@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbXLXOSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbXLXOTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754640AbXLXOSR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 09:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbXLXOSB
+	id S1754817AbXLXOTS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 09:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbXLXOTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 09:18:01 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:58254 "EHLO mgw1.diku.dk"
+	Mon, 24 Dec 2007 09:19:08 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:58072 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751318AbXLXOSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 09:18:00 -0500
-Date: Mon, 24 Dec 2007 15:17:56 +0100 (CET)
+	id S1752393AbXLXOTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 09:19:07 -0500
+Date: Mon, 24 Dec 2007 15:18:56 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: tony.luck@intel.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/38] arch/ia64: Use time_before, time_before_eq, etc.
-Message-ID: <Pine.LNX.4.64.0712241517020.23999@ask.diku.dk>
+To: jes@sgi.com, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/38] arch/ia64/sn: Use time_before, time_before_eq, etc.
+Message-ID: <Pine.LNX.4.64.0712241518040.23999@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -63,56 +62,83 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -r -u -p a/arch/ia64/kernel/irq_ia64.c b/arch/ia64/kernel/irq_ia64.c
---- a/arch/ia64/kernel/irq_ia64.c	2007-12-21 06:57:18.000000000 +0100
-+++ b/arch/ia64/kernel/irq_ia64.c	2007-12-23 20:30:39.000000000 +0100
-@@ -405,7 +405,7 @@ ia64_handle_irq (ia64_vector vector, str
- 			static unsigned char count;
- 			static long last_time;
- 
--			if (jiffies - last_time > 5*HZ)
-+			if (time_after(jiffies, last_time + 5*HZ))
- 				count = 0;
- 			if (++count < 5) {
- 				last_time = jiffies;
-diff -r -u -p a/arch/ia64/kernel/mca.c b/arch/ia64/kernel/mca.c
---- a/arch/ia64/kernel/mca.c	2007-12-21 06:57:18.000000000 +0100
-+++ b/arch/ia64/kernel/mca.c	2007-12-23 20:31:54.000000000 +0100
-@@ -76,6 +76,7 @@
- #include <linux/cpumask.h>
+diff -r -u -p a/arch/ia64/sn/kernel/xpc_main.c b/arch/ia64/sn/kernel/xpc_main.c
+--- a/arch/ia64/sn/kernel/xpc_main.c	2007-11-12 10:35:56.000000000 +0100
++++ b/arch/ia64/sn/kernel/xpc_main.c	2007-12-23 20:32:54.000000000 +0100
+@@ -56,6 +56,7 @@
+ #include <linux/reboot.h>
+ #include <linux/completion.h>
  #include <linux/kdebug.h>
- #include <linux/cpu.h>
 +#include <linux/jiffies.h>
+ #include <asm/sn/intr.h>
+ #include <asm/sn/sn_sal.h>
+ #include <asm/uaccess.h>
+@@ -199,7 +200,7 @@ xpc_timeout_partition_disengage_request(
+ 	struct xpc_partition *part = (struct xpc_partition *) data;
  
- #include <asm/delay.h>
- #include <asm/machvec.h>
-@@ -285,7 +286,8 @@ static void ia64_mlogbuf_dump_from_init(
- 	if (mlogbuf_finished)
- 		return;
  
--	if (mlogbuf_timestamp && (mlogbuf_timestamp + 30*HZ > jiffies)) {
-+	if (mlogbuf_timestamp &&
-+	    (time_before(jiffies, mlogbuf_timestamp + 30*HZ))) {
- 		printk(KERN_ERR "INIT: mlogbuf_dump is interrupted by INIT "
- 			" and the system seems to be messed up.\n");
- 		ia64_mlogbuf_finish(0);
-diff -r -u -p a/arch/ia64/kernel/unaligned.c b/arch/ia64/kernel/unaligned.c
---- a/arch/ia64/kernel/unaligned.c	2007-10-22 11:24:57.000000000 +0200
-+++ b/arch/ia64/kernel/unaligned.c	2007-12-23 20:30:39.000000000 +0100
-@@ -16,6 +16,7 @@
- #include <linux/kernel.h>
- #include <linux/sched.h>
- #include <linux/tty.h>
-+#include <linux/jiffies.h>
+-	DBUG_ON(jiffies < part->disengage_request_timeout);
++	DBUG_ON(time_before(jiffies, part->disengage_request_timeout));
  
- #include <asm/intrinsics.h>
- #include <asm/processor.h>
-@@ -1289,7 +1290,7 @@ within_logging_rate_limit (void)
+ 	(void) xpc_partition_disengaged(part);
+ 
+@@ -230,7 +231,7 @@ xpc_hb_beater(unsigned long dummy)
  {
- 	static unsigned long count, last_time;
+ 	xpc_vars->heartbeat++;
  
--	if (jiffies - last_time > 5*HZ)
-+	if (time_after(jiffies, last_time + 5*HZ))
- 		count = 0;
- 	if (count < 5) {
- 		last_time = jiffies;
+-	if (jiffies >= xpc_hb_check_timeout) {
++	if (time_before_eq(jiffies, xpc_hb_check_timeout)) {
+ 		wake_up_interruptible(&xpc_act_IRQ_wq);
+ 	}
+ 
+@@ -270,7 +271,7 @@ xpc_hb_checker(void *ignore)
+ 
+ 
+ 		/* checking of remote heartbeats is skewed by IRQ handling */
+-		if (jiffies >= xpc_hb_check_timeout) {
++		if (time_before_eq(jiffies, xpc_hb_check_timeout)) {
+ 			dev_dbg(xpc_part, "checking remote heartbeats\n");
+ 			xpc_check_remote_hb();
+ 
+@@ -305,7 +306,7 @@ xpc_hb_checker(void *ignore)
+ 		/* wait for IRQ or timeout */
+ 		(void) wait_event_interruptible(xpc_act_IRQ_wq,
+ 			    (last_IRQ_count < atomic_read(&xpc_act_IRQ_rcvd) ||
+-					jiffies >= xpc_hb_check_timeout ||
++			     time_before_eq(jiffies, xpc_hb_check_timeout) ||
+ 						(volatile int) xpc_exiting));
+ 	}
+ 
+diff -r -u -p a/arch/ia64/sn/kernel/xpc_partition.c b/arch/ia64/sn/kernel/xpc_partition.c
+--- a/arch/ia64/sn/kernel/xpc_partition.c	2007-06-02 22:32:05.000000000 +0200
++++ b/arch/ia64/sn/kernel/xpc_partition.c	2007-12-23 20:33:17.000000000 +0100
+@@ -22,6 +22,7 @@
+ #include <linux/cache.h>
+ #include <linux/mmzone.h>
+ #include <linux/nodemask.h>
++#include <linux/jiffies.h>
+ #include <asm/uncached.h>
+ #include <asm/sn/bte.h>
+ #include <asm/sn/intr.h>
+@@ -877,7 +878,8 @@ xpc_partition_disengaged(struct xpc_part
+ 	disengaged = (xpc_partition_engaged(1UL << partid) == 0);
+ 	if (part->disengage_request_timeout) {
+ 		if (!disengaged) {
+-			if (jiffies < part->disengage_request_timeout) {
++			if (time_before(jiffies,
++					part->disengage_request_timeout)) {
+ 				/* timelimit hasn't been reached yet */
+ 				return 0;
+ 			}
+diff -r -u -p a/arch/mips/cobalt/reset.c b/arch/mips/cobalt/reset.c
+--- a/arch/mips/cobalt/reset.c	2007-10-22 11:24:58.000000000 +0200
++++ b/arch/mips/cobalt/reset.c	2007-12-23 20:30:39.000000000 +0100
+@@ -49,7 +49,7 @@ void cobalt_machine_halt(void)
+ 		if((diff & (COBALT_KEY_ENTER | COBALT_KEY_SELECT)) && !(~last & (COBALT_KEY_ENTER | COBALT_KEY_SELECT)))
+ 			writeb(RESET, RESET_PORT);
+ 
+-		for (mark = jiffies; jiffies - mark < HZ;)
++		for (mark = jiffies; time_before(jiffies, mark + HZ);)
+ 			;
+ 	}
+ }
