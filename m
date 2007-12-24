@@ -1,33 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbXLXN7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbXLXOFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754006AbXLXN7o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 08:59:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbXLXN7g
+	id S1753493AbXLXOFl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 09:05:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXLXOFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 08:59:36 -0500
-Received: from websiteout12.httpserveur.net ([67.15.80.77]:37008 "HELO
-	websiteout12.httpserveur.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751325AbXLXN7g (ORCPT
+	Mon, 24 Dec 2007 09:05:32 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:5483 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751781AbXLXOFb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 08:59:36 -0500
-X-Greylist: delayed 441 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Dec 2007 08:59:36 EST
-X-Abuse: Please report all abuse immediately to abuse@httpserveur.net
-Message-ID: <476FB973.5060108@clownix.net>
-Date: Mon, 24 Dec 2007 14:51:47 +0100
-From: clowncoder <clowncoder@clownix.net>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070429)
+	Mon, 24 Dec 2007 09:05:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=uq+valUs8ITOmYYq1tCQI0SMApF8A86ycN0CeSdJWaS/6iZ+lMnqQbL0sFk610mceSV3L70ThiA8Q6wJRFlpzeagnEZ0PODQAgXNn0rHBbMEfPyQrwpRUmu1y++usBuWh+BesVfCVS01MwHlBZ0IgUhCAUZxSwjQsrICVMhZ6ew=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] cmd64x: fix hwif->chipset setup
+Date: Mon, 24 Dec 2007 15:15:31 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
+Cc: linux-kernel@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: New UML-Based Virtual Network
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712241515.31340.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-If you need a little network to test some of the kernel's
-networking functions, there is a simple virtual network
-available at http://clownix.net (uml_clownix_net).
-Vincent Perrier
-Regards
+
+commit 528a572daea90aa41db92683e5a8756acef514c4 ("ide: add ->chipset field
+to ide_pci_device_t") broke hwif->chipset setup (it is now set to ide_cmd646
+for CMD648 instead of CMD646).  It seems that the breakage happend while
+I was moving patches around (cmd64x_chipsets[] entries for CMD646 and CMD648
+are identical except for 'name' field).  Fix it and bump driver version.
+
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/pci/cmd64x.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: b/drivers/ide/pci/cmd64x.c
+===================================================================
+--- a/drivers/ide/pci/cmd64x.c
++++ b/drivers/ide/pci/cmd64x.c
+@@ -1,5 +1,5 @@
+ /*
+- * linux/drivers/ide/pci/cmd64x.c		Version 1.51	Nov 8, 2007
++ * linux/drivers/ide/pci/cmd64x.c		Version 1.52	Dec 24, 2007
+  *
+  * cmd64x.c: Enable interrupts at initialization time on Ultra/PCI machines.
+  *           Due to massive hardware bugs, UltraDMA is only supported
+@@ -564,6 +564,7 @@ static const struct ide_port_info cmd64x
+ 		.init_chipset	= init_chipset_cmd64x,
+ 		.init_hwif	= init_hwif_cmd64x,
+ 		.enablebits	= {{0x51,0x04,0x04}, {0x51,0x08,0x08}},
++		.chipset	= ide_cmd646,
+ 		.host_flags	= IDE_HFLAG_ABUSE_PREFETCH | IDE_HFLAG_BOOTABLE,
+ 		.pio_mask	= ATA_PIO5,
+ 		.mwdma_mask	= ATA_MWDMA2,
+@@ -573,7 +574,6 @@ static const struct ide_port_info cmd64x
+ 		.init_chipset	= init_chipset_cmd64x,
+ 		.init_hwif	= init_hwif_cmd64x,
+ 		.enablebits	= {{0x51,0x04,0x04}, {0x51,0x08,0x08}},
+-		.chipset	= ide_cmd646,
+ 		.host_flags	= IDE_HFLAG_ABUSE_PREFETCH | IDE_HFLAG_BOOTABLE,
+ 		.pio_mask	= ATA_PIO5,
+ 		.mwdma_mask	= ATA_MWDMA2,
