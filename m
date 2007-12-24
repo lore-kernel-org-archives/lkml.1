@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbXLXBNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757800AbXLXBP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755387AbXLXBNv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 20:13:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXLXBNm
+	id S1757800AbXLXBP3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 20:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXLXBPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 20:13:42 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50062 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751010AbXLXBNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 20:13:41 -0500
-Date: Sun, 23 Dec 2007 20:11:49 -0500
-From: Rik van Riel <riel@redhat.com>
-To: balbir@linux.vnet.ibm.com
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com
-Subject: Re: [patch 00/20] VM pageout scalability improvements
-Message-ID: <20071223201149.7b88888f@bree.surriel.com>
-In-Reply-To: <476EE858.202@linux.vnet.ibm.com>
-References: <20071218211539.250334036@redhat.com>
-	<476D7334.4010301@linux.vnet.ibm.com>
-	<20071222192119.030f32d5@bree.surriel.com>
-	<476EE858.202@linux.vnet.ibm.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Dec 2007 20:15:22 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42044 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751302AbXLXBPW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 20:15:22 -0500
+Date: Sun, 23 Dec 2007 17:14:34 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+cc: "H. Peter Anvin" <hpa@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux PM List <linux-pm@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4
+ suspend-to-RAM
+In-Reply-To: <alpine.LFD.0.9999.0712231621340.21557@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.9999.0712231703390.21557@woody.linux-foundation.org>
+References: <200712231419.40207.carlos@strangeworlds.co.uk> <200712232320.21182.rjw@sisk.pl> <476EEB6F.7080909@kernel.org> <200712240009.41764.carlos@strangeworlds.co.uk> <alpine.LFD.0.9999.0712231621340.21557@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Dec 2007 04:29:36 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> Rik van Riel wrote:
 
-> > In the real world, users with large JVMs on their servers, which
-> > sometimes go a little into swap, can trigger this system.  All of
-> > the CPUs end up scanning the active list, and all pages have the
-> > referenced bit set.  Even if the system eventually recovers, it
-> > might as well have been dead.
-> > 
-> > Going into swap a little should only take a little bit of time.
+
+On Sun, 23 Dec 2007, Linus Torvalds wrote:
 > 
-> Very fascinating, so we need to scale better with larger memory.
-> I suspect part of the answer will lie with using large/huge pages.
+> IOW, it looks like the normal kind of ACPI mess. Color me not in the least 
+> surprised, and it needs somebody who understands AML and what the heck is 
+> supposed to happen to figure out.
 
-Linus vetoed going to a larger soft page size, with good reason.
+Side note: we could obviously undo the commit that triggered this for you 
+(ie 52ade9b3b97fd3bea42842a056fe0786c28d0555), but then we have to undo 
+also the commit that caused us to do that commit in the first place, and 
+change the ordering on resume too (that would be commit 
+e3c7db621bed4afb8e231cb005057f2feb5db557 - the commit that moved the 
+"pm_ops->finish()" call to before the call to device_resume())
 
-Just look at how much the 64kB page size on PPC64 sucks for most
-workloads - it works for PPC64 because people buy PPC64 monster
-systems for the kinds of monster workloads that work well with a
-large page size, but it definately isn't general purpose.
+In other words, we'd have to go back to our original ordering, which Len 
+said was fundamentally wrong. I don't think anybody really wants that.
+
+It would be better to figure out why "device_suspend()" apparently causes 
+problems for your AML crud.
+
+Oh, and why is linux-kernel cc'd, but not linux-pm? Are all the relevant 
+people from linux-pm cc'd, or should somebody who is on that list please 
+try to condense this down?
+
+(For linux-pm: see 
+
+        http://bugzilla.kernel.org/show_bug.cgi?id=9528
+
+for some more details, including a few red herrings like the whole subject 
+line of this email thread which turned out to not be valid after all).
+
+		Linus
