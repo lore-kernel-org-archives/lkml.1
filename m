@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbXLXPvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752481AbXLXP6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752930AbXLXPvY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 10:51:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750934AbXLXPvR
+	id S1752481AbXLXP6q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 10:58:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXLXP6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 10:51:17 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:3724 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750779AbXLXPvR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 10:51:17 -0500
-Date: Mon, 24 Dec 2007 10:51:15 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/3] PM: Do not destroy/create devices while suspended
-In-Reply-To: <200712240155.14765.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0712241045150.25920-100000@netrider.rowland.org>
+	Mon, 24 Dec 2007 10:58:37 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:43121 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750842AbXLXP6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 10:58:36 -0500
+Date: Mon, 24 Dec 2007 16:58:32 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 7/38] arch/x86/ia32: Use time_before, time_before_eq,
+ etc.
+In-Reply-To: <20071224153152.GA21971@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0712241657080.23999@ask.diku.dk>
+References: <Pine.LNX.4.64.0712241522410.23999@ask.diku.dk>
+ <20071224153152.GA21971@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Dec 2007, Rafael J. Wysocki wrote:
+On Mon, 24 Dec 2007, Andi Kleen wrote:
 
-> Hi,
+> On Mon, Dec 24, 2007 at 03:23:19PM +0100, Julia Lawall wrote:
+> > From: Julia Lawall <julia@diku.dk>
+> > 
+> > The functions time_before, time_before_eq, time_after, and time_after_eq
+> > are more robust for comparing jiffies against other values.
 > 
-> Some device drivers register CPU hotplug notifiers and use them to destroy
-> device objects when removing the corresponding CPUs and to create these objects
-> when adding the CPUs back.
-> 
-> Unfortunately, this is not the right thing to do during suspend/hibernation,
-> since in that cases the CPU hotplug notifiers are called after suspending
-> devices and before resuming them, so the operations in question are carried
-> out on the objects representing suspended devices which shouldn't be
-> unregistered behing the PM core's back.  Although right now it usually doesn't
-> lead to any practical complications, it will predictably deadlock if
-> gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch is applied.
-> 
-> The solution is to prevent drivers from removing/adding devices from within
-> CPU hotplug notifiers during suspend/hibernation using the FROZEN bit
-> in the notifier's action argument.  The following three patches modify the
-> MSR, x86-64 MCE and cpuid drivers along these lines.
+> The old code was actually correct I think, but the change is ok for me.
 
-Do we need to worry about the possibility that when the system wakes up 
-from hibernation, the set of usable CPUs might be smaller than it was 
-beforehand?  Is any special handling needed for this, or is it already 
-accounted for?
+Please ignore the patch.  All of my before_eq and after_eq's are 
+backwards due to parsing <= as >= and vice versa.  I will try again.
 
-Alan Stern
+julia
 
