@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbXLXOow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbXLXOpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758143AbXLXOow (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 09:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbXLXOom
+	id S1758200AbXLXOpe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 09:45:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbXLXOpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 09:44:42 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:51458 "EHLO mgw2.diku.dk"
+	Mon, 24 Dec 2007 09:45:19 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:37011 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753374AbXLXOol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 09:44:41 -0500
-Date: Mon, 24 Dec 2007 15:44:33 +0100 (CET)
+	id S1755106AbXLXOpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 09:45:16 -0500
+Date: Mon, 24 Dec 2007 15:45:03 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 28/38] mm: Use time_before, time_before_eq, etc.
-Message-ID: <Pine.LNX.4.64.0712241544070.23999@ask.diku.dk>
+To: marcel@holtmann.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 29/38] net/bluetooth: Use time_before, time_before_eq, etc.
+Message-ID: <Pine.LNX.4.64.0712241544390.23999@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -62,52 +63,34 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -r -u -p a/mm/page_alloc.c b/mm/page_alloc.c
---- a/mm/page_alloc.c	2007-12-21 06:57:20.000000000 +0100
-+++ b/mm/page_alloc.c	2007-12-23 20:30:40.000000000 +0100
-@@ -43,6 +43,7 @@
- #include <linux/backing-dev.h>
- #include <linux/fault-inject.h>
- #include <linux/page-isolation.h>
+diff -r -u -p a/net/bluetooth/hci_core.c b/net/bluetooth/hci_core.c
+--- a/net/bluetooth/hci_core.c	2007-11-01 10:30:44.000000000 +0100
++++ b/net/bluetooth/hci_core.c	2007-12-23 20:44:22.000000000 +0100
+@@ -38,6 +38,7 @@
+ #include <linux/skbuff.h>
+ #include <linux/interrupt.h>
+ #include <linux/notifier.h>
 +#include <linux/jiffies.h>
+ #include <net/sock.h>
  
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -1276,7 +1277,7 @@ static nodemask_t *zlc_setup(struct zone
- 	if (!zlc)
- 		return NULL;
- 
--	if (jiffies - zlc->last_full_zap > 1 * HZ) {
-+	if (time_after(jiffies, zlc->last_full_zap + 1 * HZ)) {
- 		bitmap_zero(zlc->fullzones, MAX_ZONES_PER_ZONELIST);
- 		zlc->last_full_zap = jiffies;
+ #include <asm/system.h>
+@@ -1321,7 +1322,8 @@ static inline void hci_sched_acl(struct 
+ 	if (!test_bit(HCI_RAW, &hdev->flags)) {
+ 		/* ACL tx timeout must be longer than maximum
+ 		 * link supervision timeout (40.9 seconds) */
+-		if (!hdev->acl_cnt && (jiffies - hdev->acl_last_tx) > (HZ * 45))
++		if (!hdev->acl_cnt &&
++		    time_after(jiffies, hdev->acl_last_tx + HZ * 45))
+ 			hci_acl_tx_to(hdev);
  	}
-diff -r -u -p a/mm/pdflush.c b/mm/pdflush.c
---- a/mm/pdflush.c	2007-07-20 17:46:05.000000000 +0200
-+++ b/mm/pdflush.c	2007-12-23 20:30:40.000000000 +0100
-@@ -22,6 +22,7 @@
- #include <linux/kthread.h>
- #include <linux/cpuset.h>
- #include <linux/freezer.h>
-+#include <linux/jiffies.h>
  
+@@ -1543,7 +1545,8 @@ static void hci_cmd_task(unsigned long a
  
- /*
-@@ -130,7 +131,7 @@ static int __pdflush(struct pdflush_work
- 		 * Thread creation: For how long have there been zero
- 		 * available threads?
- 		 */
--		if (jiffies - last_empty_jifs > 1 * HZ) {
-+		if (time_after(jiffies, last_empty_jifs + 1 * HZ)) {
- 			/* unlocked list_empty() test is OK here */
- 			if (list_empty(&pdflush_list)) {
- 				/* unlocked test is OK here */
-@@ -151,7 +152,7 @@ static int __pdflush(struct pdflush_work
- 		if (nr_pdflush_threads <= MIN_PDFLUSH_THREADS)
- 			continue;
- 		pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
--		if (jiffies - pdf->when_i_went_to_sleep > 1 * HZ) {
-+		if (time_after(jiffies, pdf->when_i_went_to_sleep + 1 * HZ)) {
- 			/* Limit exit rate */
- 			pdf->when_i_went_to_sleep = jiffies;
- 			break;					/* exeunt */
+ 	BT_DBG("%s cmd %d", hdev->name, atomic_read(&hdev->cmd_cnt));
+ 
+-	if (!atomic_read(&hdev->cmd_cnt) && (jiffies - hdev->cmd_last_tx) > HZ) {
++	if (!atomic_read(&hdev->cmd_cnt) &&
++	    time_after(jiffies, hdev->cmd_last_tx + HZ)) {
+ 		BT_ERR("%s command tx timeout", hdev->name);
+ 		atomic_set(&hdev->cmd_cnt, 1);
+ 	}
