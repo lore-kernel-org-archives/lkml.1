@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbXLXO0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbXLXO1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbXLXO0s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 09:26:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbXLXO0j
+	id S1756621AbXLXO1y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 09:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXLXO1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 09:26:39 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:57762 "EHLO mgw2.diku.dk"
+	Mon, 24 Dec 2007 09:27:46 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:39287 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753852AbXLXO0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 09:26:38 -0500
-Date: Mon, 24 Dec 2007 15:26:18 +0100 (CET)
+	id S1752769AbXLXO1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 09:27:45 -0500
+Date: Mon, 24 Dec 2007 15:27:01 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: ralf@linux-mips.org, linux-kernel@vger.kernel.org,
+To: dmitry.torokhov@gmail.com, vojtech@suse.cz, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 12/38] drivers/char/ds1286.c: Use time_before, time_before_eq,
+Subject: [PATCH 13/38] drivers/char/keyboard.c: Use time_before, time_before_eq,
  etc.
-Message-ID: <Pine.LNX.4.64.0712241525520.23999@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0712241526190.23999@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -64,23 +64,24 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -r -u -p a/drivers/char/ds1286.c b/drivers/char/ds1286.c
---- a/drivers/char/ds1286.c	2007-06-02 22:32:10.000000000 +0200
-+++ b/drivers/char/ds1286.c	2007-12-23 20:30:39.000000000 +0100
-@@ -39,6 +39,7 @@
- #include <linux/spinlock.h>
- #include <linux/bcd.h>
- #include <linux/proc_fs.h>
+diff -r -u -p a/drivers/char/keyboard.c b/drivers/char/keyboard.c
+--- a/drivers/char/keyboard.c	2007-10-22 11:25:05.000000000 +0200
++++ b/drivers/char/keyboard.c	2007-12-23 20:35:00.000000000 +0100
+@@ -43,6 +43,7 @@
+ #include <linux/input.h>
+ #include <linux/reboot.h>
+ #include <linux/notifier.h>
 +#include <linux/jiffies.h>
  
- #include <asm/uaccess.h>
- #include <asm/system.h>
-@@ -451,7 +452,7 @@ static void ds1286_get_time(struct rtc_t
- 	 */
+ extern void ctrl_alt_del(void);
  
- 	if (ds1286_is_updating() != 0)
--		while (jiffies - uip_watchdog < 2*HZ/100)
-+		while (time_before(jiffies, uip_watchdog + 2*HZ/100))
- 			barrier();
- 
- 	/*
+@@ -929,7 +930,8 @@ static void k_brl(struct vc_data *vc, un
+ 	if (up_flag) {
+ 		if (brl_timeout) {
+ 			if (!committing ||
+-			    jiffies - releasestart > (brl_timeout * HZ) / 1000) {
++			    time_after(jiffies,
++				       releasestart + (brl_timeout*HZ)/1000)) {
+ 				committing = pressed;
+ 				releasestart = jiffies;
+ 			}
