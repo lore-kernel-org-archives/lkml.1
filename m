@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbXLWXeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbXLWXjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757016AbXLWXeQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 18:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbXLWXeG
+	id S1756580AbXLWXjT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 18:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbXLWXjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 18:34:06 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37908 "EHLO gate.crashing.org"
+	Sun, 23 Dec 2007 18:39:05 -0500
+Received: from smtp25.orange.fr ([193.252.22.23]:37420 "EHLO smtp25.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751063AbXLWXeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 18:34:03 -0500
-Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a
-	driver opt-in issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Arjan van de Ven <arjan@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, torvalds@linux-foundation.org
-In-Reply-To: <20071222211026.GT29690@parisc-linux.org>
-References: <20071222043139.0cd59804@laptopd505.fenrus.org>
-	 <476D1D16.5090703@garzik.org>
-	 <20071222064719.73fdd9a4@laptopd505.fenrus.org>
-	 <20071222155436.GS29690@parisc-linux.org>
-	 <20071222080249.482fab0b@laptopd505.fenrus.org>
-	 <20071222211026.GT29690@parisc-linux.org>
-Content-Type: text/plain
-Date: Mon, 24 Dec 2007 10:33:27 +1100
-Message-Id: <1198452807.6686.36.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1751140AbXLWXjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 18:39:02 -0500
+X-ME-UUID: 20071223233856256.3E8921C00084@mwinf2509.orange.fr
+Message-ID: <476F0ED5.3090609@free.fr>
+Date: Mon, 24 Dec 2007 02:43:49 +0100
+From: Stephane Ascoet <stephaneascoet@free.fr>
+Organization: Conseils pour que le progres profite a tous les terriens
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, matthew@wil.cx,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, drzeus@drzeus.cx,
+       linux-acpi@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Li Shaohua <shaohua.li@intel.com>, Len Brown <lenb@kernel.org>
+Subject: Re: do not stop/start devices in suspend/resume path: the SCSI case
+References: <4745F77C.7040402@gmail.com> <47511751.2010707@gmail.com> <47514CE2.3000600@gmail.com> <200712051124.18852.bjorn.helgaas@hp.com>
+In-Reply-To: <200712051124.18852.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bjorn Helgaas a écrit :
+> Good.  It's not clear to me whether it is safe to leave devices
+> enabled while we sleep.  I don't see an actual problem, but there
+> might be something related to hotplug while we're asleep or something.
+> So I'll cc: some additional people who might have some insight.
+Hi, is there a chance for SCSI sleeping being managed by ACPI(it seems 
+to be the case for IDE)?
 
-> I've occasionally wondered if that spinlock needs to get split up, but
-> for the amount of pain that could ensue, I can't imagine it ever being
-> worthwhile.
-
-Wondered the same thing and decided against it. I do have every now and
-then some really crazy cases to deal with. One of them is the need to
-use something like fixmap/kmap_atomic because a vendors makes 32 bits
-CPUs that need 512MB of address space to map config space :-)
-
-Ben.
-
-
+-- 
+Bien cordialement, Stephane Ascoet, conseils pour que la technologie 
+soit un progres respectueux de la vie.
+Album photo:<http://www.flickr.com/photos/stephaneascoet/>
