@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbXLXCvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbXLXCwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbXLXCvX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 21:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbXLXCvJ
+	id S1757607AbXLXCwY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 21:52:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXLXCwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 21:51:09 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:2418 "EHLO scrub.xs4all.nl"
+	Sun, 23 Dec 2007 21:52:16 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51095 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753684AbXLXCvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 21:51:05 -0500
-From: Roman Zippel <zippel@linux-m68k.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] Avoid overflows in kernel/time.c (version 5)
-Date: Mon, 24 Dec 2007 01:14:12 +0100
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-       Ralf Baechle <ralf@linux-mips.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Paul Mundt <lethal@linux-sh.org>, Richard Henderson <rth@twiddle.net>,
-       Michael Starvik <starvik@axis.com>, David Howells <dhowells@redhat.com>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Hirokazu Takata <takata@linux-m32r.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       "William L. Irwin" <sparclinux@vger.kernel.org>,
-       Chris Zankel <chris@zankel.net>,
-       Jan Engelhardt <jengelh@computergmbh.de>
-References: <200712180541.lBI5fnqB028037@tazenda.hos.anvin.org>
-In-Reply-To: <200712180541.lBI5fnqB028037@tazenda.hos.anvin.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712240114.13431.zippel@linux-m68k.org>
+	id S1752002AbXLXCwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 21:52:16 -0500
+Date: Mon, 24 Dec 2007 13:52:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+       "Kyle A. Lucke" <klucke@us.ibm.com>, paulus@samba.org,
+       linux-kernel@vger.kernel.org, David Gibson <dwg@au1.ibm.com>
+Subject: Re: drivers/net/iseries_veth.c dubious sysfs usage
+Message-Id: <20071224135208.2a29ffc0.sfr@canb.auug.org.au>
+In-Reply-To: <20071213070829.GA13764@kroah.com>
+References: <20071205093054.GA23229@kroah.com>
+	<1196853031.6759.7.camel@concordia>
+	<20071205214103.GA7074@kroah.com>
+	<1196912898.14754.13.camel@concordia>
+	<20071213070829.GA13764@kroah.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Monday 17 December 2007, H. Peter Anvin wrote:
+Hi Greg,
 
->  kernel/timeconst.pl           |  340
+On Wed, 12 Dec 2007 23:08:29 -0800 Greg KH <greg@kroah.com> wrote:
+>
+> Hm, ok, it's odd as you are the only driver in the whole tree doing
+> something like this, but it seems semi-resonable, so I can't complain :)
+>=20
+> I'll fix the core up to allow you to do this, thanks for the
+> explanation.
 
-I agree with Jan that it would be better to put this into scripts.
-In the long term we could also detect some of the simple special cases, so we 
-can finally inline some of these functions again, this would mean the 
-generated file would go into include/linux/ and the script should be in 
-scripts/.
+So if this "seems semi-reasonable", why was the result
+gregkh-driver-driver-add-driver_add_kobj-for-looney-iseries_veth-driver
+containing "Hopefully no one uses this function in the future and the
+iseries_veth driver authors come to their senses so I can remove this
+hack..." as part of its comment.  If you expect respect, you need to
+treat others the same way ...
 
-> +	my ($b,$n,$d) = @_;
+If what the driver writers are doing is "looney" (in your opinion), then
+please describe a better way of doing what they are trying to do.
+Sometimes, if people have to abuse the infrastructure, it is possible that
+the infrastructure is lacking?
 
-I noticed this already in the old script, using something else than single 
-letter variables would increase readability considerably.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-bye, Roman
+--Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHbx7dTgG2atn1QN8RAhWEAJ4ymGNuhmuHByAVk/VK3jh+K6UBYQCglLBB
+WQQ4PCkw2he5ftxow1xrR2s=
+=nkiS
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK--
