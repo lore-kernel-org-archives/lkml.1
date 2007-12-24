@@ -1,86 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbXLXCoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbXLXCuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbXLXCoO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Dec 2007 21:44:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbXLXCoF
+	id S1755530AbXLXCuy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Dec 2007 21:50:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbXLXCup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Dec 2007 21:44:05 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57304 "EHLO smtps.tip.net.au"
+	Sun, 23 Dec 2007 21:50:45 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:2415 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751459AbXLXCoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Dec 2007 21:44:04 -0500
-Date: Mon, 24 Dec 2007 13:43:53 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: balbir@linux.vnet.ibm.com
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Build breakage on powerpc with 2.6.24-rc6-mm1
-Message-Id: <20071224134353.c00fc231.sfr@canb.auug.org.au>
-In-Reply-To: <20071223224158.GA7975@linux.vnet.ibm.com>
-References: <20071223224158.GA7975@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__24_Dec_2007_13_43_53_+1100_HJmzWKCz5Gt4yzl+"
+	id S1751302AbXLXCup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Dec 2007 21:50:45 -0500
+From: Roman Zippel <zippel@linux-m68k.org>
+To: Eric Sandeen <sandeen@redhat.com>
+Subject: Re: [PATCH] UPDATED: hfs: handle more on-disk corruptions without oopsing
+Date: Mon, 24 Dec 2007 03:16:41 +0100
+User-Agent: KMail/1.9.7
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <47699C29.4010706@redhat.com> <476A8F36.2050007@redhat.com>
+In-Reply-To: <476A8F36.2050007@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712240316.43308.zippel@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__24_Dec_2007_13_43_53_+1100_HJmzWKCz5Gt4yzl+
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hi Balbir,
+On Thursday 20 December 2007, Eric Sandeen wrote:
 
-Thanks for the report.
+> Index: linux-2.6.24-rc3/fs/hfs/brec.c
+> ===================================================================
+> --- linux-2.6.24-rc3.orig/fs/hfs/brec.c
+> +++ linux-2.6.24-rc3/fs/hfs/brec.c
+> @@ -44,10 +44,21 @@ u16 hfs_brec_keylen(struct hfs_bnode *no
+>  		recoff = hfs_bnode_read_u16(node, node->tree->node_size - (rec + 1) *
+> 2); if (!recoff)
+>  			return 0;
+> -		if (node->tree->attributes & HFS_TREE_BIGKEYS)
+> +		if (node->tree->attributes & HFS_TREE_BIGKEYS) {
+>  			retval = hfs_bnode_read_u16(node, recoff) + 2;
+> -		else
+> +			if (retval > node->tree->max_key_len + 2) {
+> +				printk(KERN_ERR "hfs: keylen %d too large\n",
+> +					retval);
+> +				retval = HFS_BAD_KEYLEN;
+> +			}
+> +		} else {
+>  			retval = (hfs_bnode_read_u8(node, recoff) | 1) + 1;
+> +			if (retval > node->tree->max_key_len + 1) {
+> +				printk(KERN_ERR "hfs: keylen %d too large\n",
+> +					retval);
+> +				retval = HFS_BAD_KEYLEN;
+> +			}
+> +		}
+>  	}
+>  	return retval;
+>  }
 
-On Mon, 24 Dec 2007 04:11:58 +0530 Balbir Singh <balbir@linux.vnet.ibm.com>=
- wrote:
+You can reuse 0 as failure value, a key has to be of nonzero size.
+
+> Index: linux-2.6.24-rc3/fs/hfs/btree.c
+> ===================================================================
+> --- linux-2.6.24-rc3.orig/fs/hfs/btree.c
+> +++ linux-2.6.24-rc3/fs/hfs/btree.c
+> @@ -81,6 +81,17 @@ struct hfs_btree *hfs_btree_open(struct
+>  		goto fail_page;
+>  	if (!tree->node_count)
+>  		goto fail_page;
+> +	if ((id == HFS_EXT_CNID) && (tree->max_key_len != HFS_MAX_EXT_KEYLEN)) {
+> +		printk(KERN_ERR "hfs: invalid extent max_key_len %d\n",
+> +			tree->max_key_len);
+> +		goto fail_page;
+> +	}
+> +	if ((id == HFS_CAT_CNID) && (tree->max_key_len != HFS_MAX_CAT_KEYLEN)) {
+> +		printk(KERN_ERR "hfs: invalid catalog max_key_len %d\n",
+> +			tree->max_key_len);
+> +		goto fail_page;
+> +	}
+> +
+>  	tree->node_size_shift = ffs(size) - 1;
+>  	tree->pages_per_bnode = (tree->node_size + PAGE_CACHE_SIZE - 1) >>
+> PAGE_CACHE_SHIFT;
 >
-> I see the following error with the iseries_veth driver in 2.6.24-rc6-mm1
->=20
-> drivers/net/iseries_veth.c: In function =E2=80=98veth_init_connection=E2=
-=80=99:
-> drivers/net/iseries_veth.c:818: warning: unused variable =E2=80=98rc=E2=
-=80=99
-> drivers/net/iseries_veth.c: In function =E2=80=98veth_probe_one=E2=80=99:
-> drivers/net/iseries_veth.c:1086: error: =E2=80=98veth_port_ktypeq=E2=80=
-=99 undeclared
-> (first use in this function)
-> drivers/net/iseries_veth.c:1086: error: (Each undeclared identifier is
-> reported only once
-> drivers/net/iseries_veth.c:1086: error: for each function it appears
-> in.)
-> make[2]: *** [drivers/net/iseries_veth.o] Error 1
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
 
-Yeah, that would be
-gregkh-driver-kobject-convert-drivers-net-iseries_vethc-to-use-kobject_init=
--add_ng.
+I'd prefer a switch statement here.
 
-Hi Greg, do you even build with your patches applied?
+It would be nice if you could do the same changes for hfsplus, so both stay in 
+sync.
+Thanks.
 
-> Here's a patch, compile tested to fix the compilation problem
-
-Hopefully Greg will fix his original patch before it reaches Linus.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__24_Dec_2007_13_43_53_+1100_HJmzWKCz5Gt4yzl+
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHbxztTgG2atn1QN8RAiFeAJ0eoC9FEIZUKdcCZzLUx4IiO4gHbQCffn6T
-XYCe4KW5c/YRjg0iPPka1h4=
-=o0P7
------END PGP SIGNATURE-----
-
---Signature=_Mon__24_Dec_2007_13_43_53_+1100_HJmzWKCz5Gt4yzl+--
+bye, Roman
