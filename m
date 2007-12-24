@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbXLXOaD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757798AbXLXOak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754222AbXLXOaD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 09:30:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbXLXO3w
+	id S1757798AbXLXOak (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 09:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbXLXOaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 09:29:52 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:33712 "EHLO mgw1.diku.dk"
+	Mon, 24 Dec 2007 09:30:30 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:33792 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753579AbXLXO3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 09:29:50 -0500
-Date: Mon, 24 Dec 2007 15:29:38 +0100 (CET)
+	id S1754522AbXLXOa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 09:30:29 -0500
+Date: Mon, 24 Dec 2007 15:30:11 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: hpa@zytor.com, linux-kernel@vger.kernel.org,
+To: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 16/38] drivers/md: Use time_before, time_before_eq, etc.
-Message-ID: <Pine.LNX.4.64.0712241528430.23999@ask.diku.dk>
+Subject: [PATCH 17/38] drivers/media/dvb: Use time_before, time_before_eq,
+ etc.
+Message-ID: <Pine.LNX.4.64.0712241529400.23999@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -63,16 +64,36 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -r -u -p a/drivers/md/raid6algos.c b/drivers/md/raid6algos.c
---- a/drivers/md/raid6algos.c	2007-11-01 10:30:39.000000000 +0100
-+++ b/drivers/md/raid6algos.c	2007-12-23 20:36:20.000000000 +0100
-@@ -121,7 +121,8 @@ int __init raid6_select_algo(void)
- 			j0 = jiffies;
- 			while ( (j1 = jiffies) == j0 )
- 				cpu_relax();
--			while ( (jiffies-j1) < (1 << RAID6_TIME_JIFFIES_LG2) ) {
-+			while ( time_before(jiffies,
-+					    j1 + (1<<RAID6_TIME_JIFFIES_LG2)) ) {
- 				(*algo)->gen_syndrome(disks, PAGE_SIZE, dptrs);
- 				perf++;
- 			}
+diff -r -u -p a/drivers/media/dvb/frontends/stv0299.c b/drivers/media/dvb/frontends/stv0299.c
+--- a/drivers/media/dvb/frontends/stv0299.c	2007-10-22 11:25:10.000000000 +0200
++++ b/drivers/media/dvb/frontends/stv0299.c	2007-12-23 20:30:39.000000000 +0100
+@@ -192,7 +192,7 @@ static int stv0299_wait_diseqc_fifo (str
+ 	dprintk ("%s\n", __FUNCTION__);
+ 
+ 	while (stv0299_readreg(state, 0x0a) & 1) {
+-		if (jiffies - start > timeout) {
++		if (time_after(jiffies, start + timeout)) {
+ 			dprintk ("%s: timeout!!\n", __FUNCTION__);
+ 			return -ETIMEDOUT;
+ 		}
+@@ -209,7 +209,7 @@ static int stv0299_wait_diseqc_idle (str
+ 	dprintk ("%s\n", __FUNCTION__);
+ 
+ 	while ((stv0299_readreg(state, 0x0a) & 3) != 2 ) {
+-		if (jiffies - start > timeout) {
++		if (time_after(jiffies, start + timeout)) {
+ 			dprintk ("%s: timeout!!\n", __FUNCTION__);
+ 			return -ETIMEDOUT;
+ 		}
+diff -r -u -p a/drivers/media/dvb/frontends/tda8083.c b/drivers/media/dvb/frontends/tda8083.c
+--- a/drivers/media/dvb/frontends/tda8083.c	2007-10-22 11:25:10.000000000 +0200
++++ b/drivers/media/dvb/frontends/tda8083.c	2007-12-23 20:30:39.000000000 +0100
+@@ -171,7 +171,7 @@ static void tda8083_wait_diseqc_fifo (st
+ {
+ 	unsigned long start = jiffies;
+ 
+-	while (jiffies - start < timeout &&
++	while (time_before(jiffies, start + timeout) &&
+ 	       !(tda8083_readreg(state, 0x02) & 0x80))
+ 	{
+ 		msleep(50);
