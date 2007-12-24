@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbXLXOO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbXLXORE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274AbXLXOO6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 09:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXLXOOv
+	id S1753970AbXLXORE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 09:17:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbXLXOQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 09:14:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55125 "EHLO mx1.redhat.com"
+	Mon, 24 Dec 2007 09:16:54 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:58112 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751325AbXLXOOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 09:14:50 -0500
-Date: Mon, 24 Dec 2007 06:12:20 -0800
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: akpm@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       linux@bohmer.net, jonathan@jonmasters.org, matthias.kaehlcke@gmail.com,
-       kjwinchester@gmail.com
-Subject: Re: [PATCH 4/4] usb: libusual: locking cleanup
-Message-Id: <20071224061220.ceed2bf8.zaitcev@redhat.com>
-In-Reply-To: <1198428397.2742.20.camel@imap.mvista.com>
-References: <20071221205854.408865412@mvista.com>
-	<20071221205859.316759032@mvista.com>
-	<20071221222428.a75a5a34.zaitcev@redhat.com>
-	<1198342910.2742.14.camel@imap.mvista.com>
-	<20071222233733.3a4e94b0.zaitcev@redhat.com>
-	<1198428397.2742.20.camel@imap.mvista.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1750982AbXLXOQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 09:16:53 -0500
+Date: Mon, 24 Dec 2007 15:16:46 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: rth@twiddle.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/38] arch/alpha: Use time_before, time_before_eq, etc.
+Message-ID: <Pine.LNX.4.64.0712241516010.23999@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Dec 2007 08:46:37 -0800, Daniel Walker <dwalker@mvista.com> wrote:
+From: Julia Lawall <julia@diku.dk>
 
-> I noticed you also have a spinlock held in usu_probe_thread(), the
-> usu_lock.. That spinlock would preclude anything inside request_module()
-> from sleeping..
+The functions time_before, time_before_eq, time_after, and time_after_eq
+are more robust for comparing jiffies against other values.
 
-The usu_lock is not held across request_module. In fact, it can be
-easily taken from inside request_module, when it invokes modprobe.
-Stop scaring me :-)
+A simplified version of the semantic patch making this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-> One thing that has bothered me is that I don't see a reason why this
-> couldn't become a complete, yet you have a comment which says that it
-> can't be a complete.. I honestly didn't understand the comment.. I would
-> imagine that you tried a complete , and it didn't work?
+// <smpl>
+@ change_compare_np @
+expression E;
+@@
 
-Yes, it was a completition initially. But suppose you have two storage
-devices, plugged in across a reboot. Two threads are created and have to
-wait until the libusual's init function ends. Since we post one completion,
-only one thread continues.
+(
+- jiffies <= E
++ time_before_eq(jiffies,E)
+|
+- jiffies >= E
++ time_after_eq(jiffies,E)
+|
+- jiffies < E
++ time_before(jiffies,E)
+|
+- jiffies > E
++ time_after(jiffies,E)
+)
 
--- Pete
+@ include depends on change_compare_np @
+@@
+
+#include <linux/jiffies.h>
+
+@ no_include depends on !include && change_compare_np @
+@@
+
+  #include <linux/...>
++ #include <linux/jiffies.h>
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+
+diff -r -u -p a/arch/alpha/kernel/traps.c b/arch/alpha/kernel/traps.c
+--- a/arch/alpha/kernel/traps.c	2007-10-22 11:24:57.000000000 +0200
++++ b/arch/alpha/kernel/traps.c	2007-12-23 20:30:39.000000000 +0100
+@@ -16,6 +16,7 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/kallsyms.h>
++#include <linux/jiffies.h>
+ 
+ #include <asm/gentrap.h>
+ #include <asm/uaccess.h>
+@@ -781,7 +782,7 @@ do_entUnaUser(void __user * va, unsigned
+ 	   with the unaliged access.  */
+ 
+ 	if (!test_thread_flag (TIF_UAC_NOPRINT)) {
+-		if (cnt >= 5 && jiffies - last_time > 5*HZ) {
++		if (cnt >= 5 && time_after(jiffies, last_time + 5*HZ)) {
+ 			cnt = 0;
+ 		}
+ 		if (++cnt < 5) {
