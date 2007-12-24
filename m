@@ -1,182 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbXLXVBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbXLXVXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365AbXLXVBR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 16:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbXLXVBG
+	id S1752847AbXLXVXA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 16:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbXLXVWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 16:01:06 -0500
-Received: from charybdis-ext.suse.de ([195.135.221.2]:58574 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751386AbXLXVBF (ORCPT
+	Mon, 24 Dec 2007 16:22:51 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:54243 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbXLXVWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 16:01:05 -0500
-Subject: [PATCH] PNP: add all PNP card device id's as individual aliases
-From: Kay Sievers <kay.sievers@novell.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Greg KH <greg@kroah.com>, Takashi Iwai <tiwai@suse.de>
-Content-Type: text/plain
-Date: Mon, 24 Dec 2007 21:58:47 +0100
-Message-Id: <1198529927.11716.4.camel@lov.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.4 
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Dec 2007 16:22:50 -0500
+Date: Mon, 24 Dec 2007 14:22:46 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Loic Prylli <loic@myri.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch] Make MMCONFIG space (extended PCI config space) a driver opt-in issue
+Message-ID: <20071224212246.GF1695@parisc-linux.org>
+References: <alpine.LFD.0.9999.0712221939570.21557@woody.linux-foundation.org> <476DDFEE.3010009@garzik.org> <alpine.LFD.0.9999.0712222034150.21557@woody.linux-foundation.org> <476DE98F.2010009@garzik.org> <476DF1A6.3060900@myri.com> <476DF5BE.5030004@garzik.org> <20071223110337.GA25441@jurassic.park.msu.ru> <alpine.LFD.0.9999.0712230925240.21557@woody.linux-foundation.org> <476F6047.50100@garzik.org> <alpine.LFD.0.9999.0712241036040.21557@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.9999.0712241036040.21557@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: PNP: add all PNP card device id's as individual aliases
+On Mon, Dec 24, 2007 at 10:51:22AM -0800, Linus Torvalds wrote:
+> The *second* problem is entirely a kernel internal issue. It's the one 
+> that causes us the biggest issues right now, but it's also the one that 
+> will not impact user space at all once if is fixed. So once we do the 
+> *early* probing using anything but mmconfig accesses, we can then much 
+> more easily enable mmconfig later, and by the time the user does anything 
+> like "lspci -vvvxxxx", we could do those mmconfig accesses.
 
-The current PNP combined card + devices module aliase can
-never ever match anything, because all these values are never
-available all at the same time to match a module.
+I had a nice idea to fix this ... will post a patch to do that later.
 
-Instead of adding the useless combined alias, we add the device
-id's all as individual aliases. Device id's are exported by the PNP
-bus, and can now properly used to request the loading of a
-matching module.
+> I also suspect that we *may* want to use a separate file for the extended 
+> config. Right now, things like lspci read the config space by accessing 
+> a file like
+> 
+> 	/sys/bus/pci/devices/0000:00:00.0/config
+> 
+> and I'm not at all sure we want to extend that one past the first 256 
+> bytes of config space. Why? Because I don't want old programs that may not 
+> know how dangerous the rest of the space is to read extended config space 
+> by mistake when they don't know how to parse it anyway.
 
-The module snd-sbawe currently exports aliases, who can never
-match any device:
-  alias: pnp:cCTLXXXXdCTL0045dCTL0022*
-  alias: pnp:cCTLXXXXdCTL0044dCTL0023*
-  alias: pnp:cCTLXXXXdCTL0042dCTL0022*
-  alias: pnp:cCTLXXXXdCTL0041dCTL0021*
-  alias: pnp:cCTLXXXXdCTL0031dCTL0021*
-  alias: pnp:cCTL00eddCTL0041dCTL0070*
-  alias: pnp:cCTL00e9dCTL0045dCTL0022*
-  alias: pnp:cCTL00e4dCTL0045dCTL0022*
-  alias: pnp:cCTL00c7dCTL0045dCTL0022*
-  alias: pnp:cCTL00c5dCTL0045dCTL0022*
-  alias: pnp:cCTL00c3dCTL0045dCTL0022*
-  alias: pnp:cCTL00c1dCTL0042dCTL0022*
-  alias: pnp:cCTL00b2dCTL0044dCTL0023*
-  alias: pnp:cCTL009edCTL0044dCTL0023*
-  alias: pnp:cCTL009ddCTL0042dCTL0022*
-  alias: pnp:cCTL009fdCTL0041dCTL0021*
-  alias: pnp:cCTL009cdCTL0041dCTL0021*
-  alias: pnp:cCTL009adCTL0041dCTL0021*
-  alias: pnp:cCTL0054dCTL0031dCTL0021*
-  alias: pnp:cCTL0048dCTL0031dCTL0021*
-  alias: pnp:cCTL0047dCTL0031dCTL0021*
-  alias: pnp:cCTL0046dCTL0031dCTL0021*
-  alias: pnp:cCTL0045dCTL0031dCTL0021*
-  alias: pnp:cCTL0044dCTL0031dCTL0021*
-  alias: pnp:cCTL0043dCTL0031dCTL0021*
-  alias: pnp:cCTL0042dCTL0031dCTL0021*
-  alias: pnp:cCTL0039dCTL0031dCTL0021*
-  alias: pnp:cCTL0035dCTL0031dCTL0021*
+Unless we're talking about crazy, crazy programs that blindly open and
+read every file in sysfs as root (yes, they exist, and they already cause
+problems simply by reading past the first 64 bytes of config space which
+causes problems for, eg, sym53c875 cards), non-root accesses are already
+restricted to the first 64 bytes, so it's no more of a problem than it
+currently is.
 
-With this patch it exports only the device id's, as matchable
-aliases:
-  alias: pnp:dCTL0070*
-  alias: pnp:dCTL0045*
-  alias: pnp:dCTL0023*
-  alias: pnp:dCTL0044*
-  alias: pnp:dCTL0022*
-  alias: pnp:dCTL0042*
-  alias: pnp:dCTL0041*
-  alias: pnp:dCTL0021*
-  alias: pnp:dCTL0031*
-
-Now, the exported value of the PNP bus can be used to autoload
-a matching module:
-  $ modprobe --first-time -n -v pnp:dCTL0045
-  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/core/snd-rawmidi.ko
-  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/drivers/mpu401/snd-mpu401-uart.ko
-  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/core/snd-hwdep.ko
-  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/isa/sb/snd-sb-common.ko
-  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/isa/sb/snd-sb16-csp.ko
-  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/isa/sb/snd-sb16-dsp.ko
-  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/drivers/opl3/snd-opl3-lib.ko
-  insmod /lib/modules/2.6.24-rc6-g5b825ed2-dirty/kernel/sound/isa/sb/snd-sbawe.ko
-
-  $ grep CTL0045 /sys/bus/pnp/devices/*/id
-  /sys/bus/pnp/devices/01:01.00/id:CTL0045
-
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
----
- file2alias.c |   57 ++++++++++++++++++++++++++++++++++++++++++++-------------
- 1 file changed, 44 insertions(+), 13 deletions(-)
-
-diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index d802b5a..1882889 100644
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -324,19 +324,52 @@ static int do_pnp_entry(const char *filename,
- 	return 1;
- }
- 
--/* looks like: "pnp:cCdD..." */
--static int do_pnp_card_entry(const char *filename,
--			struct pnp_card_device_id *id, char *alias)
-+/* looks like: "pnp:dD" for every device of the card */
-+static void do_pnp_card_entries(void *symval, unsigned long size,
-+				struct module *mod)
- {
--	int i;
-+	const unsigned long id_size = sizeof(struct pnp_card_device_id);
-+	const unsigned int count = (size / id_size)-1;
-+	const struct pnp_card_device_id *cards = symval;
-+	unsigned int i;
- 
--	sprintf(alias, "pnp:c%s", id->id);
--	for (i = 0; i < PNP_MAX_DEVICES; i++) {
--		if (! *id->devs[i].id)
--			break;
--		sprintf(alias + strlen(alias), "d%s", id->devs[i].id);
-+	device_id_check(mod->name, "pnp", size, id_size, symval);
-+
-+	for (i = 0; i < count; i++) {
-+		unsigned int j;
-+		const struct pnp_card_device_id *card = &cards[i];
-+
-+		for (j = 0; j < PNP_MAX_DEVICES; j++) {
-+			const char *id = (char *)card->devs[j].id;
-+			int i2, j2;
-+			int dup = 0;
-+
-+			if (!id[0])
-+				break;
-+
-+			/* find duplicate, already added value */
-+			for (i2 = 0; i2 < i && !dup; i2++) {
-+				const struct pnp_card_device_id *card2 = &cards[i2];
-+
-+				for (j2 = 0; j2 < PNP_MAX_DEVICES; j2++) {
-+					const char *id2 = (char *)card2->devs[j2].id;
-+
-+					if (!id2[0])
-+						break;
-+
-+					if (!strcmp(id, id2)) {
-+						dup = 1;
-+						break;
-+					}
-+				}
-+			}
-+
-+			/* add an individual alias for every device entry */
-+			if (!dup)
-+				buf_printf(&mod->dev_table_buf,
-+					   "MODULE_ALIAS(\"pnp:d%s*\");\n", id);
-+		}
- 	}
--	return 1;
- }
- 
- /* Looks like: pcmcia:mNcNfNfnNpfnNvaNvbNvcNvdN. */
-@@ -630,9 +663,7 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
- 			 sizeof(struct pnp_device_id), "pnp",
- 			 do_pnp_entry, mod);
- 	else if (sym_is(symname, "__mod_pnp_card_device_table"))
--		do_table(symval, sym->st_size,
--			 sizeof(struct pnp_card_device_id), "pnp_card",
--			 do_pnp_card_entry, mod);
-+		do_pnp_card_entries(symval, sym->st_size, mod);
- 	else if (sym_is(symname, "__mod_pcmcia_device_table"))
- 		do_table(symval, sym->st_size,
- 			 sizeof(struct pcmcia_device_id), "pcmcia",
-diff --git a/sound/isa/sb/sb16.c b/sound/isa/sb/sb16.c
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
