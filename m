@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbXLXOuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbXLXOvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758054AbXLXOuw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 09:50:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbXLXOul
+	id S1758243AbXLXOvY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 09:51:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXLXOvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 09:50:41 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:46746 "EHLO mgw2.diku.dk"
+	Mon, 24 Dec 2007 09:51:15 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:46840 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757285AbXLXOuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 09:50:40 -0500
-Date: Mon, 24 Dec 2007 15:50:34 +0100 (CET)
+	id S1753912AbXLXOvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Dec 2007 09:51:12 -0500
+Date: Mon, 24 Dec 2007 15:51:00 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: jbenc@suse.cz, flamingice@sourmilk.net, linux-kernel@vger.kernel.org,
+To: vladislav.yasevich@hp.com, sri@us.ibm.com, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 36/38] net/mac80211: Use time_before, time_before_eq, etc.
-Message-ID: <Pine.LNX.4.64.0712241550090.23999@ask.diku.dk>
+Subject: [PATCH 37/38] net/sctp: Use time_before, time_before_eq, etc.
+Message-ID: <Pine.LNX.4.64.0712241550340.23999@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -63,43 +63,57 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -r -u -p a/net/mac80211/rc80211_simple.c b/net/mac80211/rc80211_simple.c
---- a/net/mac80211/rc80211_simple.c	2007-11-13 16:01:34.000000000 +0100
-+++ b/net/mac80211/rc80211_simple.c	2007-12-23 20:30:40.000000000 +0100
-@@ -13,6 +13,7 @@
- #include <linux/slab.h>
- #include <linux/skbuff.h>
- #include <linux/compiler.h>
+diff -r -u -p a/net/sctp/outqueue.c b/net/sctp/outqueue.c
+--- a/net/sctp/outqueue.c	2007-11-15 15:09:38.000000000 +0100
++++ b/net/sctp/outqueue.c	2007-12-23 20:46:36.000000000 +0100
+@@ -50,6 +50,7 @@
+ #include <linux/list.h>   /* For struct list_head */
+ #include <linux/socket.h>
+ #include <linux/ip.h>
 +#include <linux/jiffies.h>
+ #include <net/sock.h>	  /* For skb_set_owner_w */
  
- #include <net/mac80211.h>
- #include "ieee80211_i.h"
-@@ -194,7 +195,7 @@ static void rate_control_simple_tx_statu
- 		rate_control_rate_dec(local, sta);
- 	}
+ #include <net/sctp/sctp.h>
+@@ -425,7 +426,8 @@ void sctp_retransmit_mark(struct sctp_ou
+ 			 * retransmitting due to T3 timeout.
+ 			 */
+ 			if (reason == SCTP_RTXR_T3_RTX &&
+-			    (jiffies - chunk->sent_at) < transport->last_rto)
++			    time_before(jiffies,
++					chunk->sent_at + transport->last_rto))
+ 				continue;
  
--	if (srctrl->avg_rate_update + 60 * HZ < jiffies) {
-+	if (time_after(jiffies, srctrl->avg_rate_update + 60 * HZ)) {
- 		srctrl->avg_rate_update = jiffies;
- 		if (srctrl->tx_avg_rate_num > 0) {
- #ifdef CONFIG_MAC80211_VERBOSE_DEBUG
-diff -r -u -p a/net/mac80211/rx.c b/net/mac80211/rx.c
---- a/net/mac80211/rx.c	2007-12-04 13:19:55.000000000 +0100
-+++ b/net/mac80211/rx.c	2007-12-23 20:30:40.000000000 +0100
-@@ -14,6 +14,7 @@
- #include <linux/netdevice.h>
- #include <linux/etherdevice.h>
- #include <linux/rcupdate.h>
+ 			/* RFC 2960 6.2.1 Processing a Received SACK
+diff -r -u -p a/net/sctp/transport.c b/net/sctp/transport.c
+--- a/net/sctp/transport.c	2007-11-15 15:09:39.000000000 +0100
++++ b/net/sctp/transport.c	2007-12-23 20:46:58.000000000 +0100
+@@ -50,6 +50,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/random.h>
 +#include <linux/jiffies.h>
- #include <net/mac80211.h>
- #include <net/ieee80211_radiotap.h>
+ #include <net/sctp/sctp.h>
+ #include <net/sctp/sm.h>
  
-@@ -741,7 +742,7 @@ ieee80211_reassemble_find(struct ieee802
- 		    compare_ether_addr(hdr->addr2, f_hdr->addr2) != 0)
- 			continue;
- 
--		if (entry->first_frag_time + 2 * HZ < jiffies) {
-+		if (time_after(jiffies, entry->first_frag_time + 2 * HZ)) {
- 			__skb_queue_purge(&entry->skb_list);
- 			continue;
- 		}
+@@ -525,8 +526,9 @@ void sctp_transport_lower_cwnd(struct sc
+ 		 * congestion indications more than once every window of
+ 		 * data (or more loosely more than once every round-trip time).
+ 		 */
+-		if ((jiffies - transport->last_time_ecne_reduced) >
+-		    transport->rtt) {
++		if (time_after(jiffies,
++			       transport->last_time_ecne_reduced +
++			       transport->rtt)) {
+ 			transport->ssthresh = max(transport->cwnd/2,
+ 						  4*transport->asoc->pathmtu);
+ 			transport->cwnd = transport->ssthresh;
+@@ -543,7 +545,8 @@ void sctp_transport_lower_cwnd(struct sc
+ 		 * to be done every RTO interval, we do it every hearbeat
+ 		 * interval.
+ 		 */
+-		if ((jiffies - transport->last_time_used) > transport->rto)
++		if (time_after(jiffies,
++			       transport->last_time_used + transport->rto))
+ 			transport->cwnd = max(transport->cwnd/2,
+ 						 4*transport->asoc->pathmtu);
+ 		break;
