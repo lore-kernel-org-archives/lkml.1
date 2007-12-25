@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbXLYOda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbXLYOnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753046AbXLYOda (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 09:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXLYOdV
+	id S1753638AbXLYOnp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 09:43:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXLYOnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 09:33:21 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:41640 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbXLYOdU (ORCPT
+	Tue, 25 Dec 2007 09:43:37 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:18445 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751226AbXLYOng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 09:33:20 -0500
-Date: Tue, 25 Dec 2007 15:32:41 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Alon Bar-Lev <alon.barlev@gmail.com>, linux-mips@ftp.linux-mips.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [MIPS] MEM_SDREFCFG is not defined for Alchemy DB1550 (compile
-	fail)
-Message-ID: <20071225143240.GA29231@linux-mips.org>
-References: <9e0cf0bf0712230733o3dfd54fcp4962ebf3f84cdff@mail.gmail.com> <4770DE51.5000205@ru.mvista.com>
+	Tue, 25 Dec 2007 09:43:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=A4d9OcTNxpxAyxKkzN6WgIaUeuuj/M1Dp0UVO8oKOyUFzGcdRk0Yc6KEG/d1ln8ZPwjOoMSFyNJ7VZOBTmJXkQhTPwKWeNY7FHB5bxicJhB1i0F3uB39HZY6C6JEG+j9j/E8AxlRBG86VLQRn/iMO9u4YRaB2sPbEo/3wO9w3Mc=
+Date: Tue, 25 Dec 2007 15:45:17 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH 2/6] udf: remove some ugly macros
+Message-ID: <20071225144513.GA24373@joi>
+References: <1198455022-27674-1-git-send-email-marcin.slusarz@gmail.com> <1198455022-27674-3-git-send-email-marcin.slusarz@gmail.com> <20071225115438.GA8296@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4770DE51.5000205@ru.mvista.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20071225115438.GA8296@infradead.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 25, 2007 at 01:41:21PM +0300, Sergei Shtylyov wrote:
+On Tue, Dec 25, 2007 at 11:54:38AM +0000, Christoph Hellwig wrote:
+> Looks generally good, but it would be nice if you could avoid
+> introducing new overly long lines.  Then again this really won't be
+> noticed in udf anyway and it looks like you plan to clean it up later
+> anyway.
+Yes, that's what I'm going to do.
 
->> When I have:
->> CONFIG_MIPS_DB1550
->> CONFIG_SOC_AU1550
->> CONFIG_SOC_AU1X00
->> CONFIG_PM
+> (in case it wasn;'t clear count this as an ack from me)
 >
->> MEM_SDREFCFG is used at:
->> arch/mips/au1000/common/power.c::pm_do_freq()
->
->    PM code is generally broken and unmaintained, so no wonder. I don't 
-> remember if anyone has fixed CPU context restoration code (it uses a 
-> "skewed" stack frame).
->
->> While the MEM_SDREFCFG constant is declare only for CONFIG_SOC_AU1000,
->> CONFIG_SOC_AU1500, CONFIG_SOC_AU1100 at:
->> include/asm-mips/mach-au1x00/au1000.h
->
->> Maybe MEM_SDREFCFG should be defined for CONFIG_SOC_AU1X00?
->
->    I've just looked into the Au1550 datasheet and indeed it doesn't have 
-> such register; its SDDRAM controller is not compatible with older SoCs.
->
->> Or there should be #ifdef for its usage in power.c?
->
->    Looks like you'll have to invent something... ;-)
->
->> Best Regards,
->> Alon Bar-Lev.
+Thanks for review!
 
-So I guess it's time to mark the whole PM stuff as BROKEN?
-
-  Ralf
+Marcin
