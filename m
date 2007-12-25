@@ -1,65 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751933AbXLYFQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752158AbXLYH47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751933AbXLYFQO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 00:16:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbXLYFQE
+	id S1752158AbXLYH47 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 02:56:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbXLYH4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 00:16:04 -0500
-Received: from mga05.intel.com ([192.55.52.89]:20469 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750757AbXLYFQE (ORCPT
+	Tue, 25 Dec 2007 02:56:50 -0500
+Received: from zyfb01-66.zyxel.com.tw ([59.124.183.66]:43817 "EHLO
+	zyfb01-66.zyxel.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751262AbXLYH4u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 00:16:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,205,1196668800"; 
-   d="scan'208";a="460781234"
-Subject: volanoMark 24% regression in 2.6.24-rc6: why a simple patch makes
-	it
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: travis@sgi.com, LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 25 Dec 2007 13:14:05 +0800
-Message-Id: <1198559645.6362.195.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Tue, 25 Dec 2007 02:56:50 -0500
+X-Greylist: delayed 975 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Dec 2007 02:56:49 EST
+Message-ID: <001201c846c9$6d03de40$431a17ac@ZyXEL.com>
+From: "lewis_zyxel" <lachang.li@zyxel.com.tw>
+To: <linux-kernel@vger.kernel.org>
+Subject: 2 ports could not bond to a aggregator in 802.3ad mode issue
+Date: Tue, 25 Dec 2007 15:40:30 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="big5";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-OriginalArrivalTime: 25 Dec 2007 07:40:31.0152 (UTC) FILETIME=[6D05B300:01C846C9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With kernel 2.6.24-rc6, volanoMark has much regression.
+I wish to be personally CC'ed the answers/comments posted to the list in 
+response to my posting.
 
-1) On 8-core stoakley: 17%;
-2) On 16-core tigerton: 24%.
+I have 2 ports(eth0, eth1) in my device. I use kernel(2.6.23) bonding driver 
+v3.1.3 (June 13, 2007) to bond 2 ports to one aggregator and use the 
+following commands to setup the environment:
+insmod ./bonding.ko mode=4 miimon=100
+ifconfig bond0 172.23.26.223 netmask 255.255.255.0
+ifconfig eth0 down
+ifconfig eth1 down
+ifenslave bond0 eth0 eth1
 
-I bisected it down to patch fbdcf18df73758b2e187ab94678b30cd5f6ff9f9. It is
-to fix the bad cpu number in /proc/cpuinfo. As a matter of fact, this issue
-is already fixed by other 2 patches:
-699d934d5f958d7944d195c03c334f28cc0b3669
-and
-c0c52d28e05e8bdaa2126570c02ecb1a7358cecc.
+After the setting, I cat the proc entry and got the following information
 
-At the first glance, the patch looks good, at least no conflict with the other
-2 patches. After double-checking it, I found in below call chain:
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+Transmit Hash Policy: layer2 (0)
+MII Status: up
+MII Polling Interval (ms): 100
+Up Delay (ms): 0
+Down Delay (ms): 0
 
-smp_store_cpu_info => identify_cpu => init_intel => init_intel_cacheinfo.
+802.3ad info
+LACP rate: slow
+Active Aggregator Info:
+        Aggregator ID: 1
+        Number of ports: 1
+        Actor Key: 17
+        Partner Key: 1
+        Partner Mac Address: 00:00:00:00:00:00
 
-When CONFIG_X86_HT=y, init_intel_cacheinfo will uses cpuinfo_x86->cpu_index, which
-is initiated by smp_store_cpu_info. If with patch fbdcf18df73758b2e187ab94678b30cd5f6ff9f9,
-cpuinfo_x86->cpu_index is initiated after identify_cpu is called, so
-init_intel_cacheinfo just always initiates per_cpu(cpu_llc_id, 0) = l2_id or l3_id. Then,
-set_cpu_sibling_map will set bad llc_shared_map, so the core domain won't be built.
+Slave Interface: eth0
+MII Status: up
+Link Failure Count: 0
+Permanent HW addr: 00:e0:0c:48:00:04
+Aggregator ID: 1
 
-By checking domain info from dmesg, it really confirms my consequence.
+Slave Interface: eth1
+MII Status: up
+Link Failure Count: 0
+Permanent HW addr: 6f:74:66:73:74:79
+Aggregator ID: 2
 
->From this case, I really found that core domain could improve performance, at least when
-testing by volanoMark. :)
+It shows that 2 ports could not bond to a aggregator. After I trace the the 
+bonding driver code, I modify the ad_port_selection_logic() in bond_3ad.c as 
+following:
 
-The solution is just to revert patch fbdcf18df73758b2e187ab94678b30cd5f6ff9f9,
-because other 2 patches which fixed the same issue are already in 2.6.24-rc5.
+- ((MAC_ADDRESS_COMPARE(&(port->partner_oper_system), &(null_mac_addr)) && 
+// partner answers
++ (!(MAC_ADDRESS_COMPARE(&(port->partner_oper_system), &(null_mac_addr)) && 
+// partner answers
+            !aggregator->is_individual)  // but is not individual OR
+            )
 
--yanmin
+After the modification, I cat the proc entry again and the result is as 
+following:
+/home/shares # cat /proc/net/bonding/bond0
+Ethernet Channel Bonding Driver: v3.1.3 (June 13, 2007)
 
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+Transmit Hash Policy: layer2 (0)
+MII Status: up
+MII Polling Interval (ms): 100
+Up Delay (ms): 0
+Down Delay (ms): 0
+
+802.3ad info
+LACP rate: slow
+Active Aggregator Info:
+        Aggregator ID: 1
+        Number of ports: 2
+        Actor Key: 17
+        Partner Key: 1
+        Partner Mac Address: 00:00:00:00:00:00
+
+Slave Interface: eth0
+MII Status: up
+Link Failure Count: 0
+Permanent HW addr: 00:e0:0c:48:00:04
+Aggregator ID: 1
+
+Slave Interface: eth1
+MII Status: up
+Link Failure Count: 0
+Permanent HW addr: 6f:74:66:73:74:79
+Aggregator ID: 1
+
+The behavior changes from 'one aggregator with one port'  to 'one aggregator 
+with 2 ports', the latter seems more accurate. Is there a bug in bonding 
+driver code v3.1.3 (June 13, 2007)?
+Best regards,
+Lewis Li
 
