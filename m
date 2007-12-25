@@ -1,119 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbXLYCmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752331AbXLYDdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752245AbXLYCmG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 21:42:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbXLYClz
+	id S1752331AbXLYDdT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 22:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbXLYDdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 21:41:55 -0500
-Received: from slackadelic.com ([65.196.224.53]:33031 "EHLO
-	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbXLYCly (ORCPT
+	Mon, 24 Dec 2007 22:33:10 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:33715 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751070AbXLYDdJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 21:41:54 -0500
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: ACPI:  _PTS ordering needs fixing for pre ACPI 3.0 systems (was: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4 suspend-to-RAM)
-Date: Tue, 25 Dec 2007 02:41:48 +0000
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+	Mon, 24 Dec 2007 22:33:09 -0500
+Date: Tue, 25 Dec 2007 04:34:18 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Theodore Tso <tytso@mit.edu>, Christoph Lameter <clameter@sgi.com>,
+       Andi Kleen <andi@firstfloor.org>, Willy Tarreau <w@1wt.eu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       linux-acpi@vger.kernel.org
-References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no> <4770356E.1000407@shaw.ca> <200712250003.27570.carlos@strangeworlds.co.uk>
-In-Reply-To: <200712250003.27570.carlos@strangeworlds.co.uk>
-MIME-Version: 1.0
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+Message-ID: <20071225033418.GA29199@one.firstfloor.org>
+References: <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org> <20071222192550.GD28891@thunk.org> <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org> <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com> <20071223051241.GA4449@1wt.eu> <20071223141500.GB6430@one.firstfloor.org> <20071224034530.GB16658@thunk.org> <Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com> <20071224233701.GB9784@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200712250241.49753.carlos@strangeworlds.co.uk>
+In-Reply-To: <20071224233701.GB9784@kernel.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding Linux-ACPI to CC.
+> And is /sys/slab
+> guaranteed to be a stable and permanent interface if the SLAB
 
-On Tuesday 25 December 2007 00:03:25 Carlos Corbacho wrote:
-> According to the earlier versions of the ACPI spec, Linux is doing the
-> wrong thing - we should call _PTS() before we start powerding down devices,
-> or notifying device drivers to start suspending.
->
-> So, my limited understanding of what we currently do for ACPI
-> suspend-to-RAM is:
->
-> 1) Freeze processes/ devices
-> 2) Put all devices into low power mode
-> 3) Execute _PTS()
-> 4) Suspend system
->
-> So the problem is - our current suspend order is fine for ACPI 3.0 and
-> above, but for pre-3.0 systems, this violates the older specs, where 2) and
-> 3) should be reversed.
+Debugging feature and "stable and permanent" just don't 
+fit together. It's like requesting stable and permanent
+sysrq output.
 
-The following is a hack to illustrate what I'm getting at (this is
-tested on x86-64) (it's a hack since it does all the ACPI prepare bits
-during set_target() for the pre ACPI 3.0 systems, rather than prepare() -
-whether this can be cleaned up to move out just the _PTS() call, I don't
-know).
-
-It abuses suspend_ops->set_target(), but was the easiest way to quickly
-demonstrate this (since the kerneldoc for set_target() says it will always
-be executed before we suspend the devices).
-
--Carlos
----
-
- drivers/acpi/sleep/main.c |   26 ++++++++++++++++++++++----
- 1 files changed, 22 insertions(+), 4 deletions(-)
-
-
-diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
-index 96d23b3..89e708b 100644
---- a/drivers/acpi/sleep/main.c
-+++ b/drivers/acpi/sleep/main.c
-@@ -77,8 +77,19 @@ static int acpi_pm_set_target(suspend_state_t pm_state)
- 	} else {
- 		printk(KERN_ERR "ACPI does not support this state: %d\n",
- 			pm_state);
--		error = -ENOSYS;
-+		return -ENOSYS;
- 	}
-+
-+	/*
-+	 * For ACPI 1.0 and 2.0 systems, we must run the preparation methods
-+	 * before we put the devices into low power mode.
-+	 */
-+	if (acpi_gbl_FADT.header.revision < 3) {
-+		error = acpi_sleep_prepare(acpi_target_sleep_state);
-+		if (error)
-+			acpi_target_sleep_state = ACPI_STATE_S0;
-+	}
-+
- 	return error;
- }
- 
-@@ -91,10 +102,17 @@ static int acpi_pm_set_target(suspend_state_t pm_state)
- 
- static int acpi_pm_prepare(void)
- {
--	int error = acpi_sleep_prepare(acpi_target_sleep_state);
-+	int error = 0;
- 
--	if (error)
--		acpi_target_sleep_state = ACPI_STATE_S0;
-+	/*
-+	 * For ACPI 3.0 or newer systems, we must run the preparation methods
-+	 * after we put the devices into low power mode.
-+	 */
-+	if (acpi_gbl_FADT.header.revision >= 3) {
-+		error = acpi_sleep_prepare(acpi_target_sleep_state);
-+		if (error)
-+			acpi_target_sleep_state = ACPI_STATE_S0;
-+	}
- 
- 	return error;
- }
+-Andi
