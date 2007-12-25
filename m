@@ -1,56 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbXLYBHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbXLYCmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752609AbXLYBHU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 20:07:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbXLYBHH
+	id S1752245AbXLYCmG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 21:42:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbXLYClz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 20:07:07 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:1364 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750932AbXLYBHF (ORCPT
+	Mon, 24 Dec 2007 21:41:55 -0500
+Received: from slackadelic.com ([65.196.224.53]:33031 "EHLO
+	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbXLYCly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 20:07:05 -0500
-Date: Tue, 25 Dec 2007 09:06:50 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Chris Friesen <cbf123@mail.usask.ca>
-Cc: yoshfuji@linux-ipv6.org, dada1@cosmosbay.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: "ip neigh show" not showing arp cache entries?
-Message-ID: <20071225010650.GA29188@gondor.apana.org.au>
-References: <E1J4TCz-0005L8-00@gondolin.me.apana.org.au> <4767DE91.9060803@nortel.com> <20071219011401.GA4585@gondor.apana.org.au> <47692AA1.20902@mail.usask.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 24 Dec 2007 21:41:54 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Robert Hancock <hancockr@shaw.ca>
+Subject: ACPI:  _PTS ordering needs fixing for pre ACPI 3.0 systems (was: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4 suspend-to-RAM)
+Date: Tue, 25 Dec 2007 02:41:48 +0000
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       linux-acpi@vger.kernel.org
+References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no> <4770356E.1000407@shaw.ca> <200712250003.27570.carlos@strangeworlds.co.uk>
+In-Reply-To: <200712250003.27570.carlos@strangeworlds.co.uk>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <47692AA1.20902@mail.usask.ca>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200712250241.49753.carlos@strangeworlds.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 19, 2007 at 08:28:49AM -0600, Chris Friesen wrote:
-> 
-> I've included the traces below, they're pretty long.  I don't know 
-> enough about the netlink format to trace the responses, but I did notice 
-> one interesting thing.
-> 
-> In the "ip neigh show" case the "bond2" entry isn't printed out, but I 
-> can see the string "bond2" in the recvmsg() call so it looks like the 
+Adding Linux-ACPI to CC.
 
-Actually bond2 isn't in the recvmsg, it's just that strace is
-printing out the complete content of the buffer which happenes
-to include bond2.
+On Tuesday 25 December 2007 00:03:25 Carlos Corbacho wrote:
+> According to the earlier versions of the ACPI spec, Linux is doing the
+> wrong thing - we should call _PTS() before we start powerding down devices,
+> or notifying device drivers to start suspending.
+>
+> So, my limited understanding of what we currently do for ACPI
+> suspend-to-RAM is:
+>
+> 1) Freeze processes/ devices
+> 2) Put all devices into low power mode
+> 3) Execute _PTS()
+> 4) Suspend system
+>
+> So the problem is - our current suspend order is fine for ACPI 3.0 and
+> above, but for pre-3.0 systems, this violates the older specs, where 2) and
+> 3) should be reversed.
 
-I've verified that the first recvmsg indeed does not contain the
-bond2 address at all.  Instead of the first 3 IPv4 records it has
-3 IPv6 records.  So we seem to have a kernel problem here.
+The following is a hack to illustrate what I'm getting at (this is
+tested on x86-64) (it's a hack since it does all the ACPI prepare bits
+during set_target() for the pre ACPI 3.0 systems, rather than prepare() -
+whether this can be cleaned up to move out just the _PTS() call, I don't
+know).
 
-However, too many changes have been made in this area since 2.6.14
-for it to be worthwhile for me to debug this any further until you
-manage to reproduce it with the current kernel.
+It abuses suspend_ops->set_target(), but was the easiest way to quickly
+demonstrate this (since the kerneldoc for set_target() says it will always
+be executed before we suspend the devices).
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+-Carlos
+---
+
+ drivers/acpi/sleep/main.c |   26 ++++++++++++++++++++++----
+ 1 files changed, 22 insertions(+), 4 deletions(-)
+
+
+diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
+index 96d23b3..89e708b 100644
+--- a/drivers/acpi/sleep/main.c
++++ b/drivers/acpi/sleep/main.c
+@@ -77,8 +77,19 @@ static int acpi_pm_set_target(suspend_state_t pm_state)
+ 	} else {
+ 		printk(KERN_ERR "ACPI does not support this state: %d\n",
+ 			pm_state);
+-		error = -ENOSYS;
++		return -ENOSYS;
+ 	}
++
++	/*
++	 * For ACPI 1.0 and 2.0 systems, we must run the preparation methods
++	 * before we put the devices into low power mode.
++	 */
++	if (acpi_gbl_FADT.header.revision < 3) {
++		error = acpi_sleep_prepare(acpi_target_sleep_state);
++		if (error)
++			acpi_target_sleep_state = ACPI_STATE_S0;
++	}
++
+ 	return error;
+ }
+ 
+@@ -91,10 +102,17 @@ static int acpi_pm_set_target(suspend_state_t pm_state)
+ 
+ static int acpi_pm_prepare(void)
+ {
+-	int error = acpi_sleep_prepare(acpi_target_sleep_state);
++	int error = 0;
+ 
+-	if (error)
+-		acpi_target_sleep_state = ACPI_STATE_S0;
++	/*
++	 * For ACPI 3.0 or newer systems, we must run the preparation methods
++	 * after we put the devices into low power mode.
++	 */
++	if (acpi_gbl_FADT.header.revision >= 3) {
++		error = acpi_sleep_prepare(acpi_target_sleep_state);
++		if (error)
++			acpi_target_sleep_state = ACPI_STATE_S0;
++	}
+ 
+ 	return error;
+ }
