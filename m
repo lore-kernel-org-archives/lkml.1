@@ -1,50 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752234AbXLYXk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbXLYXpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752234AbXLYXk7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 18:40:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbXLYXkl
+	id S1751927AbXLYXpf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 18:45:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXLYXp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 18:40:41 -0500
-Received: from ozlabs.org ([203.10.76.45]:36679 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751393AbXLYXkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 18:40:40 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: Re: [PATCH 05/16] make write() operation smp aware
-Date: Wed, 26 Dec 2007 10:40:24 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: lguest@ozlabs.org, glommer@gmail.com, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, rostedt@goodmis.org
-References: <11981576363806-git-send-email-gcosta@redhat.com> <11981576581695-git-send-email-gcosta@redhat.com> <11981576632726-git-send-email-gcosta@redhat.com>
-In-Reply-To: <11981576632726-git-send-email-gcosta@redhat.com>
+	Tue, 25 Dec 2007 18:45:28 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53726 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751130AbXLYXp1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Dec 2007 18:45:27 -0500
+Message-ID: <47719611.6030502@zytor.com>
+Date: Tue, 25 Dec 2007 15:45:21 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][DOC] Console is utf-8 by default
+References: <20071225231144.GA4061@implementation>
+In-Reply-To: <20071225231144.GA4061@implementation>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712261040.24771.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 December 2007 00:33:45 Glauber de Oliveira Costa wrote:
-> --- a/drivers/lguest/lguest_user.c
-> +++ b/drivers/lguest/lguest_user.c
-> @@ -223,14 +223,21 @@ static ssize_t write(struct file *file, const char
-...
->  	/* If you haven't initialized, you must do that first. */
-> -	if (req != LHREQ_INITIALIZE && !lg)
-> -		return -EINVAL;
-> +	if (req != LHREQ_INITIALIZE) {
-> +		if (!lg)
-> +			return -EINVAL;
-> +		vcpu = &lg->vcpus[vcpu_id];
-> +		if (!vcpu)
-> +			return -EINVAL;
-> +	}
+Samuel Thibault wrote:
+> The console is now by default in UTF-8 mode, so let's document this.
+> BTW, document the needed "vt." prefix.
+> 
+> -	vt.default_blu=	[VT]
+> +	default_blu=	[VT]
 
-Bounds check again...
+Reverse patch?
 
-Cheers,
-Rusty.
+	-hpa
