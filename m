@@ -1,108 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbXLYJmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbXLYJ7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbXLYJmF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 04:42:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbXLYJlx
+	id S1752543AbXLYJ7l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 04:59:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbXLYJ7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 04:41:53 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:45331 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751667AbXLYJlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 04:41:52 -0500
-Date: Tue, 25 Dec 2007 04:41:52 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: torvalds@osdl.org, jgarzik@pobox.com, htejun@gmail.com, pavel@suse.cz,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: 2.6.24-rc6 and earlier: "host bus error" after STR
-Message-ID: <20071225094151.GA9769@havoc.gtf.org>
-References: <20071224204813.GA3546@martell.zuzino.mipt.ru>
+	Tue, 25 Dec 2007 04:59:31 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:22544 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751082AbXLYJ7b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Dec 2007 04:59:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=dM8RbHAeYEE33+MDF/ZLHKqNzVV0C5zioSYSis9Vh0w4XySD5muzmOssAXfSG0ji+x8/0+61dE+IYm4Zyylkd2qYxitYXUugzkJtNHmTccGEuRsbYfSL2CqlqASGduZhVMP0TbyyqQ1W9+AdafivviUc/6RZYqaihyGfZ2R88fs=
+Date: Tue, 25 Dec 2007 18:03:21 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: akpm@linux-foundation.org
+Cc: greg@kroah.com, marcel@holtmann.org, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net
+Subject: [BUG][PATCH -mm] bluetooth : rfcomm add get/put device in del_conn
+Message-ID: <20071225100321.GA2791@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071224204813.GA3546@martell.zuzino.mipt.ru>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 24, 2007 at 11:48:13PM +0300, Alexey Dobriyan wrote:
-> Hi, I occasionally get those "soft resetting link" messages
-> right after STR. Typical messages below (from photos):
-> 
-> 
-> eth1: link up, 100Mbps, full-duplex, lpa 0x45E1
-> i8042 kbd 00:0a: activation failed
-> sd 0:0:0:0: [sda] Starting disk
-> ata2.01: ACPI cmd ef/03:44:00:00:00:b0 filtered out
-> ata2.01: ACPI cmd ef/03:44:00:00:00:b0 filtered out
-> ata2.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-> ata2.01: configured for UDMA/66
-> ata2.01: ACPI cmd ef/03:45:00:00:00:b0 filtered out
-> ata2.01: ACPI cmd ef/03:45:00:00:00:b0 filtered out
-> ata2.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-> ata2.01: configured for UDMA/133
-> sd 2:0:0:0: [sdb] 312581808 512-byte hardware sectors (160042 MB)
-> sd 2:0:0:0: [sdb] Write Protect is off
-> sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-> sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> ata2.01: ACPI cmd ef/03:42:00:00:00:a0 filtered out
-> ata2.01: ACPI cmd ef/03:42:00:00:00:a0 filtered out
-> ata2.01: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-> ata1.00: configured for UDMA/33
-> sd 2:0:0:0: [sdb] 234441648 512-byte hardware sectors (120034 MB)
-> sd 2:0:0:0: [sdb] Write Protect is off
-> sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-> sd 2:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> sd 2:0:0:0: [sdb] Starting disk
-> ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-> ata3.00: cmd ca/00:28:ff:c0:00/00:00:00:00:00/e0 tag 0 dma 20480 out
-> 	 res 51/84:28:ff:c0:00/00:00:00:00:00/e0 Emask 0x30 (host bus error)
-> ata3.00: status: { DRDY ERR }
-> ata3.00: error: { ICRC ABRT }
-> 
-> 	...
-> 
-> ata3: soft resetting link
-> ata3: EH complete
-> ata3.00: limiting speed to UDMA/100:PIO4
-> ata3.00: BMDMA stat 0x6
-> ata3.00: cmd ca/00:28:ff:c0:00/00:00:00:00:00/e0 tag 0 dma 20480 out
->          res 51/84:28:ff:c0:00/00:00:00:00:00/e0 Emask 0x30 (host bus error)
-> ata3.00: status: { DRDY ERR }
-> ata3.00: error: { ICRC ABRT }
-> 
-> 	...
-> 
-> ata3: soft resetting link
-> ata3.00: configured for UDMA/100
-> sd 2:0:0:0: [sdb] Result: hostbyte=0x00 driverbyte=0x08
-> sd 2:0:0:0: [sdb] Sense Key: 0xb [current] [descriptor]
-> Descriptor sense data with sense descriptors (in hex):
-> 	72 0b 47 00 00 00 00 0[ce] 00 0a 80 00 00 00 00	/* border of photo*/
-> 
-> 	...
-> 
-> ata3.00: configured for UDMA/100
-> ata3: EH complete
-> sd 2:0:0:0: [sdb] ... 160G disk
-> 	...
-> ata3.00: limiting speed to UDMA/33:PIO4
-> ata3.00: exception Emask 0x0 Sact 0x0 Serr 0x0 action 0x2
-> ata3.00: BMDMA stat 0x6
-> ata3.00: cmd ca/00:08:47:66:6e/00:00:00:00:00/eb tag 0 dma 4096 out
-> 	 res 51/84:08:47:66:6e/00:00:00:00:00/eb Emask 0x30 (host bus error)
-> ata3.00: status: { DRDY ERR }
-> ata3.00: error: { ICRC ABRT }
-> ata3: soft resetting link
+Due to 2.6.24-rc6-mm1 kernel changes (maybe kobject or driver core), If I exec:
 
-host bus == PCI
+rfcomm connect 0 1
 
-So, your PCI bus is crapping itself in a major way.
+kernel will oops after connect timeout.
 
-One thing to try might be "libata.noacpi=1"
+hand copy some oops text:
 
-	Jeff
+EIP is at driver_sysfs_remove+0x1a/0x40
+Call Trace:
+ show_trace_log_lvl+0x1a/0x30
+ show_stack_log_lvl+0x9a/0xc0
+ show_registers+0xc7/0x270
+ die+0x129/0x240
+ do_page_fault+0x3a1/0x670
+ error_code+0x72/0x78
+ __device_release_driver+0x1e/0xa0
+ device_release_driver+0x30/0x50
+ bus_remove_device+0x63/0x90
+ device_del+0x55/0x190
+ del_conn+0xb/0x10 [bluetooth]
+ run_workqueue+0xe1/0x210
+ worker_thread+0x99/0xf0
+ kthread+0x5c/0xa0
+ kernel_thread_helper+0x7/0x18
 
+(The remote bluetooth device is a mobile phone which is power off)
 
+The reason is that in bus_remobe_dev, the klist_del function will release the device, so just add a get/put pair around the device_del in del_conn.
 
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+
+---
+net/bluetooth/hci_sysfs.c |    2 ++
+1 file changed, 2 insertions(+)
+
+diff -upr linux/net/bluetooth/hci_sysfs.c linux.new/net/bluetooth/hci_sysfs.c
+--- linux/net/bluetooth/hci_sysfs.c	2007-12-25 17:45:09.000000000 +0800
++++ linux.new/net/bluetooth/hci_sysfs.c	2007-12-25 17:45:51.000000000 +0800
+@@ -319,7 +319,9 @@ void hci_conn_add_sysfs(struct hci_conn 
+ static void del_conn(struct work_struct *work)
+ {
+ 	struct hci_conn *conn = container_of(work, struct hci_conn, work);
++	get_device(&conn->dev);
+ 	device_del(&conn->dev);
++	put_device(&conn->dev);
+ }
+ 
+ void hci_conn_del_sysfs(struct hci_conn *conn)
