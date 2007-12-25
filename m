@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbXLYMVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbXLYM3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbXLYMVU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 07:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbXLYMVK
+	id S1753271AbXLYM3L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 07:29:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbXLYM3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 07:21:10 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39347 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750868AbXLYMVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 07:21:08 -0500
-Date: Tue, 25 Dec 2007 13:19:23 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Julia Lawall <julia@diku.dk>
-Cc: rth@twiddle.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/38] arch/alpha: Use time_before, time_before_eq, etc.
-Message-ID: <20071225121923.GB31662@elf.ucw.cz>
-References: <Pine.LNX.4.64.0712241516010.23999@ask.diku.dk>
+	Tue, 25 Dec 2007 07:29:04 -0500
+Received: from slackadelic.com ([65.196.224.53]:53399 "EHLO
+	mail.slackadelic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbXLYM3D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Dec 2007 07:29:03 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4 suspend-to-RAM
+Date: Tue, 25 Dec 2007 12:28:55 +0000
+User-Agent: KMail/1.9.7
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200712231419.40207.carlos@strangeworlds.co.uk> <200712231730.34935.rjw@sisk.pl> <20071225121231.GA31662@elf.ucw.cz>
+In-Reply-To: <20071225121231.GA31662@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712241516010.23999@ask.diku.dk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200712251228.57351.carlos@strangeworlds.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2007-12-24 15:16:46, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> The functions time_before, time_before_eq, time_after, and time_after_eq
-> are more robust for comparing jiffies against other values.
-> 
-> A simplified version of the semantic patch making this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @ change_compare_np @
-> expression E;
-> @@
-> 
-> (
-> - jiffies <= E
-> + time_before_eq(jiffies,E)
-> |
-> - jiffies >= E
-> + time_after_eq(jiffies,E)
-> |
-> - jiffies < E
-> + time_before(jiffies,E)
-> |
-> - jiffies > E
-> + time_after(jiffies,E)
-> )
+Pavel,
 
-Maybe you should create new macro so that you don't have to pass the
-jiffies all the time?
+On Tuesday 25 December 2007 12:12:31 Pavel Machek wrote:
+> > The patch is fine by me, so if anyone has objections, please speak up.
+>
+> Just.. I have been running with very similar patch for few years... it
+> fixes few prototype machines I have here.
 
->  	if (!test_thread_flag (TIF_UAC_NOPRINT)) {
-> -		if (cnt >= 5 && jiffies - last_time > 5*HZ) {
-> +		if (cnt >= 5 && time_after(jiffies, last_time + 5*HZ)) {
+I've withdrawn the patch since it doesn't actually fix the issue (turns out 
+it's actually a bug in Linux's handling of suspend-to-RAM for ACPI 1.0 and 
+2.0 systems).
 
-			     && time_after_now(last_time + 5*HZ)
-
-or something?
-									Pavel
+-Carlos
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
