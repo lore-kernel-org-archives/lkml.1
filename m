@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752357AbXLYXuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110AbXLYXy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752357AbXLYXuo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 18:50:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbXLYXuh
+	id S1752110AbXLYXy6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 18:54:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXLYXyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 18:50:37 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36033 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751133AbXLYXug (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 18:50:36 -0500
-Message-ID: <477196DC.9000704@zytor.com>
-Date: Tue, 25 Dec 2007 15:48:44 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 25 Dec 2007 18:54:51 -0500
+Received: from ozlabs.org ([203.10.76.45]:38643 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751199AbXLYXyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Dec 2007 18:54:50 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: Re: [PATCH 0/16] lguest: introduce vcpu structure
+Date: Wed, 26 Dec 2007 10:54:45 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: lguest@ozlabs.org, glommer@gmail.com, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, rostedt@goodmis.org
+References: <11981576363806-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11981576363806-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [x86] is checkpatch.pl broken
-References: <20071225170737.GA3887@cvg.org>
-In-Reply-To: <20071225170737.GA3887@cvg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712261054.46261.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
-> Hi list,
-> 
-> by doing cleanup of arch/x86/boot/*.[ch] i found that
-> checkpatch does ignore obvious things. For example,
-> run it over edd.c showed only one warning:
-> 
-> BTW, is there someone who is already involved in a such
-> cleanup to eliminate double effort?
-> 
+On Friday 21 December 2007 00:33:40 Glauber de Oliveira Costa wrote:
+> this patch makes room for the vcpu structure in lguest, already used in
+> this very same way at lguest64. It's the first part of our plan to
+> have lguest and lguest64 unified too.
 
-BTW, it's more than a wee bit rude of you to Cc: a bunch of people but 
-not the listed maintainer of the piece of code you're claiming to be 
-cleaning up.
+Hi Glauber!
 
-	-hpa
+    These patches look really solid, thanks!  A few minor things, then I'll 
+apply them and push them for 2.6.25.
+
+    My only question is whether we should go further and vpu-ify routines like 
+lgread and kill_guest, so that we can avoid more "lg" temporary variables...
+
+> When two dogs hang out, you don't have new puppies right in the other day.
+> Some time has to be elapsed. They have to grow first. In this same spirit,
+> having these patches _do not_ mean smp guests can be launched (yet)
+> Much more work is to come, but this is the basic infrastructure.
+
+OK, that made me laugh...
+
+Thanks!
+Rusty.
+
