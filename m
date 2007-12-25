@@ -1,102 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbXLYPyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbXLYQCM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752610AbXLYPyY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 10:54:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbXLYPyO
+	id S1752704AbXLYQCM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 11:02:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbXLYQCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 10:54:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35125 "EHLO ogre.sisk.pl"
+	Tue, 25 Dec 2007 11:02:00 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35160 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751546AbXLYPyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 10:54:13 -0500
+	id S1750752AbXLYQB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Dec 2007 11:01:59 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Suspend code ordering (again) (was: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4 suspend-to-RAM)
-Date: Tue, 25 Dec 2007 17:13:11 +0100
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 0/3] PM: Do not destroy/create devices while suspended
+Date: Tue, 25 Dec 2007 17:21:41 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-References: <200712231419.40207.carlos@strangeworlds.co.uk> <200712241444.24031.rjw@sisk.pl> <alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>
+References: <Pine.LNX.4.44L0.0712241045150.25920-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0712241045150.25920-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712251713.13223.rjw@sisk.pl>
+Message-Id: <200712251721.42233.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 24 of December 2007, Linus Torvalds wrote:
-> 
+On Monday, 24 of December 2007, Alan Stern wrote:
 > On Mon, 24 Dec 2007, Rafael J. Wysocki wrote:
+> 
+> > Hi,
 > > 
-> > Well, having considered that for a longer while, I think the AML code is
-> > referring to a device that we have suspended already, and since it's in a low
-> > power state, it just can't handle the reference.
+> > Some device drivers register CPU hotplug notifiers and use them to destroy
+> > device objects when removing the corresponding CPUs and to create these objects
+> > when adding the CPUs back.
 > > 
-> > If that is the case, we'll have to find the device (that should be possible
-> > using some code instrumentation) and move the suspending of it into the late
-> > stage.
+> > Unfortunately, this is not the right thing to do during suspend/hibernation,
+> > since in that cases the CPU hotplug notifiers are called after suspending
+> > devices and before resuming them, so the operations in question are carried
+> > out on the objects representing suspended devices which shouldn't be
+> > unregistered behing the PM core's back.  Although right now it usually doesn't
+> > lead to any practical complications, it will predictably deadlock if
+> > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch is applied.
+> > 
+> > The solution is to prevent drivers from removing/adding devices from within
+> > CPU hotplug notifiers during suspend/hibernation using the FROZEN bit
+> > in the notifier's action argument.  The following three patches modify the
+> > MSR, x86-64 MCE and cpuid drivers along these lines.
 > 
-> Yes. 
-> 
-> In general, I'm personally of the opinion that drivers should *not* 
-> actually go into D3 at all in the regular "->suspend()" phase. It should 
-> be done in ->suspend_late. The early suspend is for saving state and 
-> returning errors.
-> 
-> Sadly, we've made it a bit too inconvenient to actually do that. Almost 
-> all drivers only do the "->suspend" thing, and the default PCI behaviour 
-> doesn't help us in any way either.
-> 
-> Anyway, I wonder if a patch like this could make it easier for driver 
-> writers to handle things. It basically does:
-> 
->  - if you don't have a regular "suspend()" function, we'll just save state 
->    at suspend time.
-> 
->  - if you don't have a "suspend_late()" function, we'll look at the 
->    current state, and if it's still in PCI_D0, we'll suspend to PCI_D3hot 
->    if it's a regular PCI device (ie not a bridge or something else odd).
-> 
->  - then, at resume time, by default we don't do anything in the early 
->    resume, but in the late resume we'll undo everything, of course.
-> 
-> Anyway, with this, most drivers could just remove the 
-> "pci_set_power_state()" call *entirely*, and let the default 
-> suspend_late action power the device down. But if you want to override 
-> that default action, you can either:
-> 
->  - set the power state in your own ->suspend() routine (either by using 
->    pci_set_power_state(), or by just explicitly setting the state to 
->    unknown with "dev->current_state =  PCI_UNKNOWN"
-> 
->  - have a "late_suspend()" action, which obviously will override the 
->    default action entirely.
-> 
-> Hmm?
+> Do we need to worry about the possibility that when the system wakes up 
+> from hibernation, the set of usable CPUs might be smaller than it was 
+> beforehand?
 
-Well, as Carlos correctly noticed, the problem is related to the change in
-the ACPI specification between versions 1.0x and 2.0.  Namely, while ACPI
-2.0 and later wants us to put devices into low power states before calling
-_PTS, ACPI 1.0x wants us to do that after calling _PTS.  Since we're following
-the 2.0 and later specifications right now, we're not doing the right thing for
-the (strictly) ACPI 1.0x-compliant systems.
+This is possible in error conditions.
 
-We ought to be able to fix things on the high level, by calling _PTS earlier on
-systems that claim to be ACPI 1.0x-compliant.  That will require us to modify
-the generic susped code quite a bit and will need to be tested for some time.
+> Is any special handling needed for this, or is it already accounted for?
 
-I'm going to prepare patches to implement this idea targeted for the 2.6.25
-time frame.
+Hm, well.  The cleanest thing would be to allow the drivers to remove the
+device objects on CPU_UP_CANCELED_FROZEN, which means that we weren't able to
+bring the CPU up during a resume, but still that will deadlock with
+gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch.
 
 Greetings,
 Rafael
+
