@@ -1,43 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752331AbXLYDdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbXLYEhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752331AbXLYDdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Dec 2007 22:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbXLYDdK
+	id S1752696AbXLYEhU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Dec 2007 23:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXLYEhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Dec 2007 22:33:10 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:33715 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751070AbXLYDdJ (ORCPT
+	Mon, 24 Dec 2007 23:37:08 -0500
+Received: from usermail.globalproof.net ([194.146.153.18]:32798 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751070AbXLYEhG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Dec 2007 22:33:09 -0500
-Date: Tue, 25 Dec 2007 04:34:18 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Theodore Tso <tytso@mit.edu>, Christoph Lameter <clameter@sgi.com>,
-       Andi Kleen <andi@firstfloor.org>, Willy Tarreau <w@1wt.eu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-Message-ID: <20071225033418.GA29199@one.firstfloor.org>
-References: <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org> <20071222192550.GD28891@thunk.org> <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org> <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com> <20071223051241.GA4449@1wt.eu> <20071223141500.GB6430@one.firstfloor.org> <20071224034530.GB16658@thunk.org> <Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com> <20071224233701.GB9784@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071224233701.GB9784@kernel.org>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 24 Dec 2007 23:37:06 -0500
+From: "Denys Fedoryshchenko" <denys@visp.net.lb>
+To: linux-kernel@vger.kernel.org
+Subject: nmi_watchdog killing tickless feature
+Date: Tue, 25 Dec 2007 06:36:54 +0200
+Message-Id: <20071225043654.M32161@visp.net.lb>
+X-Mailer: OpenWebMail 2.52 20060502
+X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And is /sys/slab
-> guaranteed to be a stable and permanent interface if the SLAB
+Hi
 
-Debugging feature and "stable and permanent" just don't 
-fit together. It's like requesting stable and permanent
-sysrq output.
+Please CC me on reply, i am not subscribed to list.
 
--Andi
+I did small test, and notice that if nmi_watchdog is enabled
+mpstat 1
+
+06:11:00     CPU   %user   %nice    %sys %iowait    %irq   %soft  %steal  
+%idle    intr/s
+06:11:01     all    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
+100.00    993.07
+06:11:02     all    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
+100.00   1007.00
+06:11:03     all    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
+100.00   1005.00
+
+if disabled
+06:13:52     CPU   %user   %nice    %sys %iowait    %irq   %soft  %steal  
+%idle    intr/s
+06:13:53     all    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
+100.00      1.00
+06:13:54     all    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
+100.00      9.00
+06:13:55     all    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
+100.00      4.00
+06:13:56     all    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
+100.00      2.00
+06:13:57     all    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
+100.00      2.00
+
+The difference is huge, probably in power consumption too. Kernel is
+relatively standard (2.6.24-rc6-git1), if required i can attach .config
+If it is not bug, probably good to document, that it is killing powersaving
+features?
+
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
+
