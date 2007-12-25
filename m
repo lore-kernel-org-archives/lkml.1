@@ -1,26 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751422AbXLYWGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbXLYWGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751422AbXLYWGU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 17:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbXLYWFy
+	id S1752629AbXLYWGf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 17:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbXLYWF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 17:05:54 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51301 "EHLO
+	Tue, 25 Dec 2007 17:05:56 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38937 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752138AbXLYWFw (ORCPT
+	by vger.kernel.org with ESMTP id S1752182AbXLYWFy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 17:05:52 -0500
-Date: Tue, 25 Dec 2007 14:04:31 -0800
+	Tue, 25 Dec 2007 17:05:54 -0500
+Date: Tue, 25 Dec 2007 14:05:14 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Gianluca Alberici <gianluca@abinetworks.biz>
-Cc: Scott <linux-kernel@bluecamel.eml.cc>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Subject: Re: NFS EINVAL on open(... | O_TRUNC) on 2.6.23.9
-Message-Id: <20071225140431.9264970a.akpm@linux-foundation.org>
-In-Reply-To: <476E47F5.4090807@abinetworks.biz>
-References: <476CEC5E.9070002@abinetworks.biz>
-	<838DE9A2-59B2-49FA-B3E8-89B26368B1CF@bluecamel.eml.cc>
-	<476E47F5.4090807@abinetworks.biz>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/63] ide-cd: redux
+Message-Id: <20071225140514.fa13f5ac.akpm@linux-foundation.org>
+In-Reply-To: <200712200148.49690.bzolnier@gmail.com>
+References: <200712200148.49690.bzolnier@gmail.com>
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,108 +26,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Dec 2007 12:35:17 +0100 Gianluca Alberici <gianluca@abinetworks.biz> wrote:
+On Thu, 20 Dec 2007 01:48:49 +0100 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-> Hello,
-> 
-> I can do better. I have investigated a bit the problem:
-> 
-> 1) The problem arises only with the userspace nfsd (Universal nfsd 2.2). 
-> I have realized that the latest patches introduced in 2.6.22 have 
-> changed a lot of things into NFS.
-> 
-> 2) The following code has been debugged with sunrpc.rpc_debug and 
-> sunrpc.nfs_debug
-> 
-> #include <sys/types.h>
-> #include <sys/stat.h>
-> #include <fcntl.h>
-> #include <errno.h>
-> #include <stdio.h>
-> 
-> int main(int argc, char *argv[]) {
->         int fp;
->         if ((fp=open("/mnt/tmp/test",O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU )) == -1) printf("ERR: %d\n",errno);
->         else {
->                 write(fp, argv[1], strlen(argv[1]));
->                 printf("OK\n");
->                 close(fp);
->         };
-> }
-> 
-> 
-> 2b) The output
-> 
-> [...]
-> 
-> <8>NFS call  setattr
-> <8>RPC:       new task initialized, procpid 18656
-> <8>RPC:       allocated task f7bec500
-> <8>RPC:     0 looking up UNIX cred
-> <8>RPC:   740 __rpc_execute flags=0x480
-> <8>RPC:   740 call_start nfs2 proc 2 (sync)
-> <8>RPC:   740 call_reserve (status 0)
-> <8>RPC:   740 reserved req f1416000 xid 643f3c42
-> <8>RPC:   740 call_reserveresult (status 0)
-> <8>RPC:   740 call_allocate (status 0)
-> <8>RPC:   740 allocated buffer of size 528 at e627b800
-> <8>RPC:   740 call_bind (status 0)
-> <8>RPC:   740 call_connect xprt f70d4000 is connected
-> <8>RPC:   740 call_transmit (status 0)
-> <8>RPC:   740 xprt_prepare_transmit
-> <8>RPC:   740 xprt_cwnd_limited cong = 0 cwnd = 512
-> <8>RPC:   740 call_encode (status 0)
-> <8>RPC:   740 marshaling UNIX cred f4efcb40
-> <8>RPC:   740 using AUTH_UNIX cred f4efcb40 to wrap rpc data
-> <8>RPC:   740 xprt_transmit(148)
-> <8>RPC:       xs_udp_data_ready...
-> <8>RPC:       cong 256, cwnd was 512, now 512
-> <8>RPC:   740 xid 643f3c42 complete (28 bytes received)
-> <8>RPC:       xs_udp_send_request(148) = 148
-> <8>RPC:   740 xmit complete
-> <8>RPC:       wake_up_next(f70d4114 "xprt_resend")
-> <8>RPC:       wake_up_next(f70d40e4 "xprt_sending")
-> <8>RPC:   740 call_status (status 28)
-> <8>RPC:   740 call_decode (status 28)
-> <8>RPC:   740 validating UNIX cred f4efcb40
-> <8>RPC:   740 using AUTH_UNIX cred f4efcb40 to unwrap rpc data
-> <8>RPC:   740 call_decode result -22
-> <8>RPC:   740 return 0, status -22
-> <8>RPC:   740 release task
-> <8>RPC:       freeing buffer of size 528 at e627b800
-> <8>RPC:   740 release request f1416000
-> <8>RPC:       wake_up_next(f70d4174 "xprt_backlog")
-> <8>RPC:   740 releasing UNIX cred f4efcb40
-> <8>RPC:       rpc_release_client(f6f1f880)
-> <8>NFS reply setattr: -22
-> 
-> [...]
-> 
-> 3) It turns out the following:
-> 
-> - setattr returns EINVAL due to...
-> - RPC call_decode returns status 22
-> 
-> 4) In conclusion in my understanding:
-> 
-> - At present linux nfs filesystem support is not anymore compatible with 
-> old userspace servers like universal nfsd and crypto filesystems as cfsd 
-> (which is an nfs server pretty old fashioned).
-> - This problem makes UNFSD and CFSD unusable on 2.6.22 and up (this 
-> doesnt sound good to me)
-> 
-> The question are:
-> 
-> - Is this wanted or is a bug ?
-> - Can this be solved with some backwards compat stuff into the kernel or 
-> all the old packages as UNFSD have to be
-> bugfixed/upgraded
-> - I have found other strange behaviors of the new NFS filesystem support 
-> that i am investigating. All are bound to the user of
-> old userspace servers onto the new NFS (since 2.6.22). What to do ?
-> 
+> This patch series is a major rework of the ide-cd driver.
 
-I'm not sure what the NFS client's policy is regarding support for
-userspace servers.  But I'd certainly hope that it is "don't break them".
+woo-hoo.
 
-Which would make this an NFS client regression.
+> PS ide-cd Maintainer position is still open...
+
+boo-hoo.
+
+I wish someone would fix that "The drive appears confused (ireason =
+0x%02x)" thing.  I had a go a while back but iirc the reporter disappeared
+on me.  It is somewhat common.
+
+Or do you think this patch might indeed fix it?
