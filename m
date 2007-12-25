@@ -1,82 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbXLYL74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825AbXLYMO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753106AbXLYL74 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 06:59:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbXLYL7s
+	id S1752825AbXLYMO1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 07:14:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbXLYMOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 06:59:48 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43373 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbXLYL7s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 06:59:48 -0500
-Date: Tue, 25 Dec 2007 11:59:46 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: marcin.slusarz@gmail.com
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 3/6] udf: convert UDF_SB_ALLOC_PARTMAPS macro to
-	udf_sb_alloc_partition_maps function
-Message-ID: <20071225115946.GB8296@infradead.org>
-References: <1198455022-27674-1-git-send-email-marcin.slusarz@gmail.com> <1198455022-27674-4-git-send-email-marcin.slusarz@gmail.com>
+	Tue, 25 Dec 2007 07:14:18 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36407 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750891AbXLYMOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Dec 2007 07:14:18 -0500
+Date: Tue, 25 Dec 2007 13:12:31 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4
+	suspend-to-RAM
+Message-ID: <20071225121231.GA31662@elf.ucw.cz>
+References: <200712231419.40207.carlos@strangeworlds.co.uk> <200712231730.34935.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1198455022-27674-4-git-send-email-marcin.slusarz@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <200712231730.34935.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 24, 2007 at 01:10:19AM +0100, marcin.slusarz@gmail.com wrote:
-> @@ -53,6 +53,7 @@
->  #include <linux/vfs.h>
->  #include <linux/vmalloc.h>
->  #include <asm/byteorder.h>
-> +#include <linux/errno.h>
+Hi!
 
-linux/*.h always before asm/*.h
+> On Sunday, 23 of December 2007, Carlos Corbacho wrote:
+> > Fix suspend-to-RAM on nForce 4 (CK804) boards by increasing
+> > PCIBIOS_MIN_IO.
+> > 
+> > Fixes kernel bugzilla #9528
+> > 
+> > Problem:
+> > 
+> > Linus' patch (52ade9b3b97fd3bea42842a056fe0786c28d0555) to re-order
+> > suspend (and fix fall out from Rafael's earlier suspend reordering work)
+> > broke suspend-to-RAM on nForce 4 (CK804) boards.
+> > 
+> > Why:
+> > 
+> > After debugging _PTS() in the DSDT, it turns out these nVidia boards are
+> > trying to write to an IO port > 0x1000 (0x142E) during suspend. Before the
+> > re-ordering, we got away with this.
+> > 
+> > After the afore mentioned commit, we started hitting the PCIBIOS_MIN_IO
+> > limit and suspend then broke on these machines (the machine simply hangs
+> > when it reaches the 0x142E IO port write during suspend-to-RAM).
+> > 
+> > There was some previous work in the PCIBIOS_MIN_IO area over two years ago
+> > (71db63acff69618b3d9d3114bd061938150e146b) which bumped this to 0x4000,
+> > but this was reverted (2ba84684e8cf6f980e4e95a2300f53a505eb794e) after
+> > causing new and entirely different problems on another nForce board.
+> > 
+> > 0x1500 has been picked here as a nice, round and more conservative value
+> > than 0x4000, and which covers 0x142E.
+> 
+> The patch is fine by me, so if anyone has objections, please speak up.
 
-> +static int __must_check udf_sb_alloc_partition_maps(struct super_block *sb, __u32 count)
+Just.. I have been running with very similar patch for few years... it
+fixes few prototype machines I have here.
 
-I think __must_check is primarily for public APIs.  But if it really
-helps you here I won't complain.
 
-Also please use u32 over __u32 (dito for the other similar types)
+> > diff --git a/include/asm-x86/pci.h b/include/asm-x86/pci.h
+> > index e883619..03cb123 100644
+> > --- a/include/asm-x86/pci.h
+> > +++ b/include/asm-x86/pci.h
+> > @@ -46,7 +46,7 @@ extern unsigned int pcibios_assign_all_busses(void);
+> >  #define pcibios_scan_all_fns(a, b)	0
+> >  
+> >  extern unsigned long pci_mem_start;
+> > -#define PCIBIOS_MIN_IO		0x1000
+> > +#define PCIBIOS_MIN_IO		0x1500
+> >  #define PCIBIOS_MIN_MEM		(pci_mem_start)
+> >  
+> >  #define PCIBIOS_MIN_CARDBUS_IO	0x4000
 
-> +{
-> +	struct udf_sb_info *sbi = UDF_SB(sb);
-> +	sbi->s_partmaps = kzalloc(sizeof(struct udf_part_map) * count, GFP_KERNEL);
-> +	if (sbi->s_partmaps != NULL)
-> +		sbi->s_partitions = count;
-> +	else {
-> +		sbi->s_partitions = 0;
-> +		udf_error(sb, __FUNCTION__, "Unable to allocate space for %d partition maps", count);
-> +	}
-> +	return sbi->s_partmaps != NULL ? 0 : -ENOMEM;
-> +}
 
-But please don't introduce new overlong lines in entirely new functions.
-
-Also the code look rather odd, I'd rather write it as:
-
-static int udf_sb_alloc_partition_maps(struct super_block *sb, u32 count)
-{
-	struct udf_sb_info *sbi = UDF_SB(sb);
-
-	sbi->s_partmaps = kcalloc(count, sizeof(struct udf_part_map),
-				  GFP_KERNEL);
-	if (!sbi->s_partmaps) {
-		udf_error(sb, __FUNCTION__,
-			  "Unable to allocate space for %d partition maps",
-			  count);
-		sbi->s_partitions = 0;
-		return -ENOMEM;
-	}
-
-	sbi->s_partitions = count;
-	return 0;
-}
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
