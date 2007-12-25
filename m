@@ -1,184 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbXLYPLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbXLYPyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbXLYPLs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 10:11:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbXLYPLj
+	id S1752610AbXLYPyY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 10:54:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbXLYPyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 10:11:39 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:61328 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751031AbXLYPLi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 10:11:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=MpnqEPO/6s9cZPCt1/L8N4lXxbMaa31wCcBb1D1/mKPwfQddEMTxCHAnedYMrHWvsjTs0QM2QWn/Nt8n+fJ/im8ufPtiJvygkjn0HfyCj0Z+XbOJHPHYd/K4nlx5XzvRO+avvIytfB9yxvHb/U8FlEpO9gdYrUp/eETx29HlTek=
-Date: Tue, 25 Dec 2007 16:13:19 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH 3/6] udf: convert UDF_SB_ALLOC_PARTMAPS macro to
-	udf_sb_alloc_partition_maps function
-Message-ID: <20071225151314.GE24373@joi>
-References: <1198455022-27674-1-git-send-email-marcin.slusarz@gmail.com> <1198455022-27674-4-git-send-email-marcin.slusarz@gmail.com> <20071225115946.GB8296@infradead.org>
+	Tue, 25 Dec 2007 10:54:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35125 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751546AbXLYPyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Dec 2007 10:54:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Suspend code ordering (again) (was: Re: x86: Increase PCIBIOS_MIN_IO to 0x1500 to fix nForce 4 suspend-to-RAM)
+Date: Tue, 25 Dec 2007 17:13:11 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       "H. Peter Anvin" <hpa@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+References: <200712231419.40207.carlos@strangeworlds.co.uk> <200712241444.24031.rjw@sisk.pl> <alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071225115946.GB8296@infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200712251713.13223.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 25, 2007 at 11:59:46AM +0000, Christoph Hellwig wrote:
-> On Mon, Dec 24, 2007 at 01:10:19AM +0100, marcin.slusarz@gmail.com wrote:
-> > @@ -53,6 +53,7 @@
-> >  #include <linux/vfs.h>
-> >  #include <linux/vmalloc.h>
-> >  #include <asm/byteorder.h>
-> > +#include <linux/errno.h>
->
-> linux/*.h always before asm/*.h
->
-> > +static int __must_check udf_sb_alloc_partition_maps(struct super_block *sb, __u32 count)
->
-> I think __must_check is primarily for public APIs.  But if it really
-> helps you here I won't complain.
->
-> Also please use u32 over __u32 (dito for the other similar types)
->
-> > +{
-> > +	struct udf_sb_info *sbi = UDF_SB(sb);
-> > +	sbi->s_partmaps = kzalloc(sizeof(struct udf_part_map) * count, GFP_KERNEL);
-> > +	if (sbi->s_partmaps != NULL)
-> > +		sbi->s_partitions = count;
-> > +	else {
-> > +		sbi->s_partitions = 0;
-> > +		udf_error(sb, __FUNCTION__, "Unable to allocate space for %d partition maps", count);
-> > +	}
-> > +	return sbi->s_partmaps != NULL ? 0 : -ENOMEM;
-> > +}
->
-> But please don't introduce new overlong lines in entirely new functions.
->
-> Also the code look rather odd, I'd rather write it as:
->
-> static int udf_sb_alloc_partition_maps(struct super_block *sb, u32 count)
-> {
-> 	struct udf_sb_info *sbi = UDF_SB(sb);
->
-> 	sbi->s_partmaps = kcalloc(count, sizeof(struct udf_part_map),
-> 				  GFP_KERNEL);
-> 	if (!sbi->s_partmaps) {
-> 		udf_error(sb, __FUNCTION__,
-> 			  "Unable to allocate space for %d partition maps",
-> 			  count);
-> 		sbi->s_partitions = 0;
-> 		return -ENOMEM;
-> 	}
->
-> 	sbi->s_partitions = count;
-> 	return 0;
-> }
+On Monday, 24 of December 2007, Linus Torvalds wrote:
+> 
+> On Mon, 24 Dec 2007, Rafael J. Wysocki wrote:
+> > 
+> > Well, having considered that for a longer while, I think the AML code is
+> > referring to a device that we have suspended already, and since it's in a low
+> > power state, it just can't handle the reference.
+> > 
+> > If that is the case, we'll have to find the device (that should be possible
+> > using some code instrumentation) and move the suspending of it into the late
+> > stage.
+> 
+> Yes. 
+> 
+> In general, I'm personally of the opinion that drivers should *not* 
+> actually go into D3 at all in the regular "->suspend()" phase. It should 
+> be done in ->suspend_late. The early suspend is for saving state and 
+> returning errors.
+> 
+> Sadly, we've made it a bit too inconvenient to actually do that. Almost 
+> all drivers only do the "->suspend" thing, and the default PCI behaviour 
+> doesn't help us in any way either.
+> 
+> Anyway, I wonder if a patch like this could make it easier for driver 
+> writers to handle things. It basically does:
+> 
+>  - if you don't have a regular "suspend()" function, we'll just save state 
+>    at suspend time.
+> 
+>  - if you don't have a "suspend_late()" function, we'll look at the 
+>    current state, and if it's still in PCI_D0, we'll suspend to PCI_D3hot 
+>    if it's a regular PCI device (ie not a bridge or something else odd).
+> 
+>  - then, at resume time, by default we don't do anything in the early 
+>    resume, but in the late resume we'll undo everything, of course.
+> 
+> Anyway, with this, most drivers could just remove the 
+> "pci_set_power_state()" call *entirely*, and let the default 
+> suspend_late action power the device down. But if you want to override 
+> that default action, you can either:
+> 
+>  - set the power state in your own ->suspend() routine (either by using 
+>    pci_set_power_state(), or by just explicitly setting the state to 
+>    unknown with "dev->current_state =  PCI_UNKNOWN"
+> 
+>  - have a "late_suspend()" action, which obviously will override the 
+>    default action entirely.
+> 
+> Hmm?
 
-Ok, updated batch below:
---
-- convert UDF_SB_ALLOC_PARTMAPS macro to udf_sb_alloc_partition_maps function
-- convert kmalloc + memset to kcalloc
-- check if kcalloc failed (partially)
+Well, as Carlos correctly noticed, the problem is related to the change in
+the ACPI specification between versions 1.0x and 2.0.  Namely, while ACPI
+2.0 and later wants us to put devices into low power states before calling
+_PTS, ACPI 1.0x wants us to do that after calling _PTS.  Since we're following
+the 2.0 and later specifications right now, we're not doing the right thing for
+the (strictly) ACPI 1.0x-compliant systems.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-CC: Ben Fennema <bfennema@falcon.csc.calpoly.edu>
-CC: Jan Kara <jack@suse.cz>
-CC: Christoph Hellwig <hch@infradead.org>
----
- fs/udf/super.c  |   25 +++++++++++++++++++++++--
- fs/udf/udf_sb.h |   13 -------------
- 2 files changed, 23 insertions(+), 15 deletions(-)
+We ought to be able to fix things on the high level, by calling _PTS earlier on
+systems that claim to be ACPI 1.0x-compliant.  That will require us to modify
+the generic susped code quite a bit and will need to be tested for some time.
 
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index 246868c..3f5b632 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -52,6 +52,7 @@
- #include <linux/buffer_head.h>
- #include <linux/vfs.h>
- #include <linux/vmalloc.h>
-+#include <linux/errno.h>
- #include <asm/byteorder.h>
+I'm going to prepare patches to implement this idea targeted for the 2.6.25
+time frame.
 
- #include <linux/udf_fs.h>
-@@ -226,6 +227,24 @@ static void __exit exit_udf_fs(void)
- module_init(init_udf_fs)
- module_exit(exit_udf_fs)
-
-+static int udf_sb_alloc_partition_maps(struct super_block *sb, u32 count)
-+{
-+	struct udf_sb_info *sbi = UDF_SB(sb);
-+
-+	sbi->s_partmaps = kcalloc(count, sizeof(struct udf_part_map),
-+				  GFP_KERNEL);
-+	if (!sbi->s_partmaps) {
-+		udf_error(sb, __FUNCTION__,
-+			  "Unable to allocate space for %d partition maps",
-+			  count);
-+		sbi->s_partitions = 0;
-+		return -ENOMEM;
-+	}
-+
-+	sbi->s_partitions = count;
-+	return 0;
-+}
-+
- /*
-  * udf_parse_options
-  *
-@@ -1037,7 +1056,9 @@ static int udf_load_logicalvol(struct super_block *sb, struct buffer_head *bh,
-
- 	lvd = (struct logicalVolDesc *)bh->b_data;
-
--	UDF_SB_ALLOC_PARTMAPS(sb, le32_to_cpu(lvd->numPartitionMaps));
-+	i = udf_sb_alloc_partition_maps(sb, le32_to_cpu(lvd->numPartitionMaps));
-+	if (i != 0)
-+		return i;
-
- 	for (i = 0, offset = 0;
- 	     i < sbi->s_partitions && offset < le32_to_cpu(lvd->mapTableLength);
-@@ -1242,7 +1263,7 @@ static int udf_process_sequence(struct super_block *sb, long block,
- 			if (i == VDS_POS_PRIMARY_VOL_DESC) {
- 				udf_load_pvoldesc(sb, bh);
- 			} else if (i == VDS_POS_LOGICAL_VOL_DESC) {
--				udf_load_logicalvol(sb, bh, fileset);
-+				udf_load_logicalvol(sb, bh, fileset); /* TODO: check return value */
- 			} else if (i == VDS_POS_PARTITION_DESC) {
- 				struct buffer_head *bh2 = NULL;
- 				if (udf_load_partdesc(sb, bh)) {
-diff --git a/fs/udf/udf_sb.h b/fs/udf/udf_sb.h
-index 92e6d75..4d3bd77 100644
---- a/fs/udf/udf_sb.h
-+++ b/fs/udf/udf_sb.h
-@@ -43,19 +43,6 @@ static inline struct udf_sb_info *UDF_SB(struct super_block *sb)
-
- struct logicalVolIntegrityDescImpUse *udf_sb_lvidiu(struct udf_sb_info *sbi);
-
--#define UDF_SB_ALLOC_PARTMAPS(X,Y)\
--{\
--	struct udf_sb_info *sbi = UDF_SB(X);\
--	sbi->s_partmaps = kmalloc(sizeof(struct udf_part_map) * Y, GFP_KERNEL);\
--	if (sbi->s_partmaps != NULL) {\
--		sbi->s_partitions = Y;\
--		memset(sbi->s_partmaps, 0x00, sizeof(struct udf_part_map) * Y);\
--	} else {\
--		sbi->s_partitions = 0;\
--		udf_error(X, __FUNCTION__, "Unable to allocate space for %d partition maps", Y);\
--	}\
--}
--
- #define UDF_SB_ALLOC_BITMAP(X,Y,Z)\
- {\
- 	struct udf_sb_info *sbi = UDF_SB(X);\
---
-1.5.3.4
-
+Greetings,
+Rafael
