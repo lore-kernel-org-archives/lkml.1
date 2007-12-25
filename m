@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751434AbXLYNXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbXLYNfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751434AbXLYNXB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 08:23:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbXLYNWv
+	id S1753193AbXLYNfx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 08:35:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbXLYNfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 08:22:51 -0500
-Received: from an-out-0708.google.com ([209.85.132.249]:10133 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751488AbXLYNWu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 08:22:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
-        b=VC76voXvIahD9pdoTYCMDAPubJxY5N1HckeHxmbaK+hud0oVK9FYs8rdDZhoMTqKn7aISSvFKBxYkDKbI61daADpUF8tCWTRicBN7xVP0XGzSFMov/wqBJ2tDN3QvjRBKQQcaj6c2ogFK46NQK7vID1Y5GxwvHo76Az5/N7cLL4=
-Date: Tue, 25 Dec 2007 22:21:26 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       Carsten Otte <cotte@de.ibm.com>
-Subject: [PATCH] xip: fix get_zeroed_page with __GFP_HIGHMEM
-Message-ID: <20071225132126.GA4800@APFDCB5C>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	linux-fsdevel@vger.kernel.org, Carsten Otte <cotte@de.ibm.com>
+	Tue, 25 Dec 2007 08:35:44 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:47549 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750982AbXLYNfo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Dec 2007 08:35:44 -0500
+Date: Tue, 25 Dec 2007 14:35:40 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: "raki john" <raki4652@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: relation between mmc_request, mmc_data and mmc_command
+Message-ID: <20071225143540.1dd5aca4@poseidon.drzeus.cx>
+In-Reply-To: <d2a348dd0712232325s7da2bfdfk92b0fd049adcb3df@mail.gmail.com>
+References: <d2a348dd0712232325s7da2bfdfk92b0fd049adcb3df@mail.gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-24431-1198589742-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The use of get_zeroed_page() with __GFP_HIGHMEM is invalid.
-Use alloc_page() with __GFP_ZERO instead of invalid get_zeroed_page().
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-(This patch is only compile tested)
+--=_hera.drzeus.cx-24431-1198589742-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Cc: Carsten Otte <cotte@de.ibm.com>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+On Sun, 23 Dec 2007 23:25:26 -0800
+"raki john" <raki4652@gmail.com> wrote:
 
----
- mm/filemap_xip.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+>=20
+> Does  mmc_requeest->stop is equal  to mmc_request->data->stop ?
+>=20
+> Does  mmc_request   is equal  to mmc_request->data->mrq ?
+>=20
+> Does mmc_request->data   is equal  to   mmc_request->cmd->data ?
+>=20
+> Does mmc_request   is equal  to mmc_request->cmd->mrq  ?
+>=20
 
-Index: 2.6-git/mm/filemap_xip.c
-===================================================================
---- 2.6-git.orig/mm/filemap_xip.c
-+++ 2.6-git/mm/filemap_xip.c
-@@ -25,14 +25,15 @@ static struct page *__xip_sparse_page;
- static struct page *xip_sparse_page(void)
- {
- 	if (!__xip_sparse_page) {
--		unsigned long zeroes = get_zeroed_page(GFP_HIGHUSER);
--		if (zeroes) {
-+		struct page *page = alloc_page(GFP_HIGHUSER | __GFP_ZERO);
-+
-+		if (page) {
- 			static DEFINE_SPINLOCK(xip_alloc_lock);
- 			spin_lock(&xip_alloc_lock);
- 			if (!__xip_sparse_page)
--				__xip_sparse_page = virt_to_page(zeroes);
-+				__xip_sparse_page = page;
- 			else
--				free_page(zeroes);
-+				__free_page(page);
- 			spin_unlock(&xip_alloc_lock);
- 		}
- 	}
+Yes on all accounts. I don't know the reason for this extreme redundancy. I=
+t was there long before I got involved.
+
+>=20
+> I think Stop command which is part of mmc_request is used for sending stop
+> command after Multi Block write. is this correct. If stop command fails(C=
+RC
+> fail, timeout), does this mean card  write failed.
+>=20
+
+It is correct that it is used for multi block writes. But also other open e=
+nded transfers.
+
+If the stop command fails, then the card will be in an unknown state. The w=
+rite should have been completed though.
+
+Rgds
+Pierre
+
+--=_hera.drzeus.cx-24431-1198589742-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+
+iEYEARECAAYFAkdxBywACgkQ7b8eESbyJLhXMwCfWmSNENQHSANPh737UpdIafO2
+pJ8An3sUgJa4v4bYwpscehbhRc4K4ehg
+=wnIn
+-----END PGP SIGNATURE-----
+
+--=_hera.drzeus.cx-24431-1198589742-0001-2--
