@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbXLZUtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbXLZUva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753030AbXLZUtw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 15:49:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbXLZUtp
+	id S1753239AbXLZUva (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 15:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXLZUvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 15:49:45 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38386 "EHLO amd.ucw.cz"
+	Wed, 26 Dec 2007 15:51:22 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38393 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751638AbXLZUtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 15:49:45 -0500
-Date: Wed, 26 Dec 2007 21:49:25 +0100
+	id S1751611AbXLZUvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 15:51:21 -0500
+Date: Wed, 26 Dec 2007 21:51:03 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>, security@kernel.org
-Cc: "David P. Reed" <dpreed@reed.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [PATCH] x86_64: fix problems due to use of "outb" to port 80
-	on some AMD64x2 laptops, etc.
-Message-ID: <20071226204925.GF8094@elf.ucw.cz>
-References: <1184274754.12353.254.camel@chaos> <4761F193.7090400@reed.com> <20071214131502.GA14359@elte.hu> <20071215230036.GF2434@elf.ucw.cz> <47645D66.4020506@zytor.com> <20071216094029.GD27280@elte.hu> <47659BF3.4040100@zytor.com> <4765AF78.60307@reed.com> <20071216232353.GC5692@elf.ucw.cz> <4765B622.8030507@zytor.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Oliver Neukum <oliver@neukum.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC] sleepy linux
+Message-ID: <20071226205103.GG8094@elf.ucw.cz>
+References: <20071225230731.GA29030@elf.ucw.cz> <4772A3FB.8080108@zytor.com> <200712262108.35643.oliver@neukum.org> <4772BD0C.3040609@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4765B622.8030507@zytor.com>
+In-Reply-To: <4772BD0C.3040609@zytor.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2007-12-16 15:34:58, H. Peter Anvin wrote:
-> Pavel Machek wrote:
->> Hi!
->>> The process of safely making delicate changes here is beyond my 
->>> responsibility as just a user - believe me, I'm not suggesting that a 
->>> risky fix be put in .24.   I can patch my own kernels, and I can even 
->>> share an unofficial patch with others for now, or suggest that Fedora and 
->>> Ubuntu add it to their downstream.
->>>
->>> May I make a small suggestion, though.   If the decision is a DMI-keyed 
->>> switch from out-80 to udelay(2)  gets put in, perhaps there should also 
->>> be a way for people to test their own configuration for the underlying 
->>> problem made available as a script.   Though it is a "hack", all you need 
->>> to freeze a problem system is to run a loop doing about 1000 "cat 
->>> /dev/nvram > /dev/null"  commands.  If that leads to a freeze, one might 
->>> ask to have the motherboard added to the DMI-key list.
->> Can you freeze it by catting /dev/rtc, too? That may be significant,
->> because that is readable for group audio (at least on some
->> systems)... which would smell like "small security hole" to me.
+On Wed 2007-12-26 12:43:56, H. Peter Anvin wrote:
+> Oliver Neukum wrote:
+>> Am Mittwoch, 26. Dezember 2007 19:56:59 schrieb H. Peter Anvin:
+>>>> 3) Network card that is either down
+>>>>    or can wake up system on any packet (and not loose too many packets)
+>>>>
+>>> This is the big crux I see.  You're going to constantly wake up the 
+>>> machine due to broadcast packets, and spend a lot of power just going in 
+>>> and out of S3.
+>> How many machines care a lot about saving power while they are connected
+>> to an ethernet? Wlan might be more of a problem.
 >
-> Heck, on my system (Fedora 7), it's mode 644...
+> A lot of them should.  An inordinate amount of machines sit there burning 
+> power for no reason.  You can argue that S3 isn't needed -- that nohz + 
+> C3/C4 + turning off the screen would be enough, and that might be
+> + legit.  
 
-Ok, time to CC security team, I'd say.
+NOHZ + C4 + turn off screen + turn off disk + turn off SATA is still
+~8W on thinkpad x60.
 
-Problem is, that some AMD64x2 nVidia laptops crash on port 0x80
-access... which is easily user-triggerable by using /dev/rtc. If it is
-644 on Fedora, I guess we have a problem.
+S3 is ~1W.
 
-Otoh, it is "only" a denial of service, and it can probably be
-attributed to "buggy hardware". Is that still relevant for security team?
+That's quite significant difference.
 
-									Pavel
+(But yes, connected-to-ethernet is not most important use scenario.)
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
