@@ -1,129 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752251AbXLZDJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbXLZDKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752251AbXLZDJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 22:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbXLZDJJ
+	id S1752420AbXLZDKd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 22:10:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbXLZDKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 22:09:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:7194 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbXLZDJI (ORCPT
+	Tue, 25 Dec 2007 22:10:25 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:43947 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751579AbXLZDKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 22:09:08 -0500
+	Tue, 25 Dec 2007 22:10:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=PIqly3Z3JCYKdoXEF4V2AENBsDPbp+uMLvTXLfI3o5pdf1aHLT3ip3HkAGS9g9HQmd+jI5+Q2Jago3DYCTotlfdzEVqaPNEIjB9ibyTWTmcVsyqoMN0hsd580xC6g3k7V3xbeISCn2YM+BRUP5RYa9x3kuTqENcM+t/j4N9ADZ0=
-Date: Wed, 26 Dec 2007 11:13:00 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: akpm@linux-foundation.org
-Cc: greg@kroah.com, marcel@holtmann.org, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net
-Subject: Re: [BUG][PATCH -mm] bluetooth : rfcomm add get/put device in
-	del_conn
-Message-ID: <20071226031300.GA3007@darkstar.te-china.tietoenator.com>
-References: <20071225100321.GA2791@darkstar.te-china.tietoenator.com> <a8e1da0712250207q2da4ce9bwc6ee70dfff240f9f@mail.gmail.com>
+        h=from:to:cc:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:x-mimeole:thread-index;
+        b=yB69RWmjTYm0y9P8H6jkOKWua9AX3Y+vNbMd5XnDneKT/O9/Noy3EjzF4S4AjSlz4Dp1zaaGH7sbnzXu7KDNLEgg8fs75mEL+wLKbms6EhMWEd9dL7lc97IfCx0ZcCs+N7gZbVeC6QoOcaYkDVZZBC6/dnZTKHqD5bUe6Tu7+/I=
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: <joel.becker@oracle.com>
+Subject: [PATCH 2/2] configfs: file.c fix possible recursive locking
+Date: Wed, 26 Dec 2007 12:09:57 +0900
+Message-ID: <003001c8476c$ccbce270$47e7a8c0@jason>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0712250207q2da4ce9bwc6ee70dfff240f9f@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Thread-Index: AchHbMp5otdCeRebS8mwsbCrj2uA/A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 25, 2007 at 06:07:24PM +0800, Dave Young wrote:
-> On Dec 25, 2007 6:03 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> > Due to 2.6.24-rc6-mm1 kernel changes (maybe kobject or driver core), If I exec:
-> >
-> > rfcomm connect 0 1
-> >
-> > kernel will oops after connect timeout.
-> >
-> > hand copy some oops text:
-> >
-> > EIP is at driver_sysfs_remove+0x1a/0x40
-> > Call Trace:
-> >  show_trace_log_lvl+0x1a/0x30
-> >  show_stack_log_lvl+0x9a/0xc0
-> >  show_registers+0xc7/0x270
-> >  die+0x129/0x240
-> >  do_page_fault+0x3a1/0x670
-> >  error_code+0x72/0x78
-> >  __device_release_driver+0x1e/0xa0
-> >  device_release_driver+0x30/0x50
-> >  bus_remove_device+0x63/0x90
-> >  device_del+0x55/0x190
-> >  del_conn+0xb/0x10 [bluetooth]
-> >  run_workqueue+0xe1/0x210
-> >  worker_thread+0x99/0xf0
-> >  kthread+0x5c/0xa0
-> >  kernel_thread_helper+0x7/0x18
-> >
-> > (The remote bluetooth device is a mobile phone which is power off)
-> >
-> > The reason is that in bus_remobe_dev, the klist_del function will release the device, so just add a get/put pair around the device_del in del_conn.
-> >
-> > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-> >
-> > ---
-> > net/bluetooth/hci_sysfs.c |    2 ++
-> > 1 file changed, 2 insertions(+)
-> >
-> > diff -upr linux/net/bluetooth/hci_sysfs.c linux.new/net/bluetooth/hci_sysfs.c
-> > --- linux/net/bluetooth/hci_sysfs.c     2007-12-25 17:45:09.000000000 +0800
-> > +++ linux.new/net/bluetooth/hci_sysfs.c 2007-12-25 17:45:51.000000000 +0800
-> > @@ -319,7 +319,9 @@ void hci_conn_add_sysfs(struct hci_conn
-> >  static void del_conn(struct work_struct *work)
-> >  {
-> >         struct hci_conn *conn = container_of(work, struct hci_conn, work);
-> > +       get_device(&conn->dev);
-> >         device_del(&conn->dev);
-> > +       put_device(&conn->dev);
-> >  }
-> >
-> >  void hci_conn_del_sysfs(struct hci_conn *conn)
-> >
-> 
-> Hi greg,
-> 
-> BTW, Is it a possible bug of driver core or kobject ?
-> 
+configfs_register_subsystem() with default_groups triggers recursive locking.
+it seems that mutex_lock_nested is needed.
 
-In device_del 
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.24-rc6 #145
+---------------------------------------------
+swapper/1 is trying to acquire lock:
+ (&sb->s_type->i_mutex_key#3){--..}, at: [<c40c9a9e>] configfs_add_file+0x2e/0x70
 
-if(parent)
-    klist_del()  will drop the kref of device
+but task is already holding lock:
+ (&sb->s_type->i_mutex_key#3){--..}, at: [<c40ca985>] configfs_register_subsystem+0x55/0x130
 
-and then in bus_remove_device
-    klist_del()  will drop it again, so the device would be released.
+other info that might help us debug this:
+1 lock held by swapper/1:
+ #0:  (&sb->s_type->i_mutex_key#3){--..}, at: [<c40ca985>] configfs_register_subsystem+0x55/0x130
 
-then the following works will oops.
+stack backtrace:
+Pid: 1, comm: swapper Not tainted 2.6.24-rc6 #145
+ [<c40053ba>] show_trace_log_lvl+0x1a/0x30
+ [<c4005e82>] show_trace+0x12/0x20
+ [<c400687e>] dump_stack+0x6e/0x80
+ [<c404ec72>] __lock_acquire+0xe62/0x1120
+ [<c404efb2>] lock_acquire+0x82/0xa0
+ [<c43fda88>] mutex_lock_nested+0x98/0x2e0
+ [<c40c9a9e>] configfs_add_file+0x2e/0x70
+ [<c40c9b0c>] configfs_create_file+0x2c/0x40
+ [<c40ca639>] configfs_attach_item+0x139/0x220
+ [<c40ca734>] configfs_attach_group+0x14/0x140
+ [<c40ca7e9>] configfs_attach_group+0xc9/0x140
+ [<c40ca9f6>] configfs_register_subsystem+0xc6/0x130
+ [<c45c8186>] init_netconsole+0x2b6/0x300
+ [<c45a75f2>] kernel_init+0x142/0x320
+ [<c4004fb3>] kernel_thread_helper+0x7/0x14
+ =======================
 
-So might my patch is a wrong fix. how about the below one:
-
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
-
+Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
 ---
-drivers/base/core.c |    2 ++
-1 file changed, 2 insertions(+)
+ fs/configfs/file.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff -upr linux/drivers/base/core.c linux.new/drivers/base/core.c
---- linux/drivers/base/core.c	2007-12-26 11:00:49.000000000 +0800
-+++ linux.new/drivers/base/core.c	2007-12-26 11:01:18.000000000 +0800
-@@ -926,6 +926,7 @@ void device_del(struct device * dev)
- 	struct device * parent = dev->parent;
- 	struct class_interface *class_intf;
+diff --git a/fs/configfs/file.c b/fs/configfs/file.c
+index a3658f9..397cb50 100644
+--- a/fs/configfs/file.c
++++ b/fs/configfs/file.c
+@@ -320,7 +320,7 @@ int configfs_add_file(struct dentry * dir, const struct configfs_attribute * att
+ 	umode_t mode = (attr->ca_mode & S_IALLUGO) | S_IFREG;
+ 	int error = 0;
  
-+	dev = get_device(dev);
- 	if (parent)
- 		klist_del(&dev->knode_parent);
- 	if (MAJOR(dev->devt))
-@@ -966,6 +967,7 @@ void device_del(struct device * dev)
- 	cleanup_device_parent(dev);
- 	kobject_del(&dev->kobj);
- 	put_device(parent);
-+	put_device(dev);
- }
+-	mutex_lock(&dir->d_inode->i_mutex);
++	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_NORMAL);
+ 	error = configfs_make_dirent(parent_sd, NULL, (void *) attr, mode, type);
+ 	mutex_unlock(&dir->d_inode->i_mutex);
  
- /**
+---
+
+Thanks.
+Joonwoo
+
