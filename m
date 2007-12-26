@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbXLZLWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbXLZLWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbXLZLWT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 06:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbXLZLHH
+	id S1755384AbXLZLWf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 06:22:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbXLZLHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 06:07:07 -0500
-Received: from il.qumranet.com ([82.166.9.18]:50471 "EHLO il.qumranet.com"
+	Wed, 26 Dec 2007 06:07:08 -0500
+Received: from il.qumranet.com ([82.166.9.18]:50490 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752113AbXLZLGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 06:06:10 -0500
+	id S1752193AbXLZLGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 06:06:11 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Cc: Zhang Xiantao <xiantao.zhang@intel.com>
-Subject: [PATCH 48/55] KVM: Portability: Move kvm_x86_ops to x86.c
-Date: Wed, 26 Dec 2007 13:05:53 +0200
-Message-Id: <1198667160-22953-49-git-send-email-avi@qumranet.com>
+Cc: Sheng Yang <sheng.yang@intel.com>
+Subject: [PATCH 52/55] KVM: x86 emulator: modify 'lods', and 'stos' not to depend on CR2
+Date: Wed, 26 Dec 2007 13:05:57 +0200
+Message-Id: <1198667160-22953-53-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1198667160-22953-1-git-send-email-avi@qumranet.com>
 References: <1198667160-22953-1-git-send-email-avi@qumranet.com>
@@ -22,55 +22,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhang Xiantao <xiantao.zhang@intel.com>
+From: Sheng Yang <sheng.yang@intel.com>
 
-Signed-off-by: Zhang Xiantao <xiantao.zhang@intel.com>
-Acked-by: Carsten Otte <cotte@de.ibm.com>
+The current 'lods' and 'stos' is depending on incoming CR2 rather than decode
+memory address from registers.
+
+Signed-off-by: Sheng Yang <sheng.yang@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm_main.c |    1 -
- drivers/kvm/x86.c      |    2 ++
- drivers/kvm/x86.h      |    2 ++
- 3 files changed, 4 insertions(+), 1 deletions(-)
+ drivers/kvm/x86_emulate.c |   14 ++++++++++----
+ 1 files changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 31dafa3..7808189 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -55,7 +55,6 @@ static LIST_HEAD(vm_list);
- 
- static cpumask_t cpus_hardware_enabled;
- 
--struct kvm_x86_ops *kvm_x86_ops;
- struct kmem_cache *kvm_vcpu_cache;
- EXPORT_SYMBOL_GPL(kvm_vcpu_cache);
- 
-diff --git a/drivers/kvm/x86.c b/drivers/kvm/x86.c
-index 4282a0f..2edc53e 100644
---- a/drivers/kvm/x86.c
-+++ b/drivers/kvm/x86.c
-@@ -44,6 +44,8 @@
- 
- #define STAT_OFFSET(x) offsetof(struct kvm_vcpu, stat.x)
- 
-+struct kvm_x86_ops *kvm_x86_ops;
-+
- struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ "pf_fixed", STAT_OFFSET(pf_fixed) },
- 	{ "pf_guest", STAT_OFFSET(pf_guest) },
-diff --git a/drivers/kvm/x86.h b/drivers/kvm/x86.h
-index 663b822..ec32c26 100644
---- a/drivers/kvm/x86.h
-+++ b/drivers/kvm/x86.h
-@@ -85,6 +85,8 @@ struct kvm_vcpu {
- 	struct x86_emulate_ctxt emulate_ctxt;
- };
- 
-+extern struct kvm_x86_ops *kvm_x86_ops;
-+
- int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva, u32 error_code);
- 
- static inline void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
+diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
+index e697947..8e2162f 100644
+--- a/drivers/kvm/x86_emulate.c
++++ b/drivers/kvm/x86_emulate.c
+@@ -1528,7 +1528,9 @@ special_insn:
+ 	case 0xaa ... 0xab:	/* stos */
+ 		c->dst.type = OP_MEM;
+ 		c->dst.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
+-		c->dst.ptr = (unsigned long *)cr2;
++		c->dst.ptr = (unsigned long *)register_address(
++						   ctxt->es_base,
++						   c->regs[VCPU_REGS_RDI]);
+ 		c->dst.val = c->regs[VCPU_REGS_RAX];
+ 		register_address_increment(c->regs[VCPU_REGS_RDI],
+ 				       (ctxt->eflags & EFLG_DF) ? -c->dst.bytes
+@@ -1538,9 +1540,13 @@ special_insn:
+ 		c->dst.type = OP_REG;
+ 		c->dst.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
+ 		c->dst.ptr = (unsigned long *)&c->regs[VCPU_REGS_RAX];
+-		if ((rc = ops->read_emulated(cr2, &c->dst.val,
+-					     c->dst.bytes,
+-					     ctxt->vcpu)) != 0)
++		if ((rc = ops->read_emulated(register_address(
++				c->override_base ? *c->override_base :
++						   ctxt->ds_base,
++						 c->regs[VCPU_REGS_RSI]),
++						 &c->dst.val,
++						 c->dst.bytes,
++						 ctxt->vcpu)) != 0)
+ 			goto done;
+ 		register_address_increment(c->regs[VCPU_REGS_RSI],
+ 				       (ctxt->eflags & EFLG_DF) ? -c->dst.bytes
 -- 
 1.5.3.7
 
