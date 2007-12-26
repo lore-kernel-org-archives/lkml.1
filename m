@@ -1,279 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751537AbXLZDLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbXLZDeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751537AbXLZDLE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 22:11:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbXLZDKh
+	id S1752360AbXLZDeI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 22:34:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXLZDd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 22:10:37 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:43947 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbXLZDKf (ORCPT
+	Tue, 25 Dec 2007 22:33:56 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:1703 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751476AbXLZDdz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 22:10:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:x-mimeole:thread-index;
-        b=nf+WHtMY9l/p1jflDqoZJdo0wu3e0X/IjPdCzkj+0QQ6NjpqVofqAYfXy3Ab63dw0OJkVF+qzvoGRUigKeCXAn956X6ktE98ehn2WwKlQffuScxayVNWmlLHgC1N7tOvDDU7jtqGDc/vZ/SGNe898//cYJjfQB98rUfS3o9T0KE=
-From: "Joonwoo Park" <joonwpark81@gmail.com>
-To: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Cc: <satyam@infradead.org>, <mpm@selenic.com>
-Subject: [PATCH] netconsole: register cmdline netconsole configs to configfs
-Date: Wed, 26 Dec 2007 12:10:07 +0900
-Message-ID: <003201c8476c$d2e98ae0$47e7a8c0@jason>
+	Tue, 25 Dec 2007 22:33:55 -0500
+Date: Tue, 25 Dec 2007 22:33:53 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0/3] PM: Do not destroy/create devices while suspended
+In-Reply-To: <200712252021.14540.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0712252229050.25960-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Thread-Index: AchHbNAejJnFGq7/SOqudukYJgohSQ==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch intorduces cmdline netconsole configs to register to configfs with dynamic netconsole. Satyam Sharma who designed shiny
-dynamic reconfiguration for netconsole, mentioned about this issue already. (http://lkml.org/lkml/2007/7/29/360)
-But I think, without separately managing of two kind of netconsole target objects, it's possible by using config_group instead of
-config_item in the netconsole_target and default_groups feature of configfs.
+On Tue, 25 Dec 2007, Rafael J. Wysocki wrote:
 
-Patch was tested with configuration creation/destruction by kernel and module.
-And it makes possible to enable/disable, modify and review netconsole target configs from cmdline.
+> > > Do we need to worry about the possibility that when the system wakes up 
+> > > from hibernation, the set of usable CPUs might be smaller than it was 
+> > > beforehand?
+> > 
+> > This is possible in error conditions.
+> > 
+> > > Is any special handling needed for this, or is it already accounted for?
+> > 
+> > Hm, well.  The cleanest thing would be to allow the drivers to remove the
+> > device objects on CPU_UP_CANCELED_FROZEN, which means that we weren't able to
+> > bring the CPU up during a resume, but still that will deadlock with
+> > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch.
+> 
+> Hmm.  In principle, device objects may be destroyed on CPU_UP_CANCELED_FROZEN
+> without acquiring the device locks, since in fact we know these objects won't
+> be accessed concurrently at that time (the locks are already held by the PM
+> core, but the PM core is not going to actually access the devices before the
+> subsequent resume).
 
-Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
----
- drivers/net/netconsole.c |   91 ++++++++++++++++++++++++++++++++++++----------
- 1 files changed, 72 insertions(+), 19 deletions(-)
+How about delaying the CPU_UP_CANCELED_FROZEN announcements until it's 
+really safe to send them out?  That is, after all devices have been 
+resumed and the PM core no longer holds any of their locks.  (Should 
+this be before or after tasks leave the freezer? -- I'm not sure.)
 
-diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
-index 5ffbb88..04e4555 100644
---- a/drivers/net/netconsole.c
-+++ b/drivers/net/netconsole.c
-@@ -93,7 +93,7 @@ static DEFINE_SPINLOCK(target_list_lock);
- struct netconsole_target {
- 	struct list_head	list;
- #ifdef	CONFIG_NETCONSOLE_DYNAMIC
--	struct config_item	item;
-+	struct config_group	group;
- #endif
- 	int			enabled;
- 	struct netpoll		np;
-@@ -103,16 +103,49 @@ struct netconsole_target {
- 
- static struct configfs_subsystem netconsole_subsys;
- 
--static int __init dynamic_netconsole_init(void)
-+static void netconsole_target_put(struct netconsole_target *nt);
-+static struct config_item_type netconsole_target_type;
-+
-+static int __init dynamic_netconsole_init(int defaults)
- {
-+	int err;
-+	unsigned long flags;
- 	config_group_init(&netconsole_subsys.su_group);
-+
-+	if (defaults > 0) {
-+		struct list_head *pos;
-+		struct config_group **groups;
-+		int i = 0;
-+
-+		groups = kcalloc(defaults, sizeof(struct config_group *),
-+				GFP_KERNEL);
-+		if (!groups)
-+			return -ENOMEM;
-+
-+		spin_lock_irqsave(&target_list_lock, flags);
-+		list_for_each(pos, &target_list) {
-+			struct netconsole_target *nt;
-+			nt = list_entry(pos, struct netconsole_target, list);
-+			groups[i] = &nt->group;
-+			i++;
-+		}
-+		spin_unlock_irqrestore(&target_list_lock, flags);
-+		netconsole_subsys.su_group.default_groups = groups;
-+	}
-+
- 	mutex_init(&netconsole_subsys.su_mutex);
--	return configfs_register_subsystem(&netconsole_subsys);
-+
-+	err = configfs_register_subsystem(&netconsole_subsys);
-+	if (err)
-+		kfree(netconsole_subsys.su_group.default_groups);
-+
-+	return err;
- }
- 
- static void __exit dynamic_netconsole_exit(void)
- {
- 	configfs_unregister_subsystem(&netconsole_subsys);
-+	kfree(netconsole_subsys.su_group.default_groups);
- }
- 
- /*
-@@ -122,14 +155,23 @@ static void __exit dynamic_netconsole_exit(void)
-  */
- static void netconsole_target_get(struct netconsole_target *nt)
- {
--	if (config_item_name(&nt->item))
--		config_item_get(&nt->item);
-+	if (config_item_name(&nt->group.cg_item))
-+		config_item_get(&nt->group.cg_item);
- }
- 
- static void netconsole_target_put(struct netconsole_target *nt)
- {
--	if (config_item_name(&nt->item))
--		config_item_put(&nt->item);
-+	if (config_item_name(&nt->group.cg_item))
-+		config_item_put(&nt->group.cg_item);
-+}
-+
-+static void dynamic_netconsole_init_type_name(struct netconsole_target *nt,
-+						int index)
-+{
-+	char name[16];
-+	snprintf(name, sizeof(name), "netcon%d", index);
-+	config_item_init_type_name(&nt->group.cg_item, name,
-+				&netconsole_target_type);
- }
- 
- #else	/* !CONFIG_NETCONSOLE_DYNAMIC */
-@@ -155,6 +197,11 @@ static void netconsole_target_put(struct netconsole_target *nt)
- {
- }
- 
-+static void dynamic_netconsole_init_type_name(struct netconsole_target *nt,
-+						int index)
-+{
-+}
-+
- #endif	/* CONFIG_NETCONSOLE_DYNAMIC */
- 
- /* Allocate new target (from boot/module param) and setup netpoll for it */
-@@ -236,8 +283,8 @@ struct netconsole_target_attr {
- static struct netconsole_target *to_target(struct config_item *item)
- {
- 	return item ?
--		container_of(item, struct netconsole_target, item) :
--		NULL;
-+		container_of(to_config_group(item), struct netconsole_target,
-+			group) : NULL;
- }
- 
- /*
-@@ -368,7 +415,7 @@ static ssize_t store_dev_name(struct netconsole_target *nt,
- 	if (nt->enabled) {
- 		printk(KERN_ERR "netconsole: target (%s) is enabled, "
- 				"disable to update parameters\n",
--				config_item_name(&nt->item));
-+				config_item_name(&nt->group.cg_item));
- 		return -EINVAL;
- 	}
- 
-@@ -392,7 +439,7 @@ static ssize_t store_local_port(struct netconsole_target *nt,
- 	if (nt->enabled) {
- 		printk(KERN_ERR "netconsole: target (%s) is enabled, "
- 				"disable to update parameters\n",
--				config_item_name(&nt->item));
-+				config_item_name(&nt->group.cg_item));
- 		return -EINVAL;
- 	}
- 
-@@ -415,7 +462,7 @@ static ssize_t store_remote_port(struct netconsole_target *nt,
- 	if (nt->enabled) {
- 		printk(KERN_ERR "netconsole: target (%s) is enabled, "
- 				"disable to update parameters\n",
--				config_item_name(&nt->item));
-+				config_item_name(&nt->group.cg_item));
- 		return -EINVAL;
- 	}
- 
-@@ -435,7 +482,7 @@ static ssize_t store_local_ip(struct netconsole_target *nt,
- 	if (nt->enabled) {
- 		printk(KERN_ERR "netconsole: target (%s) is enabled, "
- 				"disable to update parameters\n",
--				config_item_name(&nt->item));
-+				config_item_name(&nt->group.cg_item));
- 		return -EINVAL;
- 	}
- 
-@@ -451,7 +498,7 @@ static ssize_t store_remote_ip(struct netconsole_target *nt,
- 	if (nt->enabled) {
- 		printk(KERN_ERR "netconsole: target (%s) is enabled, "
- 				"disable to update parameters\n",
--				config_item_name(&nt->item));
-+				config_item_name(&nt->group.cg_item));
- 		return -EINVAL;
- 	}
- 
-@@ -471,7 +518,7 @@ static ssize_t store_remote_mac(struct netconsole_target *nt,
- 	if (nt->enabled) {
- 		printk(KERN_ERR "netconsole: target (%s) is enabled, "
- 				"disable to update parameters\n",
--				config_item_name(&nt->item));
-+				config_item_name(&nt->group.cg_item));
- 		return -EINVAL;
- 	}
- 
-@@ -606,14 +653,15 @@ static struct config_item *make_netconsole_target(struct config_group *group,
- 	memset(nt->np.remote_mac, 0xff, ETH_ALEN);
- 
- 	/* Initialize the config_item member */
--	config_item_init_type_name(&nt->item, name, &netconsole_target_type);
-+	config_item_init_type_name(&nt->group.cg_item, name,
-+				&netconsole_target_type);
- 
- 	/* Adding, but it is disabled */
- 	spin_lock_irqsave(&target_list_lock, flags);
- 	list_add(&nt->list, &target_list);
- 	spin_unlock_irqrestore(&target_list_lock, flags);
- 
--	return &nt->item;
-+	return &nt->group.cg_item;
- }
- 
- static void drop_netconsole_target(struct config_group *group,
-@@ -633,7 +681,7 @@ static void drop_netconsole_target(struct config_group *group,
- 	if (nt->enabled)
- 		netpoll_cleanup(&nt->np);
- 
--	config_item_put(&nt->item);
-+	config_item_put(&nt->group.cg_item);
- }
- 
- static struct configfs_group_operations netconsole_subsys_group_ops = {
-@@ -743,6 +791,7 @@ static int __init init_netconsole(void)
- 	unsigned long flags;
- 	char *target_config;
- 	char *input = config;
-+	int i = 0;
- 
- 	if (strnlen(input, MAX_PARAM_LENGTH)) {
- 		while ((target_config = strsep(&input, ";"))) {
-@@ -751,9 +800,13 @@ static int __init init_netconsole(void)
- 				err = PTR_ERR(nt);
- 				goto fail;
- 			}
-+
-+			dynamic_netconsole_init_type_name(nt, i);
-+
- 			spin_lock_irqsave(&target_list_lock, flags);
- 			list_add(&nt->list, &target_list);
- 			spin_unlock_irqrestore(&target_list_lock, flags);
-+			i++;
- 		}
- 	}
- 
-@@ -761,7 +814,7 @@ static int __init init_netconsole(void)
- 	if (err)
- 		goto fail;
- 
--	err = dynamic_netconsole_init();
-+	err = dynamic_netconsole_init(i);
- 	if (err)
- 		goto undonotifier;
- 
----
+So the idea is send appropriate announcements at the usual time for
+CPUs that do come back up normally, and don't send anything right away
+for CPUs that fail to come up.  Just keep track of which ones failed,
+and then later take care of them.
 
-Thanks.
-Joonwoo 
+Alan Stern
 
