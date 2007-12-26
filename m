@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbXLZSkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752128AbXLZS5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114AbXLZSkc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 13:40:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbXLZSkY
+	id S1752128AbXLZS5s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 13:57:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXLZS5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 13:40:24 -0500
-Received: from hs-out-0708.google.com ([64.233.178.250]:21671 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750883AbXLZSkX (ORCPT
+	Wed, 26 Dec 2007 13:57:41 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57211 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750883AbXLZS5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 13:40:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=hdci0436tWkfzw5jsAHgbZfc2ZwtDw4bf0XDUV1cC7/U6XIMVARPtTo5mliUc1bCmHHMAvg0Mt6kSEZvm9LLbCUFZ5oKNb7vBL30Z9oBe3/f3dsYD103PB+CNzt6AHn8IUq8QXkXjctRf8R7ax6aEIYJqRlCtPty6/JhD51KQJo=
-Message-ID: <d2a348dd0712261040w402d6390o1b4f2abd83959c86@mail.gmail.com>
-Date: Wed, 26 Dec 2007 10:40:22 -0800
-From: "raki john" <raki4652@gmail.com>
-To: "Pierre Ossman" <drzeus@drzeus.cx>
-Subject: Order of Loading mmc driver modules.
-Cc: linux-kernel@vger.kernel.org
+	Wed, 26 Dec 2007 13:57:40 -0500
+Message-ID: <4772A3FB.8080108@zytor.com>
+Date: Wed, 26 Dec 2007 10:56:59 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Pavel Machek <pavel@ucw.cz>
+CC: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC] sleepy linux
+References: <20071225230731.GA29030@elf.ucw.cz>
+In-Reply-To: <20071225230731.GA29030@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+Pavel Machek wrote:
+> This is RFC. It does not even work for me... it sleeps but it will not
+> wake up, because SATA wakeup code is missing. Code attached for illustration.
+> 
+> I wonder if this is the right approach? What is right interface to the
+> drivers?
+> 
+> 3) Network card that is either down
+>    or can wake up system on any packet (and not loose too many packets)
+> 
 
-I am working with pxamci driver(2.6.22.1). I have made , core and host
-as  separate modules.
+This is the big crux I see.  You're going to constantly wake up the 
+machine due to broadcast packets, and spend a lot of power just going in 
+and out of S3.
 
-what is the correct order of loading the modules
-
-i am doing in this order first core (mmc_core.ko), then card(mmc_block.ko)
-after that host driver ( pxamci.ko). Is this correct.
-
-I do not know much about Linux device model.
-
-i saw that pxamci.ko driver registers it self as platform_driver. When
-does its probe function is called. Is it called immediately  after
-platform_driver_register(&pxamci_driver) is called.
-
-also in card driver (mmc_block.ko) in block.c  file i saw a probe
-function(mmc_blk_probe). How does it is invoked .
-
-Thanks in advance for your help.
-
-
---
-Thanks
-raki
+	-hpa
