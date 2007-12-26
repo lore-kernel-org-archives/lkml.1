@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752204AbXLZEO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752494AbXLZEQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752204AbXLZEO4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 23:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbXLZEOq
+	id S1752494AbXLZEQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 23:16:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbXLZEQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 23:14:46 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59565 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751522AbXLZEOo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 23:14:44 -0500
-Date: Tue, 25 Dec 2007 20:11:58 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: Suspend code ordering (again) (was: Re: x86: Increase PCIBIOS_MIN_IO
- to 0x1500 to fix nForce 4 suspend-to-RAM)
-In-Reply-To: <200712251713.13223.rjw@sisk.pl>
-Message-ID: <alpine.LFD.0.9999.0712252006330.21557@woody.linux-foundation.org>
-References: <200712231419.40207.carlos@strangeworlds.co.uk> <200712241444.24031.rjw@sisk.pl> <alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org> <200712251713.13223.rjw@sisk.pl>
+	Tue, 25 Dec 2007 23:16:20 -0500
+Received: from namei.org ([69.55.235.186]:51115 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751573AbXLZEQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Dec 2007 23:16:19 -0500
+Date: Wed, 26 Dec 2007 15:15:04 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       dhowells@redhat.com
+Subject: Re: [patch, rfc] mm.h, security.h, key.h and preventing namespace
+ poisoning
+In-Reply-To: <20071225140504.f4c255d3.akpm@linux-foundation.org>
+Message-ID: <Xine.LNX.4.64.0712261514390.26710@us.intercode.com.au>
+References: <20071219093834.GW4396912@sgi.com> <Xine.LNX.4.64.0712201052110.1736@us.intercode.com.au>
+ <20071220014413.GK4612@sgi.com> <Xine.LNX.4.64.0712201506520.6851@us.intercode.com.au>
+ <20071225140504.f4c255d3.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 25 Dec 2007, Andrew Morton wrote:
 
-
-On Tue, 25 Dec 2007, Rafael J. Wysocki wrote:
->
-> the ACPI specification between versions 1.0x and 2.0.  Namely, while ACPI
-> 2.0 and later wants us to put devices into low power states before calling
-> _PTS, ACPI 1.0x wants us to do that after calling _PTS.  Since we're following
-> the 2.0 and later specifications right now, we're not doing the right thing for
-> the (strictly) ACPI 1.0x-compliant systems.
+> On Thu, 20 Dec 2007 15:11:40 +1100 (EST) James Morris <jmorris@namei.org> wrote:
 > 
-> We ought to be able to fix things on the high level, by calling _PTS earlier on
-> systems that claim to be ACPI 1.0x-compliant.  That will require us to modify
-> the generic susped code quite a bit and will need to be tested for some time.
+> > > > +#ifdef CONFIG_SECURITY
+> > > > +extern unsigned long mmap_min_addr;
+> > > > +#endif
+> > > > +
+> > > >  #include <asm/page.h>
+> > > >  #include <asm/pgtable.h>
+> > > >  #include <asm/processor.h>
+> > > 
+> > > Fine by me.
+> > 
+> > I'll queue it for -mm & 2.6.25.
+> 
+> I don't think we need the ifdef.  If someone incorrectly refers to this
+> then they'll get a link-time error rather than a compile-time error (bad). 
+> But we lose an ifdef (good).
 
-That's insane. Are you really saying that ACPI wants totally different 
-orderings for different versions of the spec? And does Windows really do 
-that?
+Done, & rebased the git branch.
 
-Please don't make lots of modifications to the generic suspend code. The 
-only thing that is worth doing is to just have a firmware callback before 
-the "device_suspend()" thing (and then on a ACPI-1.0 system, call _PTS 
-*there*), and on an ACPI-2.0 system, call _PTS *after* device_suspend().
 
-Still, the fact is, some (most, I think) drivers *should* put themselves 
-into D3 only in "late_suspend()", so if ACPI-2.0 really expects _PTS to be 
-called after that, we're just screwed. That's when the system is really 
-down, interrupts disabled etc, we don't want to call anything but the 
-final ACPI "turn us off" stuff there!
-
-			Linus
+- James
+-- 
+James Morris
+<jmorris@namei.org>
