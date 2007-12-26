@@ -1,73 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbXLZVCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbXLZVMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbXLZVCA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 16:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXLZVBw
+	id S1752593AbXLZVMG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 16:12:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbXLZVLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 16:01:52 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53649 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751627AbXLZVBv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 16:01:51 -0500
-Date: Wed, 26 Dec 2007 13:01:49 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
-       gregkh@suse.de, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22-stable causes oomkiller to be invoked
-In-Reply-To: <20071221044508.GA11996@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
-References: <20071214095023.b5327703.akpm@linux-foundation.org>
- <20071214182802.GC2576@linux.vnet.ibm.com> <20071214150533.aa30efd4.akpm@linux-foundation.org>
- <20071215035200.GA22082@linux.vnet.ibm.com> <20071214220030.325f82b8.akpm@linux-foundation.org>
- <20071215104434.GA26325@linux.vnet.ibm.com> <20071217045904.GB31386@linux.vnet.ibm.com>
- <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com>
- <20071217120720.e078194b.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com>
- <20071221044508.GA11996@linux.vnet.ibm.com>
+	Wed, 26 Dec 2007 16:11:54 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50546 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751401AbXLZVLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 16:11:53 -0500
+Date: Wed, 26 Dec 2007 22:11:37 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ritesh Raj Sarraf <rrs@researchut.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [Suspend-devel] Fwd: Kernel Oops with 2.6.23
+Message-ID: <20071226211137.GI8094@elf.ucw.cz>
+References: <200711300103.38658.rrs@researchut.com> <200712030601.33212.rrs@researchut.com> <20071203215105.GC8704@elf.ucw.cz> <200712172146.01667.rrs@researchut.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712172146.01667.rrs@researchut.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Dec 2007, Dhaval Giani wrote:
+On Mon 2007-12-17 21:45:54, Ritesh Raj Sarraf wrote:
+> On Tuesday 04 December 2007, Pavel Machek wrote:
+> > On Mon 2007-12-03 06:01:26, Ritesh Raj Sarraf wrote:
+> > > On Sunday 02 December 2007, Pavel Machek wrote:
+> > > > killall -9 pulseaudio. If pulseaudio is not dead within 60 seconds,
+> > > > you hit a kernel bug. If it needs suspend to be reproduced, you
+> > > > probably have a suspend bug.
+> > >
+> > > Hi Pavel,
+> > >
+> > > Something similar to this are multiple cases where the kernel is not able
+> > > to kill a process at all.
+> > >
+> > > A good example is an application pumping IO to a multipathed device. When
+> > > all the paths to the multipathed devices go down, and you'd like to kill
+> > > the process, there is no way left to do it. In fact, a reboot also
+> > > doesn't work in such cases. Reboot gets hung in midway trying to kill the
+> > > process. The user is left to do a hard reset of the machine.
+> > >
+> > > In situations like these, the processes go into D state.
+> > >
+> > > Here's what the manpage of ps says:
+> > >
+> > > PROCESS STATE CODES
+> > >        Here are the different values that the s, stat and state output
+> > > specifiers (header "STAT" or "S")
+> > >        will display to describe the state of a process.
+> > >        D    Uninterruptible sleep (usually IO)
+> > >
+> > > Does it mean that processes in D state are excluded by the kernel from
+> > > being killed ? Or is it still a kernel bug ?
+> >
+> > Still a kernel bug. Processes should not stay in D state for long.
+> > 									Pavel
+> 
+> Hi Pavel,
+> 
+> Sometime back we discussed about 'D' state processes which are not killed by 
+> the kernel by any signal.
+> 
+> Here's a bugzilla detailing the symptom.
+> https://bugzilla.redhat.com/show_bug.cgi?id=419581
+> [I/O Processes don't get killed when all the paths to the LUN are down]
+> 
+> It is still being assumed as working as designed.
 
-> No, it does not stop the oom I am seeing here.
+This is borderline.
 
-Duh. Disregard that patch. It looks like check_pgt_cache() is not called. 
-This could happen if tlb_flush_mmu is never called during the 
-fork/terminate sequences in your script. pgd_free is called *after* a 
-possible tlb flush so the pgd page is on the quicklist (which is good for 
-the next process which needs a pgd). The tlb_flush_mmu's during pte 
-eviction should trim the quicklist. For some reason this is not happening 
-on your box (it works here).
+I guess multipath should use new TASK_KILLABLE infrastructure, but I
+do not expect RedHat to backport that.
 
-Could you try this script that insures that check_pgt_cache is called 
-after every pgd_free?
-
-Index: linux-2.6/arch/x86/mm/pgtable_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/pgtable_32.c	2007-12-26 12:55:10.000000000 -0800
-+++ linux-2.6/arch/x86/mm/pgtable_32.c	2007-12-26 12:55:54.000000000 -0800
-@@ -366,6 +366,15 @@ void pgd_free(pgd_t *pgd)
- 		}
- 	/* in the non-PAE case, free_pgtables() clears user pgd entries */
- 	quicklist_free(0, pgd_dtor, pgd);
-+
-+	/*
-+	 * We must call check_pgd_cache() here because the pgd is freed after
-+	 * tlb flushing and the call to check_pgd_cache. In some cases the VM
-+	 * may not call tlb_flush_mmu during process termination (??).
-+	 * If this is repeated then we may never call check_pgd_cache.
-+	 * The quicklist will grow and grow. So call check_pgd_cache here.
-+	 */
-+	check_pgt_cache();
- }
- 
- void check_pgt_cache(void)
+Feel free to implement that yourself, it should be quite easy.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
