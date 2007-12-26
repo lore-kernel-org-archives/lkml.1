@@ -1,71 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751870AbXLZOZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752293AbXLZOZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751870AbXLZOZV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 09:25:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbXLZOZJ
+	id S1752293AbXLZOZo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 09:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXLZOZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 09:25:09 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:52541 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751048AbXLZOZH (ORCPT
+	Wed, 26 Dec 2007 09:25:34 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:35630 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079AbXLZOZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 09:25:07 -0500
-Date: Wed, 26 Dec 2007 09:24:10 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Glauber de Oliveira Costa <gcosta@redhat.com>, lguest@ozlabs.org,
-       glommer@gmail.com, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH 02/16] adapt lguest launcher to per-cpuness
-In-Reply-To: <200712261035.46939.rusty@rustcorp.com.au>
-Message-ID: <Pine.LNX.4.58.0712260915090.28862@gandalf.stny.rr.com>
-References: <11981576363806-git-send-email-gcosta@redhat.com>
- <11981576442148-git-send-email-gcosta@redhat.com>
- <11981576492807-git-send-email-gcosta@redhat.com> <200712261035.46939.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Dec 2007 09:25:33 -0500
+In-Reply-To: <20071225140431.9264970a.akpm@linux-foundation.org>
+References: <476CEC5E.9070002@abinetworks.biz> <838DE9A2-59B2-49FA-B3E8-89B26368B1CF@bluecamel.eml.cc> <476E47F5.4090807@abinetworks.biz> <20071225140431.9264970a.akpm@linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v753)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <199BEBA7-E46E-4B1F-9D36-91BB43331B75@oracle.com>
+Cc: Scott <linux-kernel@bluecamel.eml.cc>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Chuck Lever <chuck.lever@oracle.com>
+Subject: Re: NFS EINVAL on open(... | O_TRUNC) on 2.6.23.9
+Date: Wed, 26 Dec 2007 09:24:22 -0500
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Gianluca Alberici <gianluca@abinetworks.biz>
+X-Mailer: Apple Mail (2.753)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 26 Dec 2007, Rusty Russell wrote:
-
-> On Friday 21 December 2007 00:33:42 Glauber de Oliveira Costa wrote:
-> > +		if (!vcpu_id) {
-> > +			/*
-> > +			 * Service input, then unset the BREAK to
-> > +			 * release the Waker.
-> > +			 */
-> > +			handle_input(lguest_fd);
-> > +			if (pwrite(lguest_fd, args, sizeof(args), 0) < 0)
-> > +				err(1, "Resetting break");
-> > +		}
+On Dec 25, 2007, at 5:04 PM, Andrew Morton wrote:
+> On Sun, 23 Dec 2007 12:35:17 +0100 Gianluca Alberici  
+> <gianluca@abinetworks.biz> wrote:
 >
-> I hate winged comments: those two extra lines, wasted!
->
+>> Hello,
+>>
+>> I can do better. I have investigated a bit the problem:
+>>
+>> 1) The problem arises only with the userspace nfsd (Universal nfsd  
+>> 2.2).
+>> I have realized that the latest patches introduced in 2.6.22 have
+>> changed a lot of things into NFS.
+>>
+>> 2) The following code has been debugged with sunrpc.rpc_debug and
+>> sunrpc.nfs_debug
+>>
+>> #include <sys/types.h>
+>> #include <sys/stat.h>
+>> #include <fcntl.h>
+>> #include <errno.h>
+>> #include <stdio.h>
+>>
+>> int main(int argc, char *argv[]) {
+>>         int fp;
+>>         if ((fp=open("/mnt/tmp/test",O_WRONLY | O_CREAT | O_TRUNC,  
+>> S_IRWXU )) == -1) printf("ERR: %d\n",errno);
+>>         else {
+>>                 write(fp, argv[1], strlen(argv[1]));
+>>                 printf("OK\n");
+>>                 close(fp);
+>>         };
+>> }
+>>
+>>
+>> 2b) The output
+>>
+>> [...]
+>>
+>> <8>NFS call  setattr
+>> <8>RPC:       new task initialized, procpid 18656
+>> <8>RPC:       allocated task f7bec500
+>> <8>RPC:     0 looking up UNIX cred
+>> <8>RPC:   740 __rpc_execute flags=0x480
+>> <8>RPC:   740 call_start nfs2 proc 2 (sync)
+>> <8>RPC:   740 call_reserve (status 0)
+>> <8>RPC:   740 reserved req f1416000 xid 643f3c42
+>> <8>RPC:   740 call_reserveresult (status 0)
+>> <8>RPC:   740 call_allocate (status 0)
+>> <8>RPC:   740 allocated buffer of size 528 at e627b800
+>> <8>RPC:   740 call_bind (status 0)
+>> <8>RPC:   740 call_connect xprt f70d4000 is connected
+>> <8>RPC:   740 call_transmit (status 0)
+>> <8>RPC:   740 xprt_prepare_transmit
+>> <8>RPC:   740 xprt_cwnd_limited cong = 0 cwnd = 512
+>> <8>RPC:   740 call_encode (status 0)
+>> <8>RPC:   740 marshaling UNIX cred f4efcb40
+>> <8>RPC:   740 using AUTH_UNIX cred f4efcb40 to wrap rpc data
+>> <8>RPC:   740 xprt_transmit(148)
+>> <8>RPC:       xs_udp_data_ready...
+>> <8>RPC:       cong 256, cwnd was 512, now 512
+>> <8>RPC:   740 xid 643f3c42 complete (28 bytes received)
+>> <8>RPC:       xs_udp_send_request(148) = 148
+>> <8>RPC:   740 xmit complete
+>> <8>RPC:       wake_up_next(f70d4114 "xprt_resend")
+>> <8>RPC:       wake_up_next(f70d40e4 "xprt_sending")
+>> <8>RPC:   740 call_status (status 28)
+>> <8>RPC:   740 call_decode (status 28)
+>> <8>RPC:   740 validating UNIX cred f4efcb40
+>> <8>RPC:   740 using AUTH_UNIX cred f4efcb40 to unwrap rpc data
+>> <8>RPC:   740 call_decode result -22
+>> <8>RPC:   740 return 0, status -22
+>> <8>RPC:   740 release task
+>> <8>RPC:       freeing buffer of size 528 at e627b800
+>> <8>RPC:   740 release request f1416000
+>> <8>RPC:       wake_up_next(f70d4174 "xprt_backlog")
+>> <8>RPC:   740 releasing UNIX cred f4efcb40
+>> <8>RPC:       rpc_release_client(f6f1f880)
+>> <8>NFS reply setattr: -22
+>>
+>> [...]
+>>
+>> 3) It turns out the following:
+>>
+>> - setattr returns EINVAL due to...
+>> - RPC call_decode returns status 22
+>>
+>> 4) In conclusion in my understanding:
+>>
+>> - At present linux nfs filesystem support is not anymore  
+>> compatible with
+>> old userspace servers like universal nfsd and crypto filesystems  
+>> as cfsd
+>> (which is an nfs server pretty old fashioned).
 
-For multiple lines, wings are a Good Thing (TM). Otherwise it looks
-sloppy.
+Linux NFS client issues with servers that are old or not widely used  
+should be reported to linux-nfs@vger.kernel.org (thanks for  
+forwarding this, Andrew).
 
-  /* Service input, then unset the BREAK to
-   * release the Waker. */
+User space servers are usually not tested with NFS client changes,  
+since their use is infrequent compared with Solaris, NetApp filers,  
+and the Linux knfsd (and several others).  We have to draw the line  
+somewhere to make NFS client development a manageable process.
 
-extra asterisk! ok then
+>> - This problem makes UNFSD and CFSD unusable on 2.6.22 and up (this
+>> doesnt sound good to me)
 
-  /* Service input, then unset the BREAK to
-     release the Waker. */
+It's likely the NFS client team is not aware of problems with these  
+servers simply because none of us run them, and nothing has been  
+reported so far.
 
-Yuck, that "release" looks like it can be code, especially with parsers
-that look for comments that start with some sort of /* or *
+>> The question are:
+>>
+>> - Is this wanted or is a bug ?
 
-Those little wings do IMHO make the code look nicer. I know in the Linux
-community, my weight compared to you is a chihuahua compared to a
-St. Bernard.  But in this case, I believe others think that my collar is
-prettier than yours. ;-)
+An EINVAL return is fairly generic, but since it is coming from the  
+reply path on the client, that probably indicates that decoding the  
+reply failed somehow.  That could be a client problem, or the server  
+reply was incorrect or corrupt.
 
-Some one buy Rusty a bigger hard-drive to store those extra lines.
+More specific information about the problem is needed.  Could we see  
+a wire trace?  A raw tcpdump or tethereal dump captured during the  
+problematic interaction would be helpful.  Maybe even an strace of  
+the failing application would tell us what the arguments for the  
+setattr() call are.  And what are your mount options, especially  
+which NFS version? (cat /proc/mounts)
 
--- Steve
+Have you tried a 'git bisect' or something similar to track down  
+exactly when client behavior changed?
 
+>> - Can this be solved with some backwards compat stuff into the  
+>> kernel or
+>> all the old packages as UNFSD have to be
+>> bugfixed/upgraded
+
+If NFS servers don't conform to the NFS protocol specification, then  
+it's unlikely that the NFS client will be changed to fix such  
+issues.  Ie: server bugs need to be fixed on the server.  That is  
+sometimes difficult if the server is not maintained, for instance.
+
+>> - I have found other strange behaviors of the new NFS filesystem  
+>> support
+>> that i am investigating. All are bound to the user of
+>> old userspace servers onto the new NFS (since 2.6.22). What to do ?
+
+Report the problems on the linux-nfs@vger.kernel.org mailing list, or
+document them in the official bug databases (either the Linux kernel  
+bugzilla or the NFSv4 bug tracker at http://bugzilla.linux-nfs.org/
+
+> I'm not sure what the NFS client's policy is regarding support for
+> userspace servers.  But I'd certainly hope that it is "don't break  
+> them".
+
+The general policy is that if a server behaves in ways that don't  
+conform to the NFS spec, then the Linux NFS client probably won't  
+work with it.  If the client works with a broken server today, there  
+is no guarantee that it will continue to work.
+
+> Which would make this an NFS client regression.
+
+--
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
