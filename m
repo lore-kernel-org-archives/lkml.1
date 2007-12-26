@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751933AbXLZPpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbXLZP60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751933AbXLZPpt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 10:45:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXLZPpk
+	id S1751994AbXLZP60 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 10:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbXLZP6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 10:45:40 -0500
-Received: from smtp107.plus.mail.re1.yahoo.com ([69.147.102.70]:45491 "HELO
-	smtp107.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751076AbXLZPpj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 10:45:39 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:Mail-Followup-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=1XeCeTssP8haJM8DIhy7IiqPJiqekEnx22AA/3DU8l5nEPjnGLuDIyH0GYV2kNhGRRAK+ew4etqshj0PB39e3xM6XIm/n7twcMCURWnFItU7LpnmMJvgRtopoBaPoJJ7PESF5elDFCLk+kG4gsmgG8eNsbGwrIaTKfGYwGbRdr0=  ;
-X-YMail-OSG: r5EBFiAVM1ljLgtbb32PHnnvDLw0CAfPSACUW29WIOpWhbWHOz9.M8NFesrS4ObxeXrvgcwfRQ--
-Date: Wed, 26 Dec 2007 16:43:29 +0100
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/63] ide-cd: redux
-Message-ID: <20071226154329.GA4713@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-Mail-Followup-To: bbpetkov@yahoo.de,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200712200148.49690.bzolnier@gmail.com> <20071225140514.fa13f5ac.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20071225140514.fa13f5ac.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 26 Dec 2007 10:58:17 -0500
+Received: from mailhub.hp.com ([192.151.27.10]:41333 "EHLO mailhub.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751133AbXLZP6Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 10:58:16 -0500
+From: "Paul Moore" <paul.moore@hp.com>
+Subject: Re: 2.6.24-rc6-mm1 - git-lblnet.patch and networking horkage
+Date: 26 Dec 2007 08:57:00 -0700
+To: <jmorris@namei.org>
+X-Mailer: ChatterEmail+ for Treo 6xx/700p (3.0.8)
+Message-ID: <3281504256.5618888@mail.hp.com>
+Cc: <Valdis.Kletnieks@vt.edu>, <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <sds@tycho.nsa.gov>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 25, 2007 at 02:05:14PM -0800, Andrew Morton wrote:
-> On Thu, 20 Dec 2007 01:48:49 +0100 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> 
-> > This patch series is a major rework of the ide-cd driver.
-> 
-> woo-hoo.
-> 
-> > PS ide-cd Maintainer position is still open...
-> 
-> boo-hoo.
-> 
-> I wish someone would fix that "The drive appears confused (ireason =
-> 0x%02x)" thing.  I had a go a while back but iirc the reporter disappeared
-> on me.  It is somewhat common.
-> 
-> Or do you think this patch might indeed fix it?
+As James said I'm away right now and computer access is limited.  However, I'm stuck in the airport right now and spent some time looking at the code ... Based on what has been found so far I wonder if the problem isn't a race but a problem of skb->iif never being initialized correctly?  To my untrained eye it looks like __netdev_alloc_skb() should be setting skb->iif (like it does for skb->dev) but it currently doesn't.
 
-Andrew, take a look at patch #12 in this series: "ide-cd: fix "missing data" handling in
-cdrom_pc_intr()."
--- 
-Regards/Gruﬂ,
-    Boris.
+Am I barking up the wrong tree here?
+
+. paul moore
+. linux security @ hp
+-----Original Message-----
+From: James Morris <jmorris@namei.org>
+Date: Wednesday, Dec 26, 2007 7:16 am
+Subject: Re: 2.6.24-rc6-mm1 - git-lblnet.patch and networking horkage
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>,	Paul Moore <paul.moore@hp.com>, linux-kernel@vger.kernel.org,	Stephen Smalley <sds@tycho.nsa.gov>
+
+On Wed, 26 Dec 2007, James Morris wrote:
+>
+>> What does the following say ?
+> 
+> # sestatus  && rpm -q selinux-policy
+>
+>Don't worry about that -- I reproduced it with Paul Moore's git tree: git://git.infradead.org/users/pcmoore/lblnet-2.6_testing
+>
+>(under current -mm, the e1000 driver doesn't find my ethernet card & the 
+>tcl tests won't run without an external interface).
+>
+>The offending commit is when SELinux is converted to the new ifindex 
+>interface:
+>
+>  9c6ad8f6895db7a517c04c2147cb5e7ffb83a315 is first bad commit
+>  commit 9c6ad8f6895db7a517c04c2147cb5e7ffb83a315
+>  Author: Paul Moore <paul.moore@hp.com>
+>  Date:   Fri Dec 21 11:44:26 2007 -0500
+>
+>      SELinux: Convert the netif code to use ifindex values
+>
+>      [...]
+>
+>In some case (not yet fully identified -- also happens when avahi starts 
+>up, although seemingly silently & without obvious issues), SELinux is 
+>passed an ifindex of 1515870810, which corresponds to 0x5a5a5a5a, the slab 
+>poison value, suggesting a race in the calling code where we're being 
+>asked to check an skb which has been freed.
+>
+>The SELinux code is erroring out before performing an access check 
+>(perhaps there should be WARN_ON, at least), so this will affect both 
+>permissive and enforcing mode without generating any log messages.
+>
+>Andrew: I suggest dropping the patchset from -mm until Paul gets back from 
+>vacation.
+>
+>
+>- James
+>-- 
+>James Morris
+><jmorris@namei.org>
+>
+
