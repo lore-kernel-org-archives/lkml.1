@@ -1,70 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbXLZQR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751957AbXLZQmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752355AbXLZQR6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 11:17:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbXLZQRt
+	id S1751957AbXLZQmo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 11:42:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXLZQme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 11:17:49 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:33753 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750972AbXLZQRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 11:17:48 -0500
-Date: Wed, 26 Dec 2007 17:15:08 +0100 (MET)
-From: Julia Lawall <julia@diku.dk>
-To: linux-scsi@vger.kernel.org, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/3] drivers/scsi: Use offsetof
-Message-ID: <Pine.LNX.4.58.0712261714270.1185@pc-041.diku.dk>
+	Wed, 26 Dec 2007 11:42:34 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:45891 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbXLZQmc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 11:42:32 -0500
+Date: Wed, 26 Dec 2007 10:42:30 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: TOMOYO Linux Security Goal
+Message-ID: <20071226164230.GA14210@sergelap.austin.ibm.com>
+References: <200712252133.JFF05267.FOMFtOLJHSOVFQ@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712252133.JFF05267.FOMFtOLJHSOVFQ@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
+> This document is intended to specify the security goal that TOMOYO Linux is
+> trying to achieve, so that users can evaluate whether TOMOYO Linux will meet
+> their needs, and kernel developers can evaluate whether TOMOYO Linux deserved
+> to be in-tree.
+> 
+> 1. About TOMOYO Linux
+> 
+> Project Homepage: http://tomoyo.sourceforge.jp/index.html.en
+> Project Wiki: http://elinux.org/TomoyoLinux
+> 
+> TOMOYO Linux is a DIY tool for understanding and protecting your system.
+> TOMOYO Linux policy definitions are absolutely readable to Linux users, and
+> TOMOYO Linux supports unique policy learning mechanism which automatically
 
-In the patch cc154ac64aa8d3396b187f64cef01ce67f433324, Al Viro observed
-that the proper way to compute the distance between two structure fields is
-to use offsetof() or a cast to a pointer to character.  The same change can
-be applied to a few more files.
+Are they in fact unique?
 
-The change was made using the following semantic patch
-(http://www.emn.fr/x-info/coccinelle/)
+> gathers information and arranges the results as policy definitions.
+> These things made it possible for users to write policy from scratch.
+> Troubleshooting can be done by users.
+> We put some TOMOYO Linux policy examples on our web site.
+> 
+> http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/etch/domain_policy.conf?v=policy-sample
+> 
+> 2. TOMOYO Linux Security Goal
 
-// <smpl>
-@r3 disable ptr_to_array@
-type T;
-T *s;
-type T1, T2;
-identifier fld1;
-@@
+This section seems to me to be the most important one, and could really
+use a little more detail.
 
-(
-  (char *)&s->fld1 - (char *)s
-|
-  (uint8_t *)&s->fld1 - (uint8_t *)s
-|
-  (u8 *)&s->fld1 - (u8 *)s
-|
-- (T1)&s->fld1 - (T2)s
-+ offsetof(T,fld1)
-)
-// </smpl>
+> The TOMOYO Linux's security goal is to provide "MAC that covers practical
+> requirements
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
+This email promised me a security goal, but instead of laying out
+requirements it meets, its says it meets "practical requirements".
+That's really not helpful.
 
-diff -u -p a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
---- a/drivers/scsi/BusLogic.c	2007-10-22 11:25:20.000000000 +0200
-+++ b/drivers/scsi/BusLogic.c	2007-12-26 16:33:42.000000000 +0100
-@@ -2856,7 +2856,10 @@ static int BusLogic_QueueCommand(struct
- 		CCB->Opcode = BusLogic_InitiatorCCB_ScatterGather;
- 		CCB->DataLength = Count * sizeof(struct BusLogic_ScatterGatherSegment);
- 		if (BusLogic_MultiMasterHostAdapterP(HostAdapter))
--			CCB->DataPointer = (unsigned int) CCB->DMA_Handle + ((unsigned long) &CCB->ScatterGatherList - (unsigned long) CCB);
-+			CCB->DataPointer =
-+				(unsigned int) CCB->DMA_Handle +
-+				offsetof(struct BusLogic_CCB,
-+					 ScatterGatherList);
- 		else
- 			CCB->DataPointer = Virtual_to_32Bit_Virtual(CCB->ScatterGatherList);
+What kernel resources does TOMOYO authorize?  All those which SELinux
+does?
+
+> for most users and keeps usable for most administrators".
+> TOMOYO Linux is not a tool for security professional but for average users
+> and administrators.
+
+So your point was that your main goal is simplicity?
+
+Ok a few things you could add:
+
+	1. Tomoyo provide no sort of information flow control.
+
+	2. TOMOYO is purely restrictive.
+
+	3. Learning mode is primary source of policy so you
+	   depend on change of behavior to detect intruders.
+	
+	4. but any intruder who attempts to do something which
+	   the compomised sftware wouldn't have done should be
+	   stopped and detected.
+
+This gives a precise (though perhaps wrong as I'm guessing :) picture
+of what TOMOYO can do and how it fits in with SMACK, apparmor,
+capabilities, and SELinux.
+
+thanks,
+-serge
+
+> 3. Our Approach
+> 
+> To meet the above goal, TOMOYO Linux attempts to make the system where
+> everything is prearranged in an easy-to-understand way.
+> 
+>   * Make the all subject's all access requests that will occur at least once
+>     during the lifetime of the kernel known in advance.
+> 
+>   * Let the administrator understand what access requests will each subject
+>     raise in his/her system and write policy which only allows expected and
+>     desirable access requests for his/her needs.
+> 
+> Unlike AppArmor, TOMOYO Linux is intended to protect the whole system from
+> attackers exploiting vulnerabilities in applications that the system hosts.
+> The threat is that an attacker can cause a vulnerable application to do
+> something unexpected and undesirable. TOMOYO Linux addresses this threat by
+> recording all applications' behaviors in the test environment and forcing
+> all applications behave within recorded behaviors in the production environment.
+> 
+> TOMOYO Linux has a unique concept of "process invocation history"
+> (in short, PIH). The PIH is a developmental lineage of a process.
+> When a process executes a program, the process creates a copy with fork() and
+> replace the copy with execve().
+> TOMOYO Linux appends the pathname of the executed program to the PIH of
+> the replaced process, and associates process's PIH (stored in task_struct)
+> with a domain.
+> As a result, the context switching (a.k.a. domain transition) is unidirectional.
+> This rule allows administrator distinguish and manage fine-grained context.
+> Domain transition forms tree structure like a directory tree of filesystems.
+> Each domain has different set of permissions that are essential for that domain.
+> 
+> 4. Things you can do with TOMOYO Linux.
+> 
+> Create policy from scratch.
+> 
+>   You want to use ready-made policy files supplied by somebody else
+>   because testing all paths needed for your usage sounds boring?
+> 
+>   OK, then you can choose other implementations that provide
+>   ready-made policy files, but you should check whether these files
+>   contain enough permissions for your usage or not. It is inevitable thing
+>   to test all paths needed for your usage if you want to use white listing
+>   access control.
+> 
+>   Also, ready-made policy files tend to contain redundant permissions
+>   for your usage which often leads to serious problem.
+> 
+>   TOMOYO Linux is a DIY tool for understanding and protecting your Linux box.
+>   TOMOYO Linux's "learning mode" will automatically generate
+>   policy files with necessary and sufficient permissions for you.
+> 
+> Understand all possible requests.
+> 
+>   TOMOYO Linux reports what is happening within your Linux box.
+>   You can have the security of knowing that no unexpected requests arise,
+>   if you have tested all paths needed for your usage.
+> 
+>   Please remember, we are not saying that
+>   "You can have the security of knowing that no unexpected results happen".
+>   Although TOMOYO Linux attempts to filter the request as hard as possible,
+>   TOMOYO Linux can't guarantee the result.
+> 
+> Analyze system's behavior.
+> 
+>   TOMOYO Linux resembles to /usr/bin/strace .
+>   TOMOYO Linux reports what programs are executed from each program and
+>   what files/networks are accessed by each program.
+> 
+>   You can use TOMOYO Linux for analyzing application's behavior
+>   if you want to know "which configuration file does this daemon read?",
+>   "what port numbers does this daemon require?" and so on.
+> 
+>   This helps debugging program's behaviors and writing manuals.
+>   TOMOYO Linux is also applicable for educational use.
+> 
+> Provide per application firewall.
+> 
+>   It is userland applications' businesses to perform pathname based access
+>   control, but they sometimes make mistakes which are known as OS command
+>   injection vulnerability or buffer overflow vulnerability.
+>   TOMOYO Linux assists this access control in kernel space to reduce
+>   the damage by restricting pathnames which each application can request.
+> 
+>   TOMOYO Linux can perform TCP_Wrapper-like simple stateless
+>   TCP/IP packet filtering based on IPv4/v6 address and ports.
+> 
+>   TOMOYO Linux can restrict the list of environment variable's name
+>   passed to execve() so that some dangerous environment variable
+>   (e.g. LD_PRELOAD) won't be passed freely.
+> 
+>   TOMOYO Linux also supports conditional permissions.
+>   You can use uid/gid etc. of a process to restrict the combination of
+>   user and accessible resources.
+> 
+> Provide support for multi-call binary applications without patches.
+> 
+>   A multi-call binary (e.g. /sbin/busybox) changes behaviors according to
+>   the invocation name (in other words, argv[0] passed to execve()).
+>   Users specify the invocation name using symbolic links or hard links.
+> 
+>   TOMOYO Linux allows administrators to give execute permission and define PIH
+>   using the pathname of a symbolic link, if the combination of
+>   the pathname of a symbolic link and the pathname of the entity pointed
+>   by the symbolic link is registered in the policy file.
+>   You can use symbolic links as if they are hard links.
+> 
+>   TOMOYO Linux supports restricting the combination of
+>   path-to-executable-or-symbolic-link and basename-of-argv[0]
+>   so that users can't pass different argv[0]
+>   from path-to-executable-or-symbolic-link freely.
+> 
+>   Please be aware that some multi-call binary programs change their behaviors
+>   according to the command line parameters (i.e. argv[1] to argv[argc - 1]).
+>   Regarding such programs, TOMOYO Linux can't restrict behaviors by restricting
+>   the argv[0]. But TOMOYO Linux doesn't attempt to restrict all argv[] elements
+>   passed to execve(), because doing so will make the system too inconvenient
+>   and frustrating to use.
+> 
+> Give different set of permissions to the same application.
+> 
+>   There are some non-executable applications (e.g. Java's class files).
+>   Such applications use the same program for executing (e.g. Java Runtime
+>   Environment). Since TOMOYO Linux has PIH, you can give different set of
+>   permissions for each application by separating PIH for each application.
+> 
+>   Although TOMOYO Linux can switch context for every execve() requests,
+>   it is preferable to be able to switch context without invoking execve().
+>   So far, we are not providing APIs to switch context like AppArmor's
+>   change_hat()/change_profile(). We'd like to introduce APIs to switch context
+>   when distributors get ready to support TOMOYO Linux (in other words, after
+>   TOMOYO Linux is merged into mainline).
+> 
+> Provide DMZ for remote logins.
+> 
+>   Recently, password brute-force attacks against SSH service are increasing.
+>   But TOMOYO Linux's PIH can provide a room for deploying DMZ.
+> 
+>   Why password or public-key authentication is possible for only once?
+>   Why not give normal users a chance to beat back attackers who logged in
+>   through brute-force attacks?
+> 
+>   You can deploy extra login authentications that the only normal user knows
+>   how to pass.
+> 
+> Provide simple RBAC-like administrative task division.
+> 
+>   TOMOYO Linux's PIH forms a tree structure.
+>   This means that you can split one tree into several subtrees
+>   and associate each subtree with each administrative task.
+>   You can give each subtree necessary and sufficient permissions
+>   for each administrative task.
+> 
+>   You can deploy custom authentication at the entry point of each subtree
+>   so that one administrator cannot proceed to other administrator's subtrees.
+> 
+> And more...
+> 
+>   Your imagination invents new usage.
+> 
+> 
+> Authors:
+>   Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+>   Toshiharu Harada <haradats@nttdata.co.jp>
+>   Kentaro Takeda <takedakn@nttdata.co.jp>
+> 
+> 
+> Appendix 1 - Usability features of TOMOYO Linux
+> 
+> TOMOYO Linux switches the context of a process whenever a process executes
+> a program, but there are two exceptions.
+> Administrator may relocate domain of a process if PIH is not meaningful for
+> that process (e.g. daemon programs). This exception allows administrator
+> restart daemon programs.
+> Administrator may suppress domain transition if domain transition is not
+> meaningful for that process (e.g. /bin/touch called from /etc/init.d/ scripts).
+> This exception reduces memory usage for policy.
+> 
+> TOMOYO Linux can apply access control over all userspace applications,
+> but administrator can also apply access control over only specific userspace
+> applications if he/she wishes so.
+> 
+> TOMOYO Linux supports "delayed enforcing mode" that allows administrator
+> interactively judge whether a request which is not defined in the policy
+> should be permitted or rejected.
+> This mode helps administrator adjust the policy after software updates.
+> 
+> 
+> Appendix 2 - Presentation slides
+> 
+> - PacSec2007: TOMOYO Linux: "A Practical Method to Understand and Protect
+>                              Your Own Linux Box"
+>   http://sourceforge.jp/projects/tomoyo/document/PacSec2007-en-demo.pdf
+> 
+> - OLS2007: "TOMOYO Linux BoF"
+>   http://sourceforge.jp/projects/tomoyo/document/ols2007-tomoyo-20070629.pdf
+> 
+> - ELC2007: "TOMOYO Linux - A Lightweight and Manageable Security System
+>             for PC and Embedded Linux"
+>   http://sourceforge.jp/projects/tomoyo/document/elc2007-presentation-20070418-for_linux.pdf 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
