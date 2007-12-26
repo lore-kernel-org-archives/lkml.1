@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbXLZLOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbXLZLO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbXLZLOI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 06:14:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbXLZLGl
+	id S1754321AbXLZLO3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 06:14:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbXLZLGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 06:06:41 -0500
-Received: from il.qumranet.com ([82.166.9.18]:50469 "EHLO il.qumranet.com"
+	Wed, 26 Dec 2007 06:06:42 -0500
+Received: from il.qumranet.com ([82.166.9.18]:50483 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbXLZLGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751789AbXLZLGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 26 Dec 2007 06:06:07 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH 31/55] KVM: x86 emulator: Hoist modrm and abs decoding into separate functions
-Date: Wed, 26 Dec 2007 13:05:36 +0200
-Message-Id: <1198667160-22953-32-git-send-email-avi@qumranet.com>
+Cc: Sheng Yang <sheng.yang@intel.com>
+Subject: [PATCH 22/55] KVM: VMX: Enable memory mapped TPR shadow (FlexPriority)
+Date: Wed, 26 Dec 2007 13:05:27 +0200
+Message-Id: <1198667160-22953-23-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1198667160-22953-1-git-send-email-avi@qumranet.com>
 References: <1198667160-22953-1-git-send-email-avi@qumranet.com>
@@ -21,381 +22,426 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Sheng Yang <sheng.yang@intel.com>
+
+This patch based on CR8/TPR patch, and enable the TPR shadow (FlexPriority)
+for 32bit Windows.  Since TPR is accessed very frequently by 32bit
+Windows, especially SMP guest, with FlexPriority enabled, we saw significant
+performance gain.
+
+Signed-off-by: Sheng Yang <sheng.yang@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/x86_emulate.c |  337 ++++++++++++++++++++++++---------------------
- 1 files changed, 177 insertions(+), 160 deletions(-)
+ drivers/kvm/kvm.h      |    4 ++
+ drivers/kvm/kvm_main.c |   56 ++++++++++++++++-------
+ drivers/kvm/vmx.c      |  117 ++++++++++++++++++++++++++++++++++++++++++-----
+ drivers/kvm/vmx.h      |    5 ++
+ 4 files changed, 152 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index b352a6c..64888a6 100644
---- a/drivers/kvm/x86_emulate.c
-+++ b/drivers/kvm/x86_emulate.c
-@@ -548,14 +548,182 @@ static void decode_register_operand(struct operand *op,
- 	op->orig_val = op->val;
- }
+diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
+index 516f79f..22317d6 100644
+--- a/drivers/kvm/kvm.h
++++ b/drivers/kvm/kvm.h
+@@ -383,6 +383,7 @@ struct kvm {
+ 	struct kvm_ioapic *vioapic;
+ 	int round_robin_prev_vcpu;
+ 	unsigned int tss_addr;
++	struct page *apic_access_page;
+ };
  
-+static int decode_modrm(struct x86_emulate_ctxt *ctxt,
-+			struct x86_emulate_ops *ops)
-+{
-+	struct decode_cache *c = &ctxt->decode;
-+	u8 sib;
-+	int index_reg = 0, base_reg = 0, scale, rip_relative = 0;
-+	int rc = 0;
-+
-+	if (c->rex_prefix) {
-+		c->modrm_reg = (c->rex_prefix & 4) << 1;	/* REX.R */
-+		index_reg = (c->rex_prefix & 2) << 2; /* REX.X */
-+		c->modrm_rm = base_reg = (c->rex_prefix & 1) << 3; /* REG.B */
-+	}
-+
-+	c->modrm = insn_fetch(u8, 1, c->eip);
-+	c->modrm_mod |= (c->modrm & 0xc0) >> 6;
-+	c->modrm_reg |= (c->modrm & 0x38) >> 3;
-+	c->modrm_rm |= (c->modrm & 0x07);
-+	c->modrm_ea = 0;
-+	c->use_modrm_ea = 1;
-+
-+	if (c->modrm_mod == 3) {
-+		c->modrm_val = *(unsigned long *)
-+			decode_register(c->modrm_rm, c->regs, c->d & ByteOp);
-+		return rc;
-+	}
-+
-+	if (c->ad_bytes == 2) {
-+		unsigned bx = c->regs[VCPU_REGS_RBX];
-+		unsigned bp = c->regs[VCPU_REGS_RBP];
-+		unsigned si = c->regs[VCPU_REGS_RSI];
-+		unsigned di = c->regs[VCPU_REGS_RDI];
-+
-+		/* 16-bit ModR/M decode. */
-+		switch (c->modrm_mod) {
-+		case 0:
-+			if (c->modrm_rm == 6)
-+				c->modrm_ea += insn_fetch(u16, 2, c->eip);
-+			break;
-+		case 1:
-+			c->modrm_ea += insn_fetch(s8, 1, c->eip);
-+			break;
-+		case 2:
-+			c->modrm_ea += insn_fetch(u16, 2, c->eip);
-+			break;
-+		}
-+		switch (c->modrm_rm) {
-+		case 0:
-+			c->modrm_ea += bx + si;
-+			break;
-+		case 1:
-+			c->modrm_ea += bx + di;
-+			break;
-+		case 2:
-+			c->modrm_ea += bp + si;
-+			break;
-+		case 3:
-+			c->modrm_ea += bp + di;
-+			break;
-+		case 4:
-+			c->modrm_ea += si;
-+			break;
-+		case 5:
-+			c->modrm_ea += di;
-+			break;
-+		case 6:
-+			if (c->modrm_mod != 0)
-+				c->modrm_ea += bp;
-+			break;
-+		case 7:
-+			c->modrm_ea += bx;
-+			break;
-+		}
-+		if (c->modrm_rm == 2 || c->modrm_rm == 3 ||
-+		    (c->modrm_rm == 6 && c->modrm_mod != 0))
-+			if (!c->override_base)
-+				c->override_base = &ctxt->ss_base;
-+		c->modrm_ea = (u16)c->modrm_ea;
-+	} else {
-+		/* 32/64-bit ModR/M decode. */
-+		switch (c->modrm_rm) {
-+		case 4:
-+		case 12:
-+			sib = insn_fetch(u8, 1, c->eip);
-+			index_reg |= (sib >> 3) & 7;
-+			base_reg |= sib & 7;
-+			scale = sib >> 6;
-+
-+			switch (base_reg) {
-+			case 5:
-+				if (c->modrm_mod != 0)
-+					c->modrm_ea += c->regs[base_reg];
-+				else
-+					c->modrm_ea +=
-+						insn_fetch(s32, 4, c->eip);
-+				break;
-+			default:
-+				c->modrm_ea += c->regs[base_reg];
-+			}
-+			switch (index_reg) {
-+			case 4:
-+				break;
-+			default:
-+				c->modrm_ea += c->regs[index_reg] << scale;
-+			}
-+			break;
-+		case 5:
-+			if (c->modrm_mod != 0)
-+				c->modrm_ea += c->regs[c->modrm_rm];
-+			else if (ctxt->mode == X86EMUL_MODE_PROT64)
-+				rip_relative = 1;
-+			break;
-+		default:
-+			c->modrm_ea += c->regs[c->modrm_rm];
-+			break;
-+		}
-+		switch (c->modrm_mod) {
-+		case 0:
-+			if (c->modrm_rm == 5)
-+				c->modrm_ea += insn_fetch(s32, 4, c->eip);
-+			break;
-+		case 1:
-+			c->modrm_ea += insn_fetch(s8, 1, c->eip);
-+			break;
-+		case 2:
-+			c->modrm_ea += insn_fetch(s32, 4, c->eip);
-+			break;
-+		}
-+	}
-+	if (rip_relative) {
-+		c->modrm_ea += c->eip;
-+		switch (c->d & SrcMask) {
-+		case SrcImmByte:
-+			c->modrm_ea += 1;
-+			break;
-+		case SrcImm:
-+			if (c->d & ByteOp)
-+				c->modrm_ea += 1;
-+			else
-+				if (c->op_bytes == 8)
-+					c->modrm_ea += 4;
-+				else
-+					c->modrm_ea += c->op_bytes;
-+		}
-+	}
-+done:
-+	return rc;
-+}
-+
-+static int decode_abs(struct x86_emulate_ctxt *ctxt,
-+		      struct x86_emulate_ops *ops)
-+{
-+	struct decode_cache *c = &ctxt->decode;
-+	int rc = 0;
-+
-+	switch (c->ad_bytes) {
-+	case 2:
-+		c->modrm_ea = insn_fetch(u16, 2, c->eip);
-+		break;
-+	case 4:
-+		c->modrm_ea = insn_fetch(u32, 4, c->eip);
-+		break;
-+	case 8:
-+		c->modrm_ea = insn_fetch(u64, 8, c->eip);
-+		break;
-+	}
-+done:
-+	return rc;
-+}
-+
- int
- x86_decode_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
+ static inline struct kvm_pic *pic_irqchip(struct kvm *kvm)
+@@ -522,6 +523,9 @@ int is_error_page(struct page *page);
+ int kvm_set_memory_region(struct kvm *kvm,
+ 			  struct kvm_userspace_memory_region *mem,
+ 			  int user_alloc);
++int __kvm_set_memory_region(struct kvm *kvm,
++			    struct kvm_userspace_memory_region *mem,
++			    int user_alloc);
+ gfn_t unalias_gfn(struct kvm *kvm, gfn_t gfn);
+ struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn);
+ void kvm_release_page(struct page *page);
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index af4b470..c3dc24f 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -362,10 +362,12 @@ EXPORT_SYMBOL_GPL(fx_init);
+  * space.
+  *
+  * Discontiguous memory is allowed, mostly for framebuffers.
++ *
++ * Must be called holding kvm->lock.
+  */
+-int kvm_set_memory_region(struct kvm *kvm,
+-			  struct kvm_userspace_memory_region *mem,
+-			  int user_alloc)
++int __kvm_set_memory_region(struct kvm *kvm,
++			    struct kvm_userspace_memory_region *mem,
++			    int user_alloc)
  {
- 	struct decode_cache *c = &ctxt->decode;
--	u8 sib;
- 	int rc = 0;
- 	int mode = ctxt->mode;
--	int index_reg = 0, base_reg = 0, scale, rip_relative = 0;
+ 	int r;
+ 	gfn_t base_gfn;
+@@ -392,8 +394,6 @@ int kvm_set_memory_region(struct kvm *kvm,
+ 	if (!npages)
+ 		mem->flags &= ~KVM_MEM_LOG_DIRTY_PAGES;
  
- 	/* Shadow copy of register state. Committed on successful emulation. */
+-	mutex_lock(&kvm->lock);
+-
+ 	new = old = *memslot;
  
-@@ -637,13 +805,9 @@ x86_decode_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
- done_prefixes:
+ 	new.base_gfn = base_gfn;
+@@ -403,7 +403,7 @@ int kvm_set_memory_region(struct kvm *kvm,
+ 	/* Disallow changing a memory slot's size. */
+ 	r = -EINVAL;
+ 	if (npages && old.npages && npages != old.npages)
+-		goto out_unlock;
++		goto out_free;
  
- 	/* REX prefix. */
--	if (c->rex_prefix) {
-+	if (c->rex_prefix)
- 		if (c->rex_prefix & 8)
- 			c->op_bytes = 8;	/* REX.W */
--		c->modrm_reg = (c->rex_prefix & 4) << 1;	/* REX.R */
--		index_reg = (c->rex_prefix & 2) << 2; /* REX.X */
--		c->modrm_rm = base_reg = (c->rex_prefix & 1) << 3; /* REG.B */
--	}
- 
- 	/* Opcode byte(s). */
- 	c->d = opcode_table[c->b];
-@@ -663,159 +827,12 @@ done_prefixes:
+ 	/* Check for overlaps */
+ 	r = -EEXIST;
+@@ -414,7 +414,7 @@ int kvm_set_memory_region(struct kvm *kvm,
+ 			continue;
+ 		if (!((base_gfn + npages <= s->base_gfn) ||
+ 		      (base_gfn >= s->base_gfn + s->npages)))
+-			goto out_unlock;
++			goto out_free;
  	}
  
- 	/* ModRM and SIB bytes. */
--	if (c->d & ModRM) {
--		c->modrm = insn_fetch(u8, 1, c->eip);
--		c->modrm_mod |= (c->modrm & 0xc0) >> 6;
--		c->modrm_reg |= (c->modrm & 0x38) >> 3;
--		c->modrm_rm |= (c->modrm & 0x07);
--		c->modrm_ea = 0;
--		c->use_modrm_ea = 1;
--
--		if (c->modrm_mod == 3) {
--			c->modrm_val = *(unsigned long *)
--			  decode_register(c->modrm_rm, c->regs, c->d & ByteOp);
--			goto modrm_done;
--		}
--
--		if (c->ad_bytes == 2) {
--			unsigned bx = c->regs[VCPU_REGS_RBX];
--			unsigned bp = c->regs[VCPU_REGS_RBP];
--			unsigned si = c->regs[VCPU_REGS_RSI];
--			unsigned di = c->regs[VCPU_REGS_RDI];
--
--			/* 16-bit ModR/M decode. */
--			switch (c->modrm_mod) {
--			case 0:
--				if (c->modrm_rm == 6)
--					c->modrm_ea +=
--						insn_fetch(u16, 2, c->eip);
--				break;
--			case 1:
--				c->modrm_ea += insn_fetch(s8, 1, c->eip);
--				break;
--			case 2:
--				c->modrm_ea += insn_fetch(u16, 2, c->eip);
--				break;
--			}
--			switch (c->modrm_rm) {
--			case 0:
--				c->modrm_ea += bx + si;
--				break;
--			case 1:
--				c->modrm_ea += bx + di;
--				break;
--			case 2:
--				c->modrm_ea += bp + si;
--				break;
--			case 3:
--				c->modrm_ea += bp + di;
--				break;
--			case 4:
--				c->modrm_ea += si;
--				break;
--			case 5:
--				c->modrm_ea += di;
--				break;
--			case 6:
--				if (c->modrm_mod != 0)
--					c->modrm_ea += bp;
--				break;
--			case 7:
--				c->modrm_ea += bx;
--				break;
--			}
--			if (c->modrm_rm == 2 || c->modrm_rm == 3 ||
--			    (c->modrm_rm == 6 && c->modrm_mod != 0))
--				if (!c->override_base)
--					c->override_base = &ctxt->ss_base;
--			c->modrm_ea = (u16)c->modrm_ea;
--		} else {
--			/* 32/64-bit ModR/M decode. */
--			switch (c->modrm_rm) {
--			case 4:
--			case 12:
--				sib = insn_fetch(u8, 1, c->eip);
--				index_reg |= (sib >> 3) & 7;
--				base_reg |= sib & 7;
--				scale = sib >> 6;
--
--				switch (base_reg) {
--				case 5:
--					if (c->modrm_mod != 0)
--						c->modrm_ea +=
--							c->regs[base_reg];
--					else
--						c->modrm_ea +=
--						    insn_fetch(s32, 4, c->eip);
--					break;
--				default:
--					c->modrm_ea += c->regs[base_reg];
--				}
--				switch (index_reg) {
--				case 4:
--					break;
--				default:
--					c->modrm_ea +=
--						c->regs[index_reg] << scale;
--
--				}
--				break;
--			case 5:
--				if (c->modrm_mod != 0)
--					c->modrm_ea += c->regs[c->modrm_rm];
--				else if (mode == X86EMUL_MODE_PROT64)
--					rip_relative = 1;
--				break;
--			default:
--				c->modrm_ea += c->regs[c->modrm_rm];
--				break;
--			}
--			switch (c->modrm_mod) {
--			case 0:
--				if (c->modrm_rm == 5)
--					c->modrm_ea +=
--						insn_fetch(s32, 4, c->eip);
--				break;
--			case 1:
--				c->modrm_ea += insn_fetch(s8, 1, c->eip);
--				break;
--			case 2:
--				c->modrm_ea += insn_fetch(s32, 4, c->eip);
--				break;
--			}
--		}
--		if (rip_relative) {
--			c->modrm_ea += c->eip;
--			switch (c->d & SrcMask) {
--			case SrcImmByte:
--				c->modrm_ea += 1;
--				break;
--			case SrcImm:
--				if (c->d & ByteOp)
--					c->modrm_ea += 1;
--				else
--					if (c->op_bytes == 8)
--						c->modrm_ea += 4;
--					else
--						c->modrm_ea += c->op_bytes;
--			}
--		}
--modrm_done:
--		;
--	} else if (c->d & MemAbs) {
--		switch (c->ad_bytes) {
--		case 2:
--			c->modrm_ea = insn_fetch(u16, 2, c->eip);
--			break;
--		case 4:
--			c->modrm_ea = insn_fetch(u32, 4, c->eip);
--			break;
--		case 8:
--			c->modrm_ea = insn_fetch(u64, 8, c->eip);
--			break;
--		}
--
--	}
-+	if (c->d & ModRM)
-+		rc = decode_modrm(ctxt, ops);
-+	else if (c->d & MemAbs)
-+		rc = decode_abs(ctxt, ops);
-+	if (rc)
-+		goto done;
+ 	/* Free page dirty bitmap if unneeded */
+@@ -428,7 +428,7 @@ int kvm_set_memory_region(struct kvm *kvm,
+ 		new.rmap = vmalloc(npages * sizeof(struct page *));
  
- 	if (!c->override_base)
- 		c->override_base = &ctxt->ds_base;
+ 		if (!new.rmap)
+-			goto out_unlock;
++			goto out_free;
+ 
+ 		memset(new.rmap, 0, npages * sizeof(*new.rmap));
+ 
+@@ -445,7 +445,7 @@ int kvm_set_memory_region(struct kvm *kvm,
+ 			up_write(&current->mm->mmap_sem);
+ 
+ 			if (IS_ERR((void *)new.userspace_addr))
+-				goto out_unlock;
++				goto out_free;
+ 		}
+ 	} else {
+ 		if (!old.user_alloc && old.rmap) {
+@@ -468,7 +468,7 @@ int kvm_set_memory_region(struct kvm *kvm,
+ 
+ 		new.dirty_bitmap = vmalloc(dirty_bytes);
+ 		if (!new.dirty_bitmap)
+-			goto out_unlock;
++			goto out_free;
+ 		memset(new.dirty_bitmap, 0, dirty_bytes);
+ 	}
+ 
+@@ -498,18 +498,28 @@ int kvm_set_memory_region(struct kvm *kvm,
+ 	kvm_mmu_slot_remove_write_access(kvm, mem->slot);
+ 	kvm_flush_remote_tlbs(kvm);
+ 
+-	mutex_unlock(&kvm->lock);
+-
+ 	kvm_free_physmem_slot(&old, &new);
+ 	return 0;
+ 
+-out_unlock:
+-	mutex_unlock(&kvm->lock);
++out_free:
+ 	kvm_free_physmem_slot(&new, &old);
+ out:
+ 	return r;
+ 
+ }
++EXPORT_SYMBOL_GPL(__kvm_set_memory_region);
++
++int kvm_set_memory_region(struct kvm *kvm,
++			  struct kvm_userspace_memory_region *mem,
++			  int user_alloc)
++{
++	int r;
++
++	mutex_lock(&kvm->lock);
++	r = __kvm_set_memory_region(kvm, mem, user_alloc);
++	mutex_unlock(&kvm->lock);
++	return r;
++}
+ EXPORT_SYMBOL_GPL(kvm_set_memory_region);
+ 
+ int kvm_vm_ioctl_set_memory_region(struct kvm *kvm,
+@@ -888,14 +898,21 @@ static int emulator_read_emulated(unsigned long addr,
+ 		memcpy(val, vcpu->mmio_data, bytes);
+ 		vcpu->mmio_read_completed = 0;
+ 		return X86EMUL_CONTINUE;
+-	} else if (emulator_read_std(addr, val, bytes, vcpu)
+-		   == X86EMUL_CONTINUE)
+-		return X86EMUL_CONTINUE;
++	}
+ 
+ 	gpa = vcpu->mmu.gva_to_gpa(vcpu, addr);
++
++	/* For APIC access vmexit */
++	if ((gpa & PAGE_MASK) == APIC_DEFAULT_PHYS_BASE)
++		goto mmio;
++
++	if (emulator_read_std(addr, val, bytes, vcpu)
++			== X86EMUL_CONTINUE)
++		return X86EMUL_CONTINUE;
+ 	if (gpa == UNMAPPED_GVA)
+ 		return X86EMUL_PROPAGATE_FAULT;
+ 
++mmio:
+ 	/*
+ 	 * Is this MMIO handled locally?
+ 	 */
+@@ -938,9 +955,14 @@ static int emulator_write_emulated_onepage(unsigned long addr,
+ 		return X86EMUL_PROPAGATE_FAULT;
+ 	}
+ 
++	/* For APIC access vmexit */
++	if ((gpa & PAGE_MASK) == APIC_DEFAULT_PHYS_BASE)
++		goto mmio;
++
+ 	if (emulator_write_phys(vcpu, gpa, val, bytes))
+ 		return X86EMUL_CONTINUE;
+ 
++mmio:
+ 	/*
+ 	 * Is this MMIO handled locally?
+ 	 */
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index 265df86..6fc981d 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -86,6 +86,7 @@ static struct vmcs_config {
+ 	u32 revision_id;
+ 	u32 pin_based_exec_ctrl;
+ 	u32 cpu_based_exec_ctrl;
++	u32 cpu_based_2nd_exec_ctrl;
+ 	u32 vmexit_ctrl;
+ 	u32 vmentry_ctrl;
+ } vmcs_config;
+@@ -179,6 +180,29 @@ static inline int vm_need_tpr_shadow(struct kvm *kvm)
+ 	return ((cpu_has_vmx_tpr_shadow()) && (irqchip_in_kernel(kvm)));
+ }
+ 
++static inline int cpu_has_secondary_exec_ctrls(void)
++{
++	return (vmcs_config.cpu_based_exec_ctrl &
++		CPU_BASED_ACTIVATE_SECONDARY_CONTROLS);
++}
++
++static inline int vm_need_secondary_exec_ctrls(struct kvm *kvm)
++{
++	return ((cpu_has_secondary_exec_ctrls()) && (irqchip_in_kernel(kvm)));
++}
++
++static inline int cpu_has_vmx_virtualize_apic_accesses(void)
++{
++	return (vmcs_config.cpu_based_2nd_exec_ctrl &
++		SECONDARY_EXEC_VIRTUALIZE_APIC_ACCESSES);
++}
++
++static inline int vm_need_virtualize_apic_accesses(struct kvm *kvm)
++{
++	return ((cpu_has_vmx_virtualize_apic_accesses()) &&
++		(irqchip_in_kernel(kvm)));
++}
++
+ static int __find_msr_index(struct vcpu_vmx *vmx, u32 msr)
+ {
+ 	int i;
+@@ -918,6 +942,7 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf)
+ 	u32 min, opt;
+ 	u32 _pin_based_exec_control = 0;
+ 	u32 _cpu_based_exec_control = 0;
++	u32 _cpu_based_2nd_exec_control = 0;
+ 	u32 _vmexit_control = 0;
+ 	u32 _vmentry_control = 0;
+ 
+@@ -935,11 +960,8 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf)
+ 	      CPU_BASED_USE_IO_BITMAPS |
+ 	      CPU_BASED_MOV_DR_EXITING |
+ 	      CPU_BASED_USE_TSC_OFFSETING;
+-#ifdef CONFIG_X86_64
+-	opt = CPU_BASED_TPR_SHADOW;
+-#else
+-	opt = 0;
+-#endif
++	opt = CPU_BASED_TPR_SHADOW |
++	      CPU_BASED_ACTIVATE_SECONDARY_CONTROLS;
+ 	if (adjust_vmx_controls(min, opt, MSR_IA32_VMX_PROCBASED_CTLS,
+ 				&_cpu_based_exec_control) < 0)
+ 		return -EIO;
+@@ -948,6 +970,18 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf)
+ 		_cpu_based_exec_control &= ~CPU_BASED_CR8_LOAD_EXITING &
+ 					   ~CPU_BASED_CR8_STORE_EXITING;
+ #endif
++	if (_cpu_based_exec_control & CPU_BASED_ACTIVATE_SECONDARY_CONTROLS) {
++		min = 0;
++		opt = SECONDARY_EXEC_VIRTUALIZE_APIC_ACCESSES;
++		if (adjust_vmx_controls(min, opt, MSR_IA32_VMX_PROCBASED_CTLS2,
++					&_cpu_based_2nd_exec_control) < 0)
++			return -EIO;
++	}
++#ifndef CONFIG_X86_64
++	if (!(_cpu_based_2nd_exec_control &
++				SECONDARY_EXEC_VIRTUALIZE_APIC_ACCESSES))
++		_cpu_based_exec_control &= ~CPU_BASED_TPR_SHADOW;
++#endif
+ 
+ 	min = 0;
+ #ifdef CONFIG_X86_64
+@@ -985,6 +1019,7 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf)
+ 
+ 	vmcs_conf->pin_based_exec_ctrl = _pin_based_exec_control;
+ 	vmcs_conf->cpu_based_exec_ctrl = _cpu_based_exec_control;
++	vmcs_conf->cpu_based_2nd_exec_ctrl = _cpu_based_2nd_exec_control;
+ 	vmcs_conf->vmexit_ctrl         = _vmexit_control;
+ 	vmcs_conf->vmentry_ctrl        = _vmentry_control;
+ 
+@@ -1427,6 +1462,27 @@ static void seg_setup(int seg)
+ 	vmcs_write32(sf->ar_bytes, 0x93);
+ }
+ 
++static int alloc_apic_access_page(struct kvm *kvm)
++{
++	struct kvm_userspace_memory_region kvm_userspace_mem;
++	int r = 0;
++
++	mutex_lock(&kvm->lock);
++	if (kvm->apic_access_page)
++		goto out;
++	kvm_userspace_mem.slot = APIC_ACCESS_PAGE_PRIVATE_MEMSLOT;
++	kvm_userspace_mem.flags = 0;
++	kvm_userspace_mem.guest_phys_addr = 0xfee00000ULL;
++	kvm_userspace_mem.memory_size = PAGE_SIZE;
++	r = __kvm_set_memory_region(kvm, &kvm_userspace_mem, 0);
++	if (r)
++		goto out;
++	kvm->apic_access_page = gfn_to_page(kvm, 0xfee00);
++out:
++	mutex_unlock(&kvm->lock);
++	return r;
++}
++
+ /*
+  * Sets up the vmcs for emulated real mode.
+  */
+@@ -1458,8 +1514,14 @@ static int vmx_vcpu_setup(struct vcpu_vmx *vmx)
+ 				CPU_BASED_CR8_LOAD_EXITING;
+ #endif
+ 	}
++	if (!vm_need_secondary_exec_ctrls(vmx->vcpu.kvm))
++		exec_control &= ~CPU_BASED_ACTIVATE_SECONDARY_CONTROLS;
+ 	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, exec_control);
+ 
++	if (vm_need_secondary_exec_ctrls(vmx->vcpu.kvm))
++		vmcs_write32(SECONDARY_VM_EXEC_CONTROL,
++			     vmcs_config.cpu_based_2nd_exec_ctrl);
++
+ 	vmcs_write32(PAGE_FAULT_ERROR_CODE_MASK, !!bypass_guest_pf);
+ 	vmcs_write32(PAGE_FAULT_ERROR_CODE_MATCH, !!bypass_guest_pf);
+ 	vmcs_write32(CR3_TARGET_COUNT, 0);           /* 22.2.1 */
+@@ -1528,6 +1590,10 @@ static int vmx_vcpu_setup(struct vcpu_vmx *vmx)
+ 	vmcs_writel(CR0_GUEST_HOST_MASK, ~0UL);
+ 	vmcs_writel(CR4_GUEST_HOST_MASK, KVM_GUEST_CR4_MASK);
+ 
++	if (vm_need_virtualize_apic_accesses(vmx->vcpu.kvm))
++		if (alloc_apic_access_page(vmx->vcpu.kvm) != 0)
++			return -ENOMEM;
++
+ 	return 0;
+ }
+ 
+@@ -1616,13 +1682,17 @@ static int vmx_vcpu_reset(struct kvm_vcpu *vcpu)
+ 
+ 	vmcs_write32(VM_ENTRY_INTR_INFO_FIELD, 0);  /* 22.2.1 */
+ 
+-#ifdef CONFIG_X86_64
+-	vmcs_write64(VIRTUAL_APIC_PAGE_ADDR, 0);
+-	if (vm_need_tpr_shadow(vmx->vcpu.kvm))
+-		vmcs_write64(VIRTUAL_APIC_PAGE_ADDR,
+-			     page_to_phys(vmx->vcpu.apic->regs_page));
+-	vmcs_write32(TPR_THRESHOLD, 0);
+-#endif
++	if (cpu_has_vmx_tpr_shadow()) {
++		vmcs_write64(VIRTUAL_APIC_PAGE_ADDR, 0);
++		if (vm_need_tpr_shadow(vmx->vcpu.kvm))
++			vmcs_write64(VIRTUAL_APIC_PAGE_ADDR,
++				     page_to_phys(vmx->vcpu.apic->regs_page));
++		vmcs_write32(TPR_THRESHOLD, 0);
++	}
++
++	if (vm_need_virtualize_apic_accesses(vmx->vcpu.kvm))
++		vmcs_write64(APIC_ACCESS_ADDR,
++			     page_to_phys(vmx->vcpu.kvm->apic_access_page));
+ 
+ 	vmx->vcpu.cr0 = 0x60000010;
+ 	vmx_set_cr0(&vmx->vcpu, vmx->vcpu.cr0); /* enter rmode */
+@@ -2094,6 +2164,26 @@ static int handle_vmcall(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	return 1;
+ }
+ 
++static int handle_apic_access(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
++{
++	u64 exit_qualification;
++	enum emulation_result er;
++	unsigned long offset;
++
++	exit_qualification = vmcs_read64(EXIT_QUALIFICATION);
++	offset = exit_qualification & 0xffful;
++
++	er = emulate_instruction(vcpu, kvm_run, 0, 0, 0);
++
++	if (er !=  EMULATE_DONE) {
++		printk(KERN_ERR
++		       "Fail to handle apic access vmexit! Offset is 0x%lx\n",
++		       offset);
++		return -ENOTSUPP;
++	}
++	return 1;
++}
++
+ /*
+  * The exit handlers return 1 if the exit was handled fully and guest execution
+  * may resume.  Otherwise they set the kvm_run parameter to indicate what needs
+@@ -2113,7 +2203,8 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu,
+ 	[EXIT_REASON_PENDING_INTERRUPT]       = handle_interrupt_window,
+ 	[EXIT_REASON_HLT]                     = handle_halt,
+ 	[EXIT_REASON_VMCALL]                  = handle_vmcall,
+-	[EXIT_REASON_TPR_BELOW_THRESHOLD]     = handle_tpr_below_threshold
++	[EXIT_REASON_TPR_BELOW_THRESHOLD]     = handle_tpr_below_threshold,
++	[EXIT_REASON_APIC_ACCESS]             = handle_apic_access,
+ };
+ 
+ static const int kvm_vmx_max_exit_handlers =
+diff --git a/drivers/kvm/vmx.h b/drivers/kvm/vmx.h
+index 270d477..c84bd37 100644
+--- a/drivers/kvm/vmx.h
++++ b/drivers/kvm/vmx.h
+@@ -89,6 +89,8 @@ enum vmcs_field {
+ 	TSC_OFFSET_HIGH                 = 0x00002011,
+ 	VIRTUAL_APIC_PAGE_ADDR          = 0x00002012,
+ 	VIRTUAL_APIC_PAGE_ADDR_HIGH     = 0x00002013,
++	APIC_ACCESS_ADDR		= 0x00002014,
++	APIC_ACCESS_ADDR_HIGH		= 0x00002015,
+ 	VMCS_LINK_POINTER               = 0x00002800,
+ 	VMCS_LINK_POINTER_HIGH          = 0x00002801,
+ 	GUEST_IA32_DEBUGCTL             = 0x00002802,
+@@ -214,6 +216,7 @@ enum vmcs_field {
+ #define EXIT_REASON_MSR_WRITE           32
+ #define EXIT_REASON_MWAIT_INSTRUCTION   36
+ #define EXIT_REASON_TPR_BELOW_THRESHOLD 43
++#define EXIT_REASON_APIC_ACCESS         44
+ 
+ /*
+  * Interruption-information format
+@@ -307,4 +310,6 @@ enum vmcs_field {
+ #define MSR_IA32_FEATURE_CONTROL_LOCKED         0x1
+ #define MSR_IA32_FEATURE_CONTROL_VMXON_ENABLED  0x4
+ 
++#define APIC_ACCESS_PAGE_PRIVATE_MEMSLOT	9
++
+ #endif
 -- 
 1.5.3.7
 
