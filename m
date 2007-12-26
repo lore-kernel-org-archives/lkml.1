@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbXLZJVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbXLZJon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751958AbXLZJVR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 04:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbXLZJVI
+	id S1751909AbXLZJon (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 04:44:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbXLZJoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 04:21:08 -0500
-Received: from n2.bullet.kr1.yahoo.com ([203.212.168.58]:35538 "HELO
-	n2.bullet.kr1.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751434AbXLZJVH (ORCPT
+	Wed, 26 Dec 2007 04:44:34 -0500
+Received: from an-out-0708.google.com ([209.85.132.245]:4106 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751353AbXLZJod (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 04:21:07 -0500
-X-Greylist: delayed 382 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Dec 2007 04:21:06 EST
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 906644.87671.bm@mix95401.mail.in2.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=yrCgoF+w71UE9iB0lf1uQF1MZHZs/QgSS67n5796pmt+12u4hVvnWlRSzKfFnhgbY1BQlpoQHstLTSHWezu8mEMm7G7014qb10Dsnkc3oivFa94F9pX5dka/bL7UsT4NRtraRjA4KCeAO114giYiXOGdc/DbtFAOO2AHCmpURTE=;
-X-YMail-OSG: PUwNXmsVM1nmt6UsNXzmSFMHM07qh6OIqIXTQKAo3XE0smFXAJnTdH7kSd_2nXlDDXcWnu0SkaExGO2ovhTNXdbg75V4hhIi_xIIyXd1.AEUcwJpqNOq3qMFwhq9ug--
-Date: Wed, 26 Dec 2007 09:13:26 +0000 (GMT)
-From: pradeep pradeep <asnvpradeep@yahoo.com>
-Subject: VGA Drivers
-To: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+	Wed, 26 Dec 2007 04:44:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=rSXQ56S+D76OO0QkIYnUxDZl8oE0lF9JboSJhf3NO58AkP67oXxNm1L/AVEgIsexVmDCIWbUehg4wgXaKrYVIVuvmMe9QyCsrosojWFSmBCQkR1082xDR/e4tSoBfhBoS/sRZf9vsDYO21zLw/NONOSH/ivlbrbg0eXHe6qAz88=
+Message-ID: <9cde8bff0712260144t71eb437bxa7394692700cf8cb@mail.gmail.com>
+Date: Wed, 26 Dec 2007 18:44:31 +0900
+From: "Nguyen Anh Quynh" <aquynh@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>,
+       tpmdd-devel@lists.sourceforge.net
+Subject: [PATCH] tpm_bios.c
+Cc: munetoh <munetoh@jp.ibm.com>, "Kuniyasu Suzaki" <k.suzaki@aist.go.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <691805.30097.qm@web94706.mail.in2.yahoo.com>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_11878_17738218.1198662271141"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-    I want to support a new PCI based VGA card in
-linux. I want to know what is the VGA driver stack in
-the Linux. Can any one help me where to start.
+------=_Part_11878_17738218.1198662271141
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
--Pradeep
+This trivial patch removes some unused stuffs from tpm_bios.c (against
+2.6.24-rc6)
 
-Pradeep Annavarapu
-Moschip Semiconductor
-Hyderabad
+Signed-off-by: Nguyen Anh Quynh <aquynh@gmail.com>
 
+------=_Part_11878_17738218.1198662271141
+Content-Type: text/x-patch; name=tpm.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fanohdrk0
+Content-Disposition: attachment; filename=tpm.patch
 
-      Forgot the famous last words? Access your message archive online at http://in.messenger.yahoo.com/webmessengerpromo.php
-
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2hhci90cG0vdHBtX2Jpb3MuYyBiL2RyaXZlcnMvY2hhci90
+cG0vdHBtX2Jpb3MuYwppbmRleCA2MGEyZDI2Li4wOWJiOTVhIDEwMDY0NAotLS0gYS9kcml2ZXJz
+L2NoYXIvdHBtL3RwbV9iaW9zLmMKKysrIGIvZHJpdmVycy9jaGFyL3RwbS90cG1fYmlvcy5jCkBA
+IC0yNyw5ICsyNyw3IEBACiAjaW5jbHVkZSA8YWNwaS9hY3RibC5oPgogI2luY2x1ZGUgInRwbS5o
+IgogCi0jZGVmaW5lIFRDR19FVkVOVF9OQU1FX0xFTl9NQVgJMjU1CiAjZGVmaW5lIE1BWF9URVhU
+X0VWRU5UCQkxMDAwCS8qIE1heCBldmVudCBzdHJpbmcgbGVuZ3RoICovCi0jZGVmaW5lIEFDUElf
+VENQQV9TSUcJCSJUQ1BBIgkvKiAweDQxNTA0MzU0IC8nVENQQScgKi8KIAogZW51bSBiaW9zX3Bs
+YXRmb3JtX2NsYXNzIHsKIAlCSU9TX0NMSUVOVCA9IDB4MDAsCg==
+------=_Part_11878_17738218.1198662271141--
