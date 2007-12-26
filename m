@@ -1,62 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752816AbXLZUzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbXLZU5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752816AbXLZUzI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 15:55:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbXLZUy5
+	id S1752874AbXLZU5y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 15:57:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbXLZU5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 15:54:57 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59432 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751603AbXLZUy4 (ORCPT
+	Wed, 26 Dec 2007 15:57:46 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:34788 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751320AbXLZU5o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 15:54:56 -0500
-Message-ID: <4772BF86.4010906@zytor.com>
-Date: Wed, 26 Dec 2007 12:54:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Oliver Neukum <oliver@neukum.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] sleepy linux
-References: <20071225230731.GA29030@elf.ucw.cz> <4772A3FB.8080108@zytor.com> <200712262108.35643.oliver@neukum.org> <4772BD0C.3040609@zytor.com> <20071226205103.GG8094@elf.ucw.cz>
-In-Reply-To: <20071226205103.GG8094@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 26 Dec 2007 15:57:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=Kf1lxXmj/fXgTA1Yit3hD2AV0B4G6TFc75eMyiTC3tbAvSf7NYfD6D5eQ7XiPnvEGYkKFeTEBHwpeAZyvq1PrZCW7mZ2LRr3pB5cEnnlxu+TtBwBi51G7OGUIoqhZSQu+CVeGhGDTie3wd8tyfjc0GROdB12I5mcgiNTlg5yNEk=
+Date: Wed, 26 Dec 2007 14:57:34 -0600
+From: David Hilvert <dhilvert@gmail.com>
+To: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dmitri@users.sourceforge.net
+Subject: Re: Regarding request for IBM camera patch to be applied to the
+ main tree
+Message-Id: <20071226145734.031f568e.dhilvert@gmail.com>
+In-Reply-To: <20071221223209.GA24780@kroah.com>
+References: <20071221223209.GA24780@kroah.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Wed 2007-12-26 12:43:56, H. Peter Anvin wrote:
->> Oliver Neukum wrote:
->>> Am Mittwoch, 26. Dezember 2007 19:56:59 schrieb H. Peter Anvin:
->>>>> 3) Network card that is either down
->>>>>    or can wake up system on any packet (and not loose too many packets)
->>>>>
->>>> This is the big crux I see.  You're going to constantly wake up the 
->>>> machine due to broadcast packets, and spend a lot of power just going in 
->>>> and out of S3.
->>> How many machines care a lot about saving power while they are connected
->>> to an ethernet? Wlan might be more of a problem.
->> A lot of them should.  An inordinate amount of machines sit there burning 
->> power for no reason.  You can argue that S3 isn't needed -- that nohz + 
->> C3/C4 + turning off the screen would be enough, and that might be
->> + legit.  
-> 
-> NOHZ + C4 + turn off screen + turn off disk + turn off SATA is still
-> ~8W on thinkpad x60.
-> 
-> S3 is ~1W.
-> 
-> That's quite significant difference.
-> 
-> (But yes, connected-to-ethernet is not most important use scenario.)
-> 								Pavel
+On Fri, 21 Dec 2007 14:32:09 -0800
+Greg KH <greg@kroah.com> wrote:
 
-Still... if we could get the desktops of the world down anywhere close 
-to that range when not used, it would be a huge win.
+> On Fri, Dec 21, 2007 at 03:21:30PM -0600, David Hilvert wrote:
+> > > > http://www.linux-usb.org/ibmcam/
+> > 
+> > > > http://auricle.dyndns.org/xvp610/
+> > 
+> > [Remainder of private e-mail context snipped; message has been blind-CC'ed to
+> > the original recipients.  Please CC any replies intended for me.]
+> > 
+> > As the author of the second patch noted, I had avoided sending it to lkml due
+> > to the difficulty of determining whether the patch is correct (e.g., having no
+> > ill effect on other cameras), due, in turn, to lack of documentation for this
+> > series of cameras.  Perhaps dmitri could comment further on this, if he has
+> > time and access to test on any other cameras that might fall under the 'model
+> > 3' designation (whatever this designation might mean).  The (rather old, now)
+> > patch in question (against 2.6.1 or so, and perhaps other versions) follows; if
+> > I recall correctly, it was designed to minimize change lines rather than
+> > provide for overall clarity, so that a clearer final implementation is probably
+> > possible.
+> > 
+> > 
+> > diff -urN linux-2.6.1/drivers/usb/media/ibmcam.c linux-2.6.1-patched/drivers/usb/media/ibmcam.c
+> > --- linux-2.6.1/drivers/usb/media/ibmcam.c	Fri Jan  9 00:59:19 2004
+> > +++ linux-2.6.1-patched/drivers/usb/media/ibmcam.c	Fri Feb  6 14:54:33 2004
+> 
+> I suggest forward porting it to the latest tree and submit it to the usb
+> video maintainers for inclusion.
+> 
+> thanks,
+> 
+> greg k-h
 
-	-hpa
+Port to 2.6.23.12 follows:
+
+
+--- linux-2.6.23.12/drivers/media/video/usbvideo/ibmcam.c	2007-12-18 21:55:57.000000000 +0000
++++ linux-2.6.23.12-patched/drivers/media/video/usbvideo/ibmcam.c	2007-12-26 20:34:45.000000000 +0000
+@@ -802,6 +802,21 @@
+ 		return scan_Continue;
+ }
+ 
++/*
++ * ibmcam_model3_parse_lines()
++ *
++ * | Even lines |     Odd Lines       |
++ * -----------------------------------|
++ * |YYY........Y|UYVYUYVY.........UYVY|
++ * |YYY........Y|UYVYUYVY.........UYVY| 
++ * |............|.....................|
++ * |YYY........Y|UYVYUYVY.........UYVY| 
++ * |------------+---------------------|
++ *
++ * There is one (U, V) chroma pair for every four luma (Y) values.  This
++ * function reads a pair of lines at a time and obtains missing chroma values
++ * from adjacent pixels.
++ */
+ static enum ParseState ibmcam_model3_parse_lines(
+ 	struct uvd *uvd,
+ 	struct usbvideo_frame *frame,
+@@ -816,6 +831,7 @@
+ 	const int ccm = 128; /* Color correction median - see below */
+ 	int i, u, v, rw, data_w=0, data_h=0, color_corr;
+ 	static unsigned char lineBuffer[640*3];
++	int line;
+ 
+ 	color_corr = (uvd->vpic.colour - 0x8000) >> 8; /* -128..+127 = -ccm..+(ccm-1)*/
+ 	RESTRICT_TO_RANGE(color_corr, -ccm, ccm+1);
+@@ -869,15 +885,15 @@
+ 		return scan_NextFrame;
+ 	}
+ 
+-	/* Make sure there's enough data for the entire line */
+-	len = 3 * data_w; /* <y-data> <uv-data> */
++	/* Make sure that lineBuffer can store two lines of data */
++	len = 3 * data_w; /* <y-data> <uyvy-data> */
+ 	assert(len <= sizeof(lineBuffer));
+ 
+-	/* Make sure there's enough data for the entire line */
++	/* Make sure there's enough data for two lines */
+ 	if (RingQueue_GetLength(&uvd->dp) < len)
+ 		return scan_Out;
+ 
+-	/* Suck one line out of the ring queue */
++	/* Suck two lines of data out of the ring queue */
+ 	RingQueue_Dequeue(&uvd->dp, lineBuffer, len);
+ 
+ 	data = lineBuffer;
+@@ -887,15 +903,23 @@
+ 	rw = (int)VIDEOSIZE_Y(frame->request) - (int)(frame->curline) - 1;
+ 	RESTRICT_TO_RANGE(rw, 0, VIDEOSIZE_Y(frame->request)-1);
+ 
+-	for (i = 0; i < VIDEOSIZE_X(frame->request); i++) {
+-		int y, rv, gv, bv;	/* RGB components */
++	/* Iterate over two lines. */
++	for (line = 0; line < 2; line++) {
++		for (i = 0; i < VIDEOSIZE_X(frame->request); i++) {
++			int y;
++			int rv, gv, bv;	/* RGB components */
++
++			if (i >= data_w) {
++				RGB24_PUTPIXEL(frame, i, rw, 0, 0, 0);
++				continue;
++			}
+ 
+-		if (i < data_w) {
+-			y = data[i];	/* Luminosity is the first line */
++			/* first line is YYY...Y; second is UYVY...UYVY */
++			y = data[(line == 0) ? i : (i*2 + 1)];
+ 
+ 			/* Apply static color correction */
+-			u = color[i*2] + hue_corr;
+-			v = color[i*2 + 1] + hue2_corr;
++			u = color[(i/2)*4] + hue_corr;
++			v = color[(i/2)*4 + 2] + hue2_corr;
+ 
+ 			/* Apply color correction */
+ 			if (color_corr != 0) {
+@@ -903,13 +927,21 @@
+ 				u = 128 + ((ccm + color_corr) * (u - 128)) / ccm;
+ 				v = 128 + ((ccm + color_corr) * (v - 128)) / ccm;
+ 			}
+-		} else
+-			y = 0, u = v = 128;
+ 
+-		YUV_TO_RGB_BY_THE_BOOK(y, u, v, rv, gv, bv);
+-		RGB24_PUTPIXEL(frame, i, rw, rv, gv, bv); /* Done by deinterlacing now */
++
++			YUV_TO_RGB_BY_THE_BOOK(y, u, v, rv, gv, bv);
++			RGB24_PUTPIXEL(frame, i, rw, rv, gv, bv);  /* No deinterlacing */
++		}
++
++		/* Check for the end of requested data */
++		if (rw == 0)
++			break;
++
++		/* Prepare for the second line */
++		rw--;
++		data = lineBuffer + data_w;
+ 	}
+-	frame->deinterlace = Deinterlace_FillEvenLines;
++	frame->deinterlace = Deinterlace_None;
+ 
+ 	/*
+ 	 * Account for number of bytes that we wrote into output V4L frame.
