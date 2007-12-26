@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbXLZLJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbXLZLJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752760AbXLZLJE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 06:09:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbXLZLGY
+	id S1753379AbXLZLJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 06:09:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbXLZLGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 26 Dec 2007 06:06:24 -0500
-Received: from il.qumranet.com ([82.166.9.18]:50473 "EHLO il.qumranet.com"
+Received: from il.qumranet.com ([82.166.9.18]:50469 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751673AbXLZLGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 06:06:05 -0500
+	id S1751611AbXLZLGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 06:06:04 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Cc: Laurent Vivier <Laurent.Vivier@bull.net>
-Subject: [PATCH 12/55] KVM: VMX: Let gcc to choose which registers to save (i386)
-Date: Wed, 26 Dec 2007 13:05:17 +0200
-Message-Id: <1198667160-22953-13-git-send-email-avi@qumranet.com>
+Cc: Izik Eidus <izike@qumranet.com>
+Subject: [PATCH 08/55] KVM: Export memory slot allocation mechanism
+Date: Wed, 26 Dec 2007 13:05:13 +0200
+Message-Id: <1198667160-22953-9-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1198667160-22953-1-git-send-email-avi@qumranet.com>
 References: <1198667160-22953-1-git-send-email-avi@qumranet.com>
@@ -22,77 +22,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Laurent Vivier <Laurent.Vivier@bull.net>
+From: Izik Eidus <izike@qumranet.com>
 
-This patch lets GCC to determine which registers to save when we
-switch to/from a VCPU in the case of intel i386.
+Remove kvm memory slot allocation mechanism from the ioctl
+and put it to exported function.
 
-* Original code saves following registers:
-
-    eax, ebx, ecx, edx, edi, esi, ebp (using popa)
-
-* Patched code:
-
-  - informs GCC that we modify following registers
-    using the clobber description:
-
-    ebx, edi, rsi
-
-  - doesn't save eax because it is an output operand (vmx->fail)
-
-  - cannot put ecx in clobber description because it is an input operand,
-    but as we modify it and we want to keep its value (vcpu), we must
-    save it (pop/push)
-
-  - ebp is saved (pop/push) because GCC seems to ignore its use the clobber
-    description.
-
-  - edx is saved (pop/push) because it is reserved by GCC (REGPARM) and
-    cannot be put in the clobber description.
-
-  - line "mov (%%esp), %3 \n\t" has been removed because %3
-    is ecx and ecx is restored just after.
-
-Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+Signed-off-by: Izik Eidus <izike@qumranet.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/vmx.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/kvm/kvm.h      |    3 +++
+ drivers/kvm/kvm_main.c |   17 +++++++++++++----
+ 2 files changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index 3a58a2a..f76677d 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -2268,7 +2268,8 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		"push %%rdx; push %%rbp;"
- 		"push %%rcx \n\t"
- #else
--		"pusha; push %%ecx \n\t"
-+		"push %%edx; push %%ebp;"
-+		"push %%ecx \n\t"
- #endif
- 		ASM_VMX_VMWRITE_RSP_RDX "\n\t"
- 		/* Check if vmlaunch of vmresume is needed */
-@@ -2342,9 +2343,8 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		"mov %%ebp, %c[rbp](%3) \n\t"
- 		"mov %%cr2, %%eax  \n\t"
- 		"mov %%eax, %c[cr2](%3) \n\t"
--		"mov (%%esp), %3 \n\t"
+diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
+index 12de42c..f3dda08 100644
+--- a/drivers/kvm/kvm.h
++++ b/drivers/kvm/kvm.h
+@@ -513,6 +513,9 @@ struct page *gva_to_page(struct kvm_vcpu *vcpu, gva_t gva);
+ extern struct page *bad_page;
  
--		"pop %%ecx; popa \n\t"
-+		"pop %%ecx; pop %%ebp; pop %%edx \n\t"
- #endif
- 		"setbe %0 \n\t"
- 	      : "=q" (vmx->fail)
-@@ -2372,6 +2372,8 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- #ifdef CONFIG_X86_64
- 		, "rbx", "rdi", "rsi"
- 		, "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
-+#else
-+		, "ebx", "edi", "rsi"
- #endif
- 	      );
+ int is_error_page(struct page *page);
++int kvm_set_memory_region(struct kvm *kvm,
++			  struct kvm_userspace_memory_region *mem,
++			  int user_alloc);
+ gfn_t unalias_gfn(struct kvm *kvm, gfn_t gfn);
+ struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn);
+ void kvm_release_page(struct page *page);
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index 0e8f77d..16176a2 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -643,10 +643,9 @@ EXPORT_SYMBOL_GPL(fx_init);
+  *
+  * Discontiguous memory is allowed, mostly for framebuffers.
+  */
+-static int kvm_vm_ioctl_set_memory_region(struct kvm *kvm,
+-					  struct
+-					  kvm_userspace_memory_region *mem,
+-					  int user_alloc)
++int kvm_set_memory_region(struct kvm *kvm,
++			  struct kvm_userspace_memory_region *mem,
++			  int user_alloc)
+ {
+ 	int r;
+ 	gfn_t base_gfn;
+@@ -789,6 +788,16 @@ out_unlock:
+ 	kvm_free_physmem_slot(&new, &old);
+ out:
+ 	return r;
++
++}
++EXPORT_SYMBOL_GPL(kvm_set_memory_region);
++
++static int kvm_vm_ioctl_set_memory_region(struct kvm *kvm,
++					  struct
++					  kvm_userspace_memory_region *mem,
++					  int user_alloc)
++{
++	return kvm_set_memory_region(kvm, mem, user_alloc);
+ }
  
+ static int kvm_vm_ioctl_set_nr_mmu_pages(struct kvm *kvm,
 -- 
 1.5.3.7
 
