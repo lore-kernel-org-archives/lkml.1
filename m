@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbXLZV26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbXLZVbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752387AbXLZV26 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 16:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbXLZV2t
+	id S1752558AbXLZVbp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 16:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXLZVbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 16:28:49 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:45619 "EHLO relay.sgi.com"
+	Wed, 26 Dec 2007 16:31:38 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:45725 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751612AbXLZV2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 16:28:48 -0500
-Date: Wed, 26 Dec 2007 13:28:45 -0800 (PST)
+	id S1751533AbXLZVbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 16:31:37 -0500
+Date: Wed, 26 Dec 2007 13:31:35 -0800 (PST)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       a.p.zijlstra@chello.nl
-Subject: Re: [PATCH] slub: /proc/slabinfo ABI compatibility
-In-Reply-To: <84144f020712241259o27f4015ai1128fbb675d079ef@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0712261323050.16904@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0712221446280.24655@sbz-30.cs.Helsinki.FI> 
- <20071222131601.GB32558@elte.hu> <20071222133727.GA12031@elte.hu> 
- <Pine.LNX.4.64.0712241110240.8802@schroedinger.engr.sgi.com>
- <84144f020712241259o27f4015ai1128fbb675d079ef@mail.gmail.com>
+To: Theodore Tso <tytso@mit.edu>
+cc: Andi Kleen <andi@firstfloor.org>, Willy Tarreau <w@1wt.eu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Major regression on hackbench with SLUB (more numbers)
+In-Reply-To: <20071224233701.GB9784@kernel.org>
+Message-ID: <Pine.LNX.4.64.0712261330030.16904@schroedinger.engr.sgi.com>
+References: <20071222100326.GF26157@elte.hu>
+ <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org>
+ <20071222192550.GD28891@thunk.org> <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org>
+ <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com>
+ <20071223051241.GA4449@1wt.eu> <20071223141500.GB6430@one.firstfloor.org>
+ <20071224034530.GB16658@thunk.org> <Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com>
+ <20071224233701.GB9784@kernel.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Dec 2007, Pekka Enberg wrote:
+On Mon, 24 Dec 2007, Theodore Tso wrote:
 
-> On Dec 24, 2007 9:12 PM, Christoph Lameter <clameter@sgi.com> wrote:
-> > Hmmm... What is the combination of config variables that causes this? I
-> > moved the count_partial function in mm in order to make the merge of slab
-> > defrag easier.
-> 
-> I think it's CONFIG_PROC_FS without CONFIG_SYSFS.
+> So two questions: why isn't -f the default?  And is /sys/slab
 
-The only user of count_partial is in slab_objects() which is in a 
-section that is
-
-#if defined(CONFIG_SYSFS) && defined(CONFIG_SLUB_DEBUG)
-
-There should be no use if CONFIG_SYSFS is not set. I think we get a 
-warning about a function that is never called when compiling the current 
-mm code without SLUB_DEBUG or CONFIG_SYSFS (because the slab defrag use 
-has not been merged yet).
-
-In mm count_partial() is always defined. In Linus tree count_partial() 
-comes just before slab_objects().
-
+Because it gives misleading output. It displays the name of the first 
+of multiple slabs that share the same storage structures.
