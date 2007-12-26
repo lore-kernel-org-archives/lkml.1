@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbXLZUnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbXLZUpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753037AbXLZUnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 15:43:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbXLZUnF
+	id S1752799AbXLZUpK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 15:45:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbXLZUo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 15:43:05 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:41978 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751401AbXLZUnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 15:43:04 -0500
-Date: Wed, 26 Dec 2007 12:43:01 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: tlb_finish_mmu() bogisity
-In-Reply-To: <Pine.LNX.4.64.0712241054210.8299@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0712261236390.15176@schroedinger.engr.sgi.com>
-References: <20071223093241.GR8181@ftp.linux.org.uk>
- <alpine.LFD.0.9999.0712231311530.21557@woody.linux-foundation.org>
- <Pine.LNX.4.64.0712241054210.8299@schroedinger.engr.sgi.com>
+	Wed, 26 Dec 2007 15:44:59 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33536 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751494AbXLZUo6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 15:44:58 -0500
+Message-ID: <4772BD0C.3040609@zytor.com>
+Date: Wed, 26 Dec 2007 12:43:56 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Oliver Neukum <oliver@neukum.org>
+CC: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC] sleepy linux
+References: <20071225230731.GA29030@elf.ucw.cz> <4772A3FB.8080108@zytor.com> <200712262108.35643.oliver@neukum.org>
+In-Reply-To: <200712262108.35643.oliver@neukum.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Argh. This is indeed bogus. The one reporting the problem states that the 
-patch did not address the issue. The report was regarding pgd freeing 
-which is handled slightly differently from pte frees.
+Oliver Neukum wrote:
+> Am Mittwoch, 26. Dezember 2007 19:56:59 schrieb H. Peter Anvin:
+>>> 3) Network card that is either down
+>>>    or can wake up system on any packet (and not loose too many packets)
+>>>
+>> This is the big crux I see.  You're going to constantly wake up the 
+>> machine due to broadcast packets, and spend a lot of power just going in 
+>> and out of S3.
+> 
+> How many machines care a lot about saving power while they are connected
+> to an ethernet? Wlan might be more of a problem.
 
-[PATCH] Revert quicklist need->flush fix
+A lot of them should.  An inordinate amount of machines sit there 
+burning power for no reason.  You can argue that S3 isn't needed -- that 
+nohz + C3/C4 + turning off the screen would be enough, and that might be 
+legit.  Heck, I'm constantly frustrated by every distro upgrade breaking 
+power management for my monitor.
 
-Did not fix the reported issue. Apart from other weirdness this causes a 
-bad link between the TLB flushing logic and the quicklists. If there is 
-indeed an issue that an arch needs a tlb flush before free then the arch 
-code needs to set tlb->need_flush before calling quicklist_free.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Index: linux-2.6/include/asm-generic/tlb.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/tlb.h	2007-12-26 12:26:32.000000000 -0800
-+++ linux-2.6/include/asm-generic/tlb.h	2007-12-26 12:26:39.000000000 -0800
-@@ -86,9 +86,6 @@ tlb_flush_mmu(struct mmu_gather *tlb, un
- static inline void
- tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
- {
--#ifdef CONFIG_QUICKLIST
--	tlb->need_flush += &__get_cpu_var(quicklist)[0].nr_pages != 0;
--#endif
- 	tlb_flush_mmu(tlb, start, end);
- 
- 	/* keep the page table cache within bounds */
+	-hpa
