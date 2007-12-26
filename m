@@ -1,212 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755672AbXLZLZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbXLZL0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755672AbXLZLZr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 06:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbXLZLHS
+	id S1755758AbXLZL0J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 06:26:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbXLZLPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 06:07:18 -0500
-Received: from il.qumranet.com ([82.166.9.18]:50468 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752211AbXLZLGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 06:06:12 -0500
-From: Avi Kivity <avi@qumranet.com>
-To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH 54/55] KVM: VMX: Consolidate register usage in vmx_vcpu_run()
-Date: Wed, 26 Dec 2007 13:05:59 +0200
-Message-Id: <1198667160-22953-55-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1198667160-22953-1-git-send-email-avi@qumranet.com>
-References: <1198667160-22953-1-git-send-email-avi@qumranet.com>
+	Wed, 26 Dec 2007 06:15:24 -0500
+Received: from ns4.abinetworks.biz ([216.218.212.66]:37922 "EHLO
+	ns4.abinetworks.biz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbXLZLPU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 06:15:20 -0500
+Message-ID: <477237A2.3040907@abinetworks.biz>
+Date: Wed, 26 Dec 2007 12:14:42 +0100
+From: Gianluca Alberici <gianluca@abinetworks.biz>
+User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Scott <linux-kernel@bluecamel.eml.cc>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: NFS EINVAL on open(... | O_TRUNC) on 2.6.23.9
+References: <476CEC5E.9070002@abinetworks.biz>	<838DE9A2-59B2-49FA-B3E8-89B26368B1CF@bluecamel.eml.cc>	<476E47F5.4090807@abinetworks.biz> <20071225140431.9264970a.akpm@linux-foundation.org>
+In-Reply-To: <20071225140431.9264970a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We pass vcpu, vmx->fail, and vmx->launched to assembly code, but all three
-are fields within vmx.  Consolidate by only passing in vmx and offsets for
-the rest.
+Hello all,
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- drivers/kvm/vmx.c |  146 ++++++++++++++++++++++++++--------------------------
- 1 files changed, 73 insertions(+), 73 deletions(-)
+I've seen that Trond and the other guys at Netapp are working hard on 
+the NFS support and there are dozens of patches in latest
+2.6.24rcX s kernels regarding both RPC and NFS.
+I can only hope, as Andrew Morton said, that the policy of new NFS impl 
+was 'dont break'.
+In the end those buggy, dreaded, old fashioned NFSs have done their job 
+excellently for over 15 years and will be around for
+another 5 IMHO.
 
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index 18fd918..30220ea 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -2350,36 +2350,36 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- #endif
- 		ASM_VMX_VMWRITE_RSP_RDX "\n\t"
- 		/* Check if vmlaunch of vmresume is needed */
--		"cmp $0, %1 \n\t"
-+		"cmpl $0, %c[launched](%0) \n\t"
- 		/* Load guest registers.  Don't clobber flags. */
- #ifdef CONFIG_X86_64
--		"mov %c[cr2](%3), %%rax \n\t"
-+		"mov %c[cr2](%0), %%rax \n\t"
- 		"mov %%rax, %%cr2 \n\t"
--		"mov %c[rax](%3), %%rax \n\t"
--		"mov %c[rbx](%3), %%rbx \n\t"
--		"mov %c[rdx](%3), %%rdx \n\t"
--		"mov %c[rsi](%3), %%rsi \n\t"
--		"mov %c[rdi](%3), %%rdi \n\t"
--		"mov %c[rbp](%3), %%rbp \n\t"
--		"mov %c[r8](%3),  %%r8  \n\t"
--		"mov %c[r9](%3),  %%r9  \n\t"
--		"mov %c[r10](%3), %%r10 \n\t"
--		"mov %c[r11](%3), %%r11 \n\t"
--		"mov %c[r12](%3), %%r12 \n\t"
--		"mov %c[r13](%3), %%r13 \n\t"
--		"mov %c[r14](%3), %%r14 \n\t"
--		"mov %c[r15](%3), %%r15 \n\t"
--		"mov %c[rcx](%3), %%rcx \n\t" /* kills %3 (rcx) */
-+		"mov %c[rax](%0), %%rax \n\t"
-+		"mov %c[rbx](%0), %%rbx \n\t"
-+		"mov %c[rdx](%0), %%rdx \n\t"
-+		"mov %c[rsi](%0), %%rsi \n\t"
-+		"mov %c[rdi](%0), %%rdi \n\t"
-+		"mov %c[rbp](%0), %%rbp \n\t"
-+		"mov %c[r8](%0),  %%r8  \n\t"
-+		"mov %c[r9](%0),  %%r9  \n\t"
-+		"mov %c[r10](%0), %%r10 \n\t"
-+		"mov %c[r11](%0), %%r11 \n\t"
-+		"mov %c[r12](%0), %%r12 \n\t"
-+		"mov %c[r13](%0), %%r13 \n\t"
-+		"mov %c[r14](%0), %%r14 \n\t"
-+		"mov %c[r15](%0), %%r15 \n\t"
-+		"mov %c[rcx](%0), %%rcx \n\t" /* kills %0 (rcx) */
- #else
--		"mov %c[cr2](%3), %%eax \n\t"
-+		"mov %c[cr2](%0), %%eax \n\t"
- 		"mov %%eax,   %%cr2 \n\t"
--		"mov %c[rax](%3), %%eax \n\t"
--		"mov %c[rbx](%3), %%ebx \n\t"
--		"mov %c[rdx](%3), %%edx \n\t"
--		"mov %c[rsi](%3), %%esi \n\t"
--		"mov %c[rdi](%3), %%edi \n\t"
--		"mov %c[rbp](%3), %%ebp \n\t"
--		"mov %c[rcx](%3), %%ecx \n\t" /* kills %3 (ecx) */
-+		"mov %c[rax](%0), %%eax \n\t"
-+		"mov %c[rbx](%0), %%ebx \n\t"
-+		"mov %c[rdx](%0), %%edx \n\t"
-+		"mov %c[rsi](%0), %%esi \n\t"
-+		"mov %c[rdi](%0), %%edi \n\t"
-+		"mov %c[rbp](%0), %%ebp \n\t"
-+		"mov %c[rcx](%0), %%ecx \n\t" /* kills %0 (ecx) */
- #endif
- 		/* Enter guest mode */
- 		"jne .Llaunched \n\t"
-@@ -2389,62 +2389,62 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 		".Lkvm_vmx_return: "
- 		/* Save guest registers, load host registers, keep flags */
- #ifdef CONFIG_X86_64
--		"xchg %3,     (%%rsp) \n\t"
--		"mov %%rax, %c[rax](%3) \n\t"
--		"mov %%rbx, %c[rbx](%3) \n\t"
--		"pushq (%%rsp); popq %c[rcx](%3) \n\t"
--		"mov %%rdx, %c[rdx](%3) \n\t"
--		"mov %%rsi, %c[rsi](%3) \n\t"
--		"mov %%rdi, %c[rdi](%3) \n\t"
--		"mov %%rbp, %c[rbp](%3) \n\t"
--		"mov %%r8,  %c[r8](%3) \n\t"
--		"mov %%r9,  %c[r9](%3) \n\t"
--		"mov %%r10, %c[r10](%3) \n\t"
--		"mov %%r11, %c[r11](%3) \n\t"
--		"mov %%r12, %c[r12](%3) \n\t"
--		"mov %%r13, %c[r13](%3) \n\t"
--		"mov %%r14, %c[r14](%3) \n\t"
--		"mov %%r15, %c[r15](%3) \n\t"
-+		"xchg %0,     (%%rsp) \n\t"
-+		"mov %%rax, %c[rax](%0) \n\t"
-+		"mov %%rbx, %c[rbx](%0) \n\t"
-+		"pushq (%%rsp); popq %c[rcx](%0) \n\t"
-+		"mov %%rdx, %c[rdx](%0) \n\t"
-+		"mov %%rsi, %c[rsi](%0) \n\t"
-+		"mov %%rdi, %c[rdi](%0) \n\t"
-+		"mov %%rbp, %c[rbp](%0) \n\t"
-+		"mov %%r8,  %c[r8](%0) \n\t"
-+		"mov %%r9,  %c[r9](%0) \n\t"
-+		"mov %%r10, %c[r10](%0) \n\t"
-+		"mov %%r11, %c[r11](%0) \n\t"
-+		"mov %%r12, %c[r12](%0) \n\t"
-+		"mov %%r13, %c[r13](%0) \n\t"
-+		"mov %%r14, %c[r14](%0) \n\t"
-+		"mov %%r15, %c[r15](%0) \n\t"
- 		"mov %%cr2, %%rax   \n\t"
--		"mov %%rax, %c[cr2](%3) \n\t"
-+		"mov %%rax, %c[cr2](%0) \n\t"
- 
--		"pop  %%rcx; pop  %%rbp; pop  %%rdx \n\t"
-+		"pop  %%rbp; pop  %%rbp; pop  %%rdx \n\t"
- #else
--		"xchg %3, (%%esp) \n\t"
--		"mov %%eax, %c[rax](%3) \n\t"
--		"mov %%ebx, %c[rbx](%3) \n\t"
--		"pushl (%%esp); popl %c[rcx](%3) \n\t"
--		"mov %%edx, %c[rdx](%3) \n\t"
--		"mov %%esi, %c[rsi](%3) \n\t"
--		"mov %%edi, %c[rdi](%3) \n\t"
--		"mov %%ebp, %c[rbp](%3) \n\t"
-+		"xchg %0, (%%esp) \n\t"
-+		"mov %%eax, %c[rax](%0) \n\t"
-+		"mov %%ebx, %c[rbx](%0) \n\t"
-+		"pushl (%%esp); popl %c[rcx](%0) \n\t"
-+		"mov %%edx, %c[rdx](%0) \n\t"
-+		"mov %%esi, %c[rsi](%0) \n\t"
-+		"mov %%edi, %c[rdi](%0) \n\t"
-+		"mov %%ebp, %c[rbp](%0) \n\t"
- 		"mov %%cr2, %%eax  \n\t"
--		"mov %%eax, %c[cr2](%3) \n\t"
-+		"mov %%eax, %c[cr2](%0) \n\t"
- 
--		"pop %%ecx; pop %%ebp; pop %%edx \n\t"
-+		"pop %%ebp; pop %%ebp; pop %%edx \n\t"
- #endif
--		"setbe %0 \n\t"
--	      : "=q" (vmx->fail)
--	      : "r"(vmx->launched), "d"((unsigned long)HOST_RSP),
--		"c"(vcpu),
--		[rax]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_RAX])),
--		[rbx]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_RBX])),
--		[rcx]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_RCX])),
--		[rdx]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_RDX])),
--		[rsi]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_RSI])),
--		[rdi]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_RDI])),
--		[rbp]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_RBP])),
-+		"setbe %c[fail](%0) \n\t"
-+	      : : "c"(vmx), "d"((unsigned long)HOST_RSP),
-+		[launched]"i"(offsetof(struct vcpu_vmx, launched)),
-+		[fail]"i"(offsetof(struct vcpu_vmx, fail)),
-+		[rax]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_RAX])),
-+		[rbx]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_RBX])),
-+		[rcx]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_RCX])),
-+		[rdx]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_RDX])),
-+		[rsi]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_RSI])),
-+		[rdi]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_RDI])),
-+		[rbp]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_RBP])),
- #ifdef CONFIG_X86_64
--		[r8]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_R8])),
--		[r9]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_R9])),
--		[r10]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_R10])),
--		[r11]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_R11])),
--		[r12]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_R12])),
--		[r13]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_R13])),
--		[r14]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_R14])),
--		[r15]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_R15])),
-+		[r8]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_R8])),
-+		[r9]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_R9])),
-+		[r10]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_R10])),
-+		[r11]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_R11])),
-+		[r12]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_R12])),
-+		[r13]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_R13])),
-+		[r14]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_R14])),
-+		[r15]"i"(offsetof(struct vcpu_vmx, vcpu.regs[VCPU_REGS_R15])),
- #endif
--		[cr2]"i"(offsetof(struct kvm_vcpu, cr2))
-+		[cr2]"i"(offsetof(struct vcpu_vmx, vcpu.cr2))
- 	      : "cc", "memory"
- #ifdef CONFIG_X86_64
- 		, "rbx", "rdi", "rsi"
--- 
-1.5.3.7
+Anyways, id really would be so thankful if somebody from the NFS team 
+was givin us a clue about the whole thing.
+
+TIA
+
+Gianluca
+
+Andrew Morton wrote:
+
+>On Sun, 23 Dec 2007 12:35:17 +0100 Gianluca Alberici <gianluca@abinetworks.biz> wrote:
+>
+>  
+>
+>>Hello,
+>>
+>>I can do better. I have investigated a bit the problem:
+>>
+>>1) The problem arises only with the userspace nfsd (Universal nfsd 2.2). 
+>>I have realized that the latest patches introduced in 2.6.22 have 
+>>changed a lot of things into NFS.
+>>
+>>2) The following code has been debugged with sunrpc.rpc_debug and 
+>>sunrpc.nfs_debug
+>>
+>>#include <sys/types.h>
+>>#include <sys/stat.h>
+>>#include <fcntl.h>
+>>#include <errno.h>
+>>#include <stdio.h>
+>>
+>>int main(int argc, char *argv[]) {
+>>        int fp;
+>>        if ((fp=open("/mnt/tmp/test",O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU )) == -1) printf("ERR: %d\n",errno);
+>>        else {
+>>                write(fp, argv[1], strlen(argv[1]));
+>>                printf("OK\n");
+>>                close(fp);
+>>        };
+>>}
+>>
+>>
+>>2b) The output
+>>
+>>[...]
+>>
+>><8>NFS call  setattr
+>><8>RPC:       new task initialized, procpid 18656
+>><8>RPC:       allocated task f7bec500
+>><8>RPC:     0 looking up UNIX cred
+>><8>RPC:   740 __rpc_execute flags=0x480
+>><8>RPC:   740 call_start nfs2 proc 2 (sync)
+>><8>RPC:   740 call_reserve (status 0)
+>><8>RPC:   740 reserved req f1416000 xid 643f3c42
+>><8>RPC:   740 call_reserveresult (status 0)
+>><8>RPC:   740 call_allocate (status 0)
+>><8>RPC:   740 allocated buffer of size 528 at e627b800
+>><8>RPC:   740 call_bind (status 0)
+>><8>RPC:   740 call_connect xprt f70d4000 is connected
+>><8>RPC:   740 call_transmit (status 0)
+>><8>RPC:   740 xprt_prepare_transmit
+>><8>RPC:   740 xprt_cwnd_limited cong = 0 cwnd = 512
+>><8>RPC:   740 call_encode (status 0)
+>><8>RPC:   740 marshaling UNIX cred f4efcb40
+>><8>RPC:   740 using AUTH_UNIX cred f4efcb40 to wrap rpc data
+>><8>RPC:   740 xprt_transmit(148)
+>><8>RPC:       xs_udp_data_ready...
+>><8>RPC:       cong 256, cwnd was 512, now 512
+>><8>RPC:   740 xid 643f3c42 complete (28 bytes received)
+>><8>RPC:       xs_udp_send_request(148) = 148
+>><8>RPC:   740 xmit complete
+>><8>RPC:       wake_up_next(f70d4114 "xprt_resend")
+>><8>RPC:       wake_up_next(f70d40e4 "xprt_sending")
+>><8>RPC:   740 call_status (status 28)
+>><8>RPC:   740 call_decode (status 28)
+>><8>RPC:   740 validating UNIX cred f4efcb40
+>><8>RPC:   740 using AUTH_UNIX cred f4efcb40 to unwrap rpc data
+>><8>RPC:   740 call_decode result -22
+>><8>RPC:   740 return 0, status -22
+>><8>RPC:   740 release task
+>><8>RPC:       freeing buffer of size 528 at e627b800
+>><8>RPC:   740 release request f1416000
+>><8>RPC:       wake_up_next(f70d4174 "xprt_backlog")
+>><8>RPC:   740 releasing UNIX cred f4efcb40
+>><8>RPC:       rpc_release_client(f6f1f880)
+>><8>NFS reply setattr: -22
+>>
+>>[...]
+>>
+>>3) It turns out the following:
+>>
+>>- setattr returns EINVAL due to...
+>>- RPC call_decode returns status 22
+>>
+>>4) In conclusion in my understanding:
+>>
+>>- At present linux nfs filesystem support is not anymore compatible with 
+>>old userspace servers like universal nfsd and crypto filesystems as cfsd 
+>>(which is an nfs server pretty old fashioned).
+>>- This problem makes UNFSD and CFSD unusable on 2.6.22 and up (this 
+>>doesnt sound good to me)
+>>
+>>The question are:
+>>
+>>- Is this wanted or is a bug ?
+>>- Can this be solved with some backwards compat stuff into the kernel or 
+>>all the old packages as UNFSD have to be
+>>bugfixed/upgraded
+>>- I have found other strange behaviors of the new NFS filesystem support 
+>>that i am investigating. All are bound to the user of
+>>old userspace servers onto the new NFS (since 2.6.22). What to do ?
+>>
+>>    
+>>
+>
+>I'm not sure what the NFS client's policy is regarding support for
+>userspace servers.  But I'd certainly hope that it is "don't break them".
+>
+>Which would make this an NFS client regression.
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+>  
+>
 
