@@ -1,151 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752017AbXLZCVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbXLZC7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752017AbXLZCVb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 21:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbXLZCVX
+	id S1751993AbXLZC7W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 21:59:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbXLZC7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 21:21:23 -0500
-Received: from ns.netcenter.hu ([195.228.254.57]:52410 "EHLO netcenter.hu"
+	Tue, 25 Dec 2007 21:59:10 -0500
+Received: from koto.vergenet.net ([210.128.90.7]:56709 "EHLO koto.vergenet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751356AbXLZCVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 21:21:22 -0500
-Message-ID: <076901c84765$bbc3cee0$9900a8c0@dcccs>
-From: "Janos Haar" <djani22@netcenter.hu>
-To: "David Chinner" <dgc@sgi.com>
-Cc: <linux-kernel@vger.kernel.org>
-References: <015601c84598$fa668f30$9900a8c0@dcccs> <20071225091347.GA155407@sgi.com>
-Subject: Re: xfs|loop|raid: attempt to access beyond end of device
-Date: Wed, 26 Dec 2007 03:19:19 +0100
+	id S1751325AbXLZC7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Dec 2007 21:59:09 -0500
+Date: Wed, 26 Dec 2007 11:59:05 +0900
+From: Simon Horman <horms@verge.net.au>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Cc: Amos Waterland <apw@us.ibm.com>, David Miller <davem@davemloft.net>
+Subject: [patch] ipv4: Update ip command line processing (take II)
+Message-ID: <20071226025903.GB14422@verge.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1914
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1914
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello list,
+Recently the documentation in Documentation/nfsroot.txt was
+update to note that in fact ip=off and ip=::::::off as the
+latter is ignored and the default (on) is used.
 
+This was certainly a step in the direction of reducing confusion.
+But it seems to me that the code ought to be fixed up so that
+ip=::::::off actually turns off ip autoconfiguration.
 
------ Original Message ----- 
-From: "David Chinner" <dgc@sgi.com>
-To: "Janos Haar" <djani22@netcenter.hu>
-Cc: <linux-kernel@vger.kernel.org>
-Sent: Tuesday, December 25, 2007 10:13 AM
-Subject: Re: xfs|loop|raid: attempt to access beyond end of device
+This patch also notes more specifically that ip=on (aka ip=::::::on)
+is the default.
 
+Cc: Amos Waterland <apw@us.ibm.com>
+Signed-off-by: Simon Horman <horms@verge.net.au>
 
-> On Sun, Dec 23, 2007 at 08:21:08PM +0100, Janos Haar wrote:
-> > Hello, list,
-> >
-> > I have a little problem on one of my productive system.
-> >
-> > The system sometimes crashed, like this:
-> >
-> > Dec 23 08:53:05 Albohacen-global kernel: attempt to access beyond end of
-> > device
-> > Dec 23 08:53:05 Albohacen-global kernel: loop0: rw=1,
-want=50552830649176,
-> > limit=3085523200
-> > Dec 23 08:53:05 Albohacen-global kernel: Buffer I/O error on device
-loop0,
-> > logical block 6319103831146
-> > Dec 23 08:53:05 Albohacen-global kernel: lost page write due to I/O
-error on
-> > loop0
->
-> So a long way beyond the end of the device.
->
-> [snip soft lockup warnings]
->
-> > Dec 23 09:08:19 Albohacen-global kernel: Filesystem "loop0": Access to
-block
-> > zero in inode 397821447 start_block: 0 start_off: 0 blkcnt: 0
-extent-state:
-> > 0 lastx: e4
->
-> And that's to block zero of the filesystem. Sure signs of a corupted inode
-> extent btree. We've seen a few of these corruptions on loopback device
-> reported recently.
->
-> You'll need to unmount and repair the filesystem to make this go away,
-> but it's hard to know what is causing the btree corruption.
+--- 
+Fri, 21 Dec 2007 16:48:16 +0900
+* Removed check on if (name) in ic_proto_name().
+  It should have been if (*name == '\0'), but even then its
+  a bit bogus, providing an early exit for a code-path that
+  is called approximately once.
 
-Yes, if i do that, the fs clean again, and works well until we moves big
-amount of data on the storage.
-But the problem comes out again, and again.
-
-If i can, i will try the latest stable kernel, with some loop fixes, but it
-is not too easy.
-This is a productive system.
-
-
->
-> > Dec 23 09:08:22 Albohacen-global last message repeated 19 times
-> >
-> > some more info:
-> >
-> > [root@Albohacen-global ~]# uname -a
-> > Linux Albohacen-global 2.6.21.1 #3 SMP Thu May 3 04:33:36 CEST 2007
-x86_64
-> > x86_64 x86_64 GNU/Linux
-> > [root@Albohacen-global ~]# cat /proc/mdstat
-> > Personalities : [linear] [raid0] [raid1] [raid10] [raid6] [raid5]
-[raid4]
-> > [multipath] [faulty]
-> > md1 : active raid4 sdf2[1] sde2[0] sdd2[5] sdc2[4] sdb2[3] sda2[2]
-> >       19558720 blocks level 4, 64k chunk, algorithm 0 [6/6] [UUUUUU]
-> >       bitmap: 8/239 pages [32KB], 8KB chunk
-> >
-> > md2 : active raid4 sdf3[1] sde3[0] sdd3[5] sdc3[4] sdb3[3] sda3[2]
-> >       1542761600 blocks level 4, 64k chunk, algorithm 0 [6/6] [UUUUUU]
-> >       bitmap: 0/148 pages [0KB], 1024KB chunk
-> >
-> > md0 : active raid1 sdb1[1] sda1[0]
-> >       104320 blocks [2/2] [UU]
-> >
-> > unused devices: <none>
-> > [root@Albohacen-global ~]# losetup /dev/loop0
-> > /dev/loop0: [0010]:6598 (/dev/md2), encryption blowfish (type 18)
->
-> You're using an encrypted block device?
-
-Yes.
-
-> What mechanism are you using for
-> encryption (doesn't appear to be dmcrypt)?
-
-No, this is the "old way", not the dmcrypt.
-This is cryptoloop.
-
-> Does it handle readahead bio
-> cancellation correctly?
-
-I dont know exactly, but in my log it is always a write failures! ( i think
-from rw=1 and lost page write messages)
-It is the readahead important in this case?
-
-> We had similar XFS corruption problems on dmcrypt
-> between 2.6.14 and ~2.6.20 due to a bug in dmcrypt's failure to handle
-> aborted readahead I/O correctly....
-
-Ok, what is the next step? :-)
-(i will try the latest kernel, if i can....)
-Can i switch to dmcrypt from cryptoloop without rebuild the fs?
-
-Thanks a lot,
-Janos Haar
-
->
-> Cheers,
->
-> Dave.
-> -- 
-> Dave Chinner
-> Principal Engineer
-> SGI Australian Software Group
-
+Index: net-2.6.25/net/ipv4/ipconfig.c
+===================================================================
+--- net-2.6.25.orig/net/ipv4/ipconfig.c	2007-12-26 11:56:20.000000000 +0900
++++ net-2.6.25/net/ipv4/ipconfig.c	2007-12-26 11:57:04.000000000 +0900
+@@ -1417,6 +1417,10 @@ static int __init ic_proto_name(char *na
+ 	if (!strcmp(name, "on") || !strcmp(name, "any")) {
+ 		return 1;
+ 	}
++	if (!strcmp(name, "off") || !strcmp(name, "none")) {
++		ic_enable = 0;
++		return 1;
++	}
+ #ifdef CONFIG_IP_PNP_DHCP
+ 	else if (!strcmp(name, "dhcp")) {
+ 		ic_proto_enabled &= ~IC_RARP;
+@@ -1451,12 +1455,6 @@ static int __init ip_auto_config_setup(c
+ 
+ 	ic_set_manually = 1;
+ 
+-	ic_enable = (*addrs &&
+-		(strcmp(addrs, "off") != 0) &&
+-		(strcmp(addrs, "none") != 0));
+-	if (!ic_enable)
+-		return 1;
+-
+ 	if (ic_proto_name(addrs))
+ 		return 1;
+ 
+Index: net-2.6.25/Documentation/nfsroot.txt
+===================================================================
+--- net-2.6.25.orig/Documentation/nfsroot.txt	2007-12-26 11:56:20.000000000 +0900
++++ net-2.6.25/Documentation/nfsroot.txt	2007-12-26 11:57:04.000000000 +0900
+@@ -97,10 +97,6 @@ ip=<client-ip>:<server-ip>:<gw-ip>:<netm
+   autoconfiguration will take place.  The most common way to use this
+   is "ip=dhcp".
+ 
+-  Note that "ip=off" is not the same thing as "ip=::::::off", because in
+-  the latter autoconfiguration will take place if any of DHCP, BOOTP or RARP
+-  are compiled in the kernel.
+-
+   <client-ip>	IP address of the client.
+ 
+   		Default:  Determined using autoconfiguration.
+@@ -150,6 +146,7 @@ ip=<client-ip>:<server-ip>:<gw-ip>:<netm
+ 
+                   off or none: don't use autoconfiguration
+ 		  on or any:   use any protocol available in the kernel
++			       (default)
+ 		  dhcp:        use DHCP
+ 		  bootp:       use BOOTP
+ 		  rarp:        use RARP
