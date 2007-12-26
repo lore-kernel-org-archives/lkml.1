@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbXLZQOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbXLZQQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751994AbXLZQOP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 11:14:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbXLZQOE
+	id S1752181AbXLZQQe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 11:16:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbXLZQQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 11:14:04 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:53878 "EHLO mgw2.diku.dk"
+	Wed, 26 Dec 2007 11:16:26 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:33646 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751133AbXLZQOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 11:14:03 -0500
-Date: Wed, 26 Dec 2007 17:13:50 +0100 (MET)
+	id S1751090AbXLZQQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 11:16:26 -0500
+Date: Wed, 26 Dec 2007 17:14:25 +0100 (MET)
 From: Julia Lawall <julia@diku.dk>
-To: tglx@linutronix.de, viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/3] arch/x86: Use offsetof
-Message-ID: <Pine.LNX.4.58.0712261712450.1185@pc-041.diku.dk>
+To: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, viro@ftp.linux.org.uk,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/3] drivers/s390: Use offsetof
+Message-ID: <Pine.LNX.4.58.0712261713530.1185@pc-041.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,41 +32,45 @@ The change was made using the following semantic patch
 (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
-@r@
+@r3 disable ptr_to_array@
 type T;
-T s;
+T *s;
 type T1, T2;
-identifier fld1, fld2;
-typedef uint8_t;
-typedef u8;
+identifier fld1;
 @@
 
 (
-  (char *)&s.fld1 - (char *)&s.fld2
+  (char *)&s->fld1 - (char *)s
 |
-  (uint8_t *)&s.fld1 - (uint8_t *)&s.fld2
+  (uint8_t *)&s->fld1 - (uint8_t *)s
 |
-  (u8 *)&s.fld1 - (u8 *)&s.fld2
+  (u8 *)&s->fld1 - (u8 *)s
 |
-- (T1)&s.fld1 - (T2)&s.fld2
-+ offsetof(T,fld1) - offsetof(T,fld2)
+- (T1)&s->fld1 - (T2)s
++ offsetof(T,fld1)
 )
+
+@@
+type T;
+expression E;
+@@
+
+- (int)(offsetof(T,E))
++ offsetof(T,E)
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -u -p a/arch/x86/kernel/vm86_32.c b/arch/x86/kernel/vm86_32.c
---- a/arch/x86/kernel/vm86_32.c	2007-10-22 11:25:00.000000000 +0200
-+++ b/arch/x86/kernel/vm86_32.c	2007-12-26 16:27:15.000000000 +0100
-@@ -215,7 +215,9 @@ asmlinkage int sys_vm86old(struct pt_reg
- 	ret = -EFAULT;
- 	if (tmp)
- 		goto out;
--	memset(&info.vm86plus, 0, (int)&info.regs32 - (int)&info.vm86plus);
-+	memset(&info.vm86plus, 0,
-+	       offsetof(struct kernel_vm86_struct, regs32) -
-+	       offsetof(struct kernel_vm86_struct, vm86plus));
- 	info.regs32 = &regs;
- 	tsk->thread.vm86_info = v86;
- 	do_sys_vm86(&info, tsk);
+diff -u -p a/drivers/s390/scsi/zfcp_dbf.c b/drivers/s390/scsi/zfcp_dbf.c
+--- a/drivers/s390/scsi/zfcp_dbf.c	2007-10-22 11:25:20.000000000 +0200
++++ b/drivers/s390/scsi/zfcp_dbf.c	2007-12-26 16:25:51.000000000 +0100
+@@ -614,7 +614,7 @@ void zfcp_san_dbf_event_incoming_els(str
+ 	struct fsf_status_read_buffer *status_buffer =
+ 	    (struct fsf_status_read_buffer *)fsf_req->data;
+ 	int length = (int)status_buffer->length -
+-	    (int)((void *)&status_buffer->payload - (void *)status_buffer);
++	    offsetof(struct fsf_status_read_buffer, payload);
+
+ 	_zfcp_san_dbf_event_common_els("iels", 1, fsf_req, status_buffer->d_id,
+ 				       fc_host_port_id(adapter->scsi_host),
