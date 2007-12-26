@@ -1,179 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbXLZU5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbXLZVCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752874AbXLZU5y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 15:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbXLZU5q
+	id S1752853AbXLZVCA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 16:02:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXLZVBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 15:57:46 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:34788 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751320AbXLZU5o (ORCPT
+	Wed, 26 Dec 2007 16:01:52 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53649 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751627AbXLZVBv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 15:57:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=Kf1lxXmj/fXgTA1Yit3hD2AV0B4G6TFc75eMyiTC3tbAvSf7NYfD6D5eQ7XiPnvEGYkKFeTEBHwpeAZyvq1PrZCW7mZ2LRr3pB5cEnnlxu+TtBwBi51G7OGUIoqhZSQu+CVeGhGDTie3wd8tyfjc0GROdB12I5mcgiNTlg5yNEk=
-Date: Wed, 26 Dec 2007 14:57:34 -0600
-From: David Hilvert <dhilvert@gmail.com>
-To: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dmitri@users.sourceforge.net
-Subject: Re: Regarding request for IBM camera patch to be applied to the
- main tree
-Message-Id: <20071226145734.031f568e.dhilvert@gmail.com>
-In-Reply-To: <20071221223209.GA24780@kroah.com>
-References: <20071221223209.GA24780@kroah.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Dec 2007 16:01:51 -0500
+Date: Wed, 26 Dec 2007 13:01:49 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
+       gregkh@suse.de, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22-stable causes oomkiller to be invoked
+In-Reply-To: <20071221044508.GA11996@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
+References: <20071214095023.b5327703.akpm@linux-foundation.org>
+ <20071214182802.GC2576@linux.vnet.ibm.com> <20071214150533.aa30efd4.akpm@linux-foundation.org>
+ <20071215035200.GA22082@linux.vnet.ibm.com> <20071214220030.325f82b8.akpm@linux-foundation.org>
+ <20071215104434.GA26325@linux.vnet.ibm.com> <20071217045904.GB31386@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com>
+ <20071217120720.e078194b.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com>
+ <20071221044508.GA11996@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Dec 2007 14:32:09 -0800
-Greg KH <greg@kroah.com> wrote:
+On Fri, 21 Dec 2007, Dhaval Giani wrote:
 
-> On Fri, Dec 21, 2007 at 03:21:30PM -0600, David Hilvert wrote:
-> > > > http://www.linux-usb.org/ibmcam/
-> > 
-> > > > http://auricle.dyndns.org/xvp610/
-> > 
-> > [Remainder of private e-mail context snipped; message has been blind-CC'ed to
-> > the original recipients.  Please CC any replies intended for me.]
-> > 
-> > As the author of the second patch noted, I had avoided sending it to lkml due
-> > to the difficulty of determining whether the patch is correct (e.g., having no
-> > ill effect on other cameras), due, in turn, to lack of documentation for this
-> > series of cameras.  Perhaps dmitri could comment further on this, if he has
-> > time and access to test on any other cameras that might fall under the 'model
-> > 3' designation (whatever this designation might mean).  The (rather old, now)
-> > patch in question (against 2.6.1 or so, and perhaps other versions) follows; if
-> > I recall correctly, it was designed to minimize change lines rather than
-> > provide for overall clarity, so that a clearer final implementation is probably
-> > possible.
-> > 
-> > 
-> > diff -urN linux-2.6.1/drivers/usb/media/ibmcam.c linux-2.6.1-patched/drivers/usb/media/ibmcam.c
-> > --- linux-2.6.1/drivers/usb/media/ibmcam.c	Fri Jan  9 00:59:19 2004
-> > +++ linux-2.6.1-patched/drivers/usb/media/ibmcam.c	Fri Feb  6 14:54:33 2004
-> 
-> I suggest forward porting it to the latest tree and submit it to the usb
-> video maintainers for inclusion.
-> 
-> thanks,
-> 
-> greg k-h
+> No, it does not stop the oom I am seeing here.
 
-Port to 2.6.23.12 follows:
+Duh. Disregard that patch. It looks like check_pgt_cache() is not called. 
+This could happen if tlb_flush_mmu is never called during the 
+fork/terminate sequences in your script. pgd_free is called *after* a 
+possible tlb flush so the pgd page is on the quicklist (which is good for 
+the next process which needs a pgd). The tlb_flush_mmu's during pte 
+eviction should trim the quicklist. For some reason this is not happening 
+on your box (it works here).
 
+Could you try this script that insures that check_pgt_cache is called 
+after every pgd_free?
 
---- linux-2.6.23.12/drivers/media/video/usbvideo/ibmcam.c	2007-12-18 21:55:57.000000000 +0000
-+++ linux-2.6.23.12-patched/drivers/media/video/usbvideo/ibmcam.c	2007-12-26 20:34:45.000000000 +0000
-@@ -802,6 +802,21 @@
- 		return scan_Continue;
+Index: linux-2.6/arch/x86/mm/pgtable_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/pgtable_32.c	2007-12-26 12:55:10.000000000 -0800
++++ linux-2.6/arch/x86/mm/pgtable_32.c	2007-12-26 12:55:54.000000000 -0800
+@@ -366,6 +366,15 @@ void pgd_free(pgd_t *pgd)
+ 		}
+ 	/* in the non-PAE case, free_pgtables() clears user pgd entries */
+ 	quicklist_free(0, pgd_dtor, pgd);
++
++	/*
++	 * We must call check_pgd_cache() here because the pgd is freed after
++	 * tlb flushing and the call to check_pgd_cache. In some cases the VM
++	 * may not call tlb_flush_mmu during process termination (??).
++	 * If this is repeated then we may never call check_pgd_cache.
++	 * The quicklist will grow and grow. So call check_pgd_cache here.
++	 */
++	check_pgt_cache();
  }
  
-+/*
-+ * ibmcam_model3_parse_lines()
-+ *
-+ * | Even lines |     Odd Lines       |
-+ * -----------------------------------|
-+ * |YYY........Y|UYVYUYVY.........UYVY|
-+ * |YYY........Y|UYVYUYVY.........UYVY| 
-+ * |............|.....................|
-+ * |YYY........Y|UYVYUYVY.........UYVY| 
-+ * |------------+---------------------|
-+ *
-+ * There is one (U, V) chroma pair for every four luma (Y) values.  This
-+ * function reads a pair of lines at a time and obtains missing chroma values
-+ * from adjacent pixels.
-+ */
- static enum ParseState ibmcam_model3_parse_lines(
- 	struct uvd *uvd,
- 	struct usbvideo_frame *frame,
-@@ -816,6 +831,7 @@
- 	const int ccm = 128; /* Color correction median - see below */
- 	int i, u, v, rw, data_w=0, data_h=0, color_corr;
- 	static unsigned char lineBuffer[640*3];
-+	int line;
- 
- 	color_corr = (uvd->vpic.colour - 0x8000) >> 8; /* -128..+127 = -ccm..+(ccm-1)*/
- 	RESTRICT_TO_RANGE(color_corr, -ccm, ccm+1);
-@@ -869,15 +885,15 @@
- 		return scan_NextFrame;
- 	}
- 
--	/* Make sure there's enough data for the entire line */
--	len = 3 * data_w; /* <y-data> <uv-data> */
-+	/* Make sure that lineBuffer can store two lines of data */
-+	len = 3 * data_w; /* <y-data> <uyvy-data> */
- 	assert(len <= sizeof(lineBuffer));
- 
--	/* Make sure there's enough data for the entire line */
-+	/* Make sure there's enough data for two lines */
- 	if (RingQueue_GetLength(&uvd->dp) < len)
- 		return scan_Out;
- 
--	/* Suck one line out of the ring queue */
-+	/* Suck two lines of data out of the ring queue */
- 	RingQueue_Dequeue(&uvd->dp, lineBuffer, len);
- 
- 	data = lineBuffer;
-@@ -887,15 +903,23 @@
- 	rw = (int)VIDEOSIZE_Y(frame->request) - (int)(frame->curline) - 1;
- 	RESTRICT_TO_RANGE(rw, 0, VIDEOSIZE_Y(frame->request)-1);
- 
--	for (i = 0; i < VIDEOSIZE_X(frame->request); i++) {
--		int y, rv, gv, bv;	/* RGB components */
-+	/* Iterate over two lines. */
-+	for (line = 0; line < 2; line++) {
-+		for (i = 0; i < VIDEOSIZE_X(frame->request); i++) {
-+			int y;
-+			int rv, gv, bv;	/* RGB components */
-+
-+			if (i >= data_w) {
-+				RGB24_PUTPIXEL(frame, i, rw, 0, 0, 0);
-+				continue;
-+			}
- 
--		if (i < data_w) {
--			y = data[i];	/* Luminosity is the first line */
-+			/* first line is YYY...Y; second is UYVY...UYVY */
-+			y = data[(line == 0) ? i : (i*2 + 1)];
- 
- 			/* Apply static color correction */
--			u = color[i*2] + hue_corr;
--			v = color[i*2 + 1] + hue2_corr;
-+			u = color[(i/2)*4] + hue_corr;
-+			v = color[(i/2)*4 + 2] + hue2_corr;
- 
- 			/* Apply color correction */
- 			if (color_corr != 0) {
-@@ -903,13 +927,21 @@
- 				u = 128 + ((ccm + color_corr) * (u - 128)) / ccm;
- 				v = 128 + ((ccm + color_corr) * (v - 128)) / ccm;
- 			}
--		} else
--			y = 0, u = v = 128;
- 
--		YUV_TO_RGB_BY_THE_BOOK(y, u, v, rv, gv, bv);
--		RGB24_PUTPIXEL(frame, i, rw, rv, gv, bv); /* Done by deinterlacing now */
-+
-+			YUV_TO_RGB_BY_THE_BOOK(y, u, v, rv, gv, bv);
-+			RGB24_PUTPIXEL(frame, i, rw, rv, gv, bv);  /* No deinterlacing */
-+		}
-+
-+		/* Check for the end of requested data */
-+		if (rw == 0)
-+			break;
-+
-+		/* Prepare for the second line */
-+		rw--;
-+		data = lineBuffer + data_w;
- 	}
--	frame->deinterlace = Deinterlace_FillEvenLines;
-+	frame->deinterlace = Deinterlace_None;
- 
- 	/*
- 	 * Account for number of bytes that we wrote into output V4L frame.
+ void check_pgt_cache(void)
