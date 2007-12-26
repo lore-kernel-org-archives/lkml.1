@@ -1,89 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbXLZDsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752204AbXLZEO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752299AbXLZDsv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 22:48:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbXLZDsl
+	id S1752204AbXLZEO4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 23:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbXLZEOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 22:48:41 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:43824 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbXLZDsj (ORCPT
+	Tue, 25 Dec 2007 23:14:46 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59565 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751522AbXLZEOo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 22:48:39 -0500
-Date: Wed, 26 Dec 2007 03:47:53 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Akinobu Mita <akinobu.mita@gmail.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, Carsten Otte <cotte@de.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] xip: fix get_zeroed_page with __GFP_HIGHMEM
-In-Reply-To: <20071225132126.GA4800@APFDCB5C>
-Message-ID: <Pine.LNX.4.64.0712260316140.6684@blonde.wat.veritas.com>
-References: <20071225132126.GA4800@APFDCB5C>
+	Tue, 25 Dec 2007 23:14:44 -0500
+Date: Tue, 25 Dec 2007 20:11:58 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       "H. Peter Anvin" <hpa@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: Suspend code ordering (again) (was: Re: x86: Increase PCIBIOS_MIN_IO
+ to 0x1500 to fix nForce 4 suspend-to-RAM)
+In-Reply-To: <200712251713.13223.rjw@sisk.pl>
+Message-ID: <alpine.LFD.0.9999.0712252006330.21557@woody.linux-foundation.org>
+References: <200712231419.40207.carlos@strangeworlds.co.uk> <200712241444.24031.rjw@sisk.pl> <alpine.LFD.0.9999.0712241008150.21557@woody.linux-foundation.org> <200712251713.13223.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Dec 2007, Akinobu Mita wrote:
-> The use of get_zeroed_page() with __GFP_HIGHMEM is invalid.
-> Use alloc_page() with __GFP_ZERO instead of invalid get_zeroed_page().
+
+
+On Tue, 25 Dec 2007, Rafael J. Wysocki wrote:
+>
+> the ACPI specification between versions 1.0x and 2.0.  Namely, while ACPI
+> 2.0 and later wants us to put devices into low power states before calling
+> _PTS, ACPI 1.0x wants us to do that after calling _PTS.  Since we're following
+> the 2.0 and later specifications right now, we're not doing the right thing for
+> the (strictly) ACPI 1.0x-compliant systems.
 > 
-> (This patch is only compile tested)
-> 
-> Cc: Carsten Otte <cotte@de.ibm.com>
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> We ought to be able to fix things on the high level, by calling _PTS earlier on
+> systems that claim to be ACPI 1.0x-compliant.  That will require us to modify
+> the generic susped code quite a bit and will need to be tested for some time.
 
-Good find!  You got me very worried, how this escaped testing before.
-Presumed explanation: it hasn't been needed beyond s390, which has no
-CONFIG_HIGHMEM; and it has never been tested with CONFIG_DEBUG_VM on.
+That's insane. Are you really saying that ACPI wants totally different 
+orderings for different versions of the spec? And does Windows really do 
+that?
 
-Acked-by: Hugh Dickins <hugh@veritas.com>
+Please don't make lots of modifications to the generic suspend code. The 
+only thing that is worth doing is to just have a firmware callback before 
+the "device_suspend()" thing (and then on a ACPI-1.0 system, call _PTS 
+*there*), and on an ACPI-2.0 system, call _PTS *after* device_suspend().
 
-But I haven't tested it either: let's wait for Carsten to report.
-I believe Nick has changes on the way which will make it possible for
-ordinary mortals to test XIP: here's a good argument to bring them on.
+Still, the fact is, some (most, I think) drivers *should* put themselves 
+into D3 only in "late_suspend()", so if ACPI-2.0 really expects _PTS to be 
+called after that, we're just screwed. That's when the system is really 
+down, interrupts disabled etc, we don't want to call anything but the 
+final ACPI "turn us off" stuff there!
 
-May I cross-reference my "prep_zero_page: remove bogus BUG_ON"
-09f345da758fca1222b0971b65b2fddbdf78bb83 in 2.6.24-rc: that bogus
-(actually VM_)BUG_ON would have stood in the way too, so there's
-no point in backporting this without that.  But if only non-HIGHMEM
-architectures can have been using XIP, a backport is not essential.
-
-Hugh
-
-p.s. Nick's ZERO_PAGE changes, in 2.6.24-rc, actually cancel the need
-for a special xip_sparse_page distinct from ZERO_PAGE.  But let's not
-become dependent on those: keep this doing it the way it does now.
-
-> 
-> ---
->  mm/filemap_xip.c |    9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
-> 
-> Index: 2.6-git/mm/filemap_xip.c
-> ===================================================================
-> --- 2.6-git.orig/mm/filemap_xip.c
-> +++ 2.6-git/mm/filemap_xip.c
-> @@ -25,14 +25,15 @@ static struct page *__xip_sparse_page;
->  static struct page *xip_sparse_page(void)
->  {
->  	if (!__xip_sparse_page) {
-> -		unsigned long zeroes = get_zeroed_page(GFP_HIGHUSER);
-> -		if (zeroes) {
-> +		struct page *page = alloc_page(GFP_HIGHUSER | __GFP_ZERO);
-> +
-> +		if (page) {
->  			static DEFINE_SPINLOCK(xip_alloc_lock);
->  			spin_lock(&xip_alloc_lock);
->  			if (!__xip_sparse_page)
-> -				__xip_sparse_page = virt_to_page(zeroes);
-> +				__xip_sparse_page = page;
->  			else
-> -				free_page(zeroes);
-> +				__free_page(page);
->  			spin_unlock(&xip_alloc_lock);
->  		}
->  	}
+			Linus
