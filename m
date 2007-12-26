@@ -1,87 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbXLZDmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbXLZDsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752176AbXLZDmS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 22:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXLZDmE
+	id S1752299AbXLZDsv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 22:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbXLZDsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 22:42:04 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:1738 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751439AbXLZDmB (ORCPT
+	Tue, 25 Dec 2007 22:48:41 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:43824 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbXLZDsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 22:42:01 -0500
-Date: Tue, 25 Dec 2007 22:42:01 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Victor Hahn <victor@open-bash.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: Can't disconnect a USB sound device and connect another
-In-Reply-To: <20071225140450.b6d742bb.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0712252236120.25960-100000@netrider.rowland.org>
+	Tue, 25 Dec 2007 22:48:39 -0500
+Date: Wed, 26 Dec 2007 03:47:53 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Akinobu Mita <akinobu.mita@gmail.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, Carsten Otte <cotte@de.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] xip: fix get_zeroed_page with __GFP_HIGHMEM
+In-Reply-To: <20071225132126.GA4800@APFDCB5C>
+Message-ID: <Pine.LNX.4.64.0712260316140.6684@blonde.wat.veritas.com>
+References: <20071225132126.GA4800@APFDCB5C>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Dec 2007, Andrew Morton wrote:
-
-> On Sun, 23 Dec 2007 23:36:11 +0100 Victor Hahn <victor@open-bash.org> wrote:
+On Tue, 25 Dec 2007, Akinobu Mita wrote:
+> The use of get_zeroed_page() with __GFP_HIGHMEM is invalid.
+> Use alloc_page() with __GFP_ZERO instead of invalid get_zeroed_page().
 > 
-> > -----BEGIN PGP SIGNED MESSAGE-----
-> > Hash: SHA1
-> > 
-> > ... because it causes lsusb to freeze and gives me this in /var/log/messages:
+> (This patch is only compile tested)
 > 
-> Has this always happened, or is it something we introduced in a recent
-> kernel?
+> Cc: Carsten Otte <cotte@de.ibm.com>
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+
+Good find!  You got me very worried, how this escaped testing before.
+Presumed explanation: it hasn't been needed beyond s390, which has no
+CONFIG_HIGHMEM; and it has never been tested with CONFIG_DEBUG_VM on.
+
+Acked-by: Hugh Dickins <hugh@veritas.com>
+
+But I haven't tested it either: let's wait for Carsten to report.
+I believe Nick has changes on the way which will make it possible for
+ordinary mortals to test XIP: here's a good argument to bring them on.
+
+May I cross-reference my "prep_zero_page: remove bogus BUG_ON"
+09f345da758fca1222b0971b65b2fddbdf78bb83 in 2.6.24-rc: that bogus
+(actually VM_)BUG_ON would have stood in the way too, so there's
+no point in backporting this without that.  But if only non-HIGHMEM
+architectures can have been using XIP, a backport is not essential.
+
+Hugh
+
+p.s. Nick's ZERO_PAGE changes, in 2.6.24-rc, actually cancel the need
+for a special xip_sparse_page distinct from ZERO_PAGE.  But let's not
+become dependent on those: keep this doing it the way it does now.
+
 > 
-> > Dec 23 23:27:04 cabrio kernel: usb 2-2: USB disconnect, address 5
-> > Dec 23 23:27:04 cabrio kernel: PGD 110f2067 PUD 110f3067 PMD 0
-> > Dec 23 23:27:04 cabrio kernel: CPU 0
-> > Dec 23 23:27:04 cabrio kernel: Modules linked in: videodev v4l2_common 
-> > v4l1_compat snd_rtctimer binfmt_misc rfcomm l2cap bluetooth capability 
-...
-> > Dec 23 23:27:04 cabrio kernel: Pid: 2052, comm: khubd Not tainted 2.6.23.11 #1
-> > Dec 23 23:27:04 cabrio kernel: RIP: 0010:[_end+130488219/2130651808]  
-> > [_end+130488219/2130651808] :snd:snd_ctl_dev_disconnect+0x6b/0xb0
-> > Dec 23 23:27:04 cabrio kernel: RSP: 0018:ffff810037bfdc40  EFLAGS: 00010282
-> > Dec 23 23:27:04 cabrio kernel: RAX: 0000000000000000 RBX: 0000000000100100 
-> > RCX: 0000000000000018
-> > Dec 23 23:27:04 cabrio kernel: RDX: 0000000000020004 RSI: 000000000000001d 
-> > RDI: ffff810013e98c08
-> > Dec 23 23:27:04 cabrio kernel: RBP: ffff8100394631a8 R08: ffff810037bfc000 
-> > R09: 0000000000000000
-...
-> > Dec 23 23:27:04 cabrio kernel: Process khubd (pid: 2052, threadinfo 
-> > ffff810037bfc000, task ffff81003d67d0c0)
-> > Dec 23 23:27:04 cabrio kernel: Stack:  0000000000000000 ffff810038850d00 
-> > ffff810039463000 ffff810039463150
-> > Dec 23 23:27:04 cabrio kernel:  0000000000000000 ffffffff88281e69 
-> > ffff810038850d00 ffffffff882821ac
-> > Dec 23 23:27:04 cabrio kernel:  0000000000000000 0000000000000000 
-> > ffff810039463000 ffff8100394631e0
-> > Dec 23 23:27:04 cabrio kernel: Call Trace:
-> > Dec 23 23:27:04 cabrio kernel:  
-> > [_end+130500873/2130651808] :snd:snd_device_disconnect+0x59/0x90
-> > Dec 23 23:27:04 cabrio kernel:  
-...
-> > Is there a way to exchange USB audio devices without rebooting?
+> ---
+>  mm/filemap_xip.c |    9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
 > 
-> First we have to work out if it's a USB bug or an ALSA bug.  I'd guess
-> ALSA, but not with a lot of confidence.
-> 
-> Anyone?
-
-There have been similar reports of this bug.  To me it looks like an
-ALSA problem.  The routine in question, snd_ctl_dev_disconnect(), is an
-ALSA callback and doesn't contain any USB code.
-
-A good way to start would be to obtain a disassembly listing of that 
-routine, so we can find out what C statement caused the bug.
-
-Alan Stern
-
+> Index: 2.6-git/mm/filemap_xip.c
+> ===================================================================
+> --- 2.6-git.orig/mm/filemap_xip.c
+> +++ 2.6-git/mm/filemap_xip.c
+> @@ -25,14 +25,15 @@ static struct page *__xip_sparse_page;
+>  static struct page *xip_sparse_page(void)
+>  {
+>  	if (!__xip_sparse_page) {
+> -		unsigned long zeroes = get_zeroed_page(GFP_HIGHUSER);
+> -		if (zeroes) {
+> +		struct page *page = alloc_page(GFP_HIGHUSER | __GFP_ZERO);
+> +
+> +		if (page) {
+>  			static DEFINE_SPINLOCK(xip_alloc_lock);
+>  			spin_lock(&xip_alloc_lock);
+>  			if (!__xip_sparse_page)
+> -				__xip_sparse_page = virt_to_page(zeroes);
+> +				__xip_sparse_page = page;
+>  			else
+> -				free_page(zeroes);
+> +				__free_page(page);
+>  			spin_unlock(&xip_alloc_lock);
+>  		}
+>  	}
