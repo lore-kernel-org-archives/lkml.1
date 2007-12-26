@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbXLZXP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbXLZXkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752732AbXLZXP0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 18:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXLZXPQ
+	id S1752011AbXLZXkF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 18:40:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbXLZXjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 18:15:16 -0500
-Received: from smtp-out001.kontent.com ([81.88.40.215]:49377 "EHLO
-	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751422AbXLZXPP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 18:15:15 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] sleepy linux
-Date: Thu, 27 Dec 2007 00:15:39 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <20071225230731.GA29030@elf.ucw.cz> <200712262123.37152.oliver@neukum.org> <20071226203258.GE8094@elf.ucw.cz>
-In-Reply-To: <20071226203258.GE8094@elf.ucw.cz>
+	Wed, 26 Dec 2007 18:39:54 -0500
+Received: from namei.org ([69.55.235.186]:58109 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751423AbXLZXjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 18:39:54 -0500
+Date: Thu, 27 Dec 2007 10:39:44 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc6-mm1 - e1000 breakage
+In-Reply-To: <20071226144621.0220aece.akpm@linux-foundation.org>
+Message-ID: <Xine.LNX.4.64.0712271030520.9606@us.intercode.com.au>
+References: <20071222233056.d652743e.akpm@linux-foundation.org>
+ <30638.1198647786@turing-police.cc.vt.edu> <Xine.LNX.4.64.0712261833110.7815@us.intercode.com.au>
+ <10809.1198657525@turing-police.cc.vt.edu> <Xine.LNX.4.64.0712261949060.10612@us.intercode.com.au>
+ <Xine.LNX.4.64.0712270059270.5765@us.intercode.com.au>
+ <20071226144621.0220aece.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712270015.40165.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 26. Dezember 2007 21:32:58 schrieb Pavel Machek:
-> On Wed 2007-12-26 21:23:37, Oliver Neukum wrote:
-> > Am Mittwoch, 26. Dezember 2007 21:17:22 schrieb Pavel Machek:
+On Wed, 26 Dec 2007, Andrew Morton wrote:
 
-> > > Is there an easy way to tell if all the devices are runtime suspended?
-> > 
-> > Do you really want to know whether they are suspended or whether they
-> > could be suspended?
+> > (under current -mm, the e1000 driver doesn't find my ethernet card & the 
+> > tcl tests won't run without an external interface).
 > 
-> If they are suspended.
-> 
-> My plan is: let the drivers autosuspend on their own. If I see all of
-> them are autosuspended, then it looks like great time to put whole
-> system into s2ram...
+> You might need to enable CONFIG_E1000E.
 
-Your calculation of cost/benefit will be wrong. A driver will have timeouts
-based on the cost of a suspend/resume cycle of that device only.
-You'd have to calculate of keeping the whole system awake against that.
+Indeed, it works for me.
 
-	Regards
-		Oliver
+
+
+- James 
+-- 
+James Morris 
+<jmorris@namei.org>
