@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbXLZVbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752113AbXLZVwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752558AbXLZVbp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 16:31:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXLZVbi
+	id S1752113AbXLZVwv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 16:52:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbXLZVwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 16:31:38 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:45725 "EHLO relay.sgi.com"
+	Wed, 26 Dec 2007 16:52:41 -0500
+Received: from namei.org ([69.55.235.186]:52702 "EHLO us.intercode.com.au"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751533AbXLZVbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 16:31:37 -0500
-Date: Wed, 26 Dec 2007 13:31:35 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Theodore Tso <tytso@mit.edu>
-cc: Andi Kleen <andi@firstfloor.org>, Willy Tarreau <w@1wt.eu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-In-Reply-To: <20071224233701.GB9784@kernel.org>
-Message-ID: <Pine.LNX.4.64.0712261330030.16904@schroedinger.engr.sgi.com>
-References: <20071222100326.GF26157@elte.hu>
- <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org>
- <20071222192550.GD28891@thunk.org> <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org>
- <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com>
- <20071223051241.GA4449@1wt.eu> <20071223141500.GB6430@one.firstfloor.org>
- <20071224034530.GB16658@thunk.org> <Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com>
- <20071224233701.GB9784@kernel.org>
+	id S1751514AbXLZVwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 16:52:41 -0500
+Date: Thu, 27 Dec 2007 08:52:03 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Paul Moore <paul.moore@hp.com>
+cc: Valdis.Kletnieks@vt.edu, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, sds@tycho.nsa.gov
+Subject: Re: 2.6.24-rc6-mm1 - git-lblnet.patch and networking horkage
+In-Reply-To: <3281504256.5618888@mail.hp.com>
+Message-ID: <Xine.LNX.4.64.0712270848260.19279@us.intercode.com.au>
+References: <3281504256.5618888@mail.hp.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Dec 2007, Theodore Tso wrote:
+On Thu, 26 Dec 2007, Paul Moore wrote:
 
-> So two questions: why isn't -f the default?  And is /sys/slab
+> As James said I'm away right now and computer access is limited.  
+> However, I'm stuck in the airport right now and spent some time looking 
+> at the code ... Based on what has been found so far I wonder if the 
+> problem isn't a race but a problem of skb->iif never being initialized 
+> correctly?  To my untrained eye it looks like __netdev_alloc_skb() 
+> should be setting skb->iif (like it does for skb->dev) but it currently 
+> doesn't.
 
-Because it gives misleading output. It displays the name of the first 
-of multiple slabs that share the same storage structures.
+->iif will be zeroed during skb allocation, then set during 
+netif_receive_skb().
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
