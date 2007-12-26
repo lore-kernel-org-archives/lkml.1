@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbXLZDeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbXLZDmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752360AbXLZDeI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 22:34:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXLZDd4
+	id S1752176AbXLZDmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 22:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXLZDmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 22:33:56 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:1703 "HELO
+	Tue, 25 Dec 2007 22:42:04 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:1738 "HELO
 	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751476AbXLZDdz (ORCPT
+	with SMTP id S1751439AbXLZDmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 22:33:55 -0500
-Date: Tue, 25 Dec 2007 22:33:53 -0500 (EST)
+	Tue, 25 Dec 2007 22:42:01 -0500
+Date: Tue, 25 Dec 2007 22:42:01 -0500 (EST)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/3] PM: Do not destroy/create devices while suspended
-In-Reply-To: <200712252021.14540.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0712252229050.25960-100000@netrider.rowland.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Victor Hahn <victor@open-bash.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: Can't disconnect a USB sound device and connect another
+In-Reply-To: <20071225140450.b6d742bb.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0712252236120.25960-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Dec 2007, Rafael J. Wysocki wrote:
+On Tue, 25 Dec 2007, Andrew Morton wrote:
 
-> > > Do we need to worry about the possibility that when the system wakes up 
-> > > from hibernation, the set of usable CPUs might be smaller than it was 
-> > > beforehand?
-> > 
-> > This is possible in error conditions.
-> > 
-> > > Is any special handling needed for this, or is it already accounted for?
-> > 
-> > Hm, well.  The cleanest thing would be to allow the drivers to remove the
-> > device objects on CPU_UP_CANCELED_FROZEN, which means that we weren't able to
-> > bring the CPU up during a resume, but still that will deadlock with
-> > gregkh-driver-pm-acquire-device-locks-prior-to-suspending.patch.
+> On Sun, 23 Dec 2007 23:36:11 +0100 Victor Hahn <victor@open-bash.org> wrote:
 > 
-> Hmm.  In principle, device objects may be destroyed on CPU_UP_CANCELED_FROZEN
-> without acquiring the device locks, since in fact we know these objects won't
-> be accessed concurrently at that time (the locks are already held by the PM
-> core, but the PM core is not going to actually access the devices before the
-> subsequent resume).
+> > -----BEGIN PGP SIGNED MESSAGE-----
+> > Hash: SHA1
+> > 
+> > ... because it causes lsusb to freeze and gives me this in /var/log/messages:
+> 
+> Has this always happened, or is it something we introduced in a recent
+> kernel?
+> 
+> > Dec 23 23:27:04 cabrio kernel: usb 2-2: USB disconnect, address 5
+> > Dec 23 23:27:04 cabrio kernel: PGD 110f2067 PUD 110f3067 PMD 0
+> > Dec 23 23:27:04 cabrio kernel: CPU 0
+> > Dec 23 23:27:04 cabrio kernel: Modules linked in: videodev v4l2_common 
+> > v4l1_compat snd_rtctimer binfmt_misc rfcomm l2cap bluetooth capability 
+...
+> > Dec 23 23:27:04 cabrio kernel: Pid: 2052, comm: khubd Not tainted 2.6.23.11 #1
+> > Dec 23 23:27:04 cabrio kernel: RIP: 0010:[_end+130488219/2130651808]  
+> > [_end+130488219/2130651808] :snd:snd_ctl_dev_disconnect+0x6b/0xb0
+> > Dec 23 23:27:04 cabrio kernel: RSP: 0018:ffff810037bfdc40  EFLAGS: 00010282
+> > Dec 23 23:27:04 cabrio kernel: RAX: 0000000000000000 RBX: 0000000000100100 
+> > RCX: 0000000000000018
+> > Dec 23 23:27:04 cabrio kernel: RDX: 0000000000020004 RSI: 000000000000001d 
+> > RDI: ffff810013e98c08
+> > Dec 23 23:27:04 cabrio kernel: RBP: ffff8100394631a8 R08: ffff810037bfc000 
+> > R09: 0000000000000000
+...
+> > Dec 23 23:27:04 cabrio kernel: Process khubd (pid: 2052, threadinfo 
+> > ffff810037bfc000, task ffff81003d67d0c0)
+> > Dec 23 23:27:04 cabrio kernel: Stack:  0000000000000000 ffff810038850d00 
+> > ffff810039463000 ffff810039463150
+> > Dec 23 23:27:04 cabrio kernel:  0000000000000000 ffffffff88281e69 
+> > ffff810038850d00 ffffffff882821ac
+> > Dec 23 23:27:04 cabrio kernel:  0000000000000000 0000000000000000 
+> > ffff810039463000 ffff8100394631e0
+> > Dec 23 23:27:04 cabrio kernel: Call Trace:
+> > Dec 23 23:27:04 cabrio kernel:  
+> > [_end+130500873/2130651808] :snd:snd_device_disconnect+0x59/0x90
+> > Dec 23 23:27:04 cabrio kernel:  
+...
+> > Is there a way to exchange USB audio devices without rebooting?
+> 
+> First we have to work out if it's a USB bug or an ALSA bug.  I'd guess
+> ALSA, but not with a lot of confidence.
+> 
+> Anyone?
 
-How about delaying the CPU_UP_CANCELED_FROZEN announcements until it's 
-really safe to send them out?  That is, after all devices have been 
-resumed and the PM core no longer holds any of their locks.  (Should 
-this be before or after tasks leave the freezer? -- I'm not sure.)
+There have been similar reports of this bug.  To me it looks like an
+ALSA problem.  The routine in question, snd_ctl_dev_disconnect(), is an
+ALSA callback and doesn't contain any USB code.
 
-So the idea is send appropriate announcements at the usual time for
-CPUs that do come back up normally, and don't send anything right away
-for CPUs that fail to come up.  Just keep track of which ones failed,
-and then later take care of them.
+A good way to start would be to obtain a disassembly listing of that 
+routine, so we can find out what C statement caused the bug.
 
 Alan Stern
 
