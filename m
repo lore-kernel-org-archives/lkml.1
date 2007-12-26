@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbXLZXOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbXLZXP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752138AbXLZXOM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 18:14:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbXLZXOE
+	id S1752732AbXLZXP0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 18:15:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXLZXPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 18:14:04 -0500
-Received: from smtp-dmz-237-backup.dmz.nerim.net ([195.5.254.237]:56895 "EHLO
-	kellthuzad.dmz.nerim.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750947AbXLZXOD (ORCPT
+	Wed, 26 Dec 2007 18:15:16 -0500
+Received: from smtp-out001.kontent.com ([81.88.40.215]:49377 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422AbXLZXPP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 18:14:03 -0500
-Date: Thu, 27 Dec 2007 00:12:13 +0100
-From: Andre Majorel <aym-xunil@teaser.fr>
-To: linux-kernel@vger.kernel.org
-Subject: atimes not updated over NFS
-Message-ID: <20071226231213.GB9777@aym.net2.nerim.net>
+	Wed, 26 Dec 2007 18:15:15 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] sleepy linux
+Date: Thu, 27 Dec 2007 00:15:39 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <20071225230731.GA29030@elf.ucw.cz> <200712262123.37152.oliver@neukum.org> <20071226203258.GE8094@elf.ucw.cz>
+In-Reply-To: <20071226203258.GE8094@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200712270015.40165.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After upgrading an NFS server from kernel 2.6.12 to 2.6.23, the
-atime of files is not updated any more when clients read them :
+Am Mittwoch, 26. Dezember 2007 21:32:58 schrieb Pavel Machek:
+> On Wed 2007-12-26 21:23:37, Oliver Neukum wrote:
+> > Am Mittwoch, 26. Dezember 2007 21:17:22 schrieb Pavel Machek:
 
-  client$ ll -u --time-style +%Y-%m-%d_%H:%M:%S /nfsmnt/zz
-  -rw-r--r-- 1 xxx xxx 0 2007-12-21_14:58:11 /nfsmnt/zz
-  client$ md5sum /nfsmnt/zz
-  d41d8cd98f00b204e9800998ecf8427e  /nfsmnt/zz
-  client$ date +%Y-%m-%d_%H:%M:%S
-  2007-12-21_15:00:28
-  client$ ll -u --time-style +%Y-%m-%d_%H:%M:%S /nfsmnt/zz
-  -rw-r--r-- 1 xxx xxx 0 2007-12-21_14:58:11 /nfsmnt/zz
+> > > Is there an easy way to tell if all the devices are runtime suspended?
+> > 
+> > Do you really want to know whether they are suspended or whether they
+> > could be suspended?
+> 
+> If they are suspended.
+> 
+> My plan is: let the drivers autosuspend on their own. If I see all of
+> them are autosuspended, then it looks like great time to put whole
+> system into s2ram...
 
-Reading the file locally, i.e. on the NFS server, does update the
-atime :
+Your calculation of cost/benefit will be wrong. A driver will have timeouts
+based on the cost of a suspend/resume cycle of that device only.
+You'd have to calculate of keeping the whole system awake against that.
 
-  server$ ll -u --time-style +%Y-%m-%d_%H:%M:%S /nfsmnt/zz
-  -rw-r--r-- 1 xxx xxx 0 2007-12-21_14:58:11 /nfsmnt/zz
-  serveur$ md5sum /nfsmnt/zz
-  d41d8cd98f00b204e9800998ecf8427e  /nfsmnt/zz
-  serveur$ date +%Y-%m-%d_%H:%M:%S
-  2007-12-21_15:04:00
-  serveur$ ll -u --time-style +%Y-%m-%d_%H:%M:%S /nfsmnt/zz
-  -rw-r--r-- 1 xxx xxx 0 2007-12-21_15:03:57 /nfsmnt/zz
-
-/nfsmnt is mounted with options :
-- server : rw,noexec,nosuid,nodev,nodiratime
-- client : rw,user=root,nosuid,nodev,nodiratime,intr,rsize=8192,wsize=8192
-
-Any ideas ?
-
--- 
-André Majorel <URL:http://www.teaser.fr/~amajorel/>
-Do not use this account for regular correspondence.
-See the URL above for contact information.
+	Regards
+		Oliver
