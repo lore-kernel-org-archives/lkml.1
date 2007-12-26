@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbXLZLS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbXLZLSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbXLZLS1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 06:18:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbXLZLGy
+	id S1754872AbXLZLSn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 06:18:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbXLZLGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 06:06:54 -0500
-Received: from il.qumranet.com ([82.166.9.18]:50464 "EHLO il.qumranet.com"
+	Wed, 26 Dec 2007 06:06:55 -0500
+Received: from il.qumranet.com ([82.166.9.18]:50486 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751842AbXLZLGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751809AbXLZLGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 26 Dec 2007 06:06:07 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Cc: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: [PATCH 33/55] KVM: Portability: Move x86 instruction emulation code to x86.c
-Date: Wed, 26 Dec 2007 13:05:38 +0200
-Message-Id: <1198667160-22953-34-git-send-email-avi@qumranet.com>
+Cc: Carsten Otte <cotte@de.ibm.com>
+Subject: [PATCH 24/55] KVM: Portability: Move kvm_get/set_msr[_common] to x86.c
+Date: Wed, 26 Dec 2007 13:05:29 +0200
+Message-Id: <1198667160-22953-25-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1198667160-22953-1-git-send-email-avi@qumranet.com>
 References: <1198667160-22953-1-git-send-email-avi@qumranet.com>
@@ -22,413 +22,330 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hollis Blanchard <hollisb@us.ibm.com>
+From: Carsten Otte <cotte@de.ibm.com>
 
-Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+This patch moves the implementation of the functions of kvm_get/set_msr,
+kvm_get/set_msr_common, and set_efer from kvm_main.c to x86.c. The
+definition of EFER_RESERVED_BITS is moved too.
+
+Signed-off-by: Carsten Otte <cotte@de.ibm.com>
+Acked-by: Hollis Blanchard <hollisb@us.ibm.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm.h      |    1 +
- drivers/kvm/kvm_main.c |  177 +-----------------------------------------------
- drivers/kvm/x86.c      |  175 +++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 177 insertions(+), 176 deletions(-)
+ drivers/kvm/kvm_main.c |  133 -----------------------------------------------
+ drivers/kvm/x86.c      |  134 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 134 insertions(+), 133 deletions(-)
 
-diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index d030a82..ef2a6a8 100644
---- a/drivers/kvm/kvm.h
-+++ b/drivers/kvm/kvm.h
-@@ -591,6 +591,7 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data);
- 
- void fx_init(struct kvm_vcpu *vcpu);
- 
-+void kvm_vcpu_block(struct kvm_vcpu *vcpu);
- void kvm_resched(struct kvm_vcpu *vcpu);
- void kvm_load_guest_fpu(struct kvm_vcpu *vcpu);
- void kvm_put_guest_fpu(struct kvm_vcpu *vcpu);
 diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 11580be..a779d42 100644
+index 7186791..5eccf27 100644
 --- a/drivers/kvm/kvm_main.c
 +++ b/drivers/kvm/kvm_main.c
-@@ -789,7 +789,7 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
- /*
-  * The vCPU has executed a HLT instruction with in-kernel mode enabled.
-  */
--static void kvm_vcpu_block(struct kvm_vcpu *vcpu)
-+void kvm_vcpu_block(struct kvm_vcpu *vcpu)
- {
- 	DECLARE_WAITQUEUE(wait, current);
+@@ -90,8 +90,6 @@ static struct kvm_stats_debugfs_item {
  
-@@ -812,144 +812,6 @@ static void kvm_vcpu_block(struct kvm_vcpu *vcpu)
- 	remove_wait_queue(&vcpu->wq, &wait);
+ static struct dentry *debugfs_dir;
+ 
+-#define EFER_RESERVED_BITS 0xfffffffffffff2fe
+-
+ static long kvm_vcpu_ioctl(struct file *file, unsigned int ioctl,
+ 			   unsigned long arg);
+ 
+@@ -1356,137 +1354,6 @@ void realmode_set_cr(struct kvm_vcpu *vcpu, int cr, unsigned long val,
+ 	}
  }
  
--int kvm_emulate_halt(struct kvm_vcpu *vcpu)
+-int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
 -{
--	++vcpu->stat.halt_exits;
--	if (irqchip_in_kernel(vcpu->kvm)) {
--		vcpu->mp_state = VCPU_MP_STATE_HALTED;
--		kvm_vcpu_block(vcpu);
--		if (vcpu->mp_state != VCPU_MP_STATE_RUNNABLE)
--			return -EINTR;
--		return 1;
--	} else {
--		vcpu->run->exit_reason = KVM_EXIT_HLT;
--		return 0;
--	}
--}
--EXPORT_SYMBOL_GPL(kvm_emulate_halt);
+-	u64 data;
 -
--int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
--{
--	unsigned long nr, a0, a1, a2, a3, ret;
--
--	kvm_x86_ops->cache_regs(vcpu);
--
--	nr = vcpu->regs[VCPU_REGS_RAX];
--	a0 = vcpu->regs[VCPU_REGS_RBX];
--	a1 = vcpu->regs[VCPU_REGS_RCX];
--	a2 = vcpu->regs[VCPU_REGS_RDX];
--	a3 = vcpu->regs[VCPU_REGS_RSI];
--
--	if (!is_long_mode(vcpu)) {
--		nr &= 0xFFFFFFFF;
--		a0 &= 0xFFFFFFFF;
--		a1 &= 0xFFFFFFFF;
--		a2 &= 0xFFFFFFFF;
--		a3 &= 0xFFFFFFFF;
--	}
--
--	switch (nr) {
--	default:
--		ret = -KVM_ENOSYS;
+-	switch (msr) {
+-	case 0xc0010010: /* SYSCFG */
+-	case 0xc0010015: /* HWCR */
+-	case MSR_IA32_PLATFORM_ID:
+-	case MSR_IA32_P5_MC_ADDR:
+-	case MSR_IA32_P5_MC_TYPE:
+-	case MSR_IA32_MC0_CTL:
+-	case MSR_IA32_MCG_STATUS:
+-	case MSR_IA32_MCG_CAP:
+-	case MSR_IA32_MC0_MISC:
+-	case MSR_IA32_MC0_MISC+4:
+-	case MSR_IA32_MC0_MISC+8:
+-	case MSR_IA32_MC0_MISC+12:
+-	case MSR_IA32_MC0_MISC+16:
+-	case MSR_IA32_UCODE_REV:
+-	case MSR_IA32_PERF_STATUS:
+-	case MSR_IA32_EBL_CR_POWERON:
+-		/* MTRR registers */
+-	case 0xfe:
+-	case 0x200 ... 0x2ff:
+-		data = 0;
 -		break;
+-	case 0xcd: /* fsb frequency */
+-		data = 3;
+-		break;
+-	case MSR_IA32_APICBASE:
+-		data = kvm_get_apic_base(vcpu);
+-		break;
+-	case MSR_IA32_MISC_ENABLE:
+-		data = vcpu->ia32_misc_enable_msr;
+-		break;
+-#ifdef CONFIG_X86_64
+-	case MSR_EFER:
+-		data = vcpu->shadow_efer;
+-		break;
+-#endif
+-	default:
+-		pr_unimpl(vcpu, "unhandled rdmsr: 0x%x\n", msr);
+-		return 1;
 -	}
--	vcpu->regs[VCPU_REGS_RAX] = ret;
--	kvm_x86_ops->decache_regs(vcpu);
+-	*pdata = data;
 -	return 0;
 -}
--EXPORT_SYMBOL_GPL(kvm_emulate_hypercall);
+-EXPORT_SYMBOL_GPL(kvm_get_msr_common);
 -
--int kvm_fix_hypercall(struct kvm_vcpu *vcpu)
+-/*
+- * Reads an msr value (of 'msr_index') into 'pdata'.
+- * Returns 0 on success, non-0 otherwise.
+- * Assumes vcpu_load() was already called.
+- */
+-int kvm_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
 -{
--	char instruction[3];
--	int ret = 0;
--
--	mutex_lock(&vcpu->kvm->lock);
--
--	/*
--	 * Blow out the MMU to ensure that no other VCPU has an active mapping
--	 * to ensure that the updated hypercall appears atomically across all
--	 * VCPUs.
--	 */
--	kvm_mmu_zap_all(vcpu->kvm);
--
--	kvm_x86_ops->cache_regs(vcpu);
--	kvm_x86_ops->patch_hypercall(vcpu, instruction);
--	if (emulator_write_emulated(vcpu->rip, instruction, 3, vcpu)
--	    != X86EMUL_CONTINUE)
--		ret = -EFAULT;
--
--	mutex_unlock(&vcpu->kvm->lock);
--
--	return ret;
+-	return kvm_x86_ops->get_msr(vcpu, msr_index, pdata);
 -}
 -
--static u64 mk_cr_64(u64 curr_cr, u32 new_val)
+-#ifdef CONFIG_X86_64
+-
+-static void set_efer(struct kvm_vcpu *vcpu, u64 efer)
 -{
--	return (curr_cr & ~((1ULL << 32) - 1)) | new_val;
--}
--
--void realmode_lgdt(struct kvm_vcpu *vcpu, u16 limit, unsigned long base)
--{
--	struct descriptor_table dt = { limit, base };
--
--	kvm_x86_ops->set_gdt(vcpu, &dt);
--}
--
--void realmode_lidt(struct kvm_vcpu *vcpu, u16 limit, unsigned long base)
--{
--	struct descriptor_table dt = { limit, base };
--
--	kvm_x86_ops->set_idt(vcpu, &dt);
--}
--
--void realmode_lmsw(struct kvm_vcpu *vcpu, unsigned long msw,
--		   unsigned long *rflags)
--{
--	lmsw(vcpu, msw);
--	*rflags = kvm_x86_ops->get_rflags(vcpu);
--}
--
--unsigned long realmode_get_cr(struct kvm_vcpu *vcpu, int cr)
--{
--	kvm_x86_ops->decache_cr4_guest_bits(vcpu);
--	switch (cr) {
--	case 0:
--		return vcpu->cr0;
--	case 2:
--		return vcpu->cr2;
--	case 3:
--		return vcpu->cr3;
--	case 4:
--		return vcpu->cr4;
--	default:
--		vcpu_printf(vcpu, "%s: unexpected cr %u\n", __FUNCTION__, cr);
--		return 0;
+-	if (efer & EFER_RESERVED_BITS) {
+-		printk(KERN_DEBUG "set_efer: 0x%llx #GP, reserved bits\n",
+-		       efer);
+-		inject_gp(vcpu);
+-		return;
 -	}
+-
+-	if (is_paging(vcpu)
+-	    && (vcpu->shadow_efer & EFER_LME) != (efer & EFER_LME)) {
+-		printk(KERN_DEBUG "set_efer: #GP, change LME while paging\n");
+-		inject_gp(vcpu);
+-		return;
+-	}
+-
+-	kvm_x86_ops->set_efer(vcpu, efer);
+-
+-	efer &= ~EFER_LMA;
+-	efer |= vcpu->shadow_efer & EFER_LMA;
+-
+-	vcpu->shadow_efer = efer;
 -}
 -
--void realmode_set_cr(struct kvm_vcpu *vcpu, int cr, unsigned long val,
--		     unsigned long *rflags)
+-#endif
+-
+-int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
 -{
--	switch (cr) {
--	case 0:
--		set_cr0(vcpu, mk_cr_64(vcpu->cr0, val));
--		*rflags = kvm_x86_ops->get_rflags(vcpu);
+-	switch (msr) {
+-#ifdef CONFIG_X86_64
+-	case MSR_EFER:
+-		set_efer(vcpu, data);
 -		break;
--	case 2:
--		vcpu->cr2 = val;
+-#endif
+-	case MSR_IA32_MC0_STATUS:
+-		pr_unimpl(vcpu, "%s: MSR_IA32_MC0_STATUS 0x%llx, nop\n",
+-		       __FUNCTION__, data);
 -		break;
--	case 3:
--		set_cr3(vcpu, val);
+-	case MSR_IA32_MCG_STATUS:
+-		pr_unimpl(vcpu, "%s: MSR_IA32_MCG_STATUS 0x%llx, nop\n",
+-			__FUNCTION__, data);
 -		break;
--	case 4:
--		set_cr4(vcpu, mk_cr_64(vcpu->cr4, val));
+-	case MSR_IA32_UCODE_REV:
+-	case MSR_IA32_UCODE_WRITE:
+-	case 0x200 ... 0x2ff: /* MTRRs */
+-		break;
+-	case MSR_IA32_APICBASE:
+-		kvm_set_apic_base(vcpu, data);
+-		break;
+-	case MSR_IA32_MISC_ENABLE:
+-		vcpu->ia32_misc_enable_msr = data;
 -		break;
 -	default:
--		vcpu_printf(vcpu, "%s: unexpected cr %u\n", __FUNCTION__, cr);
+-		pr_unimpl(vcpu, "unhandled wrmsr: 0x%x\n", msr);
+-		return 1;
 -	}
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(kvm_set_msr_common);
+-
+-/*
+- * Writes msr value into into the appropriate "register".
+- * Returns 0 on success, non-0 otherwise.
+- * Assumes vcpu_load() was already called.
+- */
+-int kvm_set_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 data)
+-{
+-	return kvm_x86_ops->set_msr(vcpu, msr_index, data);
 -}
 -
  void kvm_resched(struct kvm_vcpu *vcpu)
  {
  	if (!need_resched())
-@@ -958,43 +820,6 @@ void kvm_resched(struct kvm_vcpu *vcpu)
- }
- EXPORT_SYMBOL_GPL(kvm_resched);
- 
--void kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
--{
--	int i;
--	u32 function;
--	struct kvm_cpuid_entry *e, *best;
--
--	kvm_x86_ops->cache_regs(vcpu);
--	function = vcpu->regs[VCPU_REGS_RAX];
--	vcpu->regs[VCPU_REGS_RAX] = 0;
--	vcpu->regs[VCPU_REGS_RBX] = 0;
--	vcpu->regs[VCPU_REGS_RCX] = 0;
--	vcpu->regs[VCPU_REGS_RDX] = 0;
--	best = NULL;
--	for (i = 0; i < vcpu->cpuid_nent; ++i) {
--		e = &vcpu->cpuid_entries[i];
--		if (e->function == function) {
--			best = e;
--			break;
--		}
--		/*
--		 * Both basic or both extended?
--		 */
--		if (((e->function ^ function) & 0x80000000) == 0)
--			if (!best || e->function > best->function)
--				best = e;
--	}
--	if (best) {
--		vcpu->regs[VCPU_REGS_RAX] = best->eax;
--		vcpu->regs[VCPU_REGS_RBX] = best->ebx;
--		vcpu->regs[VCPU_REGS_RCX] = best->ecx;
--		vcpu->regs[VCPU_REGS_RDX] = best->edx;
--	}
--	kvm_x86_ops->decache_regs(vcpu);
--	kvm_x86_ops->skip_emulated_instruction(vcpu);
--}
--EXPORT_SYMBOL_GPL(kvm_emulate_cpuid);
--
- /*
-  * Check if userspace requested an interrupt window, and that the
-  * interrupt window is open.
 diff --git a/drivers/kvm/x86.c b/drivers/kvm/x86.c
-index c1f10e5..2cf7eba 100644
+index a728af8..7862743 100644
 --- a/drivers/kvm/x86.c
 +++ b/drivers/kvm/x86.c
-@@ -1610,3 +1610,178 @@ __init void kvm_arch_init(void)
+@@ -38,6 +38,7 @@
+ 			  | X86_CR4_OSXMMEXCPT | X86_CR4_VMXE))
+ 
+ #define CR8_RESERVED_BITS (~(unsigned long)X86_CR8_TPR)
++#define EFER_RESERVED_BITS 0xfffffffffffff2fe
+ 
+ unsigned long segment_base(u16 selector)
  {
- 	kvm_init_msr_list();
- }
+@@ -324,6 +325,44 @@ static u32 emulated_msrs[] = {
+ 	MSR_IA32_MISC_ENABLE,
+ };
+ 
++#ifdef CONFIG_X86_64
 +
-+int kvm_emulate_halt(struct kvm_vcpu *vcpu)
++static void set_efer(struct kvm_vcpu *vcpu, u64 efer)
 +{
-+	++vcpu->stat.halt_exits;
-+	if (irqchip_in_kernel(vcpu->kvm)) {
-+		vcpu->mp_state = VCPU_MP_STATE_HALTED;
-+		kvm_vcpu_block(vcpu);
-+		if (vcpu->mp_state != VCPU_MP_STATE_RUNNABLE)
-+			return -EINTR;
-+		return 1;
-+	} else {
-+		vcpu->run->exit_reason = KVM_EXIT_HLT;
-+		return 0;
++	if (efer & EFER_RESERVED_BITS) {
++		printk(KERN_DEBUG "set_efer: 0x%llx #GP, reserved bits\n",
++		       efer);
++		inject_gp(vcpu);
++		return;
 +	}
++
++	if (is_paging(vcpu)
++	    && (vcpu->shadow_efer & EFER_LME) != (efer & EFER_LME)) {
++		printk(KERN_DEBUG "set_efer: #GP, change LME while paging\n");
++		inject_gp(vcpu);
++		return;
++	}
++
++	kvm_x86_ops->set_efer(vcpu, efer);
++
++	efer &= ~EFER_LMA;
++	efer |= vcpu->shadow_efer & EFER_LMA;
++
++	vcpu->shadow_efer = efer;
 +}
-+EXPORT_SYMBOL_GPL(kvm_emulate_halt);
 +
-+int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
++#endif
++
++/*
++ * Writes msr value into into the appropriate "register".
++ * Returns 0 on success, non-0 otherwise.
++ * Assumes vcpu_load() was already called.
++ */
++int kvm_set_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 data)
 +{
-+	unsigned long nr, a0, a1, a2, a3, ret;
++	return kvm_x86_ops->set_msr(vcpu, msr_index, data);
++}
 +
-+	kvm_x86_ops->cache_regs(vcpu);
+ /*
+  * Adapt set_msr() to msr_io()'s calling convention
+  */
+@@ -332,6 +371,101 @@ static int do_set_msr(struct kvm_vcpu *vcpu, unsigned index, u64 *data)
+ 	return kvm_set_msr(vcpu, index, *data);
+ }
+ 
 +
-+	nr = vcpu->regs[VCPU_REGS_RAX];
-+	a0 = vcpu->regs[VCPU_REGS_RBX];
-+	a1 = vcpu->regs[VCPU_REGS_RCX];
-+	a2 = vcpu->regs[VCPU_REGS_RDX];
-+	a3 = vcpu->regs[VCPU_REGS_RSI];
-+
-+	if (!is_long_mode(vcpu)) {
-+		nr &= 0xFFFFFFFF;
-+		a0 &= 0xFFFFFFFF;
-+		a1 &= 0xFFFFFFFF;
-+		a2 &= 0xFFFFFFFF;
-+		a3 &= 0xFFFFFFFF;
-+	}
-+
-+	switch (nr) {
-+	default:
-+		ret = -KVM_ENOSYS;
++int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
++{
++	switch (msr) {
++#ifdef CONFIG_X86_64
++	case MSR_EFER:
++		set_efer(vcpu, data);
 +		break;
++#endif
++	case MSR_IA32_MC0_STATUS:
++		pr_unimpl(vcpu, "%s: MSR_IA32_MC0_STATUS 0x%llx, nop\n",
++		       __FUNCTION__, data);
++		break;
++	case MSR_IA32_MCG_STATUS:
++		pr_unimpl(vcpu, "%s: MSR_IA32_MCG_STATUS 0x%llx, nop\n",
++			__FUNCTION__, data);
++		break;
++	case MSR_IA32_UCODE_REV:
++	case MSR_IA32_UCODE_WRITE:
++	case 0x200 ... 0x2ff: /* MTRRs */
++		break;
++	case MSR_IA32_APICBASE:
++		kvm_set_apic_base(vcpu, data);
++		break;
++	case MSR_IA32_MISC_ENABLE:
++		vcpu->ia32_misc_enable_msr = data;
++		break;
++	default:
++		pr_unimpl(vcpu, "unhandled wrmsr: 0x%x\n", msr);
++		return 1;
 +	}
-+	vcpu->regs[VCPU_REGS_RAX] = ret;
-+	kvm_x86_ops->decache_regs(vcpu);
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(kvm_emulate_hypercall);
++EXPORT_SYMBOL_GPL(kvm_set_msr_common);
 +
-+int kvm_fix_hypercall(struct kvm_vcpu *vcpu)
++
++/*
++ * Reads an msr value (of 'msr_index') into 'pdata'.
++ * Returns 0 on success, non-0 otherwise.
++ * Assumes vcpu_load() was already called.
++ */
++int kvm_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
 +{
-+	char instruction[3];
-+	int ret = 0;
-+
-+	mutex_lock(&vcpu->kvm->lock);
-+
-+	/*
-+	 * Blow out the MMU to ensure that no other VCPU has an active mapping
-+	 * to ensure that the updated hypercall appears atomically across all
-+	 * VCPUs.
-+	 */
-+	kvm_mmu_zap_all(vcpu->kvm);
-+
-+	kvm_x86_ops->cache_regs(vcpu);
-+	kvm_x86_ops->patch_hypercall(vcpu, instruction);
-+	if (emulator_write_emulated(vcpu->rip, instruction, 3, vcpu)
-+	    != X86EMUL_CONTINUE)
-+		ret = -EFAULT;
-+
-+	mutex_unlock(&vcpu->kvm->lock);
-+
-+	return ret;
++	return kvm_x86_ops->get_msr(vcpu, msr_index, pdata);
 +}
 +
-+static u64 mk_cr_64(u64 curr_cr, u32 new_val)
++int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
 +{
-+	return (curr_cr & ~((1ULL << 32) - 1)) | new_val;
-+}
++	u64 data;
 +
-+void realmode_lgdt(struct kvm_vcpu *vcpu, u16 limit, unsigned long base)
-+{
-+	struct descriptor_table dt = { limit, base };
-+
-+	kvm_x86_ops->set_gdt(vcpu, &dt);
-+}
-+
-+void realmode_lidt(struct kvm_vcpu *vcpu, u16 limit, unsigned long base)
-+{
-+	struct descriptor_table dt = { limit, base };
-+
-+	kvm_x86_ops->set_idt(vcpu, &dt);
-+}
-+
-+void realmode_lmsw(struct kvm_vcpu *vcpu, unsigned long msw,
-+		   unsigned long *rflags)
-+{
-+	lmsw(vcpu, msw);
-+	*rflags = kvm_x86_ops->get_rflags(vcpu);
-+}
-+
-+unsigned long realmode_get_cr(struct kvm_vcpu *vcpu, int cr)
-+{
-+	kvm_x86_ops->decache_cr4_guest_bits(vcpu);
-+	switch (cr) {
-+	case 0:
-+		return vcpu->cr0;
-+	case 2:
-+		return vcpu->cr2;
-+	case 3:
-+		return vcpu->cr3;
-+	case 4:
-+		return vcpu->cr4;
++	switch (msr) {
++	case 0xc0010010: /* SYSCFG */
++	case 0xc0010015: /* HWCR */
++	case MSR_IA32_PLATFORM_ID:
++	case MSR_IA32_P5_MC_ADDR:
++	case MSR_IA32_P5_MC_TYPE:
++	case MSR_IA32_MC0_CTL:
++	case MSR_IA32_MCG_STATUS:
++	case MSR_IA32_MCG_CAP:
++	case MSR_IA32_MC0_MISC:
++	case MSR_IA32_MC0_MISC+4:
++	case MSR_IA32_MC0_MISC+8:
++	case MSR_IA32_MC0_MISC+12:
++	case MSR_IA32_MC0_MISC+16:
++	case MSR_IA32_UCODE_REV:
++	case MSR_IA32_PERF_STATUS:
++	case MSR_IA32_EBL_CR_POWERON:
++		/* MTRR registers */
++	case 0xfe:
++	case 0x200 ... 0x2ff:
++		data = 0;
++		break;
++	case 0xcd: /* fsb frequency */
++		data = 3;
++		break;
++	case MSR_IA32_APICBASE:
++		data = kvm_get_apic_base(vcpu);
++		break;
++	case MSR_IA32_MISC_ENABLE:
++		data = vcpu->ia32_misc_enable_msr;
++		break;
++#ifdef CONFIG_X86_64
++	case MSR_EFER:
++		data = vcpu->shadow_efer;
++		break;
++#endif
 +	default:
-+		vcpu_printf(vcpu, "%s: unexpected cr %u\n", __FUNCTION__, cr);
-+		return 0;
++		pr_unimpl(vcpu, "unhandled rdmsr: 0x%x\n", msr);
++		return 1;
 +	}
++	*pdata = data;
++	return 0;
 +}
++EXPORT_SYMBOL_GPL(kvm_get_msr_common);
 +
-+void realmode_set_cr(struct kvm_vcpu *vcpu, int cr, unsigned long val,
-+		     unsigned long *rflags)
-+{
-+	switch (cr) {
-+	case 0:
-+		set_cr0(vcpu, mk_cr_64(vcpu->cr0, val));
-+		*rflags = kvm_x86_ops->get_rflags(vcpu);
-+		break;
-+	case 2:
-+		vcpu->cr2 = val;
-+		break;
-+	case 3:
-+		set_cr3(vcpu, val);
-+		break;
-+	case 4:
-+		set_cr4(vcpu, mk_cr_64(vcpu->cr4, val));
-+		break;
-+	default:
-+		vcpu_printf(vcpu, "%s: unexpected cr %u\n", __FUNCTION__, cr);
-+	}
-+}
-+
-+void kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
-+{
-+	int i;
-+	u32 function;
-+	struct kvm_cpuid_entry *e, *best;
-+
-+	kvm_x86_ops->cache_regs(vcpu);
-+	function = vcpu->regs[VCPU_REGS_RAX];
-+	vcpu->regs[VCPU_REGS_RAX] = 0;
-+	vcpu->regs[VCPU_REGS_RBX] = 0;
-+	vcpu->regs[VCPU_REGS_RCX] = 0;
-+	vcpu->regs[VCPU_REGS_RDX] = 0;
-+	best = NULL;
-+	for (i = 0; i < vcpu->cpuid_nent; ++i) {
-+		e = &vcpu->cpuid_entries[i];
-+		if (e->function == function) {
-+			best = e;
-+			break;
-+		}
-+		/*
-+		 * Both basic or both extended?
-+		 */
-+		if (((e->function ^ function) & 0x80000000) == 0)
-+			if (!best || e->function > best->function)
-+				best = e;
-+	}
-+	if (best) {
-+		vcpu->regs[VCPU_REGS_RAX] = best->eax;
-+		vcpu->regs[VCPU_REGS_RBX] = best->ebx;
-+		vcpu->regs[VCPU_REGS_RCX] = best->ecx;
-+		vcpu->regs[VCPU_REGS_RDX] = best->edx;
-+	}
-+	kvm_x86_ops->decache_regs(vcpu);
-+	kvm_x86_ops->skip_emulated_instruction(vcpu);
-+}
-+EXPORT_SYMBOL_GPL(kvm_emulate_cpuid);
+ /*
+  * Read or write a bunch of msrs. All parameters are kernel addresses.
+  *
 -- 
 1.5.3.7
 
