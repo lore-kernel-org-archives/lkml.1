@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbXLZQQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbXLZQR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181AbXLZQQe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 11:16:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbXLZQQ0
+	id S1752355AbXLZQR6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 11:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbXLZQRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 11:16:26 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:33646 "EHLO mgw1.diku.dk"
+	Wed, 26 Dec 2007 11:17:49 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:33753 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751090AbXLZQQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 11:16:26 -0500
-Date: Wed, 26 Dec 2007 17:14:25 +0100 (MET)
+	id S1750972AbXLZQRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 11:17:48 -0500
+Date: Wed, 26 Dec 2007 17:15:08 +0100 (MET)
 From: Julia Lawall <julia@diku.dk>
-To: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, viro@ftp.linux.org.uk,
+To: linux-scsi@vger.kernel.org, viro@zeniv.linux.org.uk,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/3] drivers/s390: Use offsetof
-Message-ID: <Pine.LNX.4.58.0712261713530.1185@pc-041.diku.dk>
+Subject: [PATCH 3/3] drivers/scsi: Use offsetof
+Message-ID: <Pine.LNX.4.58.0712261714270.1185@pc-041.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -49,28 +49,22 @@ identifier fld1;
 - (T1)&s->fld1 - (T2)s
 + offsetof(T,fld1)
 )
-
-@@
-type T;
-expression E;
-@@
-
-- (int)(offsetof(T,E))
-+ offsetof(T,E)
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -u -p a/drivers/s390/scsi/zfcp_dbf.c b/drivers/s390/scsi/zfcp_dbf.c
---- a/drivers/s390/scsi/zfcp_dbf.c	2007-10-22 11:25:20.000000000 +0200
-+++ b/drivers/s390/scsi/zfcp_dbf.c	2007-12-26 16:25:51.000000000 +0100
-@@ -614,7 +614,7 @@ void zfcp_san_dbf_event_incoming_els(str
- 	struct fsf_status_read_buffer *status_buffer =
- 	    (struct fsf_status_read_buffer *)fsf_req->data;
- 	int length = (int)status_buffer->length -
--	    (int)((void *)&status_buffer->payload - (void *)status_buffer);
-+	    offsetof(struct fsf_status_read_buffer, payload);
-
- 	_zfcp_san_dbf_event_common_els("iels", 1, fsf_req, status_buffer->d_id,
- 				       fc_host_port_id(adapter->scsi_host),
+diff -u -p a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
+--- a/drivers/scsi/BusLogic.c	2007-10-22 11:25:20.000000000 +0200
++++ b/drivers/scsi/BusLogic.c	2007-12-26 16:33:42.000000000 +0100
+@@ -2856,7 +2856,10 @@ static int BusLogic_QueueCommand(struct
+ 		CCB->Opcode = BusLogic_InitiatorCCB_ScatterGather;
+ 		CCB->DataLength = Count * sizeof(struct BusLogic_ScatterGatherSegment);
+ 		if (BusLogic_MultiMasterHostAdapterP(HostAdapter))
+-			CCB->DataPointer = (unsigned int) CCB->DMA_Handle + ((unsigned long) &CCB->ScatterGatherList - (unsigned long) CCB);
++			CCB->DataPointer =
++				(unsigned int) CCB->DMA_Handle +
++				offsetof(struct BusLogic_CCB,
++					 ScatterGatherList);
+ 		else
+ 			CCB->DataPointer = Virtual_to_32Bit_Virtual(CCB->ScatterGatherList);
