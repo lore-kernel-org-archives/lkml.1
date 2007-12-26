@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751983AbXLZRNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752373AbXLZROV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751983AbXLZRNa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 12:13:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbXLZRNV
+	id S1752373AbXLZROV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 12:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbXLZROO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 12:13:21 -0500
-Received: from [76.243.235.52] ([76.243.235.52]:37667 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751223AbXLZRNT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 12:13:19 -0500
-Subject: Re: [PATCH 7/7] sg_ring: convert core ATA code to sg_ring.
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-In-Reply-To: <47721294.7030401@gmail.com>
-References: <200712191731.26512.rusty@rustcorp.com.au>
-	 <200712191836.06769.rusty@rustcorp.com.au>
-	 <200712191837.04697.rusty@rustcorp.com.au>
-	 <200712191838.27363.rusty@rustcorp.com.au>  <47721294.7030401@gmail.com>
-Content-Type: text/plain
-Date: Wed, 26 Dec 2007 11:12:59 -0600
-Message-Id: <1198689179.3317.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Dec 2007 12:14:14 -0500
+Received: from emroute3.ornl.gov ([160.91.4.110]:46089 "EHLO emroute3.ornl.gov"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751381AbXLZRON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 12:14:13 -0500
+Date: Wed, 26 Dec 2007 12:14:11 -0500
+From: David Dillow <dillowda@ornl.gov>
+Subject: Re: list corruption on ib_srp load in v2.6.24-rc5
+In-reply-to: <20071223014407L.tomof@acm.org>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org, pw@osc.edu,
+       fujita.tomonori@lab.ntt.co.jp
+Message-id: <1198689251.25003.2.camel@lap75545.ornl.gov>
+Organization: Oak Ridge National Laboratory
+MIME-version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8)
+Content-type: text/plain
+Content-transfer-encoding: 7bit
+References: <1198273973.9979.34.camel@lap75545.ornl.gov>
+ <1198275532.9979.43.camel@lap75545.ornl.gov> <20071223014407L.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2007-12-26 at 17:36 +0900, Tejun Heo wrote:
-> (PS, I haven't followed the sg chaining discussion.  Why is sg chaining
-> an optional feature?  Performance overhead on low end machines?)
+On Sun, 2007-12-23 at 01:41 +0900, FUJITA Tomonori wrote:
+> transport_container_unregister(&i->rport_attr_cont) should not fail here.
+> 
+> It fails because there is still a srp rport.
+> 
+> I think that as Pete pointed out, srp_remove_one needs to call
+> srp_remove_host.
+> 
+> Can you try this?
 
-The idea of SG chaining is to allow drivers that wish to take advantage
-of it to increase their transfer lengths beyond
-MAX_HW_SEGMENTS*PAGE_SIZE by using chaining.  However, drivers that stay
-below MAX_HW_SEGMENTS for the scatterlist length don't need to be
-altered.
+That patched oopsed in scsi_remove_host(), but reversing the order has
+survived over 500 insert/probe/remove cycles.
 
-The ultimate goal (well, perhaps more wish) is to have all drivers
-converted, so SCSI can use something small for the default scatterlist
-sizing and dump all the sglist mempool stuff (although this may never be
-reached).
-
-James
+Tested-by: David Dillow <dillowda@ornl.gov>
+---
+diff --git a/drivers/infiniband/ulp/srp/ib_srp.c b/drivers/infiniband/ulp/srp/ib_srp.c
+index 950228f..77e8b90 100644
+--- a/drivers/infiniband/ulp/srp/ib_srp.c
++++ b/drivers/infiniband/ulp/srp/ib_srp.c
+@@ -2054,6 +2054,7 @@ static void srp_remove_one(struct ib_device *device)
+ 		list_for_each_entry_safe(target, tmp_target,
+ 					 &host->target_list, list) {
+ 			scsi_remove_host(target->scsi_host);
++			srp_remove_host(target->scsi_host);
+ 			srp_disconnect_target(target);
+ 			ib_destroy_cm_id(target->cm_id);
+ 			srp_free_target_ib(target);
 
 
