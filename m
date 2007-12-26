@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751627AbXLZLNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbXLZLNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751627AbXLZLNf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 06:13:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbXLZLGj
+	id S1754195AbXLZLNs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 06:13:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbXLZLGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 26 Dec 2007 06:06:39 -0500
-Received: from il.qumranet.com ([82.166.9.18]:50472 "EHLO il.qumranet.com"
+Received: from il.qumranet.com ([82.166.9.18]:50470 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbXLZLGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751776AbXLZLGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 26 Dec 2007 06:06:06 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH 27/55] KVM: x86 emulator: Extract the common code of SrcReg and DstReg
-Date: Wed, 26 Dec 2007 13:05:32 +0200
-Message-Id: <1198667160-22953-28-git-send-email-avi@qumranet.com>
+Cc: Anthony Liguori <aliguori@us.ibm.com>
+Subject: [PATCH 23/55] KVM: Fix gfn_to_page() acquiring mmap_sem twice
+Date: Wed, 26 Dec 2007 13:05:28 +0200
+Message-Id: <1198667160-22953-24-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1198667160-22953-1-git-send-email-avi@qumranet.com>
 References: <1198667160-22953-1-git-send-email-avi@qumranet.com>
@@ -21,118 +22,79 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Share the common parts of SrcReg and DstReg decoding.
+From: Anthony Liguori <aliguori@us.ibm.com>
 
+KVM's nopage handler calls gfn_to_page() which acquires the mmap_sem when
+calling out to get_user_pages().  nopage handlers are already invoked with the
+mmap_sem held though.  Introduce a __gfn_to_page() for use by the nopage
+handler which requires the lock to already be held.
+
+This was noticed by tglx.
+
+Signed-off-by: Anthony Liguori <aliguori@us.ibm.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/x86_emulate.c |   80 +++++++++++++++++---------------------------
- 1 files changed, 31 insertions(+), 49 deletions(-)
+ drivers/kvm/kvm_main.c |   22 ++++++++++++++++++----
+ 1 files changed, 18 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index 087a820..58ceb66 100644
---- a/drivers/kvm/x86_emulate.c
-+++ b/drivers/kvm/x86_emulate.c
-@@ -520,6 +520,34 @@ static int test_cc(unsigned int condition, unsigned int flags)
- 	return (!!rc ^ (condition & 1));
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index c3dc24f..7186791 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -633,7 +633,10 @@ int kvm_is_visible_gfn(struct kvm *kvm, gfn_t gfn)
  }
+ EXPORT_SYMBOL_GPL(kvm_is_visible_gfn);
  
-+static void decode_register_operand(struct operand *op,
-+				    struct decode_cache *c,
-+				    int highbyte_regs,
-+				    int inhibit_bytereg)
+-struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn)
++/*
++ * Requires current->mm->mmap_sem to be held
++ */
++static struct page *__gfn_to_page(struct kvm *kvm, gfn_t gfn)
+ {
+ 	struct kvm_memory_slot *slot;
+ 	struct page *page[1];
+@@ -648,12 +651,10 @@ struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn)
+ 		return bad_page;
+ 	}
+ 
+-	down_read(&current->mm->mmap_sem);
+ 	npages = get_user_pages(current, current->mm,
+ 				slot->userspace_addr
+ 				+ (gfn - slot->base_gfn) * PAGE_SIZE, 1,
+ 				1, 1, page, NULL);
+-	up_read(&current->mm->mmap_sem);
+ 	if (npages != 1) {
+ 		get_page(bad_page);
+ 		return bad_page;
+@@ -661,6 +662,18 @@ struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn)
+ 
+ 	return page[0];
+ }
++
++struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn)
 +{
-+	op->type = OP_REG;
-+	if ((c->d & ByteOp) && !inhibit_bytereg) {
-+		op->ptr = decode_register(c->modrm_reg, c->regs, highbyte_regs);
-+		op->val = *(u8 *)op->ptr;
-+		op->bytes = 1;
-+	} else {
-+		op->ptr = decode_register(c->modrm_reg, c->regs, 0);
-+		op->bytes = c->op_bytes;
-+		switch (op->bytes) {
-+		case 2:
-+			op->val = *(u16 *)op->ptr;
-+			break;
-+		case 4:
-+			op->val = *(u32 *)op->ptr;
-+			break;
-+		case 8:
-+			op->val = *(u64 *) op->ptr;
-+			break;
-+		}
-+	}
-+	op->orig_val = op->val;
++	struct page *page;
++
++	down_read(&current->mm->mmap_sem);
++	page = __gfn_to_page(kvm, gfn);
++	up_read(&current->mm->mmap_sem);
++
++	return page;
 +}
 +
- int
- x86_decode_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
- {
-@@ -809,31 +837,7 @@ modrm_done:
- 	case SrcNone:
- 		break;
- 	case SrcReg:
--		c->src.type = OP_REG;
--		if (c->d & ByteOp) {
--			c->src.ptr =
--				decode_register(c->modrm_reg, c->regs,
--						  (rex_prefix == 0));
--			c->src.val = c->src.orig_val = *(u8 *)c->src.ptr;
--			c->src.bytes = 1;
--		} else {
--			c->src.ptr =
--			    decode_register(c->modrm_reg, c->regs, 0);
--			switch ((c->src.bytes = c->op_bytes)) {
--			case 2:
--				c->src.val = c->src.orig_val =
--						       *(u16 *) c->src.ptr;
--				break;
--			case 4:
--				c->src.val = c->src.orig_val =
--						       *(u32 *) c->src.ptr;
--				break;
--			case 8:
--				c->src.val = c->src.orig_val =
--						       *(u64 *) c->src.ptr;
--				break;
--			}
--		}
-+		decode_register_operand(&c->src, c, rex_prefix == 0, 0);
- 		break;
- 	case SrcMem16:
- 		c->src.bytes = 2;
-@@ -891,30 +895,8 @@ modrm_done:
- 		/* Special instructions do their own operand decoding. */
- 		return 0;
- 	case DstReg:
--		c->dst.type = OP_REG;
--		if ((c->d & ByteOp)
--		    && !(c->twobyte &&
--			(c->b == 0xb6 || c->b == 0xb7))) {
--			c->dst.ptr =
--				decode_register(c->modrm_reg, c->regs,
--						  (rex_prefix == 0));
--			c->dst.val = *(u8 *) c->dst.ptr;
--			c->dst.bytes = 1;
--		} else {
--			c->dst.ptr =
--			    decode_register(c->modrm_reg, c->regs, 0);
--			switch ((c->dst.bytes = c->op_bytes)) {
--			case 2:
--				c->dst.val = *(u16 *)c->dst.ptr;
--				break;
--			case 4:
--				c->dst.val = *(u32 *)c->dst.ptr;
--				break;
--			case 8:
--				c->dst.val = *(u64 *)c->dst.ptr;
--				break;
--			}
--		}
-+		decode_register_operand(&c->dst, c, rex_prefix == 0,
-+			 c->twobyte && (c->b == 0xb6 || c->b == 0xb7));
- 		break;
- 	case DstMem:
- 		if ((c->d & ModRM) && c->modrm_mod == 3) {
+ EXPORT_SYMBOL_GPL(gfn_to_page);
+ 
+ void kvm_release_page(struct page *page)
+@@ -2621,7 +2634,8 @@ static struct page *kvm_vm_nopage(struct vm_area_struct *vma,
+ 	pgoff = ((address - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
+ 	if (!kvm_is_visible_gfn(kvm, pgoff))
+ 		return NOPAGE_SIGBUS;
+-	page = gfn_to_page(kvm, pgoff);
++	/* current->mm->mmap_sem is already held so call lockless version */
++	page = __gfn_to_page(kvm, pgoff);
+ 	if (is_error_page(page)) {
+ 		kvm_release_page(page);
+ 		return NOPAGE_SIGBUS;
 -- 
 1.5.3.7
 
