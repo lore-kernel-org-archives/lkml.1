@@ -1,70 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbXLZPYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbXLZPYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752355AbXLZPYX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 10:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbXLZPYI
+	id S1752730AbXLZPYf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 10:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbXLZPYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 10:24:08 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:33851 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbXLZPYF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 10:24:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=xoOyLQgVVkDjgqX3fMuPNn2LLYW4Z/v9c/gEOrTtQ5bpvEdWYQZTWM15yVKs4bsienk+m8egZAEDAW+Ute6TH2iE6mhEM6S9Rvgl4jStaKOqJdllICr7LUqmpf2M6Sr49fKkP/4mRiNToANttXKQW/9k2q8UavMAlY9VMMsfNQw=
-Message-ID: <47727216.4050003@gmail.com>
-Date: Wed, 26 Dec 2007 18:24:06 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Wed, 26 Dec 2007 10:24:13 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:52212 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751328AbXLZPYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 10:24:10 -0500
+Date: Wed, 26 Dec 2007 16:23:53 +0100 (MET)
+From: Julia Lawall <julia@diku.dk>
+To: ballabio_dario@emc.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/4] drivers/scsi/u14-34f.c: Use time_before, time_before_eq,
+ etc.
+Message-ID: <Pine.LNX.4.58.0712261623060.1185@pc-041.diku.dk>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: Suspend code ordering (again)
-References: <200712231419.40207.carlos@strangeworlds.co.uk> <200712251713.13223.rjw@sisk.pl> <alpine.LFD.0.9999.0712252006330.21557@woody.linux-foundation.org> <200712261607.18429.rjw@sisk.pl>
-In-Reply-To: <200712261607.18429.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Wednesday, 26 of December 2007, Linus Torvalds wrote:
->   
->> On Tue, 25 Dec 2007, Rafael J. Wysocki wrote:
->>     
->>> the ACPI specification between versions 1.0x and 2.0.  Namely, while ACPI
->>> 2.0 and later wants us to put devices into low power states before calling
->>> _PTS, ACPI 1.0x wants us to do that after calling _PTS.  Since we're following
->>> the 2.0 and later specifications right now, we're not doing the right thing for
->>> the (strictly) ACPI 1.0x-compliant systems.
->>>
->>> We ought to be able to fix things on the high level, by calling _PTS earlier on
->>> systems that claim to be ACPI 1.0x-compliant.  That will require us to modify
->>> the generic susped code quite a bit and will need to be tested for some time.
->>>       
->> That's insane. Are you really saying that ACPI wants totally different 
->> orderings for different versions of the spec?
->>     
->
-> Yes, I am.
->
->   
->> And does Windows really do that?
->>     
->
-> I don't know.
->   
-Windows was compliant only with 1.x spec until Vista.
-With Vista claims are 3.x compliance.
+From: Julia Lawall <julia@diku.dk>
 
+The functions time_before, time_before_eq, time_after, and time_after_eq
+are more robust for comparing jiffies against other values.
+
+A simplified version of the semantic patch making this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@ change_compare_np @
+expression E;
+@@
+
+(
+- jiffies <= E
++ time_before_eq(jiffies,E)
+|
+- jiffies >= E
++ time_after_eq(jiffies,E)
+|
+- jiffies < E
++ time_before(jiffies,E)
+|
+- jiffies > E
++ time_after(jiffies,E)
+)
+
+@ include depends on change_compare_np @
+@@
+
+#include <linux/jiffies.h>
+
+@ no_include depends on !include && change_compare_np @
+@@
+
+  #include <linux/...>
++ #include <linux/jiffies.h>
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+
+diff -u -p linux-2.6/drivers/scsi/u14-34f.c linuxcopy/drivers/scsi/u14-34f.c
+--- linux-2.6/drivers/scsi/u14-34f.c	2007-10-22 11:25:24.000000000 +0200
++++ linuxcopy/drivers/scsi/u14-34f.c	2007-12-26 16:09:12.000000000 +0100
+@@ -420,6 +420,7 @@
+ #include <linux/init.h>
+ #include <linux/ctype.h>
+ #include <linux/spinlock.h>
++#include <linux/jiffies.h>
+ #include <asm/dma.h>
+ #include <asm/irq.h>
+
+@@ -745,7 +746,8 @@ static int wait_on_busy(unsigned long io
+ static int board_inquiry(unsigned int j) {
+    struct mscp *cpp;
+    dma_addr_t id_dma_addr;
+-   unsigned int time, limit = 0;
++   unsigned long time;
++   unsigned int limit = 0;
+
+    id_dma_addr = pci_map_single(HD(j)->pdev, HD(j)->board_id,
+                     sizeof(HD(j)->board_id), PCI_DMA_BIDIRECTIONAL);
+@@ -778,7 +780,7 @@ static int board_inquiry(unsigned int j)
+
+    spin_unlock_irq(&driver_lock);
+    time = jiffies;
+-   while ((jiffies - time) < HZ && limit++ < 20000) udelay(100L);
++   while (time_before(jiffies, time + HZ) && limit++ < 20000) udelay(100L);
+    spin_lock_irq(&driver_lock);
+
+    if (cpp->adapter_status || HD(j)->cp_stat[0] != FREE) {
+@@ -1393,7 +1395,8 @@ static int u14_34f_eh_abort(struct scsi_
+ }
+
+ static int u14_34f_eh_host_reset(struct scsi_cmnd *SCarg) {
+-   unsigned int i, j, time, k, c, limit = 0;
++   unsigned long time;
++   unsigned int i, j, k, c, limit = 0;
+    int arg_done = FALSE;
+    struct scsi_cmnd *SCpnt;
+
+@@ -1479,7 +1482,8 @@ static int u14_34f_eh_host_reset(struct
+
+    spin_unlock_irq(sh[j]->host_lock);
+    time = jiffies;
+-   while ((jiffies - time) < (10 * HZ) && limit++ < 200000) udelay(100L);
++   while (time_before(jiffies, time + 10 * HZ) && limit++ < 200000)
++	udelay(100L);
+    spin_lock_irq(sh[j]->host_lock);
+
+    printk("%s: reset, interrupts disabled, loops %d.\n", BN(j), limit);
