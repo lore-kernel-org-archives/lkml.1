@@ -1,281 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751863AbXLZA2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751847AbXLZBZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751863AbXLZA2L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Dec 2007 19:28:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXLZA1z
+	id S1751847AbXLZBZc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Dec 2007 20:25:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbXLZBZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Dec 2007 19:27:55 -0500
-Received: from ozlabs.org ([203.10.76.45]:51413 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751130AbXLZA1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Dec 2007 19:27:53 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 0/5] sg_ring for scsi
-Date: Wed, 26 Dec 2007 11:27:40 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: davem@davemloft.net, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com, dougg@torque.net
-References: <200712211013.38511.rusty@rustcorp.com.au> <200712211426.47896.rusty@rustcorp.com.au> <20071221133746B.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20071221133746B.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 25 Dec 2007 20:25:22 -0500
+Received: from pip9.gyao.ne.jp ([61.122.117.247]:25307 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751278AbXLZBZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Dec 2007 20:25:21 -0500
+Date: Wed, 26 Dec 2007 10:24:55 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian McMenamin <lkmladrian@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH - SH/Dreamcast] CD-Rom (GD-Rom) support for the SEGA Dreamcast
+Message-ID: <20071226012455.GA10332@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian McMenamin <lkmladrian@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+	Jens Axboe <jens.axboe@oracle.com>
+References: <8b67d60712231143n51a17cdeu536b501855e870b2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712261127.41088.rusty@rustcorp.com.au>
+In-Reply-To: <8b67d60712231143n51a17cdeu536b501855e870b2@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 December 2007 15:37:46 FUJITA Tomonori wrote:
-> Some scsi drivers like ips access to sglist in a tricky way.
+On Sun, Dec 23, 2007 at 07:43:24PM +0000, Adrian McMenamin wrote:
+> This patch adds support for the CD-Rom (the so-called "GD-Rom") on the
+> SEGA Dreamcast.
+> 
+Looks quite a bit better. Just a few minor things.
 
-Indeed.  I fail to see how this code works, in fact:
+> +static void gdrom_spicommand(void *spi_string, int buflen)
+> +{
+> +	short *cmd = spi_string;
+> +	/* ensure IRQ_WAIT is set */
+> +	ctrl_outb(0x08, GDROM_ALTSTATUS_REG);
+> +	/* specify how many bytes we expect back */
+> +	ctrl_outb(buflen & 0xFF, GDROM_BCL_REG);
+> +	ctrl_outb((buflen >> 8) & 0xFF, GDROM_BCH_REG);
+> +	/* other parameters */
+> +	ctrl_outb(0, GDROM_INTSEC_REG);
+> +	ctrl_outb(0, GDROM_SECNUM_REG);
+> +	ctrl_outb(0, GDROM_ERROR_REG);
+> +	/* Wait until we can go */
+> +	gdrom_wait_clrbusy();
+> +	ctrl_outb(GDROM_COM_PACKET, GDROM_STATUSCOMMAND_REG);
+> +	while ((ctrl_inb(GDROM_ALTSTATUS_REG) & 0x88) != 8)
+> +		; /* wait for DRQ to be set to 1 */
 
-drivers/scsi/ips.c:ips_queue() line 1101
+cpu_relax()
 
-	if (ips_is_passthru(SC)) {
+> +static int gdrom_get_last_session(struct cdrom_device_info *cd_info,
+> struct cdrom_multisession *ms_info)
+> +{
+> +	struct gdromtoc *tocA, *tocB;
+> +	int fentry, lentry, track, data, tocuse;
+> +	int err = -ENOMEM;
+> +	tocA = kzalloc(sizeof(struct gdromtoc), GFP_KERNEL);
+> +	if (!tocA)
+> +		goto exit;	
+> +	tocB = kzalloc(sizeof(struct gdromtoc), GFP_KERNEL);
+> +	if (!tocB)
+> +		goto clean_tocA;
+> +	tocuse = 1;
+> +	err = gdrom_readtoc_cmd(tocB, 1);
+> +	if (err) {
+> +		tocuse = 0;
+> +		err = gdrom_readtoc_cmd(tocA, 0);
+> +		if (err) {
+> +			err = -ENXIO;
+> +			printk(KERN_INFO "Could not get CD table of contents\n");
+> +			goto clean_tocB;
+> +		}	
+> +	} else
+> +		printk(KERN_DEBUG "Disk is GDROM\n");
+> +
+> +	kfree(gd.toc);
+> +
+> +	if (tocuse) {
+> +		gd.toc = tocB;
+> +		kfree(tocA);
+> +	} else {
+> +		gd.toc = tocA;
+> +		kfree(tocB);
+> +	}
 
-		ips_copp_wait_item_t *scratch;
+tocA and tocB seem to be useless, as you're not using them for anything
+but gd.toc assignment. If you're catching errors from gdrom_readtoc_cmd()
+directly, then just pass in gd.toc in both cases, then you can skip all
+of this temporary state stuff entirely.
 
-		/* A Reset IOCTL is only sent by the boot CD in extreme cases.           */
-		/* There can never be any system activity ( network or disk ), but check */
-		/* anyway just as a good practice.                                       */
-		pt = (ips_passthru_t *) scsi_sglist(SC);
-		if ((pt->CoppCP.cmd.reset.op_code == IPS_CMD_RESET_CHANNEL) &&
-		    (pt->CoppCP.cmd.reset.adapter_flag == 1)) {
+> +	sense_key = sense[1] & 0x0F;
+> +	switch (sense_key){
+> +	case 0xB:
+> +		printk(KERN_INFO "GDROM: Command aborted\n");
+> +		break;
+> +	case 0x7:
+> +		printk(KERN_INFO "GDROM: Data protection error\n");
+> +		break;
+> +	case 0x6:
+> +		printk(KERN_NOTICE "GDROM: Unit needs attention - possible disk switch\n");
+> +		break;
+> +	case 0x5:
+> +		printk(KERN_INFO "GDROM: Illegal request - command has failed\n");
+> +		break;
+> +	case 0x4:
+> +		printk(KERN_CRIT "GDROM: Hardware error\n");
+> +		break;
+> +	case 0x3:
+> +		printk(KERN_WARNING "GDROM: Disk read error\n");
+> +		break;
+> +	case 0x2:
+> +		printk(KERN_INFO "GDROM: Not ready\n");
+> +		break;
+> +	case 0x1:
+> +		printk(KERN_DEBUG "GDROM: Recovered from error\n");
+> +		break;
+> +	case 0x0:
+> +		/*success - stay silent*/
+> +		break;
+> +		
+> +	default:
+> +		printk(KERN_INFO "GDROM: Unknown error\n");
+> +	}
 
-Casting the scsi_sglist(SC) (which ips_is_passthrough treated as a
-scatterlist) to an ips_passthrough_t seems completely bogus.  It looks like
-it wants to access the region mapped by the scatterlist.
-
-There are many signs through the code that it needs a great deal of work:
-what is the purpose of sg_break?  Why does the code check if kmap_atomic
-fails?
-
-===
-Convert the ips SCSI driver to sg_ring.
-
-Slightly non-trivial conversion, will need testing.
-
-The first issue is the standard one with "scsi_for_each_sg"
-conversion: scsi_for_each_sg will always start i at 0 and increment it
-each time around; "sg_ring_for_each" will start i at 0 but it will
-return to zero for each new sg_ring entry; you need a separate counter
-if you really want a simple increment.
-
-Various flaws in the driver have been maintained.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff -r 63176a8a6ce3 drivers/scsi/ips.c
---- a/drivers/scsi/ips.c	Mon Dec 24 17:40:08 2007 +1100
-+++ b/drivers/scsi/ips.c	Wed Dec 26 11:20:52 2007 +1100
-@@ -1105,7 +1105,7 @@ static int ips_queue(struct scsi_cmnd *S
- 		/* A Reset IOCTL is only sent by the boot CD in extreme cases.           */
- 		/* There can never be any system activity ( network or disk ), but check */
- 		/* anyway just as a good practice.                                       */
--		pt = (ips_passthru_t *) scsi_sglist(SC);
-+		pt = (ips_passthru_t *) SC->sg;
- 		if ((pt->CoppCP.cmd.reset.op_code == IPS_CMD_RESET_CHANNEL) &&
- 		    (pt->CoppCP.cmd.reset.adapter_flag == 1)) {
- 			if (ha->scb_activelist.count != 0) {
-@@ -1508,8 +1508,8 @@ static int ips_is_passthru(struct scsi_c
- 	if ((SC->cmnd[0] == IPS_IOCTL_COMMAND) &&
- 	    (SC->device->channel == 0) &&
- 	    (SC->device->id == IPS_ADAPTER_ID) &&
--	    (SC->device->lun == 0) && scsi_sglist(SC)) {
--                struct scatterlist *sg = scsi_sglist(SC);
-+	    (SC->device->lun == 0) && SC->sg) {
-+                struct scatterlist *sg = &SC->sg->sg[0];
-                 char  *buffer;
- 
-                 /* kmap_atomic() ensures addressability of the user buffer.*/
-@@ -1575,12 +1575,12 @@ ips_make_passthru(ips_ha_t *ha, struct s
- 	ips_passthru_t *pt;
- 	int length = 0;
- 	int i, ret;
--        struct scatterlist *sg = scsi_sglist(SC);
-+        struct sg_ring *sg;
- 
- 	METHOD_TRACE("ips_make_passthru", 1);
- 
--        scsi_for_each_sg(SC, sg, scsi_sg_count(SC), i)
--                length += sg[i].length;
-+	sg_ring_for_each(SC->sg, sg, i)
-+                length += sg->sg[i].length;
- 
- 	if (length < sizeof (ips_passthru_t)) {
- 		/* wrong size */
-@@ -2005,7 +2005,7 @@ ips_cleanup_passthru(ips_ha_t * ha, ips_
- 
- 	METHOD_TRACE("ips_cleanup_passthru", 1);
- 
--	if ((!scb) || (!scb->scsi_cmd) || (!scsi_sglist(scb->scsi_cmd))) {
-+	if ((!scb) || (!scb->scsi_cmd) || (!scb->scsi_cmd->sg)) {
- 		DEBUG_VAR(1, "(%s%d) couldn't cleanup after passthru",
- 			  ips_name, ha->host_num);
- 
-@@ -2758,16 +2758,18 @@ ips_next(ips_ha_t * ha, int intr)
-                 scb->sg_count = scsi_dma_map(SC);
-                 BUG_ON(scb->sg_count < 0);
- 		if (scb->sg_count) {
--			struct scatterlist *sg;
--			int i;
-+			struct sg_ring *sg;
-+			int i, idx;
- 
- 			scb->flags |= IPS_SCB_MAP_SG;
- 
--                        scsi_for_each_sg(SC, sg, scb->sg_count, i) {
-+			idx = 0;
-+			sg_ring_for_each(SC->sg, sg, i) {
- 				if (ips_fill_scb_sg_single
--				    (ha, sg_dma_address(sg), scb, i,
--				     sg_dma_len(sg)) < 0)
--					break;
-+				    (ha, sg_dma_address(&sg->sg[i]), scb, idx,
-+				     sg_dma_len(&sg->sg[i])) < 0)
-+					break;
-+				idx++;
- 			}
- 			scb->dcdb.transfer_length = scb->data_len;
- 		} else {
-@@ -3251,34 +3253,35 @@ ips_done(ips_ha_t * ha, ips_scb_t * scb)
- 		 * the rest of the data and continue.
- 		 */
- 		if ((scb->breakup) || (scb->sg_break)) {
--                        struct scatterlist *sg;
-+                        struct sg_ring *sg;
-                         int i, sg_dma_index, ips_sg_index = 0;
- 
- 			/* we had a data breakup */
- 			scb->data_len = 0;
- 
--                        sg = scsi_sglist(scb->scsi_cmd);
--
-                         /* Spin forward to last dma chunk */
--                        sg_dma_index = scb->breakup;
--                        for (i = 0; i < scb->breakup; i++)
--                                sg = sg_next(sg);
--
-+			sg_dma_index = 0;
-+			sg_ring_for_each(scb->scsi_cmd->sg, sg, i) {
-+				if (sg_dma_index == scb->breakup)
-+					break;
-+				sg_dma_index++;
-+			}
-+			
- 			/* Take care of possible partial on last chunk */
-                         ips_fill_scb_sg_single(ha,
--                                               sg_dma_address(sg),
-+                                               sg_dma_address(&sg->sg[i]),
-                                                scb, ips_sg_index++,
--                                               sg_dma_len(sg));
--
--                        for (; sg_dma_index < scsi_sg_count(scb->scsi_cmd);
--                             sg_dma_index++, sg = sg_next(sg)) {
-+                                               sg_dma_len(&sg->sg[i]));
-+
-+			do {
-                                 if (ips_fill_scb_sg_single
-                                     (ha,
--                                     sg_dma_address(sg),
-+                                     sg_dma_address(&sg->sg[i]),
-                                      scb, ips_sg_index++,
--                                     sg_dma_len(sg)) < 0)
--                                        break;
--                        }
-+                                     sg_dma_len(&sg->sg[i])) < 0)
-+					break;
-+			} while ((sg = sg_ring_iter(scb->scsi_cmd->sg, sg, &i))
-+				 != NULL);
- 
- 			scb->dcdb.transfer_length = scb->data_len;
- 			scb->dcdb.cmd_attribute |=
-@@ -3510,26 +3513,28 @@ ips_scmd_buf_write(struct scsi_cmnd *scm
- ips_scmd_buf_write(struct scsi_cmnd *scmd, void *data, unsigned int count)
- {
-         int i;
--        unsigned int min_cnt, xfer_cnt;
-+        unsigned int min_cnt, xfer_cnt = 0;
-         char *cdata = (char *) data;
-         unsigned char *buffer;
-         unsigned long flags;
--        struct scatterlist *sg = scsi_sglist(scmd);
--
--        for (i = 0, xfer_cnt = 0;
--             (i < scsi_sg_count(scmd)) && (xfer_cnt < count); i++) {
--                min_cnt = min(count - xfer_cnt, sg[i].length);
-+	struct sg_ring *sg;
-+
-+	sg_ring_for_each(scmd->sg, sg, i) {
-+                min_cnt = min(count - xfer_cnt, sg->sg[i].length);
- 
-                 /* kmap_atomic() ensures addressability of the data buffer.*/
-                 /* local_irq_save() protects the KM_IRQ0 address slot.     */
-                 local_irq_save(flags);
--                buffer = kmap_atomic(sg_page(&sg[i]), KM_IRQ0) + sg[i].offset;
-+                buffer = kmap_atomic(sg_page(&sg->sg[i]), KM_IRQ0)
-+			+ sg->sg[i].offset;
-                 memcpy(buffer, &cdata[xfer_cnt], min_cnt);
--                kunmap_atomic(buffer - sg[i].offset, KM_IRQ0);
-+                kunmap_atomic(buffer - sg->sg[i].offset, KM_IRQ0);
-                 local_irq_restore(flags);
- 
-                 xfer_cnt += min_cnt;
--        }
-+		if (xfer_cnt == count)
-+			break;
-+	}
- }
- 
- /****************************************************************************/
-@@ -3543,26 +3548,28 @@ ips_scmd_buf_read(struct scsi_cmnd *scmd
- ips_scmd_buf_read(struct scsi_cmnd *scmd, void *data, unsigned int count)
- {
-         int i;
--        unsigned int min_cnt, xfer_cnt;
-+        unsigned int min_cnt, xfer_cnt = 0;
-         char *cdata = (char *) data;
-         unsigned char *buffer;
-         unsigned long flags;
--        struct scatterlist *sg = scsi_sglist(scmd);
--
--        for (i = 0, xfer_cnt = 0;
--             (i < scsi_sg_count(scmd)) && (xfer_cnt < count); i++) {
--                min_cnt = min(count - xfer_cnt, sg[i].length);
-+	struct sg_ring *sg;
-+
-+	sg_ring_for_each(scmd->sg, sg, i) {
-+                min_cnt = min(count - xfer_cnt, sg->sg[i].length);
- 
-                 /* kmap_atomic() ensures addressability of the data buffer.*/
-                 /* local_irq_save() protects the KM_IRQ0 address slot.     */
-                 local_irq_save(flags);
--                buffer = kmap_atomic(sg_page(&sg[i]), KM_IRQ0) + sg[i].offset;
-+                buffer = kmap_atomic(sg_page(&sg->sg[i]), KM_IRQ0) 
-+			+ sg->sg[i].offset;
-                 memcpy(&cdata[xfer_cnt], buffer, min_cnt);
--                kunmap_atomic(buffer - sg[i].offset, KM_IRQ0);
-+                kunmap_atomic(buffer - sg->sg[i].offset, KM_IRQ0);
-                 local_irq_restore(flags);
- 
-                 xfer_cnt += min_cnt;
--        }
-+		if (xfer_cnt == count)
-+			break;
-+	}
- }
- 
- /****************************************************************************/
-@@ -4196,7 +4203,7 @@ ips_rdcap(ips_ha_t * ha, ips_scb_t * scb
- 
- 	METHOD_TRACE("ips_rdcap", 1);
- 
--	if (scsi_bufflen(scb->scsi_cmd) < 8)
-+	if (scb->scsi_cmd->request_bufflen < 8)
- 		return (0);
- 
- 	cap.lba =
+These are all pretty close together, maybe it would be cleaner to throw
+these strings in to an array and just use the sense_key as the array
+index. Some other drivers do this already.
