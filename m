@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752465AbXLZPXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751561AbXLZPX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752465AbXLZPXH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 10:23:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbXLZPWn
+	id S1751561AbXLZPX1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 10:23:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbXLZPXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 10:22:43 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:33858 "EHLO mgw2.diku.dk"
+	Wed, 26 Dec 2007 10:23:18 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:44485 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751333AbXLZPWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 10:22:40 -0500
-Date: Wed, 26 Dec 2007 16:22:23 +0100 (MET)
+	id S1751376AbXLZPXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 10:23:17 -0500
+Date: Wed, 26 Dec 2007 16:23:05 +0100 (MET)
 From: Julia Lawall <julia@diku.dk>
-To: perex@perex.cz, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/4] sound/oss: Use time_before, time_before_eq, etc.
-Message-ID: <Pine.LNX.4.58.0712261621390.1185@pc-041.diku.dk>
+To: james.smart@emulex.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/4] drivers/scsi/lpfc: Use time_before, time_before_eq, etc.
+Message-ID: <Pine.LNX.4.58.0712261622240.1185@pc-041.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -63,57 +63,54 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -u -p linux-2.6/sound/oss/pss.c linuxcopy/sound/oss/pss.c
---- linux-2.6/sound/oss/pss.c	2006-11-30 19:05:48.000000000 +0100
-+++ linuxcopy/sound/oss/pss.c	2007-12-26 15:59:55.000000000 +0100
-@@ -60,6 +60,7 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/spinlock.h>
-+#include <linux/jiffies.h>
-
- #include "sound_config.h"
- #include "sound_firmware.h"
-@@ -271,7 +272,7 @@ static int pss_reset_dsp(pss_confdata *
- 	unsigned long   i, limit = jiffies + HZ/10;
-
- 	outw(0x2000, REG(PSS_CONTROL));
--	for (i = 0; i < 32768 && (limit-jiffies >= 0); i++)
-+	for (i = 0; i < 32768 && (time_before_eq(jiffies, limit)); i++)
- 		inw(REG(PSS_CONTROL));
- 	outw(0x0000, REG(PSS_CONTROL));
- 	return 1;
-@@ -371,11 +372,11 @@ static int pss_download_boot(pss_confdat
- 		outw(0, REG(PSS_DATA));
-
- 		limit = jiffies + HZ/10;
--		for (i = 0; i < 32768 && (limit - jiffies >= 0); i++)
-+		for (i = 0; i < 32768 && (time_before_eq(jiffies, limit)); i++)
- 			val = inw(REG(PSS_STATUS));
-
- 		limit = jiffies + HZ/10;
--		for (i = 0; i < 32768 && (limit-jiffies >= 0); i++)
-+		for (i = 0; i < 32768 && (time_before_eq(jiffies, limit)); i++)
- 		{
- 			val = inw(REG(PSS_STATUS));
- 			if (val & 0x4000)
-diff -u -p linux-2.6/sound/oss/sb_common.c linuxcopy/sound/oss/sb_common.c
---- linux-2.6/sound/oss/sb_common.c	2007-02-09 17:34:30.000000000 +0100
-+++ linuxcopy/sound/oss/sb_common.c	2007-12-26 15:59:55.000000000 +0100
-@@ -31,6 +31,7 @@
- #include <linux/module.h>
+diff -u -p linux-2.6/drivers/scsi/lpfc/lpfc_scsi.c linuxcopy/drivers/scsi/lpfc/lpfc_scsi.c
+--- linux-2.6/drivers/scsi/lpfc/lpfc_scsi.c	2007-11-08 08:00:52.000000000 +0100
++++ linuxcopy/drivers/scsi/lpfc/lpfc_scsi.c	2007-12-25 20:53:54.000000000 +0100
+@@ -22,6 +22,7 @@
+ #include <linux/pci.h>
+ #include <linux/interrupt.h>
  #include <linux/delay.h>
- #include <linux/spinlock.h>
 +#include <linux/jiffies.h>
 
- #include "sound_config.h"
- #include "sound_firmware.h"
-@@ -97,7 +98,7 @@ int sb_dsp_command(sb_devc * devc, unsig
- 	 * loops.
- 	 */
+ #include <scsi/scsi.h>
+ #include <scsi/scsi_device.h>
+@@ -55,7 +56,8 @@ lpfc_adjust_queue_depth(struct lpfc_hba
+ 	atomic_inc(&phba->num_rsrc_err);
+ 	phba->last_rsrc_error_time = jiffies;
 
--	for (i = 0; i < 500000 && (limit-jiffies)>0; i++)
-+	for (i = 0; i < 500000 && time_before(jiffies, limit); i++)
- 	{
- 		if ((inb(DSP_STATUS) & 0x80) == 0)
- 		{
+-	if ((phba->last_ramp_down_time + QUEUE_RAMP_DOWN_INTERVAL) > jiffies) {
++	if (time_before(jiffies,
++			phba->last_ramp_down_time+QUEUE_RAMP_DOWN_INTERVAL)) {
+ 		spin_unlock_irqrestore(&phba->hbalock, flags);
+ 		return;
+ 	}
+@@ -94,8 +96,10 @@ lpfc_rampup_queue_depth(struct lpfc_vpor
+ 	if (vport->cfg_lun_queue_depth <= sdev->queue_depth)
+ 		return;
+ 	spin_lock_irqsave(&phba->hbalock, flags);
+-	if (((phba->last_ramp_up_time + QUEUE_RAMP_UP_INTERVAL) > jiffies) ||
+-	 ((phba->last_rsrc_error_time + QUEUE_RAMP_UP_INTERVAL ) > jiffies)) {
++	if ((time_before(jiffies,
++			 phba->last_ramp_up_time + QUEUE_RAMP_UP_INTERVAL)) ||
++	 (time_before(jiffies,
++		      phba->last_rsrc_error_time + QUEUE_RAMP_UP_INTERVAL))) {
+ 		spin_unlock_irqrestore(&phba->hbalock, flags);
+ 		return;
+ 	}
+@@ -617,10 +621,12 @@ lpfc_scsi_cmd_iocb_cmpl(struct lpfc_hba
+ 		lpfc_rampup_queue_depth(vport, sdev);
+
+ 	if (!result && pnode != NULL &&
+-	   ((jiffies - pnode->last_ramp_up_time) >
+-		LPFC_Q_RAMP_UP_INTERVAL * HZ) &&
+-	   ((jiffies - pnode->last_q_full_time) >
+-		LPFC_Q_RAMP_UP_INTERVAL * HZ) &&
++	   (time_after(jiffies,
++		       pnode->last_ramp_up_time +
++		       LPFC_Q_RAMP_UP_INTERVAL * HZ)) &&
++	   (time_after(jiffies,
++		       pnode->last_q_full_time +
++		       LPFC_Q_RAMP_UP_INTERVAL * HZ)) &&
+ 	   (vport->cfg_lun_queue_depth > sdev->queue_depth)) {
+ 		shost_for_each_device(tmp_sdev, sdev->host) {
+ 			if (vport->cfg_lun_queue_depth > tmp_sdev->queue_depth){
