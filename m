@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbXLZLVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbXLZLWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbXLZLVx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 06:21:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbXLZLHG
+	id S1754867AbXLZLWT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 06:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbXLZLHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 06:07:06 -0500
-Received: from il.qumranet.com ([82.166.9.18]:50464 "EHLO il.qumranet.com"
+	Wed, 26 Dec 2007 06:07:07 -0500
+Received: from il.qumranet.com ([82.166.9.18]:50471 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752220AbXLZLGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 06:06:12 -0500
+	id S1752113AbXLZLGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 06:06:10 -0500
 From: Avi Kivity <avi@qumranet.com>
 To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
 Cc: Zhang Xiantao <xiantao.zhang@intel.com>
-Subject: [PATCH 55/55] KVM: Portability: Make kvm_vcpu_ioctl_translate arch dependent
-Date: Wed, 26 Dec 2007 13:06:00 +0200
-Message-Id: <1198667160-22953-56-git-send-email-avi@qumranet.com>
+Subject: [PATCH 48/55] KVM: Portability: Move kvm_x86_ops to x86.c
+Date: Wed, 26 Dec 2007 13:05:53 +0200
+Message-Id: <1198667160-22953-49-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1198667160-22953-1-git-send-email-avi@qumranet.com>
 References: <1198667160-22953-1-git-send-email-avi@qumranet.com>
@@ -24,105 +24,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Zhang Xiantao <xiantao.zhang@intel.com>
 
-Move kvm_vcpu_ioctl_translate to arch, since mmu would be put under arch.
-
 Signed-off-by: Zhang Xiantao <xiantao.zhang@intel.com>
+Acked-by: Carsten Otte <cotte@de.ibm.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm.h      |    3 +++
- drivers/kvm/kvm_main.c |   24 +-----------------------
- drivers/kvm/x86.c      |   22 ++++++++++++++++++++++
- 3 files changed, 26 insertions(+), 23 deletions(-)
+ drivers/kvm/kvm_main.c |    1 -
+ drivers/kvm/x86.c      |    2 ++
+ drivers/kvm/x86.h      |    2 ++
+ 3 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index a7be073..e34e246 100644
---- a/drivers/kvm/kvm.h
-+++ b/drivers/kvm/kvm.h
-@@ -642,6 +642,9 @@ void kvm_arch_destroy_vm(struct kvm *kvm);
- int kvm_arch_vcpu_ioctl_get_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu);
- int kvm_arch_vcpu_ioctl_set_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu);
- 
-+int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
-+				    struct kvm_translation *tr);
-+
- int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs);
- int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs);
- int kvm_arch_vcpu_ioctl_get_sregs(struct kvm_vcpu *vcpu,
 diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 9d63a10..bce4216 100644
+index 31dafa3..7808189 100644
 --- a/drivers/kvm/kvm_main.c
 +++ b/drivers/kvm/kvm_main.c
-@@ -761,28 +761,6 @@ void kvm_resched(struct kvm_vcpu *vcpu)
- }
- EXPORT_SYMBOL_GPL(kvm_resched);
+@@ -55,7 +55,6 @@ static LIST_HEAD(vm_list);
  
--/*
-- * Translate a guest virtual address to a guest physical address.
-- */
--static int kvm_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
--				    struct kvm_translation *tr)
--{
--	unsigned long vaddr = tr->linear_address;
--	gpa_t gpa;
--
--	vcpu_load(vcpu);
--	mutex_lock(&vcpu->kvm->lock);
--	gpa = vcpu->mmu.gva_to_gpa(vcpu, vaddr);
--	tr->physical_address = gpa;
--	tr->valid = gpa != UNMAPPED_GVA;
--	tr->writeable = 1;
--	tr->usermode = 0;
--	mutex_unlock(&vcpu->kvm->lock);
--	vcpu_put(vcpu);
--
--	return 0;
--}
--
- static int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu,
- 				    struct kvm_interrupt *irq)
- {
-@@ -986,7 +964,7 @@ static long kvm_vcpu_ioctl(struct file *filp,
- 		r = -EFAULT;
- 		if (copy_from_user(&tr, argp, sizeof tr))
- 			goto out;
--		r = kvm_vcpu_ioctl_translate(vcpu, &tr);
-+		r = kvm_arch_vcpu_ioctl_translate(vcpu, &tr);
- 		if (r)
- 			goto out;
- 		r = -EFAULT;
+ static cpumask_t cpus_hardware_enabled;
+ 
+-struct kvm_x86_ops *kvm_x86_ops;
+ struct kmem_cache *kvm_vcpu_cache;
+ EXPORT_SYMBOL_GPL(kvm_vcpu_cache);
+ 
 diff --git a/drivers/kvm/x86.c b/drivers/kvm/x86.c
-index 6097926..f1746af 100644
+index 4282a0f..2edc53e 100644
 --- a/drivers/kvm/x86.c
 +++ b/drivers/kvm/x86.c
-@@ -2318,6 +2318,28 @@ struct fxsave {
- #endif
+@@ -44,6 +44,8 @@
+ 
+ #define STAT_OFFSET(x) offsetof(struct kvm_vcpu, stat.x)
+ 
++struct kvm_x86_ops *kvm_x86_ops;
++
+ struct kvm_stats_debugfs_item debugfs_entries[] = {
+ 	{ "pf_fixed", STAT_OFFSET(pf_fixed) },
+ 	{ "pf_guest", STAT_OFFSET(pf_guest) },
+diff --git a/drivers/kvm/x86.h b/drivers/kvm/x86.h
+index 663b822..ec32c26 100644
+--- a/drivers/kvm/x86.h
++++ b/drivers/kvm/x86.h
+@@ -85,6 +85,8 @@ struct kvm_vcpu {
+ 	struct x86_emulate_ctxt emulate_ctxt;
  };
  
-+/*
-+ * Translate a guest virtual address to a guest physical address.
-+ */
-+int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
-+				    struct kvm_translation *tr)
-+{
-+	unsigned long vaddr = tr->linear_address;
-+	gpa_t gpa;
++extern struct kvm_x86_ops *kvm_x86_ops;
 +
-+	vcpu_load(vcpu);
-+	mutex_lock(&vcpu->kvm->lock);
-+	gpa = vcpu->mmu.gva_to_gpa(vcpu, vaddr);
-+	tr->physical_address = gpa;
-+	tr->valid = gpa != UNMAPPED_GVA;
-+	tr->writeable = 1;
-+	tr->usermode = 0;
-+	mutex_unlock(&vcpu->kvm->lock);
-+	vcpu_put(vcpu);
-+
-+	return 0;
-+}
-+
- int kvm_arch_vcpu_ioctl_get_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
- {
- 	struct fxsave *fxsave = (struct fxsave *)&vcpu->guest_fx_image;
+ int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva, u32 error_code);
+ 
+ static inline void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
 -- 
 1.5.3.7
 
