@@ -1,45 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752091AbXLZRon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752408AbXLZRtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752091AbXLZRon (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 12:44:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXLZRof
+	id S1752408AbXLZRtL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 12:49:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbXLZRs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 12:44:35 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:40421 "EHLO
+	Wed, 26 Dec 2007 12:48:57 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:38707 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbXLZRoe (ORCPT
+	with ESMTP id S1751396AbXLZRs4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 12:44:34 -0500
-Message-ID: <477292F2.7020404@zytor.com>
-Date: Wed, 26 Dec 2007 09:44:18 -0800
+	Wed, 26 Dec 2007 12:48:56 -0500
+Message-ID: <477293F3.60304@zytor.com>
+Date: Wed, 26 Dec 2007 09:48:35 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [x86] is checkpatch.pl broken
-References: <20071225170737.GA3887@cvg.org> <477196DC.9000704@zytor.com> <aa79d98a0712260238n4848e812l4a66f86b414cc277@mail.gmail.com>
-In-Reply-To: <aa79d98a0712260238n4848e812l4a66f86b414cc277@mail.gmail.com>
+To: Julia Lawall <julia@diku.dk>
+CC: autofs@linux.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/4] fs/autofs: Use time_before, time_before_eq, etc.
+References: <Pine.LNX.4.58.0712261621000.1185@pc-041.diku.dk>
+In-Reply-To: <Pine.LNX.4.58.0712261621000.1185@pc-041.diku.dk>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
->
->>
-> It's a quite true, sorry for this and thanks for the note. And Peter,
-> the line I marked
-> is not to be splitted even having additional spaces over  math operators. Look
+Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> orig:
-> mbr_base = (buf_base+sector_size-1) & ~(sector_size-1);
-> new (could be):
-> mbr_base = (buf_base + sector_size - 1) & ~(sector_size - 1);
+> The functions time_before, time_before_eq, time_after, and time_after_eq
+> are more robust for comparing jiffies against other values.
 > 
-> Is a new version that bad?
 
-Certainly isn't any better.
+More robust, how?  You already almost introduced a bug here...
 
 	-hpa
