@@ -1,64 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbXL0HJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbXL0H1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753322AbXL0HJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 02:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbXL0HJO
+	id S1752846AbXL0H1w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 02:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbXL0H1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 02:09:14 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:38706 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751085AbXL0HJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 02:09:13 -0500
-Date: Thu, 27 Dec 2007 08:08:53 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ray Lee <ray-lk@madrabbit.org>, autofs@linux.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/4] fs/autofs: Use time_before, time_before_eq, etc.
-In-Reply-To: <4772BD6C.1010502@zytor.com>
-Message-ID: <Pine.LNX.4.64.0712270805370.6952@ask.diku.dk>
-References: <Pine.LNX.4.58.0712261621000.1185@pc-041.diku.dk>
- <2c0942db0712261158q34cddebeifceef6ceda683320@mail.gmail.com>
- <4772BD6C.1010502@zytor.com>
+	Thu, 27 Dec 2007 02:27:42 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52093 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751258AbXL0H1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 02:27:41 -0500
+Message-ID: <477353B6.6000102@cn.fujitsu.com>
+Date: Thu, 27 Dec 2007 15:26:46 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: netdev@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: fib6_del_route has redundant code
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Dec 2007, H. Peter Anvin wrote:
+Hi all,
+I think the following code in fib6_del_route in the latest kernel is useless.
+1125         if (fn->leaf == NULL && fn->fn_flags&RTN_TL_ROOT)
+1126                 fn->leaf = &ip6_null_entry;
 
-> Ray Lee wrote:
-> > On Dec 26, 2007 7:21 AM, Julia Lawall <julia@diku.dk> wrote:
-> > > -               if (jiffies - ent->last_usage < timeout)
-> > > +               if (time_before(jiffies, ent->last_usage + timeout))
-> > 
-> > I don't think this is a safe change? subtraction is always safe (if
-> > you think about it as 'distance'), addition isn't always safe unless
-> > you know the range. The time_before macro will expand that out to
-> > (effectively):
-> > 
-> >   if ( (long)(ent->last_usage + timeout) - (long)(jiffies) < 0 )
-> > 
-> > which seems to introduce an overflow condition in the first term.
-> > 
-> > Dunno, I may be wrong (happens often), but at the very least what
-> > you've transformed it into is no longer obviously correct, and so it's
-> > not a great change.
-> 
-> Indeed.  The bottom form will have overflow issues at time
-> jiffies_wraparound/2, whereas the top form will have overflow issues only near
-> jiffies_wraparound/1.
+ip6_null_entry will never be unlinked from fn->leaf now, that is, fn->leaf == NULL will never meet.
 
-OK, so it seems like it is not such a good idea.
+In previous kernel, When adding a default route, ip6_null_entry will be unlinked from fn->leaf.
+So, when deleting a default route, it need to check whether the deleted route is the last one,
+if so, ip6_null_entry will link to fn->leaf again.
 
-There are, however, over 200 files that contain calls to the various time 
-functions that follow this pattern, eg:
+I am not sure if there is another place unlinks ip6_null_entry from fn->leaf.
 
-arch/arm/kernel/ecard.c:563
-if (!last || time_after(jiffies, last + 5*HZ)) {
-
-Perhaps they should be coverted to use a subtraction as well?
-
-julia
-
+Regards,
+Gui Jiafeng
