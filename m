@@ -1,112 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbXL0R33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbXL0RlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753948AbXL0R33 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 12:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbXL0R2m
+	id S1753466AbXL0RlJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 12:41:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbXL0Rk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 12:28:42 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:1096 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752429AbXL0R20 (ORCPT
+	Thu, 27 Dec 2007 12:40:59 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:47875 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977AbXL0Rk6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 12:28:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=l/CSmuVcNlkOlIhtz/5i275oAxsnYTFHCRiyv2izEAuLsjh06LvYl3cXYHjTWVh1bj434NISLqY2pwmsl86KZf/jtLfUQn4JmaaC34MGSmHp1bpdtbLYIokAidh4CAc+IOfMKyQm2dHF5hir7FqoAbIeeOh+SkUcrsF37ikS6OM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 3/3] ide: add IDE_HFLAG_NO_DSC host flag
-Date: Thu, 27 Dec 2007 18:38:00 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: linux-kernel@vger.kernel.org
+	Thu, 27 Dec 2007 12:40:58 -0500
+Date: Thu, 27 Dec 2007 18:40:56 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
+       "Denis V. Lunev" <den@openvz.org>
+Subject: Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
+Message-ID: <20071227174056.GA17350@rhlx01.hs-esslingen.de>
+References: <20071119191000.GA1560@elf.ucw.cz> <200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org> <m1hcj8mz1p.fsf_-_@ebiederm.dsl.xmission.com> <1197003097.13978.557.camel@pmac.infradead.org> <20071207022342.806ee4ee.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712271838.00351.bzolnier@gmail.com>
+In-Reply-To: <20071207022342.806ee4ee.akpm@linux-foundation.org>
+X-Priority: none
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Add IDE_HFLAG_NO_DSC host flag for hosts that doesn't support DSC overlap.
+On Fri, Dec 07, 2007 at 02:23:42AM -0800, Andrew Morton wrote:
+> > (commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416)
+> > 
+> > This seems to have broken the use of /proc/bus/usb as a mountpoint. It
+> > always appears empty now, whatever's supposed to be mounted there.
+> > 
+> 
+> Yes.  Denis and Eric are tossing around competing patches but afaik nobody
+> is happy with any of them.  Guys, could we get this sorted soonish please?
 
-* Set it in aec62xx (for ATP850UF only) and hpt34x host drivers.
+"Soonish" being rather earlier than 20071227?
+'cause it's still throwing a fit for me on 2.6.24-rc6-mm1(!) (plus hotfix),
+nothing visible in /proc/bus/usb, thus WLAN driver won't probe
+anything.
+Side note: later upgraded from hotplug-based setup to udev,
+but didn't change status quo of problem of empty mount.
+Now back again to a 2.6.19ish kernel, since this is the only one
+that I could always fall back on after a sizeable number of attempts
+to get to run anything newer trouble-free in this environment.
+Frankly I'm slightly getting fed up with the number of regressions
+I'm hitting in my smallish environment lately. But that's sorta
+what you pay for when going experimental.
+Just the same day I also had to discover that e100 doesn't usefully
+support (IOW, fatal resource probing error) my Intel BNC combo 645477-004,
+as opposed to eepro100. Swapped the card from this ""production""
+headless box to an easily accessible one for followup debugging of e100.
 
-* Convert ide-tape device driver to check for IDE_HFLAG_NO_DSC flag.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-tape.c    |   16 ++++------------
- drivers/ide/pci/aec62xx.c |    1 +
- drivers/ide/pci/hpt34x.c  |    1 +
- include/linux/ide.h       |    2 ++
- 4 files changed, 8 insertions(+), 12 deletions(-)
+K6-3@150 headless, Debian stable.
 
-Index: b/drivers/ide/ide-tape.c
-===================================================================
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -4532,19 +4532,11 @@ static void idetape_setup (ide_drive_t *
- 
- 	spin_lock_init(&tape->spinlock);
- 	drive->dsc_overlap = 1;
--#ifdef CONFIG_BLK_DEV_IDEPCI
--	if (HWIF(drive)->pci_dev != NULL) {
--		/*
--		 * These two ide-pci host adapters appear to need DSC overlap disabled.
--		 * This probably needs further analysis.
--		 */
--		if ((HWIF(drive)->pci_dev->device == PCI_DEVICE_ID_ARTOP_ATP850UF) ||
--		    (HWIF(drive)->pci_dev->device == PCI_DEVICE_ID_TTI_HPT343)) {
--			printk(KERN_INFO "ide-tape: %s: disabling DSC overlap\n", tape->name);
--		    	drive->dsc_overlap = 0;
--		}
-+	if (drive->hwif->host_flags & IDE_HFLAG_NO_DSC) {
-+		printk(KERN_INFO "ide-tape: %s: disabling DSC overlap\n",
-+				 tape->name);
-+		drive->dsc_overlap = 0;
- 	}
--#endif /* CONFIG_BLK_DEV_IDEPCI */
- 	/* Seagate Travan drives do not support DSC overlap. */
- 	if (strstr(drive->id->model, "Seagate STT3401"))
- 		drive->dsc_overlap = 0;
-Index: b/drivers/ide/pci/aec62xx.c
-===================================================================
---- a/drivers/ide/pci/aec62xx.c
-+++ b/drivers/ide/pci/aec62xx.c
-@@ -202,6 +202,7 @@ static const struct ide_port_info aec62x
- 		.enablebits	= {{0x4a,0x02,0x02}, {0x4a,0x04,0x04}},
- 		.host_flags	= IDE_HFLAG_SERIALIZE |
- 				  IDE_HFLAG_NO_ATAPI_DMA |
-+				  IDE_HFLAG_NO_DSC |
- 				  IDE_HFLAG_ABUSE_SET_DMA_MODE |
- 				  IDE_HFLAG_OFF_BOARD,
- 		.pio_mask	= ATA_PIO4,
-Index: b/drivers/ide/pci/hpt34x.c
-===================================================================
---- a/drivers/ide/pci/hpt34x.c
-+++ b/drivers/ide/pci/hpt34x.c
-@@ -131,6 +131,7 @@ static void __devinit init_hwif_hpt34x(i
- 
- #define IDE_HFLAGS_HPT34X \
- 	(IDE_HFLAG_NO_ATAPI_DMA | \
-+	 IDE_HFLAG_NO_DSC | \
- 	 IDE_HFLAG_ABUSE_SET_DMA_MODE | \
- 	 IDE_HFLAG_NO_AUTODMA)
- 
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1098,6 +1098,8 @@ enum {
- 	IDE_HFLAG_CY82C693		= (1 << 27),
- 	/* force host out of "simplex" mode */
- 	IDE_HFLAG_CLEAR_SIMPLEX		= (1 << 28),
-+	/* DSC overlap is unsupported */
-+	IDE_HFLAG_NO_DSC		= (1 << 29),
- };
- 
- #ifdef CONFIG_BLK_DEV_OFFBOARD
+mount 2.12r-19
+usbutils 0.72-7
+
+fstab:
+none /proc/bus/usb usbfs defaults 0 0
+
+lsmod (NOTE: from 2.6.19-cks2, sorry):
+
+Module                  Size  Used by
+act_police              6980  1 
+sch_ingress             3712  1 
+cls_u32                 7300  5 
+sch_tbf                 6400  1 
+sch_sfq                 5888  4 
+sch_htb                16128  1 
+ppp_async              11648  1 
+crc_ccitt               2304  1 ppp_async
+ipt_ULOG                7940  1 
+xt_state                2304  4 
+xt_limit                2816  11 
+xt_tcpudp               3200  48 
+xt_multiport            3200  10 
+iptable_mangle          2944  0 
+iptable_nat             7044  1 
+iptable_filter          3200  1 
+ip_tables              12360  3 iptable_mangle,iptable_nat,iptable_filter
+ip_nat_tftp             2048  0 
+ip_conntrack_tftp       4504  1 ip_nat_tftp
+ip_nat_h323             7296  0 
+ip_conntrack_h323      48028  1 ip_nat_h323
+ip_nat_irc              2816  0 
+ip_nat_ftp              3456  0 
+ip_conntrack_irc        6928  1 ip_nat_irc
+ip_conntrack_ftp        7312  1 ip_nat_ftp
+ipt_MASQUERADE          3840  1 
+ip_nat                 16684  6 iptable_nat,ip_nat_tftp,ip_nat_h323,ip_nat_irc,ip_nat_ftp,ipt_MASQUERADE
+ip_conntrack           43884  12 xt_state,iptable_nat,ip_nat_tftp,ip_conntrack_tftp,ip_nat_h323,ip_conntrack_h323,ip_nat_irc,ip_nat_ftp,ip_conntrack_irc,ip_conntrack_ftp,ipt_MASQUERADE,ip_nat
+ipt_REJECT              4608  0 
+ipt_LOG                 6784  11 
+x_tables               14468  10 ipt_ULOG,xt_state,xt_limit,xt_tcpudp,xt_multiport,iptable_nat,ip_tables,ipt_MASQUERADE,ipt_REJECT,ipt_LOG
+isdn                  109920  0 
+sis5595                14472  0 
+i2c_isa                 6528  1 sis5595
+at76c503_rfmd           5900  0 
+firmware_class          9728  1 at76c503_rfmd
+i2c_sis5595             8196  0 
+at76c503               85856  1 at76c503_rfmd
+at76_usbdfu             5636  1 at76c503
+i2c_sis630              9100  0 
+i2c_core               22656  4 sis5595,i2c_isa,i2c_sis5595,i2c_sis630
+ohci_hcd               31748  0 
+usbcore               135044  5 at76c503_rfmd,at76c503,at76_usbdfu,ohci_hcd
+e100                   33800  0 
+3c59x                  41384  0 
+
+lspci -v (2.6.19-cks2):
+
+00:00.0 Host bridge: Silicon Integrated Systems [SiS] 5591/5592 Host (rev 02)
+	Flags: bus master, medium devsel, latency 64
+	Memory at e8000000 (32-bit, non-prefetchable) [size=64M]
+	Capabilities: [c0] AGP version 1.0
+
+00:00.1 IDE interface: Silicon Integrated Systems [SiS] 5513 [IDE] (rev d0) (prog-if 8a [Master SecP PriP])
+	Flags: bus master, fast devsel, latency 64, IRQ 14
+	I/O ports at <ignored>
+	I/O ports at <ignored>
+	I/O ports at <ignored>
+	I/O ports at <ignored>
+	I/O ports at 4000 [size=16]
+
+00:01.0 ISA bridge: Silicon Integrated Systems [SiS] SiS85C503/5513 (LPC Bridge) (rev 01)
+	Flags: bus master, medium devsel, latency 0
+
+00:01.1 Class ff00: Silicon Integrated Systems [SiS] ACPI
+	Flags: medium devsel
+
+00:01.2 USB Controller: Silicon Integrated Systems [SiS] USB 1.0 Controller (rev 11) (prog-if 10 [OHCI])
+	Flags: bus master, medium devsel, latency 64, IRQ 12
+	Memory at f0102000 (32-bit, non-prefetchable) [size=4K]
+
+00:02.0 PCI bridge: Silicon Integrated Systems [SiS] Virtual PCI-to-PCI bridge (AGP) (prog-if 00 [Normal decode])
+	Flags: bus master, fast devsel, latency 0
+	Bus: primary=00, secondary=01, subordinate=01, sec-latency=64
+	I/O behind bridge: 0000d000-0000dfff
+	Memory behind bridge: ec000000-edffffff
+	Prefetchable memory behind bridge: e0000000-e7ffffff
+
+00:09.0 Ethernet controller: Intel Corporation 82557/8/9 [Ethernet Pro 100] (rev 08)
+	Subsystem: Intel Corporation EtherExpress PRO/100+ Management Adapter
+	Flags: bus master, medium devsel, latency 64, IRQ 11
+	Memory at f0100000 (32-bit, non-prefetchable) [size=4K]
+	I/O ports at e000 [size=64]
+	Memory at f0000000 (32-bit, non-prefetchable) [size=1M]
+	Expansion ROM at ee000000 [disabled] [size=1M]
+	Capabilities: [dc] Power Management version 2
+
+00:0f.0 Ethernet controller: 3Com Corporation 3c905B Deluxe Etherlink 10/100/BNC [Cyclone]
+	Subsystem: 3Com Corporation 3c905B Deluxe Etherlink 10/100/BNC [Cyclone]
+	Flags: bus master, medium devsel, latency 64, IRQ 10
+	I/O ports at e400 [size=128]
+	Memory at f0101000 (32-bit, non-prefetchable) [size=128]
+	Expansion ROM at ef000000 [disabled] [size=128K]
+	Capabilities: [dc] Power Management version 1
+
+01:00.0 VGA compatible controller: ATI Technologies Inc Radeon RV100 QY [Radeon 7000/VE] (prog-if 00 [VGA])
+	Subsystem: ATI Technologies Inc Unknown device 110a
+	Flags: bus master, stepping, 66MHz, medium devsel, latency 64
+	Memory at e0000000 (32-bit, prefetchable) [size=128M]
+	I/O ports at d000 [size=256]
+	Memory at ed000000 (32-bit, non-prefetchable) [size=64K]
+	[virtual] Expansion ROM at ec000000 [disabled] [size=128K]
+	Capabilities: [58] AGP version 2.0
+	Capabilities: [50] Power Management version 2
+
+Thanks,
+
+Andreas Mohr
