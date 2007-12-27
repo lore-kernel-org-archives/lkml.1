@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbXL0X5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbXL0X6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754682AbXL0X5H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 18:57:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbXL0X4z
+	id S1754729AbXL0X6S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 18:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbXL0X6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 18:56:55 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:29675 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752685AbXL0X4y convert rfc822-to-8bit (ORCPT
+	Thu, 27 Dec 2007 18:58:07 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59365 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753970AbXL0X6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 18:56:54 -0500
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Date: Thu, 27 Dec 2007 23:55:43 +0000
-Subject: RE: [PATCH 1/3] cciss: export more attributes to sysfs (repost)
-Thread-Topic: [PATCH 1/3] cciss: export more attributes to sysfs (repost)
-Thread-Index: AchEJ5U1Y5hrLSX8TOSMxvauODdGIQEu6Iwg
-Message-ID: <DEE40752C8AF224BB890E455C7B8E0FE15A296AD@G6W0268.americas.hpqcorp.net>
-References: <20071214221744.GA32019@roadking.usa.hp.com>
- <20071221151647.ac8f864c.akpm@linux-foundation.org>
-In-Reply-To: <20071221151647.ac8f864c.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Thu, 27 Dec 2007 18:58:07 -0500
+Date: Thu, 27 Dec 2007 23:58:04 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: SLUB sysfs support
+Message-ID: <20071227235804.GJ27894@ZenIV.linux.org.uk>
+References: <20071224034530.GB16658@thunk.org> <Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com> <20071224233701.GB9784@kernel.org> <Pine.LNX.4.64.0712261330030.16904@schroedinger.engr.sgi.com> <20071226221631.GD27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712262149000.19009@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712271222190.31582@schroedinger.engr.sgi.com> <20071227225947.GH27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712271508080.917@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712271552420.1154@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0712271552420.1154@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> Mike, what's going on?  I definitely told you last time I
-> looked at this patch that it is a bug to call
-> sysfs_remove_group() under spinlock, because
-> sysfs_remove_group() takes sleeping locks.  Yet here it is again.
->
-> Maybe you lost my email.  It is here:
-> http://lkml.org/lkml/2007/11/20/77
->
->
-> Also please see http://lkml.org/lkml/2007/11/20/79
->
+On Thu, Dec 27, 2007 at 03:53:43PM -0800, Christoph Lameter wrote:
+> On Thu, 27 Dec 2007, Christoph Lameter wrote:
+> 
+> > > a) remove symlink when slab goes away
+> > 
+> > Ok. Need to think about how to code that.
+> 
+> How do I iterate over all symlinks in /sys/kernel/slab/*?
+> 
+> I remember trying to do it before and not being able to find a sysfs 
+> method for that.
 
-Andrew,
-My apologies. Obviously I did not read your email closely. When I return from vacation I will address these issues.
+What the hell do you need that for?  You have an obvious moment when
+/sys/kernel/slab/cache_name -> <whatever> should be gone - it's when
+you remove the slab called cache_name.  And at that point you don't
+need to iterate over anything - you have the exact name, for fsck sake...
 
--- mikem
+Why would you want these symlinks to stick around for longer than that?
