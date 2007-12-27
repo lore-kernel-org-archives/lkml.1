@@ -1,110 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbXL0SCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbXL0SCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199AbXL0SCk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 13:02:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbXL0SBw
+	id S1754328AbXL0SCx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 13:02:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbXL0SBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 13:01:52 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43407 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753257AbXL0SBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 13:01:34 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: [RFC][PATCH 3/7] ACPI: Separate disabling of GPEs from _PTS
-Date: Thu, 27 Dec 2007 19:16:27 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       "Moore, Robert" <robert.moore@intel.com>
-References: <200712271903.53961.rjw@sisk.pl>
-In-Reply-To: <200712271903.53961.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712271916.28675.rjw@sisk.pl>
+	Thu, 27 Dec 2007 13:01:54 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:6494 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753657AbXL0SBi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 13:01:38 -0500
+Date: Thu, 27 Dec 2007 11:59:23 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+In-reply-to: <fa.gv3MUHxQvd7EaG/0hhC9IzBvIlA@ifi.uio.no>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
+Message-id: <4773E7FB.2020000@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.m7tRTz/ymu3iMyLTO2aF1Tvaw24@ifi.uio.no>
+ <fa.XrRLIuL4juNAXXaMPF3iY8FyWW8@ifi.uio.no>
+ <fa.gv3MUHxQvd7EaG/0hhC9IzBvIlA@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Arjan van de Ven wrote:
+>> 2) [non-minor] hmmmm.
+>>
+>> 	[jgarzik@core ~]$ lspci -n | wc -l
+>> 	23
+>>
+>> So I would have to perform 23 sysfs twiddles, before I could obtain a 
+>> full and unabridged 'lspci -vvvxxx'?
+> 
+> not you as human, but "lspci" ought to yes.
+> 
+>> For the userspace interface, the most-often-used knob for diagnostic 
+>> purposes will be the easiest one.  And that's
+> 
+> the easiest one is an option to lspci. Nothing more nothing less.
+> 
+> Making a global knob in kernel space is a lot more tricky, and in addition
+> really there's enough cases where userspace wants the one device anyway
+> Doing the "for each device I'm about to dump" in lspci is pretty much as hard as doing
+> the global one (if not simpler)
 
-The preparation to enter an ACPI system sleep state is now tied to
-the disabling of GPEs, but the GPEs should not be disabled before
-suspending devices.  Since on ACPI 1.0x systems the _PTS global
-control method should be executed before suspending devices, we
-need to disable GPEs separately.
+So then if you have a system where MMCONFIG doesn't work and you're not 
+using any devices that require extended config space, then doing lspci 
+-vvvxxx will blow up the machine? Yuck.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/hardware/hwsleep.c |    4 ----
- drivers/acpi/sleep/main.c       |   17 +++++++++++++++--
- 2 files changed, 15 insertions(+), 6 deletions(-)
+Still don't like this approach. It seems like (partially) covering up 
+problems rather than solving them.
 
-Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
-+++ linux-2.6/drivers/acpi/hardware/hwsleep.c
-@@ -229,10 +229,6 @@ acpi_status acpi_enter_sleep_state_prep(
- 				"While executing method _SST"));
- 	}
- 
--	/* Disable/Clear all GPEs */
--
--	status = acpi_hw_disable_all_gpes();
--
- 	return_ACPI_STATUS(status);
- }
- 
-Index: linux-2.6/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -91,10 +91,13 @@ static int acpi_pm_open(suspend_state_t 
- 
- static int acpi_pm_prepare(void)
- {
--	int error = acpi_sleep_prepare(acpi_target_sleep_state);
-+	int error;
- 
-+	error = acpi_sleep_prepare(acpi_target_sleep_state);
- 	if (error)
- 		acpi_target_sleep_state = ACPI_STATE_S0;
-+	else if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
-+		error = -EFAULT;
- 
- 	return error;
- }
-@@ -261,7 +264,16 @@ static int acpi_hibernation_start(void)
- 
- static int acpi_hibernation_prepare(void)
- {
--	return acpi_sleep_prepare(ACPI_STATE_S4);
-+	int error;
-+
-+	error = acpi_sleep_prepare(ACPI_STATE_S4);
-+	if (error)
-+		return error;
-+
-+	if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
-+		error = -EFAULT;
-+
-+	return error;
- }
- 
- static int acpi_hibernation_enter(void)
-@@ -432,6 +444,7 @@ static void acpi_power_off_prepare(void)
- {
- 	/* Prepare to power off the system */
- 	acpi_sleep_prepare(ACPI_STATE_S5);
-+	acpi_hw_disable_all_gpes();
- }
- 
- static void acpi_power_off(void)
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
