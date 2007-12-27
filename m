@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbXL0VjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbXL0Vrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbXL0VjJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 16:39:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbXL0Vi7
+	id S1753897AbXL0Vrz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 16:47:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbXL0Vrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 16:38:59 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45600 "EHLO
+	Thu, 27 Dec 2007 16:47:46 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42933 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752017AbXL0Vi7 (ORCPT
+	by vger.kernel.org with ESMTP id S1752028AbXL0Vrp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 16:38:59 -0500
-Date: Thu, 27 Dec 2007 13:37:41 -0800 (PST)
+	Thu, 27 Dec 2007 16:47:45 -0500
+Date: Thu, 27 Dec 2007 13:46:32 -0800 (PST)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Loic Prylli <loic@myri.com>
 cc: Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jeff@garzik.org>,
@@ -22,10 +22,10 @@ cc: Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jeff@garzik.org>,
        Kai Ruhnau <kai@tragetaschen.dyndns.org>
 Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
  opt-in
-In-Reply-To: <477414C9.3040906@myri.com>
-Message-ID: <alpine.LFD.0.9999.0712271328010.21557@woody.linux-foundation.org>
-References: <fa.m7tRTz/ymu3iMyLTO2aF1Tvaw24@ifi.uio.no> <fa.XrRLIuL4juNAXXaMPF3iY8FyWW8@ifi.uio.no> <fa.H0fcNl3b6xVBwzWUgT72M4K6KOU@ifi.uio.no> <4773EBB4.2020805@shaw.ca> <alpine.LFD.0.9999.0712271023090.21557@woody.linux-foundation.org>
- <477414C9.3040906@myri.com>
+In-Reply-To: <alpine.LFD.0.9999.0712271328010.21557@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.9999.0712271338280.21557@woody.linux-foundation.org>
+References: <fa.m7tRTz/ymu3iMyLTO2aF1Tvaw24@ifi.uio.no> <fa.XrRLIuL4juNAXXaMPF3iY8FyWW8@ifi.uio.no> <fa.H0fcNl3b6xVBwzWUgT72M4K6KOU@ifi.uio.no> <4773EBB4.2020805@shaw.ca> <alpine.LFD.0.9999.0712271023090.21557@woody.linux-foundation.org> <477414C9.3040906@myri.com>
+ <alpine.LFD.0.9999.0712271328010.21557@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,46 +34,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Thu, 27 Dec 2007, Loic Prylli wrote:
+On Thu, 27 Dec 2007, Linus Torvalds wrote:
 > 
-> The root pcie port implementation is obviously buggy. But did we confirm
-> whether that hardware bug might be partly related to
-> "configuration-retry-status" pcie-root handling as introduced/described in:
+> Kai, can you try that? Just remove the call to pci_enable_crs() in 
+> pci_scan_bridge() in drivers/pci/probe.c, and see if mmconfig starts 
+> working for you?
 
-Ahh, yes, that sounds like an excellent explanation of what might be going 
-on.
+We could also make the error handling more permissive, and just check for 
+the low 16 bits, which is the part that the CRS spec mentions the actual 
+value for. The whole vendor ID of 0x0001 is mentioned int he CRS spec as 
+being explicitly chosen exactly because it's invalid.
 
-Our code expects that the retry status is read as a 32-bit word that is 
-0xffff0001, but you're right, that "0001" in the low-order bits is an 
-interesting coincidence, and it may be that what the ATI pcie bridge 
-does the high bits wrong.
+That said, given that we don't actually reap any benefits from CRS support 
+right now *anyway*, I think the right thing to do is disable it by 
+default. But it would be interesting to know if this patch makes it work 
+on those ATI bridges..
 
-The CRS docs *do* say that it has to return 0001h for the Vendor ID, but 
-also that any additional bytes (ie the device ID) should be all ones. So 
-we're doing the right thing from a spec standpoint, but as I often say: 
-the spec doesn't count for anything, compared to reality.
+		Linus
 
-> Does the 0001 vendor-id still shows up if pci_enable_crs() has never
-> been called?
+---
+ drivers/pci/probe.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I don't believe we have ever tried, but it would be very interesting to 
-hear. 
-
-Kai, can you try that? Just remove the call to pci_enable_crs() in 
-pci_scan_bridge() in drivers/pci/probe.c, and see if mmconfig starts 
-working for you?
-
-> Does anybody knows what was the original rational to call
-> pci_enable_crs() by default?
-
-.. another good question. I don't think anybody expected it to be broken, 
-but if this turns out to be the thing that triggers it, I think we should 
-disable CRS by default.
-
-The code doesn't actually do what CRS is supposed to help with (ie go on 
-to probe another device and then come back to the slow one later), so 
-right now it's pretty much useless *anyway*. 
-
-Matthew?
-
-			Linus
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 2f75d69..94cd3a4 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -908,7 +908,7 @@ pci_scan_device(struct pci_bus *bus, int devfn)
+ 		return NULL;
+ 
+ 	/* Configuration request Retry Status */
+-	while (l == 0xffff0001) {
++	while ((l & 0xffff) == 0x0001) {
+ 		msleep(delay);
+ 		delay *= 2;
+ 		if (pci_bus_read_config_dword(bus, devfn, PCI_VENDOR_ID, &l))
