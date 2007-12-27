@@ -1,77 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbXL0VD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbXL0VMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752685AbXL0VD6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 16:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbXL0VDh
+	id S1753787AbXL0VMa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 16:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbXL0VMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 16:03:37 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:54416 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752083AbXL0VDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 16:03:34 -0500
-Date: Thu, 27 Dec 2007 15:03:32 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Cc: Andrew Morgan <morgan@kernel.org>, linux-security-module@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: [PATCH 1/1] capabilities: oom_kill: don't set PF_SUPERPRIV for oom
-	check
-Message-ID: <20071227210332.GA24096@sergelap.austin.ibm.com>
+	Thu, 27 Dec 2007 16:12:21 -0500
+Received: from mailbox2.myri.com ([64.172.73.26]:2000 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752032AbXL0VMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 16:12:20 -0500
+Message-ID: <477414C9.3040906@myri.com>
+Date: Thu, 27 Dec 2007 16:10:33 -0500
+From: Loic Prylli <loic@myri.com>
+User-Agent: Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jeff@garzik.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+References: <fa.m7tRTz/ymu3iMyLTO2aF1Tvaw24@ifi.uio.no> <fa.XrRLIuL4juNAXXaMPF3iY8FyWW8@ifi.uio.no> <fa.H0fcNl3b6xVBwzWUgT72M4K6KOU@ifi.uio.no> <4773EBB4.2020805@shaw.ca> <alpine.LFD.0.9999.0712271023090.21557@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.9999.0712271023090.21557@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From ed2e7764917fd56d9743630bd7072f67ff30adc2 Mon Sep 17 00:00:00 2001
-From: Serge Hallyn <serue@us.ibm.com>
-Date: Wed, 26 Dec 2007 15:04:50 -0800
-Subject: [PATCH 1/1] capabilities: oom_kill: don't set PF_SUPERPRIV for oom check
+On 12/27/2007 1:58 PM, Linus Torvalds wrote:
+>
+> There was a thread called "PCI vendor id == 1 regression?" (Kai Ruhnau was 
+> the main reporter for that one). But looking back, it seems that one 
+> didn't hit the kernel mailing list, so I guess google cannot pick it up. I 
+> can forward all the emails if you want, but quite frankly, you don't 
+> really want to. It boils down to:
+>
+> Stephen Hemminger:
+>   "There have been two reports with different hardware of the PCI vendor
+>    id of 0001 showing up. I got a report on sky2, and Francois saw similar
+>    problem on r8169.
+>    In one case, it happened only with 2.6.23 kernel, the correct id was
+>    returned by older kernels.
+>
+>    This is a heads up, there may be a PCI problem. Or just
+>    some users smoking strange fall leaves."
+>
+> And then one of the reporters:
+>
+>   "Good kernel:
+>
+>    02:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev 12)
+> 	00: ab 11 64 43 07 00 10 00 12 00 00 02 01 00 00 00
+>
+>    Bad kernel:
+>
+>    02:00.0 Ethernet controller: Unknown device 0001:4364 (rev 12)
+> 	00: 01 00 64 43 07 00 10 00 12 00 00 02 01 00 00 00"
+>   
 
-With 64-bit capabilities came an inadvertent change such
-that the check for a privileged process, to make it less
-likely to be killed when out of memory, sets PF_SUPERPRIV,
-which it did not do before.
 
-This patch restores the original behavior of not setting the
-PF_SUPERPRIV bit when checking for privileged processes.
 
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
-Acked-by: Andrew G. Morgan <morgan@kernel.org>
----
- include/linux/capability.h |    2 ++
- mm/oom_kill.c              |    3 ++-
- 2 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/capability.h b/include/linux/capability.h
-index 7d50ff6..0acdd65 100644
---- a/include/linux/capability.h
-+++ b/include/linux/capability.h
-@@ -490,6 +490,8 @@ extern const kernel_cap_t __cap_init_eff_set;
- int capable(int cap);
- int __capable(struct task_struct *t, int cap);
- 
-+#define CAPABLE_PROBE_ONLY(a,b)		(!security_capable(a,b))
-+
- extern long cap_prctl_drop(unsigned long cap);
- 
- #endif /* __KERNEL__ */
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index 9fd8d5d..cd515f8 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -128,7 +128,8 @@ unsigned long badness(struct task_struct *p, unsigned long uptime,
- 	 * Superuser processes are usually more important, so we make it
- 	 * less likely that we kill those.
- 	 */
--	if (__capable(p, CAP_SYS_ADMIN) || __capable(p, CAP_SYS_RESOURCE))
-+	if (CAPABLE_PROBE_ONLY(p, CAP_SYS_ADMIN) ||
-+		CAPABLE_PROBE_ONLY(p, CAP_SYS_RESOURCE))
- 		points /= 4;
- 
- 	/*
--- 
-1.5.1
+
+The root pcie port implementation is obviously buggy. But did we confirm
+whether that hardware bug might be partly related to
+"configuration-retry-status" pcie-root handling as introduced/described in:
+
+
+
+http://marc.info/?l=linux-kernel&m=110541914926842&w=2
+
+
+Does the 0001 vendor-id still shows up if pci_enable_crs() has never
+been called?
+
+
+Does anybody knows what was the original rational to call
+pci_enable_crs() by default?
+
+
+Loic
 
