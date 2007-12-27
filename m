@@ -1,116 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752445AbXL0ITB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbXL0ImY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752445AbXL0ITB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 03:19:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbXL0ISw
+	id S1753179AbXL0ImY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 03:42:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbXL0ImP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 03:18:52 -0500
-Received: from pip10.gyao.ne.jp ([61.122.117.248]:57458 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750890AbXL0ISu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 03:18:50 -0500
-Date: Thu, 27 Dec 2007 17:18:22 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian McMenamin <lkmladrian@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org
-Subject: Re: [PATCH] SH/Dreamcast - add support for GD-Rom device
-Message-ID: <20071227081822.GA22693@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian McMenamin <lkmladrian@gmail.com>,
-	Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-	linux-sh@vger.kernel.org
-References: <8b67d60712261726l28960f69u2eb2756a6f5176e1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8b67d60712261726l28960f69u2eb2756a6f5176e1@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 27 Dec 2007 03:42:15 -0500
+Received: from mga03.intel.com ([143.182.124.21]:5986 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750989AbXL0ImO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 03:42:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,201,1196668800"; 
+   d="scan'208";a="351277014"
+Subject: [PATCH linux-acpi] Remove superfluous code and correct counting
+	error in function acpi_system_write_alarm
+From: Yi Yang <yi.y.yang@intel.com>
+Reply-To: yi.y.yang@intel.com
+To: linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, lenb@kernel.org,
+       acpi-bugzilla@lists.sourceforge.net
+In-Reply-To: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com>
+References: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com>
+Content-Type: text/plain
+Organization: Intel
+Date: Thu, 27 Dec 2007 16:41:39 +0800
+Message-Id: <1198744900.3640.4.camel@yangyi-dev.bj.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 27, 2007 at 01:26:47AM +0000, Adrian McMenamin wrote:
-> This patch adds support for the CD-Rom drive on the SEGA Dreamcast.
-> 
-Please fix your mailer to inline the patch, preferably without word
-wrapping. This is not a difficult thing, send yourself some test mails
-until you get it sorted out.
+In function acpi_system_write_alarm in file drivers/acpi/sleep/proc.c,
+big sec, min, hr, mo, day and yr are counted twice to get reasonable
+values, that is very superfluous, we can do that only once.
 
-> diff -rupN linux-2.6-orig/drivers/block/Kconfig linux-2.6/drivers/block/Kconfig
-> --- linux-2.6-orig/drivers/block/Kconfig	2007-12-26 17:27:14.000000000 +0000
-> +++ linux-2.6/drivers/block/Kconfig	2007-12-27 00:08:39.000000000 +0000
-> @@ -105,6 +105,18 @@ config PARIDE
->  	  "MicroSolutions backpack protocol", "DataStor Commuter protocol"
->  	  etc.).
->  
-> +config	GDROM
+In additon, /proc/acpi/alarm can set a related value which can be
+specified as YYYY years MM months DD days HH hours MM minutes SS
+senconds, it isn't a date, so you can specify as +0000-00-00 96:00:00
+, that means 3 days later, current code can't handle such a case.
 
-Why is this using a tab?
+This patch removes unnecessary code and does with the aforementioned
+situation.
 
-> +	tristate "SEGA Dreamcast GD-ROM drive"
-> +	depends on SH_DREAMCAST
-> +	help
-> +	  A standard SEGA Dreamcast comes with a modified CD ROM drive called a
-> +	  "GD-ROM" by SEGA to signify it is capable of reading special disks
-> +	  with up to 1 GB of data. This drive will also read standard CD ROM
-> +	  disks. Select this option to access any disks in your GD ROM drive.
-> +	  Most users will want to say "Y" here.
-> +	  You can also build this as a module which will be called gdrom.ko
-> +
-> +
-Superfluous whitespace.
+Before applying this patch:
 
-> +static int gdrom_get_last_session(struct cdrom_device_info *cd_info, struct cdrom_multisession *ms_info)
-> +{
-> +	int fentry, lentry, track, data, tocuse, err;
-> +	kfree(gd.toc);
-> +	gd.toc = kzalloc(sizeof(struct gdromtoc), GFP_KERNEL);
+[root@localhost /]# cat /proc/acpi/alarm
+2007-12-00 00:00:00
+[root@localhost /]# echo "0000-00-00 96:180:180" > /proc/acpi/alarm
+[root@localhost /]# cat /proc/acpi/alarm
+0007-12-02 **:**:**
+[root@localhost /]#
 
-Er, what? The size of this never changes, allocate it once, and just
-overload it every time you step in to this function. There's no reason to
-free it and reallocate every time. Shove it in your probe routine with
-the rest of your kzallocs.
+After applying this patch:
 
-> +/* keep the function loioking like the universal CD Rom specification - returning int*/
+[root@localhost ~]# echo "2007-12-00 00:00:00" > /proc/acpi/alarm
+[root@localhost ~]# cat /proc/acpi/alarm
+2007-12-00 00:00:00
+[root@localhost ~]# echo "0000-00-00 96:180:180" > /proc/acpi/alarm
+[root@localhost ~]# cat /proc/acpi/alarm
+0007-12-04 03:03:00
+[root@localhost ~]#
 
-looking.
+Signed-off by Yi Yang <yi.y.yang@intel.com>
 
-> +static int gdrom_set_command_interrupt_handler(void)
-> +{
-> +	/* need a queue to wait in */
-> +	init_waitqueue_head(&command_queue);
-> +	return request_irq(HW_EVENT_GDROM_CMD, gdrom_command_interrupt, IRQF_DISABLED, "gdrom_command", &gd);
-> +}
-> +
-> +static int gdrom_set_dma_interrupt_handler(void)
-> +{
-> +	init_waitqueue_head(&request_queue);
-> +	return request_irq(HW_EVENT_GDROM_DMA, gdrom_dma_interrupt, IRQF_DISABLED, "gdrom_dma", &gd);
-> +}
-> +
-Having separate functions for these is pretty pointless.
+diff --git a/drivers/acpi/sleep/proc.c b/drivers/acpi/sleep/proc.c
+index fce78fb..f8df521 100644
+--- a/drivers/acpi/sleep/proc.c
++++ b/drivers/acpi/sleep/proc.c
+@@ -256,27 +256,6 @@ acpi_system_write_alarm(struct file *file,
+ 	if ((result = get_date_field(&p, &sec)))
+ 		goto end;
+ 
+-	if (sec > 59) {
+-		min += 1;
+-		sec -= 60;
+-	}
+-	if (min > 59) {
+-		hr += 1;
+-		min -= 60;
+-	}
+-	if (hr > 23) {
+-		day += 1;
+-		hr -= 24;
+-	}
+-	if (day > 31) {
+-		mo += 1;
+-		day -= 31;
+-	}
+-	if (mo > 12) {
+-		yr += 1;
+-		mo -= 12;
+-	}
+-
+ 	spin_lock_irq(&rtc_lock);
+ 
+ 	rtc_control = CMOS_READ(RTC_CONTROL);
+@@ -293,24 +272,24 @@ acpi_system_write_alarm(struct file *file,
+ 	spin_unlock_irq(&rtc_lock);
+ 
+ 	if (sec > 59) {
+-		min++;
+-		sec -= 60;
++		min += sec/60;
++		sec = sec%60;
+ 	}
+ 	if (min > 59) {
+-		hr++;
+-		min -= 60;
++		hr += min/60;
++		min = min%60;
+ 	}
+ 	if (hr > 23) {
+-		day++;
+-		hr -= 24;
++		day += hr/24;
++		hr = hr%24;
+ 	}
+ 	if (day > 31) {
+-		mo++;
+-		day -= 31;
++		mo += day/32;
++		day = day%32;
+ 	}
+ 	if (mo > 12) {
+-		yr++;
+-		mo -= 12;
++		yr += mo/13;
++		mo = mo%13;
+ 	}
+ 
+ 	spin_lock_irq(&rtc_lock);
 
-> +	spin_lock(&gdrom_lock);
-> +	list_for_each_safe(elem, next, &gdrom_deferred) {
-> +		req = list_entry(elem, struct request, queuelist);
-> +		spin_unlock(&gdrom_lock);
 
-[snip]
-
-> +		/* now seek to take the request spinlock
-> + 		 * before handling ending the request */
-> +		spin_lock(&gdrom_lock);
-> +		list_del_init(&req->queuelist);
-> +		blk_requeue_request(gd.gdrom_rq, req);
-> +		if (err)
-> +			end_request(req, 0);
-> +		else
-> +			end_request(req, 1);
-> +	}
-> +	spin_unlock(&gdrom_lock);
-> +	kfree(read_command);
-> +}	
-> +
-This locking is all over the place. What is this lock supposed to be
-accomplishing?
