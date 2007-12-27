@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXL0U12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbXL0U2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbXL0U12 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 15:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbXL0U1U
+	id S1752575AbXL0U2a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 15:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXL0U2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 15:27:20 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:63004 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752068AbXL0U1T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 15:27:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=AE4VCVQ+XuA4YPYmFs6Ye7EDFDwPQj0VBN5G/3+IjdEI7Oje9IfehQ7uSkHV9nuc5zyjYO57E1qojouHb6n1N8xCb9ZNvkDwpkzd0S1AykyksuARGFnpwWG1WFCpfxahqd0PKq7Cm0VeM9Su/kpl6XI6eII1kShfuzGxa6prTHs=
-Date: Thu, 27 Dec 2007 21:28:52 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH] slab: avoid double initialization & do it in 1 function
-Message-ID: <20071227202849.GA11114@joi>
+	Thu, 27 Dec 2007 15:28:23 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:35251 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752322AbXL0U2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 15:28:22 -0500
+Date: Thu, 27 Dec 2007 12:28:14 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       Willy Tarreau <w@1wt.eu>, Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: SLUB sysfs support
+In-Reply-To: <Pine.LNX.4.64.0712262149000.19009@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0712271222190.31582@schroedinger.engr.sgi.com>
+References: <20071222192550.GD28891@thunk.org>
+ <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org>
+ <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com>
+ <20071223051241.GA4449@1wt.eu> <20071223141500.GB6430@one.firstfloor.org>
+ <20071224034530.GB16658@thunk.org> <Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com>
+ <20071224233701.GB9784@kernel.org> <Pine.LNX.4.64.0712261330030.16904@schroedinger.engr.sgi.com>
+ <20071226221631.GD27894@ZenIV.linux.org.uk>
+ <Pine.LNX.4.64.0712262149000.19009@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* alloc_slabmgmt: initialize all slab fields in 1 function
-* slab->nodeid was initialized twice: in alloc_slabmgmt
-  and immediately after it in cache_grow
+Hmmm.. If I separately allocate the kobject then I can no longer get to 
+the kmem_cache structure from the kobject. 
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-CC: Christoph Lameter <clameter@sgi.com>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>
-diff --git a/mm/slab.c b/mm/slab.c
-index 2e338a5..458b07a 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -2626,6 +2626,7 @@ static struct slab *alloc_slabmgmt(struct kmem_cache *cachep, void *objp,
- 	slabp->colouroff = colour_off;
- 	slabp->s_mem = objp + colour_off;
- 	slabp->nodeid = nodeid;
-+	slabp->free = 0;
- 	return slabp;
- }
- 
-@@ -2679,7 +2680,6 @@ static void cache_init_objs(struct kmem_cache *cachep,
- 		slab_bufctl(slabp)[i] = i + 1;
- 	}
- 	slab_bufctl(slabp)[i - 1] = BUFCTL_END;
--	slabp->free = 0;
- }
- 
- static void kmem_flagcheck(struct kmem_cache *cachep, gfp_t flags)
-@@ -2812,7 +2812,6 @@ static int cache_grow(struct kmem_cache *cachep,
- 	if (!slabp)
- 		goto opps1;
- 
--	slabp->nodeid = nodeid;
- 	slab_map_pages(cachep, slabp, objp);
- 
- 	cache_init_objs(cachep, slabp);
+I need to add a second kobject_del to sysfs_slab_remove() to make sysfs 
+completely forget about the object?
+
+Probably should track down any remaining symlinks at that point and nuke 
+them too. Isnt there some way to convince sysfs to remove the symlinks 
+if the target vanishes?
+
+
+
+
+
