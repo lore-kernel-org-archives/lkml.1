@@ -1,94 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbXL0Tky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbXL0TuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753795AbXL0Tky (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 14:40:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbXL0Tko
+	id S1753836AbXL0TuQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 14:50:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbXL0TuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 14:40:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43811 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751427AbXL0Tkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 14:40:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Thu, 27 Dec 2007 14:50:05 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60604 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751569AbXL0TuD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 14:50:03 -0500
+Date: Thu, 27 Dec 2007 11:47:32 -0800
+From: Arjan van de Ven <arjan@infradead.org>
 To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Suspend code ordering (again)
-Date: Thu, 27 Dec 2007 21:00:19 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no> <fa.XycBwhGuyvtVl/QW5HONqLwOags@ifi.uio.no> <4773E9EE.40107@shaw.ca>
-In-Reply-To: <4773E9EE.40107@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+Message-ID: <20071227114732.1442829e@laptopd505.fenrus.org>
+In-Reply-To: <4773E7FB.2020000@shaw.ca>
+References: <fa.m7tRTz/ymu3iMyLTO2aF1Tvaw24@ifi.uio.no>
+	<fa.XrRLIuL4juNAXXaMPF3iY8FyWW8@ifi.uio.no>
+	<fa.gv3MUHxQvd7EaG/0hhC9IzBvIlA@ifi.uio.no>
+	<4773E7FB.2020000@shaw.ca>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712272100.20282.rjw@sisk.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 27 of December 2007, Robert Hancock wrote:
-> Rafael J. Wysocki wrote:
-> > On Wednesday, 26 of December 2007, Linus Torvalds wrote:
-> >> On Tue, 25 Dec 2007, Rafael J. Wysocki wrote:
-> >>> the ACPI specification between versions 1.0x and 2.0.  Namely, while ACPI
-> >>> 2.0 and later wants us to put devices into low power states before calling
-> >>> _PTS, ACPI 1.0x wants us to do that after calling _PTS.  Since we're following
-> >>> the 2.0 and later specifications right now, we're not doing the right thing for
-> >>> the (strictly) ACPI 1.0x-compliant systems.
-> >>>
-> >>> We ought to be able to fix things on the high level, by calling _PTS earlier on
-> >>> systems that claim to be ACPI 1.0x-compliant.  That will require us to modify
-> >>> the generic susped code quite a bit and will need to be tested for some time.
-> >> That's insane. Are you really saying that ACPI wants totally different 
-> >> orderings for different versions of the spec?
+On Thu, 27 Dec 2007 11:59:23 -0600
+Robert Hancock <hancockr@shaw.ca> wrote:
+
+> Arjan van de Ven wrote:
+> >> 2) [non-minor] hmmmm.
+> >>
+> >> 	[jgarzik@core ~]$ lspci -n | wc -l
+> >> 	23
+> >>
+> >> So I would have to perform 23 sysfs twiddles, before I could
+> >> obtain a full and unabridged 'lspci -vvvxxx'?
 > > 
-> > Yes, I am.
+> > not you as human, but "lspci" ought to yes.
 > > 
-> >> And does Windows really do that?
+> >> For the userspace interface, the most-often-used knob for
+> >> diagnostic purposes will be the easiest one.  And that's
 > > 
-> > I don't know.
+> > the easiest one is an option to lspci. Nothing more nothing less.
 > > 
-> >> Please don't make lots of modifications to the generic suspend code. The 
-> >> only thing that is worth doing is to just have a firmware callback before 
-> >> the "device_suspend()" thing (and then on a ACPI-1.0 system, call _PTS 
-> >> *there*), and on an ACPI-2.0 system, call _PTS *after* device_suspend().
-> > 
-> > Yes, that's what I'm going to do, but I need to untangle some ACPI code for
-> > this purpose.
-> > 
-> >> Still, the fact is, some (most, I think) drivers *should* put themselves 
-> >> into D3 only in "late_suspend()", so if ACPI-2.0 really expects _PTS to be 
-> >> called after that, we're just screwed.
-> > 
-> > Well, section 9.1.6 of ACPI 2.0 specifies the suspend ordering directly and
-> > says exactly that _PTS is to be executed after putting devices into respective
-> > D states.
+> > Making a global knob in kernel space is a lot more tricky, and in
+> > addition really there's enough cases where userspace wants the one
+> > device anyway Doing the "for each device I'm about to dump" in
+> > lspci is pretty much as hard as doing the global one (if not
+> > simpler)
 > 
-> I would not take those sections as gospel, they're really an example 
-> only. It's quite possible that Windows does not follow that ordering.
+> So then if you have a system where MMCONFIG doesn't work and you're
+> not using any devices that require extended config space, then doing
+> lspci -vvvxxx will blow up the machine? Yuck.
+
+ONLY in the case where you would have otherwise blown up at boot.
+Lets face it; blowing up if the admin does "lspci -vvvxxx" with a clear 
+message in dmesg about which device was enabled last is BY FAR preferable 
+over just plain not booting.
+
+In all cases where the kernel knows MMCONFIG is broken, no amount of pci_enable_ext_config()
+(from drivers or sysfs) will enable MMCONFIG.
+
 > 
-> Also, as was pointed out, pre-Vista versions of Windows follow ACPI 1.0 
-> and Vista follows 3.0, so 2.0 doesn't really matter since BIOS people 
-> won't test against it. 1.0 specifies that _PTS is to be called before 
-> suspending devices and 3.0 says that the AML must not depend on any 
-> specific device power state, so in both cases it should be safe to call 
-> _PTS before suspending, no?
+> Still don't like this approach. It seems like (partially) covering up 
+> problems rather than solving them.
 
-Well, IMO, if we take one option only (whichever that is) and there are systems
-that follow the other one, they will likely break.
+It's containing them not so much covering. To the point that it becomes diagnosable
+and that users have working systems by default.
 
-Apart from this, there are BIOSes that openly claim ACPI 2.0 support (for
-example, the one in my HP nx6325 does that) and they may actually prefer the
-post-ACPI-1.0 ordering even if they work with the pre-ACPI-2.0 one.
+> 
 
-Greetings,
-Rafael
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
