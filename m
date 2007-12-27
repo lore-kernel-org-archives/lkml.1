@@ -1,163 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbXL0S7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbXL0TBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754425AbXL0S7j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 13:59:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbXL0S7a
+	id S1754219AbXL0TBV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 14:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbXL0TBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 13:59:30 -0500
-Received: from smtp.falooley.org ([66.160.141.103]:60143 "EHLO
-	smtp.falooley.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427AbXL0S73 (ORCPT
+	Thu, 27 Dec 2007 14:01:04 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:6066 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752666AbXL0TBC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 13:59:29 -0500
-X-Greylist: delayed 2608 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Dec 2007 13:59:29 EST
-Date: Thu, 27 Dec 2007 13:15:25 -0500
-From: Jason Lunz <lunz@falooley.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: atom ota <atomota@sleepyhammer.com>, Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-mtd@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>,
-       Rob Landley <rob@landley.net>
-Subject: [PATCH] allow use of mtd and jffs2 on uml
-Message-ID: <20071227181524.GA19051@falooley.org>
-References: <22c797d00709272118i33d32b9dy93d5f5ec8f8edd30@mail.gmail.com> <20071024011712.GA3762@falooley.org> <1193208689.26096.48.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1193208689.26096.48.camel@pmac.infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 27 Dec 2007 14:01:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=sCQYOCsbgjBbrsucfg4NW+f0I0J/phTK2HPuPO4Hzpq19szme4lSAO3AIM7CExH2blyNFIybKRM8VOASnr0mDBDekY05Ua+6k4QeTUq5AIi5ZNFLZmvUHOiUF6XuYJPd2M89fWKjo4CVPcF0g346L55JhAB/RUE3w3DgqssEcAM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org, bzolnier@gmail.com
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Thu, 27 Dec 2007 20:11:53 +0100
+Message-Id: <20071227191153.1357.63211.sendpatchset@localhost.localdomain>
+Subject: [PATCH 0/9] ide: switch to generic DMA-mapping API
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Allow parts of drivers/mtd to compile on uml by pushing the HAS_IOMEM
-dependencies down closer to the parts of mtd that actually need it. This
-allows enough of mtd to build to let jffs2 be used on uml.
+Make IDE core PCI independent by replacing hwif->pci_dev (struct pci_dev *)
+with hwif->dev (struct device *) and switch to using generic DMA-mapping API.
 
-Signed-off-by: Jason Lunz <lunz@falooley.org>
+This is on top of IDE quilt tree + 3 patches posted today.
 
----
+diffstat:
 
- arch/um/Kconfig             |    4 +---
- drivers/mtd/Kconfig         |   12 +++++++-----
- drivers/mtd/chips/Kconfig   |   11 ++++++++---
- drivers/mtd/devices/Kconfig |    7 +++++++
- 4 files changed, 23 insertions(+), 11 deletions(-)
+ drivers/ide/arm/icside.c                  |   52 ++++++++--------------------
+ drivers/ide/ide-dma.c                     |   55 +++++++++++++++---------------
+ drivers/ide/ide-io.c                      |    2 -
+ drivers/ide/ide-lib.c                     |    6 ++-
+ drivers/ide/ide-probe.c                   |    4 +-
+ drivers/ide/ide.c                         |    3 +
+ drivers/ide/mips/au1xxx-ide.c             |   43 ++++-------------------
+ drivers/ide/pci/aec62xx.c                 |    8 ++--
+ drivers/ide/pci/alim15x3.c                |    9 ++--
+ drivers/ide/pci/amd74xx.c                 |    7 ++-
+ drivers/ide/pci/atiixp.c                  |    9 ++--
+ drivers/ide/pci/cmd64x.c                  |   14 +++----
+ drivers/ide/pci/cs5520.c                  |    2 -
+ drivers/ide/pci/cs5535.c                  |    4 +-
+ drivers/ide/pci/cy82c693.c                |    5 +-
+ drivers/ide/pci/delkin_cb.c               |    2 -
+ drivers/ide/pci/hpt34x.c                  |    2 -
+ drivers/ide/pci/hpt366.c                  |   29 +++++++++------
+ drivers/ide/pci/it8213.c                  |    7 ++-
+ drivers/ide/pci/it821x.c                  |   47 +++++++++++++++----------
+ drivers/ide/pci/jmicron.c                 |    2 -
+ drivers/ide/pci/ns87415.c                 |   14 +++----
+ drivers/ide/pci/pdc202xx_new.c            |    6 ++-
+ drivers/ide/pci/pdc202xx_old.c            |   11 +++---
+ drivers/ide/pci/piix.c                    |   53 ++--------------------------
+ drivers/ide/pci/rz1000.c                  |    2 -
+ drivers/ide/pci/sc1200.c                  |   12 +++---
+ drivers/ide/pci/scc_pata.c                |   13 +++----
+ drivers/ide/pci/serverworks.c             |   18 ++++++---
+ drivers/ide/pci/sgiioc4.c                 |   19 ++++------
+ drivers/ide/pci/siimage.c                 |   51 ++++++++++++++++-----------
+ drivers/ide/pci/sis5513.c                 |   22 ++++++------
+ drivers/ide/pci/sl82c105.c                |   17 +++++----
+ drivers/ide/pci/slc90e66.c                |    7 ++-
+ drivers/ide/pci/tc86c001.c                |    3 +
+ drivers/ide/pci/triflex.c                 |    2 -
+ drivers/ide/pci/trm290.c                  |    2 -
+ drivers/ide/pci/via82cxxx.c               |   12 +++---
+ drivers/ide/ppc/pmac.c                    |   24 ++++++-------
+ drivers/ide/setup-pci.c                   |    6 +--
+ include/asm-mips/mach-au1x00/au1xxx_ide.h |    1
+ include/linux/ide.h                       |   10 +++--
+ 42 files changed, 288 insertions(+), 329 deletions(-)
 
-Index: linux-2.6.23.1-uml/arch/um/Kconfig
-===================================================================
---- linux-2.6.23.1-uml.orig/arch/um/Kconfig
-+++ linux-2.6.23.1-uml/arch/um/Kconfig
-@@ -326,9 +326,7 @@
- 
- source "drivers/md/Kconfig"
- 
--if BROKEN
--	source "drivers/mtd/Kconfig"
--endif
-+source "drivers/mtd/Kconfig"
- 
- #This is just to shut up some Kconfig warnings, so no prompt.
- config INPUT
-Index: linux-2.6.23.1-uml/drivers/mtd/devices/Kconfig
-===================================================================
---- linux-2.6.23.1-uml.orig/drivers/mtd/devices/Kconfig
-+++ linux-2.6.23.1-uml/drivers/mtd/devices/Kconfig
-@@ -78,6 +78,7 @@
- 
- config MTD_SLRAM
- 	tristate "Uncached system RAM"
-+ 	depends on HAS_IOMEM
- 	help
- 	  If your CPU cannot cache all of the physical memory in your machine,
- 	  you can still use it for storage or swap by using this driver to
-@@ -85,6 +86,7 @@
- 
- config MTD_PHRAM
- 	tristate "Physical system RAM"
-+ 	depends on HAS_IOMEM
- 	help
- 	  This is a re-implementation of the slram driver above.
- 
-@@ -151,10 +153,13 @@
- 	  Testing MTD users (eg JFFS2) on large media and media that might
- 	  be removed during a write (using the floppy drive).
- 
-+if HAS_IOMEM
- comment "Disk-On-Chip Device Drivers"
-+endif
- 
- config MTD_DOC2000
- 	tristate "M-Systems Disk-On-Chip 2000 and Millennium (DEPRECATED)"
-+ 	depends on HAS_IOMEM
- 	select MTD_DOCPROBE
- 	select MTD_NAND_IDS
- 	---help---
-@@ -177,6 +182,7 @@
- 
- config MTD_DOC2001
- 	tristate "M-Systems Disk-On-Chip Millennium-only alternative driver (DEPRECATED)"
-+ 	depends on HAS_IOMEM
- 	select MTD_DOCPROBE
- 	select MTD_NAND_IDS
- 	---help---
-@@ -198,6 +204,7 @@
- 
- config MTD_DOC2001PLUS
- 	tristate "M-Systems Disk-On-Chip Millennium Plus"
-+ 	depends on HAS_IOMEM
- 	select MTD_DOCPROBE
- 	select MTD_NAND_IDS
- 	---help---
-Index: linux-2.6.23.1-uml/drivers/mtd/Kconfig
-===================================================================
---- linux-2.6.23.1-uml.orig/drivers/mtd/Kconfig
-+++ linux-2.6.23.1-uml/drivers/mtd/Kconfig
-@@ -2,7 +2,6 @@
- 
- menuconfig MTD
- 	tristate "Memory Technology Device (MTD) support"
--	depends on HAS_IOMEM
- 	help
- 	  Memory Technology Devices are flash, RAM and similar chips, often
- 	  used for solid state file systems on embedded devices. This option
-@@ -278,15 +277,18 @@
- 	  This enables read only access to SmartMedia formatted NAND
- 	  flash. You can mount it with FAT file system.
- 
--source "drivers/mtd/chips/Kconfig"
- 
--source "drivers/mtd/maps/Kconfig"
-+if HAS_IOMEM
-+	source "drivers/mtd/chips/Kconfig"
-+	source "drivers/mtd/maps/Kconfig"
-+endif
- 
- source "drivers/mtd/devices/Kconfig"
- 
--source "drivers/mtd/nand/Kconfig"
--
--source "drivers/mtd/onenand/Kconfig"
-+if HAS_IOMEM
-+	source "drivers/mtd/nand/Kconfig"
-+	source "drivers/mtd/onenand/Kconfig"
-+endif
- 
- source "drivers/mtd/ubi/Kconfig"
- 
-Index: linux-2.6.23.1-uml/drivers/mtd/Makefile
-===================================================================
---- linux-2.6.23.1-uml.orig/drivers/mtd/Makefile
-+++ linux-2.6.23.1-uml/drivers/mtd/Makefile
-@@ -26,6 +26,9 @@
- nftl-objs		:= nftlcore.o nftlmount.o
- inftl-objs		:= inftlcore.o inftlmount.o
- 
--obj-y		+= chips/ maps/ devices/ nand/ onenand/
-+obj-y		+= devices/
-+ifdef CONFIG_HAS_IOMEM
-+obj-y		+= chips/ maps/ nand/ onenand/
-+endif
- 
- obj-$(CONFIG_MTD_UBI)		+= ubi/
+Thanks,
+Bart
