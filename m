@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbXL0SNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbXL0SPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbXL0SNn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 13:13:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbXL0SNg
+	id S1754097AbXL0SPk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 13:15:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXL0SPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 13:13:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50230 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751432AbXL0SNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 13:13:36 -0500
-Date: Thu, 27 Dec 2007 13:12:18 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3 -mm] kexec jump -v8
-Message-ID: <20071227181218.GA15084@redhat.com>
-References: <1198222399.1965.15.camel@caritas-dev.intel.com> <20071227015716.GA6718@redhat.com> <1198722793.7320.15.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1198722793.7320.15.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 27 Dec 2007 13:15:33 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:5119 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752002AbXL0SPc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 13:15:32 -0500
+Date: Thu, 27 Dec 2007 12:15:16 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+In-reply-to: <fa.H0fcNl3b6xVBwzWUgT72M4K6KOU@ifi.uio.no>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
+Message-id: <4773EBB4.2020805@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.m7tRTz/ymu3iMyLTO2aF1Tvaw24@ifi.uio.no>
+ <fa.XrRLIuL4juNAXXaMPF3iY8FyWW8@ifi.uio.no>
+ <fa.H0fcNl3b6xVBwzWUgT72M4K6KOU@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 27, 2007 at 10:33:13AM +0800, Huang, Ying wrote:
-> On Wed, 2007-12-26 at 20:57 -0500, Vivek Goyal wrote:
-> [...]
-> > > 9. Now, you are in the original kernel again. You can read/write the
-> > >    memory image of kexeced kernel via /proc/kimgcore.
-> > > 
-> > 
-> > Why do we need two interfaces, /proc/vmcore and /proc/kimgcore? Can't
-> > we have just one say /proc/vmcore. Irrespective of what kernel you are
-> > in /proc/vmcore gives you the access to the memory of kernel which was
-> > previously booted.
+Linus Torvalds wrote:
 > 
-> In theory we can kexec another kernel even in a kexeced kernel, that is,
-> in kernel A kexec kernel B, and in kernel B kexec another kernel C. In
-> this situation, both /proc/vmcore and /proc/kimgcore has valid contents.
-> So I think, it may be better to keep two interfaces.
+> On Thu, 27 Dec 2007, Jeff Garzik wrote:
+>> 2) [non-minor] hmmmm.
+>>
+>> 	[jgarzik@core ~]$ lspci -n | wc -l
+>> 	23
+>>
+>> So I would have to perform 23 sysfs twiddles, before I could obtain a full and
+>> unabridged 'lspci -vvvxxx'?
 > 
+> Or you force it on with "pci=mmconfig" or something at boot-time.
+> 
+> But yes. The *fact* is that MMCONFIG has not just been globally broken, 
+> but broken on a per-device basis. I don't know why (and quite frankly, I 
+> doubt anybody does), but the PCI device ID corruption happened only for a 
+> specific set of devices.
+> 
+> Whether it was a timing issue with particular devices or whether it was a 
+> timing issue with some particular bridge (and could affect any devices 
+> behind that bridge), who knows... It almost certainly was brought on by a 
+> borderline (or broken) northbridge, but it apparently only affected 
+> specific devices - which makes me suspect that it wasn't *entirely* due to 
+> just the northbridge, and it was a combination of things.
 
-In those situations I think only one interface is better. For example, 
-above will be broken if somebody kexec 4 kernels.
+Pointer to such a report? The only single-device problems I'm aware of
+are with some devices within the K8 integrated northbridge, which we
+already handle. Other than that, the only non-global problems I'm aware
+of are devices behind host bridges which can't receive/handle MMCONFIG
+requests, in which case the problem would be bus-wide.
 
-A-->B--->C--->D
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-I think better option might be if it is stack like situation. A kernel
-shows you only the previous kernel's memory contents through /proc/vmcore
-interface. So If I am in kernel D, I see only kernel C's memory image.
-To see kernel B's memory image, one shall have to go back to kernel C.
 
-Thanks
-Vivek
+
