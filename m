@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbXL0Cei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbXL0CsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753158AbXL0Cei (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 21:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbXL0Cea
+	id S1753050AbXL0CsQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 21:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXL0CsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 21:34:30 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:54521 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751824AbXL0Ce3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 21:34:29 -0500
-Message-ID: <47730F2F.3080900@garzik.org>
-Date: Wed, 26 Dec 2007 21:34:23 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 26 Dec 2007 21:48:05 -0500
+Received: from zyfb01-66.zyxel.com.tw ([59.124.183.66]:20357 "EHLO
+	zyfb01-66.zyxel.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751842AbXL0CsE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 21:48:04 -0500
+Message-ID: <001501c84832$e4bb3d60$431a17ac@ZyXEL.com>
+From: "Lewis Li" <lachang.li@zyxel.com.tw>
+To: <linux-kernel@vger.kernel.org>
+References: <001201c846c9$6d03de40$431a17ac@ZyXEL.com> <20071226141301.8231163b.akpm@linux-foundation.org> <23058.1198709236@death>
+Subject: Re: 2 ports could not bond to a aggregator in 802.3ad mode issue 
+Date: Thu, 27 Dec 2007 10:48:00 +0800
 MIME-Version: 1.0
-To: saeed bishara <saeed.bishara@gmail.com>
-CC: linux-kernel@vger.kernel.org, NFS list <linux-nfs@vger.kernel.org>
-Subject: Re: read-ahead in NFS server
-References: <c70ff3ad0712260351i6583aa8dpbf16ed606a634b1f@mail.gmail.com>
-In-Reply-To: <c70ff3ad0712260351i6583aa8dpbf16ed606a634b1f@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+	format=flowed;
+	charset="big5";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-OriginalArrivalTime: 27 Dec 2007 02:48:00.0294 (UTC) FILETIME=[E4B8CC60:01C84832]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-saeed bishara wrote:
-> Hi,
-> my NFS server seems not to utilize the read-ahead feature, my exported
-> dir is located on ext3 fs over sata disk. the sata controller can
-> issue commands up to 1MB, also I modified the read ahead under the sys
-> to 1MB. but when the client do reads in 32KB chunks (rsize), I can see
-> in the server side that all IOs are ~32KB. my kernel version is
-> 2.6.22.7.
-> according to the nfsd code, the NFS server should utilize the
-> read-ahead feature, but what should I do
-> to make it work?
+Yes, you are right. The incorrect behavior is due to we don't setup the 
+lacpdu of switch correctly.
+The bonding driver is correct. Thanks for your comment!
 
-(linux-nfs added to cc)
+> I do not believe so.
+>
+> IEEE 802.3 section 43.3.9 states, in part,
+>
+> "Links that are not successful candidates for aggregation (e.g.,
+> links that are attached to other devices that cannot perform aggregation
+> or links that have been manually configured to be non-aggregatable) are
+> enabled to operate as individual IEEE 802.3 links. For consistency of
+> modeling, such a link is regarded as being attached to a compatible
+> Aggregator that can only be associated with a single link. That is, from
+> the perspective of Link Aggregation, non-aggregated links are not a
+> special case; they compose an aggregation with a maximum membership of
+> one link."
+>
+> I do not see that it is correct to attach the links to a common
+> aggregator, as your output indicates that no partner association has
+> been created (the Partner MAC is all zeroes) and the links are therefore
+> apparently connected to a device that cannot perform aggregation.
+>
+> ---
+> -Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
 
-I cannot speak for the NFS server code specifically, but 32kb sounds 
-like a network read (or write) data size limit.
-
-Are you using TCP?  Are you using NFSv4, or an older version?
-
-	Jeff
-
+Regards,
+Lewis Li 
 
