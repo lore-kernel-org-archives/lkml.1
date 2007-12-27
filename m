@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbXL0CLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbXL0CdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752685AbXL0CLU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 21:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbXL0CLK
+	id S1752777AbXL0CdN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 21:33:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbXL0CdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 21:11:10 -0500
-Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:34314 "EHLO
-	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751716AbXL0CLI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 21:11:08 -0500
-To: rusty@rustcorp.com.au
-Cc: fujita.tomonori@lab.ntt.co.jp, davem@davemloft.net,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, dougg@torque.net
-Subject: Re: [PATCH 0/5] sg_ring for scsi
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <200712261127.41088.rusty@rustcorp.com.au>
-References: <200712211426.47896.rusty@rustcorp.com.au>
-	<20071221133746B.fujita.tomonori@lab.ntt.co.jp>
-	<200712261127.41088.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 26 Dec 2007 21:33:00 -0500
+Received: from mga09.intel.com ([134.134.136.24]:5033 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751758AbXL0Cc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 21:32:59 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,209,1196668800"; 
+   d="scan'208";a="257134579"
+Subject: Re: [PATCH 0/3 -mm] kexec jump -v8
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071227015716.GA6718@redhat.com>
+References: <1198222399.1965.15.camel@caritas-dev.intel.com>
+	 <20071227015716.GA6718@redhat.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071227110927Q.fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 27 Dec 2007 11:09:27 +0900
-X-Dispatcher: imput version 20040704(IM147)
+Date: Thu, 27 Dec 2007 10:33:13 +0800
+Message-Id: <1198722793.7320.15.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 27 Dec 2007 02:32:55.0116 (UTC) FILETIME=[C93198C0:01C84830]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Dec 2007 11:27:40 +1100
-Rusty Russell <rusty@rustcorp.com.au> wrote:
-
-> On Friday 21 December 2007 15:37:46 FUJITA Tomonori wrote:
-> > Some scsi drivers like ips access to sglist in a tricky way.
+On Wed, 2007-12-26 at 20:57 -0500, Vivek Goyal wrote:
+[...]
+> > 9. Now, you are in the original kernel again. You can read/write the
+> >    memory image of kexeced kernel via /proc/kimgcore.
+> > 
 > 
-> Indeed.  I fail to see how this code works, in fact:
-> 
-> drivers/scsi/ips.c:ips_queue() line 1101
-> 
-> 	if (ips_is_passthru(SC)) {
-> 
-> 		ips_copp_wait_item_t *scratch;
-> 
-> 		/* A Reset IOCTL is only sent by the boot CD in extreme cases.           */
-> 		/* There can never be any system activity ( network or disk ), but check */
-> 		/* anyway just as a good practice.                                       */
-> 		pt = (ips_passthru_t *) scsi_sglist(SC);
-> 		if ((pt->CoppCP.cmd.reset.op_code == IPS_CMD_RESET_CHANNEL) &&
-> 		    (pt->CoppCP.cmd.reset.adapter_flag == 1)) {
-> 
-> Casting the scsi_sglist(SC) (which ips_is_passthrough treated as a
-> scatterlist) to an ips_passthrough_t seems completely bogus.  It looks like
-> it wants to access the region mapped by the scatterlist.
+> Why do we need two interfaces, /proc/vmcore and /proc/kimgcore? Can't
+> we have just one say /proc/vmcore. Irrespective of what kernel you are
+> in /proc/vmcore gives you the access to the memory of kernel which was
+> previously booted.
 
-Yeah, it seems to be broken.
+In theory we can kexec another kernel even in a kexeced kernel, that is,
+in kernel A kexec kernel B, and in kernel B kexec another kernel C. In
+this situation, both /proc/vmcore and /proc/kimgcore has valid contents.
+So I think, it may be better to keep two interfaces.
 
-> There are many signs through the code that it needs a great deal of
-> work: what is the purpose of sg_break? Why does the code check if kmap_atomic
-> fails?
+In fact, current kexec jump implementation use a dummy "jump back helper
+image" in kexeced kernel to jump back to the original kernel. The "jump
+back helper image" has no PT_LOAD segment, it is used to provide a
+struct kimage (including control page, swap page) and entry point to
+jump back.
 
-sg_break is a workaround for the hardware restrictions, I think.
-
-
-> ===
-> Convert the ips SCSI driver to sg_ring.
-> 
-> Slightly non-trivial conversion, will need testing.
-
-As I said, I don't think that converting SCSI drivers to sg_ring (with
-lots of non-trivial work) provides any benefits. Surely, sg_ring
-enables us to modify sg lists but SCSI drivers don't need the
-feature. What SCSI drivers needs is just a efficient way to get the
-next sg entry (they use 'sg++' in the past and sg_next now).
+Best Regards,
+Huang Ying
