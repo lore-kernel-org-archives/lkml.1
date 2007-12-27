@@ -1,99 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbXL0GFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752372AbXL0Gr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbXL0GFP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 01:05:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbXL0GFE
+	id S1752372AbXL0Gr2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 01:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbXL0GrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 01:05:04 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:57050 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750795AbXL0GFD (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 01:05:03 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, tpmdd-devel@lists.sourceforge.net
-Subject: 2.6.24-rc6-mm1 - drivers/char/tpm/tpm_bios.c oddness?
-In-Reply-To: Your message of "Sat, 22 Dec 2007 23:30:56 PST."
-             <20071222233056.d652743e.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20071222233056.d652743e.akpm@linux-foundation.org>
+	Thu, 27 Dec 2007 01:47:20 -0500
+Received: from mga01.intel.com ([192.55.52.88]:34743 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833AbXL0GrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 01:47:19 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,210,1196668800"; 
+   d="scan'208";a="464687360"
+Subject: [PATCH linux-acpi] Fix /proc/acpi/alarm set error
+From: Yi Yang <yi.y.yang@intel.com>
+Reply-To: yi.y.yang@intel.com
+To: linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, lenb@kernel.org,
+       acpi-bugzilla@lists.sourceforge.net
+Content-Type: text/plain
+Organization: Intel
+Date: Thu, 27 Dec 2007 14:47:02 +0800
+Message-Id: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1198735493_11278P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Date: Thu, 27 Dec 2007 01:04:53 -0500
-Message-ID: <14152.1198735493@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1198735493_11278P
-Content-Type: text/plain; charset="UTF-8"
-Content-Id: <14139.1198735485.1@turing-police.cc.vt.edu>
-Content-Transfer-Encoding: quoted-printable
+/proc/acpi/alarm can't be set correctly, here is a sample:
 
-On Sat, 22 Dec 2007 23:30:56 PST, Andrew Morton said:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6=
-/2.6.24-rc6-mm1/
+[root@localhost /]# echo "2006 09" > /proc/acpi/alarm
+[root@localhost /]# cat /proc/acpi/alarm
+2007-12-09 09:09:09
+[root@localhost /]# echo "2006 04" > /proc/acpi/alarm
+[root@localhost /]# cat /proc/acpi/alarm
+2007-12-04 04:04:04
+[root@localhost /]#
 
-Looks like an uninitialized variable dereference for SEPARATOR events:
+Obviously, it is wrong, it should consider it as an invalid input.
 
-# mount -t securityfs none /sys/kernel/security/
-# ls /sys/kernel/security/
-tpm0
-# l /sys/kernel/security/tpm0/
-total 0
-0 -r--r----- 1 root root 0 2007-12-26 23:28 ascii_bios_measurements
-0 -r--r----- 1 root root 0 2007-12-26 23:28 binary_bios_measurements
-# cat /sys/kernel/security/tpm0/ascii_bios_measurements =
+This patch'll fix this issue, after applying this patch, the result is:
 
- 0 0000000000000000000000000000000000000000 07 [S-CRTM Contents]
- 0 0000000000000000000000000000000000000000 07 [S-CRTM Contents]
- 0 0000000000000000000000000000000000000000 07 [S-CRTM Contents]
- 0 0000000000000000000000000000000000000000 07 [S-CRTM Contents]
- 4 c1e25c3f6b0dc78d57296aa2870ca6f782ccf80f 05 [Calling INT 19h]
- 0 85e53271e14006f0265921d02d4d736cdc580b0b 04 [=C3=BF]
- 1 85e53271e14006f0265921d02d4d736cdc580b0b 04 [=C3=BF]
- 2 85e53271e14006f0265921d02d4d736cdc580b0b 04 [=C3=BF]
- 3 85e53271e14006f0265921d02d4d736cdc580b0b 04 [=C3=BF]
- 4 85e53271e14006f0265921d02d4d736cdc580b0b 04 [=C3=BF]
- 5 85e53271e14006f0265921d02d4d736cdc580b0b 04 [=C3=BF]
- 6 85e53271e14006f0265921d02d4d736cdc580b0b 04 [=C3=BF]
- 7 85e53271e14006f0265921d02d4d736cdc580b0b 04 [=C3=BF]
- 4 38f30a0a967fcf2bfee1e3b2971de540115048c8 05 [Returned INT 19h]
- 4 f9d3a33e4ba6109fb60e8df6ec0f10330733c8b2 0c [Compact Hash]
- 5 9bd5c812613f67ce1c75d0ea48b9933a547683cb 0c [Compact Hash]
+[root@localhost /]# echo "2008 09" > /proc/acpi/alarm
+-bash: echo: write error: Invalid argument
+[root@localhost /]#
 
-Looks like the problem is likely in get_event_name:
-
-        case NONHOST_INFO:
-                name =3D tcpa_event_type_strings[event->event_type];
-                n_len =3D strlen(name);
-                break;
-        case SEPARATOR:
-        case ACTION:
-                if (MAX_TEXT_EVENT > event->event_size) {
-                        name =3D event_entry;
-                        n_len =3D event->event_size;
-                }
-                break;
-
-Should there be a 'break;' after the SEPARATOR line?  Given the name, it
-probably doesn't have a name/length pair attached to an event, right?
+Signed-off by Yi Yang <yi.y.yang@intel.com>
+ 
+diff --git a/drivers/acpi/sleep/proc.c b/drivers/acpi/sleep/proc.c
+index 1538355..fce78fb 100644
+--- a/drivers/acpi/sleep/proc.c
++++ b/drivers/acpi/sleep/proc.c
+@@ -178,6 +178,9 @@ static int get_date_field(char **p, u32 * value)
+ 	 * Try to find delimeter, only to insert null.  The end of the
+ 	 * string won't have one, but is still valid.
+ 	 */
++	if (*p == NULL)
++		return result;
++
+ 	next = strpbrk(*p, "- :");
+ 	if (next)
+ 		*next++ = '\0';
+@@ -190,6 +193,8 @@ static int get_date_field(char **p, u32 * value)
+ 
+ 	if (next)
+ 		*p = next;
++	else
++		*p = NULL;
+ 
+ 	return result;
+ }
 
 
-
---==_Exmh_1198735493_11278P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHc0CFcC3lWbTT17ARAhiTAKDGb73umGgJ98bM86OBzK8YGlGNlgCgxF+N
-aK5zXa3YNamnYoDSv32x0WY=
-=YIDV
------END PGP SIGNATURE-----
-
---==_Exmh_1198735493_11278P--
