@@ -1,97 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606AbXL0Kog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752001AbXL0Kx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753606AbXL0Kog (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 05:44:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbXL0Ko2
+	id S1752001AbXL0Kx3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 05:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbXL0KxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 05:44:28 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2854 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751423AbXL0Ko2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 05:44:28 -0500
-Date: Thu, 27 Dec 2007 10:44:14 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, Andrew Lutomirski <luto@myrealbox.com>,
-       David Newall <david@davidnewall.com>,
-       John Reiser <jreiser@bitwagon.com>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org, security@kernel.org
-Subject: Re: /dev/urandom uses uninit bytes, leaks user data
-Message-ID: <20071227104414.GB5353@ucw.cz>
-References: <47632010.6030709@BitWagon.com> <20071215043208.GF17344@thunk.org> <4766A40D.4080804@BitWagon.com> <20071217173623.GC7070@thunk.org> <476719E5.1010505@myrealbox.com> <20071218030533.GN7070@thunk.org> <47673AD8.9010702@davidnewall.com> <20071218034656.GR7070@thunk.org> <cb0375e10712192018l66671b34r1680077765e89fb0@mail.gmail.com> <20071220203601.GI27081@thunk.org>
+	Thu, 27 Dec 2007 05:53:20 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:58180 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750985AbXL0KxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 05:53:19 -0500
+Date: Thu, 27 Dec 2007 11:53:15 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: "raki john" <raki4652@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Order of Loading mmc driver modules.
+Message-ID: <20071227115315.460d8827@poseidon.drzeus.cx>
+In-Reply-To: <d2a348dd0712261040w402d6390o1b4f2abd83959c86@mail.gmail.com>
+References: <d2a348dd0712261040w402d6390o1b4f2abd83959c86@mail.gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071220203601.GI27081@thunk.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-24618-1198752797-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2007-12-20 15:36:01, Theodore Tso wrote:
-> On Wed, Dec 19, 2007 at 11:18:54PM -0500, Andrew Lutomirski wrote:
-> > I understand that there's no way that /dev/random can provide good
-> > output if there's insufficient entropy.  But it still shouldn't leak
-> > arbitrary bits of user data that were never meant to be put into the
-> > pool at all.
-> 
-> Let's be clear here.  It's not arbitrary bits of user data.  It's at
-> most three bytes of kernel stack garbage from the process which is
-> adding entropy to /dev/random from userspace.  And the attacker
-> doesn't get to pick which 3 bytes they are, either!  That means they
-> are not "arbitrary bits".
-> 
-> > (My hypothetical attack is a lot hypothetical than I thought at first.
-> >  An attacker does not need to break into the kernel and steal the
-> > state of the pool.  It may be as easy as this to trigger:
-> > 
-> > Step 1: Boot a system without a usable entropy source.
-> > Step 2: add some (predictable) "entropy" from userspace which isn't a
-> > multiple of 4, so up to three extra bytes get added.
-> > Step 3: Read a few bytes of /dev/random and send them over the network.
-> 
-> So Step 1 assumes a system without a random seed file, or any usable
-> entropy source.  As I've mentioned, this means that any cryptographic
-> users of /dev/random --- like, say, openssh daemon --- are in deep,
-> DEEP, trouble.  This is a very serious problem, and in my opinion, far
-> more serious and far more REAL that your hypothetical attack.  So we
-> need to address Step 1 anyway, and more urgently.
-> 
-> In step 2, what program are you expecting will be writing to
-> /dev/random?  Very few programs do so today, and none that are
-> commonly installed on most Linux distributions, other than the dd
-> program run out of /etc/init.d/random to initialize /dev/random from
-> the random seed file.  But, oh wait --- you're assuming that doesn't
-> exist, even though all major distributions have it.
-> 
-> Why would a legitimate program read a few bytes of /dev/random and
-> send them on the network in step 3?  Or are you assuming your
-> hypothetical attacker has a shell account on the system?  In which
-> case there is probably far more concerns about information leakage
-> than 3 bytes of kernel stack garbage, which might or might not contain
-> user data.
-> 
-> And note that this attack can only be done for 3 bytes.  After that,
-> the work factors involved become intractable.
-> 
-> So yes, there is a theoretical hole given your assumptions, but the
-> problem started the "system without any intial entropy", and there are
-> far worse problems that result in that case.  So that is the problem
-> we should be addressing.
-> 
-> That being said, write_pool() is hardly a fastpath, and the memset
-> isn't going to make any difference.  So if it makes people feel
-> better, I don't object to adding it.  I'm just pointing out that the
-> assumption is either pretty silly (since all of the distributions do
-> use the random seed file, and in practice *someone* has logged into
-> the console to add some amount of entropy at some point in the
-> machine's lifetime, even it if was when the machine was initially
-> installed) and/or points out a more critical issue, which is we need
-> to make sure that we do have a reasonable entropy source on all
-> machines.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Lets memset. It is not a fastpath, and code will be more obvious that
-way.
+--=_hera.drzeus.cx-24618-1198752797-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Wed, 26 Dec 2007 10:40:22 -0800
+"raki john" <raki4652@gmail.com> wrote:
+
+> Hi All,
+>=20
+> I am working with pxamci driver(2.6.22.1). I have made , core and host
+> as  separate modules.
+>=20
+> what is the correct order of loading the modules
+>=20
+> i am doing in this order first core (mmc_core.ko), then card(mmc_block.ko)
+> after that host driver ( pxamci.ko). Is this correct.
+>=20
+
+If you're using just insmod, then yes, this is a valid order. The only thin=
+g that is crucial is that mmc_core is loaded before any of the other. If yo=
+u use modprobe that will happen automatically.
+
+> I do not know much about Linux device model.
+>=20
+
+There's lots of info on the web and in the Documentation/ directory of the =
+kernel source if you want to indulge yourself.
+
+> i saw that pxamci.ko driver registers it self as platform_driver. When
+> does its probe function is called. Is it called immediately  after
+> platform_driver_register(&pxamci_driver) is called.
+>=20
+
+For pxamci, yes. More specifically, the probe function is called when there=
+ is both a driver (created by platform_driver_register()) and a device (pla=
+tform_device_register()) available. But since the device is added very earl=
+y in the pxamci case, the magic will happen when the driver registers.
+
+> also in card driver (mmc_block.ko) in block.c  file i saw a probe
+> function(mmc_blk_probe). How does it is invoked .
+>=20
+
+When the corresponding device is registered. In this case it is whenever a =
+card is detected and initialized.
+
+Rgds
+Pierre
+
+--=_hera.drzeus.cx-24618-1198752797-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+
+iEYEARECAAYFAkdzhBsACgkQ7b8eESbyJLjsxwCeLFtgpI9DGwKRQdUwmVScFGLr
+20gAnReIUctTmRw1MYeO4L4REZPPaf30
+=7CO1
+-----END PGP SIGNATURE-----
+
+--=_hera.drzeus.cx-24618-1198752797-0001-2--
