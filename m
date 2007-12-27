@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbXL0WUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbXL0WVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473AbXL0WUy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 17:20:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbXL0WUq
+	id S1754640AbXL0WVW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 17:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbXL0WVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 17:20:46 -0500
-Received: from pip10.gyao.ne.jp ([61.122.117.248]:17300 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752828AbXL0WUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 17:20:45 -0500
-Date: Fri, 28 Dec 2007 07:20:15 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-sh <linux-sh@vger.kernel.org>
-Subject: Re: [PATCH] SH/Dreamcast - add support for GD-Rom device
-Message-ID: <20071227222015.GA26382@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	linux-sh <linux-sh@vger.kernel.org>
-References: <1198774339.6170.11.camel@localhost.localdomain>
+	Thu, 27 Dec 2007 17:21:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44318 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753380AbXL0WVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 17:21:11 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Subject: Re: [RFC][PATCH 0/7] Fix the ACPI 1.0 vs ACPI 2.0 suspend ordering issue
+Date: Thu, 27 Dec 2007 23:40:41 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       "Moore, Robert" <robert.moore@intel.com>
+References: <200712271903.53961.rjw@sisk.pl> <200712271808.26995.carlos@strangeworlds.co.uk>
+In-Reply-To: <200712271808.26995.carlos@strangeworlds.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1198774339.6170.11.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200712272340.42866.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 27, 2007 at 04:52:19PM +0000, Adrian McMenamin wrote:
-> This patch adds support for the CD-Rom drive on the SEGA Dreamcast.
+On Thursday, 27 of December 2007, Carlos Corbacho wrote:
+> On Thursday 27 December 2007 18:03:52 Rafael J. Wysocki wrote:
+> > Please review (and test, if possible).
 > 
-> The SEGA Dreamcast has a built in CD-Rom drive, electrically similar
-> to an ATA-3 drive, but implementing a proprietary packet interface -
-> the so-called Sega Packet Interface (SPI)- and also supporting a
-> proprietary format of disk - the Giga Disk Rom, with a 1GB capacity.
-> The drive is know as the "GD-Rom drive".
+> Suspend now works properly here with this patch set.
 > 
-> This patch partially implements the SPI and also supports reading GD
-> Rom disks. Unlike previous GD Rom drivers (which were never in the
-> mainline), this driver implements DMA and not PIO for reads. It is a
-> new driver, not a modified version of previous drivers.
-> 
-> This is the fifth iteration of this patch - which should work with
-> both 2.6-24-rc5 and Paul Mundt's 2.6.25 queue.
-> 
-> Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
-> 
-Looks fine to me. Thanks for cleaning it up, Adrian.
+> Tested-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+
+Thanks a lot for testing!
+
+Greetings,
+Rafael
