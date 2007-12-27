@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbXL0DYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbXL0Do2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbXL0DYz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Dec 2007 22:24:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbXL0DYr
+	id S1753180AbXL0Do2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Dec 2007 22:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbXL0DoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Dec 2007 22:24:47 -0500
-Received: from mail.tmr.com ([64.65.253.246]:33871 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751767AbXL0DYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Dec 2007 22:24:46 -0500
-Message-ID: <47731FCA.9090201@tmr.com>
-Date: Wed, 26 Dec 2007 22:45:14 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Wed, 26 Dec 2007 22:44:19 -0500
+Received: from sitemail2.everyone.net ([216.200.145.36]:36254 "EHLO
+	omta16.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751758AbXL0DoS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Dec 2007 22:44:18 -0500
+X-Eon-Dm: dm02
+X-Eon-Sig: AQF97PZHcx93YMh4SQIAAAAB,f0b55b81ae1802026ff2440035469c9c
+Message-ID: <47731F6F.9090000@smsglobal.net>
+Date: Thu, 27 Dec 2007 11:43:43 +0800
+From: "Rogelio M. Serrano Jr." <rogelio@smsglobal.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: More verizon problems
-References: <200712231430.50493.gene.heskett@gmail.com>
-In-Reply-To: <200712231430.50493.gene.heskett@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: RFC: permit link(2)  to work across --bind mounts ?
+References: <47684DBD.6030502@rtr.ca>
+In-Reply-To: <47684DBD.6030502@rtr.ca>
+X-Enigmail-Version: 0.95.3
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig215D2D22937D82BB2F33AEC4"
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> Resend, with more odd data from fetchmail.log appended.
-> 
-> Just for a heads up, for about the last 8 hours, verizon, my ISP, has been 
-> inserting themselves into the path between my gmail account and my local 
-> fetchmail of this email subcription at pop.gmail.com.
-> 
-> Worse yet they are bouncing the messages in a way that makes it look as if I
-> sent them when they in fact originated at vger.kernel.org.  Somehow they have 
-> convinced themselves that any mailing list this busy must be spam and is to be 
-> bounced.  Either that or they, verizon, since they sleep with M$, have taken a 
-> large under the table payment to screw with linux in any way they can.  It 
-> bears investigating.
-> 
-> I called just now and screamed bloody murder at tech support, and in about 15 
-> minutes I started getting the list again, BUT they are still in the path 
-> between vger and my fetchmail daemon as shown below.
-> 
-> Or at least that is how I am interpreting the incoming headers, which now look 
-> like this by the time they hit my inbox but with my SA headers clipped:
-> -----------------------
-> Received: from incoming.verizon.net [206.46.232.10]
->         by coyote.coyote.den with POP3 (fetchmail-6.3.6)
->         for <gene@localhost> (single-drop); Thu, 20 Dec 2007 21:10:08 -0500 
-> (EST)
->  Received: from mailbag1.bizmailsrvcs.net ([172.18.12.131])
->  by vms051.mailsrvcs.net
->  (Sun Java System Messaging Server 6.2-6.01 (built Apr  3 2006))
->  with ESMTP id <0JTD00L5XN9KBGD0@vms051.mailsrvcs.net> for
->  gene.heskett@verizon.net; Thu, 20 Dec 2007 20:08:11 -0600 (CST)
->  Received: from [64.233.162.238] (port=3333 helo=nz-out-0506.google.com)
->  by mailbag1.bizmailsrvcs.net with esmtp (Exim 4.68)
->  (envelope-from <gene.heskett+caf_=gene.heskett=verizononline.net@gmail.com>)
->  id 1J5XG9-00052G-Du    for gene.heskett@verizononline.net; Thu,
->  20 Dec 2007 20:05:09 -0600
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig215D2D22937D82BB2F33AEC4
+Content-Type: multipart/mixed;
+ boundary="------------070609060805060707050000"
 
-Right here I see that google forwarded your mail from their (google) 
-server sending to the bizmailsrvcs.net (verizon) server, and VZ didn't 
-jump in the path, google put them there.
+This is a multi-part message in MIME format.
+--------------070609060805060707050000
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
->  Received: by nz-out-0506.google.com with SMTP id x7so90741nzc.3 for
->  <gene.heskett@verizononline.net>; Thu, 20 Dec 2007 18:08:08 -0800 (PST)
+Mark Lord wrote:
+> Why does link(2) not support hard-linking across bind mount points
+> of the same underlying filesystem ?
+do we need link(2) at all? bind mounts are supposed to be (hard/soft)
+link minus the headaches.
 
-Most likely cause is that you forwarded mail from google to verizon, 
-which is probably a bad thing on many levels.
+--=20
+Democracy is about two wolves and a sheep deciding what to eat for dinner=
+=2E
 
-Not Verizon's fault.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+--------------070609060805060707050000
+Content-Type: text/x-vcard; charset=utf-8;
+ name="rogelio.vcf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="rogelio.vcf"
+
+YmVnaW46dmNhcmQNCmZuOlJvZ2VsaW8gTS4gU2VycmFubyBKcg0KbjpNLiBTZXJyYW5vIEpy
+O1JvZ2VsaW8NCm9yZzpTTVNHIENvbW11bmljYXRpb25zIFBoaWxpcHBpbmVzO1RlY2huaWNh
+bCBEZXBhcnRtZW50DQphZHI6Ozs7Ozs7UmVwdWJsaWMgb2YgdGhlIFBoaWxpcHBpbmVzDQpl
+bWFpbDtpbnRlcm5ldDpyb2dlbGlvQHNtc2dsb2JhbC5uZXQNCnRpdGxlOlByb2dyYW1tZXIN
+CnRlbDt3b3JrOis2MzI3NTM0MTQ1DQp0ZWw7aG9tZTorNjMyOTUyNzAyNg0KdGVsO2NlbGw6
+KzYzOTIwOTIwMjI2Nw0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnZlcnNpb246Mi4xDQplbmQ6
+dmNhcmQNCg0K
+--------------070609060805060707050000--
+
+--------------enig215D2D22937D82BB2F33AEC4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHcx92yihxuQOYt8wRAu/oAJ4uCWeeyq8ugjQjp+6nfF3Rf8Pf5wCdHKY6
+CbwIA/CvAHB1IJEXl4jDc3E=
+=a/kX
+-----END PGP SIGNATURE-----
+
+--------------enig215D2D22937D82BB2F33AEC4--
