@@ -1,42 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbXL0S1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbXL0SaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200AbXL0S1x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 13:27:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbXL0S1q
+	id S1754276AbXL0SaY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 13:30:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbXL0SaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 13:27:46 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40712 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752105AbXL0S1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 13:27:45 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/bSrpQSqLbUrMoewM0PfLB9zVOHBmtwB7ipQkZ85
-	oIx7QE6p2UEa99
-Subject: Re: [patch?] s2ram + P4 + tsc = annoyance
-From: Mike Galbraith <efault@gmx.de>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4773EA58.2040605@shaw.ca>
-References: <fa./Gg6lFn4vN7sfhp2nE3LSMDm0q4@ifi.uio.no>
-	 <4773EA58.2040605@shaw.ca>
-Content-Type: text/plain
-Date: Thu, 27 Dec 2007 19:27:43 +0100
-Message-Id: <1198780063.4425.59.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Thu, 27 Dec 2007 13:30:13 -0500
+Received: from wega.rz.tu-ilmenau.de ([141.24.4.159]:37766 "EHLO
+	wega.rz.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752070AbXL0SaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 13:30:11 -0500
+In-Reply-To: <20071226134811.GA9765@gondor.apana.org.au>
+References: <60C7157B-A303-435A-92D3-A6DA1C0CC178@tu-ilmenau.de> <20071226134811.GA9765@gondor.apana.org.au>
+Mime-Version: 1.0 (Apple Message framework v753)
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=pgp-sha1; boundary="Apple-Mail-1--717841425"
+Message-Id: <C1644401-A884-4D06-81D1-2DAC8454E778@tu-ilmenau.de>
+Cc: linux-kernel@vger.kernel.org, michal@logix.cz,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+From: Alexander Eichhorn <alexander.eichhorn@tu-ilmenau.de>
+Subject: Re: OOPS: 2.6.23.11 in PadLock-AES when used in LRW-Mode
+Date: Thu, 27 Dec 2007 19:29:34 +0100
+To: Herbert Xu <herbert@gondor.apana.org.au>
+X-Pgp-Agent: GPGMail 1.1.2 (Tiger)
+X-Mailer: Apple Mail (2.753)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--Apple-Mail-1--717841425
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
 
-On Thu, 2007-12-27 at 12:09 -0600, Robert Hancock wrote:
+Patch Works. Tested with 2.6.23.11 on Via C7 with aes-lrw-benbi and  
+key-size 384 bit. Filesystem was an ext3 (default options) on top of  
+plain partition, Raid-1, and Raid-5.
 
-> Are we missing some logic to resync the TSCs after resume, or something?
+Thanks a lot,
+Alexander
 
-They used to be forcibly synchronized during boot, but it seems that was
-dropped in 2.6.21.
+On 26. Dec 2007, at 14:48 Uhr, Herbert Xu wrote:
+> Please let me know if the following patch fixes the problem for you.
 
-	-Mike
 
+Alexander Eichhorn                          Distr. Systems and  
+Operating Systems Group
+Faculty of Computer Science and Automation  Ilmenau Technical University
+Campus Center, room 433                     phone: +49(0)3677-694557
+http://www-ia.tu-ilmenau.de/~echa           fax:   +49(0)3677-694541
+
+PGP Public Key: http://www-ia.tu-ilmenau.de/~echa/AlexanderEichhorn.asc
+Fingerprint: 9724 37D9 77AD AF99 65B6  E220 F540 E333 C9EC DC4F
+
+
+
+
+--Apple-Mail-1--717841425
+content-type: application/pgp-signature; x-mac-type=70674453;
+	name=PGP.sig
+content-description: This is a digitally signed message part
+content-disposition: inline; filename=PGP.sig
+content-transfer-encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (Darwin)
+
+iEYEARECAAYFAkdz7xIACgkQ9UDjM8ns3E/PIwCeMwPaa3niTE2q3taJw0gEyaOE
+3b0AoIxMrbWmd55ygkzjlFeCUBjFrilV
+=yUDS
+-----END PGP SIGNATURE-----
+
+--Apple-Mail-1--717841425--
