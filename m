@@ -1,76 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752372AbXL0Gr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbXL0Gvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752372AbXL0Gr2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 01:47:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbXL0GrU
+	id S1753149AbXL0Gvz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 01:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbXL0Gvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 01:47:20 -0500
-Received: from mga01.intel.com ([192.55.52.88]:34743 "EHLO mga01.intel.com"
+	Thu, 27 Dec 2007 01:51:48 -0500
+Received: from il.qumranet.com ([82.166.9.18]:56036 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750833AbXL0GrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 01:47:19 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,210,1196668800"; 
-   d="scan'208";a="464687360"
-Subject: [PATCH linux-acpi] Fix /proc/acpi/alarm set error
-From: Yi Yang <yi.y.yang@intel.com>
-Reply-To: yi.y.yang@intel.com
-To: linux-acpi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, lenb@kernel.org,
-       acpi-bugzilla@lists.sourceforge.net
-Content-Type: text/plain
-Organization: Intel
-Date: Thu, 27 Dec 2007 14:47:02 +0800
-Message-Id: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	id S1750949AbXL0Gvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 01:51:47 -0500
+Message-ID: <47734B82.5000805@qumranet.com>
+Date: Thu, 27 Dec 2007 08:51:46 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: Re: [PATCH 00/55] KVM patch queue review for 2.6.25 merge window
+ (part II)
+References: <1198667160-22953-1-git-send-email-avi@qumranet.com> <20071226204752.GA3383@uranus.ravnborg.org>
+In-Reply-To: <20071226204752.GA3383@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/proc/acpi/alarm can't be set correctly, here is a sample:
+Sam Ravnborg wrote:
+> On Wed, Dec 26, 2007 at 01:05:05PM +0200, Avi Kivity wrote:
+>   
+>> The second 2.6.25 kvm patch series, for your review.  Three more to go.
+>>     
+>
+> Hi Avi.
+>
+> A diffstat in your introduction mail would be nice so one does not
+> have to check 50+ patches to see if it touches any file I can give
+> feedback on.
+>
+>   
 
-[root@localhost /]# echo "2006 09" > /proc/acpi/alarm
-[root@localhost /]# cat /proc/acpi/alarm
-2007-12-09 09:09:09
-[root@localhost /]# echo "2006 04" > /proc/acpi/alarm
-[root@localhost /]# cat /proc/acpi/alarm
-2007-12-04 04:04:04
-[root@localhost /]#
+Right, sorry for not including it originally:
 
-Obviously, it is wrong, it should consider it as an invalid input.
+(this is the diffstat for the entire patchset, not just this batch)
 
-This patch'll fix this issue, after applying this patch, the result is:
+ arch/x86/Kconfig                                   |    6 +
+ arch/x86/Makefile                                  |    2 +
+ {drivers => arch/x86}/kvm/Kconfig                  |    4 +-
+ {drivers => arch/x86}/kvm/Makefile                 |    6 +-
+ {drivers => arch/x86}/kvm/i8259.c                  |    8 +-
+ {drivers => arch/x86}/kvm/irq.c                    |   22 +-
+ arch/x86/kvm/irq.h                                 |   88 +
+ {drivers => arch/x86}/kvm/kvm_svm.h                |    2 +-
+ {drivers => arch/x86}/kvm/lapic.c                  |  141 +-
+ arch/x86/kvm/lapic.h                               |   44 +
+ {drivers => arch/x86}/kvm/mmu.c                    | 1016 ++++--
+ arch/x86/kvm/mmu.h                                 |   44 +
+ {drivers => arch/x86}/kvm/paging_tmpl.h            |  410 +--
+ arch/x86/kvm/segment_descriptor.h                  |   29 +
+ {drivers => arch/x86}/kvm/svm.c                    |  347 +-
+ {drivers => arch/x86}/kvm/svm.h                    |    3 +-
+ {drivers => arch/x86}/kvm/vmx.c                    | 1068 +++---
+ {drivers => arch/x86}/kvm/vmx.h                    |   26 +-
+ drivers/kvm/kvm_main.c => arch/x86/kvm/x86.c       | 4099 
++++++++++-----------
+ arch/x86/kvm/x86_emulate.c                         | 1912 +++++++++
+ drivers/Kconfig                                    |    2 -
+ drivers/Makefile                                   |    1 -
+ drivers/kvm/irq.h                                  |  165 -
+ drivers/kvm/segment_descriptor.h                   |   17 -
+ drivers/kvm/x86_emulate.c                          | 1662 --------
+ include/asm-x86/Kbuild                             |    1 +
+ include/asm-x86/kvm.h                              |  176 +
+ drivers/kvm/kvm.h => include/asm-x86/kvm_host.h    |  530 +--
+ include/asm-x86/kvm_para.h                         |  105 +
+ .../asm-x86/kvm_x86_emulate.h                      |   69 +-
+ include/linux/Kbuild                               |    2 +-
+ include/linux/kvm.h                                |  162 +-
+ include/linux/kvm_host.h                           |  290 ++
+ include/linux/kvm_para.h                           |   80 +-
+ include/linux/kvm_types.h                          |   54 +
+ kernel/fork.c                                      |    1 +
+ {drivers => virt}/kvm/ioapic.c                     |   99 +-
+ virt/kvm/ioapic.h                                  |   95 +
+ virt/kvm/iodev.h                                   |   63 +
+ virt/kvm/kvm_main.c                                | 1393 +++++++
+ 40 files changed, 8139 insertions(+), 6105 deletions(-)
 
-[root@localhost /]# echo "2008 09" > /proc/acpi/alarm
--bash: echo: write error: Invalid argument
-[root@localhost /]#
+As you can see, the {drivers/ -> virt/, arch/x86/} transition dominates 
+the diffstat.  Note that this does not include ia64 support, which is 
+planned for the 2.6.25 merge window and only awaits a bit of paperwork.
 
-Signed-off by Yi Yang <yi.y.yang@intel.com>
- 
-diff --git a/drivers/acpi/sleep/proc.c b/drivers/acpi/sleep/proc.c
-index 1538355..fce78fb 100644
---- a/drivers/acpi/sleep/proc.c
-+++ b/drivers/acpi/sleep/proc.c
-@@ -178,6 +178,9 @@ static int get_date_field(char **p, u32 * value)
- 	 * Try to find delimeter, only to insert null.  The end of the
- 	 * string won't have one, but is still valid.
- 	 */
-+	if (*p == NULL)
-+		return result;
-+
- 	next = strpbrk(*p, "- :");
- 	if (next)
- 		*next++ = '\0';
-@@ -190,6 +193,8 @@ static int get_date_field(char **p, u32 * value)
- 
- 	if (next)
- 		*p = next;
-+	else
-+		*p = NULL;
- 
- 	return result;
- }
+The Kconfig/Makefile changes which are probably most of interest to you 
+should arrive in the last batch.
 
+-- 
+error compiling committee.c: too many arguments to function
 
