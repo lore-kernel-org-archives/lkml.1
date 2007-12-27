@@ -1,94 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753622AbXL0TBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbXL0TCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753622AbXL0TBi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 14:01:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbXL0TBJ
+	id S1754500AbXL0TCA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 14:02:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbXL0TBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 14:01:09 -0500
+	Thu, 27 Dec 2007 14:01:17 -0500
 Received: from ug-out-1314.google.com ([66.249.92.173]:6066 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753526AbXL0TBH (ORCPT
+	with ESMTP id S1753808AbXL0TBP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 14:01:07 -0500
+	Thu, 27 Dec 2007 14:01:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=StAWarG2lfwGAFRei9cGLGNTHcmoTGaARpQ81KCvTlAwuzFm/XHCkrZ/JtWhc5owRo9kiX7Zra1Iv43r7kOLF7uU7/OuYfT77UbZyLoub0skOXEQAgSeYNz1gEkd0C7xtK3G1htEyLIXpBw5g438UYt89ZEPA2Rxgwtd+4sgWAM=
+        b=iWMzw9i+z/WA2EnIQQ1uVIfpO6y+kzDFMig24tjBUxjZPxTG16z9eUdVKGga7klFK2FGtrLOUWIKy2TXCFOlhZX82+bF25FPwXP3z3jJE7en0AoA3Cww7BOZdxXnPSBYNMMU3nc1zsse64TaJcu8UE1RyW2Nde0TrgG1E56PL74=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org, bzolnier@gmail.com
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Thu, 27 Dec 2007 20:12:00 +0100
-Message-Id: <20071227191200.1357.71766.sendpatchset@localhost.localdomain>
+Date: Thu, 27 Dec 2007 20:12:07 +0100
+Message-Id: <20071227191207.1357.24118.sendpatchset@localhost.localdomain>
 In-Reply-To: <20071227191153.1357.63211.sendpatchset@localhost.localdomain>
 References: <20071227191153.1357.63211.sendpatchset@localhost.localdomain>
-Subject: [PATCH 1/9] piix: remove stale comments
+Subject: [PATCH 2/9] ide: fix ide_intr() for non-PCI devices and CONFIG_BLK_DEV_IDEPCI=y
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+'hwif->pci_dev && !hwif->pci_dev->vendor' condition is never true,
+check for 'hwif->chipset != ide_pci' instead.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/pci/piix.c |   47 +----------------------------------------------
- 1 file changed, 1 insertion(+), 46 deletions(-)
+ drivers/ide/ide-io.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: b/drivers/ide/pci/piix.c
+Index: b/drivers/ide/ide-io.c
 ===================================================================
---- a/drivers/ide/pci/piix.c
-+++ b/drivers/ide/pci/piix.c
-@@ -8,53 +8,8 @@
-  *
-  *  May be copied or modified under the terms of the GNU General Public License
-  *
-- *  PIO mode setting function for Intel chipsets.
-- *  For use instead of BIOS settings.
-+ * Documentation:
-  *
-- * 40-41
-- * 42-43
-- * 
-- *                 41
-- *                 43
-- *
-- * | PIO 0       | c0 | 80 | 0 |
-- * | PIO 2 | SW2 | d0 | 90 | 4 |
-- * | PIO 3 | MW1 | e1 | a1 | 9 |
-- * | PIO 4 | MW2 | e3 | a3 | b |
-- *
-- * sitre = word40 & 0x4000; primary
-- * sitre = word42 & 0x4000; secondary
-- *
-- * 44 8421|8421    hdd|hdb
-- *
-- * 48 8421         hdd|hdc|hdb|hda udma enabled
-- *
-- *    0001         hda
-- *    0010         hdb
-- *    0100         hdc
-- *    1000         hdd
-- *
-- * 4a 84|21        hdb|hda
-- * 4b 84|21        hdd|hdc
-- *
-- *    ata-33/82371AB
-- *    ata-33/82371EB
-- *    ata-33/82801AB            ata-66/82801AA
-- *    00|00 udma 0              00|00 reserved
-- *    01|01 udma 1              01|01 udma 3
-- *    10|10 udma 2              10|10 udma 4
-- *    11|11 reserved            11|11 reserved
-- *
-- * 54 8421|8421    ata66 drive|ata66 enable
-- *
-- * pci_read_config_word(HWIF(drive)->pci_dev, 0x40, &reg40);
-- * pci_read_config_word(HWIF(drive)->pci_dev, 0x42, &reg42);
-- * pci_read_config_word(HWIF(drive)->pci_dev, 0x44, &reg44);
-- * pci_read_config_byte(HWIF(drive)->pci_dev, 0x48, &reg48);
-- * pci_read_config_word(HWIF(drive)->pci_dev, 0x4a, &reg4a);
-- * pci_read_config_byte(HWIF(drive)->pci_dev, 0x54, &reg54);
-- *
-- * Documentation
-  *	Publically available from Intel web site. Errata documentation
-  * is also publically available. As an aide to anyone hacking on this
-  * driver the list of errata that are relevant is below.going back to
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -1487,7 +1487,7 @@ irqreturn_t ide_intr (int irq, void *dev
+ 		 * remove all the ifdef PCI crap
+ 		 */
+ #ifdef CONFIG_BLK_DEV_IDEPCI
+-		if (hwif->pci_dev && !hwif->pci_dev->vendor)
++		if (hwif->chipset != ide_pci)
+ #endif	/* CONFIG_BLK_DEV_IDEPCI */
+ 		{
+ 			/*
