@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbXL0U2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbXL0Uyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752575AbXL0U2a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 15:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXL0U2X
+	id S1753850AbXL0Uyf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 15:54:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbXL0UyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 15:28:23 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:35251 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752322AbXL0U2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 15:28:22 -0500
-Date: Thu, 27 Dec 2007 12:28:14 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       Willy Tarreau <w@1wt.eu>, Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: SLUB sysfs support
-In-Reply-To: <Pine.LNX.4.64.0712262149000.19009@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0712271222190.31582@schroedinger.engr.sgi.com>
-References: <20071222192550.GD28891@thunk.org>
- <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org>
- <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com>
- <20071223051241.GA4449@1wt.eu> <20071223141500.GB6430@one.firstfloor.org>
- <20071224034530.GB16658@thunk.org> <Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com>
- <20071224233701.GB9784@kernel.org> <Pine.LNX.4.64.0712261330030.16904@schroedinger.engr.sgi.com>
- <20071226221631.GD27894@ZenIV.linux.org.uk>
- <Pine.LNX.4.64.0712262149000.19009@schroedinger.engr.sgi.com>
+	Thu, 27 Dec 2007 15:54:24 -0500
+Received: from mu-out-0910.google.com ([209.85.134.191]:54780 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbXL0UyX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 15:54:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=PCD0B9B4lM51rhH6j1ixxN2BJNWUUmrOjN5/fzfIsa+Bj5jyjOT/CYKRLrrFLpfV6M3oAWV9riMxizx/rUACpIRFdkvJ51nNcLWR//bmEn3r28MwfDrWZEgCVGb8QZr6yRHEUkO0sVrnqLS+/Sir2v2bBwLsXyXP6u4kslTm0oc=
+Message-ID: <477410F9.5030903@gmail.com>
+Date: Thu, 27 Dec 2007 21:54:17 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Adrian Bunk <bunk@kernel.org>
+CC: Michael Tokarev <mjt@tls.msk.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] mxser, remove it
+References: <1198762722-3222-1-git-send-email-jirislaby@gmail.com> <4773C283.5070408@msgid.tls.msk.ru> <20071227172101.GA18199@does.not.exist>
+In-Reply-To: <20071227172101.GA18199@does.not.exist>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hmmm.. If I separately allocate the kobject then I can no longer get to 
-the kmem_cache structure from the kobject. 
+On 12/27/2007 06:21 PM, Adrian Bunk wrote:
+> On Thu, Dec 27, 2007 at 06:19:31PM +0300, Michael Tokarev wrote:
+>> Jiri Slaby wrote:
+>>> (Old) mxser is obsoleted by mxser_new and scheduled for removal on Dec 2007.
+>>> Remove it.
+>>>
+>>> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+>>> ---
+>>>  Documentation/feature-removal-schedule.txt |    8 -
+>>>  drivers/char/Kconfig                       |   11 -
+>>>  drivers/char/Makefile                      |    1 -
+>>>  drivers/char/mxser.c                       | 3141 ----------------------------
+>>>  drivers/char/mxser.h                       |  441 ----
+>>>  5 files changed, 0 insertions(+), 3602 deletions(-)
+>>>  delete mode 100644 drivers/char/mxser.c
+>>>  delete mode 100644 drivers/char/mxser.h
+>> While we're at it, how about adding a modalias for mxser_new
+>> module with old (being removed) name, so that users who're
+>> using the old module will not scream?  I mean, in order for
+>> `modprobe mxser' to load mxser_new module.
+> 
+> It might even make sense to rename the mxser_new module to mxser and do 
+> it the other way round - it's e.g. not clear whether a _new driver is 
+> for new hardware or a new driver for old hardware.
 
-I need to add a second kobject_del to sysfs_slab_remove() to make sysfs 
-completely forget about the object?
+Makes sense, if no other suggestions, I will post v2 tomorrow.
 
-Probably should track down any remaining symlinks at that point and nuke 
-them too. Isnt there some way to convince sysfs to remove the symlinks 
-if the target vanishes?
-
-
-
-
-
+thanks,
+--js
