@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbXL0Skw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbXL0SmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753886AbXL0Skw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 13:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbXL0Skn
+	id S1754165AbXL0SmP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 13:42:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbXL0Sl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 13:40:43 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39170 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752221AbXL0Skm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 13:40:42 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX199ZPh+p2N9UNepoOZY+0KLPH5ewquKkf6hjDQMxG
-	PvyuKRGY6AFPcE
-Subject: Re: [patch?] s2ram + P4 + tsc = annoyance
-From: Mike Galbraith <efault@gmx.de>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1198780063.4425.59.camel@homer.simson.net>
-References: <fa./Gg6lFn4vN7sfhp2nE3LSMDm0q4@ifi.uio.no>
-	 <4773EA58.2040605@shaw.ca>  <1198780063.4425.59.camel@homer.simson.net>
-Content-Type: text/plain
-Date: Thu, 27 Dec 2007 19:40:40 +0100
-Message-Id: <1198780840.4425.61.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Thu, 27 Dec 2007 13:41:57 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:45062 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752330AbXL0Sl4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 13:41:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=vIrfcIWXAoLsJ8809CZUhfDUkuuSXwwkCUV6E9VG/UKCWWMAa4Oxe9fJXlm7q3G/PdDHlDeAtEAjDtpquYcPN+Znm3IBo57qGtXtEogRJlRzeW33tTauVL2NVfQR0kbDbSi1ATPeG5ss9epU9x6nUVFd9Sjk/lLYvS5h3i08MNg=
+Date: Thu, 27 Dec 2007 21:41:45 +0300
+To: Andreas Mohr <andi@lisas.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
+       "Denis V. Lunev" <den@openvz.org>
+Subject: Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
+Message-ID: <20071227184145.GA1831@martell.zuzino.mipt.ru>
+References: <20071119191000.GA1560@elf.ucw.cz> <200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org> <m1hcj8mz1p.fsf_-_@ebiederm.dsl.xmission.com> <1197003097.13978.557.camel@pmac.infradead.org> <20071207022342.806ee4ee.akpm@linux-foundation.org> <20071227174056.GA17350@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071227174056.GA17350@rhlx01.hs-esslingen.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2007-12-27 at 19:27 +0100, Mike Galbraith wrote:
-> On Thu, 2007-12-27 at 12:09 -0600, Robert Hancock wrote:
+On Thu, Dec 27, 2007 at 06:40:56PM +0100, Andreas Mohr wrote:
+> On Fri, Dec 07, 2007 at 02:23:42AM -0800, Andrew Morton wrote:
+> > > (commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416)
+> > > 
+> > > This seems to have broken the use of /proc/bus/usb as a mountpoint. It
+> > > always appears empty now, whatever's supposed to be mounted there.
+> > > 
+> > 
+> > Yes.  Denis and Eric are tossing around competing patches but afaik nobody
+> > is happy with any of them.  Guys, could we get this sorted soonish please?
 > 
-> > Are we missing some logic to resync the TSCs after resume, or something?
-> 
-> They used to be forcibly synchronized during boot, but it seems that was
-> dropped in 2.6.21.
+> "Soonish" being rather earlier than 20071227?
+> 'cause it's still throwing a fit for me on 2.6.24-rc6-mm1(!) (plus hotfix),
+> nothing visible in /proc/bus/usb, thus WLAN driver won't probe
+> anything.
 
-(but out of sync isn't my problem, it's TSC having been reset)
-
+Patch which restores usual behaviour was merged in 2.6.24-rc5
+(3790ee4bd86396558eedd86faac1052cb782e4e1 "proc: remove/Fix proc generic d_revalidate")
+so no hotfixes are needed. I just checked with bind mounting / to
+/proc/bus/usb -- it works.
