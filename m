@@ -1,123 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbXL0SEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbXL0SI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754461AbXL0SEX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 13:04:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXL0SCB
+	id S1754139AbXL0SI2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 13:08:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbXL0SIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 13:02:01 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43432 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753835AbXL0SBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 13:01:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: [RFC][PATCH 6/7] Hibernation: Call _PTS early on ACPI 1.0x systems
-Date: Thu, 27 Dec 2007 19:19:10 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Arjan van de Ven <arjan@infradead.org>,
+	Thu, 27 Dec 2007 13:08:19 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:20989 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752228AbXL0SIS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 13:08:18 -0500
+Date: Thu, 27 Dec 2007 12:07:42 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Suspend code ordering (again)
+In-reply-to: <fa.XycBwhGuyvtVl/QW5HONqLwOags@ifi.uio.no>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       "H. Peter Anvin" <hpa@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       "Moore, Robert" <robert.moore@intel.com>
-References: <200712271903.53961.rjw@sisk.pl>
-In-Reply-To: <200712271903.53961.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712271919.12184.rjw@sisk.pl>
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Message-id: <4773E9EE.40107@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no>
+ <fa.WvaVh83zJOh/eZUrjQOZy4J8JFk@ifi.uio.no>
+ <fa.VsyhBr+FAHB0bTb9poSZS80xN/0@ifi.uio.no>
+ <fa.XycBwhGuyvtVl/QW5HONqLwOags@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Rafael J. Wysocki wrote:
+> On Wednesday, 26 of December 2007, Linus Torvalds wrote:
+>> On Tue, 25 Dec 2007, Rafael J. Wysocki wrote:
+>>> the ACPI specification between versions 1.0x and 2.0.  Namely, while ACPI
+>>> 2.0 and later wants us to put devices into low power states before calling
+>>> _PTS, ACPI 1.0x wants us to do that after calling _PTS.  Since we're following
+>>> the 2.0 and later specifications right now, we're not doing the right thing for
+>>> the (strictly) ACPI 1.0x-compliant systems.
+>>>
+>>> We ought to be able to fix things on the high level, by calling _PTS earlier on
+>>> systems that claim to be ACPI 1.0x-compliant.  That will require us to modify
+>>> the generic susped code quite a bit and will need to be tested for some time.
+>> That's insane. Are you really saying that ACPI wants totally different 
+>> orderings for different versions of the spec?
+> 
+> Yes, I am.
+> 
+>> And does Windows really do that?
+> 
+> I don't know.
+> 
+>> Please don't make lots of modifications to the generic suspend code. The 
+>> only thing that is worth doing is to just have a firmware callback before 
+>> the "device_suspend()" thing (and then on a ACPI-1.0 system, call _PTS 
+>> *there*), and on an ACPI-2.0 system, call _PTS *after* device_suspend().
+> 
+> Yes, that's what I'm going to do, but I need to untangle some ACPI code for
+> this purpose.
+> 
+>> Still, the fact is, some (most, I think) drivers *should* put themselves 
+>> into D3 only in "late_suspend()", so if ACPI-2.0 really expects _PTS to be 
+>> called after that, we're just screwed.
+> 
+> Well, section 9.1.6 of ACPI 2.0 specifies the suspend ordering directly and
+> says exactly that _PTS is to be executed after putting devices into respective
+> D states.
 
-The ACPI 1.0 specification wants us to put devices into low power
-states after executing the _PTS global control methods, while ACPI
-2.0 and later want us to do that in the reverse order.  The current
-hibernation code follows ACPI 2.0 in that respect which may cause some
-ACPI 1.0x systems to hang during hibernation (ref.
-http://bugzilla.kernel.org/show_bug.cgi?id=9528).
+I would not take those sections as gospel, they're really an example 
+only. It's quite possible that Windows does not follow that ordering.
 
-Make the hibernation code execute _PTS before putting devices into low
-power states on ACPI 1.0x systems (i.e. on systems for which the
-revision in the FADT header is lesser than 3).
+Also, as was pointed out, pre-Vista versions of Windows follow ACPI 1.0 
+and Vista follows 3.0, so 2.0 doesn't really matter since BIOS people 
+won't test against it. 1.0 specifies that _PTS is to be called before 
+suspending devices and 3.0 says that the AML must not depend on any 
+specific device power state, so in both cases it should be safe to call 
+_PTS before suspending, no?
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/sleep/main.c |   38 +++++++++++++++++++++++++++-----------
- 1 file changed, 27 insertions(+), 11 deletions(-)
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-Index: linux-2.6/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6/drivers/acpi/sleep/main.c
-@@ -271,21 +271,35 @@ static struct dmi_system_id __initdata a
- static int acpi_hibernation_open(void)
- {
- 	acpi_target_sleep_state = ACPI_STATE_S4;
-+
-+	/* On ACPI 1.0x systems _PTS has to be executed right now. */
-+	if (acpi_gbl_FADT.header.revision < 3) {
-+		int error = acpi_sleep_prepare(ACPI_STATE_S4);
-+
-+		if (error) {
-+			acpi_target_sleep_state = ACPI_STATE_S0;
-+			return error;
-+		}
-+		acpi_sleep_finish_wake_up = true;
-+	}
-+
- 	return 0;
- }
- 
- static int acpi_hibernation_prepare(void)
- {
--	int error;
--
--	error = acpi_sleep_prepare(ACPI_STATE_S4);
--	if (error)
--		return error;
--
--	if (!ACPI_SUCCESS(acpi_hw_disable_all_gpes()))
--		error = -EFAULT;
-+	/* On ACPI 1.0x systems _PTS global is executed earlier. */
-+	if (acpi_gbl_FADT.header.revision >= 3) {
-+		int error = acpi_sleep_prepare(ACPI_STATE_S4);
-+
-+		if (error) {
-+			acpi_target_sleep_state = ACPI_STATE_S0;
-+			return error;
-+		}
-+		acpi_sleep_finish_wake_up = true;
-+	}
- 
--	return error;
-+	return ACPI_SUCCESS(acpi_hw_disable_all_gpes()) ? 0 : -EFAULT;
- }
- 
- static int acpi_hibernation_enter(void)
-@@ -326,15 +340,17 @@ static void acpi_hibernation_finish(void
- 	acpi_set_firmware_waking_vector((acpi_physical_address) 0);
- 
- 	acpi_target_sleep_state = ACPI_STATE_S0;
-+	acpi_sleep_finish_wake_up = false;
- }
- 
- static void acpi_hibernation_close(void)
- {
- 	/*
- 	 * This is necessary in case acpi_hibernation_finish() is not called
--	 * during a failing transition to the sleep state.
-+	 * directly during a failing transition to the sleep state.
- 	 */
--	acpi_target_sleep_state = ACPI_STATE_S0;
-+	if (acpi_sleep_finish_wake_up)
-+		acpi_hibernation_finish();
- }
- 
- static int acpi_hibernation_pre_restore(void)
