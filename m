@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbXL0SmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXL0S5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754165AbXL0SmP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 13:42:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbXL0Sl5
+	id S1753882AbXL0S5o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 13:57:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbXL0S5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 13:41:57 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:45062 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752330AbXL0Sl4 (ORCPT
+	Thu, 27 Dec 2007 13:57:35 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:42249 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187AbXL0S5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 13:41:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=vIrfcIWXAoLsJ8809CZUhfDUkuuSXwwkCUV6E9VG/UKCWWMAa4Oxe9fJXlm7q3G/PdDHlDeAtEAjDtpquYcPN+Znm3IBo57qGtXtEogRJlRzeW33tTauVL2NVfQR0kbDbSi1ATPeG5ss9epU9x6nUVFd9Sjk/lLYvS5h3i08MNg=
-Date: Thu, 27 Dec 2007 21:41:45 +0300
-To: Andreas Mohr <andi@lisas.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
-       "Denis V. Lunev" <den@openvz.org>
-Subject: Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
-Message-ID: <20071227184145.GA1831@martell.zuzino.mipt.ru>
-References: <20071119191000.GA1560@elf.ucw.cz> <200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org> <m1hcj8mz1p.fsf_-_@ebiederm.dsl.xmission.com> <1197003097.13978.557.camel@pmac.infradead.org> <20071207022342.806ee4ee.akpm@linux-foundation.org> <20071227174056.GA17350@rhlx01.hs-esslingen.de>
+	Thu, 27 Dec 2007 13:57:34 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=mx2RpdZzPGf5VT7ijogAuQvvqp46/kzmSHVMjUprer1nG4OoV77mWkKwmel5/vDkC
+	sWJsP+Ahj+1uBQW/qOShQ==
+Message-ID: <3f1a065b0712271057s150b62f8nb11ebc28dc55f811@mail.gmail.com>
+Date: Thu, 27 Dec 2007 10:57:20 -0800
+From: "Russell Leidich" <rml@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] AMD Thermal Interrupt Support
+Cc: linux-kernel@vger.kernel.org, "Andi Kleen" <ak@suse.de>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <20071225140413.e8b4f2cd.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20071227174056.GA17350@rhlx01.hs-esslingen.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+References: <20071217185453.C4597CC562@localhost>
+	 <20071225140413.e8b4f2cd.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 27, 2007 at 06:40:56PM +0100, Andreas Mohr wrote:
-> On Fri, Dec 07, 2007 at 02:23:42AM -0800, Andrew Morton wrote:
-> > > (commit 2b1e300a9dfc3196ccddf6f1d74b91b7af55e416)
-> > > 
-> > > This seems to have broken the use of /proc/bus/usb as a mountpoint. It
-> > > always appears empty now, whatever's supposed to be mounted there.
-> > > 
-> > 
-> > Yes.  Denis and Eric are tossing around competing patches but afaik nobody
-> > is happy with any of them.  Guys, could we get this sorted soonish please?
-> 
-> "Soonish" being rather earlier than 20071227?
-> 'cause it's still throwing a fit for me on 2.6.24-rc6-mm1(!) (plus hotfix),
-> nothing visible in /proc/bus/usb, thus WLAN driver won't probe
-> anything.
+Thanks Andrew.  I have a few questions on your comments...
 
-Patch which restores usual behaviour was merged in 2.6.24-rc5
-(3790ee4bd86396558eedd86faac1052cb782e4e1 "proc: remove/Fix proc generic d_revalidate")
-so no hotfixes are needed. I just checked with bind mounting / to
-/proc/bus/usb -- it works.
+On Dec 25, 2007 2:04 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > +     unsigned int apic_lv_therm;
+> > +
+> > +     /* Set up APIC_LVTTHMR to issue THERMAL_APIC_VECTOR. */
+> > +     apic_lv_therm = apic_read(APIC_LVTTHMR);
+> > +     /*
+> > +      * See if some agent other than this routine has already initialized
+> > +      * APIC_LVTTHMR, i.e. if it's unmasked, but not equal to the value that
+> > +      * we would have programmed, had we been here before on this core.
+> > +      */
+> > +     if ((!(apic_lv_therm & APIC_LVT_MASKED)) && ((apic_lv_therm &
+> > +             (APIC_MODE_MASK | APIC_VECTOR_MASK)) != (APIC_DM_FIXED |
+> > +             THERMAL_APIC_VECTOR))) {
+> > +             unsigned int cpu = smp_processor_id();
+>
+> afaict this function is called while the calling thread is running
+> preemptibly.  This smp_processor_id() call should have generated a runtime
+> warning if it was tested with all debug options enabled?
+
+I thought that the whole point of on_each_cpu(&thermal_apic_init,
+NULL, 1, 0) was to ensure that thermal_apic_init() runs
+(nonpreemptibly) on each core.  No?
+
+> > +static void default_smp_thermal_interrupt(void) {}
+>
+> static void default_smp_thermal_interrupt(void)
+> {
+> }
+>
+> please.
+>
+>
+> Can this function ever actually be called?
+
+My colleauge was concerned that we have a do-nothing handler in case
+we get a spurious thermal interrupt.  In my view, there's no point
+programming for the possibility of broken hardware.  On the other
+hand, I do need some sort of indirection to bind the entry.S thermal
+handler from assembly language to either Intel or AMD C code.  Trouble
+is, at compiletime, we might have both Intel and AMD support
+installed, but only one of them should actually receive the interrupt
+at runtime.  So I think I need to do runtime binding, unless I want to
+do CPUID inside the ISR.  What do you think?
+
+-- 
+Russell Leidich
