@@ -1,143 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbXL0ONg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbXL0OR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753233AbXL0ONg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 09:13:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbXL0ON3
+	id S1752869AbXL0OR2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 09:17:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbXL0ORU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 09:13:29 -0500
-Received: from mx01.ap-wdsl.de ([88.198.184.82]:34991 "EHLO mx01.ap-wdsl.de"
+	Thu, 27 Dec 2007 09:17:20 -0500
+Received: from mail.zelnet.ru ([80.92.97.13]:39884 "EHLO mail.zelnet.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751933AbXL0ON2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 09:13:28 -0500
-X-Greylist: delayed 2494 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Dec 2007 09:13:28 EST
-Subject: [PATCH] leds: Add support for the 3rd LED on the PCEngines WRAP
-From: Michael Loeffler <zvpunry@zvpunry.de>
-To: linux-kernel@vger.kernel.org
-Cc: Richard Purdie <rpurdie@rpsys.net>, Kristian Kielhofner <kris@krisk.org>
-Content-Type: text/plain
-Date: Thu, 27 Dec 2007 14:31:42 +0100
-Message-Id: <1198762302.15874.6.camel@macbook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	id S1751790AbXL0ORU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 09:17:20 -0500
+Message-ID: <4773B3DC.20908@namesys.com>
+Date: Thu, 27 Dec 2007 17:17:00 +0300
+From: Edward Shishkin <edward@namesys.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: joejamesjoyce@aol.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: REISER4: Attention Edward Shishkin (reiser4progs-1.0.6)
+References: <8CA163CDBC4A026-5E4-F8F@WEBMAIL-MC02.sysops.aol.com>
+In-Reply-To: <8CA163CDBC4A026-5E4-F8F@WEBMAIL-MC02.sysops.aol.com>
+X-Enigmail-Version: 0.86.0.0
+X-Enigmail-Supports: pgp-inline, pgp-mime
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 3rd LED on this board is something like a power-led, it is on all the
-time. With this change to the leds-wrap driver it is possible to use this
-LED too.
+joejamesjoyce@aol.com wrote:
 
-Signed-off-by: Michael Loeffler <zvpunry@zvpunry.de>
----
-Hi
+> REISER4: Attention Edward Shishkin (reiser4progs-1.0.6)
+>
+> -------------------------------------------------------------------------
+> -
+>
+> Hi Edward, it has been pointed out that you CHANGED reiser4progs-1.0.6 
+> in your version
+>
+> http://chichkin_i.zelnet.ru/namesys/reiser4progs-1.0.6.tar.gz
+>
+> from the version previously supplied by namesys.com
+>
+> ftp://ftp.namesys.com/pub/reiser4progs/reiser4progs-1.0.6.tar.gz
 
-I wonder why there was no support for this LED. This LED and the GPIO
-line is documented in the first commit message (0d75565f) for this file.
 
-I use this changed version for five weeks and it just works. I think this
-patch can be included in 2.6.25.
+Hmm, but I have found they are synchronized...
 
-bye
+>
+> Does this have any relevance for REISER4 that I should know about?
+>
 
-PS: I'm not subscribed to the lkml, so please Cc me.
+I guess you have downloaded your reiser4progs-1.0.6 before it was
+announced at 14 Mar 2007 ( http://lkml.org/lkml/2007/3/14/446 )
+There is nothing criminal here: the latest version uses more progressive
+compression mode as default one, plus some options got other name.
 
- drivers/leds/leds-wrap.c |   43 +++++++++++++++++++++++++++++++++++++------
- 1 files changed, 37 insertions(+), 6 deletions(-)
+Thanks,
+Edward.
 
-diff --git a/drivers/leds/leds-wrap.c b/drivers/leds/leds-wrap.c
-index 27fb2d8..254e426 100644
---- a/drivers/leds/leds-wrap.c
-+++ b/drivers/leds/leds-wrap.c
-@@ -19,11 +19,21 @@
- #include <linux/scx200_gpio.h>
- 
- #define DRVNAME "wrap-led"
-+#define WRAP_POWER_LED_GPIO	2
- #define WRAP_ERROR_LED_GPIO	3
--#define	WRAP_EXTRA_LED_GPIO	18
-+#define WRAP_EXTRA_LED_GPIO	18
- 
- static struct platform_device *pdev;
- 
-+static void wrap_power_led_set(struct led_classdev *led_cdev,
-+		enum led_brightness value)
-+{
-+	if (value)
-+		scx200_gpio_set_low(WRAP_POWER_LED_GPIO);
-+	else
-+		scx200_gpio_set_high(WRAP_POWER_LED_GPIO);
-+}
-+
- static void wrap_error_led_set(struct led_classdev *led_cdev,
- 		enum led_brightness value)
- {
-@@ -42,6 +52,11 @@ static void wrap_extra_led_set(struct led_classdev *led_cdev,
- 		scx200_gpio_set_high(WRAP_EXTRA_LED_GPIO);
- }
- 
-+static struct led_classdev wrap_power_led = {
-+	.name		= "wrap:power",
-+	.brightness_set	= wrap_power_led_set,
-+};
-+
- static struct led_classdev wrap_error_led = {
- 	.name		= "wrap:error",
- 	.brightness_set	= wrap_error_led_set,
-@@ -56,6 +71,7 @@ static struct led_classdev wrap_extra_led = {
- static int wrap_led_suspend(struct platform_device *dev,
- 		pm_message_t state)
- {
-+	led_classdev_suspend(&wrap_power_led);
- 	led_classdev_suspend(&wrap_error_led);
- 	led_classdev_suspend(&wrap_extra_led);
- 	return 0;
-@@ -63,6 +79,7 @@ static int wrap_led_suspend(struct platform_device *dev,
- 
- static int wrap_led_resume(struct platform_device *dev)
- {
-+	led_classdev_resume(&wrap_power_led);
- 	led_classdev_resume(&wrap_error_led);
- 	led_classdev_resume(&wrap_extra_led);
- 	return 0;
-@@ -76,17 +93,31 @@ static int wrap_led_probe(struct platform_device *pdev)
- {
- 	int ret;
- 
-+	ret = led_classdev_register(&pdev->dev, &wrap_power_led);
-+	if (ret < 0)
-+		return ret;
-+
- 	ret = led_classdev_register(&pdev->dev, &wrap_error_led);
--	if (ret == 0) {
--		ret = led_classdev_register(&pdev->dev, &wrap_extra_led);
--		if (ret < 0)
--			led_classdev_unregister(&wrap_error_led);
--	}
-+	if (ret < 0)
-+		goto err1;
-+
-+	ret = led_classdev_register(&pdev->dev, &wrap_extra_led);
-+	if (ret < 0)
-+		goto err2;
-+
-+	return ret;
-+
-+err2:
-+	led_classdev_unregister(&wrap_error_led);
-+err1:
-+	led_classdev_unregister(&wrap_power_led);
-+
- 	return ret;
- }
- 
- static int wrap_led_remove(struct platform_device *pdev)
- {
-+	led_classdev_unregister(&wrap_power_led);
- 	led_classdev_unregister(&wrap_error_led);
- 	led_classdev_unregister(&wrap_extra_led);
- 	return 0;
--- 
-1.5.3.7.1112.g9758e
-
+> I have included a diff between the two versions.
+>
+> -------------------------------------------------------------------------
+> -
+>
+> diff -pruN reiser4progs-1.0.6-namesys/include/reiser4/plugin.h 
+> reiser4progs-1.0.6-shinkin/include/reiser4/plugin.h
+> --- reiser4progs-1.0.6-namesys/include/reiser4/plugin.h 2006-11-01 
+> 14:50:34.000000000 +0000
+> +++ reiser4progs-1.0.6-shinkin/include/reiser4/plugin.h 2007-02-27 
+> 15:25:16.000000000 +0000
+> @@ -273,11 +273,10 @@ enum reiser4_crypto_id {
+>
+> enum reiser4_compress_mode_id {
+>    CMODE_NONE_ID   = 0x0,
+> -   CMODE_COL8_ID   = 0x1,
+> -   CMODE_COL16_ID  = 0x2,
+> -   CMODE_COL32_ID  = 0x3,
+> +   CMODE_LATTD_ID  = 0x1,
+> +   CMODE_ULTIM_ID  = 0x2,
+> +   CMODE_FORCE_ID  = 0x3,
+>    CMODE_CONVX_ID  = 0x4,
+> -   CMODE_FORCE_ID  = 0x5,
+>    CMODE_LAST_ID
+> };
+>
+> diff -pruN reiser4progs-1.0.6-namesys/libreiser4/factory.c 
+> reiser4progs-1.0.6-shinkin/libreiser4/factory.c
+> --- reiser4progs-1.0.6-namesys/libreiser4/factory.c 2006-11-01 
+> 14:50:34.000000000 +0000
+> +++ reiser4progs-1.0.6-shinkin/libreiser4/factory.c 2007-02-27 
+> 15:40:43.000000000 +0000
+> @@ -269,11 +269,10 @@ errno_t reiser4_factory_init(void) {
+>    __load_plug(gzip1);
+>
+>    __load_plug(nocompress);
+> -   __load_plug(col8);
+> -   __load_plug(col16);
+> -   __load_plug(col32);
+> -   __load_plug(convx);
+> +   __load_plug(lattd);
+> +   __load_plug(ultim);
+>    __load_plug(force);
+> +   __load_plug(convx);
+>
+>    __load_plug(clust64);
+>    __load_plug(clust32);
+> diff -pruN reiser4progs-1.0.6-namesys/libreiser4/profile.c 
+> reiser4progs-1.0.6-shinkin/libreiser4/profile.c
+> --- reiser4progs-1.0.6-namesys/libreiser4/profile.c 2006-11-01 
+> 14:50:34.000000000 +0000
+> +++ reiser4progs-1.0.6-shinkin/libreiser4/profile.c 2007-01-20 
+> 11:08:31.000000000 +0000
+> @@ -145,7 +145,7 @@ reiser4_profile_t defprof = {
+>            .hidden = 0,
+>            .max = CMODE_LAST_ID,
+> #endif
+> -           .id = {CMODE_COL8_ID, 0, CMODE_PLUG_TYPE},
+> +           .id = {CMODE_CONVX_ID, 0, CMODE_PLUG_TYPE},
+>        },
+>        [PROF_CRYPTO] = {
+> #ifndef ENABLE_MINIMAL
+> diff -pruN reiser4progs-1.0.6-namesys/plugin/compress/compress_mode.c 
+> reiser4progs-1.0.6-shinkin/plugin/compress/compress_mode.c
+> --- reiser4progs-1.0.6-namesys/plugin/compress/compress_mode.c  
+> 2006-11-01 14:50:34.000000000 +0000
+> +++ reiser4progs-1.0.6-shinkin/plugin/compress/compress_mode.c  
+> 2007-02-27 15:32:30.000000000 +0000
+> @@ -19,22 +19,22 @@ reiser4_plug_t nocompress_plug = {
+>    .desc  = "'Don't compress' compression mode plugin.",
+> };
+>
+> -reiser4_plug_t col8_plug = {
+> -   .id    = {CMODE_COL8_ID, 0, CMODE_PLUG_TYPE},
+> -   .label = "col8",
+> -   .desc  = "'Check on lattice-8' compression mode plugin.",
+> +reiser4_plug_t lattd_plug = {
+> +   .id    = {CMODE_LATTD_ID, 0, CMODE_PLUG_TYPE},
+> +   .label = "latt",
+> +   .desc  = "'Check on dynamic lattice' compression mode plugin.",
+> };
+>
+> -reiser4_plug_t col16_plug = {
+> -   .id    = {CMODE_COL16_ID, 0, CMODE_PLUG_TYPE},
+> -   .label = "col16",
+> -   .desc  = "'Check on lattice-16' compression mode plugin.",
+> +reiser4_plug_t ultim_plug = {
+> +   .id    = {CMODE_ULTIM_ID, 0, CMODE_PLUG_TYPE},
+> +   .label = "ultim",
+> +   .desc  = "'Check ultimately' compression mode plugin.",
+> };
+>
+> -reiser4_plug_t col32_plug = {
+> -   .id    = {CMODE_COL32_ID, 0, CMODE_PLUG_TYPE},
+> -   .label = "col32",
+> -   .desc  = "'Check on lattice-32' compression mode plugin.",
+> +reiser4_plug_t force_plug = {
+> +   .id    = {CMODE_FORCE_ID, 0, CMODE_PLUG_TYPE},
+> +   .label = "force",
+> +   .desc  = "'Compress evrything' compression mode plugin.",
+> };
+>
+> reiser4_plug_t convx_plug = {
+> @@ -42,11 +42,4 @@ reiser4_plug_t convx_plug = {
+>    .label = "conv",
+>    .desc  = "'Convert to extent' compression mode plugin.",
+> };
+> -
+> -reiser4_plug_t force_plug = {
+> -   .id    = {CMODE_FORCE_ID, 0, CMODE_PLUG_TYPE},
+> -   .label = "force",
+> -   .desc  = "'Compress evrything' compression mode plugin.",
+> -};
+> -
+> #endif
+>
+>
+>
+> ________________________________________________________________________
+> More new features than ever.  Check out the new AOL Mail ! - 
+> http://webmail.aol.com
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+>
+>
 
