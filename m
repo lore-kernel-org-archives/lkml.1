@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbXL1Mwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754402AbXL1MxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbXL1Mwt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 07:52:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbXL1Mwj
+	id S1754402AbXL1MxU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 07:53:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbXL1MxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 07:52:39 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:59534 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752697AbXL1Mwj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 07:52:39 -0500
-Date: Fri, 28 Dec 2007 18:15:32 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: vgoyal@redhat.com, hbabu@us.ibm.com
-Cc: lkml <linux-kernel@vger.kernel.org>, kexec@lists.infradead.org
-Subject: kexec refuses to boot latest -mm
-Message-ID: <20071228124532.GB32643@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+	Fri, 28 Dec 2007 07:53:12 -0500
+Received: from mx2.suse.de ([195.135.220.15]:34779 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752690AbXL1MxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 07:53:11 -0500
+From: Andi Kleen <ak@suse.de>
+To: travis@sgi.com
+Subject: Re: [PATCH 05/10] x86_64: Use generic percpu
+Date: Fri, 28 Dec 2007 13:54:51 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       tglx@linutronix.de, mingo@redhat.com
+References: <20071228001046.854702000@sgi.com> <20071228001047.556634000@sgi.com>
+In-Reply-To: <20071228001047.556634000@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200712281354.52453.ak@suse.de>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+On Friday 28 December 2007 01:10:51 travis@sgi.com wrote:
+> x86_64 provides an optimized way to determine the local per cpu area
+> offset through the pda and determines the base by accessing a remote
+> pda.
 
-I can't seem to get the latest -mm (2.6.24-rc6-mm1) to boot with
-kexec. It just gets stuck at "Starting new kernel".
+And? The rationale for this patch seems to be incomplete.
 
-It does boot normally when booted as the first kernel.
+As far as I can figure out you're replacing an optimized percpu 
+implementation which a dumber generic one. Which needs
+at least some description why.
 
-Any hints debugging? (x86 architecture)
+If the generic one is now as good or better than the 
+specific one that might be ok, but that should be somewhere
+in the description.
 
--- 
-regards,
-Dhaval
+Also for such changes .text size comparisons before/after
+are a good idea.
+
+-Andi
+ 
