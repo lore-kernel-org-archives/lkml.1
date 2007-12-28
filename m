@@ -1,224 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbXL1KME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbXL1Ket@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbXL1KME (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 05:12:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbXL1KLz
+	id S1753345AbXL1Ket (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 05:34:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXL1Kej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 05:11:55 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:44601 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751609AbXL1KLy (ORCPT
+	Fri, 28 Dec 2007 05:34:39 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:45542 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbXL1Kei (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 05:11:54 -0500
-Date: Fri, 28 Dec 2007 15:41:09 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, htejun@gmail.com,
-       gregkh@suse.de, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, maneesh@linux.vnet.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22-stable causes oomkiller to be invoked
-Message-ID: <20071228101109.GB5083@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20071214150533.aa30efd4.akpm@linux-foundation.org> <20071215035200.GA22082@linux.vnet.ibm.com> <20071214220030.325f82b8.akpm@linux-foundation.org> <20071215104434.GA26325@linux.vnet.ibm.com> <20071217045904.GB31386@linux.vnet.ibm.com> <Pine.LNX.4.64.0712171143280.12871@schroedinger.engr.sgi.com> <20071217120720.e078194b.akpm@linux-foundation.org> <Pine.LNX.4.64.0712171222470.29500@schroedinger.engr.sgi.com> <20071221044508.GA11996@linux.vnet.ibm.com> <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
+	Fri, 28 Dec 2007 05:34:38 -0500
+Date: Fri, 28 Dec 2007 13:34:51 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kai Ruhnau <kai@tragetaschen.dyndns.org>, Loic Prylli <loic@myri.com>,
+       Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jeff@garzik.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       gregkh@suse.de, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+	opt-in
+Message-ID: <20071228103451.GA28694@jurassic.park.msu.ru>
+References: <fa.H0fcNl3b6xVBwzWUgT72M4K6KOU@ifi.uio.no> <4773EBB4.2020805@shaw.ca> <alpine.LFD.0.9999.0712271023090.21557@woody.linux-foundation.org> <477414C9.3040906@myri.com> <alpine.LFD.0.9999.0712271328010.21557@woody.linux-foundation.org> <alpine.LFD.0.9999.0712271338280.21557@woody.linux-foundation.org> <47742498.1060900@tragetaschen.dyndns.org> <alpine.LNX.1.00.0712272204520.13593@iabervon.org> <alpine.LFD.0.9999.0712272129290.21557@woody.linux-foundation.org> <alpine.LNX.1.00.0712280036330.13593@iabervon.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="4Ckj6UjgE2iN1+kY"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712271119030.30555@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712261258050.16862@schroedinger.engr.sgi.com>
+In-Reply-To: <alpine.LNX.1.00.0712280036330.13593@iabervon.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Dec 28, 2007 at 01:07:09AM -0500, Daniel Barkalow wrote:
+> So would always using conf1 for the non-extended space (unless the 
+> platform only uses mmconfig), or at least for the first 64 bytes. I'd bet 
+> all the subtle bugs are in the first few words, anyway. (With blatant bugs 
+> in the rest, of course, where we want to blacklist busses and devices)
 
---4Ckj6UjgE2iN1+kY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Yes. Though limiting conf1 to the first 64 bytes is simply not worth
+a pain - we would still have to deal with buses that are unreachable
+via mmconf.
 
-On Thu, Dec 27, 2007 at 11:22:34AM -0800, Christoph Lameter wrote:
-> On Thu, 27 Dec 2007, Dhaval Giani wrote:
-> 
-> > anything specific you are looking for? I still hit the oom.
-> 
-> Weird.... WTH is this? You run an unmodified upstream tree? Can you add a 
-> printk in quicklist_trim that shows
-> 
+Always using legacy configuration mechanism for the legacy config space
+and extended mechanism (mmconf) for the extended config space is a simple
+and very logical approach. It's supposed to resolve *all* known mmconf
+problems. And it still allows per-device quirks (tweaking dev->cfg_size).
+And it does *remove* code, not add anything new/untested.
 
-Hi,
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 
-I am running 2.6.24-rc5-mm1 here.
+Ivan.
 
-> A) that it is called
-> 
-> B) what the control values q->nr_pages and min_pages are?
-> 
+ arch/x86/pci/mmconfig-shared.c |   35 -----------------------------------
+ arch/x86/pci/mmconfig_32.c     |   22 +++++++++-------------
+ arch/x86/pci/mmconfig_64.c     |   22 ++++++++++------------
+ arch/x86/pci/pci.h             |    7 -------
+ 4 files changed, 19 insertions(+), 67 deletions(-)
 
-Trying to print these using printks renders the system unbootable. With
-help from RAS folks around me, managed to get a systemtap script, 
-
-probe kernel.statement("quicklist_trim@mm/quicklist.c:56")
-{
-        printf(" q->nr_pages is %d, min_pages is %d ----> %s\n",
-$q->nr_pages, $$
-min_pages, execname());
-}
-
-we managed to get your required information. Last 10,000 lines are
-attached (The uncompressed file comes to 500 kb).
-
-Hope it helps.
-
-Thanks,
--- 
-regards,
-Dhaval
-
---4Ckj6UjgE2iN1+kY
-Content-Type: application/x-bzip2
-Content-Disposition: attachment; filename="systp.out.1.bz2"
-Content-Transfer-Encoding: base64
-
-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
-
---4Ckj6UjgE2iN1+kY--
+diff --git a/arch/x86/pci/mmconfig-shared.c b/arch/x86/pci/mmconfig-shared.c
+index 4df637e..6b521d3 100644
+--- a/arch/x86/pci/mmconfig-shared.c
++++ b/arch/x86/pci/mmconfig-shared.c
+@@ -22,42 +22,9 @@
+ #define MMCONFIG_APER_MIN	(2 * 1024*1024)
+ #define MMCONFIG_APER_MAX	(256 * 1024*1024)
+ 
+-DECLARE_BITMAP(pci_mmcfg_fallback_slots, 32*PCI_MMCFG_MAX_CHECK_BUS);
+-
+ /* Indicate if the mmcfg resources have been placed into the resource table. */
+ static int __initdata pci_mmcfg_resources_inserted;
+ 
+-/* K8 systems have some devices (typically in the builtin northbridge)
+-   that are only accessible using type1
+-   Normally this can be expressed in the MCFG by not listing them
+-   and assigning suitable _SEGs, but this isn't implemented in some BIOS.
+-   Instead try to discover all devices on bus 0 that are unreachable using MM
+-   and fallback for them. */
+-static void __init unreachable_devices(void)
+-{
+-	int i, bus;
+-	/* Use the max bus number from ACPI here? */
+-	for (bus = 0; bus < PCI_MMCFG_MAX_CHECK_BUS; bus++) {
+-		for (i = 0; i < 32; i++) {
+-			unsigned int devfn = PCI_DEVFN(i, 0);
+-			u32 val1, val2;
+-
+-			pci_conf1_read(0, bus, devfn, 0, 4, &val1);
+-			if (val1 == 0xffffffff)
+-				continue;
+-
+-			if (pci_mmcfg_arch_reachable(0, bus, devfn)) {
+-				raw_pci_ops->read(0, bus, devfn, 0, 4, &val2);
+-				if (val1 == val2)
+-					continue;
+-			}
+-			set_bit(i + 32 * bus, pci_mmcfg_fallback_slots);
+-			printk(KERN_NOTICE "PCI: No mmconfig possible on device"
+-			       " %02x:%02x\n", bus, i);
+-		}
+-	}
+-}
+-
+ static const char __init *pci_mmcfg_e7520(void)
+ {
+ 	u32 win;
+@@ -270,8 +237,6 @@ void __init pci_mmcfg_init(int type)
+ 		return;
+ 
+ 	if (pci_mmcfg_arch_init()) {
+-		if (type == 1)
+-			unreachable_devices();
+ 		if (known_bridge)
+ 			pci_mmcfg_insert_resources(IORESOURCE_BUSY);
+ 		pci_probe = (pci_probe & ~PCI_PROBE_MASK) | PCI_PROBE_MMCONF;
+diff --git a/arch/x86/pci/mmconfig_32.c b/arch/x86/pci/mmconfig_32.c
+index 1bf5816..7b75e65 100644
+--- a/arch/x86/pci/mmconfig_32.c
++++ b/arch/x86/pci/mmconfig_32.c
+@@ -30,10 +30,6 @@ static u32 get_base_addr(unsigned int seg, int bus, unsigned devfn)
+ 	struct acpi_mcfg_allocation *cfg;
+ 	int cfg_num;
+ 
+-	if (seg == 0 && bus < PCI_MMCFG_MAX_CHECK_BUS &&
+-	    test_bit(PCI_SLOT(devfn) + 32*bus, pci_mmcfg_fallback_slots))
+-		return 0;
+-
+ 	for (cfg_num = 0; cfg_num < pci_mmcfg_config_num; cfg_num++) {
+ 		cfg = &pci_mmcfg_config[cfg_num];
+ 		if (cfg->pci_segment == seg &&
+@@ -68,13 +64,16 @@ static int pci_mmcfg_read(unsigned int seg, unsigned int bus,
+ 	u32 base;
+ 
+ 	if ((bus > 255) || (devfn > 255) || (reg > 4095)) {
+-		*value = -1;
++err:		*value = -1;
+ 		return -EINVAL;
+ 	}
+ 
++	if (reg < 256)
++		return pci_conf1_read(seg,bus,devfn,reg,len,value);
++
+ 	base = get_base_addr(seg, bus, devfn);
+ 	if (!base)
+-		return pci_conf1_read(seg,bus,devfn,reg,len,value);
++		goto err;
+ 
+ 	spin_lock_irqsave(&pci_config_lock, flags);
+ 
+@@ -105,9 +104,12 @@ static int pci_mmcfg_write(unsigned int seg, unsigned int bus,
+ 	if ((bus > 255) || (devfn > 255) || (reg > 4095))
+ 		return -EINVAL;
+ 
++	if (reg < 256)
++		return pci_conf1_write(seg,bus,devfn,reg,len,value);
++
+ 	base = get_base_addr(seg, bus, devfn);
+ 	if (!base)
+-		return pci_conf1_write(seg,bus,devfn,reg,len,value);
++		return -EINVAL;
+ 
+ 	spin_lock_irqsave(&pci_config_lock, flags);
+ 
+@@ -134,12 +136,6 @@ static struct pci_raw_ops pci_mmcfg = {
+ 	.write =	pci_mmcfg_write,
+ };
+ 
+-int __init pci_mmcfg_arch_reachable(unsigned int seg, unsigned int bus,
+-				    unsigned int devfn)
+-{
+-	return get_base_addr(seg, bus, devfn) != 0;
+-}
+-
+ int __init pci_mmcfg_arch_init(void)
+ {
+ 	printk(KERN_INFO "PCI: Using MMCONFIG\n");
+diff --git a/arch/x86/pci/mmconfig_64.c b/arch/x86/pci/mmconfig_64.c
+index 4095e4d..c4cf318 100644
+--- a/arch/x86/pci/mmconfig_64.c
++++ b/arch/x86/pci/mmconfig_64.c
+@@ -40,9 +40,7 @@ static char __iomem *get_virt(unsigned int seg, unsigned bus)
+ static char __iomem *pci_dev_base(unsigned int seg, unsigned int bus, unsigned int devfn)
+ {
+ 	char __iomem *addr;
+-	if (seg == 0 && bus < PCI_MMCFG_MAX_CHECK_BUS &&
+-		test_bit(32*bus + PCI_SLOT(devfn), pci_mmcfg_fallback_slots))
+-		return NULL;
++
+ 	addr = get_virt(seg, bus);
+ 	if (!addr)
+ 		return NULL;
+@@ -56,13 +54,16 @@ static int pci_mmcfg_read(unsigned int seg, unsigned int bus,
+ 
+ 	/* Why do we have this when nobody checks it. How about a BUG()!? -AK */
+ 	if (unlikely((bus > 255) || (devfn > 255) || (reg > 4095))) {
+-		*value = -1;
++err:		*value = -1;
+ 		return -EINVAL;
+ 	}
+ 
++	if (reg < 256)
++		return pci_conf1_read(seg,bus,devfn,reg,len,value);
++
+ 	addr = pci_dev_base(seg, bus, devfn);
+ 	if (!addr)
+-		return pci_conf1_read(seg,bus,devfn,reg,len,value);
++		goto err;
+ 
+ 	switch (len) {
+ 	case 1:
+@@ -88,9 +89,12 @@ static int pci_mmcfg_write(unsigned int seg, unsigned int bus,
+ 	if (unlikely((bus > 255) || (devfn > 255) || (reg > 4095)))
+ 		return -EINVAL;
+ 
++	if (reg < 256)
++		return pci_conf1_write(seg,bus,devfn,reg,len,value);
++
+ 	addr = pci_dev_base(seg, bus, devfn);
+ 	if (!addr)
+-		return pci_conf1_write(seg,bus,devfn,reg,len,value);
++		return -EINVAL;
+ 
+ 	switch (len) {
+ 	case 1:
+@@ -126,12 +130,6 @@ static void __iomem * __init mcfg_ioremap(struct acpi_mcfg_allocation *cfg)
+ 	return addr;
+ }
+ 
+-int __init pci_mmcfg_arch_reachable(unsigned int seg, unsigned int bus,
+-				    unsigned int devfn)
+-{
+-	return pci_dev_base(seg, bus, devfn) != NULL;
+-}
+-
+ int __init pci_mmcfg_arch_init(void)
+ {
+ 	int i;
+diff --git a/arch/x86/pci/pci.h b/arch/x86/pci/pci.h
+index ac56d39..36cb44c 100644
+--- a/arch/x86/pci/pci.h
++++ b/arch/x86/pci/pci.h
+@@ -98,13 +98,6 @@ extern void pcibios_sort(void);
+ 
+ /* pci-mmconfig.c */
+ 
+-/* Verify the first 16 busses. We assume that systems with more busses
+-   get MCFG right. */
+-#define PCI_MMCFG_MAX_CHECK_BUS 16
+-extern DECLARE_BITMAP(pci_mmcfg_fallback_slots, 32*PCI_MMCFG_MAX_CHECK_BUS);
+-
+-extern int __init pci_mmcfg_arch_reachable(unsigned int seg, unsigned int bus,
+-					   unsigned int devfn);
+ extern int __init pci_mmcfg_arch_init(void);
+ 
+ /*
