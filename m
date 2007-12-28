@@ -1,32 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbXL1T70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbXL1T7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752876AbXL1T70 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 14:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbXL1T7S
+	id S1753319AbXL1T7z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 14:59:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXL1T7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 14:59:18 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36356 "EHLO
+	Fri, 28 Dec 2007 14:59:46 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36360 "EHLO
 	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbXL1T7S (ORCPT
+	with ESMTP id S1752058AbXL1T7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 14:59:18 -0500
-Date: Fri, 28 Dec 2007 19:57:24 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Adrian Bunk <adrian.bunk@movial.fi>
+	Fri, 28 Dec 2007 14:59:45 -0500
+Date: Fri, 28 Dec 2007 19:58:41 +0000
+From: Russell King <rmk@arm.linux.org.uk>
+To: Adrian Bunk <adrian.bunk@movial.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
        oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.24 patch] restore ARMv6 OProfile support
-Message-ID: <20071228195724.GA22797@flint.arm.linux.org.uk>
-References: <20071228185636.GA4738@stusta.de>
+Subject: Fwd: Re: [2.6.24 patch] restore ARMv6 OProfile support
+Message-ID: <20071228195841.GA3945@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20071228185636.GA4738@stusta.de>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+Sorry, hit the wrong key.  'T' and 'Y' are too close together.  (mutt)
+
+----- Forwarded message from Russell King <rmk+lkml@arm.linux.org.uk> -----
+
+Date: Fri, 28 Dec 2007 19:57:24 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Adrian Bunk <adrian.bunk@movial.fi>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
+	oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.24 patch] restore ARMv6 OProfile support
 
 On Fri, Dec 28, 2007 at 08:56:36PM +0200, Adrian Bunk wrote:
 > This patch restores the ARMv6 OProfile support that was killed by
@@ -79,6 +91,13 @@ be reverted?
 > +	bool
 > +
 >  config KPROBES
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
+
+----- End forwarded message -----
 
 -- 
 Russell King
