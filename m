@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbXL1Uv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbXL1Uvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241AbXL1Uv0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 15:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbXL1Uo0
+	id S1756810AbXL1Uvm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 15:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbXL1Uob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 15:44:26 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37189 "EHLO
+	Fri, 28 Dec 2007 15:44:31 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37184 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753500AbXL1UoE (ORCPT
+	with ESMTP id S1753268AbXL1UoC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 15:44:04 -0500
+	Fri, 28 Dec 2007 15:44:02 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
-       Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 15/30] Unionfs: remove unnecessary lock when deleting whiteouts
-Date: Fri, 28 Dec 2007 15:42:49 -0500
-Message-Id: <11988745922017-git-send-email-ezk@cs.sunysb.edu>
+       Hugh Dickins <hugh@veritas.com>, Erez Zadok <ezk@cs.sunysb.edu>
+Subject: [PATCH 11/30] Unionfs: restructure unionfs_setattr and fix truncation order
+Date: Fri, 28 Dec 2007 15:42:45 -0500
+Message-Id: <1198874591189-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11988745841003-git-send-email-ezk@cs.sunysb.edu>
@@ -26,34 +26,155 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lockdep complained, because we eventually call vfs_unlink which'd grab the
-necessary locks.
+From: Hugh Dickins <hugh@veritas.com>
 
+Restructure the code to move the lower notify_change out of the loop in
+unionfs_setattr.  Cleanup and simplify the code.  Then fix the truncation
+order which fsx-linux in a unionfs on tmpfs found.  Then handle copyup
+properly.
+
+When shrinking a file, unionfs_setattr needs to vmtruncate the upper level
+before notifying change to the lower level, to eliminate those dirty pages
+beyond new eof which otherwise drift down to the lower level's writepage,
+writing beyond its eof (and later uncovered when the file is expanded).
+
+Also truncate the upper level first when expanding, in the case when
+the upper level's s_maxbytes is more limiting than the lower level's.
+
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/dirhelper.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ fs/unionfs/inode.c |   97 ++++++++++++++++++++++++++-------------------------
+ 1 files changed, 49 insertions(+), 48 deletions(-)
 
-diff --git a/fs/unionfs/dirhelper.c b/fs/unionfs/dirhelper.c
-index 2e52fc3..b40090a 100644
---- a/fs/unionfs/dirhelper.c
-+++ b/fs/unionfs/dirhelper.c
-@@ -110,7 +110,6 @@ int delete_whiteouts(struct dentry *dentry, int bindex,
- 	lower_dir = lower_dir_dentry->d_inode;
- 	BUG_ON(!S_ISDIR(lower_dir->i_mode));
+diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
+index 78cdfa2..37258c8 100644
+--- a/fs/unionfs/inode.c
++++ b/fs/unionfs/inode.c
+@@ -998,11 +998,10 @@ static int unionfs_setattr(struct dentry *dentry, struct iattr *ia)
+ {
+ 	int err = 0;
+ 	struct dentry *lower_dentry;
+-	struct inode *inode = NULL;
+-	struct inode *lower_inode = NULL;
++	struct inode *inode;
++	struct inode *lower_inode;
+ 	int bstart, bend, bindex;
+-	int i;
+-	int copyup = 0;
++	loff_t size;
  
--	mutex_lock(&lower_dir->i_mutex);
- 	if (!permission(lower_dir, MAY_WRITE | MAY_EXEC, NULL)) {
- 		err = do_delete_whiteouts(dentry, bindex, namelist);
- 	} else {
-@@ -120,7 +119,6 @@ int delete_whiteouts(struct dentry *dentry, int bindex,
- 		run_sioq(__delete_whiteouts, &args);
- 		err = args.err;
+ 	unionfs_read_lock(dentry->d_sb);
+ 	unionfs_lock_dentry(dentry);
+@@ -1023,62 +1022,64 @@ static int unionfs_setattr(struct dentry *dentry, struct iattr *ia)
+ 	if (ia->ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID))
+ 		ia->ia_valid &= ~ATTR_MODE;
+ 
+-	for (bindex = bstart; (bindex <= bend) || (bindex == bstart);
+-	     bindex++) {
+-		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
+-		if (!lower_dentry)
+-			continue;
+-		BUG_ON(lower_dentry->d_inode == NULL);
+-
+-		/* If the file is on a read only branch */
+-		if (is_robranch_super(dentry->d_sb, bindex)
+-		    || IS_RDONLY(lower_dentry->d_inode)) {
+-			if (copyup || (bindex != bstart))
+-				continue;
+-			/* Only if its the leftmost file, copyup the file */
+-			for (i = bstart - 1; i >= 0; i--) {
+-				loff_t size = i_size_read(dentry->d_inode);
+-				if (ia->ia_valid & ATTR_SIZE)
+-					size = ia->ia_size;
+-				err = copyup_dentry(dentry->d_parent->d_inode,
+-						    dentry, bstart, i,
+-						    dentry->d_name.name,
+-						    dentry->d_name.len,
+-						    NULL, size);
+-
+-				if (!err) {
+-					copyup = 1;
+-					lower_dentry =
+-						unionfs_lower_dentry(dentry);
+-					break;
+-				}
+-				/*
+-				 * if error is in the leftmost branch, pass
+-				 * it up.
+-				 */
+-				if (i == 0)
+-					goto out;
+-			}
++	lower_dentry = unionfs_lower_dentry(dentry);
++	BUG_ON(!lower_dentry);	/* should never happen after above revalidate */
++
++	/* copyup if the file is on a read only branch */
++	if (is_robranch_super(dentry->d_sb, bstart)
++	    || IS_RDONLY(lower_dentry->d_inode)) {
++		/* check if we have a branch to copy up to */
++		if (bstart <= 0) {
++			err = -EACCES;
++			goto out;
++		}
+ 
++		if (ia->ia_valid & ATTR_SIZE)
++			size = ia->ia_size;
++		else
++			size = i_size_read(inode);
++		/* copyup to next available branch */
++		for (bindex = bstart - 1; bindex >= 0; bindex--) {
++			err = copyup_dentry(dentry->d_parent->d_inode,
++					    dentry, bstart, bindex,
++					    dentry->d_name.name,
++					    dentry->d_name.len,
++					    NULL, size);
++			if (!err)
++				break;
+ 		}
+-		err = notify_change(lower_dentry, ia);
+ 		if (err)
+ 			goto out;
+-		break;
++		/* get updated lower_dentry after copyup */
++		lower_dentry = unionfs_lower_dentry(dentry);
  	}
--	mutex_unlock(&lower_dir->i_mutex);
  
- out:
- 	return err;
+-	/* for mmap */
++	lower_inode = unionfs_lower_inode(inode);
++
++	/*
++	 * If shrinking, first truncate upper level to cancel writing dirty
++	 * pages beyond the new eof; and also if its' maxbytes is more
++	 * limiting (fail with -EFBIG before making any change to the lower
++	 * level).  There is no need to vmtruncate the upper level
++	 * afterwards in the other cases: we fsstack_copy_inode_size from
++	 * the lower level.
++	 */
+ 	if (ia->ia_valid & ATTR_SIZE) {
+-		if (ia->ia_size != i_size_read(inode)) {
++		size = i_size_read(inode);
++		if (ia->ia_size < size || (ia->ia_size > size &&
++		    inode->i_sb->s_maxbytes < lower_inode->i_sb->s_maxbytes)) {
+ 			err = vmtruncate(inode, ia->ia_size);
+ 			if (err)
+-				printk(KERN_ERR
+-				       "unionfs: setattr: vmtruncate failed\n");
++				goto out;
+ 		}
+ 	}
+ 
+-	/* get the size from the first lower inode */
+-	lower_inode = unionfs_lower_inode(inode);
++	/* notify the (possibly copied-up) lower inode */
++	err = notify_change(lower_dentry, ia);
++	if (err)
++		goto out;
++
++	/* get attributes from the first lower inode */
+ 	unionfs_copy_attr_all(inode, lower_inode);
+ 	/*
+ 	 * unionfs_copy_attr_all will copy the lower times to our inode if
 -- 
 1.5.2.2
 
