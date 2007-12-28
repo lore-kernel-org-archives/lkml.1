@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbXL1H7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458AbXL1IEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbXL1H7b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 02:59:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbXL1H7U
+	id S1754458AbXL1IEG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 03:04:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbXL1IDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 02:59:20 -0500
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:53987 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751652AbXL1H7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 02:59:18 -0500
-Date: Fri, 28 Dec 2007 16:48:33 +0900
-To: balbir@linux.vnet.ibm.com
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp
-Subject: Re: SCSI errors on powerpc with 2.6.24-rc6-mm1
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <4774A74B.3000105@linux.vnet.ibm.com>
-References: <47733C01.1080002@linux.vnet.ibm.com>
-	<20071228143043U.fujita.tomonori@lab.ntt.co.jp>
-	<4774A74B.3000105@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20071228165115O.tomof@acm.org>
-X-Dispatcher: imput version 20040704(IM147)
+	Fri, 28 Dec 2007 03:03:55 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:37816 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751425AbXL1IDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 03:03:54 -0500
+Message-ID: <398829041.61992@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Fri, 28 Dec 2007 16:03:49 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       shaggy@austin.ibm.com, jfs-discussion@lists.sourceforge.net
+Subject: [PATCH] jfs: clear PAGECACHE_TAG_DIRTY for no-write pages
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <E1J8AC5-0002BE-RP@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Dec 2007 13:05:39 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Andrew,
 
-> FUJITA Tomonori wrote:
-> [snip]
-> > Thanks,
-> > 
-> > Can you try this?
-> > 
-> > 
-> > diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-> > index e7d8544..495575a 100644
-> > --- a/lib/iommu-helper.c
-> > +++ b/lib/iommu-helper.c
-> > @@ -8,15 +8,20 @@
-> >  static unsigned long find_next_zero_area(unsigned long *map,
-> >  					 unsigned long size,
-> >  					 unsigned long start,
-> > -					 unsigned int nr)
-> > +					 unsigned int nr,
-> > +					 unsigned long align_mask)
-> >  {
-> >  	unsigned long index, end, i;
-> >  again:
-> >  	index = find_next_zero_bit(map, size, start);
-> > +
-> > +	/* Align allocation */
-> > +	index = (index + align_mask) & ~align_mask;
-> > +
-> >  	end = index + nr;
-> > -	if (end > size)
-> > +	if (end >= size)
-> >  		return -1;
-> > -	for (i = index + 1; i < end; i++) {
-> > +	for (i = index; i < end; i++) {
-> >  		if (test_bit(i, map)) {
-> >  			start = i+1;
-> >  			goto again;
-> > @@ -50,9 +55,8 @@ unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
-> >  {
-> >  	unsigned long index;
-> >  again:
-> > -	index = find_next_zero_area(map, size, start, nr);
-> > +	index = find_next_zero_area(map, size, start, nr, align_mask);
-> >  	if (index != -1) {
-> > -		index = (index + align_mask) & ~align_mask;
-> >  		if (is_span_boundary(index, nr, shift, boundary_size)) {
-> >  			/* we could do more effectively */
-> >  			start = index + 1;
-> 
-> This on top of -mm? Or on top of the reverted iommu patch.
+This patch fixed the 'pdflush stuck in D state' bug
+        http://bugzilla.kernel.org/show_bug.cgi?id=9291
+and should be pushed to mainline ASAP.
+---
 
-Oops, it's for -mm.
+When JFS decides to drop a dirty metapage, it simply clears the META_dirty bit
+and leave alone the PG_dirty and PAGECACHE_TAG_DIRTY bits.
 
-Thanks,
+When such no-write page goes to metapage_writepage(), the `relic'
+PAGECACHE_TAG_DIRTY tag should be cleared, to prevent pdflush from
+repeatedly trying to sync them.
+
+Also, avoid the redirty when a bio submission is planned.
+
+Tested-by: Markus Rehbach <Markus.Rehbach@gmx.de>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn> 
+---
+
+diff --git a/fs/jfs/jfs_metapage.c b/fs/jfs/jfs_metapage.c
+index f5cd8d3..0c3ffc4 100644
+--- a/fs/jfs/jfs_metapage.c
++++ b/fs/jfs/jfs_metapage.c
+@@ -353,7 +353,8 @@ static int metapage_writepage(struct page *page, struct writeback_control *wbc)
+ {
+ 	struct bio *bio = NULL;
+ 	unsigned int block_offset;	/* block offset of mp within page */
+-	struct inode *inode = page->mapping->host;
++	struct address_space *mapping = page->mapping;
++	struct inode *inode = mapping->host;
+ 	unsigned int blocks_per_mp = JFS_SBI(inode->i_sb)->nbperpage;
+ 	unsigned int len;
+ 	unsigned int xlen;
+@@ -449,9 +450,15 @@ static int metapage_writepage(struct page *page, struct writeback_control *wbc)
+ 			goto dump_bio;
+ 
+ 		submit_bio(WRITE, bio);
+-	}
+-	if (redirty)
++	} else if (redirty) {
+ 		redirty_page_for_writepage(wbc, page);
++	} else {
++		write_lock_irq(&mapping->tree_lock);
++		radix_tree_tag_clear(&mapping->page_tree,
++				page_index(page),
++				PAGECACHE_TAG_DIRTY);
++		write_unlock_irq(&mapping->tree_lock);
++	}
+ 
+ 	unlock_page(page);
+ 
+
