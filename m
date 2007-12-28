@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbXL1Ap0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbXL1AvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802AbXL1Ap0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 19:45:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbXL1ApK
+	id S1754863AbXL1AvP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 19:51:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXL1Au7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 19:45:10 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:49411 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754104AbXL1ApI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 19:45:08 -0500
-Date: Fri, 28 Dec 2007 00:45:04 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: SLUB sysfs support
-Message-ID: <20071228004504.GK27894@ZenIV.linux.org.uk>
-References: <20071224233701.GB9784@kernel.org> <Pine.LNX.4.64.0712261330030.16904@schroedinger.engr.sgi.com> <20071226221631.GD27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712262149000.19009@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712271222190.31582@schroedinger.engr.sgi.com> <20071227225947.GH27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712271508080.917@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712271552420.1154@schroedinger.engr.sgi.com> <20071227235804.GJ27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712271601200.1294@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712271601200.1294@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.3i
+	Thu, 27 Dec 2007 19:50:59 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:52974 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751963AbXL1Au6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 19:50:58 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] SH/Dreamcast - add support for GD-Rom device
+Date: Thu, 27 Dec 2007 19:49:01 -0500
+User-Agent: KMail/1.9.7
+Cc: Adrian McMenamin <adrian@newgolddream.dyndns.info>,
+       Paul Mundt <lethal@linux-sh.org>, Jens Axboe <jens.axboe@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>
+References: <1198774339.6170.11.camel@localhost.localdomain> <1198796281.4833.31.camel@localhost>
+In-Reply-To: <1198796281.4833.31.camel@localhost>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1620347.NXWMkVdv5Z";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200712271949.02942.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 27, 2007 at 04:02:56PM -0800, Christoph Lameter wrote:
-> > Why would you want these symlinks to stick around for longer than that?
-> 
-> /sys/kernel/slab/cache_name is a real directory but then there are the 
-> aliases in /sys/kernel/slab/alias_name pointing to that directory that 
-> also have to be removed.
-> 
-> So I need to scan for symlinks in /sys/kernel/slab/* pointing to 
-> /sys/kernel/slab/cache_name.
+--nextPart1620347.NXWMkVdv5Z
+Content-Type: text/plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Oh, lovely.  So we can have module A do kmem_cache_create(), calling
-cache "foo".  Then module B does (without any knowlegde about A)
-completely unrelated kmem_cache_create(), calling the sucker "bar".
-mm/slub decides that they are mergable.  Then we get rmmod A... and
-no way to find out if that's foo or bar going away - kmem_cache_destroy()
-doesn't have enough information to figure that out.  So we have to keep
-both slab/foo and slab/bar around until both are gone or until somebody
-kind enough creates a cache called foo.  Better yet, on some systems you
-get things like slab/nfsd4_delegations sticking around long after nfsd is
-gone just because slub.c decides that it's sharable, but in the next
-kernel version the thing it's shared with gets different object size and
-behaviour suddenly changes - now it's gone as soon as nfsd is gone.
-Brilliant interface, that...
+On Thursday 27 December 2007, Joe Perches wrote:
+> On Thu, 2007-12-27 at 16:52 +0000, Adrian McMenamin wrote:
+> > This patch adds support for the CD-Rom drive on the SEGA Dreamcast.
+>
+> Because it was already so close, might as well make it checkpatch clean.
+
+for the 80 col limit, that's up to the author.  if Adrian is happy with it =
+as=20
+is, that's fine.
+
+> I also added a function gdrom_is_busy() to make a couple of tests
+> fit on a single line and perhaps easier to read.
+
+i'd tend to agree it does make it easier to read, however you didnt make it=
+=20
+inline which means gcc may not inline it which means there's pointless=20
+overhead of doing a function call.
+
+otherwise, arbitrary breaking on 80 cols actually makes the code harder to=
+=20
+read for no gain.
+=2Dmike
+
+--nextPart1620347.NXWMkVdv5Z
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.8 (GNU/Linux)
+
+iQIcBAABAgAGBQJHdEf+AAoJEEFjO5/oN/WBg0QQAMXtMlJ8mZx5ZunuBJZm0S9f
+CCXzQIdDdeTiVhWRjELWD9DLjZckxVn9XUOKwKh1S+Q1cDXUXbtpL0QA/ipzRmq0
+tR1yzJCrkXvr5847oevEiyXjgwAGsCVZaSor1tv6/vrfUaiOO21WGtAEoh8v0mxx
+MmFgei+0nHvS88WpGfj6dPDFStBBj+mAHweyO348VK+QCv4Sv4WTwURsc5f2BZ9B
+uoIQt9txFUAKaEe1sRDGiXxYK24AKNk8mmf91ioXEnJpPj5HJC2j+iQkiocba7uN
+Fo16MBj2/npjbnz1sq5ZR0WS5kUDwHT4ksPxYRD7YVpviTRn8nCIxwKSUbx6qdb7
+n3x9qjlipsNqGGro2ooBXJTm4bEAVUSi1Iezcar4kOWwOLUcGbIaXZxnI6qf91DM
+DXZtom1G7XuAfaPgkSj7ssd7ChTnXorUkFksdicxrZNMwBxE6Sd9LAJCv8Cttehf
+zPVHndfVBtIcXGNbXCH6ni1lTgMZlhpIkUxh07xV83zt7qx0bah/fz+tBjiJsWvq
+RSQGzDUviL1/nZZCE+yjxMa5AXOnaqGjwdBqiY6ENzAoyYvEGODiK9O7umD1UYAz
+p8eoBuIcVRhwQNJrvieZMFc7bg/W7V3Bbnm6pyxck1JwlFaUoqZxFdTGd4+BE0oZ
+S69TkVEGQdycrNIVhp6j
+=MvCa
+-----END PGP SIGNATURE-----
+
+--nextPart1620347.NXWMkVdv5Z--
