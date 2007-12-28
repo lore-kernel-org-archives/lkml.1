@@ -1,108 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbXL1Fbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbXL1FcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755156AbXL1Fbl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 00:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbXL1Fbc
+	id S1755283AbXL1FcT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 00:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbXL1FcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 00:31:32 -0500
-Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:41322 "EHLO
-	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbXL1Fbb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 00:31:31 -0500
-To: balbir@linux.vnet.ibm.com
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: SCSI errors on powerpc with 2.6.24-rc6-mm1
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <47733C01.1080002@linux.vnet.ibm.com>
-References: <47732C41.7000003@linux.vnet.ibm.com>
-	<20071227134335O.fujita.tomonori@lab.ntt.co.jp>
-	<47733C01.1080002@linux.vnet.ibm.com>
+	Fri, 28 Dec 2007 00:32:08 -0500
+Received: from gate.crashing.org ([63.228.1.57]:55125 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750762AbXL1FcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 00:32:05 -0500
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+	opt-in
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Kai Ruhnau <kai@tragetaschen.dyndns.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Loic Prylli <loic@myri.com>, Robert Hancock <hancockr@shaw.ca>,
+       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       gregkh@suse.de, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
+In-Reply-To: <47742498.1060900@tragetaschen.dyndns.org>
+References: <fa.m7tRTz/ymu3iMyLTO2aF1Tvaw24@ifi.uio.no>
+	 <fa.XrRLIuL4juNAXXaMPF3iY8FyWW8@ifi.uio.no>
+	 <fa.H0fcNl3b6xVBwzWUgT72M4K6KOU@ifi.uio.no> <4773EBB4.2020805@shaw.ca>
+	 <alpine.LFD.0.9999.0712271023090.21557@woody.linux-foundation.org>
+	 <477414C9.3040906@myri.com>
+	 <alpine.LFD.0.9999.0712271328010.21557@woody.linux-foundation.org>
+	 <alpine.LFD.0.9999.0712271338280.21557@woody.linux-foundation.org>
+	 <47742498.1060900@tragetaschen.dyndns.org>
+Content-Type: text/plain
+Date: Fri, 28 Dec 2007 16:31:22 +1100
+Message-Id: <1198819882.7209.29.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20071228143043U.fujita.tomonori@lab.ntt.co.jp>
-Date: Fri, 28 Dec 2007 14:30:43 +0900
-X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Dec 2007 11:15:37 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> FUJITA Tomonori wrote:
-> > On Thu, 27 Dec 2007 10:08:25 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> >> FUJITA Tomonori wrote:
-> >>> On Mon, 24 Dec 2007 10:18:50 +0530
-> >>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >>>
-> >> [snip]
-> >>
-> >>> I might break the IOMMU code. Can you reproduce it easily? If so,
-> >>> reverting my IOMMU patches (I've attached a patch to revert them) fix
-> >>> the problem?
-> >> [snip]
-> >>
-> >>
-> >> Yes, this patch fixes the problem for me.
-> > 
-> > Thanks, so you can reproduce it easily, right?
-> > 
+On Thu, 2007-12-27 at 23:18 +0100, Kai Ruhnau wrote:
+
+> That one did not work out so well.
+> I reenabled the call to pci_enable_crs() and changed the line as above.
+> That resulted in two timeouts (from dmesg):
 > 
-> Yes, quite easily
+> [....]
+> ACPI: Interpreter enabled
+> ACPI: (supports S0 S3 S4 S5)
+> ACPI: Using IOACPI for interrupt routing
+> ACPI: PCI Root Bridge [PCI0] (0000:00)
+> Device 0000:01:00.0 not responding
+> Device 0000:02:00.0 not responding
+> [....]
 > 
-> > The problem is that I don't want to revert these changes. I'll see
-> > how these changes cause the problem shortly.
-> 
-> I'll try and find some bandwidth to review/test the patches and help you
-> figure out the right solution.
+> Then, the kernel boots up normally except of graphics and network card
+> not showing up at all in lspci.
 
-Thanks,
+Could be that DRS is totally broken on those bridges. Might need some
+per bridge quirks to disable CRS. But don't do that by default please,
+other people need it.
 
-Can you try this?
+Cheers,
+Ben.
 
 
-diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-index e7d8544..495575a 100644
---- a/lib/iommu-helper.c
-+++ b/lib/iommu-helper.c
-@@ -8,15 +8,20 @@
- static unsigned long find_next_zero_area(unsigned long *map,
- 					 unsigned long size,
- 					 unsigned long start,
--					 unsigned int nr)
-+					 unsigned int nr,
-+					 unsigned long align_mask)
- {
- 	unsigned long index, end, i;
- again:
- 	index = find_next_zero_bit(map, size, start);
-+
-+	/* Align allocation */
-+	index = (index + align_mask) & ~align_mask;
-+
- 	end = index + nr;
--	if (end > size)
-+	if (end >= size)
- 		return -1;
--	for (i = index + 1; i < end; i++) {
-+	for (i = index; i < end; i++) {
- 		if (test_bit(i, map)) {
- 			start = i+1;
- 			goto again;
-@@ -50,9 +55,8 @@ unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
- {
- 	unsigned long index;
- again:
--	index = find_next_zero_area(map, size, start, nr);
-+	index = find_next_zero_area(map, size, start, nr, align_mask);
- 	if (index != -1) {
--		index = (index + align_mask) & ~align_mask;
- 		if (is_span_boundary(index, nr, shift, boundary_size)) {
- 			/* we could do more effectively */
- 			start = index + 1;
