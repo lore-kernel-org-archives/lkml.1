@@ -1,155 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbXL1CIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbXL1CT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754481AbXL1CIc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 21:08:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbXL1CIX
+	id S1754576AbXL1CT6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 21:19:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbXL1CTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 21:08:23 -0500
-Received: from an-out-0708.google.com ([209.85.132.245]:36281 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbXL1CIW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 21:08:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XsqqHJ+VMASecmmRNaYMW3/N5trmRNLR9MdYFdGN1vAOCjtZhzA7SRWIBm7QVTHlJrE/5J2RmLsNQ5EGSNdOZD3mkppvXBXmzGTwIxggpCbtyPZ+RIvecJY1ED1S4XQ4hq4VoUCBYIFDkSv+jh7K/naJ4t0paQab5xtfby01xqk=
-Subject: [PATCH] x86: kprobes change kprobe_handler flow
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Thu, 27 Dec 2007 18:08:22 -0800
-Message-Id: <1198807702.6323.37.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Dec 2007 21:19:49 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:45737 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753519AbXL1CTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 21:19:49 -0500
+Date: Thu, 27 Dec 2007 18:19:46 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: SLUB sysfs support
+In-Reply-To: <20071228004504.GK27894@ZenIV.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0712271811470.2053@schroedinger.engr.sgi.com>
+References: <20071224233701.GB9784@kernel.org>
+ <Pine.LNX.4.64.0712261330030.16904@schroedinger.engr.sgi.com>
+ <20071226221631.GD27894@ZenIV.linux.org.uk>
+ <Pine.LNX.4.64.0712262149000.19009@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0712271222190.31582@schroedinger.engr.sgi.com>
+ <20071227225947.GH27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712271508080.917@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0712271552420.1154@schroedinger.engr.sgi.com>
+ <20071227235804.GJ27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712271601200.1294@schroedinger.engr.sgi.com>
+ <20071228004504.GK27894@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the control flow of kprobe_handler more obvious.
+On Fri, 28 Dec 2007, Al Viro wrote:
 
-Collapse the separate if blocks/gotos with if/else blocks
-this unifies the duplication of the check for a breakpoint
-instruction race with another cpu.
+> Oh, lovely.  So we can have module A do kmem_cache_create(), calling
+> cache "foo".  Then module B does (without any knowlegde about A)
+> completely unrelated kmem_cache_create(), calling the sucker "bar".
+> mm/slub decides that they are mergable.  Then we get rmmod A... and
+> no way to find out if that's foo or bar going away - kmem_cache_destroy()
+> doesn't have enough information to figure that out.  So we have to keep
+> both slab/foo and slab/bar around until both are gone or until somebody
+> kind enough creates a cache called foo.  Better yet, on some systems you
+> get things like slab/nfsd4_delegations sticking around long after nfsd is
+> gone just because slub.c decides that it's sharable, but in the next
+> kernel version the thing it's shared with gets different object size and
+> behaviour suddenly changes - now it's gone as soon as nfsd is gone.
+> Brilliant interface, that...
 
-Create two jump targets:
-	preempt_out: re-enables preemption before returning ret
-	out: only returns ret
+Just enable slab debugging and all of that goes away and you get the usual 
+error messages. Otherwise slub tries to compress the memory use as much as 
+possible. The advantage here is that you can add an abitrary amount of 
+kmem_cache_create() without increasing memory use significantly. Its cheap 
+to do kmem_cache creations. Thus you can create open arbitrary caches not 
+worrying about memory use and have meaningful variables on which you do 
+kmem_cache_alloc instead of kmalloc/kfree. kmalloc/kfree wastes space 
+since they go to powers of two. And kmalloc/kfree have to calculate the
+cache at runtime whereas kmem_cache_alloc/free does the lookup once.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Masami, noticed a small bug in the previous version in the !p
-case when the breakpoint was the kernel's.  Please review this
-version.
+The amount of per cpu stuff we keep around that is idle is reduced by 50%. 
+Increasing cpu cache usage and reduces memory footprint. per cpu stuff 
+has to hold per cpu reserves and it is not good to waste too much memory 
+there.
 
- arch/x86/kernel/kprobes.c |   60 +++++++++++++++++++++------------------------
- 1 files changed, 28 insertions(+), 32 deletions(-)
+nfsd4_delegations? What is this about?
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 4e33329..f8c7ac1 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -480,32 +480,28 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 	preempt_disable();
- 	kcb = get_kprobe_ctlblk();
- 
--	/* Check we're not actually recursing */
--	if (kprobe_running()) {
--		p = get_kprobe(addr);
--		if (p) {
-+	p = get_kprobe(addr);
-+	if (p) {
-+		/* Check we're not actually recursing */
-+		if (kprobe_running()) {
- 			ret = reenter_kprobe(p, regs, kcb);
- 			if (kcb->kprobe_status == KPROBE_REENTER)
--				return 1;
-+			{
-+				ret = 1;
-+				goto out;
-+			}
-+			goto preempt_out;
- 		} else {
--			if (*addr != BREAKPOINT_INSTRUCTION) {
--			/* The breakpoint instruction was removed by
--			 * another cpu right after we hit, no further
--			 * handling of this interrupt is appropriate
--			 */
--				regs->ip = (unsigned long)addr;
-+			set_current_kprobe(p, regs, kcb);
-+			kcb->kprobe_status = KPROBE_HIT_ACTIVE;
-+			if (p->pre_handler && p->pre_handler(p, regs))
-+			{
-+				/* handler set things up, skip ss setup */
- 				ret = 1;
--				goto no_kprobe;
-+				goto out;
- 			}
--			p = __get_cpu_var(current_kprobe);
--			if (p->break_handler && p->break_handler(p, regs))
--				goto ss_probe;
- 		}
--		goto no_kprobe;
--	}
--
--	p = get_kprobe(addr);
--	if (!p) {
-+	} else {
- 		if (*addr != BREAKPOINT_INSTRUCTION) {
- 			/*
- 			 * The breakpoint instruction was removed right
-@@ -518,34 +514,34 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 			 */
- 			regs->ip = (unsigned long)addr;
- 			ret = 1;
-+			goto preempt_out;
-+		}
-+		if (kprobe_running()) {
-+			p = __get_cpu_var(current_kprobe);
-+			if (p->break_handler && p->break_handler(p, regs))
-+				goto ss_probe;
- 		}
- 		/* Not one of ours: let kernel handle it */
--		goto no_kprobe;
-+		goto preempt_out;
- 	}
- 
--	set_current_kprobe(p, regs, kcb);
--	kcb->kprobe_status = KPROBE_HIT_ACTIVE;
--
--	if (p->pre_handler && p->pre_handler(p, regs))
--		/* handler has already set things up, so skip ss setup */
--		return 1;
--
- ss_probe:
-+	ret = 1;
- #if !defined(CONFIG_PREEMPT) || defined(CONFIG_PM)
- 	if (p->ainsn.boostable == 1 && !p->post_handler) {
- 		/* Boost up -- we can execute copied instructions directly */
- 		reset_current_kprobe();
- 		regs->ip = (unsigned long)p->ainsn.insn;
--		preempt_enable_no_resched();
--		return 1;
-+		goto preempt_out;
- 	}
- #endif
- 	prepare_singlestep(p, regs);
- 	kcb->kprobe_status = KPROBE_HIT_SS;
--	return 1;
-+	goto out;
- 
--no_kprobe:
-+preempt_out:
- 	preempt_enable_no_resched();
-+out:
- 	return ret;
- }
- 
--- 
-1.5.4.rc2.1097.gb6e0d
-
-
+How do I scan for the symlinks in sysfs?
 
