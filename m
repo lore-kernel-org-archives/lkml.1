@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbXL1PZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbXL1PbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbXL1PZP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 10:25:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbXL1PZB
+	id S1754815AbXL1PbD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 10:31:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbXL1Pav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 10:25:01 -0500
-Received: from web32608.mail.mud.yahoo.com ([68.142.207.235]:31919 "HELO
-	web32608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753625AbXL1PZB (ORCPT
+	Fri, 28 Dec 2007 10:30:51 -0500
+Received: from stinky.trash.net ([213.144.137.162]:32839 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbXL1Pau (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 10:25:01 -0500
-X-YMail-OSG: QGGdDTMVM1m1vIIg0NKqeTvGz1EcTN3Mzxq78LlEyrvEvG5hh86LpO0JhmkRdfJ1OcF7yLmvVIUjJyEV9vdbzIuMgQ--
-X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.158.1
-Date: Fri, 28 Dec 2007 07:24:59 -0800 (PST)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Strange NFS write performance Linux->Solaris-10/VXFS, maybe VW related
-To: linux-kernel@vger.kernel.org
-Cc: linux-nfs@vger.kernel.org
+	Fri, 28 Dec 2007 10:30:50 -0500
+Message-ID: <4775169C.8040302@trash.net>
+Date: Fri, 28 Dec 2007 16:30:36 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <713696.79839.qm@web32608.mail.mud.yahoo.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+CC: Harald Welte <laforge@gnumonks.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>
+Subject: Re: [PATCH] net/ipv4/netfilter/ip_tables.c: remove some inlines
+References: <200712161247.53986.vda.linux@googlemail.com> <47668BE9.8010504@trash.net> <200712270401.35983.vda.linux@googlemail.com>
+In-Reply-To: <200712270401.35983.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Denys Vlasenko wrote:
+> On Monday 17 December 2007 14:47, Patrick McHardy wrote:
+>   
+>> This clashes with my pending patches, which I'll push upstream
+>> today. I also spent some time resyncing ip_tables and ip6_tables
+>> so a diff of both (with some sed'ing) shows only the actual
+>> differences, so please update ip6_tables as well.
+>>     
+>
+> I would be happy to rediff the patch.
+>
+> Which tree should I sync against in order to not collide
+> with your changes?
+>   
 
- currently I am tracking down an "interesting" effect when writing to a Solars-10/Sparc based server. The server exports two filesystems. One UFS, one VXFS. The filesystems are mounted NFS3/TCP, no special options. Linux kernel in question is 2.6.24-rc6, but it happens with earlier kernels (2.6.19.2, 2.6.22.6) as well. The client is x86_64 with 8 GB of ram. 
-
- The problem: when writing to the VXFS based filesystem, performance drops dramatically when the the filesize reaches or exceeds "dirty_ratio". For a dirty_ratio of 10% (about 800MB) files below 750 MB are transfered with about 30 MB/sec. Anything above 770 MB drops down to below 10 MB/sec. If I perform the same tests on the UFS based FS, performance stays at about 30 MB/sec until 3GB and likely larger (I just stopped at 3 GB).
-
- Any ideas what could cause this difference? Any suggestions on debugging it?
-
-spsdm5:/lfs/test_ufs on /mnt/test_ufs type nfs (rw,proto=tcp,nfsvers=3,hard,intr,addr=160.50.118.37)
-spsdm5:/lfs/test_vxfs on /mnt/test_vxfs type nfs (rw,proto=tcp,nfsvers=3,hard,intr,addr=160.50.118.37)
-
-Cheers
-Martin
-PS: Please CC me, as I am not subscribed. Don't worry about the spamtrap name :-)
-
-------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
-
-
+The net-2.6.25.git tree contains all my changes.
