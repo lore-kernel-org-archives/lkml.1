@@ -1,118 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbXL1TQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbXL1TRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754398AbXL1TQb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 14:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbXL1TQX
+	id S1754959AbXL1TRU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 14:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbXL1TRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 14:16:23 -0500
-Received: from mailbox2.myri.com ([64.172.73.26]:1947 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751814AbXL1TQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 14:16:21 -0500
-Message-ID: <47754B26.6050700@myri.com>
-Date: Fri, 28 Dec 2007 14:14:46 -0500
-From: Loic Prylli <loic@myri.com>
-User-Agent: Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jeff@garzik.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gregkh@suse.de, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>,
-       Kai Ruhnau <kai@tragetaschen.dyndns.org>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-References: <fa.m7tRTz/ymu3iMyLTO2aF1Tvaw24@ifi.uio.no>	 <fa.XrRLIuL4juNAXXaMPF3iY8FyWW8@ifi.uio.no>	 <fa.H0fcNl3b6xVBwzWUgT72M4K6KOU@ifi.uio.no> <4773EBB4.2020805@shaw.ca>	 <alpine.LFD.0.9999.0712271023090.21557@woody.linux-foundation.org>	 <477414C9.3040906@myri.com>	 <alpine.LFD.0.9999.0712271328010.21557@woody.linux-foundation.org>	 <1198819790.7209.27.camel@pasglop>	 <alpine.LFD.0.9999.0712272135270.21557@woody.linux-foundation.org> <1198822010.7209.32.camel@pasglop>
-In-Reply-To: <1198822010.7209.32.camel@pasglop>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 28 Dec 2007 14:17:12 -0500
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:55116 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751814AbXL1TRK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 14:17:10 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAEHadEdMROHU/2dsb2JhbACBV6tC
+Date: Fri, 28 Dec 2007 14:12:00 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Adrian Bunk <adrian.bunk@movial.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, rmk@arm.linux.org.uk,
+       phil.el@wanadoo.fr, oprofile-list@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6.24 patch] restore ARMv6 OProfile support
+Message-ID: <20071228191159.GA21353@Krystal>
+References: <20071228185636.GA4738@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20071228185636.GA4738@stusta.de>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:06:42 up 55 days, 12 min,  4 users,  load average: 0.05, 0.49,
+	0.54
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Adrian Bunk (adrian.bunk@movial.fi) wrote:
+> This patch restores the ARMv6 OProfile support that was killed by
+> commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
+> 
+> Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
+> 
+
+Yup, it must be put back, but I doubt stuffing it in
+kernel/Kconfig.instrumentation is the best way to proceed, especially
+since it will break the "instrumentation menu removal" patches currently
+in -mm _and_ because this is arm-specific.
+
+Why don't we simply put it in arch/arm/Kconfig ?
 
 
-On 12/28/2007 1:06 AM, Benjamin Herrenschmidt wrote:
-> On Thu, 2007-12-27 at 21:37 -0800, Linus Torvalds wrote:
->   
->> On Fri, 28 Dec 2007, Benjamin Herrenschmidt wrote:
->>     
->>> I have embedded boards where proper CRS operations is critical since the
->>> kernel brings the PCIe link up itself, and thus is likely to hit devices
->>> still in the middle of CRS.
->>>       
->> .. but that's perfectly fine. A PCI-E bridge will certainly retry it in 
->> hardware (or it isn't a PCI-E bridge!).
->>     
->
-> Only a handful of times in many bridges I've seen.
->   
+> ---
+> 
+>  kernel/Kconfig.instrumentation |   19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+> 
+> 7fc221ef169610b5eac98e2ddd641811c0d53e4a 
+> diff --git a/kernel/Kconfig.instrumentation b/kernel/Kconfig.instrumentation
+> index 468f47a..4453187 100644
+> --- a/kernel/Kconfig.instrumentation
+> +++ b/kernel/Kconfig.instrumentation
+> @@ -29,2 +29,17 @@ config OPROFILE
+> 
+> +config OPROFILE_ARMV6
+> +	bool
+> +	depends on OPROFILE && ARM && CPU_V6 && !SMP
+> +	default y
+> +	select OPROFILE_ARM11_CORE
+> +
+> +config OPROFILE_MPCORE
+> +	bool
+> +	depends on OPROFILE && ARM && CPU_V6 && SMP
+> +	default y
+> +	select OPROFILE_ARM11_CORE
+> +
+> +config OPROFILE_ARM11_CORE
+> +	bool
+> +
+>  config KPROBES
 
-
-
-
-Yes retry implementation are not universal. But bridges with
-CRS-visibility might be even less common (both are
-optional/implementation-specific features).
-
-
-To make some choices for our own devices, we experimented at Myricom
-with CRS on a few chipsets to see what they implement:
-
-broadcom/serverworks 2000/1000: no-retry/ no-visibility
-nvidia CK804/IO804: no-retry/no-visibility
-nvidia MPC55/IO55: no-retry/no-visibility
-intel-7520: does-retry/no-visibility
-intel-975X:  does-retry/no-visibility
-intel-5000series: does-retry/no-visibility
-intel X38: does-retry/no-visibility
-AMD/ATI RD790: no-retry/no-visibility
-
-
-[ in all no-retry cases, when a CRS is somehow returned to the
-pcie-root, the requester will get a 0xfffffffff, depending on chipsets,
-other error bits (malformed-tlp, completion-timeout) might be triggered ]
-
-
->From the data reported on this mailing-list, it seems like the ATI tries
-to implement CRS-visibility, but it is obviously buggy.
-
-
-Not knowing whether there is any chipset with the visibility feature,
-but without the retry capability, and given that CRS is irrelevant for
-most Linux platforms (it only matters just after power-on, long before
-Linux is started in the common case), it seems fair that
-CRS-visibility-enabling should only be added in the specific code of the
-specific embedded platforms (with no BIOS/firmware of any kind) that
-might need it.
-
-
-
->  
->   
->> So I'm going to disable that thing. If there is some _other_ PCI-E bridge 
->> that is simply buggy, and cannot handle the hw retry itself or is just 
->> otherwise dodgy, we can have a white-list for cases where it really needs 
->> to be done, but the current code is just bogus.
->>     
->
-> If you disable it, then isn't there also a problem with PCIE->PCI-X
-> bridge which will stop issuing CRS when they should ? (not sure here, I
-> may be a bit confused).
->   
-
-
-This is mostly independant, allowing a PCIE->PCI-X bridge to generate
-CRS is a different bit (bit 15 of pcie->devctl on the bridge). FWIW,
-Linux does not seem to touch it, and it defaults to zero, so it does not
-seem like most current PCIE->PCI-X bridge will never generates a CRS
-(some BIOSes might do it, but not the couple of platforms I looked at).
-Again the choice of setting here seems something better left to the
-specific BIOS/embedded-code for a given platform.
-
-
-Loic
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
