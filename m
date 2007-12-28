@@ -1,95 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbXL1Hfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbXL1HgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755522AbXL1Hfn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 02:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbXL1Hfb
+	id S1753280AbXL1HgK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 02:36:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbXL1Hfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 02:35:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37760 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754804AbXL1Hfa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 02:35:30 -0500
-Date: Thu, 27 Dec 2007 23:34:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.24-rc6-mm1 - crash in tick_sched_timer/update_process_times
-Message-Id: <20071227233411.c1114622.akpm@linux-foundation.org>
-In-Reply-To: <18487.1198778074@turing-police.cc.vt.edu>
-References: <20071222233056.d652743e.akpm@linux-foundation.org>
-	<18487.1198778074@turing-police.cc.vt.edu>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 28 Dec 2007 02:35:51 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:49580 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752848AbXL1Hft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 02:35:49 -0500
+Message-ID: <4774A74B.3000105@linux.vnet.ibm.com>
+Date: Fri, 28 Dec 2007 13:05:39 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: SCSI errors on powerpc with 2.6.24-rc6-mm1
+References: <47732C41.7000003@linux.vnet.ibm.com> <20071227134335O.fujita.tomonori@lab.ntt.co.jp> <47733C01.1080002@linux.vnet.ibm.com> <20071228143043U.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20071228143043U.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Dec 2007 12:54:34 -0500 Valdis.Kletnieks@vt.edu wrote:
+FUJITA Tomonori wrote:
+[snip]
+> Thanks,
+> 
+> Can you try this?
+> 
+> 
+> diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
+> index e7d8544..495575a 100644
+> --- a/lib/iommu-helper.c
+> +++ b/lib/iommu-helper.c
+> @@ -8,15 +8,20 @@
+>  static unsigned long find_next_zero_area(unsigned long *map,
+>  					 unsigned long size,
+>  					 unsigned long start,
+> -					 unsigned int nr)
+> +					 unsigned int nr,
+> +					 unsigned long align_mask)
+>  {
+>  	unsigned long index, end, i;
+>  again:
+>  	index = find_next_zero_bit(map, size, start);
+> +
+> +	/* Align allocation */
+> +	index = (index + align_mask) & ~align_mask;
+> +
+>  	end = index + nr;
+> -	if (end > size)
+> +	if (end >= size)
+>  		return -1;
+> -	for (i = index + 1; i < end; i++) {
+> +	for (i = index; i < end; i++) {
+>  		if (test_bit(i, map)) {
+>  			start = i+1;
+>  			goto again;
+> @@ -50,9 +55,8 @@ unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
+>  {
+>  	unsigned long index;
+>  again:
+> -	index = find_next_zero_area(map, size, start, nr);
+> +	index = find_next_zero_area(map, size, start, nr, align_mask);
+>  	if (index != -1) {
+> -		index = (index + align_mask) & ~align_mask;
+>  		if (is_span_boundary(index, nr, shift, boundary_size)) {
+>  			/* we could do more effectively */
+>  			start = index + 1;
 
-> On Sat, 22 Dec 2007 23:30:56 PST, Andrew Morton said:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc6/2.6.24-rc6-mm1/
-> 
-> I seem to be on a roll here... :)
+This on top of -mm? Or on top of the reverted iommu patch.
 
-Yup.  But please do try to get the cc's right.  Especially when I'm lying
-on a beach.
 
-> X86_64 kernel, Dell Latitude D820, Core2 T7200 processor...
-> 
-> (Yes, I know it's tainted.  If I *have* to, I'll try to get an untainted one,
-> which will be a pain - the oss 'nv' driver is a tad busticated on my box at
-> the moment).
-
-I doubt if the nvidia driver is involved in this.
-
-> Took me a bunch of hours to find a way to repeat this one, but it seems
-> pretty consistent - I exit an 'Eterm' process and ka-blam.  First guess
-> I have is that we hit a race and the timer popped right in the middle of
-> a process exiting and we try to update process times on an already-defunct
-> process table entry?
-> 
-> This ring any bells or brown-paper-bag D'Oh!s before I go bisecting?
-> 
-> [15345.901919] Unable to handle kernel paging request at 000000af008c00cd RIP:
-> [15345.901934]  [<ffffffff802310d9>] scheduler_tick+0xdb/0x1c4
-> [15345.901952] PGD 0
-> [15345.901959] Oops: 0000 [1] PREEMPT SMP
-> [15345.901972] last sysfs file: /sys/devices/platform/coretemp.1/temp1_input
-> [15345.901978] CPU 1
-> [15345.901984] Modules linked in: irnet ppp_generic slhc irtty_sir sir_dev ircomm_tty ircomm irda crc_ccitt coretemp nf_conntrack_ftp xt_pkttype ipt_REJECT ipt_osf nf_conntrack_ipv4 xt_ipisforif ipt_recent ipt_LOG xt_u32 iptable_filter ip_tables xt_tcpudp nf_conntrack_ipv6 xt_state nf_conntrack ip6t_LOG xt_limit ip6table_filter ip6_tables x_tables sha256_generic aes_generic acpi_cpufreq tpm_tis pcmcia gspca(U) iwl3945 firmware_class iTCO_wdt yenta_socket compat_ioctl32 ohci1394 rsrc_nonstatic iTCO_vendor_support mac80211 ieee1394 pcmcia_core nvidia(P)(U) watchdog_core battery videodev ac watchdog_dev v4l2_common snd_hda_intel v4l1_compat thermal power_supply cfg80211 button intel_agp processor rtc
-> [15345.902170] Pid: 0, comm: Eterm Tainted: P        2.6.24-rc6-mm1 #4
-> [15345.902176] RIP: 0010:[<ffffffff802310d9>]  [<ffffffff802310d9>] scheduler_tick+0xdb/0x1c4
-> [15345.902189] RSP: 0018:ffff81007f8a3eb8  EFLAGS: 00010083
-> [15345.902195] RAX: 000000af008c005d RBX: 00000df4fefac7d9 RCX: 0000000000000004
-> [15345.902202] RDX: 0000000000000004 RSI: ffff81007e405600 RDI: ffff810001011180
-> [15345.902208] RBP: ffff81007f8a3ed8 R08: 0000000000000010 R09: 0000000000000001
-> [15345.902214] R10: ffff8100808f4000 R11: ffffffff8071d180 R12: ffff810001011180
-> [15345.902219] R13: 0000000000000001 R14: ffff81007e405600 R15: 0000000000000001
-> [15345.902226] FS:  0000000000000000(0000) GS:ffff81007f86f9c0(0063) knlGS:00000000f7dab6c0
-> [15345.902233] CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-> [15345.902238] CR2: 000000af008c00cd CR3: 00000000766c8000 CR4: 00000000000006e0
-> [15345.902244] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [15345.902249] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [15345.902256] Process Eterm (pid: 0, threadinfo 4394404dffffffff, task ffff81007e405600)
-> [15345.902261] Stack:  0000000000000001 0000000000000000 ffff81007e405600 00000c71d7bbe7da
-> [15345.902279]  ffff81007f8a3f08 ffffffff8023f913 ffff81007f8a3f08 ffff81000100e060
-> [15345.902293]  ffff810077161b08 ffff81000100df60 ffff81007f8a3f38 ffffffff80251b7d
-> [15345.902306] Call Trace:
-> [15345.902312]  <IRQ>  [<ffffffff8023f913>] update_process_times+0x4a/0x5b
-> [15345.902334]  [<ffffffff80251b7d>] tick_sched_timer+0x8e/0xcb
-> [15345.902345]  [<ffffffff8024ce2c>] hrtimer_interrupt+0x111/0x1a1
-> [15345.902357]  [<ffffffff8022733e>] ia32_setup_frame+0xb5/0x1b7
-> [15345.902367]  [<ffffffff8021f174>] smp_apic_timer_interrupt+0x86/0xa6
-> [15345.902377]  [<ffffffff8020cca6>] apic_timer_interrupt+0x66/0x70
-> [15345.902383]  <EOI>
-> [15345.902389]
-> [15345.902390] Code: ff 50 70 4c 89 e7 e8 4a 2d 2f 00 44 89 ef e8 85 9f ff ff 41
-> [15345.902445] RIP  [<ffffffff802310d9>] scheduler_tick+0xdb/0x1c4
-> [15345.902455]  RSP <ffff81007f8a3eb8>
-> [15345.902461] CR2: 000000af008c00cd
-> 
-> 
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
