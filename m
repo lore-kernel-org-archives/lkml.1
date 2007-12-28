@@ -1,128 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbXL1Bof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbXL1BsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754609AbXL1Bof (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 20:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbXL1Bo1
+	id S1754689AbXL1BsS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 20:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbXL1BsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 20:44:27 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:64534 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753292AbXL1Bo0 (ORCPT
+	Thu, 27 Dec 2007 20:48:04 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:39474 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752907AbXL1BsB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 20:44:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=j2C1H39ol55bZJYYKUrUTYBXgb9y327XzfK4DawhNzqlolQsY0cANWRim1PCOSspypB/MdhH1+YGGxA7B+GYZIsN3STMyW2wXH6Pno/YHG+SJmP769UUBEVVi1QHooN0RR6fnogLnVo5xVmVk0INmI1VQeuzotoVeTmEERCCnJU=
-Subject: [PATCH] x86: kprobes change kprobe_handler flow
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Thu, 27 Dec 2007 17:44:25 -0800
-Message-Id: <1198806265.6323.34.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Thu, 27 Dec 2007 20:48:01 -0500
+Message-ID: <477455A0.7060603@ak.jp.nec.com>
+Date: Fri, 28 Dec 2007 10:47:12 +0900
+From: KaiGai Kohei <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: akpm@osdl.org, morgan@kernel.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Exporting capability code/name pairs
+References: <477321C8.3070004@ak.jp.nec.com> <20071227161435.GB9677@sergelap.austin.ibm.com>
+In-Reply-To: <20071227161435.GB9677@sergelap.austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the control flow of kprobe_handler more obvious.
+Serge E. Hallyn wrote:
+> Quoting KaiGai Kohei (kaigai@ak.jp.nec.com):
+>> This patch enables to export the code/name pairs of capabilities under
+>> /capability of securityfs.
+>>
+>> In the current libcap, it obtains the list of capabilities from header file
+>> on the build environment statically. However, it is not enough portable
+>> between different versions of kernels, because an already built libcap
+>> cannot have knowledge about new added capabilities.
+>>
+>> Dynamic collection of code/name pairs of capabilities will resolve this
+>> matter.
+>>
+>> But it is not perfect one. I have a bit concern about this patch now.
+>>
+>> 1. I want to generate cap_entries array from linux/capability.h
+>>    automatically. Is there any good idea?
+>> 2. We have to mount securityfs explicitly, or using /etc/fstab.
+>>    It can make a matter when we want to use this features
+>>    in very early boot sequence.
+>>
+>> Any comment please.
+> 
+> I like the idea, but
+   - snip -
+>> +/*
+>> + * capability code/name pairs are exported under /sys/security/capability/
+>> + */
+>> +struct cap_entry_data {
+>> +	unsigned int code;
+>> +	const char *name;
+>> +};
+>> +
+>> +static struct cap_entry_data cap_entries[] = {
+>> +	/* max number of supported format */
+>> +	{ _LINUX_CAPABILITY_VERSION,	"version" },
+>> +	/* max number of capability */
+>> +	{ CAP_LAST_CAP,			"index" },
+>> +	/* list of capabilities */
+>> +	{ CAP_CHOWN,			"cap_chown" },
+>> +	{ CAP_DAC_OVERRIDE,		"cap_dac_override" },
+   - snip -
+>> +	{ CAP_MAC_OVERRIDE,		"cap_mac_override" },
+>> +	{ CAP_MAC_ADMIN,		"cap_mac_admin" },
+>> +	{ -1,				NULL},
+>> +};
+> 
+> I don't like this duplication with the list in include/linux/capability.h.
+> Now when a new cap is added, it needs to be
+> 
+> 	1. added to capability.h
+> 	2. swapped as the new CAP_LAST_CAP in capability.h
+> 	3. added to this list...
+> 
+> Could you integrate the two lists (not sure how offhand), or at least
+> put them in the same place?
 
-Collapse the separate if blocks/gotos with if/else blocks
-this unifies the duplication of the check for a breakpoint
-instruction race with another cpu.
+The following script will generate cap_entries[] array.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Masami, please have a look at this, I think it's much more obvious
-written this way.  The way the old code fell through or not was rather
-non-obvious.  Some further work eliminating the nested returns and
-creating a out: and preempt_out: target at the end of the function
-would make it easier to notice preempt imbalances in later  changes.
+cat include/linux/capability.h				\
+  | egrep '^#define[ \t]+CAP_[A-Z_]+[ \t]+[0-9]+$'	\
+  | awk '{ printf("\t{ %s, \"\" },\n", $2, tolower($2)); }'
 
- arch/x86/kernel/kprobes.c |   48 ++++++++++++++++----------------------------
- 1 files changed, 18 insertions(+), 30 deletions(-)
+It is nice to include the result of this script, like as:
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 4e33329..d656215 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -480,32 +480,22 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 	preempt_disable();
- 	kcb = get_kprobe_ctlblk();
- 
--	/* Check we're not actually recursing */
--	if (kprobe_running()) {
--		p = get_kprobe(addr);
--		if (p) {
-+	p = get_kprobe(addr);
-+	if (p) {
-+		/* Check we're not actually recursing */
-+		if (kprobe_running()) {
- 			ret = reenter_kprobe(p, regs, kcb);
- 			if (kcb->kprobe_status == KPROBE_REENTER)
- 				return 1;
-+			goto no_kprobe;
- 		} else {
--			if (*addr != BREAKPOINT_INSTRUCTION) {
--			/* The breakpoint instruction was removed by
--			 * another cpu right after we hit, no further
--			 * handling of this interrupt is appropriate
--			 */
--				regs->ip = (unsigned long)addr;
--				ret = 1;
--				goto no_kprobe;
--			}
--			p = __get_cpu_var(current_kprobe);
--			if (p->break_handler && p->break_handler(p, regs))
--				goto ss_probe;
-+			set_current_kprobe(p, regs, kcb);
-+			kcb->kprobe_status = KPROBE_HIT_ACTIVE;
-+			if (p->pre_handler && p->pre_handler(p, regs))
-+				/* handler set things up, skip ss setup */
-+				return 1;
- 		}
--		goto no_kprobe;
--	}
--
--	p = get_kprobe(addr);
--	if (!p) {
-+	} else {
- 		if (*addr != BREAKPOINT_INSTRUCTION) {
- 			/*
- 			 * The breakpoint instruction was removed right
-@@ -518,18 +508,16 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 			 */
- 			regs->ip = (unsigned long)addr;
- 			ret = 1;
-+			goto no_kprobe;
-+		}
-+		if (kprobe_running()) {
-+			p = __get_cpu_var(current_kprobe);
-+			if (p->break_handler && p->break_handler(p, regs))
-+				goto ss_probe;
-+			goto no_kprobe;
- 		}
--		/* Not one of ours: let kernel handle it */
--		goto no_kprobe;
- 	}
- 
--	set_current_kprobe(p, regs, kcb);
--	kcb->kprobe_status = KPROBE_HIT_ACTIVE;
--
--	if (p->pre_handler && p->pre_handler(p, regs))
--		/* handler has already set things up, so skip ss setup */
--		return 1;
--
- ss_probe:
- #if !defined(CONFIG_PREEMPT) || defined(CONFIG_PM)
- 	if (p->ainsn.boostable == 1 && !p->post_handler) {
+static struct cap_entry_data cap_entries[] = {
+	/* max number of supported format */
+	{ _LINUX_CAPABILITY_VERSION,	"version" },
+	/* max number of capability */
+	{ CAP_LAST_CAP,			"index" },
+#include "capability_names.h"
+	{ -1,				NULL },
+};
+
+I guess we can put this script on Makefile like as kernel/timeconst.pl doing.
+
+Thanks,
 -- 
-1.5.4.rc2.1097.gb6e0d
-
-
-
+OSS Platform Development Division, NEC
+KaiGai Kohei <kaigai@ak.jp.nec.com>
