@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbXL1HgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbXL1Hgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753280AbXL1HgK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 02:36:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbXL1Hfv
+	id S1755559AbXL1Hgy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 02:36:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbXL1Hgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 02:35:51 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:49580 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752848AbXL1Hft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 02:35:49 -0500
-Message-ID: <4774A74B.3000105@linux.vnet.ibm.com>
-Date: Fri, 28 Dec 2007 13:05:39 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Fri, 28 Dec 2007 02:36:46 -0500
+Received: from pils.linux-kernel.at ([213.129.242.82]:8480 "EHLO
+	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752959AbXL1Hgp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 02:36:45 -0500
+Message-ID: <4774A774.8020404@linux-kernel.at>
+Date: Fri, 28 Dec 2007 08:36:20 +0100
+From: Oliver Falk <oliver@linux-kernel.at>
+Organization: Linux kernel Austria
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070615 Fedora/2.0.0.4-1.fc7 Thunderbird/2.0.0.4 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: SCSI errors on powerpc with 2.6.24-rc6-mm1
-References: <47732C41.7000003@linux.vnet.ibm.com> <20071227134335O.fujita.tomonori@lab.ntt.co.jp> <47733C01.1080002@linux.vnet.ibm.com> <20071228143043U.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20071228143043U.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Justin Banks <justinb@bakbone.com>
+CC: Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: kernel panic - help!?
+References: <475FA716.2000105@linux-kernel.at> <a8e1da0712120156v2b855f64jf40f9971ebf9b689@mail.gmail.com> <20071212142436.GB16664@bleen.domain.actdsltmp>
+In-Reply-To: <20071212142436.GB16664@bleen.domain.actdsltmp>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-lkernAT-MailScanner-Information: Please contact the ISP for more information
+X-MailScanner-ID: lBS7aKvT017572
+X-lkernAT-MailScanner: Found to be clean
+X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-3.009, required 5, ALL_TRUSTED -1.80, BAYES_00 -2.60,
+	PLING_QUERY 1.39)
+X-MailScanner-From: oliver@linux-kernel.at
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-[snip]
-> Thanks,
+On 12/12/2007 03:24 PM, Justin Banks wrote:
+> Dave Young wrote
+>> On Dec 12, 2007 5:17 PM, Oliver Falk <oliver@linux-kernel.at> wrote:
+>>> Can someone explain me that?
+>>>
+>>> Dec 12 00:24:15 santorini kernel: Unable to handle kernel NULL pointer
+>>> dereference at virtual address 00000000
+>>> Dec 12 00:24:15 santorini kernel:  printing eip:
+>>> Dec 12 00:24:15 santorini kernel: c0190182
+>>> Dec 12 00:24:15 santorini kernel: *pde = 1b62b001
+>>> Dec 12 00:24:15 santorini kernel: Oops: 0000 [#1]
+>>> Dec 12 00:24:15 santorini kernel: SMP
+>>> Dec 12 00:24:15 santorini kernel: Modules linked in: mptctl mptbase sg
+>>> md5 ipv6 i2c_dev i2c_core button battery ac uhci_hcd ehci_hcd hw_rand
+>>> om tg3 bonding(U) floppy ata_piix libata dm_snapshot dm_zero dm_mirror
+>>> ext3 jbd dm_mod cciss sd_mod scsi_mod
+>>> Dec 12 00:24:15 santorini kernel: CPU:    2
+>>> Dec 12 00:24:15 santorini kernel: EIP:    0060:[<c0190182>]    Not
+>>> tainted VLI
+>>> Dec 12 00:24:15 santorini kernel: EFLAGS: 00010246   (2.6.9-55.0.9.ELsmp)
 > 
-> Can you try this?
+> ----------------------------------------------------------^^^^^^^^^^^^^^^^^^
+> 
+> <snip>
 > 
 > 
-> diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-> index e7d8544..495575a 100644
-> --- a/lib/iommu-helper.c
-> +++ b/lib/iommu-helper.c
-> @@ -8,15 +8,20 @@
->  static unsigned long find_next_zero_area(unsigned long *map,
->  					 unsigned long size,
->  					 unsigned long start,
-> -					 unsigned int nr)
-> +					 unsigned int nr,
-> +					 unsigned long align_mask)
->  {
->  	unsigned long index, end, i;
->  again:
->  	index = find_next_zero_bit(map, size, start);
-> +
-> +	/* Align allocation */
-> +	index = (index + align_mask) & ~align_mask;
-> +
->  	end = index + nr;
-> -	if (end > size)
-> +	if (end >= size)
->  		return -1;
-> -	for (i = index + 1; i < end; i++) {
-> +	for (i = index; i < end; i++) {
->  		if (test_bit(i, map)) {
->  			start = i+1;
->  			goto again;
-> @@ -50,9 +55,8 @@ unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
->  {
->  	unsigned long index;
->  again:
-> -	index = find_next_zero_area(map, size, start, nr);
-> +	index = find_next_zero_area(map, size, start, nr, align_mask);
->  	if (index != -1) {
-> -		index = (index + align_mask) & ~align_mask;
->  		if (is_span_boundary(index, nr, shift, boundary_size)) {
->  			/* we could do more effectively */
->  			start = index + 1;
+>> Please tell the kernel version before post.
+> 
+> It's really really old :)
 
-This on top of -mm? Or on top of the reverted iommu patch.
+of@santorini:~$ uname -r
+2.6.9-55.0.9.ELsmp
 
+Some RHEL system....
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+-of
