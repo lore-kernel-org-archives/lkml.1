@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbXL1FDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbXL1FSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752790AbXL1FDW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 00:03:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbXL1FDN
+	id S1754262AbXL1FSV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 00:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbXL1FSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 00:03:13 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:36671 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750762AbXL1FDM (ORCPT
+	Fri, 28 Dec 2007 00:18:11 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47420
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750958AbXL1FSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 00:03:12 -0500
-X-Greylist: delayed 1733 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Dec 2007 00:03:11 EST
-X-Sasl-enc: P2MGuI2hsuRG6g4xgIauZDpzAeb9RKmek17cfEzpmS2K 1198816456
-Subject: Re: [autofs] [PATCH 1/4] fs/autofs: Use time_before,
-	time_before_eq, etc.
-From: Ian Kent <raven@themaw.net>
-To: Julia Lawall <julia@diku.dk>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ray Lee <ray-lk@madrabbit.org>,
-       autofs@linux.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0712270805370.6952@ask.diku.dk>
-References: <Pine.LNX.4.58.0712261621000.1185@pc-041.diku.dk>
-	 <2c0942db0712261158q34cddebeifceef6ceda683320@mail.gmail.com>
-	 <4772BD6C.1010502@zytor.com> <Pine.LNX.4.64.0712270805370.6952@ask.diku.dk>
-Content-Type: text/plain
-Date: Fri, 28 Dec 2007 13:34:10 +0900
-Message-Id: <1198816450.3089.24.camel@raven.themaw.net>
+	Fri, 28 Dec 2007 00:18:10 -0500
+Date: Thu, 27 Dec 2007 21:18:08 -0800 (PST)
+Message-Id: <20071227.211808.221171928.davem@davemloft.net>
+To: guijianfeng@cn.fujitsu.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: fib6_del_route has redundant code
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <477353B6.6000102@cn.fujitsu.com>
+References: <477353B6.6000102@cn.fujitsu.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-12-27 at 08:08 +0100, Julia Lawall wrote:
-> On Wed, 26 Dec 2007, H. Peter Anvin wrote:
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Date: Thu, 27 Dec 2007 15:26:46 +0800
+
+> I think the following code in fib6_del_route in the latest kernel is useless.
+> 1125         if (fn->leaf == NULL && fn->fn_flags&RTN_TL_ROOT)
+> 1126                 fn->leaf = &ip6_null_entry;
 > 
-> > Ray Lee wrote:
-> > > On Dec 26, 2007 7:21 AM, Julia Lawall <julia@diku.dk> wrote:
-> > > > -               if (jiffies - ent->last_usage < timeout)
-> > > > +               if (time_before(jiffies, ent->last_usage + timeout))
-> > > 
-> > > I don't think this is a safe change? subtraction is always safe (if
-> > > you think about it as 'distance'), addition isn't always safe unless
-> > > you know the range. The time_before macro will expand that out to
-> > > (effectively):
+> ip6_null_entry will never be unlinked from fn->leaf now, that is,
+> fn->leaf == NULL will never meet.
 
-I don't see how subtraction is any different in this case as that could
-just as easily underflow leading to the same issue.
+I think you are right, but if it is true the next block of
+code is dead too:
 
-> > > 
-> > >   if ( (long)(ent->last_usage + timeout) - (long)(jiffies) < 0 )
-> > > 
-> > > which seems to introduce an overflow condition in the first term.
-> > > 
-> > > Dunno, I may be wrong (happens often), but at the very least what
-> > > you've transformed it into is no longer obviously correct, and so it's
-> > > not a great change.
-> > 
-> > Indeed.  The bottom form will have overflow issues at time
-> > jiffies_wraparound/2, whereas the top form will have overflow issues only near
-> > jiffies_wraparound/1.
-> 
-> OK, so it seems like it is not such a good idea.
-> 
-> There are, however, over 200 files that contain calls to the various time 
-> functions that follow this pattern, eg:
-> 
-> arch/arm/kernel/ecard.c:563
-> if (!last || time_after(jiffies, last + 5*HZ)) {
+	/* If it was last route, expunge its radix tree node */
+	if (fn->leaf == NULL) {
+		fn->fn_flags &= ~RTN_RTINFO;
+		rt6_stats.fib_route_nodes--;
+		fn = fib6_repair_tree(fn);
+	}
 
-Including autofs4.
-
-> 
-> Perhaps they should be coverted to use a subtraction as well?
-
-Thinking about the cases involved always makes my head ache.
-
-Ian
-
-
+But I am not completely convinced that all of these lines
+of code can be removed :-)
