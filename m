@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbXL1UqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbXL1Uqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755648AbXL1UqY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 15:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbXL1Unv
+	id S1754435AbXL1Uqk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 15:46:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbXL1Uny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 15:43:51 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37107 "EHLO
+	Fri, 28 Dec 2007 15:43:54 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37101 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753105AbXL1Unk (ORCPT
+	with ESMTP id S1752981AbXL1Uni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 15:43:40 -0500
+	Fri, 28 Dec 2007 15:43:38 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 19/30] Unionfs: prevent false lockdep warnings in stacking
-Date: Fri, 28 Dec 2007 15:42:53 -0500
-Message-Id: <1198874594640-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 07/30] Unionfs: create new special files only in first branch
+Date: Fri, 28 Dec 2007 15:42:41 -0500
+Message-Id: <1198874589339-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11988745841003-git-send-email-ezk@cs.sunysb.edu>
@@ -26,244 +26,244 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A stackable file system like unionfs often performs an operation on a lower
-file system, by calling a vfs_* method, having been called possibly by the
-very same method from the VFS.  Both calls to the vfs_* method grab a lock
-in the same lock class, and hence lockdep complains.  This warning is a
-false positive in instances where unionfs only calls the vfs_* method on
-lower objects; there's a strict lock ordering here: upper objects first,
-then lower objects.
-
-We want to prevent these false positives so that lockdep will not shutdown
-so it'd still be able to warn us about potentially true locking problems.
-So, we temporarily turn off lockdep ONLY AROUND the calls to vfs methods to
-which we pass lower objects, and only for those instances where lockdep
-complained.  While this solution may seem unclean, it is not without
-precedent: other places in the kernel also do similar temporary disabling,
-of course after carefully having checked that it is the right thing to do.
-
-In the long run, lockdep needs to be taught how to handle about stacking.
-Then this patch can be removed.  It is likely that such lockdep-stacking
-support will do essentially the same as this patch: consider the same
-ordering (upper then lower) and consider upper vs. lower locks to be in
-different classes.
+When creating a new special file, always create it in the first branch,
+which is always writeable, not in the branch which may have a whiteout in
+it.  This makes the policy for the creation of new special files consistent
+with that of new files/directories, as well as improves efficiency a bit.
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- Documentation/filesystems/unionfs/issues.txt |   10 +++++++---
- fs/unionfs/copyup.c                          |    3 +++
- fs/unionfs/inode.c                           |   21 +++++++++++++++++++--
- fs/unionfs/rename.c                          |   21 +++++++++++----------
- fs/unionfs/super.c                           |    4 ++++
- fs/unionfs/unlink.c                          |   12 ++++++++++--
- 6 files changed, 54 insertions(+), 17 deletions(-)
+ fs/unionfs/inode.c |  174 +++++++++++++++++++++++++++------------------------
+ 1 files changed, 92 insertions(+), 82 deletions(-)
 
-diff --git a/Documentation/filesystems/unionfs/issues.txt b/Documentation/filesystems/unionfs/issues.txt
-index bb6ab05..f4b7e7e 100644
---- a/Documentation/filesystems/unionfs/issues.txt
-+++ b/Documentation/filesystems/unionfs/issues.txt
-@@ -17,8 +17,12 @@ KNOWN Unionfs 2.x ISSUES:
-    an upper object, and then a lower object, in a strict order to avoid
-    locking problems; in addition, Unionfs, as a fan-out file system, may
-    have to lock several lower inodes.  We are currently looking into Lockdep
--   to see how to make it aware of stackable file systems.  In the meantime,
--   if you get any warnings from Lockdep, you can safely ignore them (or feel
--   free to report them to the Unionfs maintainers, just to be sure).
-+   to see how to make it aware of stackable file systems.  For now, we
-+   temporarily disable lockdep when calling vfs methods on lower objects,
-+   but only for those places where lockdep complained.  While this solution
-+   may seem unclean, it is not without precedent: other places in the kernel
-+   also do similar temporary disabling, of course after carefully having
-+   checked that it is the right thing to do.  Anyway, you get any warnings
-+   from Lockdep, please report them to the Unionfs maintainers.
- 
- For more information, see <http://unionfs.filesystems.org/>.
-diff --git a/fs/unionfs/copyup.c b/fs/unionfs/copyup.c
-index f48209f..0012caf 100644
---- a/fs/unionfs/copyup.c
-+++ b/fs/unionfs/copyup.c
-@@ -297,11 +297,14 @@ static int __copyup_reg_data(struct dentry *dentry,
- 			break;
- 		}
- 
-+		/* see Documentation/filesystems/unionfs/issues.txt */
-+		lockdep_off();
- 		write_bytes =
- 			output_file->f_op->write(output_file,
- 						 (char __user *)buf,
- 						 read_bytes,
- 						 &output_file->f_pos);
-+		lockdep_on();
- 		if ((write_bytes < 0) || (write_bytes < read_bytes)) {
- 			err = write_bytes;
- 			break;
 diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
-index 3df9b19..4890f42 100644
+index 63ff3d3..8076d0b 100644
 --- a/fs/unionfs/inode.c
 +++ b/fs/unionfs/inode.c
-@@ -80,7 +80,10 @@ static int unionfs_create(struct inode *parent, struct dentry *dentry,
- 			struct dentry *lower_dir_dentry;
+@@ -686,15 +686,15 @@ out:
+ 	return err;
+ }
  
- 			lower_dir_dentry = lock_parent(wh_dentry);
-+			/* see Documentation/filesystems/unionfs/issues.txt */
-+			lockdep_off();
- 			err = vfs_unlink(lower_dir_dentry->d_inode, wh_dentry);
-+			lockdep_on();
- 			unlock_dir(lower_dir_dentry);
+-static int unionfs_mknod(struct inode *dir, struct dentry *dentry, int mode,
++static int unionfs_mknod(struct inode *parent, struct dentry *dentry, int mode,
+ 			 dev_t dev)
+ {
+ 	int err = 0;
+-	struct dentry *lower_dentry = NULL, *whiteout_dentry = NULL;
++	struct dentry *lower_dentry = NULL;
++	struct dentry *wh_dentry = NULL;
+ 	struct dentry *lower_parent_dentry = NULL;
+-	int bindex = 0, bstart;
+ 	char *name = NULL;
+-	int whiteout_unlinked = 0;
++	int valid = 0;
  
- 			/*
-@@ -262,9 +265,13 @@ static int unionfs_link(struct dentry *old_dentry, struct inode *dir,
- 		/* found a .wh.foo entry, unlink it and then call vfs_link() */
- 		lower_dir_dentry = lock_parent(whiteout_dentry);
- 		err = is_robranch_super(new_dentry->d_sb, dbstart(new_dentry));
--		if (!err)
-+		if (!err) {
-+			/* see Documentation/filesystems/unionfs/issues.txt */
-+			lockdep_off();
- 			err = vfs_unlink(lower_dir_dentry->d_inode,
- 					 whiteout_dentry);
-+			lockdep_on();
+ 	unionfs_read_lock(dentry->d_sb);
+ 	unionfs_lock_dentry(dentry);
+@@ -705,115 +705,125 @@ static int unionfs_mknod(struct inode *dir, struct dentry *dentry, int mode,
+ 		goto out;
+ 	}
+ 
+-	bstart = dbstart(dentry);
+-
+-	lower_dentry = unionfs_lower_dentry(dentry);
++	/*
++	 * It's only a bug if this dentry was not negative and couldn't be
++	 * revalidated (shouldn't happen).
++	 */
++	BUG_ON(!valid && dentry->d_inode);
+ 
+ 	/*
+-	 * check if whiteout exists in this branch, i.e. lookup .wh.foo
+-	 * first.
++	 * We shouldn't create things in a read-only branch; this check is a
++	 * bit redundant as we don't allow branch 0 to be read-only at the
++	 * moment
+ 	 */
+-	name = alloc_whname(dentry->d_name.name, dentry->d_name.len);
+-	if (unlikely(IS_ERR(name))) {
+-		err = PTR_ERR(name);
++	err = is_robranch_super(dentry->d_sb, 0);
++	if (err) {
++		err = -EROFS;
+ 		goto out;
+ 	}
+ 
+-	whiteout_dentry = lookup_one_len(name, lower_dentry->d_parent,
+-					 dentry->d_name.len + UNIONFS_WHLEN);
+-	if (IS_ERR(whiteout_dentry)) {
+-		err = PTR_ERR(whiteout_dentry);
+-		goto out;
+-	}
++	/*
++	 * We _always_ create on branch 0
++	 */
++	lower_dentry = unionfs_lower_dentry_idx(dentry, 0);
++	if (lower_dentry) {
++		/*
++		 * check if whiteout exists in this branch, i.e. lookup .wh.foo
++		 * first.
++		 */
++		name = alloc_whname(dentry->d_name.name, dentry->d_name.len);
++		if (unlikely(IS_ERR(name))) {
++			err = PTR_ERR(name);
++			goto out;
 +		}
  
- 		fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
- 		dir->i_nlink = unionfs_get_nlinks(dir);
-@@ -291,9 +298,13 @@ static int unionfs_link(struct dentry *old_dentry, struct inode *dir,
- 	BUG_ON(dbstart(old_dentry) != dbstart(new_dentry));
- 	lower_dir_dentry = lock_parent(lower_new_dentry);
- 	err = is_robranch(old_dentry);
--	if (!err)
-+	if (!err) {
-+		/* see Documentation/filesystems/unionfs/issues.txt */
-+		lockdep_off();
- 		err = vfs_link(lower_old_dentry, lower_dir_dentry->d_inode,
- 			       lower_new_dentry);
-+		lockdep_on();
-+	}
- 	unlock_dir(lower_dir_dentry);
+-	if (!whiteout_dentry->d_inode) {
+-		dput(whiteout_dentry);
+-		whiteout_dentry = NULL;
+-	} else {
+-		/* found .wh.foo, unlink it */
+-		lower_parent_dentry = lock_parent(whiteout_dentry);
++		wh_dentry = lookup_one_len(name, lower_dentry->d_parent,
++					   dentry->d_name.len + UNIONFS_WHLEN);
++		if (IS_ERR(wh_dentry)) {
++			err = PTR_ERR(wh_dentry);
++			wh_dentry = NULL;
++			goto out;
++		}
  
- docopyup:
-@@ -316,10 +327,16 @@ docopyup:
- 					unionfs_lower_dentry(old_dentry);
- 				lower_dir_dentry =
- 					lock_parent(lower_new_dentry);
-+				/*
-+				 * see
-+				 * Documentation/filesystems/unionfs/issues.txt
-+				 */
-+				lockdep_off();
- 				/* do vfs_link */
- 				err = vfs_link(lower_old_dentry,
- 					       lower_dir_dentry->d_inode,
- 					       lower_new_dentry);
-+				lockdep_on();
- 				unlock_dir(lower_dir_dentry);
- 				goto check_link;
+-		/* found a.wh.foo entry, remove it then do vfs_mkdir */
+-		err = is_robranch_super(dentry->d_sb, bstart);
+-		if (!err)
+-			err = vfs_unlink(lower_parent_dentry->d_inode,
+-					 whiteout_dentry);
+-		dput(whiteout_dentry);
++		if (wh_dentry->d_inode) {
++			/*
++			 * .wh.foo has been found, so let's unlink it
++			 */
++			struct dentry *lower_dir_dentry;
+ 
+-		unlock_dir(lower_parent_dentry);
++			lower_dir_dentry = lock_parent(wh_dentry);
++			err = vfs_unlink(lower_dir_dentry->d_inode, wh_dentry);
++			unlock_dir(lower_dir_dentry);
+ 
+-		if (err) {
+-			if (!IS_COPYUP_ERR(err))
++			/*
++			 * Whiteouts are special files and should be deleted
++			 * no matter what (as if they never existed), in
++			 * order to allow this create operation to succeed.
++			 * This is especially important in sticky
++			 * directories: a whiteout may have been created by
++			 * one user, but the newly created file may be
++			 * created by another user.  Therefore, in order to
++			 * maintain Unix semantics, if the vfs_unlink above
++			 * ailed, then we have to try to directly unlink the
++			 * whiteout.  Note: in the ODF version of unionfs,
++			 * whiteout are handled much more cleanly.
++			 */
++			if (err == -EPERM) {
++				struct inode *inode = lower_dir_dentry->d_inode;
++				err = inode->i_op->unlink(inode, wh_dentry);
++			}
++			if (err) {
++				printk(KERN_ERR "unionfs: mknod: could not "
++				       "unlink whiteout, err = %d\n", err);
+ 				goto out;
+-			bstart--;
+-		} else {
+-			whiteout_unlinked = 1;
+-		}
+-	}
+-
+-	for (bindex = bstart; bindex >= 0; bindex--) {
+-		if (is_robranch_super(dentry->d_sb, bindex))
+-			continue;
+-
+-		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
+-		if (!lower_dentry) {
+-			lower_dentry = create_parents(dir, dentry,
+-						      dentry->d_name.name,
+-						      bindex);
+-			if (IS_ERR(lower_dentry)) {
+-				printk(KERN_ERR "unionfs: failed to create "
+-				       "parents on %d, err = %ld\n",
+-				       bindex, PTR_ERR(lower_dentry));
+-				continue;
  			}
-diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
-index 452d1e7..8b04acf 100644
---- a/fs/unionfs/rename.c
-+++ b/fs/unionfs/rename.c
-@@ -90,16 +90,14 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 		dput(lower_wh_dentry);
- 	}
+ 		}
+-
+-		lower_parent_dentry = lock_parent(lower_dentry);
+-		if (IS_ERR(lower_parent_dentry)) {
+-			err = PTR_ERR(lower_parent_dentry);
++	} else {
++		/*
++		 * if lower_dentry is NULL, create the entire
++		 * dentry directory structure in branch 0.
++		 */
++		lower_dentry = create_parents(parent, dentry,
++					      dentry->d_name.name, 0);
++		if (IS_ERR(lower_dentry)) {
++			err = PTR_ERR(lower_dentry);
+ 			goto out;
+ 		}
++	}
  
-+	err = is_robranch_super(old_dentry->d_sb, bindex);
-+	if (err)
+-		err = vfs_mknod(lower_parent_dentry->d_inode,
+-				lower_dentry, mode, dev);
+-
+-		if (err) {
+-			unlock_dir(lower_parent_dentry);
+-			break;
+-		}
++	lower_parent_dentry = lock_parent(lower_dentry);
++	if (IS_ERR(lower_parent_dentry)) {
++		err = PTR_ERR(lower_parent_dentry);
 +		goto out;
-+
- 	dget(lower_old_dentry);
- 	lower_old_dir_dentry = dget_parent(lower_old_dentry);
- 	lower_new_dir_dentry = dget_parent(lower_new_dentry);
- 
--	lock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
--
--	err = is_robranch_super(old_dentry->d_sb, bindex);
--	if (err)
--		goto out_unlock;
--
- 	/*
- 	 * ready to whiteout for old_dentry. caller will create the actual
- 	 * whiteout, and must dput(*wh_old)
-@@ -110,7 +108,7 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 				      old_dentry->d_name.len);
- 		err = PTR_ERR(whname);
- 		if (unlikely(IS_ERR(whname)))
--			goto out_unlock;
-+			goto out_dput;
- 		*wh_old = lookup_one_len(whname, lower_old_dir_dentry,
- 					 old_dentry->d_name.len +
- 					 UNIONFS_WHLEN);
-@@ -118,16 +116,19 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 		err = PTR_ERR(*wh_old);
- 		if (IS_ERR(*wh_old)) {
- 			*wh_old = NULL;
--			goto out_unlock;
-+			goto out_dput;
- 		}
- 	}
- 
-+	/* see Documentation/filesystems/unionfs/issues.txt */
-+	lockdep_off();
-+	lock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
- 	err = vfs_rename(lower_old_dir_dentry->d_inode, lower_old_dentry,
- 			 lower_new_dir_dentry->d_inode, lower_new_dentry);
--
--out_unlock:
- 	unlock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
-+	lockdep_on();
- 
-+out_dput:
- 	dput(lower_old_dir_dentry);
- 	dput(lower_new_dir_dentry);
- 	dput(lower_old_dentry);
-diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
-index 8b70aca..45bcf89 100644
---- a/fs/unionfs/super.c
-+++ b/fs/unionfs/super.c
-@@ -839,7 +839,11 @@ static void unionfs_clear_inode(struct inode *inode)
- 			lower_inode = unionfs_lower_inode_idx(inode, bindex);
- 			if (!lower_inode)
- 				continue;
-+			unionfs_set_lower_inode_idx(inode, bindex, NULL);
-+			/* see Documentation/filesystems/unionfs/issues.txt */
-+			lockdep_off();
- 			iput(lower_inode);
-+			lockdep_on();
- 		}
- 	}
- 
-diff --git a/fs/unionfs/unlink.c b/fs/unionfs/unlink.c
-index 423ff36..677a5ae 100644
---- a/fs/unionfs/unlink.c
-+++ b/fs/unionfs/unlink.c
-@@ -41,8 +41,12 @@ static int unionfs_unlink_whiteout(struct inode *dir, struct dentry *dentry)
- 	/* avoid destroying the lower inode if the file is in use */
- 	dget(lower_dentry);
- 	err = is_robranch_super(dentry->d_sb, bindex);
--	if (!err)
-+	if (!err) {
-+		/* see Documentation/filesystems/unionfs/issues.txt */
-+		lockdep_off();
- 		err = vfs_unlink(lower_dir_dentry->d_inode, lower_dentry);
-+		lockdep_on();
 +	}
- 	/* if vfs_unlink succeeded, update our inode's times */
+ 
+-		/*
+-		 * Only INTERPOSE_LOOKUP can return a value other than 0 on
+-		 * err.
+-		 */
+-		err = PTR_ERR(unionfs_interpose(dentry, dir->i_sb, 0));
++	err = vfs_mknod(lower_parent_dentry->d_inode, lower_dentry, mode, dev);
++	if (!err) {
++		err = PTR_ERR(unionfs_interpose(dentry, parent->i_sb, 0));
+ 		if (!err) {
+-			fsstack_copy_attr_times(dir,
+-						lower_parent_dentry->d_inode);
+-			fsstack_copy_inode_size(dir,
++			unionfs_copy_attr_times(parent);
++			fsstack_copy_inode_size(parent,
+ 						lower_parent_dentry->d_inode);
+-			/* update number of links on parent directory */
+-			dir->i_nlink = unionfs_get_nlinks(dir);
++			/* update no. of links on parent directory */
++			parent->i_nlink = unionfs_get_nlinks(parent);
+ 		}
+-		unlock_dir(lower_parent_dentry);
+-
+-		break;
+ 	}
+ 
+-out:
+-	if (!dentry->d_inode)
+-		d_drop(dentry);
++	unlock_dir(lower_parent_dentry);
+ 
++out:
++	dput(wh_dentry);
+ 	kfree(name);
+ 
  	if (!err)
- 		unionfs_copy_attr_times(dentry->d_inode);
-@@ -139,8 +143,12 @@ static int unionfs_rmdir_first(struct inode *dir, struct dentry *dentry,
- 	/* avoid destroying the lower inode if the file is in use */
- 	dget(lower_dentry);
- 	err = is_robranch(dentry);
--	if (!err)
-+	if (!err) {
-+		/* see Documentation/filesystems/unionfs/issues.txt */
-+		lockdep_off();
- 		err = vfs_rmdir(lower_dir_dentry->d_inode, lower_dentry);
-+		lockdep_on();
-+	}
- 	dput(lower_dentry);
+ 		unionfs_postcopyup_setmnt(dentry);
  
- 	fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
+-	unionfs_check_inode(dir);
++	unionfs_check_inode(parent);
++	if (!err)
++		unionfs_check_dentry(dentry->d_parent);
+ 	unionfs_check_dentry(dentry);
+ 	unionfs_unlock_dentry(dentry);
+ 	unionfs_read_unlock(dentry->d_sb);
+-
+ 	return err;
+ }
+ 
 -- 
 1.5.2.2
 
