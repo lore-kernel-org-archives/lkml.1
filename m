@@ -1,108 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbXL1Ee2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbXL1FDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754991AbXL1Ee2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 23:34:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbXL1EeS
+	id S1752790AbXL1FDW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 00:03:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbXL1FDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 23:34:18 -0500
-Received: from iabervon.org ([66.92.72.58]:40599 "EHLO iabervon.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754104AbXL1EeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 23:34:17 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Dec 2007 23:34:17 EST
-Date: Thu, 27 Dec 2007 23:27:35 -0500 (EST)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Kai Ruhnau <kai@tragetaschen.dyndns.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Loic Prylli <loic@myri.com>, Robert Hancock <hancockr@shaw.ca>,
-       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gregkh@suse.de, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-In-Reply-To: <47742498.1060900@tragetaschen.dyndns.org>
-Message-ID: <alpine.LNX.1.00.0712272204520.13593@iabervon.org>
-References: <fa.m7tRTz/ymu3iMyLTO2aF1Tvaw24@ifi.uio.no> <fa.XrRLIuL4juNAXXaMPF3iY8FyWW8@ifi.uio.no> <fa.H0fcNl3b6xVBwzWUgT72M4K6KOU@ifi.uio.no> <4773EBB4.2020805@shaw.ca> <alpine.LFD.0.9999.0712271023090.21557@woody.linux-foundation.org> <477414C9.3040906@myri.com>
- <alpine.LFD.0.9999.0712271328010.21557@woody.linux-foundation.org> <alpine.LFD.0.9999.0712271338280.21557@woody.linux-foundation.org> <47742498.1060900@tragetaschen.dyndns.org>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 28 Dec 2007 00:03:13 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:36671 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750762AbXL1FDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 00:03:12 -0500
+X-Greylist: delayed 1733 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Dec 2007 00:03:11 EST
+X-Sasl-enc: P2MGuI2hsuRG6g4xgIauZDpzAeb9RKmek17cfEzpmS2K 1198816456
+Subject: Re: [autofs] [PATCH 1/4] fs/autofs: Use time_before,
+	time_before_eq, etc.
+From: Ian Kent <raven@themaw.net>
+To: Julia Lawall <julia@diku.dk>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ray Lee <ray-lk@madrabbit.org>,
+       autofs@linux.kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0712270805370.6952@ask.diku.dk>
+References: <Pine.LNX.4.58.0712261621000.1185@pc-041.diku.dk>
+	 <2c0942db0712261158q34cddebeifceef6ceda683320@mail.gmail.com>
+	 <4772BD6C.1010502@zytor.com> <Pine.LNX.4.64.0712270805370.6952@ask.diku.dk>
+Content-Type: text/plain
+Date: Fri, 28 Dec 2007 13:34:10 +0900
+Message-Id: <1198816450.3089.24.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Dec 2007, Kai Ruhnau wrote:
-
-> Linus Torvalds wrote:
-> > On Thu, 27 Dec 2007, Linus Torvalds wrote:
-> >   
-> >> Kai, can you try that? Just remove the call to pci_enable_crs() in 
-> >> pci_scan_bridge() in drivers/pci/probe.c, and see if mmconfig starts 
-> >> working for you?
-> >>     
-> >
-> > We could also make the error handling more permissive, and just check for 
-> > the low 16 bits, which is the part that the CRS spec mentions the actual 
-> > value for. The whole vendor ID of 0x0001 is mentioned int he CRS spec as 
-> > being explicitly chosen exactly because it's invalid.
-> >
-> > That said, given that we don't actually reap any benefits from CRS support 
-> > right now *anyway*, I think the right thing to do is disable it by 
-> > default. But it would be interesting to know if this patch makes it work 
-> > on those ATI bridges..
-> >
-> > 		Linus
-> >
-> > ---
-> >  drivers/pci/probe.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> > index 2f75d69..94cd3a4 100644
-> > --- a/drivers/pci/probe.c
-> > +++ b/drivers/pci/probe.c
-> > @@ -908,7 +908,7 @@ pci_scan_device(struct pci_bus *bus, int devfn)
-> >  		return NULL;
-> >  
-> >  	/* Configuration request Retry Status */
-> > -	while (l == 0xffff0001) {
-> > +	while ((l & 0xffff) == 0x0001) {
-> >  		msleep(delay);
-> >  		delay *= 2;
-> >  		if (pci_bus_read_config_dword(bus, devfn, PCI_VENDOR_ID, &l)
+On Thu, 2007-12-27 at 08:08 +0100, Julia Lawall wrote:
+> On Wed, 26 Dec 2007, H. Peter Anvin wrote:
 > 
-> That one did not work out so well.
-> I reenabled the call to pci_enable_crs() and changed the line as above.
-> That resulted in two timeouts (from dmesg):
+> > Ray Lee wrote:
+> > > On Dec 26, 2007 7:21 AM, Julia Lawall <julia@diku.dk> wrote:
+> > > > -               if (jiffies - ent->last_usage < timeout)
+> > > > +               if (time_before(jiffies, ent->last_usage + timeout))
+> > > 
+> > > I don't think this is a safe change? subtraction is always safe (if
+> > > you think about it as 'distance'), addition isn't always safe unless
+> > > you know the range. The time_before macro will expand that out to
+> > > (effectively):
+
+I don't see how subtraction is any different in this case as that could
+just as easily underflow leading to the same issue.
+
+> > > 
+> > >   if ( (long)(ent->last_usage + timeout) - (long)(jiffies) < 0 )
+> > > 
+> > > which seems to introduce an overflow condition in the first term.
+> > > 
+> > > Dunno, I may be wrong (happens often), but at the very least what
+> > > you've transformed it into is no longer obviously correct, and so it's
+> > > not a great change.
+> > 
+> > Indeed.  The bottom form will have overflow issues at time
+> > jiffies_wraparound/2, whereas the top form will have overflow issues only near
+> > jiffies_wraparound/1.
 > 
-> [....]
-> ACPI: Interpreter enabled
-> ACPI: (supports S0 S3 S4 S5)
-> ACPI: Using IOACPI for interrupt routing
-> ACPI: PCI Root Bridge [PCI0] (0000:00)
-> Device 0000:01:00.0 not responding
-> Device 0000:02:00.0 not responding
-> [....]
+> OK, so it seems like it is not such a good idea.
 > 
-> Then, the kernel boots up normally except of graphics and network card
-> not showing up at all in lspci.
+> There are, however, over 200 files that contain calls to the various time 
+> functions that follow this pattern, eg:
+> 
+> arch/arm/kernel/ecard.c:563
+> if (!last || time_after(jiffies, last + 5*HZ)) {
 
-Uh, right. We already know that your northbridge, mmconfig, CRS, and this 
-device combine to always return 0001 for the Vendor ID. If we loop on 
-getting that, we must time out.
+Including autofs4.
 
-I'd actually bet that the hardware bug is actually that any device that 
-gives a CRS response the first time will have its Vendor ID appear as 0001 
-on subsequent mmconfig accesses, which means that it's actually a bus 
-quirk that probably only affects mmconfig access to something in the 
-conf1-visible space. The only per-device aspect would be that it uses CRS 
-(possibly correctly), and that doesn't mean that mmconfig won't be safe in 
-general for the device, or even that it won't be necessary. Actually, we 
-already know that per-driver enabling mmconfig is broken: sky2 is one that 
-wants to opt in but there are also reports of the Vendor ID 0001 bug with 
-it.
+> 
+> Perhaps they should be coverted to use a subtraction as well?
 
-	-Daniel
-*This .sig left intentionally blank*
+Thinking about the cases involved always makes my head ache.
+
+Ian
+
+
