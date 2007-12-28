@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbXL1Uu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbXL1Uuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756082AbXL1Uu0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 15:50:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbXL1UoV
+	id S1756654AbXL1Uuq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 15:50:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbXL1UoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 15:44:21 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37171 "EHLO
+	Fri, 28 Dec 2007 15:44:25 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37180 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752290AbXL1Un4 (ORCPT
+	with ESMTP id S1753435AbXL1UoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 15:43:56 -0500
+	Fri, 28 Dec 2007 15:44:00 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 27/30] Unionfs: cleanup lower inodes after successful unlink
-Date: Fri, 28 Dec 2007 15:43:01 -0500
-Message-Id: <1198874598761-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 29/30] Unionfs: implement d_iput method
+Date: Fri, 28 Dec 2007 15:43:03 -0500
+Message-Id: <11988745981620-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11988745841003-git-send-email-ezk@cs.sunysb.edu>
@@ -26,41 +26,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is needed to drop lower objects early enough, under certain conditions,
+so the lower objects don't stay behind until umount(). [LTP testing]
+
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/unlink.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
+ fs/unionfs/dentry.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 42 insertions(+), 0 deletions(-)
 
-diff --git a/fs/unionfs/unlink.c b/fs/unionfs/unlink.c
-index 1e81494..a1c82b6 100644
---- a/fs/unionfs/unlink.c
-+++ b/fs/unionfs/unlink.c
-@@ -91,7 +91,9 @@ out:
- int unionfs_unlink(struct inode *dir, struct dentry *dentry)
- {
- 	int err = 0;
-+	struct inode *inode = dentry->d_inode;
+diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
+index 0e89308..0369d93 100644
+--- a/fs/unionfs/dentry.c
++++ b/fs/unionfs/dentry.c
+@@ -484,7 +484,49 @@ out:
+ 	return;
+ }
  
-+	BUG_ON(S_ISDIR(inode->i_mode));
- 	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_CHILD);
- 	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 
-@@ -104,8 +106,13 @@ int unionfs_unlink(struct inode *dir, struct dentry *dentry)
- 	err = unionfs_unlink_whiteout(dir, dentry);
- 	/* call d_drop so the system "forgets" about us */
- 	if (!err) {
--		if (!S_ISDIR(dentry->d_inode->i_mode))
--			unionfs_postcopyup_release(dentry);
-+		unionfs_postcopyup_release(dentry);
-+		if (inode->i_nlink == 0) {
-+			/* drop lower inodes */
-+			iput(unionfs_lower_inode(inode));
-+			unionfs_set_lower_inode(inode, NULL);
-+			ibstart(inode) = ibend(inode) = -1;
++/*
++ * Called when we're removing the last reference to our dentry.  So we
++ * should drop all lower references too.
++ */
++static void unionfs_d_iput(struct dentry *dentry, struct inode *inode)
++{
++	int bindex, rc;
++
++	unionfs_read_lock(dentry->d_sb, UNIONFS_SMUTEX_CHILD);
++
++	if (dbstart(dentry) < 0)
++		goto drop_lower_inodes;
++	for (bindex = dbstart(dentry); bindex <= dbend(dentry); bindex++) {
++		if (unionfs_lower_mnt_idx(dentry, bindex)) {
++			unionfs_mntput(dentry, bindex);
++			unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
 +		}
- 		d_drop(dentry);
- 		/*
- 		 * if unlink/whiteout succeeded, parent dir mtime has
++		if (unionfs_lower_dentry_idx(dentry, bindex)) {
++			dput(unionfs_lower_dentry_idx(dentry, bindex));
++			unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
++		}
++	}
++	set_dbstart(dentry, -1);
++	set_dbend(dentry, -1);
++
++drop_lower_inodes:
++	rc = atomic_read(&inode->i_count);
++	if (rc == 1 && inode->i_nlink == 1 && ibstart(inode) >= 0) {
++		/* see Documentation/filesystems/unionfs/issues.txt */
++		lockdep_off();
++		iput(unionfs_lower_inode(inode));
++		lockdep_on();
++		unionfs_set_lower_inode(inode, NULL);
++		/* XXX: may need to set start/end to -1? */
++	}
++
++	iput(inode);
++
++	unionfs_read_unlock(dentry->d_sb);
++}
++
+ struct dentry_operations unionfs_dops = {
+ 	.d_revalidate	= unionfs_d_revalidate,
+ 	.d_release	= unionfs_d_release,
++	.d_iput		= unionfs_d_iput,
+ };
 -- 
 1.5.2.2
 
