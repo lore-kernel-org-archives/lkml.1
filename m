@@ -1,97 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753162AbXL1JId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbXL1JLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753162AbXL1JId (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 04:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbXL1JIY
+	id S1753345AbXL1JLi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 04:11:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbXL1JLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 04:08:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33087 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751609AbXL1JIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 04:08:23 -0500
-Date: Fri, 28 Dec 2007 10:00:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Christoph Lameter <clameter@sgi.com>, Theodore Tso <tytso@mit.edu>,
-       Andi Kleen <andi@firstfloor.org>, Willy Tarreau <w@1wt.eu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Major regression on hackbench with SLUB (more numbers)
-Message-ID: <20071228090037.GA20372@elte.hu>
-References: <alpine.LFD.0.9999.0712221251110.21557@woody.linux-foundation.org> <20071222221050.GA20753@1wt.eu> <Pine.LNX.4.58.0712221954530.19187@gandalf.stny.rr.com> <20071223051241.GA4449@1wt.eu> <20071223141500.GB6430@one.firstfloor.org> <20071224034530.GB16658@thunk.org> <Pine.LNX.4.64.0712241120230.8849@schroedinger.engr.sgi.com> <20071224233701.GB9784@kernel.org> <Pine.LNX.4.64.0712261330030.16904@schroedinger.engr.sgi.com> <20071226221631.GD27894@ZenIV.linux.org.uk>
+	Fri, 28 Dec 2007 04:11:30 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:36883 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751806AbXL1JL3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 04:11:29 -0500
+Message-ID: <4774BDBA.70904@linux.vnet.ibm.com>
+Date: Fri, 28 Dec 2007 14:41:22 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071226221631.GD27894@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc6-mm1 Kernel panics at different functions ()
+References: <20071222233056.d652743e.akpm@linux-foundation.org> <47736732.7040400@linux.vnet.ibm.com> <20071227015410.2c09db2f.akpm@linux-foundation.org>
+In-Reply-To: <20071227015410.2c09db2f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Al Viro <viro@ZenIV.linux.org.uk> wrote:
-
-> > > So two questions: why isn't -f the default?  And is /sys/slab
-> > 
-> > Because it gives misleading output. It displays the name of the 
-> > first of multiple slabs that share the same storage structures.
+Andrew Morton wrote:
+> On Thu, 27 Dec 2007 14:19:54 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 > 
-> Erm...  Let me spell it out: current lifetime rules are completely 
-> broken. As it is, create/destroy/create cache sequence will do 
-> kobject_put() on kfree'd object.  Even without people playing with 
-> holding sysfs files open or doing IO on those.
+>> Hi Andrew,
+>>
+>> The 2.6.24-rc6-mm1 kernel with hotfix x86-fix-system-gate-related-crash.patch applied
+>> panics while booting on a x86_64 box
+>>
+>> Unable to handle kernel NULL pointer dereference at 0000000000000046 RIP: 
+>>  [<ffffffff80369a0b>] rb_erase+0xe7/0x2a3
+>> PGD 17ff65067 PUD 17f1c7067 PMD 0 
+>> Oops: 0000 [1] SMP 
+>> last sysfs file: /sys/devices/pci0000:00/0000:00:0a.0/0000:02:04.0/host0/target0:0:6/0:0:6:0/type
+>> CPU 0 
+>> Modules linked in:
+>> Pid: 0, comm: swapper Not tainted 2.6.24-rc6-mm1-autokern1 #1
+>> RIP: 0010:[<ffffffff80369a0b>]  [<ffffffff80369a0b>] rb_erase+0xe7/0x2a3
+>> RSP: 0000:ffffffff80650e00  EFLAGS: 00010002
+>> RAX: ffff8101fe9568c8 RBX: ffff8100010062a8 RCX: ffff8101fe9568b0
+>> RDX: ffff8101fe9568c8 RSI: 0000000000000046 RDI: 0000000000000000
+>> RBP: ffffffff80650e10 R08: ffff8101fe9568c8 R09: 0000000000000086
+>> R10: 0000000000000000 R11: 00000000000001e8 R12: ffff8100010062b8
+>> R13: 0000000000000002 R14: ffff810001006260 R15: 0000000000000001
+>> FS:  0000000000000000(0000) GS:ffffffff805dc000(0000) knlGS:00000000f31ffbb0
+>> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+>> CR2: 0000000000000046 CR3: 000000017f0ab000 CR4: 00000000000006e0
+>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>> Process swapper (pid: 0, threadinfo ffffffff805f6000, task ffffffff805a2080)
+>> Stack:  ffff8100010062a8 ffff8101fe9568b0 ffffffff80650e40 ffffffff8024be16
+>>  ffffffff80369d65 ffffffff80369d65 ffff8101fe9568b0 ffff8100010062a8
+>>  ffffffff80650eb0 ffffffff8024c1d5 ffffffffb88cc28e 0000000006e73eff
+>> Call Trace:
+>>  <IRQ>  [<ffffffff8024be16>] __remove_hrtimer+0x2e/0x3c
+>>  [<ffffffff80369d65>] __down_read_trylock+0x16/0x42
+>>  [<ffffffff80369d65>] __down_read_trylock+0x16/0x42
+>>  [<ffffffff8024c1d5>] hrtimer_run_queues+0x130/0x191
+>>  [<ffffffff8023fd09>] run_timer_softirq+0x28/0x1a7
+>>  [<ffffffff8023c018>] __do_softirq+0x55/0xc2
+>>  [<ffffffff8020c73c>] call_softirq+0x1c/0x28
+>>  [<ffffffff8020e719>] do_softirq+0x32/0x9d
+>>  [<ffffffff8023c0dd>] irq_exit+0x3f/0x41
+>>  [<ffffffff8021ff85>] smp_apic_timer_interrupt+0x92/0xa7
+>>  [<ffffffff8020c1e6>] apic_timer_interrupt+0x66/0x70
+>>  <EOI>  [<ffffffff802095f5>] default_idle+0x36/0x5e
+>>  [<ffffffff802095f0>] default_idle+0x31/0x5e
+>>  [<ffffffff802095bf>] default_idle+0x0/0x5e
+>>  [<ffffffff802096b6>] cpu_idle+0x90/0xb2
+>>  [<ffffffff804b0126>] rest_init+0x5a/0x5c
+>>  [<ffffffff806017ee>] start_kernel+0x2b8/0x2c4
+>>  [<ffffffff8060112b>] _sinittext+0x12b/0x132
+>>
+>>
 > 
-> a) you have kobject embedded into struct with the lifetime rules of 
-> its own.  When its refcount hits zero you kfree() the sucker, even if 
-> you still have references to embedded kobject.
+> It does seem to be mostly hrtimer-related.  But surely the hrtimer system
+> is initialised by the time tis happens.
 > 
-> b) your symlinks stick around.  Even when cache is long gone you still 
-> have a sysfs symlink with its embedded kobject as a target.  They are 
-> eventually removed when cache with the same name gets created.  _Then_ 
-> you get the target kobject dropped - when the memory it used to be in 
-> had been freed for hell knows how long and reused by something that 
-> would not appreciate slub.c code suddenly deciding to decrement some 
-> word in that memory.
-> 
-> c) you leak references to these kobject; kobject_del() only removes it 
-> from the tree undoing the effect of kobject_add() and you still need 
-> kobject_put() to deal with the last reference.
+> The usual refrain: is it possible to run a bisection search?
+Hi Andrew,
 
-as a sidenote: bugs like this seem to be reoccuring. People implement 
-sysfs bindings (without being sysfs internals experts - and why should 
-they be) - and create hard to debug problems. We've seen that with the 
-scheduler's recent sysfs changes too.
+While doing the git bisect, following panic was seen
 
-shouldnt the sysfs code be designed in a way to not allow such bugs? The 
-primary usecase of sysfs is by people who do _not_ deal with it on a 
-daily basis. So if they pick APIs that look obvious and create hard to 
-debug problems (and userspace incompatibilities) that's a primary 
-failure of sysfs, not a failure of those who utilize it.
+Unable to handle kernel paging request at 000000000000401e RIP: 
+ [<ffffffff80232ec8>] load_balance_monitor+0x15e/0x2a4
+PGD 0 
+Oops: 0000 [1] SMP 
+last sysfs file: /devices/pci0000:00/0000:00:0a.0/0000:02:04.0/host0/target0:0:6/0:0:6:0/type
+CPU 1 
+Modules linked in:
+Pid: 15, comm: load_balance_mo Not tainted 2.6.24-rc6-mm1-autokern1 #1
+RIP: 0010:[<ffffffff80232ec8>]  [<ffffffff80232ec8>] load_balance_monitor+0x15e/0x2a4
+RSP: 0000:ffff81007ffb7eb0  EFLAGS: 00010297
+RAX: 0000000000000000 RBX: 0000000000000001 RCX: 0000000000000000
+RDX: 000000000000401e RSI: ffff81007ffb7ed8 RDI: 0000000000000000
+RBP: ffff81007ffb7f20 R08: ffff81007ffb6000 R09: ffff81007ffb6000
+R10: ffff81007ffb6000 R11: 0000000000000000 R12: 0000000000000000
+R13: 0000000000000003 R14: 0000000000000800 R15: ffff8101fe997f00
+FS:  0000000000000000(0000) GS:ffff8100e3b10000(0000) knlGS:00000000f73e1bb0
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 000000000000401e CR3: 0000000000201000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process load_balance_mo (pid: 15, threadinfo ffff81007ffb6000, task ffff81007ff94790)
+Stack:  0000000000002000 0000000000000000 ffff810001009cc0 00000001e3b29d90
+ 0000008000000000 000000000000000f ffff81007f0be780 000000000000000f
+ 000000017ffb7f20 0000000000000000 00000000fffffffc ffffffffffffffff
+Call Trace:
+ [<ffffffff80232d6a>] load_balance_monitor+0x0/0x2a4
+ [<ffffffff80247830>] kthread+0x3d/0x63
+ [<ffffffff8020c2b8>] child_rip+0xa/0x12
+ [<ffffffff802477f3>] kthread+0x0/0x63
+ [<ffffffff8020c2ae>] child_rip+0x0/0x12
 
-At a minimum there should be some _strong_ debugging facility that 
-transparently detects and reports such bugs as they occur. 
-CONFIG_DEBUG_KOBJECT is totally unusable right now, it spams the syslog 
-(so no distro ever enables it - i disable it in random bootups as well 
-because it takes _ages_ to even get to a boot prompt) and never finds 
-any of these hard-to-find-but-easy-to-explain bugs.
 
-or if sysfs/kobjects should be scrapped and rewritten, do you have any 
-insight into what kind of abstraction could/should replace it? Should we 
-go back to procfs and get rid of kobjects altogether? (as it's slowly 
-turning into a /proc problem of itself, with worse compatibility and 
-sneakier bugs.)
+Code: 48 8b 04 c2 48 8b 10 48 01 55 98 e8 ce 40 12 00 83 f8 07 41 
+RIP  [<ffffffff80232ec8>] load_balance_monitor+0x15e/0x2a4
+ RSP <ffff81007ffb7eb0>
+CR2: 000000000000401e
 
-	Ingo
+
+The git-sched.patch is causing this panic, and i am searching for the patch causing the
+hrtimer-related panic.
+ 
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
