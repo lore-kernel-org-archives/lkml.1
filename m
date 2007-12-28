@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbXL1HVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbXL1Hdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754262AbXL1HVa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 02:21:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbXL1HVT
+	id S1754537AbXL1Hdi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 02:33:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXL1Hd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 02:21:19 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:36081 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751540AbXL1HVS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 02:21:18 -0500
-Date: Fri, 28 Dec 2007 08:21:16 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andreas Mohr <andi@lisas.de>, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>,
-       "Denis V. Lunev" <den@openvz.org>
-Subject: Re: [PATCH 2.6.24-rc3] Fix /proc/net breakage
-Message-ID: <20071228072116.GA16553@rhlx01.hs-esslingen.de>
-References: <20071119191000.GA1560@elf.ucw.cz> <200711192304.25087.rjw@sisk.pl> <4743026B.2020907@openvz.org> <m1hcj8mz1p.fsf_-_@ebiederm.dsl.xmission.com> <1197003097.13978.557.camel@pmac.infradead.org> <20071207022342.806ee4ee.akpm@linux-foundation.org> <20071227174056.GA17350@rhlx01.hs-esslingen.de> <20071227184145.GA1831@martell.zuzino.mipt.ru> <20071227221728.GA17379@rhlx01.hs-esslingen.de> <20071228062201.GA2071@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071228062201.GA2071@martell.zuzino.mipt.ru>
-X-Priority: none
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 28 Dec 2007 02:33:29 -0500
+Received: from mga11.intel.com ([192.55.52.93]:39364 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751977AbXL1Hd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 02:33:28 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,215,1196668800"; 
+   d="scan'208";a="466825184"
+Subject: Re: [PATCH 0/3 -mm] kexec jump -v8
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20071227181218.GA15084@redhat.com>
+References: <1198222399.1965.15.camel@caritas-dev.intel.com>
+	 <20071227015716.GA6718@redhat.com>
+	 <1198722793.7320.15.camel@caritas-dev.intel.com>
+	 <20071227181218.GA15084@redhat.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 28 Dec 2007 15:30:53 +0800
+Message-Id: <1198827053.7320.33.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 28 Dec 2007 07:30:33.0072 (UTC) FILETIME=[87C72F00:01C84923]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Fri, Dec 28, 2007 at 09:22:01AM +0300, Alexey Dobriyan wrote:
-> On Thu, Dec 27, 2007 at 11:17:28PM +0100, Andreas Mohr wrote:
-> > And this is the state that my 2.6.24-rc_six_-mm1 tree is in already.
+On Thu, 2007-12-27 at 13:12 -0500, Vivek Goyal wrote:
+> On Thu, Dec 27, 2007 at 10:33:13AM +0800, Huang, Ying wrote:
+> > On Wed, 2007-12-26 at 20:57 -0500, Vivek Goyal wrote:
+> > [...]
+> > > > 9. Now, you are in the original kernel again. You can read/write the
+> > > >    memory image of kexeced kernel via /proc/kimgcore.
+> > > > 
+> > > 
+> > > Why do we need two interfaces, /proc/vmcore and /proc/kimgcore? Can't
+> > > we have just one say /proc/vmcore. Irrespective of what kernel you are
+> > > in /proc/vmcore gives you the access to the memory of kernel which was
+> > > previously booted.
+> > 
+> > In theory we can kexec another kernel even in a kexeced kernel, that is,
+> > in kernel A kexec kernel B, and in kernel B kexec another kernel C. In
+> > this situation, both /proc/vmcore and /proc/kimgcore has valid contents.
+> > So I think, it may be better to keep two interfaces.
+> > 
 > 
-> OK.
+> In those situations I think only one interface is better. For example, 
+> above will be broken if somebody kexec 4 kernels.
 > 
-> > So either it didn't help here or it broke again by some later change or
-> > there's some dumb PEBKAC error here.
-> 
-> Do you by chance forgot CONFIG_USB_?HCI_HCD=y ? I see empty usbfs here if
-> they are deselected.
+> A-->B--->C--->D
 
-Quite well-educated guess! In fact I had already discovered that
-ohci-hcd fails to load, at all. Doh.
-(however after going through all recent ohci.*hcd related LKML postings
-it seems there's no report about such problems yet)
+I don't think the two interfaces will be broken if somebody kexec 4
+kernels. For example, when kexec D from C, the /proc/vmcore is contents
+of B, /proc/kimgcore is contents of D. To jump back from C to B, the D
+is unloaded, and a jump back helper image is loaded.
 
-Sorry for barking up the entirely wrong tree!
+> I think better option might be if it is stack like situation. A kernel
+> shows you only the previous kernel's memory contents through /proc/vmcore
+> interface. So If I am in kernel D, I see only kernel C's memory image.
+> To see kernel B's memory image, one shall have to go back to kernel C.
 
-For giggles, here's the output:
+Maybe it is not sufficient to only show the previous kernel's memory
+contents. In kernel C, you maybe need to access the memory image of
+kernel B and memory image of kernel D.
 
-# modprobe ohci-hcd
-FATAL: Error inserting ohci_hcd (/lib/modules/2.6.24-rc6-mm1-gate/kernel/drivers/usb/host/ohci-hcd.ko): No such device
+That is, /proc/vmcore is the memory image of the previous kernel,
+and /proc/kimgcore is the memory image of the next kernel.
 
-dmesg:
-ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-ohci_hcd: block sizes: ed 64 td 64
+Best Regards,
+Huang Ying
 
-(yes, that's all there is, despite CONFIG_USB_DEBUG being set)
-
-The LED of a usb stick isn't active either, for obvious reasons.
-
-And keep in mind that this is a (relatively old) OHCI-only machine...
-(which had the 2.6.19 lsmod showing ohci-hcd just fine and working fine
-with WLAN USB)
-
-Now pondering whether to try -rc6 proper or whether to revert specific
-guilty-looking USB changes...
-And wondering how to properly elevate this issue (prompt Greg about it,
-new thread, bug #, ...?)
-
-Thanks,
-
-Andreas Mohr
