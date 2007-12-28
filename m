@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754998AbXL1FoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbXL1F6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754998AbXL1FoQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 00:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbXL1Fn7
+	id S1754928AbXL1F6i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 00:58:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXL1F62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 00:43:59 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46082 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750762AbXL1Fn6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 00:43:58 -0500
-Date: Thu, 27 Dec 2007 21:41:32 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Robert Hancock <hancockr@shaw.ca>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: Suspend code ordering (again)
-In-Reply-To: <47744291.30100@shaw.ca>
-Message-ID: <alpine.LFD.0.9999.0712272138110.21557@woody.linux-foundation.org>
-References: <fa.Tr7qmPdet0rF2FSRX/94s2UEMSE@ifi.uio.no> <fa.XycBwhGuyvtVl/QW5HONqLwOags@ifi.uio.no> <4773E9EE.40107@shaw.ca> <200712272100.20282.rjw@sisk.pl> <47744291.30100@shaw.ca>
+	Fri, 28 Dec 2007 00:58:28 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51112 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751170AbXL1F61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 00:58:27 -0500
+Message-ID: <4774907D.5070806@cn.fujitsu.com>
+Date: Fri, 28 Dec 2007 13:58:21 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Miller <davem@davemloft.net>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: fib6_del_route has redundant code
+References: <477353B6.6000102@cn.fujitsu.com> <20071227.211808.221171928.davem@davemloft.net>
+In-Reply-To: <20071227.211808.221171928.davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 27 Dec 2007, Robert Hancock wrote:
+>> I think the following code in fib6_del_route in the latest kernel is useless.
+>> 1125         if (fn->leaf == NULL && fn->fn_flags&RTN_TL_ROOT)
+>> 1126                 fn->leaf = &ip6_null_entry;
+>>
+>> ip6_null_entry will never be unlinked from fn->leaf now, that is,
+>> fn->leaf == NULL will never meet.
 > 
-> I doubt they would prefer the later ordering in any way that matters, if the
-> Windows version they were designed for uses the earlier ordering.
+> I think you are right, but if it is true the next block of
+> code is dead too:
+> 
+> 	/* If it was last route, expunge its radix tree node */
+> 	if (fn->leaf == NULL) {
+> 		fn->fn_flags &= ~RTN_RTINFO;
+> 		rt6_stats.fib_route_nodes--;
+> 		fn = fib6_repair_tree(fn);
+> 	}
+> 
+Dave,
 
-Well, I wouldn't say it's abotu "preferring" one over the other. It's very 
-possible that the BIOS writers were *intending* to prefer ACPI 2.0, and it 
-may even be likely that they thought that they wrote it that way, but the 
-real issue is that it has apparently never ever been *tested* that way.
+I think this block of code can't be removed, because just the root(default route)
+fn->leaf always has ip6_null_entry on it. The normal fn->leaf becomes NULL when last
+route has been deleted, the radix tree should be expunged.
 
-So yes, maybe the vendors actually thought they were a good ACPI-2.0 
-implementation, but if Windows doesn't do the ordering that the 2.0 spec 
-expects, then that is pretty much just a theoretical thing.
+> But I am not completely convinced that all of these lines
+> of code can be removed :-)
+> 
+> 
 
-But yeah, it would be really nice to have this verified some way. Somebody 
-must already know (whether it's a VM person or a BIOS writer, and whether 
-they'd tell us, is obviously another issue).
+-- 
 
-		Linus
+
+Regards
+Gui Jianfeng
+--------------------------------------------------
+Gui Jianfeng
+Development Dept.I
+Nanjing Fujitsu Nanda Software Tech. Co., Ltd.(FNST)
+8/F., Civil Defense Building, No.189 Guangzhou Road,
+Nanjing, 210029, China
+TEL: +86+25-86630566-838
+COINS: 79955-838
+FAX: +86+25-83317685
+MAIL:guijianfeng@cn.fujitsu.com
+--------------------------------------------------
