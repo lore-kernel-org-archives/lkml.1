@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579AbXL1JNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbXL1J2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753579AbXL1JNW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 04:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbXL1JNO
+	id S1753202AbXL1J2q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 04:28:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbXL1J2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 04:13:14 -0500
-Received: from namei.org ([69.55.235.186]:50725 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752050AbXL1JNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 04:13:13 -0500
-Date: Fri, 28 Dec 2007 20:12:32 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: KaiGai Kohei <kaigai@ak.jp.nec.com>
-cc: "Serge E. Hallyn" <serue@us.ibm.com>, akpm@osdl.org, morgan@kernel.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Exporting capability code/name pairs
-In-Reply-To: <477494C3.2040301@ak.jp.nec.com>
-Message-ID: <Xine.LNX.4.64.0712281957520.23510@us.intercode.com.au>
-References: <477321C8.3070004@ak.jp.nec.com> <20071227161435.GB9677@sergelap.austin.ibm.com>
- <477455A0.7060603@ak.jp.nec.com> <477494C3.2040301@ak.jp.nec.com>
+	Fri, 28 Dec 2007 04:28:36 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:52990 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751781AbXL1J2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 04:28:35 -0500
+Date: Fri, 28 Dec 2007 10:27:06 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ray Lee <ray-lk@madrabbit.org>, autofs@linux.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH 1/4] fs/autofs: Use time_before, time_before_eq, etc.
+In-Reply-To: <4772BD6C.1010502@zytor.com>
+Message-ID: <Pine.LNX.4.64.0712281016290.15274@ask.diku.dk>
+References: <Pine.LNX.4.58.0712261621000.1185@pc-041.diku.dk>
+ <2c0942db0712261158q34cddebeifceef6ceda683320@mail.gmail.com>
+ <4772BD6C.1010502@zytor.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Dec 2007, KaiGai Kohei wrote:
+On Wed, 26 Dec 2007, H. Peter Anvin wrote:
 
-> Remaining issues:
-> - We have to mount securityfs explicitly, or use /etc/fstab.
->   It can cause a matter when we want to use this feature on
->   very early phase on boot. (like /sbin/init)
+> Ray Lee wrote:
+> > On Dec 26, 2007 7:21 AM, Julia Lawall <julia@diku.dk> wrote:
+> > > -               if (jiffies - ent->last_usage < timeout)
+> > > +               if (time_before(jiffies, ent->last_usage + timeout))
+> > 
+> > I don't think this is a safe change? subtraction is always safe (if
+> > you think about it as 'distance'), addition isn't always safe unless
+> > you know the range. The time_before macro will expand that out to
+> > (effectively):
+> > 
+> >   if ( (long)(ent->last_usage + timeout) - (long)(jiffies) < 0 )
+> > 
+> > which seems to introduce an overflow condition in the first term.
+> > 
+> > Dunno, I may be wrong (happens often), but at the very least what
+> > you've transformed it into is no longer obviously correct, and so it's
+> > not a great change.
+> 
+> Indeed.  The bottom form will have overflow issues at time
+> jiffies_wraparound/2, whereas the top form will have overflow issues only near
+> jiffies_wraparound/1.
 
-Why can't early userspace itself mount securityfs?
+Isn't this only the case if timeout is a potentially large number? In this 
+case, timeout may ultimately depend on a value that come from the user 
+level, so I don't know what ranges are expected, but in many other cases 
+one of the summands is a constant multiplied by HZ.  If the constant is 
+small, then I guess that the likelihood that jiffies overflows and the 
+likelihood that the sum overflows are essentially the same.  One then has 
+to consider whether:
 
-I'm not even sure this is a good idea at all.  Existing capabilities will 
-never disappear, and, as with syscalls, it's probably up to userland to 
-handle new ones not existing.
+overflowed - correct </>/<=/>= small constant
 
-In any case, some more technical issues:
+is more or less desirable than
 
-> kernel/cap_names.sh generates the body of cap_entries[] array,
+time_before/after/before_eq/after_eq(correct, overflowed_by_small_constant)
 
-This needs to be in the scripts directory.
+julia
 
-The generated header should be made idempotent (#ifdef wrapping), and also 
-include a warning that it is automatically generated (identifying the 
-script which does so), and that is should not be edited.
-
-> +	d_caps = securityfs_create_dir("capability", NULL);
-> +	if (!d_caps)
-
-Wrong way to check for error -- the function returns an ERR_PTR().
-
-> +		f_caps[i] = securityfs_create_file(cap_entries[i].name, 0444,
-> +						   d_caps, &cap_entries[i],
-> +						   &cap_entry_fops);
-> +		if (!f_caps[i])
-
-Ditto.
-
-Another issue is that securityfs depends on CONFIG_SECURITY, which might 
-be undesirable, given that capabilities are a standard feature.
-
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
