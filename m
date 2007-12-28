@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXL1NYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbXL1Nvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbXL1NYS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 08:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbXL1NYH
+	id S1754320AbXL1Nvi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 08:51:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXL1Nv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 08:24:07 -0500
-Received: from h155.mvista.com ([63.81.120.155]:7624 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752723AbXL1NYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 08:24:06 -0500
-Message-ID: <4774F911.9080503@ru.mvista.com>
-Date: Fri, 28 Dec 2007 16:24:33 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [PATCH 7/9] icside: use hwif->dev
-References: <20071227191153.1357.63211.sendpatchset@localhost.localdomain> <20071227191245.1357.38374.sendpatchset@localhost.localdomain>
-In-Reply-To: <20071227191245.1357.38374.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Dec 2007 08:51:29 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:44541 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752841AbXL1Nv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 08:51:28 -0500
+Message-ID: <398849894.70377@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Message-Id: <20071228135122.498901458@mail.ustc.edu.cn>
+References: <20071228134119.112899193@mail.ustc.edu.cn>
+User-Agent: quilt/0.46-1
+Date: Fri, 28 Dec 2007 21:41:25 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Michael Rubin <mrubin@google.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 06/11] writeback: requeue_io_wait() on locked buffers
+Content-Disposition: inline; filename=writeback-more_io_wait-d.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+Convert to requeue_io_wait() for case:
 
-> * Setup hwif->dev in icside_setup().
+	pages skipped due to locked buffers
 
-> * Use hwif->dev instead of state->dev in icside_build_sglist(),
->   icside_dma_end(), icside_dma_start() and icside_dma_setup().
+Cc: Michael Rubin <mrubin@google.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ fs/fs-writeback.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> * Remove no longer needed 'dev' field from struct icside_state.
+--- linux-2.6.24-rc6-mm1.orig/fs/fs-writeback.c
++++ linux-2.6.24-rc6-mm1/fs/fs-writeback.c
+@@ -449,11 +449,11 @@ int generic_sync_sb_inodes(struct super_
+ 		if (wbc->pages_skipped != pages_skipped) {
+ 			/*
+ 			 * writeback is not making progress due to locked
+ 			 * buffers.  Skip this inode for now.
+ 			 */
+-			redirty_tail(inode);
++			requeue_io_wait(inode);
+ 		}
+ 		spin_unlock(&inode_lock);
+ 		iput(inode);
+ 		cond_resched();
+ 		spin_lock(&inode_lock);
 
-> Cc: Russell King <rmk@arm.linux.org.uk>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-MBR, Sergei
-
-PS: Russel, that was only an eyes check, the last word is yours. :-)
+-- 
