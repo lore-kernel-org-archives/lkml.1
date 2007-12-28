@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbXL1DKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbXL1DXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754788AbXL1DKa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 22:10:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbXL1DKW
+	id S1754869AbXL1DXQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 22:23:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbXL1DXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 22:10:22 -0500
-Received: from psyche.piasta.pl ([83.175.144.5]:51711 "EHLO psyche.piasta.pl"
+	Thu, 27 Dec 2007 22:23:06 -0500
+Received: from waste.org ([66.93.16.53]:48510 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753367AbXL1DKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 22:10:21 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Dec 2007 22:10:21 EST
-Date: Fri, 28 Dec 2007 04:03:45 +0100
-From: Marek Kierdelewicz <marek@piasta.pl>
-To: Gustavo Guillermo =?ISO-8859-2?Q?P=E9rez?= 
-	<gustavo@compunauta.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Corrupted Hard Drive after activating intel I/oat dma
-Message-ID: <20071228040345.67db1361@catlap>
-In-Reply-To: <200712271949.02116.gustavo@compunauta.com>
-References: <200712271949.02116.gustavo@compunauta.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+	id S1753482AbXL1DXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 22:23:05 -0500
+Subject: Re: [patch 00/20] VM pageout scalability improvements
+From: Matt Mackall <mpm@selenic.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com
+In-Reply-To: <20071223201149.7b88888f@bree.surriel.com>
+References: <20071218211539.250334036@redhat.com>
+	 <476D7334.4010301@linux.vnet.ibm.com>
+	 <20071222192119.030f32d5@bree.surriel.com>
+	 <476EE858.202@linux.vnet.ibm.com>
+	 <20071223201149.7b88888f@bree.surriel.com>
+Content-Type: text/plain
+Date: Thu, 27 Dec 2007 21:20:41 -0600
+Message-Id: <1198812041.4406.63.camel@cinder.waste.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gustavo,
 
->By mistake we activate intel I/oat dma support on a laptop with a
->centrino duo to try to get better performance on IO.
+On Sun, 2007-12-23 at 20:11 -0500, Rik van Riel wrote:
+> On Mon, 24 Dec 2007 04:29:36 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > Rik van Riel wrote:
+> 
+> > > In the real world, users with large JVMs on their servers, which
+> > > sometimes go a little into swap, can trigger this system.  All of
+> > > the CPUs end up scanning the active list, and all pages have the
+> > > referenced bit set.  Even if the system eventually recovers, it
+> > > might as well have been dead.
+> > > 
+> > > Going into swap a little should only take a little bit of time.
+> > 
+> > Very fascinating, so we need to scale better with larger memory.
+> > I suspect part of the answer will lie with using large/huge pages.
+> 
+> Linus vetoed going to a larger soft page size, with good reason.
+> 
+> Just look at how much the 64kB page size on PPC64 sucks for most
+> workloads - it works for PPC64 because people buy PPC64 monster
+> systems for the kinds of monster workloads that work well with a
+> large page size, but it definately isn't general purpose.
 
-I/OAT is for accelerating network operations on newer Xeon processors
-and E1000 nics. Some information about it is available here:
-http://lwn.net/Articles/165131/
+Indeed, machines already exist with >> 1TB of RAM, so even going to 1MB
+pages leaves these machines in trouble. Going to big pages a few years
+ago would have pushed the problem back a few years, but now we need real
+fixes.
 
-There's no way that enabling this option could cause your hdd to fry.
+-- 
+Mathematics is the supreme nostalgia of our time.
 
->know the option was not supported, but I want to know if cause that we
->can have a fried hd :(.
->thanks in advance if someone has something to said about the
->failure. :(
->Kernel 2.6.19-gentoo-r7
-
-I'm a gentoo@laptop user myself. This distro is very disk-demanding
-because of the frequent compilations. In my opinion it's not the best
-distro for a mobile system. No wonder your disk gave out :(.
-
-Cheers,
-Marek Kierdelewicz
-KoBa ISP
