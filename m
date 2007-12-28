@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbXL1DXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbXL1D05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbXL1DXQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Dec 2007 22:23:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbXL1DXG
+	id S1754992AbXL1D05 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Dec 2007 22:26:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbXL1D0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Dec 2007 22:23:06 -0500
-Received: from waste.org ([66.93.16.53]:48510 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753482AbXL1DXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Dec 2007 22:23:05 -0500
-Subject: Re: [patch 00/20] VM pageout scalability improvements
-From: Matt Mackall <mpm@selenic.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com
-In-Reply-To: <20071223201149.7b88888f@bree.surriel.com>
-References: <20071218211539.250334036@redhat.com>
-	 <476D7334.4010301@linux.vnet.ibm.com>
-	 <20071222192119.030f32d5@bree.surriel.com>
-	 <476EE858.202@linux.vnet.ibm.com>
-	 <20071223201149.7b88888f@bree.surriel.com>
-Content-Type: text/plain
-Date: Thu, 27 Dec 2007 21:20:41 -0600
-Message-Id: <1198812041.4406.63.camel@cinder.waste.org>
+	Thu, 27 Dec 2007 22:26:49 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43584 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752766AbXL1D0t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Dec 2007 22:26:49 -0500
+Date: Fri, 28 Dec 2007 03:26:45 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: SLUB sysfs support
+Message-ID: <20071228032645.GM27894@ZenIV.linux.org.uk>
+References: <20071226221631.GD27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712262149000.19009@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712271222190.31582@schroedinger.engr.sgi.com> <20071227225947.GH27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712271508080.917@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0712271552420.1154@schroedinger.engr.sgi.com> <20071227235804.GJ27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712271601200.1294@schroedinger.engr.sgi.com> <20071228004504.GK27894@ZenIV.linux.org.uk> <Pine.LNX.4.64.0712271811470.2053@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0712271811470.2053@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Dec 27, 2007 at 06:19:46PM -0800, Christoph Lameter wrote:
+> nfsd4_delegations? What is this about?
 
-On Sun, 2007-12-23 at 20:11 -0500, Rik van Riel wrote:
-> On Mon, 24 Dec 2007 04:29:36 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > Rik van Riel wrote:
-> 
-> > > In the real world, users with large JVMs on their servers, which
-> > > sometimes go a little into swap, can trigger this system.  All of
-> > > the CPUs end up scanning the active list, and all pages have the
-> > > referenced bit set.  Even if the system eventually recovers, it
-> > > might as well have been dead.
-> > > 
-> > > Going into swap a little should only take a little bit of time.
-> > 
-> > Very fascinating, so we need to scale better with larger memory.
-> > I suspect part of the answer will lie with using large/huge pages.
-> 
-> Linus vetoed going to a larger soft page size, with good reason.
-> 
-> Just look at how much the 64kB page size on PPC64 sucks for most
-> workloads - it works for PPC64 because people buy PPC64 monster
-> systems for the kinds of monster workloads that work well with a
-> large page size, but it definately isn't general purpose.
+The random lifetimes of user-visible files you create in sysfs.
 
-Indeed, machines already exist with >> 1TB of RAM, so even going to 1MB
-pages leaves these machines in trouble. Going to big pages a few years
-ago would have pushed the problem back a few years, but now we need real
-fixes.
+> How do I scan for the symlinks in sysfs?
 
--- 
-Mathematics is the supreme nostalgia of our time.
+At which point are you going to do that?  AFAICS, the fundamental problem
+is that you
+	* have aliases indistinguishable, so kmem_cache_destroy() can't tell
+which one is going away, no matter what
+	* have per-alias objects in sysfs
+As the result, you have a user-visible mess in that directory in sysfs.
+And I don't see how you would deal with that - on the "the contents of
+directory changes in so-and-so way when such-and-such operation is
+done", not the implementation details one.
 
+BTW, I'm rather sceptical about free use of slabs; keep in mind that their
+names have to be unique with your sysfs layout, so...
