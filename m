@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbXL1Uwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbXL1Uw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbXL1Uwl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 15:52:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbXL1Uoj
+	id S1757124AbXL1Uw4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 15:52:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbXL1Uol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 15:44:39 -0500
-Received: from gate.crashing.org ([63.228.1.57]:58004 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189AbXL1Unn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 15:43:43 -0500
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
-	opt-in
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Loic Prylli <loic@myri.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jeff@garzik.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gregkh@suse.de, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>,
-       Kai Ruhnau <kai@tragetaschen.dyndns.org>
-In-Reply-To: <47754B26.6050700@myri.com>
-References: <fa.m7tRTz/ymu3iMyLTO2aF1Tvaw24@ifi.uio.no>
-	 <fa.XrRLIuL4juNAXXaMPF3iY8FyWW8@ifi.uio.no>
-	 <fa.H0fcNl3b6xVBwzWUgT72M4K6KOU@ifi.uio.no> <4773EBB4.2020805@shaw.ca>
-	 <alpine.LFD.0.9999.0712271023090.21557@woody.linux-foundation.org>
-	 <477414C9.3040906@myri.com>
-	 <alpine.LFD.0.9999.0712271328010.21557@woody.linux-foundation.org>
-	 <1198819790.7209.27.camel@pasglop>
-	 <alpine.LFD.0.9999.0712272135270.21557@woody.linux-foundation.org>
-	 <1198822010.7209.32.camel@pasglop>  <47754B26.6050700@myri.com>
-Content-Type: text/plain
-Date: Sat, 29 Dec 2007 07:42:36 +1100
-Message-Id: <1198874556.7209.38.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Dec 2007 15:44:41 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37210 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752331AbXL1UoX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 15:44:23 -0500
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, hch@infradead.org,
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: [PATCH 14/30] Unionfs: remove unnecessary conditional inode lock
+Date: Fri, 28 Dec 2007 15:42:48 -0500
+Message-Id: <11988745922794-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
+In-Reply-To: <11988745841003-git-send-email-ezk@cs.sunysb.edu>
+References: <11988745841003-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This was intended to protect the inode during branch management, but that is
+now done through our superblock rwsem.
 
-On Fri, 2007-12-28 at 14:14 -0500, Loic Prylli wrote:
-> 
-> Not knowing whether there is any chipset with the visibility feature,
-> but without the retry capability, and given that CRS is irrelevant for
-> most Linux platforms (it only matters just after power-on, long before
-> Linux is started in the common case),
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+---
+ fs/unionfs/dentry.c |   13 -------------
+ 1 files changed, 0 insertions(+), 13 deletions(-)
 
-"common case" I suppose in your mouth means desktop machines ? :-)
-
-In the embedded world, I would expect CRS to be something that linux has
-to deal with regulary. Maybe enable_crs should be moved to quirks on
-those platforms who want it...
-
-> This is mostly independant, allowing a PCIE->PCI-X bridge to generate
-> CRS is a different bit (bit 15 of pcie->devctl on the bridge). FWIW,
-> Linux does not seem to touch it, and it defaults to zero, so it does
-> not
-> seem like most current PCIE->PCI-X bridge will never generates a CRS
-> (some BIOSes might do it, but not the couple of platforms I looked
-> at).
-> Again the choice of setting here seems something better left to the
-> specific BIOS/embedded-code for a given platform.
-
-Ok, I wasn't sure about that one.
-
-Ben.
-
+diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
+index 68c07ba..dc1aa39 100644
+--- a/fs/unionfs/dentry.c
++++ b/fs/unionfs/dentry.c
+@@ -33,7 +33,6 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 	int bindex, bstart, bend;
+ 	int sbgen, dgen;
+ 	int positive = 0;
+-	int locked = 0;
+ 	int interpose_flag;
+ 	struct nameidata lowernd; /* TODO: be gentler to the stack */
+ 
+@@ -87,16 +86,6 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 		interpose_flag = INTERPOSE_REVAL_NEG;
+ 		if (positive) {
+ 			interpose_flag = INTERPOSE_REVAL;
+-			/*
+-			 * During BRM, the VFS could already hold a lock on
+-			 * a file being read, so don't lock it again
+-			 * (deadlock), but if you lock it in this function,
+-			 * then release it here too.
+-			 */
+-			if (!mutex_is_locked(&dentry->d_inode->i_mutex)) {
+-				mutex_lock(&dentry->d_inode->i_mutex);
+-				locked = 1;
+-			}
+ 
+ 			bstart = ibstart(dentry->d_inode);
+ 			bend = ibend(dentry->d_inode);
+@@ -115,8 +104,6 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 			UNIONFS_I(dentry->d_inode)->lower_inodes = NULL;
+ 			ibstart(dentry->d_inode) = -1;
+ 			ibend(dentry->d_inode) = -1;
+-			if (locked)
+-				mutex_unlock(&dentry->d_inode->i_mutex);
+ 		}
+ 
+ 		result = unionfs_lookup_backend(dentry, &lowernd,
+-- 
+1.5.2.2
 
