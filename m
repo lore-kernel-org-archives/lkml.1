@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbXL1Ux7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbXL1Uy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757271AbXL1Ux7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 15:53:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbXL1Upc
+	id S1757038AbXL1Uy3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 15:54:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbXL1Uqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 15:45:32 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37292 "EHLO
+	Fri, 28 Dec 2007 15:46:51 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37624 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754723AbXL1Up3 (ORCPT
+	with ESMTP id S1755954AbXL1Uqt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 15:45:29 -0500
+	Fri, 28 Dec 2007 15:46:49 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
-       Erez Zadok <ezk@cs.sunysb.edu>, Michael Tokarev <mjt@tls.msk.ru>
-Subject: [PATCH 04/30] Unionfs: clarify usage.txt read/write behavior
-Date: Fri, 28 Dec 2007 15:42:38 -0500
-Message-Id: <1198874586335-git-send-email-ezk@cs.sunysb.edu>
+       Hugh Dickins <hugh@veritas.com>, Mike Halcrow <mhalcrow@us.ibm.com>,
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: [PATCH 02/30] VFS/fs_stack: use locking around i_size_write in 32-bit systems
+Date: Fri, 28 Dec 2007 15:42:36 -0500
+Message-Id: <11988745852368-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11988745841003-git-send-email-ezk@cs.sunysb.edu>
@@ -26,109 +27,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC: Michael Tokarev <mjt@tls.msk.ru>
+From: Hugh Dickins <hugh@veritas.com>
 
+LTP's iogen01 doio tests hang nicely on 32-bit SMP when /tmp is a unionfs
+mount of a tmpfs.  See the comment on i_size_write in linux/fs.h: it needs
+to be locked, otherwise i_size_read can spin forever waiting for a lost
+seqcount update.
+
+Most filesystems are already holding i_mutex for this, but unionfs calls
+fsstack_copy_inode_size from many places, not necessarily holding i_mutex.
+Use the low-level i_lock within fsstack_copy_inode_size when 32-bit SMP.
+
+Checked the entire unionfs code to ensure this is the right fix for
+i_size_write().
+
+Also compared to what other file systems do when they have to handle inodes,
+esp. not their own inodes (e.g., network file systems have to access the
+exported file system's inodes).  Found out that most such file systems not just
+don't lock around i_size_write, but they don't even use i_size_read or
+i_size_write to access the inode's size.
+
+CC: Mike Halcrow <mhalcrow@us.ibm.com>
+
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- Documentation/filesystems/unionfs/concepts.txt |   20 +++++++++++++++++---
- Documentation/filesystems/unionfs/issues.txt   |    2 +-
- Documentation/filesystems/unionfs/usage.txt    |   13 ++++++++-----
- 3 files changed, 26 insertions(+), 9 deletions(-)
+ fs/stack.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/filesystems/unionfs/concepts.txt b/Documentation/filesystems/unionfs/concepts.txt
-index 7654ccc..bed69bd 100644
---- a/Documentation/filesystems/unionfs/concepts.txt
-+++ b/Documentation/filesystems/unionfs/concepts.txt
-@@ -1,4 +1,4 @@
--Unionfs 2.1 CONCEPTS:
-+Unionfs 2.x CONCEPTS:
- =====================
+diff --git a/fs/stack.c b/fs/stack.c
+index 7913fe5..4336f2b 100644
+--- a/fs/stack.c
++++ b/fs/stack.c
+@@ -21,8 +21,14 @@
+  */
+ void fsstack_copy_inode_size(struct inode *dst, const struct inode *src)
+ {
++#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
++	spin_lock(&dst->i_lock);
++#endif
+ 	i_size_write(dst, i_size_read(src));
+ 	dst->i_blocks = src->i_blocks;
++#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
++	spin_unlock(&dst->i_lock);
++#endif
+ }
+ EXPORT_SYMBOL_GPL(fsstack_copy_inode_size);
  
- This file describes the concepts needed by a namespace unification file
-@@ -66,12 +66,26 @@ Copyup:
- =======
- 
- When a change is made to the contents of a file's data or meta-data, they
--have to be stored somewhere. The best way is to create a copy of the
-+have to be stored somewhere.  The best way is to create a copy of the
- original file on a branch that is writable, and then redirect the write
--though to this copy. The copy must be made on a higher priority branch so
-+though to this copy.  The copy must be made on a higher priority branch so
- that lookup and readdir return this newer "version" of the file rather than
- the original (see duplicate elimination).
- 
-+An entire unionfs mount can be read-only or read-write.  If it's read-only,
-+then none of the branches will be written to, even if some of the branches
-+are physically writeable.  If the unionfs mount is read-write, then the
-+leftmost (highest priority) branch must be writeable (for copyup to take
-+place); the remaining branches can be any mix of read-write and read-only.
-+
-+In a writeable mount, unionfs will create new files/dir in the leftmost
-+branch.  If one tries to modify a file in a read-only branch/media, unionfs
-+will copyup the file to the leftmost branch and modify it there.  If you try
-+to modify a file from a writeable branch which is not the leftmost branch,
-+then unionfs will modify it in that branch; this is useful if you, say,
-+unify differnet packages (e.g., apache, sendmail, ftpd, etc.) and you want
-+changes to specific package files to remain logically in the directory where
-+they came from.
- 
- Cache Coherency:
- ================
-diff --git a/Documentation/filesystems/unionfs/issues.txt b/Documentation/filesystems/unionfs/issues.txt
-index 9db1d70..bb6ab05 100644
---- a/Documentation/filesystems/unionfs/issues.txt
-+++ b/Documentation/filesystems/unionfs/issues.txt
-@@ -1,4 +1,4 @@
--KNOWN Unionfs 2.1 ISSUES:
-+KNOWN Unionfs 2.x ISSUES:
- =========================
- 
- 1. Unionfs should not use lookup_one_len() on the underlying f/s as it
-diff --git a/Documentation/filesystems/unionfs/usage.txt b/Documentation/filesystems/unionfs/usage.txt
-index 59c4f28..1adde69 100644
---- a/Documentation/filesystems/unionfs/usage.txt
-+++ b/Documentation/filesystems/unionfs/usage.txt
-@@ -12,7 +12,7 @@ GENERAL SYNTAX
- 
- # mount -t unionfs -o <OPTIONS>,<BRANCH-OPTIONS> none MOUNTPOINT
- 
--OPTIONS can be any legal combination one of:
-+OPTIONS can be any legal combination of:
- 
- - ro		# mount file system read-only
- - rw		# mount file system read-write
-@@ -20,8 +20,9 @@ OPTIONS can be any legal combination one of:
- - incgen	# increment generation no. (see Cache Consistency below)
- 
- BRANCH-OPTIONS can be either (1) a list of branches given to the "dirs="
--option, or (2) a list of individual branch manipulation commands, described
--in the "Branch Management" section below.
-+option, or (2) a list of individual branch manipulation commands, combined
-+with the "remount" option, and is further described in the "Branch
-+Management" section below.
- 
- The syntax for the "dirs=" mount option is:
- 
-@@ -32,7 +33,9 @@ the union, with an optional branch mode for each of those directories.
- Directories that come earlier (specified first, on the left) in the list
- have a higher precedence than those which come later.  Additionally,
- read-only or read-write permissions of the branch can be specified by
--appending =ro or =rw (default) to each directory.
-+appending =ro or =rw (default) to each directory.  See the Copyup section in
-+concepts.txt, for a description of Unionfs's behavior when mixing read-only
-+and read-write branches and mounts.
- 
- Syntax:
- 
-@@ -112,7 +115,7 @@ CACHE CONSISTENCY
- =================
- 
- If you modify any file on any of the lower branches directly, while there is
--a Unionfs 2.1 mounted above any of those branches, you should tell Unionfs
-+a Unionfs 2.x mounted above any of those branches, you should tell Unionfs
- to purge its caches and re-get the objects.  To do that, you have to
- increment the generation number of the superblock using the following
- command:
 -- 
 1.5.2.2
 
