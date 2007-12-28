@@ -1,62 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758AbXL1Fak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbXL1Fbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754758AbXL1Fak (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 00:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbXL1Fad
+	id S1755156AbXL1Fbl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 00:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbXL1Fbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 00:30:33 -0500
-Received: from gate.crashing.org ([63.228.1.57]:55096 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751049AbXL1Fac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 00:30:32 -0500
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
-	opt-in
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Loic Prylli <loic@myri.com>, Robert Hancock <hancockr@shaw.ca>,
-       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       gregkh@suse.de, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>,
-       Kai Ruhnau <kai@tragetaschen.dyndns.org>
-In-Reply-To: <alpine.LFD.0.9999.0712271328010.21557@woody.linux-foundation.org>
-References: <fa.m7tRTz/ymu3iMyLTO2aF1Tvaw24@ifi.uio.no>
-	 <fa.XrRLIuL4juNAXXaMPF3iY8FyWW8@ifi.uio.no>
-	 <fa.H0fcNl3b6xVBwzWUgT72M4K6KOU@ifi.uio.no> <4773EBB4.2020805@shaw.ca>
-	 <alpine.LFD.0.9999.0712271023090.21557@woody.linux-foundation.org>
-	 <477414C9.3040906@myri.com>
-	 <alpine.LFD.0.9999.0712271328010.21557@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 28 Dec 2007 16:29:50 +1100
-Message-Id: <1198819790.7209.27.camel@pasglop>
+	Fri, 28 Dec 2007 00:31:32 -0500
+Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:41322 "EHLO
+	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbXL1Fbb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 00:31:31 -0500
+To: balbir@linux.vnet.ibm.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: SCSI errors on powerpc with 2.6.24-rc6-mm1
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <47733C01.1080002@linux.vnet.ibm.com>
+References: <47732C41.7000003@linux.vnet.ibm.com>
+	<20071227134335O.fujita.tomonori@lab.ntt.co.jp>
+	<47733C01.1080002@linux.vnet.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20071228143043U.fujita.tomonori@lab.ntt.co.jp>
+Date: Fri, 28 Dec 2007 14:30:43 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 27 Dec 2007 11:15:37 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-On Thu, 2007-12-27 at 13:37 -0800, Linus Torvalds wrote:
-> The code doesn't actually do what CRS is supposed to help with (ie go
-> on 
-> to probe another device and then come back to the slow one later), so 
-> right now it's pretty much useless *anyway*. 
+> FUJITA Tomonori wrote:
+> > On Thu, 27 Dec 2007 10:08:25 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> >> FUJITA Tomonori wrote:
+> >>> On Mon, 24 Dec 2007 10:18:50 +0530
+> >>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >>>
+> >> [snip]
+> >>
+> >>> I might break the IOMMU code. Can you reproduce it easily? If so,
+> >>> reverting my IOMMU patches (I've attached a patch to revert them) fix
+> >>> the problem?
+> >> [snip]
+> >>
+> >>
+> >> Yes, this patch fixes the problem for me.
+> > 
+> > Thanks, so you can reproduce it easily, right?
+> > 
+> 
+> Yes, quite easily
+> 
+> > The problem is that I don't want to revert these changes. I'll see
+> > how these changes cause the problem shortly.
+> 
+> I'll try and find some bandwidth to review/test the patches and help you
+> figure out the right solution.
 
-It's not totally useless... Instead of not seeing the device that hasn't
-fully initialized yet at all, we end up waiting a bit and then seeing
-it. Going to probe somebody else is a nice optimization we could do with
-multithread PCI probe but doesn't remove the need for CRS.
+Thanks,
 
-I have embedded boards where proper CRS operations is critical since the
-kernel brings the PCIe link up itself, and thus is likely to hit devices
-still in the middle of CRS.
-
-Note that I'm -very- surprised however that your BIOS hands control out
-of the kernel with devices still issuing CRS... Unless those devices may
-do it after boot but that's dodgy and will break many other things.
-
-Ben.
+Can you try this?
 
 
+diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
+index e7d8544..495575a 100644
+--- a/lib/iommu-helper.c
++++ b/lib/iommu-helper.c
+@@ -8,15 +8,20 @@
+ static unsigned long find_next_zero_area(unsigned long *map,
+ 					 unsigned long size,
+ 					 unsigned long start,
+-					 unsigned int nr)
++					 unsigned int nr,
++					 unsigned long align_mask)
+ {
+ 	unsigned long index, end, i;
+ again:
+ 	index = find_next_zero_bit(map, size, start);
++
++	/* Align allocation */
++	index = (index + align_mask) & ~align_mask;
++
+ 	end = index + nr;
+-	if (end > size)
++	if (end >= size)
+ 		return -1;
+-	for (i = index + 1; i < end; i++) {
++	for (i = index; i < end; i++) {
+ 		if (test_bit(i, map)) {
+ 			start = i+1;
+ 			goto again;
+@@ -50,9 +55,8 @@ unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
+ {
+ 	unsigned long index;
+ again:
+-	index = find_next_zero_area(map, size, start, nr);
++	index = find_next_zero_area(map, size, start, nr, align_mask);
+ 	if (index != -1) {
+-		index = (index + align_mask) & ~align_mask;
+ 		if (is_span_boundary(index, nr, shift, boundary_size)) {
+ 			/* we could do more effectively */
+ 			start = index + 1;
