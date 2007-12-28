@@ -1,88 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbXL1MB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbXL1MOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567AbXL1MB5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 07:01:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbXL1MBr
+	id S1753739AbXL1MOr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 07:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbXL1MOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 07:01:47 -0500
-Received: from h155.mvista.com ([63.81.120.155]:7081 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752521AbXL1MBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 07:01:46 -0500
-Message-ID: <4774E5C6.90506@ru.mvista.com>
-Date: Fri, 28 Dec 2007 15:02:14 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 28 Dec 2007 07:14:38 -0500
+Received: from crazy.xmat.net ([91.121.11.163]:53633 "EHLO
+	tchaikovsky.artsenscene.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752544AbXL1MOh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 07:14:37 -0500
+To: jonsmirl@gmail.com
+Subject: Re: [PATCH 0/5] Version 17,  series to add device tree naming to i2c
+X-IlohaMail-Blah: khali@gcu-squad.org
+X-IlohaMail-Method: mail() [mem]
+X-IlohaMail-Dummy: moo
+X-Mailer: IlohaMail/0.8.14 (On: mail.gcu-squad.org)
+Message-ID: <uyqq2ui6.1198844066.4263970.khali@gcu-squad.org>
+In-Reply-To: <9e4733910712270847j35778e43i66fda3eca9dc125@mail.gmail.com>
+From: "Jean Delvare" <khali@linux-fr.org>
+Bounce-To: "Jean Delvare" <khali@linux-fr.org>
+CC: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/9] piix: remove stale comments
-References: <20071227191153.1357.63211.sendpatchset@localhost.localdomain> <20071227191200.1357.71766.sendpatchset@localhost.localdomain>
-In-Reply-To: <20071227191200.1357.71766.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Date: Fri, 28 Dec 2007 13:14:28 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Bartlomiej Zolnierkiewicz wrote:
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Hi John,
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Le 27/12/2007, Jon Smirl écrit:
+>On 12/19/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+>> Another rework of the i2c for powerpc device tree patch. This version implements standard alias naming only on the powerpc platform and only for the device tree names. The old naming mechanism of i2c_client.name,driver_name is left in place and not changed for non-powerpc platforms. This patch is fully capable of dynamically loading the i2c modules. You can modprobe in the i2c-mpc driver and the i2c modules described in the device tree will be automatically loaded. Modules also work if compiled in.
+>
+>Are there any further objections to this patch? Can it all go in
+>through the powerpc trees or do the i2c people want to send it on?
 
-> Index: b/drivers/ide/pci/piix.c
-> ===================================================================
-> --- a/drivers/ide/pci/piix.c
-> +++ b/drivers/ide/pci/piix.c
-> @@ -8,53 +8,8 @@
->   *
->   *  May be copied or modified under the terms of the GNU General Public License
->   *
-> - *  PIO mode setting function for Intel chipsets.
-> - *  For use instead of BIOS settings.
-> + * Documentation:
->   *
-> - * 40-41
-> - * 42-43
-> - * 
-> - *                 41
-> - *                 43
-> - *
-> - * | PIO 0       | c0 | 80 | 0 |
-> - * | PIO 2 | SW2 | d0 | 90 | 4 |
-> - * | PIO 3 | MW1 | e1 | a1 | 9 |
-> - * | PIO 4 | MW2 | e3 | a3 | b |
-> - *
-> - * sitre = word40 & 0x4000; primary
-> - * sitre = word42 & 0x4000; secondary
-> - *
-> - * 44 8421|8421    hdd|hdb
-> - *
-> - * 48 8421         hdd|hdc|hdb|hda udma enabled
-> - *
-> - *    0001         hda
-> - *    0010         hdb
-> - *    0100         hdc
-> - *    1000         hdd
-> - *
-> - * 4a 84|21        hdb|hda
-> - * 4b 84|21        hdd|hdc
-> - *
-> - *    ata-33/82371AB
-> - *    ata-33/82371EB
-> - *    ata-33/82801AB            ata-66/82801AA
-> - *    00|00 udma 0              00|00 reserved
-> - *    01|01 udma 1              01|01 udma 3
-> - *    10|10 udma 2              10|10 udma 4
-> - *    11|11 reserved            11|11 reserved
-> - *
-> - * 54 8421|8421    ata66 drive|ata66 enable
+I am on vacation until January 4th. I will review your patchset the week
+following my return.
 
-    You could have left te progarmming info intact...
-
-WBR, Sergei
-
+Thanks for your patience,
+--
+Jean Delvare
