@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbXL1MOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbXL1MPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753739AbXL1MOr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 07:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbXL1MOi
+	id S1752964AbXL1MPW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 07:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbXL1MPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 07:14:38 -0500
-Received: from crazy.xmat.net ([91.121.11.163]:53633 "EHLO
-	tchaikovsky.artsenscene.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752544AbXL1MOh convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 07:14:37 -0500
-To: jonsmirl@gmail.com
-Subject: Re: [PATCH 0/5] Version 17,  series to add device tree naming to i2c
-X-IlohaMail-Blah: khali@gcu-squad.org
-X-IlohaMail-Method: mail() [mem]
-X-IlohaMail-Dummy: moo
-X-Mailer: IlohaMail/0.8.14 (On: mail.gcu-squad.org)
-Message-ID: <uyqq2ui6.1198844066.4263970.khali@gcu-squad.org>
-In-Reply-To: <9e4733910712270847j35778e43i66fda3eca9dc125@mail.gmail.com>
-From: "Jean Delvare" <khali@linux-fr.org>
-Bounce-To: "Jean Delvare" <khali@linux-fr.org>
-CC: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	Fri, 28 Dec 2007 07:15:05 -0500
+Received: from h155.mvista.com ([63.81.120.155]:7189 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752967AbXL1MPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 07:15:04 -0500
+Message-ID: <4774E8E4.1080400@ru.mvista.com>
+Date: Fri, 28 Dec 2007 15:15:32 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Date: Fri, 28 Dec 2007 13:14:28 +0100
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/9] ide: fix ide_intr() for non-PCI devices and CONFIG_BLK_DEV_IDEPCI=y
+References: <20071227191153.1357.63211.sendpatchset@localhost.localdomain> <20071227191207.1357.24118.sendpatchset@localhost.localdomain>
+In-Reply-To: <20071227191207.1357.24118.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bartlomiej Zolnierkiewicz wrote:
 
-Hi John,
+> 'hwif->pci_dev && !hwif->pci_dev->vendor' condition is never true,
+> check for 'hwif->chipset != ide_pci' instead.
 
-Le 27/12/2007, Jon Smirl écrit:
->On 12/19/07, Jon Smirl <jonsmirl@gmail.com> wrote:
->> Another rework of the i2c for powerpc device tree patch. This version implements standard alias naming only on the powerpc platform and only for the device tree names. The old naming mechanism of i2c_client.name,driver_name is left in place and not changed for non-powerpc platforms. This patch is fully capable of dynamically loading the i2c modules. You can modprobe in the i2c-mpc driver and the i2c modules described in the device tree will be automatically loaded. Modules also work if compiled in.
->
->Are there any further objections to this patch? Can it all go in
->through the powerpc trees or do the i2c people want to send it on?
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-I am on vacation until January 4th. I will review your patchset the week
-following my return.
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Thanks for your patience,
---
-Jean Delvare
+MBR, Sergei
