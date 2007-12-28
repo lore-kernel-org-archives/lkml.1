@@ -1,132 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbXL1Rls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbXL1Rmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755363AbXL1Rls (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 12:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbXL1Rlk
+	id S1755552AbXL1Rmt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 12:42:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbXL1Rml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 12:41:40 -0500
-Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:53242 "EHLO
-	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754223AbXL1Rli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 12:41:38 -0500
-X-Greylist: delayed 572 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Dec 2007 12:41:38 EST
-Date: Fri, 28 Dec 2007 18:32:03 +0100
-From: Gabor Gombas <gombasg@sztaki.hu>
-To: linux-kernel@vger.kernel.org
-Cc: bluez-devel@lists.sourceforge.net
-Subject: Oops involving RFCOMM and sysfs
-Message-ID: <20071228173203.GA20690@boogie.lpds.sztaki.hu>
+	Fri, 28 Dec 2007 12:42:41 -0500
+Received: from mailbox2.myri.com ([64.172.73.26]:1882 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752969AbXL1Rmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 12:42:40 -0500
+Message-ID: <47753525.3010701@myri.com>
+Date: Fri, 28 Dec 2007 12:40:53 -0500
+From: Loic Prylli <loic@myri.com>
+User-Agent: Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Copyright: Forwarding or publishing without permission is prohibited.
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Daniel Barkalow <barkalow@iabervon.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kai Ruhnau <kai@tragetaschen.dyndns.org>,
+       Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       gregkh@suse.de, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Martin Mares <mj@ucw.cz>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+References: <alpine.LFD.0.9999.0712271023090.21557@woody.linux-foundation.org> <477414C9.3040906@myri.com> <alpine.LFD.0.9999.0712271328010.21557@woody.linux-foundation.org> <alpine.LFD.0.9999.0712271338280.21557@woody.linux-foundation.org> <47742498.1060900@tragetaschen.dyndns.org> <alpine.LNX.1.00.0712272204520.13593@iabervon.org> <alpine.LFD.0.9999.0712272129290.21557@woody.linux-foundation.org> <alpine.LNX.1.00.0712280036330.13593@iabervon.org> <20071228103451.GA28694@jurassic.park.msu.ru> <20071228081418.08b60228@laptopd505.fenrus.org> <20071228163841.GA9409@jurassic.park.msu.ru>
+In-Reply-To: <20071228163841.GA9409@jurassic.park.msu.ru>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I'm using my phone as a GPRS modem over Bluetooth. Sometimes Bluetooth
-on the phone seems to stall and the phone has to be switched off & on to
-get it back to a sane state. During this I sometimes get the following
-Oops (this is kernel 2.6.24-rc6 on x86_64):
 
-Dec 28 17:52:11 host kernel: Unable to handle kernel NULL pointer dereference at 00000000000000b8 RIP: 
-Dec 28 17:52:11 host kernel:  [<ffffffff8046e0d5>] mutex_lock+0x10/0x1d
-Dec 28 17:52:11 host kernel: PGD 920b0067 PUD a7aba067 PMD 0 
-Dec 28 17:52:11 host kernel: Oops: 0002 [1] 
-Dec 28 17:52:11 host kernel: CPU 0 
-Dec 28 17:52:11 host kernel: Modules linked in: cpufreq_ondemand ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async crc_ccitt ppp_generic slhc binfmt_misc rfcomm l2cap nfsd auth_rpcgss exportfs ipt_REJECT xt_tcpudp ipt_LOG xt_limit iptable_filter ip_tables x_tables nfs lockd nfs_acl sunrpc fuse dm_crypt dm_snapshot dm_mirror saa7134_alsa radeon hwmon_vid eeprom hci_usb bluetooth usb_storage tuner tea5767 tda8290 tuner_simple mt20xx tea5761 sg snd_intel8x0 saa7134 firewire_ohci snd_ac97_codec firewire_core videobuf_dma_sg videobuf_core ir_kbd_i2c ac97_bus crc_itu_t ir_common snd_pcm ehci_hcd ohci_hcd parport_pc parport sky2 sr_mod forcedeth snd_timer snd_page_alloc cdrom floppy
-Dec 28 17:52:11 host kernel: Pid: 4381, comm: pppd Not tainted 2.6.24-rc6 #1
-Dec 28 17:52:11 host kernel: RIP: 0010:[<ffffffff8046e0d5>]  [<ffffffff8046e0d5>] mutex_lock+0x10/0x1d
-Dec 28 17:52:11 host kernel: RSP: 0018:ffff81009402fd08  EFLAGS: 00010246
-Dec 28 17:52:11 host kernel: RAX: 0000000000000000 RBX: 00000000000000b8 RCX: 0000000000000000
-Dec 28 17:52:11 host kernel: RDX: ffff81009402ffd8 RSI: ffffffff80639d70 RDI: 00000000000000b8
-Dec 28 17:52:11 host kernel: RBP: ffffffff8058adb0 R08: 6390dfaa7e3bd395 R09: ffffffff8050597e
-Dec 28 17:52:11 host kernel: R10: 0000000000004000 R11: 0000003000000018 R12: ffff8100b4d75e60
-Dec 28 17:52:11 host kernel: R13: 00000000fffffff4 R14: ffff8100abe9e180 R15: ffff8100a7a10900
-Dec 28 17:52:11 host kernel: FS:  00002ab1bddc3ac0(0000) GS:ffffffff805b0000(0000) knlGS:0000000000000000
-Dec 28 17:52:11 host kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-Dec 28 17:52:11 host kernel: CR2: 00000000000000b8 CR3: 000000009400e000 CR4: 00000000000006e0
-Dec 28 17:52:11 host kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-Dec 28 17:52:11 host kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Dec 28 17:52:11 host kernel: Process pppd (pid: 4381, threadinfo ffff81009402e000, task ffff81009403d060)
-Dec 28 17:52:11 host kernel: Stack:  ffff81009403d060 ffffffff80285555 ffff810093734d48 ffffffff802aefa5
-Dec 28 17:52:11 host kernel:  ffff8100bf9e1c80 ffff8100b4d75e60 ffff810060720600 ffffffff802af1ba
-Dec 28 17:52:11 host kernel:  ffff8100b6e5ced0 ffff8100b6e5ced0 ffff8100bfa11c00 ffff810060720600
-Dec 28 17:52:11 host kernel: Call Trace:
-Dec 28 17:52:11 host kernel:  [<ffffffff80285555>] dput+0x26/0x103
-Dec 28 17:52:11 host kernel:  [<ffffffff802aefa5>] sysfs_get_dentry+0x45/0x8f
-Dec 28 17:52:11 host kernel:  [<ffffffff802af1ba>] sysfs_move_dir+0x63/0x204
-Dec 28 17:52:11 host kernel:  [<ffffffff803006e5>] kobject_move+0xba/0x110
-Dec 28 17:52:11 host kernel:  [<ffffffff80368640>] device_move+0x59/0x111
-Dec 28 17:52:11 host kernel:  [<ffffffff8828841c>] :rfcomm:rfcomm_tty_close+0x2f/0x74
-Dec 28 17:52:11 host kernel:  [<ffffffff803442ff>] release_dev+0x212/0x5e2
-Dec 28 17:52:11 host kernel:  [<ffffffff80288801>] mntput_no_expire+0x1f/0x6f
-Dec 28 17:52:11 host kernel:  [<ffffffff803e845d>] sys_sendto+0x128/0x151
-Dec 28 17:52:11 host kernel:  [<ffffffff803446db>] tty_release+0xc/0x10
-Dec 28 17:52:11 host kernel:  [<ffffffff80276f67>] __fput+0xb1/0x16f
-Dec 28 17:52:11 host kernel:  [<ffffffff802748b5>] filp_close+0x5d/0x65
-Dec 28 17:52:11 host kernel:  [<ffffffff80275a07>] sys_close+0x73/0xa6
-Dec 28 17:52:11 host kernel:  [<ffffffff8020b5fc>] tracesys+0xdc/0xe1
-Dec 28 17:52:11 host kernel: 
-Dec 28 17:52:11 host kernel: 
-Dec 28 17:52:11 host kernel: Code: ff 0f 79 05 e8 c9 00 00 00 58 5a 5b c3 41 54 48 8d 47 08 48 
-Dec 28 17:52:11 host kernel: RIP  [<ffffffff8046e0d5>] mutex_lock+0x10/0x1d
-Dec 28 17:52:11 host kernel:  RSP <ffff81009402fd08>
-Dec 28 17:52:11 host kernel: CR2: 00000000000000b8
-Dec 28 17:52:11 host kernel: ---[ end trace 12717319afdb56f5 ]---
+On 12/28/2007 11:38 AM, Ivan Kokshaysky wrote:
+> On Fri, Dec 28, 2007 at 08:14:18AM -0800, Arjan van de Ven wrote:
+>   
+>> it removes code by removing quirks / known not working stuff..
+>>     
+>
+>   
 
-The bug is also present in 2.6.23.9:
 
-Dec 28 15:30:29 twister kernel: Unable to handle kernel paging request at fffffffffffffffe RIP: 
-Dec 28 15:30:29 twister kernel:  [<ffffffff8027ac13>] dput+0xd/0x103
-Dec 28 15:30:29 twister kernel: PGD 203067 PUD 204067 PMD 0 
-Dec 28 15:30:29 twister kernel: Oops: 0000 [1] 
-Dec 28 15:30:29 twister kernel: CPU 0 
-Dec 28 15:30:29 twister kernel: Modules linked in: ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async crc_ccitt ppp_generic slhc binfmt_misc rfcomm l2cap nfsd exportfs auth_rpcgss ipt_REJECT xt_tcpudp ipt_LOG xt_limit iptable_filter ip_tables x_tables nfs lockd nfs_acl sunrpc fuse dm_crypt dm_snapshot dm_mirror saa7134_alsa radeon it87 hwmon_vid eeprom hci_usb bluetooth tuner usb_storage saa7134 video_buf ir_kbd_i2c snd_intel8x0 sg firewire_ohci firewire_core ir_common crc_itu_t snd_ac97_codec ac97_bus forcedeth parport_pc parport sky2 ohci_hcd snd_pcm snd_timer snd_page_alloc ehci_hcd sr_mod cdrom floppy
-Dec 28 15:30:29 twister kernel: Pid: 14700, comm: pppd Not tainted 2.6.23.9 #1
-Dec 28 15:30:29 twister kernel: RIP: 0010:[<ffffffff8027ac13>]  [<ffffffff8027ac13>] dput+0xd/0x103
-Dec 28 15:30:29 twister kernel: RSP: 0018:ffff810054e5bd28  EFLAGS: 00010282
-Dec 28 15:30:29 twister kernel: RAX: fffffffffffffffe RBX: fffffffffffffffe RCX: 0000000000000052
-Dec 28 15:30:29 twister kernel: RDX: ffffffff802f6414 RSI: ffff81000411b4e0 RDI: fffffffffffffffe
-Dec 28 15:30:29 twister kernel: RBP: ffff8100bfef14d0 R08: ffffffffffffffff R09: 0000000000005401
-Dec 28 15:30:29 twister kernel: R10: 00007fff7018a2e0 R11: 0000000000000246 R12: ffff8100b3731948
-Dec 28 15:30:29 twister kernel: R13: 0000000000000000 R14: ffff81005a1cb100 R15: fffffffffffffffe
-Dec 28 15:30:29 twister kernel: FS:  00002acd3a94cac0(0000) GS:ffffffff80592000(0000) knlGS:00000000f7d786b0
-Dec 28 15:30:29 twister kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-Dec 28 15:30:29 twister kernel: CR2: fffffffffffffffe CR3: 0000000047f21000 CR4: 00000000000006e0
-Dec 28 15:30:29 twister kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-Dec 28 15:30:29 twister kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Dec 28 15:30:29 twister kernel: Process pppd (pid: 14700, threadinfo ffff810054e5a000, task ffff81007907ce40)
-Dec 28 15:30:29 twister kernel: Stack:  00000000fffffffe ffffffff802a5a81 0000000000000053 ffff81000411b4e0
-Dec 28 15:30:29 twister kernel:  0000000000000000 ffff8100b539f8d0 ffff81000411b4e0 ffff8100b04e7060
-Dec 28 15:30:29 twister kernel:  00000000fffffff4 ffff81005a1cb100 ffff8100b09db800 ffffffff802f6448
-Dec 28 15:30:29 twister kernel: Call Trace:
-Dec 28 15:30:29 twister kernel:  [<ffffffff802a5a81>] sysfs_move_dir+0x1d2/0x1ed
-Dec 28 15:30:29 twister kernel:  [<ffffffff802f6448>] kobject_move+0xba/0x110
-Dec 28 15:30:29 twister kernel:  [<ffffffff8035e0f0>] device_move+0x59/0x111
-Dec 28 15:30:29 twister kernel:  [<ffffffff8827c382>] :rfcomm:rfcomm_tty_close+0x2f/0x74
-Dec 28 15:30:29 twister kernel:  [<ffffffff803397ff>] release_dev+0x212/0x5e2
-Dec 28 15:30:29 twister kernel:  [<ffffffff802d4206>] inode_has_perm+0x65/0x72
-Dec 28 15:30:29 twister kernel:  [<ffffffff802d42a7>] file_has_perm+0x94/0xa3
-Dec 28 15:30:29 twister kernel:  [<ffffffff80339bdb>] tty_release+0xc/0x11
-Dec 28 15:30:29 twister kernel:  [<ffffffff8026c578>] __fput+0xb1/0x177
-Dec 28 15:30:29 twister kernel:  [<ffffffff80269ecc>] filp_close+0x5d/0x65
-Dec 28 15:30:29 twister kernel:  [<ffffffff8026b01a>] sys_close+0x72/0xa5
-Dec 28 15:30:29 twister kernel:  [<ffffffff8020b5cc>] tracesys+0xdc/0xe1
-Dec 28 15:30:29 twister kernel: 
-Dec 28 15:30:29 twister kernel: 
-Dec 28 15:30:29 twister kernel: Code: 83 3b 01 75 05 e8 e8 29 1e 00 48 c7 c6 08 de 61 80 48 89 df 
-Dec 28 15:30:29 twister kernel: RIP  [<ffffffff8027ac13>] dput+0xd/0x103
-Dec 28 15:30:29 twister kernel:  RSP <ffff810054e5bd28>
-Dec 28 15:30:29 twister kernel: CR2: fffffffffffffffe
 
-Gabor
 
--- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences
-     ---------------------------------------------------------
+The only quirk I see removed is a bitmap with an arbitrary size (that we
+don't really know is sufficient for every system), and that is only
+built using comparison between mmconf and type1 accesses.  IMHO, there
+is zero knowledge in that removed code (no knowledge about specific
+chipsets that work or don't work, or misleading BIOSes).
+
+
+
+
+> This not working stuff gets detected at probe time - see
+> drivers/pci/probe.c:pci_cfg_space_size().
+>   
+
+
+This indeed avoids most mmconf invalid attempts (for extended-conf-space
+probing that goes through pci_find_ext_capability() or from user-space).
+
+
+One could think of adding a cfg_size check in
+pci_read_config_{read/write), but IMHO that would be useless, since
+direct read/write into a known extended-conf-space register in the
+extended-config-space can only happen for a pci-express device, and
+there is ample evidence that such accesses always work (more exactly
+MCFG can always be trusted for pcie devices).
+
+One thing that could be changed in pci_cfg_space_size() is to avoid
+making a special case for PCI-X 266MHz/533Mhz (assume cfg_size == 256
+for such devices too, reserve extended cfg-space for pci-express
+devices). There is good reasons to think no such PCI-X 266Mhz/533 device
+will ever have an extended-space (no capability IDs was ever defined in
+the PCI-X 2.0 spec, no new revision is planned). Such a check would
+avoid the possibility of trying extended-conf-space access for PCI-X 2.0
+devices behind a amd-8132 or similar (such accesses would just returnd
+-1, but there was some objections raised about doing anything like that
+other than at initialization time, even if there is ample reasons to
+argue it would be harmless).
+
+
+Loic
+
+
