@@ -1,87 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbXL1Xf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbXL1XvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbXL1Xf0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 18:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbXL1XfI
+	id S1753461AbXL1XvZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 18:51:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbXL1XvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 18:35:08 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:44163 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753835AbXL1XfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 18:35:03 -0500
-Date: Sat, 29 Dec 2007 01:34:50 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Al Boldi <a1426z@gawab.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] USB Kconfig: Reorganize USB Kconfig Menu
-Message-ID: <20071228233450.GC9105@does.not.exist>
-References: <200712231449.00862.a1426z@gawab.com> <200712271418.59156.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 28 Dec 2007 18:51:14 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50529 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752422AbXL1XvN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 18:51:13 -0500
+Date: Fri, 28 Dec 2007 23:50:49 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de
+Cc: Bahadir Balban <bahadir.balban@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: 2.6.24-rc5 sysfs pci bridge duplicate symlink
+Message-ID: <20071228235048.GB22935@flint.arm.linux.org.uk>
+References: <7ac1e90c0712280511y3a0f454cmc84e8c17f173c8dc@mail.gmail.com> <20071228150322.71e5ca49.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200712271418.59156.david-b@pacbell.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20071228150322.71e5ca49.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 27, 2007 at 02:18:58PM -0800, David Brownell wrote:
-> On Sunday 23 December 2007, Al Boldi wrote:
+On Fri, Dec 28, 2007 at 03:03:22PM -0800, Andrew Morton wrote:
+> On Fri, 28 Dec 2007 13:11:37 +0000 "Bahadir Balban" <bahadir.balban@gmail.com> wrote:
+> 
+> > Hi,
 > > 
-> > Reogranize USB Kconfig Menu, and move USB_GADGET out into the Device Driver
-> > Menu.  This helps the USB Kconfig Menu to be more logical/usable.
+> > On ARM with PCI, I get this error since -rc2 (didn't try rc1):
 > > 
-> > Cc: David Brownell <david-b@pacbell.net>
-> > Cc: Greg KH <greg@kroah.com>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > Signed-off-by: Al Boldi <a1426z@gawab.com>
+> > sysfs: duplicate filename 'bridge' can not be created
+> > WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> > [<c00287fc>] (dump_stack+0x0/0x14) from [<c00cbc64>] (sysfs_add_one+0x50/0xf4)
+> > [<c00cbc14>] (sysfs_add_one+0x0/0xf4) from [<c00ccd30>]
+> > (sysfs_create_link+0xec/0x184)
+> >  r6:cfca8b48 r5:cfca96c8 r4:cfc2fec0
+> > [<c00ccc44>] (sysfs_create_link+0x0/0x184) from [<c0160b44>]
+> > (pci_bus_add_devices+0xf0/0x144)
+> >  r7:cfc5a2d4 r6:cfc5a2d4 r5:cfc5a2c0 r4:cfcad800
+> > [<c0160a54>] (pci_bus_add_devices+0x0/0x144) from [<c0160b30>]
+> > (pci_bus_add_devices+0xdc/0x144)
+> >  r7:cfc5a3d4 r6:cfc5a3d4 r5:cfc5a3c0 r4:cfcadc00
+> > [<c0160a54>] (pci_bus_add_devices+0x0/0x144) from [<c0160b30>]
+> > (pci_bus_add_devices+0xdc/0x144)
+> >  r7:cfc5a4d4 r6:cfc5a4d4 r5:cfc5a4c0 r4:cfc5d400
+> > [<c0160a54>] (pci_bus_add_devices+0x0/0x144) from [<c000a934>]
+> > (pci_common_init+0x148/0x184)
+> >  r7:c035fd58 r6:cfc3e760 r5:c001e030 r4:cfc5a4c0
+> > 
+> > 
+> > Any idea why?
+> > 
 > 
-> Along those lines, sure ... but this particular patch can't quite
-> be the answer.  For one thing, it rather critially needs the appended,
-> else it won't work on ARM.  (And quite a lot of the ARM platforms
-> need the gadget stack!!)
-> 
-> There are ISTR a few other platforms which, for reasons unknown to
-> me, don't source drivers/Kconfig but recreate portions of it on
-> their own ... that's not something that this patch should change.
+> (suitable cc added)
 
-$ find . -name Kconfig\* | xargs grep drivers/usb/Kconfig
-./arch/arm/Kconfig:source "drivers/usb/Kconfig"
-./arch/cris/Kconfig:source "drivers/usb/Kconfig"
-./arch/h8300/Kconfig:source "drivers/usb/Kconfig"
-./arch/v850/Kconfig:source "drivers/usb/Kconfig"
-./drivers/Kconfig:source "drivers/usb/Kconfig"
-$ 
+Looks to me as if the code added to pci_bus_add_devices() is off it's
+rocker.
 
-> Also, looking at this in xconfig shows some oddness.  That "core"
-> submenu holds stuff that would logically be part of the toplevel
-> menu for host side USB.  While that toplevel menu has the USS720
-> driver, which seems more like a "miscellany" thing...
-> 
-> The comment about SCSI shouldn't show when SCSI is defined; and
-> the comment aboue "SCSI disk support" belongs with the mass storage
-> menu, not at the top level.  The way that the mass storage menu
-> is presented also hides the fact that you can get fully functional
-> mass storage support without checking *any* of the drivers there,
-> since the core already handles standard devices.
->...
+In brief, pci_bus_add_devices() is supposed to be callable given *any*
+state of the bus, and it will add any new devices found in the bus tree
+from the bus that it's called for downwards.  (That's how I designed
+that bit of PCI code - so it can cope with hotpluggable PCI bridges.)
 
-The SCSI dependency should be handled through select - there's no 
-reason for bothering the kconfig user wih such implementation details.
+It still does this.  However, some bright spark decided to add sysfs
+links to it - and break it.  Now, whenever we descend into a subordinate
+bus (and return to a higher level) we will try to create a sysfs symlink
+even if the bus is one that we already registered.
 
-> - Dave
->...
+So... that sysfs_create_link() call in there should not be unconditional.
+It should _only_ ever do that call if list_empty(&dev->subordinate->node)
+was true.  IOW, we only create symlinks for subordinate bus that we don't
+already know about.
 
+It looks like it was introduced by Greg's "PCI: fix __must_check warnings"
+but why a patch advertised _solely_ as a fix is adding additional sysfs
+attributes I've no idea.
 
-cu
-Adrian
+Something like the following should fix it.  Bahadir - please test.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+index 9e5ea07..132a91f 100644
+--- a/drivers/pci/bus.c
++++ b/drivers/pci/bus.c
+@@ -131,18 +131,21 @@ void pci_bus_add_devices(struct pci_bus *bus)
+ 		 * it and then scan for unattached PCI devices.
+ 		 */
+ 		if (dev->subordinate) {
+-		       if (list_empty(&dev->subordinate->node)) {
++			int new_bus = list_empty(&dev->subordinate->node);
++			if (new_bus) {
+ 			       down_write(&pci_bus_sem);
+ 			       list_add_tail(&dev->subordinate->node,
+ 					       &dev->bus->children);
+ 			       up_write(&pci_bus_sem);
+ 			}
+ 			pci_bus_add_devices(dev->subordinate);
+-			retval = sysfs_create_link(&dev->subordinate->class_dev.kobj,
+-						   &dev->dev.kobj, "bridge");
+-			if (retval)
+-				dev_err(&dev->dev, "Error creating sysfs "
+-					"bridge symlink, continuing...\n");
++			if (new_bus) {
++				retval = sysfs_create_link(&dev->subordinate->class_dev.kobj,
++							   &dev->dev.kobj, "bridge");
++				if (retval)
++					dev_err(&dev->dev, "Error creating sysfs "
++						"bridge symlink, continuing...\n");
++			}
+ 		}
+ 	}
+ }
 
