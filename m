@@ -1,273 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbXL1Uku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbXL1Uno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752763AbXL1Uku (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 15:40:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbXL1Ukm
+	id S1753197AbXL1Uno (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 15:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbXL1Un3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 15:40:42 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:49186 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752099AbXL1Ukk (ORCPT
+	Fri, 28 Dec 2007 15:43:29 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37040 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751488AbXL1Un2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 15:40:40 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:references;
-	b=GviizsmV7YGLGBvdcJezNqKjyobp5NeWhxJY97da0YjKilUV3qefvI2VLxjAGphx7
-	d6/RvodvU4thQKWJSe6TQ==
-Message-ID: <3f1a065b0712281240p14c8223agfe83db0ac26aca4c@mail.gmail.com>
-Date: Fri, 28 Dec 2007 12:40:28 -0800
-From: "Russell Leidich" <rml@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] AMD Thermal Interrupt Support
-Cc: linux-kernel@vger.kernel.org, "Andi Kleen" <ak@suse.de>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <20071227233419.d1adf3f3.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_18645_7089747.1198874428489"
-References: <20071217185453.C4597CC562@localhost>
-	 <20071225140413.e8b4f2cd.akpm@linux-foundation.org>
-	 <3f1a065b0712271057s150b62f8nb11ebc28dc55f811@mail.gmail.com>
-	 <20071227233419.d1adf3f3.akpm@linux-foundation.org>
+	Fri, 28 Dec 2007 15:43:28 -0500
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, hch@infradead.org
+Subject: [GIT PULL -mm] 00/30 Unionfs+fsstack updates/fixes/cleanups
+Date: Fri, 28 Dec 2007 15:42:34 -0500
+Message-Id: <11988745841003-git-send-email-ezk@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_18645_7089747.1198874428489
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-OK, given our discussion, perhaps the attached revised patch will be
-more to your liking.
+The following is a series of patchsets related to Unionfs.  This is the
+second set of patchsets resulting from an lkml review of the entire unionfs
+code base (many thanks go to all of those who sent their comments).  The
+most significant changes in this set are bug fixes and an overhaul of the
+locking in unionfs (many of these fixes are applicable to stacking in
+general).
 
-If so, let me know and I'll give it one last paranoid test, then mail
-you a Signed-off-by patch.
+The first two patches in the series are small generic VFS fsstack patches.
 
--- 
-Russell Leidich
+These patches were tested (where appropriate) on Linus's 2.6.24 latest code
+(as of v2.6.24-rc6-125-g5356f66), MM, as well as the backports to
+2.6.{23,22,21,20,19,18,9} on ext2/3/4, xfs, reiserfs, nfs2/3/4, jffs2,
+ramfs, tmpfs, cramfs, and squashfs (where available).  Also tested with
+LTP-full.  See http://unionfs.filesystems.org/ to download back-ported
+unionfs code.
 
-------=_Part_18645_7089747.1198874428489
-Content-Type: text/plain; name=patch.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_far6vclu1
-Content-Disposition: attachment; filename=patch.txt
+Please pull from the 'master' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/ezk/unionfs.git
 
-ZGlmZiAtdXByTiAvaG9tZS9ybWwvbGludXgtMi42LjI0LXJjNS5vcmlnL2FyY2gveDg2L2tlcm5l
-bC9jcHUvbWNoZWNrL01ha2VmaWxlIC9ob21lL3JtbC9saW51eC0yLjYuMjQtcmM1L2FyY2gveDg2
-L2tlcm5lbC9jcHUvbWNoZWNrL01ha2VmaWxlCi0tLSAvaG9tZS9ybWwvbGludXgtMi42LjI0LXJj
-NS5vcmlnL2FyY2gveDg2L2tlcm5lbC9jcHUvbWNoZWNrL01ha2VmaWxlCTIwMDctMTItMTEgMTQ6
-MzA6NTMuNTMzMjk3MDAwIC0wODAwCisrKyAvaG9tZS9ybWwvbGludXgtMi42LjI0LXJjNS9hcmNo
-L3g4Ni9rZXJuZWwvY3B1L21jaGVjay9NYWtlZmlsZQkyMDA3LTEyLTExIDExOjU2OjIwLjU0OTE4
-NTAwMCAtMDgwMApAQCAtMSw0ICsxLDQgQEAKLW9iai15CQkJCT0gIG1jZV8kKEJJVFMpLm8gdGhl
-cm1fdGhyb3Qubworb2JqLXkJCQkJPSAgbWNlXyQoQklUUykubyB0aGVybV90aHJvdC5vIG1jZV90
-aGVybWFsLm8KIAogb2JqLSQoQ09ORklHX1g4Nl8zMikJCSs9IGs3Lm8gcDQubyBwNS5vIHA2Lm8g
-d2luY2hpcC5vCiBvYmotJChDT05GSUdfWDg2X01DRV9JTlRFTCkJKz0gbWNlX2ludGVsXzY0Lm8K
-ZGlmZiAtdXByTiAvaG9tZS9ybWwvbGludXgtMi42LjI0LXJjNS5vcmlnL2FyY2gveDg2L2tlcm5l
-bC9jcHUvbWNoZWNrL21jZV9hbWRfNjQuYyAvaG9tZS9ybWwvbGludXgtMi42LjI0LXJjNS9hcmNo
-L3g4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2VfYW1kXzY0LmMKLS0tIC9ob21lL3JtbC9saW51eC0y
-LjYuMjQtcmM1Lm9yaWcvYXJjaC94ODYva2VybmVsL2NwdS9tY2hlY2svbWNlX2FtZF82NC5jCTIw
-MDctMTItMTEgMTQ6MzA6NTMuNTU5Mjk4MDAwIC0wODAwCisrKyAvaG9tZS9ybWwvbGludXgtMi42
-LjI0LXJjNS9hcmNoL3g4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2VfYW1kXzY0LmMJMjAwNy0xMi0y
-OCAxMjozNToxNi4xNTExMDYwMDAgLTA4MDAKQEAgLTIwLDYgKzIwLDcgQEAKICNpbmNsdWRlIDxs
-aW51eC9pbnRlcnJ1cHQuaD4KICNpbmNsdWRlIDxsaW51eC9rb2JqZWN0Lmg+CiAjaW5jbHVkZSA8
-bGludXgvbm90aWZpZXIuaD4KKyNpbmNsdWRlIDxsaW51eC9wY2lfaWRzLmg+CiAjaW5jbHVkZSA8
-bGludXgvc2NoZWQuaD4KICNpbmNsdWRlIDxsaW51eC9zbXAuaD4KICNpbmNsdWRlIDxsaW51eC9z
-eXNkZXYuaD4KQEAgLTI5LDYgKzMwLDggQEAKICNpbmNsdWRlIDxhc20vbXNyLmg+CiAjaW5jbHVk
-ZSA8YXNtL3BlcmNwdS5oPgogI2luY2x1ZGUgPGFzbS9pZGxlLmg+CisjaW5jbHVkZSA8YXNtL3Ro
-ZXJtX3Rocm90Lmg+CisjaW5jbHVkZSA8YXNtL2s4Lmg+CiAKICNkZWZpbmUgUEZYICAgICAgICAg
-ICAgICAgIm1jZV90aHJlc2hvbGQ6ICIKICNkZWZpbmUgVkVSU0lPTiAgICAgICAgICAgInZlcnNp
-b24gMS4xLjEiCkBAIC00Niw2ICs0OSwxNiBAQAogI2RlZmluZSBNQVNLX0VSUl9DT1VOVF9ISSAw
-eDAwMDAwRkZGCiAjZGVmaW5lIE1BU0tfQkxLUFRSX0xPICAgIDB4RkYwMDAwMDAKICNkZWZpbmUg
-TUNHX1hCTEtfQUREUiAgICAgMHhDMDAwMDQwMAorI2RlZmluZSBUSEVSTV9DVExfRjNYNjQgICAw
-eDY0CisjZGVmaW5lIFBTTF9BUElDX0xPX0VOICAgIDB4ODAKKyNkZWZpbmUgUFNMX0FQSUNfSElf
-RU4gICAgMHg0MAorI2RlZmluZSBIVENfQUNUSVZFICAgICAgICAweDEwCisjZGVmaW5lIEhUQ19F
-TiAgICAgICAgICAgIDEKKyNkZWZpbmUgTkJfUENJX0RFVl9CQVNFICAgMHgxOAorCitzdGF0aWMg
-aW50IHNtcF90aGVybWFsX2ludGVycnVwdF9pbml0KHZvaWQpOworc3RhdGljIGludCB0aGVybWFs
-X2FwaWNfaW5pdF9hbGxvd2VkOworc3RhdGljIHZvaWQgdGhlcm1hbF9hcGljX2luaXQodm9pZCAq
-dW51c2VkKTsKIAogc3RydWN0IHRocmVzaG9sZF9ibG9jayB7CiAJdW5zaWduZWQgaW50IGJsb2Nr
-OwpAQCAtNjQ0LDE5ICs2NTcsMTkgQEAgc3RhdGljIHZvaWQgdGhyZXNob2xkX3JlbW92ZV9kZXZp
-Y2UodW5zaQogfQogCiAvKiBnZXQgbm90aWZpZWQgd2hlbiBhIGNwdSBjb21lcyBvbi9vZmYgKi8K
-LXN0YXRpYyBpbnQgdGhyZXNob2xkX2NwdV9jYWxsYmFjayhzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sg
-Km5mYiwKK3N0YXRpYyBpbnQgYW1kX2NwdV9jYWxsYmFjayhzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sg
-Km5mYiwKIAkJCQkJICAgIHVuc2lnbmVkIGxvbmcgYWN0aW9uLCB2b2lkICpoY3B1KQogewogCS8q
-IGNwdSB3YXMgdW5zaWduZWQgaW50IHRvIGJlZ2luIHdpdGggKi8KIAl1bnNpZ25lZCBpbnQgY3B1
-ID0gKHVuc2lnbmVkIGxvbmcpaGNwdTsKIAotCWlmIChjcHUgPj0gTlJfQ1BVUykKLQkJZ290byBv
-dXQ7Ci0KIAlzd2l0Y2ggKGFjdGlvbikgewogCWNhc2UgQ1BVX09OTElORToKIAljYXNlIENQVV9P
-TkxJTkVfRlJPWkVOOgogCQl0aHJlc2hvbGRfY3JlYXRlX2RldmljZShjcHUpOworCQlpZiAodGhl
-cm1hbF9hcGljX2luaXRfYWxsb3dlZCkKKwkJCXNtcF9jYWxsX2Z1bmN0aW9uX3NpbmdsZShjcHUs
-CisJCQkJCSZ0aGVybWFsX2FwaWNfaW5pdCwgTlVMTCwgMSwgMCk7CiAJCWJyZWFrOwogCWNhc2Ug
-Q1BVX0RFQUQ6CiAJY2FzZSBDUFVfREVBRF9GUk9aRU46CkBAIC02NjUsMTIgKzY3OCwxMSBAQCBz
-dGF0aWMgaW50IHRocmVzaG9sZF9jcHVfY2FsbGJhY2soc3RydWN0CiAJZGVmYXVsdDoKIAkJYnJl
-YWs7CiAJfQotICAgICAgb3V0OgogCXJldHVybiBOT1RJRllfT0s7CiB9CiAKLXN0YXRpYyBzdHJ1
-Y3Qgbm90aWZpZXJfYmxvY2sgdGhyZXNob2xkX2NwdV9ub3RpZmllciA9IHsKLQkubm90aWZpZXJf
-Y2FsbCA9IHRocmVzaG9sZF9jcHVfY2FsbGJhY2ssCitzdGF0aWMgc3RydWN0IG5vdGlmaWVyX2Js
-b2NrIGFtZF9jcHVfbm90aWZpZXIgPSB7CisJLm5vdGlmaWVyX2NhbGwgPSBhbWRfY3B1X2NhbGxi
-YWNrLAogfTsKIAogc3RhdGljIF9faW5pdCBpbnQgdGhyZXNob2xkX2luaXRfZGV2aWNlKHZvaWQp
-CkBAIC02ODMsOCArNjk1LDE4NSBAQCBzdGF0aWMgX19pbml0IGludCB0aHJlc2hvbGRfaW5pdF9k
-ZXZpY2UoCiAJCWlmIChlcnIpCiAJCQlyZXR1cm4gZXJyOwogCX0KLQlyZWdpc3Rlcl9ob3RjcHVf
-bm90aWZpZXIoJnRocmVzaG9sZF9jcHVfbm90aWZpZXIpOworCXJlZ2lzdGVyX2hvdGNwdV9ub3Rp
-ZmllcigmYW1kX2NwdV9ub3RpZmllcik7CiAJcmV0dXJuIDA7CiB9CiAKIGRldmljZV9pbml0Y2Fs
-bCh0aHJlc2hvbGRfaW5pdF9kZXZpY2UpOworCisvKgorICogQU1ELXNwZWNpZmljIHRoZXJtYWwg
-aW50ZXJydXB0IGhhbmRsZXIuCisgKi8KK3ZvaWQgYW1kX3NtcF90aGVybWFsX2ludGVycnVwdCh2
-b2lkKQoreworCXVuc2lnbmVkIGludCBjcHUgPSBzbXBfcHJvY2Vzc29yX2lkKCk7CisKKwkvKgor
-CSAqIFdlJ3JlIGhlcmUgYmVjYXVzZSB0aGVybWFsIHRocm90dGxpbmcgaGFzIGp1c3QgYmVlbiBh
-Y3RpdmF0ZWQgLS0gbm90CisJICogZGVhY3RpdmF0ZWQgLS0gaGVuY2UgdGhlcm1fdGhyb3RfcHJv
-Y2VzcygxKS4KKwkgKi8KKwlpZiAodGhlcm1fdGhyb3RfcHJvY2VzcygxKSkKKwkJbWNlX2xvZ190
-aGVybV90aHJvdF9ldmVudChjcHUsIDEpOworCS8qCisJICogV2UnbGwgc3RpbGwgZ2V0IHN1YnNl
-cXVlbnQgaW50ZXJydXB0cyBldmVuIGlmIHdlIGRvbid0IGNsZWFyIHRoZQorCSAqIHN0YXR1cyBi
-aXQgaW4gVEhFUk1fQ1RMX0YzWDY0LiAgVGFrZSBhZHZhbnRhZ2Ugb2YgdGhpcyBmYWN0IHRvIGF2
-b2lkCisJICogdG91Y2hpbmcgUENJIHNwYWNlLiAgKElmIHRoaXMgYXNzdW1wdGlvbiBmYWlscyBh
-dCBzb21lIHBvaW50LCB3ZSdsbAorCSAqIG5lZWQgdG8gc2NoZWR1bGVfd29yaygpIGluIG9yZGVy
-IHRvIGVudGVyIGEgcHJvY2VzcyBjb250ZXh0LCBzbyB0aGF0CisJICogUENJIGxvY2tzIGNhbiBi
-ZSBhc3NlcnRlZCBmb3IgcHJvcGVyIGFjY2Vzcy4gIFRoaXMgcmVxdWlyZW1lbnQsIGluCisJICog
-dHVybiwgY3JlYXRlcyB0aGUgbmVlZCB0byByZW1lbWJlciB3aGljaCBjb3JlIGludGVycnVwdGVk
-LCBhcyB0aGUKKwkgKiBjb3JlIHdoaWNoIHVsdGltYXRlbHkgdGFrZXMgdGhlIHNjaGVkdWxlZCB3
-b3JrIG1heSBiZSBkaWZmZXJlbnQuCisJICogV2l0aCBhbnkgbHVjaywgd2UnbGwgbmV2ZXIgbmVl
-ZCB0byBkbyB0aGlzLikKKwkgKi8KK30KKworLyoKKyAqIEluaXRpYWxpemUgZWFjaCBub3J0aGJy
-aWRnZSdzIHRoZXJtYWwgdGhyb3R0bGluZyBsb2dpYy4KKyAqLworc3RhdGljIHZvaWQgc21wX3Ro
-ZXJtYWxfbm9ydGhicmlkZ2VfaW5pdCh2b2lkKQoreworCWludCBuYl9udW07CisJdTMyIHRoZXJt
-X2N0bF9mM3g2NDsKKworCWZvciAobmJfbnVtID0gMDsgbmJfbnVtIDwgbnVtX2s4X25vcnRoYnJp
-ZGdlczsgbmJfbnVtKyspIHsKKwkJLyoKKwkJICogQ29uZmlndXJlIHRoZSB0aGVybWFsIGludGVy
-cnVwdCBmb3IgdGhpcyBub3J0aGJyaWRnZS4KKwkJICovCisJCXBjaV9yZWFkX2NvbmZpZ19kd29y
-ZChrOF9ub3J0aGJyaWRnZXNbbmJfbnVtXSwKKwkJCQkJVEhFUk1fQ1RMX0YzWDY0LCAmdGhlcm1f
-Y3RsX2YzeDY0KTsKKwkJdGhlcm1fY3RsX2YzeDY0IHw9IFBTTF9BUElDX0hJX0VOIHwgSFRDX0VO
-OworCQl0aGVybV9jdGxfZjN4NjQgJj0gKH5QU0xfQVBJQ19MT19FTik7CisJCXBjaV93cml0ZV9j
-b25maWdfZHdvcmQoazhfbm9ydGhicmlkZ2VzW25iX251bV0sCisJCQkJCVRIRVJNX0NUTF9GM1g2
-NCwgdGhlcm1fY3RsX2YzeDY0KTsKKwkJcHJpbnRrKEtFUk5fSU5GTyAiTm9ydGhicmlkZ2UgYXQg
-UENJIGRldmljZSAweCV4OiAiCisJCQkidGhlcm1hbCBtb25pdG9yaW5nIGVuYWJsZWQuXG4iLCBO
-Ql9QQ0lfREVWX0JBU0UgKworCQkJCQkJCQkJbmJfbnVtKTsKKwl9Cit9CisKKy8qCisgKiBFbmFi
-bGUgdGhlIGRlbGl2ZXJ5IG9mIHRoZXJtYWwgaW50ZXJydXB0cyB2aWEgdGhlIGxvY2FsIEFQSUMu
-CisgKi8KK3N0YXRpYyB2b2lkIHRoZXJtYWxfYXBpY19pbml0KHZvaWQgKnVudXNlZCkKK3sKKwl1
-bnNpZ25lZCBpbnQgYXBpY19sdl90aGVybTsKKworCS8qIFNldCB1cCBBUElDX0xWVFRITVIgdG8g
-aXNzdWUgVEhFUk1BTF9BUElDX1ZFQ1RPUi4gKi8KKwlhcGljX2x2X3RoZXJtID0gYXBpY19yZWFk
-KEFQSUNfTFZUVEhNUik7CisJLyoKKwkgKiBTZWUgaWYgc29tZSBhZ2VudCBvdGhlciB0aGFuIHRo
-aXMgcm91dGluZSBoYXMgYWxyZWFkeSBpbml0aWFsaXplZAorCSAqIEFQSUNfTFZUVEhNUiwgaS5l
-LiBpZiBpdCdzIHVubWFza2VkLCBidXQgbm90IGVxdWFsIHRvIHRoZSB2YWx1ZSB0aGF0CisJICog
-d2Ugd291bGQgaGF2ZSBwcm9ncmFtbWVkLCBoYWQgd2UgYmVlbiBoZXJlIGJlZm9yZSBvbiB0aGlz
-IGNvcmUuCisJICovCisJaWYgKCghKGFwaWNfbHZfdGhlcm0gJiBBUElDX0xWVF9NQVNLRUQpKSAm
-JiAoKGFwaWNfbHZfdGhlcm0gJgorCQkoQVBJQ19NT0RFX01BU0sgfCBBUElDX1ZFQ1RPUl9NQVNL
-KSkgIT0gKEFQSUNfRE1fRklYRUQgfAorCQlUSEVSTUFMX0FQSUNfVkVDVE9SKSkpIHsKKwkJdW5z
-aWduZWQgaW50IGNwdSA9IHNtcF9wcm9jZXNzb3JfaWQoKTsKKworCQlwcmludGsoS0VSTl9DUklU
-ICJDUFUgMHgleDogVGhlcm1hbCBtb25pdG9yaW5nIG5vdCAiCisJCQkiZnVuY3Rpb25hbC5cbiIs
-IGNwdSk7CisJCWlmICgoYXBpY19sdl90aGVybSAmIEFQSUNfTU9ERV9NQVNLKSA9PSBBUElDX0RN
-X1NNSSkKKwkJCXByaW50ayhLRVJOX0RFQlVHICJUaGVybWFsIGludGVycnVwdHMgYWxyZWFkeSAi
-CisJCQkJImhhbmRsZWQgYnkgU01JIGFjY29yZGluZyB0byAoKChsb2NhbCBBUElDICIKKwkJCQki
-YmFzZSkgKyAweDMzMCkgYml0IDB4OSkuXG4iKTsKKwkJZWxzZQorCQkJcHJpbnRrKEtFUk5fREVC
-VUcgIlRoZXJtYWwgaW50ZXJydXB0cyB1bmV4cGVjdGVkbHkgIgorCQkJCSJlbmFibGVkIGF0ICgo
-KGxvY2FsIEFQSUMgYmFzZSkgKyAweDMzMCkgYml0ICIKKwkJCQkiMHgxMCkuXG4iKTsKKwl9IGVs
-c2UgeworCQkvKgorCQkgKiBDb25maWd1cmUgdGhlIExvY2FsIFRoZXJtYWwgVmVjdG9yIFRhYmxl
-IEVudHJ5IHRvIGlzc3VlCisJCSAqIGlzc3VlIHRoZXJtYWwgaW50ZXJydXB0cyB0byBUSEVSTUFM
-X0FQSUNfVkVDVE9SLgorCQkgKgorCQkgKiBTdGFydCBieSBtYXNraW5nIG9mZiBEZWxpdmVyeSBN
-b2RlIGFuZCBWZWN0b3IuCisJCSAqLworCQlhcGljX2x2X3RoZXJtICY9IH4oQVBJQ19NT0RFX01B
-U0sgfCBBUElDX1ZFQ1RPUl9NQVNLKTsKKwkJLyogRml4ZWQgaW50ZXJydXB0LCBtYXNrZWQgZm9y
-IG5vdy4gKi8KKwkJYXBpY19sdl90aGVybSB8PSBBUElDX0xWVF9NQVNLRUQgfCBBUElDX0RNX0ZJ
-WEVEIHwKKwkJCQkJCQlUSEVSTUFMX0FQSUNfVkVDVE9SOworCQlhcGljX3dyaXRlKEFQSUNfTFZU
-VEhNUiwgYXBpY19sdl90aGVybSk7CisJCS8qCisJCSAqIFRoZSBJbnRlbCB0aGVybWFsIGtlcm5l
-bCBjb2RlIGltcGxpZXMgdGhhdCB0aGVyZSBtYXkgYmUgYQorCQkgKiByYWNlIGludm9sdmluZyB0
-aGUgbWFzayBiaXQsIHNvIGNsZWFyIGl0IG9ubHkgbm93LCBhZnRlcgorCQkgKiB0aGUgb3RoZXIg
-Yml0cyBoYXZlIHNldHRsZWQuCisJCSAqLworCQlhcGljX3dyaXRlKEFQSUNfTFZUVEhNUiwgYXBp
-Y19sdl90aGVybSAmIH5BUElDX0xWVF9NQVNLRUQpOworCX0KK30KKworLyoKKyogVGhpcyBmdW5j
-dGlvbiBpcyBpbnRlbmRlZCB0byBiZSBjYWxsZWQganVzdCBhZnRlciB0aGVybWFsIHRocm90dGxp
-bmcgaGFzCisgKiBiZWVuIGVuYWJsZWQuICBJdCB3YXJucyB0aGUgdXNlciBpZiB0aHJvdHRsaW5n
-IGlzIGFscmVhZHkgYWN0aXZlLCB3aGljaAorICogY291bGQgaW5kaWNhdGUgYSBmYWlsZWQgY29v
-bGluZyBzeXN0ZW0uICBJdCBtYXkgYmUgdGhlIGxhc3QgY2hhbmNlIHRvIGdldAorICogYSB3YXJu
-aW5nIG91dCBiZWZvcmUgdGhlcm1hbCBzaHV0ZG93biBvY2N1cnMuCisgKi8KK3N0YXRpYyB2b2lk
-IHNtcF90aGVybWFsX2Vhcmx5X3Rocm90dGxlX2NoZWNrKHZvaWQpCit7CisJaW50IG5iX251bTsK
-Kwl1MzIgdGhlcm1fY3RsX2YzeDY0OworCisJZm9yIChuYl9udW0gPSAwOyBuYl9udW0gPCBudW1f
-azhfbm9ydGhicmlkZ2VzOyBuYl9udW0rKykgeworCQkvKgorCQkgKiBSZWFkIGJhY2sgVEhFUk1f
-Q1RMX0YzWDY0IHRvIGNoZWNrIHdodGhlciBIVENfQUNUSVZFIGlzCisJCSAqIGFzc2VydGVkLCBp
-biB3aGljaCBjYXNlLCB3YXJuIHRoZSB1c2VyLgorCQkgKi8KKwkJcGNpX3JlYWRfY29uZmlnX2R3
-b3JkKGs4X25vcnRoYnJpZGdlc1tuYl9udW1dLAorCQkJCQlUSEVSTV9DVExfRjNYNjQsICZ0aGVy
-bV9jdGxfZjN4NjQpOworCQlpZiAodGhlcm1fY3RsX2YzeDY0ICYgSFRDX0FDVElWRSkKKwkJCXBy
-aW50ayhLRVJOX1dBUk5JTkcgIkhpZ2ggdGVtcGVyYXR1cmUgb24gbm9ydGhicmlkZ2UgIgorCQkJ
-CSJhdCBQQ0kgZGV2aWNlIDB4JXguICBUaHJvdHRsaW5nIGVuYWJsZWQuXG4iLAorCQkJCU5CX1BD
-SV9ERVZfQkFTRSArIG5iX251bSk7CisJfQorfQorCisvKgorICogRGV0ZXJtaW5lIHdoZXRoZXIg
-b3Igbm90IHRoZSBub3J0aGJyaWRnZXMgc3VwcG9ydCB0aGVybWFsIHRocm90dGxpbmcKKyAqIGlu
-dGVycnVwdHMuICBJZiBzbywgaW5pdGlhbGl6ZSB0aGVtIGZvciByZWNlaXZpbmcgdGhlIHNhbWUs
-IHRoZW4gcGVyZm9ybQorICogY29ycmVzcG9uZGluZyBBUElDIGluaXRpYWxpemF0aW9uIG9uIGVh
-Y2ggY29yZS4KKyAqLworc3RhdGljIGludCBzbXBfdGhlcm1hbF9pbnRlcnJ1cHRfaW5pdCh2b2lk
-KQoreworCWludCBuYl9udW07CisKKwlpZiAobnVtX2s4X25vcnRoYnJpZGdlcyA9PSAwKQorCQln
-b3RvIG91dDsKKwkvKgorCSAqIElmIGFueSBvZiB0aGUgbm9ydGhicmlkZ2VzIGhhcyBQQ0kgSUQg
-MHgxMTAzLCB0aGVuIGl0cyB0aGVybWFsCisJICogaGFyZHdhcmUgc3VmZmVycyBmcm9tIGFuIGVy
-cmF0dW0gd2hpY2ggcHJldmVudHMgdGhpcyBjb2RlIGZyb20KKwkgKiB3b3JraW5nLCBzbyBhYm9y
-dC4KKwkgKi8KKwlmb3IgKG5iX251bSA9IDA7IG5iX251bSA8IG51bV9rOF9ub3J0aGJyaWRnZXM7
-IG5iX251bSsrKSB7CisJCWlmICgoazhfbm9ydGhicmlkZ2VzW25iX251bV0tPmRldmljZSkgPT0g
-MHgxMTAzKQorCQkJZ290byBvdXQ7CisJfQorCS8qCisJICogQXNzZXJ0IHRoYXQgd2Ugc2hvdWxk
-IGxvZyB0aGVybWFsIHRocm90dGxpbmcgZXZlbnRzLCB3aGVuZXZlcgorCSAqIHdlIGV2ZW50dWFs
-bHkgZ2V0IGFyb3VuZCB0byBlbmFibGluZyB0aGVtLgorCSAqLworCWF0b21pY19zZXQoJnRoZXJt
-X3Rocm90X2VuLCAxKTsKKwkvKgorCSAqIEJpbmQgY3B1X3NwZWNpZmljX3NtcF90aGVybWFsX2lu
-dGVycnVwdCgpIHRvCisJICogYW1kX3NtcF90aGVybWFsX2ludGVycnVwdCgpLgorCSAqLworCWNw
-dV9zcGVjaWZpY19zbXBfdGhlcm1hbF9pbnRlcnJ1cHQgPSBhbWRfc21wX3RoZXJtYWxfaW50ZXJy
-dXB0OworCXNtcF90aGVybWFsX25vcnRoYnJpZGdlX2luaXQoKTsKKwkvKgorCSAqIFdlJ3ZlIG5v
-dyBpbml0aWFsaXplZCBzdWZmaWNpZW50IGZhYnJpYyB0byBwZXJtaXQgdGhlCisJICogaW5pdGlh
-bGl6YXRpb24gb2YgdGhlIHRoZXJtYWwgaW50ZXJydXB0IEFQSUMgdmVjdG9ycywgc3VjaCBhcwor
-CSAqIHdoZW4gYSBjb3JlIGNvbWVzIG9ubGluZSBhbmQgY2FsbHMgYW1kX2NwdV9jYWxsYmFjaygp
-LgorCSAqLworCXRoZXJtYWxfYXBpY19pbml0X2FsbG93ZWQgPSAxOworCS8qCisJICogQ2FsbCB0
-aGVybWFsX2FwaWNfaW5pdCgpIG9uIGVhY2ggY29yZS4KKwkgKi8KKwlvbl9lYWNoX2NwdSgmdGhl
-cm1hbF9hcGljX2luaXQsIE5VTEwsIDEsIDApOworCXNtcF90aGVybWFsX2Vhcmx5X3Rocm90dGxl
-X2NoZWNrKCk7CitvdXQ6CisJcmV0dXJuIDA7Cit9CisKKy8qCisgKiBzbXBfdGhlcm1hbF9pbnRl
-cnJ1cHRfaW5pdCBjYW5ub3QgZXhlY3V0ZSB1bnRpbCBQQ0kgaGFzIGJlZW4gZnVsbHkKKyAqIGlu
-aXRpYWxpemVkLCBoZW5jZSBsYXRlX2luaXRjYWxsKCkuCisgKi8KK2xhdGVfaW5pdGNhbGwoc21w
-X3RoZXJtYWxfaW50ZXJydXB0X2luaXQpOworCmRpZmYgLXVwck4gL2hvbWUvcm1sL2xpbnV4LTIu
-Ni4yNC1yYzUub3JpZy9hcmNoL3g4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2VfaW50ZWxfNjQuYyAv
-aG9tZS9ybWwvbGludXgtMi42LjI0LXJjNS9hcmNoL3g4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2Vf
-aW50ZWxfNjQuYwotLS0gL2hvbWUvcm1sL2xpbnV4LTIuNi4yNC1yYzUub3JpZy9hcmNoL3g4Ni9r
-ZXJuZWwvY3B1L21jaGVjay9tY2VfaW50ZWxfNjQuYwkyMDA3LTEyLTExIDE0OjMwOjUzLjU2NDMw
-MzAwMCAtMDgwMAorKysgL2hvbWUvcm1sL2xpbnV4LTIuNi4yNC1yYzUvYXJjaC94ODYva2VybmVs
-L2NwdS9tY2hlY2svbWNlX2ludGVsXzY0LmMJMjAwNy0xMi0yOCAxMTo0MDozMS4yODk3MDQwMDAg
-LTA4MDAKQEAgLTEzLDIxICsxMywxNSBAQAogI2luY2x1ZGUgPGFzbS9pZGxlLmg+CiAjaW5jbHVk
-ZSA8YXNtL3RoZXJtX3Rocm90Lmg+CiAKLWFzbWxpbmthZ2Ugdm9pZCBzbXBfdGhlcm1hbF9pbnRl
-cnJ1cHQodm9pZCkKK3ZvaWQgaW50ZWxfc21wX3RoZXJtYWxfaW50ZXJydXB0KHZvaWQpCiB7CiAJ
-X191NjQgbXNyX3ZhbDsKIAotCWFja19BUElDX2lycSgpOwotCi0JZXhpdF9pZGxlKCk7Ci0JaXJx
-X2VudGVyKCk7Ci0KIAlyZG1zcmwoTVNSX0lBMzJfVEhFUk1fU1RBVFVTLCBtc3JfdmFsKTsKIAlp
-ZiAodGhlcm1fdGhyb3RfcHJvY2Vzcyhtc3JfdmFsICYgMSkpCiAJCW1jZV9sb2dfdGhlcm1fdGhy
-b3RfZXZlbnQoc21wX3Byb2Nlc3Nvcl9pZCgpLCBtc3JfdmFsKTsKIAogCWFkZF9wZGEoaXJxX3Ro
-ZXJtYWxfY291bnQsIDEpOwotCWlycV9leGl0KCk7CiB9CiAKIHN0YXRpYyB2b2lkIF9fY3B1aW5p
-dCBpbnRlbF9pbml0X3RoZXJtYWwoc3RydWN0IGNwdWluZm9feDg2ICpjKQpAQCAtNzUsNiArNjks
-MTEgQEAgc3RhdGljIHZvaWQgX19jcHVpbml0IGludGVsX2luaXRfdGhlcm1hbAogCXdybXNyKE1T
-Ul9JQTMyX01JU0NfRU5BQkxFLCBsIHwgKDEgPDwgMyksIGgpOwogCiAJbCA9IGFwaWNfcmVhZChB
-UElDX0xWVFRITVIpOworCS8qCisJICogQmluZCB0aGUgY3B1X3NwZWNpZmljX3NtcF90aGVybWFs
-X2ludGVycnVwdCB0cmFtcG9saW5lIHRvCisJICogaW50ZWxfc21wX3RoZXJtYWxfaW50ZXJydXB0
-LgorCSAqLworCWNwdV9zcGVjaWZpY19zbXBfdGhlcm1hbF9pbnRlcnJ1cHQgPSBpbnRlbF9zbXBf
-dGhlcm1hbF9pbnRlcnJ1cHQ7CiAJYXBpY193cml0ZShBUElDX0xWVFRITVIsIGwgJiB+QVBJQ19M
-VlRfTUFTS0VEKTsKIAlwcmludGsoS0VSTl9JTkZPICJDUFUlZDogVGhlcm1hbCBtb25pdG9yaW5n
-IGVuYWJsZWQgKCVzKVxuIiwKIAkJY3B1LCB0bTIgPyAiVE0yIiA6ICJUTTEiKTsKZGlmZiAtdXBy
-TiAvaG9tZS9ybWwvbGludXgtMi42LjI0LXJjNS5vcmlnL2FyY2gveDg2L2tlcm5lbC9jcHUvbWNo
-ZWNrL21jZV90aGVybWFsLmMgL2hvbWUvcm1sL2xpbnV4LTIuNi4yNC1yYzUvYXJjaC94ODYva2Vy
-bmVsL2NwdS9tY2hlY2svbWNlX3RoZXJtYWwuYwotLS0gL2hvbWUvcm1sL2xpbnV4LTIuNi4yNC1y
-YzUub3JpZy9hcmNoL3g4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2VfdGhlcm1hbC5jCTE5NjktMTIt
-MzEgMTY6MDA6MDAuMDAwMDAwMDAwIC0wODAwCisrKyAvaG9tZS9ybWwvbGludXgtMi42LjI0LXJj
-NS9hcmNoL3g4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2VfdGhlcm1hbC5jCTIwMDctMTItMjggMTE6
-NDE6NDcuNDU0NzMwMDAwIC0wODAwCkBAIC0wLDAgKzEsMzcgQEAKKy8qCisgKiBDb3B5cmlnaHQg
-KGMpIDIwMDcgR29vZ2xlIEluYy4KKyAqCisgKiBXcml0dGVuIGJ5IE1pa2UgV2F5Y2hpc29uIDxt
-aWtld0Bnb29nbGUuY29tPiBhbmQgUnVzc2VsbCBMZWlkaWNoCisgKiA8cm1sQGdvb2dsZS5jb20+
-LgorICoKKyAqIENQVS1pbmRlcGVuZGVudCB0aGVybWFsIGludGVycnVwdCBoYW5kbGVyLgorICov
-CisKKyNpbmNsdWRlIDxsaW51eC9pbml0Lmg+CisjaW5jbHVkZSA8bGludXgvaW50ZXJydXB0Lmg+
-CisjaW5jbHVkZSAibWNlLmgiCisjaW5jbHVkZSA8YXNtL2h3X2lycS5oPgorI2luY2x1ZGUgPGFz
-bS9pZGxlLmg+CisKK3N0YXRpYyB2b2lkIGRlZmF1bHRfc21wX3RoZXJtYWxfaW50ZXJydXB0KHZv
-aWQpCit7CisJaWYgKHByaW50a19yYXRlbGltaXQoKSkKKwkJcHJpbnRrKEtFUk5fREVCVUcgIlVu
-ZXhwZWN0ZWQgdGhlcm1hbCB0aHJvdHRsaW5nIGludGVycnVwdC5cbiIpOworfQorCitjcHVfc3Bl
-Y2lmaWNfc21wX3RoZXJtYWxfaW50ZXJydXB0X2NhbGxiYWNrX3QgY3B1X3NwZWNpZmljX3NtcF90
-aGVybWFsX2ludGVycnVwdAorCQkJCQkJPSBkZWZhdWx0X3NtcF90aGVybWFsX2ludGVycnVwdDsK
-KworLyoKKyAqIFdyYXBwZXIgZm9yIHRoZSBDUFUtc3BlY2lmaWMgdGhlcm1hbCBpbnRlcnJ1cHQg
-c2VydmljZSByb3V0aW5lLiAgV2l0aG91dAorICogdGhpcywgd2UnZCBoYXZlIHRvIGRpc2Nlcm4g
-dGhlIENQVSBicmFuZCBhdCBydW50aW1lIChiZWNhdXNlIHN1cHBvcnQgY291bGQKKyAqIGJlIGlu
-c3RhbGxlZCBmb3IgbW9yZSB0aGFuIG9uZSkuCisgKi8KK2FzbWxpbmthZ2Ugdm9pZCBzbXBfdGhl
-cm1hbF9pbnRlcnJ1cHQodm9pZCkKK3sKKwlhY2tfQVBJQ19pcnEoKTsKKwlleGl0X2lkbGUoKTsK
-KwlpcnFfZW50ZXIoKTsKKwljcHVfc3BlY2lmaWNfc21wX3RoZXJtYWxfaW50ZXJydXB0KCk7CisJ
-aXJxX2V4aXQoKTsKK30KZGlmZiAtdXByTiAvaG9tZS9ybWwvbGludXgtMi42LjI0LXJjNS5vcmln
-L2luY2x1ZGUvYXNtLXg4Ni9tY2UuaCAvaG9tZS9ybWwvbGludXgtMi42LjI0LXJjNS9pbmNsdWRl
-L2FzbS14ODYvbWNlLmgKLS0tIC9ob21lL3JtbC9saW51eC0yLjYuMjQtcmM1Lm9yaWcvaW5jbHVk
-ZS9hc20teDg2L21jZS5oCTIwMDctMTItMTEgMTQ6MzE6MzQuMjYzNTE1MDAwIC0wODAwCisrKyAv
-aG9tZS9ybWwvbGludXgtMi42LjI0LXJjNS9pbmNsdWRlL2FzbS14ODYvbWNlLmgJMjAwNy0xMi0y
-OCAxMTo0MzowNy42NTk5OTIwMDAgLTA4MDAKQEAgLTExMyw3ICsxMTMsMTAgQEAgc3RhdGljIGlu
-bGluZSB2b2lkIG1jZV9hbWRfZmVhdHVyZV9pbml0KAogI2VuZGlmCiAKIHZvaWQgbWNlX2xvZ190
-aGVybV90aHJvdF9ldmVudCh1bnNpZ25lZCBpbnQgY3B1LCBfX3U2NCBzdGF0dXMpOwordHlwZWRl
-ZiB2b2lkICgqY3B1X3NwZWNpZmljX3NtcF90aGVybWFsX2ludGVycnVwdF9jYWxsYmFja190KSh2
-b2lkKTsKIAorZXh0ZXJuIGNwdV9zcGVjaWZpY19zbXBfdGhlcm1hbF9pbnRlcnJ1cHRfY2FsbGJh
-Y2tfdAorCQkJCQljcHVfc3BlY2lmaWNfc21wX3RoZXJtYWxfaW50ZXJydXB0OwogZXh0ZXJuIGF0
-b21pY190IG1jZV9lbnRyeTsKIAogZXh0ZXJuIHZvaWQgZG9fbWFjaGluZV9jaGVjayhzdHJ1Y3Qg
-cHRfcmVncyAqLCBsb25nKTsK
-------=_Part_18645_7089747.1198874428489--
+to receive the following:
+
+Erez Zadok (27):
+      VFS/fs_stack: drop cast on inode passed to i_size_read
+      Unionfs: use locking around i_size_write in 32-bit systems
+      Unionfs: clarify usage.txt read/write behavior
+      Unionfs: interpose cleanup and fix for spliced dentries
+      Unionfs: initialize inode times for reused inodes
+      Unionfs: create new special files only in first branch
+      Unionfs: create new symlinks only in first branch
+      Unionfs: release special files on copyup
+      Unionfs: remove custom read/write methods
+      Unionfs: prevent deadlock in cache coherency
+      Unionfs: remove unnecessary conditional inode lock
+      Unionfs: remove unnecessary lock when deleting whiteouts
+      Unionfs: remove unnecessary lock in read_inode
+      Unionfs: remove unnecessary locking in follow-link
+      Unionfs: remove unnecessary parent lock in create
+      Unionfs: prevent false lockdep warnings in stacking
+      Unionfs: implement lockdep classes
+      Unionfs: minor code rearrangement in rename
+      Unionfs: handle on lower inodes in lookup
+      Unionfs: set our superblock a/m/ctime granularity
+      Unionfs: update inode times after a successful open
+      Unionfs: minor cleanup in check_empty
+      Unionfs: initialize namelist variable in rename
+      Unionfs: cleanup lower inodes after successful unlink
+      Unionfs: don't check dentry on error
+      Unionfs: implement d_iput method
+      Unionfs: don't check parent dentries
+
+Hugh Dickins (3):
+      VFS/fs_stack: use locking around i_size_write in 32-bit systems
+      Unionfs: mmap fixes
+      Unionfs: restructure unionfs_setattr and fix truncation order
+
+ Documentation/filesystems/unionfs/concepts.txt |   20 
+ Documentation/filesystems/unionfs/issues.txt   |   12 
+ Documentation/filesystems/unionfs/usage.txt    |   13 
+ fs/stack.c                                     |    8 
+ fs/unionfs/commonfops.c                        |   22 
+ fs/unionfs/copyup.c                            |   16 
+ fs/unionfs/dentry.c                            |  101 ++--
+ fs/unionfs/dirfops.c                           |    4 
+ fs/unionfs/dirhelper.c                         |   11 
+ fs/unionfs/fanout.h                            |   14 
+ fs/unionfs/file.c                              |   53 --
+ fs/unionfs/inode.c                             |  579 ++++++++++++-------------
+ fs/unionfs/lookup.c                            |   20 
+ fs/unionfs/main.c                              |   19 
+ fs/unionfs/mmap.c                              |   33 -
+ fs/unionfs/rename.c                            |  114 ++--
+ fs/unionfs/subr.c                              |    4 
+ fs/unionfs/super.c                             |   31 -
+ fs/unionfs/union.h                             |   38 +
+ fs/unionfs/unlink.c                            |   31 -
+ fs/unionfs/xattr.c                             |   16 
+ 21 files changed, 608 insertions(+), 551 deletions(-)
+
+---
+Erez Zadok
+ezk@cs.sunysb.edu
