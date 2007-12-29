@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbXL2CDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbXL2CLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755569AbXL2CDl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 21:03:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbXL2CDd
+	id S1755117AbXL2CLU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 21:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbXL2CLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 21:03:33 -0500
-Received: from hs-out-0708.google.com ([64.233.178.246]:59615 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753445AbXL2CDc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 21:03:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ez/QfQgF7RwqW1epixgrZ4iKpSoEggeHQCBammmIbLcEgQTjG23I8WNtXbEX78YZTh0ZXGoL2f+9hJdZyPiblhC6wjK8x2Pje3nnv3ARSYIcqjRN+Hj0JD0PQutM5TBwavZHFrDUd1aQz9HjaeUogO1SvgDufob8dY4OzYEGs7c=
-Message-ID: <a8e1da0712281803i11c04b37ic5e92a4c27c79b07@mail.gmail.com>
-Date: Sat, 29 Dec 2007 10:03:31 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
-In-Reply-To: <1198893445.6821.108.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 28 Dec 2007 21:11:10 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:40984 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752678AbXL2CLJ (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 21:11:09 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: sarcarsh@gmail.com
+Cc: Marek Kierdelewicz <marek@piasta.pl>,
+       =?ISO-8859-1?Q?Gustavo_Guillermo_P=E9rez?= <gustavo@compunauta.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Corrupted Hard Drive after activating intel I/oat dma
+In-Reply-To: Your message of "Sat, 29 Dec 2007 04:21:44 +0530."
+             <47757E00.1040905@gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200712271949.02116.gustavo@compunauta.com> <20071228040345.67db1361@catlap>
+            <47757E00.1040905@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1198894256_2814P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071229010157.GB2883@darkstar.te-china.tietoenator.com>
-	 <1198891742.6821.98.camel@twins>
-	 <a8e1da0712281736p6dcc3f05vdb3b8ed9618e0147@mail.gmail.com>
-	 <1198892544.6821.103.camel@twins>
-	 <a8e1da0712281752q68ec8a98kcc5f84928091a8d2@mail.gmail.com>
-	 <1198893445.6821.108.camel@twins>
+Date: Fri, 28 Dec 2007 21:10:56 -0500
+Message-ID: <24730.1198894256@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From your previous mail
->You need to actually boot the kernel to get effective reports from
->lockdep, it'll build just fine.
+--==_Exmh_1198894256_2814P
+Content-Type: text/plain; charset=us-ascii
 
-I will post the config file and dmesg with lockdep messages after a while.
+On Sat, 29 Dec 2007 04:21:44 +0530, Shourya Sarcar said:
+> Marek Kierdelewicz wrote:
+> 
+> > 
+> > I'm a gentoo@laptop user myself. This distro is very disk-demanding
+> > because of the frequent compilations. In my opinion it's not the best
+> > distro for a mobile system. No wonder your disk gave out :(.
+> 
+> Can you substantiate "distro is very disk-demanding
+> because of the frequent compilations" ?
 
-On Dec 29, 2007 9:57 AM, Peter Zijlstra <peterz@infradead.org> wrote:
->
-> On Sat, 2007-12-29 at 09:52 +0800, Dave Young wrote:
->
-> > Hm, actually it's not so hard, but If I resend the 12 patches seems
-> > like spam to lkml :-).
-> >
-> > Of cource, if you all don't mind and it is really needed, I will do that.
->
-> As it stands now I'm quite convinced these patches will make lockdep
-> scream bloody murder, so these patches would need quite some more work
-> before they're usable.
->
-> > >
-> > > Also, I don't think your series is bisectable, ie. 1/12 changes
-> > > device::sem -> device::mutex, and 12/12 changes a user of it.
-> >
-> > Sorry, I don't use git tools now. Could you tell me how to fix it?
-> > thanks in advance.
->
-> Just ensure that the kernel builds after each applied patch. If you're
-> using quilt, something like:
->
-> while (quilt push && make)
-> should finish the whole series.
->
-Thanks a lot.
+As I understand it, the gentoo philosophy is 'update by patching the source,
+then compiling it'.  So basically, the way the kernel is updated with a
+"patch/make/make install", you apply *all* updates that way.  This can suck
+if you have things like OpenOffice and Firefox on your machine, and you get
+to recompile them to update. And even if you don't, all it takes is one update
+to the wrong /usr/include file, and you end up recompiling 3/4 of the binaries
+in /usr.
 
-Regards
-dave
->
->
->
+--==_Exmh_1198894256_2814P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHdaywcC3lWbTT17ARAhuWAJ9zJ0IBlgCibe2qLFj3MfkHDtoMXQCgmJpT
+RY0XJ62j8t6EjKW5g7wfBu8=
+=MvDO
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1198894256_2814P--
