@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbXL2Bh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755107AbXL2Biw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbXL2Bh2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 20:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbXL2BhU
+	id S1755107AbXL2Biw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 20:38:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbXL2Bio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 20:37:20 -0500
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:23019 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752718AbXL2BhT (ORCPT
+	Fri, 28 Dec 2007 20:38:44 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:46982 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbXL2Bio (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 20:37:19 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=UCU32+xOsCOxDjlyydC+UZa6DHSoR8F2shNGUpj72zZ8hUkLmT98ysuMgWml/eVrGSccA5YknAGpZeylXab89Kdi53fQMFaV00509EFyrYSq1erFbcDLQacTThlZIENFp+T1aGG+Z9Igj1FvW+U0zAGvvAKaXhim+1fcreqUjmE=  ;
-X-YMail-OSG: 46afUfYVM1k3vr2gTZ_a.O.NEPPde0RBTmlp7LNyZIV4RF6hCs4wwYrduEn_7qhSz33sEhaAaQ--
-From: David Brownell <david-b@pacbell.net>
-To: Dave Young <hidave.darkstar@gmail.com>
-Subject: Re: [PATCH 11/12] spi : Use mutex instead of semaphore in driver core
-Date: Fri, 28 Dec 2007 17:37:12 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
-References: <20071229011858.GL2883@darkstar.te-china.tietoenator.com>
-In-Reply-To: <20071229011858.GL2883@darkstar.te-china.tietoenator.com>
+	Fri, 28 Dec 2007 20:38:44 -0500
+Date: Sat, 29 Dec 2007 02:38:43 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: chripell@gmail.com
+cc: linux-kernel@vger.kernel.org, Christian Pellegrin <chripell@fsfe.org>
+Subject: Re: [PATCH RESEND] max3100 driver
+In-Reply-To: <11988468663187-git-send-email-chripell@gmail.com>
+Message-ID: <Pine.LNX.4.64.0712290233060.29013@fbirervta.pbzchgretzou.qr>
+References: <11988468663187-git-send-email-chripell@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200712281737.13145.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 December 2007, Dave Young wrote:
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-ACK ... if the driver core is changing, this is obvious.
- 
-> ---
-> drivers/spi/spi.c |    4 ++--
-> 1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff -upr linux/drivers/spi/spi.c linux.new/drivers/spi/spi.c
-> --- linux/drivers/spi/spi.c	2007-12-28 10:47:38.000000000 +0800
-> +++ linux.new/drivers/spi/spi.c	2007-12-28 10:48:22.000000000 +0800
-> @@ -494,7 +494,7 @@ struct spi_master *spi_busnum_to_master(
->  	struct spi_master	*master = NULL;
->  	struct spi_master	*m;
->  
-> -	down(&spi_master_class.sem);
-> +	mutex_lock(&spi_master_class.mutex);
->  	list_for_each_entry(dev, &spi_master_class.children, node) {
->  		m = container_of(dev, struct spi_master, dev);
->  		if (m->bus_num == bus_num) {
-> @@ -502,7 +502,7 @@ struct spi_master *spi_busnum_to_master(
->  			break;
->  		}
->  	}
-> -	up(&spi_master_class.sem);
-> +	mutex_unlock(&spi_master_class.mutex);
->  	return master;
->  }
->  EXPORT_SYMBOL_GPL(spi_busnum_to_master);
-> 
+On Dec 28 2007 14:01, chripell@gmail.com wrote:
+>+
+>+ * The initial minor number is 128 to prevent clashes with ttyS:
+>+ * mknod /dev/ttyMAX0 c 4 128
+>+ */
 
+[4:128] is taken by ttyS64. Please look into Documentation/devices.txt.
+
+>+struct max3100_port_s {
+>+	struct uart_port port;
+>+	struct spi_device *spi;
+>+	struct tty_struct 	*tty;
+>+
+>+	struct mutex   spi_txrx;/* protects access to the hw */
+>+
+>+	int rts;		/* rts status, can be MAX3100_RTS or 0 */
+
+possibly be bool then, if it only takes on two values?
+
+>+	int conf;		/* configuration for the MAX31000
+>+				 * (bits 0-7, bits 8-11 are irqs) */
+>+	int last_cts_rx;	/* last CTS received for flow ctrl */
+>+
+>+	int tx_buf_cur;	        /* current char to tx */
+>+	int tx_buf_tot;		/* current number of chars in tx buf */
+
+Probably unsigned?
+
+>+static int max3100_do_parity(struct max3100_port_s *s, u16 c)
+>+{
+>+	int parity;
+>+	int i, n;
+>+
+>+	if (s->parity & MAX3100_PARITY_ODD)
+>+		parity = 0;
+>+	else
+>+		parity = 1;
+
+Or
+	parity = !!(s->parity & MAX3100_PARITY_ODD);
+	n = (s->parity & MAX3100_7BIT) ? 7 : 8;
+(up to you)
+
+>+	for (i = 0; i < n; i++)
+>+		parity = parity ^ ((c>>i) & 1);
+
+		parity ^= (c >> i) & 1;
+
+>+	return parity;
+>+}
+>+
+>+	if (s->loopback) {
+>+		if ((tx & MAX3100_CMD) == MAX3100_RC)
+>+			tx |= 1;
+>+	}
+
+	if (s->loopback && (tx & MAX3100_CMD) == MAX3100_RC)
+		tx |= 1;
+
+>+MODULE_DESCRIPTION("MAX3100 driver");
+>+MODULE_LICENSE("GPL");
+
+I notice a steep increase in serial drivers. Everyone got their
+new chips for xmas, eh? :)
 
