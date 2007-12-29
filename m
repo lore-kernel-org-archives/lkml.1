@@ -1,99 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbXL2CMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbXL2CMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755806AbXL2CMQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 21:12:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbXL2CMC
+	id S1755992AbXL2CMs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 21:12:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbXL2CMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 21:12:02 -0500
-Received: from mx2.suse.de ([195.135.220.15]:56028 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752125AbXL2CMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 21:12:00 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Russell Leidich" <rml@google.com>
-Subject: Re: [PATCH] AMD Thermal Interrupt Support
-Date: Sat, 29 Dec 2007 03:11:51 +0100
-User-Agent: KMail/1.9.6
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
-References: <20071217185453.C4597CC562@localhost> <20071227233419.d1adf3f3.akpm@linux-foundation.org> <3f1a065b0712281240p14c8223agfe83db0ac26aca4c@mail.gmail.com>
-In-Reply-To: <3f1a065b0712281240p14c8223agfe83db0ac26aca4c@mail.gmail.com>
+	Fri, 28 Dec 2007 21:12:40 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:51676 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348AbXL2CMj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 21:12:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SVdFiY4jYhQa+M2I/i07qZElh5ujPj2a6ZNz6KhNLxkzoZ1cf4Oanvshk2BAZCGG2o0o9GVUIHJeNsSGAS+rD9d46ROO48ytAa57K/fpBcD9IGGCUXf6CnHoinXltoBtCu7RCmz3UR0m5f9ZtgYkx2gu3L66nI+M8N4N8UvzZks=
+Message-ID: <3cce60f30712281812v5f7ce335l35d698553449187a@mail.gmail.com>
+Date: Fri, 28 Dec 2007 18:12:39 -0800
+From: "Shannon Nelson" <shannon.lee.nelson@gmail.com>
+To: "=?ISO-8859-1?Q?Gustavo_Guillermo_P=E9rez?=" <gustavo@compunauta.com>
+Subject: Re: Corrupted Hard Drive after activating intel I/oat dma
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200712271949.02116.gustavo@compunauta.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200712290311.51176.ak@suse.de>
+References: <200712271949.02116.gustavo@compunauta.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 December 2007 21:40:28 Russell Leidich wrote:
-> OK, given our discussion, perhaps the attached revised patch will be
-> more to your liking.
-> 
-> If so, let me know and I'll give it one last paranoid test, then mail
-> you a Signed-off-by patch.
-> 
+On Dec 27, 2007 5:49 PM, Gustavo Guillermo Pérez <gustavo@compunauta.com> wrote:
+> By mistake we activate intel I/oat dma support on a laptop with a centrino duo
+> to try to get better performance on IO.
+>
+> The wd1200bevs Western Digital Scorpio 120GB HD fails with bad sectors and
+> power down (randomly) after booting linux with this option enabled, and
+> rebooting with old options does not help, I'm just reporting it, cause we can
+> think on a power failure too, but the only change was that, and linux start
+> up take too long and HD activity was so hard. I know the option was not
+> supported, but I want to know if cause that we can have a fried hd :(.
 
-In general you seem to have a lot (too many?) of low level comments,
-but no high level "strategy" comment anywhere what this code actually
-tries to do. I find the high level comments usually more useful.
+I highly doubt that ioatdma could break a harddrive, as it is only
+used by the networking stack.  Besides, the driver will only be useful
+on a server type motherboard using a chipset that supports ioatdma.
+This is not the case with a Centrino-based machine.
 
-amd_cpu_callback:
+By the way, you might try checking the Maintainer's file to find out
+who supports that module and copy them directly.  If they're at work
+this week they might have a more official answer.
 
--	if (cpu >= NR_CPUS)
--		goto out;
--
-
-that change seems to be unrelated cleanup. Such patches should be always separate.
-Same with the rename.
-
-I find it is quite common to do smp_call_function_single in CPU up/down callbacks.
-It would be better to fix that generically in the high level code (provide
-a new callback that is guaranteed to run on the target CPU) than to always reimplement 
-it.
-
-thermal_apic_init:
-
-
-+		printk(KERN_CRIT "CPU 0x%x: Thermal monitoring not "
-+			"functional.\n", cpu);
-
-Why is that KERN_CRIT? Does not seem that critical to me.
-
-smp_thermal_interrupt_init:
-
-The erratum number/part number should be documented and the kernel ought to print
-why it didn't initialize thermal on that hardware.
-
-I'm not sure which erratum that is, but since that PCI-ID is used by all K8s
-you excluded all of them, don't you? Is that whole code only for Fam10h? 
-That seems a little drastic. Perhaps it should just check steppings etc.
-And needs more comments.
-
-You're technically racy against parallel cpu hotplug happening from initrd
-(which already runs during initcall -- yes that is a deathtrap) 
-although that is typically hard to fix.
-
-thermal_apic_init_allowed seems like a hack. A separate notifier would
-be cleaner.
-
-+/*
-+ * smp_thermal_interrupt_init cannot execute until PCI has been fully
-+ * initialized, hence late_initcall().
-+ */
-+late_initcall(smp_thermal_interrupt_init);
-
-PCI is already initialized before normal initcall, otherwise pretty much 
-all drivers would break.
-
-
-mce_thermal.c seems to be just unnecessary to me. It would be cleaner
-to just keep the separate own handlers, especially since they do quite
-different things anyways. Don't mesh together what is quite different.
-
-Also "cpu_specific_smp_thermal_interrupt_callback_t" is definitely too long.
-
--Andi
+sln
+-- 
+==============================================
+Mr. Shannon Nelson         Parents can't afford to be squeamish.
