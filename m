@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755064AbXL2BkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbXL2BmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755064AbXL2BkQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 20:40:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbXL2BkE
+	id S1755338AbXL2BmS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 20:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbXL2BmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 20:40:04 -0500
-Received: from hs-out-0708.google.com ([64.233.178.245]:44634 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752775AbXL2BkD (ORCPT
+	Fri, 28 Dec 2007 20:42:09 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:46990 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752943AbXL2BmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 20:40:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TvSAPQQuApTzBaSiLkC4oMkQVXCUEh/U9HMkMlT6S01Kg3S5ZQp+JBCSSXBYU1oNIE59hAUOnkH11p2QCvXtI+SUs9VeU1ayyHTnKjNZp1H9fy4wQaq6aYAtHyQztN83LWR2X7SW95lxqxdFmqEqo0u5JVDFc34HPy8fkq6ivwU=
-Message-ID: <a8e1da0712281740o3dda12b2kad05fbc6ddc392e3@mail.gmail.com>
-Date: Sat, 29 Dec 2007 09:40:00 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
-In-Reply-To: <a8e1da0712281736p6dcc3f05vdb3b8ed9618e0147@mail.gmail.com>
+	Fri, 28 Dec 2007 20:42:07 -0500
+Date: Sat, 29 Dec 2007 02:42:06 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: devzero@web.de, jcm@jonmasters.org
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de
+Subject: Re: kbuild: modules_install regression ? - depmod
+In-Reply-To: <73443449@web.de>
+Message-ID: <Pine.LNX.4.64.0712290239020.29013@fbirervta.pbzchgretzou.qr>
+References: <73443449@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071229010157.GB2883@darkstar.te-china.tietoenator.com>
-	 <1198891742.6821.98.camel@twins>
-	 <a8e1da0712281736p6dcc3f05vdb3b8ed9618e0147@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 29, 2007 9:36 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> On Dec 29, 2007 9:29 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> >
-> >
-> > I'm pretty sure you didn't boot that kernel with lockdep enabled.
-> Yes, I will try rebuild with lockdep  and test.
-No,  I checked the config , lockdep is indeed enabled. But I will try
-to test with the lock debug options enabled in a while.
-> >
-> > Also, most, if not all, of your patches miss a patch description.
+
+[Adding jcm to Cc]
+
+On Dec 28 2007 16:08, devzero@web.de wrote:
 >
-> Does the description really needed for it? IMHO, the subject is enough
-> to descript the patches.
+>i have the same issue, but with 2.6.24-rc6 on a box with 512MB RAM
 >
-> Thanks for comment.
+>System is openSUSE 10.3
 >
-> Regards
-> dave
+>on "make modules_install" , depmod reproduceably dies with out of memory error when it is ~800MB VSZ and ~350MB RSS
+>this happens on different hardware.
 >
+>any clue what`s going wrong?
+>how much memory should i expect being needed with "make modules_install" , e.g. with allmodconfig ?
+
+
+If you enable CONFIG_DEBUG_INFO, don't be surprised.
+
+Though I'd say depmod should ignore the debug sections.
+
+>
+>
+>Subject:    kbuild: modules_install regression ? - depmod
+>From:       Jan-Simon =?utf-8?q?M=C3=B6ller?= <dl9pf () gmx ! de>
+>Date:       2007-11-01 4:14:34
+>Message-ID: 200711010514.34469.dl9pf () gmx ! de
+>[Download message RAW]
+>
+>Hi!
+>
+>I compiled kernel 2.6.24-rc1 (latest git as of today) on a Box with 256MB Ram.
+>During "make modules_install" I got these errors:
+>
+>  DEPMOD  2.6.24-rc1-default
+>WARNING: Can't read 
+>module /lib/modules/2.6.24-rc1-default/kernel/net/bridge/bridge.ko: Cannot 
+>allocate memory
+>WARNING: Can't read 
+>module /lib/modules/2.6.24-rc1-default/kernel/net/bridge/netfilter/ebt_redirect.ko: 
+>Cannot allocate memory
+>[...]
+>FATAL: Memory allocation failure depmod.c line 158: realloc(mod->deps, 
+>sizeof(mod->deps[0])*(mod->num_deps+1)).
+>make: *** [_modinst_post] Fehler 1
+>
+>
+>Depmod used too much memory and exits. Tried a 2nd time and checked with top.
+>
+>IMHO this is a regression.
+>
+>best regards
+>jan-simon
+>
+>__________________________________________________________________________
+>Erweitern Sie FreeMail zu einem noch leistungsstärkeren E-Mail-Postfach!		
+>Mehr Infos unter http://produkte.web.de/club/?mc=021131
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+>
+
