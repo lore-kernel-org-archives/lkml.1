@@ -1,89 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbXL2WAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbXL2WCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753811AbXL2WAb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 17:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbXL2WAW
+	id S1754226AbXL2WCO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 17:02:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbXL2WCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 17:00:22 -0500
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:58775 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751975AbXL2WAV (ORCPT
+	Sat, 29 Dec 2007 17:02:00 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:1627 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752053AbXL2WB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 17:00:21 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAGpSdkdMROHU/2dsb2JhbACBV6gx
-Date: Sat, 29 Dec 2007 17:00:18 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Adrian Bunk <adrian.bunk@movial.fi>, rmk@arm.linux.org.uk,
-       phil.el@wanadoo.fr, oprofile-list@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.24 patch] Fix ARMv6 OProfile support
-Message-ID: <20071229220018.GA25255@Krystal>
-References: <20071228185636.GA4738@stusta.de> <20071229160556.GA12262@Krystal> <20071229100618.304433a7.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20071229100618.304433a7.randy.dunlap@oracle.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:59:50 up 56 days,  3:05,  3 users,  load average: 0.79, 0.65,
-	0.50
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sat, 29 Dec 2007 17:01:59 -0500
+Date: Sat, 29 Dec 2007 17:01:57 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Dave Young <hidave.darkstar@gmail.com>
+cc: Greg KH <gregkh@suse.de>, Peter Zijlstra <peterz@infradead.org>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
+In-Reply-To: <a8e1da0712282307p3723857ex534d787f128db112@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0712291652540.26261-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch restores the ARMv6 OProfile support that was killed by
-commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
+On Sat, 29 Dec 2007, Dave Young wrote:
 
-It puts the config options in arch/arm/Kconfig.
+> On Dec 29, 2007 1:06 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
+> >
+> > On Dec 29, 2007 12:42 PM, Greg KH <gregkh@suse.de> wrote:
+> > > On Sat, Dec 29, 2007 at 10:36:49AM +0800, Dave Young wrote:
+> > > > >
+> > > > The full boot dmesg with lockdep output is out, there's one warnings in it :
+> > >
+> > > Please fix that warning before the next repost of these patches (along
+> > > with fixing the problem of them not being able to be applied and
+> > > successfully built at every point in the series...)
+> > >
+> >
+> > Ok, thanks, I will fix them and repost.
+> >
+> 
+> Hi,
+> After digging the code, I feel hard to fix the lockdep warning due to
+> some misterious relationship with usb.
+> 
+> Could someone help on this? thanks.
+> Add usb-devel list as cc
 
-Changelog :
-Use def_bool.
+The problem isn't specific to USB.  And you will not be able to fix it 
+unless you make drastic changes to the lockdep checker.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Adrian Bunk <adrian.bunk@movial.fi>
-CC: Randy Dunlap <randy.dunlap@oracle.com>
-CC: rmk@arm.linux.org.uk
-CC: phil.el@wanadoo.fr
-CC: oprofile-list@lists.sourceforge.net
----
- arch/arm/Kconfig |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+lockdep warns whenever a task acquires a mutex while holding another
+mutex of the same kind (that is, the same member in another structure
+of the same type).  But there are lots of places where the kernel needs
+to acquire dev->sem for one device while already holding
+dev->parent->sem.  There's no way to remove these, which means there's
+no way to prevent lockdep from issuing a warning.
 
-Index: linux-2.6-lttng/arch/arm/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/arm/Kconfig	2007-12-29 16:58:32.000000000 -0500
-+++ linux-2.6-lttng/arch/arm/Kconfig	2007-12-29 16:59:25.000000000 -0500
-@@ -130,6 +130,23 @@ config FIQ
- config ARCH_MTD_XIP
- 	bool
- 
-+if OPROFILE
-+
-+config OPROFILE_ARMV6
-+	def_bool y
-+	depends on CPU_V6 && !SMP
-+	select OPROFILE_ARM11_CORE
-+
-+config OPROFILE_MPCORE
-+	def_bool y
-+	depends on CPU_V6 && SMP
-+	select OPROFILE_ARM11_CORE
-+
-+config OPROFILE_ARM11_CORE
-+	bool
-+
-+endif
-+
- config VECTORS_BASE
- 	hex
- 	default 0xffff0000 if MMU || CPU_HIGH_VECTOR
+Around a month ago I had a discussion with Peter Zijlstra about the
+problems in converting the device semaphores to mutexes; you may be
+able to find it in the LKML archives.  Doing the conversion while
+keeping lockdep happy is a very hard problem and we were not able to
+solve it.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+It's possible that you may be able to convert the semaphores in struct
+class or other structures.  But you won't succeed with struct device.
+
+Alan Stern
+
