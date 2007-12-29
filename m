@@ -1,136 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbXL2B3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754258AbXL2BgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755521AbXL2B3g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 20:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbXL2B3Z
+	id S1754258AbXL2BgV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 20:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXL2BgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 20:29:25 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:34896 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754733AbXL2B3W (ORCPT
+	Fri, 28 Dec 2007 20:36:12 -0500
+Received: from hs-out-0708.google.com ([64.233.178.249]:42072 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752099AbXL2BgM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 20:29:22 -0500
-Date: Sat, 29 Dec 2007 02:29:19 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>, Michael Tokarev <mjt@tls.msk.ru>
-Subject: Re: [PATCH 1/1] mxser, remove it
-In-Reply-To: <1198836540-8042-1-git-send-email-jirislaby@gmail.com>
-Message-ID: <Pine.LNX.4.64.0712290211240.29013@fbirervta.pbzchgretzou.qr>
-References: <1198836540-8042-1-git-send-email-jirislaby@gmail.com>
+	Fri, 28 Dec 2007 20:36:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TokdjXB5ffnXpJL6voyVxkNau+Vp3ZVGL6zce4J2siBTXrr5LdytFQYG6ddmMrSaJsgsqVDaI54/9u1bQgqpkumnRX2qAOIssZKq4fARTwwXMrUnUh6UWtwDAcri92pmqX0xiDmdGyFffwcW5r6riS9naT2OYliTa0vo9y0puD8=
+Message-ID: <a8e1da0712281736p6dcc3f05vdb3b8ed9618e0147@mail.gmail.com>
+Date: Sat, 29 Dec 2007 09:36:11 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
+In-Reply-To: <1198891742.6821.98.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20071229010157.GB2883@darkstar.te-china.tietoenator.com>
+	 <1198891742.6821.98.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Dec 29, 2007 9:29 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+>
+>
+> I'm pretty sure you didn't boot that kernel with lockdep enabled.
+Yes, I will try rebuild with lockdep  and test.
+>
+> Also, most, if not all, of your patches miss a patch description.
 
-On Dec 28 2007 11:09, Jiri Slaby wrote:
-> 
->+struct mxser_cardinfo {
->+	unsigned int nports;
->+	char *name;
->+	unsigned int flags;
->+};
+Does the description really needed for it? IMHO, the subject is enough
+to descript the patches.
 
-const char *name. Maybe name could also be put at the front
-to get closer struct packing on 64-bit?
+Thanks for comment.
 
-> 
->+static int mxvar_baud_table[] = {
->+	0, 50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400,
->+	4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600
->+};
->+static unsigned int mxvar_baud_table1[] = {
->+	0, B50, B75, B110, B134, B150, B200, B300, B600, B1200, B1800, B2400,
->+	B4800, B9600, B19200, B38400, B57600, B115200, B230400, B460800, B921600
->+};
-
-Constify both, if possible?
-
->+struct mxser_port {
->+	struct mxser_board *board;
->+	struct tty_struct *tty;
->+
->+	unsigned long ioaddr;
->+	unsigned long opmode_ioaddr;
->+	int max_baud;
-> 
-> 	int rx_high_water;
-> 	int rx_trigger;		/* Rx fifo trigger level */
-> 	int rx_low_water;
-> 	int baud_base;		/* max. speed */
->+	long realbaud;
-> 	int type;		/* UART type */
-
-realbaud could also be reordered one up or one down.
-There are probably more fields around.
-
->-static int CheckIsMoxaMust(int io)
->+static int __devinit CheckIsMoxaMust(unsigned long io)
-> {
-> 	u8 oldmcr, hwid;
-> 	int i;
->@@ -434,90 +336,15 @@ static int CheckIsMoxaMust(int io)
-> 	}
-> 
-> 	GET_MOXA_MUST_HARDWARE_ID(io, &hwid);
->-	for (i = 0; i < UART_TYPE_NUM; i++) {
->-		if (hwid == Gmoxa_uart_id[i])
->+	for (i = 1; i < UART_INFO_NUM; i++) { /* 0 = OTHER_UART */
->+		if (hwid == Gpci_uart_info[i].type)
-> 			return (int)hwid;
-
-I do not think a cast is necessary, hwid is implicitly upconverted to int.
-
->+static int mxser_get_serial_info(struct mxser_port *info,
->+		struct serial_struct __user *retinfo)
-> {
->-	struct mxser_struct *info = tty->driver_data;
->-	int retval;
->+	struct serial_struct tmp;
->+
->+	if (!retinfo)
->+		return -EFAULT;
->+	memset(&tmp, 0, sizeof(tmp));
->+	tmp.type = info->type;
->+	tmp.line = info->tty->index;
->+	tmp.port = info->ioaddr;
->+	tmp.irq = info->board->irq;
->+	tmp.flags = info->flags;
->+	tmp.baud_base = info->baud_base;
->+	tmp.close_delay = info->close_delay;
->+	tmp.closing_wait = info->closing_wait;
->+	tmp.custom_divisor = info->custom_divisor;
->+	tmp.hub6 = 0;
->+	if (copy_to_user(retinfo, &tmp, sizeof(*retinfo)))
->+		return -EFAULT;
->+	return 0;
->+}
->+
-
-Maybe without the extra memcpy?:
-
-static int mxser_get_serial_info(struct mxser_port *info,
-		struct serial_struct __user *retinfo)
-{
-	struct mxser_struct *info = tty->driver_data;
-	int retval;
-	struct serial_struct tmp = {
-		.type = info->type,
-		.line = info->tty->index,
-		.port = info->ioaddr,
-		.irq = info->board->irq,
-		.flags = info->flags,
-		.baud_base = info->baud_base,
-		.close_delay = info->close_delay,
-		.closing_wait = info->closing_wait,
-		.custom_divisor = info->custom_divisor,
-		.hub6 = 0,
-	};
-	if (copy_to_user(retinfo, &tmp, sizeof(*retinfo)))
-		return -EFAULT;
-	return 0;
-}
-
+Regards
+dave
