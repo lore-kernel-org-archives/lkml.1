@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbXL2Wx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbXL2Wyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbXL2Wx2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 17:53:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbXL2WxV
+	id S1756407AbXL2Wyd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 17:54:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbXL2WyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 17:53:21 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54535 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752290AbXL2WxU (ORCPT
+	Sat, 29 Dec 2007 17:54:24 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:62892 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752290AbXL2WyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 17:53:20 -0500
-Date: Sat, 29 Dec 2007 23:51:34 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] sleepy linux
-Message-ID: <20071229235134.GC17823@ucw.cz>
-References: <20071225230731.GA29030@elf.ucw.cz> <200712262123.37152.oliver@neukum.org> <20071226203258.GE8094@elf.ucw.cz> <200712271041.30923.oliver@neukum.org>
+	Sat, 29 Dec 2007 17:54:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZWCnzPuv1L59z8NoE08UhU3+ov4R7a4nLtjvYc+6ZdP4afNoA/Um+1wplAT+xhChQNz1yl0rdBNw0WCgSffccPKj/Berh1o9ImN5+KW1wtzkn7mH7cHf23rS4EhN872Pv1RWGrJM9vhNEnZLO5XZTCquHmxcvynBMkpVJFMitfQ=
+Message-ID: <8b67d60712291454y6c60151cm7d9a4957e35adbfd@mail.gmail.com>
+Date: Sat, 29 Dec 2007 22:54:22 +0000
+From: "Adrian McMenamin" <lkmladrian@gmail.com>
+To: "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>
+Subject: Re: [PATCH] Fix broken ip= parsing
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, horms@verge.net.au,
+       davem@davemloft.net
+In-Reply-To: <20071229170849.C2E68C2EEE@solo.franken.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200712271041.30923.oliver@neukum.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20071229170849.C2E68C2EEE@solo.franken.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 29/12/2007, Thomas Bogendoerfer <tsbogend@alpha.franken.de> wrote:
+> Commit a6c05c3d064dbb83be88cba3189beb5db9d2dfc3 breaks ip= parsing
+> completly, because ic_enable is never set. The patch below puts
+> back the way ic_enable was set before.
+>
+> Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> ---
+>
+This patch certainly fixes the problem I was having with NFS root - I
+had a working setup that stopped (though at the same time as I updated
+my Busybox setup so I thought this was my mistake).
 
-> > ... I also don't need to call any suspend() routines, because all the
-> > drivers are already suspended, right?
-> 
-> Well, you have a number of devices which cannot do runtime pm.
-> They can do suspend/resume with the whole system. For them these
-> operations mean saving/restoring state.
-> So for these devices implementing autosuspend makes no sense.
-> They would sensibly do only idle/busy detection.
+Please apply.
 
-Yep... Let's call busy/idle detection and save/restore state
-"autosuspend" for those devices. It does not save any power, but it
-can be viewed as "kind-of-suspend". (No, I do not have this kind of
-details ready).
-
-> > And yes, I want device activity to prevent s2ram. If user is burning
-> > CD, machine should not sleep. If user is actively typing, machine
-> 
-> In these cases the devices involved should report themselves busy,
-> shouldn't they?
-
-Yes.
-
-> > should not sleep. My vision is: screen saver tells kernel keyboard
-> > need not be very responsive, at that point keyboard driver can
-> > autosuspend the keyboard, and if that was the last device, whole
-> > system sleeps.
-> 
-> We lack a notion of telling devices that they are opened only for
-> detecting wakeups. Currently a driver has to assume that an opened
-> device has to be fully functional.
-
-Yes, we'll need to add some userland interfaces. No, this will not be
-easy.
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Tested by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
