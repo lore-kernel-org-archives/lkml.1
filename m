@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbXL2SIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbXL2SId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756582AbXL2SIP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 13:08:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbXL2SIA
+	id S1755296AbXL2SId (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 13:08:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbXL2SIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 13:08:00 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:40083 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754567AbXL2SH7 (ORCPT
+	Sat, 29 Dec 2007 13:08:24 -0500
+Received: from an-out-0708.google.com ([209.85.132.242]:47669 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755540AbXL2SIX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 13:07:59 -0500
-Date: Sat, 29 Dec 2007 10:06:18 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Adrian Bunk <adrian.bunk@movial.fi>, rmk@arm.linux.org.uk,
-       phil.el@wanadoo.fr, oprofile-list@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.24 patch] Fix ARMv6 OProfile support
-Message-Id: <20071229100618.304433a7.randy.dunlap@oracle.com>
-In-Reply-To: <20071229160556.GA12262@Krystal>
-References: <20071228185636.GA4738@stusta.de>
-	<20071229160556.GA12262@Krystal>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 29 Dec 2007 13:08:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YmAQtgQK3ZKf4Ovuc8F0h6W9d2t3rzzr5HGxAtiEYqEgChYJWsHkIqsTSEo1Zc6SCKROvsgM0OZwooSicre4AozCbacqaFxQrR9bliJUkalC0vuquuaxMb3bsR1d7t9FkpekKxYSq6+RihnnRVuAyqk1kS6hQA4K0qrVawbRTaE=
+Message-ID: <ea9232d10712291008n5f37453eke796dfc2b423f33c@mail.gmail.com>
+Date: Sat, 29 Dec 2007 19:08:22 +0100
+From: "Karol Swietlicki" <magotari@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: slabtop replacement was Re: Major regression on hackbench with SLUB (more numbers)
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <ea9232d10712221528v30f1bdf1sc6820678670555ec@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0712210750510.29372@schroedinger.engr.sgi.com>
+	 <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy>
+	 <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com>
+	 <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de>
+	 <20071222100326.GF26157@elte.hu>
+	 <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org>
+	 <20071222194620.GA19350@one.firstfloor.org>
+	 <ea9232d10712221528v30f1bdf1sc6820678670555ec@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Dec 2007 11:05:57 -0500 Mathieu Desnoyers wrote:
+On 23/12/2007, Karol Swietlicki <magotari@gmail.com> wrote:
+> On 22/12/2007, Andi Kleen <andi@firstfloor.org> wrote:
+> > A manpage for slabinfo would be useful though. Anybody
+> > volunteering to write one?
+> >
+> > -Andi
+>
+> That would be me.
+> I'm a newbie and never wrote a man page before, so it will take a few
+> days, but I'm bored and out of ideas for any new code for the moment
+> being. Should be fun.
+>
+> Karol Swietlicki
 
-> Fix ARMv6 OProfile support
-> 
-> This patch restores the ARMv6 OProfile support that was killed by
-> commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
-> 
-> It puts the config options in arch/arm/Kconfig.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: Adrian Bunk <adrian.bunk@movial.fi>
-> CC: Randy Dunlap <randy.dunlap@oracle.com>
-> CC: rmk@arm.linux.org.uk
-> CC: phil.el@wanadoo.fr
-> CC: oprofile-list@lists.sourceforge.net
-> ---
->  arch/arm/Kconfig |   19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
-> Index: linux-2.6-lttng/arch/arm/Kconfig
-> ===================================================================
-> --- linux-2.6-lttng.orig/arch/arm/Kconfig	2007-12-28 17:00:50.000000000 -0500
-> +++ linux-2.6-lttng/arch/arm/Kconfig	2007-12-28 17:02:05.000000000 -0500
-> @@ -130,6 +130,25 @@ config FIQ
->  config ARCH_MTD_XIP
->  	bool
->  
-> +if OPROFILE
-> +
-> +config OPROFILE_ARMV6
-> +	bool
-> +	depends on CPU_V6 && !SMP
-> +	default y
-> +	select OPROFILE_ARM11_CORE
-> +
-> +config OPROFILE_MPCORE
-> +	bool
-> +	depends on CPU_V6 && SMP
-> +	default y
-> +	select OPROFILE_ARM11_CORE
+I'm dropping out from this one.
+I worked for a good while, and I really see no way of improving what
+the usage information (slabinfo -h) already provides. It's a good
+description, and I'm starting to think that adding a man page is
+overkill. If I am misunderstanding something and what is desired is in
+fact usage information in the man page format, I can provide such a
+page, no problem.
 
-Prefer to use "def_bool y" for the 2 config symbols above,
-as you did in the Cell patch.
+At least now I know how to write man pages.
 
-> +config OPROFILE_ARM11_CORE
-> +	bool
-> +
-> +endif
-> +
->  config VECTORS_BASE
->  	hex
->  	default 0xffff0000 if MMU || CPU_HIGH_VECTOR
-
-
----
-~Randy
-desserts:  http://www.xenotime.net/linux/recipes/
+Karol Swietlicki
