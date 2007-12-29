@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbXL2Cb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbXL2Cc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbXL2Cb6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 21:31:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbXL2Cbu
+	id S1756090AbXL2Cc5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 21:32:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbXL2Cct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 21:31:50 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:49304 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753190AbXL2Cbt (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 21:31:49 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andi Kleen <ak@suse.de>
-Cc: Russell Leidich <rml@google.com>,
+	Fri, 28 Dec 2007 21:32:49 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49779 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753274AbXL2Cct (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 21:32:49 -0500
+Date: Sat, 29 Dec 2007 02:23:29 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Jiri Slaby <jirislaby@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] AMD Thermal Interrupt Support
-In-Reply-To: Your message of "Sat, 29 Dec 2007 03:11:51 +0100."
-             <200712290311.51176.ak@suse.de>
-From: Valdis.Kletnieks@vt.edu
-References: <20071217185453.C4597CC562@localhost> <20071227233419.d1adf3f3.akpm@linux-foundation.org> <3f1a065b0712281240p14c8223agfe83db0ac26aca4c@mail.gmail.com>
-            <200712290311.51176.ak@suse.de>
+       Adrian Bunk <bunk@kernel.org>, Michael Tokarev <mjt@tls.msk.ru>
+Subject: Re: [PATCH 1/1] mxser, remove it
+Message-ID: <20071229022329.39f6162a@the-village.bc.nu>
+In-Reply-To: <Pine.LNX.4.64.0712290211240.29013@fbirervta.pbzchgretzou.qr>
+References: <1198836540-8042-1-git-send-email-jirislaby@gmail.com>
+	<Pine.LNX.4.64.0712290211240.29013@fbirervta.pbzchgretzou.qr>
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1198895417_2814P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Fri, 28 Dec 2007 21:30:17 -0500
-Message-ID: <26145.1198895417@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1198895417_2814P
-Content-Type: text/plain; charset=us-ascii
-
-On Sat, 29 Dec 2007 03:11:51 +0100, Andi Kleen said:
-> On Friday 28 December 2007 21:40:28 Russell Leidich wrote:
-
-> +		printk(KERN_CRIT "CPU 0x%x: Thermal monitoring not "
-> +			"functional.\n", cpu);
+> > 
+> >+static int mxvar_baud_table[] = {
+> >+	0, 50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400,
+> >+	4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600
+> >+};
+> >+static unsigned int mxvar_baud_table1[] = {
+> >+	0, B50, B75, B110, B134, B150, B200, B300, B600, B1200, B1800, B2400,
+> >+	B4800, B9600, B19200, B38400, B57600, B115200, B230400, B460800, B921600
+> >+};
 > 
-> Why is that KERN_CRIT? Does not seem that critical to me.
+> Constify both, if possible?
 
-If you think you're running on a chipset that *should* support thermal
-monitoring, and it isn't there in a usable state, that seems pretty critical
-to me.  If that didn't work, you probably can't trust the "oh, the chip will
-thermal-limit itself if it gets to 100C or whatever" either.
+These are not portable - baud rate tables vary for some platforms. No
+driver should be touching Bxxx coding itself any more. Use the tty_
+functions to decode and encode baud rates.
 
-Of course, I'm just speaking as somebody who quite recently had a system do a
-thermal throttle when it hit 85C due to a cooling system failure.  I'm pretty
-sure that if thermal monitoring wasn't functional, it wouldn't have throttled
-either (after all, how can you throttle when you hit a given temp when you
-don't have a working way to tell what the temp even is?), and I'd be looking at
-extensive hardware damage...
-
-
---==_Exmh_1198895417_2814P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHdbE5cC3lWbTT17ARAsOhAJ9FGiDmuGRg9eTHLWTlWUXzMb1QFACgqb9f
-1UGfTooeDJkd98VcB66AmsU=
-=bsA1
------END PGP SIGNATURE-----
-
---==_Exmh_1198895417_2814P--
