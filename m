@@ -1,153 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbXL2Qv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbXL2Q7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbXL2Qv3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 11:51:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbXL2QvS
+	id S1756093AbXL2Q7c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 11:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbXL2Q7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 11:51:18 -0500
-Received: from py-out-1112.google.com ([64.233.166.183]:22428 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753087AbXL2QvR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 11:51:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=T8i5I1NQhiEGm84y4mnLmQY6DMJd8AJzOfUth3QMJ0cGjDcAfyq8I48zDhz/SZTaLqCwucIUhrLFpAW/PBDQGa1ajpNYwRyBDa89hOKjzzc7GAx8BDcGtWG+K6niUK2NxCTRa9HUlqKhfHjpWHoWX8sVcdRTP6YcZNWsVNDBpPg=
-Message-ID: <64bb37e0712290851r6d41768dk270e47884713a3de@mail.gmail.com>
-Date: Sat, 29 Dec 2007 17:51:13 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc6-mm1
-Cc: linux-kernel@vger.kernel.org, "Neil Brown" <neilb@suse.de>,
-       "J. Bruce Fields" <bfields@fieldses.org>, netdev@vger.kernel.org,
-       "Herbert Xu" <herbert@gondor.apana.org.au>
-In-Reply-To: <20071228150746.42b3bbc0.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071222233056.d652743e.akpm@linux-foundation.org>
-	 <64bb37e0712230827m7d368e2l3174f3b4396d09c1@mail.gmail.com>
-	 <64bb37e0712281453y4aac82b7h7acc8ec314ca6e3e@mail.gmail.com>
-	 <20071228150746.42b3bbc0.akpm@linux-foundation.org>
+	Sat, 29 Dec 2007 11:59:23 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:36500 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753896AbXL2Q7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Dec 2007 11:59:22 -0500
+From: Ville Syrjala <syrjala@sci.fi>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ville Syrjala <syrjala@sci.fi>
+Subject: [PATCH] w1-gpio: Add GPIO w1 bus master driver (v3)
+Date: Sat, 29 Dec 2007 18:59:21 +0200
+Message-Id: <11989475611180-git-send-email-syrjala@sci.fi>
+X-Mailer: git-send-email 1.5.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 29, 2007 12:07 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 28 Dec 2007 23:53:49 +0100 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-> > On Dec 23, 2007 5:27 PM, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
-[snip]
-> > [ 7620.708561] Pid: 5698, comm: nfsv4-svc Not tainted 2.6.24-rc3-mm2 #2
-[snip]
-> That looks like a sunrpc bug.  git-nfsd has bene mucking around in there a
-> bit.
+Add a GPIO 1-wire bus master driver. The driver used the GPIO API to
+control the wire and the GPIO pin can be specified using platform data
+similar to i2c-gpio. The driver was tested with AT91SAM9260 + DS2401.
 
-Please note, that this report is still against 2.6.24-rc3-mm2. The
-only new thing about that was, that slub_debug=FZP does not catch the
-cause...
+Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+---
+Changes from version 2 to version 3:
+* Use platform_driver_probe() instead of platform_driver_register().
+* Remove useless address operators from function pointer assignments.
 
-> > The cause, why I am resending this: I just got a crash with
-> > 2.6.24-rc6-mm1, again looking network related:
-> >
-> > [93436.933356] WARNING: at include/net/dst.h:165 dst_release()
-> > [93436.936685] Pid: 8079, comm: konqueror Not tainted 2.6.24-rc6-mm1 #11
-> > [93436.939292]
-> > [93436.939293] Call Trace:
-> > [93436.939304]  [<ffffffff80531d2d>] skb_release_all+0xdd/0x110
-> > [93436.939307]  [<ffffffff80531311>] __kfree_skb+0x11/0xa0
-> > [93436.939309]  [<ffffffff805313b7>] kfree_skb+0x17/0x30
-> > [93436.939312]  [<ffffffff805a0b48>] unix_release_sock+0x128/0x250
-> > [93436.939315]  [<ffffffff805a0c91>] unix_release+0x21/0x30
-> > [93436.939318]  [<ffffffff8052b144>] sock_release+0x24/0x90
-> > [93436.939320]  [<ffffffff8052b656>] sock_close+0x26/0x50
-> > [93436.939324]  [<ffffffff8029f921>] __fput+0xc1/0x230
-> > [93436.939327]  [<ffffffff8029fe46>] fput+0x16/0x20
-> > [93436.939329]  [<ffffffff8029c576>] filp_close+0x56/0x90
-> > [93436.939331]  [<ffffffff8029de46>] sys_close+0xa6/0x110
-> > [93436.939335]  [<ffffffff8020b57b>] system_call_after_swapgs+0x7b/0x80
+ Documentation/w1/masters/00-INDEX |    2 +
+ Documentation/w1/masters/w1-gpio  |   33 ++++++++++
+ drivers/w1/masters/Kconfig        |   10 +++
+ drivers/w1/masters/Makefile       |    1 +
+ drivers/w1/masters/w1-gpio.c      |  124 +++++++++++++++++++++++++++++++++++++
+ include/linux/w1-gpio.h           |   23 +++++++
+ 6 files changed, 193 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/w1/masters/w1-gpio
+ create mode 100644 drivers/w1/masters/w1-gpio.c
+ create mode 100644 include/linux/w1-gpio.h
 
->From code inspection I would blame the patch "[SKBUFF]: Free old skb
-properly in skb_morph" from Herbert Xu. (CC added)
+diff --git a/Documentation/w1/masters/00-INDEX b/Documentation/w1/masters/00-INDEX
+index 752613c..7b0ceaa 100644
+--- a/Documentation/w1/masters/00-INDEX
++++ b/Documentation/w1/masters/00-INDEX
+@@ -4,3 +4,5 @@ ds2482
+ 	- The Maxim/Dallas Semiconductor DS2482 provides 1-wire busses.
+ ds2490
+ 	- The Maxim/Dallas Semiconductor DS2490 builds USB <-> W1 bridges.
++w1-gpio
++	- GPIO 1-wire bus master driver.
+diff --git a/Documentation/w1/masters/w1-gpio b/Documentation/w1/masters/w1-gpio
+new file mode 100644
+index 0000000..af5d3b4
+--- /dev/null
++++ b/Documentation/w1/masters/w1-gpio
+@@ -0,0 +1,33 @@
++Kernel driver w1-gpio
++=====================
++
++Author: Ville Syrjala <syrjala@sci.fi>
++
++
++Description
++-----------
++
++GPIO 1-wire bus master driver. The driver uses the GPIO API to control the
++wire and the GPIO pin can be specified using platform data.
++
++
++Example (mach-at91)
++-------------------
++
++#include <linux/w1-gpio.h>
++
++static struct w1_gpio_platform_data foo_w1_gpio_pdata = {
++	.pin		= AT91_PIN_PB20,
++	.is_open_drain	= 1,
++};
++
++static struct platform_device foo_w1_device = {
++	.name			= "w1-gpio",
++	.id			= -1,
++	.dev.platform_data	= &foo_w1_gpio_pdata,
++};
++
++...
++	at91_set_GPIO_periph(foo_w1_gpio_pdata.pin, 1);
++	at91_set_multi_drive(foo_w1_gpio_pdata.pin, 1);
++	platform_device_register(&foo_w1_device);
+diff --git a/drivers/w1/masters/Kconfig b/drivers/w1/masters/Kconfig
+index 8236d44..c449309 100644
+--- a/drivers/w1/masters/Kconfig
++++ b/drivers/w1/masters/Kconfig
+@@ -42,5 +42,15 @@ config W1_MASTER_DS1WM
+ 	  in HP iPAQ devices like h5xxx, h2200, and ASIC3-based like
+ 	  hx4700.
+ 
++config W1_MASTER_GPIO
++	tristate "GPIO 1-wire busmaster"
++	depends on GENERIC_GPIO
++	help
++	  Say Y here if you want to communicate with your 1-wire devices using
++	  GPIO pins. This driver uses the GPIO API to control the wire.
++
++	  This support is also available as a module.  If so, the module
++	  will be called w1-gpio.ko.
++
+ endmenu
+ 
+diff --git a/drivers/w1/masters/Makefile b/drivers/w1/masters/Makefile
+index 11551b3..1420b5b 100644
+--- a/drivers/w1/masters/Makefile
++++ b/drivers/w1/masters/Makefile
+@@ -6,3 +6,4 @@ obj-$(CONFIG_W1_MASTER_MATROX)		+= matrox_w1.o
+ obj-$(CONFIG_W1_MASTER_DS2490)		+= ds2490.o
+ obj-$(CONFIG_W1_MASTER_DS2482)		+= ds2482.o
+ obj-$(CONFIG_W1_MASTER_DS1WM)		+= ds1wm.o
++obj-$(CONFIG_W1_MASTER_GPIO)		+= w1-gpio.o
+diff --git a/drivers/w1/masters/w1-gpio.c b/drivers/w1/masters/w1-gpio.c
+new file mode 100644
+index 0000000..9e1138a
+--- /dev/null
++++ b/drivers/w1/masters/w1-gpio.c
+@@ -0,0 +1,124 @@
++/*
++ * w1-gpio - GPIO w1 bus master driver
++ *
++ * Copyright (C) 2007 Ville Syrjala <syrjala@sci.fi>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/w1-gpio.h>
++
++#include "../w1.h"
++#include "../w1_int.h"
++
++#include <asm/gpio.h>
++
++static void w1_gpio_write_bit_dir(void *data, u8 bit)
++{
++	struct w1_gpio_platform_data *pdata = data;
++
++	if (bit)
++		gpio_direction_input(pdata->pin);
++	else
++		gpio_direction_output(pdata->pin, 0);
++}
++
++static void w1_gpio_write_bit_val(void *data, u8 bit)
++{
++	struct w1_gpio_platform_data *pdata = data;
++
++	gpio_set_value(pdata->pin, bit);
++}
++
++static u8 w1_gpio_read_bit(void *data)
++{
++	struct w1_gpio_platform_data *pdata = data;
++
++	return gpio_get_value(pdata->pin);
++}
++
++static int __init w1_gpio_probe(struct platform_device *pdev)
++{
++	struct w1_bus_master *master;
++	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
++	int err;
++
++	if (!pdata)
++		return -ENXIO;
++
++	master = kzalloc(sizeof(struct w1_bus_master), GFP_KERNEL);
++	if (!master)
++		return -ENOMEM;
++
++	err = gpio_request(pdata->pin, "w1");
++	if (err)
++		goto free_master;
++
++	master->data = pdata;
++	master->read_bit = w1_gpio_read_bit;
++
++	if (pdata->is_open_drain) {
++		gpio_direction_output(pdata->pin, 1);
++		master->write_bit = w1_gpio_write_bit_val;
++	} else {
++		gpio_direction_input(pdata->pin);
++		master->write_bit = w1_gpio_write_bit_dir;
++	}
++
++	err = w1_add_master_device(master);
++	if (err)
++		goto free_gpio;
++
++	platform_set_drvdata(pdev, master);
++
++	return 0;
++
++ free_gpio:
++	gpio_free(pdata->pin);
++ free_master:
++	kfree(master);
++
++	return err;
++}
++
++static int __exit w1_gpio_remove(struct platform_device *pdev)
++{
++	struct w1_bus_master *master = platform_get_drvdata(pdev);
++	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
++
++	w1_remove_master_device(master);
++	gpio_free(pdata->pin);
++	kfree(master);
++
++	return 0;
++}
++
++static struct platform_driver w1_gpio_driver = {
++	.driver = {
++		.name	= "w1-gpio",
++		.owner	= THIS_MODULE,
++	},
++	.remove	= __exit_p(w1_gpio_remove),
++};
++
++static int __init w1_gpio_init(void)
++{
++	return platform_driver_probe(&w1_gpio_driver, w1_gpio_probe);
++}
++
++static void __exit w1_gpio_exit(void)
++{
++	platform_driver_unregister(&w1_gpio_driver);
++}
++
++module_init(w1_gpio_init);
++module_exit(w1_gpio_exit);
++
++MODULE_DESCRIPTION("GPIO w1 bus master driver");
++MODULE_AUTHOR("Ville Syrjala <syrjala@sci.fi>");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/w1-gpio.h b/include/linux/w1-gpio.h
+new file mode 100644
+index 0000000..9797fec
+--- /dev/null
++++ b/include/linux/w1-gpio.h
+@@ -0,0 +1,23 @@
++/*
++ * w1-gpio interface to platform code
++ *
++ * Copyright (C) 2007 Ville Syrjala <syrjala@sci.fi>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ */
++#ifndef _LINUX_W1_GPIO_H
++#define _LINUX_W1_GPIO_H
++
++/**
++ * struct w1_gpio_platform_data - Platform-dependent data for w1-gpio
++ * @pin: GPIO pin to use
++ * @is_open_drain: GPIO pin is configured as open drain
++ */
++struct w1_gpio_platform_data {
++	unsigned int pin;
++	unsigned int is_open_drain:1;
++};
++
++#endif /* _LINUX_W1_GPIO_H */
+-- 
+1.5.2.5
 
-Mostly it only shuffles code around, the only real change seems to be this hunk:
-@@ -441,7 +446,7 @@ static struct sk_buff *__skb_clone(struct sk_buff
-*n, struct sk_buff *skb)
-  */
- struct sk_buff *skb_morph(struct sk_buff *dst, struct sk_buff *src)
- {
--	skb_release_data(dst);
-+	skb_release_all(dst);
- 	return __skb_clone(dst, src);
- }
- EXPORT_SYMBOL_GPL(skb_morph);
-
-Using sbk_release_all instead only skb_release_data (with is called
-automatically from the new sbk_release_all) will add a new call to
-dst_release(skb->dst); (first line in sbk_release_all)
-Could that explain the above underflow warning?
-
-(I do not have any clue about the inner workings of the network core,
-I just looked for code changes, that might be relevant...)
-
-> > [93436.947241] general protection fault: 0000 [1] SMP
-> > [93436.947243] last sysfs file:
-> > /sys/devices/pci0000:00/0000:00:0f.0/0000:01:00.1/irq
-> > [93436.947245] CPU 1
-> > [93436.947246] Modules linked in: radeon drm nfsd exportfs w83792d
-> > ipv6 tuner tea5767 tda8290 tuner_xc2028 tda9887 tuner_simple mt20xx
-> > tea5761 tvaudio msp3400 bttv ir_common compat_ioctl32 videobuf_dma_sg
-> > videobuf_core btcx_risc tveeprom usbhid videodev v4l2_common hid
-> > v4l1_compat pata_amd sg i2c_nforce2
-> > [93436.947257] Pid: 8079, comm: konqueror Not tainted 2.6.24-rc6-mm1 #11
-> > [93436.947259] RIP: 0010:[<ffffffff80531438>]  [<ffffffff80531438>]
-> > skb_drop_list+0x18/0x30
-> > [93436.947262] RSP: 0018:ffff810005f4fda8  EFLAGS: 00010286
-> > [93436.947263] RAX: ab1ed5ca5b74e7de RBX: ab1ed5ca5b74e7de RCX: 000000000000d135
-> > [93436.947265] RDX: ffff81011d089a80 RSI: 0000000000000001 RDI: ffff81011d089a88
-> > [93436.947266] RBP: ffff810005f4fdb8 R08: 0000000000000001 R09: 0000000000000006
-> > [93436.947268] R10: 0000000000000000 R11: 0000000000000000 R12: ffff8100de02c500
-> > [93436.947269] R13: ffff81011c188a00 R14: 0000000000000001 R15: ffff81011c189198
-> > [93436.947271] FS:  00007fb5bde0d700(0000) GS:ffff81007ff22000(0000)
-> > knlGS:0000000000000000
-> > [93436.947273] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > [93436.947274] CR2: 00007fb5bdd76000 CR3: 00000000664d5000 CR4: 00000000000006e0
-> > [93436.947276] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > [93436.947277] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > [93436.947279] Process konqueror (pid: 8079, threadinfo
-> > ffff810005f4e000, task ffff8100a1dec000)
-> > [93436.947281] Stack:  ffff810005f4fdd8 ffff810116c86140
-> > ffff810005f4fdd8 ffffffff805314ae
-> > [93436.947284]  ffff810116c86140 ffff8100de02c500 ffff810005f4fdf8
-> > ffffffff80531cf0
-> > [93436.947286]  ffff8100de02c500 ffff81011c188b48 ffff810005f4fe18
-> > ffffffff80531311
-> > [93436.947288] Call Trace:
-> > [93436.947290]  [<ffffffff805314ae>] skb_release_data+0x5e/0xa0
-> > [93436.947293]  [<ffffffff80531cf0>] skb_release_all+0xa0/0x110
-> > [93436.947295]  [<ffffffff80531311>] __kfree_skb+0x11/0xa0
-> > [93436.947297]  [<ffffffff805313b7>] kfree_skb+0x17/0x30
-> > [93436.947299]  [<ffffffff805a0b48>] unix_release_sock+0x128/0x250
-> > [93436.947302]  [<ffffffff805a0c91>] unix_release+0x21/0x30
-> > [93436.947304]  [<ffffffff8052b144>] sock_release+0x24/0x90
-> > [93436.947307]  [<ffffffff8052b656>] sock_close+0x26/0x50
-> > [93436.947309]  [<ffffffff8029f921>] __fput+0xc1/0x230
-> > [93436.947312]  [<ffffffff8029fe46>] fput+0x16/0x20
-> > [93436.947314]  [<ffffffff8029c576>] filp_close+0x56/0x90
-> > [93436.947316]  [<ffffffff8029de46>] sys_close+0xa6/0x110
-> > [93436.947319]  [<ffffffff8020b57b>] system_call_after_swapgs+0x7b/0x80
-> > [93436.947322]
-> > [93436.947322]
-> > [93436.947323] Code: 48 8b 18 48 89 c7 e8 5d ff ff ff 48 85 db 75 ed
-> > 48 83 c4 08
-> > [93436.947328] RIP  [<ffffffff80531438>] skb_drop_list+0x18/0x30
-> > [93436.947330]  RSP <ffff810005f4fda8>
-> > [93436.947332] ---[ end trace befb7cc3528ab3b1 ]---
->
-> Yes, that looks more networking-related.
-
-I would hope this OOPS was caused by the same error, trying to release
-the same list twice.
-
-Torsten
