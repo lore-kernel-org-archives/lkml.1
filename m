@@ -1,111 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbXL2QSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbXL2Q3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbXL2QSe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 11:18:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbXL2QS1
+	id S1755904AbXL2Q3o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 11:29:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbXL2Q3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 11:18:27 -0500
-Received: from twinlark.arctic.org ([208.69.40.136]:39261 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753978AbXL2QS0 (ORCPT
+	Sat, 29 Dec 2007 11:29:36 -0500
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:42048 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753932AbXL2Q3f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 11:18:26 -0500
-Date: Sat, 29 Dec 2007 08:18:25 -0800 (PST)
-From: dean gaudet <dean@arctic.org>
-To: David Newall <david@davidnewall.com>
-cc: Mark Lord <lkml@rtr.ca>, Al Viro <viro@ftp.linux.org.uk>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: RFC: permit link(2)  to work across --bind mounts ?
-In-Reply-To: <47760578.2090305@davidnewall.com>
-Message-ID: <alpine.DEB.0.999999.0712290754230.5207@twinlark.arctic.org>
-References: <47684DBD.6030502@rtr.ca> <20071218230016.GF8181@ftp.linux.org.uk> <20071218231404.GG8181@ftp.linux.org.uk> <47689608.3030503@rtr.ca> <4768973C.8020909@davidnewall.com> <alpine.DEB.0.999999.0712281835240.5207@twinlark.arctic.org>
- <47760578.2090305@davidnewall.com>
-User-Agent: Alpine 0.999999 (DEB 847 2007-12-06)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 29 Dec 2007 11:29:35 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FABIFdkdMROHU/2dsb2JhbACBV6l/
+Date: Sat, 29 Dec 2007 11:29:32 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, bryan.wu@analog.com,
+       linux-kernel@vger.kernel.org
+Subject: [2.6.24 patch] Fix blackfin HARDWARE_PM support
+Message-ID: <20071229162932.GC12262@Krystal>
+References: <20071228185643.GB4738@stusta.de> <20071228192320.GI6780@does.not.exist> <20071228192855.GA23157@Krystal> <200712290114.46694.rgetz@blackfin.uclinux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200712290114.46694.rgetz@blackfin.uclinux.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:26:10 up 55 days, 21:31,  4 users,  load average: 0.21, 0.43,
+	0.50
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Dec 2007, David Newall wrote:
+(Robin, can you check if this patch does what is currently intended with
+HARDWARE_PM please ? This involves testing with CONFIG_OPROFILE y/m/n.)
 
-> dean gaudet wrote:
-> > On Wed, 19 Dec 2007, David Newall wrote:
-> >   
-> > > Mark Lord wrote:
-> > >     
-> > > > But.. pity there's no mount flag override for smaller systems,
-> > > > where bind mounts might be more useful with link(2) actually working.
-> > > >       
-> > > I don't see it.  You always can make hard link on the underlying
-> > > filesystem.
-> > > If you need to make it on the bound mount, that is, if you can't locate
-> > > the
-> > > underlying filesystem to make the hard link, you can use a symbolic link.
-> > >     
-> > 
-> > i run into it on a system where /home is a bind mount of /var/home ... i did
-> > this because:
-> > 
-> > - i prefer /home to be nosuid,nodev (multi-user system)
-> >   
-> 
-> Whatever security /home has, /var/home is the one that restricts because users
-> can still access their files that way.
+This patch restores the blackfin Hardware Performance Monitor Profiling
+support that was killed by
+commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
 
-yep.  and /var is nosuid,nodev as well.
+Since there seems to be no good reason to behave differently from other
+architectures, it now automatically selects the hardware performance counters
+whenever the profiling is activated.
 
-> > - i prefer /home to not be on same fs as /
-> > - the system has only one raid1 array, and i can't stand having two
-> > writable filesystems competing on the same set of spindles (i like to
-> >   imagine that one fs competing for the spindles can potentially result
-> >   in better seek patterns)
-> > ...
-> > - i didn't want to try to balance disk space between /var and /home
-> > - i didn't want to use a volume mgr just to handle disk space balance...
-> >   
-> 
-> Pffuff.  That's what volume managers are for!  You do have (at least) two
-> independent spindles in your RAID1 array, which give you less need to worry
-> about head-stack contention.
+mach-common/irqpanic.c: pm_overflow
+calls pm_overflow_handler which is in oprofile/op_model_bf533.c. I doubt that
+setting HARDWARE_PM as "m" will work at all, since the pm_overflow_handler
+should be in the core kernel image because it is called by irqpanic.c.
 
-this system is write intensive and writes go to all spindles, so you're
-assertion is wrong.  a quick look at iostat shows the system has averaged
-50/50 reads/writes over 34 days.  that means 50% of the IO is going to
-both spindles.
+Therefore, I change HARDWARE_PM from a tristate to a bool.
 
-Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s avgrq-sz avgqu-sz   await  svctm  %util
-sda               1.96     2.24   33.65   33.16   755.50   465.45    36.55     0.56    8.43   5.98  39.96
+The whole arch/$(ARCH)/oprofile/ is built depending on CONFIG_OPROFILE. Since
+part of the HARDWARE_PM support files sits in this directory, it makes sense to
+also depend on OPROFILE, not only PROFILING. Since OPROFILE already depends on
+PROFILING, it is correct to only depend on OPROFILE only.
 
-> You probably want different mount restrictions
-> on /home than /var, so you really must use separate filesystems.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Adrian Bunk <adrian.bunk@movial.fi>
+CC: Randy Dunlap <randy.dunlap@oracle.com>
+CC: bryan.wu@analog.com
+CC: Robin Getz <rgetz@blackfin.uclinux.org>
+---
+ arch/blackfin/Kconfig |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-not sure why you think i want different restrictions... i'm running fine
-with nosuid,nodev for /var.
+Index: linux-2.6-lttng/arch/blackfin/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/blackfin/Kconfig	2007-12-29 11:00:05.000000000 -0500
++++ linux-2.6-lttng/arch/blackfin/Kconfig	2007-12-29 11:25:39.000000000 -0500
+@@ -65,6 +65,10 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
+ 
++config HARDWARE_PM
++	def_bool y
++	depends on OPROFILE
++
+ source "init/Kconfig"
+ source "kernel/Kconfig.preempt"
+ 
 
-the main worry i have is some user maliciously hardlinks everything
-under /var/log somewhere else and slowly fills up the file system with
-old rotated logs.  the users otherwise have quotas so they can't fill
-things up on their own.  i could probably set up XFS quota trees (aka
-"projects") but haven't gone to this effort yet.
-
-
-> LVM is your friend.
-
-i disagree.  but this is getting into personal taste -- i find volume
-managers to be an unnecessary layer of complexity.  given i need quotas for
-the users anyhow i don't see why i should both manage my disk space via
-quotas and via an extra block layer.
-
-
-> 
-> But with regards to bind mounts and hard links:  If you want to be able to
-> hard-link /home/me/log to /var/tmp/my-log, then I see nothing to prevent
-> hard-linking /var/home/me/log to /var/tmp/my-log.
-
-you probably missed the point where i said that i was surprised i couldn't
-hardlink across the bind mount and actually wanted it to work.
-
--dean
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
