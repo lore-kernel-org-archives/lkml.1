@@ -1,121 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbXL2J7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbXL2KBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756835AbXL2J7R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 04:59:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbXL2J7E
+	id S1756894AbXL2KBQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 05:01:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbXL2KBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 04:59:04 -0500
-Received: from web32607.mail.mud.yahoo.com ([68.142.207.234]:39036 "HELO
-	web32607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752323AbXL2J7B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 04:59:01 -0500
-X-YMail-OSG: jOHrNzsVM1lZWRNEv7VdJfgBrj0z6jXQzE5bnicK6Kut5sdw
-X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.158.1
-Date: Sat, 29 Dec 2007 01:59:00 -0800 (PST)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: Strange NFS write performance Linux->Solaris-10/VXFS, maybe VW related
-To: Chris Snook <csnook@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       spam trap <spamtrap@knobisoft.de>
+	Sat, 29 Dec 2007 05:01:06 -0500
+Received: from xabean.com ([67.18.92.146]:50736 "EHLO mail.xabean.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752958AbXL2KBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Dec 2007 05:01:04 -0500
+X-Greylist: delayed 2863 seconds by postgrey-1.27 at vger.kernel.org; Sat, 29 Dec 2007 05:01:04 EST
+X-HD-DVD-Key: 09f911029d74e35bd84156c5635688c0 (blow me MPAA)
+X-Envelope-From: richard@richardharman.com
+X-DomainKeys: Sendmail DomainKeys Filter v0.3.0 mail.xabean.com lBT9D9jB004779
+DomainKey-Signature: a=rsa-sha1; s=beta; d=richardharman.com; c=nofws; q=dns;
+	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
+	references:in-reply-to:content-type:content-transfer-encoding;
+	b=km9egeZUVZnF6wD9/VX0Ba59tERDmm4/HElxdduDxnkqokZhLCHT1aR11sWcpPXV2
+	n78bDn9C0lzropAkZgvMg==
+X-Client-Addr: 72.83.150.24
+X-mtfnpy: !!MTFNPY!!
+Message-ID: <47760ED5.6060207@richardharman.com>
+Date: Sat, 29 Dec 2007 04:09:41 -0500
+From: Richard Harman <richard@richardharman.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <701839.48516.qm@web32607.mail.mud.yahoo.com>
+To: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+References: <47754735.1050009@richardharman.com> <20071229095242.1300e19c@linux360.ro>
+In-Reply-To: <20071229095242.1300e19c@linux360.ro>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-> From: Chris Snook <csnook@redhat.com>
-> To: Martin Knoblauch <spamtrap@knobisoft.de>
-> Cc: linux-kernel@vger.kernel.org; linux-nfs@vger.kernel.org
-> Sent: Friday, December 28, 2007 7:45:13 PM
-> Subject: Re: Strange NFS write performance Linux->Solaris-10/VXFS, maybe VW related
-> 
-> Martin Knoblauch wrote:
-> > Hi,
-> > 
-> > currently I am tracking down an "interesting" effect when writing
-> to
-> 
- a
-> > Solars-10/Sparc based server. The server exports two filesystems.
-> One
-> 
- UFS,
-> > one VXFS. The filesystems are mounted NFS3/TCP, no special
-> options.
-> 
- Linux
-> > kernel in question is 2.6.24-rc6, but it happens with earlier kernels
-> > (2.6.19.2, 2.6.22.6) as well. The client is x86_64 with 8 GB of ram.
-> > 
-> > The problem: when writing to the VXFS based filesystem,
-> performance
-> 
- drops
-> > dramatically when the the filesize reaches or exceeds
-> "dirty_ratio".
-> 
- For a
-> > dirty_ratio of 10% (about 800MB) files below 750 MB are
-> transfered
-> 
- with about
-> > 30 MB/sec. Anything above 770 MB drops down to below 10 MB/sec. If
-> I
-> 
- perform
-> > the same tests on the UFS based FS, performance stays at about
-> 30
-> 
- MB/sec
-> > until 3GB and likely larger (I just stopped at 3 GB).
-> > 
-> > Any ideas what could cause this difference? Any suggestions
-> on
-> 
- debugging it?
-> 
-> 1) Try normal NFS tuning, such as rsize/wsize tuning.
->
+Eduard-Gabriel Munteanu wrote:
 
-  rsize/wsize only have minimal effect. The negotiated  size seems to be optimal.
-
-> 2) You're entering synchronous writeback mode, so you can delay the
+> On Fri, 28 Dec 2007 13:57:57 -0500
+> Richard Harman <richard@richardharman.com> wrote:
 > 
- problem by raising dirty_ratio to 100, or reduce the size of the problem
-> by lowering  dirty_ratio to 1.  Either one could help.
+>> I just saw this thread online from someone else who was having
+>> problems with an HP laptop -- I believe my laptop falls into this
+>> category.
+>>
+>> The laptop is currently running Fedora Core 8, but I couldn't figure
+>> out what kernel that diff was against.  I'm not experienced with
+>> git.  Can you give me a few pointers on how to get that patch applied
+>> to a kernel tarball?  I'll be more than willing to be your test
+>> subject to see how well this patch and whatever future revision of it
+>> may work.
+>>
+>> Richard
 > 
-
- For experiments, sure. But I do not think that I want to have 8 GB of dirty pages [potentially] laying around. Are you sure that 1% is a useful value for dirty_ratio? Looking at the code, it seems a minimum of 5% is  enforced  in "page-writeback.c:get_dirty_limits":
-
-        dirty_ratio = vm_dirty_ratio;
-        if (dirty_ratio > unmapped_ratio / 2)
-                dirty_ratio = unmapped_ratio / 2;
-
-        if (dirty_ratio < 5)
-                dirty_ratio = 5;
-
-
-> 3) It sounds like the bottleneck is the vxfs filesystem.  It only
+> Hi,
 > 
- *appears* on  the client side because writes up until dirty_ratio get buffered on
-> the client. 
+> I'll assume you didn't read the thread careful enough, so I have to
+> emphasize the fact that this patch won't improve power savings (even
+> more, it may actually consume an additional 1-2 Watts). Try it only if
+> you need dynticks for another purpose than just saving power (in which
+> case, you should wait until a better solution comes up, namely
+> LAPIC-less dynticks).
 
- Sure, the fact that a UFS (or SAM-FS) based FS behaves well in the same situation points in that direction.
+Oh, at the moment I couldn't care less about power savings, I'm more 
+interested in simply getting the kernel properly -booting- on this hardware.
 
->   If you can confirm that the server is actually writing stuff to disk
-> 
- slower  when the client is in writeback mode, then it's possible the Linux
-> NFS client is  doing something inefficient in writeback mode.
-> 
+Right now, with your patch and the 'noirqdebug' option or disabling nohz 
+the system appears to be stable.  This laptop otherwise locks up trying 
+to configure apic/lapic, or locks up solid later with NO oops/bug and 
+nothing will bring it out of it (eg, sysrq has no effect).  NMI watchdog 
+was also inoperable, which I believe was due to the apic/lapic being 
+disabled.
 
- I will try to get an iostat trace from the Sun side. Thanks for the suggestion.
+With your patch, the lapic is used:
 
-Cheers
-Martin
-PS: Happy Year 2008 to all Kernel Hackers and their families
+ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
 
+These kernel dmesg logs are hand-transcribed, and are from 2.6.22.5, but 
+this shows where the kernel would lock up good and solid:
 
+http://www.richardharman.com/pavilion/2.6.22.5/dmesg.txt
 
+> IIRC, the diff was made against 2.6.24-rc4, but it applies okay on the
+> latest -rc (2.6.24-rc6 as of now) as far as I can see. Copy starting
+> with the line below "---" all the way to the end and save it to a file
+> (make sure tabs don't get messed up), then apply with "patch -p1" as
+> you would apply any other patch. Run "make xconfig" (or whatever
+> interface to Kconfig you use), make sure "Processor type and
+> features -> Disable C1E on AMD systems to make dynticks work" is set,
+> along with all other relevant options, then build and the kernel as
+> usual.
+
+Yeah, I actually found a how-to on how to pull down Linus's git tree, 
+and managed to patch -p1 against that.  Kudos to the folks who set up 
+faqs on using git.
+
+Anyway, I'm extremely open to getting to the bottom of working around 
+the quirks on this hardware.  If I havn't mentioned it previously, this 
+laptop is an HP dv6408nr, with an amd turion tl-56 cpu and nVidia MCP51 
+chipset.
+
+What can I do to help?  It has been pulling teeth trying to get to the 
+bottom of this.
