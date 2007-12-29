@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbXL2WPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbXL2WWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755338AbXL2WPk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 17:15:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbXL2WPd
+	id S1754687AbXL2WWq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 17:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbXL2WWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 17:15:33 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:1671 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751600AbXL2WPc (ORCPT
+	Sat, 29 Dec 2007 17:22:34 -0500
+Received: from hoefnix.telenet-ops.be ([195.130.132.54]:36985 "EHLO
+	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977AbXL2WWd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 17:15:32 -0500
-Date: Sat, 29 Dec 2007 17:15:30 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: mgross <640e9920@gmail.com>
-cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>
-Subject: Re: [RFC] USB driver for talking to the Microchip PIC18 boot loader
-In-Reply-To: <20071229193409.GA20188@mgross-t43>
-Message-ID: <Pine.LNX.4.44L0.0712291714041.26261-100000@netrider.rowland.org>
+	Sat, 29 Dec 2007 17:22:33 -0500
+Date: Sat, 29 Dec 2007 23:21:41 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org
+Subject: Re: Top 9 kernel oopses/warnings for the week of December 29th, 2007
+In-Reply-To: <alpine.LFD.0.9999.0712291147400.2778@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0712292257430.17197@anakin>
+References: <477630CF.5070609@linux.intel.com>
+ <alpine.LFD.0.9999.0712291116190.2778@woody.linux-foundation.org>
+ <4776A13C.1080405@linux.intel.com> <alpine.LFD.0.9999.0712291147400.2778@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Dec 2007, mgross wrote:
-
-> I'm playing around with a PIC based project at home (not an Intel
-> activity) and found I needed a usb driver to talk to the boot loader
-> so I can program my USB Bitwhacker with new custom firmware.  The
-> following adds the pic18bl driver to the kernel.  Its pretty simple
-> and is somewhat based on bits of a libusb driver that does some of
-> what this driver does.
+On Sat, 29 Dec 2007, Linus Torvalds wrote:
+> On Sat, 29 Dec 2007, Arjan van de Ven wrote:
+> > hmmm.. the copy in my Sent folder looks fine, as does the one in the lkml
+> > archive:
+> > http://lkml.org/lkml/2007/12/29/41
+> > 
+> > This is distinctly weird.
 > 
-> What do you think?
+> Ahh, it seems to be a alpine bug. Probably brought on by alpine trying to 
+> highlight the web addresses.
+> 
+> It doesn't always happen - between Rank 3 and Rank 4, you have an empty 
+> line, and alpine reacted correctly to that one, but the "empty" line 
+> between Rank 1 and Rank 2 actually contained a single TAB, and that 
+> apparently made alpine really confused.
+> 
+> So never mind. I'll make a bug-report on alpine, it wasn't a bug in your 
+> email.
 
-Not to detract from your driver, but would it be possible to do the 
-whole thing in userspace using libusb?  Maybe by extending the driver 
-you mentioned?
+The bug is also present in the original branch, called pine 4.64 ;-)
 
-Alan Stern
+Gr{oetje,eeting}s,
 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
