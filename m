@@ -1,100 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbXL2Lgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbXL2Lmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753920AbXL2Lgm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 06:36:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbXL2Lgc
+	id S1753886AbXL2Lmq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 06:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXL2Lmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 06:36:32 -0500
-Received: from mga10.intel.com ([192.55.52.92]:51707 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752102AbXL2Lgb (ORCPT
+	Sat, 29 Dec 2007 06:42:38 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54076 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752554AbXL2Lmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 06:36:31 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.24,219,1196668800"; 
-   d="scan'208";a="261329001"
-Message-ID: <477630CF.5070609@linux.intel.com>
-Date: Sat, 29 Dec 2007 12:34:39 +0100
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
+	Sat, 29 Dec 2007 06:42:37 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <477632A7.6050208@s5r6.in-berlin.de>
+Date: Sat, 29 Dec 2007 12:42:31 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       netdev@vger.kernel.org
-Subject: Top 9 kernel oopses/warnings for the week of December 29th, 2007
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Dave Young <hidave.darkstar@gmail.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH 06/12] pci : Use mutex instead of semaphore in driver
+ core
+References: <20071229011057.GG2883@darkstar.te-china.tietoenator.com> <20071229025506.GL11638@parisc-linux.org>
+In-Reply-To: <20071229025506.GL11638@parisc-linux.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The http://www.kerneloops.org website collects kernel oops and
-warning reports from various mailing lists and bugzillas as well as
-with a client users can install to auto-submit oopses.
-Below is a top 10 list of the oopses collected in the last 7 days.
-(Reports prior to 2.6.23 have been omitted in collecting the top 10)
+Matthew Wilcox wrote:
+> Patches should be self-contained for ease of bisecting.  I can't tell
+> whether this patch is correct or not because you haven't included all
+> the other places that need to change at the same time as this.
 
-It has been a quiet week due to the holidays, only 55 oops traces
-have been collected.
+I think a broken-up patch series isn't totally wrong to do for a first
+look at these RFC patches.  Of course the series needs to become a
+single patch before it is committed to a tree whose history needs to
+support bijection, e.g. -mm.
 
-Rank 1: sysctl_head_finish
-	sysctl table check failed
-	Reported 7 times
-	Only reported for the proprietary madwifi driver
-	More info: http://www.kerneloops.org/search.php?search=sysctl_head_finish
-	
-Rank 2: __ieee80211_rx
-	Warning at net/mac80211/rx.c:1672
-	Reported 5 times
-	Only seen in 2.6.24-rc6 so far
-	Johannes has diagnosed this as a driver bug in the iwlwifi drivers
-	More info: http://www.kerneloops.org/search.php?search=__ieee80211_rx
-	
-Rank 3: rb_erase
-	Null pointer dereference
-	Reported 4 times
-	Only seen in 2.6.24-rc6 so far
-	(Note: the reported removed the oops end marker manually; may be duplicate reports)
-	More info: http://www.kerneloops.org/guilty.php?version=2.6.24-rc6&guilty=rb_erase&start=1574400&end=1574400
+However, Dave's postings lack a References: header which refer to his
+00/12 posting.
 
-Rank 4: remove_proc_entry
-	Warning at fs/proc/generic.c:736
-	Reported 4 times for 2.6.24-rc4 and rc5 (Mandrake)
-	Seems to be a module unload issue
-	More info: http://www.kerneloops.org/search.php?search=remove_proc_entry
-	
-Rank 5: aes_encrypt
-	Invalid kernel pointer oops
-	Reported 2 times for 2.6.23.11
-	More info: http://www.kerneloops.org/search.php?search=aes_encrypt
-	
-Rank 6: cascade
-	BUG statement at kernel/timer.c:606
-	Reported 2 times for 2.6.23 (Gentoo)
-	More info: http://www.kerneloops.org/search.php?search=cascade
-	
-Rank 7: kref_put
-	Kernel paging request
-	Reported 2 times, only for 2.6.24-rc6-mm1
-	Diagnosed as a bug in the md-subsystem, patch available
-	More info: http://www.kerneloops.org/search.php?search=kref_put
-	More info: http://article.gmane.org/gmane.linux.kernel/618056
-	
-Rank 8: device_release
-	Warning at drivers/base/core.c:107
-	Reported 2 times last week, 6 incidents total
-	Seems to be a bug in the MTD physmap driver and the hgafb driver
-	More info: http://article.gmane.org/gmane.linux.kernel/618076
-	More info: http://article.gmane.org/gmane.linux.kernel/618076
-	
-Rank 9: mutex_lock
-	Null pointer dereference
-	Reported 2 times, of which one was a duplicate report
-	Seems to be related to running PPP over a bluetooth link
-	More info: http://www.kerneloops.org/guilty.php?version=2.6.24-rc6&guilty=mutex_lock&start=1574400&end=1574400
-	
-
-kerneloops.org news:
-* As of 2.6.24-rc6, oopses have a unique identifier which makes it possible to filter out duplicate
-   reports of (and replies to) the same oops. Unfortunately some reporters remove this line from
-   their reports to lkml.
+(Also, a bonus in the 00/12 posting would be a listing of all patch
+titles in the series and the total diffstat of the series, but nearly
+nobody does this.)
+-- 
+Stefan Richter
+-=====-=-=== ==-- ===-=
+http://arcgraph.de/sr/
