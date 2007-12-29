@@ -1,74 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbXL2LW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbXL2Lgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105AbXL2LW2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 06:22:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbXL2LWS
+	id S1753920AbXL2Lgm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 06:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbXL2Lgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 06:22:18 -0500
-Received: from [194.117.236.238] ([194.117.236.238]:34887 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751931AbXL2LWR (ORCPT
+	Sat, 29 Dec 2007 06:36:32 -0500
+Received: from mga10.intel.com ([192.55.52.92]:51707 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752102AbXL2Lgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 06:22:17 -0500
-Date: Sat, 29 Dec 2007 13:19:40 +0200
-From: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Richard Harman <richard@richardharman.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
-Message-ID: <20071229131940.31d82752@linux360.ro>
-In-Reply-To: <47760ED5.6060207@richardharman.com>
-References: <47754735.1050009@richardharman.com>
-	<20071229095242.1300e19c@linux360.ro>
-	<47760ED5.6060207@richardharman.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 29 Dec 2007 06:36:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.24,219,1196668800"; 
+   d="scan'208";a="261329001"
+Message-ID: <477630CF.5070609@linux.intel.com>
+Date: Sat, 29 Dec 2007 12:34:39 +0100
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       netdev@vger.kernel.org
+Subject: Top 9 kernel oopses/warnings for the week of December 29th, 2007
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Dec 2007 04:09:41 -0500
-Richard Harman <richard@richardharman.com> wrote:
+The http://www.kerneloops.org website collects kernel oops and
+warning reports from various mailing lists and bugzillas as well as
+with a client users can install to auto-submit oopses.
+Below is a top 10 list of the oopses collected in the last 7 days.
+(Reports prior to 2.6.23 have been omitted in collecting the top 10)
 
-> Right now, with your patch and the 'noirqdebug' option or disabling
-> nohz the system appears to be stable.  This laptop otherwise locks up
-> trying to configure apic/lapic, or locks up solid later with NO
-> oops/bug and nothing will bring it out of it (eg, sysrq has no
-> effect).  NMI watchdog was also inoperable, which I believe was due
-> to the apic/lapic being disabled.
-> 
-> With your patch, the lapic is used:
-> 
-> ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-> ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+It has been a quiet week due to the holidays, only 55 oops traces
+have been collected.
 
-The kernel should display these messages even without my patch.
- 
-> These kernel dmesg logs are hand-transcribed, and are from 2.6.22.5,
-> but this shows where the kernel would lock up good and solid:
-> 
-> http://www.richardharman.com/pavilion/2.6.22.5/dmesg.txt
+Rank 1: sysctl_head_finish
+	sysctl table check failed
+	Reported 7 times
+	Only reported for the proprietary madwifi driver
+	More info: http://www.kerneloops.org/search.php?search=sysctl_head_finish
+	
+Rank 2: __ieee80211_rx
+	Warning at net/mac80211/rx.c:1672
+	Reported 5 times
+	Only seen in 2.6.24-rc6 so far
+	Johannes has diagnosed this as a driver bug in the iwlwifi drivers
+	More info: http://www.kerneloops.org/search.php?search=__ieee80211_rx
+	
+Rank 3: rb_erase
+	Null pointer dereference
+	Reported 4 times
+	Only seen in 2.6.24-rc6 so far
+	(Note: the reported removed the oops end marker manually; may be duplicate reports)
+	More info: http://www.kerneloops.org/guilty.php?version=2.6.24-rc6&guilty=rb_erase&start=1574400&end=1574400
 
-I doubt it is my patch that makes your laptop work. C1E detection was
-added by the following commit:
+Rank 4: remove_proc_entry
+	Warning at fs/proc/generic.c:736
+	Reported 4 times for 2.6.24-rc4 and rc5 (Mandrake)
+	Seems to be a module unload issue
+	More info: http://www.kerneloops.org/search.php?search=remove_proc_entry
+	
+Rank 5: aes_encrypt
+	Invalid kernel pointer oops
+	Reported 2 times for 2.6.23.11
+	More info: http://www.kerneloops.org/search.php?search=aes_encrypt
+	
+Rank 6: cascade
+	BUG statement at kernel/timer.c:606
+	Reported 2 times for 2.6.23 (Gentoo)
+	More info: http://www.kerneloops.org/search.php?search=cascade
+	
+Rank 7: kref_put
+	Kernel paging request
+	Reported 2 times, only for 2.6.24-rc6-mm1
+	Diagnosed as a bug in the md-subsystem, patch available
+	More info: http://www.kerneloops.org/search.php?search=kref_put
+	More info: http://article.gmane.org/gmane.linux.kernel/618056
+	
+Rank 8: device_release
+	Warning at drivers/base/core.c:107
+	Reported 2 times last week, 6 incidents total
+	Seems to be a bug in the MTD physmap driver and the hgafb driver
+	More info: http://article.gmane.org/gmane.linux.kernel/618076
+	More info: http://article.gmane.org/gmane.linux.kernel/618076
+	
+Rank 9: mutex_lock
+	Null pointer dereference
+	Reported 2 times, of which one was a duplicate report
+	Seems to be related to running PPP over a bluetooth link
+	More info: http://www.kerneloops.org/guilty.php?version=2.6.24-rc6&guilty=mutex_lock&start=1574400&end=1574400
+	
 
-$ git-describe fb79d22e1d4b06385796cc0db0084a2e07beccee
-v2.6.23-2294-gfb79d22
-
-Try building a 2.6.24-rc6 without my patch and see if it still works
-(apply it again in reverse mode, for example). I guess it will work,
-because the kernel shouldn't use the LAPIC as a timer at all (except as
-a dummy one), with or without dynticks support.
-
-When I started investigating the "nohz is not working problem", I
-stumbled across a few threads on LKML where a few people had
-similar problems with their laptops and they where instructed to pass
-"nolapic" or something similar as a boot parameter to the kernel. I
-guess the problem disappeared after the commit I mentioned previously,
-since such reports weren't that recent. IIRC, that was on kernels
-previous to 2.6.24-*, where x86 and x86-64 weren't unified and there
-were no dynticks on the latter.
-
-To be more clear, my patch disables C1E instead of disabling the
-LAPIC, as these two don't agree with each other.
+kerneloops.org news:
+* As of 2.6.24-rc6, oopses have a unique identifier which makes it possible to filter out duplicate
+   reports of (and replies to) the same oops. Unfortunately some reporters remove this line from
+   their reports to lkml.
