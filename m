@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbXL2XET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbXL2XEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756686AbXL2XET (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 18:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbXL2XEI
+	id S1756967AbXL2XEb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 18:04:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbXL2XET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 18:04:08 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:40066 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752084AbXL2XEF (ORCPT
+	Sat, 29 Dec 2007 18:04:19 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:53932 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756609AbXL2XER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 18:04:05 -0500
-Date: Sun, 30 Dec 2007 00:02:17 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Valdis.Kletnieks@vt.edu
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, serue@us.ibm.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: TOMOYO Linux Security Goal
-Message-ID: <20071230000217.GA17828@ucw.cz>
-References: <200712252133.JFF05267.FOMFtOLJHSOVFQ@I-love.SAKURA.ne.jp> <20071226164230.GA14210@sergelap.austin.ibm.com> <200712272200.IIJ73936.OHOFFLMOQJVFtS@I-love.SAKURA.ne.jp> <20071227145431.GB5161@sergelap.austin.ibm.com> <200712282332.EGC57888.OFFQHJOLVSMtFO@I-love.SAKURA.ne.jp> <27904.1198862631@turing-police.cc.vt.edu>
+	Sat, 29 Dec 2007 18:04:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=C0taqKcArEqnGENFBb5wLRG3eMct32EC2JyMb33LEhbppw4WZsV2V7elyTrfYNr1VhHRc9Lxl3FahyPN8X6CZ2n5mFyGz+I3VOHQ8WZQw1uL+o5IJj7pLN/gTobnWFQI2WTbWJlYm8AJQahNxK2pV4mR2CZaFslCtuRkXNlf2t0=
+Message-ID: <e85b9d30712291504r2f4ef991w33f501ccf0d41c2b@mail.gmail.com>
+Date: Sun, 30 Dec 2007 00:04:17 +0100
+From: Matthew <jackdachef@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Fwd: laptop / computer hardlocks during execution of 32bit applications(binaries) on 64bit system (Gentoo)
+Cc: roland@redhat.com, "Ingo Molnar" <mingo@elte.hu>, tglx@linutronix.de
+In-Reply-To: <e85b9d30712291157v113f5e73yd830ae3c3429092d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <27904.1198862631@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <e85b9d30712291157v113f5e73yd830ae3c3429092d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2007-12-28 12:23:51, Valdis.Kletnieks@vt.edu wrote:
-> On Fri, 28 Dec 2007 23:32:09 +0900, Tetsuo Handa said:
-> 
-> > You can run your system with only policy collected by learning mode.
-> > Thus, you basically don't need manual intervention.
-> > But since there are randomly named files (i.e. temporary files),
-> > you pay a little time to modify policy.
-> > 
-> > The learning mode is to save time for permitting commonly accessed resources.
-> > Administrator reviews policy collected by learning mode. Thus the readability
-> > of policy is important so that administrator can understand what he/she is
-> > going to allow or reject.
-> 
-> Please make a *big* notation someplace that "learning mode" is quite likely to
-> *not* produce a totally correct policy.  In particular, it won't build rules for
-> infrequently used code paths (such as error handling) unless you find a way to
-> exercise those paths while in learning mode.
-> 
-> Particularly fun - when learning mode doesn't create an entry for the logfile
-> for I/O errors.  Then when one actually happens, you have no idea what it was...
+so I was wrong XD
 
-Yes... if you disallow access to /etc/nologin (or do something
-similary stupid) you can even introduce security hole...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+sorry,
+
+the error was found in the meantime:
+
+see: http://forums.gentoo.org/viewtopic-p-4667858.html#4667858
+
+Don't need to do more testing. The culprit is the unification of the
+x86 i387 code.
+
+The culprit is 57c3da2f5bb3fafedc31284117ae43bc593b65ab or
+f10c1cfd359660c01446807b6c2bc8ce3aee919a
+
+see http://forums.gentoo.org/viewtopic-p-4667906.html#4667906 and next post
+
+Greetings
+
+Mat
