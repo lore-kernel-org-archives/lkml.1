@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbXL2BwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbXL2Bzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754793AbXL2BwY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 20:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXL2BwO
+	id S1755168AbXL2Bzz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 20:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbXL2Bzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 20:52:14 -0500
-Received: from hs-out-0708.google.com ([64.233.178.246]:52446 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752917AbXL2BwO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 20:52:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HmI+tFgKCHHCPtZaz4V6vlbgiEa2WQp4xe2To5cW3tdRe/VVjPwTZdwx1D/r5RWyUvj34FiHnI/IwJCdktexWf2oe9C5faZrR6jswsswTaPq8yDGj0/zVO8cjpmWna9F7S10MyDx0H88D/UsNHIHggFf6nAWfssy5uFJa/vnemw=
-Message-ID: <a8e1da0712281752q68ec8a98kcc5f84928091a8d2@mail.gmail.com>
-Date: Sat, 29 Dec 2007 09:52:11 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
-In-Reply-To: <1198892544.6821.103.camel@twins>
+	Fri, 28 Dec 2007 20:55:48 -0500
+Received: from mail.suse.de ([195.135.220.2]:47921 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753007AbXL2Bzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 20:55:47 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH 05/10] x86_64: Use generic percpu
+Date: Sat, 29 Dec 2007 02:55:39 +0100
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       tglx@linutronix.de, mingo@redhat.com
+References: <20071228001046.854702000@sgi.com> <200712281354.52453.ak@suse.de> <47757311.5050503@sgi.com>
+In-Reply-To: <47757311.5050503@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20071229010157.GB2883@darkstar.te-china.tietoenator.com>
-	 <1198891742.6821.98.camel@twins>
-	 <a8e1da0712281736p6dcc3f05vdb3b8ed9618e0147@mail.gmail.com>
-	 <1198892544.6821.103.camel@twins>
+Message-Id: <200712290255.40233.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 29, 2007 9:42 AM, Peter Zijlstra <peterz@infradead.org> wrote:
->
-> On Sat, 2007-12-29 at 09:36 +0800, Dave Young wrote:
-> > On Dec 29, 2007 9:29 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > >
-> > >
-> > > I'm pretty sure you didn't boot that kernel with lockdep enabled.
-> > Yes, I will try rebuild with lockdep  and test.
->
-> I'll fail miserably :-)
->
-> >From your other mail:
-> > No,  I checked the config , lockdep is indeed enabled. But I will try
-> > to test with the lock debug options enabled in a while.
->
-> You need to actually boot the kernel to get effective reports from
-> lockdep, it'll build just fine.
->
-> > > Also, most, if not all, of your patches miss a patch description.
+On Friday 28 December 2007 23:05:05 Mike Travis wrote:
+> Andi Kleen wrote:
+> > On Friday 28 December 2007 01:10:51 travis@sgi.com wrote:
+> >> x86_64 provides an optimized way to determine the local per cpu area
+> >> offset through the pda and determines the base by accessing a remote
+> >> pda.
 > >
-> > Does the description really needed for it? IMHO, the subject is enough
-> > to descript the patches.
->
-> Preferably, the subject might convey what you are doing, but the full
-> description should at least add to that by telling _why_ you are doing
-> that.
+> > And? The rationale for this patch seems to be incomplete.
+> >
+> > As far as I can figure out you're replacing an optimized percpu
+> > implementation which a dumber generic one. Which needs
+> > at least some description why.
+> 
+> The specific intent for the next wave of changes coming are to reduce
+[...] That should be in the changelog of the patch.
 
-Hm, actually it's not so hard, but If I resend the 12 patches seems
-like spam to lkml :-).
+Anyways the difference between the x86 percpu.h and the generic one is
+that x86-64 uses a short cut through the PDA to get the current cpu
+offset for the current CPU case. The generic one goes through 
+smp_processor_id()->array reference instead. 
 
-Of cource, if you all don't mind and it is really needed, I will do that.
+I would request that this optimization is not being removed
+without suitable replacement in the same patchkit.
 
->
-> Also, I don't think your series is bisectable, ie. 1/12 changes
-> device::sem -> device::mutex, and 12/12 changes a user of it.
-
-Sorry, I don't use git tools now. Could you tell me how to fix it?
-thanks in advance.
-
-Regards
-dave
+-Andi
