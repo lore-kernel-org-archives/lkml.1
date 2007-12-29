@@ -1,286 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbXL2Q7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbXL2RFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756093AbXL2Q7c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 11:59:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbXL2Q7X
+	id S1756043AbXL2RFT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 12:05:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbXL2RFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 11:59:23 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:36500 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753896AbXL2Q7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 11:59:22 -0500
-From: Ville Syrjala <syrjala@sci.fi>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       David Brownell <david-b@pacbell.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ville Syrjala <syrjala@sci.fi>
-Subject: [PATCH] w1-gpio: Add GPIO w1 bus master driver (v3)
-Date: Sat, 29 Dec 2007 18:59:21 +0200
-Message-Id: <11989475611180-git-send-email-syrjala@sci.fi>
-X-Mailer: git-send-email 1.5.2.5
+	Sat, 29 Dec 2007 12:05:06 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:65303 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754240AbXL2RFF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Dec 2007 12:05:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=oYpYQDfboyjx3tlMoDPsLOrEe8tugCRROJUcq4VVHu4D8bmsmj1ob1OOGT7bAlPVgnbETUXp0HVnBnuLmMUJRYd7wX1QWd6cwnikA6AbNxcuvkdKmtkEhSvxasc4MCUXP1bAatzPj38Nx1otz5+YAfFgWZ/QD4FThBc1ZD7Dw6k=
+Date: Sat, 29 Dec 2007 18:06:28 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: WARNING: at kernel/lockdep.c:2658 check_flags()
+Message-ID: <20071229170554.GA21506@joi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a GPIO 1-wire bus master driver. The driver used the GPIO API to
-control the wire and the GPIO pin can be specified using platform data
-similar to i2c-gpio. The driver was tested with AT91SAM9260 + DS2401.
+Hi
+Today I've got this (while i was upgrading my gentoo box):
 
-Signed-off-by: Ville Syrjala <syrjala@sci.fi>
----
-Changes from version 2 to version 3:
-* Use platform_driver_probe() instead of platform_driver_register().
-* Remove useless address operators from function pointer assignments.
+WARNING: at kernel/lockdep.c:2658 check_flags()
+Pid: 21680, comm: conftest Not tainted 2.6.24-rc6 #63
 
- Documentation/w1/masters/00-INDEX |    2 +
- Documentation/w1/masters/w1-gpio  |   33 ++++++++++
- drivers/w1/masters/Kconfig        |   10 +++
- drivers/w1/masters/Makefile       |    1 +
- drivers/w1/masters/w1-gpio.c      |  124 +++++++++++++++++++++++++++++++++++++
- include/linux/w1-gpio.h           |   23 +++++++
- 6 files changed, 193 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/w1/masters/w1-gpio
- create mode 100644 drivers/w1/masters/w1-gpio.c
- create mode 100644 include/linux/w1-gpio.h
+Call Trace:
+ [<ffffffff80253457>] check_flags+0x1c7/0x1d0
+ [<ffffffff80257217>] lock_acquire+0x57/0xc0
+ [<ffffffff8024d5c0>] __atomic_notifier_call_chain+0x60/0xd0
+ [<ffffffff8024d641>] atomic_notifier_call_chain+0x11/0x20
+ [<ffffffff8024d67e>] notify_die+0x2e/0x30
+ [<ffffffff8020da0a>] do_divide_error+0x5a/0xa0
+ [<ffffffff80522bdd>] trace_hardirqs_on_thunk+0x35/0x3a
+ [<ffffffff80255b89>] trace_hardirqs_on+0xd9/0x180
+ [<ffffffff80522bdd>] trace_hardirqs_on_thunk+0x35/0x3a
+ [<ffffffff80523c2d>] error_exit+0x0/0xa9
 
-diff --git a/Documentation/w1/masters/00-INDEX b/Documentation/w1/masters/00-INDEX
-index 752613c..7b0ceaa 100644
---- a/Documentation/w1/masters/00-INDEX
-+++ b/Documentation/w1/masters/00-INDEX
-@@ -4,3 +4,5 @@ ds2482
- 	- The Maxim/Dallas Semiconductor DS2482 provides 1-wire busses.
- ds2490
- 	- The Maxim/Dallas Semiconductor DS2490 builds USB <-> W1 bridges.
-+w1-gpio
-+	- GPIO 1-wire bus master driver.
-diff --git a/Documentation/w1/masters/w1-gpio b/Documentation/w1/masters/w1-gpio
-new file mode 100644
-index 0000000..af5d3b4
---- /dev/null
-+++ b/Documentation/w1/masters/w1-gpio
-@@ -0,0 +1,33 @@
-+Kernel driver w1-gpio
-+=====================
-+
-+Author: Ville Syrjala <syrjala@sci.fi>
-+
-+
-+Description
-+-----------
-+
-+GPIO 1-wire bus master driver. The driver uses the GPIO API to control the
-+wire and the GPIO pin can be specified using platform data.
-+
-+
-+Example (mach-at91)
-+-------------------
-+
-+#include <linux/w1-gpio.h>
-+
-+static struct w1_gpio_platform_data foo_w1_gpio_pdata = {
-+	.pin		= AT91_PIN_PB20,
-+	.is_open_drain	= 1,
-+};
-+
-+static struct platform_device foo_w1_device = {
-+	.name			= "w1-gpio",
-+	.id			= -1,
-+	.dev.platform_data	= &foo_w1_gpio_pdata,
-+};
-+
-+...
-+	at91_set_GPIO_periph(foo_w1_gpio_pdata.pin, 1);
-+	at91_set_multi_drive(foo_w1_gpio_pdata.pin, 1);
-+	platform_device_register(&foo_w1_device);
-diff --git a/drivers/w1/masters/Kconfig b/drivers/w1/masters/Kconfig
-index 8236d44..c449309 100644
---- a/drivers/w1/masters/Kconfig
-+++ b/drivers/w1/masters/Kconfig
-@@ -42,5 +42,15 @@ config W1_MASTER_DS1WM
- 	  in HP iPAQ devices like h5xxx, h2200, and ASIC3-based like
- 	  hx4700.
- 
-+config W1_MASTER_GPIO
-+	tristate "GPIO 1-wire busmaster"
-+	depends on GENERIC_GPIO
-+	help
-+	  Say Y here if you want to communicate with your 1-wire devices using
-+	  GPIO pins. This driver uses the GPIO API to control the wire.
-+
-+	  This support is also available as a module.  If so, the module
-+	  will be called w1-gpio.ko.
-+
- endmenu
- 
-diff --git a/drivers/w1/masters/Makefile b/drivers/w1/masters/Makefile
-index 11551b3..1420b5b 100644
---- a/drivers/w1/masters/Makefile
-+++ b/drivers/w1/masters/Makefile
-@@ -6,3 +6,4 @@ obj-$(CONFIG_W1_MASTER_MATROX)		+= matrox_w1.o
- obj-$(CONFIG_W1_MASTER_DS2490)		+= ds2490.o
- obj-$(CONFIG_W1_MASTER_DS2482)		+= ds2482.o
- obj-$(CONFIG_W1_MASTER_DS1WM)		+= ds1wm.o
-+obj-$(CONFIG_W1_MASTER_GPIO)		+= w1-gpio.o
-diff --git a/drivers/w1/masters/w1-gpio.c b/drivers/w1/masters/w1-gpio.c
-new file mode 100644
-index 0000000..9e1138a
---- /dev/null
-+++ b/drivers/w1/masters/w1-gpio.c
-@@ -0,0 +1,124 @@
-+/*
-+ * w1-gpio - GPIO w1 bus master driver
-+ *
-+ * Copyright (C) 2007 Ville Syrjala <syrjala@sci.fi>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/w1-gpio.h>
-+
-+#include "../w1.h"
-+#include "../w1_int.h"
-+
-+#include <asm/gpio.h>
-+
-+static void w1_gpio_write_bit_dir(void *data, u8 bit)
-+{
-+	struct w1_gpio_platform_data *pdata = data;
-+
-+	if (bit)
-+		gpio_direction_input(pdata->pin);
-+	else
-+		gpio_direction_output(pdata->pin, 0);
-+}
-+
-+static void w1_gpio_write_bit_val(void *data, u8 bit)
-+{
-+	struct w1_gpio_platform_data *pdata = data;
-+
-+	gpio_set_value(pdata->pin, bit);
-+}
-+
-+static u8 w1_gpio_read_bit(void *data)
-+{
-+	struct w1_gpio_platform_data *pdata = data;
-+
-+	return gpio_get_value(pdata->pin);
-+}
-+
-+static int __init w1_gpio_probe(struct platform_device *pdev)
-+{
-+	struct w1_bus_master *master;
-+	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
-+	int err;
-+
-+	if (!pdata)
-+		return -ENXIO;
-+
-+	master = kzalloc(sizeof(struct w1_bus_master), GFP_KERNEL);
-+	if (!master)
-+		return -ENOMEM;
-+
-+	err = gpio_request(pdata->pin, "w1");
-+	if (err)
-+		goto free_master;
-+
-+	master->data = pdata;
-+	master->read_bit = w1_gpio_read_bit;
-+
-+	if (pdata->is_open_drain) {
-+		gpio_direction_output(pdata->pin, 1);
-+		master->write_bit = w1_gpio_write_bit_val;
-+	} else {
-+		gpio_direction_input(pdata->pin);
-+		master->write_bit = w1_gpio_write_bit_dir;
-+	}
-+
-+	err = w1_add_master_device(master);
-+	if (err)
-+		goto free_gpio;
-+
-+	platform_set_drvdata(pdev, master);
-+
-+	return 0;
-+
-+ free_gpio:
-+	gpio_free(pdata->pin);
-+ free_master:
-+	kfree(master);
-+
-+	return err;
-+}
-+
-+static int __exit w1_gpio_remove(struct platform_device *pdev)
-+{
-+	struct w1_bus_master *master = platform_get_drvdata(pdev);
-+	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
-+
-+	w1_remove_master_device(master);
-+	gpio_free(pdata->pin);
-+	kfree(master);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver w1_gpio_driver = {
-+	.driver = {
-+		.name	= "w1-gpio",
-+		.owner	= THIS_MODULE,
-+	},
-+	.remove	= __exit_p(w1_gpio_remove),
-+};
-+
-+static int __init w1_gpio_init(void)
-+{
-+	return platform_driver_probe(&w1_gpio_driver, w1_gpio_probe);
-+}
-+
-+static void __exit w1_gpio_exit(void)
-+{
-+	platform_driver_unregister(&w1_gpio_driver);
-+}
-+
-+module_init(w1_gpio_init);
-+module_exit(w1_gpio_exit);
-+
-+MODULE_DESCRIPTION("GPIO w1 bus master driver");
-+MODULE_AUTHOR("Ville Syrjala <syrjala@sci.fi>");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/w1-gpio.h b/include/linux/w1-gpio.h
-new file mode 100644
-index 0000000..9797fec
---- /dev/null
-+++ b/include/linux/w1-gpio.h
-@@ -0,0 +1,23 @@
-+/*
-+ * w1-gpio interface to platform code
-+ *
-+ * Copyright (C) 2007 Ville Syrjala <syrjala@sci.fi>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ */
-+#ifndef _LINUX_W1_GPIO_H
-+#define _LINUX_W1_GPIO_H
-+
-+/**
-+ * struct w1_gpio_platform_data - Platform-dependent data for w1-gpio
-+ * @pin: GPIO pin to use
-+ * @is_open_drain: GPIO pin is configured as open drain
-+ */
-+struct w1_gpio_platform_data {
-+	unsigned int pin;
-+	unsigned int is_open_drain:1;
-+};
-+
-+#endif /* _LINUX_W1_GPIO_H */
--- 
-1.5.2.5
+possible reason: unannotated irqs-off.
+irq event stamp: 4693
+hardirqs last  enabled at (4693): [<ffffffff80522bdd>] trace_hardirqs_on_thunk+0x35/0x3a
+hardirqs last disabled at (4692): [<ffffffff80522c17>] trace_hardirqs_off_thunk+0x35/0x37
+softirqs last  enabled at (3546): [<ffffffff80238343>] __do_softirq+0xb3/0xd0
+softirqs last disabled at (3521): [<ffffffff8020c97c>] call_softirq+0x1c/0x30
 
+This is 11ee29577cc1637f94d903a6ea322cf1ed8ce1b3:
+Merge git://git.kernel.org/pub/scm/linux/kernel/git/bart/ide-2.6
+from 25 Dec + some patches for udf (but I didn't mount it) and simple
+patch for slab: http://lkml.org/lkml/2007/12/27/110
+
+Marcin
