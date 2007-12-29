@@ -1,86 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbXL2GDC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbXL2GOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756062AbXL2GDC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 01:03:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbXL2GCw
+	id S1756253AbXL2GOF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 01:14:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbXL2GNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 01:02:52 -0500
-Received: from twinlark.arctic.org ([208.69.40.136]:46790 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751172AbXL2GCv (ORCPT
+	Sat, 29 Dec 2007 01:13:54 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:29702 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751534AbXL2GNx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 01:02:51 -0500
-Date: Fri, 28 Dec 2007 22:02:51 -0800 (PST)
-From: dean gaudet <dean@arctic.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: David Newall <david@davidnewall.com>, Mark Lord <lkml@rtr.ca>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: RFC: permit link(2)  to work across --bind mounts ?
-In-Reply-To: <Pine.LNX.4.64.0712290429350.29013@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.DEB.0.999999.0712282152190.5207@twinlark.arctic.org>
-References: <47684DBD.6030502@rtr.ca> <20071218230016.GF8181@ftp.linux.org.uk> <20071218231404.GG8181@ftp.linux.org.uk> <47689608.3030503@rtr.ca> <4768973C.8020909@davidnewall.com> <alpine.DEB.0.999999.0712281835240.5207@twinlark.arctic.org>
- <Pine.LNX.4.64.0712290429350.29013@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 0.999999 (DEB 847 2007-12-06)
+	Sat, 29 Dec 2007 01:13:53 -0500
+X-IronPort-AV: E=Sophos;i="4.24,219,1196658000"; 
+   d="scan'208";a="59158189"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [2.6.24 patch] restore blackfin HARDWARE_PM support
+Date: Sat, 29 Dec 2007 01:14:46 -0500
+User-Agent: KMail/1.9.5
+Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, bryan.wu@analog.com,
+       linux-kernel@vger.kernel.org
+References: <20071228185643.GB4738@stusta.de> <20071228192320.GI6780@does.not.exist> <20071228192855.GA23157@Krystal>
+In-Reply-To: <20071228192855.GA23157@Krystal>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200712290114.46694.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 29 Dec 2007 06:13:51.0833 (UTC) FILETIME=[FBA39490:01C849E1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Dec 2007, Jan Engelhardt wrote:
-
+On Fri 28 Dec 2007 14:28, Mathieu Desnoyers pondered:
+> * Adrian Bunk (bunk@kernel.org) wrote:
+> > On Fri, Dec 28, 2007 at 02:14:04PM -0500, Mathieu Desnoyers wrote:
+> > > * Adrian Bunk (adrian.bunk@movial.fi) wrote:
+> > > > This patch restores the blackfin Hardware Performance Monitor Profiling 
+> > > > support that was killed by
+> > > > commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
+> > > > 
+> > > > Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
+> > > > 
+> > > 
+> > > Yep, this one too must be put back, but kernel/Kconfig.instrumentation
+> > > seems like the wrong spot for a blackfin-specific config option (and
+> > > this will break the instrumentation menu removal patches in -mm).
+> > > 
+> > > Can we put this in arch/blackfin/Kconfig instead ?
+> > 
+> > No, this is a user visible option that belongs into the same menu as
+> > "Profling support".
+> > 
 > 
-> On Dec 28 2007 18:53, dean gaudet wrote:
-> >p.s. in retrospect i probably could have arranged it more like this:
-> >
-> >  mount /dev/md1 $tmpmntpoint
-> >  mount --bind $tmpmntpoint/var /var
-> >  mount --bind $tmpmntpoint/home /home
-> >  umount $tmpmntpoint
-> >
-> >except i can't easily specify that in fstab... and neither of the bind 
-> >mounts would show up in df(1).  seems like it wouldn't be hard to support 
-> >this type of subtree mount though.  mount(8) could support a single 
-> >subtree mount using this technique but the second subtree mount attempt 
-> >would fail because you can't temporarily remount the device because the 
-> >mount point is gone.
+> Actually, I wonder why these options exist at all rather than being on
+> by default when profiling is enabled. There is no such thing as
+> "activating the performance monitor profiling" on other architectures.
+> What is so special about blackfin that makes it need it ?
+
+This is probably more historical, and you are correct - it should just be part of profiling.
+
+
+> > > > ---
+> > > > 
+> > > >  kernel/Kconfig.instrumentation |    9 +++++++++
+> > > >  1 file changed, 9 insertions(+)
+> > > > 
+> > > > 942996f33f81726c5edb012d61ecdad70c55884d 
+> > > > diff --git a/kernel/Kconfig.instrumentation b/kernel/Kconfig.instrumentation
+> > > > index 97c76ca..e023671 100644
+> > > > --- a/kernel/Kconfig.instrumentation
+> > > > +++ b/kernel/Kconfig.instrumentation
+> > > > @@ -44,2 +44,11 @@ config OPROFILE_MPCORE
+> > > >  
+> > > > +config HARDWARE_PM
+> > > > +	tristate "Hardware Performance Monitor Profiling"
+> > > > +	depends on BLACKFIN && PROFILING
+> > > > +	help
+> > > > +	  take use of hardware performance monitor to profiling the kernel
+> > > > +	  and application.
+> > > > +
+> > > > +	  If unsure, say N.
+> > > > +
+> > > >  config KPROBES
+> > > > 
+> > > 
+> > > Mathieu Desnoyers
+> > 
+> > cu
+> > Adrian
+> > 
+> > -- 
+> > 
+> >        "Is there not promise of rain?" Ling Tan asked suddenly out
+> >         of the darkness. There had been need of rain for many days.
+> >        "Only a promise," Lao Er said.
+> >                                        Pearl S. Buck - Dragon Seed
+> > 
 > 
-> Why is it gone?
-> 
-> mount /dev/md1 /tmpmnt
-> mount --bind /tmpmnt/var /var
-> mount --bind /tmpmnt/home /home
-> 
-> Is perfectly fine, and /tmpmnt is still alive and mounted. Additionally,
-> you can
-> 
-> umount /tmpmnt
-> 
-> now, which leaves only /var and /home.
-
-i was trying to come up with a userland-only change in mount(8) which
-would behave like so:
-
-# mount --subtree var /dev/md1 /var
-  internally mount does:
-  - mount /dev/md1 /tmpmnt
-  - mount --bind /tmpmnt/var /var
-  - umount /tmpmnt
-
-# mount --subtree home /dev/md1 /home
-  internally mount does:
-  - mount /dev/md1 /tmpmnt
-  - mount --bind /tmpmnt/home /home
-  - umount /tmpmnt
-
-but that second mount would fail because /dev/md1 is already mounted
-(but the mount point is gone)...
-
-it certainly works if i issue the commands individually as i described
--- but a change within mount(8) would have the benefit of working with
-/etc/fstab too.
-
--dean
