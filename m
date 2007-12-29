@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbXL2EGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbXL2EHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756740AbXL2EGt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 23:06:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbXL2EEp
+	id S1756608AbXL2EHS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 23:07:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbXL2EEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 23:04:45 -0500
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:21938 "HELO
+	Fri, 28 Dec 2007 23:04:46 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:21941 "HELO
 	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755108AbXL2EEn (ORCPT
+	by vger.kernel.org with SMTP id S1755236AbXL2EEn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 28 Dec 2007 23:04:43 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=c8AfDosIjeSVbqYV8Ipom1tQQt3N52zknpM/8D/yGi5258IsuQomVWpgO7s/xJYWHqSNVWoBlGBDT6uyQLiqt5RqTWyrRmjcW4hYs6O3AAcOLn3TFOpDti+7/nxh8YFo8px2oK+nlr6vRIVs4YAXdDGlbxZvH4V42fBqHN3aEYk=  ;
-X-YMail-OSG: fnNiJpkVM1lnmFzUIFiw2.6pa66DMbnguN.zbDAGV7TE6HiDlg1BqQUem1iYM2TBG79S3LNuwQ--
+  b=y/SXeL7+fBur34WEeHjNlR1jo0wtrFePT+FA0ptDoSMG3soI/NDkDKIACgZUvpLBMcu8SBfI6Khs3S8Sldjorah8zffV57pXa0KKJKlo8UMHxOOMhB2bBg18EwXrvlX7Zws77TnfMYVJDcLFcB5u3du3HE6h8ST3arjncevYQzI=  ;
+X-YMail-OSG: SCd4VF0VM1m3iKaayC_LzZHV8auxftiEAWTeWFdRNeNAQeHGePQz.g6Ph6iYHiGRlADjhqM2Fg--
 From: David Brownell <david-b@pacbell.net>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.24-rc6-mm 6/9] gpiolib: pcf857x i2c gpio expander support
-Date: Fri, 28 Dec 2007 19:58:06 -0800
+Subject: [patch 2.6.24-rc6-mm 7/9] gpiolib: mcp23s08 spi gpio expander support
+Date: Fri, 28 Dec 2007 19:58:15 -0800
 User-Agent: KMail/1.9.6
-Cc: Jean Delvare <khali@linux-fr.org>
+Cc: spi-devel-general@lists.sourceforge.net
 References: <200712281927.32575.david-b@pacbell.net>
 In-Reply-To: <200712281927.32575.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200712281958.07152.david-b@pacbell.net>
+Message-Id: <200712281958.16131.david-b@pacbell.net>
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -36,452 +36,424 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Brownell <dbrownell@users.sourceforge.net>
 
-This is a new-style I2C driver for most common 8 and 16 bit I2C based
-"quasi-bidirectional" GPIO expanders:  pcf8574 or pcf8575, and several
-compatible models (mostly faster, supporting I2C at up to 1 MHz).
-
-The driver exposes the GPIO signals using the platform-neutral GPIO
-programming interface, so they are easily accessed by other kernel code.
-The lack of such a flexible kernel API has been a big factor in the
-proliferation of board-specific drivers for these chips... stuff that
-rarely makes it upstream since it's so ugly.  This driver will let such
-boards use standard calls.
-
-Since it's a new-style driver, these devices must be configured as
-part of board-specific init.  That eliminates the need for error-prone
-manual configuration of module parameters, and makes compatibility with
-legacy drivers (pcf8574.c, pc8575.c) for these chips easier (there's
-a clear either/or disjunction).
+Basic driver for 8-bit SPI based MCP23S08 GPIO expander, without support for
+IRQs or the shared chipselect mechanism.
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Acked-by: Jean Delvare <khali@linux-fr.org>
 ---
- drivers/gpio/Kconfig        |   23 +++
- drivers/gpio/Makefile       |    2 
- drivers/gpio/pcf857x.c      |  330 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/i2c/pcf857x.h |   45 ++++++
- 4 files changed, 400 insertions(+)
+ drivers/gpio/Kconfig         |    7 
+ drivers/gpio/Makefile        |    1 
+ drivers/gpio/mcp23s08.c      |  357 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/spi/mcp23s08.h |   24 ++
+ 4 files changed, 389 insertions(+)
 
 --- at91.orig/drivers/gpio/Kconfig
 +++ at91/drivers/gpio/Kconfig
-@@ -27,6 +27,29 @@ config DEBUG_GPIO
+@@ -52,4 +52,11 @@ config GPIO_PCF857X
  
- comment "I2C GPIO expanders:"
- 
-+config GPIO_PCF857X
-+	tristate "PCF857x, PCA857x, and PCA967x I2C GPIO expanders"
-+	depends on I2C
-+	help
-+	  Say yes here to provide access to most "quasi-bidirectional" I2C
-+	  GPIO expanders used for additional digital outputs or inputs.
-+	  Most of these parts are from NXP, though TI is a second source for
-+	  some of them.  Compatible models include:
-+
-+	  8 bits:   pcf8574, pcf8574a, pca8574, pca8574a,
-+	            pca9670, pca9672, pca9674, pca9674a
-+
-+	  16 bits:  pcf8575, pcf8575c, pca8575,
-+	            pca9671, pca9673, pca9675
-+
-+	  Your board setup code will need to declare the expanders in
-+	  use, and assign numbers to the GPIOs they expose.  Those GPIOs
-+	  can then be used from drivers and other kernel code, just like
-+	  other GPIOs, but only accessible from task contexts.
-+
-+	  This driver provides an in-kernel interface to those GPIOs using
-+	  platform-neutral GPIO calls.
-+
  comment "SPI GPIO expanders:"
  
++config GPIO_MCP23S08
++	tristate "Microchip MCP23S08 I/O expander"
++	depends on SPI_MASTER
++	help
++	  SPI driver for Microchip MCP23S08 I/O expander.  This provides
++	  a GPIO interface supporting inputs and outputs.
++
  endmenu
 --- at91.orig/drivers/gpio/Makefile
 +++ at91/drivers/gpio/Makefile
-@@ -1,5 +1,7 @@
+@@ -1,5 +1,6 @@
  # gpio support: dedicated expander chips, etc
  
-+obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
-+
++obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
+ obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+ 
  ifeq ($(CONFIG_DEBUG_GPIO),y)
- EXTRA_CFLAGS += -DDEBUG
- endif
 --- /dev/null
-+++ at91/drivers/gpio/pcf857x.c
-@@ -0,0 +1,330 @@
++++ at91/drivers/gpio/mcp23s08.c
+@@ -0,0 +1,357 @@
 +/*
-+ * pcf857x - driver for pcf857x, pca857x, and pca967x I2C GPIO expanders
-+ *
-+ * Copyright (C) 2007 David Brownell
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ * mcp23s08.c - SPI gpio expander driver
 + */
 +
 +#include <linux/kernel.h>
-+#include <linux/slab.h>
-+#include <linux/i2c.h>
-+#include <linux/i2c/pcf857x.h>
++#include <linux/device.h>
++#include <linux/workqueue.h>
++#include <linux/mutex.h>
++
++#include <linux/spi/spi.h>
++#include <linux/spi/mcp23s08.h>
 +
 +#include <asm/gpio.h>
 +
 +
-+/*
-+ * The pcf857x, pca857x, and pca967x chips only expose one read and one
-+ * write register.  Writing a "one" bit (to match the reset state) lets
-+ * that pin be used as an input; it's not an open-drain model, but acts
-+ * a bit like one.  This is described as "quasi-bidirectional"; read the
-+ * chip documentation for details.
++/* Registers are all 8 bits wide.
 + *
-+ * Many other I2C GPIO expander chips (like the pca953x models) have
-+ * more complex register models and more conventional circuitry using
-+ * push/pull drivers.  They often use the same 0x20..0x27 addresses as
-+ * pcf857x parts, making the "legacy" I2C driver model problematic.
++ * The mcp23s17 has twice as many bits, and can be configured to work
++ * with either 16 bit registers or with two adjacent 8 bit banks.
++ *
++ * Also, there are I2C versions of both chips.
 + */
-+struct pcf857x {
++#define MCP_IODIR	0x00		/* init/reset:  all ones */
++#define MCP_IPOL	0x01
++#define MCP_GPINTEN	0x02
++#define MCP_DEFVAL	0x03
++#define MCP_INTCON	0x04
++#define MCP_IOCON	0x05
++#	define IOCON_SEQOP	(1 << 5)
++#	define IOCON_HAEN	(1 << 3)
++#	define IOCON_ODR	(1 << 2)
++#	define IOCON_INTPOL	(1 << 1)
++#define MCP_GPPU	0x06
++#define MCP_INTF	0x07
++#define MCP_INTCAP	0x08
++#define MCP_GPIO	0x09
++#define MCP_OLAT	0x0a
++
++struct mcp23s08 {
++	struct spi_device	*spi;
++	u8			addr;
++
++	/* lock protects the cached values */
++	struct mutex		lock;
++	u8			cache[11];
++
 +	struct gpio_chip	chip;
-+	struct i2c_client	*client;
-+	unsigned		out;		/* software latch */
++
++	struct work_struct	work;
 +};
 +
-+/*-------------------------------------------------------------------------*/
-+
-+/* Talk to 8-bit I/O expander */
-+
-+static int pcf857x_input8(struct gpio_chip *chip, unsigned offset)
++static int mcp23s08_read(struct mcp23s08 *mcp, unsigned reg)
 +{
-+	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
++	u8	tx[2], rx[1];
++	int	status;
 +
-+	gpio->out |= (1 << offset);
-+	return i2c_smbus_write_byte(gpio->client, gpio->out);
++	tx[0] = mcp->addr | 0x01;
++	tx[1] = reg;
++	status = spi_write_then_read(mcp->spi, tx, sizeof tx, rx, sizeof rx);
++	return (status < 0) ? status : rx[0];
 +}
 +
-+static int pcf857x_get8(struct gpio_chip *chip, unsigned offset)
++static int mcp23s08_write(struct mcp23s08 *mcp, unsigned reg, u8 val)
 +{
-+	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
-+	s32		value;
++	u8	tx[3];
 +
-+	value = i2c_smbus_read_byte(gpio->client);
-+	return (value < 0) ? 0 : (value & (1 << offset));
++	tx[0] = mcp->addr;
++	tx[1] = reg;
++	tx[2] = val;
++	return spi_write_then_read(mcp->spi, tx, sizeof tx, NULL, 0);
 +}
 +
-+static int pcf857x_output8(struct gpio_chip *chip, unsigned offset, int value)
++static int
++mcp23s08_read_regs(struct mcp23s08 *mcp, unsigned reg, u8 *vals, unsigned n)
 +{
-+	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
-+	unsigned	bit = 1 << offset;
++	u8	tx[2];
 +
-+	if (value)
-+		gpio->out |= bit;
-+	else
-+		gpio->out &= ~bit;
-+	return i2c_smbus_write_byte(gpio->client, gpio->out);
++	if ((n + reg) > sizeof mcp->cache)
++		return -EINVAL;
++	tx[0] = mcp->addr | 0x01;
++	tx[1] = reg;
++	return spi_write_then_read(mcp->spi, tx, sizeof tx, vals, n);
 +}
 +
-+static void pcf857x_set8(struct gpio_chip *chip, unsigned offset, int value)
++/*----------------------------------------------------------------------*/
++
++static int mcp23s08_direction_input(struct gpio_chip *chip, unsigned offset)
 +{
-+	pcf857x_output8(chip, offset, value);
-+}
-+
-+/*-------------------------------------------------------------------------*/
-+
-+/* Talk to 16-bit I/O expander */
-+
-+static int i2c_write_le16(struct i2c_client *client, u16 word)
-+{
-+	u8 buf[2] = { word & 0xff, word >> 8, };
++	struct mcp23s08	*mcp = container_of(chip, struct mcp23s08, chip);
 +	int status;
 +
-+	status = i2c_master_send(client, buf, 2);
-+	return (status < 0) ? status : 0;
++	mutex_lock(&mcp->lock);
++	mcp->cache[MCP_IODIR] |= (1 << offset);
++	status = mcp23s08_write(mcp, MCP_IODIR, mcp->cache[MCP_IODIR]);
++	mutex_unlock(&mcp->lock);
++	return status;
 +}
 +
-+static int i2c_read_le16(struct i2c_client *client)
++static int mcp23s08_get(struct gpio_chip *chip, unsigned offset)
 +{
-+	u8 buf[2];
++	struct mcp23s08	*mcp = container_of(chip, struct mcp23s08, chip);
 +	int status;
 +
-+	status = i2c_master_recv(client, buf, 2);
++	mutex_lock(&mcp->lock);
++
++	/* REVISIT reading this clears any IRQ ... */
++	status = mcp23s08_read(mcp, MCP_GPIO);
 +	if (status < 0)
-+		return status;
-+	return (buf[1] << 8) | buf[0];
++		status = 0;
++	else {
++		mcp->cache[MCP_GPIO] = status;
++		status = !!(status & (1 << offset));
++	}
++	mutex_unlock(&mcp->lock);
++	return status;
 +}
 +
-+static int pcf857x_input16(struct gpio_chip *chip, unsigned offset)
++static int __mcp23s08_set(struct mcp23s08 *mcp, unsigned mask, int value)
 +{
-+	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
-+
-+	gpio->out |= (1 << offset);
-+	return i2c_write_le16(gpio->client, gpio->out);
-+}
-+
-+static int pcf857x_get16(struct gpio_chip *chip, unsigned offset)
-+{
-+	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
-+	int		value;
-+
-+	value = i2c_read_le16(gpio->client);
-+	return (value < 0) ? 0 : (value & (1 << offset));
-+}
-+
-+static int pcf857x_output16(struct gpio_chip *chip, unsigned offset, int value)
-+{
-+	struct pcf857x	*gpio = container_of(chip, struct pcf857x, chip);
-+	unsigned	bit = 1 << offset;
++	u8 olat = mcp->cache[MCP_OLAT];
 +
 +	if (value)
-+		gpio->out |= bit;
++		olat |= mask;
 +	else
-+		gpio->out &= ~bit;
-+	return i2c_write_le16(gpio->client, gpio->out);
++		olat &= ~mask;
++	mcp->cache[MCP_OLAT] = olat;
++	return mcp23s08_write(mcp, MCP_OLAT, olat);
 +}
 +
-+static void pcf857x_set16(struct gpio_chip *chip, unsigned offset, int value)
++static void mcp23s08_set(struct gpio_chip *chip, unsigned offset, int value)
 +{
-+	pcf857x_output16(chip, offset, value);
++	struct mcp23s08	*mcp = container_of(chip, struct mcp23s08, chip);
++	u8 mask = 1 << offset;
++
++	mutex_lock(&mcp->lock);
++	__mcp23s08_set(mcp, mask, value);
++	mutex_unlock(&mcp->lock);
 +}
 +
-+/*-------------------------------------------------------------------------*/
-+
-+static int pcf857x_probe(struct i2c_client *client)
++static int
++mcp23s08_direction_output(struct gpio_chip *chip, unsigned offset, int value)
 +{
-+	struct pcf857x_platform_data	*pdata;
-+	struct pcf857x			*gpio;
++	struct mcp23s08	*mcp = container_of(chip, struct mcp23s08, chip);
++	u8 mask = 1 << offset;
++	int status;
++
++	mutex_lock(&mcp->lock);
++	status = __mcp23s08_set(mcp, mask, value);
++	if (status == 0) {
++		mcp->cache[MCP_IODIR] &= ~mask;
++		status = mcp23s08_write(mcp, MCP_IODIR, mcp->cache[MCP_IODIR]);
++	}
++	mutex_unlock(&mcp->lock);
++	return status;
++}
++
++/*----------------------------------------------------------------------*/
++
++#ifdef CONFIG_DEBUG_FS
++
++#include <linux/seq_file.h>
++
++/*
++ * This shows more info than the generic gpio dump code:
++ * pullups, deglitching, open drain drive.
++ */
++static void mcp23s08_dbg_show(struct seq_file *s, struct gpio_chip *chip)
++{
++	struct mcp23s08	*mcp;
++	char		bank;
++	unsigned	t;
++	unsigned	mask;
++
++	mcp = container_of(chip, struct mcp23s08, chip);
++
++	/* NOTE: we only handle one bank for now ... */
++	bank = '0' + ((mcp->addr >> 1) & 0x3);
++
++	mutex_lock(&mcp->lock);
++	t = mcp23s08_read_regs(mcp, 0, mcp->cache, sizeof mcp->cache);
++	if (t < 0) {
++		seq_printf(s, " I/O ERROR %d\n", t);
++		goto done;
++	}
++
++	for (t = 0, mask = 1; t < 8; t++, mask <<= 1) {
++		const char	*label;
++
++		label = gpiochip_is_requested(chip, t);
++		if (!label)
++			continue;
++
++		seq_printf(s, " gpio-%-3d P%c.%d (%-12s) %s %s %s",
++			chip->base + t, bank, t, label,
++			(mcp->cache[MCP_IODIR] & mask) ? "in " : "out",
++			(mcp->cache[MCP_GPIO] & mask) ? "hi" : "lo",
++			(mcp->cache[MCP_GPPU] & mask) ? "  " : "up");
++		/* NOTE:  ignoring the irq-related registers */
++		seq_printf(s, "\n");
++	}
++done:
++	mutex_unlock(&mcp->lock);
++}
++
++#else
++#define mcp23s08_dbg_show	NULL
++#endif
++
++/*----------------------------------------------------------------------*/
++
++static int mcp23s08_probe(struct spi_device *spi)
++{
++	struct mcp23s08			*mcp;
++	struct mcp23s08_platform_data	*pdata;
 +	int				status;
++	int				do_update = 0;
 +
-+	pdata = client->dev.platform_data;
-+	if (!pdata)
++	pdata = spi->dev.platform_data;
++	if (!pdata || pdata->slave > 3 || !pdata->base)
 +		return -ENODEV;
 +
-+	/* Allocate, initialize, and register this gpio_chip. */
-+	gpio = kzalloc(sizeof *gpio, GFP_KERNEL);
-+	if (!gpio)
++	mcp = kzalloc(sizeof *mcp, GFP_KERNEL);
++	if (!mcp)
 +		return -ENOMEM;
 +
-+	gpio->chip.base = pdata->gpio_base;
-+	gpio->chip.can_sleep = 1;
++	mutex_init(&mcp->lock);
 +
-+	/* NOTE:  the OnSemi jlc1562b is also largely compatible with
-+	 * these parts, notably for output.  It has a low-resolution
-+	 * DAC instead of pin change IRQs; and its inputs can be the
-+	 * result of comparators.
-+	 */
++	mcp->spi = spi;
++	mcp->addr = 0x40 | (pdata->slave << 1);
 +
-+	/* 8574 addresses are 0x20..0x27; 8574a uses 0x38..0x3f;
-+	 * 9670, 9672, 9764, and 9764a use quite a variety.
-+	 *
-+	 * NOTE: we don't distinguish here between *4 and *4a parts.
-+	 */
-+	if (strcmp(client->name, "pcf8574") == 0
-+			|| strcmp(client->name, "pca8574") == 0
-+			|| strcmp(client->name, "pca9670") == 0
-+			|| strcmp(client->name, "pca9672") == 0
-+			|| strcmp(client->name, "pca9674") == 0
-+			) {
-+		gpio->chip.ngpio = 8;
-+		gpio->chip.direction_input = pcf857x_input8;
-+		gpio->chip.get = pcf857x_get8;
-+		gpio->chip.direction_output = pcf857x_output8;
-+		gpio->chip.set = pcf857x_set8;
++	mcp->chip.label = "mcp23s08",
 +
-+		if (!i2c_check_functionality(client->adapter,
-+				I2C_FUNC_SMBUS_BYTE))
-+			status = -EIO;
++	mcp->chip.direction_input = mcp23s08_direction_input;
++	mcp->chip.get = mcp23s08_get;
++	mcp->chip.direction_output = mcp23s08_direction_output;
++	mcp->chip.set = mcp23s08_set;
++	mcp->chip.dbg_show = mcp23s08_dbg_show;
 +
-+		/* fail if there's no chip present */
-+		else
-+			status = i2c_smbus_read_byte(client);
++	mcp->chip.base = pdata->base;
++	mcp->chip.ngpio = 8;
++	mcp->chip.can_sleep = 1;
 +
-+	/* '75/'75c addresses are 0x20..0x27, just like the '74;
-+	 * the '75c doesn't have a current source pulling high.
-+	 * 9671, 9673, and 9765 use quite a variety of addresses.
-+	 *
-+	 * NOTE: we don't distinguish here between '75 and '75c parts.
-+	 */
-+	} else if (strcmp(client->name, "pcf8575") == 0
-+			|| strcmp(client->name, "pca8575") == 0
-+			|| strcmp(client->name, "pca9671") == 0
-+			|| strcmp(client->name, "pca9673") == 0
-+			|| strcmp(client->name, "pca9675") == 0
-+			) {
-+		gpio->chip.ngpio = 16;
-+		gpio->chip.direction_input = pcf857x_input16;
-+		gpio->chip.get = pcf857x_get16;
-+		gpio->chip.direction_output = pcf857x_output16;
-+		gpio->chip.set = pcf857x_set16;
++	spi_set_drvdata(spi, mcp);
 +
-+		if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C))
-+			status = -EIO;
-+
-+		/* fail if there's no chip present */
-+		else
-+			status = i2c_read_le16(client);
-+
-+	} else
-+		status = -ENODEV;
-+
++	/* verify MCP_IOCON.SEQOP = 0, so sequential reads work */
++	status = mcp23s08_read(mcp, MCP_IOCON);
 +	if (status < 0)
 +		goto fail;
-+
-+	gpio->chip.label = client->name;
-+
-+	gpio->client = client;
-+	i2c_set_clientdata(client, gpio);
-+
-+	/* NOTE:  these chips have strange "quasi-bidirectional" I/O pins.
-+	 * We can't actually know whether a pin is configured (a) as output
-+	 * and driving the signal low, or (b) as input and reporting a low
-+	 * value ... without knowing the last value written since the chip
-+	 * came out of reset (if any).  We can't read the latched output.
-+	 *
-+	 * In short, the only reliable solution for setting up pin direction
-+	 * is to do it explicitly.  The setup() method can do that, but it
-+	 * may cause transient glitching since it can't know the last value
-+	 * written (some pins may need to be driven low).
-+	 *
-+	 * Using pdata->n_latch avoids that trouble.  When left initialized
-+	 * to zero, our software copy of the "latch" then matches the chip's
-+	 * all-ones reset state.  Otherwise it flags pins to be driven low.
-+	 */
-+	gpio->out = ~pdata->n_latch;
-+
-+	status = gpiochip_add(&gpio->chip);
-+	if (status < 0)
-+		goto fail;
-+
-+	/* NOTE: these chips can issue "some pin-changed" IRQs, which we
-+	 * don't yet even try to use.  Among other issues, the relevant
-+	 * genirq state isn't available to modular drivers; and most irq
-+	 * methods can't be called from sleeping contexts.
-+	 */
-+
-+	dev_info(&client->dev, "gpios %d..%d on a %s%s\n",
-+			gpio->chip.base,
-+			gpio->chip.base + gpio->chip.ngpio - 1,
-+			client->name,
-+			client->irq ? " (irq ignored)" : "");
-+
-+	/* Let platform code set up the GPIOs and their users.
-+	 * Now is the first time anyone could use them.
-+	 */
-+	if (pdata->setup) {
-+		status = pdata->setup(client,
-+				gpio->chip.base, gpio->chip.ngpio,
-+				pdata->context);
++	if (status & IOCON_SEQOP) {
++		status &= ~IOCON_SEQOP;
++		status = mcp23s08_write(mcp, MCP_IOCON, (u8) status);
 +		if (status < 0)
-+			dev_warn(&client->dev, "setup --> %d\n", status);
++			goto fail;
++	}
++
++	/* configure ~100K pullups */
++	status = mcp23s08_write(mcp, MCP_GPPU, pdata->pullups);
++	if (status < 0)
++		goto fail;
++
++	status = mcp23s08_read_regs(mcp, 0, mcp->cache, sizeof mcp->cache);
++	if (status < 0)
++		goto fail;
++
++	/* disable inverter on input */
++	if (mcp->cache[MCP_IPOL] != 0) {
++		mcp->cache[MCP_IPOL] = 0;
++		do_update = 1;
++	}
++
++	/* disable irqs */
++	if (mcp->cache[MCP_GPINTEN] != 0) {
++		mcp->cache[MCP_GPINTEN] = 0;
++		do_update = 1;
++	}
++
++	if (do_update) {
++		u8 tx[4];
++
++		tx[0] = mcp->addr;
++		tx[1] = MCP_IPOL;
++		memcpy(&tx[2], &mcp->cache[MCP_IPOL], sizeof(tx) - 2);
++		status = spi_write_then_read(mcp->spi, tx, sizeof tx, NULL, 0);
++
++		/* FIXME check status... */
++	}
++
++	status = gpiochip_add(&mcp->chip);
++
++	/* NOTE:  these chips have a relatively sane IRQ framework, with
++	 * per-signal masking and level/edge triggering.  It's not yet
++	 * handled here...
++	 */
++
++	if (pdata->setup) {
++		status = pdata->setup(spi, mcp->chip.base,
++				mcp->chip.ngpio, pdata->context);
++		if (status < 0)
++			dev_dbg(&spi->dev, "setup --> %d\n", status);
 +	}
 +
 +	return 0;
 +
 +fail:
-+	dev_dbg(&client->dev, "probe error %d for '%s'\n",
-+			status, client->name);
-+	kfree(gpio);
++	kfree(mcp);
 +	return status;
 +}
 +
-+static int pcf857x_remove(struct i2c_client *client)
++static int mcp23s08_remove(struct spi_device *spi)
 +{
-+	struct pcf857x_platform_data	*pdata = client->dev.platform_data;
-+	struct pcf857x			*gpio = i2c_get_clientdata(client);
++	struct mcp23s08			*mcp = spi_get_drvdata(spi);
++	struct mcp23s08_platform_data	*pdata = spi->dev.platform_data;
 +	int				status = 0;
 +
 +	if (pdata->teardown) {
-+		status = pdata->teardown(client,
-+				gpio->chip.base, gpio->chip.ngpio,
++		status = pdata->teardown(spi,
++				mcp->chip.base, mcp->chip.ngpio,
 +				pdata->context);
 +		if (status < 0) {
-+			dev_err(&client->dev, "%s --> %d\n",
-+					"teardown", status);
++			dev_err(&spi->dev, "%s --> %d\n", "teardown", status);
 +			return status;
 +		}
 +	}
 +
-+	status = gpiochip_remove(&gpio->chip);
++	status = gpiochip_remove(&mcp->chip);
 +	if (status == 0)
-+		kfree(gpio);
++		kfree(mcp);
 +	else
-+		dev_err(&client->dev, "%s --> %d\n", "remove", status);
++		dev_err(&spi->dev, "%s --> %d\n", "remove", status);
 +	return status;
 +}
 +
-+static struct i2c_driver pcf857x_driver = {
++static struct spi_driver mcp23s08_driver = {
++	.probe		= mcp23s08_probe,
++	.remove		= mcp23s08_remove,
 +	.driver = {
-+		.name	= "pcf857x",
++		.name	= "mcp23s08",
 +		.owner	= THIS_MODULE,
 +	},
-+	.probe	= pcf857x_probe,
-+	.remove	= pcf857x_remove,
 +};
 +
-+static int __init pcf857x_init(void)
-+{
-+	return i2c_add_driver(&pcf857x_driver);
-+}
-+module_init(pcf857x_init);
++/*----------------------------------------------------------------------*/
 +
-+static void __exit pcf857x_exit(void)
++static int __init mcp23s08_init(void)
 +{
-+	i2c_del_driver(&pcf857x_driver);
++	return spi_register_driver(&mcp23s08_driver);
 +}
-+module_exit(pcf857x_exit);
++module_init(mcp23s08_init);
++
++static void __exit mcp23s08_exit(void)
++{
++	spi_unregister_driver(&mcp23s08_driver);
++}
++module_exit(mcp23s08_exit);
 +
 +MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("David Brownell");
++
 --- /dev/null
-+++ at91/include/linux/i2c/pcf857x.h
-@@ -0,0 +1,45 @@
-+#ifndef __LINUX_PCF857X_H
-+#define __LINUX_PCF857X_H
++++ at91/include/linux/spi/mcp23s08.h
+@@ -0,0 +1,24 @@
 +
-+/**
-+ * struct pcf857x_platform_data - data to set up pcf857x driver
-+ * @gpio_base: number of the chip's first GPIO
-+ * @n_latch: optional bit-inverse of initial register value; if
-+ *	you leave this initialized to zero the driver will act
-+ *	like the chip was just reset
-+ * @setup: optional callback issued once the GPIOs are valid
-+ * @teardown: optional callback issued before the GPIOs are invalidated
-+ * @context: optional parameter passed to setup() and teardown()
-+ *
-+ * In addition to the I2C_BOARD_INFO() state appropriate to each chip,
-+ * the i2c_board_info used with the pcf875x driver must provide the
-+ * chip "type" ("pcf8574", "pcf8574a", "pcf8575", "pcf8575c") and its
-+ * platform_data (pointer to one of these structures) with at least
-+ * the gpio_base value initialized.
-+ *
-+ * The @setup callback may be used with the kind of board-specific glue
-+ * which hands the (now-valid) GPIOs to other drivers, or which puts
-+ * devices in their initial states using these GPIOs.
-+ *
-+ * These GPIO chips are only "quasi-bidirectional"; read the chip specs
-+ * to understand the behavior.  They don't have separate registers to
-+ * record which pins are used for input or output, record which output
-+ * values are driven, or provide access to input values.  That must be
-+ * inferred by reading the chip's value and knowing the last value written
-+ * to it.  If you leave n_latch initialized to zero, that last written
-+ * value is presumed to be all ones (as if the chip were just reset).
++/* FIXME driver should be able to handle all four slaves that
++ * can be hooked up to each chipselect, as well as IRQs...
 + */
-+struct pcf857x_platform_data {
-+	unsigned	gpio_base;
-+	unsigned	n_latch;
 +
-+	int		(*setup)(struct i2c_client *client,
++struct mcp23s08_platform_data {
++	/* four slaves can share one SPI chipselect */
++	u8		slave;
++
++	/* number assigned to the first GPIO */
++	unsigned	base;
++
++	/* pins with pullups */
++	u8		pullups;
++
++	void		*context;	/* param to setup/teardown */
++
++	int		(*setup)(struct spi_device *spi,
 +					int gpio, unsigned ngpio,
 +					void *context);
-+	int		(*teardown)(struct i2c_client *client,
++	int		(*teardown)(struct spi_device *spi,
 +					int gpio, unsigned ngpio,
 +					void *context);
-+	void		*context;
 +};
-+
-+#endif /* __LINUX_PCF857X_H */
