@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbXL2E3C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbXL2Eja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbXL2E3C (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 23:29:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbXL2E2x
+	id S1756158AbXL2Eja (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 23:39:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbXL2EjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 23:28:53 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:65461 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753879AbXL2E2x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 23:28:53 -0500
-Message-ID: <47747B3A.5090304@cinatas.ath.cx>
-Date: Fri, 28 Dec 2007 05:27:38 +0100
-From: Sascha Warner <prx@cinatas.ath.cx>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071207)
+	Fri, 28 Dec 2007 23:39:20 -0500
+Received: from cantor.suse.de ([195.135.220.2]:34633 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753253AbXL2EjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 23:39:19 -0500
+Date: Fri, 28 Dec 2007 20:42:00 -0800
+From: Greg KH <gregkh@suse.de>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
+Message-ID: <20071229044200.GA16712@suse.de>
+References: <20071229010157.GB2883@darkstar.te-china.tietoenator.com> <1198891742.6821.98.camel@twins> <a8e1da0712281736p6dcc3f05vdb3b8ed9618e0147@mail.gmail.com> <1198892544.6821.103.camel@twins> <a8e1da0712281752q68ec8a98kcc5f84928091a8d2@mail.gmail.com> <1198893445.6821.108.camel@twins> <a8e1da0712281803i11c04b37ic5e92a4c27c79b07@mail.gmail.com> <a8e1da0712281836t418881fbi5c8b924ba353bf90@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, WU Fengguang <wfg@mail.ustc.edu.cn>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 00/11] writeback bug fixes and simplifications
-References: <47742268.8040302@cinatas.ath.cx> <20071228150111.e9451632.akpm@linux-foundation.org>
-In-Reply-To: <20071228150111.e9451632.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/B3cx/d244Ud55/V7HcJ0Rn+KMm9UOFnVAA4s
- AUwgofHFaxcA9WoOAH3woYgvhawHWOzNDAXIfCopIzfFPSeB61
- VPCbM4Sc66rQuuvdYbc3w==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8e1da0712281836t418881fbi5c8b924ba353bf90@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 27 Dec 2007 23:08:40 +0100 Sascha Warner <prx@cinatas.ath.cx> wrote:
->
->   
->> Hi,
->>
->> I applied your patches to 2.6.24-rc6-mm1, but now I am faced with one
->> pdflush often using 100% CPU for a long time. There seem to be some rare
->> pauses from its 100% usage, however.
->>
->> On ~23 minutes uptime i have ~19 minutes pdflush runtime.
->>
->> This is on E6600, x86_64, 2 Gig RAM, SATA HDD, running on gentoo ~x64_64
->>
->> Let me know if you need more info.
->>
->>     
->
-> (some) cc's restored.  Please, always do reply-to-all.
->   
-Hi Wu,
+On Sat, Dec 29, 2007 at 10:36:49AM +0800, Dave Young wrote:
+> >
+> The full boot dmesg with lockdep output is out, there's one warnings in it :
 
-Your latest patch does fix the seen pdflush 100% issue :)
+Please fix that warning before the next repost of these patches (along
+with fixing the problem of them not being able to be applied and
+successfully built at every point in the series...)
 
-P.S.: Andrew, sorry my subject pretended I was subscribed to lkml, I am not.
-I hoped for the script at lkml to pull the threads together because of
-the subject.
+thanks,
 
-Thank you,
-Sascha Warner
+greg k-h
