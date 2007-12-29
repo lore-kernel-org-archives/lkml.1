@@ -1,75 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713AbXL2Dnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbXL2EDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755713AbXL2Dnh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 22:43:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbXL2Dn2
+	id S1755828AbXL2EDj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 23:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbXL2EDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 22:43:28 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:59657 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 28 Dec 2007 23:03:30 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54178 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753284AbXL2Dn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 22:43:27 -0500
-To: serue@us.ibm.com
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: TOMOYO Linux Security Goal
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20071226164230.GA14210@sergelap.austin.ibm.com>
-	<200712272200.IIJ73936.OHOFFLMOQJVFtS@I-love.SAKURA.ne.jp>
-	<20071227145431.GB5161@sergelap.austin.ibm.com>
-	<200712282332.EGC57888.OFFQHJOLVSMtFO@I-love.SAKURA.ne.jp>
-	<20071228151221.GA12548@sergelap.austin.ibm.com>
-In-Reply-To: <20071228151221.GA12548@sergelap.austin.ibm.com>
-Message-Id: <200712291243.HFE05726.MFOJOVLQFFOtSH@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Sat, 29 Dec 2007 12:43:24 +0900
+	id S1753539AbXL2EDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 23:03:30 -0500
+Date: Sat, 29 Dec 2007 15:03:19 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jochen Friedrich <jochen@scram.de>
+Cc: wim@iguana.be, Scott Wood <scottwood@freescale.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] Add support for PowerQUICC watchdog
+Message-Id: <20071229150319.1045b2a3.sfr@canb.auug.org.au>
+In-Reply-To: <47751287.6000801@scram.de>
+References: <47751287.6000801@scram.de>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__29_Dec_2007_15_03_19_+1100_HhGJOTqV8F4flA2y"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+--Signature=_Sat__29_Dec_2007_15_03_19_+1100_HhGJOTqV8F4flA2y
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Serge E. Hallyn wrote:
-> > > >   * namespace manipulation. (i.e. mount()/umount()/pivot_root())
-> > > 
-> > > do you track mounts namespace cloning?
-> > > 
-> > Yes. TOMOYO can recognize mount operation with the following flags.
-> > 
-> >   --bind --move --remount
-> >   --make-unbindable --make-private --make-slave --make-shared
-> 
-> No, I mean clone(CLONE_NEWNS) and unshare(CLONE_NEWNS).  Without
-> tracking those, it seems like a convoluted sequence of mounting,
-> unmonting, and mount sharing and unsharing could potentially confuse
-> your policy or your admins...
-Oh, I see. TOMOYO doesn't track clone() and unshare().
+Hi Jochen,
 
-> I haven't fully thought it through.  But at least if an admin makes a
-> policy update with an expectation that all processes have the same mount
-> trees the result could be unsafe.
-TOMOYO doesn't expect that all processes have the same mount trees.
-But TOMOYO expects that the mount trees won't change unless one of mount()/
-umount()/pivot_root() are called.
-Does a process get different mount trees by just calling clone() or unshare()?
-My understanding is that clone() or unshare() disables propergation of
-mount tree changes when somebody calls mount() or umount() or pivot_root().
+Just a couple of suggestions.
 
-> > Speak of bind mounts, there comes vfsmount problem.
-> > AppArmor has been proposing patches to pass "struct vfsmount" parameter to
-> > VFS helper functions and LSM hooks so that AppArmor/TOMOYO can determine
-> > which pathname was requested in the bind-mounted environment.
-> > Without the vfsmount patches, we can't calculate pathname without the risk of
-> > AB-BA deadlock (if namespace_sem held) or crash (if namespace_sem not held).
-> > I think we should start discussing how the vfsmount patches can be merged.
-> > I'm sad to see no response for AppArmor's posting
-> > at http://lkml.org/lkml/2007/12/20/182 .
-> 
-> If the patches solve your problem, and you respond saying "TOMOYO needs
-> these patches too", it just might get the thread going.
-> 
-I'll say it when I submit patches.
+On Fri, 28 Dec 2007 16:13:11 +0100 Jochen Friedrich <jochen@scram.de> wrote:
+>
+> +int __init pq_wdt_early_init(void)
+> +{
+>
+> +	data =3D of_get_property(soc, "bus-frequency", NULL);
+> +	if (!data) {
+> +		of_node_put(soc);
+> +		printk(KERN_ERR "Could not find bus-frequency in soc node\n");
+> +		ret =3D -ENODEV;
+> +		goto out;
+> +	}
+> +	of_node_put(soc);
 
-Regards.
+If you move the "of_node_put(soc)" just above the "if (!data)" then you
+won't need to repeat it.
+
+> +static struct of_platform_driver pq_wdt_driver =3D {
+> +	.owner		=3D THIS_MODULE,
+> +	.name		=3D "pq-wdt",
+> +	.match_table	=3D pq_wdt_match,
+> +	.probe		=3D pq_wdt_probe,
+> +	.remove		=3D pq_wdt_remove,
+> +};
+
+We are removing the owner and name fields from struct of_platform_driver, s=
+o the preferred initialization looks like this:
+
+static struct of_platform_driver pq_wdt_driver =3D {
+	.match_table	=3D pq_wdt_match,
+	.probe		=3D pq_wdt_probe,
+	.remove		=3D pq_wdt_remove,
+	.driver		=3D {
+		.name	=3D "pq-wdt",
+		.owner	=3D THIS_MODULE,
+	}
+};
+
+or similar.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__29_Dec_2007_15_03_19_+1100_HhGJOTqV8F4flA2y
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHdccNTgG2atn1QN8RAnmjAJ9nwNbZ6t1Qdau5o6Rm+uGjwisdfgCfWWnV
+eSzxT51yMkDyHIS8HCPsr84=
+=YWjB
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__29_Dec_2007_15_03_19_+1100_HhGJOTqV8F4flA2y--
