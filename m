@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbXL2Tgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbXL2Twl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754005AbXL2Tgj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 14:36:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbXL2TgS
+	id S1752730AbXL2Twl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 14:52:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbXL2Twa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 14:36:18 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40153 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751865AbXL2TgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 14:36:16 -0500
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX1+WjqNV5T+WPrlRb7UxkV3zxMH5emAu/Mml/P45XW
-	PsT7sAR39nHcai
-Date: Sat, 29 Dec 2007 20:36:11 +0100
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org
+	Sat, 29 Dec 2007 14:52:30 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57677 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751144AbXL2Tw3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Dec 2007 14:52:29 -0500
+Date: Sat, 29 Dec 2007 11:52:26 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org
 Subject: Re: Top 9 kernel oopses/warnings for the week of December 29th,
-	2007
-Message-ID: <20071229193611.GA5609@atjola.homenet>
-References: <477630CF.5070609@linux.intel.com> <alpine.LFD.0.9999.0712291116190.2778@woody.linux-foundation.org>
+ 2007
+In-Reply-To: <4776A13C.1080405@linux.intel.com>
+Message-ID: <alpine.LFD.0.9999.0712291147400.2778@woody.linux-foundation.org>
+References: <477630CF.5070609@linux.intel.com> <alpine.LFD.0.9999.0712291116190.2778@woody.linux-foundation.org> <4776A13C.1080405@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.0.9999.0712291116190.2778@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Y-GMX-Trusted: 0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.12.29 11:18:18 -0800, Linus Torvalds wrote:
-> 
-> 
-> On Sat, 29 Dec 2007, Arjan van de Ven wrote:
-> >
-> > It has been a quiet week due to the holidays, only 55 oops traces
-> > have been collected.
-> 
-> This would be more useful if it was more readable. As it is, you seem to 
-> have some formatting errors in your automation, where the things are 
-> incorrectly grouped:
-> 
-> > Rank 1: sysctl_head_finish
-> > 	sysctl table check failed
-> > 	Reported 7 times
-> > 	Only reported for the proprietary madwifi driver
-> > 	More info: http://www.kerneloops.org/search.php?search=sysctl_head_finish
-> > 	Rank 2: __ieee80211_rx
-> > 	Warning at net/mac80211/rx.c:1672
-> 
-> ie notice how that "Rank 2" got reported as if it was part of the "Rank 1" 
-> issue. 
 
-Shows up correctly here. Random guess is that your MUA treats tabs like
-spaces when it sees format=flowed. The lines between the different ranks
-weren't empty but had a single tab. And for whatever reason (I don't see
-any trailing spaces), Arjan's mail had a format=flowed header.
 
-AFAIK, only SPACE CRLF is valid for line-continuation with
-format=flowed, not TAB CRLF.  So the above formatting would be the
-result of a pointless format=flowed header meeting a MUA that was too
-eager searching for line continuations.
+On Sat, 29 Dec 2007, Arjan van de Ven wrote:
+> 
+> hmmm.. the copy in my Sent folder looks fine, as does the one in the lkml
+> archive:
+> http://lkml.org/lkml/2007/12/29/41
+> 
+> This is distinctly weird.
 
-Björn
+Ahh, it seems to be a alpine bug. Probably brought on by alpine trying to 
+highlight the web addresses.
+
+It doesn't always happen - between Rank 3 and Rank 4, you have an empty 
+line, and alpine reacted correctly to that one, but the "empty" line 
+between Rank 1 and Rank 2 actually contained a single TAB, and that 
+apparently made alpine really confused.
+
+So never mind. I'll make a bug-report on alpine, it wasn't a bug in your 
+email.
+
+		Linus
