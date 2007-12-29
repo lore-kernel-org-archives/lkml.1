@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbXL2SId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbXL2SUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755296AbXL2SId (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 13:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbXL2SIY
+	id S1756533AbXL2SUW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 13:20:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbXL2SUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 13:08:24 -0500
-Received: from an-out-0708.google.com ([209.85.132.242]:47669 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755540AbXL2SIX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 13:08:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YmAQtgQK3ZKf4Ovuc8F0h6W9d2t3rzzr5HGxAtiEYqEgChYJWsHkIqsTSEo1Zc6SCKROvsgM0OZwooSicre4AozCbacqaFxQrR9bliJUkalC0vuquuaxMb3bsR1d7t9FkpekKxYSq6+RihnnRVuAyqk1kS6hQA4K0qrVawbRTaE=
-Message-ID: <ea9232d10712291008n5f37453eke796dfc2b423f33c@mail.gmail.com>
-Date: Sat, 29 Dec 2007 19:08:22 +0100
-From: "Karol Swietlicki" <magotari@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: slabtop replacement was Re: Major regression on hackbench with SLUB (more numbers)
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Christoph Lameter" <clameter@sgi.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <ea9232d10712221528v30f1bdf1sc6820678670555ec@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 29 Dec 2007 13:20:11 -0500
+Received: from mx1.riseup.net ([204.13.164.18]:36075 "EHLO mx1.riseup.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753879AbXL2SUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Dec 2007 13:20:09 -0500
+Date: Sat, 29 Dec 2007 19:20:05 +0100
+From: Stefano Brivio <stefano.brivio@polimi.it>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Arnd Bergmann <ARNDB@de.ibm.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Akinobu Mita <akinobu.mita@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Mattias Nissler <mattias.nissler@gmx.de>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 7/8] debugfs: allow access to signed values
+Message-ID: <20071229192005.10518d4c@morte>
+In-Reply-To: <20071228185832.GA4462@lst.de>
+References: <20071219001955.055692620@polimi.it>
+	<1198080034.4747.15.camel@johannes.berg>
+	<20071220131548.1d09cd62@morte>
+	<200712201347.15022.ARNDB@de.ibm.com>
+	<20071228185832.GA4462@lst.de>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0712210750510.29372@schroedinger.engr.sgi.com>
-	 <1198275391.30889.3.camel@lappy> <1198275453.30889.4.camel@lappy>
-	 <Pine.LNX.4.64.0712211422540.3795@schroedinger.engr.sgi.com>
-	 <20071221225413.GA26189@elte.hu> <p731w9ffu8c.fsf@bingen.suse.de>
-	 <20071222100326.GF26157@elte.hu>
-	 <alpine.LFD.0.9999.0712220937560.21557@woody.linux-foundation.org>
-	 <20071222194620.GA19350@one.firstfloor.org>
-	 <ea9232d10712221528v30f1bdf1sc6820678670555ec@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23/12/2007, Karol Swietlicki <magotari@gmail.com> wrote:
-> On 22/12/2007, Andi Kleen <andi@firstfloor.org> wrote:
-> > A manpage for slabinfo would be useful though. Anybody
-> > volunteering to write one?
-> >
-> > -Andi
->
-> That would be me.
-> I'm a newbie and never wrote a man page before, so it will take a few
-> days, but I'm bored and out of ideas for any new code for the moment
-> being. Should be fun.
->
-> Karol Swietlicki
+On Fri, 28 Dec 2007 19:58:32 +0100
+Christoph Hellwig <hch@lst.de> wrote:
 
-I'm dropping out from this one.
-I worked for a good while, and I really see no way of improving what
-the usage information (slabinfo -h) already provides. It's a good
-description, and I'm starting to think that adding a man page is
-overkill. If I am misunderstanding something and what is desired is in
-fact usage information in the man page format, I can provide such a
-page, no problem.
+> On Thu, Dec 20, 2007 at 01:47:13PM +0100, Arnd Bergmann wrote:
+> > Also, Christoph has recently posted a suggestion for how to improve
+> > the interface to allow the 'get' operation to return an error:
+> > http://patchwork.ozlabs.org/cbe-oss-dev/patch?id=14962
+> > 
+> > I'd suggest consolidating the two changes in order to avoid merge
+> > conflicts.
+> 
+> Stefano, I couldn't find your complete patch series.  Where are the
+> other 7 patches for that series?   Anyway, I'll post my series with
+> the simple attribute chanegs ASAP and I'll Cc you.  If you send me the
+> latest version of your patches I'll port it ontop of my patches.
 
-At least now I know how to write man pages.
+Sorry for the late reply. As Johannes said, the other patches have nothing
+to do with this anyway. I had to put this patch within my patchset because I
+originally wanted to send a patch which would export signed values to
+debugfs, but then I solved the issue in a different fashion, and I'm not
+that interested in it at the moment.
 
-Karol Swietlicki
+BTW, the patch I sent was just meant to allow exporting signed values
+through debugfs, but in order to do that I had to change some users as well.
+And being spufs an user, I don't feel that much like sending a patch
+without testing on ppc64 in advance.
+
+
+-- 
+Ciao
+Stefano
