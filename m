@@ -1,90 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbXL2Q3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbXL2Qv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755904AbXL2Q3o (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 11:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbXL2Q3g
+	id S1756023AbXL2Qv3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 11:51:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbXL2QvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 11:29:36 -0500
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:42048 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753932AbXL2Q3f (ORCPT
+	Sat, 29 Dec 2007 11:51:18 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:22428 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753087AbXL2QvR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 11:29:35 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FABIFdkdMROHU/2dsb2JhbACBV6l/
-Date: Sat, 29 Dec 2007 11:29:32 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, bryan.wu@analog.com,
-       linux-kernel@vger.kernel.org
-Subject: [2.6.24 patch] Fix blackfin HARDWARE_PM support
-Message-ID: <20071229162932.GC12262@Krystal>
-References: <20071228185643.GB4738@stusta.de> <20071228192320.GI6780@does.not.exist> <20071228192855.GA23157@Krystal> <200712290114.46694.rgetz@blackfin.uclinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 29 Dec 2007 11:51:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=T8i5I1NQhiEGm84y4mnLmQY6DMJd8AJzOfUth3QMJ0cGjDcAfyq8I48zDhz/SZTaLqCwucIUhrLFpAW/PBDQGa1ajpNYwRyBDa89hOKjzzc7GAx8BDcGtWG+K6niUK2NxCTRa9HUlqKhfHjpWHoWX8sVcdRTP6YcZNWsVNDBpPg=
+Message-ID: <64bb37e0712290851r6d41768dk270e47884713a3de@mail.gmail.com>
+Date: Sat, 29 Dec 2007 17:51:13 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc6-mm1
+Cc: linux-kernel@vger.kernel.org, "Neil Brown" <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@fieldses.org>, netdev@vger.kernel.org,
+       "Herbert Xu" <herbert@gondor.apana.org.au>
+In-Reply-To: <20071228150746.42b3bbc0.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200712290114.46694.rgetz@blackfin.uclinux.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:26:10 up 55 days, 21:31,  4 users,  load average: 0.21, 0.43,
-	0.50
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <20071222233056.d652743e.akpm@linux-foundation.org>
+	 <64bb37e0712230827m7d368e2l3174f3b4396d09c1@mail.gmail.com>
+	 <64bb37e0712281453y4aac82b7h7acc8ec314ca6e3e@mail.gmail.com>
+	 <20071228150746.42b3bbc0.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Robin, can you check if this patch does what is currently intended with
-HARDWARE_PM please ? This involves testing with CONFIG_OPROFILE y/m/n.)
+On Dec 29, 2007 12:07 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 28 Dec 2007 23:53:49 +0100 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+> > On Dec 23, 2007 5:27 PM, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+[snip]
+> > [ 7620.708561] Pid: 5698, comm: nfsv4-svc Not tainted 2.6.24-rc3-mm2 #2
+[snip]
+> That looks like a sunrpc bug.  git-nfsd has bene mucking around in there a
+> bit.
 
-This patch restores the blackfin Hardware Performance Monitor Profiling
-support that was killed by
-commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
+Please note, that this report is still against 2.6.24-rc3-mm2. The
+only new thing about that was, that slub_debug=FZP does not catch the
+cause...
 
-Since there seems to be no good reason to behave differently from other
-architectures, it now automatically selects the hardware performance counters
-whenever the profiling is activated.
+> > The cause, why I am resending this: I just got a crash with
+> > 2.6.24-rc6-mm1, again looking network related:
+> >
+> > [93436.933356] WARNING: at include/net/dst.h:165 dst_release()
+> > [93436.936685] Pid: 8079, comm: konqueror Not tainted 2.6.24-rc6-mm1 #11
+> > [93436.939292]
+> > [93436.939293] Call Trace:
+> > [93436.939304]  [<ffffffff80531d2d>] skb_release_all+0xdd/0x110
+> > [93436.939307]  [<ffffffff80531311>] __kfree_skb+0x11/0xa0
+> > [93436.939309]  [<ffffffff805313b7>] kfree_skb+0x17/0x30
+> > [93436.939312]  [<ffffffff805a0b48>] unix_release_sock+0x128/0x250
+> > [93436.939315]  [<ffffffff805a0c91>] unix_release+0x21/0x30
+> > [93436.939318]  [<ffffffff8052b144>] sock_release+0x24/0x90
+> > [93436.939320]  [<ffffffff8052b656>] sock_close+0x26/0x50
+> > [93436.939324]  [<ffffffff8029f921>] __fput+0xc1/0x230
+> > [93436.939327]  [<ffffffff8029fe46>] fput+0x16/0x20
+> > [93436.939329]  [<ffffffff8029c576>] filp_close+0x56/0x90
+> > [93436.939331]  [<ffffffff8029de46>] sys_close+0xa6/0x110
+> > [93436.939335]  [<ffffffff8020b57b>] system_call_after_swapgs+0x7b/0x80
 
-mach-common/irqpanic.c: pm_overflow
-calls pm_overflow_handler which is in oprofile/op_model_bf533.c. I doubt that
-setting HARDWARE_PM as "m" will work at all, since the pm_overflow_handler
-should be in the core kernel image because it is called by irqpanic.c.
+>From code inspection I would blame the patch "[SKBUFF]: Free old skb
+properly in skb_morph" from Herbert Xu. (CC added)
 
-Therefore, I change HARDWARE_PM from a tristate to a bool.
+Mostly it only shuffles code around, the only real change seems to be this hunk:
+@@ -441,7 +446,7 @@ static struct sk_buff *__skb_clone(struct sk_buff
+*n, struct sk_buff *skb)
+  */
+ struct sk_buff *skb_morph(struct sk_buff *dst, struct sk_buff *src)
+ {
+-	skb_release_data(dst);
++	skb_release_all(dst);
+ 	return __skb_clone(dst, src);
+ }
+ EXPORT_SYMBOL_GPL(skb_morph);
 
-The whole arch/$(ARCH)/oprofile/ is built depending on CONFIG_OPROFILE. Since
-part of the HARDWARE_PM support files sits in this directory, it makes sense to
-also depend on OPROFILE, not only PROFILING. Since OPROFILE already depends on
-PROFILING, it is correct to only depend on OPROFILE only.
+Using sbk_release_all instead only skb_release_data (with is called
+automatically from the new sbk_release_all) will add a new call to
+dst_release(skb->dst); (first line in sbk_release_all)
+Could that explain the above underflow warning?
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Adrian Bunk <adrian.bunk@movial.fi>
-CC: Randy Dunlap <randy.dunlap@oracle.com>
-CC: bryan.wu@analog.com
-CC: Robin Getz <rgetz@blackfin.uclinux.org>
----
- arch/blackfin/Kconfig |    4 ++++
- 1 file changed, 4 insertions(+)
+(I do not have any clue about the inner workings of the network core,
+I just looked for code changes, that might be relevant...)
 
-Index: linux-2.6-lttng/arch/blackfin/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/blackfin/Kconfig	2007-12-29 11:00:05.000000000 -0500
-+++ linux-2.6-lttng/arch/blackfin/Kconfig	2007-12-29 11:25:39.000000000 -0500
-@@ -65,6 +65,10 @@ config GENERIC_CALIBRATE_DELAY
- 	bool
- 	default y
- 
-+config HARDWARE_PM
-+	def_bool y
-+	depends on OPROFILE
-+
- source "init/Kconfig"
- source "kernel/Kconfig.preempt"
- 
+> > [93436.947241] general protection fault: 0000 [1] SMP
+> > [93436.947243] last sysfs file:
+> > /sys/devices/pci0000:00/0000:00:0f.0/0000:01:00.1/irq
+> > [93436.947245] CPU 1
+> > [93436.947246] Modules linked in: radeon drm nfsd exportfs w83792d
+> > ipv6 tuner tea5767 tda8290 tuner_xc2028 tda9887 tuner_simple mt20xx
+> > tea5761 tvaudio msp3400 bttv ir_common compat_ioctl32 videobuf_dma_sg
+> > videobuf_core btcx_risc tveeprom usbhid videodev v4l2_common hid
+> > v4l1_compat pata_amd sg i2c_nforce2
+> > [93436.947257] Pid: 8079, comm: konqueror Not tainted 2.6.24-rc6-mm1 #11
+> > [93436.947259] RIP: 0010:[<ffffffff80531438>]  [<ffffffff80531438>]
+> > skb_drop_list+0x18/0x30
+> > [93436.947262] RSP: 0018:ffff810005f4fda8  EFLAGS: 00010286
+> > [93436.947263] RAX: ab1ed5ca5b74e7de RBX: ab1ed5ca5b74e7de RCX: 000000000000d135
+> > [93436.947265] RDX: ffff81011d089a80 RSI: 0000000000000001 RDI: ffff81011d089a88
+> > [93436.947266] RBP: ffff810005f4fdb8 R08: 0000000000000001 R09: 0000000000000006
+> > [93436.947268] R10: 0000000000000000 R11: 0000000000000000 R12: ffff8100de02c500
+> > [93436.947269] R13: ffff81011c188a00 R14: 0000000000000001 R15: ffff81011c189198
+> > [93436.947271] FS:  00007fb5bde0d700(0000) GS:ffff81007ff22000(0000)
+> > knlGS:0000000000000000
+> > [93436.947273] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > [93436.947274] CR2: 00007fb5bdd76000 CR3: 00000000664d5000 CR4: 00000000000006e0
+> > [93436.947276] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > [93436.947277] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > [93436.947279] Process konqueror (pid: 8079, threadinfo
+> > ffff810005f4e000, task ffff8100a1dec000)
+> > [93436.947281] Stack:  ffff810005f4fdd8 ffff810116c86140
+> > ffff810005f4fdd8 ffffffff805314ae
+> > [93436.947284]  ffff810116c86140 ffff8100de02c500 ffff810005f4fdf8
+> > ffffffff80531cf0
+> > [93436.947286]  ffff8100de02c500 ffff81011c188b48 ffff810005f4fe18
+> > ffffffff80531311
+> > [93436.947288] Call Trace:
+> > [93436.947290]  [<ffffffff805314ae>] skb_release_data+0x5e/0xa0
+> > [93436.947293]  [<ffffffff80531cf0>] skb_release_all+0xa0/0x110
+> > [93436.947295]  [<ffffffff80531311>] __kfree_skb+0x11/0xa0
+> > [93436.947297]  [<ffffffff805313b7>] kfree_skb+0x17/0x30
+> > [93436.947299]  [<ffffffff805a0b48>] unix_release_sock+0x128/0x250
+> > [93436.947302]  [<ffffffff805a0c91>] unix_release+0x21/0x30
+> > [93436.947304]  [<ffffffff8052b144>] sock_release+0x24/0x90
+> > [93436.947307]  [<ffffffff8052b656>] sock_close+0x26/0x50
+> > [93436.947309]  [<ffffffff8029f921>] __fput+0xc1/0x230
+> > [93436.947312]  [<ffffffff8029fe46>] fput+0x16/0x20
+> > [93436.947314]  [<ffffffff8029c576>] filp_close+0x56/0x90
+> > [93436.947316]  [<ffffffff8029de46>] sys_close+0xa6/0x110
+> > [93436.947319]  [<ffffffff8020b57b>] system_call_after_swapgs+0x7b/0x80
+> > [93436.947322]
+> > [93436.947322]
+> > [93436.947323] Code: 48 8b 18 48 89 c7 e8 5d ff ff ff 48 85 db 75 ed
+> > 48 83 c4 08
+> > [93436.947328] RIP  [<ffffffff80531438>] skb_drop_list+0x18/0x30
+> > [93436.947330]  RSP <ffff810005f4fda8>
+> > [93436.947332] ---[ end trace befb7cc3528ab3b1 ]---
+>
+> Yes, that looks more networking-related.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+I would hope this OOPS was caused by the same error, trying to release
+the same list twice.
+
+Torsten
