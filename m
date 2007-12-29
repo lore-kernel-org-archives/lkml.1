@@ -1,119 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbXL2G2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbXL2Geg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbXL2G2n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 01:28:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbXL2G2e
+	id S1753189AbXL2Geg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 01:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbXL2Ge1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 01:28:34 -0500
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:53155 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751714AbXL2G2d (ORCPT
+	Sat, 29 Dec 2007 01:34:27 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:58097 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750848AbXL2Ge1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 01:28:33 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAIN3dUdMROHU/2dsb2JhbACBV6p/
-Date: Sat, 29 Dec 2007 01:23:27 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, bryan.wu@analog.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.24 patch] restore blackfin HARDWARE_PM support
-Message-ID: <20071229062326.GA16853@Krystal>
-References: <20071228185643.GB4738@stusta.de> <20071228192320.GI6780@does.not.exist> <20071228192855.GA23157@Krystal> <200712290114.46694.rgetz@blackfin.uclinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 29 Dec 2007 01:34:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KpByTXzPK4fZ1w/JL/zV1DrgeGJrMsxNDlp3nP7/TSi1kUZ7tMfpYTtHxS1sICVNpUOCb85esArSjpoPD7/RTYf1xnXkXiROi09x0NqIvCyh6i0GdC+i1F8C8HZLBYxu3WdlV+38Jf44dpgi7oz0SOJMawqlwoCi7KjjJS2K/rg=
+Message-ID: <cabda6420712282234m41e29e34t8af2463ff4ddb5e5@mail.gmail.com>
+Date: Sat, 29 Dec 2007 07:34:26 +0100
+From: chri <chripell@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: [PATCH RESEND] max3100 driver
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0712290233060.29013@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200712290114.46694.rgetz@blackfin.uclinux.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 01:19:55 up 55 days, 11:25,  3 users,  load average: 0.17, 0.45,
-	0.50
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <11988468663187-git-send-email-chripell@gmail.com>
+	 <Pine.LNX.4.64.0712290233060.29013@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Robin Getz (rgetz@blackfin.uclinux.org) wrote:
-> On Fri 28 Dec 2007 14:28, Mathieu Desnoyers pondered:
-> > * Adrian Bunk (bunk@kernel.org) wrote:
-> > > On Fri, Dec 28, 2007 at 02:14:04PM -0500, Mathieu Desnoyers wrote:
-> > > > * Adrian Bunk (adrian.bunk@movial.fi) wrote:
-> > > > > This patch restores the blackfin Hardware Performance Monitor Profiling 
-> > > > > support that was killed by
-> > > > > commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
-> > > > > 
-> > > > > Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
-> > > > > 
-> > > > 
-> > > > Yep, this one too must be put back, but kernel/Kconfig.instrumentation
-> > > > seems like the wrong spot for a blackfin-specific config option (and
-> > > > this will break the instrumentation menu removal patches in -mm).
-> > > > 
-> > > > Can we put this in arch/blackfin/Kconfig instead ?
-> > > 
-> > > No, this is a user visible option that belongs into the same menu as
-> > > "Profling support".
-> > > 
-> > 
-> > Actually, I wonder why these options exist at all rather than being on
-> > by default when profiling is enabled. There is no such thing as
-> > "activating the performance monitor profiling" on other architectures.
-> > What is so special about blackfin that makes it need it ?
-> 
-> This is probably more historical, and you are correct - it should just be part of profiling.
-> 
+Hi,
 
-Ok, and do we really need to make HARDWARE_PM a tristate ? I see that
-part of it must be compiled into the kernel in core .S files. Does it
-really make sense for it to be a module ?
+On Dec 29, 2007 2:38 AM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>
+> [4:128] is taken by ttyS64. Please look into Documentation/devices.txt.
+>
 
-Also, op_model_bf533.c sits in the arch/blackfin/oprofile directory,
-(built if HARDWARE_PM is y or m) but depends on PROFILING, not OPROFILE.
-Is HARDWARE_PM useful at all without OPROFILE ?
+I did it but I think it's better to reuse a minor from ttyS than
+allocating a new major (64 serial ports is a lot). I saw that other
+drivers take a similar approach, just tend to stay away from low
+numbers that are used by 8250 and its child (that can be connected
+more or less everywhere).  Perhaps in these udev times the serial
+minor number should be allocated dinamicaly. Do you think this makes
+sense?
 
-> 
-> > > > > ---
-> > > > > 
-> > > > >  kernel/Kconfig.instrumentation |    9 +++++++++
-> > > > >  1 file changed, 9 insertions(+)
-> > > > > 
-> > > > > 942996f33f81726c5edb012d61ecdad70c55884d 
-> > > > > diff --git a/kernel/Kconfig.instrumentation b/kernel/Kconfig.instrumentation
-> > > > > index 97c76ca..e023671 100644
-> > > > > --- a/kernel/Kconfig.instrumentation
-> > > > > +++ b/kernel/Kconfig.instrumentation
-> > > > > @@ -44,2 +44,11 @@ config OPROFILE_MPCORE
-> > > > >  
-> > > > > +config HARDWARE_PM
-> > > > > +	tristate "Hardware Performance Monitor Profiling"
-> > > > > +	depends on BLACKFIN && PROFILING
-> > > > > +	help
-> > > > > +	  take use of hardware performance monitor to profiling the kernel
-> > > > > +	  and application.
-> > > > > +
-> > > > > +	  If unsure, say N.
-> > > > > +
-> > > > >  config KPROBES
-> > > > > 
-> > > > 
-> > > > Mathieu Desnoyers
-> > > 
-> > > cu
-> > > Adrian
-> > > 
-> > > -- 
-> > > 
-> > >        "Is there not promise of rain?" Ling Tan asked suddenly out
-> > >         of the darkness. There had been need of rain for many days.
-> > >        "Only a promise," Lao Er said.
-> > >                                        Pearl S. Buck - Dragon Seed
-> > > 
-> > 
+>
+> I notice a steep increase in serial drivers. Everyone got their
+> new chips for xmas, eh? :)
+>
+>
+
+This year I was a bad boy so Santa brought me just a cheap uart. For
+next Xmas I hope in a WLAN chip or something like that. ;-)
+
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Christian Pellegrin, see http://www.evolware.org/chri/
+"Real Programmers don't play tennis, or any other sport which requires
+you to change clothes. Mountain climbing is OK, and Real Programmers
+wear their climbing boots to work in case a mountain should suddenly
+spring up in the middle of the computer room."
