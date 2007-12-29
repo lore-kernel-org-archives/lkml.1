@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbXL2MQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbXL2MQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754563AbXL2MQX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 07:16:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXL2MQP
+	id S1753499AbXL2MQo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 07:16:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbXL2MQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 07:16:15 -0500
-Received: from mx2.suse.de ([195.135.220.15]:37075 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752355AbXL2MQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 07:16:14 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH] x86: unify x86 Makefile(s)
-Date: Sat, 29 Dec 2007 13:16:07 +0100
-User-Agent: KMail/1.9.6
-Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20071228212341.GA6939@uranus.ravnborg.org> <20071229093904.GA17390@uranus.ravnborg.org> <20071229095253.GC27360@does.not.exist>
-In-Reply-To: <20071229095253.GC27360@does.not.exist>
+	Sat, 29 Dec 2007 07:16:32 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:56352 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755097AbXL2MQb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Dec 2007 07:16:31 -0500
+Date: Sat, 29 Dec 2007 05:16:30 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Dave Young <hidave.darkstar@gmail.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH 06/12] pci : Use mutex instead of semaphore in driver core
+Message-ID: <20071229121630.GP11638@parisc-linux.org>
+References: <20071229011057.GG2883@darkstar.te-china.tietoenator.com> <20071229025506.GL11638@parisc-linux.org> <477632A7.6050208@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200712291316.07938.ak@suse.de>
+In-Reply-To: <477632A7.6050208@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Dec 29, 2007 at 12:42:31PM +0100, Stefan Richter wrote:
+> I think a broken-up patch series isn't totally wrong to do for a first
+> look at these RFC patches.  Of course the series needs to become a
+> single patch before it is committed to a tree whose history needs to
+> support bijection, e.g. -mm.
 
-If -funit-at-a-time really increases stack size too much on some compiler
-version the right fix would be to check where it does that using make checkstack
-and then add "noinline" attributes there to prevent the compiler from inlining.
-That would prevent them.
+For this kind of patch (converting a semaphore to a mutex), it is
+necessary to see everywhere that changes.  There's no way to tell if what
+he's doing is safe without seeing all the places that have to change,
+and verifying whether it breaks any of the rules in include/linux/mutex.h
 
-Globally disabling it is too big a hammer.
+For other kinds of patches, you could well be right.
 
-e.g. I know XFS did it in a similar way to prevent this problem.
-
-So I would reenable it for now and if you know it causes problems on specific
-compiler versions, Adrian, you could watch make checkstack there and submit
-noinline patches as needed.
-
--Andi
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
