@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbXL2OHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbXL2OT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754970AbXL2OHa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 09:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbXL2OHV
+	id S1754970AbXL2OT6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 09:19:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbXL2OTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 09:07:21 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:42212 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753542AbXL2OHU (ORCPT
+	Sat, 29 Dec 2007 09:19:48 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:37859 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752066AbXL2OTs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 09:07:20 -0500
-Date: Sat, 29 Dec 2007 15:07:18 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: devzero@web.de
-cc: jcm@jonmasters.org, dl9pf@gmx.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild: modules_install regression ? - depmod
-In-Reply-To: <75140323@web.de>
-Message-ID: <Pine.LNX.4.64.0712291504540.23321@fbirervta.pbzchgretzou.qr>
-References: <75140323@web.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 29 Dec 2007 09:19:48 -0500
+Subject: Re: Trying to convert old modules to newer kernels
+From: Jon Masters <jonathan@jonmasters.org>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071220162700.GF2308@csclub.uwaterloo.ca>
+References: <Pine.LNX.4.61.0712191503370.4688@chaos.analogic.com>
+	 <20071219202323.GH2310@csclub.uwaterloo.ca>
+	 <Pine.LNX.4.61.0712191555150.4514@chaos.analogic.com>
+	 <20071220150255.GE2308@csclub.uwaterloo.ca>
+	 <Pine.LNX.4.61.0712201107300.8261@chaos.analogic.com>
+	 <20071220162700.GF2308@csclub.uwaterloo.ca>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Sat, 29 Dec 2007 09:19:11 -0500
+Message-Id: <1198937951.9453.22.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Dec 29 2007 14:30, devzero@web.de wrote:
->> On Dec 28 2007 16:08, devzero@web.de wrote:
->> >
->> >i have the same issue, but with 2.6.24-rc6 on a box with 512MB RAM
->> >
->> >System is openSUSE 10.3
->>
->> If you enable CONFIG_DEBUG_INFO, don't be surprised.
->
->oh yes, that`s it!
->
->apparently CONFIG_DEBUG_KERNEL, CONFIG_DEBUG_BUGVERBOSE and CONFIG_DEBUG_INFO
->defaults to "y" on my distro`s kernel, and i just copied config from
->/proc/config.gz and did a "make oldconfig".
+On Thu, 2007-12-20 at 11:27 -0500, Lennart Sorensen wrote:
+> On Thu, Dec 20, 2007 at 11:13:19AM -0500, linux-os (Dick Johnson) wrote:
+> > It never gets to the printk(). You were right about the
+> > compilation. Somebody changed the kernel to compile with
+> > parameter passing in REGISTERS! This means that EVERYTHING
+> > needs to be compiled the same way, 'C' calling conventions
+> > were not good enough!
+> > 
+> > FYI, it has been previously shown that passing parameters
+> > in registers on register-starved ix86 machines is always
+> > a loss, because the registers need to be freed up, either
+> > by saving them on the stack or as dummy memory variables.
+> > 
+> > Now, they've done it to the entire kernel!
+> 
+> It's a config option.  I think redhat was the first to actually start
+> using it on their distributions.  Many distributions don't use it.
+> Debian does not use it on their kernels.
 
-Erm... same system here -
+And anyway, what's wrong with having the kernel build scripts build the
+module for you? ;-)
 
-$ gzip -cd /proc/config.gz | grep DEBUG_INFO
-# CONFIG_DEBUG_INFO is not set
+Jon.
 
-I think you managed to snafu something during building.
+
