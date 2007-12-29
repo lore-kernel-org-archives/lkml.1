@@ -1,32 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbXL2EGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbXL2EGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbXL2EGR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 23:06:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbXL2EEn
+	id S1755942AbXL2EGd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 23:06:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbXL2EEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 23:04:43 -0500
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:21917 "HELO
+	Fri, 28 Dec 2007 23:04:44 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:21926 "HELO
 	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754804AbXL2EEl (ORCPT
+	by vger.kernel.org with SMTP id S1754924AbXL2EEm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 23:04:41 -0500
+	Fri, 28 Dec 2007 23:04:42 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=OnTLbEqwBJ/776uPMVX8uRRW5twRkUrzLrUpA9hAl16bcp52Iirkvr4WmaeSsvQqYcryCKkar9s+HimyA3TEZAg/YjMtW0BvJtNqjrER7kzHHDzXhSPq56j87wG9hoFry4XsyDYZFwyk8y/YQH1o2Ea/z9k1KfbvCNNfuH86XNk=  ;
-X-YMail-OSG: y7.5wHEVM1kguisBANsQAcsV5zt0K1zTMAjpS0uAhaGLf4DP_E8mR5S8oAI8cRZeQfQDRWM4uw--
+  b=2VN/xuyVJOI+x1cjRgX8jNLFCOEeM2Fy/yGlLkKhJ2doMwGTOQrTI3J2QYWs7Vyl1uU3sCUl4KUyL+FBXWEDoJKkJdJjIs1GtrQfHEArZ1o/hyEBT4zagoHBndYPY+ht6xyQs2Ujn7VGleG6H1ORPGjlW5vGQXEcKOfHFrJqUKo=  ;
+X-YMail-OSG: lWRwjyIVM1nE.IF8F99hOGy0XRSB5A_U_HdHJKrso3wQPXiqzjdsyZFrEDA0hqXPW.5J.IbqpQ--
 From: David Brownell <david-b@pacbell.net>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.24-rc6-mm 4/9] gpiolib: avr32 at32ap platform support
-Date: Fri, 28 Dec 2007 19:56:32 -0800
+Subject: [patch 2.6.24-rc6-mm 5/9] gpiolib: pxa platform support
+Date: Fri, 28 Dec 2007 19:57:29 -0800
 User-Agent: KMail/1.9.6
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: eric miao <eric.y.miao@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
 References: <200712281927.32575.david-b@pacbell.net>
 In-Reply-To: <200712281927.32575.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200712281956.33051.david-b@pacbell.net>
+Message-Id: <200712281957.29571.david-b@pacbell.net>
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -34,388 +35,473 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+From: Philipp Zabel <philipp.zabel@gmail.com>
 
-Teach AVR32 to use the "GPIO Library" when exposing its GPIOs, so that
-signals on external chips (like GPIO expanders) can easily be used.
+This adds gpiolib support for the PXA architecture:
+  - move all GPIO API functions from generic.c into gpio.c
+  - convert the gpio_get/set_value macros into inline functions
 
-This mostly just reorganizes some existing logic, with two minor changes
-in behavior:
+This makes it easier to hook up GPIOs provided by external chips like
+ASICs and CPLDs, as used on various product and developer boards.
 
- - The PSR registers are used instead of the previous "gpio_mask" values,
-   matching AT91 behavior and removing some duplication between that role
-   and that of "pinmux_mask".
-
- - NR_IRQs grew to acommodate a bank of external GPIOs.  Eventually this
-   number should probably become a board-specific config option.
-
-There's a debugfs dump of status for the built-in GPIOs, showing which
-pins have deglitching, pullups, or open drain drive enabled, as well as
-the ID string used when requesting each IRQ.
-
+Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- arch/avr32/Kconfig                         |    1 
- arch/avr32/mach-at32ap/pio.c               |  172 +++++++++++++++--------------
- arch/avr32/mach-at32ap/pio.h               |    2 
- include/asm-avr32/arch-at32ap/at32ap7000.h |    2 
- include/asm-avr32/arch-at32ap/gpio.h       |   36 ++++--
- include/asm-avr32/arch-at32ap/irq.h        |    4 
- 6 files changed, 122 insertions(+), 95 deletions(-)
+ arch/arm/Kconfig                    |    1 
+ arch/arm/mach-pxa/Makefile          |    2 
+ arch/arm/mach-pxa/generic.c         |   93 ----------------
+ arch/arm/mach-pxa/generic.h         |    1 
+ arch/arm/mach-pxa/gpio.c            |  197 ++++++++++++++++++++++++++++++++++++
+ arch/arm/mach-pxa/irq.c             |    2 
+ include/asm-arm/arch-pxa/gpio.h     |   48 +++-----
+ include/asm-arm/arch-pxa/pxa-regs.h |   13 ++
+ 8 files changed, 235 insertions(+), 122 deletions(-)
+ create mode 100644 arch/arm/mach-pxa/gpio.c
 
---- at91.orig/arch/avr32/Kconfig
-+++ at91/arch/avr32/Kconfig
-@@ -80,6 +80,7 @@ config PLATFORM_AT32AP
- 	select SUBARCH_AVR32B
- 	select MMU
- 	select PERFORMANCE_COUNTERS
+--- at91.orig/arch/arm/Kconfig
++++ at91/arch/arm/Kconfig
+@@ -345,6 +345,7 @@ config ARCH_PXA
+ 	select GENERIC_GPIO
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
 +	select GPIO_LIB
+ 	help
+ 	  Support for Intel/Marvell's PXA2xx/PXA3xx processor line.
  
- choice
- 	prompt "AVR32 CPU type"
---- at91.orig/arch/avr32/mach-at32ap/pio.c
-+++ at91/arch/avr32/mach-at32ap/pio.c
-@@ -24,11 +24,11 @@
- #define MAX_NR_PIO_DEVICES		8
+--- at91.orig/arch/arm/mach-pxa/Makefile
++++ at91/arch/arm/mach-pxa/Makefile
+@@ -3,7 +3,7 @@
+ #
  
- struct pio_device {
-+	struct gpio_chip chip;
- 	void __iomem *regs;
- 	const struct platform_device *pdev;
- 	struct clk *clk;
- 	u32 pinmux_mask;
--	u32 gpio_mask;
- 	char name[8];
- };
+ # Common support (must be linked before board specific support)
+-obj-y				+= clock.o generic.o irq.o dma.o time.o
++obj-y				+= clock.o generic.o gpio.o irq.o dma.o time.o
+ obj-$(CONFIG_PXA25x)		+= pxa25x.o
+ obj-$(CONFIG_PXA27x)		+= pxa27x.o
+ obj-$(CONFIG_PXA3xx)		+= pxa3xx.o mfp.o
+--- at91.orig/arch/arm/mach-pxa/generic.c
++++ at91/arch/arm/mach-pxa/generic.c
+@@ -32,7 +32,6 @@
+ #include <asm/mach/map.h>
  
-@@ -64,7 +64,8 @@ void __init at32_select_periph(unsigned 
- 		goto fail;
- 	}
+ #include <asm/arch/pxa-regs.h>
+-#include <asm/arch/gpio.h>
+ #include <asm/arch/udc.h>
+ #include <asm/arch/pxafb.h>
+ #include <asm/arch/mmc.h>
+@@ -73,97 +72,6 @@ unsigned int get_memclk_frequency_10khz(
+ EXPORT_SYMBOL(get_memclk_frequency_10khz);
  
--	if (unlikely(test_and_set_bit(pin_index, &pio->pinmux_mask))) {
-+	if (unlikely(test_and_set_bit(pin_index, &pio->pinmux_mask)
-+			 || gpiochip_is_requested(&pio->chip, pin_index))) {
- 		printk("%s: pin %u is busy\n", pio->name, pin_index);
- 		goto fail;
- 	}
-@@ -79,9 +80,6 @@ void __init at32_select_periph(unsigned 
- 	if (!(flags & AT32_GPIOF_PULLUP))
- 		pio_writel(pio, PUDR, mask);
- 
--	/* gpio_request NOT allowed */
--	set_bit(pin_index, &pio->gpio_mask);
+ /*
+- * Handy function to set GPIO alternate functions
+- */
+-int pxa_last_gpio;
 -
- 	return;
- 
- fail:
-@@ -130,9 +128,6 @@ void __init at32_select_gpio(unsigned in
- 
- 	pio_writel(pio, PER, mask);
- 
--	/* gpio_request now allowed */
--	clear_bit(pin_index, &pio->gpio_mask);
--
- 	return;
- 
- fail:
-@@ -166,96 +161,50 @@ fail:
- 
- /* GPIO API */
- 
--int gpio_request(unsigned int gpio, const char *label)
-+static int direction_input(struct gpio_chip *chip, unsigned offset)
- {
--	struct pio_device *pio;
--	unsigned int pin;
-+	struct pio_device *pio = container_of(chip, struct pio_device, chip);
-+	u32 mask = 1 << offset;
- 
--	pio = gpio_to_pio(gpio);
--	if (!pio)
--		return -ENODEV;
--
--	pin = gpio & 0x1f;
--	if (test_and_set_bit(pin, &pio->gpio_mask))
--		return -EBUSY;
-+	if (!(pio_readl(pio, PSR) & mask))
-+		return -EINVAL;
- 
-+	pio_writel(pio, ODR, mask);
- 	return 0;
- }
--EXPORT_SYMBOL(gpio_request);
- 
--void gpio_free(unsigned int gpio)
-+static int gpio_get(struct gpio_chip *chip, unsigned offset)
- {
--	struct pio_device *pio;
--	unsigned int pin;
--
--	pio = gpio_to_pio(gpio);
--	if (!pio) {
--		printk(KERN_ERR
--		       "gpio: attempted to free invalid pin %u\n", gpio);
--		return;
--	}
-+	struct pio_device *pio = container_of(chip, struct pio_device, chip);
- 
--	pin = gpio & 0x1f;
--	if (!test_and_clear_bit(pin, &pio->gpio_mask))
--		printk(KERN_ERR "gpio: freeing free or non-gpio pin %s-%u\n",
--		       pio->name, pin);
-+	return (pio_readl(pio, PDSR) >> offset) & 1;
- }
--EXPORT_SYMBOL(gpio_free);
- 
--int gpio_direction_input(unsigned int gpio)
+-int pxa_gpio_mode(int gpio_mode)
 -{
--	struct pio_device *pio;
--	unsigned int pin;
+-	unsigned long flags;
+-	int gpio = gpio_mode & GPIO_MD_MASK_NR;
+-	int fn = (gpio_mode & GPIO_MD_MASK_FN) >> 8;
+-	int gafr;
 -
--	pio = gpio_to_pio(gpio);
--	if (!pio)
--		return -ENODEV;
-+static void gpio_set(struct gpio_chip *chip, unsigned offset, int value);
- 
--	pin = gpio & 0x1f;
--	pio_writel(pio, ODR, 1 << pin);
+-	if (gpio > pxa_last_gpio)
+-		return -EINVAL;
+-
+-	local_irq_save(flags);
+-	if (gpio_mode & GPIO_DFLT_LOW)
+-		GPCR(gpio) = GPIO_bit(gpio);
+-	else if (gpio_mode & GPIO_DFLT_HIGH)
+-		GPSR(gpio) = GPIO_bit(gpio);
+-	if (gpio_mode & GPIO_MD_MASK_DIR)
+-		GPDR(gpio) |= GPIO_bit(gpio);
+-	else
+-		GPDR(gpio) &= ~GPIO_bit(gpio);
+-	gafr = GAFR(gpio) & ~(0x3 << (((gpio) & 0xf)*2));
+-	GAFR(gpio) = gafr |  (fn  << (((gpio) & 0xf)*2));
+-	local_irq_restore(flags);
+-
+-	return 0;
+-}
+-
+-EXPORT_SYMBOL(pxa_gpio_mode);
+-
+-int gpio_direction_input(unsigned gpio)
+-{
+-	unsigned long flags;
+-	u32 mask;
+-
+-	if (gpio > pxa_last_gpio)
+-		return -EINVAL;
+-
+-	mask = GPIO_bit(gpio);
+-	local_irq_save(flags);
+-	GPDR(gpio) &= ~mask;
+-	local_irq_restore(flags);
 -
 -	return 0;
 -}
 -EXPORT_SYMBOL(gpio_direction_input);
 -
--int gpio_direction_output(unsigned int gpio, int value)
-+static int direction_output(struct gpio_chip *chip, unsigned offset, int value)
- {
--	struct pio_device *pio;
--	unsigned int pin;
--
--	pio = gpio_to_pio(gpio);
--	if (!pio)
--		return -ENODEV;
-+	struct pio_device *pio = container_of(chip, struct pio_device, chip);
-+	u32 mask = 1 << offset;
- 
--	gpio_set_value(gpio, value);
--
--	pin = gpio & 0x1f;
--	pio_writel(pio, OER, 1 << pin);
-+	if (!(pio_readl(pio, PSR) & mask))
-+		return -EINVAL;
- 
-+	gpio_set(chip, offset, value);
-+	pio_writel(pio, OER, mask);
- 	return 0;
- }
--EXPORT_SYMBOL(gpio_direction_output);
- 
--int gpio_get_value(unsigned int gpio)
-+static void gpio_set(struct gpio_chip *chip, unsigned offset, int value)
- {
--	struct pio_device *pio = &pio_dev[gpio >> 5];
-+	struct pio_device *pio = container_of(chip, struct pio_device, chip);
-+	u32 mask = 1 << offset;
- 
--	return (pio_readl(pio, PDSR) >> (gpio & 0x1f)) & 1;
--}
--EXPORT_SYMBOL(gpio_get_value);
--
--void gpio_set_value(unsigned int gpio, int value)
+-int gpio_direction_output(unsigned gpio, int value)
 -{
--	struct pio_device *pio = &pio_dev[gpio >> 5];
+-	unsigned long flags;
 -	u32 mask;
 -
--	mask = 1 << (gpio & 0x1f);
- 	if (value)
- 		pio_writel(pio, SODR, mask);
- 	else
- 		pio_writel(pio, CODR, mask);
+-	if (gpio > pxa_last_gpio)
+-		return -EINVAL;
+-
+-	mask = GPIO_bit(gpio);
+-	local_irq_save(flags);
+-	if (value)
+-		GPSR(gpio) = mask;
+-	else
+-		GPCR(gpio) = mask;
+-	GPDR(gpio) |= mask;
+-	local_irq_restore(flags);
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(gpio_direction_output);
+-
+-/*
+- * Return GPIO level
+- */
+-int pxa_gpio_get_value(unsigned gpio)
+-{
+-	return __gpio_get_value(gpio);
+-}
+-
+-EXPORT_SYMBOL(pxa_gpio_get_value);
+-
+-/*
+- * Set output GPIO level
+- */
+-void pxa_gpio_set_value(unsigned gpio, int value)
+-{
+-	__gpio_set_value(gpio, value);
+-}
+-
+-EXPORT_SYMBOL(pxa_gpio_set_value);
+-
+-/*
+  * Routine to safely enable or disable a clock in the CKEN
+  */
+ void __pxa_set_cken(int clock, int enable)
+@@ -178,7 +86,6 @@ void __pxa_set_cken(int clock, int enabl
+ 
+ 	local_irq_restore(flags);
  }
--EXPORT_SYMBOL(gpio_set_value);
+-
+ EXPORT_SYMBOL(__pxa_set_cken);
  
- /*--------------------------------------------------------------------------*/
- 
-@@ -339,6 +288,63 @@ gpio_irq_setup(struct pio_device *pio, i
- 
- /*--------------------------------------------------------------------------*/
- 
-+#ifdef CONFIG_DEBUG_FS
+ /*
+--- at91.orig/arch/arm/mach-pxa/generic.h
++++ at91/arch/arm/mach-pxa/generic.h
+@@ -16,6 +16,7 @@ extern void __init pxa_init_irq_low(void
+ extern void __init pxa_init_irq_high(void);
+ extern void __init pxa_init_irq_gpio(int gpio_nr);
+ extern void __init pxa_init_irq_set_wake(int (*set_wake)(unsigned int, unsigned int));
++extern void __init pxa_init_gpio(int gpio_nr);
+ extern void __init pxa25x_init_irq(void);
+ extern void __init pxa27x_init_irq(void);
+ extern void __init pxa3xx_init_irq(void);
+--- /dev/null
++++ at91/arch/arm/mach-pxa/gpio.c
+@@ -0,0 +1,197 @@
++/*
++ *  linux/arch/arm/mach-pxa/gpio.c
++ *
++ *  Generic PXA GPIO handling
++ *
++ *  Author:	Nicolas Pitre
++ *  Created:	Jun 15, 2001
++ *  Copyright:	MontaVista Software Inc.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ */
 +
-+#include <linux/seq_file.h>
++#include <linux/init.h>
++#include <linux/module.h>
++
++#include <asm/gpio.h>
++#include <asm/hardware.h>
++#include <asm/io.h>
++#include <asm/arch/pxa-regs.h>
++
++#include "generic.h"
++
++
++struct pxa_gpio_chip {
++	struct gpio_chip chip;
++	void __iomem     *regbase;
++};
++
++int pxa_last_gpio;
 +
 +/*
-+ * This shows more info than the generic gpio dump code:
-+ * pullups, deglitching, open drain drive.
++ * Configure pins for GPIO or other functions
 + */
-+static void pio_bank_show(struct seq_file *s, struct gpio_chip *chip)
++int pxa_gpio_mode(int gpio_mode)
 +{
-+	struct pio_device *pio = container_of(chip, struct pio_device, chip);
-+	u32			psr, osr, imr, pdsr, pusr, ifsr, mdsr;
-+	unsigned		i;
-+	u32			mask;
-+	char			bank;
++	unsigned long flags;
++	int gpio = gpio_mode & GPIO_MD_MASK_NR;
++	int fn = (gpio_mode & GPIO_MD_MASK_FN) >> 8;
++	int gafr;
 +
-+	psr = pio_readl(pio, PSR);
-+	osr = pio_readl(pio, OSR);
-+	imr = pio_readl(pio, IMR);
-+	pdsr = pio_readl(pio, PDSR);
-+	pusr = pio_readl(pio, PUSR);
-+	ifsr = pio_readl(pio, IFSR);
-+	mdsr = pio_readl(pio, MDSR);
++	if (gpio > pxa_last_gpio)
++		return -EINVAL;
 +
-+	bank = 'A' + pio->pdev->id;
++	local_irq_save(flags);
++	if (gpio_mode & GPIO_DFLT_LOW)
++		GPCR(gpio) = GPIO_bit(gpio);
++	else if (gpio_mode & GPIO_DFLT_HIGH)
++		GPSR(gpio) = GPIO_bit(gpio);
++	if (gpio_mode & GPIO_MD_MASK_DIR)
++		GPDR(gpio) |= GPIO_bit(gpio);
++	else
++		GPDR(gpio) &= ~GPIO_bit(gpio);
++	gafr = GAFR(gpio) & ~(0x3 << (((gpio) & 0xf)*2));
++	GAFR(gpio) = gafr |  (fn  << (((gpio) & 0xf)*2));
++	local_irq_restore(flags);
 +
-+	for (i = 0, mask = 1; i < 32; i++, mask <<= 1) {
-+		const char *label;
++	return 0;
++}
++EXPORT_SYMBOL(pxa_gpio_mode);
 +
-+		label = gpiochip_is_requested(chip, i);
-+		if (!label)
-+			continue;
++static int pxa_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
++{
++	unsigned long        flags;
++	u32                  mask = 1 << offset;
++	u32                  value;
++	struct pxa_gpio_chip *pxa;
++	void __iomem         *gpdr;
 +
-+		seq_printf(s, " gpio-%-3d P%c%-2d (%-12s) %s %s %s",
-+			chip->base + i, bank, i,
-+			label,
-+			(osr & mask) ? "out" : "in ",
-+			(mask & pdsr) ? "hi" : "lo",
-+			(mask & pusr) ? "  " : "up");
-+		if (ifsr & mask)
-+			seq_printf(s, " deglitch");
-+		if ((osr & mdsr) & mask)
-+			seq_printf(s, " open-drain");
-+		if (imr & mask)
-+			seq_printf(s, " irq-%d edge-both",
-+				gpio_to_irq(chip->base + i));
-+		seq_printf(s, "\n");
++	pxa = container_of(chip, struct pxa_gpio_chip, chip);
++	gpdr = pxa->regbase + GPDR_OFFSET;
++	local_irq_save(flags);
++	value = __raw_readl(gpdr);
++	value &= ~mask;
++	__raw_writel(value, gpdr);
++	local_irq_restore(flags);
++
++	return 0;
++}
++
++static int pxa_gpio_direction_output(struct gpio_chip *chip,
++					unsigned offset, int value)
++{
++	unsigned long        flags;
++	u32                  mask = 1 << offset;
++	u32                  tmp;
++	struct pxa_gpio_chip *pxa;
++	void __iomem         *gpdr;
++
++	pxa = container_of(chip, struct pxa_gpio_chip, chip);
++	__raw_writel(mask,
++			pxa->regbase + (value ? GPSR_OFFSET : GPCR_OFFSET));
++	gpdr = pxa->regbase + GPDR_OFFSET;
++	local_irq_save(flags);
++	tmp = __raw_readl(gpdr);
++	tmp |= mask;
++	__raw_writel(tmp, gpdr);
++	local_irq_restore(flags);
++
++	return 0;
++}
++
++/*
++ * Return GPIO level
++ */
++static int pxa_gpio_get(struct gpio_chip *chip, unsigned offset)
++{
++	u32                  mask = 1 << offset;
++	struct pxa_gpio_chip *pxa;
++
++	pxa = container_of(chip, struct pxa_gpio_chip, chip);
++	return __raw_readl(pxa->regbase + GPLR_OFFSET) & mask;
++}
++
++/*
++ * Set output GPIO level
++ */
++static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
++{
++	u32                  mask = 1 << offset;
++	struct pxa_gpio_chip *pxa;
++
++	pxa = container_of(chip, struct pxa_gpio_chip, chip);
++
++	if (value)
++		__raw_writel(mask, pxa->regbase + GPSR_OFFSET);
++	else
++		__raw_writel(mask, pxa->regbase + GPCR_OFFSET);
++}
++
++static struct pxa_gpio_chip pxa_gpio_chip[] = {
++	[0] = {
++		.regbase = GPIO0_BASE,
++		.chip = {
++			.label            = "gpio-0",
++			.direction_input  = pxa_gpio_direction_input,
++			.direction_output = pxa_gpio_direction_output,
++			.get              = pxa_gpio_get,
++			.set              = pxa_gpio_set,
++			.base             = 0,
++			.ngpio            = 32,
++		},
++	},
++	[1] = {
++		.regbase = GPIO1_BASE,
++		.chip = {
++			.label            = "gpio-1",
++			.direction_input  = pxa_gpio_direction_input,
++			.direction_output = pxa_gpio_direction_output,
++			.get              = pxa_gpio_get,
++			.set              = pxa_gpio_set,
++			.base             = 32,
++			.ngpio            = 32,
++		},
++	},
++	[2] = {
++		.regbase = GPIO2_BASE,
++		.chip = {
++			.label            = "gpio-2",
++			.direction_input  = pxa_gpio_direction_input,
++			.direction_output = pxa_gpio_direction_output,
++			.get              = pxa_gpio_get,
++			.set              = pxa_gpio_set,
++			.base             = 64,
++			.ngpio            = 32, /* 21 for PXA25x */
++		},
++	},
++#if defined(CONFIG_PXA27x) || defined(CONFIG_PXA3xx)
++	[3] = {
++		.regbase = GPIO3_BASE,
++		.chip = {
++			.label            = "gpio-3",
++			.direction_input  = pxa_gpio_direction_input,
++			.direction_output = pxa_gpio_direction_output,
++			.get              = pxa_gpio_get,
++			.set              = pxa_gpio_set,
++			.base             = 96,
++			.ngpio            = 32,
++		},
++	},
++#endif
++};
++
++void __init pxa_init_gpio(int gpio_nr)
++{
++	int i;
++
++	/* add a GPIO chip for each register bank.
++	 * the last PXA25x register only contains 21 GPIOs
++	 */
++	for (i = 0; i < gpio_nr; i += 32) {
++		if (i+32 > gpio_nr)
++			pxa_gpio_chip[i/32].chip.ngpio = gpio_nr - i;
++		gpiochip_add(&pxa_gpio_chip[i/32].chip);
 +	}
 +}
+--- at91.orig/arch/arm/mach-pxa/irq.c
++++ at91/arch/arm/mach-pxa/irq.c
+@@ -310,6 +310,8 @@ void __init pxa_init_irq_gpio(int gpio_n
+ 	/* Install handler for GPIO>=2 edge detect interrupts */
+ 	set_irq_chip(IRQ_GPIO_2_x, &pxa_internal_chip_low);
+ 	set_irq_chained_handler(IRQ_GPIO_2_x, pxa_gpio_demux_handler);
 +
-+#else
-+#define pio_bank_show	NULL
-+#endif
-+
-+
-+/*--------------------------------------------------------------------------*/
-+
- static int __init pio_probe(struct platform_device *pdev)
- {
- 	struct pio_device *pio = NULL;
-@@ -349,6 +355,18 @@ static int __init pio_probe(struct platf
- 	pio = &pio_dev[pdev->id];
- 	BUG_ON(!pio->regs);
- 
-+	pio->chip.label = pio->name;
-+	pio->chip.base = pdev->id * 32;
-+	pio->chip.ngpio = 32;
-+
-+	pio->chip.direction_input = direction_input;
-+	pio->chip.get = gpio_get;
-+	pio->chip.direction_output = direction_output;
-+	pio->chip.set = gpio_set;
-+	pio->chip.dbg_show = pio_bank_show;
-+
-+	gpiochip_add(&pio->chip);
-+
- 	gpio_irq_setup(pio, irq, gpio_irq_base);
- 
- 	platform_set_drvdata(pdev, pio);
-@@ -406,12 +424,6 @@ void __init at32_init_pio(struct platfor
- 	pio->pdev = pdev;
- 	pio->regs = ioremap(regs->start, regs->end - regs->start + 1);
- 
--	/*
--	 * request_gpio() is only valid for pins that have been
--	 * explicitly configured as GPIO and not previously requested
--	 */
--	pio->gpio_mask = ~0UL;
--
- 	/* start with irqs disabled and acked */
- 	pio_writel(pio, IDR, ~0UL);
- 	(void) pio_readl(pio, ISR);
---- at91.orig/arch/avr32/mach-at32ap/pio.h
-+++ at91/arch/avr32/mach-at32ap/pio.h
-@@ -19,7 +19,7 @@
- #define PIO_OSR                                0x0018
- #define PIO_IFER                               0x0020
- #define PIO_IFDR                               0x0024
--#define PIO_ISFR                               0x0028
-+#define PIO_IFSR                               0x0028
- #define PIO_SODR                               0x0030
- #define PIO_CODR                               0x0034
- #define PIO_ODSR                               0x0038
---- at91.orig/include/asm-avr32/arch-at32ap/at32ap7000.h
-+++ at91/include/asm-avr32/arch-at32ap/at32ap7000.h
-@@ -13,8 +13,6 @@
- #define GPIO_PERIPH_A	0
- #define GPIO_PERIPH_B	1
- 
--#define NR_GPIO_CONTROLLERS	4
--
- /*
-  * Pin numbers identifying specific GPIO pins on the chip. They can
-  * also be converted to IRQ numbers by passing them through
---- at91.orig/include/asm-avr32/arch-at32ap/gpio.h
-+++ at91/include/asm-avr32/arch-at32ap/gpio.h
-@@ -5,20 +5,36 @@
- #include <asm/irq.h>
- 
- 
--/* Arch-neutral GPIO API */
--int __must_check gpio_request(unsigned int gpio, const char *label);
--void gpio_free(unsigned int gpio);
--
--int gpio_direction_input(unsigned int gpio);
--int gpio_direction_output(unsigned int gpio, int value);
--int gpio_get_value(unsigned int gpio);
--void gpio_set_value(unsigned int gpio, int value);
-+/* Some GPIO chips can manage IRQs; some can't.  The exact numbers can
-+ * be changed if needed, but for the moment they're not configurable.
-+ */
-+#define ARCH_NR_GPIOS	(NR_GPIO_IRQS + 2 * 32)
-+
-+
-+/* Arch-neutral GPIO API, supporting both "native" and external GPIOs. */
-+#include <asm-generic/gpio.h>
-+
-+static inline int gpio_get_value(unsigned int gpio)
-+{
-+	return __gpio_get_value(gpio);
-+}
-+
-+static inline void gpio_set_value(unsigned int gpio, int value)
-+{
-+	__gpio_set_value(gpio, value);
-+}
-+
-+static inline int gpio_cansleep(unsigned int gpio)
-+{
-+	return __gpio_cansleep(gpio);
-+}
- 
--#include <asm-generic/gpio.h>		/* cansleep wrappers */
- 
- static inline int gpio_to_irq(unsigned int gpio)
- {
--	return gpio + GPIO_IRQ_BASE;
-+	if (gpio < NR_GPIO_IRQS)
-+		return gpio + GPIO_IRQ_BASE;
-+	return -EINVAL;
++	pxa_init_gpio(gpio_nr);
  }
  
- static inline int irq_to_gpio(unsigned int irq)
---- at91.orig/include/asm-avr32/arch-at32ap/irq.h
-+++ at91/include/asm-avr32/arch-at32ap/irq.h
-@@ -3,11 +3,11 @@
+ void __init pxa_init_irq_set_wake(int (*set_wake)(unsigned int, unsigned int))
+--- at91.orig/include/asm-arm/arch-pxa/gpio.h
++++ at91/include/asm-arm/arch-pxa/gpio.h
+@@ -28,43 +28,35 @@
+ #include <asm/irq.h>
+ #include <asm/hardware.h>
  
- #define EIM_IRQ_BASE	NR_INTERNAL_IRQS
- #define NR_EIM_IRQS	32
+-static inline int gpio_request(unsigned gpio, const char *label)
+-{
+-	return 0;
+-}
++#include <asm-generic/gpio.h>
+ 
+-static inline void gpio_free(unsigned gpio)
+-{
+-	return;
+-}
+ 
+-extern int gpio_direction_input(unsigned gpio);
+-extern int gpio_direction_output(unsigned gpio, int value);
++/* NOTE: some PXAs have fewer on-chip GPIOs (like PXA255, with 85).
++ * Those cases currently cause holes in the GPIO number space.
++ */
++#define NR_BUILTIN_GPIO 128
+ 
+-static inline int __gpio_get_value(unsigned gpio)
++static inline int gpio_get_value(unsigned gpio)
+ {
+-	return GPLR(gpio) & GPIO_bit(gpio);
++	if (__builtin_constant_p(gpio) && (gpio < NR_BUILTIN_GPIO))
++		return GPLR(gpio) & GPIO_bit(gpio);
++	else
++		return __gpio_get_value(gpio);
+ }
+ 
+-#define gpio_get_value(gpio)			\
+-	(__builtin_constant_p(gpio) ?		\
+-	 __gpio_get_value(gpio) :		\
+-	 pxa_gpio_get_value(gpio))
 -
- #define AT32_EXTINT(n)	(EIM_IRQ_BASE + (n))
+-static inline void __gpio_set_value(unsigned gpio, int value)
++static inline void gpio_set_value(unsigned gpio, int value)
+ {
+-	if (value)
+-		GPSR(gpio) = GPIO_bit(gpio);
+-	else
+-		GPCR(gpio) = GPIO_bit(gpio);
++	if (__builtin_constant_p(gpio) && (gpio < NR_BUILTIN_GPIO)) {
++		if (value)
++			GPSR(gpio) = GPIO_bit(gpio);
++		else
++			GPCR(gpio) = GPIO_bit(gpio);
++	} else {
++		__gpio_set_value(gpio, value);
++	}
+ }
  
- #define GPIO_IRQ_BASE	(EIM_IRQ_BASE + NR_EIM_IRQS)
--#define NR_GPIO_IRQS	(5 * 32)
-+#define NR_GPIO_CTLR	(5 /*internal*/ + 1 /*external*/)
-+#define NR_GPIO_IRQS	(NR_GPIO_CTLR * 32)
+-#define gpio_set_value(gpio,value)		\
+-	(__builtin_constant_p(gpio) ?		\
+-	 __gpio_set_value(gpio, value) :	\
+-	 pxa_gpio_set_value(gpio, value))
+-
+-#include <asm-generic/gpio.h>			/* cansleep wrappers */
++#define gpio_cansleep __gpio_cansleep
  
- #define NR_IRQS		(GPIO_IRQ_BASE + NR_GPIO_IRQS)
+ #define gpio_to_irq(gpio)	IRQ_GPIO(gpio)
+ #define irq_to_gpio(irq)	IRQ_TO_GPIO(irq)
+--- at91.orig/include/asm-arm/arch-pxa/pxa-regs.h
++++ at91/include/asm-arm/arch-pxa/pxa-regs.h
+@@ -1131,6 +1131,19 @@
+  * General Purpose I/O
+  */
  
++#define GPIO0_BASE	((void __iomem *)io_p2v(0x40E00000))
++#define GPIO1_BASE	((void __iomem *)io_p2v(0x40E00004))
++#define GPIO2_BASE	((void __iomem *)io_p2v(0x40E00008))
++#define GPIO3_BASE	((void __iomem *)io_p2v(0x40E00100))
++
++#define GPLR_OFFSET	0x00
++#define GPDR_OFFSET	0x0C
++#define GPSR_OFFSET	0x18
++#define GPCR_OFFSET	0x24
++#define GRER_OFFSET	0x30
++#define GFER_OFFSET	0x3C
++#define GEDR_OFFSET	0x48
++
+ #define GPLR0		__REG(0x40E00000)  /* GPIO Pin-Level Register GPIO<31:0> */
+ #define GPLR1		__REG(0x40E00004)  /* GPIO Pin-Level Register GPIO<63:32> */
+ #define GPLR2		__REG(0x40E00008)  /* GPIO Pin-Level Register GPIO<80:64> */
