@@ -1,51 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbXL2Cep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbXL2CgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbXL2Cep (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Dec 2007 21:34:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbXL2Ceh
+	id S1756146AbXL2CgP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Dec 2007 21:36:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbXL2CgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Dec 2007 21:34:37 -0500
-Received: from mx2.suse.de ([195.135.220.15]:57870 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753469AbXL2Ceg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Dec 2007 21:34:36 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH] AMD Thermal Interrupt Support
-Date: Sat, 29 Dec 2007 03:34:34 +0100
-User-Agent: KMail/1.9.6
-Cc: Russell Leidich <rml@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-References: <20071217185453.C4597CC562@localhost> <200712290311.51176.ak@suse.de> <26145.1198895417@turing-police.cc.vt.edu>
-In-Reply-To: <26145.1198895417@turing-police.cc.vt.edu>
+	Fri, 28 Dec 2007 21:36:00 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:33624 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752226AbXL2Cf7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Dec 2007 21:35:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dWXlFCts2Z22zXKq3+wvJ/AgG3SXmUF+Y20RY7jrluo9f4lzKN2P3+551AK/pzzH8hrYdNYWeiHb2xNfwenyvG6juYTUoKFdiKMVOyDuA/WQ/mnu21okc5cIgJ6WFyf957ynQzw6ocdzCTD/t+Z4OxRvzzR3aqxjmDh3k+mRPGU=
+Message-ID: <6101e8c40712281835m6205fe91p8ecf37a2eac9d432@mail.gmail.com>
+Date: Sat, 29 Dec 2007 03:35:56 +0100
+From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
+	<oliver.pntr@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [2.6.23(?)=<] X used greatest stack depth: N bytes left
+Cc: linux-kernel@vger.kernel.org,
+       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
+In-Reply-To: <20071228171312.baa0776b.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200712290334.34609.ak@suse.de>
+References: <6101e8c40712281311p446f64e1xb28f8fc273545041@mail.gmail.com>
+	 <20071228153258.bef76bb2.randy.dunlap@oracle.com>
+	 <6101e8c40712281658i2ac7a27du4b0964afd043280e@mail.gmail.com>
+	 <20071228171312.baa0776b.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 29 December 2007 03:30:17 Valdis.Kletnieks@vt.edu wrote:
-> On Sat, 29 Dec 2007 03:11:51 +0100, Andi Kleen said:
-> > On Friday 28 December 2007 21:40:28 Russell Leidich wrote:
-> 
-> > +		printk(KERN_CRIT "CPU 0x%x: Thermal monitoring not "
-> > +			"functional.\n", cpu);
-> > 
-> > Why is that KERN_CRIT? Does not seem that critical to me.
-> 
-> If you think you're running on a chipset that *should* support thermal
-> monitoring, and it isn't there in a usable state, that seems pretty critical
-> to me.  If that didn't work, you probably can't trust the "oh, the chip will
-> thermal-limit itself if it gets to 100C or whatever" either.
+On 12/29/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Sat, 29 Dec 2007 01:58:44 +0100 Oliver Pinter (Pintér Olivér) wrote:
+>
+> > On 12/29/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > > On Fri, 28 Dec 2007 22:11:25 +0100 Oliver Pinter (Pintér Olivér) wrote:
+> > >
+> > > > in newer kernel I recently see this warnings:
+> > > >
+> > > > X used greatest stack depth: N bytes left
+> > > >
+> > > > X E { program name }
+> > > > N E { x byte }
+> > > >
+> > > > ----------------8<--------------
+> > > > ...
+> > > > khelper used greatest stack depth: 7496 bytes left
+> > > > khelper used greatest stack depth: 7184 bytes left
+> > > > ...
+> > > > khelper used greatest stack depth: 6328 bytes left
+> > > > stty used greatest stack depth: 6180 bytes left
+> > > > mount used greatest stack depth: 6156 bytes left
+> > > > mknod used greatest stack depth: 5932 bytes left
+> > > > ...
+> > > > wpa_supplicant used greatest stack depth: 5740 bytes left
+> > > > ...
+> > > > dhclient3 used greatest stack depth: 5500 bytes left
+> > > > ----------------8<--------------
+> > > >
+> > > > it is the "results" of the CONFIG_DEBUG_STACKOVERFLOW=y
+> > > > CONFIG_DEBUG_STACK_USAGE=y options or it's other problem or feature?
+> > >
+> > > CONFIG_DEBUG_STACK_USAGE, in kernel/exit.c:
+> > >
+> > > ---
+> >
+> > sure, but to 2.6.22 or 2.6.23-rcX (with merged the cfs scheduler)
+> > don't show this warnings, but the CONFIG_DEBUG_STACK_USAGE is enabled.
+>
+> Sorry, I couldn't tell that you were asking more than that.
+>
+> In 2.6.22, CONFIG_DEBUG_STACK_USAGE only causes output during
+> sysrq-W (show blocked state).
+>
+> In 2.6.24-rc, CONFIG_DEBUG_STACK_USAGE also causes output during
+> process exit, which is what you are seeing.
+>
+> Does that help?
 
-Thermal shutdown in emergency uses quite different mechanisms (e.g. it goes
-directly through pins to the motherboard); i don't think that code checks for 
-that.
+yes, thanks, then it's the answer
 
--Andi
+sorry, for my bad  composition/spelling
+
+-- 
+Thanks,
+Oliver
