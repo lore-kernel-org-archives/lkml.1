@@ -1,159 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbXL2LLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbXL2LW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbXL2LLW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 06:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXL2LLL
+	id S1754105AbXL2LW2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 06:22:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbXL2LWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 06:11:11 -0500
-Received: from web32604.mail.mud.yahoo.com ([68.142.207.231]:36778 "HELO
-	web32604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752262AbXL2LLJ (ORCPT
+	Sat, 29 Dec 2007 06:22:18 -0500
+Received: from [194.117.236.238] ([194.117.236.238]:34887 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751931AbXL2LWR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 06:11:09 -0500
-X-YMail-OSG: JkomRZAVM1nGRntx1OhnlZUWQdXYQsla6aIcSe5MZk3lnA4p
-X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.158.1
-Date: Sat, 29 Dec 2007 03:11:08 -0800 (PST)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: Strange NFS write performance Linux->Solaris-10/VXFS, maybe VW related
-To: Chris Snook <csnook@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       spam trap <spamtrap@knobisoft.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <86290.88050.qm@web32604.mail.mud.yahoo.com>
+	Sat, 29 Dec 2007 06:22:17 -0500
+Date: Sat, 29 Dec 2007 13:19:40 +0200
+From: Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Richard Harman <richard@richardharman.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+Message-ID: <20071229131940.31d82752@linux360.ro>
+In-Reply-To: <47760ED5.6060207@richardharman.com>
+References: <47754735.1050009@richardharman.com>
+	<20071229095242.1300e19c@linux360.ro>
+	<47760ED5.6060207@richardharman.com>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-> From: Chris Snook <csnook@redhat.com>
-> To: Martin Knoblauch <spamtrap@knobisoft.de>
-> Cc: linux-kernel@vger.kernel.org; linux-nfs@vger.kernel.org
-> Sent: Friday, December 28, 2007 7:45:13 PM
-> Subject: Re: Strange NFS write performance Linux->Solaris-10/VXFS, maybe VW related
+On Sat, 29 Dec 2007 04:09:41 -0500
+Richard Harman <richard@richardharman.com> wrote:
+
+> Right now, with your patch and the 'noirqdebug' option or disabling
+> nohz the system appears to be stable.  This laptop otherwise locks up
+> trying to configure apic/lapic, or locks up solid later with NO
+> oops/bug and nothing will bring it out of it (eg, sysrq has no
+> effect).  NMI watchdog was also inoperable, which I believe was due
+> to the apic/lapic being disabled.
 > 
-> Martin Knoblauch wrote:
-> > Hi,
-> > 
-> > currently I am tracking down an "interesting" effect when writing
-
-> 3) It sounds like the bottleneck is the vxfs filesystem.  It
-> only *appears* on  the client side because writes up until dirty_ratio
-> get buffered on the client. 
->   If you can confirm that the server is actually writing stuff to
-> disk slower  when the client is in writeback mode, then it's possible
-> the Linux NFSclient is  doing something inefficient in writeback mode.
+> With your patch, the lapic is used:
 > 
+> ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+> ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
 
-so, is the output of "iostat -d -l1 d111" during two runs. The first run is with 750 MB, the second with 850MB.
+The kernel should display these messages even without my patch.
+ 
+> These kernel dmesg logs are hand-transcribed, and are from 2.6.22.5,
+> but this shows where the kernel would lock up good and solid:
+> 
+> http://www.richardharman.com/pavilion/2.6.22.5/dmesg.txt
 
-// 750MB
-$ iostat -d -l 1 md111 2
-   md111
-kps tps serv
- 22   0   14
-  0   0    0
-  0   0   13
-29347 468   12
-37040 593   17
-30938 492   25
-30421 491   25
-41626 676   16
-42913 703   14
-39890 647   15
-9009 141    7
-8963 141    7
-5143  81    7
-34814 547   10
-49323 775   12
-28624 451    6
- 22   1    6
-#### finish
-  0   0    0
-  0   0    0
+I doubt it is my patch that makes your laptop work. C1E detection was
+added by the following commit:
 
- Here it seems that the disk is writing for 26-28 seconds with avg. 29 MB/sec. Fine.
+$ git-describe fb79d22e1d4b06385796cc0db0084a2e07beccee
+v2.6.23-2294-gfb79d22
 
-// 850MB
-$ iostat -d -l 1 md111 2
-   md111
-kps tps serv
-  0   0    0
-11275 180   10
-39874 635   14
-37403 587   17
-24341 392   30
-25989 423   26
-22464 375   30
-21922 361   32
-27924 450   26
-21507 342   21
-9217 153   15
-9260 150   15
-9544 155   15
-9298 150   14
-10118 162   11
-15505 250   12
-27513 448   14
-26698 436   15
-26144 431   15
-25201 412   14
-#### 38 seconds in run
-  0   0    0
-  0   0    0
-579  17   12
-  0   0    0
-  0   0    0
-  0   0    0
-  0   0    0
-518   9   16
-485   8    6
-  9   1    7
-514   9    7
-  0   0    0
-  0   0    0
-541   9    8
-532  10    6
-  0   0    0
-  0   0    0
-650  12    7
-  0   0    0
-242   8    9
-1023  18    5
-304   5    6
-418   8    7
-283   5    5
-303   5    8
-527  10    6
-  0   0    0
-  0   0    0
-  0   0    0
-  5   1   13
-  0   0    0
-  0   0    0
-  0   0    0
-  0   0    0
-  0   0    0
-  0   0   11
-  0   0    0
-  0   0    0
-  0   0    0
-  1   0   15
-  0   0    0
- 96   2   15
-138   3   10
-11057 175    6
-17549 280    6
-351   8    5
-  0   0    0
-##### 218 seconds in run, finish.
+Try building a 2.6.24-rc6 without my patch and see if it still works
+(apply it again in reverse mode, for example). I guess it will work,
+because the kernel shouldn't use the LAPIC as a timer at all (except as
+a dummy one), with or without dynticks support.
 
- So, for the first 38 seconds everything looks similar to the 750 MB case. For the next about 180 seconds most time nothing happens. Averaging 4.1 MB/sec.
+When I started investigating the "nohz is not working problem", I
+stumbled across a few threads on LKML where a few people had
+similar problems with their laptops and they where instructed to pass
+"nolapic" or something similar as a boot parameter to the kernel. I
+guess the problem disappeared after the commit I mentioned previously,
+since such reports weren't that recent. IIRC, that was on kernels
+previous to 2.6.24-*, where x86 and x86-64 weren't unified and there
+were no dynticks on the latter.
 
-Maybe it is time to capture the traffic. What are the best tcpdump parameters for NFS? I always forget :-(
-
-Cheers
-Martin
-
-
-
+To be more clear, my patch disables C1E instead of disabling the
+LAPIC, as these two don't agree with each other.
