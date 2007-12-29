@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbXL2SDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbXL2SH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756179AbXL2SDU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 13:03:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754451AbXL2SDJ
+	id S1756415AbXL2SH0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 13:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbXL2SHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 13:03:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42293 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754409AbXL2SDI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 13:03:08 -0500
-Subject: Re: WARNING: at kernel/lockdep.c:2658 check_flags()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20071229170554.GA21506@joi>
-References: <20071229170554.GA21506@joi>
+	Sat, 29 Dec 2007 13:07:13 -0500
+Received: from DSL022.labridge.com ([206.117.136.22]:3741 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754409AbXL2SHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Dec 2007 13:07:12 -0500
+Subject: Re: [PATCH] SH/Dreamcast - add support for GD-Rom device
+From: Joe Perches <joe@perches.com>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh <linux-sh@vger.kernel.org>,
+       Paul Mundt <lethal@linux-sh.org>
+In-Reply-To: <1198929826.6278.11.camel@localhost.localdomain>
+References: <1198774339.6170.11.camel@localhost.localdomain>
+	 <1198796281.4833.31.camel@localhost>  <1198801142.5354.67.camel@odie>
+	 <1198893469.4861.9.camel@localhost>
+	 <1198929826.6278.11.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Sat, 29 Dec 2007 19:03:07 +0100
-Message-Id: <1198951387.31975.1.camel@lappy>
+Date: Sat, 29 Dec 2007 10:07:05 -0800
+Message-Id: <1198951625.4861.25.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2007-12-29 at 18:06 +0100, Marcin Slusarz wrote:
-> Hi
-> Today I've got this (while i was upgrading my gentoo box):
+On Sat, 2007-12-29 at 12:03 +0000, Adrian McMenamin wrote:
+> This won't work see include/scsi/scsi.h
+> /*
+> *  SENSE KEYS
+> */
 > 
-> WARNING: at kernel/lockdep.c:2658 check_flags()
-> Pid: 21680, comm: conftest Not tainted 2.6.24-rc6 #63
+> #define NO_SENSE            0x00
+> #define RECOVERED_ERROR     0x01
+> #define NOT_READY           0x02
+> #define MEDIUM_ERROR        0x03
+> #define HARDWARE_ERROR      0x04
+> #define ILLEGAL_REQUEST     0x05
+> #define UNIT_ATTENTION      0x06
+> #define DATA_PROTECT        0x07
+> #define BLANK_CHECK         0x08
+> #define COPY_ABORTED        0x0a
+> #define ABORTED_COMMAND     0x0b
+> #define VOLUME_OVERFLOW     0x0d
+> #define MISCOMPARE          0x0e
 > 
-> Call Trace:
->  [<ffffffff80253457>] check_flags+0x1c7/0x1d0
->  [<ffffffff80257217>] lock_acquire+0x57/0xc0
->  [<ffffffff8024d5c0>] __atomic_notifier_call_chain+0x60/0xd0
->  [<ffffffff8024d641>] atomic_notifier_call_chain+0x11/0x20
->  [<ffffffff8024d67e>] notify_die+0x2e/0x30
->  [<ffffffff8020da0a>] do_divide_error+0x5a/0xa0
->  [<ffffffff80522bdd>] trace_hardirqs_on_thunk+0x35/0x3a
->  [<ffffffff80255b89>] trace_hardirqs_on+0xd9/0x180
->  [<ffffffff80522bdd>] trace_hardirqs_on_thunk+0x35/0x3a
->  [<ffffffff80523c2d>] error_exit+0x0/0xa9
+> (The GD device specs says it supports 0, 1, 2, 3,4, 5, 6, 7 and 0xB)
 > 
-> possible reason: unannotated irqs-off.
-> irq event stamp: 4693
-> hardirqs last  enabled at (4693): [<ffffffff80522bdd>] trace_hardirqs_on_thunk+0x35/0x3a
-> hardirqs last disabled at (4692): [<ffffffff80522c17>] trace_hardirqs_off_thunk+0x35/0x37
-> softirqs last  enabled at (3546): [<ffffffff80238343>] __do_softirq+0xb3/0xd0
-> softirqs last disabled at (3521): [<ffffffff8020c97c>] call_softirq+0x1c/0x30
+> ie we could get a sense key of 0x0B which would be greater than the
+> array size. I think you'd have to hard code the limit.
 
-more early fixups for notify_die()..
+Then shouldn't this test be:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
+	for (i = 0; i < ARRAY_SIZE(sense_texts); i++) {
+		if (sense_key == sense_texts[i].sense_key)
+			printk(KERN_INFO "GDROM: %s\n", sense_texts[i].text);
+	}
+	if (i >= ARRAY_SIZE(sense_texts))
+		printk(KERN_ERR "GDROM: Unknown sense key: %d\n", sense_key);
 
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index 8fc3a27..3a10cf6 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -543,6 +543,7 @@ void do_##name(struct pt_regs * regs, long error_code) \
- 	info.si_errno = 0; \
- 	info.si_code = sicode; \
- 	info.si_addr = (void __user *)siaddr; \
-+	trace_hardirqs_fixup(); \
- 	if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr) \
- 						== NOTIFY_STOP) \
- 		return; \
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index 778667a..5e07af1 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -635,6 +635,7 @@ asmlinkage void do_##name(struct pt_regs * regs, long error_code) \
- 	info.si_errno = 0; \
- 	info.si_code = sicode; \
- 	info.si_addr = (void __user *)siaddr; \
-+	trace_hardirqs_fixup(); \
- 	if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr) \
- 							== NOTIFY_STOP) \
- 		return; \
-
+cheers, Joe
 
