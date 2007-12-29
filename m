@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbXL2HHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbXL2HKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127AbXL2HHn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 02:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbXL2HHe
+	id S1756407AbXL2HKb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 02:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbXL2HKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 02:07:34 -0500
-Received: from ag-out-0708.google.com ([72.14.246.245]:34147 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750877AbXL2HHd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 02:07:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=J+zJ9OD0n1PHzMYifg8wX6qvcPSZlRMiAYGkQBwU7pL0giLcMXIdE5uKa/i0lskxRkpCX2EoA7EDPfKyogTpQsC2qxebkrIpPU75+6Z5VltJIUOsT3eHrl/m2lMmJvsgC5FNAKSeaRWHOji707nNf30cZj+HBUF2Jq5YWl5xvHQ=
-Message-ID: <a8e1da0712282307p3723857ex534d787f128db112@mail.gmail.com>
-Date: Sat, 29 Dec 2007 15:07:30 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
-Cc: "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-In-Reply-To: <a8e1da0712282106j666988acndcc5eab302a5a284@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 29 Dec 2007 02:10:24 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:52497 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750877AbXL2HKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Dec 2007 02:10:24 -0500
+Date: Sat, 29 Dec 2007 08:10:23 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       eric miao <eric.y.miao@gmail.com>
+Subject: Re: [patch 2.6.24-rc6-mm 2/9] gpiolib: add gpio provider infrastructure
+Message-ID: <20071229071023.GC16569@uranus.ravnborg.org>
+References: <200712281927.32575.david-b@pacbell.net> <200712281954.34704.david-b@pacbell.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071229010157.GB2883@darkstar.te-china.tietoenator.com>
-	 <1198891742.6821.98.camel@twins>
-	 <a8e1da0712281736p6dcc3f05vdb3b8ed9618e0147@mail.gmail.com>
-	 <1198892544.6821.103.camel@twins>
-	 <a8e1da0712281752q68ec8a98kcc5f84928091a8d2@mail.gmail.com>
-	 <1198893445.6821.108.camel@twins>
-	 <a8e1da0712281803i11c04b37ic5e92a4c27c79b07@mail.gmail.com>
-	 <a8e1da0712281836t418881fbi5c8b924ba353bf90@mail.gmail.com>
-	 <20071229044200.GA16712@suse.de>
-	 <a8e1da0712282106j666988acndcc5eab302a5a284@mail.gmail.com>
+In-Reply-To: <200712281954.34704.david-b@pacbell.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 29, 2007 1:06 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
->
-> On Dec 29, 2007 12:42 PM, Greg KH <gregkh@suse.de> wrote:
-> > On Sat, Dec 29, 2007 at 10:36:49AM +0800, Dave Young wrote:
-> > > >
-> > > The full boot dmesg with lockdep output is out, there's one warnings in it :
-> >
-> > Please fix that warning before the next repost of these patches (along
-> > with fixing the problem of them not being able to be applied and
-> > successfully built at every point in the series...)
-> >
->
-> Ok, thanks, I will fix them and repost.
->
+Hi David.
 
-Hi,
-After digging the code, I feel hard to fix the lockdep warning due to
-some misterious relationship with usb.
+> +/* Warn when drivers omit gpio_request() calls -- legal but ill-advised
+> + * when setting direction, and otherwise illegal.  Until board setup code
+> + * and drivers use explicit requests everywhere (which won't happen when
+> + * those calls have no teeth) we can't avoid autorequesting.  This nag
+> + * message should motivate switching to explicit requests...
+> + */
+> +static void gpio_ensure_requested(struct gpio_desc *desc)
+> +{
+> +	if (test_and_set_bit(FLAG_REQUESTED, &desc->flags) == 0) {
+> +		pr_warning("GPIO-%d autorequested\n", (int)(desc - gpio_desc));
+> +#ifdef CONFIG_DEBUG_FS
+> +		desc->label = "[auto]";
+> +#endif
+> +	}
+For this an the other setters of desc->label a small helper function
+would be better. The helper function could then contain the necessary
+ifdef in only one place.
 
-Could someone help on this? thanks.
-Add usb-devel list as cc
 
-Regards
-dave
+> --- at91.orig/include/asm-generic/gpio.h
+> +++ at91/include/asm-generic/gpio.h
+> +
+> +extern const char *gpiochip_is_requested(struct gpio_chip *chip,
+> +			unsigned offset);
+> +
+> +/* add/remove chips */
+> +extern int gpiochip_add(struct gpio_chip *chip);
+> +extern int __must_check gpiochip_remove(struct gpio_chip *chip);
+
+The use of "extern" is not needed in .h files for function prototypes.
+
+	Sam
