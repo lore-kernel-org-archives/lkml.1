@@ -1,68 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbXL3GnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbXL3HK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756161AbXL3GnA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 01:43:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXL3Gmv
+	id S1756118AbXL3HK4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 02:10:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXL3HKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 01:42:51 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:23864 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751657AbXL3Gmu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 01:42:50 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=t61EflC2eBJqVlRKuLF1LFxKW5x0OvDRHpsgSny90+EQP4KeBekKX+KgfXwGzsn1jAlRLgDJMnMTd2rLdY2Yuxc/0+DvFZ2OjJ49Di4Q7uM6rWXLxbbnpr9SVABjixax/+lGljfvoDsvZ+EWo3zF+c/vKs8ZxM3bXUjpqmb5Hds=  ;
-X-YMail-OSG: T6foZt4VM1nw12s8EtuC8Q7cKcZvmRJsX3A3.cKk_ueHzOLctdkgES_7C1nTNLJSQYiwTMyQrQ--
-From: David Brownell <david-b@pacbell.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 01/12] Use mutex instead of semaphore in driver core
-Date: Sat, 29 Dec 2007 22:42:47 -0800
-User-Agent: KMail/1.9.6
-Cc: Dave Young <hidave.darkstar@gmail.com>, Greg KH <gregkh@suse.de>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-References: <Pine.LNX.4.44L0.0712291652540.26261-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0712291652540.26261-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200712292242.47960.david-b@pacbell.net>
+	Sun, 30 Dec 2007 02:10:43 -0500
+Received: from il.qumranet.com ([82.166.9.18]:59466 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751657AbXL3HKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 02:10:42 -0500
+From: Avi Kivity <avi@qumranet.com>
+To: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: [PATCH 00/52] KVM patch queue review for 2.6.25 merge window (part III)
+Date: Sun, 30 Dec 2007 09:09:46 +0200
+Message-Id: <1198998638-22713-1-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.3.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 29 December 2007, Alan Stern wrote:
-> lockdep warns whenever a task acquires a mutex while holding another
-> mutex of the same kind (that is, the same member in another structure
-> of the same type).  But there are lots of places where the kernel needs
-> to acquire dev->sem for one device while already holding
-> dev->parent->sem.
+The third installment of the 2.6.25 kvm patch queue, for your reviewing
+pleasure.  This time, a diffstat of the files affected by these 53 patches is
+appended.
 
-Not just devices.  I've seen the same issue with genirq when
-enabling or disabling wakeup:  while holding irq_desc[354].lock
-it must also acquire the parent IRQ's irq_desc[37].lock so it
-can update that parent IRQ's wake flag ... because the wake
-signal goes from the child up to the parent up to the logic
-that kicks the clock framework and thence the CPU, and software
-must enable at least some of those paths by hand.
-
-And lockdep says "[ INFO: possible recursive locking detected ]".
-But the analysis is "ignore that one, it's a false alarm".
-
-
-> There's no way to remove these, which means there's 
-> no way to prevent lockdep from issuing a warning.
-
-There may be no *efficient* way to do that.  If it tracked
-every lock individually these false alarms could go away;
-but that would increase the overhead to create and destroy
-such locks too.
-
-Such tradeoffs are what make it Engineering, not Science.  ;)
-
-- Dave
-
+ drivers/kvm/kvm.h         |  384 ++++++---------------------------------------
+ drivers/kvm/kvm_main.c    |  192 +++++++---------------
+ drivers/kvm/mmu.c         |  113 +++++++++++---
+ drivers/kvm/paging_tmpl.h |  156 +++++++------------
+ drivers/kvm/svm.c         |    4 +-
+ drivers/kvm/vmx.c         |    5 +-
+ drivers/kvm/x86.c         |  261 +++++++++++++++++++++++++------
+ drivers/kvm/x86.h         |  331 ++++++++++++++++++++++++++++++++++++++
+ drivers/kvm/x86_emulate.c |   38 +++++-
+ drivers/kvm/x86_emulate.h |   18 +--
+ include/asm-x86/Kbuild    |    1 +
+ include/asm-x86/kvm.h     |  155 ++++++++++++++++++
+ include/linux/kvm.h       |  137 +----------------
+ 13 files changed, 1003 insertions(+), 792 deletions(-)
