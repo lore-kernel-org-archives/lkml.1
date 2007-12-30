@@ -1,68 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbXL3LSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbXL3Lil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753936AbXL3LSy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 06:18:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbXL3LSr
+	id S1754234AbXL3Lil (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 06:38:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXL3Lic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 06:18:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44433 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751287AbXL3LSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 06:18:46 -0500
-Date: Sun, 30 Dec 2007 12:15:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] sleepy linux
-Message-ID: <20071230111552.GA8578@elte.hu>
-References: <20071225230731.GA29030@elf.ucw.cz>
+	Sun, 30 Dec 2007 06:38:32 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:56605 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751999AbXL3Lib (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 06:38:31 -0500
+Date: Sun, 30 Dec 2007 12:38:11 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: [PATCH] Get NUMLOCK from PC BIOS
+Message-ID: <alpine.LSU.0.999.0712301230270.3273@be1.lrz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20071225230731.GA29030@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19poVyuuxBwLoEvUFDzK1/lXBmWAg+UCnBaO3y
+ VQyyULoUXkHZ1bglk+v7VSWlFqlS0QuhcfSN9rLQ8nIJAhtoVH
+ T2oe4GXTZVR9rgVaYe5Pg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch enables reading the default NUMLOCK status from the BIOS data
+area as defined for IBM PCs (1981). Using this area has been a reliable way
+to detect (or set) the NUMLOCK status for about 27 years, and it will
+continue to work on any IBM-compatible system that might run DOS. 
+Especially, the NUMLOCK status on Linus' famous laptop should be usable.
 
-* Pavel Machek <pavel@ucw.cz> wrote:
+---
 
-> Todays hardware is mostly capable of doing better: with correctly set 
-> up wakeups, machine can sleep and successfully pretend it is not 
-> sleeping -- by waking up whenever something interesting happens. Of 
-> course, it is easier on machines not connected to the network, and on 
-> notebook computers.
-> 
-> Requirements:
-> 
-> 0) Working suspend-to-RAM, with kernel being able to bring video back.
-> 
-> 1) RTC clock that can wake up system
+I'd like some information about how this patch works non non-IBM-compatible
+x86 PCs. For now, I've documented the wordt possible outcome I can imagine.
 
-very nice approach! It might require smarter hardware to be really 
-efficient, but the generic ability for Linux to utilize S3 automatically 
-would _quickly_ drive the creation of smarter hardware i'm sure - so i'd 
-propose to include this even if it wastes power in some cases.
+Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
 
-a quick feature request: could you please make the wake-on-RTC 
-capability generic and add a CONFIG_DEBUG_SUSPEND_ON_RAM=y config option 
-(disabled by default) that does a short 1-second suspend-to-RAM sequence 
-upon bootup? That way we could test s2ram automatically (which is a MUCH 
-needed feature for automated regression testing and automatic 
-bisection). In addition, some sort of 'suspend for N seconds' /sys or 
-/dev/rtc capability would be nice as well.
+diff -pruN -X dontdiff linux-2.6.23.pure/drivers/char/keyboard.c linux-2.6.23.base/drivers/char/keyboard.c
+--- linux-2.6.23.pure/drivers/char/keyboard.c	2007-10-11 14:15:18.000000000 +0200
++++ linux-2.6.23.base/drivers/char/keyboard.c	2007-12-30 12:12:11.000000000 +0100
+@@ -24,6 +24,7 @@
+  * 21-08-02: Converted to input API, major cleanup. (Vojtech Pavlik)
+  */
+ 
++#include <asm/io.h>
+ #include <linux/consolemap.h>
+ #include <linux/module.h>
+ #include <linux/sched.h>
+@@ -57,7 +58,10 @@ extern void ctrl_alt_del(void);
+  * to be used for numbers.
+  */
+ 
+-#if defined(CONFIG_PARISC) && (defined(CONFIG_KEYBOARD_HIL) || defined(CONFIG_KEYBOARD_HIL_OLD))
++#ifdef CONFIG_KBD_DEFLEDS_PCBIOS
++/* KBD_DEFLEDS is a variable */
++#undef KBD_DEFLEDS
++#elif defined(CONFIG_PARISC) && (defined(CONFIG_KEYBOARD_HIL) || defined(CONFIG_KEYBOARD_HIL_OLD))
+ #define KBD_DEFLEDS (1 << VC_NUMLOCK)
+ #else
+ #define KBD_DEFLEDS 0
+@@ -1358,8 +1362,17 @@ int __init kbd_init(void)
+ {
+ 	int i;
+ 	int error;
++#ifdef CONFIG_KBD_DEFLEDS_PCBIOS
++	int KBD_DEFLEDS = 0;
++	/* address 0x40:0x17 */
++	char * bios_kbd_status=xlate_dev_mem_ptr(0x417);
++
++	/* Numlock status bit set? */
++	if (*bios_kbd_status & 0x20)
++		KBD_DEFLEDS = 1 << VC_NUMLOCK;
++#endif
+ 
+-        for (i = 0; i < MAX_NR_CONSOLES; i++) {
++	for (i = 0; i < MAX_NR_CONSOLES; i++) {
+ 		kbd_table[i].ledflagstate = KBD_DEFLEDS;
+ 		kbd_table[i].default_ledflagstate = KBD_DEFLEDS;
+ 		kbd_table[i].ledmode = LED_SHOW_FLAGS;
+diff -pruN -X dontdiff linux-2.6.23.pure/drivers/input/keyboard/Kconfig linux-2.6.23.base/drivers/input/keyboard/Kconfig
+--- linux-2.6.23.pure/drivers/input/keyboard/Kconfig	2007-10-11 14:14:41.000000000 +0200
++++ linux-2.6.23.base/drivers/input/keyboard/Kconfig	2007-12-30 12:11:45.000000000 +0100
+@@ -12,6 +12,17 @@ menuconfig INPUT_KEYBOARD
+ 
+ if INPUT_KEYBOARD
+ 
++config KBD_DEFLEDS_PCBIOS
++	bool "Enable Num-Lock based on BIOS settings"
++	depends on X86_PC && EXPERIMENTAL
++	help
++	  Turns on Numlock depending on the BIOS settings.
++	  This works by reading the BIOS data area as defined for IBM PCs (1981).
++
++	  If you have an alternative firmware like OpenFirmware or LinuxBios,
++	  this flag might not be set correctly, which results in a random state
++	  of the Numlock key.
++
+ config KEYBOARD_ATKBD
+ 	tristate "AT keyboard" if EMBEDDED || !X86_PC
+ 	default y
 
-btw., how far are you from having a working prototype?
-
-	Ingo
+-- 
+Top 100 things you don't want the sysadmin to say:
+39. It is only a minor upgrade, the system should be back up in
+    a few hours.  ( This is said on a monday afternoon.)
