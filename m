@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbXL3Oxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbXL3OzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757138AbXL3Oxi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 09:53:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbXL3Oxb
+	id S1757482AbXL3OzZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 09:55:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755426AbXL3OzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 09:53:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58759 "EHLO mx1.redhat.com"
+	Sun, 30 Dec 2007 09:55:13 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50491 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755226AbXL3Oxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 09:53:30 -0500
-Message-ID: <4777B0AA.9050503@redhat.com>
-Date: Sun, 30 Dec 2007 09:52:26 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1753178AbXL3OzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 09:55:11 -0500
+Date: Sun, 30 Dec 2007 15:51:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: clear IO_APIC before enabing apic error
+	vector. v2
+Message-ID: <20071230145115.GR16946@elte.hu>
+References: <200712291952.20455.yinghai.lu@sun.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: kprobes remove fix_riprel #ifdef
-References: <1198466917.6323.15.camel@brick> <47773CAD.7050907@redhat.com> <20071230132337.GF16946@elte.hu>
-In-Reply-To: <20071230132337.GF16946@elte.hu>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200712291952.20455.yinghai.lu@sun.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
 
-Ingo Molnar wrote:
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+
+> please check if you can replace the one in the x86-mm
 > 
->> Hello Harvey,
->>
->> A similar idea was already nack-ed by Ananth.
->> http://sources.redhat.com/ml/systemtap/2007-q4/msg00468.html
->> And I agree his thought.
->>
->> Especially, "riprel" does not exist on x86_32, so fix_riprel()
->> is meaningless on it.
->> Thus, I think it would better be ifdef'd in call-site.
+> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=ffcbdc220a1520d006a837f33589c7c19ffbeb76
 > 
-> but we regularly do this in generic code: we add calls that are NOPs on 
-> some architectures. For example flush_cache_page() makes no sense on the 
-> x86 architecture.
+> the updated one avoid one link warning.
 
-Indeed.
-By the way, flush_cache_page() is defined as a do-while(0) on x86.
-Would it better to define fix_riprel() as a do-while(0) on x86-32?
-I think this obviously indicates that function has no effect.
+please send delta patches instead - so that we can review the changes.
 
-> So i'm inclined to apply Harvey's cleanup - less
-> #ifdef complexity in higher-level code is very much favored, even
-> if "riprel" is a NOP concept on 32-bit.
+> this is the updated verison that take enable_IO_APIC as extra call for 
+> setup_local_APIC to avoid linking warning.
 
-OK, I agree about that fix_riprel() which is ifdef'd twice is too much ifdef'd.
-Reducing ifdef is good to me.
+hm, what link warning did you get? Perhaps the following __cpuinit:
 
-Thanks,
-> 
-> 	Ingo
+> -void __cpuinit setup_local_APIC (void)
 
--- 
-Masami Hiramatsu
+does not mix well with an __init call:
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+> +void __init enable_IO_APIC(void)
 
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
+and you hack it around by using a function pointer. Nasty and still 
+buggy. The proper solution would be to mark enable_IO_APIC as __cpuinit 
+too (or something like that).
 
+	Ingo
