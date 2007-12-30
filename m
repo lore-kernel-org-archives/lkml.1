@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbXL3Rct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbXL3RdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbXL3Rct (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 12:32:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbXL3Rbs
+	id S1754965AbXL3RdG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 12:33:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbXL3Rbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 12:31:48 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:8170 "EHLO
+	Sun, 30 Dec 2007 12:31:49 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:8159 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752437AbXL3Rbl (ORCPT
+	with ESMTP id S1752451AbXL3Rbl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 30 Dec 2007 12:31:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Qzltw+7aFUo3AJmKS5LKzNzbStnnp5hSb1TnzcUKpT5F0zLkiwoncA4HuQWx1cB2cvYGA2UgcWZHqZqg9P2QpEtZwqnVq5MURkDifaLoxAeXjO+zmM1IQ3BCax6BCi+wE2wR4Dnajigf86iLjHOoecuOX4aYxDyjHN4FbfAlPxk=
+        b=txVJ/geMvQ/6NUlU2Vsvr2KZJy/fk1w5QZ5rZ8C5ql/YbGCj72sk9xShyjWv84mvOcMN3mklt4dcKiSSjaEtM/eK1nBlCWJuOoqaQpnPe4It/JHaO3eq/J367l4KWrnkWLzXrWMVj2bJdL3Tzu60H/TZcBy2aqh3/HOatl1o528=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 2/3] ide-pmac: macio resource freeing bugfix
-Date: Sun, 30 Dec 2007 18:24:50 +0100
+Subject: [PATCH 3/3] au1xxx-ide/rapide: use hwif->index for ide_unregister()
+Date: Sun, 30 Dec 2007 18:25:30 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200712301824.51003.bzolnier@gmail.com>
+Message-Id: <200712301825.30370.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Release DMA resource before zeroing pmif.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Russell King <rmk@arm.linux.org.uk>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ppc/pmac.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/ide/arm/rapide.c      |    4 ++--
+ drivers/ide/mips/au1xxx-ide.c |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Index: b/drivers/ide/ppc/pmac.c
+Index: b/drivers/ide/arm/rapide.c
 ===================================================================
---- a/drivers/ide/ppc/pmac.c
-+++ b/drivers/ide/ppc/pmac.c
-@@ -1228,12 +1228,12 @@ pmac_ide_macio_attach(struct macio_dev *
- 		/* The inteface is released to the common IDE layer */
- 		dev_set_drvdata(&mdev->ofdev.dev, NULL);
- 		iounmap(base);
--		if (pmif->dma_regs)
-+		if (pmif->dma_regs) {
- 			iounmap(pmif->dma_regs);
-+			macio_release_resource(mdev, 1);
-+		}
- 		memset(pmif, 0, sizeof(*pmif));
- 		macio_release_resource(mdev, 0);
--		if (pmif->dma_regs)
--			macio_release_resource(mdev, 1);
- 	}
+--- a/drivers/ide/arm/rapide.c
++++ b/drivers/ide/arm/rapide.c
+@@ -78,8 +78,8 @@ static void __devexit rapide_remove(stru
  
- 	return rc;
+ 	ecard_set_drvdata(ec, NULL);
+ 
+-	/* there must be a better way */
+-	ide_unregister(hwif - ide_hwifs);
++	ide_unregister(hwif->index);
++
+ 	ecard_release_resources(ec);
+ }
+ 
+Index: b/drivers/ide/mips/au1xxx-ide.c
+===================================================================
+--- a/drivers/ide/mips/au1xxx-ide.c
++++ b/drivers/ide/mips/au1xxx-ide.c
+@@ -691,7 +691,7 @@ static int au_ide_remove(struct device *
+ 	ide_hwif_t *hwif = dev_get_drvdata(dev);
+ 	_auide_hwif *ahwif = &auide_hwif;
+ 
+-	ide_unregister(hwif - ide_hwifs);
++	ide_unregister(hwif->index);
+ 
+ 	iounmap((void *)ahwif->regbase);
+ 
