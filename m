@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbXL3NDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbXL3NEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755273AbXL3NDM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 08:03:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbXL3NC6
+	id S1755839AbXL3NEV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 08:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbXL3NEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 08:02:58 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56169 "EHLO mx3.mail.elte.hu"
+	Sun, 30 Dec 2007 08:04:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47550 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752065AbXL3NC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 08:02:57 -0500
-Date: Sun, 30 Dec 2007 13:57:08 +0100
+	id S1751891AbXL3NEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 08:04:13 -0500
+Date: Sun, 30 Dec 2007 14:03:39 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Islam Amer <pharon@gmail.com>
-Cc: "David P. Reed" <dpreed@reed.com>,
-       Richard Harman <richard@richardharman.com>,
-       Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
-Message-ID: <20071230125708.GA14424@elte.hu>
-References: <47765D11.2040903@reed.com> <1198967334.5049.3.camel@iamer-laptop> <1198974925.7055.0.camel@iamer-laptop>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Rene Herman <rene.herman@keyaccess.nl>, dpreed@reed.com,
+       Islam Amer <pharon@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       hpa@zytor.com, Pavel Machek <pavel@ucw.cz>,
+       Ingo Molnar <mingo@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
+Message-ID: <20071230130339.GA16946@elte.hu>
+References: <477711DC.5030800@keyaccess.nl> <alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1198974925.7055.0.camel@iamer-laptop>
+In-Reply-To: <alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,15 +39,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Islam Amer <pharon@gmail.com> wrote:
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> Sorry, pressed send too soon. here is the line in dmesg:
+> > This fixes "hwclock" triggered boottime hangs for a few HP/Compaq 
+> > laptops and might as such be applicable to 2.6.24 still.
 > 
-> Compaq Presario v6000: using alternate I/O delay port
+> It's not a regression as far as I can see (ie we've always done that 
+> port 80 access for slow-down), and quite frankly, I think the code is 
+> horribly ugly.
 > 
-> Thanks, please tell me if you need anymore info.
+> Using a DMI quirk for something like this is just not maintainable. 
+> Are we going to live with doing new quirks forever? I'd rather just 
+> remove the slowdown entirely (obviously that is not for 2.6.24 either, 
+> though!), and drivers that then are shown to really need it could use 
+> their *own* ports.
 
-thanks Islam for testing this. I've added your DMI strings to x86.git, 
-so v2.6.25 should work out of box on your system.
+yep, that's exactly the plan: in x86.git we've got it all set up so that 
+we can switch over to ioport=nodelay by default in v2.6.25, and then get 
+rid of all the iodelay infrastructure in 2.6.26 altogether if things 
+work out fine (which is the expectation from all test feedback so far).
 
 	Ingo
