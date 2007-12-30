@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbXL3Wmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbXL3WnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758547AbXL3Wmp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 17:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbXL3Wmg
+	id S1757939AbXL3WnD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 17:43:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758232AbXL3Wmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 17:42:36 -0500
-Received: from smtp3-g19.free.fr ([212.27.42.29]:32832 "EHLO smtp3-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754446AbXL3Wmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 17:42:35 -0500
-User-Agent: Microsoft-Entourage/11.2.5.060620
-Date: Sun, 30 Dec 2007 23:42:30 +0100
-Subject: RAID timeout parameter accessibility request
-From: Jose de la Mancha <hidalgoj@free.fr>
-To: <linux-kernel@vger.kernel.org>
-Message-ID: <C39DDD66.F5A0%hidalgoj@free.fr>
-Thread-Topic: RAID timeout parameter accessibility request
-Thread-Index: AchLNUJvgMd9CLcoEdyZCAADk7o1Ig==
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Sun, 30 Dec 2007 17:42:43 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:45202 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758185AbXL3Wmm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 17:42:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wDowUpWGfwwfKkw6L/jfIF5MtOMDP0V0MfYbleC3HP92Z7km9Iu0act1P5NWu5TMtbv5vVoUVGV0/F1FurPkgMvw/jK6GAjP7Sw3tWyiUs3/BajdfbVezPdM9aee93O3okEh2ciCQ7gvqrl1xM3q36axtdvPSRAEAJcLKTiARtU=
+Message-ID: <86802c440712301442q476979f0hef047a45e5444c84@mail.gmail.com>
+Date: Sun, 30 Dec 2007 14:42:41 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [PATCH] x86_64: clear IO_APIC before enabing apic error vector. v2
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071230220620.GC17670@does.not.exist>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200712291952.20455.yinghai.lu@sun.com>
+	 <20071230145115.GR16946@elte.hu>
+	 <86802c440712301248m38cd000ejf7e48f273d573edd@mail.gmail.com>
+	 <20071230220620.GC17670@does.not.exist>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone. I'm sorry but I'm not currently subscribed to this list (I've
-been sent here by the listmaster), so please CC me all your
-answers/comments. Thanks in advance.
+On Dec 30, 2007 2:06 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> On Sun, Dec 30, 2007 at 12:48:48PM -0800, Yinghai Lu wrote:
+> > On Dec 30, 2007 6:51 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> > >
+> > > * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> > >
+> > > > please check if you can replace the one in the x86-mm
+> > > >
+> > > > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=ffcbdc220a1520d006a837f33589c7c19ffbeb76
+> > > >
+> > > > the updated one avoid one link warning.
+> > >
+> > > please send delta patches instead - so that we can review the changes.
+> >
+> > will do that in another patch.
+> >
+> > >
+> > > > this is the updated verison that take enable_IO_APIC as extra call for
+> > > > setup_local_APIC to avoid linking warning.
+> > >
+> > > hm, what link warning did you get? Perhaps the following __cpuinit:
+> >
+> > WARNING: vmlinux.o(.text+0x163d5): Section mismatch: reference to
+> > .init.text:enable_IO_APIC (between 'setup_local_APIC' and
+> > 'apic_is_clustered_box')
+>
+> So you are doing complicated things for silencing the warning (there is
+> an easier ways for achieving it), but the real bug that you will get an
+> Oops when calling enable_IO_APIC() after bootup since it already got
+> freed stays?
 
-SHORT QUESTION :
-In a Debian-controlled RAID array, is there a parameter that handles the
-timeout before a non-responding drive is dropped from the array ? Can this
-timeout become user-adjustable in a future build ?
+the enable_IO_APIC is actually doing clear_IO_APIC. and it is only
+called by BSP via setup_local_APIC
+and it is not called again after bootup
 
-EXPLANATIONS :
-As you might know, if you install and use a "desktop edition" hard drive in
-a RAID array, the drive may not work correctly. This is caused by the normal
-error recovery procedure that a desktop edition hard drive uses : when an
-error is found on a desktop edition hard drive, the drive will enter into a
-deep recovery cycle to attempt to repair the error, recover the data from
-the problematic area, and then reallocate a dedicated area to replace the
-problematic area. This process can take up to 120 seconds depending on the
-severity of the issue.
-
-The problem is that most RAID controllers allow a very short amount of time
-(7-15 seconds) for a hard drive to recover from an error. If a hard drive
-takes too long to complete this process, the drive will be dropped from the
-RAID array !
-
-Of course there are "RAID edition" hard drives with a feature called TLER
-(Time Limited Error Recovery) which stops the hard drive from entering into
-a deep recovery cycle. The hard drive will only spend 7 seconds to attempt
-to recover. This means that the hard drive will not be dropped from a RAID
-array. But these "special" hard drives are way too expensive IMHO just for a
-small firmware-based feature.
-
-There would be an easy way to allow users to use "ordinary" hard drives in a
-Debian software-controlled RAID array. So here's my request : I suppose
-there is a parameter that handles the default timeout before a drive is
-dropped from the RAID array. I don't know if this parameter is hardcoded,
-but it would be nice if it was user-adjustable. This way, we could simply
-set up this parameter to 120 seconds or more (instead of 7-15) and we
-wouldn't have any more problems with using desktop "edition hard" drives in
-a RAID array.
-
-What do you think ? Can it be done in a future build ?
-
-I really hope that you'll be able to help, because I guess a lot of people
-can be concerned by this issue.
-
-Many thanks in advance & Best regards.
-
-Jose
-
-
+YH
