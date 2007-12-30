@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbXL3VcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758639AbXL3Vd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758270AbXL3VcA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 16:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbXL3Vbx
+	id S1758639AbXL3Vd3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 16:33:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757280AbXL3VdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 16:31:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46581 "EHLO mx2.mail.elte.hu"
+	Sun, 30 Dec 2007 16:33:22 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33855 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753571AbXL3Vbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 16:31:53 -0500
-Date: Sun, 30 Dec 2007 22:31:26 +0100
+	id S1756026AbXL3VdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 16:33:21 -0500
+Date: Sun, 30 Dec 2007 22:25:36 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] Hibernation: Document __save_processor_state() on
-	x86-64
-Message-ID: <20071230213126.GB14654@elte.hu>
-References: <200712281353.37976.rjw@sisk.pl> <200712302204.56977.rjw@sisk.pl> <20071230205104.GB26120@elte.hu> <200712302248.03567.rjw@sisk.pl>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>, dpreed@reed.com,
+       Islam Amer <pharon@gmail.com>, hpa@zytor.com,
+       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
+Message-ID: <20071230212536.GA5370@elte.hu>
+References: <alpine.LFD.1.00.0712300124440.32517@woody.linux-foundation.org> <20071230144700.78f4605c@the-village.bc.nu> <20071230152835.GX16946@elte.hu> <4777BDA5.4050203@keyaccess.nl> <20071230160751.GB26221@elte.hu> <4777C6E8.7060202@keyaccess.nl> <20071230170612.GA16502@elte.hu> <20071230182937.40f2adcf@the-village.bc.nu> <20071230204650.GA26120@elte.hu> <47780888.9070503@keyaccess.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200712302248.03567.rjw@sisk.pl>
+In-Reply-To: <47780888.9070503@keyaccess.nl>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,25 +39,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-> > how different can it be, for resume to work? I mean, we'll have 
-> > deeply kernel version dependent variables in RAM. Am i missing 
-> > something obvious?
-> 
-> On x86-64 it can be almost totally different (by restoring a 
-> hibernation image we replace the entire contents of RAM with almost no 
-> constraints).
-> 
-> [Well, using a relocatable kernel for restoring an image with 
-> nonrelocatable one or vice versa is rather not the best idea, but 
-> everything else should work in theory.]
-> 
-> On i386 the boot kernel is still required to be the same as the one in 
-> the image.
+> On 30-12-07 21:46, Ingo Molnar wrote:
+>> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>>
+>>>> So the current plan is to go with an io_delay=udelay default in v2.6.25, 
+>>>> to give this a migration window, and io_delay=none in v2.6.26 [and a 
+>>>> complete removal of arch/x86/kernel/io_delay.c], once the _p() uses are 
+>>>> fixed up. This is gradual enough to notice any regressions we care about 
+>>>> and also makes it nicely bisectable and gradual.
+>>> You will break systems if you blindly go around disabling _p delays for 
+>>> ISA and LPC bus devices. The DEC Hinote laptops for example are well 
+>>> known for requiring the correct ISA and other keyboard controller delays. 
+>>> I don't expect anyone to test with a hinote or see it until it hits 
+>>> Debian or similar 'low resource' friendly devices.
+>>
+>> well, using io_delay=udelay is not 'blindly disabling'.
+>
+> On the other hand, the patch you just posted that makes io_delay=none 
+> the default _is_ blindly disabling. So that wasn't for consumption?
 
-what's exactly in the hibernation image? Dirty data i suppose - but what 
-about kernel-internal pages. What if we go from SLAB to SLUB? What if 
-the size of a structure changes? Etc.
+if you want to see the current x86.git intention then do:
+
+ git-clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6.git
+ cd linux-2.6.git
+ git-branch x86
+ git-checkout x86
+ git-pull git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git mm
+
+right now the default is io_delay=udelay.
 
 	Ingo
