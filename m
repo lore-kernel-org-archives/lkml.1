@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbXL3A3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbXL3AgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755155AbXL3A3l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 19:29:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXL3A3c
+	id S1753468AbXL3AgT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 19:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbXL3AgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 19:29:32 -0500
-Received: from web36615.mail.mud.yahoo.com ([209.191.85.32]:31877 "HELO
-	web36615.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752405AbXL3A3b (ORCPT
+	Sat, 29 Dec 2007 19:36:10 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:21584 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751246AbXL3AgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 19:29:31 -0500
-X-YMail-OSG: eaX3Pf8VM1mjPB9.5Du3w8h0hfG_mhrMee6Qx.3z6vO3X8zIoeKOiNwGYwa8RH0_zCtN.kJ4rBC2I_Sf8qg5I1.p7ch2Uc0TB8O4rPlq.tlO9_W0hLk-
-X-RocketYMMF: rancidfat
-Date: Sat, 29 Dec 2007 16:29:29 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] security: remove security_sb_post_mountroot hook
-To: "H. Peter Anvin" <hpa@zytor.com>, Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Security Modules List 
-	<linux-security-module@vger.kernel.org>
-In-Reply-To: <200712300020.lBU0KPcr010209@tazenda.hos.anvin.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <139407.71031.qm@web36615.mail.mud.yahoo.com>
+	Sat, 29 Dec 2007 19:36:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=swO3gHQdtnmTY8DdTeqrlyYfrAKgbDb00qUeC+gtk2A5WL91yBYt5ktDvJo0oATH3QdZWek98g8Enc81pBZXWyVN+FJgf4Gii+X1hLJKIEWozgbPAnTDqR86WW4W7P909fkebF1KSo4h/doLovAxx1Ekb+xUlsU/Z+j2VFzf2rU=
+Subject: Re: [PATCH] Option to disable AMD C1E (allows dynticks to work)
+From: Islam Amer <pharon@gmail.com>
+Reply-To: pharon@gmail.com
+To: "David P. Reed" <dpreed@reed.com>
+Cc: Richard Harman <richard@richardharman.com>,
+       Eduard-Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
+       Rene Herman <rene.herman@keyaccess.nl>
+In-Reply-To: <1198967334.5049.3.camel@iamer-laptop>
+References: <47765D11.2040903@reed.com>
+	 <1198967334.5049.3.camel@iamer-laptop>
+Content-Type: text/plain
+Date: Sun, 30 Dec 2007 02:35:25 +0200
+Message-Id: <1198974925.7055.0.camel@iamer-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sorry, pressed send too soon. here is the line in dmesg:
 
---- "H. Peter Anvin" <hpa@zytor.com> wrote:
-
-> The security_sb_post_mountroot() hook is long-since obsolete, and is
-> fundamentally broken: it is never invoked if someone uses initramfs.
-> This is particularly damaging, because the existence of this hook has
-> been used as motivation for not using initramfs.
-> 
-> Stephen Smalley confirmed on 2007-07-19 that this hook was originally
-> used by SELinux but can now be safely removed:
-> 
->      http://marc.info/?l=linux-kernel&m=118485683612916&w=2
-> 
-> Cc: Stephen Smalley <sds@tycho.nsa.gov>
-> Cc: James Morris <jmorris@namei.org>
-> Cc: Eric Paris <eparis@parisplace.org>
-> Cc: Chris Wright <chrisw@sous-sol.org>
-> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-
-It is also the case that Smack does not use this hook.
-It can be removed as far as I'm concerned.
+Compaq Presario v6000: using alternate I/O delay port
 
 
+Thanks, please tell me if you need anymore info.
 
-Casey Schaufler
-casey@schaufler-ca.com
