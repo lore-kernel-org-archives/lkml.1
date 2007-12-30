@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbXL3LB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbXL3LSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753539AbXL3LB1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Dec 2007 06:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbXL3LBT
+	id S1753936AbXL3LSy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Dec 2007 06:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbXL3LSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Dec 2007 06:01:19 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:37897 "EHLO smtp5.pp.htv.fi"
+	Sun, 30 Dec 2007 06:18:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44433 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751827AbXL3LBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Dec 2007 06:01:18 -0500
-Date: Sun, 30 Dec 2007 13:01:11 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: unify x86 Makefile(s)
-Message-ID: <20071230110111.GB31605@does.not.exist>
-References: <20071228212341.GA6939@uranus.ravnborg.org> <200712292217.37474.ak@suse.de> <20071229214522.GG27360@does.not.exist> <200712300300.51427.ak@suse.de>
+	id S1751287AbXL3LSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Dec 2007 06:18:46 -0500
+Date: Sun, 30 Dec 2007 12:15:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC] sleepy linux
+Message-ID: <20071230111552.GA8578@elte.hu>
+References: <20071225230731.GA29030@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200712300300.51427.ak@suse.de>
+In-Reply-To: <20071225230731.GA29030@elf.ucw.cz>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 30, 2007 at 03:00:51AM +0100, Andi Kleen wrote:
+
+* Pavel Machek <pavel@ucw.cz> wrote:
+
+> Todays hardware is mostly capable of doing better: with correctly set 
+> up wakeups, machine can sleep and successfully pretend it is not 
+> sleeping -- by waking up whenever something interesting happens. Of 
+> course, it is easier on machines not connected to the network, and on 
+> notebook computers.
 > 
-> > Without inlining the maxmimum stack usage inside foobar() is
-> > max(stack usage foo(), stack usage bar()). [1]
+> Requirements:
 > 
-> It's a little more complicated. gcc 4.x (not sure which x, might 0) 
-> is clever enough to not use max() stack, but only use the stack for the 
-> different scopes as needed similar as when the calls weren't inlined. 
-> But gcc 3 didn't do that.
-
-That's roughly what I wanted to say.
-
-> > With foo() and bar() inlined (-funit-at-a-time also enables 
-> > -finline-functions-called-once), the maxmimum stack usage inside 
-> > foobar() is sum(stack usage foo(), stack usage bar()). And this
-> > worst case is the area where gcc 4 is much better than gcc 3.4.
+> 0) Working suspend-to-RAM, with kernel being able to bring video back.
 > 
-> Yes exactly.  If the functions weren't inlined the problem wouldn't
-> occur because the stack sizes do not add up in the same dynamic call chain. 
-> Thus a few statetic noinlines will fix it.
+> 1) RTC clock that can wake up system
 
-And we are back at my main point that risking regressions for getting 
-better code with some ancient compiler isn't worth it.
+very nice approach! It might require smarter hardware to be really 
+efficient, but the generic ability for Linux to utilize S3 automatically 
+would _quickly_ drive the creation of smarter hardware i'm sure - so i'd 
+propose to include this even if it wastes power in some cases.
 
-Plus the fact that noinline's might result in slightly worse code with 
-current compilers.
+a quick feature request: could you please make the wake-on-RTC 
+capability generic and add a CONFIG_DEBUG_SUSPEND_ON_RAM=y config option 
+(disabled by default) that does a short 1-second suspend-to-RAM sequence 
+upon bootup? That way we could test s2ram automatically (which is a MUCH 
+needed feature for automated regression testing and automatic 
+bisection). In addition, some sort of 'suspend for N seconds' /sys or 
+/dev/rtc capability would be nice as well.
 
-> -Andi
+btw., how far are you from having a working prototype?
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
