@@ -1,163 +1,416 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbXL3Deu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbXL3DiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755085AbXL3Deu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Dec 2007 22:34:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbXL3Dej
+	id S1755351AbXL3DiR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Dec 2007 22:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbXL3DiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Dec 2007 22:34:39 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:37348 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752886AbXL3Dei (ORCPT
+	Sat, 29 Dec 2007 22:38:05 -0500
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:57563 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbXL3DiD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Dec 2007 22:34:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pEGo6j1yQK5FEd06oCk1UGTsNHCig3wssrmeQQzhDW5JT06b4h/GAcpppJjufSGmnIQkRnovuHygYE7ydA7In4nRgxk1AgHd/vpl8a0Nph2H8tFDcdTGEAppbQMLpDNrgGe3EB94LrRJFXKR/UU8QUXBE19ziw1p4h9RPTZhGUQ=
-Message-ID: <64bb37e0712291934o77a3d365h56c9c31ac8437469@mail.gmail.com>
-Date: Sun, 30 Dec 2007 04:34:36 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Subject: Re: 2.6.24-rc6-mm1
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Neil Brown" <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       netdev@vger.kernel.org
-In-Reply-To: <20071230013021.GA13603@gondor.apana.org.au>
+	Sat, 29 Dec 2007 22:38:03 -0500
+Message-ID: <477711DC.5030800@keyaccess.nl>
+Date: Sun, 30 Dec 2007 04:34:52 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20071222233056.d652743e.akpm@linux-foundation.org>
-	 <64bb37e0712230827m7d368e2l3174f3b4396d09c1@mail.gmail.com>
-	 <64bb37e0712281453y4aac82b7h7acc8ec314ca6e3e@mail.gmail.com>
-	 <20071228150746.42b3bbc0.akpm@linux-foundation.org>
-	 <64bb37e0712290851r6d41768dk270e47884713a3de@mail.gmail.com>
-	 <20071230013021.GA13603@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: dpreed@reed.com, Islam Amer <pharon@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, hpa@zytor.com,
+       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: provide a DMI based port 0x80 I/O delay override
+Content-Type: multipart/mixed;
+ boundary="------------060401090409000200040709"
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 30, 2007 2:30 AM, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> On Sat, Dec 29, 2007 at 05:51:13PM +0100, Torsten Kaiser wrote:
-> >
-> > > > The cause, why I am resending this: I just got a crash with
-> > > > 2.6.24-rc6-mm1, again looking network related:
-> > > >
-> > > > [93436.933356] WARNING: at include/net/dst.h:165 dst_release()
-> > > > [93436.936685] Pid: 8079, comm: konqueror Not tainted 2.6.24-rc6-mm1 #11
-> > > > [93436.939292]
-> > > > [93436.939293] Call Trace:
-> > > > [93436.939304]  [<ffffffff80531d2d>] skb_release_all+0xdd/0x110
-> > > > [93436.939307]  [<ffffffff80531311>] __kfree_skb+0x11/0xa0
-> > > > [93436.939309]  [<ffffffff805313b7>] kfree_skb+0x17/0x30
-> > > > [93436.939312]  [<ffffffff805a0b48>] unix_release_sock+0x128/0x250
-> > > > [93436.939315]  [<ffffffff805a0c91>] unix_release+0x21/0x30
-> > > > [93436.939318]  [<ffffffff8052b144>] sock_release+0x24/0x90
-> > > > [93436.939320]  [<ffffffff8052b656>] sock_close+0x26/0x50
-> > > > [93436.939324]  [<ffffffff8029f921>] __fput+0xc1/0x230
-> > > > [93436.939327]  [<ffffffff8029fe46>] fput+0x16/0x20
-> > > > [93436.939329]  [<ffffffff8029c576>] filp_close+0x56/0x90
-> > > > [93436.939331]  [<ffffffff8029de46>] sys_close+0xa6/0x110
-> > > > [93436.939335]  [<ffffffff8020b57b>] system_call_after_swapgs+0x7b/0x80
-> >
-> > >From code inspection I would blame the patch "[SKBUFF]: Free old skb
-> > properly in skb_morph" from Herbert Xu. (CC added)
->
-> I doubt it.  skb_morph is only used on IP fragments so I don't see how
-> you could attribute an error from a Unix domain socket to this patch.
+This is a multi-part message in MIME format.
+--------------060401090409000200040709
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-That's why I wrote that I do not know much about the network core...
+Hi Linus.
 
-> In any case, Unix socket packets should not have a dst at all so the
-> very fact that you're in that path means that you have some sort of
-> memory corruption.
+[ resend, forgot the CC to linux-kernel. sorry ]
 
-... I did not know about the fact that there should not have been an dst.
+This fixes "hwclock" triggered boottime hangs for a few HP/Compaq laptops
+and might as such be applicable to 2.6.24 still.
 
-Its just that this warning was the first nice clue about the memory
-corruption related to networking that I see since 2.6.24-rc3-mm2.
-The time of the patch (Mon, 26 Nov 2007 15:11:19) even fits into the
-window between -rc3-mm1 and -rc3-mm2.
+The kernel's use of an outb to port 0x80 as an I/O delay disagrees with
+these machines (after ACPI is live, that is) and this provides for a DMI
+based switch to alternate port 0xed for them.
 
-I doubt that the memory corruption is a hardware problem, because the
-system in question is using ECC ram and I did not see any messages
-about corrected/detected errors.
+Complete changelog inside the patch.
 
-> Is this the very first OOPS/warning that you see? If not you should
-> ignore all but the very first one as that may have left your system
-> in an inconsistent state which may render all subsequent OOPSes and
-> warnings useless.
+An evolved version of this patch that also supplies udelay(2) and <nothing>
+as I/O delay lives in the x86.git tree as well but Alan Cox suggested those
+choices shouldn't yet be provided as he's finding races in drivers on SMP
+without the bus-locking outb.
 
-I looked into the log in question and the only other warning was a
-circular locking dependency that lockdep detected around 1.5 hour
-before this warning.
+As a minimal version I thought you might perhaps want to take this as a
+specific fix for the afflicted laptops for 2.6.24. H. Peter Anvin earlier
+agreed it would be minimal enough for that.
 
-As reported in my original mail immeadeatly after the warning the
-system OOPSed and hang:
-[93436.947241] general protection fault: 0000 [1] SMP
--> first OOPS
-[93436.947243] last sysfs file:
-/sys/devices/pci0000:00/0000:00:0f.0/0000:01:00.1/irq
-[93436.947245] CPU 1
-[93436.947246] Modules linked in: radeon drm nfsd exportfs w83792d
-ipv6 tuner tea5767 tda8290 tuner_xc2
-028 tda9887 tuner_simple mt20xx tea5761 tvaudio msp3400 bttv ir_common
-compat_ioctl32 videobuf_dma_sg v
-ideobuf_core btcx_risc tveeprom usbhid videodev v4l2_common hid
-v4l1_compat pata_amd sg i2c_nforce2
-[93436.947257] Pid: 8079, comm: konqueror Not tainted 2.6.24-rc6-mm1 #11
--> not tainted by a previous OOPS
-[93436.947259] RIP: 0010:[<ffffffff80531438>]  [<ffffffff80531438>]
-skb_drop_list+0x18/0x30
-[93436.947262] RSP: 0018:ffff810005f4fda8  EFLAGS: 00010286
-[93436.947263] RAX: ab1ed5ca5b74e7de RBX: ab1ed5ca5b74e7de RCX: 000000000000d135
-[93436.947265] RDX: ffff81011d089a80 RSI: 0000000000000001 RDI: ffff81011d089a88
-[93436.947266] RBP: ffff810005f4fdb8 R08: 0000000000000001 R09: 0000000000000006
-[93436.947268] R10: 0000000000000000 R11: 0000000000000000 R12: ffff8100de02c500
-[93436.947269] R13: ffff81011c188a00 R14: 0000000000000001 R15: ffff81011c189198
-[93436.947271] FS:  00007fb5bde0d700(0000) GS:ffff81007ff22000(0000)
-knlGS:0000000000000000
-[93436.947273] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-[93436.947274] CR2: 00007fb5bdd76000 CR3: 00000000664d5000 CR4: 00000000000006e0
-[93436.947276] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[93436.947277] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[93436.947279] Process konqueror (pid: 8079, threadinfo
-ffff810005f4e000, task ffff8100a1dec000)
-[93436.947281] Stack:  ffff810005f4fdd8 ffff810116c86140
-ffff810005f4fdd8 ffffffff805314ae
-[93436.947284]  ffff810116c86140 ffff8100de02c500 ffff810005f4fdf8
-ffffffff80531cf0
-[93436.947286]  ffff8100de02c500 ffff81011c188b48 ffff810005f4fe18
-ffffffff80531311
-[93436.947288] Call Trace:
-[93436.947290]  [<ffffffff805314ae>] skb_release_data+0x5e/0xa0
-[93436.947293]  [<ffffffff80531cf0>] skb_release_all+0xa0/0x110
-[93436.947295]  [<ffffffff80531311>] __kfree_skb+0x11/0xa0
-[93436.947297]  [<ffffffff805313b7>] kfree_skb+0x17/0x30
-[93436.947299]  [<ffffffff805a0b48>] unix_release_sock+0x128/0x250
-[93436.947302]  [<ffffffff805a0c91>] unix_release+0x21/0x30
-[93436.947304]  [<ffffffff8052b144>] sock_release+0x24/0x90
-[93436.947307]  [<ffffffff8052b656>] sock_close+0x26/0x50
-[93436.947309]  [<ffffffff8029f921>] __fput+0xc1/0x230
-[93436.947312]  [<ffffffff8029fe46>] fput+0x16/0x20
-[93436.947314]  [<ffffffff8029c576>] filp_close+0x56/0x90
-[93436.947316]  [<ffffffff8029de46>] sys_close+0xa6/0x110
-[93436.947319]  [<ffffffff8020b57b>] system_call_after_swapgs+0x7b/0x80
-[93436.947322]
-[93436.947322]
-[93436.947323] Code: 48 8b 18 48 89 c7 e8 5d ff ff ff 48 85 db 75 ed 48 83 c4 08
-[93436.947328] RIP  [<ffffffff80531438>] skb_drop_list+0x18/0x30
-[93436.947330]  RSP <ffff810005f4fda8>
-[93436.947332] ---[ end trace befb7cc3528ab3b1 ]---
+It was tested on both of the afflicted machines the DMI strings cover and
+doesn't change anything on others by default. It also introduces a bootparam
+io_delay=<standard|alternate> to make (or override) the choice manually.
 
-Your patch just fit so "good" to my problems:
-* it had the correct time frame for 2.6.24-rc3-mm2
-* it looked guilty at changing the refcounting of __refcnt because of
-the added dst_release()
-* it added other release / freeing operations so that a use-after-free
-memory corruption seemed possible
+   Documentation/kernel-parameters.txt |    6 ++
+   arch/x86/boot/compressed/misc_32.c  |    8 +--
+   arch/x86/boot/compressed/misc_64.c  |    8 +--
+   arch/x86/kernel/Makefile_32         |    2
+   arch/x86/kernel/Makefile_64         |    2
+   arch/x86/kernel/io_delay.c          |   77
+++++++++++++++++++++++++++++++++++++
+   arch/x86/kernel/setup_32.c          |    2
+   arch/x86/kernel/setup_64.c          |    2
+   include/asm-x86/io_32.h             |    6 --
+   include/asm-x86/io_64.h             |   27 +++++++-----
+   10 files changed, 115 insertions(+), 25 deletions(-)
 
-I just have no better idea to what caused this OOPS and the other
-hangs in -rc3-mm2.
+Rene.
 
-Torsten
+
+--------------060401090409000200040709
+Content-Type: text/plain;
+ name="dmi-port80-minimal-bootparam.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="dmi-port80-minimal-bootparam.diff"
+
+commit b2a10c0b8e6c1c73b940e60fae4cbe9db9ca9e3b
+Author: Rene Herman <rene.herman@gmail.com>
+Date:   Mon Dec 17 21:23:55 2007 +0100
+
+    x86: provide a DMI based port 0x80 I/O delay override.
+    
+    Certain (HP/Compaq) laptops experience trouble from our port 0x80
+    I/O delay writes. This patch provides for a DMI based switch to the
+    "alternate diagnostic port" 0xed (as used by some BIOSes as well)
+    for these.
+    
+    David P. Reed confirmed that using port 0xed works and provides a
+    proper delay on his HP Pavilion dv9000z, Islam Amer comfirmed that
+    it does so on a Compaq Presario V6000. Both are Quanta boards, type
+    30B9 and 30B7 respectively and are the (only) machines for which
+    the DMI based switch triggers. HP Pavilion dv6000z is expected to
+    also need this but its DMI info hasn't been verified yet.
+    
+    The symptoms of _not_ working are a hanging machine, with "hwclock"
+    use being a direct trigger and therefore the bootup often hanging
+    already on these machines.
+    
+    Earlier versions of this attempted to simply use udelay(2), with the
+    2 being a value tested to be a nicely conservative upper-bound with
+    help from many on the linux-kernel mailinglist, but that approach has
+    two problems.
+    
+    First, pre-loops_per_jiffy calibration (which is post PIT init while
+    some implementations of the PIT are actually one of the historically
+    problematic devices that need the delay) udelay() isn't particularly
+    well-defined. We could initialise loops_per_jiffy conservatively (and
+    based on CPU family so as to not unduly delay old machines) which
+    would sort of work, but still leaves:
+    
+    Second, delaying isn't the only effect that a write to port 0x80 has.
+    It's also a PCI posting barrier which some devices may be explicitly
+    or implicitly relying on. Alan Cox did a survey and found evidence
+    that additionally various drivers are racy on SMP without the bus
+    locking outb.
+    
+    Switching to an inb() makes the timing too unpredictable and as such,
+    this DMI based switch should be the safest approach for now. Any more
+    invasive changes should get more rigid testing first. It's moreover
+    only very few machines with the problem and a DMI based hack seems
+    to fit that situation.
+    
+    An early boot parameter to make the choice manually (and override any
+    possible DMI based decision) is also provided:
+    
+    	io_delay=standard|alternate
+    
+    This does not change the io_delay() in the boot code which is using
+    the same port 0x80 I/O delay but those do not appear to be a problem
+    as tested by David P. Reed. He moreover reported that booting with
+    "acpi=off" also fixed things and seeing as how ACPI isn't touched
+    until after this DMI based I/O port switch leaving the ones in the
+    boot code be is safe.
+    
+    This patch is partly based on earlier patches from Pavel Machek and
+    David P. Reed.
+    
+    Signed-off-by: Rene Herman <rene.herman@gmail.com>
+    Tested-by: David P. Reed <dpreed@reed.com>
+    Tested-by: Islam Amer <pharon@gmail.com>
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 33121d6..6948e25 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -785,6 +785,12 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			for translation below 32 bit and if not available
+ 			then look in the higher range.
+ 
++	io_delay=	[X86-32,X86-64] I/O delay port
++		standard
++			Use the 0x80 standard I/O delay port (default)
++		alternate
++			Use the 0xed alternate I/O delay port
++
+ 	io7=		[HW] IO7 for Marvel based alpha systems
+ 			See comment before marvel_specify_io7 in
+ 			arch/alpha/kernel/core_marvel.c.
+diff --git a/arch/x86/boot/compressed/misc_32.c b/arch/x86/boot/compressed/misc_32.c
+index b74d60d..288e162 100644
+--- a/arch/x86/boot/compressed/misc_32.c
++++ b/arch/x86/boot/compressed/misc_32.c
+@@ -276,10 +276,10 @@ static void putstr(const char *s)
+ 	RM_SCREEN_INFO.orig_y = y;
+ 
+ 	pos = (x + cols * y) * 2;	/* Update cursor position */
+-	outb_p(14, vidport);
+-	outb_p(0xff & (pos >> 9), vidport+1);
+-	outb_p(15, vidport);
+-	outb_p(0xff & (pos >> 1), vidport+1);
++	outb(14, vidport);
++	outb(0xff & (pos >> 9), vidport+1);
++	outb(15, vidport);
++	outb(0xff & (pos >> 1), vidport+1);
+ }
+ 
+ static void* memset(void* s, int c, unsigned n)
+diff --git a/arch/x86/boot/compressed/misc_64.c b/arch/x86/boot/compressed/misc_64.c
+index 6ea015a..43e5fcc 100644
+--- a/arch/x86/boot/compressed/misc_64.c
++++ b/arch/x86/boot/compressed/misc_64.c
+@@ -269,10 +269,10 @@ static void putstr(const char *s)
+ 	RM_SCREEN_INFO.orig_y = y;
+ 
+ 	pos = (x + cols * y) * 2;	/* Update cursor position */
+-	outb_p(14, vidport);
+-	outb_p(0xff & (pos >> 9), vidport+1);
+-	outb_p(15, vidport);
+-	outb_p(0xff & (pos >> 1), vidport+1);
++	outb(14, vidport);
++	outb(0xff & (pos >> 9), vidport+1);
++	outb(15, vidport);
++	outb(0xff & (pos >> 1), vidport+1);
+ }
+ 
+ static void* memset(void* s, int c, unsigned n)
+diff --git a/arch/x86/kernel/Makefile_32 b/arch/x86/kernel/Makefile_32
+index a7bc93c..0cc1981 100644
+--- a/arch/x86/kernel/Makefile_32
++++ b/arch/x86/kernel/Makefile_32
+@@ -8,7 +8,7 @@ CPPFLAGS_vmlinux.lds += -Ui386
+ obj-y	:= process_32.o signal_32.o entry_32.o traps_32.o irq_32.o \
+ 		ptrace_32.o time_32.o ioport_32.o ldt_32.o setup_32.o i8259_32.o sys_i386_32.o \
+ 		pci-dma_32.o i386_ksyms_32.o i387_32.o bootflag.o e820_32.o\
+-		quirks.o i8237.o topology.o alternative.o i8253.o tsc_32.o
++		quirks.o i8237.o topology.o alternative.o i8253.o tsc_32.o io_delay.o
+ 
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+ obj-y				+= cpu/
+diff --git a/arch/x86/kernel/Makefile_64 b/arch/x86/kernel/Makefile_64
+index 5a88890..08a68f0 100644
+--- a/arch/x86/kernel/Makefile_64
++++ b/arch/x86/kernel/Makefile_64
+@@ -11,7 +11,7 @@ obj-y	:= process_64.o signal_64.o entry_64.o traps_64.o irq_64.o \
+ 		x8664_ksyms_64.o i387_64.o syscall_64.o vsyscall_64.o \
+ 		setup64.o bootflag.o e820_64.o reboot_64.o quirks.o i8237.o \
+ 		pci-dma_64.o pci-nommu_64.o alternative.o hpet.o tsc_64.o bugs_64.o \
+-		i8253.o
++		i8253.o io_delay.o
+ 
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+ obj-y				+= cpu/
+diff --git a/arch/x86/kernel/io_delay.c b/arch/x86/kernel/io_delay.c
+new file mode 100644
+index 0000000..77a8bcd
+--- /dev/null
++++ b/arch/x86/kernel/io_delay.c
+@@ -0,0 +1,77 @@
++/*
++ * I/O delay strategies for inb_p/outb_p
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/dmi.h>
++#include <asm/io.h>
++
++/*
++ * Allow for a DMI based override of port 0x80
++ */
++#define IO_DELAY_PORT_STD 0x80
++#define IO_DELAY_PORT_ALT 0xed
++
++static unsigned short io_delay_port __read_mostly = IO_DELAY_PORT_STD;
++
++void native_io_delay(void)
++{
++	asm volatile ("outb %%al, %w0" : : "d" (io_delay_port));
++}
++EXPORT_SYMBOL(native_io_delay);
++
++static int __init dmi_io_delay_port_alt(const struct dmi_system_id *id)
++{
++	printk(KERN_NOTICE "%s: using alternate I/O delay port\n", id->ident);
++	io_delay_port = IO_DELAY_PORT_ALT;
++	return 0;
++}
++
++static struct dmi_system_id __initdata dmi_io_delay_port_alt_table[] = {
++	{
++		.callback	= dmi_io_delay_port_alt,
++		.ident		= "Compaq Presario V6000",
++		.matches	= {
++			DMI_MATCH(DMI_BOARD_VENDOR, "Quanta"),
++			DMI_MATCH(DMI_BOARD_NAME, "30B7")
++		}
++	},
++	{
++		.callback	= dmi_io_delay_port_alt,
++		.ident		= "HP Pavilion dv9000z",
++		.matches	= {
++			DMI_MATCH(DMI_BOARD_VENDOR, "Quanta"),
++			DMI_MATCH(DMI_BOARD_NAME, "30B9")
++		}
++	},
++	{
++	}
++};
++
++static int __initdata io_delay_override;
++
++static int __init io_delay_param(char *s)
++{
++	if (!s)
++		return -EINVAL;
++
++	if (!strcmp(s, "standard"))
++		io_delay_port = IO_DELAY_PORT_STD;
++	else if (!strcmp(s, "alternate"))
++		io_delay_port = IO_DELAY_PORT_ALT;
++	else
++		return -EINVAL;
++
++	io_delay_override = 1;
++	return 0;
++}
++
++early_param("io_delay", io_delay_param);
++
++void __init io_delay_init(void)
++{
++	if (!io_delay_override)
++		dmi_check_system(dmi_io_delay_port_alt_table);
++}
+diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
+index e1e18c3..6c3a3b4 100644
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -648,6 +648,8 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	dmi_scan_machine();
+ 
++	io_delay_init();;
++
+ #ifdef CONFIG_X86_GENERICARCH
+ 	generic_apic_probe();
+ #endif	
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index 30d94d1..ec976ed 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -311,6 +311,8 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	dmi_scan_machine();
+ 
++	io_delay_init();
++
+ #ifdef CONFIG_SMP
+ 	/* setup to use the static apicid table during kernel startup */
+ 	x86_cpu_to_apicid_ptr = (void *)&x86_cpu_to_apicid_init;
+diff --git a/include/asm-x86/io_32.h b/include/asm-x86/io_32.h
+index fe881cd..690b8f4 100644
+--- a/include/asm-x86/io_32.h
++++ b/include/asm-x86/io_32.h
+@@ -250,10 +250,8 @@ static inline void flush_write_buffers(void)
+ 
+ #endif /* __KERNEL__ */
+ 
+-static inline void native_io_delay(void)
+-{
+-	asm volatile("outb %%al,$0x80" : : : "memory");
+-}
++extern void io_delay_init(void);
++extern void native_io_delay(void);
+ 
+ #if defined(CONFIG_PARAVIRT)
+ #include <asm/paravirt.h>
+diff --git a/include/asm-x86/io_64.h b/include/asm-x86/io_64.h
+index a037b07..b2d4994 100644
+--- a/include/asm-x86/io_64.h
++++ b/include/asm-x86/io_64.h
+@@ -35,13 +35,18 @@
+   *  - Arnaldo Carvalho de Melo <acme@conectiva.com.br>
+   */
+ 
+-#define __SLOW_DOWN_IO "\noutb %%al,$0x80"
++extern void io_delay_init(void);
++extern void native_io_delay(void);
+ 
++static inline void slow_down_io(void)
++{
++	native_io_delay();
+ #ifdef REALLY_SLOW_IO
+-#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO __SLOW_DOWN_IO
+-#else
+-#define __FULL_SLOW_DOWN_IO __SLOW_DOWN_IO
++	native_io_delay();
++	native_io_delay();
++	native_io_delay();
+ #endif
++}
+ 
+ /*
+  * Talk about misusing macros..
+@@ -50,21 +55,21 @@
+ static inline void out##s(unsigned x value, unsigned short port) {
+ 
+ #define __OUT2(s,s1,s2) \
+-__asm__ __volatile__ ("out" #s " %" s1 "0,%" s2 "1"
++__asm__ __volatile__ ("out" #s " %" s1 "0,%" s2 "1" : : "a" (value), "Nd" (port))
+ 
+ #define __OUT(s,s1,x) \
+-__OUT1(s,x) __OUT2(s,s1,"w") : : "a" (value), "Nd" (port)); } \
+-__OUT1(s##_p,x) __OUT2(s,s1,"w") __FULL_SLOW_DOWN_IO : : "a" (value), "Nd" (port));} \
++__OUT1(s,x) __OUT2(s,s1,"w"); } \
++__OUT1(s##_p,x) __OUT2(s,s1,"w"); slow_down_io(); }
+ 
+ #define __IN1(s) \
+ static inline RETURN_TYPE in##s(unsigned short port) { RETURN_TYPE _v;
+ 
+ #define __IN2(s,s1,s2) \
+-__asm__ __volatile__ ("in" #s " %" s2 "1,%" s1 "0"
++__asm__ __volatile__ ("in" #s " %" s2 "1,%" s1 "0" : "=a" (_v) : "Nd" (port))
+ 
+-#define __IN(s,s1,i...) \
+-__IN1(s) __IN2(s,s1,"w") : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
+-__IN1(s##_p) __IN2(s,s1,"w") __FULL_SLOW_DOWN_IO : "=a" (_v) : "Nd" (port) ,##i ); return _v; } \
++#define __IN(s,s1) \
++__IN1(s) __IN2(s,s1,"w"); return _v; } \
++__IN1(s##_p) __IN2(s,s1,"w"); slow_down_io(); return _v; }
+ 
+ #define __INS(s) \
+ static inline void ins##s(unsigned short port, void * addr, unsigned long count) \
+
+
+--------------060401090409000200040709--
